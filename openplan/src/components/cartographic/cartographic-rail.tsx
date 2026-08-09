@@ -73,23 +73,44 @@ export type CartographicRailGroup = {
 
 type CartographicRailProps = {
   groups: CartographicRailGroup[];
-  brand?: string;
 };
 
 function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function CartographicRail({ groups, brand = "◎" }: CartographicRailProps) {
+export function CartographicRail({ groups }: CartographicRailProps) {
   const pathname = usePathname();
 
+  /**
+   * How many button-height rows the rail draws: every nav item, plus the theme
+   * control in the foot. The stylesheet divides the window height by this to
+   * size a row, so the rail fits without a scrollbar.
+   *
+   * It is a variable rather than a number in the CSS on purpose. The previous
+   * fix used fixed heights at four `max-height` breakpoints, which left bands
+   * of window height where the nav overflowed by a few pixels — measured at
+   * 1000px tall, the nav wanted 857px and had 850px, so a scrollbar appeared.
+   * Worse, any number baked into the stylesheet goes stale the moment someone
+   * adds a nav entry, and nothing would fail to say so. Reading the count from
+   * the rendered groups means adding an item re-sizes the rows instead.
+   */
+  const rowCount = groups.reduce((total, group) => total + group.items.length, 0) + 1;
+
   return (
-    <aside className="op-cart-rail" aria-label="Primary navigation">
+    <aside
+      className="op-cart-rail"
+      aria-label="Primary navigation"
+      style={{ "--op-rail-rows": rowCount } as React.CSSProperties}
+    >
       <div className="op-cart-rail__inner">
-        <Link href="/dashboard" className="op-cart-rail__logo" aria-label="OpenPlan home">
-          {brand}
-        </Link>
-        <div className="op-cart-rail__sep" />
+        {/*
+          No brand mark here. It was a second link to /dashboard, which the
+          "Overview" item directly below it already is — two adjacent links to
+          one destination, and 59px of a rail that has to fit eighteen items
+          without scrolling. The tab title and the workspace pill in the header
+          say whose app this is.
+        */}
         <nav className="op-cart-rail__nav">
           {groups.map((group, groupIdx) => (
             <div key={group.title} className="op-cart-rail__group">

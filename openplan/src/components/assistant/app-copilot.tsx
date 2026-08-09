@@ -1339,10 +1339,10 @@ function QuickLinkGrid({
                             ) : null}
                           </div>
                           <p className="mt-2 text-xs leading-relaxed text-slate-200/88">
-                            {link.reason ?? "Open this surface to continue the grounded operator workflow."}
+                            {link.reason ?? "Opens the page where this work continues."}
                           </p>
                           <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
-                            {link.auditNote ?? "Operator review is still expected in the destination surface."}
+                            {link.auditNote ?? "You still review it on the page this opens."}
                           </p>
                         </div>
                         <div className="flex shrink-0 flex-col items-end gap-2">

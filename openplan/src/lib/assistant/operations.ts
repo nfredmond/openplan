@@ -145,8 +145,8 @@ function describeWorkspaceNextCommandLink(context: {
           : "Current RTP packets are aligned enough for release review, but linked-project funding posture still needs verification before those packets are treated as fully settled.",
       auditNote:
         nextCommand.moduleKey === "grants"
-          ? "Use the Grants OS follow-through lane to resolve funding gaps, uninvoiced awards, or reimbursement pressure before finalizing packet posture."
-          : "Use the release-review packet detail to verify funding gaps, uninvoiced awards, or reimbursement follow-through before finalizing packet posture.",
+          ? "Use the Grants OS follow-through lane to resolve funding gaps, uninvoiced awards, or reimbursement pressure before finalizing packet freshness."
+          : "Use the release-review packet detail to verify funding gaps, uninvoiced awards, or reimbursement follow-through before finalizing packet freshness.",
     };
   }
 
@@ -161,7 +161,7 @@ function describeWorkspaceNextCommandLink(context: {
       statusLabel: decisionReadyCount > 0 ? `${decisionReadyCount} decision-ready` : "Modeling context available",
       reason: modelingSummary.leadDecisionDetail ?? undefined,
       auditNote:
-        "Review the lead project modeling posture and recommended next move before advancing or adjusting pursue state for any linked opportunity.",
+        "Review the lead project modeling evidence and recommended next move before advancing or adjusting pursue state for any linked opportunity.",
     };
   }
 
@@ -198,7 +198,7 @@ function describeWorkspaceNextCommandLink(context: {
   return {
     label: `Open ${nextCommand.title}`,
     statusLabel: "Workspace command",
-    reason: "The shared workspace queue currently has the clearest guidance for what should move around this surface.",
+    reason: "Your workspace queue has the clearest guidance on what to do next here.",
     auditNote: "Use the command-board rationale before changing records or regenerating artifacts.",
   };
 }
@@ -259,10 +259,10 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded workspace brief inside Planner Agent without leaving the current surface.",
+      reason: "Answers here in Planner Agent, without moving you off this page.",
       approval: "safe",
       auditEvent: "assistant.operation.workspace.brief_agent",
-      auditNote: "This runs a grounded assistant brief only, it does not mutate records.",
+      auditNote: "This reads and summarises only. It changes nothing.",
       workflowId: "workspace-overview",
       prompt: "Give me the key workspace brief and the next operator move.",
       promptLabel: "Generate workspace brief",
@@ -290,10 +290,10 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             executionMode: "future_agent_action",
             priority: "primary",
             statusLabel: "Execute action",
-            reason: "The workspace already knows the lead project that has grant records but still lacks a funding-need anchor, so Planner Agent can create that anchor directly from the shared queue.",
+            reason: "The workspace already knows the lead project that has grant records but still lacks a funding target, so Planner Agent can record that target directly from the queue.",
             approval: "approval_required",
             auditEvent: "assistant.operation.workspace.create_funding_profile",
-            auditNote: "Creates the lead project funding-profile anchor through the existing audited route without inventing any funding amounts.",
+            auditNote: "Creates the lead project funding target through the normal route, and the change is recorded in the activity log without inventing any funding amounts.",
             executeAction: {
               kind: "create_project_funding_profile",
               projectId: fundingAnchorCommand.targetProjectId,
@@ -316,16 +316,16 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             executionMode: "future_agent_action",
             priority: "primary",
             statusLabel: "Execute action",
-            reason: "The workspace queue already knows the lead project that has a grounded need but still no funding opportunity record, so Planner Agent can create that first grant record directly from the sourcing queue.",
+            reason: "The workspace queue already knows the lead project that has a recorded funding target but still no funding opportunity record, so Planner Agent can create that first grant record directly from the sourcing list.",
             approval: "approval_required",
             auditEvent: "assistant.operation.workspace.create_funding_opportunity",
-            auditNote: "Creates the first funding opportunity record for the lead sourcing project through the existing audited route.",
+            auditNote: "Creates the first funding opportunity record for the lead sourcing project through the normal route, and the change is recorded in the activity log.",
             executeAction: {
               kind: "create_funding_opportunity",
               projectId: fundingSourcingCommand.targetProjectId,
               title: `${fundingSourcingCommand.targetProjectName ?? "Project"} funding opportunity`,
               postActionWorkflowId: "workspace-funding",
-              postActionPrompt: "A lead workspace funding opportunity record was created from the sourcing queue. Which grant lane should move next?",
+              postActionPrompt: "A lead workspace funding opportunity record was created from the sourcing list. Which grant lane should move next?",
               postActionPromptLabel: "Review workspace funding posture",
             },
           }
@@ -345,7 +345,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             reason: "The workspace queue already knows the lead funding opportunity that still needs a pursue decision, so Planner Agent can advance it directly from the shared grants board.",
             approval: "approval_required",
             auditEvent: "assistant.operation.workspace.advance_funding_opportunity",
-            auditNote: "Updates the lead funding opportunity decision through the existing audited route so the workspace has a real pursue posture.",
+            auditNote: "Updates the lead funding opportunity decision through the normal route, and the change is recorded in the activity log so the workspace has a a recorded decision to pursue or skip.",
             executeAction: {
               kind: "update_funding_opportunity_decision",
               opportunityId: fundingDecisionCommand.targetOpportunityId,
@@ -371,7 +371,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             reason: "The workspace queue found an exact one-invoice, one-award reimbursement relink candidate on the same project, so Planner Agent can attach that invoice to the right award without guessing billing values.",
             approval: "approval_required",
             auditEvent: "assistant.operation.workspace.link_invoice_award",
-            auditNote: "Updates one existing invoice record to reference one exact funding-award record through the audited billing patch route.",
+            auditNote: "Updates one existing invoice record to reference one exact funding-award record through the normal billing route, and the change is recorded in the activity log.",
             executeAction: {
               kind: "link_billing_invoice_funding_award",
               workspaceId: context.workspace.id,
@@ -379,7 +379,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               fundingAwardId: invoiceRelinkCommand.targetFundingAwardId,
               postActionWorkflowId: "workspace-funding",
               postActionPrompt: "A lead invoice was relinked to its funding award from the workspace queue. Which reimbursement or billing lane should move next?",
-              postActionPromptLabel: "Review workspace reimbursement posture",
+              postActionPromptLabel: "Review workspace reimbursement status",
             },
           }
         )
@@ -395,10 +395,10 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             executionMode: "future_agent_action",
             priority: "primary",
             statusLabel: "Execute action",
-            reason: "The workspace queue already knows the lead project that has committed awards but still no reimbursement packet, so Planner Agent can start that audited record directly from the shared funding board.",
+            reason: "The workspace queue already knows the lead project that has committed awards but still no reimbursement packet, so Planner Agent can start that record directly from the shared funding board.",
             approval: "approval_required",
             auditEvent: "assistant.operation.workspace.create_reimbursement_record",
-            auditNote: "Creates a reimbursement submittal record through the existing audited project-record route without inventing invoice amounts or dates.",
+            auditNote: "Creates a reimbursement submittal record through the normal project route, and the change is recorded in the activity log without inventing invoice amounts or dates.",
             executeAction: {
               kind: "create_project_record",
               projectId: reimbursementStartCommand.targetProjectId,
@@ -409,7 +409,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               notes: "Planner Agent created this reimbursement packet starter from the workspace funding queue. Link award-specific backup and invoice chain next.",
               postActionWorkflowId: "workspace-funding",
               postActionPrompt: "A lead reimbursement packet was created from the workspace queue. Which funding or invoicing lane should move next?",
-              postActionPromptLabel: "Review workspace reimbursement posture",
+              postActionPromptLabel: "Review workspace reimbursement status",
             },
           }
         )
@@ -424,10 +424,10 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             actionClass: "review_controls",
             priority: "primary",
             statusLabel: `${reimbursementAdvanceCount} reimbursement active`,
-            reason: "The workspace queue already knows the lead project where reimbursement work exists but the invoice lane still trails the committed award stack, so this jump should be one click from the shared board.",
+            reason: "The workspace queue already knows the lead project where reimbursement work exists but the invoice register still trails the committed awards, so this jump should be one click from the shared board.",
             approval: "review",
             auditEvent: "assistant.operation.workspace.open_reimbursement_lane",
-            auditNote: "Navigation only. Use the linked project invoice lane to advance reimbursement follow-through.",
+            auditNote: "Navigation only. Use the linked project invoice register to advance reimbursement follow-through.",
           }
         )
       : null,
@@ -452,7 +452,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             reason: "The invoice register is the truthful place to reconcile award-linked reimbursement follow-through once packet work already exists, so the assistant should offer a direct triage jump there too.",
             approval: "review",
             auditEvent: "assistant.operation.workspace.open_billing_reimbursement_triage",
-            auditNote: "Navigation only. Opens the billing register narrowed to the lead project and award-linked invoice posture.",
+            auditNote: "Navigation only. Opens the billing register narrowed to the lead project and invoices linked to an award.",
           }
         )
       : null,
@@ -521,11 +521,11 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               : `${context.operationsSummary.counts.projectFundingGapProjects} gap project${context.operationsSummary.counts.projectFundingGapProjects === 1 ? "" : "s"}`,
           reason:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
-              ? "Some projects already have funding opportunities but still lack a funding-need anchor, so the assistant should close that honesty gap before ranking dollars-to-go."
+              ? "Some projects already have funding opportunities but still lack a funding target, so the assistant should close that honesty gap before ranking dollars-to-go."
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
-                ? "Some projects already have a grounded funding need but still no linked opportunities, so the assistant should surface sourcing work before it talks about closing gaps."
+                ? "Some projects have a recorded funding target but no grants attached yet, so finding grants comes before talking about closing the gap."
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
-                ? "Some projects already have linked opportunities but nothing marked pursue yet, so the assistant should surface grant-decision work before it treats the lane as a true funding stack."
+                ? "Some projects have grants attached but none marked pursue yet, so making those decisions comes before treating the funding as real."
                 : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
                   ? "Some projects already have opportunities marked awarded but still no matching funding-award record, so the assistant should close that committed-dollar bookkeeping gap before treating the remaining shortfall as final."
                   : invoiceRelinkCommand
@@ -533,15 +533,15 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
                   : reimbursementStartCommand
                     ? "Some projects already have committed awards logged but still no reimbursement packet started, so the assistant should open that audited reimbursement trail before it only talks about funding gaps."
                     : reimbursementAdvanceCommand
-                      ? "Some projects already have reimbursement work started, but the invoice lane still has not caught up to the committed award stack, so follow-through deserves explicit triage."
+                      ? "Some projects already have reimbursement work started, but the invoice register still has not caught up to the committed awards, so follow-through deserves explicit triage."
               : "The workspace now shows real project funding gaps beyond deadline-only grant pressure, so the assistant should help rank which thinly funded project to reopen first.",
           approval: "safe",
           auditEvent: "assistant.operation.workspace.funding_agent",
-          auditNote: "This produces a grounded funding-gap brief only, it does not change funding records or project assumptions.",
+          auditNote: "This reads and summarises only. It changes no funding record and no project assumption.",
           workflowId: "workspace-funding",
           prompt:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
-              ? "Which projects have funding opportunities but still lack a funding-need anchor, and where should I start?"
+              ? "Which projects have funding opportunities but still lack a funding target, and where should I start?"
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Which projects already have funding need recorded but still no linked funding opportunities, and where should I start sourcing?"
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
@@ -589,7 +589,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               : "A live run is present, but it still needs operator interpretation before downstream use.",
             approval: "review",
             auditEvent: "assistant.operation.workspace.analysis",
-            auditNote: "Inspect map posture, filters, and source quality before treating deltas as decision-ready.",
+            auditNote: "Inspect map settings, filters, and source quality before treating deltas as decision-ready.",
           }
         )
       : null,
@@ -634,7 +634,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             approval: "approval_required",
             auditEvent: "assistant.operation.workspace.refresh_gtfs_feed",
             auditNote:
-              "Fetches this feed again from the stored address through the existing audited route. It supplies no address of its own, and it cannot adopt a refetch the collapse check withholds — a materially smaller result is stored and left for a person to accept.",
+              "Fetches this feed again from the stored address through the normal route, and the change is recorded in the activity log. It supplies no address of its own, and it cannot adopt a refetch the collapse check withholds — a materially smaller result is stored and left for a person to accept.",
             executeAction: {
               kind: "refresh_gtfs_feed",
               workspaceId,
@@ -698,10 +698,10 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           actionClass: "open_surface",
           priority: "secondary",
           statusLabel: "Freshest anchor",
-          reason: "This is the latest visible project anchor from the current workspace snapshot.",
+          reason: "This is the most recent project in your workspace.",
           approval: "safe",
           auditEvent: "assistant.operation.workspace.project",
-          auditNote: "Navigation only. Record changes still happen inside the target surface.",
+          auditNote: "Navigation only. Any change still happens on the page it opens.",
         })
       : null,
   ]);
@@ -770,10 +770,10 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           executionMode: "future_agent_action",
           priority: "primary",
           statusLabel: "Missing funding need",
-          reason: "This project has funding opportunities but no recorded funding-need anchor yet, so Planner Agent cannot measure the gap honestly until that record exists.",
+          reason: "This project has funding opportunities but no recorded funding target yet, so Planner Agent cannot measure the gap honestly until that record exists.",
           approval: "approval_required",
           auditEvent: "assistant.operation.project.create_funding_profile",
-          auditNote: "Creates the project funding-profile anchor through the existing audited route without inventing funding numbers.",
+          auditNote: "Creates the project funding target through the normal route, and the change is recorded in the activity log without inventing funding numbers.",
           executeAction: {
             kind: "create_project_funding_profile",
             projectId: context.project.id,
@@ -794,7 +794,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           reason: `No linked opportunity is currently marked pursue, so ${leadFundingOpportunity.title} is the cleanest next grant decision to advance from the project lane.`,
           approval: "approval_required",
           auditEvent: "assistant.operation.project.advance_funding_opportunity",
-          auditNote: "Updates the lead funding opportunity decision through the existing audited route so the project has a real pursue posture.",
+          auditNote: "Updates the lead funding opportunity decision through the normal route, and the change is recorded in the activity log so the project has a a recorded decision to pursue or skip.",
           executeAction: {
             kind: "update_funding_opportunity_decision",
             opportunityId: leadFundingOpportunity.id,
@@ -827,7 +827,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           reason: "This project has one exact unlinked invoice and one exact funding-award record, so Planner Agent can repair that reimbursement linkage without guessing any billing values.",
           approval: "approval_required",
           auditEvent: "assistant.operation.project.link_invoice_award",
-          auditNote: "Updates one existing invoice record to reference one exact funding-award record through the audited billing patch route.",
+          auditNote: "Updates one existing invoice record to reference one exact funding-award record through the normal billing route, and the change is recorded in the activity log.",
           executeAction: {
             kind: "link_billing_invoice_funding_award",
             workspaceId: context.workspace.id,
@@ -835,7 +835,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
             fundingAwardId: exactInvoiceAwardRelink.fundingAwardId,
             postActionWorkflowId: "project-funding",
             postActionPrompt: "An exact project invoice-to-award relink was completed. What reimbursement or funding step should move next on this project?",
-            postActionPromptLabel: "Review project reimbursement posture",
+            postActionPromptLabel: "Review project reimbursement status",
           },
         })
       : null,
@@ -846,10 +846,10 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           executionMode: "future_agent_action",
           priority: "primary",
           statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
-          reason: "Committed award dollars are logged on the project, but no reimbursement packet record has been started yet against part of that award stack.",
+          reason: "Committed award dollars are logged on the project, but no reimbursement packet record has been started yet against part of that awards.",
           approval: "approval_required",
           auditEvent: "assistant.operation.project.create_reimbursement_record",
-          auditNote: "Creates a reimbursement submittal record through the existing audited project-record route without inventing payment dates or invoice amounts.",
+          auditNote: "Creates a reimbursement submittal record through the normal project route, and the change is recorded in the activity log without inventing payment dates or invoice amounts.",
           executeAction: {
             kind: "create_project_record",
             projectId: context.project.id,
@@ -860,12 +860,12 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
             notes: "Planner Agent created this reimbursement packet starter from committed award posture. Link award-specific backup and invoice chain next.",
             postActionWorkflowId: "project-funding",
             postActionPrompt: "A reimbursement packet record was created for this project. What funding or reimbursement step should move next?",
-            postActionPromptLabel: "Review reimbursement posture",
+            postActionPromptLabel: "Review reimbursement status",
           },
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-      ? quickLink("project-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice lane", `/projects/${context.project.id}#project-invoices`, {
+      ? quickLink("project-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice register", `/projects/${context.project.id}#project-invoices`, {
           targetKind: "project",
           actionClass: "review_controls",
           priority: "primary",
@@ -873,10 +873,10 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           reason:
             reimbursementPacketCount > 0
               ? "A reimbursement packet record exists, but committed award dollars are still not fully reflected in the invoice chain yet."
-              : "Committed award dollars are now logged on the project, but part of that award stack still has no linked invoice request recorded.",
+              : "Committed award dollars are now logged on the project, but part of that awards still has no linked invoice request recorded.",
           approval: "review",
           auditEvent: "assistant.operation.project.reimbursement_lane",
-          auditNote: "Use the project invoice lane to tie committed awards into reimbursement workflow before closeout posture drifts.",
+          auditNote: "Use the project invoice register to tie committed awards into reimbursement workflow before the closeout record falls behind.",
         })
       : null,
     context.fundingSummary.opportunityCount > 0
@@ -889,7 +889,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
               : exactInvoiceAwardRelink
                 ? "Check invoice award relink in panel"
               : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                ? "Check reimbursement posture in panel"
+                ? "Check reimbursement status in panel"
                 : "Check funding posture in panel",
           `/projects/${context.project.id}#project-funding-opportunities`,
         {
@@ -924,13 +924,13 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
                 : exactInvoiceAwardRelink
                   ? `This project already has an exact invoice-to-award reimbursement relink available, so that bookkeeping seam should be closed before generic reimbursement follow-through.${comparisonEvidenceReason}`
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                  ? `Committed awards are recorded, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup.${comparisonEvidenceReason}`
+                  ? `Committed awards are recorded, but reimbursement has not yet caught up to the full awards, so the invoice register deserves attention before routine cleanup.${comparisonEvidenceReason}`
                   : (projectGapAmount ?? 0) > 0
                     ? `This project still shows uncovered funding need after current pursued dollars, so the grants lane should stay in front of routine cleanup.${comparisonEvidenceReason}`
                     : `Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.${comparisonEvidenceReason}`,
           approval: "review",
           auditEvent: "assistant.operation.project.funding_agent",
-          auditNote: "Use the project funding section to verify pursue, monitor, skip, award, reimbursement, and funding-gap posture before changing delivery assumptions.",
+          auditNote: "Use the project funding section to verify pursue, monitor, skip, award, reimbursement, and funding gaps before changing delivery assumptions.",
           workflowId: "project-funding",
           prompt: "What funding opportunities, award records, reimbursements, or funding gaps need action on this project right now?",
           promptLabel:
@@ -941,7 +941,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
                 : exactInvoiceAwardRelink
                   ? "Check invoice award relink in panel"
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                  ? "Check reimbursement posture in panel"
+                  ? "Check reimbursement status in panel"
                   : "Check funding posture in panel",
         }
       )
@@ -952,10 +952,10 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded blocker read inside Planner Agent instead of sending you into the project page first.",
+      reason: "Answers here in Planner Agent, instead of sending you to the project page first.",
       approval: "safe",
       auditEvent: "assistant.operation.project.blockers_agent",
-      auditNote: "This produces a grounded assistant read only, it does not change project data.",
+      auditNote: "This reads and summarises only. It changes no project data.",
       workflowId: "project-blockers",
       prompt: "What is blocking this project right now?",
       promptLabel: "Check blockers in panel",
@@ -998,7 +998,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           approval: "approval_required",
           auditEvent: "assistant.operation.project.record_stage_gate_hold",
           auditNote:
-            "Appends one HOLD to the append-only stage-gate decision log through the audited route. It cannot record a pass, and it supersedes nothing — the existing log is untouched.",
+            "Appends one HOLD to the append-only stage-gate decision log through the normal route, and the change is recorded in the activity log. It cannot record a pass, and it supersedes nothing — the existing log is untouched.",
           executeAction: {
             kind: "record_stage_gate_hold",
             workspaceId: context.workspace.id,
@@ -1032,10 +1032,10 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           actionClass: "review_controls",
           priority: "primary",
           statusLabel: "Control queue live",
-          reason: "Milestone, submittal, or invoice posture is the main next operator surface when no gate is blocked.",
+          reason: "When no gate is blocked, milestones, submittals, and invoices are the next thing to look at.",
           approval: "review",
           auditEvent: "assistant.operation.project.controls",
-          auditNote: "Review milestone, submittal, and invoice posture before making downstream commitments.",
+          auditNote: "Review milestones, submittals, and invoices before committing to anything.",
         }),
     context.fundingSummary.opportunityCount > 0
       ? quickLink("project-funding-record", "Open project funding strategy", `/projects/${context.project.id}#project-funding-opportunities`, {
@@ -1056,13 +1056,13 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
             awardRecordCount > 0
               ? `Use the project funding section to record awarded dollars before relying on remaining gap math.${comparisonEvidenceReason}`
               : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                ? `Use the project invoice lane to move committed awards into reimbursement workflow before delivery posture drifts.${comparisonEvidenceReason}`
+                ? `Use the project invoice register to move committed awards into reimbursement workflow before the delivery record falls behind.${comparisonEvidenceReason}`
                 : (projectGapAmount ?? 0) > 0
                   ? `Use the project funding section to close the remaining uncovered gap before delivery scope drifts ahead of funding reality.${comparisonEvidenceReason}`
                   : `Use the project funding section as the canonical grant strategy lane for this project.${comparisonEvidenceReason}`,
           approval: "review",
           auditEvent: "assistant.operation.project.funding_record",
-          auditNote: "Confirm funding gap, opportunity posture, award timing, and reimbursement posture before promising delivery scope.",
+          auditNote: "Confirm funding gap, opportunity status, award timing, and reimbursement status before promising delivery scope.",
         })
       : null,
     context.counts.overlayReadyDatasets > 0 || context.counts.recentRuns > 0
@@ -1105,7 +1105,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
           }
         : {
             label: "Review RTP release-review queue in panel",
-            reason: "The registry packet queue is materially current enough that release review is now the main operator move.",
+            reason: "The registry packet queue is materially current enough that release review is the next step.",
             workflowId: "rtp-registry-release",
             prompt: "Which RTP packet is most ready for release review right now, and what should I verify before release?",
             promptLabel: "Review RTP release-review queue in panel",
@@ -1123,7 +1123,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
           approval: "review",
           auditEvent: "assistant.operation.rtp_registry.create_first_packet",
           auditNote:
-            "This creates one RTP board-packet record for the recommended cycle and immediately generates its first artifact through the existing audited report routes.",
+            "This creates one RTP board-packet record for the recommended cycle and immediately generates its first artifact through the normal report routes, and the change is recorded in the activity log.",
           executeAction: {
             kind: "create_rtp_packet_record",
             rtpCycleId: context.recommendedCycle.id,
@@ -1144,7 +1144,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
       reason: primaryRegistryWorkflow.reason,
       approval: "safe",
       auditEvent: "assistant.operation.rtp_registry.brief_agent",
-      auditNote: "This runs a grounded RTP registry brief only, it does not mutate cycle or packet records.",
+      auditNote: "This reads and summarises only. It changes no cycle and no packet.",
       workflowId: primaryRegistryWorkflow.workflowId,
       prompt: primaryRegistryWorkflow.prompt,
       promptLabel: primaryRegistryWorkflow.promptLabel,
@@ -1158,7 +1158,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
           reason: "This cycle currently carries the strongest registry-level RTP packet or workflow signal.",
           approval: "review",
           auditEvent: "assistant.operation.rtp_registry.cycle",
-          auditNote: "Use the cycle record to verify chapter, engagement, and packet posture before acting.",
+          auditNote: "Use the cycle record to verify chapter, engagement, and packet freshness before acting.",
         })
       : null,
     context.operationsSummary.nextCommand && nextCommandLink
@@ -1178,7 +1178,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
             context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
             context.operationsSummary.counts.rtpFundingReviewPackets > 0
               ? nextCommandLink.auditNote
-              : "Use the command-board rationale before changing cycle, report, or packet posture.",
+              : "Use the command-board rationale before changing cycle, report, or packet freshness.",
         })
       : null,
     quickLink("rtp-registry-surface", "Open RTP registry", "/rtp", {
@@ -1186,7 +1186,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
       actionClass: "open_surface",
       priority: "secondary",
       statusLabel: "Registry open",
-      reason: "Use the RTP registry when you need the canonical queue and cycle list rather than a single-cycle drill-down.",
+      reason: "Use the RTP registry when you need the full queue and cycle list rather than one cycle at a time.",
       approval: "safe",
       auditEvent: "assistant.operation.rtp_registry.surface",
       auditNote: "Navigation only. Registry actions still happen inside the destination screen.",
@@ -1220,7 +1220,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
           }
         : {
             label: "Run RTP release review in panel",
-            reason: "This cycle's lead RTP packet is current enough that release review is now the main operator move.",
+            reason: "This cycle's lead RTP packet is current enough that release review is the next step.",
             workflowId: "rtp-packet-release",
             prompt: "Is this RTP cycle's current board packet ready for release review, and what should I verify first?",
             promptLabel: "Run RTP release review in panel",
@@ -1259,7 +1259,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
       reason: primaryCycleWorkflow.reason,
       approval: "safe",
       auditEvent: "assistant.operation.rtp.brief_agent",
-      auditNote: "This runs a grounded RTP brief only, it does not change cycle, chapter, or packet records.",
+      auditNote: "This reads and summarises only. It changes no cycle, chapter, or packet.",
       workflowId: primaryCycleWorkflow.workflowId,
       prompt: primaryCycleWorkflow.prompt,
       promptLabel: primaryCycleWorkflow.promptLabel,
@@ -1270,10 +1270,10 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
           actionClass: "review_packet",
           priority: "primary",
           statusLabel: context.packetSummary.recommendedReport.packetFreshness.label,
-          reason: "This RTP packet is the strongest current board/binder review anchor for the cycle.",
+          reason: "This RTP packet is the best packet to review for this cycle's board binder.",
           approval: "review",
           auditEvent: "assistant.operation.rtp.packet",
-          auditNote: "Verify freshness, source drift, and section posture before release or board use.",
+          auditNote: "Verify freshness, source drift, and section status before release or board use.",
         })
       : null,
     context.operationsSummary.nextCommand && nextCommandLink
@@ -1293,7 +1293,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
             context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
             context.operationsSummary.counts.rtpFundingReviewPackets > 0
               ? nextCommandLink.auditNote
-              : "Use the command-board rationale before changing cycle, chapter, or packet posture.",
+              : "Use the command-board rationale before changing cycle, chapter, or packet freshness.",
         })
       : null,
     quickLink("rtp-record", "Open RTP cycle", `/rtp/${context.rtpCycle.id}`, {
@@ -1301,10 +1301,10 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
       actionClass: "open_surface",
       priority: "secondary",
       statusLabel: "Cycle anchor",
-      reason: "Use the RTP cycle record for the canonical chapter, portfolio, engagement, and adoption basis.",
+      reason: "Use the RTP cycle record for the authoritative chapter, portfolio, engagement, and adoption record.",
       approval: "safe",
       auditEvent: "assistant.operation.rtp.record",
-      auditNote: "Navigation only. Cycle edits still happen inside the destination surface.",
+      auditNote: "Navigation only. Cycle edits still happen on the page it opens.",
     }),
   ]);
 }
@@ -1317,10 +1317,10 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded missing-work review inside Planner Agent before you jump into the full plan record.",
+      reason: "Answers here in Planner Agent, before you open the full plan record.",
       approval: "safe",
       auditEvent: "assistant.operation.plan.gaps_agent",
-      auditNote: "This runs a grounded assistant gap review only, it does not modify the plan.",
+      auditNote: "This reads and summarises only. It changes nothing in the plan.",
       workflowId: "plan-gaps",
       prompt: "What is this plan still missing, and what should I fix next?",
       promptLabel: "Check plan gaps in panel",
@@ -1334,7 +1334,7 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
           reason: "The shared workspace queue is currently the strongest guide for what should happen around this plan.",
           approval: "review",
           auditEvent: "assistant.operation.plan.next_command",
-          auditNote: "Use the workspace command rationale before changing packet or plan posture.",
+          auditNote: "Use the workspace command rationale before changing packet or plan status.",
         })
       : null,
     quickLink("plan-record", "Open plan record", `/plans/${context.plan.id}`, {
@@ -1342,7 +1342,7 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
       actionClass: "open_surface",
       priority: "secondary",
       statusLabel: "Record open",
-      reason: "Use the plan record when you need the canonical basis before downstream packet or engagement work.",
+      reason: "Use the plan record when you need the authoritative record before packet or engagement work.",
       approval: "safe",
       auditEvent: "assistant.operation.plan.record",
       auditNote: "Navigation only. Plan edits still require action in the destination screen.",
@@ -1353,7 +1353,7 @@ function buildPlanOperations(context: PlanAssistantContext): AssistantQuickLink[
           actionClass: "open_surface",
           priority: "supporting",
           statusLabel: "Delivery anchor",
-          reason: "This linked project is the best place to keep plan work tied to actual delivery posture.",
+          reason: "This linked project is the best place to keep plan work tied to actual delivery status.",
           approval: "safe",
           auditEvent: "assistant.operation.plan.project_anchor",
           auditNote: "Use the linked project as the delivery anchor before widening scope.",
@@ -1407,10 +1407,10 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           executionMode: "future_agent_action",
           priority: "primary",
           statusLabel: "Missing funding need",
-          reason: "This package has funding opportunities but its linked project still lacks a funding-need anchor, so gap posture cannot be measured honestly yet.",
+          reason: "This package has funding opportunities but its linked project still lacks a funding target, so the gap cannot be measured yet.",
           approval: "approval_required",
           auditEvent: "assistant.operation.program.create_funding_profile",
-          auditNote: "Creates the linked project funding-profile anchor through the existing audited route without inventing funding numbers.",
+          auditNote: "Creates the linked project funding target through the normal route, and the change is recorded in the activity log without inventing funding numbers.",
           executeAction: {
             kind: "create_project_funding_profile",
             projectId: context.project.id,
@@ -1431,7 +1431,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           reason: `No linked package opportunity is currently marked pursue, so ${leadFundingOpportunity.title} is the cleanest next funding decision to advance from this package.`,
           approval: "approval_required",
           auditEvent: "assistant.operation.program.advance_funding_opportunity",
-          auditNote: "Updates the lead funding opportunity decision through the existing audited route so this package has a real pursue posture.",
+          auditNote: "Updates the lead funding opportunity decision through the normal route, and the change is recorded in the activity log so this package has a a recorded decision to pursue or skip.",
           executeAction: {
             kind: "update_funding_opportunity_decision",
             opportunityId: leadFundingOpportunity.id,
@@ -1464,7 +1464,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           reason: "This package's linked project has one exact unlinked invoice and one exact funding-award record, so Planner Agent can repair that reimbursement linkage without guessing any billing values.",
           approval: "approval_required",
           auditEvent: "assistant.operation.program.link_invoice_award",
-          auditNote: "Updates one existing invoice record on the linked project to reference one exact funding-award record through the audited billing patch route.",
+          auditNote: "Updates one existing invoice record on the linked project to reference one exact funding-award record through the normal billing route, and the change is recorded in the activity log.",
           executeAction: {
             kind: "link_billing_invoice_funding_award",
             workspaceId: context.workspace.id,
@@ -1472,7 +1472,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
             fundingAwardId: exactInvoiceAwardRelink.fundingAwardId,
             postActionWorkflowId: "program-funding",
             postActionPrompt: "An exact package invoice-to-award relink was completed on the linked project. What reimbursement or funding step should move next?",
-            postActionPromptLabel: "Review package reimbursement posture",
+            postActionPromptLabel: "Review package reimbursement status",
           },
         })
       : null,
@@ -1483,10 +1483,10 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           executionMode: "future_agent_action",
           priority: "primary",
           statusLabel: `Uninvoiced ${formatCurrency(uninvoicedAwardAmount ?? 0)}`,
-          reason: "Committed award dollars are logged for this package's linked project, but no reimbursement packet record has been started yet against part of that award stack.",
+          reason: "Committed award dollars are logged for this package's linked project, but no reimbursement packet record has been started yet against part of that awards.",
           approval: "approval_required",
           auditEvent: "assistant.operation.program.create_reimbursement_record",
-          auditNote: "Creates a reimbursement submittal record on the linked project through the existing audited project-record route without inventing payment dates or invoice amounts.",
+          auditNote: "Creates a reimbursement submittal record on the linked project through the normal project route, and the change is recorded in the activity log without inventing payment dates or invoice amounts.",
           executeAction: {
             kind: "create_project_record",
             projectId: context.project.id,
@@ -1497,12 +1497,12 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
             notes: `Planner Agent created this reimbursement packet starter from ${context.program.title}. Link award-specific backup and invoice chain next.`,
             postActionWorkflowId: "program-funding",
             postActionPrompt: "A reimbursement packet record was created for this package's linked project. What funding or reimbursement step should move next?",
-            postActionPromptLabel: "Review package reimbursement posture",
+            postActionPromptLabel: "Review package reimbursement status",
           },
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
-      ? quickLink("program-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice lane", `/projects/${context.project.id}#project-invoices`, {
+      ? quickLink("program-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice register", `/projects/${context.project.id}#project-invoices`, {
           targetKind: "project",
           actionClass: "review_controls",
           priority: "primary",
@@ -1510,10 +1510,10 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           reason:
             reimbursementPacketCount > 0
               ? "A reimbursement packet record exists on the linked project, but committed award dollars are still not fully reflected in the invoice chain yet."
-              : "Committed award dollars are now logged for this package's linked project, but part of that award stack still has no linked invoice request recorded.",
+              : "Committed award dollars are now logged for this package's linked project, but part of that awards still has no linked invoice request recorded.",
           approval: "review",
           auditEvent: "assistant.operation.program.reimbursement_lane",
-          auditNote: "Use the linked project invoice lane to move committed package awards into reimbursement workflow before delivery posture drifts.",
+          auditNote: "Use the linked project invoice register to move committed package awards into reimbursement workflow before the delivery record falls behind.",
         })
       : null,
     context.fundingSummary.opportunityCount > 0
@@ -1526,7 +1526,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
               : exactInvoiceAwardRelink
                 ? "Check invoice award relink in panel"
               : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                ? "Check reimbursement posture in panel"
+                ? "Check reimbursement status in panel"
                 : "Check funding posture in panel",
           `/programs/${context.program.id}#program-funding-opportunities`,
         {
@@ -1561,13 +1561,13 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
                 : exactInvoiceAwardRelink
                   ? "This package's linked project already has an exact invoice-to-award reimbursement relink available, so that bookkeeping seam should be closed before generic reimbursement follow-through."
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                  ? "Committed awards are recorded for this package's linked project, but reimbursement has not yet caught up to the full award stack, so the invoice lane deserves attention before routine cleanup."
+                  ? "Committed awards are recorded for this package's linked project, but reimbursement has not yet caught up to the full awards, so the invoice register deserves attention before routine cleanup."
                   : (programGapAmount ?? 0) > 0
                     ? "The linked project still shows uncovered funding need after current pursued dollars, so package funding posture should stay visible alongside packet work."
                     : "Funding opportunities are already linked to this package, so grant posture should stay visible alongside packet and readiness work.",
           approval: "review",
           auditEvent: "assistant.operation.program.funding_agent",
-          auditNote: "Use the program funding section to verify pursue, monitor, skip, award, reimbursement, and gap posture before changing linked package strategy.",
+          auditNote: "Use the program funding section to verify pursue, monitor, skip, award, reimbursement, and gaps before changing linked package strategy.",
           workflowId: "program-funding",
           prompt: "Which funding opportunities, award records, reimbursements, or funding gaps tied to this package need action next, and why?",
           promptLabel:
@@ -1578,24 +1578,24 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
                 : exactInvoiceAwardRelink
                   ? "Check invoice award relink in panel"
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                  ? "Check reimbursement posture in panel"
+                  ? "Check reimbursement status in panel"
                   : "Check funding posture in panel",
         }
       )
       : null,
-    quickLink("program-packet-agent", "Check packet posture in panel", `/programs/${context.program.id}`, {
+    quickLink("program-packet-agent", "Check packet freshness in panel", `/programs/${context.program.id}`, {
       targetKind: "program",
       actionClass: "review_packet",
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded packet-posture check inside Planner Agent before you navigate away.",
+      reason: "Checks the packet here in Planner Agent, before you navigate away.",
       approval: "safe",
       auditEvent: "assistant.operation.program.packet_agent",
-      auditNote: "This is a grounded assistant read only, it does not mutate packet records.",
+      auditNote: "This reads and summarises only. It changes no packet.",
       workflowId: "program-packet",
       prompt: "What packet or evidence work does this program need next?",
-      promptLabel: "Check packet posture in panel",
+      promptLabel: "Check packet freshness in panel",
     }),
     context.packetSummary.recommendedReport
       ? quickLink("program-recommended-packet", "Open recommended packet", `/reports/${context.packetSummary.recommendedReport.id}`, {
@@ -1603,10 +1603,10 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           actionClass: "review_packet",
           priority: "primary",
           statusLabel: "Packet attention",
-          reason: "This recommended packet is the strongest current package-level evidence surface.",
+          reason: "This recommended packet is the strongest evidence this package currently has.",
           approval: "review",
           auditEvent: "assistant.operation.program.packet",
-          auditNote: "Verify freshness, source drift, and packet audit posture before release decisions.",
+          auditNote: "Verify freshness, source drift, and packet provenance before release decisions.",
         })
       : null,
     context.operationsSummary.nextCommand
@@ -1640,13 +1640,13 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
             awardRecordCount > 0
               ? "Use the package funding section to record awarded dollars before relying on remaining gap math."
               : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-                ? "Use the linked project invoice lane to move committed package awards into reimbursement workflow before downstream delivery posture drifts."
+                ? "Use the linked project invoice register to move committed package awards into reimbursement workflow before downstream the delivery record falls behind."
                 : (programGapAmount ?? 0) > 0
                   ? "Use the package funding section to close the linked project funding gap before downstream packet or delivery assumptions harden."
                   : "Use the linked funding-opportunities section as the canonical grant posture lane for this package.",
           approval: "review",
           auditEvent: "assistant.operation.program.funding_record",
-          auditNote: "Funding decisions should stay tied to this package before they ripple into broader project or RTP posture.",
+          auditNote: "Funding decisions should stay tied to this package before they ripple into the wider project or RTP record.",
         })
       : null,
     quickLink("program-record", "Open program record", `/programs/${context.program.id}`, {
@@ -1654,7 +1654,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
       actionClass: "open_surface",
       priority: "secondary",
       statusLabel: "Record open",
-      reason: "Use the program record for the canonical package basis before changing funding or packet posture.",
+      reason: "Use the program record for the authoritative package record before changing funding or packet freshness.",
       approval: "safe",
       auditEvent: "assistant.operation.program.record",
       auditNote: "Navigation only. Funding and packet changes still happen inside the destination screen.",
@@ -1670,10 +1670,10 @@ function buildScenarioOperations(context: ScenarioAssistantContext): AssistantQu
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded scenario comparison read inside Planner Agent without leaving the current surface.",
+      reason: "Compares them here in Planner Agent, without moving you off this page.",
       approval: "safe",
       auditEvent: "assistant.operation.scenario.compare_agent",
-      auditNote: "This produces a grounded comparison summary only, it does not alter scenario data.",
+      auditNote: "This reads and summarises only. It changes no scenario data.",
       workflowId: "scenario-compare",
       prompt: "Compare the ready alternatives against baseline and tell me what moved.",
       promptLabel: "Compare scenarios in panel",
@@ -1683,7 +1683,7 @@ function buildScenarioOperations(context: ScenarioAssistantContext): AssistantQu
       actionClass: "review_analysis",
       priority: "primary",
       statusLabel: "Comparison review",
-      reason: "Scenario assumptions and baseline pairing still need operator review before they drive downstream claims.",
+      reason: "Scenario assumptions and baseline pairing still need a person to review them before anything is claimed from them.",
       approval: "review",
       auditEvent: "assistant.operation.scenario.record",
       auditNote: "Check baseline pairing and assumptions before pushing scenario claims downstream.",
@@ -1730,7 +1730,7 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
             approval: "approval_required",
             auditEvent: "assistant.operation.model.launch_model_run",
             auditNote:
-              "Re-queues this existing run through the audited launch route. It supplies no configuration of " +
+              "Re-queues this existing run through the normal launch route, and the change is recorded in the activity log. It supplies no configuration of " +
               "its own, and it cannot relaunch a run that already succeeded — so it cannot re-roll a run " +
               "until its validation numbers land better.",
             executeAction: {
@@ -1752,10 +1752,10 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
       executionMode: "future_agent_action",
       priority: "primary",
       statusLabel: "In-panel action",
-      reason: "Runs the grounded readiness read inside Planner Agent before you move into the full model surface.",
+      reason: "Answers here in Planner Agent, before you open the full model page.",
       approval: "safe",
       auditEvent: "assistant.operation.model.readiness_agent",
-      auditNote: "This runs a grounded readiness brief only, it does not launch or modify the model.",
+      auditNote: "This reads and summarises only. It does not launch or change the model.",
       workflowId: "model-readiness",
       prompt: "Is this model ready for serious use, and what still needs work?",
       promptLabel: "Check model readiness in panel",
@@ -1768,7 +1768,7 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
       reason: "Model reuse or launch decisions should follow an explicit readiness and validation check.",
       approval: "review",
       auditEvent: "assistant.operation.model.record",
-      auditNote: "Readiness and validation posture should be reviewed before launch or reuse.",
+      auditNote: "Readiness and validation should be reviewed before launch or reuse.",
     }),
   ]);
 }
@@ -1828,14 +1828,14 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
                 }
               : {
                   label: "Run RTP release check in panel",
-                  reason: rtpReleaseReviewSummary?.detail ?? "The RTP packet is current enough that release review is now the main operator move.",
+                  reason: rtpReleaseReviewSummary?.detail ?? "The RTP packet is current enough that release review is the next step.",
                   workflowId: "rtp-packet-release",
                   prompt: "Is this RTP board packet ready for release review, and what still needs verification before release?",
                   promptLabel: "Run RTP release check in panel",
                 }
       : {
           label: "Run release check in panel",
-          reason: "Runs the grounded release check inside Planner Agent before you jump into full report detail.",
+          reason: "Checks it here in Planner Agent, before you open the full report.",
           workflowId: "report-release",
           prompt: "Is this report ready for release review, and what still needs verification?",
           promptLabel: "Run release check in panel",
@@ -1862,7 +1862,7 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
                 ? "assistant.operation.report.generate_artifact"
                 : "assistant.operation.report.refresh_artifact",
             auditNote:
-              "This executes the existing report.generate route and keeps report auth, artifact provenance, and packet audit posture intact.",
+              "This executes the existing report.generate route and keeps report auth, artifact provenance, and packet provenance intact.",
             executeAction: {
               kind: "generate_report_artifact",
               reportId: context.report.id,
@@ -1883,7 +1883,7 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
       reason: primaryPacketWorkflow.reason,
       approval: "safe",
       auditEvent: "assistant.operation.report.release_agent",
-      auditNote: "This is a grounded packet review only, it does not publish or mutate the report.",
+      auditNote: "This reads and summarises only. It does not publish or change the report.",
       workflowId: primaryPacketWorkflow.workflowId,
       prompt: primaryPacketWorkflow.prompt,
       promptLabel: primaryPacketWorkflow.promptLabel,
@@ -1899,8 +1899,8 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
             ? "RTP packet review"
             : "Packet review",
       reason: context.rtpCycle
-        ? "Report detail is the canonical RTP packet audit surface for cycle drift, provenance, and artifact history."
-        : "Report detail is the canonical packet audit surface for provenance, drift, and artifact history.",
+        ? "The report itself is where you check cycle drift, where each figure came from, and the history of every generated file."
+        : "The report itself is where you check where each figure came from, what has drifted, and the history of every generated file.",
       approval: "review",
       auditEvent: "assistant.operation.report.detail",
       auditNote: "Use report detail to inspect provenance, drift, and artifact history before sharing.",
@@ -1914,7 +1914,7 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
           reason: "This report is tied to an RTP cycle, so the cycle record is the best cross-check for chapter and packet drift.",
           approval: "review",
           auditEvent: "assistant.operation.report.rtp_cycle",
-          auditNote: "Use the RTP cycle as the canonical source for chapter, portfolio, and board-packet context.",
+          auditNote: "Use the RTP cycle as the authoritative source for chapter, portfolio, and board-packet context.",
         })
       : null,
     context.project
@@ -1949,7 +1949,7 @@ function buildRunOperations(context: RunAssistantContext): AssistantQuickLink[] 
           : "Runs the grounded run brief inside Planner Agent without leaving the current screen.",
         approval: "safe",
         auditEvent: "assistant.operation.run.brief_agent",
-        auditNote: "This produces a grounded run summary only, it does not alter analysis state.",
+        auditNote: "This reads and summarises only. It changes nothing about the run.",
         workflowId: context.baselineRun ? "run-compare" : "run-brief",
         prompt: context.baselineRun
           ? "Compare this run to baseline and tell me what changed."
@@ -1971,7 +1971,7 @@ function buildRunOperations(context: RunAssistantContext): AssistantQuickLink[] 
           : "This run is visible, but it still needs operator interpretation before it should shape decisions.",
         approval: "review",
         auditEvent: "assistant.operation.run.analysis",
-        auditNote: "Inspect map posture, filters, and source quality before using the run in decisions.",
+        auditNote: "Inspect map settings, filters, and source quality before using the run in decisions.",
       }
     ),
   ]);

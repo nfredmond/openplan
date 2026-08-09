@@ -916,7 +916,7 @@ describe("assistant funding operations", () => {
     expect(action?.statusLabel).toBe("1 decision-ready");
     expect(action?.reason).toContain("is rising because modeling posture appears decision-ready");
     expect(action?.reason).toContain("Advance to pursue now");
-    expect(action?.auditNote).toContain("modeling posture and recommended next move");
+    expect(action?.auditNote).toContain("modeling evidence and recommended next move");
   });
 
   it("specializes the next-command link for a funding decision when modeling context exists but none are decision-ready", () => {
@@ -971,7 +971,7 @@ describe("assistant funding operations", () => {
     expect(action?.label).toBe("Open lead grant decision lane");
     expect(action?.statusLabel).toBe("Modeling context available");
     expect(action?.reason).toContain("still visible in the decision queue while modeling posture reads appears thin");
-    expect(action?.auditNote).toContain("modeling posture and recommended next move");
+    expect(action?.auditNote).toContain("modeling evidence and recommended next move");
   });
 
   it("names the lead closing opportunity in the next-command link when funding windows are closing", () => {

@@ -96,21 +96,6 @@
   flex-direction: column;
   padding-bottom: 8px;
 }
-.op-cart-rail__logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  margin: 12px 12px 4px;
-  background: var(--ink);
-  color: var(--bg);
-  display: grid;
-  place-items: center;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 15px;
-  flex-shrink: 0;
-  text-decoration: none;
-}
 .op-cart-rail__sep {
   width: 28px;
   height: 1px;
@@ -120,6 +105,14 @@
 .op-cart-rail__nav {
   display: flex;
   flex-direction: column;
+  /* Take the free space rather than sizing to content. Sized to content, the
+     box was fractional (18 rows of 17.99px), and a scrollHeight that rounds UP
+     against a clientHeight that rounds DOWN is a 1px overflow — enough for a
+     scrollbar, with 92px of unused rail below it. Flexing into the space makes
+     the fraction land in slack instead of in a scrollbar, and the foot still
+     sits at the bottom because this element absorbs the gap. */
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
@@ -153,7 +146,21 @@
 }
 
 .op-cart-rail__btn {
-  height: 40px;
+  /*
+     ONE FLUID ROW HEIGHT, NOT FOUR BREAKPOINTS.
+
+     `--op-rail-rows` is written by the rail component and counts every row it
+     draws (nav items + the theme control). `--op-rail-chrome` is everything
+     that is NOT a row: the 16px rail insets, the logo block, the separators,
+     the two group titles, and the inner padding. What is left, divided by the
+     rows, is how tall a row may be — minus the 4px of vertical margin each row
+     carries.
+
+     Discrete `max-height` breakpoints could not do this. They left bands where
+     the nav overflowed by a few pixels and showed a scrollbar (measured: at a
+     1000px-tall window the nav wanted 857px and had 850px, because 1000 clears
+     the 980px breakpoint). A continuous function has no such band. */
+  height: clamp(18px, calc((100dvh - var(--op-rail-chrome, 121px)) / var(--op-rail-rows, 20) - 4px), 40px);
   border-radius: 9px;
   border: none;
   background: transparent;
@@ -411,7 +418,13 @@ html.dark .op-cart-rail__btn:hover {
 .op-cart-surface__body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 20px;
+  /* A rounded card sitting 20px inside a rounded panel read as cramped, and the
+     gap was not even: the scrollbar ate 5px on the right, so the same card had
+     20px of air on the left and 25px on the right. `scrollbar-gutter` reserves
+     the track on BOTH sides, which restores symmetry, and 26px gives a nested
+     card enough room that its corner radius does not fight the panel's. */
+  padding: 20px 26px 20px;
+  scrollbar-gutter: stable both-edges;
   /* AFTER the shorthand, which would otherwise reset it. Clears the floating
      account card (bottom-left) and Planner Agent button (bottom-right) now that
      the surface runs the full height of the window. */
@@ -1044,7 +1057,6 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
    and there is room. */
 @media (max-height: 980px) {
   .op-cart-rail__btn {
-    height: 34px;
     margin-top: 1px;
     margin-bottom: 1px;
   }
@@ -1052,7 +1064,6 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 
 @media (max-height: 880px) {
   .op-cart-rail__btn {
-    height: 30px;
     margin-top: 0;
     margin-bottom: 0;
   }
@@ -1069,18 +1080,17 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   }
 }
 
-@media (max-height: 780px) {
-  .op-cart-rail__btn {
-    height: 27px;
-  }
-  .op-cart-rail__logo {
-    margin: 8px 12px 2px;
-  }
-}
-
-@media (max-height: 680px) {
-  .op-cart-rail__btn {
-    height: 24px;
+/*
+   Below this height the two group titles stop expanding on hover as well. They
+   are a nicety; at 620px of window the 40px they would take is the difference
+   between the whole nav fitting and a scrollbar. The tooltips still name every
+   destination, so nothing becomes unidentifiable.
+*/
+@media (max-height: 620px) {
+  .op-cart-rail:hover .op-cart-rail__group-title,
+  .op-cart-rail:focus-within .op-cart-rail__group-title {
+    height: 0;
+    margin: 6px 18px 0;
   }
 }
 
