@@ -1,5 +1,6 @@
 import { GET, HEAD } from "@/app/api/health/route";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { APP_VERSION } from "@/lib/runtime/app-version";
 
 describe("GET /api/health", () => {
   afterEach(() => {
@@ -18,6 +19,7 @@ describe("GET /api/health", () => {
       checkedAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       deployment: {
         commit: "unknown",
+        version: APP_VERSION,
       },
       checks: {
         app: "ok",
@@ -32,7 +34,41 @@ describe("GET /api/health", () => {
     const response = GET();
     const payload = await response.json();
 
-    expect(payload.deployment).toEqual({ commit: "abcdef123456" });
+    expect(payload.deployment).toEqual({ commit: "abcdef123456", version: APP_VERSION });
+  });
+
+  /**
+   * A SELF-HOSTED INSTANCE HAS TO BE ABLE TO NAME ITSELF.
+   *
+   * This route read `VERCEL_GIT_COMMIT_SHA` and nothing else, so every
+   * deployment that is not on Vercel reported `commit: "unknown"` however
+   * carefully its operator set `OPENPLAN_COMMIT_SHA` — and self-hosting is the
+   * posture the product committed to for 1.0.
+   *
+   * It is not a cosmetic gap. On 2026-08-08 the always-on walkthrough instance
+   * on :3000 was 174 commits behind `main`, a browser-testing pass mistook it
+   * for the working tree, and half an hour went into diagnosing a bug that had
+   * already been fixed. `/api/health` is the one question you can ask a running
+   * instance without credentials; if it cannot answer "which build are you",
+   * nobody can tell a stale deployment from a current one.
+   */
+  it("names the commit a self-hosted operator stamped, not just Vercel's", async () => {
+    vi.stubEnv("OPENPLAN_COMMIT_SHA", "0E3D7D9FABCDEF1234567890ABCDEF1234567890");
+
+    const response = GET();
+    const payload = await response.json();
+
+    expect(payload.deployment.commit).toBe("0e3d7d9fabcd");
+  });
+
+  it("reports the version so a forked instance is still identifiable", async () => {
+    const payload = await GET().json();
+
+    // Read from package.json rather than restated — a second copy of a version
+    // is a second thing to forget, and the failure is an instance confidently
+    // reporting a version it is not running.
+    expect(payload.deployment.version).toBe(APP_VERSION);
+    expect(payload.deployment.version).toMatch(/^\d+\.\d+\.\d+/);
   });
 
   it("does not expose configured secrets or unsafe environment values", async () => {
@@ -46,7 +82,7 @@ describe("GET /api/health", () => {
     const payload = await response.json();
     const serialized = JSON.stringify(payload);
 
-    expect(payload.deployment).toEqual({ commit: "unknown" });
+    expect(payload.deployment).toEqual({ commit: "unknown", version: APP_VERSION });
     expect(serialized).not.toContain("service-role-secret");
     expect(serialized).not.toContain("anthropic-secret");
     expect(serialized).not.toContain("readiness-secret");

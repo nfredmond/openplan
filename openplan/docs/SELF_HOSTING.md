@@ -84,6 +84,26 @@ missing — worth heeding, because a missing one degrades a feature silently rat
 Use a separate checkout on purpose: `next dev` in your working copy and `next start` in the
 instance would otherwise contend for the same `.next` directory.
 
+### Which build am I looking at?
+
+Two OpenPlans now answer on localhost, and a port number is not an identity. Ask the instance:
+
+```bash
+scripts/ops/which-openplan.sh http://localhost:3000
+```
+
+It prints the version and commit the instance reports and compares them to your current
+checkout, exiting non-zero on a mismatch — so it can gate a script, not only inform you. **Run it
+before you conclude anything from a browser.** On 2026-08-08 a testing pass spent half an hour
+diagnosing a bug on the walkthrough instance while it sat 174 commits behind `main`; the bug had
+already been fixed in the tree being edited.
+
+An instance answers `commit: unknown` until something stamps `OPENPLAN_COMMIT_SHA` for it. The
+refresh script does this automatically. Deliberately, that variable is **not** in `.env.example`
+and you should not set it by hand: a value copied once and never updated makes the instance
+report a build it is not running, which is worse than admitting it does not know. Let the thing
+that builds the instance set it — Vercel supplies `VERCEL_GIT_COMMIT_SHA` on its own.
+
 Everything below this point is the production/deployment path.
 
 ---

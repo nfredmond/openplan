@@ -75,6 +75,22 @@ else
   echo "Skipped (one of the .env.local files is absent)."
 fi
 
+step "Stamping the commit this instance is being built from"
+# WHY. `appCommitSha()` reads OPENPLAN_COMMIT_SHA, /api/health reports it, and
+# the dashboard prints it — but nothing ever SET it, so every self-hosted
+# instance answered "commit unrecorded". That is how this box sat 174 commits
+# behind main on 2026-08-08 with nothing able to say so, and how a testing pass
+# mistook it for the working tree. `next start` reads .env.local at runtime, so
+# stamping it here makes the running instance able to name itself.
+INSTANCE_SHA="$(git -C "$INSTANCE_ROOT" rev-parse HEAD)"
+touch "$APP_DIR/.env.local"
+if grep -q '^OPENPLAN_COMMIT_SHA=' "$APP_DIR/.env.local"; then
+  sed -i "s|^OPENPLAN_COMMIT_SHA=.*|OPENPLAN_COMMIT_SHA=$INSTANCE_SHA|" "$APP_DIR/.env.local"
+else
+  printf '\n# Set by scripts/ops/refresh-walkthrough-instance.sh so /api/health can name this build.\nOPENPLAN_COMMIT_SHA=%s\n' "$INSTANCE_SHA" >> "$APP_DIR/.env.local"
+fi
+echo "OPENPLAN_COMMIT_SHA=$(git -C "$INSTANCE_ROOT" rev-parse --short HEAD)"
+
 step "Installing dependencies"
 cd "$APP_DIR"
 npm ci
@@ -87,5 +103,20 @@ systemctl --user restart "$SERVICE"
 sleep 3
 systemctl --user is-active --quiet "$SERVICE" || fail "$SERVICE did not come back up — check: journalctl --user -u $SERVICE -n 50"
 
+step "Confirming the instance reports the build it is actually running"
+# The check that closes the loop: ask the running service which commit it is,
+# rather than trusting that the restart picked up the new build.
+REPORTED="$(curl -fsS --max-time 10 http://localhost:3000/api/health 2>/dev/null \
+  | grep -oE '"commit":"[^"]*"' | cut -d'"' -f4 || true)"
+EXPECTED_SHORT="$(git -C "$INSTANCE_ROOT" rev-parse HEAD | cut -c1-12)"
+if [ "$REPORTED" = "$EXPECTED_SHORT" ]; then
+  echo "/api/health reports $REPORTED — matches the checkout."
+else
+  printf '\033[31mWARNING: /api/health reports "%s" but the checkout is at "%s".\033[0m\n' \
+    "${REPORTED:-<no answer>}" "$EXPECTED_SHORT" >&2
+  echo "The service may still be serving an older build. Check: journalctl --user -u $SERVICE -n 50" >&2
+fi
+
 step "Done"
 echo "Instance now serves $(git -C "$INSTANCE_ROOT" rev-parse --short HEAD) on http://localhost:3000"
+echo "Verify at any time with: scripts/ops/which-openplan.sh http://localhost:3000"
