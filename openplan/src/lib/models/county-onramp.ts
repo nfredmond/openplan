@@ -125,21 +125,37 @@ export type CountyOnrampValidationSummary = z.infer<typeof countyOnrampValidatio
 export type CountyOnrampManifest = z.infer<typeof countyOnrampManifestSchema>;
 
 /**
- * Screening-gate statuses that mean a county run must NOT be treated as
- * passing modeling evidence, even once it reaches `validated-screening`.
+ * Screening-gate statuses that DO count as passing modeling evidence.
  *
- * Reaching the validated-screening stage says the validation slice RAN, not
- * that it passed: a run whose worst matched facility blows past the
- * critical-facility error threshold is still stamped validated-screening, with
- * a gate status recording that it is prototype-grade. Treating that as
- * evidence would let a failed validation strengthen a claim.
+ * AN ALLOWLIST, FLIPPED FROM A DENYLIST 2026-08-08 — a deliberate behaviour
+ * change, decided rather than deferred.
  *
- * Matching is case-insensitive and trims, because this value is recorded by
+ * It used to name the one non-passing status and treat everything else as a
+ * pass, which fails OPEN: any new or misspelled gate string a producer writes
+ * counts as evidence until somebody remembers to add it. The comment below
+ * already said why that is the wrong default — this value "is recorded by
  * whatever produced the run's validation summary rather than by a Postgres
- * enum. It is a jurisdiction-neutral rule: it keys on the gate the run
- * recorded about itself, never on which county was run.
+ * enum" — and an unconstrained field read against a denylist is the definition
+ * of a fail-open control. On a claim-boundary surface the default has to be
+ * "this is not evidence".
+ *
+ * The vocabulary is small and knowable: `classify_gate` in
+ * `scripts/modeling/validate_screening_observed_counts.py` returns exactly
+ * `bounded screening-ready` or `internal prototype only`. The old denylist test
+ * asserted that `"validated screening slice"` passed — a string nothing in the
+ * repository emits, so the assertion encoded the fail-open default rather than
+ * a real producer's output.
+ *
+ * Reaching the validated-screening STAGE says the validation slice ran, not
+ * that it passed: a run whose worst matched facility blows past the critical
+ * threshold is still stamped validated-screening, with a gate recording that it
+ * is prototype-grade. Treating that as evidence would let a failed validation
+ * strengthen a claim.
+ *
+ * Matching is case-insensitive and trims. Jurisdiction-neutral: it keys on the
+ * gate a run recorded about itself, never on which county was run.
  */
-export const COUNTY_RUN_NON_PASSING_GATE_STATUSES: readonly string[] = ["internal prototype only"];
+export const COUNTY_RUN_PASSING_GATE_STATUSES: readonly string[] = ["bounded screening-ready"];
 
 /**
  * Whether a recorded screening-gate status counts as passing evidence.
@@ -168,7 +184,8 @@ export function isPassingCountyRunGateStatus(
 ): boolean {
   const normalized = statusLabel?.trim().toLowerCase();
   if (!normalized) return false;
-  if (COUNTY_RUN_NON_PASSING_GATE_STATUSES.includes(normalized)) return false;
+  // Fails CLOSED: an unrecognised status is not evidence.
+  if (!COUNTY_RUN_PASSING_GATE_STATUSES.includes(normalized)) return false;
   if (typeof intrazonalTripShare === "number" && Number.isFinite(intrazonalTripShare)) {
     // The share is stored as a fraction; the banding works in percent.
     if (!bandIntrazonalShare(intrazonalTripShare * 100, null).supportsLinkLevelValidation) {

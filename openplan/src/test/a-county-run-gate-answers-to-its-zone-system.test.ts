@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
-  COUNTY_RUN_NON_PASSING_GATE_STATUSES,
+
   countyOnrampRunSnapshotSchema,
   countyRunZoneResolutionCaveat,
   isPassingCountyRunGateStatus,
@@ -61,9 +61,9 @@ describe("a county run's gate answers to its own zone system", () => {
   it("never promotes a non-passing gate, whatever the zone system says", () => {
     // The qualification only ever removes a claim. A fine zone system does not
     // rescue a run that failed its own validator.
-    for (const status of COUNTY_RUN_NON_PASSING_GATE_STATUSES) {
-      expect(isPassingCountyRunGateStatus(status, 0.01)).toBe(false);
-      expect(isPassingCountyRunGateStatus(status, null)).toBe(false);
+    for (const status of ["internal prototype only", "some future status"]) {
+      expect(isPassingCountyRunGateStatus(status, 0.01), status).toBe(false);
+      expect(isPassingCountyRunGateStatus(status, null), status).toBe(false);
     }
     expect(isPassingCountyRunGateStatus(null, 0.01)).toBe(false);
     expect(isPassingCountyRunGateStatus("", 0.01)).toBe(false);
