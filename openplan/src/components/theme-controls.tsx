@@ -103,13 +103,23 @@ export function ThemeControls({ className = "" }: { className?: string }) {
           aria-expanded={paletteOpen}
           aria-haspopup="listbox"
           data-testid="theme-palette-trigger"
-          className="flex w-full items-center gap-2 rounded-xl border border-border/70 bg-background/70 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          /*
+            The palette NAME is not shown until the menu is open. Knowing you are
+            on "Meadow" is worth almost nothing while you are working, and this
+            control sits in a header that also has to hold the workspace name, a
+            search pill and the primary action — at half a widescreen the label
+            cost ~90px and was part of what squeezed the search pill into
+            wrapping. The swatch identifies the palette; the name is available
+            the moment it could matter, which is when you are choosing.
+          */
+          title={`Colour palette: ${activePalette.label}`}
+          aria-label={`Colour palette: ${activePalette.label}`}
+          className="flex items-center gap-1.5 rounded-xl border border-border/70 bg-background/70 px-2 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
         >
           <Palette className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
-          <span className="truncate">{activePalette.label}</span>
           <span
             aria-hidden="true"
-            className="ml-auto h-3.5 w-3.5 shrink-0 rounded-full border border-border/70"
+            className="h-3.5 w-3.5 shrink-0 rounded-full border border-border/70"
             style={{ background: swatchFor(activePalette, theme).accent }}
           />
         </button>

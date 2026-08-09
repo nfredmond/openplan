@@ -77,14 +77,31 @@ describe("map controls appear only on map surfaces", () => {
     }
   });
 
+  /**
+   * The dashboard was listed here at first and should not have been.
+   *
+   * The argument for it was that the overview draws projects and pins, so the
+   * map is its canvas. Watching it at half a widescreen settled it the other
+   * way: the dashboard is a column of setup, team and integration cards, and
+   * the layers box plus legend took the right ~340px and squeezed the header to
+   * 916px — which is what made the search pill wrap. The map is decoration
+   * there, exactly as it is on the records pages.
+   *
+   * The test for this list is not "does the map show anything" but "would a
+   * planner open this page in order to READ the map".
+   */
+  it("does not treat the workspace overview as a map surface", () => {
+    expect(isMapSurfaceRoute("/dashboard")).toBe(false);
+  });
+
   it("answers false rather than throwing when there is no pathname", () => {
     expect(isMapSurfaceRoute(null)).toBe(false);
     expect(isMapSurfaceRoute(undefined)).toBe(false);
   });
 
-  it("declares at least the four surfaces the map is worked on", () => {
+  it("declares the surfaces the map is actually worked on", () => {
     expect(MAP_SURFACE_ROUTES).toEqual(
-      expect.arrayContaining(["/explore", "/safety", "/aerial", "/dashboard"])
+      expect.arrayContaining(["/explore", "/safety", "/aerial"])
     );
   });
 });

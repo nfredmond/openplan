@@ -28,9 +28,21 @@ export const MAP_SURFACE_ROUTES = [
   "/safety",
   /** Missions and AOIs are geographic by definition. */
   "/aerial",
-  /** The workspace overview draws projects, corridors and pins as its canvas. */
-  "/dashboard",
 ] as const;
+
+/*
+  `/dashboard` WAS listed here and should not have been.
+
+  The reasoning was that the overview draws projects and pins, so the map is its
+  canvas. Watching it at half a widescreen settled the argument the other way:
+  the dashboard is a column of setup cards, team and integration panels, and the
+  layers box plus legend take the right ~340px and squeeze the header to 916px —
+  which is what makes the search pill wrap and the top cards look wrong. The map
+  is decoration there, exactly as it is on the records pages.
+
+  The test that a route belongs here is not "does the map show anything" but
+  "would a planner open this page in order to READ the map".
+*/
 
 export function isMapSurfaceRoute(pathname: string | null | undefined): boolean {
   if (!pathname) return false;

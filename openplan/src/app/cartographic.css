@@ -291,7 +291,10 @@ html.dark .op-cart-rail__btn.is-active {
 }
 
 .op-cart-search {
-  flex: 1;
+  /* Shrinks, but not to nothing: below this the placeholder is unreadable and
+     the pill reads as a stray box rather than a search. */
+  flex: 1 1 180px;
+  min-width: 132px;
   max-width: 480px;
   padding-right: 6px;
   font: inherit;
@@ -305,6 +308,12 @@ html.dark .op-cart-rail__btn.is-active {
   color: var(--muted);
   min-width: 0;
   text-align: left;
+  /* One line, always. With nothing stopping it, "Jump to a module…" wrapped to
+     two lines inside a pill sized for one as soon as the header got tight —
+     which is what made the top row look broken at half a widescreen. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ---------- OVERVIEW SURFACE (route content) ---------- */
@@ -914,18 +923,47 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   flex: 0 0 auto;
 }
 
-.op-cart-appearance > div:last-child > button {
-  width: auto;
-  min-width: 118px;
+.op-cart-appearance > div:last-child {
+  flex: 0 0 auto;
 }
 
-@media (max-width: 900px) {
-  /* On narrow viewports the palette name is the first thing worth dropping —
-     the swatch still identifies it, and light/dark stays fully labelled. */
-  .op-cart-appearance > div:last-child > button > span:not([aria-hidden="true"]) {
+/* The palette trigger is icon + swatch only; it must size to its content.
+   It previously carried a min-width for the palette NAME, and leaving that
+   behind after the name was removed left a wide empty pill in the header —
+   worse than the label it replaced. */
+.op-cart-appearance > div:last-child > button {
+  width: auto;
+  min-width: 0;
+}
+
+/* ---------- HEADER FIT AT NARROWER WIDTHS ----------
+   The top row holds a workspace card, a search pill, appearance controls and
+   the primary action. At a maximised widescreen they all fit; at about half of
+   one the row has ~900px and something has to give. Left alone, the only
+   flexible child was the search pill, so it absorbed every shortfall and its
+   label wrapped inside a pill sized for one line.
+
+   The workspace card is the right thing to shrink: its name already truncates
+   with an ellipsis and the workspace is also named in the switcher. So it is
+   allowed to give way, the search pill keeps a floor, and appearance and the
+   primary action stay fixed. */
+.op-cart-hdr > .op-cart-pill:first-child {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  /* The timestamp under the workspace name is the least load-bearing thing in
+     the row — it is a "last updated" hint, not a control. */
+  .op-cart-ws-meta {
     display: none;
   }
-  .op-cart-appearance > div:last-child > button {
-    min-width: 0;
+}
+
+@media (max-width: 1040px) {
+  /* Below this the search pill is competing with the controls; the ⌘K hint can
+     go, since the shortcut still works and the icon still reads as search. */
+  .op-cart-kbd {
+    display: none;
   }
 }
