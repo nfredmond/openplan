@@ -1593,3 +1593,96 @@ describe("the run-writeback pass is accounted for", () => {
     expect(existsSync(repoPath("src/test/model-run-writeback.test.ts"))).toBe(true);
   });
 });
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* THE GRANTS-MODELING-EVIDENCE PASS — 2026-08-09                             */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * The second sample of an old modeling test on the same day, and the opposite
+ * result to the first — which is the point of sampling more than one.
+ * `model-run-writeback` was 7/7. This one, `grants-modeling-evidence.test.ts`
+ * (last touched 2026-04-14), killed 4 of 7.
+ *
+ * WHY THIS SUBJECT. The module decides how strongly a project's modelling is
+ * described to somebody choosing whether to pursue a grant — "decision-ready"
+ * vs "stale" vs "thin", and the recommendation that follows. Calling weak
+ * evidence decision-ready, or recommending "advance to pursue now" off thin
+ * support, puts modelling behind a funding application it cannot carry. It is a
+ * claim boundary wearing grants-module clothes.
+ *
+ * THREE GENUINE SURVIVORS, each re-run against the WHOLE 7,800-test suite
+ * before being called a hole:
+ *
+ *   1+2. The decision-ready conjunction was unguarded in BOTH directions.
+ *        `readyComparisonSnapshotCount > 0 && indicatorDeltaCount > 0` could be
+ *        reduced to either half. Zero indicator deltas is exactly the case where
+ *        saved comparisons exist and NOTHING MOVED between them, and that was
+ *        describable as decision-ready planning support.
+ *   3.   Widening the recommendation gate from `key === "decision-ready"` to
+ *        `key !== "stale"` survived everything, so THIN evidence would emit
+ *        "advance this opportunity to pursue now because modeling posture
+ *        appears decision-ready" — wording written for a case it is not in.
+ *
+ * AND TWO APPARENT SURVIVORS THAT WERE NOT. Emptying
+ * `GRANT_MODELING_PLANNING_CAVEAT`, and narrowing it to drop "not proof of award
+ * likelihood", both survived THIS file and were killed by tests elsewhere in the
+ * suite. Reporting them as holes would have been wrong. That is why a survivor
+ * is re-run against everything before it is counted — the same discipline the
+ * Title VI pass used, and here it changed the answer for two of five.
+ *
+ * All three real survivors were closed the same day with assertions that were
+ * then re-run against the original mutations: 4/7 became 7/7 within this file.
+ */
+const GRANTS_MODELING_EVIDENCE_AUDIT = {
+  date: "2026-08-09",
+  mutationsRun: 7,
+  killed: 4,
+  survived: 3,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 3,
+  /** Survived this file, killed by the wider suite — counted as killed above. */
+  killedOnlyByTheWiderSuite: 2,
+};
+
+const GRANTS_MODELING_EVIDENCE_CLOSED_SURVIVORS: Record<
+  string,
+  { productionFile: string; testFile: string; testName: string }
+> = {
+  "decision-ready-needs-ready-comparisons": {
+    productionFile: "src/lib/grants/modeling-evidence.ts",
+    testFile: "src/test/grants-modeling-evidence.test.ts",
+    testName: "does not call a packet decision-ready on ready comparisons alone",
+  },
+  "decision-ready-needs-indicator-deltas": {
+    productionFile: "src/lib/grants/modeling-evidence.ts",
+    testFile: "src/test/grants-modeling-evidence.test.ts",
+    testName: "does not call a packet decision-ready on indicator deltas alone",
+  },
+  "thin-evidence-recommends-nothing": {
+    productionFile: "src/lib/grants/modeling-evidence.ts",
+    testFile: "src/test/grants-modeling-evidence.test.ts",
+    testName: "does not recommend pursuing a grant off THIN modeling evidence",
+  },
+};
+
+describe("the grants-modeling-evidence pass is accounted for", () => {
+  it("adds up, and closed every survivor", () => {
+    expect(GRANTS_MODELING_EVIDENCE_AUDIT.killed + GRANTS_MODELING_EVIDENCE_AUDIT.survived).toBe(
+      GRANTS_MODELING_EVIDENCE_AUDIT.mutationsRun
+    );
+    expect(Object.keys(GRANTS_MODELING_EVIDENCE_CLOSED_SURVIVORS)).toHaveLength(
+      GRANTS_MODELING_EVIDENCE_AUDIT.survivorsClosed
+    );
+  });
+
+  it("keeps every assertion this pass added", () => {
+    for (const [id, entry] of Object.entries(GRANTS_MODELING_EVIDENCE_CLOSED_SURVIVORS)) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.testFile}`).toBe(true);
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(entry.testName);
+    }
+  });
+});
