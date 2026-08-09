@@ -21,89 +21,119 @@ const sourceProofLinks = [
   },
 ];
 
-const operatingFlows = [
+/**
+ * WHO THIS PAGE IS WRITTEN FOR.
+ *
+ * An assistant planner a few months out of a master's programme, who has never
+ * heard of OpenPlan, is looking at it because someone sent a link, and has about
+ * thirty seconds to work out whether it is worth a sign-up.
+ *
+ * The previous copy was written for the people building it: "surface areas",
+ * "core lanes", "enter through the right lane", "a planning flow, not a feature
+ * collage", "proof path for the Apache-2.0 claim", "the platform is built for
+ * teams that need traceable planning work, not another static status page".
+ * Every one of those is a sentence about the software's architecture, and none
+ * of them says what a planner would actually DO with it on a Tuesday.
+ *
+ * The rule for anything added here: name the task a planner recognises, in the
+ * words they would use at their own desk. "Study a corridor", "collect public
+ * comments", "write the report". Not lanes, surfaces, ledgers or postures.
+ *
+ * The honesty stays, because it is the most useful thing on the page — it is
+ * just said plainly now. "It tells you what it does not know" does the same work
+ * as a paragraph about claim tiers, and a new graduate can act on it.
+ */
+
+const whatYouCanDo = [
   {
-    title: "Move from corridor question to delivery packet",
+    title: "Study a corridor without losing the work",
     description:
-      "Corridor review, overlays, run history, and reporting stay tied together so the analysis does not get stranded in separate tools.",
+      "Pick a street, a corridor, or a whole city. OpenPlan pulls census, jobs, transit and safety data for that exact area, scores it, and saves the run — so when someone asks in six months where a number came from, you can show them.",
   },
   {
-    title: "Keep project records, engagement, and reporting in one ledger",
+    title: "Ask the public, and keep track of what they said",
     description:
-      "OpenPlan keeps project context visible while engagement campaigns and deliverables mature into report-ready material.",
+      "Publish a map where residents drop a pin and tell you what is wrong with an intersection. You read every comment before it counts, and the comments stay attached to the project when you write it up.",
   },
   {
-    title: "Publish a public lane without leaving the planning system",
+    title: "Get a first draft of the write-up",
     description:
-      "Share-token engagement pages let teams collect structured public input while preserving moderation and traceability.",
+      "Turn the analysis and the public comments into draft text you can edit — with the caveats already attached, so nothing quietly becomes more certain than it should on its way into a board packet.",
   },
 ];
 
-const publicSurfaces = [
+const whereToStart = [
   {
     href: "/examples",
-    label: "Evidence catalog",
-    title: "See a real screening run with its caveats",
+    label: "No account needed",
+    title: "See a real example first",
     description:
-      "A real screening run validated against observed traffic counts — screening-grade evidence with caveats and validation metrics shown verbatim.",
+      "A real screening run for a real place, with its caveats and its checks against observed traffic counts shown exactly as they were recorded. Look before you sign up.",
   },
   {
     href: "/sign-up?source=landing&intent=modeling",
-    label: "Analysis Studio",
-    title: "Open the map and scenario workspace",
+    label: "About five minutes",
+    title: "Run your first corridor study",
     description:
-      "Analysis Studio is a signed-in workspace. Create a free account and work with corridor maps, overlays, run history, and map-ready outputs for your own geography.",
+      "Make a free account, search for anywhere in the United States, and get a scored corridor with the data behind it. Your own city, not a demo county.",
   },
   {
     href: "/sign-up?source=landing&intent=engagement",
-    label: "Engagement workspace",
-    title: "Open the engagement workspace",
+    label: "For a live project",
+    title: "Collect public comments on a map",
     description:
-      "Public share links can be published from a signed-in workspace with moderation and human review. Create a free account to run a campaign for your community.",
+      "Make a free account and publish a comment map for a project you are working on. Nothing a resident writes appears publicly until you approve it.",
   },
 ];
 
-const releaseFacts = [
-  {
-    label: "License",
-    value: "Apache-2.0 core",
-    detail: "OpenPlan is inspectable planning software, not a closed black-box SaaS dependency.",
-  },
+const theBasics = [
   {
     label: "Cost",
-    value: "Free, with no paid tier",
-    detail: "No plans, no seats, no usage quotas, and no payment step anywhere in the software. Nothing is held back behind an upgrade.",
+    value: "Free — all of it",
+    detail:
+      "No plans, no per-seat pricing, no limit you have to pay to lift. There is no payment step anywhere in the software.",
+  },
+  {
+    label: "The code",
+    value: "Apache-2.0, public",
+    detail:
+      "Anyone can read it, run it, and change it. If your agency wants it on its own servers instead of ours, that is allowed and documented.",
   },
   {
     label: "Getting started",
-    value: "Sign up, workspace ready",
-    detail: "Self-serve: create an account and your workspace is provisioned immediately. No access queue, no approval, no one to talk to first.",
+    value: "Sign up and you are in",
+    detail:
+      "Your workspace is ready immediately. No waiting list, no sales call, and nobody you have to talk to first.",
   },
 ];
 
-const operatingCommitments = [
-  "The source-first stance is intentional: public agencies should be able to inspect the software behind their planning work.",
-  "Every feature is available to every workspace: there is no tier that unlocks more of the software, and no limit you have to pay to lift.",
-  "Public engagement portals preserve review and moderation before feedback enters formal reporting or summaries.",
-  "The platform is built for agencies and consulting teams that need traceable planning work, not another static status page.",
+const whatToExpect = [
+  "You can read the code. The software behind a public planning decision should be something the public can inspect.",
+  "Everyone gets everything. There is no paid tier that unlocks more of it, and no feature held back.",
+  "You approve public comments before they count. Nothing a resident writes reaches a report without a person reading it first.",
+  "It tells you what it does not know. Results are screening-grade — good for comparing options, setting priorities, and making a case, and not a substitute for engineering design or a CEQA determination.",
+  "It works for your area, not a sample one. Pick any city, county, town or metro area in the United States. Where a data source genuinely does not cover you, it says so instead of showing an empty result.",
 ];
 
-const coreLanes = [
+const theThreeParts = [
   {
-    title: "Map and analysis",
-    description: "Keep corridor questions, overlays, and run outputs visible inside a planning-grade workspace.",
+    title: "Maps and analysis",
+    description:
+      "Choose a place, pull the public data for it, score it, and keep the run so you can come back to it.",
     icon: Map,
     accentClass: "text-[color:var(--accent)]",
   },
   {
     title: "Public engagement",
-    description: "Collect structured public input with moderation, topic organization, and report-ready traceability.",
+    description:
+      "Collect comments on a map, review them yourself, and keep them tied to the project they belong to.",
     icon: MessageSquareText,
     accentClass: "text-[color:var(--pine)]",
   },
   {
-    title: "Reporting",
-    description: "Carry evidence forward into deliverables without manually rebuilding context in a separate packet workflow.",
+    title: "Reports and grants",
+    description:
+      "Turn the work into a document, with the caveats already written in and the sources still attached.",
     icon: FileText,
     accentClass: "text-[color:var(--copper)]",
   },
@@ -116,16 +146,16 @@ export default function PublicLandingPage() {
 
       <section className="public-hero-grid">
         <article className="public-hero">
-          <p className="public-kicker">Open-source planning platform</p>
+          <p className="public-kicker">Free, open-source planning software</p>
           <div className="public-headline-block">
-            <h1 className="public-title">Open-source planning software that keeps maps, engagement, and delivery in one record.</h1>
+            <h1 className="public-title">Your maps, your public comments, and your report — in one place.</h1>
             <p className="public-lead max-w-4xl">
-              OpenPlan is free, Apache-2.0 planning software for agencies, tribes, RTPAs, counties, cities, non-profits, and consulting teams. Run it hosted or on your own infrastructure — the software, the schema, and your data are yours.
+              OpenPlan is software for the work planners actually do: studying a corridor, asking the public what they think, keeping track of projects and grants, and writing the documents that come out of all of it. It is free, and the code is public. Used by city and county planners, MPOs and RTPAs, tribes, non-profits and consultants.
             </p>
           </div>
 
           <div className="public-source-proof" aria-label="Open-source proof path">
-            <span>Proof path for the Apache-2.0 claim:</span>
+            <span>Do not take our word for it — read the code:</span>
             {sourceProofLinks.map((link) => (
               <Link key={link.href} href={link.href} className="public-source-proof-link">
                 {link.label}
@@ -143,12 +173,12 @@ export default function PublicLandingPage() {
             </Link>
           </div>
           <p className="public-fine-print mt-2 text-sm text-muted-foreground">
-            Free and open source. Sign up and your workspace is ready immediately — no access
-            queue, no approval step, and no payment at any point.
+            Free and open source. Sign up and your workspace is ready immediately — no waiting
+            list, no approval step, and no payment at any point.
           </p>
 
           <div className="public-fact-grid public-fact-grid--three">
-            {releaseFacts.map((fact) => (
+            {theBasics.map((fact) => (
               <div key={fact.label} className="public-fact">
                 <p className="public-fact-label">{fact.label}</p>
                 <p className="public-fact-value">{fact.value}</p>
@@ -164,22 +194,22 @@ export default function PublicLandingPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="public-rail-kicker">Planning delivery signal</p>
-              <h2 className="public-rail-title">Built for real planning delivery</h2>
+              <p className="public-rail-kicker">Who it is for</p>
+              <h2 className="public-rail-title">Planners, including the ones doing it alone</h2>
             </div>
           </div>
           <p className="public-rail-copy">
-            OpenPlan is meant to feel like a serious planning workspace for agencies and consulting teams — and to stay inspectable, so the software behind a public planning decision can be read by the public it serves.
+            A one-person planning department, a regional agency, a tribal transportation office, a consultant with six clients. If you write corridor studies, run public meetings, or put grant applications together, this was built for that job.
           </p>
           <div className="public-rail-list">
             <div className="public-rail-item">
-              Public engagement stays connected to project context, moderation, and report generation.
+              You do not need to be technical to use it, and you do not need permission from us to start.
             </div>
             <div className="public-rail-item">
-              Claims stay inside what the software actually does: screening-grade results are labeled as such, and limits are stated rather than hidden.
+              It says what it does not know. Where a number is uncertain or a data source does not cover your area, it tells you plainly rather than hiding it.
             </div>
             <div className="public-rail-item">
-              The product language stays practical and civic because the work itself is.
+              Your data stays yours, and you can take it with you.
             </div>
           </div>
         </aside>
@@ -189,20 +219,20 @@ export default function PublicLandingPage() {
         <article className="public-surface">
           <div className="public-section-header">
             <div>
-              <p className="public-section-label">How work moves</p>
-              <h2 className="public-section-title">A planning flow, not a feature collage</h2>
+              <p className="public-section-label">What you can do with it</p>
+              <h2 className="public-section-title">Three things planners use it for</h2>
             </div>
             <p className="public-section-description max-w-2xl">
-              The public-facing entry points show how OpenPlan carries a team from intake to evidence, review, and delivery.
+              Most planning work starts with a question about a place and ends with a document somebody has to defend. OpenPlan is built for the middle.
             </p>
           </div>
 
           <div className="public-ledger">
-            {operatingFlows.map((flow, index) => (
+            {whatYouCanDo.map((flow, index) => (
               <div key={flow.title} className="public-ledger-row">
                 <div className="public-ledger-index">0{index + 1}</div>
                 <div className="public-ledger-body">
-                  <p className="public-ledger-label">Flow</p>
+                  
                   <h3 className="public-ledger-title">{flow.title}</h3>
                   <p className="public-ledger-copy">{flow.description}</p>
                 </div>
@@ -214,16 +244,16 @@ export default function PublicLandingPage() {
         <article className="public-surface">
           <div className="public-section-header">
             <div>
-              <p className="public-section-label">Surface areas</p>
-              <h2 className="public-section-title">Enter through the right lane</h2>
+              <p className="public-section-label">Where to start</p>
+              <h2 className="public-section-title">Pick whichever is closest to your week</h2>
             </div>
             <p className="public-section-description max-w-xl">
-              Each public route has a specific job and connects back to the broader planning record.
+              You can look at a finished example without signing up. The other two need a free account, which takes about a minute.
             </p>
           </div>
 
           <div className="public-ledger">
-            {publicSurfaces.map((surface) => (
+            {whereToStart.map((surface) => (
               <Link key={surface.href} href={surface.href} className="public-link-row">
                 <div className="public-ledger-body">
                   <p className="public-ledger-label">{surface.label}</p>
@@ -241,12 +271,12 @@ export default function PublicLandingPage() {
         <article className="public-surface">
           <div className="public-section-header">
             <div>
-              <p className="public-section-label">Operating commitments</p>
-              <h2 className="public-section-title">What the current public release promises</h2>
+              <p className="public-section-label">What to expect</p>
+              <h2 className="public-section-title">Straight answers before you sign up</h2>
             </div>
           </div>
           <div className="public-ledger">
-            {operatingCommitments.map((boundary, index) => (
+            {whatToExpect.map((boundary, index) => (
               <div key={boundary} className="public-ledger-row">
                 <div className="public-ledger-index">0{index + 1}</div>
                 <div className="public-ledger-body">
@@ -260,12 +290,12 @@ export default function PublicLandingPage() {
         <article className="public-surface">
           <div className="public-section-header">
             <div>
-              <p className="public-section-label">Core lanes</p>
-              <h2 className="public-section-title">Three surfaces that matter immediately</h2>
+              <p className="public-section-label">The three parts</p>
+              <h2 className="public-section-title">How the software is put together</h2>
             </div>
           </div>
           <div className="public-ledger">
-            {coreLanes.map((lane) => {
+            {theThreeParts.map((lane) => {
               const Icon = lane.icon;
               return (
                 <div key={lane.title} className="public-ledger-row">

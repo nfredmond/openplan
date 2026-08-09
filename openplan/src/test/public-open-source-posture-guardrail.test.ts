@@ -13,9 +13,21 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
     route: "/",
     sourcePath: "src/app/(public)/page.tsx",
     requiredMarkers: [
-      /Open-source planning software that keeps maps, engagement, and delivery in one record/i,
-      /free, Apache-2\.0 planning software for agencies, tribes, RTPAs, counties/i,
-      /no plans, no seats, no usage quotas, and no payment step/i,
+      /*
+        These hold the three CLAIMS, not the sentences that used to carry them.
+        The landing copy was rewritten for a planner audience rather than an
+        engineering one; each marker below was re-pointed at the new wording of
+        the same claim, and none was dropped:
+          1. the software is open source and free;
+          2. it names the public-agency audience it is for;
+          3. there is no paid tier and no payment step anywhere.
+        A marker that pins an exact sentence turns a posture guard into a copy
+        freeze, which is what made this file fail on a pure wording change.
+      */
+      /Free, open-source planning software/i,
+      /city and county planners, MPOs and RTPAs, tribes, non-profits and consultants/i,
+      /No plans, no per-seat pricing, no limit you have to pay to lift/i,
+      /no payment step anywhere in the software/i,
       /Proof path for the Apache-2\.0 claim/i,
       /https:\/\/github\.com\/nfredmond\/openplan\/blob\/main\/LICENSE/i,
     ],

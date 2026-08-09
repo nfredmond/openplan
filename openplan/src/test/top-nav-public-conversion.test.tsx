@@ -34,7 +34,16 @@ describe("TopNav public conversion posture", () => {
     expect(screen.getByRole("link", { name: /Create free workspace/i })).toHaveClass("top-nav-primary-link");
     expect(screen.getByRole("link", { name: /Sign in/i })).toHaveAttribute("href", "/sign-in");
     expect(screen.getByRole("link", { name: /Evidence catalog/i })).toHaveAttribute("href", "/examples");
-    expect(screen.getByText(/Open planning workspace/i)).toBeInTheDocument();
+    /*
+      The nav's home link is asserted by the PRODUCT NAME, not by the tagline
+      above it. This previously pinned the kicker "Open planning workspace",
+      which made a pure copy change fail a test whose subject — per its own name
+      — is the conversion posture: free sign-up primary, no gated previews. A
+      tagline is marketing copy and will be rewritten again; "OpenPlan" is the
+      thing that has to be there.
+    */
+    expect(screen.getByText("OpenPlan")).toBeInTheDocument();
+    expect(screen.getAllByText(/free and open source/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Maps, engagement, reporting/i)).toBeInTheDocument();
     expect(screen.queryByText(/Planning operating system/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/operator shell/i)).not.toBeInTheDocument();

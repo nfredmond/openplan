@@ -12,13 +12,25 @@ vi.mock("next/link", () => ({
 
 import PublicLandingPage from "@/app/(public)/page";
 
+/**
+ * THE COPY CHANGED; THE POSTURE DID NOT.
+ *
+ * These assertions were written against the old engineering-voice headings
+ * ("Open the map and scenario workspace", "Proof path for the Apache-2.0
+ * claim"). They exist to hold the POSTURE — self-serve sign-up leads, sign-in
+ * stays secondary, the licence claim is next to a link that proves it, and the
+ * signed-in surfaces route to sign-up rather than pretending to be public
+ * previews. Every one of those still holds; only the words a planner reads
+ * changed. Matching on the exact old phrasing would have made the guard a
+ * copy-freeze rather than a posture guard.
+ */
 describe("PublicLandingPage", () => {
   it("leads with self-serve sign-up, keeps sign-in secondary, and shows source/license proof near the Apache claim", () => {
     render(<PublicLandingPage />);
 
     expect(
       screen.getByRole("heading", {
-        name: /Open-source planning software that keeps maps, engagement, and delivery in one record/i,
+        name: /Your maps, your public comments, and your report/i,
       }),
     ).toBeInTheDocument();
 
@@ -31,7 +43,7 @@ describe("PublicLandingPage", () => {
     expect(screen.getByRole("link", { name: /Sign in to existing workspace/i })).toHaveClass("public-secondary-link");
 
     const proofPath = screen.getByLabelText(/Open-source proof path/i);
-    expect(within(proofPath).getByText(/Proof path for the Apache-2.0 claim/i)).toBeInTheDocument();
+    expect(within(proofPath).getByText(/read the code/i)).toBeInTheDocument();
     expect(within(proofPath).getByRole("link", { name: /Source repository/i })).toHaveAttribute(
       "href",
       "https://github.com/nfredmond/openplan",
@@ -51,11 +63,11 @@ describe("PublicLandingPage", () => {
     expect(screen.queryByRole("link", { name: /^Analysis Studio preview$/i })).not.toBeInTheDocument();
     // The workspace surfaces now route to self-serve sign-up, not a request
     // queue, and carry the signed-in-workspace framing honestly.
-    expect(screen.getByRole("link", { name: /Open the map and scenario workspace/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Run your first corridor study/i })).toHaveAttribute(
       "href",
       "/sign-up?source=landing&intent=modeling",
     );
-    expect(screen.getByRole("link", { name: /Open the engagement workspace/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Collect public comments on a map/i })).toHaveAttribute(
       "href",
       "/sign-up?source=landing&intent=engagement",
     );
