@@ -83,7 +83,7 @@ export function CartographicHeader({
 
           <button type="button" className="op-cart-btn op-cart-btn--primary" onClick={handleNewRun}>
             <Plus size={14} strokeWidth={2} />
-            New run
+            New analysis
           </button>
         </div>
       </header>

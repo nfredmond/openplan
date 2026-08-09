@@ -268,13 +268,26 @@ html.dark .op-cart-rail__btn.is-active {
   transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 .op-cart-hdr > .op-cart-pill:first-child {
-  justify-self: start;
+  /* STRETCH, NOT START. `justify-self: start` sizes a grid item to its CONTENT,
+     so the workspace card kept its full width as the window narrowed and spilled
+     out of its column — the search pill then rendered on top of a clipped
+     workspace name. Stretching makes it obey the column, and `min-width: 0`
+     lets the name's existing ellipsis actually engage. */
+  justify-self: stretch;
+  min-width: 0;
 }
 .op-cart-hdr__actions {
   display: flex;
   align-items: center;
   gap: 10px;
   justify-self: end;
+  /* The action group is the one thing that must never be squeezed: it holds the
+     primary action. "New analysis" wrapped to two lines at 900px before this. */
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.op-cart-hdr__actions .op-cart-btn {
+  white-space: nowrap;
 }
 .op-cart-rail:hover ~ .op-cart-hdr,
 .op-cart-rail:focus-within ~ .op-cart-hdr {
@@ -1101,4 +1114,56 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 }
 .op-cart-layers__notes-summary:hover {
   color: var(--ink-2);
+}
+
+/* ---------- HEADER AT NARROW WIDTHS ----------
+   Three equal-weight columns stop being the right shape once the window cannot
+   hold all three. Rather than let them overlap, each breakpoint drops the least
+   load-bearing thing:
+
+   - the workspace card's identity is also in the rail and the switcher, so its
+     text goes before anything interactive does;
+   - the search placeholder can shrink to its icon, because ⌘K still works and a
+     magnifier still reads as search;
+   - light/dark and the primary action are never dropped. They are why the
+     header is there. */
+@media (max-width: 1120px) {
+  .op-cart-hdr {
+    grid-template-columns: minmax(0, 0.7fr) minmax(160px, 1fr) auto;
+  }
+}
+
+@media (max-width: 960px) {
+  .op-cart-hdr {
+    grid-template-columns: auto minmax(120px, 1fr) auto;
+  }
+  /* Just the workspace colour mark: enough to say which workspace, no width. */
+  .op-cart-hdr > .op-cart-pill:first-child .op-cart-ws-body {
+    display: none;
+  }
+  .op-cart-hdr > .op-cart-pill:first-child {
+    justify-self: start;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+
+@media (max-width: 820px) {
+  .op-cart-hdr {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .op-cart-search__placeholder {
+    display: none;
+  }
+  .op-cart-search {
+    max-width: 44px;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Below this the rail is already horizontal; the appearance control folds to
+     its palette swatch and the mode toggle, which are still both labelled. */
+  .op-cart-appearance > [role="group"] span {
+    display: none;
+  }
 }
