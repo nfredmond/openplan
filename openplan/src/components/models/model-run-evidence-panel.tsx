@@ -452,6 +452,18 @@ export function ModelRunEvidencePanel({
   // relaunch that was supposed to fix it. Null when it did, or when none was
   // named — an unconditional notice would train people to ignore it.
   const [transitRelaunchNotice, setTransitRelaunchNotice] = useState<string | null>(null);
+  /**
+   * Whether the demographics this run needs could be rebuilt, answered at the
+   * moment of the click.
+   *
+   * "Add a free Census key under Settings -> Integrations, then relaunch" is an
+   * instruction OpenPlan gives. Until this existed, a planner who followed it
+   * learned whether it had worked from the worker failing again several minutes
+   * later — or never, on a deployment whose worker is not running. The relaunch
+   * route rebuilds the stamp server-side before requeueing, so the answer is
+   * already in the response body; it was returned and read by nothing.
+   */
+  const [zoneRelaunchNotice, setZoneRelaunchNotice] = useState<string | null>(null);
   const [comparisonRows, setComparisonRows] = useState<Array<Record<string, unknown>> | null>(null);
   const [behavioralComparison, setBehavioralComparison] = useState<BehavioralDemandComparison | null>(null);
   const [crossEngineBlock, setCrossEngineBlock] = useState<CrossEngineComparisonBlock | null>(null);
@@ -608,6 +620,7 @@ export function ModelRunEvidencePanel({
     setError(null);
     setExecutionOutlook(null);
     setTransitRelaunchNotice(null);
+    setZoneRelaunchNotice(null);
     setIsRelaunching(true);
     try {
       const response = await fetch(`/api/models/${modelId}/runs/${modelRunId}/launch`, {
@@ -617,6 +630,7 @@ export function ModelRunEvidencePanel({
         error?: string;
         executionOutlook?: ModelRunExecutionOutlook;
         transitFeed?: { status?: string; reason?: string | null };
+        zoneAttributes?: { status?: string; keyOrigin?: string; reason?: string | null };
       };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to relaunch worker run");
@@ -634,6 +648,19 @@ export function ModelRunEvidencePanel({
           payload.transitFeed.status !== "not_selected" &&
           payload.transitFeed.reason
           ? payload.transitFeed.reason
+          : null
+      );
+
+      // AND WHETHER THE THING THEY WERE TOLD TO FIX IS FIXED. `status` is
+      // "supplied" when the rebuild worked, and silence is the right answer
+      // there — the run itself is about to speak. Anything else means this
+      // relaunch will fail for the same reason as the last one, which is
+      // knowable now and otherwise costs a worker round-trip to discover.
+      setZoneRelaunchNotice(
+        payload.zoneAttributes &&
+          payload.zoneAttributes.status !== "supplied" &&
+          payload.zoneAttributes.reason
+          ? payload.zoneAttributes.reason
           : null
       );
 
@@ -727,6 +754,25 @@ export function ModelRunEvidencePanel({
             The transit feed chosen for this run still did not reach the modeling worker
           </p>
           <p className="mt-2">{transitRelaunchNotice}</p>
+        </div>
+      ) : null}
+
+      {zoneRelaunchNotice ? (
+        <div
+          data-testid="model-run-zone-relaunch-notice"
+          className="mt-3 rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-xs text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+        >
+          <p className="font-semibold">
+            This run&apos;s demographics still could not be read, so the relaunch will fail the same
+            way
+          </p>
+          {/*
+            "STILL" IS THE LOAD-BEARING WORD. A planner reaches this button
+            because a run failed and they did something about it. Repeating the
+            original error without saying it is unchanged reads as a fresh
+            problem; saying "still" tells them the fix did not take.
+          */}
+          <p className="mt-2">{zoneRelaunchNotice}</p>
         </div>
       ) : null}
 

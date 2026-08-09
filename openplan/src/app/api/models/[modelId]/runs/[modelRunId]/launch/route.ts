@@ -614,13 +614,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // rebuild above actually read this study area's demographics is the
         // answer to the question the planner just asked.
         //
-        // NOT YET RENDERED: the only caller today, the relaunch button in
-        // `components/models/model-run-evidence-panel.tsx`, reads `error` and
-        // `executionOutlook` off this body and nothing else — so a planner still
-        // learns the demographic-rebuild outcome from the worker's failure
-        // minutes later, not from here. This field is what a surface would read;
-        // it is not itself that surface, and it must not be described as one
-        // until the panel shows it.
+        // RENDERED 2026-08-08 by the relaunch button in
+        // `components/models/model-run-evidence-panel.tsx`, which had read
+        // `error` and `executionOutlook` off this body and nothing else — so a
+        // planner who had just added a Census key learned whether it worked
+        // from the worker failing again minutes later, or never, on a
+        // deployment whose worker is not running. The panel now shows the
+        // reason whenever `status` is not "supplied", and stays silent when it
+        // is, because a rebuilt run speaks for itself.
+        //
+        // Guarded by `a-relaunch-says-whether-the-fix-took.test.tsx`. If that
+        // rendering is removed, restore this comment to its NOT YET RENDERED
+        // form rather than leaving this one describing a surface that no longer
+        // exists.
         zoneAttributes: zoneAttributes
           ? {
               status: zoneAttributes.status,
