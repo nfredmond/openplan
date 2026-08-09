@@ -135,4 +135,93 @@ describe("RtpChapterDraftAssist", () => {
     });
     expect(screen.queryByTestId("rtp-chapter-draft-insert")).not.toBeInTheDocument();
   });
+
+  /**
+   * DRAFTING IS ALLOWED WHILE THE FISCAL VERDICT IS UNDETERMINED — THE STATE
+   * JUST MAY NOT ARRIVE QUIETLY.
+   *
+   * Nathaniel's decision, 2026-08-08: the chapter may still be drafted, because
+   * refusing leaves a planner with no starting text for the section they most
+   * need help with. What is not acceptable is the earlier behaviour, where a
+   * cycle with no revenue produced prose claiming "the revenues anticipated …
+   * are sufficient to cover the costs" and the only warning was a grounding
+   * flag reading "no citation" — procedural wording that reads as "add a
+   * source" rather than "your own finding says otherwise".
+   *
+   * So the panel states the finding itself, above the paragraph, in the
+   * operator's reading order.
+   */
+  function draftPayloadWithFiscal(fiscalConstraint: unknown) {
+    return {
+      draft: {
+        id: DRAFT_ID,
+        draft_markdown: DRAFT_WITH_TOKENS,
+        model: "claude-haiku-4-5",
+        status: "draft",
+        grounded_sentence_count: 1,
+        total_sentence_count: 2,
+      },
+      fiscalConstraint,
+    };
+  }
+
+  it("alerts the operator when the plan's fiscal constraint is not determined", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        draftPayloadWithFiscal({
+          verdict: "not_determined",
+          blockers: [
+            { code: "no_revenue_recorded", detail: "No revenue assumptions have been recorded." },
+          ],
+        }),
+        201
+      )
+    );
+
+    render(<RtpChapterDraftAssist rtpCycleId={CYCLE_ID} chapterId={CHAPTER_ID} onInsert={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /draft chapter narrative/i }));
+
+    const alert = await screen.findByTestId("chapter-draft-fiscal-alert");
+    expect(alert).toHaveTextContent(/fiscal constraint is not determined/i);
+    // The prohibition names the claim that actually shipped, not a vague caution.
+    expect(alert).toHaveTextContent(/may state or imply that the plan is fiscally constrained/i);
+    expect(alert).toHaveTextContent(/revenues cover programmed costs/i);
+    // The engine's own blocker, so the planner knows what would settle it.
+    expect(alert).toHaveTextContent(/No revenue assumptions have been recorded/i);
+
+    // ...and drafting is NOT blocked. The draft is still offered for insertion.
+    expect(screen.getByTestId("rtp-chapter-draft-insert")).toBeInTheDocument();
+    expect(screen.getByText(DRAFT_STRIPPED)).toBeInTheDocument();
+  });
+
+  it("does not alert when the verdict is settled", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(draftPayloadWithFiscal({ verdict: "constrained", blockers: [] }), 201)
+    );
+
+    render(<RtpChapterDraftAssist rtpCycleId={CYCLE_ID} chapterId={CHAPTER_ID} onInsert={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /draft chapter narrative/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("narrative-grounding-line")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("chapter-draft-fiscal-alert")).not.toBeInTheDocument();
+  });
+
+  /**
+   * A ledger that could not be READ sends null. Alerting "not determined" there
+   * would assert a finding the route never made — the same false certainty the
+   * alert exists to prevent, pointed the other way.
+   */
+  it("does not invent a verdict when none was sent", async () => {
+    fetchMock.mockResolvedValue(jsonResponse(draftPayloadWithFiscal(null), 201));
+
+    render(<RtpChapterDraftAssist rtpCycleId={CYCLE_ID} chapterId={CHAPTER_ID} onInsert={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /draft chapter narrative/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("narrative-grounding-line")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("chapter-draft-fiscal-alert")).not.toBeInTheDocument();
+  });
 });

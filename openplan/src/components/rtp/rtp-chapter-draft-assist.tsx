@@ -20,6 +20,21 @@ import { DraftGroundingLine } from "@/components/reports/report-narrative-draft-
  * `accepted` purely as provenance.
  */
 
+/**
+ * The cycle's fiscal-constraint finding, as much of it as this panel shows.
+ *
+ * A chapter MAY be drafted while the verdict is `not_determined` — that is the
+ * recorded decision, and refusing would leave a planner with no starting text
+ * for the section they most need help with. What may not happen is the
+ * undetermined state reaching the editor quietly. The prose says it, the fact
+ * list says it to the model, and this says it to the person about to press
+ * insert.
+ */
+export type FiscalConstraintNotice = {
+  verdict: string;
+  blockers: Array<{ code: string; detail: string }>;
+};
+
 export type RtpChapterDraftRow = {
   id: string;
   draft_markdown: string;
@@ -41,6 +56,7 @@ export function RtpChapterDraftAssist({
   onInsert: (markdown: string) => void;
 }) {
   const [draft, setDraft] = useState<RtpChapterDraftRow | null>(null);
+  const [fiscalConstraint, setFiscalConstraint] = useState<FiscalConstraintNotice | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -72,12 +88,17 @@ export function RtpChapterDraftAssist({
         return;
       }
 
-      const payload = (await response.json()) as { error?: string; draft?: RtpChapterDraftRow };
+      const payload = (await response.json()) as {
+        error?: string;
+        draft?: RtpChapterDraftRow;
+        fiscalConstraint?: FiscalConstraintNotice | null;
+      };
       if (!response.ok || !payload.draft) {
         throw new Error(payload.error || "Failed to draft the chapter narrative");
       }
 
       setDraft(payload.draft);
+      setFiscalConstraint(payload.fiscalConstraint ?? null);
     } catch (generateError) {
       setError(
         generateError instanceof Error
@@ -240,6 +261,39 @@ export function RtpChapterDraftAssist({
             {draft.status !== "draft" ? ` · ${draft.status}` : ""}
           </p>
           <DraftGroundingLine draft={draft} />
+          {/*
+            THE ALERT SITS ABOVE THE PROSE, NOT BESIDE IT.
+
+            A grounding flag says a sentence lacks a citation, which reads as
+            "add a source". It does not say the plan's fiscal finding is
+            unsettled, and a planner skimming three procedural flags can keep a
+            sentence that looks like standard RTP language. This states the
+            finding itself, in the operator's own reading order, before the
+            paragraph they are about to insert.
+          */}
+          {fiscalConstraint && fiscalConstraint.verdict === "not_determined" ? (
+            <div
+              role="note"
+              data-testid="chapter-draft-fiscal-alert"
+              className="rounded-xl border-l-2 border-[color:var(--copper)] bg-[color:var(--copper)]/8 px-4 py-3 text-sm"
+            >
+              <p className="font-semibold text-foreground">
+                This plan&rsquo;s fiscal constraint is not determined.
+              </p>
+              <p className="mt-1.5 leading-6 text-foreground/85">
+                Nothing in this draft may state or imply that the plan is fiscally constrained, that
+                revenues cover programmed costs, or that a constraint demonstration exists. Say that
+                the finding is outstanding, and what is still needed.
+              </p>
+              {fiscalConstraint.blockers.length > 0 ? (
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/80">
+                  {fiscalConstraint.blockers.map((blocker) => (
+                    <li key={blocker.code}>{blocker.detail}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
           <div className="max-h-64 overflow-y-auto rounded-xl border border-border/70 bg-background px-4 py-3 text-sm leading-6 text-foreground/90 whitespace-pre-wrap">
             {stripFactCitationTokens(draft.draft_markdown)}
           </div>

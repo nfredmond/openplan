@@ -724,6 +724,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           draft,
+          /*
+            The fiscal verdict travels WITH the draft so the panel can alert the
+            operator at the moment they decide whether to use the text.
+
+            Nathaniel's call (2026-08-08): a chapter may be drafted while the
+            verdict is `not_determined`, but the undetermined state has to be
+            stated plainly rather than left for the reader to infer from a
+            grounding flag. The fact list already steers the MODEL; this steers
+            the PERSON, who is the one who presses insert.
+
+            Only the verdict and its blockers are sent — no dollar figures. The
+            panel's job is to say the finding is not settled and why, not to
+            restate a ledger it is not rendering.
+          */
+          fiscalConstraint: fiscalConstraint
+            ? {
+                verdict: fiscalConstraint.verdict,
+                blockers: fiscalConstraint.blockers.map((blocker) => ({
+                  code: blocker.code,
+                  detail: blocker.detail,
+                })),
+              }
+            : null,
           usage: {
             inputTokens,
             outputTokens,
