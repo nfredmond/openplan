@@ -1783,3 +1783,96 @@ describe("the county-scaffold pass is accounted for", () => {
     }
   });
 });
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* THE MODEL-ACCESS PASS — 2026-08-09                                         */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * `loadModelAccess` is the access gate on all NINE model routes, and the fourth
+ * old-modeling sample of the day: 6 of 8.
+ *
+ * THE ACCESS CONTROL ITSELF IS SOLID, which is the headline and is worth saying
+ * plainly. Every scoping and permission mutation died against the seven test
+ * files that exercise it: dropping `user_id` from the membership lookup (any
+ * member of any workspace), dropping `workspace_id` (membership anywhere grants
+ * access here), ignoring the requested action so a write is checked as a read,
+ * `allowed` unconditionally true, and an unscoped model lookup. That matches
+ * the earlier finding that access control was the strongest territory in the
+ * repo, and extends it to a file that had not been sampled.
+ *
+ * BOTH SURVIVORS WERE ERROR-SWALLOWING, and both survived the whole suite.
+ * NEITHER IS A SECURITY HOLE — both fail CLOSED — which is precisely why
+ * nothing caught them, and why they are worth closing anyway:
+ *
+ *   - swallow the MEMBERSHIP error and `membership` stays null, `allowed`
+ *     computes false, and every caller answers 403. A database timeout tells a
+ *     legitimate member of the workspace that they are forbidden.
+ *   - swallow the MODEL error and `model` stays null, and every caller answers
+ *     404. A database failure tells a planner their model does not exist.
+ *
+ * The second is already treated as load-bearing one layer up: the model detail
+ * page refuses to call `notFound()` on a read error because "a 400 or a policy
+ * failure is not evidence" that the model is absent. That page can only draw
+ * the distinction because this function hands it the error — so swallowing it
+ * here silently collapses a distinction the caller deliberately preserves.
+ *
+ * Same defect class as an errored read returning no rows and looking like a
+ * denial: a known absence and an unknown state reported as the same thing. A
+ * fail-closed bug is still a bug when what it produces is a confident false
+ * statement to a planner.
+ *
+ * Closed with a focused unit test over the four outcomes the gate must keep
+ * distinct — read error, absent model, genuine denial, genuine allow — plus the
+ * positive case, so the refusals cannot be satisfied by a gate that refuses
+ * everything. Re-run against both original mutations: killed.
+ */
+const MODEL_ACCESS_AUDIT = {
+  date: "2026-08-09",
+  mutationsRun: 8,
+  killed: 6,
+  survived: 2,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 2,
+  survivorsConfirmedAgainstWholeSuite: 2,
+  /** Neither survivor was exploitable; both failed closed. Recorded because the
+   *  harm was a false statement to a planner, not an access grant. */
+  survivorsThatWereSecurityHoles: 0,
+};
+
+const MODEL_ACCESS_CLOSED_SURVIVORS: Record<
+  string,
+  { productionFile: string; testFile: string; testName: string }
+> = {
+  "model-read-error-is-not-a-missing-model": {
+    productionFile: "src/lib/models/api.ts",
+    testFile: "src/test/model-access-distinguishes-a-failed-read.test.ts",
+    testName: "returns a MODEL read error instead of an absent model",
+  },
+  "membership-read-error-is-not-a-denial": {
+    productionFile: "src/lib/models/api.ts",
+    testFile: "src/test/model-access-distinguishes-a-failed-read.test.ts",
+    testName: "returns a MEMBERSHIP read error instead of a silent denial",
+  },
+};
+
+describe("the model-access pass is accounted for", () => {
+  it("adds up, and closed every survivor", () => {
+    expect(MODEL_ACCESS_AUDIT.killed + MODEL_ACCESS_AUDIT.survived).toBe(
+      MODEL_ACCESS_AUDIT.mutationsRun
+    );
+    expect(Object.keys(MODEL_ACCESS_CLOSED_SURVIVORS)).toHaveLength(
+      MODEL_ACCESS_AUDIT.survivorsClosed
+    );
+  });
+
+  it("keeps every assertion this pass added", () => {
+    for (const [id, entry] of Object.entries(MODEL_ACCESS_CLOSED_SURVIVORS)) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.testFile}`).toBe(true);
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(entry.testName);
+    }
+  });
+});
