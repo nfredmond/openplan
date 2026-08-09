@@ -22,6 +22,11 @@ import {
   type RtpCycleReadinessSummary,
   type RtpCycleWorkflowSummary,
 } from "@/lib/rtp/catalog";
+import {
+  describeRtpFiscalConstraint,
+  rtpFiscalVerdictLabel,
+  type RtpFiscalConstraintSummary,
+} from "@/lib/rtp/fiscal-constraint";
 
 export type RtpChapterFactsInput = {
   chapter: {
@@ -55,6 +60,30 @@ export type RtpChapterFactsInput = {
     pendingCount: number;
   } | null;
   modelingEvidence: ReportModelingEvidence[];
+  /**
+   * The cycle's own fiscal-constraint finding, or null when the caller could
+   * not compute one.
+   *
+   * WHY A CHAPTER DRAFT NEEDS THIS. Without it, the fact list said nothing at
+   * all about fiscal constraint — including when drafting the chapter whose
+   * entire subject is fiscal constraint. Observed on a cycle with no revenue
+   * rows, no horizon bands and no linked projects, whose verdict is therefore
+   * `not_determined`: the draft asserted that "the revenues anticipated over
+   * the twenty-four-year planning period are sufficient to cover the costs of
+   * projects and programs included in the constrained network".
+   *
+   * The grounding checker did flag that sentence, but only as UNCITED, because
+   * there was no fact for it to contradict. "No citation" reads as "add a
+   * source"; a planner can reasonably keep a sentence that looks like standard
+   * RTP language. With the verdict present the sentence is contradicted by a
+   * fact rather than merely unsupported, and the model has the real finding to
+   * cite instead of plausible boilerplate.
+   *
+   * Null is passed through rather than defaulted, because inventing "not
+   * determined" for a cycle whose ledger could not be READ would be the same
+   * class of false certainty this fact exists to prevent.
+   */
+  fiscalConstraint: RtpFiscalConstraintSummary | null;
   /** Pre-built KB claims (buildKnowledgeBaseFactClaims) — each already carries KB_NARRATIVE_CAVEAT. */
   kbClaims: string[];
 };
@@ -139,6 +168,24 @@ export function buildRtpChapterFacts(input: RtpChapterFactsInput): NarrativeFact
       : null,
     engagement && engagement.campaignCount > 0
       ? `${engagement.campaignCount} engagement campaign(s) are attached to this cycle (${engagement.cycleLevelCampaignCount} cycle-level, ${engagement.chapterLevelCampaignCount} chapter-level) with ${engagement.totalItems} submitted comment(s): ${engagement.approvedCount} approved, ${engagement.readyForHandoffCount} ready for handoff, ${engagement.pendingCount} pending moderation. ${ENGAGEMENT_NARRATIVE_CAVEAT}`
+      : null,
+    /*
+      The fiscal verdict in the engine's OWN words.
+
+      `describeRtpFiscalConstraint` is the same sentence the export renders, so
+      a chapter draft and the exported financial element cannot describe the
+      plan's fiscal posture differently. Restating it here in friendlier prose
+      is exactly how two surfaces come to disagree about whether a plan is
+      constrained.
+    */
+    input.fiscalConstraint
+      ? `Fiscal constraint finding for this cycle: ${rtpFiscalVerdictLabel(
+          input.fiscalConstraint.verdict
+        )} — ${describeRtpFiscalConstraint(input.fiscalConstraint)}${
+          input.fiscalConstraint.verdict === "not_determined"
+            ? " Do not state or imply that this plan is fiscally constrained, that revenues cover programmed costs, or that a constraint demonstration exists, while this finding is not determined."
+            : ""
+        }`
       : null,
     ...modelingEvidenceClaims(input.modelingEvidence),
     ...input.kbClaims,

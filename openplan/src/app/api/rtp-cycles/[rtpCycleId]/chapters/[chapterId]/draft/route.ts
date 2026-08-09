@@ -33,6 +33,8 @@ import { factsHash, parseStoredDraft } from "@/lib/reports/narrative-drafts";
 import type { ReportModelingEvidence } from "@/lib/reports/modeling-evidence";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary } from "@/lib/rtp/catalog";
 import { buildRtpChapterFacts } from "@/lib/rtp/narrative-facts";
+import { loadRtpFinancialElement } from "@/lib/rtp/financial-element-queries";
+import { buildRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
 
 /**
  * RTP chapter draft assist.
@@ -281,13 +283,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
         supabase
           .from("rtp_cycles")
           .select(
-            "id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at"
+            // financial_basis_year and annual_inflation_rate decide whether the
+            // fiscal finding is in constant or year-of-expenditure dollars —
+            // omitting them would silently report constant dollars for a cycle
+            // that escalates.
+            "id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, financial_basis_year, annual_inflation_rate"
           )
           .eq("id", chapter.rtp_cycle_id)
           .maybeSingle(),
         supabase
           .from("project_rtp_cycle_links")
-          .select("id, project_id, portfolio_role, projects(id, name, status, updated_at)")
+          // The cost/band columns are here so this route can compute the same
+          // fiscal-constraint finding the export renders. Without them a chapter
+          // draft had no fiscal fact to cite at all — see buildRtpChapterFacts.
+          .select(
+            "id, project_id, portfolio_role, horizon_band_id, estimated_cost, cost_basis_year, projects(id, name, status, updated_at)"
+          )
           .eq("rtp_cycle_id", chapter.rtp_cycle_id),
         supabase
           .from("engagement_campaigns")
@@ -319,8 +330,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (cycleContextFailure) return cycleContextFailure;
 
       type LinkRow = {
+        id: string;
         project_id: string;
         portfolio_role: string | null;
+        horizon_band_id: string | null;
+        estimated_cost: number | string | null;
+        cost_basis_year: number | null;
         projects:
           | { id: string; name: string; status: string | null; updated_at: string | null }
           | Array<{ id: string; name: string; status: string | null; updated_at: string | null }>
@@ -330,10 +345,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const linkedProjects = linkRows.map((link) => {
         const project = Array.isArray(link.projects) ? (link.projects[0] ?? null) : link.projects;
         return {
+          linkId: link.id,
           projectId: link.project_id,
           name: project?.name ?? null,
           portfolioRole: link.portfolio_role,
           projectUpdatedAt: project?.updated_at ?? null,
+          horizonBandId: link.horizon_band_id ?? null,
+          estimatedCost: link.estimated_cost ?? null,
+          costBasisYear: link.cost_basis_year ?? null,
         };
       });
       const linkedProjectIds = linkedProjects.map((link) => link.projectId).filter(Boolean);
@@ -502,6 +521,55 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       const workflow = buildRtpCycleWorkflowSummary({ status: cycle.status, readiness });
 
+      /*
+        The cycle's own fiscal-constraint finding, so a chapter draft can cite
+        it instead of inventing one.
+
+        Observed before this existed, on a cycle with no revenue, no bands and
+        no linked projects — verdict `not_determined` — the financial-element
+        draft asserted that revenues "are sufficient to cover the costs of
+        projects and programs included in the constrained network". The
+        grounding checker flagged it only as UNCITED, because no fact existed
+        for it to contradict.
+
+        A read failure yields null rather than a default: `buildRtpFiscalConstraint`
+        on an empty ledger returns a confident `no_revenue_recorded`, which for a
+        ledger that could not be READ would be a fabricated finding. Null makes
+        the fact absent, which is the honest state.
+      */
+      const financialElement = await loadRtpFinancialElement(
+        supabase as unknown as Parameters<typeof loadRtpFinancialElement>[0],
+        chapter.rtp_cycle_id
+      ).catch(() => null);
+
+      // A read that ERRORED is not an empty ledger. `results` carries each
+      // query's own error, and either one failing makes the finding unknowable.
+      const financialReadOk =
+        financialElement !== null &&
+        !financialElement.results.bands.error &&
+        !financialElement.results.lines.error;
+
+      const fiscalConstraint =
+        financialElement && financialReadOk
+          ? buildRtpFiscalConstraint({
+              cycleHorizonStartYear: cycle.horizon_start_year,
+              cycleHorizonEndYear: cycle.horizon_end_year,
+              cycleFinancialBasisYear: cycle.financial_basis_year ?? null,
+              annualInflationRate: cycle.annual_inflation_rate ?? null,
+              bands: financialElement.bands,
+              lines: financialElement.lines,
+              projects: linkedProjects.map((link) => ({
+                linkId: link.linkId,
+                projectId: link.projectId,
+                projectName: link.name,
+                portfolioRole: link.portfolioRole,
+                horizonBandId: link.horizonBandId,
+                estimatedCost: link.estimatedCost,
+                costBasisYear: link.costBasisYear,
+              })),
+            })
+          : null;
+
       const facts = buildRtpChapterFacts({
         chapter,
         cycle,
@@ -509,6 +577,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         workflow,
         linkedProjects,
         portfolioFunding,
+        fiscalConstraint,
         engagement:
           campaigns.length > 0
             ? {
