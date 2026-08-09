@@ -131,11 +131,32 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
         })}
       </ul>
       {coverageNotes.length > 0 ? (
-        <div className="op-cart-layers__notes" role="note" aria-label="Map layer coverage">
-          {coverageNotes.map((note) => (
-            <p key={note}>{note}</p>
-          ))}
-        </div>
+        /*
+          COLLAPSED BY DEFAULT, BUT PRESENT AND COUNTED.
+
+          These are the honest disclosures — "this is not a finding that Columbus
+          has no census tracts", "no crash source covers this area". They are
+          paragraphs, and several of them turned the layers panel into the
+          tallest thing on the map, which is how it ended up under the legend.
+
+          A <details> is the right shape rather than dropping any of them: the
+          summary states HOW MANY there are and that coverage is limited, so the
+          existence of a caveat is never hidden — only its wording is one click
+          away. Silently truncating a coverage disclosure would be the defect
+          these notes exist to prevent.
+        */
+        <details className="op-cart-layers__notes" aria-label="Map layer coverage">
+          <summary className="op-cart-layers__notes-summary">
+            {coverageNotes.length === 1
+              ? "1 coverage note"
+              : `${coverageNotes.length} coverage notes`}
+          </summary>
+          <div role="note">
+            {coverageNotes.map((note) => (
+              <p key={note}>{note}</p>
+            ))}
+          </div>
+        </details>
       ) : null}
       <div className="op-cart-layers__ft">
         Basemap: <strong>{basemapLabel}</strong>

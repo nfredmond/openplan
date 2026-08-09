@@ -593,10 +593,34 @@ export function ExploreWorkbench({
     [analysisContext?.linkedDatasets, activeDatasetOverlayId]
   );
 
+  /*
+      THE MAP STAGE NEEDS A DEFINITE HEIGHT, AND THE MAP NEEDS A REAL SIZE.
+
+      Two bugs stacked here, and the map rendered blank because of both.
+
+      1. `min-h-[calc(100dvh-3rem)]` set a FLOOR, not a height, so the grid row
+         sized to its tallest cell — the right-hand rail, which is a long
+         scrolling column. Measured on a live workspace: the stage had grown to
+         16,286px. `100dvh` was also the wrong quantity, because this page is
+         rendered inside the cartographic surface, whose height is not the
+         viewport's. `lg:h-full` takes the height the surface actually gives it,
+         and `lg:grid-rows-[minmax(0,1fr)]` stops the row expanding past it, so
+         the rail scrolls inside itself as it was always meant to.
+
+      2. The map container was `absolute inset-0`. `mapbox-gl.css` sets
+         `.mapboxgl-map { position: relative }` — the same specificity as
+         Tailwind's `.absolute`, and it loads later, so it WINS and cancels the
+         positioning the sizing depended on. The container then had no height at
+         all: computed 0px inside a 16,286px parent. `h-full w-full` does not
+         depend on positioning and survives the override.
+
+      /safety was healthy throughout because its map container is sized
+      directly rather than through `inset-0`.
+  */
   return (
-    <section className="analysis-explore-shell grid min-h-[calc(100dvh-3rem)] gap-0 overflow-hidden lg:grid-cols-[minmax(0,1fr)_420px]">
+    <section className="analysis-explore-shell grid min-h-[520px] gap-0 overflow-hidden lg:h-full lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-[minmax(0,1fr)]">
       <div className="analysis-explore-mapstage relative min-h-[360px] overflow-hidden lg:min-h-0">
-        <div ref={mapContainerRef} className="absolute inset-0" />
+        <div ref={mapContainerRef} className="h-full w-full" />
 
         {!analysisResult ? (
           <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">

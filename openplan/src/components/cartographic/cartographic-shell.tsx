@@ -139,9 +139,24 @@ export async function CartographicShell({ children }: { children: React.ReactNod
           toggle.
         */}
         <MapSurfaceOnly>
-          <CartographicLayersPanel workspaceId={membership?.workspace_id ?? null} />
+          {/*
+            ONE DOCKED COLUMN, NOT TWO INDEPENDENTLY PINNED BOXES.
 
-          <CartographicMapLegend />
+            The legend was `position: fixed; top: 420px` — a hardcoded offset
+            chosen to clear a layers panel of some particular height. The layers
+            panel grows with its coverage notes, so on a workspace with tract and
+            crash disclosures it ran straight under the legend and the notes were
+            covered. A fixed offset cannot survive content it does not know the
+            height of.
+
+            Stacking them in one flex column means the legend is BELOW the panel
+            by construction, at any height, in any palette, on any viewport.
+          */}
+          <div className="op-cart-mapdock">
+            <CartographicLayersPanel workspaceId={membership?.workspace_id ?? null} />
+
+            <CartographicMapLegend />
+          </div>
         </MapSurfaceOnly>
 
         <CartographicInspectorDockConnected />

@@ -429,12 +429,32 @@ html.dark .op-cart-rail__btn.is-active {
 
 /* ---------- LAYERS PANEL ---------- */
 
-.op-cart-layers {
+/* The right-hand map dock: layers on top, legend beneath, never overlapping.
+   The two used to pin themselves independently — see cartographic-shell. */
+.op-cart-mapdock {
   position: fixed;
   top: 16px;
+  bottom: 16px;
   right: calc(16px + var(--cp-reserved, 0px));
   z-index: 25;
   width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* The dock is taller than its contents; only the panels themselves should
+     intercept clicks, so the map stays draggable through the gap. */
+  pointer-events: none;
+}
+.op-cart-mapdock > * {
+  pointer-events: auto;
+}
+
+.op-cart-layers {
+  /* Positioned by the dock now. It shrinks first and scrolls internally, so a
+     long coverage disclosure can never push the legend off screen. */
+  min-height: 0;
+  overflow-y: auto;
+  width: 100%;
   background: var(--panel);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -515,11 +535,10 @@ html.dark .op-cart-layer-item:hover {
 /* ---------- MAP LEGEND ---------- */
 
 .op-cart-legend {
-  position: fixed;
-  top: 420px;
-  right: calc(16px + var(--cp-reserved, 0px));
-  z-index: 25;
-  width: 240px;
+  /* No hardcoded top: the dock stacks it under the layers panel at whatever
+     height that panel turns out to be. */
+  flex-shrink: 0;
+  width: 100%;
   background: var(--panel);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -1056,4 +1075,30 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   .op-cart-rail__btn {
     height: 24px;
   }
+}
+
+/* The coverage notes are collapsed by default; the summary still states how
+   many there are, so a caveat is never invisible — only its wording is behind
+   one click. */
+.op-cart-layers__notes-summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 14px;
+  list-style: none;
+}
+.op-cart-layers__notes-summary::-webkit-details-marker {
+  display: none;
+}
+.op-cart-layers__notes-summary::before {
+  content: "▸ ";
+}
+.op-cart-layers__notes[open] > .op-cart-layers__notes-summary::before {
+  content: "▾ ";
+}
+.op-cart-layers__notes-summary:hover {
+  color: var(--ink-2);
 }
