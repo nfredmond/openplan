@@ -35,6 +35,7 @@ import {
   routeAcceptsRelaunchOfStatus,
 } from "@/lib/models/run-modes";
 import type { ModelRunExecutionOutlook } from "@/lib/models/run-dispatch";
+import { shortDigest } from "@/lib/models/digest-display";
 
 type ModelRunComparisonCandidate = {
   id: string;
@@ -397,11 +398,6 @@ function formatServiceFound(provenance: TransitFeedProvenance): string | null {
     );
   }
   return parts.join(" · ");
-}
-
-function shortHash(hash: string | null): string | null {
-  if (!hash) return null;
-  return hash.length > 12 ? `${hash.slice(0, 12)}…` : hash;
 }
 
 type ModelRunEvidencePanelProps = {
@@ -804,7 +800,7 @@ export function ModelRunEvidencePanel({
                   <div className="flex items-start justify-between gap-3">
                     <dt className="text-amber-900/70 dark:text-amber-200/70">Corridor hash</dt>
                     <dd className="text-right font-mono font-medium">
-                      {shortHash(evidence.assumptions.corridor_geojson_hash) || "—"}
+                      {shortDigest(evidence.assumptions.corridor_geojson_hash) || "—"}
                     </dd>
                   </div>
                 </dl>
@@ -925,7 +921,7 @@ export function ModelRunEvidencePanel({
                                   Archive checksum (verified)
                                 </dt>
                                 <dd className="min-w-0 break-all text-right font-mono font-medium">
-                                  {shortHash(transitProvenance.feedChecksumSha256)}
+                                  {shortDigest(transitProvenance.feedChecksumSha256)}
                                 </dd>
                               </div>
                             ) : null}

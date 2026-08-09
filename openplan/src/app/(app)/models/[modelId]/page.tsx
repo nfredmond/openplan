@@ -17,6 +17,11 @@ import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health
 import { isPassingCountyRunGateStatus } from "@/lib/models/county-onramp";
 import { corridorGeojsonSchema, extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { resolveStudyArea } from "@/lib/models/study-area";
+import {
+  NETWORK_DIGEST_ABSENT_NOTE,
+  NETWORK_DIGEST_MEANING,
+  shortDigest,
+} from "@/lib/models/digest-display";
 import { placeOfRecordFromProject } from "@/lib/projects/project-place";
 import {
   HOME_GEOGRAPHY_COLUMNS,
@@ -109,6 +114,8 @@ type NetworkBasisVersionRow = {
   version_name: string;
   status: string;
   updated_at: string | null;
+  /** Null on a version ingested before the digest was computed. */
+  file_hash: string | null;
   package: { id: string; name: string } | Array<{ id: string; name: string }> | null;
 };
 
@@ -321,12 +328,17 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
   const networkBasisVersionResult = networkPackageVersionId
     ? await supabase
         .from("network_package_versions")
-        .select("id, version_name, status, updated_at, package:network_packages(id, name)")
+        // `file_hash` is projected because the block below RENDERS it: it is the
+        // only thing on this page that answers "which network did this model
+        // run against?" with something two runs can be compared on. It was
+        // written by ingest and read by nothing.
+        .select("id, version_name, status, updated_at, file_hash, package:network_packages(id, name)")
         .eq("id", networkPackageVersionId)
         .maybeSingle()
     : { data: null, error: null };
 
   const networkBasisVersion = (networkBasisVersionResult.data ?? null) as NetworkBasisVersionRow | null;
+  const networkDigest = shortDigest(networkBasisVersion?.file_hash ?? null);
   const networkBasisPackage = networkBasisVersion
     ? Array.isArray(networkBasisVersion.package)
       ? networkBasisVersion.package[0] ?? null
@@ -1035,10 +1047,28 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                     </div>
                   </div>
                   {networkBasisVersion ? (
-                    <MetaList>
-                      <MetaItem>{networkBasisVersion.status}</MetaItem>
-                      <MetaItem>Updated {formatModelDateTime(networkBasisVersion.updated_at)}</MetaItem>
-                    </MetaList>
+                    <>
+                      <MetaList>
+                        <MetaItem>{networkBasisVersion.status}</MetaItem>
+                        <MetaItem>Updated {formatModelDateTime(networkBasisVersion.updated_at)}</MetaItem>
+                        {/*
+                          WHICH NETWORK THIS MODEL RAN AGAINST. The digest was
+                          computed at ingest and read by nothing — a column that
+                          made the schema look like it verified something while
+                          answering no question a planner could ask.
+                        */}
+                        {networkDigest ? (
+                          <MetaItem>
+                            <span className="font-mono" data-testid="network-basis-digest">
+                              {networkDigest}
+                            </span>
+                          </MetaItem>
+                        ) : null}
+                      </MetaList>
+                      <p className="module-record-summary mt-1 text-xs">
+                        {networkDigest ? NETWORK_DIGEST_MEANING : NETWORK_DIGEST_ABSENT_NOTE}
+                      </p>
+                    </>
                   ) : null}
                 </div>
               </div>
