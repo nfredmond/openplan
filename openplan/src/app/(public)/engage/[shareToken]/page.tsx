@@ -101,8 +101,34 @@ export async function generateMetadata({
   // raw row, so a Spanish link posted to a community group previews in Spanish
   // when the agency has published a Spanish title.
   const title = bundle.campaignText.title.text || "Community engagement";
+  /*
+    THE PREVIEW MUST SAY WHAT THE PAGE SAYS.
+
+    This read `summary` alone and never looked at `publicDescription`, so the
+    meta description and og:description — the snippet a search engine indexes,
+    and the text that renders when a resident shares the link into a community
+    group — carried the OPERATOR's summary while the page itself showed the
+    public description.
+
+    Those two fields are deliberately different things. The campaign form labels
+    one "Public-facing description — shown on portal page" and asks for the
+    other with "What kind of input is this campaign collecting, and how will
+    operators use it?" An operator answering that question honestly writes
+    internal framing — which agency needs the comments, what the funding ask is,
+    how the input will be used — and has no reason to expect it published as the
+    page's public summary. Verified in the browser: a campaign whose public
+    description was resident-facing outreach copy still previewed with the
+    operator note naming the grant programme behind it.
+
+    The precedence now mirrors the body exactly (see the headline block below),
+    so the preview and the page cannot disagree. The `summary` fallback is kept
+    only because the body keeps it; a campaign that has passed its own share
+    readiness checks has a public description and never reaches it.
+  */
   const description =
-    bundle.campaignText.summary?.text.trim() || translator.t("page.defaultDescription");
+    bundle.campaignText.publicDescription?.text.trim() ||
+    bundle.campaignText.summary?.text.trim() ||
+    translator.t("page.defaultDescription");
 
   // The canonical URL KEEPS the language. Dropping it would tell a crawler —
   // and any tool that follows canonicals — that the Spanish portal and the
