@@ -1,5 +1,6 @@
 import type { AssistantQuickLink } from "@/lib/assistant/catalog";
 import { getActionMetadata } from "@/lib/runtime/action-metadata";
+import { isRelaunchableRunStatus, isWorkerExecutedRunMode } from "@/lib/models/run-modes";
 import type {
   AssistantContext,
   ModelAssistantContext,
@@ -1691,7 +1692,60 @@ function buildScenarioOperations(context: ScenarioAssistantContext): AssistantQu
 }
 
 function buildModelOperations(context: ModelAssistantContext): AssistantQuickLink[] {
+  /**
+   * The most recent run this planner could actually retry.
+   *
+   * BOTH CONDITIONS COME FROM WHAT THE ROUTE REFUSES, not from what reads well.
+   * `record_stage_gate_hold` shipped an offer that required two mutually
+   * exclusive conditions — a control no state could satisfy, whose reachability
+   * test passed because the fixture described a board the product cannot build.
+   * So: a relaunchable STATUS (never `succeeded`, which the route rejects with a
+   * 400 and which is what stops a gate being re-rolled) and a WORKER-EXECUTED
+   * engine (in-process engines get a 409).
+   *
+   * SINGULAR, deterministically the newest. A list of failed runs each with its
+   * own approval is a wall, not a queue — and each one occupies the worker.
+   */
+  const relaunchableRun = context.recentModelRuns.find(
+    (run) => isRelaunchableRunStatus(run.status) && isWorkerExecutedRunMode(run.engineKey)
+  );
+
   return compactQuickLinks([
+    relaunchableRun
+      ? quickLink(
+          "model-relaunch-failed-run",
+          `Retry ${relaunchableRun.runTitle}`,
+          `/models/${context.model.id}`,
+          {
+            targetKind: "model",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: "primary",
+            statusLabel: "Execute action",
+            reason:
+              `${relaunchableRun.runTitle} ended ${relaunchableRun.status} and can be re-queued to the ` +
+              "modeling worker exactly as it was configured. Planner Agent cannot change the study area, " +
+              "the engine or the zone resolution — a relaunch reruns the run a person set up, which is the " +
+              "recovery once the reason it failed has been fixed.",
+            approval: "approval_required",
+            auditEvent: "assistant.operation.model.launch_model_run",
+            auditNote:
+              "Re-queues this existing run through the audited launch route. It supplies no configuration of " +
+              "its own, and it cannot relaunch a run that already succeeded — so it cannot re-roll a run " +
+              "until its validation numbers land better.",
+            executeAction: {
+              kind: "launch_model_run",
+              workspaceId: context.workspace.id,
+              modelId: context.model.id,
+              modelRunId: relaunchableRun.id,
+              postActionWorkflowId: "model-readiness",
+              postActionPrompt:
+                "A model run was re-queued. Did it get further this time, and what does the result support?",
+              postActionPromptLabel: "Review the relaunched run",
+            },
+          }
+        )
+      : null,
     quickLink("model-readiness-agent", "Check model readiness in panel", `/models/${context.model.id}`, {
       targetKind: "model",
       actionClass: "inspect_readiness",

@@ -8,6 +8,48 @@ export const MANAGED_RUN_MODE_KEYS = [
 
 export type ManagedRunModeKey = (typeof MANAGED_RUN_MODE_KEYS)[number];
 
+/**
+ * Engines the modeling WORKER executes, and which a failed run can therefore be
+ * re-queued to.
+ *
+ * DELIBERATELY AN ALLOWLIST, AND DELIBERATELY NARROWER THAN THE ROUTE.
+ * `/api/models/[modelId]/runs/[modelRunId]/launch` refuses by DENYLIST — it
+ * rejects `sketch_abm` and `ite_trip_generation` because re-queueing an
+ * in-process engine would let the worker write assignment outputs onto a run
+ * whose `engine_key` says otherwise. That asymmetry is intentional rather than
+ * an oversight: a route should refuse only what it is certain about, while an
+ * OFFER must appear only where it will actually work. An offer that cannot
+ * succeed is the defect that shipped with `record_stage_gate_hold` — a control
+ * no state could satisfy, whose reachability test passed anyway.
+ *
+ * `deterministic_corridor_v1` is absent because it is a rules-based in-app
+ * scorecard, so nothing is offered for it. The route does not name it in its
+ * denylist; whether it should is a separate question about that route's
+ * behaviour, not about what to offer a planner.
+ *
+ * Guarded by `a-model-run-relaunch-is-offered-where-it-works.test.ts`, which
+ * fails if this set ever includes an engine the route explicitly rejects.
+ */
+export const WORKER_EXECUTED_RUN_MODE_KEYS = ["aequilibrae", "behavioral_demand"] as const;
+
+export function isWorkerExecutedRunMode(engineKey: string | null | undefined): boolean {
+  return (WORKER_EXECUTED_RUN_MODE_KEYS as readonly string[]).includes(engineKey ?? "");
+}
+
+/**
+ * Run statuses the launch route will accept for a relaunch.
+ *
+ * `succeeded` and `running` are refused there (400), and that refusal is what
+ * makes this action safe to register: a run that has already produced a
+ * screening gate cannot be re-rolled until the numbers land better. Keep this
+ * in step with the route, and never widen it to `succeeded`.
+ */
+export const RELAUNCHABLE_RUN_STATUSES = ["failed", "cancelled"] as const;
+
+export function isRelaunchableRunStatus(status: string | null | undefined): boolean {
+  return (RELAUNCHABLE_RUN_STATUSES as readonly string[]).includes(status ?? "");
+}
+
 export type ManagedRunModeDefinition = {
   key: ManagedRunModeKey;
   label: string;

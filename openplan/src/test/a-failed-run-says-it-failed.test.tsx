@@ -332,6 +332,28 @@ describe("summarizeRunFailure", () => {
     expect(summary!.stageName).toBeNull();
   });
 
+  it("asks the database for the column the ordering depends on", () => {
+    /**
+     * `sort_order` was NOT in the page's nested stage projection, so the sort
+     * below had nothing to sort on and silently fell back to whatever order
+     * PostgREST returned — on the one decision that separates a cause from a
+     * stage blocked by it. Found by a TYPE error rather than a failing test,
+     * because the fixtures here supplied a field the real query never did.
+     * That is the mocked-client blind spot; asserting the projection string is
+     * the only thing that closes it.
+     */
+    const source = readFileSync(
+      path.join(process.cwd(), "src/app/(app)/models/[modelId]/page.tsx"),
+      "utf8"
+    );
+    const embed = /stages:model_run_stages\(([^)]*)\)/.exec(source)?.[1];
+    expect(embed, "could not find the model_run_stages embed").toBeTypeOf("string");
+    const columns = embed!.split(",").map((column) => column.trim());
+    for (const column of ["sort_order", "status", "stage_name", "error_message", "log_tail"]) {
+      expect(columns).toContain(column);
+    }
+  });
+
   it("orders by sort_order rather than array order", () => {
     const summary = summarizeRunFailure({
       status: "failed",

@@ -215,6 +215,54 @@ export type AssistantQuickLinkExecuteAction =
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;
+    }
+  | {
+      /**
+       * Re-queue an EXISTING model run to the modeling worker.
+       *
+       * THE FIRST MODELING ACTION IN THE REGISTRY, and it is registerable
+       * because of what the target route refuses rather than because of what
+       * this payload omits. Three ids, all verified against workspace rows; the
+       * model authors nothing. The route
+       * (`/api/models/[modelId]/runs/[modelRunId]/launch`) accepts NO BODY at
+       * all — study area, engine and zone geography are read off the run row
+       * that a person created.
+       *
+       * WHY GATE-SHOPPING IS NOT AVAILABLE HERE, which is the question that
+       * matters for a modeling action. A screening claim is derived from a
+       * count comparison, so an agent able to re-roll a run until the numbers
+       * land well would be manufacturing the tier the honesty firewall exists to
+       * protect. Three properties of the route close that off, and all three are
+       * structural rather than conventions:
+       *
+       *   - a SUCCEEDED run cannot be relaunched (400). Once a run has produced
+       *     a gate, that gate stands; there is no second roll of the same dice.
+       *   - the zone geography is read from the run's own `input_snapshot_json`
+       *     specifically "so a relaunch of a stamped run cannot quietly change
+       *     the zone geography" — the one launch parameter that moves the
+       *     intrazonal share, and therefore the one that could flip a run from
+       *     "link comparison cannot settle this" to a screening claim.
+       *   - only `failed`/`queued`/`cancelled` runs are relaunchable, and none
+       *     of those carries a gate to improve on.
+       *
+       * So the reachable use is the honest one: a run that failed for a reason
+       * a planner has now fixed — no Census key, no study area, worker offline —
+       * is retried. That is the recovery the worker's own error text tells them
+       * to perform.
+       *
+       * NOT REGISTERED, and deliberately: creating a NEW run (`POST /runs`)
+       * takes a full body including the study area, the engine and the zone
+       * geography. Every argument above depends on the agent supplying none of
+       * those, so the create path is a different action that would have to be
+       * argued on its own terms.
+       */
+      kind: "launch_model_run";
+      workspaceId: string;
+      modelId: string;
+      modelRunId: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
     };
 
 export type AssistantQuickLink = {

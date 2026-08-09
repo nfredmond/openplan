@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import {
+  readAssistantExecutionSource,
+  verifyAssistantActionApproval,
+  type AssistantApprovalVerification,
+} from "@/lib/assistant/action-approval-server";
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
+import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
+import { getActionMetadata } from "@/lib/runtime/action-metadata";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
@@ -10,6 +18,7 @@ import {
   writeMatchedNoRows,
 } from "@/lib/http/write-outcome";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   prepareWorkerZoneAttributes,
   type ZoneAttributeStamp,
@@ -34,6 +43,13 @@ import {
   transitFeedIdFromSnapshot,
   type TransitFeedStamp,
 } from "@/lib/models/transit-feed-handoff";
+
+/**
+ * Exactly the body keys the `launch_model_run` action sends. The route reads
+ * none of them — the workspace comes from the model — but the set is declared
+ * so `refuseOutOfScopeAgentRequest` can reject a widened agent request.
+ */
+const AGENT_LAUNCH_BODY_KEYS = ["workspaceId"] as const;
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -132,6 +148,87 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
         { status: 409 }
       );
+    }
+
+    /**
+     * ============ THE `launch_model_run` ACTION, REGISTERED 2026-08-08 ========
+     *
+     * The approval tier is `approval_required`, and it is enforced HERE. A
+     * "registered" action whose route never verifies its own approval
+     * type-checks fine and executes with the tier enforced only in the browser.
+     *
+     * The action is rebuilt from the ROUTE'S OWN verified values — the workspace
+     * off the model this caller was granted access to, and the two ids parsed
+     * out of the path — never from the request body. The hash must cover what
+     * this route will actually do, not what the caller says it approved.
+     *
+     * THE BODY IS SCOPE-CHECKED even though this route reads nothing from it.
+     * The approval hash covers the ACTION, so a request carrying the action's
+     * fields plus extras hashes identically to what the planner approved; a
+     * future edit that starts reading a body key would silently inherit that
+     * hole. `workspaceId` is the only key the effect sends.
+     */
+    const executionSource = readAssistantExecutionSource(request);
+    const agentSourced = executionSource === "planner_agent_quick_link";
+    let approval: AssistantApprovalVerification = {
+      approvalId: null,
+      inputHash: null,
+      authorship: null,
+    } as unknown as AssistantApprovalVerification;
+
+    if (agentSourced) {
+      // Through the shared limited reader, never an unbounded read:
+      // `body-limit-route-inventory.test.ts` forbids a mutating route pulling
+      // the body directly off the request, and it caught this the first time
+      // this block was written. (The guard scans source text, so naming the
+      // forbidden call here — even to warn against it — trips it too.)
+      const bodyRead = await readJsonOrNullWithLimit(request, BODY_LIMITS.smallJson);
+      if (!bodyRead.ok) return bodyRead.response;
+      const agentBody = (bodyRead.data ?? {}) as Record<string, unknown>;
+      const scopeRefusal = refuseOutOfScopeAgentRequest({
+        executionSource,
+        body: agentBody,
+        allowedKeys: AGENT_LAUNCH_BODY_KEYS,
+        actionKind: "launch_model_run",
+      });
+      if (scopeRefusal) {
+        audit.warn("agent_request_out_of_scope", {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+          rejectedKeys: scopeRefusal.rejectedKeys,
+        });
+        return NextResponse.json(
+          { error: scopeRefusal.error, details: scopeRefusal.details },
+          { status: 400 }
+        );
+      }
+
+      try {
+        approval = await verifyAssistantActionApproval({
+          request,
+          serviceSupabase: createServiceRoleClient(),
+          userId: user.id,
+          workspaceId: workspaceId as string,
+          action: {
+            kind: "launch_model_run",
+            workspaceId: workspaceId as string,
+            modelId: access.model.id,
+            modelRunId: modelRun.id,
+          },
+        });
+      } catch (approvalError) {
+        audit.warn("agent_approval_rejected", {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+        });
+        return NextResponse.json(
+          {
+            error:
+              approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const nowIso = new Date().toISOString();
@@ -408,6 +505,58 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // update, so a pushed worker and a polling one cannot both execute this run.
     // A push that does not land leaves the pre-existing behaviour untouched: a
     // requeued run waiting for a poller.
+    /**
+     * THE LEDGER ROW, written for the AGENT path only and written DIRECTLY
+     * rather than through `withAssistantActionAudit`.
+     *
+     * The wrapper decides success by whether the body threw, and this route
+     * does not throw for ordinary failures — it RETURNS a NextResponse with a
+     * status for each one. Wrapping it would stamp `outcome: 'succeeded'` on a
+     * relaunch that answered 500, and a ledger that misreports outcomes is
+     * worse than one missing rows, because it is believed.
+     *
+     * It is written HERE, once the run is queued, because that is the point at
+     * which the action has actually happened. The refusals above return an
+     * error to the agent and are recorded by this route's own audit logger; a
+     * refused approval is not an executed action.
+     *
+     * The manual path writes no row on purpose: `action_kind` is a claim that
+     * this was a Planner Agent action, and stamping it on a relaunch a person
+     * clicked would be false.
+     */
+    if (agentSourced) {
+      const metadata = getActionMetadata("launch_model_run");
+      const { error: ledgerError } = await recordAssistantActionExecution(createServiceRoleClient(), {
+        workspaceId: workspaceId as string,
+        userId: user.id,
+        actionKind: "launch_model_run",
+        auditEvent: metadata.auditEvent,
+        approval: metadata.approval,
+        regrounding: metadata.regrounding,
+        outcome: "succeeded",
+        inputSummary: {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+          // The engine and resolution this relaunch RAN AT, recorded so the
+          // ledger shows that neither was chosen by the agent.
+          engineKey: modelRun.engine_key ?? null,
+          zoneGeography,
+        },
+        approvalId: approval.approvalId,
+        inputHash: approval.inputHash,
+        executionSource,
+        authorship: approval.authorship,
+        startedAt: nowIso,
+        completedAt: new Date().toISOString(),
+      });
+      if (ledgerError) {
+        audit.warn("agent_ledger_row_failed", {
+          modelRunId: modelRun.id,
+          message: ledgerError.message,
+        });
+      }
+    }
+
     const dispatch = await dispatchModelRun(
       buildModelRunDispatchPayload({
         requestId: crypto.randomUUID(),

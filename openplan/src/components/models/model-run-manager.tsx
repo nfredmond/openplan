@@ -94,6 +94,17 @@ export type ModelRunStage = {
   id: string;
   stage_name: string;
   status: string;
+  /**
+   * The stage's declared position in the run.
+   *
+   * Projected because `summarizeRunFailure` picks the FIRST failed stage as the
+   * cause, and without this column it was sorting on nothing — falling back to
+   * whatever order PostgREST happened to return, on the one decision that
+   * separates a cause from a stage blocked by it. Found by a type error, not by
+   * a failing test, because the fixtures supplied a field the real query never
+   * did.
+   */
+  sort_order?: number | null;
   started_at: string | null;
   completed_at: string | null;
   error_message?: string | null;

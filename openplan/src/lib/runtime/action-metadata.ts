@@ -114,6 +114,22 @@ export const ACTION_METADATA: ActionMetadataRegistry = {
     // proposing questions that are already sitting there unpublished.
     regrounding: "refresh_preview",
   },
+  launch_model_run: {
+    kind: "launch_model_run",
+    description:
+      "Re-queues an existing model run to the modeling worker, exactly as it was configured. It cannot change the study area, the engine or the zone resolution, and it cannot relaunch a run that already succeeded.",
+    // `approval_required`, for the same reason `refresh_gtfs_feed` is: `review`
+    // shows no approval dialog at all and short-circuits hash verification, so
+    // it is not a weaker consent — it is none. A run occupies a self-hosted
+    // worker for minutes and produces figures a planner may publish, so a person
+    // has to have seen which run it names.
+    approval: "approval_required",
+    auditEvent: "planner_agent.launch_model_run",
+    // A relaunch moves the fact the offer was keyed on — the run's status. A
+    // preview still describing it as failed would keep offering a relaunch that
+    // is already in flight.
+    regrounding: "refresh_preview",
+  },
 };
 
 export function getActionMetadata<K extends AssistantQuickLinkExecuteAction["kind"]>(

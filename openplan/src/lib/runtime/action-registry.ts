@@ -187,6 +187,31 @@ const RECORD_STAGE_GATE_HOLD: ActionRecord<"record_stage_gate_hold"> = {
   },
 };
 
+const LAUNCH_MODEL_RUN: ActionRecord<"launch_model_run"> = {
+  kind: "launch_model_run",
+  effect: async (action, context) => {
+    /**
+     * The body carries the workspace and NOTHING ELSE, because the route reads
+     * nothing else. Study area, engine and zone geography live on the run row a
+     * person created; there is no field here to override them with, and adding
+     * one would be a change to what an agent may decide about a model — see the
+     * union variant in catalog.ts.
+     *
+     * The path is a TEMPLATE LITERAL on purpose. `action-route-resolution.ts`
+     * regexes `effect.toString()` for `/api/…` literals to decide which route
+     * this action targets; a path assembled from a variable resolves to zero
+     * paths, and both the approval-verification guard and the claim-tier guard
+     * would then check nothing while reporting success.
+     */
+    await postJson(
+      `/api/models/${action.modelId}/runs/${action.modelRunId}/launch`,
+      { workspaceId: action.workspaceId },
+      "Failed to launch the model run",
+      context
+    );
+  },
+};
+
 const REFRESH_GTFS_FEED: ActionRecord<"refresh_gtfs_feed"> = {
   kind: "refresh_gtfs_feed",
   effect: async (action, context) => {
@@ -259,6 +284,7 @@ export const ACTION_REGISTRY: ActionRegistry = {
   create_project_record: CREATE_PROJECT_RECORD,
   record_stage_gate_hold: RECORD_STAGE_GATE_HOLD,
   refresh_gtfs_feed: REFRESH_GTFS_FEED,
+  launch_model_run: LAUNCH_MODEL_RUN,
   create_survey_question_draft: CREATE_SURVEY_QUESTION_DRAFT,
 };
 

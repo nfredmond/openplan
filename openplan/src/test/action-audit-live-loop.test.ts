@@ -24,7 +24,7 @@ const ACTION_KINDS = Object.keys(ACTION_REGISTRY) as AssistantQuickLinkExecuteAc
 
 describe("withAssistantActionAudit (live-loop proof)", () => {
   it("registry covers all 10 ActionRecord kinds", () => {
-    expect(ACTION_KINDS).toHaveLength(10);
+    expect(ACTION_KINDS).toHaveLength(11);
     expect(new Set(ACTION_KINDS)).toEqual(
       new Set([
         "generate_report_artifact",
@@ -36,6 +36,8 @@ describe("withAssistantActionAudit (live-loop proof)", () => {
         "create_project_record",
         "record_stage_gate_hold",
         "refresh_gtfs_feed",
+    "launch_model_run",
+        "launch_model_run",
     "create_survey_question_draft",
         "create_survey_question_draft",
       ])

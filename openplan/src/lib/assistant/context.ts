@@ -712,6 +712,8 @@ export type ModelAssistantContext = {
     id: string;
     status: string;
     runTitle: string;
+    /** Null on a run recorded before the column existed — never assumed. */
+    engineKey: string | null;
     createdAt: string | null;
     completedAt: string | null;
   }>;
@@ -2769,7 +2771,10 @@ async function loadModelContext(
       : Promise.resolve({ data: [], error: null }),
     supabase
       .from("model_runs")
-      .select("id, status, run_title, created_at, completed_at")
+      // `engine_key` is projected because the relaunch OFFER is keyed on it: the
+      // launch route refuses in-process engines with a 409, so offering a
+      // relaunch for one would be a control that can never succeed.
+      .select("id, status, run_title, engine_key, created_at, completed_at")
       .eq("model_id", model.id)
       .order("created_at", { ascending: false })
       .limit(5),
@@ -2825,6 +2830,7 @@ async function loadModelContext(
           id: run.id,
           status: run.status,
           runTitle: run.run_title,
+          engineKey: (run.engine_key as string | null) ?? null,
           createdAt: run.created_at ?? null,
           completedAt: run.completed_at ?? null,
         })),

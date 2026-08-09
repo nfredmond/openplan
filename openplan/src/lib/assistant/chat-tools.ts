@@ -276,6 +276,13 @@ const PROPOSAL_REFERENCE_CHECKS: Partial<
    * would silently hide legitimate rows, which is why this note exists.
    */
   refresh_gtfs_feed: [{ field: "gtfsFeedId", table: "gtfs_feeds" }],
+  // Both ids are checked against workspace-scoped rows before the proposal
+  // is offered, so an agent cannot name a run in somebody else's workspace
+  // and have the route be the first thing to notice.
+  launch_model_run: [
+    { field: "modelId", table: "models" },
+    { field: "modelRunId", table: "model_runs" },
+  ],
   /**
    * The campaign must belong to the workspace the approval is scoped to —
    * otherwise a draft could be proposed into another agency's survey builder,
