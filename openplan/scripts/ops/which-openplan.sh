@@ -64,12 +64,51 @@ LOCAL_SHORT="$(printf '%s' "$LOCAL_SHA" | cut -c1-12)"
 echo "Checkout:  $REPO_ROOT @ $(git -C "$REPO_ROOT" rev-parse --short HEAD)"
 echo
 
+# A LOCAL PORT CAN BE ASKED DIRECTLY WHICH DIRECTORY IT IS SERVING.
+#
+# This is the most literal answer available and it beats every heuristic: the
+# kernel knows the working directory of the process holding the socket. It also
+# covers the case a commit stamp cannot — `next dev`, which compiles from source
+# and therefore has no build to stamp, and whose commit would go stale within
+# minutes of being written down.
+serving_dir_for_local_port() {
+  local port="$1" pid
+  pid="$(ss -ltnp 2>/dev/null | grep -E "[:.]${port}[[:space:]]" | grep -oE 'pid=[0-9]+' | head -1 | cut -d= -f2)"
+  [ -n "$pid" ] || return 1
+  readlink "/proc/$pid/cwd" 2>/dev/null
+}
+
+PORT="$(printf '%s' "$URL" | grep -oE ':[0-9]+' | head -1 | tr -d ':')"
+SERVING_DIR=""
+case "$URL" in
+  *localhost*|*127.0.0.1*) [ -n "$PORT" ] && SERVING_DIR="$(serving_dir_for_local_port "$PORT" || true)" ;;
+esac
+
+if [ -n "$SERVING_DIR" ]; then
+  echo "Serving from: $SERVING_DIR"
+  SERVING_REPO="$(git -C "$SERVING_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+  if [ -n "$SERVING_REPO" ] && [ -n "$REPO_ROOT" ] && [ "$SERVING_REPO" != "$REPO_ROOT" ]; then
+    echo
+    red "DIFFERENT CHECKOUT — that port is served out of $SERVING_REPO"
+    echo "You are working in $REPO_ROOT. These are two different trees."
+    exit 1
+  fi
+fi
+
 # "unknown" is the honest answer from an instance whose operator never stamped
 # OPENPLAN_COMMIT_SHA. It is not a match, and it must not be reported as one.
 if [ -z "$REPORTED_COMMIT" ] || [ "$REPORTED_COMMIT" = "unknown" ]; then
+  if [ -n "$SERVING_DIR" ] && [ "${SERVING_REPO:-}" = "$REPO_ROOT" ]; then
+    green "Serving your checkout live (a dev server compiles from source)."
+    echo "No commit is reported, and none should be: a dev server has no build to stamp,"
+    echo "and a stamped SHA would be stale the moment you commit. The directory above is"
+    echo "the identity that matters here, and it is yours."
+    exit 0
+  fi
   red "This instance does not report a commit, so it CANNOT be identified."
   echo "It may be any build at all — do not use it to verify a code change."
-  echo "Stamp it by setting OPENPLAN_COMMIT_SHA (the refresh script does this)."
+  echo "If it is a built instance, stamp OPENPLAN_COMMIT_SHA (the refresh script does this)."
+  echo "If it is a dev server on another machine, check its working directory by hand."
   exit 1
 fi
 

@@ -188,6 +188,57 @@ const CRASH_SEVERITY_PAINT: mapboxgl.ExpressionSpecification = [
   CRASH_SEVERITY_UNKNOWN_COLOR,
 ];
 
+/**
+ * The two crash circle paints, hoisted out of their `addLayer` calls so a test
+ * can run Mapbox's own style validator over them.
+ *
+ * WHY THEY ARE UP HERE RATHER THAN INLINE. A layer whose paint the style spec
+ * rejects throws out of `addLayer` and is simply never added. The map keeps
+ * working and nothing on screen reports a missing layer, so the failure is
+ * visible only in the browser console — which is how the core circles came to
+ * be rejected while the halo beneath them was accepted: crashes drew as blurred
+ * halos with no dot in the middle, and hover and selection on that layer did
+ * nothing at all. An empty layer and an absent one look identical, and crash
+ * data is California-only today, so most workspaces could never have noticed.
+ *
+ * Inline expressions cannot be reached from a test. These can — see
+ * `cartographic-crash-layer-paint.test.ts`, which validates them exactly as the
+ * browser does and turns a console message into a failed build.
+ */
+export const CRASH_HALO_CIRCLE_PAINT = {
+  "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 6, 11, 12],
+  "circle-color": CRASH_SEVERITY_PAINT,
+  "circle-opacity": 0.18,
+  "circle-blur": 0.8,
+} satisfies mapboxgl.CircleLayerSpecification["paint"];
+
+export const CRASH_CORE_CIRCLE_PAINT = {
+  /*
+    `interpolate` on ["zoom"] MUST be the top-level expression.
+
+    This read `case(selected, 9, interpolate(zoom, …))`, putting the zoom
+    expression inside a branch, which Mapbox rejects: "zoom expression may only
+    be used as input to a top-level step or interpolate".
+
+    Inverting the nesting preserves the behaviour exactly — selected stays 9 at
+    every zoom, unselected still runs 3.5 → 7 across zoom 5 → 11. Interpolate
+    output stops may be data-driven, so `feature-state` is legal here.
+  */
+  "circle-radius": [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    5,
+    ["case", ["boolean", ["feature-state", "selected"], false], 9, 3.5],
+    11,
+    ["case", ["boolean", ["feature-state", "selected"], false], 9, 7],
+  ],
+  "circle-color": CRASH_SEVERITY_PAINT,
+  "circle-stroke-color": "#ffffff",
+  "circle-stroke-width": ["case", ["boolean", ["feature-state", "selected"], false], 2.5, 1],
+  "circle-opacity": 0.95,
+} satisfies mapboxgl.CircleLayerSpecification["paint"];
+
 // The project-area fill. Same green family as the project marker but far lighter
 // — the area is context for the work, not a competing figure.
 const PROJECT_AREA_COLOR = "#4f8a7b";
@@ -1396,12 +1447,7 @@ export function CartographicMapBackdrop({
             id: CRASHES_HALO_LAYER_ID,
             type: "circle",
             source: CRASHES_SOURCE_ID,
-            paint: {
-              "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 6, 11, 12],
-              "circle-color": CRASH_SEVERITY_PAINT,
-              "circle-opacity": 0.18,
-              "circle-blur": 0.8,
-            },
+            paint: CRASH_HALO_CIRCLE_PAINT,
           },
           beforeId,
         );
@@ -1413,23 +1459,7 @@ export function CartographicMapBackdrop({
             id: CRASHES_CORE_LAYER_ID,
             type: "circle",
             source: CRASHES_SOURCE_ID,
-            paint: {
-              "circle-radius": [
-                "case",
-                ["boolean", ["feature-state", "selected"], false],
-                9,
-                ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7],
-              ],
-              "circle-color": CRASH_SEVERITY_PAINT,
-              "circle-stroke-color": "#ffffff",
-              "circle-stroke-width": [
-                "case",
-                ["boolean", ["feature-state", "selected"], false],
-                2.5,
-                1,
-              ],
-              "circle-opacity": 0.95,
-            },
+            paint: CRASH_CORE_CIRCLE_PAINT,
           },
           beforeId,
         );
