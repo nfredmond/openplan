@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_PALETTE, PALETTES, normalizePalette } from "@/lib/theme/palettes";
+import { stripSourceComments } from "./helpers/source-text";
 
 /**
  * Comments are stripped before anything is scanned.
@@ -13,10 +14,16 @@ import { DEFAULT_PALETTE, PALETTES, normalizePalette } from "@/lib/theme/palette
  * specificity rule. A guard that reads prose as if it were code is the defect
  * this repo has hit before in the other direction, where a comment made a check
  * PASS. Same root cause: match the artifact, not the paragraph about it.
+ *
+ * It uses the SHARED stripper rather than a local regex. A private one here was
+ * the fifth implementation in `src/test/`, and the whole argument for
+ * consolidating them is that a guard should not carry its own opinion about
+ * what counts as code. CSS passes through it safely: a stylesheet has no `//`
+ * comments, so the only `//` it can contain is inside a URL, which the helper's
+ * `://` protection already covers.
  */
-const GLOBALS_CSS = readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8").replace(
-  /\/\*[\s\S]*?\*\//g,
-  ""
+const GLOBALS_CSS = stripSourceComments(
+  readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8")
 );
 
 /**
