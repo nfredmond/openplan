@@ -256,10 +256,25 @@ html.dark .op-cart-rail__btn.is-active {
   left: 92px;
   right: calc(272px + var(--cp-reserved, 0px));
   z-index: 30;
-  display: flex;
+  /* Three columns, not a flex row: workspace on the left, search CENTRED in the
+     window, actions flush right. As a flex row the search drifted with the
+     length of the workspace name, and the actions floated wherever the leftover
+     space put them. The outer columns are equal-weight so the middle one is
+     genuinely centred rather than merely "after" the first. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 520px) minmax(0, 1fr);
   gap: 12px;
   align-items: center;
   transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.op-cart-hdr > .op-cart-pill:first-child {
+  justify-self: start;
+}
+.op-cart-hdr__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: end;
 }
 .op-cart-rail:hover ~ .op-cart-hdr,
 .op-cart-rail:focus-within ~ .op-cart-hdr {
@@ -291,11 +306,9 @@ html.dark .op-cart-rail__btn.is-active {
 }
 
 .op-cart-search {
-  /* Shrinks, but not to nothing: below this the placeholder is unreadable and
-     the pill reads as a stray box rather than a search. */
-  flex: 1 1 180px;
-  min-width: 132px;
-  max-width: 480px;
+  /* Owns the centre column; the grid decides its width, not flex leftovers. */
+  width: 100%;
+  min-width: 0;
   padding-right: 6px;
   font: inherit;
   color: var(--ink);
@@ -321,7 +334,12 @@ html.dark .op-cart-rail__btn.is-active {
 .op-cart-surface {
   position: fixed;
   top: 84px;
-  bottom: 80px;
+  /* Matches the left/right inset. The old 80px reserved a strip for the account
+     card and the Planner Agent button, which float ABOVE the surface anyway —
+     so it bought nothing and left the page short of the window. The content
+     area pads itself by the same amount instead, so neither control ever sits
+     on top of something you are reading. */
+  bottom: 16px;
   left: 92px;
   right: calc(272px + var(--cp-reserved, 0px));
   z-index: 20;
@@ -336,6 +354,21 @@ html.dark .op-cart-rail__btn.is-active {
   flex-direction: column;
   transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
+/* THE MAP CONTROLS RESERVE THAT SPACE, SO THEIR ABSENCE MUST RELEASE IT.
+
+   `right: 272px` was a fixed gutter for the layers panel and legend. Once those
+   render only on map surfaces, every records page kept an empty 272px strip of
+   map down its right edge and squeezed its own content — the header included,
+   which is what made the search pill wrap.
+
+   Keyed off `:has()` rather than a route list on purpose: the gutter exists
+   because of the panel, so it should follow the PANEL, not a second copy of the
+   routing rule that could drift from the first. */
+.op-cart-shell:not(:has(.op-cart-layers)) .op-cart-surface,
+.op-cart-shell:not(:has(.op-cart-layers)) .op-cart-hdr {
+  right: calc(16px + var(--cp-reserved, 0px));
+}
+
 .op-cart-rail:hover ~ .op-cart-surface,
 .op-cart-rail:focus-within ~ .op-cart-surface {
   left: 252px;
@@ -372,6 +405,10 @@ html.dark .op-cart-rail__btn.is-active {
   flex: 1;
   overflow-y: auto;
   padding: 16px 20px 20px;
+  /* AFTER the shorthand, which would otherwise reset it. Clears the floating
+     account card (bottom-left) and Planner Agent button (bottom-right) now that
+     the surface runs the full height of the window. */
+  padding-bottom: 76px;
 }
 .op-cart-surface__body::-webkit-scrollbar {
   width: 6px;
@@ -965,5 +1002,58 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
      go, since the shortcut still works and the icon still reads as search. */
   .op-cart-kbd {
     display: none;
+  }
+}
+
+/* ---------- THE RAIL MUST NOT SCROLL ----------
+   Nineteen destinations at 44px apiece is 836px of nav, which does not fit a
+   1366×768 laptop — the rail grew a scrollbar, and a scrollbar inside a 60px
+   icon strip is both ugly and hard to use. Navigation is the one thing that
+   should never be behind a scroll.
+
+   So the rail compresses with the viewport instead. The group titles are the
+   first thing to go: they are already invisible while the rail is collapsed
+   (opacity 0) yet still occupied 14px each, so collapsing their height costs
+   nothing and buys ~50px. They come back on hover, where the rail is expanded
+   and there is room. */
+@media (max-height: 980px) {
+  .op-cart-rail__btn {
+    height: 34px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+  }
+}
+
+@media (max-height: 880px) {
+  .op-cart-rail__btn {
+    height: 30px;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  .op-cart-rail__group-title {
+    height: 0;
+    margin-top: 6px;
+    margin-bottom: 0;
+    overflow: hidden;
+  }
+  .op-cart-rail:hover .op-cart-rail__group-title,
+  .op-cart-rail:focus-within .op-cart-rail__group-title {
+    height: 14px;
+    margin: 8px 18px 4px;
+  }
+}
+
+@media (max-height: 780px) {
+  .op-cart-rail__btn {
+    height: 27px;
+  }
+  .op-cart-rail__logo {
+    margin: 8px 12px 2px;
+  }
+}
+
+@media (max-height: 680px) {
+  .op-cart-rail__btn {
+    height: 24px;
   }
 }

@@ -20,6 +20,15 @@ import {
 } from "@/lib/stage-gates/rebind";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
+import { DashboardInsights } from "@/components/dashboard/dashboard-insights";
+import { DashboardViewSwitch } from "@/components/dashboard/dashboard-view-switch";
+import {
+  lanePressure,
+  medianOverallScore,
+  recentOverallScores,
+  reportsGenerated,
+  runsPerMonth,
+} from "@/lib/dashboard/insights";
 import {
   buildWorkspaceOperationsSummaryFromSourceRows,
   loadWorkspaceOperationsSummaryForWorkspace,
@@ -287,6 +296,81 @@ export default async function DashboardPage() {
     },
   ];
 
+  /*
+    THE INSIGHTS VIEW reads the SAME rows this page already loaded — `runsData`
+    and `operationsSummary`. It issues no query of its own, so switching views
+    cannot show a different workspace from the one the overview describes, and
+    costs nothing.
+  */
+  const insightsTiles = [
+    {
+      label: "Analysis runs",
+      value: `${kpis.totalRuns || 0}`,
+      detail: `${kpis.completedRuns} completed`,
+      tone: (kpis.totalRuns > 0 ? "good" : "neutral") as "good" | "neutral" | "attention",
+    },
+    {
+      label: "Reports generated",
+      value: `${reportsGenerated(runsData)}`,
+      detail: `${kpis.runsWithReports}/${kpis.totalRuns || 0} runs exported`,
+      tone: "neutral" as const,
+    },
+    {
+      label: "Median composite",
+      value: medianOverallScore(runsData) === null ? "Not scored" : `${medianOverallScore(runsData)}`,
+      // Screening-grade framing travels with the number, exactly as it does on
+      // the run itself. A median composite on a dashboard is still not a forecast.
+      detail: "Screening-grade. Not comparable across study areas.",
+      tone: "neutral" as const,
+    },
+    {
+      label: "Queued across lanes",
+      value: `${operationsSummary.counts.queueDepth}`,
+      detail: "Open items the command board is tracking",
+      tone: (operationsSummary.counts.queueDepth > 0 ? "attention" : "good") as
+        | "good"
+        | "neutral"
+        | "attention",
+    },
+  ];
+
+  const insightLanes = [
+    {
+      label: "RTP packets",
+      value: operationsSummary.counts.rtpFundingReviewPackets,
+      detail: "RTP packets awaiting funding review",
+    },
+    {
+      label: "Grants",
+      value: operationsSummary.counts.openFundingOpportunities,
+      detail: "Open funding opportunities",
+    },
+    {
+      label: "Funding gaps",
+      value: operationsSummary.counts.projectFundingGapProjects,
+      detail: "Projects carrying a funding gap",
+    },
+    {
+      label: "Reports",
+      value: operationsSummary.counts.reportRefreshRecommended + operationsSummary.counts.reportNoPacket,
+      detail: "Report packets to generate or refresh",
+    },
+    {
+      label: "Aerial",
+      value: operationsSummary.counts.aerialActiveMissions,
+      detail: "Active aerial missions",
+    },
+  ];
+
+  const insightsView = (
+    <DashboardInsights
+      tiles={insightsTiles}
+      runsPerMonth={runsPerMonth(runsData)}
+      recentScores={recentOverallScores(runsData)}
+      lanePressure={lanePressure(insightLanes)}
+    />
+  );
+
   // A brand-new user lands here on an auto-provisioned but empty workspace (the
   // handle_new_user trigger creates the workspace on sign-up). Guide them with a
   // stateful first-run checklist until they have real activity in any core lane.
@@ -307,8 +391,8 @@ export default async function DashboardPage() {
     <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
   );
 
-  return (
-    <section className="module-page">
+  const overviewView = (
+    <>
       {isFirstRun ? (
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 dark:bg-primary/10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Get started</p>
@@ -413,6 +497,16 @@ export default async function DashboardPage() {
       </div>
 
       <RunHistory workspaceId={workspaceId} />
+    </>
+  );
+
+  return (
+    <section className="module-page">
+      {/* Two readings of one workspace. Overview stays the default; see
+          `DashboardViewSwitch` for why the choice is per-browser and not in the
+          URL. Both are rendered here and one is hidden — the data is already
+          loaded, so a switch should not cost a request. */}
+      <DashboardViewSwitch overview={overviewView} insights={insightsView} />
 
       {/* Last, and always. A self-hosted instance that cannot name its own
           version makes every bug report unanswerable — see `app-version.ts`. */}

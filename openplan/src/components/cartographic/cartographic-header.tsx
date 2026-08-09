@@ -67,17 +67,25 @@ export function CartographicHeader({
         </button>
 
         {/*
-          Appearance sits in the header, not the 60px rail, because "prominent"
-          and "hidden behind a hover-expand" are not compatible. Light/dark is
-          the setting a planner reaches for most — bright room, projector, board
+          Appearance and the primary action travel together as ONE right-hand
+          group, so the header reads as three things — who you are, what you are
+          looking for, what you can do — rather than four competing items. The
+          search sits in the middle column and stays centred in the window
+          whatever the workspace name's length.
+
+          Appearance is here and not in the 60px rail because "prominent" and
+          "hidden behind a hover-expand" are not compatible. Light/dark is the
+          setting a planner reaches for most — bright room, projector, board
           presentation — and it used to be an unlabelled 14px glyph.
         */}
-        <ThemeControls className="op-cart-appearance" />
+        <div className="op-cart-hdr__actions">
+          <ThemeControls className="op-cart-appearance" />
 
-        <button type="button" className="op-cart-btn op-cart-btn--primary" onClick={handleNewRun}>
-          <Plus size={14} strokeWidth={2} />
-          New run
-        </button>
+          <button type="button" className="op-cart-btn op-cart-btn--primary" onClick={handleNewRun}>
+            <Plus size={14} strokeWidth={2} />
+            New run
+          </button>
+        </div>
       </header>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
