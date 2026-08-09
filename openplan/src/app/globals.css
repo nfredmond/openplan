@@ -78,6 +78,21 @@
 
   /* Legacy pre-cartographic aliases — remapped to cartographic equivalents so existing CSS still themes. */
   --pine: var(--accent-2);
+  /*
+    THE INK THAT GOES ON --pine, because `color: white` on it was a bug.
+
+    `--pine` is the palette's secondary accent, and it inverts with the mode: a
+    DARK teal/green/violet in light mode, a LIGHT mint/lime/lilac in dark mode.
+    Hardcoding white was therefore only ever correct in light mode, and only by
+    accident. Measured on the landing page's primary sign-up button under the
+    Meadow palette in dark mode: white on #bef264 is 1.31:1, against a 4.5:1
+    floor — the front door's main call to action, effectively unreadable.
+
+    One value per MODE covers every palette, because all five put a dark
+    secondary accent in light mode and a light one in dark mode. If a future
+    palette breaks that pattern, it overrides this token in its own block.
+  */
+  --pine-ink: #ffffff;
   --pine-deep: #154940;
   --copper: var(--accent);
   --sand: var(--map-1);
@@ -160,6 +175,8 @@
 
   /* Legacy aliases (dark) */
   --pine: var(--accent-2);
+  /* Dark mode puts a LIGHT colour on --pine, so its ink is near-black. */
+  --pine-ink: #14181a;
   --pine-deep: #a8d9b8;
   --copper: var(--accent);
   --sand: var(--map-1);
@@ -442,7 +459,7 @@
     padding: 0.45rem 0.8rem;
     font-size: 0.875rem;
     font-weight: 700;
-    color: white;
+    color: var(--pine-ink);
     transition:
       background-color 180ms ease,
       color 180ms ease,
@@ -2989,7 +3006,8 @@
 
 .public-primary-link {
   background: var(--pine);
-  color: white;
+  /* Paired with the background rather than assumed — see --pine-ink. */
+  color: var(--pine-ink);
 }
 
 .public-primary-link:hover {

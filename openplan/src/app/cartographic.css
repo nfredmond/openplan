@@ -46,14 +46,11 @@
 }
 .op-cart-btn--primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-foreground);
   border-color: var(--accent);
 }
 .op-cart-btn--primary:hover {
   filter: brightness(0.96);
-}
-html.dark .op-cart-btn--primary {
-  color: #1a1a1a;
 }
 .op-cart-btn--icon {
   width: 30px;
@@ -186,10 +183,7 @@ html.dark .op-cart-rail__btn:hover {
 }
 .op-cart-rail__btn.is-active {
   background: var(--accent);
-  color: #fff;
-}
-html.dark .op-cart-rail__btn.is-active {
-  color: #1a1a1a;
+  color: var(--accent-foreground);
 }
 .op-cart-rail__btn--ghost {
   cursor: default;
@@ -206,7 +200,7 @@ html.dark .op-cart-rail__btn.is-active {
   height: 14px;
   border-radius: 8px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-foreground);
   font-family: var(--font-mono);
   font-size: 9.5px;
   font-weight: 700;
@@ -666,7 +660,7 @@ html.dark .op-cart-layer-item:hover {
   height: 44px;
   border-radius: 10px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-foreground);
   display: grid;
   place-items: center;
   font-weight: 600;
