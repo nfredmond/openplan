@@ -19,6 +19,7 @@ import { CartographicZoomControls } from "./cartographic-zoom-controls";
 import { CartographicHeader } from "./cartographic-header";
 import { CartographicInspectorDockConnected } from "./cartographic-inspector-dock-connected";
 import { CartographicLayersPanel } from "./cartographic-layers-panel";
+import { MapSurfaceOnly } from "./map-surface-only";
 import { CartographicMapBackdrop } from "./cartographic-map-backdrop";
 import { CartographicMapLegend } from "./cartographic-map-legend";
 import { CartographicOverviewSurface } from "./cartographic-overview-surface";
@@ -130,9 +131,18 @@ export async function CartographicShell({ children }: { children: React.ReactNod
           {showOnboarding ? <OnboardingWizard defaultWorkspaceName={orgNameHint} /> : children}
         </CartographicOverviewSurface>
 
-        <CartographicLayersPanel workspaceId={membership?.workspace_id ?? null} />
+        {/*
+          The map stays behind every page; its CONTROLS do not. See
+          `lib/navigation/map-surfaces` — a layers panel on the RTP registry
+          covered the Planning System card with checkboxes for a map nobody was
+          reading, and the legend explained symbols for layers that page cannot
+          toggle.
+        */}
+        <MapSurfaceOnly>
+          <CartographicLayersPanel workspaceId={membership?.workspace_id ?? null} />
 
-        <CartographicMapLegend />
+          <CartographicMapLegend />
+        </MapSurfaceOnly>
 
         <CartographicInspectorDockConnected />
 
