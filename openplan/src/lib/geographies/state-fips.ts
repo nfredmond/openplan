@@ -144,3 +144,50 @@ export function splitStateQualifier(raw: string): StateQualifiedQuery {
   const stateFips = stateFipsFromUsps(tail) ?? stateFipsFromName(tail);
   return stateFips ? { name: head, stateFips } : { name: trimmed, stateFips: null };
 }
+
+/**
+ * The longest state name, in whitespace-separated words ("District of
+ * Columbia"). Bounds how far back a comma-less split will look.
+ */
+const MAX_STATE_NAME_WORDS = 3;
+
+/**
+ * Split a trailing state qualifier written WITHOUT a comma: "Reno NV" →
+ * `{ name: "Reno", stateFips: "32" }`, "Columbus New Mexico" →
+ * `{ name: "Columbus", stateFips: "35" }`.
+ *
+ * WHY THIS IS SEPARATE FROM `splitStateQualifier`, AND WHY CALLERS MUST TREAT IT
+ * AS A FALLBACK RATHER THAN A PARSE. A comma is an explicit separator, so
+ * splitting on it is a reading of what the planner wrote. A space is not: the
+ * last word of a place name can itself be a state name, and there are real US
+ * places where it is — "New Washington, IN", "Virginia Beach, VA", "Nevada, IA".
+ * Applying this eagerly would rewrite "New Washington" into a search for "New"
+ * restricted to Washington State and quietly return the wrong geography for a
+ * query that works correctly today.
+ *
+ * So the contract is: try the literal query first, and only reach for this when
+ * it found NOTHING. There, a guess can add results but can never displace
+ * correct ones — which is the only condition under which guessing is honest.
+ *
+ * Longer tails are tried first so a two-word state wins over the one-word tail
+ * hiding inside it: "West Virginia" must not resolve as "Virginia".
+ */
+export function splitTrailingStateWords(raw: string): StateQualifiedQuery {
+  const trimmed = raw.trim();
+  // A comma-bearing query is `splitStateQualifier`'s to read, not this one's.
+  if (trimmed.includes(",")) return { name: trimmed, stateFips: null };
+
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  for (let take = MAX_STATE_NAME_WORDS; take >= 1; take -= 1) {
+    // Must leave a non-empty place name behind: "Ohio" on its own is a place
+    // query, not a state qualifier with nothing attached to it.
+    if (tokens.length <= take) continue;
+
+    const head = tokens.slice(0, tokens.length - take).join(" ");
+    const tail = tokens.slice(tokens.length - take).join(" ");
+    const stateFips = stateFipsFromUsps(tail) ?? stateFipsFromName(tail);
+    if (stateFips) return { name: head, stateFips };
+  }
+
+  return { name: trimmed, stateFips: null };
+}

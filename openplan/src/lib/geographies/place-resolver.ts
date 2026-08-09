@@ -15,7 +15,7 @@ import { fetchJsonWithRetry } from "@/lib/data-sources/http";
 import { bboxFromGeojson } from "@/lib/data-sources/census";
 import { corridorGeojsonSchema, type CorridorGeojson } from "@/lib/models/run-launch";
 import { searchUsCounties } from "@/lib/geographies/us-counties";
-import { splitStateQualifier, stateUspsFromFips } from "@/lib/geographies/state-fips";
+import { splitStateQualifier, splitTrailingStateWords, stateUspsFromFips } from "@/lib/geographies/state-fips";
 import type { PlaceKind } from "@/lib/api/place-geographies";
 
 export type { PlaceKind } from "@/lib/api/place-geographies";
@@ -573,6 +573,32 @@ export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearc
     }));
 
   const searchUnavailable = unavailableKinds.length === ALL_PLACE_KINDS.length;
+
+  /*
+    "Reno NV" — the comma-less form — found nothing until this existed.
+
+    `splitStateQualifier` reads ", XX" and nothing else, so a query written the
+    way people usually type it reached TIGERweb as `LIKE 'RENO NV%'` and matched
+    no place in the country. The picker then told a planner searching for their
+    own city that there were no results, which is the one thing the study-area
+    front door must never say about a place that exists.
+
+    It is retried rather than parsed up front because a space is not a
+    separator — see `splitTrailingStateWords`. Retrying only on a genuinely
+    empty result means this can add the missing answer but can never displace a
+    correct one. The rewritten query carries a comma, so the retry cannot
+    recurse a second time.
+  */
+  if (items.length === 0 && !searchUnavailable) {
+    const spaced = splitTrailingStateWords(trimmed);
+    const usps = stateUspsFromFips(spaced.stateFips);
+    if (spaced.stateFips && usps && spaced.name) {
+      const retried = await searchPlaces(`${spaced.name}, ${usps}`, limit);
+      if (retried.items.length > 0) {
+        return { ...retried, unavailableKinds, searchUnavailable };
+      }
+    }
+  }
 
   return {
     items,

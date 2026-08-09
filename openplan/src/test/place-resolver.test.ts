@@ -543,3 +543,116 @@ describe("searchPlaces — ranking same-named places", () => {
     expect(fetchJsonWithRetryMock).toHaveBeenCalled();
   });
 });
+
+/**
+ * The comma-less form, which is how people actually type a place.
+ *
+ * Found by driving the study-area picker as a first-time planner: "Reno NV",
+ * "Austin TX" and "Columbus OH" each returned an empty list, because
+ * `splitStateQualifier` reads only ", XX" and the query reached TIGERweb as
+ * `LIKE 'RENO NV%'`. The picker rendered that as "no matching places" for
+ * cities that plainly exist — the study-area front door denying a real US
+ * geography, which is the failure this product forbids above all others.
+ *
+ * The retry is deliberately narrow, and the second test is the load-bearing
+ * one: a space is not a separator, so this may only fire when the literal
+ * query found NOTHING.
+ */
+describe("searchPlaces — a state written without a comma", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    searchUsCountiesMock.mockResolvedValue({ items: [], availability: "ok" as const, unavailableReason: null });
+  });
+
+  /** Answers the incorporated-place layer only when scoped to `stateFips`. */
+  function onlyWhenScopedTo(stateFips: string, feature: Record<string, unknown>) {
+    return (url: string) => {
+      const { service, layer } = tigerRoute(url);
+      const decoded = decodeURIComponent(url).replace(/\+/g, " ");
+      if (service === "current" && layer === "28" && decoded.includes(`STATE='${stateFips}'`)) {
+        return Promise.resolve({ features: [{ attributes: feature }] });
+      }
+      return Promise.resolve({ features: [] });
+    };
+  }
+
+  it("finds the city when the state is written with a space instead of a comma", async () => {
+    fetchJsonWithRetryMock.mockImplementation(
+      onlyWhenScopedTo("32", { GEOID: "3260600", NAME: "Reno city", BASENAME: "Reno", STATE: "32" }),
+    );
+
+    const outcome = await searchPlaces("Reno NV");
+
+    expect(outcome.items.map((item) => item.label)).toContain("Reno, NV");
+  });
+
+  it("reads a spelled-out multi-word state", async () => {
+    fetchJsonWithRetryMock.mockImplementation(
+      onlyWhenScopedTo("35", { GEOID: "3517050", NAME: "Columbus village", BASENAME: "Columbus", STATE: "35" }),
+    );
+
+    const outcome = await searchPlaces("Columbus New Mexico");
+
+    expect(outcome.items.map((item) => item.label)).toContain("Columbus, NM");
+  });
+
+  /**
+   * The discriminating case for trying LONGER tails first, and the reason the
+   * loop counts down. "West Virginia" ends in "Virginia", which is itself a
+   * state: a shortest-tail-first reading sends someone looking for the capital
+   * of West Virginia (FIPS 54) to Virginia (FIPS 51) instead — a wrong answer
+   * that looks entirely plausible on screen.
+   *
+   * A "New Mexico" fixture cannot prove this, because "Mexico" is not a state
+   * and both orderings therefore agree. Only a tail whose own last word is a
+   * different state can tell the two apart.
+   */
+  it("prefers the longest state name when its last word is also a state", async () => {
+    fetchJsonWithRetryMock.mockImplementation(
+      onlyWhenScopedTo("54", { GEOID: "5414600", NAME: "Charleston city", BASENAME: "Charleston", STATE: "54" }),
+    );
+
+    const outcome = await searchPlaces("Charleston West Virginia");
+
+    // Scoped to West Virginia (54). Had it read "Virginia" (51), the mock would
+    // have answered nothing and this would be an empty list.
+    expect(outcome.items.map((item) => item.label)).toEqual(["Charleston, WV"]);
+  });
+
+  /**
+   * THE GUARD THAT MATTERS. "New Washington" is a real town in Indiana, Ohio
+   * and Pennsylvania whose own last word is a state name. If the split were
+   * applied eagerly rather than as a zero-result fallback, this query would be
+   * rewritten into a search for "New" restricted to Washington State and would
+   * return someone else's geography for a search that works correctly today.
+   */
+  it("never re-reads a query that already found something", async () => {
+    const scopedCalls: string[] = [];
+    fetchJsonWithRetryMock.mockImplementation((url: string) => {
+      const { service, layer } = tigerRoute(url);
+      const decoded = decodeURIComponent(url).replace(/\+/g, " ");
+      if (decoded.includes("STATE=")) scopedCalls.push(decoded);
+      if (service === "current" && layer === "28") {
+        return Promise.resolve({
+          features: [{ attributes: { GEOID: "1854180", NAME: "New Washington town", BASENAME: "New Washington", STATE: "18" } }],
+        });
+      }
+      return Promise.resolve({ features: [] });
+    });
+
+    const outcome = await searchPlaces("New Washington");
+
+    expect(outcome.items.map((item) => item.label)).toEqual(["New Washington, IN"]);
+    // No state-scoped retry happened at all: the first search answered.
+    expect(scopedCalls).toEqual([]);
+  });
+
+  it("still reports a real empty result as empty rather than inventing a state", async () => {
+    fetchJsonWithRetryMock.mockResolvedValue({ features: [] });
+
+    const outcome = await searchPlaces("Nowhereville XZ");
+
+    expect(outcome.items).toEqual([]);
+    expect(outcome.searchUnavailable).toBe(false);
+  });
+});
