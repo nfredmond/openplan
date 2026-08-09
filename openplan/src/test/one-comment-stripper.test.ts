@@ -53,12 +53,13 @@ const PRIVATE_STRIPPER = /replace\(\s*\/\\\/\\\*\[\\s\\S\]\*\?\\\*\\\/\/[a-z]*\s
  * is legible rather than uniform.
  */
 const KNOWN_PRIVATE_STRIPPERS: Record<string, { blockOnly: boolean; lane: string }> = {
-  "src/test/pdf-writer-confinement-guard.test.ts": { blockOnly: true, lane: "reports" },
-  "src/test/report-packet-carries-both-representativeness-signals.test.ts": {
-    blockOnly: false,
-    lane: "reports",
-  },
-  "src/test/helpers/read-error-detectors.ts": { blockOnly: true, lane: "shared test infra" },
+  // EMPTY, as of 2026-08-09. All eleven private strippers are migrated: four
+  // in c135c42d, four by the concurrent session in d5e68a1d, three here.
+  //
+  // An empty list is the point of a shrink-only ratchet, not a reason to delete
+  // it — the guard's job now is to keep it empty. Adding an entry back is
+  // allowed only with the reason written down; reaching for one usually means
+  // the shared helper needs a case, not that a file needs its own copy.
 };
 
 function sourceFiles(dir: string): string[] {

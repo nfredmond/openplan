@@ -1,3 +1,4 @@
+import { stripSourceComments } from "@/test/helpers/source-text";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -44,11 +45,7 @@ function otherProductFiles(): string[] {
  * thing in it. Same convention as `crash-source-token-guard.test.ts`.
  */
 function codeOf(file: string): string {
-  return readFileSync(file, "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .split("\n")
-    .filter((line) => !/^\s*(?:\/\/|\*)/.test(line))
-    .join("\n");
+  return stripSourceComments(readFileSync(file, "utf8"));
 }
 
 /** Structural markers only a PDF assembler emits. */

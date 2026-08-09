@@ -1,3 +1,4 @@
+import { stripSourceComments } from "@/test/helpers/source-text";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -278,7 +279,7 @@ describe("the report generator's own reach into the self-reported aggregate", ()
    * satisfied it: the column could be deleted from both `.select()` strings and
    * this file stayed green, which is the one thing it exists to prevent.
    */
-  const sourceWithoutComments = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  const sourceWithoutComments = stripSourceComments(source);
 
   it("cannot read one representativeness signal into a packet without the other", () => {
     // These Supabase clients are untyped on purpose, so a column left out of a

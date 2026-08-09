@@ -1,3 +1,4 @@
+import { stripSourceComments } from "./source-text";
 /**
  * THE DETECTORS BEHIND "A … MAY NOT DISCARD A READ ERROR".
  *
@@ -52,11 +53,9 @@ import { describe, expect, it } from "vitest";
  * real lexer, because `"https://…"` would go with it.
  */
 export function blankComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "))
-    .split("\n")
-    .map((line) => (line.trim().startsWith("//") ? " ".repeat(line.length) : line))
-    .join("\n");
+  // Delegates: same blank-don't-delete behaviour, plus TRAILING comments,
+  // which this copy missed.
+  return stripSourceComments(source);
 }
 
 /** Identifiers are matched by name, and `$` is legal in one but special in a regex. */
