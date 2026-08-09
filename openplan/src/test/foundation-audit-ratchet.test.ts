@@ -1514,3 +1514,82 @@ describe("the claim-tier pass is accounted for", () => {
     }
   });
 });
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* THE RUN-WRITEBACK PASS — 2026-08-09                                        */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * THE SECOND AREA MEASURED THAT WAS ALREADY SOLID, after the CEQA path.
+ *
+ * `model-run-writeback.test.ts` is one of the oldest modeling-lane tests still
+ * in the suite (last touched 2026-04-30) and it was chosen for exactly that
+ * reason: CLAUDE.md's audit order ranks "a mutation sample of the oldest,
+ * highest-stakes tests, to convert a feeling into a number" above new
+ * capability, and every area adversarially reviewed before this week had been
+ * NEW code — the opposite of where the risk sits.
+ *
+ * WHAT IT GUARDS, and why it counts as high-stakes rather than housekeeping:
+ * when a model run is promoted to a scenario entry, or attached to one at
+ * launch, every report whose basis is that scenario must be marked stale. If
+ * that does not fire, a report keeps citing a run that has been superseded and
+ * says nothing about it — a claim standing on evidence that moved underneath
+ * it, which is the same failure the claim-tier firewall exists to prevent, one
+ * layer out.
+ *
+ * SEVEN MUTATIONS, SEVEN KILLED. Not a broad sample — this is one test file
+ * against two routes — but the mutations were chosen to be the ones that
+ * matter rather than the ones that are easy: suppressing the staleness write
+ * entirely on each of the two paths, passing the WRONG scenario set (which
+ * would mark a different scenario's reports and leave the right ones fresh),
+ * dropping the workspace scope (cross-tenant staleness), dropping the runId
+ * from the record, turning a tolerated stale-write failure into a 500, and
+ * marking staleness when attachment was never requested.
+ *
+ * A negative control (comment-only) was run first and SURVIVED, so the harness
+ * is known to be able to report one.
+ *
+ * NO SURVIVORS MEANS NO LEDGER ENTRY, and that is the honest outcome rather
+ * than a disappointing one: an old test can be good, and recording that is what
+ * makes the surviving-mutation counts elsewhere meaningful. Recorded as its own
+ * pass rather than averaged into the others, which would describe neither.
+ */
+const RUN_WRITEBACK_AUDIT = {
+  date: "2026-08-09",
+  mutationsRun: 7,
+  killed: 7,
+  survived: 0,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 0,
+};
+
+const RUN_WRITEBACK_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/app/api/models/[modelId]/runs/[modelRunId]/route.ts": { mutations: 5, survivors: 0 },
+  "src/app/api/models/[modelId]/runs/route.ts": { mutations: 2, survivors: 0 },
+};
+
+describe("the run-writeback pass is accounted for", () => {
+  it("adds up", () => {
+    expect(RUN_WRITEBACK_AUDIT.killed + RUN_WRITEBACK_AUDIT.survived).toBe(
+      RUN_WRITEBACK_AUDIT.mutationsRun
+    );
+    const perFile = Object.values(RUN_WRITEBACK_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      RUN_WRITEBACK_AUDIT.mutationsRun
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(
+      RUN_WRITEBACK_AUDIT.survived
+    );
+  });
+
+  it("still has the files and the test it measured", () => {
+    // A pass recorded against a file that no longer exists is a number about
+    // nothing. If a route moves, re-run the sample rather than editing the
+    // path — the measurement belongs to the code as it was mutated.
+    for (const file of Object.keys(RUN_WRITEBACK_AUDITED_PRODUCTION_FILES)) {
+      expect(existsSync(repoPath(file)), file).toBe(true);
+    }
+    expect(existsSync(repoPath("src/test/model-run-writeback.test.ts"))).toBe(true);
+  });
+});
