@@ -209,7 +209,12 @@ function givenARelaunchableRun() {
       error: null,
     });
     runMaybeSingleMock.mockResolvedValue({
-      data: { id: MODEL_RUN_ID, status: "failed" },
+      // `engine_key` is spelled out because the column is NOT NULL in the
+      // schema, so a row without one is a row the database cannot produce —
+      // and its DEFAULT is `deterministic_corridor_v1`, an in-process engine
+      // this route now refuses. A fixture omitting it was describing an
+      // aequilibrae run while carrying no evidence of being one.
+      data: { id: MODEL_RUN_ID, status: "failed", engine_key: "aequilibrae" },
       error: null,
     });
     runUpdateMock.mockResolvedValue({ data: { id: MODEL_RUN_ID }, error: null });
@@ -293,6 +298,28 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     });
     const sketchRes = await relaunchRun(request(), routeContext());
     expect(sketchRes.status).toBe(409);
+  });
+
+  it("refuses a deterministic run — the engine every legacy row defaulted to", async () => {
+    /**
+     * `model_runs.engine_key` is NOT NULL with DEFAULT
+     * `deterministic_corridor_v1`, so every row that predates the column reads
+     * as deterministic whatever engine actually produced it. The old denylist
+     * named only sketch_abm and ite_trip_generation, so all of those were
+     * relaunchable: the route would create AequilibraE stages, the worker
+     * claims stages BY NAME with no engine filter, and assignment outputs would
+     * land on a run labelled deterministic — the engine/provenance mismatch on
+     * a claim-boundary surface that this route's own comment forbids.
+     */
+    runMaybeSingleMock.mockResolvedValue({
+      data: { id: MODEL_RUN_ID, status: "failed", engine_key: "deterministic_corridor_v1" },
+      error: null,
+    });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(409);
+    expect(runUpdateMock).not.toHaveBeenCalled();
   });
 
   it("re-queues a failed behavioral_demand preflight (async engine), resetting its stages", async () => {

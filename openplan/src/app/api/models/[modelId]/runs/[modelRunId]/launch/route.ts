@@ -18,6 +18,7 @@ import {
   writeMatchedNoRows,
 } from "@/lib/http/write-outcome";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
+import { isWorkerExecutedRunMode, routeAcceptsRelaunchOfStatus } from "@/lib/models/run-modes";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   prepareWorkerZoneAttributes,
@@ -130,7 +131,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Model run not found" }, { status: 404 });
     }
 
-    if (modelRun.status === "running" || modelRun.status === "succeeded") {
+    // The same boundary the run card and the assistant offer read, so a control
+    // cannot render for a run this route will reject.
+    if (!routeAcceptsRelaunchOfStatus(modelRun.status)) {
       return NextResponse.json({ error: "Cannot launch a run that is already running or succeeded" }, { status: 400 });
     }
 
@@ -140,7 +143,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // missing corridor, and would write assignment outputs onto a run whose
     // engine_key still says sketch/trip-gen — an engine/provenance mismatch on
     // a claim-boundary surface. Relaunch those engines via POST /runs instead.
-    if (modelRun.engine_key === "sketch_abm" || modelRun.engine_key === "ite_trip_generation") {
+    //
+    // AN ALLOWLIST, CHANGED FROM A DENYLIST 2026-08-08 — a deliberate behaviour
+    // change, not a tidy-up. The denylist named `sketch_abm` and
+    // `ite_trip_generation` and therefore let `deterministic_corridor_v1`
+    // through, which is also in-process: `POST /runs` gives worker stages to
+    // aequilibrae and behavioral_demand ONLY. A deterministic run re-queued
+    // here would have AequilibraE stages created for it, the worker claims
+    // stages BY NAME with no engine filter, and assignment outputs would land
+    // on a run whose engine_key says deterministic — the exact mismatch the
+    // paragraph above forbids, reachable by calling this endpoint directly.
+    // An allowlist cannot acquire that hole again by someone adding an engine.
+    if (!isWorkerExecutedRunMode(modelRun.engine_key)) {
       return NextResponse.json(
         {
           error:

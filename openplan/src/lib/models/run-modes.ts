@@ -37,12 +37,29 @@ export function isWorkerExecutedRunMode(engineKey: string | null | undefined): b
 }
 
 /**
- * Run statuses the launch route will accept for a relaunch.
+ * Statuses the launch route REFUSES, and the boundary every human control
+ * shares with it.
  *
- * `succeeded` and `running` are refused there (400), and that refusal is what
- * makes this action safe to register: a run that has already produced a
- * screening gate cannot be re-rolled until the numbers land better. Keep this
- * in step with the route, and never widen it to `succeeded`.
+ * A run that is mid-flight cannot be re-queued underneath itself, and a
+ * SUCCEEDED run must not be re-queued at all: that refusal is what stops a run
+ * which already produced a screening gate being re-rolled until the numbers
+ * land better. Never widen this.
+ */
+export const RUN_STATUSES_REFUSED_BY_RELAUNCH = ["running", "succeeded"] as const;
+
+/** Whether the launch route will accept a relaunch of a run in this status. */
+export function routeAcceptsRelaunchOfStatus(status: string | null | undefined): boolean {
+  return !(RUN_STATUSES_REFUSED_BY_RELAUNCH as readonly string[]).includes(status ?? "");
+}
+
+/**
+ * Statuses the assistant is OFFERED a relaunch for — deliberately narrower than
+ * the route accepts.
+ *
+ * A `queued` run is one a person may reasonably retry by hand (it may be
+ * waiting on a worker that will never come), but an agent offering to re-queue
+ * something already queued is noise, not help. Narrowing an offer below a
+ * route's boundary is always safe; widening it past one never is.
  */
 export const RELAUNCHABLE_RUN_STATUSES = ["failed", "cancelled"] as const;
 

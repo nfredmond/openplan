@@ -30,7 +30,11 @@
  */
 import { describe, expect, it } from "vitest";
 import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
-import { RELAUNCHABLE_RUN_STATUSES } from "@/lib/models/run-modes";
+import {
+  RELAUNCHABLE_RUN_STATUSES,
+  RUN_STATUSES_REFUSED_BY_RELAUNCH,
+  routeAcceptsRelaunchOfStatus,
+} from "@/lib/models/run-modes";
 
 type RefusedModelingAction = {
   label: string;
@@ -192,6 +196,10 @@ describe("the registered modeling action stays as narrow as the argument for it"
     // the matchers to catch.
     expect(RELAUNCHABLE_RUN_STATUSES as readonly string[]).not.toContain("succeeded");
     expect(RELAUNCHABLE_RUN_STATUSES as readonly string[]).not.toContain("running");
+    // And the ROUTE itself must keep refusing it. Narrowing only the offer
+    // would leave the endpoint open to anything that calls it directly.
+    expect(RUN_STATUSES_REFUSED_BY_RELAUNCH as readonly string[]).toContain("succeeded");
+    expect(routeAcceptsRelaunchOfStatus("succeeded")).toBe(false);
   });
 
   it("is consented to by a person who saw which run it names", () => {

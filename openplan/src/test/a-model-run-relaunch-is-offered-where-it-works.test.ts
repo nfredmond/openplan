@@ -7,9 +7,11 @@ import type { ModelAssistantContext } from "@/lib/assistant/context";
 import {
   MANAGED_RUN_MODE_KEYS,
   RELAUNCHABLE_RUN_STATUSES,
+  RUN_STATUSES_REFUSED_BY_RELAUNCH,
   WORKER_EXECUTED_RUN_MODE_KEYS,
   isRelaunchableRunStatus,
   isWorkerExecutedRunMode,
+  routeAcceptsRelaunchOfStatus,
 } from "@/lib/models/run-modes";
 import type { AssistantQuickLink } from "@/lib/assistant/catalog";
 
@@ -161,34 +163,76 @@ describe("the offer does not appear where the route would refuse it", () => {
 });
 
 describe("the offer's conditions match the route's own refusals", () => {
-  it("never treats an engine the route rejects as worker-executed", () => {
+  it("gates the route on the SAME allowlist, not a denylist of its own", () => {
     /**
-     * The route refuses by DENYLIST and this offer allows by ALLOWLIST, which
-     * is deliberate — a route should refuse only what it is certain about, an
-     * offer should appear only where it will work. The asymmetry is safe in
-     * exactly one direction, and this asserts that direction: nothing the route
-     * explicitly rejects may be in the allowlist.
+     * The route used to refuse by denylist — `sketch_abm` and
+     * `ite_trip_generation` — which let `deterministic_corridor_v1` through.
+     * That engine is in-process too (`POST /runs` gives worker stages only to
+     * aequilibrae and behavioral_demand), the worker claims stages BY NAME with
+     * no engine filter, and assignment outputs would have landed on a run whose
+     * `engine_key` said deterministic. A denylist acquires that hole again
+     * every time an engine is added; an allowlist cannot.
      */
     const source = readFileSync(LAUNCH_ROUTE, "utf8");
-    const refusalBlock = /engine_key === "([^"]+)" \|\| \w+\.engine_key === "([^"]+)"/.exec(source);
-    expect(refusalBlock, "could not find the route's engine refusal").not.toBeNull();
+    expect(source).toContain("isWorkerExecutedRunMode(modelRun.engine_key)");
+    expect(source).toContain("routeAcceptsRelaunchOfStatus(modelRun.status)");
+    // The literal denylist must be gone, not merely bypassed.
+    expect(source).not.toContain('engine_key === "sketch_abm"');
+  });
 
-    const refused = [refusalBlock![1], refusalBlock![2]];
-    for (const engineKey of refused) {
-      expect(WORKER_EXECUTED_RUN_MODE_KEYS as readonly string[]).not.toContain(engineKey);
-      expect(isWorkerExecutedRunMode(engineKey), engineKey).toBe(false);
+  it("refuses every engine that is not worker-executed", () => {
+    for (const key of MANAGED_RUN_MODE_KEYS) {
+      const expected = (WORKER_EXECUTED_RUN_MODE_KEYS as readonly string[]).includes(key);
+      expect(isWorkerExecutedRunMode(key), key).toBe(expected);
+    }
+    // The three in-process engines, named so a future widening is loud.
+    for (const inProcess of ["sketch_abm", "ite_trip_generation", "deterministic_corridor_v1"]) {
+      expect(isWorkerExecutedRunMode(inProcess), inProcess).toBe(false);
     }
   });
 
-  it("never treats a status the route rejects as relaunchable", () => {
-    const source = readFileSync(LAUNCH_ROUTE, "utf8");
-    const statusRefusal = /status === "([^"]+)" \|\| \w+\.status === "([^"]+)"/.exec(source);
-    expect(statusRefusal, "could not find the route's status refusal").not.toBeNull();
-
-    for (const status of [statusRefusal![1], statusRefusal![2]]) {
-      expect(RELAUNCHABLE_RUN_STATUSES as readonly string[]).not.toContain(status);
-      expect(isRelaunchableRunStatus(status), status).toBe(false);
+  it("never offers a status the route would refuse", () => {
+    /**
+     * The offer is deliberately NARROWER than the route (it skips `queued`,
+     * which a person may reasonably retry by hand). Narrowing below a route's
+     * boundary is always safe; widening past one never is, and this is the
+     * assertion that keeps the relationship in that direction.
+     */
+    for (const status of RELAUNCHABLE_RUN_STATUSES) {
+      expect(routeAcceptsRelaunchOfStatus(status), status).toBe(true);
     }
+    for (const refused of RUN_STATUSES_REFUSED_BY_RELAUNCH) {
+      expect(routeAcceptsRelaunchOfStatus(refused), refused).toBe(false);
+      expect(isRelaunchableRunStatus(refused), refused).toBe(false);
+    }
+
+    /**
+     * NAMED LITERALLY, because the loop above derives its cases from the very
+     * list under test — deleting an entry deletes its own check. Verified by
+     * mutation: dropping `succeeded` from the refused set survived everything
+     * above. `succeeded` is the load-bearing one; a run that already produced a
+     * screening gate must never be re-queued, or the gate can be re-rolled
+     * until the numbers land.
+     */
+    expect(RUN_STATUSES_REFUSED_BY_RELAUNCH as readonly string[]).toContain("succeeded");
+    expect(RUN_STATUSES_REFUSED_BY_RELAUNCH as readonly string[]).toContain("running");
+    expect(routeAcceptsRelaunchOfStatus("succeeded")).toBe(false);
+  });
+
+  it("lets a person do at least what the agent is offered", () => {
+    /**
+     * The run card's relaunch button read `engineKey === "aequilibrae"` with no
+     * rationale, so a failed behavioral_demand run — fully supported by the
+     * route, the dispatcher and `workerRunStageNames` — had no control at all.
+     * The agent offer was WIDER than the human one, which is backwards.
+     */
+    const panel = readFileSync(
+      path.join(process.cwd(), "src/components/models/model-run-evidence-panel.tsx"),
+      "utf8"
+    );
+    expect(panel).toContain("isWorkerExecutedRunMode(engineKey)");
+    expect(panel).toContain("routeAcceptsRelaunchOfStatus(runStatus)");
+    expect(panel).not.toContain('engineKey === "aequilibrae" && runStatus');
   });
 
   it("keeps every allowlisted engine a real run mode", () => {

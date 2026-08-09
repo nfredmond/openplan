@@ -29,7 +29,11 @@ import {
   formatModelRunKpiValue,
 } from "@/lib/models/kpi-comparison";
 import type { BehavioralDemandComparison } from "@/lib/models/behavioral-kpi-comparison";
-import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import {
+  getManagedRunModeDefinition,
+  isWorkerExecutedRunMode,
+  routeAcceptsRelaunchOfStatus,
+} from "@/lib/models/run-modes";
 import type { ModelRunExecutionOutlook } from "@/lib/models/run-dispatch";
 
 type ModelRunComparisonCandidate = {
@@ -457,7 +461,24 @@ export function ModelRunEvidencePanel({
   const [crossEngineBlock, setCrossEngineBlock] = useState<CrossEngineComparisonBlock | null>(null);
 
   const canInspect = runStatus === "succeeded";
-  const canRelaunch = engineKey === "aequilibrae" && runStatus !== "running" && runStatus !== "succeeded";
+  /**
+   * THE SAME BOUNDARY THE ROUTE ENFORCES, rather than a third opinion about it.
+   *
+   * This read `engineKey === "aequilibrae"` with no comment, and it was the
+   * narrowest of three disagreeing notions of "which runs can be relaunched" —
+   * the route permitted more, and the assistant offer permitted more still. The
+   * consequence was a capability built end to end and reachable by nobody:
+   * `POST /runs` gives behavioral_demand worker stages, `workerRunStageNames`
+   * adds its ActivitySim preflight stage, and the launch route handles it — but
+   * a planner whose behavioral run failed had no button, and had to build a new
+   * run instead of retrying the one they configured.
+   *
+   * Sharing the predicates also restores an invariant that had quietly
+   * inverted: a person can now do at least what the Planner Agent can offer to
+   * do on their behalf.
+   */
+  const canRelaunch =
+    isWorkerExecutedRunMode(engineKey) && routeAcceptsRelaunchOfStatus(runStatus);
   const packetHref = `/api/models/${modelId}/runs/${modelRunId}/evidence-packet`;
   const runMode = useMemo(() => getManagedRunModeDefinition(engineKey), [engineKey]);
 
