@@ -53,15 +53,11 @@ const PRIVATE_STRIPPER = /replace\(\s*\/\\\/\\\*\[\\s\\S\]\*\?\\\*\\\/\/[a-z]*\s
  * is legible rather than uniform.
  */
 const KNOWN_PRIVATE_STRIPPERS: Record<string, { blockOnly: boolean; lane: string }> = {
-  "src/test/crash-source-token-guard.test.ts": { blockOnly: true, lane: "safety" },
-  "src/test/crash-year-window-is-shared.test.ts": { blockOnly: true, lane: "safety" },
-  "src/test/knowledge-base-retrieval.test.ts": { blockOnly: true, lane: "knowledge base" },
   "src/test/pdf-writer-confinement-guard.test.ts": { blockOnly: true, lane: "reports" },
   "src/test/report-packet-carries-both-representativeness-signals.test.ts": {
     blockOnly: false,
     lane: "reports",
   },
-  "src/test/rtp-citation-caveats-come-from-the-registry.test.ts": { blockOnly: true, lane: "rtp" },
   "src/test/helpers/read-error-detectors.ts": { blockOnly: true, lane: "shared test infra" },
 };
 

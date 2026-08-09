@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { stripSourceComments } from "./helpers/source-text";
 
 /**
  * No UI may branch on a specific crash-adapter id.
@@ -51,11 +52,9 @@ function productFiles(): string[] {
  * URL and turn a false positive into a false negative.
  */
 function codeOf(file: string): string {
-  return readFileSync(file, "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .split("\n")
-    .filter((line) => !/^\s*(?:\/\/|\*)/.test(line))
-    .join("\n");
+  // Shared stripper: the private one here was block-only plus whole-line `//`,
+  // so a TRAILING comment naming a source token survived into the scan.
+  return stripSourceComments(readFileSync(file, "utf8"));
 }
 
 /**

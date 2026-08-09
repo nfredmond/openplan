@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { stripSourceComments } from "./helpers/source-text";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
@@ -27,14 +28,9 @@ const RTP_EVIDENCE_MODULE = path.join(process.cwd(), "src", "lib", "rtp", "model
 
 /** Strip comments — the module explains the old literal on purpose. */
 function codeOf(file: string): string {
-  return readFileSync(file, "utf8")
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .split("\n")
-    .filter((line) => {
-      const trimmed = line.trim();
-      return !trimmed.startsWith("//") && !trimmed.startsWith("*");
-    })
-    .join("\n");
+  // Shared stripper: the private one here missed TRAILING comments, so a
+  // literal explained on the same line as code still counted as code.
+  return stripSourceComments(readFileSync(file, "utf8"));
 }
 
 function disclosureFor(engineKey: string | null): RtpEvidenceRunDisclosure {

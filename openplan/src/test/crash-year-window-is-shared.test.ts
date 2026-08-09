@@ -27,6 +27,7 @@
  */
 
 import { readFileSync } from "node:fs";
+import { stripSourceComments } from "./helpers/source-text";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CRASH_ANALYSIS_YEAR_WINDOW, recentCrashYears } from "@/lib/safety/crash-years";
@@ -73,11 +74,9 @@ describe("the crash analysis year window", () => {
       path.join(process.cwd(), "src/components/safety/safety-workspace.tsx"),
       "utf8"
     );
-    const code = source
-      .replace(/\/\*[\s\S]*?\*\//g, " ")
-      .split("\n")
-      .filter((line) => !/^\s*(?:\/\/|\*)/.test(line))
-      .join("\n");
+    // Shared stripper: block-only plus whole-line `//` let a trailing comment
+    // carrying a year list reach the matcher.
+    const code = stripSourceComments(source);
 
     // Three or more consecutive four-digit years in an array literal.
     const HARDCODED_YEAR_LIST = /\[\s*(?:20\d{2}\s*,\s*){2,}20\d{2}\s*[,\]]/;

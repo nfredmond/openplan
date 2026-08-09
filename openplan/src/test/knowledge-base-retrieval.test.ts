@@ -2,6 +2,7 @@ import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { join, relative, sep } from "node:path";
 import { describe, expect, it, vi } from "vitest";
+import { stripSourceComments } from "./helpers/source-text";
 import {
   excerptPageLabel,
   KB_EXCERPT_SNIPPET_CHARS,
@@ -205,7 +206,9 @@ function collectAdapterCallers(root: string): string[] {
       }
       if (!/\.tsx?$/.test(entry.name)) continue;
       if (rel === "lib/knowledge-base/retrieval.ts") continue;
-      const source = readFileSync(full, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+      // Shared stripper: block-only, so a trailing `// retrieveKnowledgeBaseExcerpts(...)`
+      // comment counted as a real caller.
+      const source = stripSourceComments(readFileSync(full, "utf8"));
       if (/retrieveKnowledgeBaseExcerpts\s*\(/.test(source)) found.push(rel);
     }
   };
