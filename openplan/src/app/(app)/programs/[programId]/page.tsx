@@ -803,8 +803,8 @@ export default async function ProgramDetailPage({
           <WorkspaceRuntimeCue summary={operationsSummary} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
-            label="Workspace command board"
-            title="What should move around this program"
+            label="Across your workspace"
+            title="What needs attention next"
             description={`Workspace priorities — packet, funding-window, and setup pressure — stay visible while you work on ${program.title}. Use this board to keep the package aligned with the rest of the workspace.`}
           />
         </div>

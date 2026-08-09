@@ -412,7 +412,7 @@ export function ModelDetailControls({
 
             <div className="space-y-1.5">
               <label htmlFor="model-control-assumptions" className="text-[0.82rem] font-semibold">
-                Assumptions posture
+                Assumptions
               </label>
               <Textarea
                 id="model-control-assumptions"
@@ -424,13 +424,13 @@ export function ModelDetailControls({
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="model-control-inputs" className="text-[0.82rem] font-semibold">
-                  Input posture
+                  Inputs
                 </label>
                 <Textarea id="model-control-inputs" value={inputSummary} onChange={(event) => setInputSummary(event.target.value)} />
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="model-control-outputs" className="text-[0.82rem] font-semibold">
-                  Output posture
+                  Outputs
                 </label>
                 <Textarea id="model-control-outputs" value={outputSummary} onChange={(event) => setOutputSummary(event.target.value)} />
               </div>

@@ -322,7 +322,7 @@ export function ModelCreator({
 
             <div className="space-y-1.5">
               <label htmlFor="model-assumptions" className="text-[0.82rem] font-semibold">
-                Assumptions posture
+                Assumptions
               </label>
               <Textarea
                 id="model-assumptions"
@@ -335,7 +335,7 @@ export function ModelCreator({
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="model-input-summary" className="text-[0.82rem] font-semibold">
-                  Input posture
+                  Inputs
                 </label>
                 <Textarea
                   id="model-input-summary"
@@ -346,7 +346,7 @@ export function ModelCreator({
               </div>
               <div className="space-y-1.5">
                 <label htmlFor="model-output-summary" className="text-[0.82rem] font-semibold">
-                  Output posture
+                  Outputs
                 </label>
                 <Textarea
                   id="model-output-summary"

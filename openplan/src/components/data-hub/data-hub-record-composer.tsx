@@ -636,7 +636,7 @@ export function DataHubRecordComposer({
               </div>
               <div className="space-y-2">
                 <label htmlFor="dataset-license" className="text-sm font-medium">
-                  License / usage posture
+                  License and permitted use
                 </label>
                 <Input id="dataset-license" value={datasetLicenseLabel} onChange={(event) => setDatasetLicenseLabel(event.target.value)} placeholder="Public domain / CC BY / vendor-restricted" />
               </div>

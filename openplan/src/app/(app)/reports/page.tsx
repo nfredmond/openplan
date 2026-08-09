@@ -671,7 +671,7 @@ export default async function ReportsPage({
   }> = [
     {
       value: "all",
-      label: "All posture",
+      label: "All reports",
       count: reports.length,
       href: buildReportsFilterHref({
         freshness: selectedFreshnessFilter,
@@ -707,7 +707,7 @@ export default async function ReportsPage({
     },
     {
       value: "no-evidence",
-      label: "No evidence summary",
+      label: "No evidence attached",
       count: reports.length - evidenceBackedCount,
       href: buildReportsFilterHref({
         freshness: selectedFreshnessFilter,
@@ -800,7 +800,7 @@ export default async function ReportsPage({
           <div className="module-intro-body">
             <h1 className="module-intro-title">Reports</h1>
             <p className="module-intro-description">
-              Keep packet generation, evidence lineage, and project delivery history inside one reviewable publishing surface.
+              Generate report packets, see what evidence each one rests on, and keep every project&apos;s delivery history in one place.
             </p>
           </div>
 
@@ -808,22 +808,22 @@ export default async function ReportsPage({
             <div className="module-summary-card">
               <p className="module-summary-label">Total reports</p>
               <p className="module-summary-value">{reports.length}</p>
-              <p className="module-summary-detail">Workspace report records currently tracked.</p>
+              <p className="module-summary-detail">Reports in this workspace.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Generated</p>
               <p className="module-summary-value">{generatedCount}</p>
-              <p className="module-summary-detail">Packets already assembled from stored report records.</p>
+              <p className="module-summary-detail">Reports with a packet already built.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Needs refresh</p>
               <p className="module-summary-value">{refreshRecommendedCount}</p>
-              <p className="module-summary-detail">Records whose current packet no longer matches the source basis.</p>
+              <p className="module-summary-detail">The underlying data changed after the packet was built.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Projects covered</p>
               <p className="module-summary-value">{distinctProjects}</p>
-              <p className="module-summary-detail">Projects with report posture visible in this workspace.</p>
+              <p className="module-summary-detail">Projects with at least one report.</p>
             </div>
           </div>
 
@@ -895,9 +895,9 @@ export default async function ReportsPage({
           />
           <WorkspaceCommandBoard
             summary={operationsSummary}
-            label="Workspace command board"
-            title="What should move around reports"
-            description="Workspace priorities — packet refresh pressure, funding timing, and plan/program setup gaps — stay visible here while you manage evidence, exports, and governance review."
+            label="Across your workspace"
+            title="What needs attention next"
+            description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
           />
         </div>
 
@@ -910,7 +910,7 @@ export default async function ReportsPage({
               <div className="module-section-heading">
                 <p className="module-section-label">Catalog</p>
                 <h2 className="module-section-title">Report records</h2>
-                <p className="module-section-description">Use the rails below to sort packet freshness and evidence posture without collapsing the registry into chip filters.</p>
+                <p className="module-section-description">Filter by how current the packet is, and by what evidence sits behind it.</p>
               </div>
             </div>
             <div className="module-inline-list">
@@ -940,7 +940,7 @@ export default async function ReportsPage({
               </div>
             </div>
             <div>
-              <p className="module-section-label mb-2">Evidence posture</p>
+              <p className="module-section-label mb-2">Evidence behind the report</p>
               <div className="module-filter-rail">
                 {postureFilters.map((filter) => {
                   const active = filter.value === selectedPostureFilter;
@@ -985,7 +985,7 @@ export default async function ReportsPage({
           <div className="mt-5">
             <ReportPacketCommandQueue
               title="Report packet queue"
-              description="The top report packet actions across the workspace, ordered before the full registry below."
+              description="The reports that need something first, before the full list below."
               items={reportQueueItems}
               emptyLabel="No queued report packet work right now."
             />
@@ -1152,7 +1152,7 @@ export default async function ReportsPage({
                   <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3 text-sm">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Evidence / regeneration posture
+                        Evidence, and whether it needs rebuilding
                       </p>
                       <StatusBadge tone={report.sourceReviewPosture.state === "ready" ? "success" : "warning"}>
                         {report.sourceReviewPosture.label}

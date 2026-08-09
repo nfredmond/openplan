@@ -307,7 +307,7 @@ describe("ReportsPage", () => {
 
     expect(screen.getAllByText(/Artifact-backed report/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Evidence \/ regeneration posture/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Evidence, and whether it needs rebuilding/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/1 source area needs review/i)).toBeInTheDocument();
     expect(screen.getByText(/Changed sources: Report metadata\./i)).toBeInTheDocument();
     expect(

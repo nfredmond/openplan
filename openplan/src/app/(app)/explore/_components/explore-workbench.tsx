@@ -819,9 +819,9 @@ export function ExploreWorkbench({
 
                   <WorkspaceCommandBoard
                     summary={analysisContext.operationsSummary}
-                    label="Workspace command board"
-                    title="What should move around this analysis workspace"
-                    description="Workspace priorities — packet pressure, funding windows, and setup gaps — stay visible here while you work corridor and map analysis."
+                    label="Across your workspace"
+                    title="What needs attention next"
+                    description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
                   />
 
                   {analysisContext.migrationPending ? (

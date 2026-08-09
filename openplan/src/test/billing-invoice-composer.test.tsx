@@ -98,7 +98,7 @@ describe("InvoiceRecordComposer", () => {
     );
 
     const postureSelect = screen.getByLabelText(
-      `Reimbursement posture — ${binding.profileName}`
+      `Reimbursement stage — ${binding.profileName}`
     ) as HTMLSelectElement;
     expect(postureSelect.value).toBe(binding.defaultPostureId);
     expect(Array.from(postureSelect.options).map((option) => option.value)).toEqual(
@@ -204,7 +204,7 @@ describe("InvoiceRecordComposer", () => {
       />
     );
 
-    expect(screen.queryByLabelText(/Reimbursement posture/)).toBeNull();
+    expect(screen.queryByLabelText(/Reimbursement stage/)).toBeNull();
     expect(screen.getByLabelText("Submitted to")).toHaveAttribute(
       "placeholder",
       "Funder or program office"

@@ -586,9 +586,9 @@ export default async function DataHubPage() {
           />
           <WorkspaceCommandBoard
             summary={operationsSummary}
-            label="Workspace command board"
-            title="What should move around Data Hub"
-            description="Workspace priorities — packet pressure, funding timing, and setup gaps — stay visible here while you work provenance, refresh posture, and dataset linkage."
+            label="Across your workspace"
+            title="What needs attention next"
+            description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
           />
         </div>
 

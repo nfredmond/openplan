@@ -376,22 +376,22 @@ export async function ReimbursementLane({
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Consulting invoices</p>
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Consulting invoice operations</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Invoices you are billing out</h2>
           <p className="text-sm text-muted-foreground">
-            The reimbursement invoice register: retention, supporting-document posture, and the funding award each draw is claimed against.
+            Every invoice, what retention is held back, whether the backup documents are attached, and which award each draw is billed against.
           </p>
         </div>
         <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
           <p className="font-semibold text-foreground">Current scope</p>
           <p className="mt-1.5">
-            OpenPlan supports a workspace or project invoice register with supporting-doc posture, retention, and operator notes. It does <strong>not yet</strong> generate a funder&apos;s exact exhibit packets, reimbursement claim forms, or agency-certified pay apps automatically.
+            You can keep the invoice register here — amounts, retention, backup documents, and your own notes. OpenPlan does <strong>not yet</strong> fill out a funder&apos;s exact exhibit packets, claim forms, or certified pay applications for you.
           </p>
         </div>
       </div>
 
       {reimbursementProfile?.selection === "interim_unconfigured_default" ? (
         <article className={noticeClass("info")}>
-          Reimbursement postures here come from the {reimbursementProfile.profileName} profile as an
+          The reimbursement stages shown here come from the {reimbursementProfile.profileName} profile, used as an
           interim default — {INTERIM_DEFAULT_RATIONALE}
         </article>
       ) : null}
@@ -479,7 +479,7 @@ export async function ReimbursementLane({
               {invoiceLinkageSummary.unlinkedOverdueCount > 0
                 ? ` ${invoiceLinkageSummary.unlinkedOverdueCount} of those record${invoiceLinkageSummary.unlinkedOverdueCount === 1 ? " is" : "s are"} already overdue, totaling ${formatCurrency(invoiceLinkageSummary.unlinkedOverdueNetAmount)}.`
                 : ""}{" "}
-              That means reimbursement posture remains understated until those records are attached to award-backed funding.
+              Until they are linked to an award, the reimbursement totals above are lower than what you are actually owed.
             </div>
           ) : null}
 
@@ -489,7 +489,7 @@ export async function ReimbursementLane({
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Priority cleanup queue</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Highest reimbursement-risk records first, ranked by unlinked status, overdue posture, and net amount.
+                    Riskiest first: unlinked to an award, overdue, and largest in amount.
                   </p>
                   {exactRelinkCandidateCount > 0 ? (
                     <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">

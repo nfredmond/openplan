@@ -401,7 +401,7 @@ async function main() {
     await page.goto(`${baseUrl}/aerial/missions/${ids.missionId}`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: missionTitle, exact: false }).waitFor({ timeout: 30000 });
     await page.getByText(packageTitle, { exact: false }).first().waitFor({ timeout: 30000 });
-    await page.getByText(/Project aerial posture \(cached\)/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/Project aerial summary \(saved\)/i).first().waitFor({ timeout: 30000 });
     await page.getByText(/Mission AOI & export/i).first().waitFor({ timeout: 30000 });
     await page.getByRole('link', { name: /Export DJI JSON/i }).waitFor({ timeout: 30000 });
     await screenshot('local-aerial-evidence-smoke-02-mission-detail');

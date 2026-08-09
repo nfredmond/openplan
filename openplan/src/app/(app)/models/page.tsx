@@ -430,7 +430,7 @@ export default async function ModelsPage({
               <p className="module-summary-detail">
                 {modelsReadFailed
                   ? "Unavailable while the catalog cannot be read."
-                  : "Records that reached review or approval posture."}
+                  : "Runs that reached review or approval."}
               </p>
             </div>
             <div className="module-summary-card">

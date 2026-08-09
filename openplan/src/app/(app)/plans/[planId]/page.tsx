@@ -850,8 +850,8 @@ export default async function PlanDetailPage({
           <WorkspaceRuntimeCue summary={operationsSummary} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
-            label="Workspace command board"
-            title="What should move around this plan"
+            label="Across your workspace"
+            title="What needs attention next"
             description={`Workspace priorities — packet, funding, and setup pressure — stay visible while you work on ${plan.title}. Use this board to keep local plan work aligned with the rest of the workspace.`}
           />
         </div>

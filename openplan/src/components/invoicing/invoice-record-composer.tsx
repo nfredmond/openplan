@@ -335,7 +335,7 @@ export function InvoiceRecordComposer({
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label htmlFor="supporting-docs-status" className="text-sm font-medium">
-                  Backup posture
+                  Backup documents
                 </label>
                 <select id="supporting-docs-status" className="module-select" value={supportingDocsStatus} onChange={(event) => setSupportingDocsStatus(event.target.value)}>
                   <option value="pending">Pending</option>
@@ -347,7 +347,7 @@ export function InvoiceRecordComposer({
               {reimbursementProfile ? (
                 <div className="space-y-2">
                   <label htmlFor="reimbursement-posture" className="text-sm font-medium">
-                    Reimbursement posture — {reimbursementProfile.profileName}
+                    Reimbursement stage — {reimbursementProfile.profileName}
                   </label>
                   <select
                     id="reimbursement-posture"

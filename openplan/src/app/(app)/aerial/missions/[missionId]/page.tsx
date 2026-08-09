@@ -441,18 +441,18 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
                 {project.name}
               </Link>
             }
-            hint="Evidence packages flowing ready here will refresh this project's aerial posture."
+            hint="When a package here becomes ready, the project's aerial summary updates too."
           />
         ) : (
           <InspectorEmpty
             title="Not linked to a project"
-            description="Missions without a project link cannot feed aerial posture back to RTP/grants."
+            description="A mission with no project attached cannot feed anything back to the RTP or a grant."
           />
         )}
       </InspectorGroup>
 
       {project ? (
-        <InspectorGroup label="Project aerial posture (cached)">
+        <InspectorGroup label="Project aerial summary (saved)">
           {projectAerialPosture ? (
             <>
               <InspectorField
@@ -479,7 +479,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
               <InspectorField
                 label="Posture cached"
                 value={formatDateTime(projectAerialPostureUpdatedAt)}
-                hint="Read from the aerial_project_posture table — refreshed after evidence-package mutations."
+                hint="Saved on the project and refreshed whenever an evidence package changes."
               />
             </>
           ) : (
@@ -607,7 +607,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             id="aerial-mission-packages"
             label="Evidence"
             title="Packages"
-            description="Each package captures a processed output (orthos, models, surfaces, QA bundles) with its status, verification readiness, and report-attachment posture."
+            description="Each package is one processed output — orthophotos, models, surfaces, QA bundles — with its status, whether it is ready to verify, and whether it is attached to a report."
             trailing={
               packagesUnreadable ? (
                 <StatusBadge tone="danger">Unavailable</StatusBadge>

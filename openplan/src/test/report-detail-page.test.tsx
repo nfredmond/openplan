@@ -1002,7 +1002,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     expectLinkByHref(/Packet assembly/i, "/reports/report-1");
     expect(screen.getByRole("button", { name: /Generate packet/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Current surface/i).length).toBeGreaterThan(0);
-    expect(screen.getByText("Grant planning posture")).toBeInTheDocument();
+    expect(screen.getByText("Analysis behind a grant case")).toBeInTheDocument();
     expect(screen.getByText(/Refresh supporting packet before final pursue language/i)).toBeInTheDocument();
     expect(
       screen.getAllByText(/planning support only, not proof of award likelihood/i).length

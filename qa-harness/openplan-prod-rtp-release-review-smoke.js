@@ -336,7 +336,7 @@ async function main() {
 
     await page.goto(`${productionBaseUrl}/explore`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Corridor analysis workspace/i }).waitFor({ timeout: 30000 });
-    await page.getByText(/What should move around this analysis workspace/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/What needs attention next/i).first().waitFor({ timeout: 30000 });
     await page.getByText(new RegExp(projectName, 'i')).first().waitFor({ timeout: 30000 });
     const analysisRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
     await analysisRuntimeCueLink.waitFor({ timeout: 30000 });
@@ -421,7 +421,7 @@ async function main() {
     const runtimeCueCount = await runtimeCueLink.count();
     if (runtimeCueCount < 1) {
       const operatorCard = page.locator('article').filter({ has: page.getByRole('heading', { name: /Report packets and exports/i }) }).first();
-      const commandBoard = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move around reports/i }) }).first();
+      const commandBoard = page.locator('article').filter({ has: page.getByRole('heading', { name: /What needs attention next/i }) }).first();
       const [operatorCardText, commandBoardText] = await Promise.all([
         operatorCard.textContent().catch(() => null),
         commandBoard.textContent().catch(() => null),

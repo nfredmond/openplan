@@ -105,7 +105,7 @@ export function RtpQueueOperationsBoard({
         </div>
 
         <Link href="/projects" className="module-inline-action mt-4">
-          Review linked project control room posture
+          Review the projects linked to this cycle
           <ArrowRight className="h-4 w-4" />
         </Link>
         <Link href="/plans" className="module-inline-action mt-3">

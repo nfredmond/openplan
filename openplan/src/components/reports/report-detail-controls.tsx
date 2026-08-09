@@ -330,7 +330,7 @@ export function ReportDetailControls({
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] opacity-75">
-                Regeneration posture
+                Does this packet need rebuilding?
               </p>
               <p className="mt-1 font-semibold">{sourceReviewPosture.headline}</p>
             </div>
@@ -351,7 +351,7 @@ export function ReportDetailControls({
         {evidenceSummary ? (
           <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-sm text-foreground">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Evidence chain posture
+              What this report rests on
             </p>
             <p className="mt-1 font-semibold">{evidenceSummary.headline}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -368,7 +368,7 @@ export function ReportDetailControls({
         {fundingSummary ? (
           <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-sm text-foreground">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Funding posture
+              Funding
             </p>
             <p className="mt-1 font-semibold">{fundingSummary.headline}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -385,7 +385,7 @@ export function ReportDetailControls({
         {reviewSummary ? (
           <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-sm text-foreground">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Release review posture
+              Ready to release?
             </p>
             <p className="mt-1 font-semibold">{reviewSummary.headline}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -393,7 +393,7 @@ export function ReportDetailControls({
             </p>
             {reviewSummary.nextActionLabel ? (
               <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Next operator move: {reviewSummary.nextActionLabel}.
+                Next step: {reviewSummary.nextActionLabel}.
               </p>
             ) : null}
           </div>

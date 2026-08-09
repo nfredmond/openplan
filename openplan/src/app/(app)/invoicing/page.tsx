@@ -113,7 +113,7 @@ export default async function InvoicingPage({
             </p>
           </div>
           <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
-            Opening the right workspace keeps invoice review, award linkage, and retention posture attached to the correct ledger.
+            Each workspace keeps its own invoices, awards, and retention. Open the right one so your review lands in the right place.
           </div>
         </header>
 

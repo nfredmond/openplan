@@ -1297,8 +1297,8 @@ export default async function ProjectDetailPage({
           <WorkspaceRuntimeCue summary={operationsSummary} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
-            label="Workspace command board"
-            title="What should move around this project"
+            label="Across your workspace"
+            title="What needs attention next"
             description={`Workspace priorities — packet, funding-window, and setup pressure — stay visible while you work on ${project.name}. Use this board to keep the project aligned with the rest of the workspace.`}
           />
         </div>

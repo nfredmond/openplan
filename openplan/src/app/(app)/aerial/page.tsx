@@ -300,7 +300,7 @@ export default async function AerialIndexPage({
           <div className="module-intro-body">
             <h1 className="module-intro-title">Aerial Ops</h1>
             <p className="module-intro-description">
-              Plan aerial missions, track evidence packages, and link verification-ready captures back to project posture.
+              Plan flights, track what came back from them, and attach the imagery that is ready to verify to the project it belongs to.
             </p>
             {focusLabel ? (
               // Named, and reversible in one click. Every count and every row

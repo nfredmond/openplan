@@ -527,7 +527,7 @@ describe("EngagementCampaignDetailPage", () => {
     expect(screen.getByText(/Campaign handoff decision/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Nearly ready/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/close the campaign when intake is complete/i)).toBeInTheDocument();
-    expect(screen.getByText(/Campaign reporting posture/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reports built on this campaign/i)).toBeInTheDocument();
     expect(screen.getByText(/Report appendix readiness/i)).toBeInTheDocument();
     expect(screen.getByText(/1 approved public comment ready for appendix review/i)).toBeInTheDocument();
     expect(screen.getByText(/not a representativeness or legal sufficiency finding/i)).toBeInTheDocument();

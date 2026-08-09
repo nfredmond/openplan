@@ -305,7 +305,7 @@ export function RtpCycleRegistryTable({
 
         <p className="text-sm text-muted-foreground">
           Showing {typedCycles.length} cycle{typedCycles.length === 1 ? "" : "s"}
-          {filtersStatus ? ` in ${formatRtpCycleStatusLabel(filtersStatus).toLowerCase()} posture` : " across all cycle phases"}
+          {filtersStatus ? ` at the ${formatRtpCycleStatusLabel(filtersStatus).toLowerCase()} stage` : " across all cycle phases"}
           {selectedPacketFilter !== "all" ? ` with packet attention set to ${selectedPacketFilter.replace("_", " ")}` : ""}
           {recentOnly ? " limited to recent queue activity" : ""}
           {selectedQueueActionFilter !== "all"
@@ -567,7 +567,7 @@ export function RtpCycleRegistryTable({
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
                   <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
                     <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                      Workflow posture
+                      Where it is
                     </p>
                     <p className="mt-2 text-sm font-medium">{cycle.workflow.label}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{cycle.workflow.detail}</p>

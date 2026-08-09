@@ -87,8 +87,8 @@ describe("ReportDetailControls", () => {
       />
     );
 
-    expect(screen.getByText(/Evidence chain posture/i)).toBeInTheDocument();
-    expect(screen.getByText(/Regeneration posture/i)).toBeInTheDocument();
+    expect(screen.getByText(/What this report rests on/i)).toBeInTheDocument();
+    expect(screen.getByText(/Does this packet need rebuilding\?/i)).toBeInTheDocument();
     expect(screen.getByText(/Changed source context/i)).toBeInTheDocument();
     expect(screen.getByText(/3 source areas need review/i)).toBeInTheDocument();
     expect(screen.getByText(/2 linked runs · 1 scenario set · 6 project records/i)).toBeInTheDocument();

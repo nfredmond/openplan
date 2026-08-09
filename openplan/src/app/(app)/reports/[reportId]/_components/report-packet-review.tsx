@@ -116,7 +116,7 @@ export function ReportPacketReview({
         </div>
         <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Grant planning posture
+            Analysis behind a grant case
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">
             {grantModelingReadiness?.label ?? "No visible support"}

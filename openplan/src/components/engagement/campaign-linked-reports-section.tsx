@@ -138,7 +138,7 @@ export function CampaignLinkedReportsSection({
             }`}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Campaign reporting posture
+              Reports built on this campaign
             </p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">
               {packetAttentionCount > 0 && recommendedReport

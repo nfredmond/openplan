@@ -226,7 +226,7 @@ export function ReportStandardDetail({
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Funding posture</p>
+              <p className="module-summary-label">Funding</p>
               <p className="module-summary-value text-base">
                 {fundingSnapshot?.label ?? "Not captured"}
               </p>
@@ -237,7 +237,7 @@ export function ReportStandardDetail({
                     : fundingSnapshot.uninvoicedAwardAmount > 0
                       ? `${formatCurrency(fundingSnapshot.uninvoicedAwardAmount)} still uninvoiced.`
                       : fundingSnapshot.reimbursementLabel
-                  : "Generate a packet to snapshot funding posture into report evidence."}
+                  : "Generate a packet and the funding picture at that moment is saved with it."}
               </p>
             </div>
           </div>
@@ -281,9 +281,9 @@ export function ReportStandardDetail({
 
       <WorkspaceCommandBoard
         summary={operationsSummary}
-        label="Workspace command board"
-        title="What should move around this report"
-        description="Workspace priorities — packet pressure, funding timing, and setup gaps — stay visible here while you review drift, provenance, and governance posture on this record."
+        label="Across your workspace"
+        title="What needs attention next"
+        description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
       />
 
       <PilotWorkflowHandoff

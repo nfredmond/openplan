@@ -1222,7 +1222,7 @@ export default async function ScenarioSetDetailPage({
               }`}
             >
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Scenario reporting posture
+                Reports built on this scenario set
               </p>
               <h3 className="mt-2 text-sm font-semibold text-foreground">
                 {linkedReportAttentionCount > 0 && recommendedLinkedReport

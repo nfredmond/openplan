@@ -213,7 +213,7 @@ export function ReportProvenanceAudit({
             </div>
             <div className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3 sm:col-span-2 xl:col-span-2">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Engagement posture
+                Public input
               </p>
               <p className="mt-1 text-sm font-semibold text-foreground">
                 {evidenceChainSummary.engagementLabel} ·{" "}
