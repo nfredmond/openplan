@@ -535,7 +535,22 @@ export function KnowledgeBaseWorkspace({
           {search.status === "done" && search.hits.length > 0 ? (
             <>
               <p className="module-note">
-                {search.hits.length} passage{search.hits.length === 1 ? "" : "s"} matched &ldquo;
+                {/*
+                  The space before "matched" lives INSIDE the ternary on purpose.
+
+                  Written as `passage{n === 1 ? "" : "s"} matched`, the singular
+                  case renders "1 passagematched" IN A REAL BROWSER while jsdom
+                  renders "1 passage matched" — an empty-string child between two
+                  text segments is serialised differently by the server renderer
+                  than it is assembled in a test DOM. `knowledge-base-search.test`
+                  asserts /1 passage matched/ and passes; the page was wrong
+                  anyway. Found by reading the rendered textContent in Chrome.
+
+                  Carrying the space in the branch removes the empty child, so
+                  both environments produce the same string and the test means
+                  what it says.
+                */}
+                {search.hits.length} passage{search.hits.length === 1 ? " " : "s "}matched &ldquo;
                 {search.query}&rdquo;
                 {search.scopeProjectId
                   ? ` in ${projectNameById.get(search.scopeProjectId) ?? "the selected project"} plus unattached documents`
