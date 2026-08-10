@@ -18,7 +18,20 @@ export type AssistantLocalConsoleFilter = z.infer<typeof assistantLocalConsoleFi
 export type AssistantLocalConsoleViewMode = z.infer<typeof assistantLocalConsoleViewModeSchema>;
 export type AssistantLocalConsoleState = z.infer<typeof assistantLocalConsoleStateSchema>;
 
-function describeConsoleFilter(filter: AssistantLocalConsoleFilter): string {
+/**
+ * The planner-facing name of a console filter — ONE definition, deliberately
+ * exported.
+ *
+ * It was written twice: here as a switch, and again in `app-copilot.tsx` as an
+ * inline ternary chain. The two had already drifted once and were only brought
+ * back into agreement by a copy pass on 2026-08-10. That is the shape CLAUDE.md
+ * warns about — a shared capability living inside one of its callers gets
+ * reimplemented by the other — and the second copy is the one a planner reads,
+ * because it names the filter in the sentence offering to widen the view.
+ *
+ * Guarded by `src/test/one-name-for-a-console-filter.test.ts`.
+ */
+export function describeConsoleFilter(filter: AssistantLocalConsoleFilter): string {
   switch (filter) {
     case "act_now":
       return "what needs doing now";

@@ -22,6 +22,7 @@ import {
 } from "@/lib/assistant/catalog";
 import {
   applyLocalConsoleStateToPreview,
+  describeConsoleFilter,
   type AssistantLocalConsoleFilter,
   type AssistantLocalConsoleState,
   type AssistantLocalConsoleViewMode,
@@ -335,14 +336,9 @@ function buildBoardStateNarrative(args: {
   hiddenSnoozedCount: number;
   showSnoozed: boolean;
 }): { title: string; detail: string } {
-  const filterLabel =
-    args.filter === "all"
-      ? "everything"
-      : args.filter === "act_now"
-        ? "what needs doing now"
-        : args.filter === "review_soon"
-          ? "work to review soon"
-          : "background context";
+  // One definition, in local-console-state.ts. This was a second copy of the
+  // same four labels and had already drifted from it once.
+  const filterLabel = describeConsoleFilter(args.filter);
 
   if (args.viewMode === "triage") {
     return {
