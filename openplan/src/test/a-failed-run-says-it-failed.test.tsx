@@ -497,3 +497,111 @@ describe("summarizeRunFailure", () => {
     expect(summary!.stageName).toBeNull();
   });
 });
+
+describe("a repeat failure says so", () => {
+  /**
+   * A RELAUNCH RESETS THE RUN ROW IN PLACE — status, error_message, every
+   * stage — so before `failure_count` / `last_failure_message` (migration
+   * 20260810000001, captured by the relaunch route before the wipe) a run
+   * failing for the third time rendered exactly like one failing for the
+   * first, and the copy could suggest "re-launch to retry" forever. The case
+   * that matters is the SAME error twice: it tells the planner the relaunch
+   * button is not the fix.
+   */
+  const failedStage = () =>
+    stage({
+      id: "s2",
+      stage_name: "Network Assignment",
+      status: "failed",
+      sort_order: 2,
+      error_message: "KeyError: 'households'",
+    });
+
+  it("renders the treadmill warning when the same error recurs", () => {
+    renderRun(
+      baseRun({
+        failure_count: 2,
+        last_failure_message: "KeyError: 'households'",
+        stages: [failedStage()],
+      })
+    );
+
+    const repeat = screen.getByTestId("run-repeat-failure");
+    expect(repeat).toHaveTextContent("failed 3 times with the same recorded reason");
+    expect(repeat).toHaveTextContent("unlikely to end differently");
+  });
+
+  it("says a different reason is different rather than implying a loop", () => {
+    renderRun(
+      baseRun({
+        failure_count: 1,
+        last_failure_message: "RuntimeError: worker disk full",
+        stages: [failedStage()],
+      })
+    );
+
+    expect(screen.getByTestId("run-repeat-failure")).toHaveTextContent(
+      "failed 1 time before, with a different recorded reason"
+    );
+  });
+
+  it("stays completely silent on a first failure", () => {
+    renderRun(baseRun({ failure_count: 0, last_failure_message: null, stages: [failedStage()] }));
+    expect(screen.queryByTestId("run-repeat-failure")).toBeNull();
+  });
+
+  it("never claims repetition for a cancelled run", () => {
+    // A cancelled run is not a failure; a prior failure count must not make a
+    // cancellation read as a crash loop.
+    const summary = summarizeRunFailure({
+      status: "cancelled",
+      failureCount: 3,
+      lastFailureMessage: "KeyError: 'households'",
+      stages: [],
+    });
+    expect(summary!.repeat).toBeNull();
+  });
+
+  it("does not call an unrecorded failure 'the same' as a recorded one", () => {
+    // Both sides must exist before the copy may claim identity; a null
+    // comparison can only under-claim repetition, never invent it.
+    const summary = summarizeRunFailure({
+      status: "failed",
+      failureCount: 1,
+      lastFailureMessage: null,
+      stages: [stage({ id: "s1", stage_name: "Setup", status: "failed", sort_order: 1, error_message: null })],
+    });
+    expect(summary!.repeat).toEqual({ priorFailures: 1, sameAsLast: false });
+  });
+
+  it("drops the bare 'Re-launch to retry' advice once the run has already been relaunched", () => {
+    const first = summarizeRunFailure({
+      status: "failed",
+      stages: [stage({ id: "s1", stage_name: "Setup", status: "failed", sort_order: 1, error_message: null })],
+    });
+    expect(first!.headline).toContain("Re-launch to retry");
+
+    const again = summarizeRunFailure({
+      status: "failed",
+      failureCount: 1,
+      lastFailureMessage: null,
+      stages: [stage({ id: "s1", stage_name: "Setup", status: "failed", sort_order: 1, error_message: null })],
+    });
+    expect(again!.headline).not.toContain("Re-launch to retry");
+    expect(again!.headline).toContain("already been relaunched after failing");
+  });
+
+  it("asks the database for the failure-history columns it renders", () => {
+    // The mocked-client blind spot again: these fixtures supply fields the
+    // real query might not, so the projection string is asserted directly.
+    const source = readFileSync(
+      path.join(process.cwd(), "src/app/(app)/models/[modelId]/page.tsx"),
+      "utf8"
+    );
+    const select = /from\("model_runs"\)\s*\.select\(\s*"([^"]+)"/.exec(source)?.[1];
+    expect(select, "could not find the model_runs projection").toBeTypeOf("string");
+    for (const column of ["failure_count", "last_failure_message"]) {
+      expect(select).toContain(column);
+    }
+  });
+});

@@ -19,6 +19,7 @@ import {
 } from "@/lib/http/write-outcome";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { isWorkerExecutedRunMode, routeAcceptsRelaunchOfStatus } from "@/lib/models/run-modes";
+import { recordableFailureMessage } from "@/lib/models/run-failure";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   prepareWorkerZoneAttributes,
@@ -120,9 +121,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Load the model run. `corridor_geojson` and `input_snapshot_json` are read
     // because relaunching REBUILDS this run's demographic inputs (below) rather
     // than re-queueing a stale copy of them.
+    // `error_message` is read because a relaunch of a FAILED run preserves
+    // the failure history it is about to wipe (see the history write below);
+    // without it a third failure reads exactly like a first. The NEW
+    // `failure_count` column is deliberately NOT in this projection: during a
+    // deploy window where the app ships before migration 20260810000001, an
+    // unknown column here would fail this select and answer 404 to every
+    // relaunch. History uses its own tolerated read/write instead.
     const { data: modelRun, error: modelRunError } = await supabase
       .from("model_runs")
-      .select("id, status, engine_key, corridor_geojson, input_snapshot_json")
+      .select("id, status, engine_key, corridor_geojson, input_snapshot_json, error_message")
       .eq("id", parsedParams.data.modelRunId)
       .eq("model_id", access.model.id)
       .maybeSingle();
@@ -361,6 +369,71 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // prior stamp in place is how a stale refusal outlives the thing that
     // caused it — the exact defect the demographics rebuild above exists to fix.
     refreshedSnapshot = { ...refreshedSnapshot, transitFeed };
+
+    // ================= PRESERVE THE FAILURE HISTORY THE RESET DESTROYS ======
+    // A relaunch wipes status, error_message and every stage in place, so
+    // before this existed a run failing for the third time was
+    // indistinguishable from one failing for the first — and the failure copy
+    // suggested "re-launch to retry" forever. Only a FAILED run contributes
+    // (cancelled is not a failure). The stage read exists because the worker
+    // lane records its reason on the failing STAGE and leaves the run-level
+    // error_message NULL.
+    //
+    // BOTH the read and the write tolerate failure: during a deploy window
+    // where the app ships before migration 20260810000001, the columns do not
+    // exist yet, and losing one increment of history is better than refusing
+    // the relaunch. The failure is audited, never silent.
+    if (modelRun.status === "failed") {
+      const priorStages = await supabase
+        .from("model_run_stages")
+        .select("stage_name, status, sort_order, error_message")
+        .eq("run_id", modelRun.id);
+      if (priorStages.error) {
+        // Best-effort within the best-effort: the run-level message (already
+        // loaded) still gets captured; only the stage fallback is lost.
+        audit.warn("model_run_failure_history_stage_read_failed", {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+          message: priorStages.error.message,
+          code: priorStages.error.code ?? null,
+        });
+      }
+      const lastFailureMessage = recordableFailureMessage({
+        errorMessage: modelRun.error_message,
+        stages: priorStages.error ? [] : priorStages.data ?? [],
+      });
+      const priorCount = await supabase
+        .from("model_runs")
+        .select("failure_count")
+        .eq("id", modelRun.id)
+        .maybeSingle();
+      if (priorCount.error) {
+        audit.warn("model_run_failure_history_unavailable", {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+          message: priorCount.error.message,
+          code: priorCount.error.code ?? null,
+        });
+      } else {
+        const historyWrite = await supabase
+          .from("model_runs")
+          .update({
+            failure_count: (priorCount.data?.failure_count ?? 0) + 1,
+            last_failure_message: lastFailureMessage,
+          })
+          .eq("id", modelRun.id)
+          .select("id")
+          .maybeSingle();
+        if (historyWrite.error || !historyWrite.data) {
+          audit.warn("model_run_failure_history_write_failed", {
+            modelId: access.model.id,
+            modelRunId: modelRun.id,
+            message: historyWrite.error?.message ?? "matched no rows",
+            code: historyWrite.error?.code ?? null,
+          });
+        }
+      }
+    }
 
     // Update run to queued and clear stale prior-run residue.
     // result_summary_json is NOT NULL DEFAULT '{}' — reset to {}, never null.

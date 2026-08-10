@@ -205,7 +205,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       supabase
         .from("model_runs")
         .select(
-          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, corridor_geojson, started_at, completed_at, created_at, updated_at, stages:model_run_stages(id, stage_name, status, sort_order, started_at, completed_at, updated_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
+          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, failure_count, last_failure_message, corridor_geojson, started_at, completed_at, created_at, updated_at, stages:model_run_stages(id, stage_name, status, sort_order, started_at, completed_at, updated_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
         )
         .eq("model_id", model.id)
         .order("created_at", { ascending: false })
@@ -656,6 +656,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     source_analysis_run_id: string | null;
     result_summary_json: Record<string, unknown> | null;
     error_message: string | null;
+    failure_count: number | null;
+    last_failure_message: string | null;
     started_at: string | null;
     completed_at: string | null;
     created_at: string | null;

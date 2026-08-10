@@ -61,7 +61,36 @@ export type RunFailureSummary = {
   isRawEngineOutput: boolean;
   /** The engine's message, verbatim, with no framing. Null when none exists. */
   rawMessage: string | null;
+  /**
+   * Non-null when this run has failed before: a relaunch resets the row in
+   * place, so without `model_runs.failure_count` / `last_failure_message`
+   * (captured by the relaunch route before the wipe) a third failure read
+   * exactly like a first — and the copy suggested "re-launch to retry"
+   * forever. `sameAsLast` compares this failure's recorded reason with the
+   * previous attempt's; it is the difference between "try again" being advice
+   * and being a treadmill.
+   */
+  repeat: { priorFailures: number; sameAsLast: boolean } | null;
 };
+
+/**
+ * The reason this failure would be RECORDED under — the same precedence the
+ * headline uses (run-level message first, else the causing stage's, verbatim).
+ * Exported for the relaunch route, which must capture it into
+ * `last_failure_message` BEFORE resetting the row; computing it there by hand
+ * would fork the "which message counts" decision this module owns.
+ */
+export function recordableFailureMessage({
+  errorMessage,
+  stages,
+}: {
+  errorMessage?: string | null;
+  stages?: ReadonlyArray<RunFailureStageLike> | null;
+}): string | null {
+  const runLevel = errorMessage?.trim();
+  if (runLevel) return runLevel;
+  return causingStage(stages ?? [])?.error_message?.trim() || null;
+}
 
 /** Run statuses this module speaks for. Anything else returns null. */
 const TERMINAL_FAILURE_STATUSES = new Set(["failed", "cancelled"]);
@@ -182,12 +211,39 @@ export function summarizeRunFailure({
   status,
   errorMessage,
   stages,
+  failureCount,
+  lastFailureMessage,
 }: {
   status: string | null | undefined;
   errorMessage?: string | null;
   stages?: ReadonlyArray<RunFailureStageLike> | null;
+  /** `model_runs.failure_count` — prior failed attempts this run was relaunched after. */
+  failureCount?: number | null;
+  /** `model_runs.last_failure_message` — the previous failed attempt's recorded reason. */
+  lastFailureMessage?: string | null;
 }): RunFailureSummary | null {
   if (!status || !TERMINAL_FAILURE_STATUSES.has(status)) return null;
+
+  // Repeat framing applies only to a FAILED run with a failed past: a
+  // cancelled run is not a failure, and a first failure has nothing to
+  // compare against. `sameAsLast` is an exact match of recorded reasons —
+  // a conservative comparison that can only under-claim repetition, never
+  // invent it.
+  const priorFailures = status === "failed" && typeof failureCount === "number" && failureCount > 0
+    ? failureCount
+    : 0;
+  const currentRecorded = recordableFailureMessage({ errorMessage, stages });
+  const previousRecorded = lastFailureMessage?.trim() || null;
+  const repeat =
+    priorFailures > 0
+      ? {
+          priorFailures,
+          sameAsLast:
+            currentRecorded !== null &&
+            previousRecorded !== null &&
+            currentRecorded === previousRecorded,
+        }
+      : null;
 
   // The run-level message wins when there is one. The in-app engines and the
   // stale-run reaper both write planner-facing text here, and the reaper's is
@@ -200,6 +256,7 @@ export function summarizeRunFailure({
       stageName: null,
       isRawEngineOutput: false,
       rawMessage: runLevel,
+      repeat,
     };
   }
 
@@ -210,13 +267,20 @@ export function summarizeRunFailure({
   if (!stageMessage) {
     // A run that failed and recorded nothing. Saying so is the honest answer;
     // the alternative that shipped for months was a sentence implying success.
+    // "Re-launch to retry" is advice for a FIRST failure only: once the run
+    // has already been relaunched after failing, repeating it turns the copy
+    // into a treadmill, so a repeat sends the planner to the logs instead.
+    const advice = repeat
+      ? "It has already been relaunched after failing — whoever runs your OpenPlan deployment can check the worker's logs."
+      : "Re-launch to retry — if it fails again, whoever runs your OpenPlan deployment can check the worker's logs.";
     return {
       headline: stageName
-        ? `This run failed during ${stageName} and no reason was recorded. Re-launch to retry — if it fails again, whoever runs your OpenPlan deployment can check the worker's logs.`
-        : "This run failed and no reason was recorded. Re-launch to retry — if it fails again, whoever runs your OpenPlan deployment can check the worker's logs.",
+        ? `This run failed during ${stageName} and no reason was recorded. ${advice}`
+        : `This run failed and no reason was recorded. ${advice}`,
       stageName,
       isRawEngineOutput: false,
       rawMessage: null,
+      repeat,
     };
   }
 
@@ -230,6 +294,7 @@ export function summarizeRunFailure({
       stageName,
       isRawEngineOutput: false,
       rawMessage: stageMessage,
+      repeat,
     };
   }
 
@@ -242,5 +307,6 @@ export function summarizeRunFailure({
     stageName,
     isRawEngineOutput: true,
     rawMessage: stageMessage,
+    repeat,
   };
 }

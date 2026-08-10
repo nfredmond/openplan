@@ -127,6 +127,10 @@ type ManagedModelRun = {
   scenario_entry_id: string | null;
   result_summary_json: Record<string, unknown> | null;
   error_message: string | null;
+  /** Prior failed attempts this run was relaunched after (migration 20260810000001). */
+  failure_count?: number | null;
+  /** The previous failed attempt's recorded reason, captured before the relaunch wiped it. */
+  last_failure_message?: string | null;
   started_at: string | null;
   completed_at: string | null;
   created_at: string | null;
@@ -1216,6 +1220,8 @@ export function ModelRunManager({
                   status: run.status,
                   errorMessage: run.error_message,
                   stages: run.stages,
+                  failureCount: run.failure_count,
+                  lastFailureMessage: run.last_failure_message,
                 });
                 const comparisonCandidates = modelRuns
                   .filter((candidate) => candidate.id !== run.id && candidate.status === "succeeded")
@@ -1259,7 +1265,26 @@ export function ModelRunManager({
                           >
                             {failureSummary.headline}
                           </p>
-                        ) : (
+                        ) : null}
+                        {/*
+                          A REPEAT FAILURE SAYS SO. A relaunch resets the run
+                          row in place, so before failure_count existed a third
+                          failure rendered exactly like a first and the copy
+                          above could suggest retrying forever. Same-error
+                          repeats are the case that matters: they tell the
+                          planner the relaunch button is not the fix.
+                        */}
+                        {failureSummary?.repeat ? (
+                          <p
+                            className="text-sm text-red-700/80 dark:text-red-300/80"
+                            data-testid="run-repeat-failure"
+                          >
+                            {failureSummary.repeat.sameAsLast
+                              ? `This run has now failed ${failureSummary.repeat.priorFailures + 1} times with the same recorded reason — relaunching again without changing something is unlikely to end differently.`
+                              : `This run failed ${failureSummary.repeat.priorFailures} ${failureSummary.repeat.priorFailures === 1 ? "time" : "times"} before, with a different recorded reason.`}
+                          </p>
+                        ) : null}
+                        {failureSummary ? null : (
                           <p className="module-record-summary">
                             {run.error_message ||
                               (run.source_analysis_run_id

@@ -23,6 +23,8 @@ const authGetUserMock = vi.fn();
 const workspaceMaybeSingleMock = vi.fn();
 const runMaybeSingleMock = vi.fn();
 const runUpdateMock = vi.fn();
+const runFailureHistorySelectMock = vi.fn();
+const runFailureHistoryUpdateMock = vi.fn();
 const stageSelectEqMock = vi.fn();
 const stageUpdateMock = vi.fn();
 const stageInsertMock = vi.fn();
@@ -52,16 +54,30 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "model_runs") {
     return {
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle: runMaybeSingleMock })) })),
-      })),
+      // Two distinct reads share this table: the main run load (two .eq's,
+      // full projection) and the failure-history read, which asks for
+      // `failure_count` alone precisely so a pre-migration deployment fails
+      // only the history and never the relaunch.
+      select: vi.fn((columns?: string) => {
+        if (columns === "failure_count") {
+          return { eq: vi.fn(() => ({ maybeSingle: runFailureHistorySelectMock })) };
+        }
+        return {
+          eq: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle: runMaybeSingleMock })) })),
+        };
+      }),
       // The re-queue now reads its own row count back — `.select().maybeSingle()`
       // is what lets a write that matched nothing be answered as its own
-      // outcome instead of passing for success.
+      // outcome instead of passing for success. The failure-history write is
+      // the exception: it is deliberately tolerated, so it awaits the bare
+      // update and is routed by its payload.
       update: (payload: Record<string, unknown>) => ({
         eq: (..._args: unknown[]) => ({
           select: (..._cols: unknown[]) => ({
-            maybeSingle: () => runUpdateMock(payload),
+            maybeSingle: () =>
+              "failure_count" in payload
+                ? runFailureHistoryUpdateMock(payload)
+                : runUpdateMock(payload),
           }),
         }),
       }),
@@ -218,6 +234,8 @@ function givenARelaunchableRun() {
       error: null,
     });
     runUpdateMock.mockResolvedValue({ data: { id: MODEL_RUN_ID }, error: null });
+    runFailureHistorySelectMock.mockResolvedValue({ data: { failure_count: 0 }, error: null });
+    runFailureHistoryUpdateMock.mockResolvedValue({ data: { id: MODEL_RUN_ID }, error: null });
     prepareWorkerZoneAttributesMock.mockResolvedValue(SUPPLIED_STAMP);
     stageSelectEqMock.mockResolvedValue({ data: [{ id: "stage-1" }], error: null });
     stageUpdateMock.mockResolvedValue({ error: null });
@@ -273,6 +291,77 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     // Existing stages get reset rather than re-inserted.
     expect(stageUpdateMock).toHaveBeenCalledTimes(1);
     expect((stageUpdateMock.mock.calls[0][0] as Record<string, unknown>).status).toBe("queued");
+  });
+
+  it("preserves the failure history before wiping the failed run", async () => {
+    /**
+     * The requeue resets status, error_message and every stage IN PLACE, so
+     * without this write a run failing for the third time is
+     * indistinguishable from one failing for the first — and the failure
+     * copy suggests "re-launch to retry" forever. The message captured is the
+     * one `summarizeRunFailure` would have shown (run-level first, else the
+     * causing stage's), via the same exported helper, so the "which message
+     * counts" decision cannot fork.
+     */
+    runMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: MODEL_RUN_ID,
+        status: "failed",
+        engine_key: "aequilibrae",
+        error_message: "KeyError: 'households'",
+      },
+      error: null,
+    });
+    runFailureHistorySelectMock.mockResolvedValue({ data: { failure_count: 2 }, error: null });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    expect(runFailureHistoryUpdateMock).toHaveBeenCalledTimes(1);
+    expect(runFailureHistoryUpdateMock).toHaveBeenCalledWith({
+      failure_count: 3,
+      last_failure_message: "KeyError: 'households'",
+    });
+    // The wipe payload must NOT touch the history columns it just wrote.
+    const wipe = requeuePayload();
+    expect(wipe).not.toHaveProperty("failure_count");
+    expect(wipe).not.toHaveProperty("last_failure_message");
+  });
+
+  it("records no failure history when relaunching a cancelled run", async () => {
+    // A cancelled run is not a failure. Counting it would make a planner who
+    // cancelled twice read "failed 2 times" on a run that never failed.
+    runMaybeSingleMock.mockResolvedValue({
+      data: { id: MODEL_RUN_ID, status: "cancelled", engine_key: "aequilibrae" },
+      error: null,
+    });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    expect(runFailureHistoryUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("relaunches anyway, and audits, when the history columns do not exist yet", async () => {
+    /**
+     * The deploy window: app ships before migration 20260810000001. The
+     * history read fails on the unknown column — and the RELAUNCH must
+     * still work, because losing one increment of history is better than
+     * refusing the recovery path. Audited, never silent.
+     */
+    runFailureHistorySelectMock.mockResolvedValue({
+      data: null,
+      error: { message: "column model_runs.failure_count does not exist", code: "42703" },
+    });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    expect(runFailureHistoryUpdateMock).not.toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "model_run_failure_history_unavailable",
+      expect.objectContaining({ modelRunId: MODEL_RUN_ID })
+    );
   });
 
   it("refuses to re-queue an in-process engine's run to the worker with 409", async () => {
