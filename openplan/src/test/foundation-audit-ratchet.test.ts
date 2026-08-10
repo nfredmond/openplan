@@ -2391,3 +2391,91 @@ describe("the sketch-engine pass is accounted for", () => {
     expect(destination).toContain("export function calculateParkingCost");
   });
 });
+
+/**
+ * PASS 9 — THE SYNTHESIS INTERNALS: `sketch-abm-inputs.ts`, the last unmeasured
+ * slice of the sketch lane. 2026-08-10 (same day as pass 8), twelve mutations
+ * plus a comment-only negative control that survived.
+ *
+ * SIX OF TWELVE KILLED — better than the engine core because this file's test
+ * has real pinned arithmetic (proportional counts, circuity, intrazonal
+ * halving, symmetric skims), and every one of those assertions earned its keep
+ * by killing a mutation. What survived is the demographic synthesis nobody had
+ * pinned: labor-force participation collapsed 0.65 → 0.15 (erasing most work
+ * travel — the single largest driver of VMT — with the trips-per-capita sanity
+ * band none the wiser), jobs split evenly across zones instead of by
+ * population, an income band boundary moved 50k → 30k, children not students
+ * until 15, the income floor removed, and the household-size distribution no
+ * longer summing to 1 (drawCategorical's fallthrough silently reroutes the
+ * missing mass to the largest size).
+ *
+ * CLOSED inside `sketch-abm-inputs.test.ts` ("synthesis internals are pinned"):
+ * exact invariants where the rule is exact (band recomputation from the
+ * documentation, every school-age child a student — with the fixture asserted
+ * non-empty, because an invariant over an empty set proves nothing), seeded
+ * deterministic statistics where it is stochastic (participation 0.662,
+ * below-50k share 0.253, size-2 share 0.357 with this seed), and one clamp
+ * pinned by a seed in which it observably BINDS (exactly one income lands on
+ * the 10000 floor). All six survivors re-run against the extended test and
+ * killed; control surviving; restores sha256-verified.
+ */
+const SKETCH_INPUTS_AUDIT = {
+  date: "2026-08-10",
+  mutationsRun: 12,
+  killed: 6,
+  survived: 6,
+  killedByTheCompiler: 0,
+  killedByTheLintGate: 0,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 6,
+  /** The 6 surviving mutations re-run against the extended test: all killed. */
+  guardMutationsRun: 6,
+  guardMutationsKilled: 6,
+};
+
+const SKETCH_INPUTS_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/lib/models/sketch-abm/sketch-abm-inputs.ts": {
+    sampledBy: ["src/test/sketch-abm-inputs.test.ts"],
+    mutations: 12,
+    survivors: 6,
+  },
+};
+
+describe("the sketch-inputs pass is accounted for", () => {
+  it("adds up", () => {
+    expect(
+      SKETCH_INPUTS_AUDIT.killed +
+        SKETCH_INPUTS_AUDIT.survived +
+        SKETCH_INPUTS_AUDIT.killedByTheCompiler +
+        SKETCH_INPUTS_AUDIT.killedByTheLintGate
+    ).toBe(SKETCH_INPUTS_AUDIT.mutationsRun);
+    const perFile = Object.values(SKETCH_INPUTS_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      SKETCH_INPUTS_AUDIT.mutationsRun
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(
+      SKETCH_INPUTS_AUDIT.survived
+    );
+  });
+
+  it("closed every survivor it found", () => {
+    expect(SKETCH_INPUTS_AUDIT.survivorsClosed).toBe(SKETCH_INPUTS_AUDIT.survived);
+    expect(SKETCH_INPUTS_AUDIT.guardMutationsKilled).toBe(SKETCH_INPUTS_AUDIT.guardMutationsRun);
+  });
+
+  it("still has the surface it measured, and the guard that closed it", () => {
+    for (const file of Object.keys(SKETCH_INPUTS_AUDITED_PRODUCTION_FILES)) {
+      expect(existsSync(repoPath(file))).toBe(true);
+    }
+    for (const entry of Object.values(SKETCH_INPUTS_AUDITED_PRODUCTION_FILES)) {
+      for (const test of entry.sampledBy) {
+        expect(existsSync(repoPath(test))).toBe(true);
+      }
+    }
+    // The closing describe block, by its exact title — the per-survivor tests
+    // live inside the sampledBy file rather than a file of their own.
+    const guard = readFileSync(repoPath("src/test/sketch-abm-inputs.test.ts"), "utf8");
+    expect(guard).toContain('describe("synthesis internals are pinned (pass 9)"');
+  });
+});

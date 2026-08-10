@@ -283,6 +283,112 @@ describe("zoneSampleSkewPct", () => {
   });
 });
 
+describe("synthesis internals are pinned (pass 9)", () => {
+  /**
+   * The 2026-08-10 Pass 9 mutation audit: 6 of 12 mutations on this file's
+   * synthesis internals survived every reachable test — labor-force
+   * participation collapsed to 0.15, jobs split evenly instead of by
+   * population, an income band boundary moved, children not students until
+   * 15, the household-size distribution no longer summing to 1, the income
+   * floor removed. The sanity bands downstream are too wide to notice any of
+   * them. These tests pin the synthesis directly: hard invariants where the
+   * rule is exact, seeded deterministic statistics where it is stochastic.
+   */
+  function pass9Build() {
+    return buildSketchAbmInputs({
+      censusTracts: [
+        { geoid: "A", population: 7500, totalHouseholds: 3000, lon: -121.5, lat: 39.5 },
+        { geoid: "B", population: 2500, totalHouseholds: 1000, lon: -121.4, lat: 39.6 },
+      ],
+      lodesJobs: { totalJobs: 400 },
+      seed: 20260810,
+    });
+  }
+
+  it("allocates jobs to zones by population share, exactly", () => {
+    // 400 jobs, population 7500/2500 -> 300/100. An even split would say
+    // 200/200 and every destination size term would be wrong everywhere.
+    const { inputs } = pass9Build();
+    expect(inputs.zones.find((z) => z.id === "A")?.total_employment).toBe(300);
+    expect(inputs.zones.find((z) => z.id === "B")?.total_employment).toBe(100);
+  });
+
+  it("keeps every person's income_category on the documented bands", () => {
+    // The bands (<25k, <50k, <75k, <100k, <150k, 150k+) are recomputed HERE
+    // from the documentation, then compared against what synthesis assigned —
+    // so a moved boundary fails the moment any household's income falls
+    // between the two versions.
+    const documentedBand = (income: number) =>
+      income < 25000 ? 1 : income < 50000 ? 2 : income < 75000 ? 3 : income < 100000 ? 4 : income < 150000 ? 5 : 6;
+    const { inputs } = pass9Build();
+    for (const household of inputs.households) {
+      for (const person of household.persons) {
+        expect(person.income_category).toBe(documentedBand(household.income));
+      }
+    }
+  });
+
+  it("clamps incomes to the documented floor, and the floor binds", () => {
+    // With this seed one draw lands below $10k and is clamped to exactly
+    // 10000 — so the clamp's existence is observable, not assumed: remove
+    // the floor and the minimum drops below 10000.
+    const { inputs } = pass9Build();
+    const incomes = inputs.households.map((h) => h.income);
+    expect(Math.min(...incomes)).toBe(10000);
+    expect(Math.max(...incomes)).toBeLessThanOrEqual(500000);
+  });
+
+  it("draws incomes with the documented dispersion, not a point mass", () => {
+    // sigma 0.6 around a $75k median puts roughly a quarter of households
+    // below $50k (0.253 with this seed). No dispersion puts none there.
+    const { inputs } = pass9Build();
+    const below50k =
+      inputs.households.filter((h) => h.income < 50000).length / inputs.households.length;
+    expect(below50k).toBeGreaterThan(0.2);
+    expect(below50k).toBeLessThan(0.31);
+  });
+
+  it("keeps the documented labor-force participation (seeded)", () => {
+    // First adults participate at 0.65 (0.662 with this seed). This is the
+    // input every work tour hangs off — the mutation collapsing it to 0.15
+    // erased most work travel and no downstream band noticed.
+    const { inputs } = pass9Build();
+    const share =
+      inputs.households.filter((h) => h.persons[0]?.worker).length / inputs.households.length;
+    expect(share).toBeGreaterThan(0.6);
+    expect(share).toBeLessThan(0.71);
+  });
+
+  it("makes every child of school age a student, exactly", () => {
+    // The rule is exact (students from age 5), so the test is an invariant,
+    // not a band. Requires the fixture to contain school-age children, and
+    // asserts it does — an invariant over an empty set proves nothing.
+    const { inputs } = pass9Build();
+    const children = inputs.households
+      .flatMap((h) => h.persons)
+      .filter((p) => p.age >= 5 && p.age < 18);
+    expect(children.length).toBeGreaterThan(100);
+    for (const child of children) {
+      expect(child.student).toBe(true);
+    }
+  });
+
+  it("draws household sizes from the documented distribution (seeded)", () => {
+    // Size-2 households are p=0.35 (0.357 with this seed). A distribution
+    // that no longer sums to 1 silently reroutes the missing mass to the
+    // last entry via drawCategorical's fallthrough — size-2 collapses and
+    // size-5 balloons, and no test noticed.
+    const { inputs } = pass9Build();
+    const size2 =
+      inputs.households.filter((h) => h.persons.length === 2).length / inputs.households.length;
+    const size5 =
+      inputs.households.filter((h) => h.persons.length === 5).length / inputs.households.length;
+    expect(size2).toBeGreaterThan(0.31);
+    expect(size2).toBeLessThan(0.4);
+    expect(size5).toBeLessThan(0.12);
+  });
+});
+
 describe("seedFromRunId", () => {
   it("derives a stable 32-bit seed from a run UUID", () => {
     const runId = "22222222-2222-4222-8222-222222222222";
