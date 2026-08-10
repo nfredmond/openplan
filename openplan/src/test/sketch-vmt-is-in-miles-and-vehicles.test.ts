@@ -115,6 +115,7 @@ function kpiRows() {
     totalRealHouseholds: 500,
     syntheticHouseholds: 100,
     expansionFactor: sketchExpansionFactor(500, 100),
+    zoneSampleSkewPct: 0.25,
   });
 }
 
@@ -243,6 +244,22 @@ describe("sketch VMT KPI rows", () => {
     expect(row?.breakdown_json.km_to_miles).toBe(KM_TO_MILES);
     expect(row?.breakdown_json.sample_vehicle_km).toBeCloseTo(SAMPLE_VEHICLE_KM, 12);
     expect(row?.unit).toBe("vehicle-miles/day");
+  });
+
+  it("carries the zone-sampling skew on every expanded KPI", () => {
+    // The synthetic sample's per-zone one-household floor drifts the zone mix
+    // away from ACS; the drift is computed per run (a static number measured
+    // on one geography would be wrong on another) and every KPI that was
+    // expansion-weighted must disclose it. Measured 2026-08-10: 0.01% VMT
+    // effect on the 26-tract benchmark package; it grows with zone count.
+    const rows = kpiRows();
+    for (const name of ["total_tours", "total_trips", "daily_vmt", "vmt_per_capita"]) {
+      const row = rows.find((candidate) => candidate.kpi_name === name);
+      expect(row?.breakdown_json.zone_sample_skew_pct, name).toBe(0.25);
+      expect(String(row?.breakdown_json.zone_sample_skew_note ?? ""), name).toContain(
+        "one-household minimum"
+      );
+    }
   });
 
   it("keeps the occupancy assumptions and the vehicle-mile factors reciprocal", () => {

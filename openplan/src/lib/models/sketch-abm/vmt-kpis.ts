@@ -136,6 +136,8 @@ export function buildSketchAbmKpiRows(params: {
   totalRealHouseholds: number;
   syntheticHouseholds: number;
   expansionFactor: number;
+  /** From buildSketchAbmInputs — see SketchAbmBuildResult.zoneSampleSkewPct. */
+  zoneSampleSkewPct: number;
 }): SketchAbmKpiRow[] {
   const {
     modelRunId,
@@ -146,6 +148,7 @@ export function buildSketchAbmKpiRows(params: {
     totalRealHouseholds,
     syntheticHouseholds,
     expansionFactor,
+    zoneSampleSkewPct,
   } = params;
   const dailyVmt = sampleVehicleKm * expansionFactor * KM_TO_MILES;
   const vmtPerCapita = populationTotal > 0 ? dailyVmt / populationTotal : null;
@@ -156,6 +159,14 @@ export function buildSketchAbmKpiRows(params: {
     expansion_factor: expansionFactor,
     synthetic_households: syntheticHouseholds,
     total_real_households: totalRealHouseholds,
+    // Every expanded KPI carries the sampling caveat, computed for THIS run's
+    // geography rather than asserted once for a geography it wasn't measured
+    // on: the synthetic sample keeps every populated zone represented (min 1
+    // household), which over-weights zones too small to earn one
+    // proportionally, and the single expansion factor cannot correct that.
+    zone_sample_skew_pct: zoneSampleSkewPct,
+    zone_sample_skew_note:
+      "Share of the expanded household base allocated to a different zone than the ACS distribution implies, from the per-zone one-household minimum in the synthetic sample. Expanded KPIs (VMT, tours, trips) are built from a sample whose zone mix drifts from ACS by this share.",
   };
 
   const row = (

@@ -908,6 +908,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             inputs: abmInputs,
             totalRealHouseholds,
             syntheticHouseholds,
+            zoneSampleSkewPct,
           } = buildSketchAbmInputs({
             censusTracts: census.tracts,
             lodesJobs: lodes,
@@ -937,6 +938,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             totalRealHouseholds,
             syntheticHouseholds,
             expansionFactor,
+            zoneSampleSkewPct,
           });
 
           const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(kpiRows);
@@ -1001,6 +1003,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 synthetic_persons: abmOutputs.summary.total_persons,
                 total_real_households: totalRealHouseholds,
                 expansion_factor: expansionFactor,
+                // See SketchAbmBuildResult.zoneSampleSkewPct — the per-zone
+                // one-household floor's drift from the ACS zone distribution.
+                zone_sample_skew_pct: zoneSampleSkewPct,
                 total_tours: Math.round(abmOutputs.summary.total_tours * expansionFactor),
                 total_trips: Math.round(abmOutputs.summary.total_trips * expansionFactor),
                 zone_count: abmInputs.zones.length,

@@ -56,6 +56,20 @@ export interface SketchAbmBuildResult {
   /** Number of synthetic households actually generated (≤ roughly
    * SYNTHETIC_HOUSEHOLD_CAP plus one per small zone). */
   syntheticHouseholds: number;
+  /**
+   * How far the synthetic sample's zone distribution drifts from the real ACS
+   * one, as a percentage (total-variation distance × 100): the share of the
+   * expanded household base allocated to a different zone than the ACS
+   * distribution implies. The per-zone minimum (`Math.max(1, …)` in
+   * buildHouseholds) keeps every populated zone represented but over-weights
+   * zones too small to earn a whole household proportionally, and the single
+   * global expansion factor cannot correct for that. Measured 2026-08-10 on
+   * the 26-tract benchmark package: 0.01% VMT effect (the floor never binds
+   * there — the smallest zone earns 10 households on its own). It grows with
+   * zone count: a large study area with many small tracts can push real mass
+   * into floored zones. Zero when the sample is exactly proportional.
+   */
+  zoneSampleSkewPct: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -479,5 +493,33 @@ export function buildSketchAbmInputs(params: SketchAbmInputParams): SketchAbmBui
     inputs: { households, zones, skims },
     totalRealHouseholds,
     syntheticHouseholds: households.length,
+    zoneSampleSkewPct: zoneSampleSkewPct(zones, households, totalRealHouseholds),
   };
+}
+
+/**
+ * Total-variation distance (×100) between the synthetic households' zone
+ * shares and the real ACS zone shares — see SketchAbmBuildResult for what the
+ * number means and why it exists.
+ */
+function zoneSampleSkewPct(
+  zones: Zone[],
+  households: Household[],
+  totalRealHouseholds: number
+): number {
+  if (totalRealHouseholds <= 0 || households.length === 0) return 0;
+  const syntheticByZone = new Map<string, number>();
+  for (const household of households) {
+    syntheticByZone.set(
+      household.home_taz_id,
+      (syntheticByZone.get(household.home_taz_id) ?? 0) + 1
+    );
+  }
+  let totalVariation = 0;
+  for (const zone of zones) {
+    const realShare = zone.total_households / totalRealHouseholds;
+    const syntheticShare = (syntheticByZone.get(zone.id) ?? 0) / households.length;
+    totalVariation += Math.abs(realShare - syntheticShare);
+  }
+  return (totalVariation / 2) * 100;
 }

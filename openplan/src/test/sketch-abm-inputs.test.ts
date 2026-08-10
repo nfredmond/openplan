@@ -235,6 +235,54 @@ describe("buildSketchAbmInputs", () => {
   });
 });
 
+describe("zoneSampleSkewPct", () => {
+  // The per-zone one-household floor over-weights zones too small to earn a
+  // whole household proportionally; zoneSampleSkewPct is the total-variation
+  // distance (x100) between the synthetic and real zone distributions.
+  // Measured 2026-08-10 on the 26-tract benchmark package the skew's VMT
+  // effect was 0.01% — the disclosure exists because the number GROWS with
+  // zone count and a static claim measured on one geography would be wrong
+  // on another.
+
+  it("is exactly zero when the sample is exactly proportional", () => {
+    // 3000 + 1000 real households, cap 2000, scale 0.5: zone counts 1500 and
+    // 500, exactly proportional — no rounding, no floor.
+    const { zoneSampleSkewPct } = buildSketchAbmInputs({
+      censusTracts: [
+        { geoid: "A", population: 7500, totalHouseholds: 3000, lon: -121.5, lat: 39.5 },
+        { geoid: "B", population: 2500, totalHouseholds: 1000, lon: -121.4, lat: 39.6 },
+      ],
+      lodesJobs: { totalJobs: 1000 },
+      seed: 1,
+    });
+    expect(zoneSampleSkewPct).toBe(0);
+  });
+
+  it("measures the floor's over-weighting of a tiny zone, hand-computed", () => {
+    // A: 9000 real, B: 1 real. scale = 2000/9001. A earns round(1999.78) =
+    // 2000; B earns round(0.22) = 0, floored to 1. Real shares: 9000/9001
+    // and 1/9001; synthetic shares: 2000/2001 and 1/2001.
+    // |Δ| per zone = 7000/18011001; TV×100 = 100 × 7000/18011001
+    //             = 0.0388651...% — the tiny zone is ~4.5x over-represented.
+    const { zoneSampleSkewPct, syntheticHouseholds } = buildSketchAbmInputs({
+      censusTracts: [
+        { geoid: "A", population: 22500, totalHouseholds: 9000, lon: -121.5, lat: 39.5 },
+        { geoid: "B", population: 3, totalHouseholds: 1, lon: -121.4, lat: 39.6 },
+      ],
+      lodesJobs: { totalJobs: 1000 },
+      seed: 1,
+    });
+    expect(syntheticHouseholds).toBe(2001);
+    expect(zoneSampleSkewPct).toBeCloseTo((100 * 7000) / 18011001, 10);
+  });
+
+  it("stays a rounding-only skew on the standard fixture", () => {
+    const { zoneSampleSkewPct } = build();
+    expect(zoneSampleSkewPct).toBeGreaterThanOrEqual(0);
+    expect(zoneSampleSkewPct).toBeLessThan(0.05);
+  });
+});
+
 describe("seedFromRunId", () => {
   it("derives a stable 32-bit seed from a run UUID", () => {
     const runId = "22222222-2222-4222-8222-222222222222";
