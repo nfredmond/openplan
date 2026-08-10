@@ -107,7 +107,30 @@ export function ThemeControls({ className = "" }: { className?: string }) {
         })}
       </div>
 
-      <div className="relative" ref={paletteRef}>
+      {/*
+        SAME SHELL AS THE MODE SWITCH, BY CONSTRUCTION.
+
+        The border, background, radius and 4px inset live out here, and the
+        button inside is plain — which is exactly how the mode switch above is
+        built. The two controls sit side by side in the header, and while the
+        palette pill carried its own border it rendered 10px shorter than the
+        switch beside it, because it was one padded element where the other was
+        a padded box around a padded button.
+
+        Matching the STRUCTURE rather than nudging a padding value is what keeps
+        them the same height: a change to the mode switch's inset or icon size
+        now moves both, instead of leaving a mismatch for someone to notice in a
+        screenshot months later.
+
+        The width is deliberately NOT matched. This control holds an icon and a
+        swatch; the switch holds two icons, so it is wider. Stretching this to
+        the same width would put back the wide empty pill that the palette NAME
+        used to fill — see the note in cartographic.css.
+      */}
+      <div
+        className="relative flex items-center rounded-xl border border-border/70 bg-background/70 p-1"
+        ref={paletteRef}
+      >
         <button
           type="button"
           onClick={() => setPaletteOpen((open) => !open)}
@@ -125,12 +148,12 @@ export function ThemeControls({ className = "" }: { className?: string }) {
           */
           title={`Colour palette: ${activePalette.label}`}
           aria-label={`Colour palette: ${activePalette.label}`}
-          className="flex items-center gap-1.5 rounded-xl border border-border/70 bg-background/70 px-2 py-1.5 text-muted-foreground transition-colors hover:text-foreground"
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
         >
-          <Palette className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
+          <Palette className="h-4 w-4 shrink-0" strokeWidth={1.9} />
           <span
             aria-hidden="true"
-            className="h-3.5 w-3.5 shrink-0 rounded-full border border-border/70"
+            className="h-4 w-4 shrink-0 rounded-full border border-border/70"
             style={{ background: swatchFor(activePalette, theme).accent }}
           />
         </button>

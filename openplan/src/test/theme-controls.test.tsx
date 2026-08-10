@@ -53,6 +53,44 @@ describe("ThemeControls", () => {
     expect(screen.getByTestId("theme-mode-dark")).toHaveAccessibleName("Dark mode");
   });
 
+  /**
+   * The two appearance controls sit side by side in the header and must read as
+   * one pair.
+   *
+   * They did not. The palette pill rendered 10px shorter than the mode switch
+   * beside it (27.4px against 37.3px, measured in the browser) because it was
+   * built differently: one padded element carrying its own border, where the
+   * switch is a padded box AROUND a padded button. Reported 2026-08-10.
+   *
+   * jsdom computes no layout, so this cannot assert a height. What it can
+   * assert is the thing that CAUSED the mismatch — the two shells are built the
+   * same way. Tuning a padding value until the pixels agreed would have left
+   * nothing for a test to hold on to, and the next change to either control
+   * would have pulled them apart again.
+   */
+  it("gives the palette pill the same shell as the mode switch", async () => {
+    renderControls();
+
+    const modeShell = (await screen.findByRole("group", { name: "Colour mode" })).className;
+    const paletteShell = screen.getByTestId("theme-palette-trigger").parentElement?.className ?? "";
+
+    for (const shellClass of ["rounded-xl", "border", "border-border/70", "bg-background/70", "p-1"]) {
+      expect(modeShell, `mode switch shell lost ${shellClass}`).toContain(shellClass);
+      expect(paletteShell, `palette pill shell is missing ${shellClass}`).toContain(shellClass);
+    }
+
+    // ...and the inner buttons carry the same inset and icon box, which is what
+    // makes the two shells resolve to the same height.
+    for (const testId of ["theme-mode-light", "theme-mode-dark", "theme-palette-trigger"]) {
+      const button = screen.getByTestId(testId);
+      expect(button.className, `${testId} inset`).toContain("px-2.5");
+      expect(button.className, `${testId} inset`).toContain("py-1.5");
+      for (const icon of button.querySelectorAll("svg, span[aria-hidden='true']")) {
+        expect(icon.getAttribute("class") ?? "", `${testId} icon box`).toContain("h-4 w-4");
+      }
+    }
+  });
+
   it("marks the current mode rather than the action", async () => {
     renderControls();
 
