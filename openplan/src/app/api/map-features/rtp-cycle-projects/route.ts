@@ -47,11 +47,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
-import { parseOptionalAmount } from "@/lib/money/optional-amount";
-import {
-  buildMapLayerDisclosure,
-  MAP_FEATURE_LAYER_LIMIT,
-} from "@/lib/cartographic/layer-disclosure";
+import { MAP_FEATURE_LAYER_LIMIT } from "@/lib/cartographic/layer-disclosure";
 /**
  * The projection and the payload shape live in a lib module, not here: Next's
  * generated route types reject a non-handler VALUE export from `route.ts`, and
@@ -59,61 +55,15 @@ import {
  * string. See the module's own header.
  */
 import {
+  buildRtpCycleProjectFeatureCollection,
   RTP_CYCLE_PROJECT_MAP_COLUMNS,
-  type RtpCycleProjectFeature,
-  type RtpCycleProjectFeatureCollection,
+  type RtpCycleProjectLinkRow,
 } from "@/lib/cartographic/rtp-cycle-project-layer";
 
 /** The migration that added `horizon_band_id`, `estimated_cost` and `cost_basis_year`. */
 const FINANCIAL_ELEMENT_MIGRATION = "20260805000003_rtp_financial_element.sql";
 
 const querySchema = z.object({ rtpCycleId: z.string().uuid() });
-
-type LinkedProjectRow = {
-  id: string;
-  name: string | null;
-  status: string | null;
-  latitude: number | string | null;
-  longitude: number | string | null;
-};
-
-type CycleProjectLinkRow = {
-  id: string;
-  project_id: string;
-  portfolio_role: string | null;
-  horizon_band_id: string | null;
-  estimated_cost: number | string | null;
-  cost_basis_year: number | null;
-  projects: LinkedProjectRow | LinkedProjectRow[] | null;
-};
-
-/**
- * PostgREST returns an embedded to-one relation as an object or a one-element
- * array depending on driver plumbing; both spellings appear in this repo.
- */
-function unwrapProject(value: CycleProjectLinkRow["projects"]): LinkedProjectRow | null {
-  if (Array.isArray(value)) return value[0] ?? null;
-  return value ?? null;
-}
-
-/**
- * Lat/lng are NUMERIC, so PostgREST may hand them back as strings. Out-of-range
- * values are rejected as well as unparseable ones: the row-level CHECK
- * constraints in 20260421000065 already refuse them, and this is the defense in
- * depth every sibling layer applies — a coordinate outside the globe draws a
- * dot somewhere, which is worse than drawing none.
- */
-function coerceLat(value: unknown): number | null {
-  const n = typeof value === "string" ? Number.parseFloat(value) : typeof value === "number" ? value : NaN;
-  if (!Number.isFinite(n) || n < -90 || n > 90) return null;
-  return n;
-}
-
-function coerceLng(value: unknown): number | null {
-  const n = typeof value === "string" ? Number.parseFloat(value) : typeof value === "number" ? value : NaN;
-  if (!Number.isFinite(n) || n < -180 || n > 180) return null;
-  return n;
-}
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("map-features.rtp-cycle-projects", request);
@@ -222,68 +172,21 @@ export async function GET(request: NextRequest) {
     // `as unknown as` because an embedded relation in the projection makes
     // supabase-js infer `GenericStringError[]` — the untyped-client convention
     // this repo keeps deliberately (see the CLAUDE.md note on generated types).
-    const rows = (data ?? []) as unknown as CycleProjectLinkRow[];
+    const rows = (data ?? []) as unknown as RtpCycleProjectLinkRow[];
 
-    const features: RtpCycleProjectFeature[] = [];
-    let withoutGeometry = 0;
-    let withoutReadableProject = 0;
-
-    for (const row of rows) {
-      const project = unwrapProject(row.projects);
-
-      if (!project) {
-        withoutReadableProject += 1;
-        continue;
-      }
-
-      const lat = coerceLat(project.latitude);
-      const lng = coerceLng(project.longitude);
-
-      if (lat === null || lng === null) {
-        withoutGeometry += 1;
-        continue;
-      }
-
-      features.push({
-        type: "Feature",
-        id: row.id,
-        geometry: { type: "Point", coordinates: [lng, lat] },
-        properties: {
-          kind: "rtp_cycle_project",
-          linkId: row.id,
-          projectId: project.id,
-          projectName: project.name,
-          projectStatus: project.status,
-          portfolioRole: row.portfolio_role,
-          horizonBandId: row.horizon_band_id,
-          estimatedCost: parseOptionalAmount(row.estimated_cost),
-          costBasisYear: row.cost_basis_year,
-        },
-      });
-    }
-
-    const droppedCount = withoutGeometry + withoutReadableProject;
+    // Assembly lives in the layer lib because the public plan share page
+    // builds the SAME collection server-side; a route-private copy would let
+    // the two maps drift about the same plan.
+    const payload = buildRtpCycleProjectFeatureCollection(rows, count);
 
     audit.info("rtp_cycle_projects_loaded", {
       rtpCycleId: query.data.rtpCycleId,
       workspaceId: membership.workspace_id,
-      count: features.length,
-      withoutGeometry,
-      withoutReadableProject,
+      count: payload.features.length,
+      withoutGeometry: payload.withoutGeometry,
+      withoutReadableProject: payload.withoutReadableProject,
       durationMs: Date.now() - startedAt,
     });
-
-    const payload: RtpCycleProjectFeatureCollection = {
-      type: "FeatureCollection",
-      features,
-      withoutGeometry,
-      withoutReadableProject,
-      ...buildMapLayerDisclosure({
-        returnedCount: features.length,
-        droppedCount,
-        matchedCount: count,
-      }),
-    };
 
     return NextResponse.json(payload, { status: 200 });
   } catch (error) {

@@ -2,6 +2,13 @@ import { notFound } from "next/navigation";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { formatRtpPortfolioRoleLabel } from "@/lib/rtp/catalog";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
+import { RtpCycleProjectMap } from "@/components/rtp/rtp-cycle-project-map";
+import { MAP_FEATURE_LAYER_LIMIT } from "@/lib/cartographic/layer-disclosure";
+import {
+  buildRtpCycleProjectFeatureCollection,
+  RTP_CYCLE_PROJECT_MAP_COLUMNS,
+  type RtpCycleProjectLinkRow,
+} from "@/lib/cartographic/rtp-cycle-project-layer";
 import {
   buildPortfolioPriorityNarrative,
   buildRtpPriorityRationale,
@@ -132,6 +139,31 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     .select("id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, projects(id, name, status, summary)")
     .eq("rtp_cycle_id", cycle.id);
   const linksFailed = reads.check("the projects in this plan", linksResult);
+
+  // The same per-cycle project map the agency sees, built HERE with the page's
+  // own service-role client because the members-only map route would answer a
+  // resident 401. Same projection, same lib builder, so the two maps cannot
+  // drift about one plan. The workspace filter is scoping the map to the
+  // cycle's own workspace, exactly as the route does — a link row whose
+  // workspace ever diverged from its cycle's must not be drawn on a public
+  // page. Decision #1 (2026-08-03) asked for this map on the public review
+  // surface; every property it exposes (name, role, cost) is already published
+  // by the lists on this page and the document page.
+  const mapLinksResult = await supabase
+    .from("project_rtp_cycle_links")
+    .select(RTP_CYCLE_PROJECT_MAP_COLUMNS, { count: "exact" })
+    .eq("rtp_cycle_id", cycle.id)
+    .eq("workspace_id", cycle.workspace_id)
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true })
+    .limit(MAP_FEATURE_LAYER_LIMIT);
+  const mapFailed = reads.check("the project map", mapLinksResult);
+  const mapCollection = mapFailed
+    ? null
+    : buildRtpCycleProjectFeatureCollection(
+        (mapLinksResult.data ?? []) as unknown as RtpCycleProjectLinkRow[],
+        mapLinksResult.count ?? null
+      );
 
   const links = (linksResult.data ?? []) as LinkRow[];
   const evidenceRunIds = Array.from(
@@ -278,6 +310,20 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
           The plan&apos;s chapters, its financial element, and the full project lists.
         </p>
       </section>
+
+      {/*
+        Rendered only when its read succeeded: the page's amber banner already
+        tells the reader part of the page is missing, and mounting the map
+        over a failed read would draw an empty plan — the exact claim a failed
+        read may not make. A collection with zero located projects still
+        renders, because "no project has a location recorded yet" is a true
+        statement the component makes honestly.
+      */}
+      {mapCollection ? (
+        <section className="mt-8">
+          <RtpCycleProjectMap audience="public" collection={mapCollection} />
+        </section>
+      ) : null}
 
       <section className="mt-8 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Projects, ranked by priority</h2>

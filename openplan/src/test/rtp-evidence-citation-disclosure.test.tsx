@@ -34,6 +34,15 @@ vi.mock("next/navigation", () => ({
 // ---------------------------------------------------------------------------
 
 const selectCalls: Record<string, string[]> = {};
+/**
+ * The `.eq()` column names of each read, aligned with `selectCalls` by index.
+ * Recorded because this page runs on the SERVICE-ROLE client: RLS is not in
+ * play and the filters ARE the access control (the document page proved by
+ * mutation that render assertions are blind to a deleted filter). The map
+ * read's `workspace_id` scope is the thing that keeps a link row whose
+ * workspace diverged from its cycle's off a public page.
+ */
+const filterCalls: Record<string, string[][]> = {};
 let tableData: Record<string, unknown>;
 /**
  * Tables whose read should FAIL this render. A mocked client hands back the
@@ -44,7 +53,7 @@ let tableErrors: Record<string, { message: string }>;
 
 type FakeResult = { data: unknown; error: { message: string } | null };
 
-function fakeQuery(tableName: string) {
+function fakeQuery(tableName: string, filters: string[]) {
   const resolveResult = (): FakeResult => {
     const error = tableErrors[tableName];
     // A failed read carries no rows. Returning the fixture AND an error would
@@ -57,14 +66,17 @@ function fakeQuery(tableName: string) {
     return { data: seeded === undefined ? [] : seeded, error: null };
   };
   const q: {
-    eq: () => typeof q;
+    eq: (column: string, value: unknown) => typeof q;
     in: () => typeof q;
     order: () => typeof q;
     limit: () => typeof q;
     maybeSingle: () => Promise<FakeResult>;
     then: (resolve: (value: FakeResult) => unknown) => Promise<unknown>;
   } = {
-    eq: () => q,
+    eq: (column: string) => {
+      filters.push(column);
+      return q;
+    },
     in: () => q,
     order: () => q,
     limit: () => q,
@@ -77,7 +89,9 @@ function fakeQuery(tableName: string) {
 const fromMock = vi.fn((tableName: string) => ({
   select: vi.fn((columns: string) => {
     (selectCalls[tableName] ??= []).push(columns);
-    return fakeQuery(tableName);
+    const filters: string[] = [];
+    (filterCalls[tableName] ??= []).push(filters);
+    return fakeQuery(tableName, filters);
   }),
 }));
 
@@ -96,6 +110,7 @@ const CA_CRITERIA = resolveRtpPriorityCriteria(US_CA_RTP_PRIORITY_FRAMEWORK);
 
 function seedPublicPageData() {
   for (const key of Object.keys(selectCalls)) delete selectCalls[key];
+  for (const key of Object.keys(filterCalls)) delete filterCalls[key];
   tableErrors = {};
   tableData = {
     rtp_cycles: {
@@ -465,5 +480,106 @@ describe("public plan page — a failed gate read may not 404 as 'this plan does
     expect(screen.queryByText(/This plan could not be loaded/)).toBeNull();
     expect(screen.getByText("Example Region RTP 2050")).toBeTruthy();
     expect(notFoundMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("public plan page — the per-cycle project map (decision #1's public half)", () => {
+  /**
+   * The operator's cycle page got the map in C-4a; the public share page — the
+   * surface decision #1 actually named — did not, and the members-only map
+   * route answers a resident 401. The page therefore builds the SAME payload
+   * with the SAME lib builder from its own service-role read, and these tests
+   * pin the three things that could quietly rot: the read's filters (they are
+   * the entire access control on a service-role page), the shared projection,
+   * and the copy variant (a resident must not be instructed to go edit
+   * projects they cannot open).
+   */
+  const SHARE_TOKEN = "public-share-token-1";
+
+  beforeEach(() => {
+    seedPublicPageData();
+    // The map read and the list read hit the same table; one fixture row
+    // carries the union of both projections (extra fields are harmless to the
+    // list read, and a mocked client returns the fixture whatever was asked).
+    tableData.project_rtp_cycle_links = [
+      {
+        id: "link-1",
+        project_id: "p1",
+        portfolio_role: "constrained",
+        horizon_band_id: null,
+        estimated_cost: "12000000",
+        cost_basis_year: 2026,
+        priority_rationale: "Rationale A",
+        priority_scores: { vmt_reduction: 3 },
+        evidence_model_run_id: null,
+        projects: {
+          id: "p1",
+          name: "Corridor improvements",
+          status: "active",
+          summary: null,
+          latitude: 39.25,
+          longitude: -121.05,
+        },
+      },
+    ];
+  });
+
+  it("renders the agency's own project map for the resident", async () => {
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.getByText("Where this plan is spending")).toBeTruthy();
+  });
+
+  it("asks with the shared projection and scopes by BOTH cycle and workspace", async () => {
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    const { RTP_CYCLE_PROJECT_MAP_COLUMNS } = await import(
+      "@/lib/cartographic/rtp-cycle-project-layer"
+    );
+    const linkSelects = selectCalls.project_rtp_cycle_links ?? [];
+    const mapReadIndex = linkSelects.indexOf(RTP_CYCLE_PROJECT_MAP_COLUMNS);
+    expect(mapReadIndex, "no read used the shared map projection").toBeGreaterThanOrEqual(0);
+
+    // The filters ARE the access control here: the page runs on the service
+    // role, and the workspace scope is what keeps a link row whose workspace
+    // diverged from its cycle's off a public page.
+    const mapReadFilters = (filterCalls.project_rtp_cycle_links ?? [])[mapReadIndex] ?? [];
+    expect(mapReadFilters).toEqual(expect.arrayContaining(["rtp_cycle_id", "workspace_id"]));
+  });
+
+  it("does not instruct the resident to go place projects", async () => {
+    // Same plan, no located projects: the honest empty state renders, but the
+    // operator instruction ("Open a project from the lists above…") is copy
+    // for somebody who can act on it, and a resident cannot.
+    tableData.project_rtp_cycle_links = [
+      {
+        ...(tableData.project_rtp_cycle_links as Array<Record<string, unknown>>)[0],
+        projects: {
+          id: "p1",
+          name: "Corridor improvements",
+          status: "active",
+          summary: null,
+          latitude: null,
+          longitude: null,
+        },
+      },
+    ];
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.getByText(/No project in this plan has a location recorded yet/)).toBeTruthy();
+    expect(screen.queryByText(/Open a project from the lists above/)).toBeNull();
+    expect(screen.queryByText(/Attach projects to this cycle/)).toBeNull();
+  });
+
+  it("renders no map over a failed read, and the banner says part is missing", async () => {
+    tableErrors.project_rtp_cycle_links = { message: "permission denied for table" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    // Mounting the map over a failed read would draw an empty plan — the
+    // exact claim a failed read may not make.
+    expect(screen.queryByText("Where this plan is spending")).toBeNull();
+    expect(screen.getByText(/Part of this plan could not be loaded/)).toBeTruthy();
   });
 });

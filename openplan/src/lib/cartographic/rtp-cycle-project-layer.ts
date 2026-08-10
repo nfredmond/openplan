@@ -19,7 +19,8 @@
  * would drift.
  */
 
-import type { MapLayerFeatureCollection } from "./layer-disclosure";
+import { buildMapLayerDisclosure, type MapLayerFeatureCollection } from "./layer-disclosure";
+import { parseOptionalAmount } from "@/lib/money/optional-amount";
 
 /**
  * The columns the layer renders from.
@@ -75,3 +76,103 @@ export type RtpCycleProjectFeatureCollection = MapLayerFeatureCollection<RtpCycl
   /** Links whose embedded project row came back empty. */
   withoutReadableProject: number;
 };
+
+/** A row as `RTP_CYCLE_PROJECT_MAP_COLUMNS` returns it, before any coercion. */
+export type RtpCycleProjectLinkRow = {
+  id: string;
+  project_id: string;
+  portfolio_role: string | null;
+  horizon_band_id: string | null;
+  estimated_cost: number | string | null;
+  cost_basis_year: number | null;
+  projects:
+    | { id: string; name: string | null; status: string | null; latitude: number | string | null; longitude: number | string | null }
+    | Array<{ id: string; name: string | null; status: string | null; latitude: number | string | null; longitude: number | string | null }>
+    | null;
+};
+
+/**
+ * PostgREST returns an embedded to-one relation as an object or a one-element
+ * array depending on driver plumbing; both spellings appear in this repo.
+ */
+function unwrapProject(value: RtpCycleProjectLinkRow["projects"]) {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+/**
+ * Lat/lng are NUMERIC, so PostgREST may hand them back as strings. Out-of-range
+ * values are rejected as well as unparseable ones: the row-level CHECK
+ * constraints in 20260421000065 already refuse them, and this is the defense in
+ * depth every sibling layer applies — a coordinate outside the globe draws a
+ * dot somewhere, which is worse than drawing none.
+ */
+function coerceCoordinate(value: unknown, bound: number): number | null {
+  const n = typeof value === "string" ? Number.parseFloat(value) : typeof value === "number" ? value : NaN;
+  if (!Number.isFinite(n) || n < -bound || n > bound) return null;
+  return n;
+}
+
+/**
+ * Rows → the layer payload. Extracted from the members-only route when the
+ * public plan share page grew the same map: a second copy of the geometry
+ * coercion or the withoutGeometry/withoutReadableProject accounting would
+ * drift, and the two maps would silently disagree about the same plan — the
+ * shared-capability-inside-one-caller seam defect, pre-empted rather than
+ * shipped this time. Pure, so both callers (route and server component) can
+ * use it as-is.
+ */
+export function buildRtpCycleProjectFeatureCollection(
+  rows: RtpCycleProjectLinkRow[],
+  matchedCount: number | null
+): RtpCycleProjectFeatureCollection {
+  const features: RtpCycleProjectFeature[] = [];
+  let withoutGeometry = 0;
+  let withoutReadableProject = 0;
+
+  for (const row of rows) {
+    const project = unwrapProject(row.projects);
+
+    if (!project) {
+      withoutReadableProject += 1;
+      continue;
+    }
+
+    const lat = coerceCoordinate(project.latitude, 90);
+    const lng = coerceCoordinate(project.longitude, 180);
+
+    if (lat === null || lng === null) {
+      withoutGeometry += 1;
+      continue;
+    }
+
+    features.push({
+      type: "Feature",
+      id: row.id,
+      geometry: { type: "Point", coordinates: [lng, lat] },
+      properties: {
+        kind: "rtp_cycle_project",
+        linkId: row.id,
+        projectId: project.id,
+        projectName: project.name,
+        projectStatus: project.status,
+        portfolioRole: row.portfolio_role,
+        horizonBandId: row.horizon_band_id,
+        estimatedCost: parseOptionalAmount(row.estimated_cost),
+        costBasisYear: row.cost_basis_year,
+      },
+    });
+  }
+
+  return {
+    type: "FeatureCollection",
+    features,
+    withoutGeometry,
+    withoutReadableProject,
+    ...buildMapLayerDisclosure({
+      returnedCount: features.length,
+      droppedCount: withoutGeometry + withoutReadableProject,
+      matchedCount,
+    }),
+  };
+}

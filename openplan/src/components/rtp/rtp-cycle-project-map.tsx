@@ -220,8 +220,36 @@ function buildPopupContent(properties: Record<string, unknown>): HTMLElement {
   return content;
 }
 
-export function RtpCycleProjectMap({ rtpCycleId }: { rtpCycleId: string }) {
-  const [state, setState] = useState<LoadState>({ status: "loading" });
+/**
+ * Two ways in, one map.
+ *
+ * `{ rtpCycleId }` is the members-only cycle page: the component fetches from
+ * `/api/map-features/rtp-cycle-projects`, which authorizes by workspace
+ * membership. `{ collection }` is the PUBLIC plan share page: the server
+ * component there is authorized by the share token, reads with the service
+ * role, builds the same payload with the same lib builder, and hands it in —
+ * this component never fetches, because the members-only route would answer
+ * a resident 401.
+ *
+ * `audience: "public"` changes COPY only, never data: the empty states stop
+ * instructing the reader to go place projects (a resident cannot), and say
+ * what is true instead. Everything honest — the coverage notes, the
+ * missing-key notice, the "no location recorded" counts — renders for both
+ * audiences, because a resident misled by an empty map is the defect the
+ * counts exist to prevent.
+ */
+type RtpCycleProjectMapProps =
+  | { rtpCycleId: string; audience?: "operator" }
+  | { collection: RtpCycleProjectFeatureCollection; audience: "public" };
+
+export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
+  const suppliedCollection = "collection" in props ? props.collection : null;
+  const rtpCycleId = "rtpCycleId" in props ? props.rtpCycleId : null;
+  const isPublic = props.audience === "public";
+
+  const [state, setState] = useState<LoadState>(
+    suppliedCollection ? { status: "ready", collection: suppliedCollection } : { status: "loading" }
+  );
   const [mapStartupFailed, setMapStartupFailed] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -229,6 +257,7 @@ export function RtpCycleProjectMap({ rtpCycleId }: { rtpCycleId: string }) {
   const styleLoadedRef = useRef(false);
 
   useEffect(() => {
+    if (rtpCycleId === null) return;
     const controller = new AbortController();
     setState({ status: "loading" });
 
@@ -465,11 +494,20 @@ export function RtpCycleProjectMap({ rtpCycleId }: { rtpCycleId: string }) {
                   ? "No project in this plan has a location recorded yet"
                   : "No projects are in this plan yet"}
               </p>
-              <p className="mx-auto mt-1.5 max-w-prose text-sm text-muted-foreground">
-                {collection && collection.matchedCount > 0
-                  ? "Open a project from the lists above and set its location. Each one you place appears here, coloured by its role in this plan."
-                  : "Attach projects to this cycle from a project's own page, then record where each one is. The map fills in as they are placed."}
-              </p>
+              {/*
+                The second sentence is instructions, and instructions are for
+                the person who can follow them. A resident on the public share
+                page cannot open a project and set its location, so telling
+                them to is copy written for somebody else — the first sentence
+                already says everything that is true for them.
+              */}
+              {isPublic ? null : (
+                <p className="mx-auto mt-1.5 max-w-prose text-sm text-muted-foreground">
+                  {collection && collection.matchedCount > 0
+                    ? "Open a project from the lists above and set its location. Each one you place appears here, coloured by its role in this plan."
+                    : "Attach projects to this cycle from a project's own page, then record where each one is. The map fills in as they are placed."}
+                </p>
+              )}
             </div>
           ) : !MAPBOX_ACCESS_TOKEN ? null : mapStartupFailed ? (
             <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
