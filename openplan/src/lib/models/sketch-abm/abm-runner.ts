@@ -15,7 +15,7 @@
  * (see mode-choice.ts). Screening-grade sketch model.
  */
 
-import { chooseDestination } from "./destination-choice";
+import { calculateParkingCost, chooseDestination } from "./destination-choice";
 import { aggregateMode, chooseTourMode } from "./mode-choice";
 import { scheduleTours } from "./time-of-day-choice";
 import { withSeededRandom } from "./rng";
@@ -125,7 +125,7 @@ async function simulateABM(inputs: ABMInputs): Promise<Omit<ABMOutputs, "seed">>
           dest_taz_id: dest_zone.id,
           ...skim,
           dest_density: (dest_zone.total_employment + dest_zone.total_households) / Math.max(0.01, dest_zone.area_sq_km),
-          dest_parking_cost: dest_zone.total_employment > 5000 ? 10 : 0,
+          dest_parking_cost: calculateParkingCost(dest_zone),
         };
 
         const { chosen_mode } = chooseTourMode(mode_inputs);

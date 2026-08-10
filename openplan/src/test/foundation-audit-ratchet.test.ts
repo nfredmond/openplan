@@ -2211,3 +2211,183 @@ describe("the sketch-VMT pass is accounted for", () => {
     expect(source).not.toContain("SKETCH_VEHICLE_MILE_FACTORS: Record<string, number>");
   });
 });
+
+/**
+ * PASS 8 — THE SKETCH-ABM ENGINE CORE: the choice-model arithmetic under the
+ * KPI layer pass 7 measured. 2026-08-10, twenty-three mutations plus a
+ * comment-only negative control that survived.
+ *
+ * SIX OF TWENTY-THREE KILLED BY A TEST — the weakest area measured in eight
+ * passes, and
+ * the cross-pass pattern called it in advance: this is the most mechanical
+ * code in the modeling lane (about 350 hand-entered coefficients, MNL utility
+ * sums, Bernoulli draws, Box-Muller sampling), and mechanical is where the
+ * holes live. What survived the whole reachable test surface: a flipped
+ * transit ASC sign, driving cost deleted from the SOV utility, transit wait
+ * time made free, transit offered where no transit system exists, the
+ * income-cost saturation clamp removed, a flipped work distance-decay sign,
+ * downtown parking made free, the intra-zonal bonus turned into a penalty, an
+ * unreachable zone made choosable, the shopping income factor dropped, the
+ * dining tour rate doubled, a time-period boundary broken, departure computed
+ * AFTER arrival, a degenerate Box-Muller with no tail beyond one sigma, peak
+ * congestion making travel FASTER, and trip distance summed as minutes. The
+ * existing sketch-abm tests assert bands, sums-to-one and monotonicity — a
+ * sign flip sails through every one of them.
+ *
+ * THE SAMPLED SET WAS WHOLE-SUITE-EQUIVALENT BY IMPORT GRAPH: the five engine
+ * files are imported only by each other, the runs route, and the sketch test
+ * files; every test file that transitively reaches them was in the sampled
+ * run (11 files, 154 tests), so a sampled survivor here IS a whole-suite
+ * survivor.
+ *
+ * ONE APPARENT SURVIVOR WAS DECIDED BY THE LINT GATE, and getting that right
+ * took two checks. The degenerate Box-Muller (`z = cos(2πu2)`) leaves `u1`
+ * unused; bare `eslint` calls that a WARNING and exits zero, but the gate
+ * invokes `eslint --max-warnings 0`, which exits 1 — so THAT spelling could
+ * not have shipped, and counting it as a survivor would have been a false
+ * finding (pass 7's compiler lesson, wearing the linter's clothes). But the
+ * unused variable is incidental to the defect: the lint-clean spelling
+ * `z = cos(2π(u1 + u2))` — same broken distribution, no tail beyond one
+ * sigma — was then run and SURVIVED the entire pre-guard surface. The
+ * recorded survivor is the lint-clean one. (No survivor was type-rejected.)
+ *
+ * ONE REAL SEAM DEFECT, fixed not just recorded: the pipeline had TWO
+ * disagreeing parking-cost models — destination choice priced parking by
+ * density bands (15/8/3/0) inside its mode-choice logsum while abm-runner
+ * fed the actual mode choice `total_employment > 5000 ? 10 : 0` for the same
+ * zone. The mode a tour chose and the destination it chose saw different
+ * parking costs. `calculateParkingCost` is now exported from
+ * destination-choice and the runner calls it — the named seam-defect class
+ * (a shared capability living inside one of its two callers).
+ *
+ * CLOSED by `src/test/sketch-abm-engine-arithmetic.test.ts`. Its mode-choice
+ * expectations were derived independently of the module (hand-computed term
+ * by term, cross-checked against a from-scratch reimplementation of the
+ * documented spec), the destination ratios are closed-form (e^0.5, e^0.16),
+ * and the stochastic stages are pinned as seeded deterministic statistics.
+ * The guard was then mutation-tested itself: all 16 surviving mutations
+ * (plus the lint-decided Box-Muller spelling) re-run against it and every
+ * one killed, with the comment-only control surviving and every restore
+ * sha256-verified.
+ */
+const SKETCH_ENGINE_AUDIT = {
+  date: "2026-08-10",
+  mutationsRun: 23,
+  killed: 6,
+  survived: 16,
+  killedByTheCompiler: 0,
+  /** The unused-variable Box-Muller spelling: eslint --max-warnings 0 exits 1. */
+  killedByTheLintGate: 1,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 16,
+  /** The 16 survivors + the lint-decided spelling, re-run against the NEW guard. */
+  guardMutationsRun: 17,
+  guardMutationsKilled: 17,
+};
+
+/**
+ * The lint-decided mutation is excluded from the per-file sum for the same
+ * reason pass 7 excluded its compiler-decided one: no TEST decided it, so a
+ * `sampledBy` naming a test file would be false.
+ */
+const SKETCH_ENGINE_MUTATIONS_DECIDED_BY_A_TEST =
+  SKETCH_ENGINE_AUDIT.mutationsRun -
+  SKETCH_ENGINE_AUDIT.killedByTheCompiler -
+  SKETCH_ENGINE_AUDIT.killedByTheLintGate;
+
+const SKETCH_ENGINE_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/lib/models/sketch-abm/mode-choice.ts": {
+    sampledBy: [
+      "src/test/sketch-abm.test.ts",
+      "src/test/sketch-abm-engine-arithmetic.test.ts",
+    ],
+    mutations: 6,
+    survivors: 5,
+  },
+  "src/lib/models/sketch-abm/destination-choice.ts": {
+    sampledBy: [
+      "src/test/sketch-abm.test.ts",
+      "src/test/sketch-abm-engine-arithmetic.test.ts",
+    ],
+    mutations: 5,
+    survivors: 4,
+  },
+  "src/lib/models/sketch-abm/tour-generation.ts": {
+    sampledBy: [
+      "src/test/sketch-abm.test.ts",
+      "src/test/sketch-abm-engine-arithmetic.test.ts",
+    ],
+    mutations: 4,
+    survivors: 2,
+  },
+  "src/lib/models/sketch-abm/time-of-day-choice.ts": {
+    sampledBy: [
+      "src/test/sketch-abm.test.ts",
+      "src/test/sketch-abm-engine-arithmetic.test.ts",
+    ],
+    mutations: 4,
+    survivors: 4,
+  },
+  "src/lib/models/sketch-abm/abm-runner.ts": {
+    sampledBy: [
+      "src/test/sketch-abm.test.ts",
+      "src/test/sketch-abm-benchmark-validation.test.ts",
+      "src/test/sketch-abm-engine-arithmetic.test.ts",
+    ],
+    mutations: 3,
+    survivors: 1,
+  },
+};
+
+describe("the sketch-engine pass is accounted for", () => {
+  it("adds up", () => {
+    expect(
+      SKETCH_ENGINE_AUDIT.killed +
+        SKETCH_ENGINE_AUDIT.survived +
+        SKETCH_ENGINE_AUDIT.killedByTheCompiler +
+        SKETCH_ENGINE_AUDIT.killedByTheLintGate
+    ).toBe(SKETCH_ENGINE_AUDIT.mutationsRun);
+    const perFile = Object.values(SKETCH_ENGINE_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      SKETCH_ENGINE_MUTATIONS_DECIDED_BY_A_TEST
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(
+      SKETCH_ENGINE_AUDIT.survived
+    );
+  });
+
+  it("closed every survivor it found", () => {
+    expect(SKETCH_ENGINE_AUDIT.survivorsClosed).toBe(SKETCH_ENGINE_AUDIT.survived);
+    expect(SKETCH_ENGINE_AUDIT.guardMutationsKilled).toBe(
+      SKETCH_ENGINE_AUDIT.guardMutationsRun
+    );
+  });
+
+  it("still has the surface it measured, and the guard that closed it", () => {
+    for (const file of Object.keys(SKETCH_ENGINE_AUDITED_PRODUCTION_FILES)) {
+      expect(existsSync(repoPath(file))).toBe(true);
+    }
+    for (const entry of Object.values(SKETCH_ENGINE_AUDITED_PRODUCTION_FILES)) {
+      for (const test of entry.sampledBy) {
+        expect(existsSync(repoPath(test))).toBe(true);
+      }
+    }
+  });
+
+  it("keeps ONE parking-cost model for the whole sketch pipeline", () => {
+    // The runner's divergent inline copy is the defect this pass fixed; a
+    // reintroduced inline formula would silently split the pipeline again.
+    const runner = readFileSync(
+      repoPath("src/lib/models/sketch-abm/abm-runner.ts"),
+      "utf8"
+    );
+    expect(runner).toContain("calculateParkingCost(dest_zone)");
+    expect(runner).not.toContain("total_employment > 5000 ? 10 : 0");
+    const destination = readFileSync(
+      repoPath("src/lib/models/sketch-abm/destination-choice.ts"),
+      "utf8"
+    );
+    expect(destination).toContain("export function calculateParkingCost");
+  });
+});

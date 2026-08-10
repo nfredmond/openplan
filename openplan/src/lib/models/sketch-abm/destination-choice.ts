@@ -220,9 +220,16 @@ function calculateDestUtility(
 }
 
 /**
- * Estimate parking cost based on zone density
+ * Estimate parking cost based on zone density.
+ *
+ * Exported because it is the ONE parking-cost model for the whole sketch
+ * pipeline: destination choice uses it inside the mode-choice logsum, and
+ * abm-runner must feed the same figure to the actual mode choice. The runner
+ * previously carried its own divergent copy (`total_employment > 5000 ? 10 : 0`),
+ * so the mode a tour chose and the destination it chose saw different parking
+ * costs for the same zone.
  */
-function calculateParkingCost(zone: Zone): number {
+export function calculateParkingCost(zone: Zone): number {
   const density = (zone.total_employment + zone.total_households) / Math.max(0.01, zone.area_sq_km);
 
   if (density > 10000) return 15; // Downtown
