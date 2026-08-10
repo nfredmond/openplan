@@ -333,7 +333,7 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
    */
   describe("the digest of the network this version was built from", () => {
     function ingestedRow() {
-      const call = versionUpdateMock.mock.calls.at(-1);
+      const call = versionUpdateMock.mock.calls.at(-1) as unknown[] | undefined;
       return (call?.[0] ?? {}) as { file_hash?: string };
     }
 

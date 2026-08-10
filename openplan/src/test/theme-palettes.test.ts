@@ -60,7 +60,7 @@ describe("theme palettes", () => {
   });
 
   it("has no CSS block for a palette nobody can select", () => {
-    const registered = new Set(PALETTES.map((palette) => palette.id));
+    const registered = new Set<string>(PALETTES.map((palette) => palette.id));
     for (const id of paletteBlocksIn(GLOBALS_CSS)) {
       expect(registered.has(id), `globals.css styles "${id}" but no palette declares it`).toBe(true);
     }

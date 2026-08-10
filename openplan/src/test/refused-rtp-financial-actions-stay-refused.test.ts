@@ -37,7 +37,7 @@ import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
  * substring match below is what actually does the work, so a near-miss spelling
  * is caught too.
  */
-const REFUSED = [
+const REFUSED: ReadonlyArray<{ fragment: string; matchOnly?: string; reason: string }> = [
   {
     fragment: "financial_assumption",
     reason:
@@ -64,7 +64,7 @@ const REFUSED = [
     reason:
       "Assigning a project to a period. The payload is two verified uuids and it still fails, because the consequential content is the PAIRING: nothing in the schema records which period a project is planned for, so the choice is an authored phasing judgement, and the band sets the escalation exponent (≈+80% across a 15-year gap at 3%).",
   },
-] as const;
+];
 
 const REGISTERED_KINDS = Object.keys(ACTION_METADATA);
 

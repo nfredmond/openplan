@@ -75,6 +75,14 @@ const REFUSED: RefusedGtfsAction[] = [
       ["add", "gtfs_feed"],
       ["register", "feed"],
     ],
+    provokes: [
+      "ingest_transit_feed",
+      "load_gtfs_from_url",
+      "fetch_transit_from_url",
+      "create_gtfs_feed",
+      "add_gtfs_feed",
+      "register_feed",
+    ],
     reason:
       "The model authors a URL — consequential content from outside the system, which no registered action " +
       "does today. An approval sheet shows a plausible address and cannot distinguish the agency's own feed " +
@@ -90,6 +98,7 @@ const REFUSED: RefusedGtfsAction[] = [
       ["upload", "gtfs"],
       ["upload", "transit"],
     ],
+    provokes: ["upload_feed_archive", "upload_gtfs", "upload_transit_schedule"],
     reason:
       "The payload is up to 200 MiB of bytes. Nothing about \"approve this zip\" is reviewable — the approval " +
       "sheet can show a filename and a size, and neither is evidence about what is inside. Every other " +
@@ -103,6 +112,13 @@ const REFUSED: RefusedGtfsAction[] = [
       ["attach", "transit"],
       ["catalog", "feed"],
       ["select", "catalog"],
+    ],
+    provokes: [
+      "attach_catalog_row",
+      "attach_gtfs",
+      "attach_transit_operator",
+      "adopt_catalog_feed",
+      "select_catalog_entry",
     ],
     reason:
       "REFUSED DESPITE AN ID-ONLY PAYLOAD — the horizon-band case, in another module. The consequential " +
@@ -120,6 +136,7 @@ const REFUSED: RefusedGtfsAction[] = [
       ["remove", "feed"],
       ["remove", "gtfs"],
     ],
+    provokes: ["delete_feed", "delete_gtfs_version", "remove_feed", "remove_gtfs"],
     reason:
       "One verified uuid, which is exactly why it looks safe. The cascade destroys the derived service levels " +
       "an RTP chapter or a Title VI service-equity finding may already cite — and the deletion of a citation's " +
@@ -169,6 +186,28 @@ describe("the refused GTFS actions are still refused", () => {
     // And the innocent one is untouched by every matcher.
     const innocentHits = REFUSED.filter((entry) => matchesRefusal("create_funding_opportunity", entry));
     expect(innocentHits.map((entry) => entry.label)).toEqual([]);
+  });
+
+  it("exercises every name group individually via its provoking spelling", () => {
+    /**
+     * The per-ENTRY check above survived a mutation: a typo in one group left
+     * five others still matching the one pretend name, so a dead group had no
+     * symptom. `provokes` pairs each group with the spelling it exists to
+     * catch — group i must match provokes[i] on its own, so a typo in ANY
+     * group fails by name.
+     */
+    for (const entry of REFUSED) {
+      expect(entry.provokes.length, `"${entry.label}" provokes/groups mismatch`).toBe(
+        entry.nameGroups.length
+      );
+      entry.nameGroups.forEach((group, index) => {
+        const provoke = entry.provokes[index];
+        expect(
+          group.every((word) => provoke.includes(word)),
+          `"${entry.label}" group ${index} [${group.join(", ")}] does not match its provoking spelling "${provoke}"`
+        ).toBe(true);
+      });
+    }
   });
 
   it("does not refuse the one transit action that IS registered", () => {

@@ -31,7 +31,11 @@ const withWorkspaceIntegrationContextMock = vi.hoisted(() =>
   })
 );
 const loadCurrentWorkspaceMembershipMock = vi.hoisted(() =>
-  vi.fn(async () => ({ membership: { workspace_id: "ws-1", role: "editor" } }))
+  vi.fn(
+    async (): Promise<{ membership: { workspace_id: string; role: string } | null }> => ({
+      membership: { workspace_id: "ws-1", role: "editor" },
+    })
+  )
 );
 const getUserMock = vi.hoisted(() => vi.fn(async () => ({ data: { user: { id: "user-1" } } })));
 

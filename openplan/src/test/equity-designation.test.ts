@@ -153,6 +153,7 @@ describe("federalJustice40NarrativeLine — honest not_determined cause", () => 
       datasetLabel: "CEJST v1.0",
       version: "1.0",
       vintage: "2010",
+      retrievedAt: null,
       notDeterminedCause: "no_matching_record",
       coverage: {
         totalTracts: 3,
@@ -263,6 +264,7 @@ describe("screenEquity separates the proxy from the federal determination", () =
       datasetLabel: "CEJST v1.0 (2022-11-22) — discontinued-program snapshot",
       version: "1.0",
       vintage: "2010",
+      retrievedAt: null,
       notDeterminedCause: null,
       coverage: {
         totalTracts: 2,

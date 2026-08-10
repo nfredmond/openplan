@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 // Mapbox's own style validator — the same code the browser runs before it will
 // accept a layer. Testing against anything else would only test our opinion of
 // the spec.
+// @ts-expect-error — mapbox-gl ships no type declarations for the style-spec
+// cjs entry point; if it ever does, this directive fails and can be removed.
 import { validate } from "mapbox-gl/dist/style-spec/index.cjs";
 
 import {

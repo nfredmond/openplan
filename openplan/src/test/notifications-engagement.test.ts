@@ -73,7 +73,9 @@ describe("engagement notifications lib", () => {
 
     // Each outbox body carries that recipient's own tokenized unsubscribe URL,
     // in the same URL shape the subscribe confirmation email uses.
-    const bodies = insert.mock.calls.map((call) => (call[0] as { to_email: string; body: string }));
+    const bodies = (insert.mock.calls as unknown as Array<[{ to_email: string; body: string }]>).map(
+      (call) => call[0]
+    );
     expect(bodies).toHaveLength(2);
     const byEmail = Object.fromEntries(bodies.map((row) => [row.to_email, row.body]));
     expect(byEmail["a@x.com"]).toContain("https://agency.example/api/engage/share123/subscribe/unsubscribe?token=tok-a");

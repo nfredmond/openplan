@@ -52,7 +52,9 @@ const SCANNED_DIRS = ["src/app", "src/components"];
  * it is formatted a particular way is worse than none, because everybody
  * believes the area is covered.
  */
-const TEXT_NODE = />([^<>{}]{3,})</gs;
+// Built via the constructor because tsc's target predates the literal `s`
+// flag; the runtime supports it either way.
+const TEXT_NODE = new RegExp(">([^<>{}]{3,})<", "gs");
 
 /**
  * Two-or-more snake_case segments — the shape of a column or enum name —

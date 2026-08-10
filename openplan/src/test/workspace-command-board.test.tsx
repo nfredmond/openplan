@@ -97,6 +97,7 @@ const measuredObservations: NonNullable<WorkspaceOperationsSummary["moduleObserv
     moderationActionableItems: 4,
     approvedItems: 11,
     leadActiveCampaign: { id: "campaign-1", title: "Corridor listening sessions" },
+    leadActiveCampaignLiveSurveyQuestions: 3,
   },
   safety: {
     crashIngests: 3,
@@ -462,6 +463,7 @@ describe("WorkspaceCommandBoard", () => {
               moderationActionableItems: null,
               approvedItems: null,
               leadActiveCampaign: null,
+              leadActiveCampaignLiveSurveyQuestions: null,
             },
             unreadable: [
               { label: "engagement campaigns", message: "permission denied for table engagement_campaigns" },

@@ -430,7 +430,6 @@ describe("a difference between the two RTP documents is rendered, never silent",
           {
             projectUpdatedAt: "2026-04-01T00:00:00.000Z",
             profile: {
-              project_id: "project-1",
               funding_need_amount: 12000000,
               local_match_need_amount: 1200000,
               updated_at: "2026-04-03T00:00:00.000Z",

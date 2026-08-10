@@ -343,7 +343,7 @@ describe("the loader fills the field the offer reads", () => {
     ],
     projects: [],
     runs: [],
-    gtfs_feeds: [{ id: "feed-expired", ...feedRow({ id: "feed-expired" }) }],
+    gtfs_feeds: [feedRow({ id: "feed-expired" })],
     gtfs_feed_versions: [versionRow("feed-expired", "2025-04-05")],
   };
 
