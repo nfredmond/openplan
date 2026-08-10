@@ -56,6 +56,33 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260805000008_promote_gtfs_feed_version.sql",
     migrationsAtRelease: 173,
   },
+  // 0.7.0 and 0.8.0 were BOTH missing from this table until 2026-08-10 — the
+  // 0.5.0 failure above, repeated twice, discovered while cutting 0.9.0. For
+  // four days `latest` pointed at 0.6.0: the high-water check guarded a line
+  // every deployment had moved past, and the CHANGELOG assertion read the
+  // 0.6.0 section. The RELEASE DUTY note above says "in the same commit that
+  // tags" precisely so this cannot happen; it happened anyway, twice, because
+  // a note asks and cannot enforce — and no assertion here can see a tag that
+  // was never recorded. Counts read off `git ls-tree -r --name-only v0.7.0` /
+  // `v0.8.0`, not from memory.
+  {
+    tag: "0.7.0",
+    lastMigration: "20260805000009_title_vi_service_equity.sql",
+    migrationsAtRelease: 174,
+  },
+  {
+    tag: "0.8.0",
+    lastMigration: "20260805000011_survey_question_draft_status.sql",
+    migrationsAtRelease: 176,
+  },
+  // Repeat-failure history for model runs; the pass 8/9 engine audits, the
+  // per-run zone-skew disclosure and the public per-cycle map ship in the same
+  // release but add no schema beyond this one migration.
+  {
+    tag: "0.9.0",
+    lastMigration: "20260810000001_model_run_failure_history.sql",
+    migrationsAtRelease: 177,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

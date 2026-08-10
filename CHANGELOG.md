@@ -19,6 +19,62 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.9.0 — 2026-08-10
+
+**One migration is required before the app deploys: `20260810000001`.** It adds
+two columns to `model_runs` (an integer defaulting to 0 and a nullable text
+column); nothing existing changes shape, and it is safe to run against a live
+database. If the app deploys first anyway, nothing breaks — relaunching a
+failed run simply doesn't record its history until the migration lands, and the
+gap is written to the audit log rather than passing silently.
+
+### A run that fails again now says so
+
+Relaunching a failed model run resets the run in place, so a run failing for
+the third time used to look exactly like one failing for the first — and the
+failure message suggested "re-launch to retry" forever. The relaunch now
+preserves the failure count and the last recorded reason before the reset, and
+the run card says "failed 3 times with the same recorded reason — relaunching
+again without changing something is unlikely to end differently." A cancelled
+run is not a failure and is never counted.
+
+### An empty map now says why it is empty
+
+Two surfaces rendered nothing at all when a deployment had no usable Mapbox
+key: the community-input map on the public engagement portal (residents
+silently lost the map) and the Analysis Studio's map stage (a permanently blank
+pane). Both now say the map exists and cannot be drawn, what still works
+without it, and which setting (`NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`, a `pk.`
+token) whoever runs the deployment can set. A token that is set but is a
+secret `sk.` key is called out as wrong rather than missing.
+
+### The public plan page gets the project map
+
+The read-only plan page a share link opens now carries the same per-cycle
+project map the agency sees — every located project, coloured by whether it is
+a commitment, illustrative, or a candidate, with the same honest counts for
+projects that have no location recorded. Nothing new is exposed: every
+property on the map is already published by the project lists on that page.
+
+### Creating an RTP cycle uses the place search
+
+The cycle form now offers the same place search as the rest of OpenPlan
+(any US county, city, CDP, or metro): picking a place fills the geography
+label and the map pin in one step. Both stay editable, and typing a custom
+label still works exactly as before.
+
+### The sketch model's arithmetic is now measured and pinned
+
+Two audit passes sampled the sketch travel model's choice engines and its
+population synthesis with deliberate mutations; the survivors are now pinned by
+tests. One real fix came out of it: the pipeline had two disagreeing parking
+cost models (destination choice and mode choice priced the same zone
+differently), now unified — screening results may shift very slightly. Every
+expanded sketch KPI also now carries a computed disclosure of how far the
+synthetic sample's zone mix drifts from the ACS distribution (0.01% VMT effect
+on the benchmark package; the number is computed per run because it grows with
+zone count).
+
 ## 0.8.0 — 2026-08-07
 
 **Two migrations are required before the app deploys: `20260805000010` and
