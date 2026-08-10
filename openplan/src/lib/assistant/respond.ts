@@ -66,11 +66,11 @@ function pluralize(count: number, singular: string, plural = `${singular}s`): st
 }
 
 function formatRtpFundingBackedReleaseReviewPressure(count: number): string {
-  return `${count} current RTP packet${count === 1 ? "" : "s"} still ${count === 1 ? "carries" : "carry"} funding-backed release-review pressure that must be resolved before packet posture can be treated as settled.`;
+  return `${count} current RTP packet${count === 1 ? "" : "s"} still ${count === 1 ? "carries" : "carry"} funding-backed release-review pressure that must be resolved before the packets can be treated as settled.`;
 }
 
 function formatRtpGrantsFollowThroughPressure(count: number): string {
-  return `${count} current RTP packet${count === 1 ? " still needs" : "s still need"} Grants OS follow-through before packet posture can be treated as settled.`;
+  return `${count} current RTP packet${count === 1 ? " still needs" : "s still need"} grants follow-through before the packets can be treated as settled.`;
 }
 
 function isRtpFundingReviewRoutedThroughGrants(context: {
@@ -253,8 +253,8 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
   const invoiceRelinkCount = typeof invoiceRelinkCommand?.badges[0]?.value === "number" ? invoiceRelinkCommand.badges[0].value : 0;
   const leadFundingDecisionDetail = context.operationsSummary.grantModelingSummary?.leadDecisionDetail ?? null;
   const summary = context.currentRun
-    ? `Grounded to ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
-    : `Grounded to ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewPressure}` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing funding anchor${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? leadFundingDecisionDetail ? `, lead grant decision cue: ${leadFundingDecisionDetail}` : `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at the next operator move.`;
+    ? `Working from ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
+    : `Working from ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewPressure}` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing a funding target${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? leadFundingDecisionDetail ? `, lead grant decision cue: ${leadFundingDecisionDetail}` : `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at what to do next.`;
 
   const facts = [
     context.recentProject
@@ -287,14 +287,14 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
         value: `${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
       },
       {
-        label: rtpFundingReviewCount > 0 ? "RTP funding review" : missingFundingAnchorCount > 0 ? "Missing anchors" : fundingSourcingCount > 0 ? "Needs sourcing" : fundingDecisionCount > 0 ? "Needs decisions" : fundingAwardRecordCount > 0 ? "Award records" : invoiceRelinkCount > 0 ? "Invoice relinks" : reimbursementStartCount > 0 ? "Need packets" : reimbursementAdvanceCount > 0 ? "Reimbursement" : "Gap projects",
+        label: rtpFundingReviewCount > 0 ? "RTP funding review" : missingFundingAnchorCount > 0 ? "Missing funding targets" : fundingSourcingCount > 0 ? "Needs sourcing" : fundingDecisionCount > 0 ? "Needs decisions" : fundingAwardRecordCount > 0 ? "Award records" : invoiceRelinkCount > 0 ? "Invoice relinks" : reimbursementStartCount > 0 ? "Need packets" : reimbursementAdvanceCount > 0 ? "Reimbursement" : "Gap projects",
         value: `${rtpFundingReviewCount > 0 ? rtpFundingReviewCount : missingFundingAnchorCount > 0 ? missingFundingAnchorCount : fundingSourcingCount > 0 ? fundingSourcingCount : fundingDecisionCount > 0 ? fundingDecisionCount : fundingAwardRecordCount > 0 ? fundingAwardRecordCount : invoiceRelinkCount > 0 ? invoiceRelinkCount : reimbursementStartCount > 0 ? reimbursementStartCount : reimbursementAdvanceCount > 0 ? reimbursementAdvanceCount : gapProjectCount}`,
       },
     ],
     facts,
     operatorCue: context.operationsSummary.nextCommand
       ? {
-          label: "Current runtime cue",
+          label: "What to do next",
           title:
             grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
               ? "Open RTP grants follow-through"
@@ -307,7 +307,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
                 : context.operationsSummary.nextCommand.detail,
         }
       : {
-          label: "Current runtime cue",
+          label: "What to do next",
           title: "Workspace command queue is clear",
           detail: context.operationsSummary.detail,
         },
@@ -359,7 +359,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
   return {
     kind: context.kind,
     title: context.project.name,
-    summary: `Grounded to the full project record: delivery posture, stage-gate signals, funding strategy, linked datasets, and recent run activity are all in scope for this copilot pass.`,
+    summary: `Working from the full project record: delivery status, stage gates, funding, linked datasets, and recent run activity are all in scope for this copilot pass.`,
     stats: [
       { label: "Status", value: context.project.status },
       { label: "Open risks", value: statCount(context, openRisks, ASSISTANT_READ_SUBJECTS.projectRisks) },
@@ -407,57 +407,57 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
     ].filter(Boolean) as string[],
     operatorCue: context.stageGateSummary.blockedGate
       ? {
-          label: "Current runtime cue",
+          label: "What to do next",
           title: `Unblock ${context.stageGateSummary.blockedGate.name}`,
           detail: context.stageGateSummary.blockedGate.rationale || "A stage gate is currently on hold and needs evidence or rationale cleanup.",
         }
       : overdueDecisionCount > 0
         ? {
-            label: "Current runtime cue",
+            label: "What to do next",
             title: `${overdueDecisionCount} overdue funding decision${overdueDecisionCount === 1 ? " needs" : "s need"} a pursue or skip call`,
             detail: `Monitored funding opportunities have already lapsed their recorded decision deadline while the window is still open, so these lapsed calls outrank newer closing-soon timing.${leadOverdueOpportunity ? ` Lead overdue monitor decision: ${leadOverdueOpportunity.title}.` : ""}`,
           }
       : context.fundingSummary.closingSoonCount > 0
         ? {
-            label: "Current runtime cue",
+            label: "What to do next",
             title: `${context.fundingSummary.closingSoonCount} funding deadline${context.fundingSummary.closingSoonCount === 1 ? "" : "s"} need attention`,
             detail: `Near-term funding windows are active on this project, so grant timing should be reviewed before less urgent control cleanup.${leadClosingOpportunity ? ` ${leadClosingOpportunity.title} is the first deadline to reopen.` : ""}`,
           }
         : awardRecordCount > 0
           ? {
-              label: "Current runtime cue",
+              label: "What to do next",
               title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
               detail: `An opportunity is already marked awarded, but the committed funding record has not been logged yet.${leadAwardOpportunity ? ` Convert ${leadAwardOpportunity.title} into a committed award entry.` : ""}`,
             }
           : exactInvoiceAwardRelink
             ? {
-                label: "Current runtime cue",
+                label: "What to do next",
                 title: "Link exact invoice to award",
                 detail: "One unlinked invoice and one funding-award record are an exact match on this project, so reimbursement linkage can be repaired directly.",
               }
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? {
-                label: "Current runtime cue",
-                title: `Reimbursement lane has ${formatCurrency(uninvoicedAwardAmount ?? 0)} uninvoiced`,
+                label: "What to do next",
+                title: `Still uninvoiced: ${formatCurrency(uninvoicedAwardAmount ?? 0)} uninvoiced`,
                 detail: reimbursementPacketCount > 0
-                  ? "A reimbursement packet is already started, but the invoice lane has not yet caught up to the full award stack."
-                  : "Committed awards are recorded, but the invoice lane has not yet caught up to the full award stack.",
+                  ? "A reimbursement packet is already started, but the invoices do not yet cover everything you have been awarded."
+                  : "Committed awards are recorded, but the invoices do not yet cover everything you have been awarded.",
               }
             : needsFundingSourcing
               ? {
-                  label: "Current runtime cue",
+                  label: "What to do next",
                   title: "Source the first funding opportunity",
-                  detail: "This project already has a grounded funding need but still no linked opportunities, so sourcing candidate programs comes before true gap triage.",
+                  detail: "This project already has a recorded funding target but no grants attached, so sourcing candidate programs comes before true gap triage.",
                 }
               : gapAmount !== null && gapAmount > 0
                 ? {
-                    label: "Current runtime cue",
+                    label: "What to do next",
                     title: `Close ${formatCurrency(gapAmount)} remaining funding gap`,
                     detail: "The project still shows uncovered need after current pursued dollars, so funding strategy should be tightened before scope or delivery assumptions drift.",
                   }
                 : riskCountsFailure || projectControlCountsFailure
                   ? {
-                      label: "Current runtime cue",
+                      label: "What to do next",
                       title: "Project control counts could not be read",
                       detail: unknownBecauseUnread(
                         riskCountsFailure ?? (projectControlCountsFailure as AssistantContextReadFailure),
@@ -465,7 +465,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
                       ),
                     }
                 : {
-                    label: "Current runtime cue",
+                    label: "What to do next",
                     title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
                     detail: `${openRisks} risk${openRisks === 1 ? "" : "s"}, ${openIssues} issue${openIssues === 1 ? "" : "s"}, and ${context.counts.deliverables} deliverable${context.counts.deliverables === 1 ? "" : "s"} remain in the current project control picture.`,
                   },
@@ -489,22 +489,22 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
       ? {
           title: "First packet queue is live",
           detail: `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so generate work outranks refresh or release-review work right now.`,
-          summary: `Grounded to the RTP cycle registry, with generate work currently outranking refresh and release-review work across the visible cycles.`,
+          summary: `Working from the RTP cycle registry, with generate work currently outranking refresh and release-review work across the visible cycles.`,
         }
       : registryPacketPosture === "refresh"
         ? {
             title: "Refresh queue is live",
-            detail: `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet refresh is the main registry posture right now.`,
-            summary: `Grounded to the RTP cycle registry, with refresh work currently outranking generate and release-review work across the visible cycles.`,
+            detail: `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so refreshing stale packets is the main work right now.`,
+            summary: `Working from the RTP cycle registry, with refresh work currently outranking generate and release-review work across the visible cycles.`,
           }
         : {
             title: "Release-review queue is live",
             detail: hasRtpFundingBackedReleaseReviewPressure(context)
               ? rtpFundingReviewPressure
               : context.recommendedCycle
-              ? `${context.recommendedCycle.title} is the strongest current cycle anchor for release-review work from the registry.`
-              : "The visible RTP packet queue is materially current enough that release-review work is now the main registry posture.",
-            summary: `Grounded to the RTP cycle registry, with release-review work currently outranking generate and refresh work across the visible cycles.`,
+              ? `${context.recommendedCycle.title} is the cycle that most needs a release review.`
+              : "The visible RTP packet queue is materially current enough that release review is now the main work across the registry.",
+            summary: `Working from the RTP cycle registry, with release-review work currently outranking generate and refresh work across the visible cycles.`,
           };
 
   return {
@@ -520,7 +520,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
     facts: [
       `${context.counts.draftCycles} draft, ${context.counts.publicReviewCycles} public-review, ${context.counts.adoptedCycles} adopted, and ${context.counts.archivedCycles} archived cycles are currently visible.`,
       context.recommendedCycle
-        ? `Recommended cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
+        ? `Suggested cycle: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
         : "No RTP cycle is visible yet from this registry snapshot.",
       rtpFundingReviewCount > 0
         ? rtpFundingReviewPressure
@@ -531,7 +531,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
     ].filter(Boolean) as string[],
     operatorCue: context.operationsSummary.nextCommand
       ? {
-          label: "Current runtime cue",
+          label: "What to do next",
           title:
             grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
               ? "Open RTP grants follow-through"
@@ -539,7 +539,7 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
           detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
-          label: "Current runtime cue",
+          label: "What to do next",
           title: registryPosture.title,
           detail: registryPosture.detail,
         },
@@ -693,18 +693,18 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
       ? {
           title: "First packet work comes first",
           detail: "This cycle still lacks a usable current packet artifact, so generate planning outranks refresh or release-review work right now.",
-          summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and generate posture before release-review work begins.`,
+          summary: `Working from this RTP cycle's readiness, chapter workflow, project list, and what still needs generating, before release review begins.`,
         }
       : cyclePacketWorkPosture === "refresh"
         ? {
             title: "Refresh work comes first",
             detail: recommendedPacketDetail,
-            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and refresh posture before release-review work.`,
+            summary: `Working from this RTP cycle's readiness, chapter workflow, project list, and how fresh its packets are, before release review.`,
           }
         : {
             title: "Release review comes first",
             detail: hasRtpFundingBackedReleaseReviewPressure(context) ? rtpFundingReviewPressure : recommendedPacketDetail,
-            summary: `Grounded to this RTP cycle's readiness, chapter workflow, project portfolio, and release-review packet posture.`,
+            summary: `Working from this RTP cycle's readiness, chapter workflow, project list, and which packets are ready to release.`,
           };
 
   return {
@@ -729,13 +729,13 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
       ...rtpFinancialElementLines(context),
       context.packetSummary.recommendedReport
         ? hasRtpFundingBackedReleaseReviewPressure(context)
-          ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}), with ${grantsRoutedRtpFundingReview ? "Grants OS follow-through" : "funding-backed release-review pressure"} still open.`
-          : `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
+          ? `Suggested packet: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}), with ${grantsRoutedRtpFundingReview ? "grants follow-through" : "funding-backed release-review pressure"} still open.`
+          : `Suggested packet: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
         : "No RTP board packet is linked yet.",
     ],
     operatorCue: context.operationsSummary.nextCommand
       ? {
-          label: "Current runtime cue",
+          label: "What to do next",
           title:
             grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
               ? "Open RTP grants follow-through"
@@ -743,7 +743,7 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
           detail: rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail,
         }
       : {
-          label: "Current runtime cue",
+          label: "What to do next",
           title: cyclePacketPosture.title,
           detail: cyclePacketPosture.detail,
         },
@@ -756,7 +756,7 @@ function buildPlanPreview(context: PlanAssistantContext): AssistantPreview {
   return {
     kind: context.kind,
     title: context.plan.title,
-    summary: `Grounded to this plan record's readiness, linked evidence posture, and the shared workspace command queue around it.`,
+    summary: `Working from this plan record's readiness, the evidence linked to it, and the workspace queue around it.`,
     stats: [
       { label: "Status", value: context.plan.status },
       { label: "Readiness", value: context.readiness.label },
@@ -772,7 +772,7 @@ function buildPlanPreview(context: PlanAssistantContext): AssistantPreview {
     ],
     operatorCue: context.operationsSummary.nextCommand
       ? {
-          label: "Current runtime cue",
+          label: "What to do next",
           title: context.operationsSummary.nextCommand.title,
           detail: context.operationsSummary.nextCommand.detail,
         }
@@ -798,7 +798,7 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
   return {
     kind: context.kind,
     title: context.program.title,
-    summary: `Grounded to this program package's readiness, packet posture, linked funding windows, and the shared workspace command queue around it.`,
+    summary: `Working from this program package's readiness, its report packets, funding windows, and the workspace queue around it.`,
     stats: [
       { label: "Status", value: context.program.status },
       { label: "Readiness", value: context.readiness.label },
@@ -832,40 +832,40 @@ function buildProgramPreview(context: ProgramAssistantContext): AssistantPreview
         ? `${awardCount} committed award${awardCount === 1 ? " is" : "s are"} logged against the linked project, with ${formatCurrency(uninvoicedAwardAmount ?? 0)} not yet invoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already started.` : ""}`
         : null,
       context.packetSummary.recommendedReport
-        ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "report packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
+        ? `Suggested packet: ${context.packetSummary.recommendedReport.title ?? "report packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}).`
         : "No linked report packet is available yet for this program.",
     ].filter(Boolean) as string[],
     operatorCue: context.operationsSummary.nextCommand
       ? {
-          label: "Current runtime cue",
+          label: "What to do next",
           title: context.operationsSummary.nextCommand.title,
           detail: context.operationsSummary.nextCommand.detail,
         }
       : context.packetSummary.recommendedReport
         ? {
-            label: "Current runtime cue",
-            title: context.packetSummary.recommendedReport.title ?? "Recommended packet anchor",
+            label: "What to do next",
+            title: context.packetSummary.recommendedReport.title ?? "Suggested packet",
             detail: context.packetSummary.recommendedReport.packetFreshness.detail,
           }
         : awardRecordCount > 0
           ? {
-              label: "Current runtime cue",
+              label: "What to do next",
               title: `${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y needs" : "ies need"} a record`,
               detail: `An opportunity is already marked awarded on this package, but the committed funding record has not been logged yet.${leadAwardOpportunity ? ` Convert ${leadAwardOpportunity.title} into a committed award entry.` : ""}`,
             }
           : exactInvoiceAwardRelink
             ? {
-                label: "Current runtime cue",
+                label: "What to do next",
                 title: "Link exact invoice to award",
                 detail: "The linked project has one unlinked invoice and one funding-award record as an exact match, so reimbursement linkage can be repaired directly.",
               }
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? {
-                label: "Current runtime cue",
-                title: `Reimbursement lane has ${formatCurrency(uninvoicedAwardAmount ?? 0)} uninvoiced`,
+                label: "What to do next",
+                title: `Still uninvoiced: ${formatCurrency(uninvoicedAwardAmount ?? 0)} uninvoiced`,
                 detail: reimbursementPacketCount > 0
-                  ? "A reimbursement packet is already started on the linked project, but the invoice lane has not yet caught up to the full award stack."
-                  : "Committed awards are recorded for the linked project, but the invoice lane has not yet caught up to the full award stack.",
+                  ? "A reimbursement packet is already started on the linked project, but the invoices do not yet cover everything you have been awarded."
+                  : "Committed awards are recorded for the linked project, but the invoices do not yet cover everything you have been awarded.",
               }
             : undefined,
     quickLinks: buildAssistantOperations(context),
@@ -877,7 +877,7 @@ function buildScenarioPreview(context: ScenarioAssistantContext): AssistantPrevi
   return {
     kind: context.kind,
     title: context.scenarioSet.title,
-    summary: `Grounded to the scenario registry, baseline linkage, run-backed comparison board, and report handoff state for this scenario set.`,
+    summary: `Working from the scenario registry, baseline linkage, run-backed comparison board, and report handoff state for this scenario set.`,
     stats: [
       { label: "Status", value: context.scenarioSet.status },
       { label: "Baseline", value: context.baselineEntry ? context.baselineEntry.label : "Missing" },
@@ -902,7 +902,7 @@ function buildModelPreview(context: ModelAssistantContext): AssistantPreview {
   return {
     kind: context.kind,
     title: context.model.title,
-    summary: `Grounded to the model record, readiness checks, explicit provenance links, launch template hints, and recent execution history.`,
+    summary: `Working from the model record, readiness checks, explicit provenance links, launch template hints, and recent execution history.`,
     stats: [
       { label: "Status", value: context.model.status },
       { label: "Checks", value: `${context.readiness.readyCheckCount}/${context.readiness.totalCheckCount}` },
@@ -931,18 +931,18 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
   const rtpPacketPreviewPosture =
     packetPosture === "generate"
       ? {
-          summary: `Grounded to this RTP-linked packet's generate setup, cycle anchor, artifact history, and provenance metadata before release-review work begins.`,
+          summary: `Working from this RTP-linked packet's generate setup, its cycle, artifact history, and provenance before release-review work begins.`,
           cueTitle: "First packet work comes first",
           cueDetail: "This RTP-linked packet still needs its first usable artifact, so generate setup outranks refresh and release-review work right now.",
         }
       : packetPosture === "refresh"
         ? {
-            summary: `Grounded to this RTP-linked packet's refresh posture, cycle anchor, artifact history, and provenance metadata before release-review work.`,
+            summary: `Working from this RTP-linked packet's how fresh it is, its cycle, artifact history, and provenance before release review.`,
             cueTitle: "Refresh work comes first",
             cueDetail: packetFreshness.detail,
           }
         : {
-            summary: `Grounded to this RTP-linked packet's release-review posture, cycle anchor, artifact history, and provenance metadata.`,
+            summary: `Working from this RTP-linked packet's release readiness, its cycle, artifact history, and provenance metadata.`,
             cueTitle: "Release review comes first",
             cueDetail: packetFreshness.detail,
           };
@@ -952,7 +952,7 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
     title: context.report.title,
     summary: context.rtpCycle
       ? rtpPacketPreviewPosture.summary
-      : `Grounded to this report packet's composition, linked runs, artifact history, and provenance metadata.`,
+      : `Working from this report packet's composition, linked runs, artifact history, and provenance metadata.`,
     stats: [
       { label: "Status", value: context.report.status },
       { label: "Runs", value: `${context.runs.length}` },
@@ -960,9 +960,9 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
       { label: context.rtpCycle ? "Packet" : "Artifacts", value: context.rtpCycle ? packetFreshness.label : `${context.artifactCount}` },
     ],
     facts: [
-      context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
-      context.rtpCycle ? `Lead packet posture: ${packetFreshness.label}. ${packetFreshness.detail}` : null,
-      context.project ? `Project anchor: ${context.project.name}` : "No project anchor is visible on this report snapshot.",
+      context.rtpCycle ? `RTP cycle: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+      context.rtpCycle ? `Lead packet: ${packetFreshness.label}. ${packetFreshness.detail}` : null,
+      context.project ? `Project: ${context.project.name}` : "No project is attached to this report.",
       context.latestArtifact
         ? `Latest artifact: ${context.latestArtifact.artifactKind} generated ${formatDateTime(context.latestArtifact.generatedAt)}.`
         : "No artifact has been generated yet.",
@@ -972,7 +972,7 @@ function buildReportPreview(context: ReportAssistantContext): AssistantPreview {
     ].filter(Boolean) as string[],
     operatorCue: context.rtpCycle
       ? {
-          label: "Current runtime cue",
+          label: "What to do next",
           title: rtpPacketPreviewPosture.cueTitle,
           detail: rtpPacketPreviewPosture.cueDetail,
         }
@@ -986,7 +986,7 @@ function buildRunPreview(context: RunAssistantContext): AssistantPreview {
   return {
     kind: context.kind,
     title: context.run.title,
-    summary: `Grounded to the active analysis run metrics, summary narrative, and optional baseline comparison.`,
+    summary: `Working from the active analysis run metrics, summary narrative, and optional baseline comparison.`,
     stats: [
       { label: "Overall", value: metricLabel(context.run.metrics, "overallScore") },
       { label: "Access", value: metricLabel(context.run.metrics, "accessibilityScore") },
@@ -1069,12 +1069,12 @@ function buildWorkspaceResponse(
       workflowId,
       label,
       title: `Analysis focus: ${context.currentRun.title}`,
-      summary: `The live analysis surface is anchored to ${context.currentRun.title}. The most useful next read is the score posture plus any attached baseline before exporting or reporting anything downstream.`,
+      summary: `This analysis is looking at ${context.currentRun.title}. The most useful next read is the score plus any attached baseline before exporting or reporting anything downstream.`,
       findings: [
         `Overall/access/safety/equity: ${metricLabel(context.currentRun.metrics, "overallScore")} / ${metricLabel(context.currentRun.metrics, "accessibilityScore")} / ${metricLabel(context.currentRun.metrics, "safetyScore")} / ${metricLabel(context.currentRun.metrics, "equityScore")}.`,
         context.baselineRun
           ? `A baseline is already attached (${context.baselineRun.title}), so this surface can support a like-for-like comparison pass right now.`
-          : "No baseline is attached, so the current run is best treated as a standalone brief until a comparison anchor is pinned.",
+          : "No baseline is attached, so the current run is best treated as a standalone brief until a baseline is pinned to compare against.",
         asString(context.currentRun.metrics.confidence)
           ? `Run confidence is labeled ${String(context.currentRun.metrics.confidence)}.`
           : "The run does not expose an explicit confidence label in stored metrics.",
@@ -1083,14 +1083,14 @@ function buildWorkspaceResponse(
         context.baselineRun
           ? "Use the compare workflow next to quantify score movement against the pinned baseline."
           : "Pin a baseline run if you need a defendable before/after or alternative-versus-baseline read.",
-        "Export metrics or geometry only after checking the run summary and source posture.",
+        "Export metrics or geometry only after reading the run summary and checking its sources.",
       ],
       evidence: [
         `Workspace: ${context.workspace.name ?? "Current workspace"}`,
         `Current run captured ${formatDateTime(context.currentRun.createdAt)}`,
         question ? `Prompt received: ${question}` : "Prompt used default Analysis Studio brief.",
       ],
-      caution: "Analysis outputs are still operator-facing working surfaces and should be human-reviewed before external use.",
+      caution: "Analysis output is working material and should be human-reviewed before external use.",
       quickLinks: buildAssistantOperations(context),
     };
   }
@@ -1099,12 +1099,12 @@ function buildWorkspaceResponse(
     return {
       workflowId,
       label,
-      title: `${context.workspace.name ?? "Workspace"} funding gap posture`,
+      title: `Funding gaps in ${context.workspace.name ?? "this workspace"}`,
         summary:
         missingFundingAnchorCount > 0
-          ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding-need anchor even though grant records already exist, so the first honest move is anchoring need before ranking dollar gaps.`
+          ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding target even though grant records already exist, so the first honest move is recording what each needs before ranking the gaps.`
           : fundingSourcingCount > 0
-          ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} a grounded need but still no linked funding opportunities, so sourcing candidates comes before gap-closing choreography.`
+          ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} a recorded funding target but no grants attached, so sourcing candidates comes before gap-closing choreography.`
           : fundingDecisionCount > 0
           ? leadFundingDecisionDetail
             ? `${leadFundingDecisionDetail} Grant-decision work still comes before gap-closing math.`
@@ -1118,14 +1118,14 @@ function buildWorkspaceResponse(
           : reimbursementAdvanceCount > 0
           ? `${reimbursementAdvanceCount} project funding stack${reimbursementAdvanceCount === 1 ? " already has" : "s already have"} reimbursement work underway, but invoicing still trails committed awards, so follow-through now deserves explicit workspace attention.`
           : gapProjectCount > 0
-          ? `${gapProjectCount} project funding stack${gapProjectCount === 1 ? " still shows" : "s still show"} uncovered need after current pursued dollars, so funding gap closure is now a real workspace-level operating lane.`
+          ? `${gapProjectCount} project funding stack${gapProjectCount === 1 ? " still shows" : "s still show"} uncovered need after current pursued dollars, so closing funding gaps is now real work across the workspace.`
           : "No uncovered project funding gaps are currently visible from the workspace command queue.",
       findings: [
         context.operationsSummary.nextCommand
           ? `Current queue lead: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
           : "No queue-leading workspace command is currently visible.",
         missingFundingAnchorCount > 0
-          ? `Missing funding anchors: ${missingFundingAnchorCount}.`
+          ? `Missing funding targets: ${missingFundingAnchorCount}.`
           : fundingSourcingCount > 0
           ? `Projects needing funding sourcing: ${fundingSourcingCount}.`
           : fundingDecisionCount > 0
@@ -1142,20 +1142,20 @@ function buildWorkspaceResponse(
           ? `Projects with reimbursement follow-through still active: ${reimbursementAdvanceCount}.`
           : gapProjectCount > 0
           ? `Project funding gap count: ${gapProjectCount}.`
-          : "The current workspace snapshot does not show any gap-flagged project funding stacks.",
+          : "The current workspace snapshot does not show any project with a flagged funding gap.",
         context.recentProject
-          ? `Freshest project anchor: ${context.recentProject.name}.`
-          : "No recent project anchor is visible from this workspace snapshot.",
+          ? `Most recent project: ${context.recentProject.name}.`
+          : "No recent project is visible in this workspace.",
       ],
       nextSteps: [
         missingFundingAnchorCount > 0
-          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "anchor-project-funding-needs") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and add a funding-need anchor before trying to quantify the gap.`
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "anchor-project-funding-needs") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and record a funding target before trying to size the gap.`
           : fundingSourcingCount > 0
           ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "source-project-funding-opportunities") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and source candidate programs before treating the project as a quantified funding gap.`
           : fundingDecisionCount > 0
           ? leadFundingDecisionDetail
-            ? `Open ${resolveWorkspaceCommandHref(fundingDecisionCommand ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and use this lead grant cue before treating the stack as a real funding pipeline: ${leadFundingDecisionDetail}`
-            : `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and mark the lead opportunity pursue before treating the stack as a real funding pipeline.`
+            ? `Open ${resolveWorkspaceCommandHref(fundingDecisionCommand ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and use this lead grant cue before treating this as real money: ${leadFundingDecisionDetail}`
+            : `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "advance-project-funding-decisions") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and mark the lead opportunity pursue before treating this as real money.`
           : fundingAwardRecordCount > 0
           ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "record-awarded-funding") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and convert the awarded opportunity into a funding-award record before trusting the remaining gap math.`
           : invoiceRelinkCount > 0
@@ -1163,14 +1163,14 @@ function buildWorkspaceResponse(
           : reimbursementStartCount > 0
           ? `Open ${reimbursementStartCommand ? resolveWorkspaceCommandHref(reimbursementStartCommand) : "/projects"} and start the first reimbursement packet before routine funding-gap cleanup.`
           : reimbursementAdvanceCount > 0
-          ? `Open ${reimbursementAdvanceCommand ? resolveWorkspaceCommandHref(reimbursementAdvanceCommand) : "/projects"} and move the existing reimbursement work into the invoice lane before closeout posture drifts.`
+          ? `Open ${reimbursementAdvanceCommand ? resolveWorkspaceCommandHref(reimbursementAdvanceCommand) : "/projects"} and invoice the reimbursement work already started, before the closeout record falls behind.`
           : gapProjectCount > 0
           ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.commandQueue.find((item) => item.key === "close-project-funding-gaps") ?? { key: "", title: "", detail: "", href: "/projects", tone: "neutral", priority: 0, badges: [] })} and reopen the thinnest-funded project first.`
-          : "Keep funding need amounts, pursue decisions, and awarded funding records current so future gap posture stays trustworthy.",
-        "Use the project funding sections, not generic notes, as the canonical place to close uncovered scope-versus-funding gaps.",
+          : "Keep funding need amounts, pursue decisions, and awarded funding records current so the gap stays trustworthy.",
+        "Close the gap between scope and funding in the project's funding section, not in a note somewhere.",
       ],
       evidence: [
-        `Missing anchors: ${missingFundingAnchorCount}`,
+        `Missing funding targets: ${missingFundingAnchorCount}`,
         `Needs sourcing: ${fundingSourcingCount}`,
         `Needs decisions: ${fundingDecisionCount}`,
         `Award records needed: ${fundingAwardRecordCount}`,
@@ -1188,7 +1188,7 @@ function buildWorkspaceResponse(
     workflowId,
     label,
     title: `${context.workspace.name ?? "Workspace"} overview`,
-    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the freshest project anchor` : ""}.${rtpFundingReviewCount > 0 ? ` ${rtpFundingReviewPressure}` : fundingDecisionCount > 0 && leadFundingDecisionDetail ? ` Lead grant decision cue: ${leadFundingDecisionDetail}` : ""} The shared command queue is ${context.operationsSummary.posture}.`,
+    summary: `This workspace currently reads as a planning-control shell with ${pluralize(context.recentRuns.length, "recent run")} visible${context.recentProject ? ` and ${context.recentProject.name} as the most recent project` : ""}.${rtpFundingReviewCount > 0 ? ` ${rtpFundingReviewPressure}` : fundingDecisionCount > 0 && leadFundingDecisionDetail ? ` Lead grant decision cue: ${leadFundingDecisionDetail}` : ""} Across the workspace: ${context.operationsSummary.posture}.`,
     findings: [
       context.recentProject
         ? `Most recent project: ${context.recentProject.name} · ${context.recentProject.status} · ${context.recentProject.deliveryPhase}.`
@@ -1199,7 +1199,7 @@ function buildWorkspaceResponse(
       rtpFundingReviewCount > 0
         ? rtpFundingReviewPressure
         : missingFundingAnchorCount > 0
-        ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding-need anchor even though grant records already exist.`
+        ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding target even though grant records already exist.`
         : fundingSourcingCount > 0
         ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} need recorded but still no linked opportunities.`
         : fundingDecisionCount > 0
@@ -1213,7 +1213,7 @@ function buildWorkspaceResponse(
         : reimbursementStartCount > 0
         ? "At least one project already has committed awards but still no reimbursement packet started."
         : reimbursementAdvanceCount > 0
-        ? "At least one project already has reimbursement work started, but invoice follow-through still trails the award stack."
+        ? "At least one project already has reimbursement work started, but the invoices still trail the awards."
         : gapProjectCount > 0
         ? `${gapProjectCount} project funding stack${gapProjectCount === 1 ? " still shows" : "s still show"} uncovered need after current pursued dollars.`
         : "No uncovered project funding gaps are currently visible from the shared queue.",
@@ -1226,19 +1226,19 @@ function buildWorkspaceResponse(
     nextSteps: [
       context.operationsSummary.nextCommand
         ? grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets"
-          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.nextCommand)} to resolve RTP-linked Grants OS follow-through before treating current packet freshness as settled.`
+          ? `Open ${resolveWorkspaceCommandHref(context.operationsSummary.nextCommand)} to resolve RTP-linked grants follow-through before treating current packet freshness as settled.`
           : `Open ${resolveWorkspaceCommandHref(context.operationsSummary.nextCommand)} to act on ${context.operationsSummary.nextCommand.title.toLowerCase()}.`
         : context.currentRun
-          ? "Open the analysis-focus workflow for a run-grounded brief."
+          ? "Open the analysis-focus workflow for a brief built on this run."
           : "Open Analysis Studio or a project detail page to deepen grounding.",
-      context.recentProject ? `Use ${context.recentProject.name} as the primary operator anchor for the next drill-down.` : "Create or attach a project record before expecting deeper assistant grounding.",
+      context.recentProject ? `Use ${context.recentProject.name} as the place to start.` : "Create or attach a project record before expecting deeper assistant grounding.",
     ],
     evidence: [
       `Role: ${context.workspace.role ?? "Unknown"}`,
       `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
       `Packet pressure: ${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
       `RTP funding review packets: ${rtpFundingReviewCount}`,
-      `Missing anchors: ${missingFundingAnchorCount}`,
+      `Missing funding targets: ${missingFundingAnchorCount}`,
       `Needs sourcing: ${fundingSourcingCount}`,
       `Needs decisions: ${fundingDecisionCount}`,
       `Award records needed: ${fundingAwardRecordCount}`,
@@ -1314,13 +1314,13 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
     return {
       workflowId,
       label,
-      title: `Funding posture for ${context.project.name}`,
+      title: `Funding for ${context.project.name}`,
       summary:
         context.fundingSummary.opportunityCount > 0
           ? `${context.project.name} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${overdueDecisionCount > 0 ? ` ${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} already lapsed the recorded decision deadline, so those lapsed calls outrank newer closing-soon timing.${leadOverdueOpportunity ? ` ${leadOverdueOpportunity.title} is the lead overdue monitor decision to resolve first.` : ""}` : ""}${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.project.name} already has a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no linked funding opportunities yet. The next honest move is sourcing candidate programs, not pretending the gap has already been worked.`
-            : `${context.project.name} does not yet have linked funding opportunities, so grant posture is still unanchored on the project record.`,
+            : `${context.project.name} does not yet have linked funding opportunities, so nothing on the project record points at money yet.`,
       findings: [
         context.fundingSummary.opportunityCount > 0
           ? `${context.fundingSummary.openCount} open or upcoming funding opportunit${context.fundingSummary.openCount === 1 ? "y is" : "ies are"} visible on this project.`
@@ -1361,10 +1361,10 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
             ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? reimbursementPacketCount > 0
-              ? `Open /projects/${context.project.id}#project-invoices to carry the existing reimbursement packet into the invoice chain before closeout posture drifts.`
-              : `Open /projects/${context.project.id}#project-invoices to move committed awards into reimbursement workflow before closeout posture drifts.`
+              ? `Open /projects/${context.project.id}#project-invoices to carry the existing reimbursement packet into the invoice chain before the closeout record falls behind.`
+              : `Open /projects/${context.project.id}#project-invoices to move committed awards into reimbursement workflow before the closeout record falls behind.`
             : context.fundingSummary.opportunityCount > 0
-              ? `Open /projects/${context.project.id}#project-funding-opportunities to confirm pursue, monitor, or skip posture and update the project funding stack.`
+              ? `Open /projects/${context.project.id}#project-funding-opportunities to confirm pursue, monitor, or skip, and update what the project has lined up.`
               : needsFundingSourcing
                 ? `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record against the recorded need.`
                 : `Open /projects/${context.project.id}#project-funding-opportunities and add the first funding opportunity record for this project.`,
@@ -1374,15 +1374,15 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
             ? "Repair the exact invoice-to-award linkage first so reimbursement bookkeeping becomes trustworthy before generic follow-through work."
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
             ? reimbursementPacketCount > 0
-              ? "Advance the existing reimbursement packet through the invoice lane so reimbursement posture catches up to the committed award stack before routine cleanup."
-              : "Push the invoice lane forward so reimbursement posture catches up to the committed award stack before routine cleanup."
+              ? "Advoice the existing reimbursement packet so claims catch up with the awards already committed before routine cleanup."
+              : "Get the invoices out so claims catch up with the awards already committed before routine cleanup."
             : gapAmount !== null && gapAmount > 0
-              ? "Close the remaining uncovered gap before treating current pursue posture as enough to support full delivery scope."
+              ? "Close the remaining uncovered gap before treating what you are pursuing as enough to deliver the full scope."
               : needsFundingSourcing
-                ? "Source candidate programs before treating this project as a quantified gap-closing lane."
+                ? "Source candidate programs before treating this project's gap as a measured number."
                 : context.fundingSummary.fundingNeedAmount !== null
-                  ? "Keep the target funding need aligned with current pursue and award posture before promising delivery scope."
-                  : "Set the project funding need so future opportunity and award posture can be measured against a real gap.",
+                  ? "Keep the funding target in step with what you are pursuing and what you have won, before promising scope."
+                  : "Set the project funding need so grants and awards can be measured against a real gap.",
       ],
       evidence: [
         `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
@@ -1451,7 +1451,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       blockedGate
         ? `Resolve ${blockedGate.gateId} evidence gaps before claiming the project is fully ready.`
         : context.fundingSummary.overdueDecisionCount > 0
-        ? "Resolve the lapsed monitor decision as pursue or skip first so grant posture stops sliding behind newer closing-soon timing."
+        ? "Resolve the lapsed monitor decision as pursue or skip first so it does not slip behind grants that close sooner."
         : context.fundingSummary.closingSoonCount > 0
         ? "Recheck the near-term funding windows before less urgent project cleanup so grant timing does not slip."
         : gapAmount !== null && gapAmount > 0
@@ -1490,11 +1490,11 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       label,
       title: `First RTP packet queue: ${context.workspace.name ?? "Current workspace"}`,
       summary: registryPacketPosture === "generate"
-        ? `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so generate work is the top registry queue posture right now.`
+        ? `${context.counts.noPacketCount} RTP cycle${context.counts.noPacketCount === 1 ? " still needs" : "s still need"} a first generated packet, so generating them is the top of the queue right now.`
         : "The registry does not currently show any RTP cycles missing a first packet.",
       findings: [
         context.recommendedCycle
-          ? `Leading cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
+          ? `Lead cycle: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
           : "No RTP cycle is visible yet from the registry snapshot.",
         `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
         context.operationsSummary.nextCommand
@@ -1503,9 +1503,9 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       ],
       nextSteps: [
         context.recommendedCycle
-          ? `Open /rtp/${context.recommendedCycle.id} to work the strongest first-packet cycle anchor first.`
+          ? `Open /rtp/${context.recommendedCycle.id} to start with the cycle that most needs a first packet.`
           : "Create the first RTP cycle before expecting first-packet queue behavior.",
-        "Confirm cycle readiness and packet section posture before generating first artifacts.",
+        "Confirm the cycle is ready and its sections are in place before generating anything.",
       ],
       evidence: [
         `Cycles: ${context.counts.cycles}`,
@@ -1522,11 +1522,11 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       label,
       title: `RTP refresh queue: ${context.workspace.name ?? "Current workspace"}`,
       summary: registryPacketPosture === "refresh"
-        ? `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so stale packet refresh is the top registry queue posture right now.`
+        ? `${context.counts.refreshRecommendedCount} RTP cycle packet${context.counts.refreshRecommendedCount === 1 ? " needs" : "s need"} refresh, so refreshing stale packets is the top of the queue right now.`
         : "The registry does not currently show stale RTP packets that need refresh.",
       findings: [
         context.recommendedCycle
-          ? `Leading cycle anchor: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
+          ? `Lead cycle: ${context.recommendedCycle.title} (${context.recommendedCycle.packetFreshnessLabel}).`
           : "No RTP cycle is visible yet from the registry snapshot.",
         `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
         context.operationsSummary.nextCommand
@@ -1535,7 +1535,7 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       ],
       nextSteps: [
         context.recommendedCycle
-          ? `Open /rtp/${context.recommendedCycle.id} to inspect the strongest stale-packet cycle anchor first.`
+          ? `Open /rtp/${context.recommendedCycle.id} to start with the cycle whose packet is most out of date.`
           : "Create RTP cycle and packet records before expecting refresh queue behavior.",
         "Check cycle drift and packet basis before regenerating stale board packets.",
       ],
@@ -1556,24 +1556,24 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       summary: hasRtpFundingBackedReleaseReviewPressure(context)
         ? rtpFundingReviewPressure
         : context.recommendedCycle
-        ? `${context.recommendedCycle.title} is the strongest current cycle anchor for RTP packet release-review work from the registry.`
-        : "No release-review RTP packet anchor is visible yet from the registry snapshot.",
+        ? `${context.recommendedCycle.title} is the cycle whose RTP packet most needs a release review.`
+        : "No RTP packet is ready for a release review yet.",
       findings: [
         `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
         hasRtpFundingBackedReleaseReviewPressure(context)
           ? rtpFundingReviewPressure
           : context.recommendedCycle
           ? `Recommended cycle: ${context.recommendedCycle.title} (${context.recommendedCycle.status}, ${context.recommendedCycle.packetFreshnessLabel}).`
-          : "No RTP cycle is available yet to anchor release-review work.",
+          : "No RTP cycle exists yet to review for release.",
         context.operationsSummary.nextCommand
           ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
           : "No broader workspace queue pressure is currently outranking release-review work in the RTP registry.",
       ],
       nextSteps: [
         context.recommendedCycle
-          ? `Open /rtp/${context.recommendedCycle.id} to verify the strongest current release-review cycle anchor first.`
+          ? `Open /rtp/${context.recommendedCycle.id} to start with the cycle most ready for a release review.`
           : "Create and mature at least one RTP cycle and packet before expecting release-review work.",
-        "Verify packet freshness, cycle drift, and release posture before externalizing anything.",
+        "Check packet freshness, cycle drift, and release readiness before this leaves the agency.",
       ],
       evidence: [
         `Cycles: ${context.counts.cycles}`,
@@ -1590,17 +1590,17 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
       label,
       title: `RTP packet queue: ${context.workspace.name ?? "Current workspace"}`,
       summary: hasRtpFundingBackedReleaseReviewPressure(context)
-        ? `${context.recommendedCycle ? `${context.recommendedCycle.title} is currently the strongest RTP queue anchor. ` : ""}${rtpFundingReviewPressure}`
+        ? `${context.recommendedCycle ? `${context.recommendedCycle.title} is the RTP cycle to work next. ` : ""}${rtpFundingReviewPressure}`
         : context.recommendedCycle
-        ? `${context.recommendedCycle.title} is currently the strongest RTP queue anchor, and the registry shows ${context.counts.refreshRecommendedCount} cycle packet${context.counts.refreshRecommendedCount === 1 ? "" : "s"} needing refresh plus ${context.counts.noPacketCount} cycle${context.counts.noPacketCount === 1 ? "" : "s"} still missing a generated packet.`
-        : "No RTP packet queue posture is visible yet because there are no cycles in the registry snapshot.",
+        ? `${context.recommendedCycle.title} is the RTP cycle to work next, and the registry shows ${context.counts.refreshRecommendedCount} cycle packet${context.counts.refreshRecommendedCount === 1 ? "" : "s"} needing refresh plus ${context.counts.noPacketCount} cycle${context.counts.noPacketCount === 1 ? "" : "s"} still missing a generated packet.`
+        : "Nothing can be said about the RTP packet queue yet, because there are no cycles in the registry snapshot.",
       findings: [
         `${context.counts.packetReports} RTP board-packet record${context.counts.packetReports === 1 ? " is" : "s are"} currently linked across the registry.`,
         hasRtpFundingBackedReleaseReviewPressure(context)
           ? rtpFundingReviewPressure
           : context.recommendedCycle
-          ? `${context.recommendedCycle.title} is in ${context.recommendedCycle.packetFreshnessLabel.toLowerCase()} posture.`
-          : "No RTP cycle is available yet to act as a packet anchor.",
+          ? `${context.recommendedCycle.title} is in ${context.recommendedCycle.packetFreshnessLabel.toLowerCase()}.`
+          : "No RTP cycle exists yet to hang a packet on.",
         context.operationsSummary.nextCommand
           ? `Workspace queue pressure: ${grantsRoutedRtpFundingReview && context.operationsSummary.nextCommand.key === "review-current-report-packets" ? "Open RTP grants follow-through" : context.operationsSummary.nextCommand.title}. ${rtpFundingReviewCount > 0 ? rtpFundingReviewPressure : context.operationsSummary.nextCommand.detail}`
           : "No broader workspace queue pressure is currently outranking the RTP registry from the current snapshot.",
@@ -1611,8 +1611,8 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
           : "Create the first RTP cycle before expecting packet queue behavior.",
         hasRtpFundingBackedReleaseReviewPressure(context)
           ? grantsRoutedRtpFundingReview
-            ? "Run the Grants OS follow-through lane before treating current packet freshness as settled."
-            : "Run the funding-backed release-review lane before treating current packet freshness as settled."
+            ? "Work the grants follow-through before treating this packet as settled."
+            : "Work the funding side of the release review before treating this packet as settled."
           : context.counts.noPacketCount > 0
           ? "Create first packets for missing cycles before spending too long on already-current packet polish."
           : "Refresh the stale packets first, then verify that the registry queue and packet trace stay aligned.",
@@ -1632,7 +1632,7 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
     title: `RTP registry brief: ${context.workspace.name ?? "Current workspace"}`,
     summary: hasRtpFundingBackedReleaseReviewPressure(context)
       ? `The RTP registry currently shows ${context.counts.cycles} cycle${context.counts.cycles === 1 ? "" : "s"}. ${rtpFundingReviewPressure}`
-      : `The RTP registry currently shows ${context.counts.cycles} cycle${context.counts.cycles === 1 ? "" : "s"}, with packet posture split between ${context.counts.refreshRecommendedCount} needing refresh and ${context.counts.noPacketCount} still missing a generated packet.`,
+      : `The RTP registry currently shows ${context.counts.cycles} cycle${context.counts.cycles === 1 ? "" : "s"}, with packets split between ${context.counts.refreshRecommendedCount} needing refresh and ${context.counts.noPacketCount} still missing a generated packet.`,
     findings: [
       `${context.counts.draftCycles} draft, ${context.counts.publicReviewCycles} public-review, ${context.counts.adoptedCycles} adopted, ${context.counts.archivedCycles} archived.`,
       context.recommendedCycle
@@ -1640,15 +1640,15 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
         : "No RTP cycle is visible yet from the registry snapshot.",
       context.operationsSummary.nextCommand
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
-        : "No broader workspace command currently outranks the RTP registry lane.",
+        : "No broader workspace queue currently outranks the RTP registry.",
     ],
     nextSteps: [
       context.recommendedCycle
-        ? `Use ${context.recommendedCycle.title} as the next RTP operator anchor instead of treating the registry as a passive list.`
+        ? `Use ${context.recommendedCycle.title} as the next RTP cycle to work, rather than reading the registry as a list.`
         : "Create the first RTP cycle so the registry can become a real operating surface.",
       context.counts.refreshRecommendedCount > 0 || context.counts.noPacketCount > 0
         ? "Work packet pressure alongside cycle status so the registry stays honest about board/binder readiness."
-        : "Keep chapter, packet, and queue trace posture aligned as cycles advance between draft, public review, and adopted states.",
+        : "Keep chapters, packets, and the queue in step as cycles advance between draft, public review, and adopted states.",
     ],
     evidence: [
       `Workspace role: ${context.workspace.role ?? "Unknown"}`,
@@ -1682,8 +1682,8 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
           ? `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.noPacketCount} missing a generated artifact.`
           : "No linked packet record exists yet, so the cycle still needs its first RTP board-packet trail.",
         context.packetSummary.recommendedReport
-          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()} posture.`
-          : "Once the first packet record exists, it can be generated and reviewed in the normal RTP packet lane.",
+          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
+          : "Once the first packet record exists, it can be generated and reviewed like any other RTP packet.",
         context.readiness.ready
           ? "Cycle readiness is materially in place for first-packet generation."
           : context.readiness.reason,
@@ -1714,7 +1714,7 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       findings: [
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible, with ${context.packetSummary.refreshRecommendedCount} needing refresh.`,
         context.packetSummary.recommendedReport
-          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()} posture.`
+          ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
           : "No linked packet record is available yet, so refresh is not possible until packet generation exists.",
         context.operationsSummary.nextCommand
           ? `Workspace queue pressure: ${context.operationsSummary.nextCommand.title}. ${context.operationsSummary.nextCommand.detail}`
@@ -1741,14 +1741,14 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       label,
       title: `Release review: ${context.rtpCycle.title}`,
       summary: hasRtpFundingBackedReleaseReviewPressure(context)
-        ? `${context.rtpCycle.title} has a materially current RTP packet anchor, but ${rtpFundingReviewPressure}`
-        : `${context.rtpCycle.title} has a materially current RTP packet anchor, so release-review work is the top cycle-level packet move right now.`,
+        ? `${context.rtpCycle.title} has a current RTP packet, but ${rtpFundingReviewPressure}`
+        : `${context.rtpCycle.title} has a current RTP packet, so a release review is the next step for this cycle right now.`,
       findings: [
         `${context.packetSummary.linkedReportCount} linked packet${context.packetSummary.linkedReportCount === 1 ? " is" : "s are"} visible.`,
         context.packetSummary.recommendedReport
           ? hasRtpFundingBackedReleaseReviewPressure(context)
-            ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is current, but ${grantsRoutedRtpFundingReview ? "Grants OS follow-through is" : "funding-backed release-review pressure is"} still open.`
-            : `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()} posture.`
+            ? `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is current, but ${grantsRoutedRtpFundingReview ? "grants follow-through is" : "funding-backed release-review pressure is"} still open.`
+            : `${context.packetSummary.recommendedReport.title ?? "Lead packet"} is in ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
           : "No linked packet record is available yet, so release-review work is premature.",
         context.readiness.ready
           ? "Cycle readiness is materially in place for release-review work."
@@ -1757,12 +1757,12 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       nextSteps: [
         hasRtpFundingBackedReleaseReviewPressure(context)
           ? grantsRoutedRtpFundingReview
-            ? "Resolve the Grants OS follow-through before treating the current packet as settled."
+            ? "Resolve the grants follow-through before treating the current packet as settled."
             : "Resolve the funding-backed release-review pressure before treating the current packet as settled."
           : context.packetSummary.recommendedReport
-          ? `Open /reports/${context.packetSummary.recommendedReport.id} to verify release posture on the lead board packet.`
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to check whether the lead board packet is ready to release.`
           : "Create and mature a packet before expecting release-review work.",
-        "Verify packet freshness, cycle drift, and packet audit posture before board/public use.",
+        "Check packet freshness, cycle drift, and where each figure came from before board or public use.",
       ],
       evidence: [
         rtpEvidenceLine(context, "Chapters", context.counts.chapters, ASSISTANT_READ_SUBJECTS.rtpChapters),
@@ -1777,14 +1777,14 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
     return {
       workflowId,
       label,
-      title: `Packet posture: ${context.rtpCycle.title}`,
+      title: `Report packet for ${context.rtpCycle.title}`,
       summary: context.packetSummary.recommendedReport
         ? cyclePacketWorkPosture === "generate"
-          ? `${context.rtpCycle.title} currently needs generate work before release-review work, and the lead packet anchor is ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}.`
+          ? `${context.rtpCycle.title} currently needs generate work before release-review work, and the lead packet is ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}.`
           : cyclePacketWorkPosture === "refresh"
             ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which still needs refresh before release-review work.`
             : hasRtpFundingBackedReleaseReviewPressure(context)
-              ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is current but still under ${grantsRoutedRtpFundingReview ? "Grants OS follow-through" : "funding-backed release-review pressure"}.`
+              ? `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is current but still under ${grantsRoutedRtpFundingReview ? "grants follow-through" : "funding-backed release-review pressure"}.`
               : `${context.rtpCycle.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead board packet"}, which is materially current for release-review work.`
         : `${context.rtpCycle.title} does not yet have a linked RTP board packet, so the packet trail still needs to be established.`,
       findings: [
@@ -1801,13 +1801,13 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       nextSteps: [
         hasRtpFundingBackedReleaseReviewPressure(context)
           ? grantsRoutedRtpFundingReview
-            ? "Run the Grants OS follow-through lane before treating current packet freshness as settled."
-            : "Run the funding-backed release-review lane before treating current packet freshness as settled."
+            ? "Work the grants follow-through before treating this packet as settled."
+            : "Work the funding side of the release review before treating this packet as settled."
           : context.packetSummary.recommendedReport
-          ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on the current RTP packet posture.`
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on this RTP packet.`
           : "Create or attach the first RTP board packet before treating this cycle as packet-ready.",
         context.readiness.ready
-          ? "Once packet posture is current, keep chapter workflow and project linkage aligned with the current cycle phase."
+          ? "Once the packets are current, keep chapter workflow and project linkage aligned with the current cycle phase."
           : context.readiness.nextSteps[0] ?? "Tighten the missing cycle setup before building more packet surface area.",
       ],
       evidence: [
@@ -1831,12 +1831,12 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
       context.operationsSummary.nextCommand
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
         : context.packetSummary.recommendedReport
-          ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"}.`
-          : "No immediate queue or packet anchor is visible beyond the cycle record itself.",
+          ? `Suggested packet: ${context.packetSummary.recommendedReport.title ?? "board packet"}.`
+          : "Nothing in the queue and no packet to work on beyond the cycle record itself.",
     ],
     nextSteps: [
       context.readiness.ready
-        ? "Use the current cycle as the anchor for project portfolio, engagement, and packet review work."
+        ? "Work the project list, engagement, and packet review from this cycle."
         : `Close the remaining ${context.readiness.totalCheckCount - context.readiness.readyCheckCount} setup gap${context.readiness.totalCheckCount - context.readiness.readyCheckCount === 1 ? "" : "s"} before treating this cycle as fully review-ready.`,
       context.packetSummary.linkedReportCount > 0
         ? "Keep RTP packet freshness aligned with chapter and project changes as the cycle moves phases."
@@ -1898,7 +1898,7 @@ function buildPlanResponse(context: PlanAssistantContext, workflowId: string): A
       context.readiness.missingCheckCount > 0
         ? `Close the remaining ${context.readiness.missingCheckCount} setup gap${context.readiness.missingCheckCount === 1 ? "" : "s"} before treating the plan as review-ready.`
         : "Use the current plan basis to drive the next packet, scenario, or engagement move.",
-      context.project ? `Keep ${context.project.name} as the main delivery anchor while this plan evolves.` : "Attach a project anchor if this plan should drive downstream reporting or controls.",
+      context.project ? `Keep ${context.project.name} as the project that actually delivers this plan.` : "Attach a project if this plan should drive reporting or delivery controls.",
     ],
     evidence: [
       `Plan type: ${context.plan.planType}`,
@@ -1927,13 +1927,13 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
     return {
       workflowId,
       label,
-      title: `Funding posture: ${context.program.title}`,
+      title: `Funding for ${context.program.title}`,
       summary:
         context.fundingSummary.opportunityCount > 0
           ? `${context.program.title} has ${context.fundingSummary.opportunityCount} linked funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y" : "ies"}, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${overdueDecisionCount > 0 ? ` ${overdueDecisionCount} monitored funding decision${overdueDecisionCount === 1 ? " has" : "s have"} already lapsed the recorded decision deadline, so those lapsed calls outrank newer closing-soon timing.${leadOverdueOpportunity ? ` ${leadOverdueOpportunity.title} is the lead overdue monitor decision to resolve first.` : ""}` : ""}${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${exactInvoiceAwardRelink ? " One exact invoice-to-award relink is ready on the linked project now." : ""}${awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 ? ` ${formatCurrency(uninvoicedAwardAmount ?? 0)} of committed awards is still uninvoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already open on the linked project.` : ""}` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Recorded project need is ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars is ${formatCurrency(gapAmount)}.` : ""}`
           : needsFundingSourcing
             ? `${context.program.title} already sits on a linked project funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}, but no funding opportunities are linked yet. The next honest move is sourcing candidate programs before talking about gap closure.`
-            : `${context.program.title} does not yet have linked funding opportunities, so grant posture is still thin.`,
+            : `${context.program.title} does not yet have linked funding opportunities, so there is little to go on yet.`,
       findings: [
         context.fundingSummary.opportunityCount > 0
           ? `${context.fundingSummary.openCount} open or upcoming opportunit${context.fundingSummary.openCount === 1 ? "y is" : "ies are"} visible on this package.`
@@ -1974,10 +1974,10 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
             ? `Open /projects/${context.project.id}#project-invoices and attach the exact unlinked invoice to its funding award before broader reimbursement cleanup.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
             ? reimbursementPacketCount > 0
-              ? `Open /projects/${context.project.id}#project-invoices to carry the existing reimbursement packet into the invoice chain before closeout posture drifts.`
-              : `Open /projects/${context.project.id}#project-invoices to move committed package awards into reimbursement workflow before closeout posture drifts.`
+              ? `Open /projects/${context.project.id}#project-invoices to carry the existing reimbursement packet into the invoice chain before the closeout record falls behind.`
+              : `Open /projects/${context.project.id}#project-invoices to move committed package awards into reimbursement workflow before the closeout record falls behind.`
             : context.fundingSummary.opportunityCount > 0
-              ? `Open /programs/${context.program.id}#program-funding-opportunities to confirm pursue, monitor, or skip posture on the linked opportunities.`
+              ? `Open /programs/${context.program.id}#program-funding-opportunities to confirm pursue, monitor, or skip on the linked opportunities.`
             : needsFundingSourcing
               ? `Open /programs/${context.program.id}#program-funding-opportunities and add the first funding opportunity tied to the recorded need.`
               : `Open /programs/${context.program.id}#program-funding-opportunities and log the first funding opportunity tied to this package.`,
@@ -1987,15 +1987,15 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
             ? `Keep ${context.project.name} aligned with this package while you repair the exact invoice-to-award linkage already visible on the linked project.`
           : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
             ? reimbursementPacketCount > 0
-              ? `Keep ${context.project.name} aligned with this package while you move the existing reimbursement packet through the invoice lane against the committed award stack.`
-              : `Keep ${context.project.name} aligned with this package while you push the reimbursement lane forward against the committed award stack.`
+              ? `Keep ${context.project.name} aligned with this package while you invoice the existing reimbursement packet against the awards already committed.`
+              : `Keep ${context.project.name} aligned with this package while you invoice against the awards already committed.`
             : gapAmount !== null && gapAmount > 0 && context.project
               ? `Keep ${context.project.name} aligned with this package while you close the remaining uncovered funding gap.`
             : needsFundingSourcing && context.project
               ? `Keep ${context.project.name} aligned with this package while you source candidate funding programs.`
               : context.project
-                ? `Keep ${context.project.name} aligned with the package funding posture before shifting RTP or delivery assumptions.`
-                : "Attach or confirm the main project anchor so funding posture can flow into the wider control room cleanly.",
+                ? `Keep ${context.project.name} aligned with the package's funding before changing RTP or delivery assumptions.`
+                : "Attach or confirm the main project so its funding shows up everywhere else it should.",
       ],
       evidence: [
         `Funding opportunities: ${context.fundingSummary.opportunityCount}`,
@@ -2016,7 +2016,7 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
     return {
       workflowId,
       label,
-      title: `Packet posture: ${context.program.title}`,
+      title: `Report packet for ${context.program.title}`,
       summary: context.packetSummary.recommendedReport
         ? `${context.program.title} currently points first to ${context.packetSummary.recommendedReport.title ?? "its lead report packet"}, which is marked ${context.packetSummary.recommendedReport.packetFreshness.label.toLowerCase()}.`
         : `${context.program.title} does not yet have a linked report packet, so the packet trail still needs to be established.`,
@@ -2031,11 +2031,11 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
       ],
       nextSteps: [
         context.packetSummary.recommendedReport
-          ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on the current packet posture.`
+          ? `Open /reports/${context.packetSummary.recommendedReport.id} to act on this packet.`
           : "Create or attach the first report packet before treating this package as packet-ready.",
         context.readiness.missingCheckCount > 0
           ? `Close the remaining ${context.readiness.missingCheckCount} readiness gap${context.readiness.missingCheckCount === 1 ? "" : "s"} so packet work is based on a cleaner package record.`
-          : "Once packet posture is current, keep the program narrative aligned with linked plans and engagement evidence.",
+          : "Once the packets are current, keep the program narrative aligned with linked plans and engagement evidence.",
       ],
       evidence: [
         `Plans: ${context.linkageCounts.plans}`,
@@ -2063,15 +2063,15 @@ function buildProgramResponse(context: ProgramAssistantContext, workflowId: stri
     ],
     nextSteps: [
       overdueDecisionCount > 0
-        ? "Resolve the lapsed monitor decision as pursue or skip first so grant posture stops sliding behind newer closing-soon timing."
+        ? "Resolve the lapsed monitor decision as pursue or skip first so it does not slip behind grants that close sooner."
         : context.fundingSummary.closingSoonCount > 0
         ? "Recheck the near-term funding windows first so grant timing does not slip while packet work continues."
         : gapAmount !== null && gapAmount > 0
           ? "Tighten the funding strategy next so the package does not read as more funded than it really is."
         : context.packetSummary.attentionCount > 0
-          ? "Work the packet posture first so the package basis stays current."
+          ? "Deal with the packets first so the package stays current."
           : "Use the current package basis to support the next submission or funding move.",
-      context.project ? `Keep ${context.project.name} as the main delivery anchor while this package evolves.` : "Attach a project anchor if this package should flow through broader project controls.",
+      context.project ? `Keep ${context.project.name} as the project that actually delivers this package.` : "Attach a project if this package should flow through the wider project controlss.",
     ],
     evidence: [
       `Cycle: ${context.program.cycleName}`,
@@ -2089,12 +2089,12 @@ function buildScenarioResponse(context: ScenarioAssistantContext, workflowId: st
     return {
       workflowId,
       label,
-      title: `Scenario handoff posture for ${context.scenarioSet.title}`,
+      title: `Handoff readiness for ${context.scenarioSet.title}`,
       summary: `${context.comparisonSummary.readyAlternatives} of ${context.comparisonSummary.totalAlternatives} alternatives are currently ready for a serious baseline-linked handoff into Analysis Studio or reporting.`,
       findings: [
         context.baselineEntry
           ? `Baseline registered: ${context.baselineEntry.label}${context.baselineEntry.attachedRunId ? " with attached run evidence" : " but still missing a run attachment"}.`
-          : "No baseline entry is registered yet, so handoff posture is inherently incomplete.",
+          : "No baseline entry is registered yet, so the handoff cannot be complete.",
         context.comparisonBoard.length > 0
           ? `${pluralize(context.comparisonBoard.length, "comparison-ready alternative")} can already open with explicit baseline pairing.`
           : "No comparison-ready alternatives are visible yet.",
@@ -2176,7 +2176,7 @@ function buildModelResponse(context: ModelAssistantContext, workflowId: string):
         `Scenario options: ${context.scenarioEntryOptions.length}`,
         `Readiness checks passed: ${context.readiness.readyCheckCount}/${context.readiness.totalCheckCount}`,
       ],
-      caution: "A green launch recommendation here is still about operator readiness, not scientific validity or production-grade model certification.",
+      caution: "A green light here means you are ready to launch, not that the result is scientifically valid or production-grade model certification.",
     };
   }
 
@@ -2195,7 +2195,7 @@ function buildModelResponse(context: ModelAssistantContext, workflowId: string):
     nextSteps: [
       context.readiness.missingCheckCount > 0
         ? "Resolve the missing readiness checks before expanding downstream dependence on this model."
-        : "Preserve the current readiness posture by recording validation and run evidence as it happens.",
+        : "Keep the current readiness by recording validation and run evidence as it happens.",
       context.schemaPending
         ? "Apply the pending model-run schema before depending on execution history inside this view."
         : "Use recent model runs plus explicit links to keep provenance tight.",
@@ -2227,14 +2227,14 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       title: `First packet plan for ${context.report.title}`,
       summary: `${context.report.title} still needs its first usable RTP board packet artifact. The main job now is confirming that the cycle basis, packet sections, and source runs are strong enough to justify generate work.`,
       findings: [
-        context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+        context.rtpCycle ? `RTP cycle: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
         `Packet freshness: ${packetFreshness.label}. ${packetFreshness.detail}`,
         context.sectionCount > 0
           ? `${context.enabledSections} of ${context.sectionCount} packet sections are enabled on the record.`
           : "No report sections are currently attached to this packet record.",
         context.runs.length > 0
           ? `${context.runs.length} linked run${context.runs.length === 1 ? " is" : "s are"} available to support the first artifact.`
-          : "No source runs are attached yet, so first-packet generation would be thinly grounded.",
+          : "No source runs are attached yet, so a first packet would have little behind it.",
       ].filter(Boolean) as string[],
       nextSteps: [
         "Confirm the packet layout and section coverage before generating the first artifact.",
@@ -2259,7 +2259,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       title: `Refresh plan for ${context.report.title}`,
       summary: `${context.report.title} already has a packet trail, but the current cycle or packet record changed after the last generation. Refresh work should verify what drifted before regenerating.`,
       findings: [
-        context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+        context.rtpCycle ? `RTP cycle: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
         `Packet freshness: ${packetFreshness.label}. ${packetFreshness.detail}`,
         context.latestArtifact
           ? `Latest artifact generated ${formatDateTime(context.latestArtifact.generatedAt)}.`
@@ -2292,7 +2292,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
           : `${context.report.title} has a generated ${context.latestArtifact.artifactKind} artifact, but release confidence still depends on the run audit, source context, and any unresolved gate holds attached inside that artifact metadata.`
         : `${context.report.title} is not release-ready yet because no generated artifact exists to review.`,
       findings: [
-        context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
+        context.rtpCycle ? `RTP cycle: ${context.rtpCycle.title} · ${context.rtpCycle.status}.` : null,
         context.rtpCycle ? `Packet freshness: ${packetFreshness.label}. ${packetFreshness.detail}` : null,
         context.latestArtifact
           ? `Latest artifact generated ${formatDateTime(context.latestArtifact.generatedAt)}.`
@@ -2328,8 +2328,8 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
     title: `${context.kind === "rtp_packet_report" ? "RTP packet audit" : "Report audit"}: ${context.report.title}`,
     summary: `${context.report.title} is grounded on ${pluralize(context.runs.length, "linked run")}, ${pluralize(context.enabledSections, "enabled section")}, and ${pluralize(context.artifactCount, "generated artifact")}.`,
     findings: [
-      context.rtpCycle ? `RTP cycle anchor: ${context.rtpCycle.title} · ${context.rtpCycle.status} · ${packetFreshness.label}.` : null,
-      context.project ? `Project anchor: ${context.project.name}.` : "No project anchor is visible from this report snapshot.",
+      context.rtpCycle ? `RTP cycle: ${context.rtpCycle.title} · ${context.rtpCycle.status} · ${packetFreshness.label}.` : null,
+      context.project ? `Project: ${context.project.name}.` : "No project is attached to this report.",
       context.runs.length > 0
         ? `Source runs: ${context.runs.slice(0, 3).map((run) => run.title).join(" · ")}.`
         : "No source runs are attached to the report.",
@@ -2341,7 +2341,7 @@ function buildReportResponse(context: ReportAssistantContext, workflowId: string
       context.rtpCycle && packetPosture !== "release"
         ? "Refresh this RTP packet from current cycle state before externalizing it."
         : null,
-      context.runs.length > 0 ? "Cross-check the linked run summaries against the packet storyline." : "Attach source runs before treating the report as analytically grounded.",
+      context.runs.length > 0 ? "Cross-check the linked run summaries against the packet storyline." : "Attach source runs before treating the report as backed by analysis.",
       context.latestArtifact ? "Audit the latest artifact metadata rather than only the report record fields." : "Generate the first artifact to create a real review object.",
     ].filter(Boolean) as string[],
     evidence: [
@@ -2391,7 +2391,7 @@ function buildRunResponse(context: RunAssistantContext, workflowId: string): Ass
           : "No explicit confidence label is stored on the current run.",
       ],
       nextSteps: [
-        context.baselineRun ? "Read the comparison surface together with saved map posture before treating every delta as purely design-driven." : "Attach a baseline if you need a before/after or alternative comparison argument.",
+        context.baselineRun ? "Read the comparison alongside the saved map settings before treating every difference as a design effect." : "Attach a baseline if you need a before/after or alternative comparison argument.",
         "Keep exported narratives honest about source limitations and human-review requirements.",
       ],
       evidence: [
@@ -2399,7 +2399,7 @@ function buildRunResponse(context: RunAssistantContext, workflowId: string): Ass
         `Baseline run: ${context.baselineRun?.id ?? "None"}`,
         `Created: ${formatDateTime(context.run.createdAt)}`,
       ],
-      caution: "Score movement alone is not enough; map posture, filter stack, and source quality still matter when interpreting deltas.",
+      caution: "Score movement alone is not enough; the map settings, the filters applied, and source quality still matter when interpreting deltas.",
       quickLinks: buildAssistantOperations(context),
     };
   }
@@ -2420,7 +2420,7 @@ function buildRunResponse(context: RunAssistantContext, workflowId: string): Ass
     ],
     nextSteps: [
       context.baselineRun ? "Use the compare workflow if you need to explain movement against a baseline." : "If this run will support a decision memo, attach a baseline or scenario context next.",
-      "Verify the run narrative and source posture before turning it into external-facing language.",
+      "Read the run narrative and check its sources before turning it into public-facing language.",
     ],
     evidence: [
       `Created: ${formatDateTime(context.run.createdAt)}`,

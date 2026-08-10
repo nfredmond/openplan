@@ -1027,7 +1027,7 @@ describe("ProjectDetailPage", () => {
       "href",
       "/reports/report-1#drift-since-generation"
     );
-    expect(screen.getAllByRole("link", { name: /Open Grants OS/i })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: /Open Grants/i })[0]).toHaveAttribute(
       "href",
       "/grants?focusProjectId=project-1"
     );

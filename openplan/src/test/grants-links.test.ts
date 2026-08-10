@@ -16,7 +16,7 @@ function buildCommand(overrides: Partial<WorkspaceCommandQueueItem>): WorkspaceC
   return {
     key: "anchor-project-funding-needs",
     moduleKey: "grants",
-    moduleLabel: "Grants OS",
+    moduleLabel: "Grants",
     title: "Anchor project funding needs",
     detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
     href: "/projects/project-anchor#project-funding-opportunities",

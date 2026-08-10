@@ -47,7 +47,7 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
 }
 
 function resolveGrantsRuntimeCueCtaTarget(command: WorkspaceCommandQueueItem) {
-  return command.moduleLabel ?? "Grants OS command";
+  return command.moduleLabel ?? "Grants";
 }
 
 export function WorkspaceRuntimeCue({

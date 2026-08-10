@@ -234,7 +234,7 @@ describe("DashboardPage", () => {
       nextCommand: {
         key: "review-current-report-packets",
         moduleKey: "grants",
-        moduleLabel: "Grants OS",
+        moduleLabel: "Grants",
         title: "Run release review on current packets",
         detail: "1 current RTP packet still carries funding follow-up from linked projects.",
         href: "/grants#grants-gap-resolution-lane",
@@ -249,7 +249,7 @@ describe("DashboardPage", () => {
         {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -265,7 +265,7 @@ describe("DashboardPage", () => {
         {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -451,7 +451,7 @@ describe("DashboardPage", () => {
       nextCommand: {
         key: "advance-project-funding-decisions",
         moduleKey: "grants",
-        moduleLabel: "Grants OS",
+        moduleLabel: "Grants",
         title: "Advance project funding decisions",
         detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
         href: "/projects/project-1#project-funding-opportunities",
@@ -470,7 +470,7 @@ describe("DashboardPage", () => {
         {
           key: "advance-project-funding-decisions",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Advance project funding decisions",
           detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
           href: "/projects/project-1#project-funding-opportunities",
@@ -490,7 +490,7 @@ describe("DashboardPage", () => {
         {
           key: "advance-project-funding-decisions",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Advance project funding decisions",
           detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
           href: "/projects/project-1#project-funding-opportunities",

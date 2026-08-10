@@ -40,7 +40,7 @@ const summary: WorkspaceOperationsSummary = {
     nextCommand: {
       key: "review-current-report-packets",
       moduleKey: "grants",
-      moduleLabel: "Grants OS",
+      moduleLabel: "Grants",
       title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
       href: "/grants#grants-gap-resolution-lane",
@@ -55,7 +55,7 @@ const summary: WorkspaceOperationsSummary = {
     {
       key: "review-current-report-packets",
       moduleKey: "grants",
-      moduleLabel: "Grants OS",
+      moduleLabel: "Grants",
       title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
       href: "/grants#grants-gap-resolution-lane",
@@ -71,7 +71,7 @@ const summary: WorkspaceOperationsSummary = {
     {
       key: "review-current-report-packets",
       moduleKey: "grants",
-      moduleLabel: "Grants OS",
+      moduleLabel: "Grants",
       title: "Run Grants follow-through on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
       href: "/grants#grants-gap-resolution-lane",
@@ -150,7 +150,9 @@ describe("WorkspaceCommandBoard", () => {
     );
     expect(screen.getByText("Workflow next-action groups")).toBeInTheDocument();
     expect(screen.getByText("RTP")).toBeInTheDocument();
-    expect(screen.getByText("Grants")).toBeInTheDocument();
+    // "Grants" now names both the module badge and the workflow group, so this
+    // asserts the group is present rather than that the word appears once.
+    expect(screen.getAllByText("Grants").length).toBeGreaterThan(0);
     expect(screen.getByText("Engagement")).toBeInTheDocument();
     expect(screen.getByText("Analysis / modeling")).toBeInTheDocument();
     expect(screen.getByText("Aerial")).toBeInTheDocument();
@@ -158,7 +160,7 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getByText(/standing check · handoff check/i)).toBeInTheDocument();
     expect(screen.getByText(/Standing check: handoff/i)).toBeInTheDocument();
     expect(screen.getByText("Funding follow-through")).toBeInTheDocument();
-    expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Grants").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Primary next action")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open primary action/i })).toHaveAttribute(
@@ -358,7 +360,7 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getAllByText(/Stale modeling: 1/i).length).toBeGreaterThan(0);
   });
 
-  it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {
+  it("shows Grants module metadata and routes grants commands to the shared lane", () => {
     render(
       <WorkspaceCommandBoard
         summary={{
@@ -374,7 +376,7 @@ describe("WorkspaceCommandBoard", () => {
           nextCommand: {
             key: "anchor-project-funding-needs",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Anchor project funding needs",
             detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
             href: "/projects/project-anchor#project-funding-opportunities",
@@ -387,7 +389,7 @@ describe("WorkspaceCommandBoard", () => {
             {
               key: "anchor-project-funding-needs",
               moduleKey: "grants",
-              moduleLabel: "Grants OS",
+              moduleLabel: "Grants",
               title: "Anchor project funding needs",
               detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
               href: "/projects/project-anchor#project-funding-opportunities",
@@ -401,7 +403,7 @@ describe("WorkspaceCommandBoard", () => {
             {
               key: "anchor-project-funding-needs",
               moduleKey: "grants",
-              moduleLabel: "Grants OS",
+              moduleLabel: "Grants",
               title: "Anchor project funding needs",
               detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
               href: "/projects/project-anchor#project-funding-opportunities",
@@ -415,7 +417,7 @@ describe("WorkspaceCommandBoard", () => {
       />
     );
 
-    expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Grants").length).toBeGreaterThan(0);
     expect(screen.getAllByRole("link", { name: /Anchor project funding needs/i })[0]).toHaveAttribute(
       "href",
       "/grants?focusProjectId=project-anchor#grants-funding-need-editor"

@@ -207,7 +207,7 @@ export default async function DashboardPage() {
             title: grantsRoutedRtpFundingReview ? "Open RTP grants follow-through" : "Open RTP funding release review",
             description:
               grantsRoutedRtpFundingReview
-                ? `Jump straight into Grants OS for the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} that still need linked-project funding follow-through.`
+                ? `Jump straight into Grants for the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} that still need linked-project funding follow-through.`
                 : rtpFundingReviewCount > 0
                 ? `Jump straight into the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} still carrying funding-backed release-review follow-up.`
                 : "Jump straight into the current RTP packets awaiting release review.",

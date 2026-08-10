@@ -31,7 +31,7 @@ function summary(overrides: Partial<WorkspaceOperationsSummary> = {}): Workspace
     command({
       key: "advance-project-funding-decisions",
       moduleKey: "grants",
-      moduleLabel: "Grants OS",
+      moduleLabel: "Grants",
       title: "Advance project funding decisions",
       detail: "Review grant decisions and modeling posture before pursue language is used.",
       href: "/projects/project-1#project-funding-opportunities",
@@ -117,7 +117,7 @@ describe("workflow next-action groups", () => {
         command({
           key: "advance-project-funding-decisions",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           detail: "Inspect modeling caveats before grant pursue language.",
         })
       )

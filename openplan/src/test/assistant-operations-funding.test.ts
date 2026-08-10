@@ -130,7 +130,7 @@ describe("assistant funding operations", () => {
         nextCommand: {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -145,7 +145,7 @@ describe("assistant funding operations", () => {
           {
             key: "review-current-report-packets",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
             href: "/grants#grants-gap-resolution-lane",
@@ -180,7 +180,7 @@ describe("assistant funding operations", () => {
         nextCommand: {
           key: "resolve-overdue-funding-decisions",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Resolve overdue funding decisions",
           detail:
             "2 monitored funding opportunities are past their decision deadline without a pursue or skip call. ATP Cycle 8 is the oldest lapsed decision.",
@@ -198,7 +198,7 @@ describe("assistant funding operations", () => {
           {
             key: "resolve-overdue-funding-decisions",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Resolve overdue funding decisions",
             detail:
               "2 monitored funding opportunities are past their decision deadline without a pursue or skip call. ATP Cycle 8 is the oldest lapsed decision.",
@@ -239,7 +239,7 @@ describe("assistant funding operations", () => {
         nextCommand: {
           key: "resolve-overdue-funding-decisions",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Resolve overdue funding decisions",
           detail: "1 monitored funding opportunity is past its decision deadline.",
           href: "/grants",
@@ -251,7 +251,7 @@ describe("assistant funding operations", () => {
           {
             key: "resolve-overdue-funding-decisions",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Resolve overdue funding decisions",
             detail: "1 monitored funding opportunity is past its decision deadline.",
             href: "/grants",
@@ -281,7 +281,7 @@ describe("assistant funding operations", () => {
         nextCommand: {
           key: "resolve-overdue-funding-decisions",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Resolve overdue funding decisions",
           detail: "1 monitored funding opportunity is past its decision deadline.",
           href: "/grants?focusOpportunityId=opp-overdue-solo#funding-opportunity-opp-overdue-solo",
@@ -294,7 +294,7 @@ describe("assistant funding operations", () => {
           {
             key: "resolve-overdue-funding-decisions",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Resolve overdue funding decisions",
             detail: "1 monitored funding opportunity is past its decision deadline.",
             href: "/grants?focusOpportunityId=opp-overdue-solo#funding-opportunity-opp-overdue-solo",
@@ -987,7 +987,7 @@ describe("assistant funding operations", () => {
         nextCommand: {
           key: "funding-windows-closing",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Advance near-term funding windows",
           detail: "1 open funding opportunity closes within 14 days. ATP Cycle 8 is the first deadline to reopen.",
           href: "/grants?focusOpportunityId=opp-closing-1#funding-opportunity-opp-closing-1",
@@ -1001,7 +1001,7 @@ describe("assistant funding operations", () => {
           {
             key: "funding-windows-closing",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Advance near-term funding windows",
             detail: "1 open funding opportunity closes within 14 days. ATP Cycle 8 is the first deadline to reopen.",
             href: "/grants?focusOpportunityId=opp-closing-1#funding-opportunity-opp-closing-1",
@@ -1035,7 +1035,7 @@ describe("assistant funding operations", () => {
         nextCommand: {
           key: "funding-windows-closing",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Advance near-term funding windows",
           detail: "1 open funding opportunity closes within 14 days.",
           href: "/grants",
@@ -1047,7 +1047,7 @@ describe("assistant funding operations", () => {
           {
             key: "funding-windows-closing",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Advance near-term funding windows",
             detail: "1 open funding opportunity closes within 14 days.",
             href: "/grants",
@@ -1077,7 +1077,7 @@ describe("assistant funding operations", () => {
         nextCommand: {
           key: "record-awarded-funding",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Record awarded funding",
           detail: "Reopen Gap Project first and convert ATP Cycle 8 into a committed award entry.",
           href: "/grants?focusOpportunityId=opp-award-1#grants-award-conversion-composer",
@@ -1093,7 +1093,7 @@ describe("assistant funding operations", () => {
           {
             key: "record-awarded-funding",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Record awarded funding",
             detail: "Reopen Gap Project first and convert ATP Cycle 8 into a committed award entry.",
             href: "/grants?focusOpportunityId=opp-award-1#grants-award-conversion-composer",

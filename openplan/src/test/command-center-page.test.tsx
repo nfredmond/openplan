@@ -111,7 +111,7 @@ const summary: WorkspaceOperationsSummary = {
   nextCommand: {
     key: "review-current-report-packets",
     moduleKey: "grants",
-    moduleLabel: "Grants OS",
+    moduleLabel: "Grants",
     title: "Run release review on current packets",
     detail: "1 current RTP packet still carries funding follow-up from linked projects.",
     href: "/grants#grants-gap-resolution-lane",

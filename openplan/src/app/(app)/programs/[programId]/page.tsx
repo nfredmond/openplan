@@ -936,7 +936,7 @@ export default async function ProgramDetailPage({
                 <p className="module-section-label">Funding</p>
                 <h2 className="module-section-title">Linked funding opportunities</h2>
                 <p className="module-section-description">
-                  Track open and upcoming calls against this funding cycle without waiting for the full Grants OS layer.
+                  Track open and upcoming calls against this funding cycle.
                 </p>
               </div>
               <span className="module-inline-item">

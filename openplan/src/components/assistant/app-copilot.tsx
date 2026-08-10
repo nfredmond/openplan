@@ -337,47 +337,47 @@ function buildBoardStateNarrative(args: {
 }): { title: string; detail: string } {
   const filterLabel =
     args.filter === "all"
-      ? "all operation groups"
+      ? "everything"
       : args.filter === "act_now"
-        ? "act-now pressure"
+        ? "what needs doing now"
         : args.filter === "review_soon"
-          ? "review-soon work"
-          : "support context";
+          ? "work to review soon"
+          : "background context";
 
   if (args.viewMode === "triage") {
     return {
-      title: "Triage mode is shaping the board",
+      title: "Showing only what needs doing now",
       detail:
         args.returningSoonCount > 0
-          ? `The console is narrowed to act-now pressure, with ${args.returningSoonCount} snoozed operation${args.returningSoonCount === 1 ? "" : "s"} returning soon.`
-          : `The console is narrowed to act-now pressure while ${filterLabel} stays available underneath the full board view.`,
+          ? `Narrowed to what needs doing now. ${args.returningSoonCount} snoozed suggestion${args.returningSoonCount === 1 ? "" : "s"} will come back soon.`
+          : `Narrowed to what needs doing now. Switch to the full view to see ${filterLabel}.`,
     };
   }
 
   if (args.returningSoonCount > 0) {
     return {
-      title: "Returning pressure is approaching",
-      detail: `${args.returningSoonCount} snoozed operation${args.returningSoonCount === 1 ? " is" : "s are"} nearing its return window while ${args.shapedCount} shaped item${args.shapedCount === 1 ? " remains" : "s remain"} under active operator control.`,
+      title: "Snoozed suggestions are about to come back",
+      detail: `${args.returningSoonCount} snoozed suggestion${args.returningSoonCount === 1 ? " is" : "s are"} due back shortly, and ${args.shapedCount} ${args.shapedCount === 1 ? "is" : "are"} still pinned or snoozed by you.`,
     };
   }
 
   if (args.hiddenSnoozedCount > 0 && !args.showSnoozed) {
     return {
-      title: "Some pressure is intentionally tucked away",
-      detail: `${args.hiddenSnoozedCount} snoozed operation${args.hiddenSnoozedCount === 1 ? " is" : "s are"} hidden from the active board, while ${filterLabel} stays in view.`,
+      title: "Some suggestions are snoozed",
+      detail: `${args.hiddenSnoozedCount} snoozed suggestion${args.hiddenSnoozedCount === 1 ? " is" : "s are"} hidden right now. You are looking at ${filterLabel}.`,
     };
   }
 
   if (args.shapedCount > 0) {
     return {
-      title: "The board reflects local operator judgment",
-      detail: `${args.shapedCount} operation${args.shapedCount === 1 ? " is" : "s are"} currently pinned or snoozed, and the board is focused on ${filterLabel}.`,
+      title: "You have pinned or snoozed some of these",
+      detail: `${args.shapedCount} suggestion${args.shapedCount === 1 ? " is" : "s are"} pinned or snoozed, and you are looking at ${filterLabel}.`,
     };
   }
 
   return {
-    title: "The board is running in clean review mode",
-    detail: `No local pin or snooze state is active right now, and the console is showing ${filterLabel}.`,
+    title: "Nothing is pinned or snoozed",
+    detail: `You are seeing ${filterLabel}, in the order OpenPlan ranked it.`,
   };
 }
 
@@ -1052,9 +1052,9 @@ function QuickLinkGrid({
         <p className="mt-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/82">
           {viewMode === "triage"
             ? hasActNowGroup
-              ? "Triage mode narrows the board to act-now pressure only."
-              : "Triage mode is on, but no act-now operations are currently available."
-            : "Full board mode keeps every operation group available for deeper review."}
+              ? "Showing only what needs doing now."
+              : "Nothing needs doing right now, so this view is empty."
+            : "Showing everything, including background context."}
         </p>
 
         <div className="mt-2 flex flex-wrap gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/82">
@@ -2601,7 +2601,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs text-slate-400">
-                      Grounded to {preview?.title ?? workspaceName}. Free-text questions stream through the AI copilot; suggested actions stay deterministic, and record changes still happen inside the destination screen.
+                      Working from {preview?.title ?? workspaceName}. Typed questions go to the AI; the suggested actions above are fixed, not generated, and any change still happens on the page it opens.
                     </p>
                     <Link
                       href="/assistant-activity"

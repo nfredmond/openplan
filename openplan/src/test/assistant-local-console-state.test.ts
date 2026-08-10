@@ -32,15 +32,15 @@ describe("assistant local console state adapters", () => {
     expect(adapted.summary).toBe(preview.summary);
     expect(adapted.facts).toEqual(preview.facts);
     expect(adapted.boardStateCue).toEqual({
-      label: "Local board posture",
+      label: "How this panel is set up",
       title: localConsoleState.title,
       detail: localConsoleState.detail,
       items: [
-        "Mode: triage",
-        "Filter: act-now pressure",
-        "Shaped ops: 3",
-        "Snoozed ops: 1",
-        "Returning soon: 1",
+        "View: triage",
+        "Filter: what needs doing now",
+        "Pinned: 3",
+        "Snoozed: 1",
+        "Coming back soon: 1",
       ],
     });
   });
@@ -62,7 +62,7 @@ describe("assistant local console state adapters", () => {
     expect(adapted.findings).toEqual(response.findings);
     expect(adapted.evidence).toEqual(response.evidence);
     expect(adapted.boardStateCue?.title).toBe(localConsoleState.title);
-    expect(adapted.boardStateCue?.items).toContain("Filter: act-now pressure");
+    expect(adapted.boardStateCue?.items).toContain("Filter: what needs doing now");
   });
 
   it("returns the original object shape when no local console state is supplied", () => {

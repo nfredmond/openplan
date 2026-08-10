@@ -474,7 +474,7 @@ export function ProjectPostureHeader({
                       href={`/grants?focusProjectId=${project.id}`}
                       className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-foreground transition hover:border-primary/35 hover:text-primary"
                     >
-                      Open Grants OS
+                      Open Grants
                     </Link>
                   </div>
                 </div>

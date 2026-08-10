@@ -21,28 +21,28 @@ export type AssistantLocalConsoleState = z.infer<typeof assistantLocalConsoleSta
 function describeConsoleFilter(filter: AssistantLocalConsoleFilter): string {
   switch (filter) {
     case "act_now":
-      return "act-now pressure";
+      return "what needs doing now";
     case "review_soon":
-      return "review-soon work";
+      return "work to review soon";
     case "support_context":
-      return "support context";
+      return "background context";
     case "all":
     default:
-      return "all operation groups";
+      return "everything";
   }
 }
 
 function buildBoardStateCue(localConsoleState: AssistantLocalConsoleState): AssistantBoardStateCue {
   return {
-    label: "Local board posture",
+    label: "How this panel is set up",
     title: localConsoleState.title,
     detail: localConsoleState.detail,
     items: [
-      `Mode: ${localConsoleState.viewMode}`,
+      `View: ${localConsoleState.viewMode}`,
       `Filter: ${describeConsoleFilter(localConsoleState.filter)}`,
-      `Shaped ops: ${localConsoleState.shapedCount}`,
-      `Snoozed ops: ${localConsoleState.snoozedCount}`,
-      `Returning soon: ${localConsoleState.returningSoonCount}`,
+      `Pinned: ${localConsoleState.shapedCount}`,
+      `Snoozed: ${localConsoleState.snoozedCount}`,
+      `Coming back soon: ${localConsoleState.returningSoonCount}`,
     ],
   };
 }

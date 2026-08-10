@@ -321,7 +321,7 @@ describe("ReportsPage", () => {
     expect(screen.getAllByText(/Open gap resolution/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
     expect(screen.getByText(/Open gap resolution/i)).toBeInTheDocument();
-    expect(screen.getByText(/in Grants OS/i)).toBeInTheDocument();
+    expect(screen.getByText(/in Grants/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Grant release review/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();

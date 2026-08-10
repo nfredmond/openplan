@@ -454,7 +454,7 @@ describe("assistant response builders", () => {
         nextCommand: {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -469,7 +469,7 @@ describe("assistant response builders", () => {
           {
             key: "review-current-report-packets",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
             href: "/grants#grants-gap-resolution-lane",
@@ -485,7 +485,7 @@ describe("assistant response builders", () => {
           {
             key: "review-current-report-packets",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
             href: "/grants#grants-gap-resolution-lane",
@@ -503,11 +503,11 @@ describe("assistant response builders", () => {
     const preview = buildAssistantPreview(context);
     const response = buildAssistantResponse(context, "workspace-overview");
 
-    expect(preview.summary).toContain("Grants OS follow-through");
+    expect(preview.summary).toContain("grants follow-through");
     expect(preview.facts.join(" ")).toContain("RTP grants follow-through");
     expect(preview.operatorCue?.title).toBe("Open RTP grants follow-through");
-    expect(preview.operatorCue?.detail).toContain("Grants OS follow-through");
-    expect(response.summary).toContain("Grants OS follow-through");
+    expect(preview.operatorCue?.detail).toContain("grants follow-through");
+    expect(response.summary).toContain("grants follow-through");
     expect(response.findings.join(" ")).toContain("Open RTP grants follow-through");
     expect(response.nextSteps.join(" ")).toContain("/grants#grants-gap-resolution-lane");
   });
@@ -636,7 +636,7 @@ describe("assistant response builders", () => {
     expect(response.summary).toContain("ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready");
     expect(response.findings.join(" ")).toContain("Lead grant decision cue");
     expect(response.findings.join(" ")).toContain("Advance to pursue now");
-    expect(response.nextSteps.join(" ")).toContain("use this lead grant cue before treating the stack as a real funding pipeline");
+    expect(response.nextSteps.join(" ")).toContain("use this lead grant cue before treating this as real money");
     expect(response.nextSteps.join(" ")).toContain("/grants?focusOpportunityId=opp-modeled-1#funding-opportunity-opp-modeled-1");
   });
 

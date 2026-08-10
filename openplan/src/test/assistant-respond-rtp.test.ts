@@ -39,7 +39,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
     nextCommand: {
       key: "review-current-report-packets",
       moduleKey: "grants",
-      moduleLabel: "Grants OS",
+      moduleLabel: "Grants",
       title: "Run release review on current packets",
       detail: "1 current RTP packet still carries funding follow-up from linked projects.",
       href: "/grants#grants-gap-resolution-lane",
@@ -54,7 +54,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       {
         key: "review-current-report-packets",
         moduleKey: "grants",
-        moduleLabel: "Grants OS",
+        moduleLabel: "Grants",
         title: "Run release review on current packets",
         detail: "1 current RTP packet still carries funding follow-up from linked projects.",
         href: "/grants#grants-gap-resolution-lane",
@@ -70,7 +70,7 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       {
         key: "review-current-report-packets",
         moduleKey: "grants",
-        moduleLabel: "Grants OS",
+        moduleLabel: "Grants",
         title: "Run release review on current packets",
         detail: "1 current RTP packet still carries funding follow-up from linked projects.",
         href: "/grants#grants-gap-resolution-lane",
@@ -122,9 +122,9 @@ describe("assistant RTP funding preview", () => {
   it("surfaces RTP funding release review in workspace preview copy", () => {
     const preview = buildAssistantPreview(buildWorkspaceContext());
 
-    expect(preview.summary).toMatch(/1 current RTP packet still needs Grants OS follow-through/i);
+    expect(preview.summary).toMatch(/1 current RTP packet still needs grants follow-through/i);
     expect(preview.facts).toContain(
-      "RTP grants follow-through: 1 current RTP packet still needs Grants OS follow-through before packet posture can be treated as settled."
+      "RTP grants follow-through: 1 current RTP packet still needs grants follow-through before the packets can be treated as settled."
     );
     expect(preview.stats.some((stat) => stat.label === "RTP funding review" && stat.value === "1")).toBe(true);
     expect(preview.operatorCue?.title).toBe("Open RTP grants follow-through");

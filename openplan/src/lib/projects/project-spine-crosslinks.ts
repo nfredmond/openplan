@@ -594,7 +594,7 @@ export function buildProjectSpineCrosslinkSummary(
             : "Confirm source documents and award status before moving funding language into external packets.",
       caveat: "Funding evidence shows current source-context posture only; it is not an award commitment, eligibility opinion, or reimbursement approval.",
       href: laneHrefForProject("/grants", input.projectId, "focusProjectId"),
-      actionLabel: "Open Grants OS",
+      actionLabel: "Open Grants",
     },
     {
       id: "engagement_evidence",

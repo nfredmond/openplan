@@ -65,7 +65,7 @@ function buildRtpRegistryContext(): RtpRegistryAssistantContext {
       nextCommand: {
         key: "review-current-report-packets",
         moduleKey: "grants",
-        moduleLabel: "Grants OS",
+        moduleLabel: "Grants",
         title: "Run release review on current packets",
         detail: "1 current RTP packet still carries funding follow-up from linked projects.",
         href: "/grants#grants-gap-resolution-lane",
@@ -80,7 +80,7 @@ function buildRtpRegistryContext(): RtpRegistryAssistantContext {
         {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -96,7 +96,7 @@ function buildRtpRegistryContext(): RtpRegistryAssistantContext {
         {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -113,19 +113,19 @@ function buildRtpRegistryContext(): RtpRegistryAssistantContext {
 }
 
 describe("assistant RTP registry grants follow-through", () => {
-  it("aligns RTP registry preview copy to Grants OS when funding review is routed there", () => {
+  it("aligns RTP registry preview copy to Grants when funding review is routed there", () => {
     const preview = buildAssistantPreview(buildRtpRegistryContext());
 
     expect(preview.facts.join(" ")).toContain("Open RTP grants follow-through");
     expect(preview.operatorCue?.title).toBe("Open RTP grants follow-through");
-    expect(preview.operatorCue?.detail).toContain("Grants OS follow-through");
+    expect(preview.operatorCue?.detail).toContain("grants follow-through");
   });
 
-  it("aligns RTP registry queue responses to Grants OS when release review is grants-routed", () => {
+  it("aligns RTP registry queue responses to Grants when release review is grants-routed", () => {
     const response = buildAssistantResponse(buildRtpRegistryContext(), "rtp-registry-packets");
 
-    expect(response.summary).toContain("Grants OS follow-through");
+    expect(response.summary).toContain("grants follow-through");
     expect(response.findings.join(" ")).toContain("Open RTP grants follow-through");
-    expect(response.nextSteps.join(" ")).toContain("Run the Grants OS follow-through lane");
+    expect(response.nextSteps.join(" ")).toContain("Work the grants follow-through");
   });
 });

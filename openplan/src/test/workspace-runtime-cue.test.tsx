@@ -52,14 +52,14 @@ function buildSummary(
 }
 
 describe("WorkspaceRuntimeCue", () => {
-  it("renders a Grants OS runtime cue for a non-reimbursement workspace command", () => {
+  it("renders a Grants runtime cue for a non-reimbursement workspace command", () => {
     render(
       <WorkspaceRuntimeCue
         summary={buildSummary(
           {
             key: "anchor-project-funding-needs",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Anchor project funding needs",
             detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
             href: "/projects/project-anchor#project-funding-opportunities",
@@ -78,7 +78,7 @@ describe("WorkspaceRuntimeCue", () => {
         "Next across this workspace: the lead Grants action is anchor project funding needs. 1 project funding lane has linked opportunities but still no recorded funding-need anchor."
       )
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open Grants OS" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Grants" })).toHaveAttribute(
       "href",
       "/grants?focusProjectId=project-anchor#grants-funding-need-editor"
     );
@@ -91,7 +91,7 @@ describe("WorkspaceRuntimeCue", () => {
           {
             key: "start-project-reimbursement-packets",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Start reimbursement packets",
             detail: "A project has committed awards but no reimbursement packet started yet.",
             href: "/projects/project-gap#project-invoices",
@@ -124,7 +124,7 @@ describe("WorkspaceRuntimeCue", () => {
           {
             key: "review-current-report-packets",
             moduleKey: "grants",
-            moduleLabel: "Grants OS",
+            moduleLabel: "Grants",
             title: "Run release review on current packets",
             detail: "1 current RTP packet still carries funding follow-up from linked projects.",
             href: "/grants#grants-gap-resolution-lane",

@@ -1,7 +1,7 @@
 import type { WorkspaceCommandQueueItem } from "@/lib/operations/workspace-summary";
 
 export const GRANTS_COMMAND_MODULE_KEY = "grants" as const;
-export const GRANTS_COMMAND_MODULE_LABEL = "Grants OS";
+export const GRANTS_COMMAND_MODULE_LABEL = "Grants";
 
 const GRANTS_QUEUE_KEYS = new Set([
   "funding-windows-closing",

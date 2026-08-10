@@ -145,7 +145,7 @@ function describeWorkspaceNextCommandLink(context: {
           : "Current RTP packets are aligned enough for release review, but linked-project funding posture still needs verification before those packets are treated as fully settled.",
       auditNote:
         nextCommand.moduleKey === "grants"
-          ? "Use the Grants OS follow-through lane to resolve funding gaps, uninvoiced awards, or reimbursement pressure before finalizing packet freshness."
+          ? "Resolve the funding gaps, uninvoiced awards, or outstanding reimbursements in Grants before treating this packet as final."
           : "Use the release-review packet detail to verify funding gaps, uninvoiced awards, or reimbursement follow-through before finalizing packet freshness.",
     };
   }

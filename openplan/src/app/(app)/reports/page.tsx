@@ -590,7 +590,7 @@ export default async function ReportsPage({
         title: report.title,
         subtitle:
           grantsFollowThroughFirst
-            ? `First action: ${grantsFollowThroughFirst.actionLabel.toLowerCase()} in Grants OS for ${report.title}`
+            ? `First action: ${grantsFollowThroughFirst.actionLabel.toLowerCase()} in Grants for ${report.title}`
             : report.storedRtpFundingReview?.needsAttention
               ? `First action: run funding-backed release review on ${report.title}`
               : releaseReviewSummary && releaseReviewSummary.state !== "ready"
@@ -1227,7 +1227,7 @@ export default async function ReportsPage({
                               <p className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-[color:var(--pine)]">
                                 {report.grantsFollowThrough.actionLabel}
                                 <ArrowRight className="h-3.5 w-3.5" />
-                                <span className="text-[0.7rem] font-medium text-muted-foreground">in Grants OS</span>
+                                <span className="text-[0.7rem] font-medium text-muted-foreground">in Grants</span>
                               </p>
                             </div>
                           ) : null}

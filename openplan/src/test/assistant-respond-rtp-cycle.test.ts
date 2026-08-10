@@ -99,7 +99,7 @@ function buildRtpCycleContext(): RtpAssistantContext {
       nextCommand: {
         key: "review-current-report-packets",
         moduleKey: "grants",
-        moduleLabel: "Grants OS",
+        moduleLabel: "Grants",
         title: "Run release review on current packets",
         detail: "1 current RTP packet still carries funding follow-up from linked projects.",
         href: "/grants#grants-gap-resolution-lane",
@@ -114,7 +114,7 @@ function buildRtpCycleContext(): RtpAssistantContext {
         {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -130,7 +130,7 @@ function buildRtpCycleContext(): RtpAssistantContext {
         {
           key: "review-current-report-packets",
           moduleKey: "grants",
-          moduleLabel: "Grants OS",
+          moduleLabel: "Grants",
           title: "Run release review on current packets",
           detail: "1 current RTP packet still carries funding follow-up from linked projects.",
           href: "/grants#grants-gap-resolution-lane",
@@ -147,19 +147,19 @@ function buildRtpCycleContext(): RtpAssistantContext {
 }
 
 describe("assistant RTP cycle grants follow-through", () => {
-  it("aligns RTP cycle preview copy to Grants OS when funding review is routed there", () => {
+  it("aligns RTP cycle preview copy to Grants when funding review is routed there", () => {
     const preview = buildAssistantPreview(buildRtpCycleContext());
 
-    expect(preview.facts.join(" ")).toContain("Grants OS follow-through");
+    expect(preview.facts.join(" ")).toContain("grants follow-through");
     expect(preview.operatorCue?.title).toBe("Open RTP grants follow-through");
-    expect(preview.operatorCue?.detail).toContain("Grants OS follow-through");
+    expect(preview.operatorCue?.detail).toContain("grants follow-through");
   });
 
-  it("aligns RTP cycle response copy to Grants OS when release review is grants-routed", () => {
+  it("aligns RTP cycle response copy to Grants when release review is grants-routed", () => {
     const response = buildAssistantResponse(buildRtpCycleContext(), "rtp-packet-release");
 
-    expect(response.summary).toContain("Grants OS follow-through");
-    expect(response.findings.join(" ")).toContain("Grants OS follow-through is still open");
-    expect(response.nextSteps.join(" ")).toContain("Resolve the Grants OS follow-through");
+    expect(response.summary).toContain("grants follow-through");
+    expect(response.findings.join(" ")).toContain("grants follow-through is still open");
+    expect(response.nextSteps.join(" ")).toContain("Resolve the grants follow-through");
   });
 });

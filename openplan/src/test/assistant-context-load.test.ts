@@ -667,7 +667,7 @@ describe("loadAssistantContext", () => {
 
     const preview = buildAssistantPreview(context);
     expect(preview.facts).toEqual(
-      expect.arrayContaining([expect.stringMatching(/Recommended cycle anchor: 2027 RTP \(Packet current\)/i)])
+      expect.arrayContaining([expect.stringMatching(/Suggested cycle: 2027 RTP \(Packet current\)/i)])
     );
   });
 
@@ -693,7 +693,7 @@ describe("loadAssistantContext", () => {
 
     const preview = buildAssistantPreview(context);
     expect(preview.facts).toEqual(
-      expect.arrayContaining([expect.stringMatching(/Recommended packet anchor: 2027 RTP Packet \(Packet current\)/i)])
+      expect.arrayContaining([expect.stringMatching(/Suggested packet: 2027 RTP Packet \(Packet current\)/i)])
     );
   });
 
@@ -719,7 +719,7 @@ describe("loadAssistantContext", () => {
     const preview = buildAssistantPreview(context);
     expect(preview.facts).toEqual(
       expect.arrayContaining([
-        expect.stringMatching(/Recommended packet anchor: Downtown Delivery Packet \(Packet current\)/i),
+        expect.stringMatching(/Suggested packet: Downtown Delivery Packet \(Packet current\)/i),
       ])
     );
   });

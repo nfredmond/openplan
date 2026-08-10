@@ -886,7 +886,7 @@ export default async function ProgramsPage({
               <p className="module-section-label">Funding catalog</p>
               <h2 className="module-section-title">Active and upcoming opportunities</h2>
               <p className="module-section-description">
-                Early Grants OS backbone: track calls, timing, ownership, and linked program/project context in the shared catalog.
+                Track open calls, their timing, who owns them, and the programs and projects they belong to.
               </p>
             </div>
             <span className="module-inline-item">
