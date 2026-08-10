@@ -86,7 +86,7 @@ export function ExploreWorkbench({
   openedForProject,
   projectAreaNotice,
 }: ExploreWorkbenchProps) {
-  const { mapContainerRef, mapRef, mapReady } = useExploreMapInstance();
+  const { mapContainerRef, mapRef, mapReady, mapUnavailableReason } = useExploreMapInstance();
 
   const [workspaceId, setWorkspaceId] = useState("");
   const [queryText, setQueryText] = useState("");
@@ -622,7 +622,33 @@ export function ExploreWorkbench({
       <div className="analysis-explore-mapstage relative min-h-[360px] overflow-hidden lg:min-h-0">
         <div ref={mapContainerRef} className="h-full w-full" />
 
-        {!analysisResult ? (
+        {/*
+          AN EMPTY MAP PANE MUST SAY WHY IT IS EMPTY. Without a usable Mapbox
+          token the hook never creates the map, and this stage rendered as a
+          permanently blank rectangle — the 2026-08-03 review's finding #6. A
+          planner reads silence as broken software; the analysis lanes still
+          work without the basemap, and this says both things.
+        */}
+        {mapUnavailableReason ? (
+          <div
+            className="absolute inset-0 z-10 flex items-center justify-center p-6"
+            data-testid="explore-map-unavailable"
+          >
+            <div className="max-w-md rounded-[0.5rem] border border-dashed border-white/25 bg-slate-900/85 px-5 py-4 text-sm text-slate-300 shadow-lg backdrop-blur-sm">
+              <p className="font-medium text-white">No map key is configured on this deployment</p>
+              <p className="mt-1.5">
+                {mapUnavailableReason === "unusable_token"
+                  ? "A Mapbox token is set but is not a public key. Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a token beginning with pk. — a secret sk. token is deliberately refused rather than sent to the browser."
+                  : "Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and this map will draw."}
+              </p>
+              <p className="mt-1.5">
+                Analyses still run without the basemap — only the map display is affected.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {!analysisResult && !mapUnavailableReason ? (
           <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">
             <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-cyan-300/70">
               Analysis Studio

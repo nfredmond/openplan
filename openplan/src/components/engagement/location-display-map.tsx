@@ -351,10 +351,6 @@ export function LocationDisplayMap({
     }
   }, [contextLayers, items]);
 
-  if (!MAPBOX_ACCESS_TOKEN) {
-    return null;
-  }
-
   const hasMappedItems = items.some(
     (item) =>
       (item.latitude !== null && item.longitude !== null) ||
@@ -372,6 +368,31 @@ export function LocationDisplayMap({
   const contextLayersFailed = Boolean(contextLayers?.readFailure);
   if (!hasMappedItems && !hasContextLayers && !contextLayersFailed) {
     return null;
+  }
+
+  // THE MAP HAS SOMETHING TO SHOW AND CANNOT DRAW IT. This used to be a bare
+  // `return null` — a resident on the public portal silently lost the map, and
+  // an unmapped campaign is indistinguishable from a misconfigured deployment
+  // (the 2026-08-03 review's finding #6). Checked AFTER the something-to-show
+  // gate above, so a campaign with no located input and no layers still renders
+  // nothing rather than a notice about an empty map.
+  if (!MAPBOX_ACCESS_TOKEN) {
+    return (
+      <div
+        className="mb-4 rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground"
+        data-testid="engagement-map-unavailable"
+      >
+        <p className="font-medium text-foreground">This campaign&apos;s map can&apos;t be shown</p>
+        <p className="mt-1.5">
+          There is a map for this campaign, but this OpenPlan deployment has no map key configured, so
+          it can&apos;t be drawn. Commenting and surveys work without it.
+        </p>
+        <p className="mt-1.5">
+          Whoever runs this deployment can set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token
+          (it begins with pk.) to enable maps.
+        </p>
+      </div>
+    );
   }
 
   return (
