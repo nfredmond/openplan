@@ -6,11 +6,11 @@ import { Plus, Search } from "lucide-react";
 import type { WorkspaceOption } from "@/lib/workspaces/current";
 import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 import { CommandPalette } from "./command-palette";
+import { LocalClock } from "./local-clock";
 import { ThemeControls } from "@/components/theme-controls";
 
 type CartographicHeaderProps = {
   workspaceName: string;
-  workspaceUpdatedLabel?: string | null;
   workspaces?: WorkspaceOption[];
   currentWorkspaceId?: string | null;
   onNewRun?: () => void;
@@ -18,7 +18,6 @@ type CartographicHeaderProps = {
 
 export function CartographicHeader({
   workspaceName,
-  workspaceUpdatedLabel,
   workspaces = [],
   currentWorkspaceId = null,
   onNewRun,
@@ -34,10 +33,6 @@ export function CartographicHeader({
     router.push("/explore");
   }
 
-  // No plan chip: OpenPlan is free with no tiers, so the only honest metadata
-  // here is when the workspace was last touched.
-  const meta = workspaceUpdatedLabel && workspaceUpdatedLabel.length > 0 ? workspaceUpdatedLabel : null;
-
   return (
     <>
       <header className="op-cart-hdr">
@@ -51,7 +46,11 @@ export function CartographicHeader({
                 currentWorkspaceName={workspaceName}
               />
             </div>
-            <div className="op-cart-ws-meta">{meta}</div>
+            {/*
+              No plan chip: OpenPlan is free with no tiers. This line is the
+              reader's own clock — see LocalClock for what it replaced and why.
+            */}
+            <LocalClock className="op-cart-ws-meta" />
           </div>
         </div>
 

@@ -44,19 +44,6 @@ function buildNavGroups(): CartographicRailGroup[] {
   }));
 }
 
-function formatUpdatedLabel(iso?: string | null): string | null {
-  if (!iso) return null;
-  const parsed = Date.parse(iso);
-  if (Number.isNaN(parsed)) return null;
-  const date = new Date(parsed);
-  return date.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 export async function CartographicShell({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const {
@@ -94,8 +81,6 @@ export async function CartographicShell({ children }: { children: React.ReactNod
   // whole home geography stays on screen instead of being cropped.
   const homeMapView = deriveHomeMapView(parseWorkspaceHomeGeography(homeGeographyRow));
 
-  const workspaceUpdatedLabel =
-    formatUpdatedLabel(workspace?.created_at ?? null) ?? null;
   const membershipPending = shellState.membershipStatus === "not_provisioned";
   // A first-run user with no workspace gets a focused self-serve onboarding
   // wizard in place of the empty page.
@@ -122,7 +107,6 @@ export async function CartographicShell({ children }: { children: React.ReactNod
 
         <CartographicHeader
           workspaceName={shellState.workspaceName}
-          workspaceUpdatedLabel={workspaceUpdatedLabel}
           workspaces={workspaceOptions}
           currentWorkspaceId={membership?.workspace_id ?? null}
         />
@@ -161,7 +145,21 @@ export async function CartographicShell({ children }: { children: React.ReactNod
 
         <CartographicInspectorDockConnected />
 
-        <CartographicZoomControls />
+        {/*
+          Zoom belongs to the same rule as the layers panel and the legend above,
+          and was simply left behind when they moved: it sat outside
+          `MapSurfaceOnly`, so every records page — projects, grants, reports,
+          invoicing — carried a pair of ＋/− buttons in the bottom-right corner
+          for a map being used as wallpaper. Zooming background decoration is not
+          a thing a planner came to the page to do.
+
+          On `/explore` this renders and CSS then hides it, because that route
+          owns its own map and its own controls; see the `data-map-owner` rule in
+          cartographic.css.
+        */}
+        <MapSurfaceOnly>
+          <CartographicZoomControls />
+        </MapSurfaceOnly>
 
         <div className="op-cart-copilot-slot">
           <AppCopilot

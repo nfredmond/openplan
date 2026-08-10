@@ -17,8 +17,18 @@ import type { PaletteDefinition } from "@/lib/theme/palettes";
  *
  * The mode switch is a two-option segmented control rather than a toggle,
  * because a toggle has to be read twice: once for the icon and once to work out
- * whether it shows the current state or the action. Two labelled options with
- * one marked current cannot be misread.
+ * whether it shows the current state or the action. Two options with one marked
+ * current cannot be misread.
+ *
+ * THE WORDS CAME BACK OFF, and that is not a return to the old glyph. What made
+ * the 24px icon undiscoverable was being a lone unlabelled control hidden in a
+ * hover-expanding 60px rail — not the absence of the words "Light" and "Dark"
+ * beside a sun and a moon. Both options are still shown side by side in the
+ * header with the current one filled, so the control still says what it is and
+ * which way it is set. Dropping the two labels returns about 70px to a header
+ * that also carries the workspace name, the module search and the primary
+ * action, where the search pill was being pushed under this control at common
+ * window widths. Each button keeps an accessible name.
  */
 
 function swatchFor(palette: PaletteDefinition, mode: "light" | "dark") {
@@ -78,19 +88,20 @@ export function ThemeControls({ className = "" }: { className?: string }) {
               type="button"
               onClick={() => setTheme(mode)}
               aria-pressed={isCurrent}
+              title={mode === "light" ? "Light mode" : "Dark mode"}
+              aria-label={mode === "light" ? "Light mode" : "Dark mode"}
               data-testid={`theme-mode-${mode}`}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+              className={`flex items-center justify-center rounded-lg px-2.5 py-1.5 transition-colors ${
                 isCurrent
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {mode === "light" ? (
-                <Sun className="h-3.5 w-3.5" strokeWidth={1.9} />
+                <Sun className="h-4 w-4" strokeWidth={1.9} />
               ) : (
-                <Moon className="h-3.5 w-3.5" strokeWidth={1.9} />
+                <Moon className="h-4 w-4" strokeWidth={1.9} />
               )}
-              {mode === "light" ? "Light" : "Dark"}
             </button>
           );
         })}

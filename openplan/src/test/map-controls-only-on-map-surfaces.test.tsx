@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
@@ -9,6 +11,7 @@ vi.mock("next/navigation", () => ({
 
 import { MapSurfaceOnly } from "@/components/cartographic/map-surface-only";
 import { isMapSurfaceRoute, MAP_SURFACE_ROUTES } from "@/lib/navigation/map-surfaces";
+import { stripSourceComments } from "./helpers/source-text";
 
 /**
  * THE MAP IS EVERYWHERE. ITS CONTROLS ARE NOT.
@@ -103,5 +106,62 @@ describe("map controls appear only on map surfaces", () => {
     expect(MAP_SURFACE_ROUTES).toEqual(
       expect.arrayContaining(["/explore", "/safety", "/aerial"])
     );
+  });
+
+  /**
+   * EVERY MAP CONTROL IS ACTUALLY WRAPPED — which is the part the tests above
+   * cannot see.
+   *
+   * Everything before this point exercises `MapSurfaceOnly` and
+   * `isMapSurfaceRoute` on their own. Both were correct on the day they landed
+   * (2026-08-08) and the product still shipped ＋/− zoom buttons in the
+   * bottom-right corner of every records page: the layers panel and the legend
+   * were moved inside `MapSurfaceOnly` and `CartographicZoomControls` was left
+   * one line below the closing tag. Every test above passed, on both days. A
+   * rule can be right and its wiring incomplete, and a test that renders the
+   * rule in isolation proves only the rule.
+   *
+   * So this reads the shell and asserts the JSX placement. Reported from the
+   * browser on 2026-08-09, the second control to be found this way.
+   */
+  it("wraps every map control inside MapSurfaceOnly in the shell", () => {
+    const shell = stripSourceComments(
+      readFileSync(
+        path.join(process.cwd(), "src/components/cartographic/cartographic-shell.tsx"),
+        "utf8"
+      )
+    );
+
+    // Comments are stripped first because the shell explains this very rule in
+    // prose directly above the wrapper, and a guard that reads its own
+    // explanation as evidence proves nothing.
+    const wrapped = [...shell.matchAll(/<MapSurfaceOnly>([\s\S]*?)<\/MapSurfaceOnly>/g)]
+      .map((match) => match[1])
+      .join("\n");
+
+    const MAP_CONTROLS = [
+      "CartographicLayersPanel",
+      "CartographicMapLegend",
+      "CartographicZoomControls",
+    ];
+
+    const unwrapped = MAP_CONTROLS.filter((control) => {
+      const rendered = new RegExp(`<${control}\\b`).test(shell);
+      const insideWrapper = new RegExp(`<${control}\\b`).test(wrapped);
+      return rendered && !insideWrapper;
+    });
+
+    expect(
+      unwrapped,
+      `These map controls are rendered in cartographic-shell.tsx outside <MapSurfaceOnly>, so they appear on ` +
+        `every signed-in page — over the surface a planner is actually reading. Move them inside the wrapper:\n` +
+        unwrapped.map((c) => `  - <${c} />`).join("\n")
+    ).toEqual([]);
+
+    // Negative control: if the wrapper block were ever emptied or the regex
+    // stopped matching, every control above would count as "not rendered" and
+    // this test would pass while proving nothing.
+    expect(wrapped.length).toBeGreaterThan(0);
+    expect(MAP_CONTROLS.some((control) => new RegExp(`<${control}\\b`).test(shell))).toBe(true);
   });
 });

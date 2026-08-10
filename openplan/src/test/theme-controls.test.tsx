@@ -34,13 +34,23 @@ describe("ThemeControls", () => {
     window.localStorage.clear();
   });
 
-  it("offers light and dark as labelled options, not an unlabelled glyph", async () => {
+  it("offers light and dark as two named options, not one unlabelled glyph", async () => {
     renderControls();
 
-    // The control this replaced was a 14px sun/moon with no text; a planner had
-    // to hover the right pixel to find the setting they use most.
-    expect(await screen.findByTestId("theme-mode-light")).toHaveTextContent("Light");
-    expect(screen.getByTestId("theme-mode-dark")).toHaveTextContent("Dark");
+    /*
+     * The control this replaced was a lone 14px sun/moon hidden in a
+     * hover-expanding rail: one button, no name, and no way to tell the current
+     * mode from the action. Both of those are what this asserts, and neither
+     * depends on the visible words — which came off so the header's search pill
+     * would stop being pushed underneath this control.
+     *
+     * What must hold: TWO options, each with an accessible name a screen reader
+     * and a tooltip can both use.
+     */
+    expect(await screen.findByRole("button", { name: "Light mode" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dark mode" })).toBeInTheDocument();
+    expect(screen.getByTestId("theme-mode-light")).toHaveAccessibleName("Light mode");
+    expect(screen.getByTestId("theme-mode-dark")).toHaveAccessibleName("Dark mode");
   });
 
   it("marks the current mode rather than the action", async () => {
