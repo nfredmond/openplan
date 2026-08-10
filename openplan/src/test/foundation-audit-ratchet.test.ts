@@ -1564,9 +1564,29 @@ const RUN_WRITEBACK_AUDIT = {
   survivorsClosed: 0,
 };
 
+/**
+ * `sampledBy` was MISSING from both entries when this pass was recorded on
+ * 2026-08-09 — a type error (`AuditedFile` requires it) that no gate caught,
+ * because vitest does not typecheck and `next build` does not typecheck
+ * `src/test`. It sat here until `tsc --noEmit` was run for another reason.
+ *
+ * The two files were filled in by probe rather than from memory: a mutation in
+ * each route, run against each candidate test file, recording which one failed.
+ * `model-run-writeback.test.ts` covers the per-run route and MISSES the sketch
+ * writeback in the collection route; `model-runs-route.test.ts` is the reverse.
+ * Guessing the pair from their names would have got it half wrong.
+ */
 const RUN_WRITEBACK_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
-  "src/app/api/models/[modelId]/runs/[modelRunId]/route.ts": { mutations: 5, survivors: 0 },
-  "src/app/api/models/[modelId]/runs/route.ts": { mutations: 2, survivors: 0 },
+  "src/app/api/models/[modelId]/runs/[modelRunId]/route.ts": {
+    sampledBy: ["src/test/model-run-writeback.test.ts"],
+    mutations: 5,
+    survivors: 0,
+  },
+  "src/app/api/models/[modelId]/runs/route.ts": {
+    sampledBy: ["src/test/model-runs-route.test.ts"],
+    mutations: 2,
+    survivors: 0,
+  },
 };
 
 describe("the run-writeback pass is accounted for", () => {
@@ -2037,5 +2057,157 @@ describe("the dispatch-outlook pass is accounted for", () => {
     expect(
       readFileSync(repoPath("src/lib/models/run-dispatch.ts"), "utf8")
     ).toContain("describeModelRunDispatch");
+  });
+});
+
+/**
+ * PASS 7 — THE SKETCH VMT LANE: the CEQA determination boundary, and the number
+ * it guards. 2026-08-10, fifteen mutations plus a comment-only negative control
+ * that survived.
+ *
+ * THE TWO HALVES CAME OUT OPPOSITE, WHICH IS THE FINDING.
+ *
+ * `src/lib/planner-pack/vmt-determination-inputs.ts` — what may support a
+ * persisted VMT significance determination — killed 8 of 8. Adding `sketch_abm`
+ * to the eligible engines, letting a run with no recorded engine through,
+ * reporting the engine refusal as "not succeeded" (which invites a wait that
+ * cannot help), accepting an unfinished run, accepting a geometry-scoped
+ * calibrated slice as a study-area figure, accepting a calibrated VMT of 0, and
+ * both directions of the held-out-APE selection: every one died.
+ *
+ * The ARITHMETIC those rules stand around did not. Two mutations passed the
+ * ENTIRE 7,979-test suite:
+ *
+ *   - deleting the kilometre→mile conversion, reporting km and calling them
+ *     miles — a sketch VMT 61% high;
+ *   - setting every carpool occupancy factor to 1, so each person-trip in a
+ *     shared vehicle counts as its own vehicle.
+ *
+ * Neither produces an implausible number, and `daily_vmt` / `vmt_per_capita`
+ * are the SHARED KPI vocabulary that scenario comparison, evidence packets and
+ * RTP citations read by exact name — so either error propagates as a fact.
+ *
+ * A THIRD "SURVIVOR" WAS NOT ONE, and reporting it would have been a false
+ * finding. Scoring benchmark fit without a study-area ACS reference passed
+ * every test, but `tsc` rejects it (TS2322: the reference is nullable). The
+ * harness runs vitest, which does not typecheck; the compiler is the guard
+ * there. Checked before it was written down, not after.
+ *
+ * WHY THE SPLIT HAPPENED, AND THE PATTERN IT CONFIRMS. The boundary module is
+ * 200 lines of which most is prose about how each refusal could mislead a
+ * planner. The arithmetic lived inside a 1,300-line API route as private
+ * constants nothing could import. Across seven passes the areas that hold are
+ * the ones whose author sounded worried; the holes are where the code reads as
+ * mechanical. Guarding a number's USE is not guarding the number.
+ *
+ * CLOSED, not just recorded: the arithmetic was extracted to
+ * `src/lib/models/sketch-abm/vmt-kpis.ts`, `SKETCH_VEHICLE_MILE_FACTORS`
+ * retyped from a partial `Record<string, number>` read with `?? 0` to a
+ * complete `Record<TravelMode, number>` (so a new travel mode can no longer
+ * default to zero vehicle-miles silently — it breaks the build), and pinned by
+ * `src/test/sketch-vmt-is-in-miles-and-vehicles.test.ts`. That guard was then
+ * mutation-tested itself: 8 of 8 killed including the original two, with a
+ * comment-only control surviving.
+ */
+const SKETCH_VMT_AUDIT = {
+  date: "2026-08-10",
+  mutationsRun: 15,
+  killed: 12,
+  survived: 2,
+  /** Killed by the type checker rather than by any test — counted as neither. */
+  killedByTheCompiler: 1,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 2,
+  /** Mutations run against the NEW guard to prove it is not vacuous. */
+  guardMutationsRun: 8,
+  guardMutationsKilled: 8,
+};
+
+const SKETCH_VMT_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/lib/planner-pack/vmt-determination-inputs.ts": {
+    sampledBy: [
+      "src/test/calibrated-vmt-is-one-definition-for-panel-and-server.test.ts",
+      "src/test/model-run-ceqa-vmt-screen.test.tsx",
+      "src/test/vmt-significance-route.test.ts",
+    ],
+    mutations: 8,
+    survivors: 0,
+  },
+  /**
+   * Six mutations, applied while this code was still private to
+   * `runs/route.ts`. `sampledBy` names the guard that exists NOW: at the time
+   * of the pass the answer was "nothing" — that is what the two survivors mean.
+   */
+  "src/lib/models/sketch-abm/vmt-kpis.ts": {
+    sampledBy: ["src/test/sketch-vmt-is-in-miles-and-vehicles.test.ts"],
+    mutations: 6,
+    survivors: 2,
+  },
+};
+
+/**
+ * The fifteenth mutation is not in the table above because no TEST decided it.
+ * Scoring benchmark fit without a study-area reference is in
+ * `runs/route.ts`, and the type checker refuses it; a `sampledBy` naming a test
+ * file would be false, and naming the compiler would not be a file. Counted in
+ * `killedByTheCompiler` and excluded from the per-file sum.
+ */
+const SKETCH_VMT_MUTATIONS_DECIDED_BY_A_TEST =
+  SKETCH_VMT_AUDIT.mutationsRun - SKETCH_VMT_AUDIT.killedByTheCompiler;
+
+describe("the sketch-VMT pass is accounted for", () => {
+  it("adds up", () => {
+    expect(
+      SKETCH_VMT_AUDIT.killed + SKETCH_VMT_AUDIT.survived + SKETCH_VMT_AUDIT.killedByTheCompiler
+    ).toBe(SKETCH_VMT_AUDIT.mutationsRun);
+    const perFile = Object.values(SKETCH_VMT_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      SKETCH_VMT_MUTATIONS_DECIDED_BY_A_TEST
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(
+      SKETCH_VMT_AUDIT.survived
+    );
+  });
+
+  it("closed every survivor it found", () => {
+    expect(SKETCH_VMT_AUDIT.survivorsClosed).toBe(SKETCH_VMT_AUDIT.survived);
+    expect(SKETCH_VMT_AUDIT.guardMutationsKilled).toBe(SKETCH_VMT_AUDIT.guardMutationsRun);
+  });
+
+  it("still has the surface it measured, and the guard that closed it", () => {
+    for (const file of Object.keys(SKETCH_VMT_AUDITED_PRODUCTION_FILES)) {
+      expect(existsSync(repoPath(file))).toBe(true);
+    }
+    for (const entry of Object.values(SKETCH_VMT_AUDITED_PRODUCTION_FILES)) {
+      for (const test of entry.sampledBy) {
+        expect(existsSync(repoPath(test))).toBe(true);
+      }
+    }
+  });
+
+  it("keeps the arithmetic OUT of the route it was extracted from", () => {
+    // The extraction is the fix, not a tidy-up: while these constants lived as
+    // route-private values nothing could import them, and nothing did.
+    const route = readFileSync(
+      repoPath("src/app/api/models/[modelId]/runs/route.ts"),
+      "utf8"
+    );
+    expect(route).toContain("@/lib/models/sketch-abm/vmt-kpis");
+    expect(route).not.toMatch(/const KM_TO_MILES\s*=/);
+    expect(route).not.toMatch(/const SKETCH_VEHICLE_MILE_FACTORS\s*[:=]/);
+    expect(route).not.toMatch(/function (buildSketchAbmKpiRows|sketchExpansionFactor)\b/);
+  });
+
+  it("makes every travel mode a decided vehicle-mile factor, not a default", () => {
+    // The partial-map-with-`?? 0` shape is what let a mode contribute silent
+    // zero vehicle-miles. A complete Record over TravelMode is the structural
+    // form of that fix, so it is asserted rather than left to convention.
+    const source = readFileSync(
+      repoPath("src/lib/models/sketch-abm/vmt-kpis.ts"),
+      "utf8"
+    );
+    expect(source).toContain("SKETCH_VEHICLE_MILE_FACTORS: Record<TravelMode, number>");
+    expect(source).not.toContain("SKETCH_VEHICLE_MILE_FACTORS: Record<string, number>");
   });
 });

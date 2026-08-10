@@ -23,9 +23,11 @@ import {
 import { DEFAULT_REFERENCE_VMT_PER_CAPITA } from "@/lib/planner-pack/ceqa";
 import { buildSketchAbmInputs, seedFromRunId } from "@/lib/models/sketch-abm/sketch-abm-inputs";
 import {
-  diagnoseZoneResolution,
-  type ZoneResolutionDiagnostic,
-} from "@/lib/models/zone-resolution";
+  buildSketchAbmKpiRows,
+  sketchExpansionFactor,
+  sketchSampleVehicleKm,
+} from "@/lib/models/sketch-abm/vmt-kpis";
+import { diagnoseZoneResolution } from "@/lib/models/zone-resolution";
 import {
   ITE_TRIP_GEN_SCREENING_CAVEAT,
   TRIP_GEN_COMPARISON_BASES,
@@ -137,200 +139,12 @@ type ScenarioEntryRow = {
   assumptions_json: Record<string, unknown> | null;
 };
 
-/** Kilometres → miles for the sketch VMT KPI derivation. */
-const KM_TO_MILES = 0.621371;
-
 /** Cap on census-tract zones for the synchronous in-process sketch lane.
  * Skim building is O(zones²) and the run executes inside the request cycle,
  * so a study area above this size is handed off to the async AequilibraE
  * worker (which has no zone cap) rather than run in-process — see the reroute
  * in the sketch branch below. */
 const SKETCH_ABM_MAX_ZONES = 150;
-
-/**
- * Screening occupancy assumptions for converting sketch person-trip distance
- * to vehicle-miles: auto_sov ×1.0; auto_hov2 ÷2 (two occupants per vehicle);
- * auto_hov3 ÷3.2 (average 3.2 occupants for the 3+ class); taxi_tnc ×1.0
- * (each taxi/TNC person-trip is a vehicle trip). transit_drive is excluded —
- * the sketch skims carry no separate drive-access distance for its park-and-
- * ride leg. Modes absent from this table contribute zero vehicle-miles.
- */
-const SKETCH_VEHICLE_MILE_FACTORS: Record<string, number> = {
-  auto_sov: 1,
-  auto_hov2: 1 / 2,
-  auto_hov3: 1 / 3.2,
-  taxi_tnc: 1,
-};
-
-/** Occupancy assumptions surfaced in KPI breakdowns (persons per vehicle). */
-const SKETCH_OCCUPANCY_ASSUMPTIONS = {
-  auto_sov: 1,
-  auto_hov2: 2,
-  auto_hov3: 3.2,
-  taxi_tnc: 1,
-} as const;
-
-/**
- * Expansion factor scaling the capped synthetic-household sample back to the
- * full ACS household base. Factor 1 when the sample covers (or exceeds, via
- * per-zone minimums) the real household count, or when the sample is empty.
- */
-function sketchExpansionFactor(totalRealHouseholds: number, syntheticHouseholds: number): number {
-  if (syntheticHouseholds <= 0) return 1;
-  return totalRealHouseholds > syntheticHouseholds
-    ? totalRealHouseholds / syntheticHouseholds
-    : 1;
-}
-
-type SketchAbmKpiRow = {
-  run_id: string;
-  kpi_name: string;
-  kpi_label: string;
-  kpi_category: "sketch_abm";
-  value: number | null;
-  unit: string;
-  breakdown_json: Record<string, unknown>;
-};
-
-/**
- * Shape sketch ABM outputs into `model_run_kpis` rows. KPI names
- * `daily_vmt`, `vmt_per_capita`, and `population_total` are the shared VMT
- * KPI vocabulary (cross-run comparison reads them by exact name) — but the
- * CEQA §15064.3 screen must NOT consume them from a sketch run, and does not:
- * sketch VMT runs far below the CARB reference (documented ~56% low), which is
- * how a false "less than significant" gets issued. The determination boundary
- * is `VMT_DETERMINATION_ELIGIBLE_ENGINE_KEYS` (aequilibrae only), enforced in
- * the vmt-significance route, in `ModelRunCeqaVmtScreen` itself, and at the
- * mount site. Do not read the shared names as an invitation to point the CEQA
- * screen at this engine.
- *
- * Trip-derived totals (total_tours, total_trips, daily_vmt) are computed at
- * the capped synthetic-sample scale and expansion-weighted back to the full
- * ACS household base; vmt_per_capita divides the EXPANDED daily_vmt by the
- * full ACS population so the numerator and denominator are at the same scale.
- */
-function buildSketchAbmKpiRows(params: {
-  modelRunId: string;
-  summary: Awaited<ReturnType<typeof runABM>>["summary"];
-  /** Measured from the run's own trips — see `diagnoseZoneResolution`. */
-  zoneResolution: ZoneResolutionDiagnostic;
-  sampleVehicleKm: number;
-  populationTotal: number;
-  totalRealHouseholds: number;
-  syntheticHouseholds: number;
-  expansionFactor: number;
-}): SketchAbmKpiRow[] {
-  const {
-    modelRunId,
-    summary,
-    zoneResolution,
-    sampleVehicleKm,
-    populationTotal,
-    totalRealHouseholds,
-    syntheticHouseholds,
-    expansionFactor,
-  } = params;
-  const dailyVmt = sampleVehicleKm * expansionFactor * KM_TO_MILES;
-  const vmtPerCapita = populationTotal > 0 ? dailyVmt / populationTotal : null;
-  const totalTours = Math.round(summary.total_tours * expansionFactor);
-  const totalTrips = Math.round(summary.total_trips * expansionFactor);
-
-  const expansionBreakdown = {
-    expansion_factor: expansionFactor,
-    synthetic_households: syntheticHouseholds,
-    total_real_households: totalRealHouseholds,
-  };
-
-  const row = (
-    kpiName: string,
-    kpiLabel: string,
-    value: number | null,
-    unit: string,
-    breakdown: Record<string, unknown> = {}
-  ): SketchAbmKpiRow => ({
-    run_id: modelRunId,
-    kpi_name: kpiName,
-    kpi_label: kpiLabel,
-    kpi_category: "sketch_abm",
-    value,
-    unit,
-    breakdown_json: breakdown,
-  });
-
-  // summary.mode_split values are percentages (0–100); KPIs store 0–1 shares.
-  const share = (mode: string) => (summary.mode_split[mode] ?? 0) / 100;
-
-  return [
-    row("total_tours", "Total tours (sketch)", totalTours, "tours", {
-      provenance:
-        "Screening-grade sketch output: tours from a capped synthetic-household sample, expansion-weighted to the full ACS household base (factor = real households / synthetic households).",
-      sample_tours: summary.total_tours,
-      ...expansionBreakdown,
-    }),
-    row("total_trips", "Total trips (sketch)", totalTrips, "trips", {
-      provenance:
-        "Screening-grade sketch output: trips from a capped synthetic-household sample, expansion-weighted to the full ACS household base (factor = real households / synthetic households).",
-      sample_trips: summary.total_trips,
-      ...expansionBreakdown,
-    }),
-    row("mode_share_auto", "Auto mode share (sketch)", share("auto"), "share"),
-    row("mode_share_transit", "Transit mode share (sketch)", share("transit"), "share"),
-    row("mode_share_walk", "Walk mode share (sketch)", share("walk"), "share"),
-    row("mode_share_bike", "Bike mode share (sketch)", share("bike"), "share"),
-    row("mode_share_shared", "Shared-ride mode share (sketch)", share("shared"), "share"),
-    row("daily_vmt", "Daily VMT (sketch)", dailyVmt, "vehicle-miles/day", {
-      provenance:
-        "Screening-grade sketch output: vehicle-miles from a synthetic-population sketch activity model over distance-based screening skims, expansion-weighted from the capped household sample to the full ACS household base (factor = real households / synthetic households). Person-trip distances convert to vehicle-miles under screening occupancy assumptions: auto_sov x1.0, auto_hov2 /2, auto_hov3 /3.2, taxi_tnc x1.0 (a vehicle trip); transit_drive access legs are excluded because the skims carry no separate drive-access distance. Converted km to miles (x 0.621371). Not a validated travel model or calibrated forecast.",
-      sample_vehicle_km: sampleVehicleKm,
-      km_to_miles: KM_TO_MILES,
-      occupancy_assumptions: SKETCH_OCCUPANCY_ASSUMPTIONS,
-      excluded_modes: ["transit_drive"],
-      ...expansionBreakdown,
-    }),
-    row("vmt_per_capita", "VMT per capita (sketch)", vmtPerCapita, "vehicle-miles/person/day", {
-      provenance:
-        "Screening-grade sketch output: expansion-weighted daily_vmt divided by total ACS population across the county-bbox-scale tract set (every tract in the counties overlapping the study-area bounding box, not clipped to the drawn corridor). Not a validated travel model or calibrated forecast.",
-      population_total: populationTotal,
-      ...expansionBreakdown,
-    }),
-    row("population_total", "Population (zones)", populationTotal, "persons", {
-      provenance:
-        "Total ACS population across the county-bbox-scale tract set (every tract in the counties overlapping the study-area bounding box, not clipped to the drawn corridor).",
-    }),
-    /**
-     * HOW MUCH OF THIS RUN'S TRAVEL NEVER REACHES A LINK.
-     *
-     * A trip that begins and ends in the same zone contributes to VMT and mode
-     * share and to no link at all — there are no streets inside a zone. Without
-     * this number a planner comparing modelled volumes to traffic counts reads
-     * the gap as a failed model. OpenPlan's own county validation hit 36% at 26
-     * zones and link-level AADT comparison failed there for exactly this
-     * reason.
-     *
-     * The share is measured on the SAMPLE trips rather than expanded, because
-     * expansion multiplies both sides of the ratio and would not change it —
-     * saying so here so nobody "fixes" it by weighting.
-     */
-    row(
-      "intrazonal_trip_share",
-      "Trips that never reach the network",
-      zoneResolution.intrazonalSharePct === null ? null : zoneResolution.intrazonalSharePct / 100,
-      "share",
-      {
-        provenance:
-          "Measured directly from this run's trip table: trips whose origin and destination zone are " +
-          "the same, over all trips. Expansion weighting is not applied because it scales numerator " +
-          "and denominator equally.",
-        zone_count: zoneResolution.zoneCount,
-        intrazonal_trips: zoneResolution.intrazonalTripCount,
-        sample_trips: zoneResolution.tripCount,
-        band: zoneResolution.band,
-        supports_link_level_validation: zoneResolution.supportsLinkLevelValidation,
-        interpretation: zoneResolution.summary,
-      }
-    ),
-  ];
-}
 
 /**
  * Ring the worker's doorbell for a run whose stages are already `queued`.
@@ -1106,10 +920,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           // Sample-scale vehicle-km: person-trip distance weighted by the
           // per-mode vehicle-mile factors (occupancy-adjusted; see
           // SKETCH_VEHICLE_MILE_FACTORS for the documented assumptions).
-          const sampleVehicleKm = abmOutputs.trips.reduce(
-            (sum, trip) => sum + trip.distance_km * (SKETCH_VEHICLE_MILE_FACTORS[trip.mode] ?? 0),
-            0
-          );
+          const sampleVehicleKm = sketchSampleVehicleKm(abmOutputs.trips);
           const expansionFactor = sketchExpansionFactor(totalRealHouseholds, syntheticHouseholds);
 
           // Measured from the trips this run actually produced, and from the
