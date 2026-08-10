@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RTP_CYCLE_STATUS_OPTIONS } from "@/lib/rtp/catalog";
+import { StudyAreaPicker } from "@/components/models/study-area-picker";
+import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 
 type CreateResponse = {
   rtpCycleId: string;
@@ -36,8 +38,30 @@ export function RtpCycleCreator() {
   const [summary, setSummary] = useState("");
   const [anchorLatitude, setAnchorLatitude] = useState("");
   const [anchorLongitude, setAnchorLongitude] = useState("");
+  // Drives the StudyAreaPicker only. rtp_cycles stores no boundary — the
+  // cycle's spatial identity is a LABEL plus a display pin — so the drawn
+  // geometry is never submitted; picking a place is a fast, correct way to
+  // fill both fields, not a new column.
+  const [pickerCorridorText, setPickerCorridorText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /**
+   * A resolved place fills the label and the pin in one step — the same
+   * any-place front door every other module uses (see StudyAreaPicker's
+   * header), instead of asking a planner to type coordinates by hand. Both
+   * fields stay editable afterwards: "Countywide, including unincorporated
+   * areas" is a legitimate label no gazetteer will ever return, and the pin
+   * is display-only (the map route's own migration calls it that), so a
+   * bbox midpoint is exactly good enough. Fires only for a searched place;
+   * a hand-drawn area has no name and fills nothing.
+   */
+  function handlePlaceResolved(place: PlaceBoundaryResponse | null) {
+    if (!place) return;
+    if (place.label) setGeographyLabel(place.label);
+    setAnchorLatitude(((place.bbox.minLat + place.bbox.maxLat) / 2).toFixed(5));
+    setAnchorLongitude(((place.bbox.minLon + place.bbox.maxLon) / 2).toFixed(5));
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -93,6 +117,7 @@ export function RtpCycleCreator() {
       setSummary("");
       setAnchorLatitude("");
       setAnchorLongitude("");
+      setPickerCorridorText("");
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to create RTP cycle");
@@ -161,6 +186,21 @@ export function RtpCycleCreator() {
               onChange={(event) => setGeographyLabel(event.target.value)}
             />
           </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <p className="text-[0.82rem] font-semibold">
+            Plan area
+            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">
+              optional — fills the label and pin below
+            </span>
+          </p>
+          <StudyAreaPicker
+            corridorText={pickerCorridorText}
+            onCorridorChange={setPickerCorridorText}
+            onPlaceResolved={handlePlaceResolved}
+            showRunEngineHint={false}
+          />
         </div>
 
         {/*
