@@ -47,6 +47,9 @@ import {
   homeGeographyLabel,
   parseWorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Overview");
 
 function fmtPct(value: number | null): string {
   return value === null ? "N/A" : `${value}%`;

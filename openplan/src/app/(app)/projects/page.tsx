@@ -28,6 +28,9 @@ import { StateBlock } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Projects");
 
 type ProjectRow = {
   id: string;

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Use — OpenPlan",
+  // No product name here: the root layout appends it via `title.template`.
+  title: "Terms of Use",
   description:
     "Terms of use for OpenPlan, free and open-source Apache-2.0 civic-planning software.",
 };

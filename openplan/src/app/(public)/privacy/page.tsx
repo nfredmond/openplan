@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Practices — OpenPlan",
+  // No product name here: the root layout appends it via `title.template`.
+  title: "Privacy Practices",
   description:
     "How OpenPlan handles workspace data, client information, and AI-assisted content.",
 };

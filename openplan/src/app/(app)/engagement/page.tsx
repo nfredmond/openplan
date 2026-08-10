@@ -21,6 +21,9 @@ import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Engagement");
 
 /**
  * `?projectId=` is how this catalog is TOLD which project it was opened for.

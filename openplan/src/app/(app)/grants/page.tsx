@@ -92,6 +92,9 @@ import {
   resolveGrantsQueueHref,
   resolveProjectExactBillingTriageTarget,
 } from "@/lib/grants/page-helpers";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Grants");
 
 /**
  * What PostgREST says back when a select names a column the deployed schema does

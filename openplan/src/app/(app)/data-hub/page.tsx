@@ -42,6 +42,9 @@ import {
   type TransitFeedVersionRow,
 } from "@/lib/transit/feed-registry-card";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Data Hub");
 
 type ConnectorRow = {
   id: string;

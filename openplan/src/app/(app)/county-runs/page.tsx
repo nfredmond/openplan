@@ -14,6 +14,9 @@ import { placeOfRecordFromProject } from "@/lib/projects/project-place";
 import { resolveStudyArea } from "@/lib/models/study-area";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { StateBlock } from "@/components/ui/state-block";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("County Validation");
 
 /**
  * `?projectId=` is how this page is TOLD which project it was opened for.

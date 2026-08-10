@@ -35,11 +35,12 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
-export const metadata = {
-  title: "Command Center · OpenPlan",
-  description:
-    "One view of everything in motion across this workspace: RTP, grants, projects, reports, invoicing, engagement, safety, modeling, data and knowledge, and aerial.",
-};
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata(
+  "Command Center",
+  "One view of everything in motion across this workspace: RTP, grants, projects, reports, invoicing, engagement, safety, modeling, data and knowledge, and aerial."
+);
 
 /**
  * A jump-lane count that never turns an unmeasured number into a zero.

@@ -5,9 +5,9 @@ import { studyAreaPrefillFrom } from "@/lib/models/study-area";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { ExploreWorkbench } from "./_components/explore-workbench";
 
-export const metadata = {
-  title: "Analysis Studio · OpenPlan",
-};
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Analysis Studio");
 
 /**
  * `?projectId=` is how Analysis Studio is TOLD which project it was opened for.

@@ -4,7 +4,8 @@ import { ArrowRight } from "lucide-react";
 import { publishedValidationCeiling } from "@/lib/examples/published-ceiling";
 
 export const metadata: Metadata = {
-  title: "Legal Notice — OpenPlan",
+  // No product name here: the root layout appends it via `title.template`.
+  title: "Legal Notice",
   description:
     "Combined legal notice for OpenPlan: open-source license boundary, hosted-service posture, AI disclosure, and screening-grade limits.",
 };

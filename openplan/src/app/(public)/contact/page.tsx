@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowRight, ClipboardCheck, Github } from "lucide-react";
 
 export const metadata = {
-  title: "Contact | OpenPlan",
+  // No product name here: the root layout appends it via `title.template`.
+  title: "Contact",
   description:
     "Get in touch about OpenPlan — questions, bug reports, and feedback from planners using the software.",
 };

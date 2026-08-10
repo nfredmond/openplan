@@ -18,9 +18,9 @@ import type {
   SafetyProjectOption,
 } from "@/lib/safety/client-types";
 
-export const metadata = {
-  title: "Safety · OpenPlan",
-};
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Safety");
 
 /**
  * `?projectId=` is how this page is TOLD which project it was opened for.

@@ -48,6 +48,9 @@ import {
   normalizeRecentQueueFilter,
 } from "./_components/_packet-state";
 import type { DominantActionKey, RtpPacketReportRow } from "./_components/_types";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("RTP Cycles");
 
 type RtpPageSearchParams = Promise<{
   status?: string;

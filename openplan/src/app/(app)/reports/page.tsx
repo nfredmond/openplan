@@ -71,6 +71,9 @@ import {
 } from "@/lib/reports/source-review-posture";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Reports");
 
 type ReportsPageSearchParams = Promise<{
   freshness?: string;

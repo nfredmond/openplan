@@ -36,6 +36,9 @@ import {
   getReportPacketPriority,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Programs");
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",

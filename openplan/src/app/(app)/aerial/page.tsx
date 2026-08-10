@@ -19,6 +19,9 @@ import {
 } from "@/lib/aerial/catalog";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Aerial Ops");
 
 /**
  * `?projectId=` is how this register is TOLD which project it was opened for.

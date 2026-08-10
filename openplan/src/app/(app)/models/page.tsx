@@ -20,6 +20,9 @@ import {
 } from "@/lib/models/catalog";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Models");
 
 type ModelsPageSearchParams = Promise<{
   projectId?: string;

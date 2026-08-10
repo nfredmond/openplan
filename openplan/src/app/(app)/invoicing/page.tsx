@@ -23,6 +23,9 @@ import {
 } from "./_components/invoicing-page-helpers";
 import { ReceivablesLane } from "./_components/receivables-lane";
 import { ReimbursementLane } from "./_components/reimbursement-lane";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Invoicing");
 
 const DIRECTION_TABS: Array<{ value: InvoicingDirection; label: string }> = [
   { value: "reimbursement", label: "Funder reimbursements" },

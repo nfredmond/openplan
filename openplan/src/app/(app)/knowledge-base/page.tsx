@@ -8,9 +8,9 @@ import {
   type KnowledgeBaseProjectOption,
 } from "@/components/knowledge-base/knowledge-base-workspace";
 
-export const metadata = {
-  title: "Knowledge Base · OpenPlan",
-};
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Knowledge Base");
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

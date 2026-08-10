@@ -34,6 +34,9 @@ import {
   PLAN_STATUS_OPTIONS,
   PLAN_TYPE_OPTIONS,
 } from "@/lib/plans/catalog";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Plans");
 
 type PlansPageSearchParams = Promise<{
   projectId?: string;

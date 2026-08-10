@@ -11,6 +11,9 @@ import { createClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Scenarios");
 
 /**
  * `?projectId=` is how this catalog is TOLD which project it was opened for.

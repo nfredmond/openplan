@@ -11,6 +11,9 @@ import {
   buildAssistantActivitySummary,
   type AssistantActionExecutionRow,
 } from "@/app/api/assistant-activity/summary";
+import { moduleMetadata } from "@/lib/ui/page-title";
+
+export const metadata = moduleMetadata("Planner Agent Activity");
 
 const ACTIVITY_LIMIT = 50;
 
