@@ -83,6 +83,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260810000001_model_run_failure_history.sql",
     migrationsAtRelease: 177,
   },
+  // 0.10.0 — the coherence release: nav/first-run overhaul, cross-module
+  // seams, and the engagement deploy path (slugs + multi-project coverage).
+  {
+    tag: "0.10.0",
+    lastMigration: "20260810000003_engagement_campaign_projects.sql",
+    migrationsAtRelease: 179,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

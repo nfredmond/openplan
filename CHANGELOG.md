@@ -19,6 +19,69 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.10.0 — 2026-08-11
+
+**Two migrations are required before the app deploys: `20260810000002` and
+`20260810000003`.** The first adds one nullable, uniquely-indexed text column
+to `engagement_campaigns` (printable link names). The second creates a new
+table, `engagement_campaign_projects`, with a trigger and a backfill that
+copies each campaign's existing lead project into it — safe against a live
+database, and existing campaigns behave identically until you use the new
+capability. If the app deploys first, campaign pages fall back to lead-project
+behavior and say so rather than failing.
+
+### The app finally introduces itself
+
+The left navigation shows its labels and group titles all the time on desktop —
+six planner-first groups instead of eighteen unlabeled icons. Modules say the
+same name in the nav and on the page ("Corridor Analysis" everywhere, one name
+for Model Validation). Command Center folded into Overview; old links redirect.
+A new **Help** page describes every module and says plainly which fixes belong
+to whoever operates the deployment. Empty pages now say what the module is for
+and offer the first step as a button.
+
+### First run starts with the AI key, and can't self-destruct
+
+Setting up a workspace now leads with "Turn on your AI assistant" — with an
+honest list of what stays off without a key (the Planner Agent, comment
+synthesis, drafting, translation) and a plain statement that OpenPlan itself is
+free; the key is your own account with the AI provider. The getting-started
+checklist no longer disappears forever the moment you create your first record,
+and a permanent "Getting started" button brings it back.
+
+### Public engagement: publish in one flow, preview first, print the link
+
+- One guided publish flow sits at the top of the campaign console — link,
+  description, intake decision, go live — ending in the real public URL. No
+  more three save buttons at the bottom of a twenty-section page.
+- **Preview the resident view before going live**, in any campaign state.
+  Residents still cannot see anything until the campaign is Active.
+- **Printable link names**: give a campaign an address like
+  `/engage/jefferson-street-study` for flyers and posters. It only works while
+  the campaign is live; the long secure link keeps working too.
+- **Campaign templates**: corridor safety, safe routes to school, long-range
+  plan input, and project open house starters — categories and draft survey
+  questions a planner reviews and publishes deliberately.
+- **One campaign can cover several projects**; each project's page shows the
+  campaigns that cover it.
+- **Survey answers export** (CSV and JSON), preserving the question wording
+  each resident actually saw. Spreadsheet formula injection is neutralized in
+  every CSV export.
+- A live campaign with submissions waiting and nothing yet approved tells the
+  operator that residents currently see an empty feed.
+
+### Work carries across modules
+
+The project follows you into Corridor Analysis and Model Validation instead of
+being re-selected; stage-gate evidence is picked from a list instead of pasted
+as an id; grant narratives can cite a project's RTP programming status; drone
+mission areas can start from the project's own boundary or corridors (with the
+buffer width in your control and every transformation disclosed); campaigns
+show and edit their RTP attachment; and report and RTP-chapter drafting can
+cite documents from the knowledge base with title and page provenance.
+Corridor Analysis boundary upload now accepts KML, KMZ, and zipped shapefiles
+in addition to GeoJSON.
+
 ## 0.9.0 — 2026-08-10
 
 **One migration is required before the app deploys: `20260810000001`.** It adds
