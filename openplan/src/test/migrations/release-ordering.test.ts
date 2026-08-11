@@ -96,6 +96,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260811000001_aerial_flight_plans.sql",
     migrationsAtRelease: 180,
   },
+  // 0.12.0 — imagery OpenPlan owns, the in-house ODM worker, orthos on the map.
+  {
+    tag: "0.12.0",
+    lastMigration: "20260811000004_aerial_processing_manifest_jobs.sql",
+    migrationsAtRelease: 183,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

@@ -19,6 +19,37 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.12.0 — 2026-08-11
+
+**Three migrations are required before the app deploys: `20260811000002`,
+`20260811000003`, and `20260811000004`.** They add the aerial imagery table
+and its private storage bucket, georeferencing columns on artifact custody,
+and manifest-job support on processing jobs. All additive; safe against a
+live database. Nothing about existing missions changes until you use the new
+capabilities.
+
+### The drone pipeline is now complete inside OpenPlan
+
+- **Upload your mission photos directly** — no more hosting a ZIP somewhere
+  yourself. Photos are stored privately per mission, with camera GPS and
+  capture times read from the files and shown honestly (a photo without
+  location data says so; nothing is invented). Capture locations appear as
+  dots on the mission map.
+- **Process without the external service**: a new self-hostable worker
+  (`workers/odm_worker`) wraps OpenDroneMap and speaks the same processing
+  contract as before. Deployments using the existing external worker change
+  nothing; deployments with neither keep the same honest "no worker
+  configured" message. Setup is a step-by-step guide with what-success-looks-
+  like at every step — including what a worker restart forgets and how
+  OpenPlan surfaces it.
+- **See the orthomosaic on the mission map.** Processing results now carry
+  their map position; the ortho preview renders as a layer over the mission
+  area. Results from the older contract (no position data) say plainly that
+  no georeference was recorded rather than drawing something wrong.
+- Mission photos can be deleted only before processing has been requested —
+  after that they are potential evidence under a survey product, and the
+  refusal says so.
+
 ## 0.11.0 — 2026-08-11
 
 **One migration is required before the app deploys: `20260811000001`.** It
