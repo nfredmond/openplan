@@ -14,6 +14,7 @@ import {
 } from "@/lib/aerial/processing-contract";
 import {
   assignArtifactOrdinals,
+  extractArtifactGeoref,
   redactArtifactDescriptors,
   type AerialArtifactCustodyPosture,
 } from "@/lib/aerial/artifact-custody";
@@ -215,14 +216,33 @@ export async function POST(request: NextRequest) {
           workspaceId: job.workspace_id,
           missionId: job.mission_id,
         },
-        candidates: assignArtifactOrdinals(callback.artifacts ?? []).map(({ artifact, ordinal }) => ({
-          kind: artifact.kind,
-          ordinal,
-          downloadUrl: artifact.downloadUrl,
-          expiresAt: artifact.expiresAt,
-          sizeBytes: artifact.sizeBytes ?? null,
-          contentType: artifact.contentType ?? null,
-        })),
+        candidates: assignArtifactOrdinals(callback.artifacts ?? []).map(({ artifact, ordinal }) => {
+          // Contract v1.1 optional georeference (boundsWgs84 / crs / pixelSizeM),
+          // VALIDATED before it goes anywhere near a map. A v1 worker sends none
+          // of it, which is the ordinary case: georef stays null, the custody
+          // columns stay NULL, and the mission map says why it cannot place the
+          // artifact instead of inferring. A refused georef is recorded in the
+          // audit (reason text only — the closed extractor vocabulary, never a
+          // URL) and the artifact is still taken into custody without placement.
+          const { georef, refusedReason } = extractArtifactGeoref(artifact);
+          if (refusedReason) {
+            audit.warn("artifact_georef_refused", {
+              requestId: callback.requestId,
+              kind: artifact.kind,
+              ordinal,
+              reason: refusedReason,
+            });
+          }
+          return {
+            kind: artifact.kind,
+            ordinal,
+            downloadUrl: artifact.downloadUrl,
+            expiresAt: artifact.expiresAt,
+            sizeBytes: artifact.sizeBytes ?? null,
+            contentType: artifact.contentType ?? null,
+            georef,
+          };
+        }),
         elapsedMs: Date.now() - startedAt,
       });
 

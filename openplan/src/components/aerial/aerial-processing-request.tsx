@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, PlaneTakeoff } from "lucide-react";
 
@@ -17,6 +17,16 @@ import { PROCESSING_PRESET_IDS, type ProcessingPresetId } from "@/lib/aerial/pro
  * called it. Every job an operator could have looked at was a job only a curl
  * command could have created — so a page that showed jobs and offered no way to
  * make one would still leave the capability out of reach.
+ *
+ * WHAT THE FORM OFFERS DEPENDS ON THE WORKER'S CONTRACT, and the form asks the
+ * server rather than guessing: `GET` on the same route answers which contract
+ * the configured worker speaks and how many photos are stored on this mission.
+ * A v1 worker (the external platform) takes exactly one shape — a pasted ZIP
+ * link, passed through as-is. A v1.1 worker takes the photos stored on the
+ * mission itself, dispatched by the server as signed links minted at request
+ * time; the pasted link remains as the fallback when nothing is stored. If the
+ * capability read fails, the form says so and keeps the pasted-link path, which
+ * both contracts accept.
  *
  * PRESETS COME FROM THE CONTRACT, not from a list retyped here: the same
  * `PROCESSING_PRESET_IDS` the route validates against and the worker publishes.
@@ -39,6 +49,15 @@ function describePresetOption(preset: string): string {
   const description = PRESET_DESCRIPTIONS[preset as ProcessingPresetId];
   return description ? `${preset} — ${description}` : preset;
 }
+
+type StoredImageryCapability =
+  | { status: "counted"; count: number }
+  | { status: "unavailable"; reason: string };
+
+type DispatchCapability = {
+  workerContract: "v1" | "v1.1" | null;
+  storedImagery: StoredImageryCapability;
+};
 
 /**
  * The route answers with several distinct shapes. Each is turned into a
@@ -77,10 +96,14 @@ async function describeFailure(response: Response): Promise<string> {
     }. It is listed below — wait for it to finish, or have it canceled on the worker, before requesting another.`;
   }
 
+  if (response.status === 422 && payload?.error === "no_imagery_available") {
+    return payload.detail ?? "This mission has no imagery to dispatch.";
+  }
+
   if (response.status === 501) {
     return (
       payload?.reason ??
-      "This deployment has no Aerial Intel Platform worker configured, so nothing can be dispatched."
+      "This deployment has no processing worker configured, so nothing can be dispatched."
     );
   }
 
@@ -107,6 +130,45 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // null = still asking; "unreadable" = the capability read itself failed, and
+  // the form says so rather than treating it as "the worker speaks v1".
+  const [capability, setCapability] = useState<DispatchCapability | "unreadable" | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch(`/api/aerial/missions/${missionId}/process`, {
+          method: "GET",
+          headers: { accept: "application/json" },
+        });
+        if (!response.ok) {
+          if (!cancelled) setCapability("unreadable");
+          return;
+        }
+        const payload = (await response.json().catch(() => null)) as
+          | (DispatchCapability & { workerConfigured?: boolean })
+          | null;
+        if (!cancelled) {
+          setCapability(
+            payload && payload.storedImagery ? payload : "unreadable"
+          );
+        }
+      } catch {
+        if (!cancelled) setCapability("unreadable");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [missionId]);
+
+  const stored =
+    capability !== null && capability !== "unreadable" && capability.workerContract === "v1.1"
+      ? capability.storedImagery
+      : null;
+  const usingStoredPhotos = stored?.status === "counted" && stored.count > 0;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -135,10 +197,17 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          imageryZipUrl: imageryZipUrl.trim(),
+          // When the server will dispatch the mission's stored photos, the
+          // pasted-link fields are not sent at all: the server reads the
+          // photos, mints the links, and computes the counts itself.
+          ...(usingStoredPhotos
+            ? {}
+            : {
+                imageryZipUrl: imageryZipUrl.trim(),
+                ...(parsedImageCount !== undefined ? { imageCount: parsedImageCount } : {}),
+                ...(parsedSizeBytes !== undefined ? { sizeBytes: parsedSizeBytes } : {}),
+              }),
           presetId,
-          ...(parsedImageCount !== undefined ? { imageCount: parsedImageCount } : {}),
-          ...(parsedSizeBytes !== undefined ? { sizeBytes: parsedSizeBytes } : {}),
           ...(notes.trim() ? { notes: notes.trim() } : {}),
         }),
       });
@@ -152,7 +221,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
       }
 
       const payload = (await response.json().catch(() => null)) as
-        | { requestId?: string; jobReference?: string }
+        | { requestId?: string; jobReference?: string; imageryType?: string }
         | null;
 
       setImageryZipUrl("");
@@ -160,9 +229,11 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
       setSizeBytes("");
       setNotes("");
       setMessage(
-        `The worker accepted the request${
-          payload?.jobReference ? ` as job ${payload.jobReference}` : ""
-        }. It appears below and advances only when the worker calls back.`
+        `The worker accepted ${
+          payload?.imageryType === "photo_manifest"
+            ? "this mission's stored photos"
+            : "the request"
+        }${payload?.jobReference ? ` as job ${payload.jobReference}` : ""}. It appears below and advances only when the worker calls back.`
       );
       router.refresh();
     } catch (submitError) {
@@ -178,27 +249,44 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
 
   return (
     <form className="space-y-3" onSubmit={handleSubmit} aria-label="Request imagery processing">
-      <div className="space-y-1.5">
-        <label
-          className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-          htmlFor="aerial-imagery-zip-url"
-        >
-          Imagery ZIP URL
-        </label>
-        <Input
-          id="aerial-imagery-zip-url"
-          value={imageryZipUrl}
-          onChange={(event) => setImageryZipUrl(event.target.value)}
-          placeholder="https://…/mission-imagery.zip"
-          required
-        />
-        <p className="text-[0.68rem] text-muted-foreground">
-          A link the worker itself can fetch — https, or plain http only for a worker on the same
-          machine. OpenPlan does not upload or store the imagery; it passes the link through.
+      {usingStoredPhotos ? (
+        <p className="text-sm text-muted-foreground" data-testid="aerial-stored-photos-source">
+          <span className="font-medium text-foreground">
+            {stored.count} stored photo{stored.count === 1 ? "" : "s"} on this mission
+          </span>{" "}
+          will be dispatched — the server mints signed, time-limited links for them at request
+          time. No ZIP link is needed.
         </p>
-      </div>
+      ) : (
+        <div className="space-y-1.5">
+          <label
+            className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            htmlFor="aerial-imagery-zip-url"
+          >
+            Imagery ZIP URL
+          </label>
+          <Input
+            id="aerial-imagery-zip-url"
+            value={imageryZipUrl}
+            onChange={(event) => setImageryZipUrl(event.target.value)}
+            placeholder="https://…/mission-imagery.zip"
+            required
+          />
+          <p className="text-[0.68rem] text-muted-foreground">
+            A link the worker itself can fetch — https, or plain http only for a worker on the
+            same machine. The link is passed through to the worker as-is.
+            {stored?.status === "counted" && stored.count === 0
+              ? " This mission has no stored photos yet — upload them in the imagery panel to dispatch them directly instead of zipping them yourself."
+              : null}
+            {stored?.status === "unavailable" ? ` ${stored.reason}` : null}
+            {capability === "unreadable"
+              ? " (Whether this mission has stored photos could not be checked just now; a pasted link still works.)"
+              : null}
+          </p>
+        </div>
+      )}
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className={`grid gap-3 ${usingStoredPhotos ? "sm:grid-cols-1" : "sm:grid-cols-3"}`}>
         <div className="space-y-1.5">
           <label
             className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
@@ -219,36 +307,40 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
             ))}
           </select>
         </div>
-        <div className="space-y-1.5">
-          <label
-            className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-            htmlFor="aerial-image-count"
-          >
-            Image count (optional)
-          </label>
-          <Input
-            id="aerial-image-count"
-            inputMode="numeric"
-            value={imageCount}
-            onChange={(event) => setImageCount(event.target.value)}
-            placeholder="482"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <label
-            className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
-            htmlFor="aerial-size-bytes"
-          >
-            ZIP size in bytes (optional)
-          </label>
-          <Input
-            id="aerial-size-bytes"
-            inputMode="numeric"
-            value={sizeBytes}
-            onChange={(event) => setSizeBytes(event.target.value)}
-            placeholder="7300000000"
-          />
-        </div>
+        {usingStoredPhotos ? null : (
+          <>
+            <div className="space-y-1.5">
+              <label
+                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                htmlFor="aerial-image-count"
+              >
+                Image count (optional)
+              </label>
+              <Input
+                id="aerial-image-count"
+                inputMode="numeric"
+                value={imageCount}
+                onChange={(event) => setImageCount(event.target.value)}
+                placeholder="482"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label
+                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                htmlFor="aerial-size-bytes"
+              >
+                ZIP size in bytes (optional)
+              </label>
+              <Input
+                id="aerial-size-bytes"
+                inputMode="numeric"
+                value={sizeBytes}
+                onChange={(event) => setSizeBytes(event.target.value)}
+                placeholder="7300000000"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="space-y-1.5">

@@ -114,13 +114,13 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   })),
 
   // ---- WRITE_ONLY: recorded by something, surfaced by nothing --------------
-  {
-    column: "engagement_item_demographics.captured_at",
-    category: "WRITE_ONLY",
-    reason:
-      "When a respondent's demographic answers were captured. Recorded and never surfaced; a " +
-      "representativeness claim rests on data of some age and does not say which.",
-  },
+  // (2026-08-11) engagement_item_demographics.captured_at left this list when
+  // aerial_imagery.captured_at shipped: the detector is identifier-based on
+  // purpose, and `captured_at` is now genuinely read and rendered (the aerial
+  // imagery panel). The engagement column's own question — a representativeness
+  // claim rests on data of some age and does not say which — remains open and
+  // is out of this detector's sight now; whoever surfaces demographics next
+  // should still answer it.
   {
     column: "analyses.sql_executed",
     category: "WRITE_ONLY",

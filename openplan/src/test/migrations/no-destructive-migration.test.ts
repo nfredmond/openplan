@@ -89,6 +89,13 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "forces the aerial-artifacts storage bucket private when provisioned public out-of-band; " +
       "WHERE-guarded, idempotent, a security repair",
   },
+  {
+    file: "20260811000002_aerial_imagery.sql",
+    kind: "update",
+    reason:
+      "forces the aerial-imagery storage bucket private when provisioned public out-of-band; " +
+      "WHERE-guarded, idempotent, a security repair — the 20260730000004 precedent verbatim",
+  },
 ];
 
 /**

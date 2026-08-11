@@ -23,6 +23,8 @@ import { looksLikePendingSchema } from "@/lib/models/run-launch";
 import type { AerialProjectPosture } from "@/lib/aerial/catalog";
 import {
   AERIAL_ARTIFACT_CUSTODY_COLUMNS,
+  AERIAL_ARTIFACT_CUSTODY_COLUMNS_WITHOUT_GEOREF,
+  isMissingCustodyGeorefColumnError,
   type AerialArtifactCustodyRecord,
 } from "@/lib/aerial/artifact-custody";
 
@@ -380,11 +382,24 @@ export async function loadAerialArtifactCustodyForMission(
   byProcessingJobId: Map<string, AerialArtifactCustodyRecord[]>;
   unreadableReason: string | null;
 }> {
-  const result = await supabase
+  let result = await supabase
     .from("aerial_artifact_custody")
     .select(AERIAL_ARTIFACT_CUSTODY_COLUMNS + ", processing_job_id")
     .eq("mission_id", missionId)
     .order("kind", { ascending: true });
+
+  // Deploy-window degrade, symmetric with the custody engine's write fallback:
+  // a database that predates the georef migration (20260811000003) can still
+  // answer everything except placement, and reporting the whole custody ledger
+  // unreadable over that would overstate the failure. The missing columns read
+  // back as undefined, which every consumer treats as "not georeferenced".
+  if (isMissingCustodyGeorefColumnError(result.error as { message?: string; code?: string } | null)) {
+    result = await supabase
+      .from("aerial_artifact_custody")
+      .select(AERIAL_ARTIFACT_CUSTODY_COLUMNS_WITHOUT_GEOREF + ", processing_job_id")
+      .eq("mission_id", missionId)
+      .order("kind", { ascending: true });
+  }
 
   if (result.error) {
     return {

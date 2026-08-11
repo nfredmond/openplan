@@ -115,6 +115,10 @@ function ImagerySubmitted({ job }: { job: AerialProcessingJobRow }) {
   }
   if (size) parts.push(size);
   if (host) parts.push(`from ${host}`);
+  // A NULL imagery_url is only storable for a photo_manifest job (the DB CHECK
+  // added in 20260811000004): the mission's own stored photos were dispatched
+  // as signed links, and there is no single source host to name.
+  if (!host && job.imagery_url === null) parts.push("from this mission's stored photos");
   if (job.preset_id) parts.push(`${job.preset_id} preset`);
 
   if (parts.length === 0) return null;

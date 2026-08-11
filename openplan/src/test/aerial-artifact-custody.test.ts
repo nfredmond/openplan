@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
@@ -538,14 +538,24 @@ describe("aerial artifact custody — taking the bytes", () => {
    * the build can see that. This can.
    */
   it("keeps the migration's kind constraint identical to the contract's kinds", () => {
-    const sql = readFileSync(
-      join(process.cwd(), "supabase/migrations/20260730000004_aerial_artifact_custody.sql"),
-      "utf8"
-    );
-    const match = sql.match(/CHECK \(kind IN \(([^)]*)\)\)/);
-    expect(match, "the kind CHECK constraint is no longer where this guard looks").not.toBeNull();
+    // The EFFECTIVE constraint is the last one applied in migration order:
+    // 20260730000004 created it inline, 20260811000003 dropped and re-added it
+    // to admit ortho_preview. Reading only the original file would freeze this
+    // guard at the first revision and let the contract and the database drift
+    // behind a green test.
+    const dir = join(process.cwd(), "supabase/migrations");
+    const kindChecks = readdirSync(dir)
+      .filter((file) => file.endsWith(".sql"))
+      .sort()
+      .flatMap((file) => {
+        const sql = readFileSync(join(dir, file), "utf8");
+        return sql.includes("aerial_artifact_custody")
+          ? [...sql.matchAll(/CHECK \(\s*kind IN \(([^)]*)\)\s*\)/g)].map((m) => m[1])
+          : [];
+      });
+    expect(kindChecks.length, "no kind CHECK found where this guard looks").toBeGreaterThan(0);
 
-    const inSql = (match?.[1] ?? "")
+    const inSql = kindChecks[kindChecks.length - 1]
       .split(",")
       .map((token) => token.trim().replace(/^'|'$/g, ""))
       .filter(Boolean)
@@ -613,6 +623,12 @@ describe("aerial artifact custody — the record a person reads", () => {
     failure_detail: null,
     attempt_count: 1,
     held_at: "2026-07-30T00:00:00Z",
+    bounds_west: null,
+    bounds_south: null,
+    bounds_east: null,
+    bounds_north: null,
+    crs: null,
+    pixel_size_m: null,
     ...overrides,
   });
 

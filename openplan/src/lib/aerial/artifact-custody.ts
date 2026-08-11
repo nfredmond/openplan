@@ -131,6 +131,143 @@ export function buildArtifactStoragePath(input: {
   return `${input.workspaceId}/${input.missionId}/${input.processingJobId}/${input.kind}${suffix}.${input.extension}`;
 }
 
+// ── Georeferencing ───────────────────────────────────────────────────────────
+
+/**
+ * The contract v1.1 artifact kind that is a browser-consumable PNG rendering of
+ * the orthomosaic. Named once: the custody loader, the mission map, and the
+ * posture summary all key on this string, and a typo in any of them would be a
+ * layer that silently never mounts.
+ */
+export const AERIAL_ORTHO_PREVIEW_KIND = "ortho_preview";
+
+/**
+ * Georeferencing as custody records it: WGS84 edges, the file's native CRS as
+ * provenance, and the ground pixel size. All reported BY THE WORKER from the
+ * file's own GeoTIFF tags (contract v1.1 optional artifact fields
+ * `boundsWgs84` / `crs` / `pixelSizeM`); OpenPlan never infers any of it.
+ */
+export type AerialArtifactGeoref = {
+  boundsWest: number;
+  boundsSouth: number;
+  boundsEast: number;
+  boundsNorth: number;
+  crs: string | null;
+  pixelSizeM: number | null;
+};
+
+/**
+ * Widest bounds span (degrees, either axis) accepted as a drone product's
+ * georeference. This is a PHYSICAL plausibility floor, not a place: 5 degrees
+ * is roughly 550 km north–south, far beyond any single photogrammetry flight,
+ * and a "bounds" wider than that would paint one image across a whole region
+ * of the map — a confidently wrong exhibit. A corrupt or misread GeoTIFF tag
+ * is refused here and the artifact stays honest as "held, not placeable".
+ */
+export const MAX_GEOREF_BOUNDS_SPAN_DEGREES = 5;
+
+export type ArtifactGeorefExtraction =
+  | { georef: AerialArtifactGeoref; refusedReason: null }
+  | { georef: null; refusedReason: string | null };
+
+function finiteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Read the optional v1.1 georef fields off an artifact descriptor and validate
+ * them, refusing anything that could not place an image truthfully.
+ *
+ * Reads from `unknown` on purpose: the zod contract mirror is owned by the
+ * worker seam and may trail this module during a deploy window, and a validator
+ * that trusted its caller's types would stop validating the moment the two
+ * disagreed. Absent fields are NOT a refusal — the v1 worker never sends them,
+ * and `{georef: null, refusedReason: null}` is the ordinary honest case that
+ * ends as NULL columns and a map that says why it cannot place the artifact.
+ */
+export function extractArtifactGeoref(artifact: unknown): ArtifactGeorefExtraction {
+  if (!artifact || typeof artifact !== "object") return { georef: null, refusedReason: null };
+  const raw = artifact as Record<string, unknown>;
+
+  const bounds = raw.boundsWgs84;
+  if (bounds === undefined || bounds === null) {
+    // No bounds means no georeference, whatever else was sent — a pixel size
+    // with no rectangle places nothing.
+    return { georef: null, refusedReason: null };
+  }
+
+  if (!Array.isArray(bounds) || bounds.length !== 4) {
+    return {
+      georef: null,
+      refusedReason: "boundsWgs84 was not a four-number [west, south, east, north] array",
+    };
+  }
+
+  const west = finiteNumber(bounds[0]);
+  const south = finiteNumber(bounds[1]);
+  const east = finiteNumber(bounds[2]);
+  const north = finiteNumber(bounds[3]);
+  if (west === null || south === null || east === null || north === null) {
+    return { georef: null, refusedReason: "boundsWgs84 contained a non-finite value" };
+  }
+
+  if (west < -180 || west > 180 || east < -180 || east > 180 || south < -90 || south > 90 || north < -90 || north > 90) {
+    return { georef: null, refusedReason: "boundsWgs84 lies outside WGS84 coordinate ranges" };
+  }
+
+  if (west >= east || south >= north) {
+    return {
+      georef: null,
+      refusedReason: "boundsWgs84 is not an open rectangle (west must be < east, south < north)",
+    };
+  }
+
+  if (east - west > MAX_GEOREF_BOUNDS_SPAN_DEGREES || north - south > MAX_GEOREF_BOUNDS_SPAN_DEGREES) {
+    return {
+      georef: null,
+      refusedReason: `boundsWgs84 spans more than ${MAX_GEOREF_BOUNDS_SPAN_DEGREES} degrees, which is not a plausible single-flight product`,
+    };
+  }
+
+  const crsRaw = typeof raw.crs === "string" ? raw.crs.trim() : "";
+  const pixelSize = finiteNumber(raw.pixelSizeM);
+
+  return {
+    georef: {
+      boundsWest: west,
+      boundsSouth: south,
+      boundsEast: east,
+      boundsNorth: north,
+      // Bounded hard: this string is stored and displayed, and the descriptor
+      // is worker-authored input.
+      crs: crsRaw ? crsRaw.slice(0, 64) : null,
+      pixelSizeM: pixelSize !== null && pixelSize > 0 ? pixelSize : null,
+    },
+    refusedReason: null,
+  };
+}
+
+/**
+ * The same validation applied to a custody ROW read back from the database,
+ * returning WGS84 bounds the map may mount, or null. The DB CHECKs enforce the
+ * all-or-none rule and coordinate ranges, but a row is still untrusted input to
+ * a map layer — a bounds rectangle wider than a flight could produce must not
+ * mount however it got stored.
+ */
+export function georefBoundsFromCustodyRecord(record: {
+  bounds_west: number | null;
+  bounds_south: number | null;
+  bounds_east: number | null;
+  bounds_north: number | null;
+}): [number, number, number, number] | null {
+  const extraction = extractArtifactGeoref({
+    boundsWgs84: [record.bounds_west, record.bounds_south, record.bounds_east, record.bounds_north],
+  });
+  if (!extraction.georef) return null;
+  const { boundsWest, boundsSouth, boundsEast, boundsNorth } = extraction.georef;
+  return [boundsWest, boundsSouth, boundsEast, boundsNorth];
+}
+
 // ── Custody records ──────────────────────────────────────────────────────────
 
 export const AERIAL_ARTIFACT_CUSTODY_STATES = ["pending", "held", "failed", "refused"] as const;
@@ -172,7 +309,45 @@ export type AerialCustodyFailureCode = (typeof AERIAL_CUSTODY_FAILURE_CODES)[num
  * exported so a test can assert the string itself.
  */
 export const AERIAL_ARTIFACT_CUSTODY_COLUMNS =
-  "id, kind, ordinal, state, storage_bucket, storage_path, byte_size, checksum_sha256, content_type, declared_size_bytes, source_expires_at, source_host, failure_code, failure_detail, attempt_count, held_at";
+  "id, kind, ordinal, state, storage_bucket, storage_path, byte_size, checksum_sha256, content_type, declared_size_bytes, source_expires_at, source_host, failure_code, failure_detail, attempt_count, held_at, bounds_west, bounds_south, bounds_east, bounds_north, crs, pixel_size_m";
+
+/**
+ * The columns migration 20260811000003 adds, named once for the deploy-window
+ * degrade on BOTH sides of the seam (the write fallback in the custody engine
+ * and the read fallbacks in the loaders), so the two cannot drift — the
+ * assistant-ledger authorship fallback's lesson, applied here from the start.
+ */
+export const AERIAL_CUSTODY_GEOREF_COLUMN_NAMES = [
+  "bounds_west",
+  "bounds_south",
+  "bounds_east",
+  "bounds_north",
+  "crs",
+  "pixel_size_m",
+] as const;
+
+/** The projection as it read before 20260811000003 — the deploy-window fallback. */
+export const AERIAL_ARTIFACT_CUSTODY_COLUMNS_WITHOUT_GEOREF = AERIAL_ARTIFACT_CUSTODY_COLUMNS.split(
+  ", "
+)
+  .filter((column) => !(AERIAL_CUSTODY_GEOREF_COLUMN_NAMES as readonly string[]).includes(column))
+  .join(", ");
+
+/**
+ * True only for the specific failure "this deployment's database does not have
+ * the georef columns yet": PostgREST's unknown-column codes AND a message
+ * naming one of exactly these columns. A constraint or permission failure must
+ * never match — those are real errors that have to surface as themselves.
+ */
+export function isMissingCustodyGeorefColumnError(
+  error: { message?: string; code?: string } | null | undefined
+): boolean {
+  if (!error) return false;
+  const code = error.code ?? "";
+  if (code !== "PGRST204" && code !== "42703") return false;
+  const message = error.message ?? "";
+  return AERIAL_CUSTODY_GEOREF_COLUMN_NAMES.some((column) => message.includes(column));
+}
 
 /** The custody row as workspace members read it. Carries no credential. */
 export type AerialArtifactCustodyRecord = {
@@ -193,6 +368,17 @@ export type AerialArtifactCustodyRecord = {
   failure_detail: string | null;
   attempt_count: number;
   held_at: string | null;
+  /**
+   * Georeference as REPORTED by the processing worker (contract v1.1). All four
+   * bounds are present together or not at all (DB CHECK). Null means the worker
+   * did not report placement — the map refuses rather than infers.
+   */
+  bounds_west: number | null;
+  bounds_south: number | null;
+  bounds_east: number | null;
+  bounds_north: number | null;
+  crs: string | null;
+  pixel_size_m: number | null;
 };
 
 export type AerialArtifactCustodyPosture = {
@@ -206,6 +392,13 @@ export type AerialArtifactCustodyPosture = {
   unrecoverableCount: number;
   /** Not held, link still valid — a retry can still save these. */
   recoverableCount: number;
+  /**
+   * A held `ortho_preview` with a validated georeference exists, so the mission
+   * map can actually place this job's imagery. Derived, never asserted: a
+   * preview without bounds, or bounds that fail validation, stays false — the
+   * map's honest refusal, not a smaller success.
+   */
+  hasMapDisplayablePreview: boolean;
   label: string;
   detail: string;
   /**
@@ -258,6 +451,7 @@ export function summarizeAerialArtifactCustody(
       refusedCount: 0,
       unrecoverableCount: 0,
       recoverableCount: 0,
+      hasMapDisplayablePreview: false,
       label: "No artifacts to take custody of",
       detail:
         "This processing job has not reported any artifacts, so there is nothing for OpenPlan to hold. That is not the same as a job whose artifacts could not be retrieved.",
@@ -334,6 +528,11 @@ export function summarizeAerialArtifactCustody(
     );
   }
 
+  const hasMapDisplayablePreview = held.some(
+    (record) =>
+      record.kind === AERIAL_ORTHO_PREVIEW_KIND && georefBoundsFromCustodyRecord(record) !== null
+  );
+
   return {
     state,
     artifactCount,
@@ -343,6 +542,7 @@ export function summarizeAerialArtifactCustody(
     refusedCount: refused.length,
     unrecoverableCount: unrecoverable.length,
     recoverableCount: recoverable,
+    hasMapDisplayablePreview,
     label,
     detail: sentences.join(" "),
     // Only a job whose deliverables OpenPlan actually holds may carry an

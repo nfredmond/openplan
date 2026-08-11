@@ -48,6 +48,15 @@ export const BODY_LIMITS = {
   // upload will meet a bare 413 instead of the GTFS refusal. If that limit is
   // ever raised above 200 MiB, this constant has to move with it.
   gtfsFeedRaw: 200 * 1024 * 1024,
+  // Aerial mission photo upload: one source image per request, 64 MiB.
+  //
+  // THIS IS THE DEFAULT, NOT THE AERIAL RULE. src/lib/aerial/imagery.ts owns
+  // the per-file ceiling (OPENPLAN_AERIAL_IMAGE_MAX_BYTES, whose default is
+  // deliberately this same number so the two cannot drift), and the upload
+  // route streams with `readBytesWithLimitStreaming` against the RESOLVED
+  // ceiling — so an operator raising the env raises the enforced limit, and
+  // the refusal names the env instead of answering a bare 413.
+  aerialImageRaw: 64 * 1024 * 1024,
 } as const;
 
 export type ReadJsonWithLimitResult<T> =

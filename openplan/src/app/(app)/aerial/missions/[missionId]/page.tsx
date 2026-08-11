@@ -10,6 +10,8 @@ import { Worksurface, WorksurfaceSection } from "@/components/ui/worksurface";
 import { Inspector, InspectorField, InspectorGroup, InspectorEmpty } from "@/components/ui/inspector";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { AerialImageryPanel } from "@/components/aerial/aerial-imagery-panel";
+import { AerialMissionMap } from "@/components/aerial/aerial-mission-map";
 import { AerialProcessingFreshness } from "@/components/aerial/aerial-processing-freshness";
 import { FlightPlanEditor } from "@/components/aerial/flight-plan-editor";
 import { AerialProcessingJobsPanel } from "@/components/aerial/aerial-processing-jobs-panel";
@@ -40,8 +42,9 @@ import {
   isAerialProcessingWorkerConfigured,
 } from "@/lib/aerial/processing-availability";
 import { loadAerialArtifactCustodyForMission, loadAerialProcessingJobsForMission, loadAerialProjectPosture } from "@/lib/aerial/queries";
+import { loadAerialOrthoPreview, type AerialOrthoPreviewResult } from "@/lib/aerial/ortho-preview";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -247,6 +250,32 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   */
   const { byProcessingJobId: custodyByJobId, unreadableReason: custodyUnreadable } =
     await loadAerialArtifactCustodyForMission(supabase, missionId);
+
+  /*
+    THE ORTHOMOSAIC PREVIEW THE MAP MAY DRAW — decided on the server, once.
+
+    The custody row is read with the USER client (the member SELECT policy is
+    the access control), and only the storage URL is signed with the service
+    role. The loader answers with a preview or a typed refusal whose sentence
+    the map renders verbatim: "no preview", "not held", and "held but the
+    worker reported no georeferencing" are three different facts and a blank
+    map would flatten all of them into nothing. A deployment without a
+    service-role key cannot sign display links; that is stated, not blanked.
+  */
+  let orthoPreview: AerialOrthoPreviewResult;
+  try {
+    orthoPreview = await loadAerialOrthoPreview({
+      supabase,
+      signer: createServiceRoleClient(),
+      missionId,
+    });
+  } catch {
+    orthoPreview = {
+      status: "unreadable",
+      detail:
+        "This deployment could not mint a display link for held imagery (its Supabase service-role key is not configured), so the map cannot draw the preview. The custody records below are unaffected.",
+    };
+  }
   const processingJobSummaries = processingJobs.map((job) =>
     summarizeAerialProcessingJob(job, { now: renderedAt, silenceMinutes })
   );
@@ -550,6 +579,38 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
               missionId={mission.id}
               aoiGeojson={mission.aoi_geojson ?? null}
               canEdit={!isReadOnlyWorkspaceRole(membership.role)}
+            />
+          </WorksurfaceSection>
+          <WorksurfaceSection
+            id="aerial-mission-imagery"
+            label="Imagery"
+            title="Mission photos"
+            description="The source photos this mission collected, held in OpenPlan's own storage with each file's own EXIF read as evidence — capture time, camera, and GPS where the file recorded them."
+          >
+            <AerialImageryPanel
+              missionId={mission.id}
+              canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            />
+          </WorksurfaceSection>
+          <WorksurfaceSection
+            id="aerial-mission-map"
+            label="Map"
+            title="Imagery on the map"
+            description="Where this mission's held imagery sits on the ground: the processed orthomosaic preview at the position the processing worker read from the file itself, and each uploaded photo at the GPS its own EXIF recorded. Nothing here is inferred — imagery the worker did not georeference is said to be unplaceable, never guessed onto the map."
+          >
+            <AerialMissionMap
+              missionId={mission.id}
+              preview={
+                orthoPreview.status === "ready"
+                  ? {
+                      url: orthoPreview.url,
+                      bounds: orthoPreview.bounds,
+                      crs: orthoPreview.crs,
+                      pixelSizeM: orthoPreview.pixelSizeM,
+                    }
+                  : null
+              }
+              previewNotice={orthoPreview.status === "ready" ? null : orthoPreview.detail}
             />
           </WorksurfaceSection>
           <WorksurfaceSection

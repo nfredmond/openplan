@@ -754,7 +754,68 @@ describe("the processing request control's refusals", () => {
 
     const alert = await screen.findByRole("alert");
     expect(alert.textContent).toMatch(/Image count is not a number/i);
-    expect(fetchMock).not.toHaveBeenCalled();
+    // The form asks the server for its dispatch capability with a GET on
+    // mount (worker contract + stored-photo count), so "nothing was sent"
+    // means no POST — the dispatch itself never left the browser.
+    expect(
+      fetchMock.mock.calls.filter(
+        (call) => ((call[1] ?? {}) as RequestInit).method === "POST"
+      )
+    ).toEqual([]);
+  });
+
+  /**
+   * CONTRACT v1.1: when the server says the worker takes stored photos and the
+   * mission has some, the form offers THEM — not a ZIP-link field whose old
+   * help text ("OpenPlan does not upload or store the imagery") the imagery
+   * panel has made false. The submit then carries no imageryZipUrl at all: the
+   * server reads the photos and mints the links itself.
+   */
+  it("offers the mission's stored photos when the worker speaks v1.1 and photos exist", async () => {
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (!init?.method || init.method === "GET") {
+        return new Response(
+          JSON.stringify({
+            workerConfigured: true,
+            workerContract: "v1.1",
+            storedImagery: { status: "counted", count: 2 },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        );
+      }
+      return new Response(
+        JSON.stringify({
+          requestId: "r-1",
+          jobReference: "job-1",
+          status: "accepted",
+          imageryType: "photo_manifest",
+        }),
+        { status: 202, headers: { "content-type": "application/json" } }
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const form = renderForm();
+
+    // The stored-photo offer replaces the pasted-link field.
+    await screen.findByTestId("aerial-stored-photos-source");
+    expect(screen.getByTestId("aerial-stored-photos-source").textContent).toMatch(
+      /2 stored photos on this mission/i
+    );
+    expect(screen.queryByLabelText(/imagery zip url/i)).toBeNull();
+
+    fireEvent.submit(form);
+
+    const status = await screen.findByRole("status");
+    expect(status.textContent).toMatch(/stored photos/i);
+
+    const postCalls = fetchMock.mock.calls.filter(
+      (call) => ((call[1] ?? {}) as RequestInit).method === "POST"
+    );
+    expect(postCalls).toHaveLength(1);
+    const posted = JSON.parse(String((postCalls[0][1] as RequestInit).body));
+    expect(posted).not.toHaveProperty("imageryZipUrl");
+    expect(posted.presetId).toBe("balanced");
   });
 });
 

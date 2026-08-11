@@ -1,6 +1,7 @@
 /**
- * The aerial flight-plan writes were deliberately REFUSED as assistant actions
- * on 2026-08-11, and this is the executable form of that decision.
+ * The aerial writes below were deliberately REFUSED as assistant actions —
+ * the flight-plan writes and the mission-imagery writes, both on 2026-08-11 —
+ * and this is the executable form of those decisions.
  *
  * WHY A TEST AND NOT A PARAGRAPH. The reasoning lives in the flight-plan
  * route's own header and in CLAUDE.md — but CLAUDE.md is gitignored, so it
@@ -83,6 +84,39 @@ const REFUSED: RefusedAerialAction[] = [
       "processing, after the crew has gone home. A number whose wrongness is invisible until it is expensive " +
       "is exactly the shape the registry refuses.",
   },
+  // ---- Mission imagery (2026-08-11, the imagery-intake lane) ----------------
+  {
+    label: "uploading mission imagery",
+    nameGroups: [
+      ["upload", "imagery"],
+      ["upload", "photo"],
+      ["add", "imagery"],
+    ],
+    provokes: ["upload_aerial_imagery", "upload_mission_photo", "add_aerial_imagery"],
+    reason:
+      "The consequential payload is megabytes of binary photo evidence the model would author from OUTSIDE " +
+      "the system — the offline comment-import refusal wearing wings, at 64 MiB per file instead of 4 MB of " +
+      "CSV — and no approval sheet can render what the planner would be consenting to. Worse, uploaded photos " +
+      "are the SOURCE evidence every processed output (orthomosaic, DSM, point cloud) derives from, so a " +
+      "fabricated or substituted frame would sit invisibly under later deliverables. Upload is a human " +
+      "console write; the route exists and is member-gated.",
+  },
+  {
+    label: "deleting mission imagery",
+    nameGroups: [
+      ["delete", "imagery"],
+      ["delete", "photo"],
+      ["remove", "imagery"],
+    ],
+    provokes: ["delete_aerial_imagery", "delete_mission_photo", "remove_aerial_imagery"],
+    reason:
+      "Deletion destroys source evidence under processed outputs, and the id-only payload is why it LOOKS " +
+      "safe and is not (the horizon-band-delete precedent): the id test is a proxy for 'the model authors no " +
+      "consequential content', and here the content is an erasure. An agent optimizing for a tidy photo set " +
+      "has a standing incentive to thin exactly the frames a reviewer would want — the submission-geofence " +
+      "shape. The human route already refuses deletion once processing has been dispatched, because OpenPlan " +
+      "cannot prove after the fact which photos a job consumed.",
+  },
 ];
 
 const REGISTERED_KINDS = Object.keys(ACTION_METADATA);
@@ -91,7 +125,7 @@ function matchesRefusal(kind: string, entry: RefusedAerialAction): boolean {
   return entry.nameGroups.some((group) => group.every((word) => kind.includes(word)));
 }
 
-describe("the refused aerial flight-plan actions are still refused", () => {
+describe("the refused aerial actions are still refused", () => {
   for (const entry of REFUSED) {
     it(`does not register anything matching "${entry.label}"`, () => {
       const offenders = REGISTERED_KINDS.filter((kind) => matchesRefusal(kind, entry));

@@ -37,6 +37,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   AERIAL_ARTIFACT_BUCKET,
   AERIAL_ARTIFACT_CUSTODY_COLUMNS,
+  AERIAL_ARTIFACT_CUSTODY_COLUMNS_WITHOUT_GEOREF,
+  AERIAL_CUSTODY_GEOREF_COLUMN_NAMES,
+  isMissingCustodyGeorefColumnError,
   artifactObjectExtension,
   artifactSourceHost,
   buildArtifactStoragePath,
@@ -46,6 +49,7 @@ import {
   summarizeAerialArtifactCustody,
   type AerialArtifactCustodyPosture,
   type AerialArtifactCustodyRecord,
+  type AerialArtifactGeoref,
   type AerialCustodyFailureCode,
 } from "@/lib/aerial/artifact-custody";
 
@@ -56,7 +60,7 @@ const DOCUMENT_CONTENT_TYPES = ["text/html", "application/xhtml+xml"];
 const MIN_ARTIFACT_TIMEOUT_MS = 2_000;
 
 type CustodyQueryResult = { data: unknown[] | null; error: { message?: string } | null };
-type CustodyWriteResult = { error: { message?: string } | null };
+type CustodyWriteResult = { error: { message?: string; code?: string } | null };
 
 /**
  * The narrowest Supabase shape this engine needs.
@@ -121,6 +125,13 @@ export type CustodyCandidate = {
   expiresAt: string;
   sizeBytes?: number | null;
   contentType?: string | null;
+  /**
+   * VALIDATED georeference (see `extractArtifactGeoref`), or null/absent when
+   * the worker reported none — the v1 contract case. Recorded on the row
+   * whatever the fetch outcome: it is the worker's report about the artifact,
+   * not a property of the download attempt.
+   */
+  georef?: AerialArtifactGeoref | null;
 };
 
 type CustodyRowWrite = {
@@ -144,7 +155,49 @@ type CustodyRowWrite = {
   attempt_count: number;
   last_attempt_at: string;
   held_at: string | null;
+  bounds_west: number | null;
+  bounds_south: number | null;
+  bounds_east: number | null;
+  bounds_north: number | null;
+  crs: string | null;
+  pixel_size_m: number | null;
 };
+
+/**
+ * The georef columns as the candidate's validated report writes them. All-null
+ * when the worker reported nothing — which the DB CHECK accepts, and which the
+ * mission map renders as its honest "cannot place this" refusal.
+ */
+function georefColumns(candidate: CustodyCandidate): Pick<
+  CustodyRowWrite,
+  "bounds_west" | "bounds_south" | "bounds_east" | "bounds_north" | "crs" | "pixel_size_m"
+> {
+  const georef = candidate.georef ?? null;
+  return {
+    bounds_west: georef?.boundsWest ?? null,
+    bounds_south: georef?.boundsSouth ?? null,
+    bounds_east: georef?.boundsEast ?? null,
+    bounds_north: georef?.boundsNorth ?? null,
+    crs: georef?.crs ?? null,
+    pixel_size_m: georef?.pixelSizeM ?? null,
+  };
+}
+
+/**
+ * Deploy-window write degrade: code ahead of migration 20260811000003.
+ * PostgREST fails the WHOLE upsert on an unknown column, and losing every
+ * custody row — a silent hole in what OpenPlan holds — is strictly worse than
+ * rows that cannot yet record placement. Same posture as the assistant
+ * ledger's authorship fallback: retry without exactly the georef columns,
+ * never on any other error, which must surface as itself.
+ */
+function withoutGeorefColumns(rows: CustodyRowWrite[]): Array<Record<string, unknown>> {
+  return rows.map((row) => {
+    const clone: Record<string, unknown> = { ...row };
+    for (const column of AERIAL_CUSTODY_GEOREF_COLUMN_NAMES) delete clone[column];
+    return clone;
+  });
+}
 
 type FetchOutcome =
   | { ok: true; bytes: Buffer; sha256: string; contentType: string | null }
@@ -288,6 +341,10 @@ function failedRow(
     attempt_count: priorAttempts + (attempted ? 1 : 0),
     last_attempt_at: now.toISOString(),
     held_at: null,
+    // The worker's placement report survives a failed fetch: where the artifact
+    // BELONGS is known even while the bytes are not held, and a later retry
+    // that succeeds must not find its georef discarded.
+    ...georefColumns(candidate),
   };
 }
 
@@ -413,6 +470,7 @@ async function custodyOfOne(
     attempt_count: priorAttempts + 1,
     last_attempt_at: now.toISOString(),
     held_at: now.toISOString(),
+    ...georefColumns(candidate),
   };
 }
 
@@ -568,9 +626,21 @@ export async function runAerialCustodyPass(input: {
   if (rows.length > 0) {
     // Idempotent on (processing_job_id, kind, ordinal): a redelivery updates the
     // same rows instead of accumulating a second set.
-    const { error: writeError } = await supabase
+    let { error: writeError } = await supabase
       .from("aerial_artifact_custody")
       .upsert(rows, { onConflict: "processing_job_id,kind,ordinal" });
+
+    // Deploy-window degrade: code ahead of migration 20260811000003. PostgREST
+    // fails the WHOLE insert on an unknown column, and a callback that writes
+    // NO custody rows because it could not also write placement is the silent
+    // audit hole this module exists to close. Retry without exactly the georef
+    // columns — never on a constraint or permission failure, which is a real
+    // error and must surface as itself below.
+    if (isMissingCustodyGeorefColumnError(writeError)) {
+      ({ error: writeError } = await supabase
+        .from("aerial_artifact_custody")
+        .upsert(withoutGeorefColumns(rows), { onConflict: "processing_job_id,kind,ordinal" }));
+    }
 
     // A FAILED WRITE IS NOT AN EMPTY RESULT EITHER, and discarding this error was
     // the sharpest way left to lie with this table. `finalizeAerialCustodyState`
@@ -626,10 +696,22 @@ export async function finalizeAerialCustodyState(input: {
 
   const supabase = asCustodyClient(input.supabase);
 
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("aerial_artifact_custody")
     .select(AERIAL_ARTIFACT_CUSTODY_COLUMNS)
     .eq("processing_job_id", input.processingJobId);
+
+  // Deploy-window read degrade, symmetric with the write fallback above: a
+  // database that predates 20260811000003 can still answer everything except
+  // placement, and "custody could not be read" over a merely-ungeoreferenced
+  // ledger would overstate the failure. The missing columns read back as
+  // undefined, which every consumer treats as "no georeference reported".
+  if (isMissingCustodyGeorefColumnError(error)) {
+    ({ data, error } = await supabase
+      .from("aerial_artifact_custody")
+      .select(AERIAL_ARTIFACT_CUSTODY_COLUMNS_WITHOUT_GEOREF)
+      .eq("processing_job_id", input.processingJobId));
+  }
 
   if (error) {
     // A failed read is NOT an empty result. Reporting `not_applicable` here

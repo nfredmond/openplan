@@ -202,16 +202,26 @@ const EXPECTED = {
   // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
   // `views` holds at 7 and `expanded` at 264: no view, and every policy is
   // written literally.
-  policies: 584,
-  permissive: 341,
+  //
+  // 20260811000002 (aerial_imagery) adds ONE table — one row per stored
+  // mission photo, bytes in the private aerial-imagery bucket. ONE permissive
+  // policy: member SELECT only. NO write policies ON PURPOSE — the custody
+  // posture: photo bytes must transit an authed route (membership + role gate
+  // checked there), which then writes with the service role, so a client-side
+  // write policy would be a hole. authenticated is GRANTed SELECT only.
+  // So: +1 policy, +1 permissive, +0 restrictive, +0 permissiveWrites,
+  // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
+  // `views` holds at 7 and `expanded` at 264.
+  policies: 585,
+  permissive: 342,
   restrictive: 243,
   permissiveWrites: 223,
   expanded: 264,
-  tablesWithPolicies: 118,
-  relations: 138,
-  tables: 131,
+  tablesWithPolicies: 119,
+  relations: 139,
+  tables: 132,
   views: 7,
-  rlsEnabledTables: 131,
+  rlsEnabledTables: 132,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

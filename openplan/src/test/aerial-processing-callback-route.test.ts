@@ -322,6 +322,110 @@ describe("POST /api/aerial/processing-callback", () => {
     expect(postureCall.workspaceId).toBe(JOB_ROW.workspace_id);
   });
 
+  it("passes a v1.1 artifact's validated georeference into the custody rows", async () => {
+    const response = await postProcessingCallback(
+      request(
+        callbackPayload({
+          callbackId: "cb-0000000012",
+          status: "succeeded",
+          artifacts: [
+            {
+              kind: "ortho_preview",
+              downloadUrl: "https://storage.example.com/preview.png?signature=abc",
+              expiresAt: "2099-07-22T14:30:00Z",
+              contentType: "image/png",
+              boundsWgs84: [-120.51, 39.2, -120.49, 39.22],
+              crs: "EPSG:32610",
+              pixelSizeM: 0.021,
+            },
+          ],
+        }),
+        CALLBACK_TOKEN
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(custodyUpsertMock).toHaveBeenCalledTimes(1);
+    const rows = custodyUpsertMock.mock.calls[0][0] as Record<string, unknown>[];
+    expect(rows[0]).toMatchObject({
+      kind: "ortho_preview",
+      bounds_west: -120.51,
+      bounds_south: 39.2,
+      bounds_east: -120.49,
+      bounds_north: 39.22,
+      crs: "EPSG:32610",
+      pixel_size_m: 0.021,
+    });
+  });
+
+  it("refuses an implausible georeference at intake, records why, and still takes custody", async () => {
+    const response = await postProcessingCallback(
+      request(
+        callbackPayload({
+          callbackId: "cb-0000000013",
+          status: "succeeded",
+          artifacts: [
+            {
+              kind: "ortho_preview",
+              downloadUrl: "https://storage.example.com/preview.png?signature=abc",
+              expiresAt: "2099-07-22T14:30:00Z",
+              contentType: "image/png",
+              // Passes the contract's ordering refine, fails the plausibility
+              // ceiling: a rectangle spanning a third of a continent.
+              boundsWgs84: [-120, 30, -100, 40],
+            },
+          ],
+        }),
+        CALLBACK_TOKEN
+      )
+    );
+
+    expect(response.status).toBe(200);
+    // Custody still happens — the bytes matter more than the placement — but
+    // the row carries no georef, and the refusal reason is on the record.
+    const rows = custodyUpsertMock.mock.calls[0][0] as Record<string, unknown>[];
+    expect(rows[0]).toMatchObject({
+      kind: "ortho_preview",
+      state: "held",
+      bounds_west: null,
+      bounds_south: null,
+      bounds_east: null,
+      bounds_north: null,
+    });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "artifact_georef_refused",
+      expect.objectContaining({ kind: "ortho_preview", reason: expect.stringMatching(/degrees/) })
+    );
+  });
+
+  it("a v1 artifact with no georef fields lands with all-null placement — the honest external-worker case", async () => {
+    // The default stub says an orthomosaic is ALREADY held, which makes the
+    // engine skip it (correctly). Empty prior custody so the write happens.
+    custodySelectEqMock.mockResolvedValue({ data: [], error: null });
+    const response = await postProcessingCallback(
+      request(
+        callbackPayload({
+          callbackId: "cb-0000000014",
+          status: "succeeded",
+          artifacts: SUCCEEDED_ARTIFACTS,
+        }),
+        CALLBACK_TOKEN
+      )
+    );
+
+    expect(response.status).toBe(200);
+    const rows = custodyUpsertMock.mock.calls[0][0] as Record<string, unknown>[];
+    expect(rows[0]).toMatchObject({
+      bounds_west: null,
+      bounds_south: null,
+      bounds_east: null,
+      bounds_north: null,
+      crs: null,
+      pixel_size_m: null,
+    });
+    expect(mockAudit.warn).not.toHaveBeenCalledWith("artifact_georef_refused", expect.anything());
+  });
+
   it("skips a second evidence package when one exists for the processing job", async () => {
     evidenceLookupMaybeSingleMock.mockResolvedValue({ data: { id: "pkg-1" }, error: null });
 
