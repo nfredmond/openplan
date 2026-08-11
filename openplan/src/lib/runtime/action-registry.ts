@@ -270,6 +270,37 @@ const CREATE_SURVEY_QUESTION_DRAFT: ActionRecord<"create_survey_question_draft">
   },
 };
 
+const CREATE_RTP_HORIZON_BANDS_FROM_CYCLE_HORIZON: ActionRecord<"create_rtp_horizon_bands_from_cycle_horizon"> = {
+  kind: "create_rtp_horizon_bands_from_cycle_horizon",
+  effect: async (action, context) => {
+    /**
+     * THE BODY CARRIES THE WORKSPACE AND A REGISTRY KEY, NOTHING ELSE.
+     *
+     * No label, year, escalation target, cost basis or sort order exists on
+     * the payload to transmit, and none is written here — the route computes
+     * every year from the cycle's own declared horizon and writes
+     * `escalation_target_year` as a literal null. An effect that could carry
+     * a year would be one field away from deleting the public document's
+     * "midpoint assumed" caveat; see the union variant in catalog.ts.
+     *
+     * The path is a TEMPLATE LITERAL on purpose. `action-route-resolution.ts`
+     * regexes `effect.toString()` for `/api/…` literals to decide which route
+     * this action targets; a path assembled from a variable resolves to zero
+     * paths, and both the approval-verification guard and the claim-tier
+     * guard would then check nothing while reporting success.
+     */
+    await postJson(
+      `/api/rtp-cycles/${action.rtpCycleId}/horizon-bands/from-cycle-horizon`,
+      {
+        workspaceId: action.workspaceId,
+        bandingProfileKey: action.bandingProfileKey,
+      },
+      "Failed to scaffold the plan's horizon periods",
+      context
+    );
+  },
+};
+
 type ActionRegistry = {
   [K in AssistantQuickLinkExecuteAction["kind"]]: ActionRecord<K>;
 };
@@ -286,6 +317,7 @@ export const ACTION_REGISTRY: ActionRegistry = {
   refresh_gtfs_feed: REFRESH_GTFS_FEED,
   launch_model_run: LAUNCH_MODEL_RUN,
   create_survey_question_draft: CREATE_SURVEY_QUESTION_DRAFT,
+  create_rtp_horizon_bands_from_cycle_horizon: CREATE_RTP_HORIZON_BANDS_FROM_CYCLE_HORIZON,
 };
 
 export function getActionRecord<K extends AssistantQuickLinkExecuteAction["kind"]>(

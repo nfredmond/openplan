@@ -29,6 +29,7 @@ const ACTION_KIND_LABELS: Record<string, string> = {
   refresh_gtfs_feed: "Refetch transit feed",
   launch_model_run: "Re-queue model run",
   create_survey_question_draft: "Draft a survey question (unpublished)",
+  create_rtp_horizon_bands_from_cycle_horizon: "Scaffold plan horizon periods",
 };
 
 const APPROVAL_PRESENTATION: Record<

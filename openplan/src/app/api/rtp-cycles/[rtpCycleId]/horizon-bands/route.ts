@@ -34,8 +34,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
@@ -45,6 +43,7 @@ import {
   writeMatchedNoRows,
 } from "@/lib/http/write-outcome";
 import type { RtpHorizonBandInput } from "@/lib/rtp/fiscal-constraint";
+import { authorizeRtpCycleWrite } from "@/lib/rtp/cycle-write-authorization";
 
 type RouteSupabase = Awaited<ReturnType<typeof createClient>>;
 type ApiAudit = ReturnType<typeof createApiAuditLogger>;
@@ -210,73 +209,20 @@ function describeBandYearProblem(
   return null;
 }
 
-type CycleAuthorization =
-  | { ok: true; workspaceId: string; userId: string }
-  | { ok: false; response: NextResponse };
-
 /**
- * Authenticate, resolve the caller's CURRENT workspace, and prove the cycle in
- * the URL belongs to it — in that order, before any write.
- *
- * The workspace is never taken from the request. It is read from the caller's
- * own membership and then used to SCOPE the cycle lookup, so a cycle in another
- * workspace is not found rather than found-and-refused. That answers 404 for
- * both "no such cycle" and "someone else's cycle", which is deliberate: a
- * distinguishable 403 would confirm the existence of other workspaces' cycles
- * to anyone willing to iterate uuids.
+ * Authorization moved to `@/lib/rtp/cycle-write-authorization` when the
+ * from-cycle-horizon scaffold route became its second caller — a shared gate
+ * living inside one of two callers gets reimplemented wrongly by the other.
+ * Same rules as always; see the lib module's header.
  */
-async function authorizeCycleWrite(
-  supabase: RouteSupabase,
-  audit: ApiAudit,
-  rtpCycleId: string
-): Promise<CycleAuthorization> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { ok: false, response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  }
-
-  let membershipResult;
-  try {
-    membershipResult = await loadCurrentWorkspaceMembership(supabase, user.id);
-  } catch (error) {
-    audit.error("membership_lookup_failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return {
-      ok: false,
-      response: NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 }),
-    };
-  }
-
-  const membership = membershipResult.membership;
-  if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
-    return { ok: false, response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-
-  const cycleResult = await supabase
-    .from("rtp_cycles")
-    .select("id, workspace_id")
-    .eq("id", rtpCycleId)
-    .eq("workspace_id", membership.workspace_id)
-    .maybeSingle();
-
-  // A failed read and an empty read are the same `null` here, and answering
-  // "RTP cycle not found" to a query that never ran would send a planner
-  // looking for a cycle that is sitting right there.
-  const readFailure = classifyRouteReadFailure("the RTP cycle", cycleResult);
-  if (readFailure) {
-    audit.error("cycle_lookup_failed", { rtpCycleId, message: readFailure.message });
-    return { ok: false, response: NextResponse.json(readFailure.body, { status: readFailure.status }) };
-  }
-
-  if (!cycleResult.data) {
-    return { ok: false, response: NextResponse.json({ error: "RTP cycle not found" }, { status: 404 }) };
-  }
-
-  return { ok: true, workspaceId: membership.workspace_id, userId: user.id };
+async function authorizeCycleWrite(supabase: RouteSupabase, audit: ApiAudit, rtpCycleId: string) {
+  // The cast is the repo's untyped-client convention: comparing the full
+  // client generic against the lib's structural type trips TS2589.
+  return authorizeRtpCycleWrite(
+    supabase as unknown as Parameters<typeof authorizeRtpCycleWrite>[0],
+    audit,
+    rtpCycleId
+  );
 }
 
 type StoredBand = {

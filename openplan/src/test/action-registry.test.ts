@@ -23,6 +23,7 @@ describe("action registry", () => {
       "create_funding_opportunity",
       "create_project_funding_profile",
       "create_project_record",
+      "create_rtp_horizon_bands_from_cycle_horizon",
       "create_rtp_packet_record",
       "create_survey_question_draft",
       "generate_report_artifact",

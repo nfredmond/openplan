@@ -292,6 +292,10 @@ const PROPOSAL_REFERENCE_CHECKS: Partial<
    * the feed table above, whose NULL is a deliberate shared-row marker).
    */
   create_survey_question_draft: [{ field: "campaignId", table: "engagement_campaigns" }],
+  // `rtp_cycles` carries a real `workspace_id` on every row, so the stock
+  // workspace-scoped check means what it says. `bandingProfileKey` is not a
+  // row reference — the route parses it against the closed profile enum.
+  create_rtp_horizon_bands_from_cycle_horizon: [{ field: "rtpCycleId", table: "rtp_cycles" }],
 };
 
 type ProposalSchemaBranch = z.ZodObject<Record<string, z.ZodTypeAny>>;

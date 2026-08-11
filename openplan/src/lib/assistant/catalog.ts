@@ -263,6 +263,43 @@ export type AssistantQuickLinkExecuteAction =
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;
+    }
+  | {
+      /**
+       * Scaffold an empty RTP cycle's horizon periods from its OWN declared
+       * horizon — the one band-creation shape the 2026-08-05 analysis
+       * permitted, registered in its derived form only.
+       *
+       * Every sibling of this action was refused, and the refusals are what
+       * define this payload. Authoring a band's years is an authored phasing
+       * judgement; authoring its escalation year switches off the public
+       * document's "midpoint assumed" caveat (a caveat deletion on a public
+       * page — the machine-translation refusal wearing another module's
+       * clothes); deleting a band detaches programmed projects. So this
+       * variant carries NO label, NO years, NO escalation year, NO cost
+       * basis, NO sort order: the route computes every year from
+       * `rtp_cycles.horizon_start_year/horizon_end_year` (refusing when the
+       * cycle has not declared them), derives the labels from those years,
+       * and writes `escalation_target_year` as a literal `null` with no code
+       * path able to set it — pinned by
+       * `rtp-scaffolded-bands-carry-no-escalation-year.test.ts`.
+       *
+       * `bandingProfileKey` is the one choice the payload carries, and it is
+       * a key into the closed in-repo registry
+       * (`@/lib/rtp/horizon-banding-profiles`), not authored content — the
+       * same shape as an enum. The route refuses a cycle that already has
+       * periods, so the scaffold only ever writes into an empty plan, and
+       * every row it writes is the agency's to rename, re-year, or delete in
+       * the band editor (Nathaniel's recorded decision: bands are
+       * agency-defined; a scaffold proposes, it never locks).
+       */
+      kind: "create_rtp_horizon_bands_from_cycle_horizon";
+      workspaceId: string;
+      rtpCycleId: string;
+      bandingProfileKey: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
     };
 
 export type AssistantQuickLink = {

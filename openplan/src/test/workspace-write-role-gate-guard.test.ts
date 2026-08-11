@@ -74,6 +74,12 @@ const RECOGNIZED_GATES = [
   "requireWorkspaceWriteAccess",
   "requireNetworkPackageWriteAccess",
   // Module loaders that resolve a parent record and apply the matrix.
+  // `authorizeRtpCycleWrite` was extracted OUT of the horizon-bands route when
+  // the scaffold route became its second caller (2026-08-10) — which moved the
+  // `canAccessWorkspaceAction` call out of both routes' source and correctly
+  // failed this guard. The prover below is what makes recognizing the wrapper
+  // safe: its defining file must itself perform a real role check.
+  "authorizeRtpCycleWrite",
   "loadModelAccess",
   "loadPlanAccess",
   "loadProgramAccess",

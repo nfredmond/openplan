@@ -29,6 +29,8 @@
  * refused list, but only by a session that writes down why the argument changed.
  */
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
 
 /**
@@ -54,9 +56,23 @@ const REFUSED: ReadonlyArray<{ fragment: string; matchOnly?: string; reason: str
       "A model authoring a baseline, a target or a data source. A baseline is a measurement of the world and a model cannot measure; `data_source` is the column that makes a measure evidence rather than an assertion. Only a registry-scaffold action with baseline/target/dataSource ABSENT from the payload may be registered.",
   },
   {
-    fragment: "delete_horizon_band",
+    // fragment + matchOnly rather than the one exact spelling: the original
+    // entry was `delete_horizon_band`, which the realistic spelling
+    // `delete_rtp_horizon_band` does NOT contain (every registered RTP kind
+    // carries the `rtp_` infix) — a naming blind spot the 2026-08-10
+    // adversarial review caught. Deletion staying refused is also what keeps
+    // the scaffold action churn-safe: without it an agent would hold both
+    // halves of a delete-and-rescaffold loop.
+    fragment: "horizon_band",
+    matchOnly: "delete",
     reason:
       "Deleting a period. `ON DELETE SET NULL` detaches every programmed project and destroys the record of which ones — and narrowing it to EMPTY bands selects the worst case, because deleting an empty out-year band converts a visibly undetermined future into a flat `constrained` with no blocker to notice.",
+  },
+  {
+    fragment: "horizon_band",
+    matchOnly: "remove",
+    reason:
+      "The `remove_` spelling of the deletion refusal above — same argument, refused by both names.",
   },
   {
     fragment: "horizon_band",
@@ -92,7 +108,11 @@ describe("the refused RTP financial actions are still refused", () => {
       "create_rtp_financial_assumption",
       "set_rtp_programmed_cost",
       "create_rtp_performance_measure",
-      "delete_horizon_band",
+      // The REALISTIC spellings, with the rtp_ infix every registered RTP
+      // kind carries — the original pretend name `delete_horizon_band` let
+      // the matcher pass its self-check while the likely spelling escaped.
+      "delete_rtp_horizon_band",
+      "remove_rtp_horizon_band",
       "assign_rtp_project_horizon_band",
       "create_funding_opportunity", // an innocent bystander that must NOT match
     ];
@@ -116,22 +136,65 @@ describe("the refused RTP financial actions are still refused", () => {
     expect(innocentHits).toEqual([]);
   });
 
-  it("records that ONE action from this lane may be registered, in its derived form only", () => {
-    // Not an assertion about the registry — a note that fails loudly if the
-    // permitted shape is ever built WITHOUT its load-bearing constraint. If
-    // `create_rtp_horizon_bands_from_cycle_horizon` is registered, its route
-    // must write `escalation_target_year` NULL unconditionally: supplying it
-    // flips `expenditureYearAssumed` to false and switches OFF the "midpoint
-    // assumed" caveat on the public draft-review document, which is a caveat
-    // deletion on a public page.
+  it("the ONE registered action from this lane carries its load-bearing guard", () => {
+    /**
+     * `create_rtp_horizon_bands_from_cycle_horizon` registered on 2026-08-10,
+     * in its derived form only, and this tripwire converted from "fail when it
+     * appears" to "fail if its guard ever disappears or hollows out".
+     *
+     * THE FIRST VERSION OF THIS TRIPWIRE WAS VACUOUS, and that is worth
+     * keeping on the record: its comment said the route "must be covered by
+     * the escalation-caveat guard" while its assertion checked only
+     * `permitted.length === 1` — which the act of registering satisfied
+     * trivially. A comment can claim a test exists; only the assertion is the
+     * test. So this now reads the guard FILE and checks for the load-bearing
+     * strings: the literal-null write and the ban on a body path to the
+     * column. Deleting the guard, or gutting those assertions, fails here by
+     * name.
+     */
     const permitted = REGISTERED_KINDS.filter((kind) => kind.includes("horizon_bands_from_cycle_horizon"));
-    if (permitted.length === 0) return; // not built yet — nothing to check
+    expect(permitted).toEqual(["create_rtp_horizon_bands_from_cycle_horizon"]);
 
-    // Once it exists, its route must be covered by the escalation-caveat guard.
-    // Failing here is a prompt to write that guard, not a reason to delete this.
+    const guardPath = path.join(
+      process.cwd(),
+      "src/test/rtp-scaffolded-bands-carry-no-escalation-year.test.ts"
+    );
+    const guard = readFileSync(guardPath, "utf8");
+    expect(guard).toContain('expect(row.escalation_target_year).toBeNull()');
+    expect(guard).toContain('expect(routeSource).toContain("escalation_target_year: null")');
+    expect(guard).toContain('expect(routeSource).not.toContain("escalationTargetYear")');
+  });
+
+  it("still refuses FREEFORM band creation — only the derived shape is registered", () => {
+    /**
+     * The gap the 2026-08-10 registration closed the other way: the original
+     * refusal list caught deleting a band and assigning a project to one, but
+     * a `create_rtp_horizon_band` whose payload carried label, years and an
+     * escalation target matched no fragment. Creating a band freeform is the
+     * escalation-year hazard plus the authored-phasing hazard in one payload,
+     * so it is refused BY NAME — with the one derived kind, whose route can
+     * author none of those fields, exempted explicitly.
+     */
+    const offenders = REGISTERED_KINDS.filter(
+      (kind) =>
+        kind.includes("horizon_band") &&
+        kind.includes("create") &&
+        kind !== "create_rtp_horizon_bands_from_cycle_horizon"
+    );
     expect(
-      permitted.length,
-      "create_rtp_horizon_bands_from_cycle_horizon is registered. Before this ships, add a guard asserting every band it can create has escalation_target_year NULL, so the public document keeps its 'midpoint assumed' caveat."
-    ).toBe(1);
+      offenders,
+      `${offenders.join(", ")} was registered. Freeform band creation was refused deliberately: a payload carrying years is an authored phasing judgement, and a payload carrying an escalation target year deletes the public document's 'midpoint assumed' caveat. Only the derived from-cycle-horizon shape may exist. If the argument has genuinely changed, record why — do not delete the assertion to make a build pass.`
+    ).toEqual([]);
+
+    // Guard the guard: the matcher catches the plausible spelling and exempts
+    // exactly the registered derived kind.
+    const pretend = ["create_rtp_horizon_band", "create_rtp_horizon_bands_from_cycle_horizon"];
+    const caught = pretend.filter(
+      (kind) =>
+        kind.includes("horizon_band") &&
+        kind.includes("create") &&
+        kind !== "create_rtp_horizon_bands_from_cycle_horizon"
+    );
+    expect(caught).toEqual(["create_rtp_horizon_band"]);
   });
 });

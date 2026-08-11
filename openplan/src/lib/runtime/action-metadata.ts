@@ -114,6 +114,22 @@ export const ACTION_METADATA: ActionMetadataRegistry = {
     // proposing questions that are already sitting there unpublished.
     regrounding: "refresh_preview",
   },
+  create_rtp_horizon_bands_from_cycle_horizon: {
+    kind: "create_rtp_horizon_bands_from_cycle_horizon",
+    description:
+      "Scaffolds an empty RTP cycle's horizon periods from the cycle's own declared horizon years, using a named banding profile. Every year is computed by the route, labels are derived from the years, no escalation target year is ever written, and a plan that already has periods is refused. The agency edits, renames, or deletes the scaffolded periods in the band editor.",
+    // `approval_required` because this writes rows into a plan's financial
+    // element — the half of an RTP a board votes on. The payload is two
+    // verified ids and a registry key, but a person should still consent to
+    // WHICH plan gets scaffolded and with WHICH profile, and `review` shows no
+    // approval dialog at all.
+    approval: "approval_required",
+    auditEvent: "planner_agent.create_rtp_horizon_bands_from_cycle_horizon",
+    // The scaffold retires the very blocker the offer keys on
+    // (`no_horizon_bands`); a preview still describing the plan as periodless
+    // would keep offering the scaffold that just ran.
+    regrounding: "refresh_preview",
+  },
   launch_model_run: {
     kind: "launch_model_run",
     description:

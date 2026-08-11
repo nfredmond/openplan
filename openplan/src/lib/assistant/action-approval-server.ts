@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { canonicalizeActionPayload, getActionMetadata } from "@/lib/runtime/action-metadata";
+import { HORIZON_BANDING_PROFILE_KEYS } from "@/lib/rtp/horizon-banding-profiles";
 import {
   plannerAgentAuthored,
   USER_AUTHORED,
@@ -126,6 +127,31 @@ export const assistantApprovalActionSchema = z.discriminatedUnion("kind", [
     // NOTE: there is no `adoptDespiteCollapse` key here, and adding one would be
     // a change to what an agent is allowed to decide — not a schema tidy-up. See
     // the union variant in catalog.ts.
+    postActionWorkflowId: z.string().optional(),
+    postActionPrompt: z.string().optional(),
+    postActionPromptLabel: z.string().optional(),
+  }),
+  z.object({
+    kind: z.literal("create_rtp_horizon_bands_from_cycle_horizon"),
+    // `.min(1)` and NOT `.uuid()`, matching every other branch in this union:
+    // `action-registry-is-complete.test.ts` synthesises a minimal payload for
+    // each kind out of `FALLBACK_VALUES`, none of which is a uuid. The uuid
+    // shape is enforced where it can also be acted on — the route parses the
+    // cycle id with `z.string().uuid()` and answers 400.
+    workspaceId: z.string().min(1),
+    rtpCycleId: z.string().min(1),
+    // The CLOSED ENUM, here as well as at the route. The `.min(1)` shape the
+    // id fields use is justified by the completeness test's uuid-less
+    // fallbacks — a justification that does not apply to an enum, whose
+    // declared values that test reads directly (as the two sibling enum
+    // branches prove). A bare string here would let the propose_ tool mint an
+    // approval sheet carrying a model-INVENTED profile key the route is
+    // guaranteed to 400 — a planner consenting to an action that cannot
+    // execute. NOTE: there is deliberately no label, year, escalation-target,
+    // cost-basis or sort-order key here, and there must never be one; every
+    // refusal that shaped this action is a field this branch does not have.
+    // See the union variant in catalog.ts.
+    bandingProfileKey: z.enum(HORIZON_BANDING_PROFILE_KEYS),
     postActionWorkflowId: z.string().optional(),
     postActionPrompt: z.string().optional(),
     postActionPromptLabel: z.string().optional(),

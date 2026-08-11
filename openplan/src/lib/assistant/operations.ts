@@ -1225,7 +1225,59 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
             prompt: "Is this RTP cycle's current board packet ready for release review, and what should I verify first?",
             promptLabel: "Run RTP release review in panel",
           };
+  /**
+   * The scaffold is offered ONLY when the fiscal engine itself says the plan
+   * has a declared horizon and no periods. Three gates, every one load-bearing:
+   *
+   *   - the horizon years must be non-null, because the route refuses a
+   *     horizonless cycle (422) and offering an action that will be refused
+   *     is the shipped-invisible defect inverted;
+   *   - `fiscal.summary` must be NON-NULL, because a null summary means a
+   *     read the verdict depends on FAILED — offering a scaffold over a
+   *     failed read would treat "could not read the periods" as "there are
+   *     none", the exact confusion the null exists to prevent;
+   *   - the `no_horizon_bands` blocker must be PRESENT, which is the engine's
+   *     own finding that the plan is periodless — the same fact the route
+   *     re-proves server-side by counting before it writes.
+   */
+  const offerBandScaffold =
+    context.rtpCycle.horizonStartYear !== null &&
+    context.rtpCycle.horizonEndYear !== null &&
+    context.fiscal?.summary != null &&
+    context.fiscal.summary.blockers.some((blocker) => blocker.code === "no_horizon_bands");
+
   return compactQuickLinks([
+    offerBandScaffold
+      ? quickLink("rtp-scaffold-horizon-bands", "Scaffold horizon periods from this plan's horizon", `/rtp/${context.rtpCycle.id}`, {
+          targetKind: "rtp_cycle",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "Derived from the plan's own horizon",
+          reason:
+            `This plan declares a ${context.rtpCycle.horizonStartYear}–${context.rtpCycle.horizonEndYear} horizon but has no periods, ` +
+            "so its financial element cannot place money in time. The scaffold derives periods from the declared horizon — " +
+            "no year, label, or escalation target is authored, and every period stays yours to edit.",
+          approval: "approval_required",
+          auditEvent: "assistant.operation.rtp.scaffold_horizon_bands",
+          auditNote:
+            "Writes derived horizon periods into an empty plan only; escalation target years are never set, so the public document keeps its midpoint-assumed caveat.",
+          executeAction: {
+            kind: "create_rtp_horizon_bands_from_cycle_horizon",
+            workspaceId: context.workspace.id,
+            rtpCycleId: context.rtpCycle.id,
+            bandingProfileKey: "near_term_then_outyears",
+            // Deliberately NO postActionWorkflowId: the packet-generation
+            // brief would point the follow-up at the NEXT registered write,
+            // and the honest next step after a scaffold is a person reviewing
+            // the derived periods in the band editor — which is what the
+            // prompt asks about.
+            postActionPrompt:
+              "The plan's horizon periods were just scaffolded from its declared horizon. What should the agency verify or edit about them before programming money into the financial element?",
+            postActionPromptLabel: "Review scaffolded periods",
+          },
+        })
+      : null,
     cyclePosture === "generate" && context.packetSummary.linkedReportCount === 0
       ? quickLink("rtp-create-first-packet", "Create first RTP packet now", `/rtp/${context.rtpCycle.id}`, {
           targetKind: "rtp_cycle",
