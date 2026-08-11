@@ -134,6 +134,48 @@ describe("project delete preconditions", () => {
   // should have: it tested a substring, not a property) and which said nothing
   // about the other 1,100 queries in the codebase.
 
+  it("upgrades a constrained-and-costed RTP placement to a commitment", () => {
+    /**
+     * The 2026-08-05 decision record's rule, implemented 2026-08-10:
+     * "blocking only when the placement is constrained AND costed". A priced
+     * line item in a fiscally constrained programme has standing beyond the
+     * project — deleting the project removes it from a financial element a
+     * board may already have adopted — so the refusal must say THAT, not the
+     * generic evidence sentence.
+     */
+    const upgraded = assessProjectDelete(
+      { project_rtp_cycle_links: 2 },
+      { projectId: "p1", constrainedCostedPlacementCount: 1 }
+    );
+    expect(upgraded.deletable).toBe(false);
+    expect(upgraded.hasCommitments).toBe(true);
+    const blocker = upgraded.blockers.find((entry) => entry.table === "project_rtp_cycle_links");
+    expect(blocker?.severity).toBe("blocking");
+    expect(blocker?.reason).toContain("constrained AND costed");
+    expect(blocker?.reason).toContain("1 RTP portfolio placement of this project's 2 RTP portfolio placements");
+    // Commitments sort first even when another relation has a larger count.
+    const mixed = assessProjectDelete(
+      { project_rtp_cycle_links: 1, reports: 10 },
+      { projectId: "p1", constrainedCostedPlacementCount: 1 }
+    );
+    expect(mixed.blockers[0]?.table).toBe("project_rtp_cycle_links");
+  });
+
+  it("keeps uncosted or unconstrained placements as evidence — candidates stay deletable-shaped", () => {
+    // Blanket blocking was refused deliberately: it would make every project
+    // linked to any cycle read as a funding commitment, including uncosted
+    // candidates, which is most of them.
+    for (const filteredCount of [0, null, undefined]) {
+      const assessment = assessProjectDelete(
+        { project_rtp_cycle_links: 3 },
+        { projectId: "p1", constrainedCostedPlacementCount: filteredCount }
+      );
+      const blocker = assessment.blockers.find((entry) => entry.table === "project_rtp_cycle_links");
+      expect(blocker?.severity, String(filteredCount)).toBe("evidence");
+      expect(assessment.hasCommitments, String(filteredCount)).toBe(false);
+    }
+  });
+
   it("guards the guard — the inventory covers both cascade behaviours and both severities", () => {
     expect(PROJECT_DELETE_RELATIONS.length).toBeGreaterThanOrEqual(30);
     expect(PROJECT_DELETE_RELATIONS.some((r) => r.behavior === "cascade")).toBe(true);

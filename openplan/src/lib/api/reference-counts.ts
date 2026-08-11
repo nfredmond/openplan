@@ -73,3 +73,35 @@ export async function countReferences(options: {
 
   return { counts, unreadable };
 }
+
+/**
+ * How many of a project's RTP placements are CONSTRAINED AND COSTED — the
+ * filtered count `assessProjectDelete`'s severity rule needs (a priced line
+ * item in a fiscally constrained programme reads as a commitment, an uncosted
+ * candidate does not).
+ *
+ * Lives HERE, not in the route, for the same reason `countReferences` does:
+ * `reference-count-projection-guard.test.ts` forbids the project-delete route
+ * from owning any count of its own, so the projection decision keeps one home.
+ * Same `"*"` + `head: true` shape as above.
+ *
+ * Returns null when the read failed — the caller degrades to the evidence
+ * copy (the refusal itself does not depend on this count) and audits the
+ * failure.
+ */
+export async function countConstrainedCostedPlacements(options: {
+  supabase: SupabaseClientLike;
+  projectId: string;
+}): Promise<{ count: number | null; error: { message: string } | null }> {
+  const { count, error } = await options.supabase
+    .from("project_rtp_cycle_links")
+    .select("*", { count: "exact", head: true })
+    .eq("project_id", options.projectId)
+    .eq("portfolio_role", "constrained")
+    .not("estimated_cost", "is", null);
+
+  if (error) {
+    return { count: null, error: { message: error.message } };
+  }
+  return { count: count ?? 0, error: null };
+}

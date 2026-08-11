@@ -218,9 +218,17 @@ describe("reference count projections", () => {
       selectSites.filter((site) => site.file.endsWith("projects/[projectId]/route.ts") && site.isCount)
     ).toEqual([]);
 
+    // TWO counts in the helper as of 2026-08-10: the dynamic-table reference
+    // sweep, and the constrained-and-costed placement filter the delete
+    // refusal's severity rule reads. Both keep the `"*"` + head-only shape —
+    // the property this guard exists for is that the projection decision has
+    // ONE home, and both live in it.
     const helper = selectSites.filter((site) => site.file === "src/lib/api/reference-counts.ts");
-    expect(helper).toHaveLength(1);
-    expect(helper[0]).toMatchObject({ table: null, projection: "*", isCount: true, headOnly: true });
+    expect(helper).toHaveLength(2);
+    for (const site of helper) {
+      expect(site).toMatchObject({ projection: "*", isCount: true, headOnly: true });
+    }
+    expect(helper.map((site) => site.table).sort()).toEqual([null, "project_rtp_cycle_links"]);
   });
 
   it("guards the guard", () => {

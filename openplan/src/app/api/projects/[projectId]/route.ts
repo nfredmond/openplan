@@ -16,7 +16,7 @@ import {
   assessProjectDelete,
   PROJECT_DELETE_RELATIONS,
 } from "@/lib/projects/project-delete-preconditions";
-import { countReferences } from "@/lib/api/reference-counts";
+import { countConstrainedCostedPlacements, countReferences } from "@/lib/api/reference-counts";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
@@ -308,7 +308,34 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       );
     }
 
-    const assessment = assessProjectDelete(counts, { projectId: project.id });
+    // The filtered count the severity rule needs: placements that are
+    // CONSTRAINED AND COSTED read as `blocking` (a priced line item in a
+    // fiscally constrained programme has standing beyond the project, like a
+    // funding award). This count is an ENHANCEMENT to the refusal's copy, not
+    // its gate — the unconditional count above already refuses — so a failed
+    // read here degrades to the evidence copy, audited rather than silent.
+    // The query lives in the shared helper: this route may own no count of
+    // its own (reference-count-projection-guard).
+    let constrainedCostedPlacementCount: number | null = null;
+    if ((counts["project_rtp_cycle_links"] ?? 0) > 0) {
+      const constrainedCosted = await countConstrainedCostedPlacements({
+        supabase,
+        projectId: project.id,
+      });
+      if (constrainedCosted.error) {
+        audit.warn("project_delete_constrained_costed_count_failed", {
+          projectId: project.id,
+          message: constrainedCosted.error.message,
+        });
+      } else {
+        constrainedCostedPlacementCount = constrainedCosted.count;
+      }
+    }
+
+    const assessment = assessProjectDelete(counts, {
+      projectId: project.id,
+      constrainedCostedPlacementCount,
+    });
 
     if (!assessment.deletable) {
       audit.info("project_delete_refused", {

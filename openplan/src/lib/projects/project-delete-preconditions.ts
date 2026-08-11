@@ -123,12 +123,15 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
     // from a financial element a board has already adopted. The generic
     // "would be deleted along with the project" does not say that.
     //
-    // Deliberately NOT raised to `blocking`: that severity is reserved for
-    // funding commitments, and applying it here would make every project
-    // linked to any cycle undeletable — including uncosted candidates, which
-    // is most of them. The precise rule is "blocking only when the placement
-    // is constrained AND costed", which needs a filtered count this module's
-    // caller does not supply today. Recorded rather than half-done.
+    // The severity here is the DEFAULT, not the rule. The rule — recorded on
+    // 2026-08-05 and implemented 2026-08-10 — is "blocking only when the
+    // placement is constrained AND costed": blanket `blocking` would make
+    // every project linked to any cycle undeletable, including uncosted
+    // candidates, which is most of them. `assessProjectDelete` upgrades this
+    // relation when the caller supplies `constrainedCostedPlacementCount > 0`
+    // (a filtered count over portfolio_role = 'constrained' AND
+    // estimated_cost NOT NULL); a caller that cannot supply it degrades to
+    // this evidence copy — the refusal itself happens either way.
     describeLoss: (count) =>
       `${pluralize(count, "RTP portfolio placements")} would be deleted along with the project. Where a placement carries a cost in a fiscally constrained plan, that line item disappears from the plan's financial element.`,
   },
@@ -205,11 +208,45 @@ function reasonFor(relation: ProjectDeleteRelation, count: number): string {
  */
 export function assessProjectDelete(
   counts: Readonly<Record<string, number>>,
-  options: { projectId: string }
+  options: {
+    projectId: string;
+    /**
+     * How many of the project's RTP placements are CONSTRAINED AND COSTED
+     * (portfolio_role = 'constrained' with a non-null estimated_cost) — the
+     * filtered count the 2026-08-05 decision record asked for. Positive
+     * upgrades the `project_rtp_cycle_links` blocker to `blocking`, because
+     * deleting the project then removes a priced line item from a plan's
+     * fiscally constrained programme — a record with standing beyond the
+     * project, exactly like a funding award. Null/undefined means the caller
+     * could not count (old caller, failed read) and the blocker keeps its
+     * evidence copy; the refusal happens either way, so degrading the COPY is
+     * the safe direction.
+     */
+    constrainedCostedPlacementCount?: number | null;
+  }
 ): ProjectDeleteAssessment {
+  const constrainedCosted = options.constrainedCostedPlacementCount ?? 0;
+
   const blockers = PROJECT_DELETE_RELATIONS.flatMap((relation) => {
     const count = counts[relation.table] ?? 0;
     if (count <= 0) return [];
+
+    if (relation.table === "project_rtp_cycle_links" && constrainedCosted > 0) {
+      return [
+        {
+          ...relation,
+          severity: "blocking" as const,
+          href: relation.href.replace("{projectId}", options.projectId),
+          count,
+          reason:
+            `${pluralize(constrainedCosted, "RTP portfolio placements")} of this project's ${pluralize(count, "RTP portfolio placements")} ` +
+            `${constrainedCosted === 1 ? "is" : "are"} constrained AND costed: deleting the project removes ` +
+            `${constrainedCosted === 1 ? "a priced line item" : "priced line items"} from a plan's fiscally ` +
+            "constrained programme, which a board may already have adopted.",
+        },
+      ];
+    }
+
     return [
       {
         ...relation,
@@ -241,7 +278,7 @@ export function assessProjectDelete(
     blockers,
     hasCommitments,
     headline: hasCommitments
-      ? "This project carries funding or invoicing records that are meant to outlive it, so it cannot be deleted."
+      ? "This project carries records that are meant to outlive it — funding, invoicing, or a costed placement in a fiscally constrained plan — so it cannot be deleted."
       : `This project has ${pluralize(
           blockers.reduce((total, blocker) => total + blocker.count, 0),
           "attached records"
