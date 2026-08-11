@@ -90,6 +90,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260810000003_engagement_campaign_projects.sql",
     migrationsAtRelease: 179,
   },
+  // 0.11.0 — the agent reads the evidence; drone flight planning + exports.
+  {
+    tag: "0.11.0",
+    lastMigration: "20260811000001_aerial_flight_plans.sql",
+    migrationsAtRelease: 180,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

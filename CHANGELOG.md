@@ -19,6 +19,44 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.11.0 — 2026-08-11
+
+**One migration is required before the app deploys: `20260811000001`.** It
+creates one new table, `aerial_flight_plans` (one row per drone mission), and
+touches nothing existing. Safe against a live database; without it the flight
+planner simply reports that it cannot save yet.
+
+### The Planner Agent can read the evidence
+
+The assistant now has real context in every module — including safety and
+aerial, which it previously could not see at all — and five new abilities:
+reading a model run's results with every stored caveat quoted verbatim,
+explaining why a run carries the claim tier it does and what evidence would
+support a higher one, searching Grants.gov live, listing your workspace's
+records so you never have to paste an id into chat, and summarizing public
+engagement responses (counts and approved excerpts only — never raw
+per-resident rows). The agent still cannot create model runs, promote claim
+tiers, or write flight plans — those refusals are recorded and enforced by
+tests.
+
+### Drone missions you can actually fly
+
+- **Flight planning**: draw or seed a mission area, pick a camera (or use the
+  generic default), set your target resolution and overlaps, and OpenPlan
+  generates a real survey grid — flight lines, photo points, distance,
+  duration, and battery estimates, with every assumption stated on screen.
+- **Exports a controller accepts**: DJI WPML (.kmz), Litchi CSV, and generic
+  KML. Exports come from the saved, fingerprinted plan — a stale plan refuses
+  to export rather than flying old settings. (First DJI Pilot 2 import worth
+  checking in the field: the file deliberately omits DJI's drone-model matrix
+  rather than hardcode it.)
+- **Your processed imagery is downloadable**: orthomosaics, point clouds, and
+  elevation models that OpenPlan verified and stored can now be downloaded
+  from the processing panel. Artifacts that failed custody say why, in the
+  words recorded at the time.
+- Missions can start from the Aerial page itself, and project aerial status
+  updates the moment a mission is created or changes status.
+
 ## 0.10.0 — 2026-08-11
 
 **Two migrations are required before the app deploys: `20260810000002` and
