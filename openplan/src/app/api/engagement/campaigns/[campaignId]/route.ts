@@ -172,6 +172,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       { data: reports, error: reportsError },
       placeCandidates,
       { data: geofenceRow, error: geofenceError },
+      { data: rtpCycleRows, error: rtpCyclesError },
+      { data: rtpChapterRows, error: rtpChaptersError },
     ] =
       await Promise.all([
         access.campaign.project_id
@@ -222,6 +224,22 @@ export async function GET(request: NextRequest, context: RouteContext) {
           .select(SUBMISSION_GEOFENCE_COLUMN)
           .eq("id", access.campaign.id)
           .maybeSingle(),
+        // The workspace's RTP cycles and their chapters, so the campaign console
+        // can SHOW and EDIT which plan this campaign feeds. Until this read
+        // existed, `rtp_cycle_id` was set only by the RTP-side creator and was
+        // invisible and uneditable from the campaign itself. Scoped to the
+        // campaign's workspace — the PATCH below verifies any chosen id against
+        // the same scope, so the options and the enforcement cannot disagree.
+        supabase
+          .from("rtp_cycles")
+          .select("id, title, status")
+          .eq("workspace_id", access.campaign.workspace_id)
+          .order("updated_at", { ascending: false }),
+        supabase
+          .from("rtp_cycle_chapters")
+          .select("id, title, rtp_cycle_id")
+          .eq("workspace_id", access.campaign.workspace_id)
+          .order("sort_order", { ascending: true }),
       ]);
 
     if (projectError) {
@@ -288,6 +306,36 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
+    /**
+     * The RTP attachment options, or `null` when they could not be read.
+     *
+     * Failure-tolerant like the geofence read above, and for the same reason:
+     * a broken cycle read must not 500 the whole campaign GET, and it must
+     * arrive as "unknown" rather than as an empty list — a console that
+     * renders "this workspace has no RTP cycles" out of a failed query is
+     * telling an operator to go re-create a plan that already exists.
+     */
+    let rtpTargets: { cycles: Array<{ id: string; title: string; status: string; chapters: Array<{ id: string; title: string }> }> } | null = null;
+    if (rtpCyclesError || rtpChaptersError) {
+      audit.error("campaign_rtp_targets_lookup_failed", {
+        campaignId: access.campaign.id,
+        message: rtpCyclesError?.message ?? rtpChaptersError?.message ?? "unknown",
+        code: rtpCyclesError?.code ?? rtpChaptersError?.code ?? null,
+      });
+    } else {
+      const chapterRows = (rtpChapterRows ?? []) as Array<{ id: string; title: string; rtp_cycle_id: string }>;
+      rtpTargets = {
+        cycles: ((rtpCycleRows ?? []) as Array<{ id: string; title: string; status: string }>).map((cycle) => ({
+          id: cycle.id,
+          title: cycle.title,
+          status: cycle.status,
+          chapters: chapterRows
+            .filter((chapter) => chapter.rtp_cycle_id === cycle.id)
+            .map((chapter) => ({ id: chapter.id, title: chapter.title })),
+        })),
+      };
+    }
+
     const mapFraming = resolvePortalMapFraming({
       campaignPlace: placeCandidates.campaign,
       projectPlace: placeCandidates.project,
@@ -310,6 +358,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         linkedReports: reports ?? [],
         counts,
         mapFraming,
+        rtpTargets,
         /**
          * Everything the console needs to offer the location check honestly:
          * whether it is on, whether it CAN be on, and what the area is called.

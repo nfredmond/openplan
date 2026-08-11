@@ -19,8 +19,12 @@ import {
   summarizeNarrativeGrounding,
 } from "@/lib/grants/narrative-grounding";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
-import { KB_NARRATIVE_CAVEAT, buildKnowledgeBaseFactClaims } from "@/lib/grants/kb-evidence";
-import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
+import {
+  KB_NARRATIVE_CAVEAT,
+  buildKnowledgeBaseFactClaims,
+  describeKnowledgeBaseRead,
+} from "@/lib/grants/kb-evidence";
+import { loadKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import {
   buildPortfolioFundingSnapshot,
@@ -498,17 +502,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
         evidence: result.evidence,
       }));
 
-      // Knowledge Base excerpts matched to this chapter. Best-effort — [] when
-      // the KB schema is unavailable or nothing matches.
-      const kbQuery = [chapter.title, chapter.guidance, cycle.title]
+      // Knowledge Base excerpts matched to this chapter, so an adopted policy
+      // document cited in a grant application can be cited in the RTP chapter
+      // too. A failed search does not refuse the draft — unlike the evidence
+      // reads above, a missing KB excerpt never becomes an absence claim in the
+      // prose (the KB caveat attaches only to facts that exist), and refusing
+      // would brick drafting on deployments without the KB migrations. But the
+      // failure is DISCLOSED in the stored grounding record and the host logs,
+      // so a reviewer can tell "your documents matched nothing" from "your
+      // documents were not consulted".
+      const kbQuery = [chapter.title, chapter.summary, chapter.guidance, cycle.title]
         .filter((part): part is string => Boolean(part && part.trim()))
         .join(". ");
-      const kbExcerpts = await retrieveKnowledgeBaseExcerpts({
+      const kbRead = await loadKnowledgeBaseExcerpts({
         supabase,
         workspaceId: chapter.workspace_id,
         query: kbQuery,
         limit: 4,
       });
+      if (kbRead.error) {
+        audit.warn("chapter_draft_kb_search_failed", {
+          chapterId: chapter.id,
+          workspaceId: chapter.workspace_id,
+          message: kbRead.error.message,
+          schemaPending: kbRead.error.schemaPending,
+        });
+      }
+      const kbExcerpts = kbRead.excerpts;
       const kbClaims = buildKnowledgeBaseFactClaims(kbExcerpts, null);
 
       const readiness = buildRtpCycleReadiness({
@@ -654,10 +674,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
       }
 
-      const grounding = summarizeNarrativeGrounding(
-        validateGroundedNarrative(draftText, factIds, "annotated", factClaimTextMap(facts)),
-        facts
-      );
+      // The Knowledge Base read outcome rides with the validation so the stored
+      // record can distinguish an empty corpus from a search that never ran.
+      const grounding = {
+        ...summarizeNarrativeGrounding(
+          validateGroundedNarrative(draftText, factIds, "annotated", factClaimTextMap(facts)),
+          facts
+        ),
+        knowledge_base: describeKnowledgeBaseRead(kbRead),
+      };
 
       const { data: draft, error: insertError } = await supabase
         .from("document_narrative_drafts")
@@ -715,6 +740,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         model: modelId,
         inputTokens,
         outputTokens,
+        knowledgeBaseExcerptCount: kbExcerpts.length,
+        knowledgeBaseFactCount: kbClaims.length,
+        knowledgeBaseSearchFailed: kbRead.error !== null,
         groundedSentenceCount: grounding.grounded_sentence_count,
         totalSentenceCount: grounding.total_sentence_count,
         isFullyGrounded: grounding.is_fully_grounded,

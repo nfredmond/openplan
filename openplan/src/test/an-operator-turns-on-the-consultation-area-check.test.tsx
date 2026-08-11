@@ -42,6 +42,8 @@ const campaign = {
   status: "active",
   engagement_type: "map_feedback",
   project_id: null,
+  rtp_cycle_id: null,
+  rtp_cycle_chapter_id: null,
   share_token: null,
   allow_public_submissions: true,
   submissions_closed_at: null,

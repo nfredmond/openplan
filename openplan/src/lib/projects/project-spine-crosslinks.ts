@@ -474,8 +474,9 @@ export function buildProjectSpineCrosslinkSummary(
           // No "below" and no "now": this sentence is also rendered on its own in
           // the "First operator move" aside beside the board, where there is
           // nothing below it, and a reader arriving today has not seen the
-          // version of the board where safety did not carry the project.
-          ? `${geographyPlaceName} is this project's area of record. A model run opened from this project starts from it, and so does the safety lane, which opens crash retrieval for this project. County onboarding has no lane on this board, so it still has to be opened for this project by hand.`
+          // version of the board where safety did not carry the project — or the
+          // version where model validation had to be opened for it by hand.
+          ? `${geographyPlaceName} is this project's area of record. A model run opened from this project starts from it, the safety row opens crash retrieval for this project, and this row opens model validation for this project, so the study area does not have to be re-entered there.`
           : geographyReadiness === "attention"
             ? `${geographyPlaceName} was drawn by hand, so it has an extent but no place identity.`
             : input.geography.workspaceFallbackLabel
@@ -491,14 +492,22 @@ export function buildProjectSpineCrosslinkSummary(
         "A study area states WHERE this project is, not what is true there. It scopes what other lanes fetch; it is not itself a finding about the place.",
       nextAction:
         geographyReadiness === "ready"
-          ? "Nothing needed — change it only if the project's scope moves."
+          ? "The area itself needs nothing — change it only if the project's scope moves. Open model validation from this row to check a model of this study area against real traffic counts."
           : geographyReadiness === "attention"
             ? "Re-pick the area from search if a county or place identity is needed downstream; keep the drawn shape if the extent is the point."
             : "Set the study area on the project record so every other lane inherits it instead of asking.",
       caveat:
         "Do not cite this lane as empty or complete without opening the project record; a study area that cannot be read is not a study area that is unset.",
-      href: "#project-identity",
-      actionLabel: "Open project record",
+      // Once an area of record exists, the useful move from this row is no
+      // longer the identity editor (which sits on this same page) but the one
+      // destination that starts from the area and had no row of its own:
+      // /county-runs reads `?projectId=` and inherits this study area. Until
+      // then the row keeps pointing at the editor that can set one.
+      href:
+        geographyReadiness === "ready"
+          ? laneHrefForProject("/county-runs", input.projectId)
+          : "#project-identity",
+      actionLabel: geographyReadiness === "ready" ? "Open model validation" : "Open project record",
     },
     {
       id: "rtp_packets",
@@ -642,13 +651,21 @@ export function buildProjectSpineCrosslinkSummary(
       evidence: "Screening/source-context posture only; no validated behavioral forecast or autonomous model decision is implied.",
       nextAction:
         analysisReadiness === "missing"
-          ? "Create or attach the model run and scenario comparison this project is allowed to cite."
+          ? "Create the first run in Corridor Analysis — it opens scoped to this project's study area — or attach the model run and scenario comparison this project is allowed to cite."
           : analysisReadiness === "attention"
             ? "Bind the recent run to a scenario entry or comparison-backed report before citing the output."
             : "Open the comparison-backed packet and verify caveats before reusing analysis language.",
       caveat: "Modeling evidence must stay source-cited and supervised; this board does not certify travel behavior forecasts or prioritization outcomes.",
-      href: laneHrefForProject("/models", input.projectId),
-      actionLabel: "Open models",
+      // With no run yet, "/models?projectId=" lands on an empty catalog. The
+      // surface that CREATES a project-linked run is Corridor Analysis, and
+      // /explore reads `?projectId=` and inherits this project's study area —
+      // so the missing state links the creation surface and the other states
+      // link the catalog of what already exists.
+      href:
+        analysisReadiness === "missing"
+          ? laneHrefForProject("/explore", input.projectId)
+          : laneHrefForProject("/models", input.projectId),
+      actionLabel: analysisReadiness === "missing" ? "Open Corridor Analysis" : "Open models",
     },
     {
       id: "safety_evidence",

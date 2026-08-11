@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, MessageSquarePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,32 @@ type ChapterOption = {
   title: string;
 };
 
+type ProjectOption = {
+  id: string;
+  name: string;
+};
+
+/**
+ * The raw shape GET /api/projects answers with. `workspaces` is a joined
+ * relation, which supabase-js returns as an object or a one-element array
+ * depending on the relationship metadata — both are handled below.
+ */
+type ProjectListRow = {
+  id: string;
+  name: string;
+  workspace_id: string;
+  workspaces?: { name?: string | null } | Array<{ name?: string | null }> | null;
+};
+
 type Props = {
   rtpCycleId: string;
   chapterOptions: ChapterOption[];
 };
+
+function workspaceNameOf(row: ProjectListRow): string | null {
+  const relation = Array.isArray(row.workspaces) ? row.workspaces[0] : row.workspaces;
+  return relation?.name ?? null;
+}
 
 export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Props) {
   const router = useRouter();
@@ -25,8 +47,52 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
   const [engagementType, setEngagementType] = useState<(typeof ENGAGEMENT_TYPES)[number]>("comment_collection");
   const [status, setStatus] = useState<(typeof ENGAGEMENT_CAMPAIGN_STATUSES)[number]>("draft");
   const [rtpCycleChapterId, setRtpCycleChapterId] = useState("");
+  const [projectId, setProjectId] = useState("");
+  // Three states, deliberately: null while loading, a real list once read, and
+  // `projectsUnavailable` when the read failed. A failed read renders as "the
+  // list could not be read", never as a workspace with no projects — and the
+  // campaign can still be created and linked to a project later from its own
+  // console, so the failure does not block the create.
+  const [projects, setProjects] = useState<ProjectOption[] | null>(null);
+  const [projectsUnavailable, setProjectsUnavailable] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/projects");
+        if (!response.ok) {
+          if (!cancelled) setProjectsUnavailable(true);
+          return;
+        }
+        const body = (await response.json()) as { projects?: ProjectListRow[] };
+        const rows = body.projects ?? [];
+        // The list is RLS-scoped to the caller, not to this cycle's workspace.
+        // For a member of several workspaces the workspace name is appended so
+        // a wrong pick is visible before the server refuses it — the create
+        // route enforces that the project and the cycle share a workspace.
+        const workspaceCount = new Set(rows.map((row) => row.workspace_id)).size;
+        if (!cancelled) {
+          setProjects(
+            rows.map((row) => {
+              const workspaceName = workspaceNameOf(row);
+              return {
+                id: row.id,
+                name: workspaceCount > 1 && workspaceName ? `${row.name} — ${workspaceName}` : row.name,
+              };
+            })
+          );
+        }
+      } catch {
+        if (!cancelled) setProjectsUnavailable(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,6 +110,7 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
           status,
           rtpCycleId,
           rtpCycleChapterId: rtpCycleChapterId || undefined,
+          projectId: projectId || undefined,
         }),
       });
 
@@ -57,6 +124,7 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
       setEngagementType("comment_collection");
       setStatus("draft");
       setRtpCycleChapterId("");
+      setProjectId("");
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to create engagement campaign");
@@ -143,6 +211,46 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="rtp-engagement-project" className="text-[0.82rem] font-semibold">
+            Linked project
+            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+          </label>
+          {projectsUnavailable ? (
+            <p className="text-sm text-muted-foreground">
+              The project list could not be read, so a project cannot be picked here right now. The
+              campaign can still be created, and a project can be linked later from the
+              campaign&apos;s own page.
+            </p>
+          ) : (
+            <>
+              <select
+                id="rtp-engagement-project"
+                className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+                value={projectId}
+                onChange={(event) => setProjectId(event.target.value)}
+                disabled={projects === null}
+              >
+                <option value="">{projects === null ? "Reading projects…" : "No linked project"}</option>
+                {(projects ?? []).map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+              {/*
+                The same consequence note the engagement-side creator carries:
+                linking a project is also where the public map opens, unless the
+                campaign is later given an area of its own.
+              */}
+              <p className="text-[0.72rem] text-muted-foreground">
+                If the project has a study area, the campaign&apos;s public map opens there. You can
+                set an area for this campaign specifically once it exists.
+              </p>
+            </>
+          )}
         </div>
 
         <div className="space-y-1.5">

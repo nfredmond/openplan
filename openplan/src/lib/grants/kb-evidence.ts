@@ -9,7 +9,12 @@
  * the document's own claims. No change to the grounding kernel is needed.
  */
 
-import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
+import {
+  excerptPageLabel,
+  type KnowledgeBaseExcerpt,
+  type KnowledgeBaseExcerptRead,
+} from "@/lib/knowledge-base/retrieval";
+import type { KnowledgeBaseGroundingDisclosure } from "@/lib/grants/narrative-grounding";
 
 /** Verbatim caveat every KB-derived narrative fact carries (mirrors BCA/engagement caveats). */
 export const KB_NARRATIVE_CAVEAT =
@@ -26,6 +31,24 @@ function sanitizeExcerpt(snippet: string): string {
     .replace(/\[fact:/gi, "[fact ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * Collapse a Knowledge Base read outcome into the disclosure a draft's stored
+ * grounding record carries. Shared by the report-section and RTP-chapter
+ * drafters so the two cannot describe the same outcome differently: a failed
+ * search is recorded as a failure, never flattened into "matched nothing".
+ */
+export function describeKnowledgeBaseRead(
+  read: KnowledgeBaseExcerptRead
+): KnowledgeBaseGroundingDisclosure {
+  return {
+    searched: read.searched,
+    excerpt_count: read.excerpts.length,
+    error: read.error
+      ? { message: read.error.message, schema_pending: read.error.schemaPending }
+      : null,
+  };
 }
 
 export function buildKnowledgeBaseFactClaims(

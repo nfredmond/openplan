@@ -175,7 +175,10 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(summary.rows[0].id).toBe("geography");
     expect(geography?.readiness).toBe("ready");
     expect(geography?.headline).toContain("Franklin County");
-    expect(geography?.href).toBe("#project-identity");
+    // With an area of record set, this row opens model validation carrying the
+    // project — the identity editor it used to anchor to sits on this same page.
+    expect(geography?.href).toBe("/county-runs?projectId=project-1");
+    expect(geography?.actionLabel).toBe("Open model validation");
   });
 
   it("calls a drawn area attention, not ready — it has extent but no identity", () => {
@@ -521,9 +524,74 @@ describe("buildProjectSpineCrosslinkSummary", () => {
       expect(hrefFor("engagement_evidence")).toBe("/engagement?projectId=project-1");
     });
 
-    it("leaves the study-area lane as an in-page anchor, since it never left the project", () => {
-      expect(hrefFor("geography")).toBe("#project-identity");
+    it("keeps the reporting lane as an in-page anchor, since it never left the project", () => {
       expect(hrefFor("rtp_packets")).toBe("#project-reporting");
+    });
+
+    it("opens model validation for this project once an area of record exists", () => {
+      // /county-runs reads `?projectId=` and inherits the project's study
+      // area; before this the board's own prose admitted model validation
+      // "has to be opened for this project by hand".
+      expect(hrefFor("geography")).toBe("/county-runs?projectId=project-1");
+
+      // Varied binding: a second project must produce a second href, or this
+      // test cannot tell "threads the id" from "hardcodes project-1".
+      const other = buildProjectSpineCrosslinkSummary({ ...baseInput, projectId: "project-2" });
+      expect(other.rows.find((row) => row.id === "geography")?.href).toBe(
+        "/county-runs?projectId=project-2"
+      );
+    });
+
+    it("keeps the study-area row on the project record until an area of record exists", () => {
+      // A project-scoped model validation link is only honest when there is a
+      // study area to inherit; until one is set (or only a drawn shape exists),
+      // the row's job is still to get one set.
+      const unset = buildProjectSpineCrosslinkSummary({
+        ...baseInput,
+        geography: {
+          label: null,
+          isDrawn: false,
+          hasResolvableIdentity: false,
+          workspaceFallbackLabel: null,
+        },
+      });
+      expect(unset.rows.find((row) => row.id === "geography")?.href).toBe("#project-identity");
+      expect(unset.rows.find((row) => row.id === "geography")?.actionLabel).toBe("Open project record");
+
+      const drawn = buildProjectSpineCrosslinkSummary({
+        ...baseInput,
+        geography: {
+          label: "Drawn corridor",
+          isDrawn: true,
+          hasResolvableIdentity: false,
+          workspaceFallbackLabel: null,
+        },
+      });
+      expect(drawn.rows.find((row) => row.id === "geography")?.href).toBe("#project-identity");
+    });
+
+    it("sends an analysis lane with no runs to Corridor Analysis, still carrying the project", () => {
+      // "/models?projectId=" on a project with zero runs lands on an empty
+      // catalog; /explore is where a project-linked run is created, and it
+      // reads the same `?projectId=` and inherits the study area.
+      const noRuns = buildProjectSpineCrosslinkSummary({
+        ...baseInput,
+        analysis: { recentRunCount: 0, comparisonBackedReportCount: 0 },
+      });
+      const analysisRow = noRuns.rows.find((row) => row.id === "analysis_modeling");
+      expect(analysisRow?.readiness).toBe("missing");
+      expect(analysisRow?.href).toBe("/explore?projectId=project-1");
+      expect(analysisRow?.actionLabel).toBe("Open Corridor Analysis");
+
+      // Varied binding again — two projects, two hrefs.
+      const otherProject = buildProjectSpineCrosslinkSummary({
+        ...baseInput,
+        projectId: "project-2",
+        analysis: { recentRunCount: 0, comparisonBackedReportCount: 0 },
+      });
+      expect(otherProject.rows.find((row) => row.id === "analysis_modeling")?.href).toBe(
+        "/explore?projectId=project-2"
+      );
     });
 
     it("percent-encodes an id rather than pasting it into the query string", () => {
@@ -539,24 +607,26 @@ describe("buildProjectSpineCrosslinkSummary", () => {
 
     it("stops claiming nothing on the board opens safety for this project", () => {
       // The geography lane used to end "nothing on this board opens them that
-      // way yet", which the safety lane's href has now made false. What is still
-      // true — county onboarding has no lane here — is stated as its own clause
-      // rather than dropped.
+      // way yet", which the safety lane's href has now made false — and then
+      // said model validation "has to be opened for this project by hand",
+      // which its own href has now made false too.
       const geography = summary.rows.find((row) => row.id === "geography");
 
-      expect(geography?.headline).toMatch(/the safety lane, which opens crash retrieval for this project/i);
+      expect(geography?.headline).toMatch(/crash retrieval for this project/i);
       expect(geography?.headline).not.toMatch(/nothing on this board/i);
-      expect(geography?.headline).toMatch(/County onboarding has no lane on this board/i);
+      expect(geography?.headline).not.toMatch(/by hand/i);
     });
 
-    it("only says county onboarding has no lane while the board genuinely has none", () => {
-      // The sentence above is a claim about this board's own contents, and the
-      // board is built right here — so adding a county-onboarding lane would
-      // make the study-area headline false with nothing to catch it. Tie the
-      // claim to the row set instead of to the string.
-      expect(summary.rows.map((row) => row.id)).not.toContain("county_runs");
-      expect(summary.rows.some((row) => /county/i.test(row.lane))).toBe(false);
-      expect(summary.rows.some((row) => row.href.startsWith("/county-runs"))).toBe(false);
+    it("only claims to open model validation because its href actually does", () => {
+      // The headline is a claim about this row's own link, and both are built
+      // right here — so the claim and the href are asserted together. A future
+      // change that reroutes the href without rewording the headline (or the
+      // reverse) fails this test instead of shipping a row that lies about
+      // where it goes.
+      const geography = summary.rows.find((row) => row.id === "geography");
+
+      expect(geography?.headline).toMatch(/this row opens model validation for this project/i);
+      expect(geography?.href).toBe("/county-runs?projectId=project-1");
     });
   });
 });

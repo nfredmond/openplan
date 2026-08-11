@@ -36,6 +36,25 @@ type ProjectOption = {
   name: string;
 };
 
+/**
+ * The workspace's RTP cycles and chapters, read back from the same GET as the
+ * map framing. Until this existed the attachment was set only by the RTP-side
+ * creator and was invisible and uneditable from the campaign console — comments
+ * collected for a plan had to be re-associated by hand.
+ *
+ * Three states, deliberately: `"loading"`, `"ready"` with the real list, and
+ * `"unavailable"` when the read failed. An unavailable list must never render
+ * as "this workspace has no RTP cycles" — that is a claim about the agency's
+ * plans made out of a broken query — and while it is unavailable the form does
+ * not send the attachment fields at all, so a failed read can never silently
+ * detach a campaign from its plan.
+ */
+type RtpCycleOption = {
+  id: string;
+  title: string;
+  chapters: Array<{ id: string; title: string }>;
+};
+
 type Campaign = {
   id: string;
   title: string;
@@ -43,6 +62,8 @@ type Campaign = {
   status: string;
   engagement_type: string;
   project_id: string | null;
+  rtp_cycle_id: string | null;
+  rtp_cycle_chapter_id: string | null;
 };
 
 export function EngagementCampaignControls({
@@ -58,6 +79,9 @@ export function EngagementCampaignControls({
   const [status, setStatus] = useState(campaign.status);
   const [engagementType, setEngagementType] = useState(campaign.engagement_type);
   const [projectId, setProjectId] = useState(campaign.project_id ?? "");
+  const [rtpCycleId, setRtpCycleId] = useState(campaign.rtp_cycle_id ?? "");
+  const [rtpCycleChapterId, setRtpCycleChapterId] = useState(campaign.rtp_cycle_chapter_id ?? "");
+  const [rtpTargets, setRtpTargets] = useState<{ state: "loading" } | { state: "unavailable" } | { state: "ready"; cycles: RtpCycleOption[] }>({ state: "loading" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,13 +112,18 @@ export function EngagementCampaignControls({
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as { error?: string };
         setFramingError(body.error ?? "Could not read where the public map opens.");
+        setRtpTargets({ state: "unavailable" });
         return;
       }
       const body = (await response.json()) as {
         mapFraming?: PortalMapFraming;
         submissionGeofence?: SubmissionGeofence;
+        rtpTargets?: { cycles: RtpCycleOption[] } | null;
       };
       setGeofence(body.submissionGeofence ?? null);
+      // `null` from the server means the cycle read FAILED there — the server
+      // says so rather than sending an empty list, and this stays honest to it.
+      setRtpTargets(body.rtpTargets ? { state: "ready", cycles: body.rtpTargets.cycles } : { state: "unavailable" });
       if (!body.mapFraming) {
         setFramingError("The campaign loaded, but it did not say where the public map opens.");
         return;
@@ -102,6 +131,7 @@ export function EngagementCampaignControls({
       setFraming(body.mapFraming);
     } catch {
       setFramingError("Could not reach the server to read where the public map opens.");
+      setRtpTargets({ state: "unavailable" });
     }
   }, [campaign.id]);
 
@@ -195,6 +225,16 @@ export function EngagementCampaignControls({
           status,
           engagementType,
           projectId: projectId || null,
+          // Sent only when the option list actually loaded. While the list is
+          // loading or unreadable the selects are not on screen, and omitting
+          // the fields keeps the stored attachment exactly as it was — a
+          // failed read must not be able to detach a campaign from its plan.
+          ...(rtpTargets.state === "ready"
+            ? {
+                rtpCycleId: rtpCycleId || null,
+                rtpCycleChapterId: rtpCycleChapterId || null,
+              }
+            : {}),
         }),
       });
 
@@ -289,6 +329,84 @@ export function EngagementCampaignControls({
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="campaign-control-rtp-cycle" className="text-[0.82rem] font-semibold">
+            RTP attachment
+            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+          </label>
+          {rtpTargets.state === "ready" ? (
+            <div className="space-y-2">
+              <select
+                id="campaign-control-rtp-cycle"
+                className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+                value={rtpCycleId}
+                onChange={(event) => {
+                  setRtpCycleId(event.target.value);
+                  // A chapter belongs to exactly one cycle, so changing the
+                  // cycle always resets the chapter — carrying the old chapter
+                  // across would pair it with a plan it is not part of, which
+                  // the server refuses.
+                  setRtpCycleChapterId("");
+                }}
+              >
+                <option value="">Not attached to an RTP cycle</option>
+                {rtpCycleId && !rtpTargets.cycles.some((cycle) => cycle.id === rtpCycleId) ? (
+                  // The stored attachment points at a cycle the list does not
+                  // contain (deleted between reads, or a read raced a change).
+                  // Keeping it selectable means saving other fields does not
+                  // silently detach the campaign.
+                  <option value={rtpCycleId}>Currently attached plan (could not be listed)</option>
+                ) : null}
+                {rtpTargets.cycles.map((cycle) => (
+                  <option key={cycle.id} value={cycle.id}>
+                    {cycle.title}
+                  </option>
+                ))}
+              </select>
+              {rtpCycleId ? (
+                <div className="space-y-1.5">
+                  <label htmlFor="campaign-control-rtp-chapter" className="text-[0.82rem] font-semibold">
+                    Plan chapter
+                    <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+                  </label>
+                  <select
+                    id="campaign-control-rtp-chapter"
+                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+                    value={rtpCycleChapterId}
+                    onChange={(event) => setRtpCycleChapterId(event.target.value)}
+                  >
+                    <option value="">Whole RTP cycle</option>
+                    {rtpCycleChapterId &&
+                    !(rtpTargets.cycles.find((cycle) => cycle.id === rtpCycleId)?.chapters ?? []).some(
+                      (chapter) => chapter.id === rtpCycleChapterId
+                    ) ? (
+                      <option value={rtpCycleChapterId}>Currently targeted chapter (could not be listed)</option>
+                    ) : null}
+                    {(rtpTargets.cycles.find((cycle) => cycle.id === rtpCycleId)?.chapters ?? []).map((chapter) => (
+                      <option key={chapter.id} value={chapter.id}>
+                        {chapter.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+              <p className="text-[0.72rem] text-muted-foreground">
+                Attaching this campaign to a Regional Transportation Plan cycle files its comments
+                against that plan&apos;s record. Pointing at a chapter files them against that
+                section; otherwise they land on the whole plan.
+              </p>
+            </div>
+          ) : rtpTargets.state === "loading" ? (
+            <p className="text-sm text-muted-foreground">Reading this workspace&apos;s RTP cycles…</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              The RTP cycles in this workspace could not be read, so this attachment cannot be
+              changed right now. The current attachment, if any, is unchanged — saving this form
+              will not touch it.
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">

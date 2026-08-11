@@ -29,6 +29,29 @@ export type NarrativeGroundingSentence = {
 };
 
 /**
+ * Disclosure of the Knowledge Base read that fed a draft's fact list.
+ *
+ * A draft assembled while the uploaded-document search FAILED looks identical
+ * to one whose corpus genuinely matched nothing — both carry zero
+ * uploaded-document facts. The reviewer deciding whether to accept the draft
+ * is owed the difference: "your documents said nothing relevant" and "your
+ * documents were not consulted" are different sentences. This record keeps
+ * them apart in the stored grounding, mirroring the three-way outcome of
+ * `loadKnowledgeBaseExcerpts` (searched / failed / matched nothing).
+ */
+export type KnowledgeBaseGroundingDisclosure = {
+  /** False when nothing was searched (blank query) — not evidence about the corpus. */
+  searched: boolean;
+  /** How many uploaded-document excerpts entered the citable fact list. */
+  excerpt_count: number;
+  /**
+   * Non-null when the search could not run. `excerpt_count` is then 0 because
+   * NOTHING WAS SEARCHED — never because nothing matched.
+   */
+  error: { message: string; schema_pending: boolean } | null;
+};
+
+/**
  * Persisted validation result for one draft. Mirrors the annotated-mode
  * `GroundedNarrative` (annotated mode keeps every sentence, so
  * `dropped_sentences` is always empty; it is stored anyway so the shape
@@ -51,6 +74,13 @@ export type NarrativeDraftGrounding = {
    * faithful by the export gate.
    */
   faithfulness_checked: boolean;
+  /**
+   * How the Knowledge Base read went, for draft kinds that consult uploaded
+   * documents (report sections and RTP chapters). Absent on rows persisted
+   * before the disclosure existed and on draft kinds that do not search the
+   * KB — absence means "not recorded", never "searched and matched nothing".
+   */
+  knowledge_base?: KnowledgeBaseGroundingDisclosure;
 };
 
 /** Build sequential fact ids fact_1..fact_N over claim texts, skipping blanks. */
@@ -146,6 +176,30 @@ function parseSentence(value: unknown): NarrativeGroundingSentence | null {
 }
 
 /**
+ * Parse a stored `knowledge_base` disclosure, tolerating its absence (rows
+ * persisted before the disclosure existed) and any malformed shape — an
+ * unreadable disclosure parses as "not recorded", never as a clean search.
+ */
+function parseKnowledgeBaseDisclosure(value: unknown): KnowledgeBaseGroundingDisclosure | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const record = value as Record<string, unknown>;
+  if (typeof record.searched !== "boolean" || typeof record.excerpt_count !== "number") {
+    return undefined;
+  }
+  if (record.error === null || record.error === undefined) {
+    return { searched: record.searched, excerpt_count: record.excerpt_count, error: null };
+  }
+  if (typeof record.error !== "object") return undefined;
+  const errorRecord = record.error as Record<string, unknown>;
+  if (typeof errorRecord.message !== "string") return undefined;
+  return {
+    searched: record.searched,
+    excerpt_count: record.excerpt_count,
+    error: { message: errorRecord.message, schema_pending: errorRecord.schema_pending === true },
+  };
+}
+
+/**
  * Defensively parse a stored grounding_json value. Returns null for
  * pre-grounding drafts (null column) or malformed payloads instead of
  * letting a bad row break the panel.
@@ -198,6 +252,10 @@ export function parseStoredNarrativeGrounding(value: unknown): NarrativeDraftGro
     // treats a citation-only pass as a faithfulness pass.
     faithfulness_checked:
       typeof record.faithfulness_checked === "boolean" ? record.faithfulness_checked : false,
+    ...(() => {
+      const knowledgeBase = parseKnowledgeBaseDisclosure(record.knowledge_base);
+      return knowledgeBase ? { knowledge_base: knowledgeBase } : {};
+    })(),
   };
 }
 

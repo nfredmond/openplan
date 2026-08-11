@@ -7,7 +7,9 @@ import {
 /**
  * A FAILED EVIDENCE READ IS NOT AN EMPTY EVIDENCE FAMILY.
  *
- * `assembleOpportunityEvidence` fans out ten reads and hands the result to the
+ * `assembleOpportunityEvidence` fans out eleven reads (plus dependent RTP
+ * cycle/band reads exercised in grant-narrative-rtp-programming.test.ts) and
+ * hands the result to the
  * grant-drafting prompts, which turn an empty family into a literal order to the
  * model — "Do not reference community input, public comments, or outreach
  * results." Every one of those reads answers a failure with the same empty value
@@ -95,6 +97,7 @@ const READS: ReadonlyArray<{
   { subject: "the project's benefit-cost screenings", table: "project_bca_screenings" },
   { subject: "the project's engagement campaigns", table: "engagement_campaigns" },
   { subject: "the project's report artifacts", table: "report_artifacts" },
+  { subject: "the project's RTP programming record", table: "project_rtp_cycle_links" },
   {
     subject: "the workspace's completed projects",
     table: "projects",

@@ -17,13 +17,13 @@ import { Input } from "@/components/ui/input";
  * displayed a workflow that could not be driven, and the only rows in the
  * decision log came from report exports writing an off-vocabulary gate id.
  *
- * DESIGN NOTE: the run citation is a plain id field rather than a picker.
- * A picker over three run tables (Analysis Studio runs, worker model runs,
- * county validation runs) is a real improvement and a bigger change; what
- * matters first is that the schema and this path can carry the citation at all,
- * so the field is present, labelled with which kind it is, and honest that it is
- * optional. A decision recorded without one is complete — most gates do not turn
- * on a run.
+ * DESIGN NOTE: the run citation is a picker over runs the page already loaded,
+ * with pasting a raw id kept as an explicit fallback. The picker only appears
+ * for a citation kind the page actually handed a list for (`runOptions`); a
+ * kind with no list — county validation runs today — keeps the plain id field,
+ * because an empty picker would read as "no runs exist" when the truth is
+ * "this page did not load them". A decision recorded without a citation is
+ * complete — most gates do not turn on a run.
  */
 
 export type StageGateDecisionTarget = {
@@ -40,12 +40,42 @@ const RUN_CITATION_LABELS: Record<Exclude<RunCitationKind, "none">, string> = {
   countyRunId: "County validation run",
 };
 
+/** One run the planner can cite by choosing it instead of pasting its id. */
+export type StageGateRunOption = {
+  id: string;
+  title: string;
+  status?: string | null;
+  createdAt?: string | null;
+};
+
+/**
+ * Runs the surrounding page already loaded, keyed by which citation kind they
+ * satisfy. A kind that is absent (or empty) here falls back to the manual id
+ * field — the page has no list of that kind to offer, and this component must
+ * not invent one.
+ */
+export type StageGateRunOptions = Partial<Record<Exclude<RunCitationKind, "none">, StageGateRunOption[]>>;
+
+function runOptionLabel(option: StageGateRunOption): string {
+  const parts = [option.title || option.id];
+  if (option.status) parts.push(option.status);
+  if (option.createdAt) {
+    const parsed = new Date(option.createdAt);
+    if (!Number.isNaN(parsed.getTime())) parts.push(parsed.toLocaleDateString());
+  }
+  // The short id tail lets a planner match the choice against a run id they
+  // have in hand (a report citation, a colleague's note) without pasting it.
+  parts.push(option.id.slice(0, 8));
+  return parts.join(" · ");
+}
+
 export function StageGateDecisionRecorder({
   workspaceId,
   projectId,
   gate,
   canWrite,
   evidenceIdExample,
+  runOptions,
 }: {
   workspaceId: string;
   projectId: string;
@@ -62,6 +92,12 @@ export function StageGateDecisionRecorder({
    * the field falls back to a hint that names no vocabulary at all.
    */
   evidenceIdExample?: string | null;
+  /**
+   * Runs the page already loaded, offered as a picker per citation kind.
+   * Optional and additive: with no lists (or an empty list for the chosen
+   * kind) the manual id field renders exactly as it always has.
+   */
+  runOptions?: StageGateRunOptions;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -70,6 +106,12 @@ export function StageGateDecisionRecorder({
   const [missingArtifacts, setMissingArtifacts] = useState("");
   const [runCitationKind, setRunCitationKind] = useState<RunCitationKind>("none");
   const [runCitationId, setRunCitationId] = useState("");
+  /**
+   * True when the planner explicitly asked to paste an id instead of picking
+   * from the offered list. Only meaningful for a kind that HAS a list; a kind
+   * without one is always manual.
+   */
+  const [manualRunEntry, setManualRunEntry] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /**
@@ -92,9 +134,15 @@ export function StageGateDecisionRecorder({
     setMissingArtifacts("");
     setRunCitationKind("none");
     setRunCitationId("");
+    setManualRunEntry(false);
     setError(null);
     setOpen(false);
   }
+
+  const optionsForKind: StageGateRunOption[] =
+    runCitationKind !== "none" ? runOptions?.[runCitationKind] ?? [] : [];
+  const pickerAvailable = optionsForKind.length > 0;
+  const usePicker = pickerAvailable && !manualRunEntry;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -106,8 +154,11 @@ export function StageGateDecisionRecorder({
     // Silently discarding evidence someone deliberately reached for is worse
     // than refusing, so the omission is named and the form stays open.
     if (runCitationKind !== "none" && !runCitationId.trim()) {
+      const kindLabel = RUN_CITATION_LABELS[runCitationKind].toLowerCase();
       setError(
-        `Enter the ${RUN_CITATION_LABELS[runCitationKind].toLowerCase()} id, or choose "No run cited". ` +
+        (usePicker
+          ? `Choose a ${kindLabel} from the list (or paste its id), or choose "No run cited". `
+          : `Enter the ${kindLabel} id, or choose "No run cited". `) +
           "A citation left blank would be recorded as no citation at all."
       );
       return;
@@ -245,7 +296,13 @@ export function StageGateDecisionRecorder({
           <select
             className="h-9 w-full rounded-[0.4rem] border border-border/70 bg-background px-2 text-sm"
             value={runCitationKind}
-            onChange={(event) => setRunCitationKind(event.target.value as RunCitationKind)}
+            onChange={(event) => {
+              setRunCitationKind(event.target.value as RunCitationKind);
+              // An id chosen for one kind is meaningless for another (the three
+              // kinds cite three different tables), so it never carries over.
+              setRunCitationId("");
+              setManualRunEntry(false);
+            }}
           >
             <option value="none">No run cited</option>
             {(Object.keys(RUN_CITATION_LABELS) as Array<keyof typeof RUN_CITATION_LABELS>).map((kind) => (
@@ -256,15 +313,57 @@ export function StageGateDecisionRecorder({
           </select>
         </label>
 
-        {runCitationKind !== "none" ? (
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium text-foreground">{RUN_CITATION_LABELS[runCitationKind]} id</span>
-            <Input
-              value={runCitationId}
-              onChange={(event) => setRunCitationId(event.target.value)}
-              placeholder="00000000-0000-0000-0000-000000000000"
-            />
-          </label>
+        {runCitationKind !== "none" && usePicker ? (
+          <div className="space-y-1.5">
+            <label className="block space-y-1.5">
+              <span className="text-sm font-medium text-foreground">{RUN_CITATION_LABELS[runCitationKind]}</span>
+              <select
+                className="h-9 w-full rounded-[0.4rem] border border-border/70 bg-background px-2 text-sm"
+                value={optionsForKind.some((option) => option.id === runCitationId) ? runCitationId : ""}
+                onChange={(event) => setRunCitationId(event.target.value)}
+              >
+                <option value="">Choose a run…</option>
+                {optionsForKind.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {runOptionLabel(option)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              onClick={() => {
+                setManualRunEntry(true);
+                setRunCitationId("");
+              }}
+            >
+              Paste an id instead
+            </button>
+          </div>
+        ) : runCitationKind !== "none" ? (
+          <div className="space-y-1.5">
+            <label className="block space-y-1.5">
+              <span className="text-sm font-medium text-foreground">{RUN_CITATION_LABELS[runCitationKind]} id</span>
+              <Input
+                value={runCitationId}
+                onChange={(event) => setRunCitationId(event.target.value)}
+                placeholder="00000000-0000-0000-0000-000000000000"
+              />
+            </label>
+            {pickerAvailable ? (
+              <button
+                type="button"
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                onClick={() => {
+                  setManualRunEntry(false);
+                  setRunCitationId("");
+                }}
+              >
+                Choose from the list instead
+              </button>
+            ) : null}
+          </div>
         ) : null}
       </div>
 

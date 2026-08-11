@@ -11,7 +11,7 @@ const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
 const checkAiUsageRateLimitMock = vi.fn();
 const recordAiUsageEventMock = vi.fn();
 const loadCountyRunModelingEvidenceMock = vi.fn();
-const retrieveKnowledgeBaseExcerptsMock = vi.fn();
+const loadKnowledgeBaseExcerptsMock = vi.fn();
 
 const CYCLE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const CHAPTER_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -52,7 +52,7 @@ vi.mock("@/lib/models/evidence-backbone", () => ({
 }));
 
 vi.mock("@/lib/knowledge-base/retrieval", () => ({
-  retrieveKnowledgeBaseExcerpts: (...args: unknown[]) => retrieveKnowledgeBaseExcerptsMock(...args),
+  loadKnowledgeBaseExcerpts: (...args: unknown[]) => loadKnowledgeBaseExcerptsMock(...args),
   excerptPageLabel: (pageFrom: number | null, pageTo: number | null) =>
     pageFrom == null ? "" : pageTo == null || pageTo === pageFrom ? `p. ${pageFrom}` : `pp. ${pageFrom}-${pageTo}`,
 }));
@@ -227,19 +227,23 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     recordAiUsageEventMock.mockResolvedValue(undefined);
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadCountyRunModelingEvidenceMock.mockResolvedValue({ evidence: null, error: null });
-    retrieveKnowledgeBaseExcerptsMock.mockResolvedValue([
-      {
-        chunkId: "chunk-1",
-        documentId: "doc-1",
-        documentTitle: "Adopted 2045 RTP",
-        docKind: "plan",
-        pageFrom: 12,
-        pageTo: 12,
-        chunkIndex: 0,
-        snippet: "The financial element totals were updated in the prior cycle.",
-        rank: 1,
-      },
-    ]);
+    loadKnowledgeBaseExcerptsMock.mockResolvedValue({
+      excerpts: [
+        {
+          chunkId: "chunk-1",
+          documentId: "doc-1",
+          documentTitle: "Adopted 2045 RTP",
+          docKind: "plan",
+          pageFrom: 12,
+          pageTo: 12,
+          chunkIndex: 0,
+          snippet: "The financial element totals were updated in the prior cycle.",
+          rank: 1,
+        },
+      ],
+      error: null,
+      searched: true,
+    });
 
     draftSingleMock.mockResolvedValue({
       data: {
@@ -315,6 +319,19 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     expect(generationArgs.prompt).toContain("CITATIONS ARE MANDATORY");
     expect(generationArgs.prompt).toContain("NEVER upgrade a claim");
 
+    // Knowledge Base retrieval is workspace-scoped and queried with THIS
+    // chapter's own words (title, summary, guidance) plus the cycle title —
+    // fixture-distinct values, so a hardcoded query could not pass.
+    expect(loadKnowledgeBaseExcerptsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        query:
+          "Financial Element. How the constrained plan is paid for.. " +
+          "Lead with the constrained portfolio and its committed dollars.. " +
+          "2050 Regional Transportation Plan",
+      })
+    );
+
     // The stored row is chapter-targeted with grounding stats + facts hash.
     const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
       workspace_id: string;
@@ -325,7 +342,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
       facts_hash: string;
       grounded_sentence_count: number;
       total_sentence_count: number;
-      grounding_json: { mode: string; is_fully_grounded: boolean };
+      grounding_json: { mode: string; is_fully_grounded: boolean; knowledge_base: unknown };
     };
     expect(insertPayload.workspace_id).toBe(WORKSPACE_ID);
     expect(insertPayload.target_kind).toBe("rtp_chapter");
@@ -336,6 +353,12 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     expect(insertPayload.grounded_sentence_count).toBe(1);
     expect(insertPayload.total_sentence_count).toBe(2);
     expect(insertPayload.grounding_json.is_fully_grounded).toBe(false);
+    // The stored record says the uploaded-document search ran and matched one.
+    expect(insertPayload.grounding_json.knowledge_base).toEqual({
+      searched: true,
+      excerpt_count: 1,
+      error: null,
+    });
 
     // Metered into the shared document-narrative bucket after success.
     expect(recordAiUsageEventMock).toHaveBeenCalledWith(
@@ -352,6 +375,60 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     const response = await postChapterDraft(jsonRequest("POST"), routeContext());
     expect(response.status).toBe(201);
     expect(anthropicMock).toHaveBeenCalledWith("claude-haiku-4-5");
+  });
+
+  it("still drafts when the knowledge base cannot be searched — but DISCLOSES the failure", async () => {
+    // A missing KB excerpt never becomes an absence claim in the prose, so the
+    // draft proceeds (unlike the evidence reads below, which refuse). What it
+    // may NOT do is store the same record as a corpus that matched nothing.
+    loadKnowledgeBaseExcerptsMock.mockResolvedValue({
+      excerpts: [],
+      error: { message: "canceling statement due to statement timeout", schemaPending: false },
+      searched: true,
+    });
+
+    const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+    expect(response.status).toBe(201);
+    const prompt = (generateTextMock.mock.calls[0][0] as { prompt: string }).prompt;
+    expect(prompt).not.toContain("An uploaded document");
+
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      grounding_json: { knowledge_base: unknown };
+    };
+    expect(insertPayload.grounding_json.knowledge_base).toEqual({
+      searched: true,
+      excerpt_count: 0,
+      error: { message: "canceling statement due to statement timeout", schema_pending: false },
+    });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "chapter_draft_kb_search_failed",
+      expect.objectContaining({
+        chapterId: CHAPTER_ID,
+        workspaceId: WORKSPACE_ID,
+        message: expect.stringContaining("statement timeout"),
+      })
+    );
+  });
+
+  it("records a corpus that matched nothing as searched-and-empty, with no failure logged", async () => {
+    loadKnowledgeBaseExcerptsMock.mockResolvedValue({ excerpts: [], error: null, searched: true });
+
+    const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+    expect(response.status).toBe(201);
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      grounding_json: { knowledge_base: unknown };
+    };
+    expect(insertPayload.grounding_json.knowledge_base).toEqual({
+      searched: true,
+      excerpt_count: 0,
+      error: null,
+    });
+    expect(mockAudit.warn).not.toHaveBeenCalledWith(
+      "chapter_draft_kb_search_failed",
+      expect.anything()
+    );
   });
 
   it("returns 502 without persisting or metering when generation fails", async () => {

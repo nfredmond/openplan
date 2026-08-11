@@ -2,7 +2,7 @@ import { Clock3, FileClock, ShieldCheck } from "lucide-react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StateBlock } from "@/components/ui/state-block";
-import { StageGateDecisionRecorder } from "@/components/projects/stage-gate-decision-recorder";
+import { StageGateDecisionRecorder, type StageGateRunOptions } from "@/components/projects/stage-gate-decision-recorder";
 import type { ProjectStageGateSummary, StageGateWorkflowState } from "@/lib/stage-gates/summary";
 
 function fmtDateTime(value: string | null | undefined): string {
@@ -35,12 +35,15 @@ export function ProjectStageGateBoard({
   workspaceId,
   projectId,
   canRecordDecision,
+  runOptions,
 }: {
   stageGateSummary: ProjectStageGateSummary;
   workspaceId: string;
   projectId: string;
   /** False for the read-only viewer tier — see `StageGateDecisionRecorder`. */
   canRecordDecision: boolean;
+  /** Runs the page loaded, passed through to the decision recorder's citation picker. */
+  runOptions?: StageGateRunOptions;
 }) {
   const decisionsUnreadable = !stageGateSummary.decisionsRead.readable;
 
@@ -290,6 +293,7 @@ export function ProjectStageGateBoard({
                 // does not match the template a planner is looking at is a
                 // small, confident piece of misinformation.
                 evidenceIdExample={gate.evidencePreview[0]?.evidence_id ?? null}
+                runOptions={runOptions}
               />
             </div>
           </div>

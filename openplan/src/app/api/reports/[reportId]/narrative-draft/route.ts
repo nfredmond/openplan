@@ -17,8 +17,12 @@ import {
   renderNarrativeFactPromptLines,
   summarizeNarrativeGrounding,
 } from "@/lib/grants/narrative-grounding";
-import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
-import { buildKnowledgeBaseFactClaims, KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
+import { loadKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
+import {
+  buildKnowledgeBaseFactClaims,
+  describeKnowledgeBaseRead,
+  KB_NARRATIVE_CAVEAT,
+} from "@/lib/grants/kb-evidence";
 import {
   buildProjectFundingSnapshot,
   type FundingAwardLike,
@@ -442,9 +446,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // Knowledge Base grounding: the agency's own uploaded plans and policies,
       // matched against this packet. Without this the same document could be
       // cited in a grant application (via the grants narrative evidence path)
-      // and not in the agency's own board packet. Best-effort by contract —
-      // retrieval answers [] when the KB schema or RPC is unavailable, which
-      // costs the draft some citable facts and never invents one.
+      // and not in the agency's own board packet. A failed search does not
+      // refuse the draft — an uploaded-document excerpt is additive evidence,
+      // never the subject of an absence claim (the KB instruction and caveat
+      // ship only when excerpts exist), and refusing would also brick drafting
+      // on deployments that have not applied the KB migrations. But the failure
+      // is DISCLOSED, in the stored grounding record and the host logs, so a
+      // reviewer can tell "your documents matched nothing" from "your documents
+      // were not consulted".
       const knowledgeBaseQuery = [
         report.title,
         report.summary,
@@ -454,13 +463,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ]
         .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
         .join(". ");
-      const kbExcerpts = await retrieveKnowledgeBaseExcerpts({
+      const kbRead = await loadKnowledgeBaseExcerpts({
         supabase,
         workspaceId: report.workspace_id,
         projectId: report.project_id,
         query: knowledgeBaseQuery,
         limit: 4,
       });
+      if (kbRead.error) {
+        audit.warn("narrative_draft_kb_search_failed", {
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          userId: user.id,
+          message: kbRead.error.message,
+          schemaPending: kbRead.error.schemaPending,
+        });
+      }
+      const kbExcerpts = kbRead.excerpts;
       const kbClaims = buildKnowledgeBaseFactClaims(kbExcerpts, projectResult.data.name);
 
       // One renumbered list so KB excerpts enter the SAME [fact:N] contract the
@@ -548,11 +567,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       // Deterministic per-sentence citation validation (annotated mode keeps
       // every sentence and flags ungrounded ones for operator review; the raw
-      // draft with its [fact:N] tokens is what gets stored).
-      const grounding = summarizeNarrativeGrounding(
-        validateGroundedNarrative(draftText, factIds, "annotated", factClaimTextMap(facts)),
-        facts
-      );
+      // draft with its [fact:N] tokens is what gets stored). The Knowledge
+      // Base read outcome rides along so the stored record can distinguish an
+      // empty corpus from a search that never ran.
+      const grounding = {
+        ...summarizeNarrativeGrounding(
+          validateGroundedNarrative(draftText, factIds, "annotated", factClaimTextMap(facts)),
+          facts
+        ),
+        knowledge_base: describeKnowledgeBaseRead(kbRead),
+      };
 
       const { data: draft, error: insertError } = await supabase
         .from("document_narrative_drafts")
@@ -619,6 +643,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         outputTokens,
         knowledgeBaseExcerptCount: kbExcerpts.length,
         knowledgeBaseFactCount: kbClaims.length,
+        knowledgeBaseSearchFailed: kbRead.error !== null,
         groundedSentenceCount: grounding.grounded_sentence_count,
         totalSentenceCount: grounding.total_sentence_count,
         isFullyGrounded: grounding.is_fully_grounded,

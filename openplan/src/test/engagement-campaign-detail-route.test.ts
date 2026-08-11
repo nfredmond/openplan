@@ -82,6 +82,26 @@ const itemsEqCampaignMock = vi.fn(() => ({ order: itemsOrderMock }));
 const reportsOrderMock = vi.fn();
 const reportsEqProjectMock = vi.fn(() => ({ order: reportsOrderMock }));
 
+/**
+ * The workspace's RTP cycles and chapters (the campaign console's attachment
+ * options), read by GET and — on PATCH, per targeted id — verified against
+ * their workspace. The eq mocks RECORD the filter so the tests below can
+ * assert the list is scoped to the campaign's workspace rather than to
+ * whatever RLS happens to return.
+ */
+const rtpCyclesOrderMock = vi.fn();
+const rtpCyclesEqMock = vi.fn((_column: string, _value: unknown) => ({
+  order: rtpCyclesOrderMock,
+  maybeSingle: rtpCycleMaybeSingleMock,
+}));
+const rtpCycleMaybeSingleMock = vi.fn();
+const rtpChaptersOrderMock = vi.fn();
+const rtpChapterMaybeSingleMock = vi.fn();
+const rtpChaptersEqMock = vi.fn((_column: string, _value: unknown) => ({
+  order: rtpChaptersOrderMock,
+  maybeSingle: rtpChapterMaybeSingleMock,
+}));
+
 const mockAudit = {
   info: vi.fn(),
   warn: vi.fn(),
@@ -142,6 +162,18 @@ const fromMock = vi.fn((table: string) => {
   if (table === "workspaces") {
     return {
       select: workspaceSelectMock,
+    };
+  }
+
+  if (table === "rtp_cycles") {
+    return {
+      select: () => ({ eq: rtpCyclesEqMock }),
+    };
+  }
+
+  if (table === "rtp_cycle_chapters") {
+    return {
+      select: () => ({ eq: rtpChaptersEqMock }),
     };
   }
 
@@ -236,6 +268,24 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       error: null,
     });
     workspaceMaybeSingleMock.mockResolvedValue({ data: {}, error: null });
+
+    // Two cycles in the campaign's workspace, one with a chapter — enough to
+    // observe grouping without describing a shape the product cannot produce.
+    rtpCyclesOrderMock.mockResolvedValue({
+      data: [
+        { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", title: "2050 Regional Transportation Plan", status: "draft" },
+        { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", title: "2045 Regional Transportation Plan", status: "adopted" },
+      ],
+      error: null,
+    });
+    rtpChaptersOrderMock.mockResolvedValue({
+      data: [
+        { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", title: "Financial element", rtp_cycle_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
+      ],
+      error: null,
+    });
+    rtpCycleMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    rtpChapterMaybeSingleMock.mockResolvedValue({ data: null, error: null });
 
     resolvePlaceBoundaryMock.mockResolvedValue({
       kind: "county",
@@ -804,5 +854,58 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     );
 
     expect(campaignGeofenceMaybeSingleMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The RTP attachment options (the campaign side of the RTP↔engagement seam).
+   * `rtp_cycle_id` was writable through this PATCH long before anything on the
+   * campaign console could read what to write — the classic shipped-invisible
+   * shape. These prove the GET now serves the options the console's selects
+   * render, scoped to the campaign's workspace, and that a failed cycle read
+   * arrives as "unknown" rather than as a workspace with no plans.
+   */
+  describe("the RTP attachment options", () => {
+    it("GET lists the workspace's cycles with their chapters grouped under them", async () => {
+      const response = await getCampaignDetail(new NextRequest("http://localhost/api/engagement/campaigns/1"), {
+        params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
+      });
+
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        rtpTargets: { cycles: Array<{ id: string; title: string; chapters: Array<{ id: string; title: string }> }> } | null;
+      };
+
+      expect(body.rtpTargets).not.toBeNull();
+      expect(body.rtpTargets?.cycles).toEqual([
+        expect.objectContaining({
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          title: "2050 Regional Transportation Plan",
+          chapters: [expect.objectContaining({ id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", title: "Financial element" })],
+        }),
+        expect.objectContaining({
+          id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          title: "2045 Regional Transportation Plan",
+          chapters: [],
+        }),
+      ]);
+
+      // Scoped to the CAMPAIGN's workspace — the same scope the PATCH verifies
+      // a chosen id against, so the options and the enforcement cannot drift.
+      expect(rtpCyclesEqMock).toHaveBeenCalledWith("workspace_id", "33333333-3333-4333-8333-333333333333");
+      expect(rtpChaptersEqMock).toHaveBeenCalledWith("workspace_id", "33333333-3333-4333-8333-333333333333");
+    });
+
+    it("GET answers null — not an empty list — when the cycle read fails", async () => {
+      rtpCyclesOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+
+      const response = await getCampaignDetail(new NextRequest("http://localhost/api/engagement/campaigns/1"), {
+        params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
+      });
+
+      // The rest of the campaign GET still answers; only the options degrade.
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { rtpTargets: unknown };
+      expect(body.rtpTargets).toBeNull();
+    });
   });
 });

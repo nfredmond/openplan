@@ -47,6 +47,11 @@ function buildPilotWorkflowSteps(input: {
   publicEngagementHref?: string | null;
 }): PilotWorkflowStep[] {
   const projectHref = input.projectId ? `/projects/${input.projectId}` : "/projects";
+  // Step 2 must carry the project the same way step 3 does: /explore reads
+  // `?projectId=` and inherits the project's study area from it. A bare
+  // "/explore" in the app's OWN workflow rail dropped the project between
+  // step 1 and step 3.
+  const analysisHref = input.projectId ? `/explore?projectId=${input.projectId}` : "/explore";
   const engagementHref = input.engagementCampaignId
     ? `/engagement/${input.engagementCampaignId}`
     : input.projectId
@@ -69,7 +74,7 @@ function buildPilotWorkflowSteps(input: {
       label: "2",
       title: "Analysis evidence",
       detail: "Run or review corridor evidence with source transparency, geometry, and comparison context intact.",
-      href: "/explore",
+      href: analysisHref,
       cta: "Open analysis",
       icon: Map,
     },

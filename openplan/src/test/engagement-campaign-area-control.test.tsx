@@ -27,6 +27,8 @@ const campaign = {
   status: "active",
   engagement_type: "map_feedback",
   project_id: null,
+  rtp_cycle_id: null,
+  rtp_cycle_chapter_id: null,
 };
 
 function respondWithFraming(framing: unknown) {

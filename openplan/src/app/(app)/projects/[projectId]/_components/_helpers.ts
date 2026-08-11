@@ -1,3 +1,8 @@
+import type { StageGateRunOptions } from "@/components/projects/stage-gate-decision-recorder";
+import type { RtpEvidenceRunRow } from "@/lib/rtp/modeling-evidence";
+
+import type { RecentRun } from "./_types";
+
 export type Tone = "info" | "success" | "warning" | "danger" | "neutral";
 
 export function titleize(value: string | null | undefined): string {
@@ -86,4 +91,34 @@ export function toneForDatasetStatus(status: string): Tone {
   if (status === "stale") return "warning";
   if (status === "error") return "danger";
   return "neutral";
+}
+
+/** The evidence-run read, plus the created_at the citation picker displays. */
+export type StageGateEvidenceRunRow = RtpEvidenceRunRow & { created_at?: string | null };
+
+/**
+ * Runs the page already loaded, reshaped for the stage-gate decision
+ * recorder's citation picker so a planner chooses a run instead of pasting a
+ * uuid. Model runs come from the succeeded-runs read the RTP evidence picker
+ * shares; Analysis Studio runs from the page's recency list. County validation
+ * runs are NOT loaded by this page, so that citation kind is deliberately
+ * absent and keeps its manual id field.
+ */
+export function buildStageGateRunOptions(
+  modelRuns: StageGateEvidenceRunRow[],
+  analysisRuns: RecentRun[]
+): StageGateRunOptions {
+  return {
+    modelRunId: modelRuns.map((run) => ({
+      id: run.id,
+      title: run.run_title,
+      status: run.status,
+      createdAt: run.created_at ?? null,
+    })),
+    runId: analysisRuns.map((run) => ({
+      id: run.id,
+      title: run.title,
+      createdAt: run.created_at,
+    })),
+  };
 }

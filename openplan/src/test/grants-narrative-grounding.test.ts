@@ -222,6 +222,42 @@ describe("parseStoredNarrativeGrounding + listFlaggedNarrativeSentences", () => 
     ).toBeNull();
   });
 
+  it("round-trips the knowledge_base disclosure, and refuses to invent one", () => {
+    const validated = validateGroundedNarrative("Need is documented. [fact:fact_1]", ["fact_1"], "annotated");
+    const summary = summarizeNarrativeGrounding(validated, facts);
+
+    // A drafter that searched the KB stores the outcome alongside the summary;
+    // a failed search must survive the JSON round-trip AS a failure.
+    const withFailure = {
+      ...summary,
+      knowledge_base: {
+        searched: true,
+        excerpt_count: 0,
+        error: { message: "statement timeout", schema_pending: false },
+      },
+    };
+    expect(parseStoredNarrativeGrounding(JSON.parse(JSON.stringify(withFailure)))).toEqual(withFailure);
+
+    const withCleanSearch = {
+      ...summary,
+      knowledge_base: { searched: true, excerpt_count: 2, error: null },
+    };
+    expect(parseStoredNarrativeGrounding(JSON.parse(JSON.stringify(withCleanSearch)))).toEqual(
+      withCleanSearch
+    );
+
+    // Legacy rows carry no disclosure — parsed as "not recorded", never as a
+    // clean empty search.
+    const legacy = parseStoredNarrativeGrounding(JSON.parse(JSON.stringify(summary)));
+    expect(legacy?.knowledge_base).toBeUndefined();
+
+    // A malformed disclosure parses as "not recorded" too, not as a clean one.
+    const malformed = parseStoredNarrativeGrounding(
+      JSON.parse(JSON.stringify({ ...summary, knowledge_base: { searched: "yes" } }))
+    );
+    expect(malformed?.knowledge_base).toBeUndefined();
+  });
+
   it("lists uncited and unknown-citation sentences with reasons", () => {
     const validated = validateGroundedNarrative(
       "Need is documented. [fact:fact_1] Uncited filler. Ghost claim. [fact:fact_9]",

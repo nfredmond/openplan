@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -28,7 +28,8 @@ const runsOrderMock = vi.fn(() => ({ limit: runsLimitMock }));
 const runsEqMock = vi.fn(() => ({ order: runsOrderMock }));
 const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
-const modelRunsLimitMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
+// Typed loosely (see ProjectReadResult below) so a test can seed real picker rows.
+const modelRunsLimitMock = vi.fn<() => Promise<ProjectReadResult>>(() => Promise.resolve({ data: [], error: null }));
 const modelRunsOrderMock = vi.fn(() => ({ limit: modelRunsLimitMock }));
 const modelRunsStatusEqMock = vi.fn(() => ({ order: modelRunsOrderMock }));
 // The evidence-picker chain is select→eq(ws)→eq(status)→order→limit; the
@@ -49,7 +50,8 @@ const modelRunsByIdInMock = vi.fn(() =>
     error: null,
   })
 );
-const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsWsEqMock, in: modelRunsByIdInMock }));
+// Takes the projection string so tests can assert on the columns asked for.
+const modelRunsSelectMock = vi.fn((_columns: string) => ({ eq: modelRunsWsEqMock, in: modelRunsByIdInMock }));
 const claimDecisionsInMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
 const claimDecisionsSelectMock = vi.fn(() => ({ in: claimDecisionsInMock }));
 const modelRunKpisInKpiMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
@@ -837,6 +839,78 @@ describe("ProjectDetailPage", () => {
     for (const columns of kpiSelects) {
       expect(columns).toContain("geometry_ref");
     }
+  });
+
+  it("asks model_runs for created_at and threads the read's own rows into the stage-gate citation picker", async () => {
+    // A run this page loaded from the database, with a title no component
+    // could invent. If the picker offers it, the page → board → recorder
+    // threading is real, not a fixture the recorder carries itself.
+    modelRunsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "5b6c7d8e-1111-4222-8333-944455566677",
+          run_title: "Harbor sketch 2050",
+          engine_key: "sketch_abm",
+          status: "succeeded",
+          created_at: "2026-06-30T12:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    // One undecided gate, so the recorder renders and can be opened.
+    buildProjectStageGateSummaryMock.mockReturnValue({
+      templateId: "ca_stage_gates_v0_1",
+      templateName: "Test stage-gate template",
+      templateVersion: "0.1.0",
+      jurisdiction: "CA",
+      jurisdictionLabel: "Test jurisdiction",
+      totalGateCount: 1,
+      passCount: 0,
+      holdCount: 0,
+      notStartedCount: 1,
+      unknownCount: 0,
+      decisionsRead: { readable: true },
+      nextGate: null,
+      blockedGate: null,
+      gates: [
+        {
+          gateId: "G01_INITIATION_AUTHORIZATION",
+          name: "Initiation",
+          sequence: 1,
+          workflowState: "not_started",
+          decisionLabel: "No decision recorded",
+          decidedAt: null,
+          rationale: "No decision recorded yet.",
+          requiredEvidenceCount: 0,
+          operatorControlEvidenceCount: 0,
+          lapmMappings: [],
+          ceqaVmtMappings: [],
+          outreachMappings: [],
+          stipRtipMappings: [],
+          evidencePreview: [],
+          missingArtifacts: [],
+        },
+      ],
+    });
+
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+
+    // Projection first: the picker renders created_at, and the mocked client
+    // returns the fixture whatever columns are asked for — so the .select()
+    // string itself is the artifact under test (same convention as the
+    // geometry_ref assertion above). Only the evidence-picker read names
+    // run_title here; the project-provenance count selects id alone.
+    const pickerSelects = modelRunsSelectMock.mock.calls
+      .map((call) => String(call[0]))
+      .filter((columns) => columns.includes("run_title"));
+    expect(pickerSelects.length).toBeGreaterThan(0);
+    for (const columns of pickerSelects) {
+      expect(columns).toContain("created_at");
+    }
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Record decision" })[0]);
+    fireEvent.change(screen.getByDisplayValue("No run cited"), { target: { value: "modelRunId" } });
+    expect(screen.getByRole("option", { name: /Harbor sketch 2050 · succeeded/ })).toBeInTheDocument();
   });
 
   it("says the stage-gate template was assumed when the workspace has stated no geography", async () => {

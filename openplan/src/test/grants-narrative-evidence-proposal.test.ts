@@ -57,6 +57,9 @@ function bundle(overrides: Partial<OpportunityEvidenceBundle> = {}): Opportunity
         updatedAt: "2026-01-01T00:00:00.000Z",
       },
     ],
+    // Null = "no programming read to state" (this fixture is about proposal
+    // facts); the RTP fact lanes are covered in grant-narrative-rtp-programming.
+    rtpProgramming: null,
     readFailures: [],
     ...overrides,
   };

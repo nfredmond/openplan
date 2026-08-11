@@ -4,7 +4,13 @@ import { useEffect, useId, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StateBlock } from "@/components/ui/state-block";
+import {
+  bufferCorridorLineToRing,
+  DEFAULT_CORRIDOR_BUFFER_METERS,
+  type AoiSeedSource,
+} from "@/lib/aerial/aoi-seed";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
@@ -43,10 +49,18 @@ const KEYBOARD_PAN_STEP_PX = 64;
 export function MissionAoiEditor({
   missionId,
   initialPolygon,
+  seedSources = [],
   onSaved,
 }: {
   missionId: string;
   initialPolygon: AoiPolygon | null;
+  /**
+   * Shapes the mission's project already holds (study-area boundary,
+   * corridors), offered as starting rings. Empty means the affordance does
+   * not render at all and the editor behaves exactly as before — drawing
+   * from scratch stays the default path either way.
+   */
+  seedSources?: AoiSeedSource[];
   onSaved?: (polygon: AoiPolygon | null) => void;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -64,6 +78,11 @@ export function MissionAoiEditor({
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [announcement, setAnnouncement] = useState("");
+  const [selectedSeedKey, setSelectedSeedKey] = useState("");
+  const [bufferMetersText, setBufferMetersText] = useState(
+    String(DEFAULT_CORRIDOR_BUFFER_METERS)
+  );
+  const [seedNotes, setSeedNotes] = useState<string[]>([]);
   const instructionsId = useId();
 
   // Map handlers are registered once at mount; they read current state via
@@ -127,8 +146,58 @@ export function MissionAoiEditor({
     setStatus("idle");
     setError(null);
     setSavedMessage(null);
+    setSeedNotes([]);
     if (verticesRef.current.length > 0) {
       announce("Polygon cleared.");
+    }
+  };
+
+  const selectedSeed = seedSources.find((source) => source.key === selectedSeedKey) ?? null;
+
+  /**
+   * Replace the current vertices with a shape the project already holds.
+   * Boundary rings arrive prepared (reduced + disclosed) from the server;
+   * corridor lines are widened here with the planner's own buffer distance.
+   */
+  const loadSeed = () => {
+    if (!selectedSeed) return;
+
+    let ring: [number, number][];
+    let notes: string[];
+    if (selectedSeed.kind === "corridor") {
+      const meters = Number(bufferMetersText);
+      if (!Number.isFinite(meters) || meters <= 0) {
+        setError("Enter a corridor width in meters greater than zero.");
+        return;
+      }
+      const buffered = bufferCorridorLineToRing(selectedSeed.line, meters);
+      if (!buffered) {
+        setError("This corridor's line could not be widened into a polygon.");
+        return;
+      }
+      ring = buffered.ring;
+      notes = buffered.notes;
+    } else {
+      ring = selectedSeed.ring;
+      notes = selectedSeed.notes;
+    }
+
+    if (ring.length < 3) {
+      setError("This shape does not have enough vertices to form a polygon.");
+      return;
+    }
+
+    setVertices(ring);
+    setStatus("closed");
+    setError(null);
+    setSavedMessage(null);
+    setSeedNotes(notes);
+    announce(`Loaded ${selectedSeed.label} as the mission area (${ring.length} vertices).`);
+
+    const map = mapRef.current;
+    const bbox = polygonBbox(ring);
+    if (map && bbox) {
+      map.fitBounds(bbox, { padding: 48 });
     }
   };
 
@@ -343,6 +412,63 @@ export function MissionAoiEditor({
 
   return (
     <div className="space-y-3">
+      {seedSources.length > 0 ? (
+        <div className="space-y-2 rounded-lg border border-border/70 bg-muted/20 p-3">
+          <p className="text-sm font-medium text-foreground">Start from the project&apos;s area</p>
+          <p className="text-xs text-muted-foreground">
+            Load the project&apos;s boundary or one of its corridors as the starting shape, then
+            adjust the vertices on the map. Drawing from scratch below still works as before.
+          </p>
+          <div className="flex flex-wrap items-end gap-2">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+              Shape
+              <select
+                className="module-select"
+                value={selectedSeedKey}
+                onChange={(event) => setSelectedSeedKey(event.target.value)}
+              >
+                <option value="">Choose a shape…</option>
+                {seedSources.map((source) => (
+                  <option key={source.key} value={source.key}>
+                    {source.kind === "project_boundary"
+                      ? `Project boundary — ${source.label}`
+                      : `Corridor — ${source.label}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {selectedSeed?.kind === "corridor" ? (
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+                Corridor width (meters each side)
+                <Input
+                  type="number"
+                  min={1}
+                  className="w-36"
+                  value={bufferMetersText}
+                  onChange={(event) => setBufferMetersText(event.target.value)}
+                />
+              </label>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={loadSeed}
+              disabled={!selectedSeed || saving}
+            >
+              Load shape
+            </Button>
+          </div>
+          {selectedSeed?.kind === "corridor" ? (
+            <p className="text-[0.72rem] text-muted-foreground">
+              The corridor line is widened into a polygon covering this distance on each side of
+              it. Starts at {DEFAULT_CORRIDOR_BUFFER_METERS} m; change it to match the flight.
+            </p>
+          ) : null}
+          {seedNotes.length > 0 ? (
+            <StateBlock title="Loaded shape" description={seedNotes.join(" ")} tone="info" compact />
+          ) : null}
+        </div>
+      ) : null}
       <div className="relative overflow-hidden rounded-xl border border-border">
         <div
           ref={mapContainerRef}

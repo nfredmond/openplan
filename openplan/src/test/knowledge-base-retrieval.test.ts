@@ -180,8 +180,9 @@ const SRC_ROOT = join(process.cwd(), "src");
  */
 const CALLERS_STILL_DISCARDING_THE_ERROR = [
   "app/api/assistant/chat/route.ts",
-  "app/api/reports/[reportId]/narrative-draft/route.ts",
-  "app/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft/route.ts",
+  // 2026-08-10: the report-section and RTP-chapter drafters migrated to
+  // `loadKnowledgeBaseExcerpts` and now DISCLOSE a failed search in the
+  // stored grounding record (`grounding_json.knowledge_base`).
   "lib/assistant/chat-tools.ts",
   "lib/grants/narrative-evidence.ts",
 ];

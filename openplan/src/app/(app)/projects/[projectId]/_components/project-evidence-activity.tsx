@@ -143,7 +143,10 @@ export function ProjectEvidenceAndActivity({
             </div>
           ) : !recentRuns || recentRuns.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No runs yet. Use <Link href="/explore" className="font-semibold text-foreground underline">Analysis Studio</Link> to create the first project-linked run.
+              {/* Carries the project: /explore reads `?projectId=` and inherits
+                  this project's study area, so the first run starts scoped to
+                  the project this panel just said had none. */}
+              No runs yet. Use <Link href={`/explore?projectId=${projectId}`} className="font-semibold text-foreground underline">Corridor Analysis</Link> to create the first project-linked run.
             </div>
           ) : (
             <div className="mt-5 module-record-list">

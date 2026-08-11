@@ -8,6 +8,7 @@ import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-c
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { ProjectStageGateBoard } from "@/components/projects/project-stage-gate-board";
+import { buildStageGateRunOptions, type StageGateEvidenceRunRow } from "./_components/_helpers";
 import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
 import {
   buildGrantDecisionModelingSupport,
@@ -37,7 +38,7 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { loadReportRunCitationLinksForReports, resolveCitedRuns } from "@/lib/reports/run-citations";
-import { RTP_EVIDENCE_KPI_NAMES, loadRtpEvidenceRunDisclosures, summarizeRtpModelingEvidence, type RtpEvidenceRunRow, type RtpEvidenceSupabaseLike, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
+import { RTP_EVIDENCE_KPI_NAMES, loadRtpEvidenceRunDisclosures, summarizeRtpModelingEvidence, type RtpEvidenceSupabaseLike, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
 import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { POSTGREST_NO_ROWS_MATCHED } from "@/lib/http/write-outcome";
 import { StateBlock } from "@/components/ui/state-block";
@@ -273,11 +274,9 @@ export default async function ProjectDetailPage({
   const [availableRunsResult, evidenceKpisResult] = await Promise.all([
     supabase
       .from("model_runs")
-      .select("id, run_title, engine_key, status")
+      .select("id, run_title, engine_key, status, created_at")
       .eq("workspace_id", project.workspace_id)
-      .eq("status", "succeeded")
-      .order("created_at", { ascending: false })
-      .limit(50),
+      .eq("status", "succeeded").order("created_at", { ascending: false }).limit(50),
     evidenceRunIds.length
       ? supabase
           .from("model_run_kpis")
@@ -286,7 +285,7 @@ export default async function ProjectDetailPage({
           .in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
       : Promise.resolve({ data: [], error: null }),
   ]);
-  const availableRunRows = laneRows(reads, "model runs available as evidence", availableRunsResult) as RtpEvidenceRunRow[];
+  const availableRunRows = laneRows(reads, "model runs available as evidence", availableRunsResult) as StageGateEvidenceRunRow[];
   // Engine + status + claim tier for every offered and cited run — even one outside
   // the 50-succeeded-run picker window. Disclosure only; nothing here writes a tier.
   const evidenceDisclosures = await loadRtpEvidenceRunDisclosures(supabase as unknown as RtpEvidenceSupabaseLike, evidenceRunIds, { knownRuns: availableRunRows });
@@ -1308,6 +1307,7 @@ export default async function ProjectDetailPage({
           workspaceId={project.workspace_id}
           projectId={project.id}
           canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", membership.role)}
+          runOptions={buildStageGateRunOptions(availableRunRows, recentRuns)}
         />
       </div>
 

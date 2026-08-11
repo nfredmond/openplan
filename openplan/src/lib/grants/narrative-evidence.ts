@@ -2,8 +2,9 @@
  * Opportunity evidence assembly for grounded grant drafting.
  *
  * Extracted verbatim from the narrative-draft route so ONE code path builds
- * the workspace evidence bundle (project + funding stack + modeling digest +
- * screening BCA + engagement synthesis + Knowledge Base excerpts) and ONE
+ * the workspace evidence bundle (project + funding stack + RTP/MTP programming
+ * + modeling digest + screening BCA + engagement synthesis + Knowledge Base
+ * excerpts) and ONE
  * code path turns it into the numbered [fact:N] list the grounding contract
  * validates against. The whole-opportunity narrative route and the
  * per-section application drafting route both consume this module, so facts
@@ -95,6 +96,29 @@ export type NarrativeLinkedProjectStage = {
   summary: string | null;
 };
 
+/**
+ * One RTP/MTP cycle the linked project is recorded in, as programming FACTS the
+ * drafter may cite. Every field is read verbatim off the workspace's own rows
+ * (the project↔cycle link, the cycle, and the horizon band it points at) —
+ * nothing here is inferred, because "this project is in the fiscally
+ * constrained plan" is a scored criterion in most federal programs and a wrong
+ * claim about it is a misrepresentation to a funder.
+ */
+export type NarrativeRtpProgrammingLink = {
+  /** The cycle's own title, e.g. "2050 Regional Transportation Plan". */
+  cycleTitle: string;
+  /** The cycle's recorded status: draft | public_review | adopted | archived. */
+  cycleStatus: string | null;
+  horizonStartYear: number | null;
+  horizonEndYear: number | null;
+  /** The cycle's recorded adoption target date (YYYY-MM-DD), when present. */
+  adoptionTargetDate: string | null;
+  /** The link row's recorded role: candidate | constrained | illustrative. */
+  portfolioRole: string | null;
+  /** The linked horizon band's own label, when the link names a band. */
+  horizonBandLabel: string | null;
+};
+
 /** One completed project offered as past-performance evidence (proposals). */
 export type NarrativeCompletedProject = {
   id: string;
@@ -130,6 +154,18 @@ export type OpportunityEvidenceBundle = {
   kbExcerpts: KnowledgeBaseExcerpt[];
   /** The linked project's identity/stage detail, when a project is linked. */
   linkedProjectStage: NarrativeLinkedProjectStage | null;
+  /**
+   * The linked project's RTP/MTP programming record, newest link first.
+   *
+   * `[]` means the reads SUCCEEDED and the project is linked to no cycle — a
+   * citable absence the fact list states explicitly, because a drafter told
+   * nothing would otherwise be free to imply programming that does not exist.
+   * `null` means either no project is linked (nothing to say) or a read in
+   * this family failed — and every such failure is reported in `readFailures`,
+   * so a caller can never mistake "could not read the programming record" for
+   * "no programming recorded". The absence fact is emitted ONLY for `[]`.
+   */
+  rtpProgramming: NarrativeRtpProgrammingLink[] | null;
   /**
    * Proposal pursuits only: the workspace's completed-projects history, as
    * past-performance evidence. Null for grant pursuits AND when the read
@@ -241,6 +277,7 @@ export async function assembleOpportunityEvidence(
   let engagementEvidence: ProjectEngagementEvidence | null = null;
   let linkedProjectStage: NarrativeLinkedProjectStage | null = null;
   let completedProjects: NarrativeCompletedProject[] | null = null;
+  let rtpProgramming: NarrativeRtpProgrammingLink[] | null = null;
 
   // Every read below is checked through this, so an evidence family that comes
   // back empty is distinguishable from one that could not be read at all.
@@ -262,6 +299,7 @@ export async function assembleOpportunityEvidence(
       reportsResult,
       bcaScreeningsResult,
       engagementCampaignsResult,
+      rtpLinksResult,
     ] = await Promise.all([
       client
         .from("projects")
@@ -305,6 +343,12 @@ export async function assembleOpportunityEvidence(
         .neq("status", "archived")
         .order("updated_at", { ascending: false })
         .limit(20),
+      client
+        .from("project_rtp_cycle_links")
+        .select("rtp_cycle_id, portfolio_role, horizon_band_id, created_at")
+        .eq("project_id", opportunity.project_id)
+        .order("created_at", { ascending: false })
+        .limit(10),
     ]);
 
     collectReadFailure("the linked project", projectResult);
@@ -315,6 +359,7 @@ export async function assembleOpportunityEvidence(
     collectReadFailure("the project's reports", reportsResult);
     collectReadFailure("the project's benefit-cost screenings", bcaScreeningsResult);
     collectReadFailure("the project's engagement campaigns", engagementCampaignsResult);
+    collectReadFailure("the project's RTP programming record", rtpLinksResult);
 
     const projectRow = projectResult.data as {
       id: string;
@@ -386,6 +431,91 @@ export async function assembleOpportunityEvidence(
       buildProjectEngagementEvidenceByProjectId(
         (engagementCampaignsResult.data ?? []) as ProjectEngagementCampaignRowLike[]
       ).get(opportunity.project_id) ?? null;
+
+    // RTP/MTP programming: resolve each link row's cycle (title/status/horizon)
+    // and horizon band (label) so the facts can name them. Any failure in this
+    // family leaves rtpProgramming null WITH the failure reported above/below —
+    // only a fully successful read may claim "[]", because [] becomes the
+    // explicit "no programming recorded" fact.
+    type RtpLinkRow = {
+      rtp_cycle_id: string | null;
+      portfolio_role: string | null;
+      horizon_band_id: string | null;
+    };
+    if (!rtpLinksResult.error) {
+      const rtpLinkRows = ((rtpLinksResult.data ?? []) as RtpLinkRow[]).filter(
+        (row) => typeof row.rtp_cycle_id === "string"
+      );
+      if (rtpLinkRows.length === 0) {
+        rtpProgramming = [];
+      } else {
+        const cycleIds = Array.from(new Set(rtpLinkRows.map((row) => row.rtp_cycle_id as string)));
+        const bandIds = Array.from(
+          new Set(
+            rtpLinkRows.flatMap((row) =>
+              typeof row.horizon_band_id === "string" ? [row.horizon_band_id] : []
+            )
+          )
+        );
+        const [cyclesResult, bandsResult] = await Promise.all([
+          client
+            .from("rtp_cycles")
+            .select("id, title, status, horizon_start_year, horizon_end_year, adoption_target_date")
+            .in("id", cycleIds),
+          bandIds.length
+            ? client.from("rtp_horizon_bands").select("id, label").in("id", bandIds)
+            : { data: [], error: null },
+        ]);
+        collectReadFailure("the RTP cycles the project is programmed in", cyclesResult);
+        collectReadFailure("the RTP horizon bands the project is programmed in", bandsResult);
+
+        if (!cyclesResult.error && !bandsResult.error) {
+          type RtpCycleRow = {
+            id: string;
+            title?: unknown;
+            status?: unknown;
+            horizon_start_year?: unknown;
+            horizon_end_year?: unknown;
+            adoption_target_date?: unknown;
+          };
+          type RtpBandRow = { id: string; label?: unknown };
+          const cyclesById = new Map(
+            ((cyclesResult.data ?? []) as RtpCycleRow[]).map((row) => [row.id, row] as const)
+          );
+          const bandLabelsById = new Map(
+            ((bandsResult.data ?? []) as RtpBandRow[]).map(
+              (row) => [row.id, typeof row.label === "string" ? row.label : null] as const
+            )
+          );
+          rtpProgramming = rtpLinkRows.flatMap((row) => {
+            const cycle = cyclesById.get(row.rtp_cycle_id as string);
+            // A link whose cycle row did not come back cannot be stated as a
+            // fact about a named plan; the cycle FK cascades on delete, so this
+            // is a should-not-happen edge, dropped rather than half-invented.
+            if (!cycle || typeof cycle.title !== "string") return [];
+            return [
+              {
+                cycleTitle: cycle.title,
+                cycleStatus: typeof cycle.status === "string" ? cycle.status : null,
+                horizonStartYear:
+                  typeof cycle.horizon_start_year === "number" ? cycle.horizon_start_year : null,
+                horizonEndYear:
+                  typeof cycle.horizon_end_year === "number" ? cycle.horizon_end_year : null,
+                adoptionTargetDate:
+                  typeof cycle.adoption_target_date === "string"
+                    ? cycle.adoption_target_date.slice(0, 10)
+                    : null,
+                portfolioRole: typeof row.portfolio_role === "string" ? row.portfolio_role : null,
+                horizonBandLabel:
+                  typeof row.horizon_band_id === "string"
+                    ? bandLabelsById.get(row.horizon_band_id) ?? null
+                    : null,
+              },
+            ];
+          });
+        }
+      }
+    }
   }
 
   // Proposal pursuits ground past-performance claims on the workspace's
@@ -471,8 +601,51 @@ export async function assembleOpportunityEvidence(
     kbExcerpts,
     linkedProjectStage,
     completedProjects,
+    rtpProgramming,
     readFailures,
   };
+}
+
+/**
+ * The recorded portfolio role, glossed in the words a reviewer scores against.
+ * An unknown role is stated verbatim rather than glossed — never upgraded.
+ */
+function describeRtpPortfolioRole(role: string | null): string {
+  if (role === "constrained") {
+    return `recorded with portfolio role "constrained" (on the fiscally constrained project list)`;
+  }
+  if (role === "illustrative") {
+    return `recorded with portfolio role "illustrative" (an unconstrained/illustrative project, NOT part of the fiscally constrained list)`;
+  }
+  if (role === "candidate") {
+    return `recorded with portfolio role "candidate" (not yet assigned to the constrained or illustrative list)`;
+  }
+  return role
+    ? `recorded with portfolio role "${role}"`
+    : "recorded with no portfolio role";
+}
+
+/** One citable claim per RTP/MTP cycle the project is recorded in. */
+function rtpProgrammingClaims(
+  links: NarrativeRtpProgrammingLink[],
+  projectName: string | null
+): string[] {
+  const projectLabel = projectName ?? "The linked project";
+  return links.map((link) => {
+    const parts = [
+      `${projectLabel} is listed in the regional transportation plan cycle "${link.cycleTitle}"${link.cycleStatus ? ` (cycle status "${link.cycleStatus}")` : ""}, ${describeRtpPortfolioRole(link.portfolioRole)}`,
+    ];
+    if (link.horizonStartYear != null && link.horizonEndYear != null) {
+      parts.push(`plan horizon ${link.horizonStartYear}–${link.horizonEndYear}`);
+    }
+    if (link.horizonBandLabel) {
+      parts.push(`programmed in the "${link.horizonBandLabel}" horizon band`);
+    }
+    if (link.adoptionTargetDate && link.cycleStatus !== "adopted") {
+      parts.push(`recorded adoption target date ${link.adoptionTargetDate}`);
+    }
+    return `${parts.join("; ")}.`;
+  });
 }
 
 export type OpportunityFactListOptions = {
@@ -526,6 +699,18 @@ export function buildOpportunityFactList(
     include("project") && bundle.linkedProjectStage?.summary
       ? `The linked project's recorded summary: ${bundle.linkedProjectStage.summary}`
       : null,
+    // RTP/MTP programming: citable under both the project and funding families,
+    // because plan consistency is scored in readiness sections and fiscal
+    // constraint in funding sections. `null` (no project linked, or a failed
+    // read already reported in readFailures) yields NO fact either way — a
+    // failed read may never be stated as "no programming recorded".
+    ...((include("project") || include("funding")) && bundle.rtpProgramming
+      ? bundle.rtpProgramming.length > 0
+        ? rtpProgrammingClaims(bundle.rtpProgramming, bundle.projectName)
+        : [
+            `No regional transportation plan (RTP/MTP) programming is on record for ${bundle.projectName ?? "the linked project"} — the project is not listed in any RTP/MTP cycle in this workspace.`,
+          ]
+      : []),
     ...(isProposal && include("project") && bundle.completedProjects
       ? bundle.completedProjects.map(
           (project) =>

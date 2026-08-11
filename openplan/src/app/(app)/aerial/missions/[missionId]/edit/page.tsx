@@ -6,6 +6,7 @@ import { MissionAoiEditor, type AoiPolygon } from "@/components/aerial/mission-a
 import { StateBlock } from "@/components/ui/state-block";
 import { Worksurface, WorksurfaceSection } from "@/components/ui/worksurface";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { buildMissionAoiSeedSources, type AoiSeedSource } from "@/lib/aerial/aoi-seed";
 import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -41,7 +42,7 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
 
   const { data: mission, error } = await supabase
     .from("aerial_missions")
-    .select("id, workspace_id, title, aoi_geojson")
+    .select("id, workspace_id, project_id, title, aoi_geojson")
     .eq("id", missionId)
     .eq("workspace_id", workspaceId)
     .maybeSingle();
@@ -53,6 +54,41 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
   const initialPolygon: AoiPolygon | null = isAoiPolygonGeoJson(mission.aoi_geojson)
     ? mission.aoi_geojson
     : null;
+
+  // Geometry the mission's project already holds, offered as AOI starting
+  // shapes. A mission with no project — or a project with no recorded
+  // geometry — gets an empty list, and the editor renders no seed affordance.
+  // A FAILED lookup is not the same as "no geometry": the editor stays fully
+  // usable for hand drawing, but the page says the shapes could not be loaded
+  // instead of silently offering none.
+  let seedSources: AoiSeedSource[] = [];
+  let seedLoadFailed = false;
+  if (mission.project_id) {
+    const [projectResult, corridorsResult] = await Promise.all([
+      supabase
+        .from("projects")
+        .select("id, name, place_label, place_geometry_geojson")
+        .eq("id", mission.project_id)
+        .eq("workspace_id", workspaceId)
+        .maybeSingle(),
+      supabase
+        .from("project_corridors")
+        .select("id, name, geometry_geojson")
+        .eq("project_id", mission.project_id)
+        .eq("workspace_id", workspaceId)
+        .order("name"),
+    ]);
+
+    seedLoadFailed = Boolean(projectResult.error || corridorsResult.error);
+    const project = projectResult.data;
+    const corridors = corridorsResult.data;
+
+    seedSources = buildMissionAoiSeedSources({
+      projectLabel: project?.place_label ?? project?.name ?? null,
+      placeGeometryGeojson: project?.place_geometry_geojson ?? null,
+      corridors: (corridors ?? []) as { id: string; name: string; geometry_geojson: unknown }[],
+    });
+  }
 
   const header = (
     <div className="flex flex-col gap-3">
@@ -88,7 +124,20 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
           title="AOI polygon"
           description="Geometry stored as GeoJSON. Exports convert the outer ring to DJI waypoints."
         >
-          <MissionAoiEditor missionId={mission.id} initialPolygon={initialPolygon} />
+          {seedLoadFailed ? (
+            <StateBlock
+              className="mb-4"
+              title="Project shapes could not be loaded"
+              description="This mission's project may have saved boundary or corridor shapes, but they could not be read just now, so no starting shapes are offered. Drawing and saving the AOI by hand still works — reload the page to try again."
+              tone="warning"
+              compact
+            />
+          ) : null}
+          <MissionAoiEditor
+            missionId={mission.id}
+            initialPolygon={initialPolygon}
+            seedSources={seedSources}
+          />
           <StateBlock
             className="mt-4"
             title="Editor scope"

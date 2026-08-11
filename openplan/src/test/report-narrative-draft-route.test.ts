@@ -417,13 +417,22 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
 
     // The stored provenance record lists the KB fact among the citable facts.
     const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
-      grounding_json: { facts: Array<{ fact_id: string; claim_text: string }> };
+      grounding_json: {
+        facts: Array<{ fact_id: string; claim_text: string }>;
+        knowledge_base: unknown;
+      };
     };
     expect(
       insertPayload.grounding_json.facts.some((fact) =>
         fact.claim_text.includes("2024 Local Road Safety Plan")
       )
     ).toBe(true);
+    // ...and the read outcome: one excerpt from a search that genuinely ran.
+    expect(insertPayload.grounding_json.knowledge_base).toEqual({
+      searched: true,
+      excerpt_count: 1,
+      error: null,
+    });
   });
 
   it("grounds a sentence that cites a knowledge-base fact instead of flagging it as unknown", async () => {
@@ -540,9 +549,11 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     expect(prompt).not.toContain("has not been independently verified by OpenPlan");
   });
 
-  it("still drafts when the knowledge base cannot be searched", async () => {
-    // Retrieval is best-effort by contract: an unavailable RPC costs the draft
-    // some citable facts and never invents one.
+  it("still drafts when the knowledge base cannot be searched — but DISCLOSES the failure", async () => {
+    // A failed search costs the draft some citable facts and never invents
+    // one, so the draft proceeds. What it may NOT do is look identical to a
+    // corpus that matched nothing: the failure is recorded in the stored
+    // grounding and in the host logs.
     rpcMock.mockRejectedValue(new Error("kb_search_chunks does not exist"));
 
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
@@ -551,6 +562,57 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     const prompt = (generateTextMock.mock.calls[0][0] as { prompt: string }).prompt;
     expect(prompt).toContain("WORKSPACE FACTS");
     expect(prompt).not.toContain("An uploaded document");
+
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      grounding_json: {
+        knowledge_base: { searched: boolean; excerpt_count: number; error: { message: string } | null };
+      };
+    };
+    expect(insertPayload.grounding_json.knowledge_base.error?.message).toContain(
+      "kb_search_chunks does not exist"
+    );
+    expect(insertPayload.grounding_json.knowledge_base.excerpt_count).toBe(0);
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "narrative_draft_kb_search_failed",
+      expect.objectContaining({
+        reportId: REPORT_ID,
+        workspaceId: WORKSPACE_ID,
+        message: expect.stringContaining("kb_search_chunks does not exist"),
+      })
+    );
+  });
+
+  it("records a corpus that matched nothing as searched-and-empty — never the same record as a failed search", async () => {
+    // Default fixture: the RPC ran and answered zero rows.
+    const emptyResponse = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(emptyResponse.status).toBe(201);
+    const emptyDisclosure = (
+      (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+        grounding_json: { knowledge_base: unknown };
+      }
+    ).grounding_json.knowledge_base;
+    expect(emptyDisclosure).toEqual({ searched: true, excerpt_count: 0, error: null });
+    expect(mockAudit.warn).not.toHaveBeenCalledWith(
+      "narrative_draft_kb_search_failed",
+      expect.anything()
+    );
+
+    // Same zero excerpts, but because the read FAILED: the stored records differ.
+    draftInsertMock.mockClear();
+    rpcMock.mockResolvedValue({ data: null, error: { message: "statement timeout" } });
+    const failedResponse = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(failedResponse.status).toBe(201);
+    const failedDisclosure = (
+      (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+        grounding_json: { knowledge_base: unknown };
+      }
+    ).grounding_json.knowledge_base;
+    expect(failedDisclosure).toEqual({
+      searched: true,
+      excerpt_count: 0,
+      error: { message: "statement timeout", schema_pending: false },
+    });
+    expect(failedDisclosure).not.toEqual(emptyDisclosure);
   });
 });
 

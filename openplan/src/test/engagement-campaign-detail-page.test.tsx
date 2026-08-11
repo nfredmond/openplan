@@ -70,6 +70,22 @@ const reportsSelectMock = vi.fn(() => ({ eq: reportsEqMock }));
 const reportSectionsInMock = vi.fn();
 const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));
 
+// The RTP cycle (and chapter) the campaign is attached to — read only when the
+// campaign row records an attachment, so the default fixtures (unattached)
+// never touch these.
+const rtpCycleMaybeSingleMock = vi.fn(
+  async (): Promise<{
+    data: { id: string; title: string; status: string } | null;
+    error: { message: string } | null;
+  }> => ({ data: null, error: null })
+);
+const rtpChapterMaybeSingleMock = vi.fn(
+  async (): Promise<{
+    data: { id: string; title: string } | null;
+    error: { message: string } | null;
+  }> => ({ data: null, error: null })
+);
+
 const reportArtifactsInMock = vi.fn();
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
@@ -212,6 +228,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
+  }
+  if (table === "rtp_cycles") {
+    return { select: () => ({ eq: () => ({ maybeSingle: rtpCycleMaybeSingleMock }) }) };
+  }
+  if (table === "rtp_cycle_chapters") {
+    return { select: () => ({ eq: () => ({ maybeSingle: rtpChapterMaybeSingleMock }) }) };
   }
   // Survey definition tables — read by `loadSurveyBuilderDefinition` (all
   // questions) and by the translation inventory (active questions only).
@@ -391,6 +413,8 @@ describe("EngagementCampaignDetailPage", () => {
         id: "campaign-1",
         workspace_id: "workspace-1",
         project_id: "project-1",
+        rtp_cycle_id: null,
+        rtp_cycle_chapter_id: null,
         title: "Downtown listening campaign",
         summary: "Collect downtown safety feedback.",
         status: "active",
@@ -662,6 +686,8 @@ describe("EngagementCampaignDetailPage", () => {
         id: "campaign-1",
         workspace_id: "workspace-1",
         project_id: "project-1",
+        rtp_cycle_id: null,
+        rtp_cycle_chapter_id: null,
         title: "Downtown listening campaign",
         summary: "Collect downtown safety feedback.",
         status: "draft",
@@ -1132,6 +1158,111 @@ describe("EngagementCampaignDetailPage", () => {
 
       expect(screen.getByText(/Which reports source this campaign could not be read/i)).toBeInTheDocument();
       expect(screen.getByText(/That is the fallback label, not a finding/i)).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * THE RTP ATTACHMENT, VISIBLE FROM THE CAMPAIGN SIDE.
+   *
+   * `rtp_cycle_id` / `rtp_cycle_chapter_id` were written by the RTP cycle
+   * page's creator and read by NOTHING on this console — the link was invisible
+   * from the campaign, so plan comments were re-associated by hand. These
+   * assert the console now says which plan the campaign feeds, by title, with
+   * a link to the cycle — and that a failed cycle read never renders as an
+   * unattached campaign.
+   */
+  describe("the campaign's RTP attachment", () => {
+    function attachedCampaignRow(overrides: Record<string, unknown> = {}) {
+      return {
+        id: "campaign-1",
+        workspace_id: "workspace-1",
+        project_id: "project-1",
+        rtp_cycle_id: "cycle-1",
+        rtp_cycle_chapter_id: null,
+        title: "Downtown listening campaign",
+        summary: "Collect downtown safety feedback.",
+        status: "active",
+        engagement_type: "comment_collection",
+        share_token: "share-token",
+        public_description: null,
+        allow_public_submissions: true,
+        submissions_closed_at: null,
+        created_at: "2026-03-01T00:00:00.000Z",
+        updated_at: "2026-03-28T22:00:00.000Z",
+        ...overrides,
+      };
+    }
+
+    it("asks the campaign row for the attachment columns it renders", async () => {
+      // A mocked client returns the fixture whatever columns were asked for,
+      // so this asserts on the projection string itself: dropping the columns
+      // from the select would leave every other assertion here green while the
+      // real page rendered an attachment that does not exist.
+      await renderPage();
+
+      const mainProjection = campaignSelectMock.mock.calls
+        .map((call) => call[0])
+        .find((columns) => typeof columns === "string" && columns.includes("workspace_id"));
+      expect(mainProjection).toContain("rtp_cycle_id");
+      expect(mainProjection).toContain("rtp_cycle_chapter_id");
+    });
+
+    it("says when the campaign is attached to no plan, and where to attach one", async () => {
+      await renderPage();
+
+      expect(screen.getByText(/RTP attachment/)).toBeInTheDocument();
+      expect(screen.getByText(/not attached to an RTP cycle/i)).toBeInTheDocument();
+    });
+
+    it("names the attached cycle by title and links to it", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({ data: attachedCampaignRow(), error: null });
+      rtpCycleMaybeSingleMock.mockResolvedValueOnce({
+        data: { id: "cycle-1", title: "2050 Regional Transportation Plan", status: "draft" },
+        error: null,
+      });
+
+      await renderPage();
+
+      expect(screen.getByText("2050 Regional Transportation Plan")).toBeInTheDocument();
+      expect(screen.getByText(/Comments land on the whole plan/i)).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Open the RTP cycle/i })).toHaveAttribute("href", "/rtp/cycle-1");
+      expect(screen.queryByText(/not attached to an RTP cycle/i)).not.toBeInTheDocument();
+    });
+
+    it("names the targeted chapter when one is set", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: attachedCampaignRow({ rtp_cycle_chapter_id: "chapter-1" }),
+        error: null,
+      });
+      rtpCycleMaybeSingleMock.mockResolvedValueOnce({
+        data: { id: "cycle-1", title: "2050 Regional Transportation Plan", status: "draft" },
+        error: null,
+      });
+      rtpChapterMaybeSingleMock.mockResolvedValueOnce({
+        data: { id: "chapter-1", title: "Financial element" },
+        error: null,
+      });
+
+      await renderPage();
+
+      expect(screen.getByText(/Targeted chapter: Financial element/)).toBeInTheDocument();
+      expect(screen.queryByText(/Comments land on the whole plan/i)).not.toBeInTheDocument();
+    });
+
+    it("does not render a failed cycle read as an unattached campaign", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({ data: attachedCampaignRow(), error: null });
+      rtpCycleMaybeSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "statement timeout" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText(/The attached RTP cycle could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/failed read, not a missing attachment/i)).toBeInTheDocument();
+      expect(screen.queryByText(/not attached to an RTP cycle/i)).not.toBeInTheDocument();
+      // Named in the top-of-page disclosure with the other failed reads.
+      expect(screen.getByText(/Part of this campaign could not be read/i)).toBeInTheDocument();
     });
   });
 });

@@ -72,6 +72,8 @@ type CampaignRow = {
   id: string;
   workspace_id: string;
   project_id: string | null;
+  rtp_cycle_id: string | null;
+  rtp_cycle_chapter_id: string | null;
   title: string;
   summary: string | null;
   status: string;
@@ -140,7 +142,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData, error: campaignError } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
+    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -185,7 +187,7 @@ export default async function EngagementCampaignDetailPage({
   // so each of them names the failure instead. See src/lib/ui/read-failures.ts.
   const reads = new ReadFailureLog();
 
-  const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult] = await Promise.all([
+  const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult, rtpCycleResult, rtpChapterResult] = await Promise.all([
     campaign.project_id
       ? supabase
           .from("projects")
@@ -214,6 +216,16 @@ export default async function EngagementCampaignDetailPage({
           .eq("project_id", campaign.project_id)
           .order("updated_at", { ascending: false })
       : Promise.resolve({ data: [] as ReportRow[], error: null }),
+    // The RTP cycle (and chapter, when one is targeted) this campaign feeds.
+    // Until the console read these, the attachment was set only from the RTP
+    // side and was invisible here — a moderator classifying plan comments had
+    // no way to see which plan they were collected for.
+    campaign.rtp_cycle_id
+      ? supabase.from("rtp_cycles").select("id, title, status").eq("id", campaign.rtp_cycle_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    campaign.rtp_cycle_chapter_id
+      ? supabase.from("rtp_cycle_chapters").select("id, title").eq("id", campaign.rtp_cycle_chapter_id).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
   ]);
 
   // Named in the moderator's words, because these labels are read back in a
@@ -223,6 +235,10 @@ export default async function EngagementCampaignDetailPage({
   const itemsUnreadable = reads.check("the comments on this campaign", itemsResult);
   reads.check("the workspace's project list", projectsResult);
   const reportsUnreadable = reads.check("reports on the linked project", reportsResult);
+  const rtpCycleUnreadable = reads.check("the RTP cycle this campaign is attached to", rtpCycleResult);
+  const rtpChapterUnreadable = reads.check("the RTP chapter this campaign is targeted at", rtpChapterResult);
+  const rtpCycle = rtpCycleResult.data as { id: string; title: string; status: string } | null;
+  const rtpChapter = rtpChapterResult.data as { id: string; title: string } | null;
 
   const project = projectResult.data;
   const categories = categoriesResult.data;
@@ -685,6 +701,80 @@ export default async function EngagementCampaignDetailPage({
           recommendedReport={recommendedCampaignReport}
           latestArtifactGeneratedAtByReportId={latestArtifactGeneratedAtByReportId}
         />
+
+        {/*
+          THE RTP ATTACHMENT, VISIBLE FROM THE CAMPAIGN SIDE. These two columns
+          were written only by the RTP cycle page's campaign creator and read by
+          nothing on this console — so a moderator triaging comments collected
+          for a plan could not see which plan, and the link was uneditable from
+          here. The display lives on the console; the edit lives in Campaign
+          management below (the same PATCH the rest of the metadata uses).
+        */}
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Regional plan</p>
+              <h2 className="module-section-title">RTP attachment</h2>
+              <p className="module-section-description">
+                Which Regional Transportation Plan cycle this campaign collects input for. Comments
+                on an attached campaign feed that plan&apos;s comment-response record instead of
+                being re-associated by hand later.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5">
+            {campaign.rtp_cycle_id === null ? (
+              <p className="text-sm text-muted-foreground">
+                This campaign is not attached to an RTP cycle. If its comments belong to a plan,
+                attach one under Campaign management at the bottom of this page.
+              </p>
+            ) : rtpCycleUnreadable ? (
+              <StateBlock
+                tone="danger"
+                title="The attached RTP cycle could not be read"
+                description="This campaign is attached to an RTP cycle, but that record could not be loaded. The attachment is still in place — this is a failed read, not a missing attachment."
+                compact
+              />
+            ) : !rtpCycle ? (
+              <StateBlock
+                tone="warning"
+                title="The attached RTP cycle could not be found"
+                description="This campaign records an attachment to an RTP cycle, but no such cycle came back. It may have been deleted; the attachment can be cleared or repointed under Campaign management below."
+                compact
+              />
+            ) : (
+              <div className="module-record-row">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone="info">{titleizeEngagementValue(rtpCycle.status)}</StatusBadge>
+                      <span className="text-sm font-semibold text-foreground">{rtpCycle.title}</span>
+                    </div>
+                    <p className="module-record-summary">
+                      {campaign.rtp_cycle_chapter_id === null
+                        ? "Comments land on the whole plan — no specific chapter is targeted."
+                        : rtpChapterUnreadable
+                          ? "A specific chapter is targeted, but its record could not be read."
+                          : rtpChapter
+                            ? `Targeted chapter: ${rtpChapter.title}`
+                            : "A specific chapter is targeted, but it could not be found — it may have been deleted."}
+                    </p>
+                  </div>
+                </div>
+                <MetaList>
+                  <MetaItem>
+                    <Link
+                      href={`/rtp/${rtpCycle.id}`}
+                      className="underline underline-offset-2 transition hover:text-foreground"
+                    >
+                      Open the RTP cycle
+                    </Link>
+                  </MetaItem>
+                </MetaList>
+              </div>
+            )}
+          </div>
+        </article>
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
