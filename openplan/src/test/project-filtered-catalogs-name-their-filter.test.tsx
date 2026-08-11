@@ -362,7 +362,7 @@ describe("engagement catalog opened for one project", () => {
 
     await renderEngagement({ projectId: PROJECT_ID });
 
-    expect(screen.queryByText("No engagement campaigns yet")).toBeNull();
+    expect(screen.queryByText("No campaigns yet")).toBeNull();
     expect(screen.getByText("No campaigns match these filters")).toBeInTheDocument();
     expect(screen.getByText(/filtered to project Downtown Corridor/i)).toBeInTheDocument();
   });
@@ -390,6 +390,6 @@ describe("engagement catalog opened for one project", () => {
 
     await renderEngagement({});
 
-    expect(screen.getByText("No engagement campaigns yet")).toBeInTheDocument();
+    expect(screen.getByText("No campaigns yet")).toBeInTheDocument();
   });
 });

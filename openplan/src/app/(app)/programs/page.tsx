@@ -38,7 +38,7 @@ import {
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { moduleMetadata } from "@/lib/ui/page-title";
 
-export const metadata = moduleMetadata("Programs");
+export const metadata = moduleMetadata("Programming Cycles");
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -625,7 +625,7 @@ export default async function ProgramsPage({
             Programs module live
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Programs</h1>
+            <h1 className="module-intro-title">Programming Cycles</h1>
             <p className="module-intro-description">
               Track funding cycles, submissions, and linked planning work in one place.
             </p>

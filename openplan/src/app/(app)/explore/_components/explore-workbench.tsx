@@ -651,7 +651,7 @@ export function ExploreWorkbench({
         {!analysisResult && !mapUnavailableReason ? (
           <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">
             <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-cyan-300/70">
-              Analysis Studio
+              Corridor Analysis
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight text-white">
               Start with your study area.
@@ -666,8 +666,8 @@ export function ExploreWorkbench({
 
       <aside className="analysis-explore-rail flex min-h-0 flex-col overflow-y-auto">
         <div className="analysis-explore-rail-header">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Analysis Studio</p>
-          <h2 className="mt-2 text-lg font-semibold tracking-tight text-white">Corridor analysis workspace</h2>
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Corridor Analysis</p>
+          <h2 className="mt-2 text-lg font-semibold tracking-tight text-white">Corridor Analysis</h2>
           <p className="mt-2 text-sm leading-6 text-slate-300/78">Use the map on the left and the controls here to set the study area, compare conditions, and review outputs.</p>
         </div>
         <div className="space-y-5 px-5 py-4">
@@ -716,7 +716,7 @@ export function ExploreWorkbench({
                   <div className="analysis-sidepanel-row is-warning">
                     <div className="analysis-sidepanel-main">
                       <p className="analysis-sidepanel-title">Create the first workspace</p>
-                      <p className="analysis-sidepanel-body">No workspace membership detected. Create a workspace to start using Analysis Studio.</p>
+                      <p className="analysis-sidepanel-body">No workspace membership detected. Create a workspace to start using Corridor Analysis.</p>
                     </div>
                     <div className="analysis-studio-input-stack">
                       <Input
@@ -852,7 +852,7 @@ export function ExploreWorkbench({
 
                   {analysisContext.migrationPending ? (
                     <div className="module-alert text-xs">
-                      Data Hub is wired into Analysis Studio, but the current database still needs the latest migration before linked datasets can fully appear here.
+                      Data Hub is wired into Corridor Analysis, but the current database still needs the latest migration before linked datasets can fully appear here.
                     </div>
                   ) : linkedDatasetQueueState.items.length > 0 ? (
                     <div className="space-y-3">

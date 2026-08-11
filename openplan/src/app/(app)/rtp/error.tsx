@@ -21,11 +21,11 @@ export default function RtpError({
   return (
     <div className="px-6 py-8">
       <ErrorState
-        title="The RTP surface hit an error."
+        title="Something went wrong in Regional Plan (RTP)."
         description={
           error.digest
-            ? `Reference ${error.digest}. Try again, or return to the RTP cycles list.`
-            : "Try again, or return to the RTP cycles list."
+            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to Regional Plan (RTP).`
+            : "Nothing has been deleted — this screen failed to load. Try again, or go back to Regional Plan (RTP)."
         }
         action={
           <div className="flex flex-wrap gap-3 text-sm">
@@ -34,13 +34,13 @@ export default function RtpError({
               onClick={reset}
               className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
             >
-              Retry
+              Try again
             </button>
             <Link
               href="/rtp"
               className="inline-flex items-center rounded border border-border px-3 py-1.5 font-medium text-foreground hover:bg-muted/40"
             >
-              Back to RTP cycles
+              Back to Regional Plan (RTP)
             </Link>
           </div>
         }

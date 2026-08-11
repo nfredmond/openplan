@@ -37,12 +37,17 @@ export default function ExamplesEvidenceCatalogPage() {
           </div>
 
           <div className="public-fact-grid public-fact-grid--three">
+            {/* Scoped to THIS RUN on purpose. This block used to read like a
+                verdict on the product ("Current status: Internal prototype
+                only — Not production-ready forecasting"); what the label
+                actually describes is the screening gate recorded on the one
+                run this page documents. */}
             <div className="public-fact">
-              <p className="public-fact-label">Current status</p>
+              <p className="public-fact-label">This run&apos;s screening gate</p>
               <p className="public-fact-value">Internal prototype only</p>
               <p className="public-fact-detail">
-                Not production-ready forecasting. No outward modeling claims are made from this
-                run.
+                The gate recorded on this run. It is not production-ready forecasting, and no
+                outward modeling claims are made from it.
               </p>
             </div>
             <div className="public-fact">

@@ -1,6 +1,15 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowRight, CheckCircle2, Circle, MapPin, Radar, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  MapPin,
+  MessageSquareShare,
+  Radar,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 /**
@@ -50,16 +59,21 @@ type FirstRunStepProps = {
   /** What this step turns on, and what stays off until it is done. */
   unlocks: string;
   /**
-   * The step's own affordance, when it is a link. Step one deliberately has
-   * none: its control (`WorkspaceGeographyPanel`) is mounted in `children`, so
+   * The step's own affordance, when it is a link. The AI-key and geography
+   * steps deliberately have none: their controls are mounted in `children`, so
    * a link would be a second route to the thing already on screen.
    */
   action?: { href: string; label: string };
   /**
    * Raise this step above the others. Exactly one step should carry it: the
-   * outstanding one that blocks the rest of the workspace.
+   * first outstanding one.
    */
   emphasis?: boolean;
+  /**
+   * A stable fragment id on the step itself, so other surfaces (the copilot's
+   * no-key notice) can deep-link straight to it.
+   */
+  anchorId?: string;
   children?: ReactNode;
 };
 
@@ -78,12 +92,14 @@ function FirstRunStep({
   unlocks,
   action,
   emphasis = false,
+  anchorId,
   children,
 }: FirstRunStepProps) {
   const done = status === "done";
 
   return (
     <li
+      id={anchorId}
       className={[
         "rounded-lg border p-4",
         emphasis
@@ -148,6 +164,14 @@ function FirstRunStep({
 
 export type FirstRunChecklistProps = {
   /**
+   * Whether an AI (Anthropic) key resolves for this workspace — a key the
+   * workspace stored itself OR the deployment's own environment key, resolved
+   * server-side with the same helper every AI route uses
+   * (`hasAnthropicAccess` inside `withWorkspaceIntegrationContext`). Only this
+   * boolean crosses to the client; the key itself never does.
+   */
+  aiKeyConfigured: boolean;
+  /**
    * Whether the workspace has stated a home geography at all. Read from the
    * row, not from the label: the schema allows a resolved geography whose
    * source recorded no display name, and that is still set.
@@ -160,22 +184,81 @@ export type FirstRunChecklistProps = {
   /** Owner/admin — the only roles the geography and invitation APIs accept. */
   canManageWorkspace: boolean;
   /**
-   * The geography setter itself, mounted here while step one is outstanding so
-   * the control sits under the step that asks for it. Mount it in exactly one
-   * place: the panel self-fetches, and two mounts would mean two requests and
-   * two answers.
+   * What the person said they came for, carried from the public landing page
+   * through sign-up as a query parameter — never stored. "engagement" adds a
+   * public-comment-campaign step right after the geography, because that is
+   * the first thing they were promised. "modeling" needs no extra step: the
+   * screening step already is that path. Anything else reads as null.
+   */
+  intent?: "modeling" | "engagement" | null;
+  /**
+   * How many engagement campaigns this workspace has, when the page's
+   * operations summary could measure it — null when it could not. The
+   * engagement step only claims to be done on an observed count, never on a
+   * failed read (rule 1 above).
+   */
+  engagementCampaignCount?: number | null;
+  /**
+   * The Anthropic key-entry control (the integration-keys panel filtered to
+   * its Anthropic row), mounted under the AI step while it is outstanding so
+   * the control sits under the step that asks for it. Same hoisting rule as
+   * `children`: mount each control in exactly one place.
+   */
+  aiKeyControl?: ReactNode;
+  /**
+   * The geography setter itself, mounted here while the geography step is
+   * outstanding so the control sits under the step that asks for it. Mount it
+   * in exactly one place: the panel self-fetches, and two mounts would mean
+   * two requests and two answers.
    */
   children?: ReactNode;
 };
 
 export function FirstRunChecklist({
+  aiKeyConfigured,
   homeGeographyIsSet,
   homeGeographyLabel,
   hasRuns,
   canManageWorkspace,
+  intent = null,
+  engagementCampaignCount = null,
+  aiKeyControl,
   children,
 }: FirstRunChecklistProps) {
   const geographyPickerIsHere = Boolean(children);
+  const aiKeyControlIsHere = Boolean(aiKeyControl);
+  const showEngagementStep = intent === "engagement";
+  // Done only on an observed count. A null count means the read did not land,
+  // and a step that cannot be observed carries no completion claim — it renders
+  // unmarked, exactly like the team step.
+  const engagementStatus: StepStatus =
+    engagementCampaignCount !== null && engagementCampaignCount > 0
+      ? "done"
+      : engagementCampaignCount === 0
+        ? "todo"
+        : "optional";
+  // Exactly one step may carry emphasis: the first incomplete one in display
+  // order. The AI key leads (Nathaniel's decision 2026-08-10: key entry at the
+  // very beginning), then geography, then the intent-driven engagement step.
+  // Emphasis never gates anything — every step stays usable regardless.
+  const emphasizeAiKey = !aiKeyConfigured;
+  const emphasizeGeography = aiKeyConfigured && !homeGeographyIsSet;
+  const emphasizeEngagement =
+    showEngagementStep &&
+    aiKeyConfigured &&
+    homeGeographyIsSet &&
+    engagementStatus !== "done";
+  const geographyIndex = 2;
+  const screeningIndex = showEngagementStep ? 4 : 3;
+  const teamIndex = screeningIndex + 1;
+
+  const aiKeyState = aiKeyConfigured
+    ? "On — an AI key is available to this workspace."
+    : canManageWorkspace
+      ? aiKeyControlIsHere
+        ? "Not on yet. Paste your workspace's Anthropic API key below."
+        : "Not on yet. Add an Anthropic key in the Integration keys panel on this page."
+      : "Not on yet. A workspace owner or admin can add the key.";
 
   const geographyState = homeGeographyIsSet
     ? homeGeographyLabel
@@ -189,12 +272,33 @@ export function FirstRunChecklist({
 
   return (
     <ol className="mt-4 space-y-3">
+      {/* First on purpose. Without a key nothing blocks — every other step and
+          the whole app stay usable — but the AI features are simply off, and
+          the honest move is to say that at the very beginning rather than let
+          a planner discover it mid-conversation with a silent copilot. */}
       <FirstRunStep
         index={1}
+        icon={Sparkles}
+        title="Turn on your AI assistant"
+        status={aiKeyConfigured ? "done" : "todo"}
+        emphasis={emphasizeAiKey}
+        anchorId="workspace-ai-key"
+        state={aiKeyState}
+        unlocks={
+          aiKeyConfigured
+            ? "The Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation all run on this key. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
+            : "Without a key, the Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation are unavailable — everything else in OpenPlan still works. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
+        }
+      >
+        {aiKeyConfigured ? null : aiKeyControl}
+      </FirstRunStep>
+
+      <FirstRunStep
+        index={geographyIndex}
         icon={MapPin}
         title="Tell OpenPlan where you work"
         status={homeGeographyIsSet ? "done" : "todo"}
-        emphasis={!homeGeographyIsSet}
+        emphasis={emphasizeGeography}
         state={geographyState}
         unlocks={
           homeGeographyIsSet
@@ -205,8 +309,32 @@ export function FirstRunChecklist({
         {children}
       </FirstRunStep>
 
+      {/* Only for people who arrived saying they came to collect public
+          comments — it puts the thing they were promised right after the one
+          setting it depends on. */}
+      {showEngagementStep ? (
+        <FirstRunStep
+          index={3}
+          icon={MessageSquareShare}
+          title="Start a public comment campaign"
+          status={engagementStatus}
+          emphasis={emphasizeEngagement}
+          state={
+            engagementStatus === "done"
+              ? "This workspace has engagement campaigns."
+              : engagementStatus === "todo"
+                ? "No campaigns yet."
+                : "Campaigns could not be counted just now, so this step makes no claim either way."
+          }
+          unlocks="Publish a map or survey where residents drop a pin and tell you what they see. Nothing a resident writes appears publicly until you approve it, and what you collect stays attached to the project when you write it up."
+          action={
+            engagementStatus === "done" ? undefined : { href: "/engagement", label: "Open Engagement" }
+          }
+        />
+      ) : null}
+
       <FirstRunStep
-        index={2}
+        index={screeningIndex}
         icon={Radar}
         title="Run your first screening"
         status={hasRuns ? "done" : "todo"}
@@ -215,8 +343,8 @@ export function FirstRunChecklist({
             ? "This workspace has saved analysis runs."
             : "No analysis runs yet."
         }
-        unlocks="Analysis Studio scores a corridor or study area against the open data available for it and saves the run to this workspace, where reports, comparisons, and grant narratives can draw on it. Results are screening-grade — they support prioritization and narrative, not final engineering."
-        action={hasRuns ? undefined : { href: "/explore", label: "Open Analysis Studio" }}
+        unlocks="Corridor Analysis scores a corridor or study area against the open data available for it and saves the run to this workspace, where reports, comparisons, and grant narratives can draw on it. Results are screening-grade — they support prioritization and narrative, not final engineering."
+        action={hasRuns ? undefined : { href: "/explore", label: "Open Corridor Analysis" }}
       />
 
       {/* Owner/admin only: the invitation API refuses everyone else, so showing
@@ -226,7 +354,7 @@ export function FirstRunChecklist({
           team exists, and an unchecked box would claim otherwise. */}
       {canManageWorkspace ? (
         <FirstRunStep
-          index={3}
+          index={teamIndex}
           icon={Users}
           title="Invite your team"
           status="optional"

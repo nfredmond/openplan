@@ -368,7 +368,7 @@ export async function ReimbursementLane({
       {reads.any ? (
         <StateBlock
           tone="danger"
-          title="Part of this reimbursement lane could not be read"
+          title="Part of this reimbursement view could not be read"
           description={`${reads.describe()} Treat no figure here as a statement of what this workspace is owed or has claimed until the read succeeds. ${reads.messages().join(" · ")}`}
         />
       ) : null}
@@ -405,12 +405,13 @@ export async function ReimbursementLane({
             <p className="mt-1 text-muted-foreground">{operationsSummary.nextCommand.detail}</p>
           </div>
           <Link href={resolveWorkspaceCommandHref(operationsSummary.nextCommand)} className="text-sm font-semibold text-foreground transition hover:text-primary">
-            Open lead project lane
+            Open lead project
           </Link>
         </div>
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <div id="record-invoice">
         <InvoiceRecordComposer
           workspaceId={workspaceId}
           projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))}
@@ -418,6 +419,7 @@ export async function ReimbursementLane({
           canWrite={canWriteInvoices}
           reimbursementProfile={reimbursementProfile}
         />
+        </div>
 
         <article className={panelClass()}>
           <div className="flex items-start gap-3 border-b border-border/60 pb-4">
@@ -493,7 +495,7 @@ export async function ReimbursementLane({
                   </p>
                   {exactRelinkCandidateCount > 0 ? (
                     <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-300">
-                      {exactRelinkCandidateCount} invoice record{exactRelinkCandidateCount === 1 ? " has" : "s have"} an exact award relink ready from this lane.
+                      {exactRelinkCandidateCount} invoice record{exactRelinkCandidateCount === 1 ? " has" : "s have"} an exact award relink ready in the queue below.
                     </p>
                   ) : null}
                   {activeProjectFilterName ? (
@@ -697,7 +699,15 @@ export async function ReimbursementLane({
                 ? "No award-linked invoice records are visible in this workspace yet."
                 : linkageFilter === "unlinked"
                   ? "No unlinked invoice records are visible in this workspace right now."
-                  : "No invoice records recorded yet for this workspace."}
+                  : "This register holds the invoices your agency sends — reimbursement claims to your funders, and bills to your own clients if you consult. Record your first invoice to start tracking what you are owed."}
+            {overdueFilter !== "overdue" && linkageFilter === "all" ? (
+              <>
+                {" "}
+                <a href="#record-invoice" className="font-medium text-foreground underline underline-offset-4">
+                  Record an invoice
+                </a>
+              </>
+            ) : null}
           </p>
         ) : (
           <ul className="mt-4 space-y-3">

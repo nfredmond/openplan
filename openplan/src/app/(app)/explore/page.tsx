@@ -7,7 +7,7 @@ import { ExploreWorkbench } from "./_components/explore-workbench";
 
 import { moduleMetadata } from "@/lib/ui/page-title";
 
-export const metadata = moduleMetadata("Analysis Studio");
+export const metadata = moduleMetadata("Corridor Analysis");
 
 /**
  * `?projectId=` is how Analysis Studio is TOLD which project it was opened for.
@@ -155,7 +155,7 @@ export default async function ExplorePage({
         : !projectRow
           ? "This page was opened for a project that is not in this workspace, so its study area could not be used. The area below is whatever this workspace had already stated."
           : !projectAreaUsable
-            ? `${projectRow.name ?? "That project"} has no study area of its own yet, so nothing could be inherited from it. Set one on the project record and Analysis Studio will open on it.`
+            ? `${projectRow.name ?? "That project"} has no study area of its own yet, so nothing could be inherited from it. Set one on the project record and Corridor Analysis will open on it.`
             : null;
 
   return (

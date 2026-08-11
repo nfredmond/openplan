@@ -87,7 +87,11 @@
 }
 .op-cart-rail:hover,
 .op-cart-rail:focus-within {
-  width: 220px;
+  /* 240px, not 220px: the longest label ("Invoices & Reimbursements") needs
+     ~208px of row at 13px once the icon, gap, margins and padding are paid
+     for — 220px left it grazing the clipped edge. Widen the rail, never
+     shrink the type. */
+  width: 240px;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
 }
 .op-cart-rail__inner {
@@ -151,16 +155,18 @@
 
      `--op-rail-rows` is written by the rail component and counts every row it
      draws (nav items + the theme control). `--op-rail-chrome` is everything
-     that is NOT a row: the 16px rail insets, the logo block, the separators,
-     the two group titles, and the inner padding. What is left, divided by the
-     rows, is how tall a row may be — minus the 4px of vertical margin each row
-     carries.
+     that is NOT a row: the 16px rail insets, the separators between the six
+     groups, the six group titles, and the inner padding — roughly
+     32 + 8 + 6×26 + 5×13 + 2 of border. What is left, divided by the rows, is
+     how tall a row may be — minus the 4px of vertical margin each row
+     carries. Overstating chrome only shortens rows a little; understating it
+     is what buys a scrollbar, so the estimate rounds UP.
 
      Discrete `max-height` breakpoints could not do this. They left bands where
      the nav overflowed by a few pixels and showed a scrollbar (measured: at a
      1000px-tall window the nav wanted 857px and had 850px, because 1000 clears
      the 980px breakpoint). A continuous function has no such band. */
-  height: clamp(18px, calc((100dvh - var(--op-rail-chrome, 121px)) / var(--op-rail-rows, 20) - 4px), 40px);
+  height: clamp(18px, calc((100dvh - var(--op-rail-chrome, 268px)) / var(--op-rail-rows, 20) - 4px), 40px);
   border-radius: 9px;
   border: none;
   background: transparent;
@@ -292,7 +298,7 @@ html.dark .op-cart-rail__btn:hover {
 }
 .op-cart-rail:hover ~ .op-cart-hdr,
 .op-cart-rail:focus-within ~ .op-cart-hdr {
-  left: 252px;
+  left: 272px;
 }
 .op-cart-ws-mark {
   width: 22px;
@@ -385,7 +391,7 @@ html.dark .op-cart-rail__btn:hover {
 
 .op-cart-rail:hover ~ .op-cart-surface,
 .op-cart-rail:focus-within ~ .op-cart-surface {
-  left: 252px;
+  left: 272px;
 }
 
 .op-cart-surface__hd {
@@ -662,7 +668,7 @@ html.dark .op-cart-layer-item:hover {
 }
 .op-cart-rail:hover ~ .op-cart-inspector,
 .op-cart-rail:focus-within ~ .op-cart-inspector {
-  left: 652px;
+  left: 672px;
 }
 .op-cart-inspector.is-hidden {
   transform: translateY(calc(100% + 32px));
@@ -797,7 +803,7 @@ html.dark .op-cart-zoom button:hover {
 }
 .op-cart-rail:hover ~ .op-cart-account,
 .op-cart-rail:focus-within ~ .op-cart-account {
-  left: 252px;
+  left: 272px;
 }
 .op-cart-account__who {
   display: flex;
@@ -1091,6 +1097,41 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   .op-cart-rail:focus-within .op-cart-rail__group-title {
     height: 0;
     margin: 6px 18px 0;
+  }
+}
+
+/* ---------- DESKTOP: THE RAIL RESTS EXPANDED ----------
+   Locked decision (2026-08-10): on desktop, item labels and group titles are
+   always visible — finding a module is never a hover-and-remember exercise.
+   The rail rests at its expanded width, so the hover/focus expansion rules
+   above become inert here (rest and hover now agree), and the header, content
+   panel, inspector and account card take their expanded offsets statically
+   instead of shifting on hover. Below 1200px the map is the scarce resource,
+   so the collapsed-with-hover-expand behavior is unchanged.
+
+   The short-viewport rules above still apply on a short DESKTOP window: group
+   titles may collapse to their separator below 880px of height, but item
+   labels stay visible — the locked decision is about labels. */
+@media (min-width: 1200px) {
+  .op-cart-rail {
+    width: 240px;
+  }
+  .op-cart-rail__group-title,
+  .op-cart-rail__tip {
+    opacity: 1;
+  }
+  .op-cart-rail__badge {
+    top: 10px;
+    left: auto;
+    right: 14px;
+  }
+  .op-cart-hdr,
+  .op-cart-surface,
+  .op-cart-account {
+    left: 272px;
+  }
+  .op-cart-inspector {
+    left: 672px;
   }
 }
 

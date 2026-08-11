@@ -7,35 +7,18 @@ import {
   resolveStageGateTemplateBinding,
 } from "@/lib/stage-gates/template-loader";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+// The checklist itself lives in the shared onboarding module so the in-app
+// Help page renders the same list this response carries — the bootstrap
+// endpoint is off the real sign-up path (the handle_new_user trigger
+// provisions the workspace), so a list that lived only here was unreachable.
+import { NEW_WORKSPACE_GETTING_STARTED_STEPS } from "@/lib/onboarding/getting-started";
 
 const bootstrapSchema = z.object({
   workspaceName: z.string().trim().min(1).max(120),
   stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
 });
 
-/**
- * The first six things to do in a new workspace.
- *
- * REWRITTEN because the original was written for a supervised single-county
- * pilot that no longer exists: it told every new workspace in the country to
- * "set pilot success metrics", "schedule pilot readout", and hold a "weekly KPI
- * review cadence" — steps that belong to one agency's engagement, not to the
- * product. OpenPlan is self-serve now (non-negotiable #4), so the first thing a
- * planner sees on sign-up cannot assume a founder, a pilot period, a readout
- * meeting, or a reporting cadence somebody else set.
- *
- * These are jurisdiction-neutral on purpose: no place, agency, or program is
- * named, because the same list is the first thing a city planner in Ohio, a
- * tribal transportation department, and a two-person consultancy will read.
- */
-const onboardingChecklist = [
-  "Confirm the workspace owner and add at least one other admin.",
-  "Set your workspace's home geography so analyses start in your area.",
-  "Invite the teammates who will review and approve work.",
-  "Draw or upload a corridor, then run your first corridor analysis.",
-  "Read the source transparency panel and check what was measured and what was not.",
-  "Export a report and confirm the run metadata and disclosures read the way you need.",
-];
+const onboardingChecklist = NEW_WORKSPACE_GETTING_STARTED_STEPS;
 
 const DUPLICATE_KEY_CODE = "23505";
 

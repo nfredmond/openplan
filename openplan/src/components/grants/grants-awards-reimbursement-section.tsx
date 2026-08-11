@@ -183,7 +183,7 @@ export function GrantsAwardsReimbursementSection({
         <div className="mt-5">
           <EmptyState
             title="No committed award stacks yet"
-            description="Once award records exist, this workspace lane will show which project stacks still need reimbursement starts, invoice follow-through, or obligation attention."
+            description="Once award records exist, this list will show which projects still need a reimbursement started, an invoice followed up, or attention to obligation deadlines."
           />
         </div>
       ) : (
@@ -227,7 +227,7 @@ export function GrantsAwardsReimbursementSection({
                     : undefined
                 }
                 titleLabel="Start the lead reimbursement record now"
-                description="Seed the first award-linked invoice directly from /grants so reimbursement work starts in the shared workspace lane before deeper billing follow-through moves into project detail."
+                description="Record the first invoice against this award right here in Grants, so reimbursement tracking starts immediately. Deeper invoice work can continue from the project's own page."
                 reimbursementProfile={reimbursementProfile}
               />
             </div>

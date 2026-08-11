@@ -710,6 +710,6 @@ describe("the RTP registry discloses a failed cycle read", () => {
 
     expect(screen.queryByText("The RTP cycle list could not be read")).not.toBeInTheDocument();
     expect(screen.queryByText("Part of this registry could not be read")).not.toBeInTheDocument();
-    expect(screen.getByText("No RTP cycles yet")).toBeInTheDocument();
+    expect(screen.getByText("No plan cycles yet")).toBeInTheDocument();
   });
 });

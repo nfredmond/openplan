@@ -460,7 +460,7 @@ export default async function DataHubPage() {
   }> = [
     {
       label: "Census / ACS",
-      detail: "Analysis Studio already captures corridor demographic retrieval metadata.",
+      detail: "Corridor Analysis already captures corridor demographic retrieval metadata.",
       tone: "success",
       kicker: "Visible system component",
     },
@@ -576,7 +576,7 @@ export default async function DataHubPage() {
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr]">
-        <div className="space-y-6">
+        <div id="register-data-source" className="space-y-6">
           <DataHubRecordComposer
             workspaceId={workspaceId}
             connectors={connectors.map((connector) => ({ id: connector.id, label: connector.display_name }))}
@@ -676,7 +676,14 @@ export default async function DataHubPage() {
 
           {connectors.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No connectors registered yet. Use the creation panel to document the first live source.
+              Data Hub records where your data comes from. Each connector documents one live source, so
+              everything built on it can say where its numbers originated. Register your first source to
+              get started.
+              <div className="mt-3">
+                <a href="#register-data-source" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                  Register a data source
+                </a>
+              </div>
             </div>
           ) : (
             <div className="mt-5 module-record-list">
@@ -736,8 +743,13 @@ export default async function DataHubPage() {
 
           {datasets.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No datasets registered yet. Once records land here, they can expose vintage, license, checksum, cadence,
-              and linked projects in one place.
+              Datasets registered here carry their vintage, license, and provenance, so every map and model
+              that uses one can cite it. Register your first dataset, or ingest one from a source above.
+              <div className="mt-3">
+                <a href="#register-data-source" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                  Register a dataset
+                </a>
+              </div>
             </div>
           ) : (
             <div className="mt-5 module-record-list">
@@ -882,8 +894,8 @@ export default async function DataHubPage() {
                                 ? `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis crash-point geometry.`
                                 : `Thematic-ready via ${dataset.thematic_metric_label || titleize(dataset.thematic_metric_key)} on analysis tracts.`
                             : overlayReady
-                              ? "Drawable in Analysis Studio as a coverage footprint."
-                              : "Registry only for now; not drawable in Analysis Studio yet."}
+                              ? "Drawable in Corridor Analysis as a coverage footprint."
+                              : "Registry only for now; not drawable in Corridor Analysis yet."}
                         </p>
                       </div>
                       <div className="module-note text-sm">
@@ -1017,7 +1029,7 @@ export default async function DataHubPage() {
               geospatial / data-fabric layer under it.
             </div>
             <div className="module-subpanel">
-              Next logical wave: automated connector runners, evidence-pack exports, and richer Analysis Studio
+              Next logical wave: automated connector runners, evidence-pack exports, and richer Corridor Analysis
               run-to-dataset lineage.
             </div>
           </div>

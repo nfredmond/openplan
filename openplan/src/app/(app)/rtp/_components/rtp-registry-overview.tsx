@@ -38,7 +38,7 @@ export function RtpRegistryOverview({
           Regional Transportation Plan
         </div>
         <div className="module-intro-body">
-          <h1 className="module-intro-title">RTP Cycles</h1>
+          <h1 className="module-intro-title">Regional Plan (RTP)</h1>
           <p className="module-intro-description">
             One record per plan update. The project list, the chapters, the public review, and the money all hang off it, so nothing drifts apart.
           </p>

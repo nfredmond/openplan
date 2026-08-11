@@ -341,7 +341,7 @@ export default async function PlansPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <div className="space-y-6">
+        <div id="create-plan" className="space-y-6">
           <PlanCreator projects={projectsData ?? []} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
@@ -419,7 +419,12 @@ export default async function PlansPage({
             <div className="mt-5">
               <EmptyState
                 title="No plans yet"
-                description="Create the first plan record to organize scope, links, and review status."
+                description="Plans is the register of your agency's planning documents — general plans, corridor plans, active transportation plans — with their scope and review status in one place. Add your first plan to connect it to the projects that carry it out."
+                action={
+                  <a href="#create-plan" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                    Add a plan
+                  </a>
+                }
               />
             </div>
           ) : (

@@ -21,11 +21,11 @@ export default function ProjectsError({
   return (
     <div className="px-6 py-8">
       <ErrorState
-        title="The projects surface hit an error."
+        title="Something went wrong in Projects."
         description={
           error.digest
-            ? `Reference ${error.digest}. Try again, or return to the projects list.`
-            : "Try again, or return to the projects list."
+            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to Projects.`
+            : "Nothing has been deleted — this screen failed to load. Try again, or go back to Projects."
         }
         action={
           <div className="flex flex-wrap gap-3 text-sm">
@@ -34,7 +34,7 @@ export default function ProjectsError({
               onClick={reset}
               className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
             >
-              Retry
+              Try again
             </button>
             <Link
               href="/projects"

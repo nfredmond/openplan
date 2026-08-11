@@ -69,7 +69,9 @@ export function RtpQueueOperationsBoard({
         />
       ) : null}
 
-      <RtpCycleCreator />
+      <div id="create-rtp-cycle">
+        <RtpCycleCreator />
+      </div>
 
       <article className="module-section-surface">
         <div className="module-section-header">

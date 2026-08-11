@@ -16,7 +16,7 @@ import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { StateBlock } from "@/components/ui/state-block";
 import { moduleMetadata } from "@/lib/ui/page-title";
 
-export const metadata = moduleMetadata("County Validation");
+export const metadata = moduleMetadata("Model Validation");
 
 /**
  * `?projectId=` is how this page is TOLD which project it was opened for.
@@ -74,9 +74,9 @@ export default async function CountyRunsPage({
   if (!membership?.workspace_id) {
     return (
       <WorkspaceMembershipRequired
-        moduleLabel="County onboarding"
-        title="County onboarding needs a workspace"
-        description="County runs belong to a workspace. You are signed in, but this account is not in one yet — join a workspace or create one before launching and reviewing county onboarding jobs."
+        moduleLabel="Model Validation"
+        title="Model Validation needs a workspace"
+        description="Validation runs belong to a workspace. You are signed in, but this account is not in one yet — join a workspace or create one before launching and reviewing validation runs."
       />
     );
   }

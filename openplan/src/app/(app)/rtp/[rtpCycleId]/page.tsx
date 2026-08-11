@@ -636,7 +636,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Funding posture</p>
+              <p className="module-summary-label">Funded projects</p>
               <p className="module-summary-value">
                 {projectLinksState === "failed" || fundingReadFailed ? "—" : `${fundedProjectCount}/${projectLinks.length}`}
               </p>
@@ -1006,7 +1006,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             ) : projectLinks.length === 0 ? (
               <EmptyState
                 title="No linked projects yet"
-                description="Attach projects to this cycle from the project detail view so constrained and illustrative portfolio posture becomes visible here."
+                description="Attach projects to this cycle from each project's detail page. Once projects are linked, this list shows which ones fit within expected revenues (constrained) and which are illustrative."
               />
             ) : (
               <div className="space-y-3">

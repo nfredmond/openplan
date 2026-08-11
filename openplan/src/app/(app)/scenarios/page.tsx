@@ -308,7 +308,9 @@ export default async function ScenariosPage({
         {/* The creator's project picker is fed by the same read the filter name
             uses. An empty picker after a failed read would tell the planner this
             workspace has no projects. */}
-        <ScenarioSetCreator projects={projectsData ?? []} projectsUnreadable={projectsUnreadable} />
+        <div id="create-scenario-set">
+          <ScenarioSetCreator projects={projectsData ?? []} projectsUnreadable={projectsUnreadable} />
+        </div>
 
         <article className="module-section-surface">
           <div className="module-section-header">
@@ -370,7 +372,14 @@ export default async function ScenariosPage({
                 description={
                   hasActiveFilters
                     ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set in this workspace — an empty filtered list is not a statement that none exist.`
-                    : "Create the first scenario set to compare a baseline against alternatives for a project."
+                    : "Scenarios lets you compare a baseline against alternatives — with the project, without it, or with a different design — before you recommend one. Create your first scenario set for a project you are studying."
+                }
+                action={
+                  hasActiveFilters ? undefined : (
+                    <a href="#create-scenario-set" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                      Create a scenario set
+                    </a>
+                  )
                 }
               />
             </div>

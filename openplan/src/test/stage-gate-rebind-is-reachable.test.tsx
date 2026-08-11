@@ -85,6 +85,15 @@ const fromMock = vi.fn((table: string) => {
     return { select: () => ({ eq: () => ({ in: async () => modelRunsRowsMock() }) }) };
   }
   if (table === "workspaces") return { select: workspacesSelectMock };
+  if (table === "assistant_action_executions") {
+    // The dashboard's recent-actions audit feed (absorbed from the retired
+    // Command Center page); empty is fine — this suite is about the binding.
+    return {
+      select: () => ({
+        eq: () => ({ order: () => ({ limit: async () => ({ data: [], error: null }) }) }),
+      }),
+    };
+  }
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -239,7 +248,7 @@ function emptyWorkspaceSummary() {
 }
 
 async function renderDashboard() {
-  render(await DashboardPage());
+  render(await DashboardPage({}));
 }
 
 beforeEach(() => {

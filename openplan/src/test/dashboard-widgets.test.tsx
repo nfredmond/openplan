@@ -95,7 +95,7 @@ describe("DashboardQuickActions", () => {
           {
             key: "analysis-studio",
             href: "/explore",
-            title: "Open Analysis Studio",
+            title: "Open Corridor Analysis",
             description: "Run corridor analysis.",
             icon: FileText,
           },
@@ -110,7 +110,7 @@ describe("DashboardQuickActions", () => {
       />
     );
 
-    const analysis = screen.getByRole("link", { name: /Open Analysis Studio/ });
+    const analysis = screen.getByRole("link", { name: /Open Corridor Analysis/ });
     expect(analysis).toHaveAttribute("href", "/explore");
     expect(within(analysis).getByText("Run corridor analysis.")).toBeInTheDocument();
 

@@ -17,6 +17,13 @@ const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
 const modelRunsRowsMock = vi.fn(() => ({ data: [] as unknown[], error: null }));
 
+// The recent-actions audit feed the dashboard absorbed from the retired
+// Command Center page (loadRecentActionExecutionsForWorkspace).
+const actionLimitMock = vi.fn(() => ({ data: [] as unknown[], error: null }));
+const actionOrderMock = vi.fn(() => ({ limit: actionLimitMock }));
+const actionEqMock = vi.fn(() => ({ order: actionOrderMock }));
+const actionSelectMock = vi.fn(() => ({ eq: actionEqMock }));
+
 // The workspace's home geography, as the page reads it server-side. `null` is
 // the honest unset state a fresh workspace is in.
 const homeGeographyRowMock = vi.fn<() => { data: unknown; error: unknown }>(() => ({
@@ -45,6 +52,10 @@ const fromMock = vi.fn((table: string) => {
     return { select: workspacesSelectMock };
   }
 
+  if (table === "assistant_action_executions") {
+    return { select: actionSelectMock };
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -67,6 +78,28 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/workspaces/current", () => ({
   loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
 }));
+
+// Whether an Anthropic key resolves for the workspace (stored key OR
+// deployment env) — the page reads it through the SAME helper every AI route
+// uses. The context wrapper is pass-through here so the resolution can be
+// varied per test without a service-role client.
+const hasAnthropicAccessMock = vi.fn(() => false);
+vi.mock("@/lib/integrations/anthropic-access", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/integrations/anthropic-access")>(
+    "@/lib/integrations/anthropic-access"
+  );
+  return { ...actual, hasAnthropicAccess: () => hasAnthropicAccessMock() };
+});
+vi.mock("@/lib/integrations/workspace-keys", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/integrations/workspace-keys")>(
+    "@/lib/integrations/workspace-keys"
+  );
+  return {
+    ...actual,
+    withWorkspaceIntegrationContext: async (_workspaceId: string, fn: () => Promise<unknown>) =>
+      fn(),
+  };
+});
 
 vi.mock("@/lib/operations/workspace-summary", async () => {
   const actual = await vi.importActual<typeof import("@/lib/operations/workspace-summary")>(
@@ -125,14 +158,17 @@ vi.mock("@/components/workspaces/workspace-integration-keys-panel", () => ({
   WorkspaceIntegrationKeysPanel: ({
     workspaceId,
     canManage,
+    providerIds,
   }: {
     workspaceId: string;
     canManage: boolean;
+    providerIds?: string[];
   }) => (
     <div
       data-testid="workspace-integration-keys-panel"
       data-workspace-id={workspaceId}
       data-can-manage={String(canManage)}
+      data-provider-ids={providerIds ? providerIds.join(",") : "all"}
     />
   ),
 }));
@@ -140,8 +176,10 @@ vi.mock("@/components/workspaces/workspace-integration-keys-panel", () => ({
 import DashboardPage from "@/app/(app)/dashboard/page";
 import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 
-async function renderPage() {
-  render(await DashboardPage());
+async function renderPage(searchParams?: Record<string, string | string[] | undefined>) {
+  render(
+    await DashboardPage(searchParams ? { searchParams: Promise.resolve(searchParams) } : {})
+  );
 }
 
 /**
@@ -281,10 +319,62 @@ describe("DashboardPage", () => {
 
     runsLimitMock.mockResolvedValue({ data: [], error: null });
     homeGeographyRowMock.mockReturnValue({ data: null, error: null });
+    // Default: no Anthropic key resolves — the honest state of a fresh
+    // deployment with no env key and no stored workspace key.
+    hasAnthropicAccessMock.mockReturnValue(false);
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+    });
+  });
+
+  /**
+   * FINDING (2026-08-10): the checklist used to require zero
+   * projects/plans/programs/reports/runs, so creating ONE project removed it
+   * permanently — even with the home geography, the one setting the rest of
+   * the app reads, still unset. Activity is not the same as being set up.
+   */
+  it("keeps the getting-started checklist on an active workspace whose geography is unset", async () => {
+    // The default beforeEach summary has 1 project and 1 report — real
+    // activity — and the default geography row is null (unset).
+    await renderPage();
+
+    expect(screen.getByText("Tell OpenPlan where you work")).toBeInTheDocument();
+    expect(screen.getByText("Start here")).toBeInTheDocument();
+    // Quick actions still render for an active workspace; the checklist and
+    // the workspace's real lead actions are not mutually exclusive.
+    expect(screen.getByText("Quick actions")).toBeInTheDocument();
+  });
+
+  it("links the getting-started card to the Help page", async () => {
+    await renderPage();
+
+    expect(screen.getByRole("link", { name: /Help page/ })).toHaveAttribute("href", "/help");
+  });
+
+  it("shows the recent-actions audit feed absorbed from the retired Command Center", async () => {
+    await renderPage();
+
+    expect(screen.getByText("Assistant action activity")).toBeInTheDocument();
+    expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
+  });
+
+  describe("sign-up intent", () => {
+    it("adds the public-comment-campaign step for an engagement arrival", async () => {
+      await renderPage({ intent: "engagement" });
+
+      expect(screen.getByText("Start a public comment campaign")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Open Engagement/ })).toHaveAttribute(
+        "href",
+        "/engagement"
+      );
+    });
+
+    it("shows no engagement step without the intent, and ignores unknown intents", async () => {
+      await renderPage({ intent: "sell-me-something" });
+
+      expect(screen.queryByText("Start a public comment campaign")).not.toBeInTheDocument();
     });
   });
 
@@ -534,11 +624,17 @@ describe("DashboardPage", () => {
   });
 
   it("mounts the integration-keys setup panel so keys can actually be configured", async () => {
+    // Default state resolves no AI key, so the panel is mounted twice: the
+    // Anthropic row hoisted into the checklist's AI step, and the remaining
+    // providers in the config row. Every mount carries the workspace binding.
     await renderPage();
 
-    const panel = screen.getByTestId("workspace-integration-keys-panel");
-    expect(panel).toHaveAttribute("data-workspace-id", "workspace-1");
-    expect(panel).toHaveAttribute("data-can-manage", "true");
+    const panels = screen.getAllByTestId("workspace-integration-keys-panel");
+    expect(panels.length).toBeGreaterThan(0);
+    for (const panel of panels) {
+      expect(panel).toHaveAttribute("data-workspace-id", "workspace-1");
+      expect(panel).toHaveAttribute("data-can-manage", "true");
+    }
   });
 
   it("tells an owner which capabilities configuration has switched off", async () => {
@@ -616,10 +712,11 @@ describe("DashboardPage", () => {
       return hero as HTMLElement;
     }
 
-    it("leads with the geography step and hoists its setter when no place is set", async () => {
+    it("shows the geography step and hoists its setter when no place is set", async () => {
       await renderFirstRun();
 
-      // Step one is outstanding, says so, and is the emphasized action.
+      // The geography step is outstanding and says so. (Emphasis sits on the
+      // AI-key step, which is also outstanding and comes first.)
       expect(screen.getByText("Tell OpenPlan where you work")).toBeInTheDocument();
       expect(screen.getByText("Start here")).toBeInTheDocument();
       expect(
@@ -648,9 +745,11 @@ describe("DashboardPage", () => {
     });
 
     it("marks the geography step done with the resolved label and returns the panel to the config row", async () => {
+      hasAnthropicAccessMock.mockReturnValue(true);
       await renderFirstRun({ homeGeographyRow: SET_HOME_GEOGRAPHY_ROW });
 
-      expect(screen.getByText("Done")).toBeInTheDocument();
+      // AI key and geography are both done; nothing outstanding is emphasized.
+      expect(screen.getAllByText("Done")).toHaveLength(2);
       expect(screen.getByText("Set to Example County, Example State.")).toBeInTheDocument();
       expect(screen.queryByText("Start here")).not.toBeInTheDocument();
 
@@ -671,12 +770,54 @@ describe("DashboardPage", () => {
       expect(screen.queryByText(/^Set to /)).not.toBeInTheDocument();
     });
 
-    it("points the screening step at Analysis Studio and reports that no runs exist", async () => {
+    it("leads with the AI step and hoists the Anthropic key row while no key resolves", async () => {
+      await renderFirstRun();
+
+      const step = screen.getByText("Turn on your AI assistant").closest("li");
+      expect(step).not.toBeNull();
+      // First incomplete step in display order carries the one emphasis.
+      expect(step!.textContent).toContain("Start here");
+      expect(step!.textContent).toMatch(
+        /Without a key, the Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation are unavailable/
+      );
+
+      // The Anthropic key row is hoisted into the hero, filtered to that one
+      // provider; the main panel below keeps the rest, so each provider row is
+      // mounted exactly once.
+      const hoisted = within(firstRunHero()).getAllByTestId("workspace-integration-keys-panel");
+      expect(hoisted).toHaveLength(1);
+      expect(hoisted[0]).toHaveAttribute("data-provider-ids", "anthropic");
+
+      const panels = screen.getAllByTestId("workspace-integration-keys-panel");
+      expect(panels).toHaveLength(2);
+      const main = panels.find((panel) => panel !== hoisted[0]);
+      expect(main).toBeDefined();
+      expect(main!.getAttribute("data-provider-ids")).not.toBe("all");
+      expect(main!.getAttribute("data-provider-ids")).not.toContain("anthropic");
+    });
+
+    it("marks the AI step done when a key resolves, with one unfiltered keys panel", async () => {
+      hasAnthropicAccessMock.mockReturnValue(true);
+      await renderFirstRun();
+
+      const step = screen.getByText("Turn on your AI assistant").closest("li");
+      expect(step!.textContent).toContain("Done");
+      expect(
+        screen.getByText("On — an AI key is available to this workspace.")
+      ).toBeInTheDocument();
+
+      const panels = screen.getAllByTestId("workspace-integration-keys-panel");
+      expect(panels).toHaveLength(1);
+      expect(panels[0]).toHaveAttribute("data-provider-ids", "all");
+      expect(within(firstRunHero()).queryByTestId("workspace-integration-keys-panel")).toBeNull();
+    });
+
+    it("points the screening step at Corridor Analysis and reports that no runs exist", async () => {
       await renderFirstRun();
 
       expect(screen.getByText("Run your first screening")).toBeInTheDocument();
       expect(screen.getByText("No analysis runs yet.")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: /Open Analysis Studio/ })).toHaveAttribute("href", "/explore");
+      expect(screen.getByRole("link", { name: /Open Corridor Analysis/ })).toHaveAttribute("href", "/explore");
     });
 
     it("offers the invite step to an owner only", async () => {

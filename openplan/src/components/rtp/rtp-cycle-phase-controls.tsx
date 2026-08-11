@@ -101,9 +101,9 @@ export function RtpCyclePhaseControls({
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Phase transition</p>
-          <h2 className="module-section-title">Advance cycle status and packet posture</h2>
+          <h2 className="module-section-title">Move this cycle to its next phase</h2>
           <p className="module-section-description">
-            Move the RTP cycle into its next phase and optionally push the recommended packet preset to linked RTP packet records.
+            Move the RTP cycle into its next phase, and optionally update its linked report documents to the settings recommended for that phase.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">

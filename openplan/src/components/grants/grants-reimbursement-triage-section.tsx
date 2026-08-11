@@ -123,7 +123,7 @@ export function GrantsReimbursementTriageSection({
         <div className="mt-5">
           <EmptyState
             title="No reimbursement triage items right now"
-            description="Once award-linked invoice records exist and need follow-through, this queue will surface the most urgent reimbursement work across the workspace."
+            description="Once invoices are recorded against awards and need follow-up, this queue will show the most urgent reimbursement work across the workspace."
           />
         </div>
       ) : (

@@ -11,11 +11,23 @@
  * imports, or side effects. Icons are therefore NAMES here; the rail resolves
  * them to components against its own ICONS map.
  *
+ * Group order is deliberate: daily operating context first (Workspace), then
+ * the documents planners maintain (Plans & Programming), the money that
+ * delivers them (Funding), the evidence that justifies them (Analysis &
+ * Modeling), the public that reviews them (Community), and the reference
+ * material under it all (Library).
+ *
  * Operator-only surfaces do not exist in this registry — there are none left
  * in the product (the /admin console is deleted), and the nav is for everyone.
  */
 
-export type AppNavRailGroup = "operate" | "analyze";
+export type AppNavRailGroup =
+  | "workspace"
+  | "plans"
+  | "funding"
+  | "analysis"
+  | "community"
+  | "library";
 
 export type AppNavEntry = {
   /** Route prefix of the surface — also its auth-protection prefix. */
@@ -36,151 +48,163 @@ export type AppNavEntry = {
 };
 
 const RAIL_GROUP_TITLES: Record<AppNavRailGroup, string> = {
-  operate: "Operate",
-  analyze: "Analyze",
+  workspace: "Workspace",
+  plans: "Plans & Programming",
+  funding: "Funding",
+  analysis: "Analysis & Modeling",
+  community: "Community",
+  library: "Library",
 };
 
 /**
- * Entries are in rail order: the "operate" group top to bottom, then the
- * "analyze" group top to bottom. buildRailGroups() preserves this order, so
- * reordering here reorders the rail.
+ * Entries are in rail order, group by group. buildRailGroups() preserves this
+ * order, so reordering here reorders the rail.
  */
 export const APP_NAV_ENTRIES: AppNavEntry[] = [
   {
     href: "/dashboard",
     label: "Overview",
-    railGroup: "operate",
+    railGroup: "workspace",
     icon: "overview",
-    paletteKeywords: "home dashboard overview",
-  },
-  {
-    href: "/command-center",
-    label: "Command Center",
-    railGroup: "operate",
-    icon: "command",
-    paletteKeywords: "operations cross-domain",
+    // "command center" kept so the old name for the dashboard's cross-domain
+    // queue still lands here from the palette.
+    paletteKeywords: "home dashboard overview command center operations cross-domain",
   },
   {
     href: "/projects",
     label: "Projects",
-    railGroup: "operate",
+    railGroup: "workspace",
     icon: "projects",
     paletteKeywords: "delivery control room milestones",
   },
   {
-    href: "/rtp",
-    label: "RTP Cycles",
-    railGroup: "operate",
-    icon: "rtp",
-    paletteKeywords: "regional transportation plan cycle",
+    href: "/reports",
+    label: "Reports",
+    railGroup: "workspace",
+    icon: "reports",
+    // "packets" is a never-rendered search term only — an old habit for what
+    // reports were once called, kept so the palette still answers it.
+    paletteKeywords: "packets exports provenance",
   },
-  { href: "/plans", label: "Plans", railGroup: "operate", icon: "plans" },
+  {
+    href: "/assistant-activity",
+    label: "Planner Agent Activity",
+    railGroup: "workspace",
+    icon: "activity",
+    paletteKeywords: "agent activity audit ledger govern",
+  },
+  {
+    href: "/rtp",
+    label: "Regional Plan (RTP)",
+    railGroup: "plans",
+    icon: "rtp",
+    paletteKeywords: "regional transportation plan rtp cycles",
+  },
+  { href: "/plans", label: "Plans", railGroup: "plans", icon: "plans" },
   {
     href: "/programs",
-    label: "Programs",
-    railGroup: "operate",
+    label: "Programming Cycles",
+    railGroup: "plans",
     icon: "programs",
-    paletteKeywords: "rtip stip funding windows",
+    paletteKeywords: "rtip stip funding windows programs",
   },
   {
     href: "/grants",
     label: "Grants",
-    railGroup: "operate",
+    railGroup: "funding",
     icon: "grants",
     paletteKeywords: "funding opportunities narrative bca",
   },
   {
-    href: "/reports",
-    label: "Reports",
-    railGroup: "operate",
-    icon: "reports",
-    paletteKeywords: "packets exports provenance",
-  },
-  {
     // "Billing" is not a concept in OpenPlan — it is free, with no plan and no
     // checkout. What is real here is the Caltrans LAPM grant-reimbursement
-    // invoice register: an agency invoicing ITS FUNDER. The "billing" keyword
-    // is kept so a saved habit still finds the right surface, and "govern" so
-    // the palette group the entry used to sit under still matches a search.
+    // invoice register: an agency invoicing ITS FUNDER — which is why the
+    // label says "Invoices & Reimbursements", never anything that could be
+    // read as OpenPlan charging the user. The "billing" keyword is kept so a
+    // saved habit still finds the right page, and "govern" so the palette
+    // group the entry used to sit under still matches a search.
     href: "/invoicing",
-    label: "Invoicing",
-    railGroup: "operate",
-    icon: "billing",
-    paletteKeywords: "invoice reimbursement LAPM billing govern",
-  },
-  {
-    // In the palette and the secondary nav, but deliberately off the compact
-    // rail: the audit ledger is a governance surface planners visit on
-    // purpose, not a daily working module.
-    href: "/assistant-activity",
-    label: "Agent Activity",
-    railGroup: "operate",
-    icon: "activity",
-    paletteKeywords: "planner agent audit ledger govern",
-    railHidden: true,
-  },
-  {
-    href: "/engagement",
-    label: "Engagement",
-    railGroup: "analyze",
-    icon: "engagement",
-    paletteKeywords: "community public map comments",
-  },
-  {
-    href: "/safety",
-    label: "Safety",
-    railGroup: "analyze",
-    icon: "safety",
-    paletteKeywords: "crash collision injury screening",
-  },
-  {
-    href: "/explore",
-    label: "Analysis Studio",
-    railGroup: "analyze",
-    icon: "analysis",
-    paletteKeywords: "corridor analysis explore",
-  },
-  {
-    href: "/scenarios",
-    label: "Scenarios",
-    railGroup: "analyze",
-    icon: "scenarios",
-    paletteKeywords: "baseline comparison",
+    label: "Invoices & Reimbursements",
+    railGroup: "funding",
+    icon: "invoicing",
+    paletteKeywords: "billing invoicing LAPM reimbursement govern",
   },
   {
     href: "/models",
     label: "Models",
-    railGroup: "analyze",
+    railGroup: "analysis",
     icon: "models",
     paletteKeywords: "travel demand model run any place",
   },
   {
+    href: "/scenarios",
+    label: "Scenarios",
+    railGroup: "analysis",
+    icon: "scenarios",
+    paletteKeywords: "baseline comparison",
+  },
+  {
+    href: "/explore",
+    label: "Corridor Analysis",
+    railGroup: "analysis",
+    icon: "analysis",
+    // "analysis studio" was this module's old name; kept searchable.
+    paletteKeywords: "corridor analysis studio explore",
+  },
+  {
     href: "/county-runs",
-    label: "County Validation",
-    railGroup: "analyze",
+    label: "Model Validation",
+    railGroup: "analysis",
     icon: "county",
-    paletteKeywords: "onboarding screening",
+    paletteKeywords:
+      "county validation county runs counts calibration onboarding screening",
+  },
+  {
+    href: "/safety",
+    label: "Safety",
+    railGroup: "analysis",
+    icon: "safety",
+    paletteKeywords: "crash collision injury screening",
+  },
+  {
+    // Deliberately a one-item group: it headlines the flagship public-input
+    // module and leaves room for future public-facing entries.
+    href: "/engagement",
+    label: "Engagement",
+    railGroup: "community",
+    icon: "engagement",
+    paletteKeywords: "community public map comments",
   },
   {
     href: "/data-hub",
     label: "Data Hub",
-    railGroup: "analyze",
+    railGroup: "library",
     icon: "data",
     paletteKeywords: "datasets geometry",
   },
   {
     href: "/knowledge-base",
     label: "Knowledge Base",
-    railGroup: "analyze",
+    railGroup: "library",
     icon: "knowledge",
     paletteKeywords: "documents plans studies grounding citations",
   },
   {
     href: "/aerial",
-    label: "Aerial Ops",
-    railGroup: "analyze",
+    label: "Aerial Imagery",
+    railGroup: "library",
     icon: "aerial",
-    paletteKeywords: "drone mission imagery",
+    paletteKeywords: "aerial ops drone mission imagery",
+  },
+  {
+    // Last in Library on purpose: reference material about the reference
+    // material. What OpenPlan is, what each module does, the setup guides, and
+    // which fixes belong to whoever operates the deployment.
+    href: "/help",
+    label: "Help",
+    railGroup: "library",
+    icon: "help",
+    paletteKeywords: "help documentation guides getting started modules support docs",
   },
 ];
 
@@ -216,15 +240,56 @@ export function buildPaletteCommands(): AppNavPaletteCommand[] {
   }));
 }
 
+export type AppNavSection = {
+  title: string;
+  items: Array<{ href: string; label: string }>;
+};
+
+/**
+ * The contextual section for a pathname: the registry group the current page
+ * belongs to, with every member of that group in registry order. The secondary
+ * nav renders this directly, so it can never carry a grouping the rail and the
+ * palette do not — the registry's groups ARE the only grouping.
+ *
+ * Longest-prefix match, with the same `===` / `startsWith(href + "/")` test
+ * the navs use for active-state, so `/rtp/some-cycle` still resolves to the
+ * Plans & Programming group. Unregistered paths return null and the secondary
+ * nav renders nothing.
+ */
+export function findNavSection(pathname: string): AppNavSection | null {
+  let matched: AppNavEntry | undefined;
+  for (const entry of APP_NAV_ENTRIES) {
+    const hit = pathname === entry.href || pathname.startsWith(`${entry.href}/`);
+    if (hit && (!matched || entry.href.length > matched.href.length)) {
+      matched = entry;
+    }
+  }
+  if (!matched) return null;
+  const group = matched.railGroup;
+  return {
+    title: RAIL_GROUP_TITLES[group],
+    items: APP_NAV_ENTRIES.filter((entry) => entry.railGroup === group).map(
+      ({ href, label }) => ({ href, label }),
+    ),
+  };
+}
+
 /**
  * Route prefixes the auth proxy puts behind sign-in: every registered surface,
- * plus two carried-forward prefixes — "/workspace" (no page route exists under
- * it today; kept from the old proxy list so any future workspace-scoped page
- * is born protected) and "/billing" (survives only as a redirect stub into
- * /invoicing, so the stub redirects through sign-in like its target).
+ * plus three carried-forward prefixes — "/workspace" (no page route exists
+ * under it today; kept from the old proxy list so any future workspace-scoped
+ * page is born protected), "/billing" (survives only as a redirect stub into
+ * /invoicing, so the stub redirects through sign-in like its target), and
+ * "/command-center" (survives only as a redirect stub into /dashboard, kept
+ * protected for the same reason).
  */
 export function protectedRoutePrefixes(): string[] {
-  return [...APP_NAV_ENTRIES.map((entry) => entry.href), "/workspace", "/billing"];
+  return [
+    ...APP_NAV_ENTRIES.map((entry) => entry.href),
+    "/workspace",
+    "/billing",
+    "/command-center",
+  ];
 }
 
 /**

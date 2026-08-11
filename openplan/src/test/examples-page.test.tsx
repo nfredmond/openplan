@@ -26,6 +26,10 @@ describe("ExamplesEvidenceCatalogPage", () => {
     expect(screen.getByText(/One example is not a guarantee/i)).toBeInTheDocument();
     expect(screen.getByText(/One completed run, verbatim/i)).toBeInTheDocument();
     expect(screen.getAllByText(/internal prototype only/i).length).toBeGreaterThan(0);
+    // The prototype-only label is scoped to THE RUN it describes, not stated
+    // as a verdict on the product.
+    expect(screen.getByText(/This run's screening gate/)).toBeInTheDocument();
+    expect(screen.queryByText("Current status")).not.toBeInTheDocument();
     expect(screen.getAllByText(/237\.62%/i).length).toBeGreaterThan(0);
 
     expect(screen.getByRole("link", { name: "Create your free workspace" })).toHaveAttribute(

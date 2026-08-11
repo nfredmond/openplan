@@ -24,8 +24,8 @@ export default function RootError({
         title="Something went wrong while loading this page."
         description={
           error.digest
-            ? `Reference ${error.digest}. Try again or head back to the dashboard.`
-            : "Try again or head back to the dashboard."
+            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to Overview.`
+            : "Nothing has been deleted — this screen failed to load. Try again, or go back to Overview."
         }
         action={
           <div className="flex flex-wrap gap-3 text-sm">
@@ -34,13 +34,13 @@ export default function RootError({
               onClick={reset}
               className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
             >
-              Retry
+              Try again
             </button>
             <Link
               href="/dashboard"
               className="inline-flex items-center rounded border border-border px-3 py-1.5 font-medium text-foreground hover:bg-muted/40"
             >
-              Back to Dashboard
+              Back to Overview
             </Link>
           </div>
         }

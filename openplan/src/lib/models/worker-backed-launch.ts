@@ -357,7 +357,7 @@ export function describeWorkerLaunchRefusal(
     return {
       heading: `${modeLabel} needs a processing worker, and this OpenPlan installation declares that it runs none`,
       body: `${doesNotRunHere} This installation's configuration states that no such worker runs against it, so nothing would serve that queue: ${whatWouldHappen}${evidence ? ` ${evidence}` : ""}`,
-      operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation starts the worker — the steps are in workers/aequilibrae_worker/DEPLOY.md — and updates the declaration (OPENPLAN_MODELING_WORKER) to say so. Until the installation says otherwise, this control refuses rather than queueing a run that cannot finish; a checkbox here would only override the operator's own answer.`,
+      operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation sets this up once; it is not something your account can fix from here. For that person: start the worker (the steps are in workers/aequilibrae_worker/DEPLOY.md) and update the declaration (OPENPLAN_MODELING_WORKER) to say so. Until the installation says otherwise, this control refuses rather than queueing a run that cannot finish; a checkbox here would only override the operator's own answer.`,
     };
   }
 
@@ -365,14 +365,14 @@ export function describeWorkerLaunchRefusal(
     return {
       heading: `${modeLabel} needs a processing worker, and the one this OpenPlan installation declares has not been picking up its runs`,
       body: `${doesNotRunHere} This installation declares that an AequilibraE worker runs against it. ${evidence ?? ""} A declaration is a statement of configuration, not a live check — the worker looks for runs on its own schedule, and OpenPlan cannot check on it from here — so what is on screen is the run history contradicting the configuration. On this evidence ${whatWouldHappen}`,
-      operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation checks that the worker is running and pointed at this installation's own Supabase project, and reads its logs; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
+      operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation is the person to hand this to; it is not something your account can fix from here. For that person: check that the worker is running and pointed at this installation's own database, and read its logs; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
     };
   }
 
   return {
     heading: `${modeLabel} needs a processing worker, and nothing has been picking up the runs on this model that need one`,
     body: `${doesNotRunHere} ${evidence ?? ""} That is what an absent worker looks like: ${whatWouldHappen}`,
-    operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation starts the worker; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
+    operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation starts the worker; it is not something your account can fix from here. For that person: the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
   };
 }
 

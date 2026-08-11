@@ -2333,9 +2333,22 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   {aiOffline ? (
                     <div
                       role="status"
-                      className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm font-semibold text-amber-100"
+                      className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100"
                     >
-                      AI chat is offline — no API key configured. Suggested actions below still work.
+                      <p className="font-semibold">
+                        The Planner Agent can&apos;t chat yet because no AI key is set up for this
+                        workspace.
+                      </p>
+                      <p className="mt-1">
+                        <Link
+                          href="/dashboard#workspace-ai-key"
+                          className="font-semibold underline underline-offset-2 hover:text-white"
+                        >
+                          Turn on your AI assistant from the dashboard checklist
+                        </Link>{" "}
+                        — a workspace owner or admin adds the key there. Suggested actions below
+                        still work.
+                      </p>
                     </div>
                   ) : null}
 

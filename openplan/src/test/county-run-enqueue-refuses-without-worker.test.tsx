@@ -87,7 +87,9 @@ describe("county run handoff where no county onramp worker is configured", () =>
     render(<CountyRunDetailClient countyRunId={COUNTY_RUN_ID} />);
 
     const refusal = screen.getByTestId("county-enqueue-refusal");
-    expect(refusal).toHaveTextContent(/no county onramp worker configured on this OpenPlan installation/i);
+    expect(refusal).toHaveTextContent(
+      /no processing worker configured on this OpenPlan installation to run county validation/i
+    );
     expect(refusal).toHaveTextContent(/no request was made and no setup started/i);
     // The generic help text does not say who will run the handoff; it must
     // not be on screen alongside the refusal, which does.
@@ -178,7 +180,7 @@ describe("county run launch control on a deployment with no worker", () => {
     );
 
     const disclosure = screen.getByTestId("county-worker-absent-disclosure");
-    expect(disclosure).toHaveTextContent(/no county onramp worker configured/i);
+    expect(disclosure).toHaveTextContent(/no processing worker configured to run county validation/i);
     // Nothing has been prepared here, so there is no record to cite as evidence.
     expect(disclosure).not.toHaveTextContent(/county run here was prepared/i);
     // The handoff lane stays real: this is a disclosure, not a dead end.

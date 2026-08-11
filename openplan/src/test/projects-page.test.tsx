@@ -358,7 +358,7 @@ describe("ProjectsPage", () => {
    *
    * `const { data: projectsData } = await supabase…` gave `null` for both "this
    * workspace has no projects" and "the query failed", and the registry then
-   * rendered "No project records yet. Create your first project" — an agency
+   * rendered the empty-portfolio invitation ("Create your first project…") — an agency
    * being told it has no portfolio, and invited to duplicate work that already
    * exists — on the strength of a broken query.
    *
@@ -366,7 +366,7 @@ describe("ProjectsPage", () => {
    * without it a page that always warns would pass every assertion here.
    */
   describe("a failed read is disclosed, never rendered as an answer", () => {
-    it("does not say 'No project records yet' when the portfolio read FAILED", async () => {
+    it("does not render the empty-portfolio invitation when the portfolio read FAILED", async () => {
       projectsOrderMock.mockResolvedValueOnce({
         data: null,
         error: { message: "permission denied for table projects" },
@@ -374,7 +374,7 @@ describe("ProjectsPage", () => {
 
       await renderPage();
 
-      expect(screen.queryByText(/No project records yet\./i)).toBeNull();
+      expect(screen.queryByText(/Create your first project to start tracking/i)).toBeNull();
       expect(
         screen.getByText(/The project registry could not be read, so this list is unavailable/i)
       ).toBeInTheDocument();
@@ -384,12 +384,12 @@ describe("ProjectsPage", () => {
       expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
     });
 
-    it("still says 'No project records yet' when the read SUCCEEDS and the workspace is empty", async () => {
+    it("still renders the empty-portfolio invitation when the read SUCCEEDS and the workspace is empty", async () => {
       projectsOrderMock.mockResolvedValueOnce({ data: [], error: null });
 
       await renderPage();
 
-      expect(screen.getByText(/No project records yet\./i)).toBeInTheDocument();
+      expect(screen.getByText(/Create your first project to start tracking/i)).toBeInTheDocument();
       // No disclosure anywhere — otherwise the banner above proves nothing.
       expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
       expect(screen.queryByText(/could not be read, so this list is unavailable/i)).toBeNull();

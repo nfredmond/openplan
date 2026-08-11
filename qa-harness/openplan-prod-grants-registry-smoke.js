@@ -578,7 +578,7 @@ async function main() {
     await page.getByText(/Focused from triage/i).waitFor({ timeout: 30000 });
     notes.push('The grants reimbursement queue now lands on the exact billing triage row instead of a generic project billing anchor.');
 
-    const billingPriorityLink = page.getByRole('link', { name: /Open lead project lane/i }).first();
+    const billingPriorityLink = page.getByRole('link', { name: /Open lead project/i }).first();
     const billingPriorityHref = await billingPriorityLink.getAttribute('href');
     const billingReturnsToGrantsTriage =
       Boolean(billingPriorityHref) &&

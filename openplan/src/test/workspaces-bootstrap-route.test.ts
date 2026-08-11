@@ -32,6 +32,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 import { POST as postBootstrap } from "@/app/api/workspaces/bootstrap/route";
+import { NEW_WORKSPACE_GETTING_STARTED_STEPS } from "@/lib/onboarding/getting-started";
 
 function jsonRequest(payload: unknown) {
   return new NextRequest("http://localhost/api/workspaces/bootstrap", {
@@ -153,6 +154,10 @@ describe("POST /api/workspaces/bootstrap", () => {
     });
     expect(Array.isArray(payload.onboardingChecklist)).toBe(true);
     expect(payload.onboardingChecklist.length).toBeGreaterThan(0);
+    // The response carries the SHARED getting-started list — the same one the
+    // in-app Help page renders (src/lib/onboarding/getting-started.ts). A list
+    // re-inlined here would drift from the one people actually read.
+    expect(payload.onboardingChecklist).toEqual([...NEW_WORKSPACE_GETTING_STARTED_STEPS]);
 
     /**
      * The first thing a new workspace reads may not assume a supervised pilot.

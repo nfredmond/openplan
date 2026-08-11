@@ -24,7 +24,18 @@ function frameClassName() {
 function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
+  // What the visitor said they came for. The landing page's two sign-up doors
+  // send ?intent=modeling or ?intent=engagement; folding it into the redirect
+  // target carries it through sign-in and email confirmation without a cookie
+  // or any storage, so the first dashboard visit can point its
+  // getting-started checklist at the matching first step. Unrecognized values
+  // are dropped, and an explicit redirect to anywhere but the dashboard wins.
+  const intentParam = searchParams.get("intent");
+  const intent =
+    intentParam === "modeling" || intentParam === "engagement" ? intentParam : null;
+  const baseRedirect = searchParams.get("redirect") ?? "/dashboard";
+  const redirectTarget =
+    intent && baseRedirect === "/dashboard" ? `/dashboard?intent=${intent}` : baseRedirect;
   const inviteToken = searchParams.get("invite");
   const signInHref = useMemo(() => {
     const params = new URLSearchParams();

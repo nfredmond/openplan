@@ -21,11 +21,11 @@ export default function GrantsError({
   return (
     <div className="px-6 py-8">
       <ErrorState
-        title="The grants surface hit an error."
+        title="Something went wrong in Grants."
         description={
           error.digest
-            ? `Reference ${error.digest}. Try again, or return to the grants list.`
-            : "Try again, or return to the grants list."
+            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to Grants.`
+            : "Nothing has been deleted — this screen failed to load. Try again, or go back to Grants."
         }
         action={
           <div className="flex flex-wrap gap-3 text-sm">
@@ -34,7 +34,7 @@ export default function GrantsError({
               onClick={reset}
               className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
             >
-              Retry
+              Try again
             </button>
             <Link
               href="/grants"

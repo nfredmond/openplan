@@ -50,7 +50,7 @@ import {
 import type { DominantActionKey, RtpPacketReportRow } from "./_components/_types";
 import { moduleMetadata } from "@/lib/ui/page-title";
 
-export const metadata = moduleMetadata("RTP Cycles");
+export const metadata = moduleMetadata("Regional Plan (RTP)");
 
 type RtpPageSearchParams = Promise<{
   status?: string;
@@ -187,7 +187,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     return (
       <WorkspaceMembershipRequired
         moduleLabel="RTP"
-        title="RTP cycles need a workspace"
+        title="Regional Plan (RTP) needs a workspace"
         description="RTP cycles only appear inside a workspace. You are signed in, but no workspace membership was found for this account — that is why the registry is empty here, not a missing cycle."
       />
     );

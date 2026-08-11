@@ -207,8 +207,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               This handoff was prepared, not sent — nothing is going to run it
             </p>
             <p className="mt-2">
-              The last attempt found no county onramp worker configured on this OpenPlan
-              installation, so no request was made and no setup started. The payload below is
+              The last attempt found no processing worker configured on this OpenPlan
+              installation to run county validation, so no request was made and no setup started. The payload below is
               complete and usable:
               an operator can run <code>scripts/modeling/bootstrap_county_validation_onramp.py</code>{" "}
               and POST the resulting manifest to the callback URL, and this page will pick it up.
@@ -224,7 +224,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                 onChange={(event) => setWorkerConfiguredSinceLastAttempt(event.target.checked)}
               />
               <span>
-                A county onramp worker has been configured on this OpenPlan installation since that
+                A validation worker has been configured on this OpenPlan installation since that
                 attempt — prepare the handoff again. (This page reads the stored result, not the
                 installation&apos;s configuration, so only you can tell it that changed.)
               </span>
@@ -265,8 +265,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             </div>
             {enqueueState.status === "prepared" ? (
               <div className="mt-1">
-                No county onramp worker is configured on this OpenPlan installation, so this payload
-                is waiting for a person to run it. It will not start on its own.
+                No processing worker is configured on this OpenPlan installation to run county
+                validation, so this payload is waiting for a person to run it. It will not start on
+                its own.
               </div>
             ) : null}
             <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>

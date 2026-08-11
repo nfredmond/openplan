@@ -21,11 +21,11 @@ export default function ModelsError({
   return (
     <div className="px-6 py-8">
       <ErrorState
-        title="The models surface hit an error."
+        title="Something went wrong in Models."
         description={
           error.digest
-            ? `Reference ${error.digest}. Try again, or return to the models list.`
-            : "Try again, or return to the models list."
+            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to Models.`
+            : "Nothing has been deleted — this screen failed to load. Try again, or go back to Models."
         }
         action={
           <div className="flex flex-wrap gap-3 text-sm">
@@ -34,7 +34,7 @@ export default function ModelsError({
               onClick={reset}
               className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
             >
-              Retry
+              Try again
             </button>
             <Link
               href="/models"

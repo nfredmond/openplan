@@ -7,6 +7,7 @@ import {
   APP_NAV_ENTRIES,
   buildPaletteCommands,
   buildRailGroups,
+  findNavSection,
   navLabel,
   protectedRoutePrefixes,
 } from "@/components/nav/nav-registry";
@@ -23,6 +24,10 @@ const NAV_EXEMPT_ROUTE_DIRS = [
   // bookmarks and deep links keep working. It is protected (the redirect
   // target is workspace-scoped) but never navigated to.
   "billing",
+  // /command-center survives only as a redirect stub into /dashboard — the
+  // Overview page absorbed it in the 2026-08-10 navigation overhaul. Same
+  // deal: protected, bookmark-safe, never navigated to.
+  "command-center",
 ];
 
 describe("nav registry — the single source for every nav and the auth proxy", () => {
@@ -54,45 +59,74 @@ describe("nav registry — the single source for every nav and the auth proxy", 
 
   it("keeps the rail's canonical groups, order, and labels", () => {
     const groups = buildRailGroups();
-    expect(groups.map((group) => group.title)).toEqual(["Operate", "Analyze"]);
-    expect(groups[0]?.items.map((item) => `${item.href}·${item.label}`)).toEqual([
-      "/dashboard·Overview",
-      "/command-center·Command Center",
-      "/projects·Projects",
-      "/rtp·RTP Cycles",
-      "/plans·Plans",
-      "/programs·Programs",
-      "/grants·Grants",
-      "/reports·Reports",
-      "/invoicing·Invoicing",
+    expect(groups.map((group) => group.title)).toEqual([
+      "Workspace",
+      "Plans & Programming",
+      "Funding",
+      "Analysis & Modeling",
+      "Community",
+      "Library",
     ]);
-    expect(groups[1]?.items.map((item) => `${item.href}·${item.label}`)).toEqual([
-      "/engagement·Engagement",
-      "/safety·Safety",
-      "/explore·Analysis Studio",
-      "/scenarios·Scenarios",
+    const items = groups.map((group) =>
+      group.items.map((item) => `${item.href}·${item.label}`),
+    );
+    expect(items[0]).toEqual([
+      "/dashboard·Overview",
+      "/projects·Projects",
+      "/reports·Reports",
+      "/assistant-activity·Planner Agent Activity",
+    ]);
+    expect(items[1]).toEqual([
+      "/rtp·Regional Plan (RTP)",
+      "/plans·Plans",
+      "/programs·Programming Cycles",
+    ]);
+    expect(items[2]).toEqual([
+      "/grants·Grants",
+      "/invoicing·Invoices & Reimbursements",
+    ]);
+    expect(items[3]).toEqual([
       "/models·Models",
-      "/county-runs·County Validation",
+      "/scenarios·Scenarios",
+      "/explore·Corridor Analysis",
+      "/county-runs·Model Validation",
+      "/safety·Safety",
+    ]);
+    expect(items[4]).toEqual(["/engagement·Engagement"]);
+    expect(items[5]).toEqual([
       "/data-hub·Data Hub",
       "/knowledge-base·Knowledge Base",
-      "/aerial·Aerial Ops",
+      "/aerial·Aerial Imagery",
+      "/help·Help",
     ]);
   });
 
-  it("puts every registered surface in the command palette, including Safety, Knowledge Base, and County Validation", () => {
+  it("shows the Planner Agent Activity ledger on the rail — it is not hidden", () => {
+    const railHrefs = buildRailGroups().flatMap((group) =>
+      group.items.map((item) => item.href),
+    );
+    expect(railHrefs).toContain("/assistant-activity");
+  });
+
+  it("puts every registered surface in the command palette, and answers retired names", () => {
     const commands = buildPaletteCommands();
     const hrefs = commands.map((command) => command.href);
 
     expect(hrefs).toContain("/safety");
     expect(hrefs).toContain("/knowledge-base");
     expect(hrefs).toContain("/county-runs");
-    // Rail-hidden surfaces stay findable from the palette.
     expect(hrefs).toContain("/assistant-activity");
     expect(new Set(hrefs).size).toBe(APP_NAV_ENTRIES.length);
 
     // The old "billing" habit still finds the LAPM invoice register.
     const invoicing = commands.find((command) => command.href === "/invoicing");
     expect(invoicing?.keywords).toContain("billing");
+    // The retired "Command Center" name still lands on Overview…
+    const overview = commands.find((command) => command.href === "/dashboard");
+    expect(overview?.keywords).toContain("command center");
+    // …and the retired "Analysis Studio" name still lands on Corridor Analysis.
+    const explore = commands.find((command) => command.href === "/explore");
+    expect(explore?.keywords).toContain("analysis studio");
   });
 
   it("covers every registry href with a protected route prefix", () => {
@@ -103,9 +137,10 @@ describe("nav registry — the single source for every nav and the auth proxy", 
         `${entry.href} is navigable but not behind the auth proxy`,
       ).toBe(true);
     }
-    // The two routable-but-unlisted prefixes the proxy also guards.
+    // The routable-but-unlisted prefixes the proxy also guards.
     expect(prefixes).toContain("/workspace");
     expect(prefixes).toContain("/billing");
+    expect(prefixes).toContain("/command-center");
   });
 
   it("carries no operator-only /admin surface anywhere", () => {
@@ -129,8 +164,47 @@ describe("nav registry — the single source for every nav and the auth proxy", 
   });
 
   it("resolves canonical labels and falls back to the href for unregistered surfaces", () => {
-    expect(navLabel("/explore")).toBe("Analysis Studio");
+    expect(navLabel("/explore")).toBe("Corridor Analysis");
     expect(navLabel("/dashboard")).toBe("Overview");
+    expect(navLabel("/invoicing")).toBe("Invoices & Reimbursements");
     expect(navLabel("/not-a-registered-surface")).toBe("/not-a-registered-surface");
+  });
+
+  /**
+   * The secondary nav has NO grouping of its own — findNavSection() is what it
+   * renders, and this test pins that derivation to the registry so a second,
+   * conflicting grouping (which is exactly what the old hand-written
+   * sectionMap became) cannot come back.
+   */
+  it("derives a contextual section from the registry for every registered surface", () => {
+    for (const entry of APP_NAV_ENTRIES) {
+      const groupTitle = buildPaletteCommands().find(
+        (command) => command.href === entry.href,
+      )?.group;
+      const expectedItems = APP_NAV_ENTRIES.filter(
+        (candidate) => candidate.railGroup === entry.railGroup,
+      ).map(({ href, label }) => ({ href, label }));
+
+      for (const pathname of [entry.href, `${entry.href}/deep/child-page`]) {
+        const section = findNavSection(pathname);
+        expect(section, `${pathname} resolves to no section`).not.toBeNull();
+        expect(
+          section?.title,
+          `${pathname} resolved to section "${section?.title}", not its registry group title`,
+        ).toBe(groupTitle);
+        expect(
+          section?.items,
+          `${pathname} did not list its whole registry group in registry order`,
+        ).toEqual(expectedItems);
+      }
+    }
+  });
+
+  it("returns no section for unregistered paths", () => {
+    expect(findNavSection("/not-a-registered-surface")).toBeNull();
+    expect(findNavSection("/")).toBeNull();
+    // The redirect stubs are protected routes but not nav destinations.
+    expect(findNavSection("/command-center")).toBeNull();
+    expect(findNavSection("/billing")).toBeNull();
   });
 });

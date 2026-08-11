@@ -55,11 +55,19 @@ type WorkspaceIntegrationKeysPanelProps = {
   workspaceId: string;
   /** Only owners and admins may manage keys; the API enforces this too. */
   canManage: boolean;
+  /**
+   * Render only these provider rows. The dashboard uses this to hoist the
+   * Anthropic row into the first-run checklist's AI step while no AI key
+   * resolves, and to render the remaining providers in the main panel — each
+   * provider row is still mounted exactly once. Omit for all providers.
+   */
+  providerIds?: string[];
 };
 
 export function WorkspaceIntegrationKeysPanel({
   workspaceId,
   canManage,
+  providerIds,
 }: WorkspaceIntegrationKeysPanelProps) {
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [storageAvailable, setStorageAvailable] = useState(false);
@@ -202,7 +210,14 @@ export function WorkspaceIntegrationKeysPanel({
 
   if (!canManage) return null;
 
-  const configuredCount = providers.filter(
+  // The API always answers with every registered provider; the filter is
+  // presentational, so a filtered mount and an unfiltered one can never
+  // disagree about a provider's state.
+  const visibleProviders = providerIds
+    ? providers.filter((provider) => providerIds.includes(provider.id))
+    : providers;
+
+  const configuredCount = visibleProviders.filter(
     (provider) => provider.storedKey !== null || provider.envKeyPresent,
   ).length;
 
@@ -213,29 +228,44 @@ export function WorkspaceIntegrationKeysPanel({
       if (provider.storedKey.decryptable === false) {
         return (
           <div className="mt-2 text-sm text-amber-800 dark:text-amber-200" role="status">
+            {/* The planner sentence leads; the server-side detail follows,
+                addressed to whoever operates the deployment, with the exact
+                names in copyable code blocks. */}
             <p>
               <span className="font-medium">
                 Stored workspace key ••••{provider.storedKey.keyLast4} can no longer be read
               </span>{" "}
-              — this deployment&apos;s{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">
-                OPENPLAN_INTEGRATION_KEY_SECRET
-              </code>{" "}
-              has changed since it was saved.
+              — the key this workspace saved is no longer usable, through no action of yours.
             </p>
             <p className="mt-1">
               {provider.envKeyPresent ? (
                 <>
-                  Requests are using this deployment&apos;s{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>{" "}
-                  instead. Re-enter the workspace key below to restore it.
+                  Requests are using this deployment&apos;s own key instead, so these features
+                  keep working. Re-enter the workspace key below to restore it.
                 </>
               ) : (
                 <>
-                  This deployment has no{" "}
+                  This deployment has no key of its own for this either, so these features are
+                  unavailable or degraded until the key is re-entered below.
+                </>
+              )}
+            </p>
+            <p className="mt-1 text-xs">
+              For whoever operates this deployment: the server setting{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                OPENPLAN_INTEGRATION_KEY_SECRET
+              </code>{" "}
+              has changed since this key was saved
+              {provider.envKeyPresent ? (
+                <>
+                  , and requests currently fall back to{" "}
+                  <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>.
+                </>
+              ) : (
+                <>
+                  , and no{" "}
                   <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>{" "}
-                  either, so these features are unavailable or degraded until the key is re-entered
-                  below.
+                  is set to fall back to.
                 </>
               )}
             </p>
@@ -257,14 +287,15 @@ export function WorkspaceIntegrationKeysPanel({
     if (provider.envKeyPresent) {
       return (
         <p className="mt-2 text-sm text-muted-foreground">
-          Using this deployment&apos;s{" "}
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>
+          Ready — running on a key set up by whoever operates this deployment (
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>)
         </p>
       );
     }
     return (
       <p className="mt-2 text-sm text-amber-800 dark:text-amber-200">
-        Not configured — {provider.label} features will be unavailable or degraded.
+        Not configured — {provider.label} features will be unavailable or degraded. Whoever
+        operates this deployment can set it up{provider.workspaceConfigurable && storageAvailable ? ", or paste a workspace key below" : ""}.
       </p>
     );
   }
@@ -274,9 +305,9 @@ export function WorkspaceIntegrationKeysPanel({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-sm font-semibold text-foreground">Integration keys</h2>
         <p className="text-xs text-muted-foreground">
-          {loading || providers.length === 0
+          {loading || visibleProviders.length === 0
             ? ""
-            : `${configuredCount} of ${providers.length} configured`}
+            : `${configuredCount} of ${visibleProviders.length} configured`}
         </p>
       </div>
 
@@ -291,13 +322,13 @@ export function WorkspaceIntegrationKeysPanel({
         <p className="mt-3 text-sm text-destructive" role="alert">
           {error}
         </p>
-      ) : providers.length === 0 ? (
+      ) : visibleProviders.length === 0 ? (
         <p className="mt-3 text-sm text-muted-foreground">
           No integration providers are registered for this deployment.
         </p>
       ) : (
         <ul className="mt-4 divide-y divide-border/60">
-          {providers.map((provider) => {
+          {visibleProviders.map((provider) => {
             const message = messages[provider.id] ?? null;
             return (
               <li key={provider.id} className="py-4 first:pt-2 last:pb-0">

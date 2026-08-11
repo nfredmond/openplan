@@ -797,7 +797,7 @@ describe("assistant funding operations", () => {
 
     expect(action).toBeDefined();
     expect(action?.label).toBe("Open billing reimbursement triage");
-    expect(action?.href).toBe("/billing?workspaceId=workspace-1&projectId=project-gap&linkage=linked");
+    expect(action?.href).toBe("/invoicing?workspaceId=workspace-1&linkage=linked&projectId=project-gap");
     expect(action?.statusLabel).toBe("1 reimbursement active");
   });
 
@@ -850,7 +850,7 @@ describe("assistant funding operations", () => {
 
     expect(action).toBeDefined();
     expect(action?.label).toBe("Link lead invoice to award now");
-    expect(action?.href).toBe("/billing?workspaceId=workspace-1&projectId=project-gap&linkage=unlinked&focusInvoiceId=invoice-1");
+    expect(action?.href).toBe("/invoicing?workspaceId=workspace-1&linkage=unlinked&projectId=project-gap&focusInvoiceId=invoice-1");
     expect(action?.executeAction?.kind).toBe("link_billing_invoice_funding_award");
     if (action?.executeAction?.kind === "link_billing_invoice_funding_award") {
       expect(action.executeAction.workspaceId).toBe("workspace-1");
@@ -1161,5 +1161,93 @@ describe("assistant funding operations", () => {
     expect(action?.label).toBe("Open lead grant decision lane");
     expect(action?.reason).toContain("ATP Cycle 8 is the lead opportunity decision to advance first.");
     expect(action?.auditNote).toContain("Lead opportunity decision: ATP Cycle 8.");
+  });
+
+  it("never generates an operation link into the deprecated /billing redirect", () => {
+    // /billing survives only as a redirect stub for old saved deep links; the
+    // assistant must generate /invoicing links directly. Drive the real builder
+    // with the two scenarios that render invoice-register links (the exact
+    // invoice-to-award relink and the reimbursement-triage jump) so the
+    // assertion covers the operations that actually build those hrefs.
+    const relinkLinks = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Relink invoice reimbursement records",
+        detail: "A project has an exact invoice-to-award relink ready.",
+        counts: {
+          projectFundingReimbursementActiveProjects: 1,
+        },
+        nextCommand: {
+          key: "relink-project-invoice-awards",
+          title: "Relink invoice reimbursement records",
+          detail: "Reopen Gap Project first and attach the exact unlinked invoice to its funding award.",
+          href: "/projects/project-gap#project-invoices",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          targetInvoiceId: "invoice-1",
+          targetFundingAwardId: "award-1",
+          tone: "warning",
+          priority: 6.25,
+          badges: [{ label: "Exact relinks", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "relink-project-invoice-awards",
+            title: "Relink invoice reimbursement records",
+            detail: "Reopen Gap Project first and attach the exact unlinked invoice to its funding award.",
+            href: "/projects/project-gap#project-invoices",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            targetInvoiceId: "invoice-1",
+            targetFundingAwardId: "award-1",
+            tone: "warning",
+            priority: 6.25,
+            badges: [{ label: "Exact relinks", value: 1 }],
+          },
+        ],
+      })
+    );
+    const triageLinks = buildAssistantOperations(
+      buildWorkspaceContext({
+        headline: "Advance reimbursement invoicing",
+        detail: "A project already has reimbursement work started but invoicing still trails the award stack.",
+        counts: {
+          projectFundingReimbursementActiveProjects: 1,
+          projectFundingGapProjects: 1,
+        },
+        nextCommand: {
+          key: "advance-project-reimbursement-invoicing",
+          title: "Advance reimbursement invoicing",
+          detail: "Reopen Gap Project first and move the existing reimbursement packet through invoicing.",
+          href: "/projects/project-gap#project-invoices",
+          targetProjectId: "project-gap",
+          targetProjectName: "Gap Project",
+          tone: "warning",
+          priority: 6.3,
+          badges: [{ label: "Reimbursement active", value: 1 }],
+        },
+        commandQueue: [
+          {
+            key: "advance-project-reimbursement-invoicing",
+            title: "Advance reimbursement invoicing",
+            detail: "Reopen Gap Project first and move the existing reimbursement packet through invoicing.",
+            href: "/projects/project-gap#project-invoices",
+            targetProjectId: "project-gap",
+            targetProjectName: "Gap Project",
+            tone: "warning",
+            priority: 6.3,
+            badges: [{ label: "Reimbursement active", value: 1 }],
+          },
+        ],
+      })
+    );
+    const allLinks = [...relinkLinks, ...triageLinks];
+
+    // Guard against vacuity: both invoice-register operations must actually render.
+    expect(allLinks.some((link) => link.id === "workspace-link-invoice-award")).toBe(true);
+    expect(allLinks.some((link) => link.id === "workspace-open-billing-reimbursement-triage")).toBe(true);
+
+    for (const link of allLinks) {
+      expect(link.href.startsWith("/billing")).toBe(false);
+    }
   });
 });

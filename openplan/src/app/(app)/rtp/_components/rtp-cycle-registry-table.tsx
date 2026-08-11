@@ -319,11 +319,18 @@ export function RtpCycleRegistryTable({
 
         {typedCycles.length === 0 ? (
           <EmptyState
-            title={allCyclesCount > 0 ? "No cycles match the current filter" : "No RTP cycles yet"}
+            title={allCyclesCount > 0 ? "No cycles match the current filter" : "No plan cycles yet"}
             description={
               allCyclesCount > 0
                 ? "Try a different status, packet-attention, recent-work, queue-action, or trace-freshness filter to resume triage across the RTP registry."
-                : "Create the first RTP cycle so the regional plan update has one shared parent object instead of fragmented records."
+                : "Each cycle here is one update of your Regional Transportation Plan (RTP) — its project lists, funding outlook, performance measures, and public review, kept together from kickoff to adoption. Create your first cycle to give the plan update one shared home."
+            }
+            action={
+              allCyclesCount > 0 ? undefined : (
+                <a href="#create-rtp-cycle" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                  Create an RTP cycle
+                </a>
+              )
             }
           />
         ) : (

@@ -109,8 +109,8 @@ export default async function AssistantActivityPage() {
   if (!membership || !workspace) {
     return (
       <WorkspaceMembershipRequired
-        moduleLabel="Planner Agent activity"
-        title="Planner Agent activity needs a workspace"
+        moduleLabel="Planner Agent Activity"
+        title="Planner Agent Activity needs a workspace"
         description="The Planner Agent audit trail is workspace-scoped. You are signed in, but no workspace membership was found for this account, so there is no action ledger to show yet."
       />
     );
@@ -139,7 +139,7 @@ export default async function AssistantActivityPage() {
             Action audit ledger
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Planner Agent activity</h1>
+            <h1 className="module-intro-title">Planner Agent Activity</h1>
             <p className="module-intro-description">
               Every action the Planner Agent executes in this workspace is written to a per-execution audit
               ledger — successes and failures alike — so operators can answer who fired what, when, and with
@@ -190,7 +190,7 @@ export default async function AssistantActivityPage() {
           <div className="module-operator-list">
             <div className="module-operator-item">Every execution writes one audit row — success or failure.</div>
             <div className="module-operator-item">Approval-gated actions verify the input hash before running.</div>
-            <div className="module-operator-item">Reads are RLS-scoped to workspace members only.</div>
+            <div className="module-operator-item">Only members of this workspace can see these records.</div>
           </div>
         </article>
       </header>
@@ -220,7 +220,7 @@ export default async function AssistantActivityPage() {
           <div className="mt-5">
             <ErrorState
               title="Action activity could not be loaded"
-              description="The assistant_action_executions read failed. Check workspace membership and RLS before treating this ledger as complete."
+              description="The action history could not be read, so this list may be incomplete rather than empty. It is not a finding that no actions ran. Reload, and if this keeps happening, ask whoever runs your OpenPlan deployment to check your workspace access."
             />
           </div>
         ) : executions.length === 0 ? (

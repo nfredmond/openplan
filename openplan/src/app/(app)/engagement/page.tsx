@@ -292,7 +292,7 @@ export default async function EngagementPage({
             Engagement workspace
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Campaigns</h1>
+            <h1 className="module-intro-title">Engagement</h1>
             <p className="module-intro-description">
               Run a public comment campaign, tie it to a project if it belongs to one, and keep every comment, category, and reply in one place.
             </p>
@@ -384,7 +384,9 @@ export default async function EngagementPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <EngagementCampaignCreator projects={(projectsData ?? []) as Array<{ id: string; name: string }>} />
+        <div id="create-campaign">
+          <EngagementCampaignCreator projects={(projectsData ?? []) as Array<{ id: string; name: string }>} />
+        </div>
 
         <article className="module-section-surface">
           <div className="module-section-header">
@@ -444,11 +446,18 @@ export default async function EngagementPage({
                 />
               ) : (
                 <EmptyState
-                  title={hasActiveFilters ? "No campaigns match these filters" : "No engagement campaigns yet"}
+                  title={hasActiveFilters ? "No campaigns match these filters" : "No campaigns yet"}
                   description={
                     hasActiveFilters
                       ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
-                      : "Create the first campaign to start collecting and moderating public input inside OpenPlan."
+                      : "Engagement is where your agency hears from the public: campaigns collect map comments, survey responses, and feedback on draft plans, with moderation built in. Create your first campaign to open a public comment window."
+                  }
+                  action={
+                    hasActiveFilters ? undefined : (
+                      <a href="#create-campaign" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                        Create a campaign
+                      </a>
+                    )
                   }
                 />
               )}

@@ -18,7 +18,7 @@ import {
   resolveRtpPacketWorkPostureFromCounts,
   resolveRtpPacketWorkPostureFromFreshnessLabel,
 } from "@/lib/assistant/rtp-packet-posture";
-import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
+import { buildInvoiceTriageHref, buildInvoicingHref } from "@/lib/invoicing/triage-links";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import {
   buildRtpReleaseReviewSummary,
@@ -361,7 +361,13 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-link-invoice-award",
           "Link lead invoice to award now",
-          `/billing?workspaceId=${context.workspace.id}&projectId=${invoiceRelinkCommand.targetProjectId ?? ""}&linkage=unlinked&focusInvoiceId=${invoiceRelinkCommand.targetInvoiceId}`,
+          buildInvoicingHref({
+            workspaceId: context.workspace.id,
+            linkage: "unlinked",
+            overdue: "all",
+            projectId: invoiceRelinkCommand.targetProjectId,
+            focusedInvoiceId: invoiceRelinkCommand.targetInvoiceId,
+          }),
           {
             targetKind: "workspace",
             actionClass: "review_controls",
@@ -443,7 +449,12 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
                 overdue: "all",
                 projectId: reimbursementAdvanceCommand.targetProjectId,
               })
-            : `/billing?workspaceId=${context.workspace.id}&projectId=${reimbursementAdvanceCommand.targetProjectId}&linkage=linked`,
+            : buildInvoicingHref({
+                workspaceId: context.workspace.id,
+                linkage: "linked",
+                overdue: "all",
+                projectId: reimbursementAdvanceCommand.targetProjectId,
+              }),
           {
             targetKind: "workspace",
             actionClass: "review_controls",

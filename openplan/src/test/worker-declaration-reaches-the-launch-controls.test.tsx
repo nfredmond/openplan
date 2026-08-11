@@ -282,7 +282,7 @@ describe("what the county onboarding page tells a planner about this deployment'
     render(await CountyRunsPage({ searchParams: Promise.resolve({}) }));
 
     const disclosure = screen.getByTestId("county-worker-absent-disclosure");
-    expect(disclosure).toHaveTextContent(/no county onramp worker configured to receive the job/i);
+    expect(disclosure).toHaveTextContent(/no processing worker configured to run county validation/i);
     // Launching stays possible — a prepared handoff is genuinely usable by an
     // operator. What changes is that it is no longer presented as background
     // execution.

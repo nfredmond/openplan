@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * `const { data } = await supabase…` hands back the same `null` for "this
  * workspace runs no engagement" and "the query failed", and this page's empty
  * state — written for the first — used to state the second as fact. On an
- * agency's own console that sentence is "No engagement campaigns yet": a
+ * agency's own console that sentence is "No campaigns yet": a
  * planning department told it has never engaged anybody, on the strength of a
  * broken query. The same defect shipped twice to the PUBLIC (the plan page and
  * the engagement portal) before it was caught.
@@ -147,7 +147,7 @@ describe("the engagement catalog discloses a failed read", () => {
     await renderPage();
 
     // (a) the false absence is gone.
-    expect(screen.queryByText(/No engagement campaigns yet/i)).toBeNull();
+    expect(screen.queryByText(/No campaigns yet/i)).toBeNull();
     // (b) the failure is disclosed, by name, with the operator detail an
     //     internal page is allowed to show.
     expect(screen.getByText(/Part of this page could not be read/i)).toBeInTheDocument();
@@ -164,7 +164,7 @@ describe("the engagement catalog discloses a failed read", () => {
     // the assertion above and nobody could tell disclosure from noise.
     await renderPage();
 
-    expect(screen.getByText(/No engagement campaigns yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/No campaigns yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
     expect(screen.queryByText(/could not be listed/i)).toBeNull();
     expect(screen.queryByText("Unavailable")).toBeNull();
@@ -198,6 +198,6 @@ describe("the engagement catalog discloses a failed read", () => {
     expect(screen.getByText(/connection reset/)).toBeInTheDocument();
     // The campaigns read succeeded, so the ordinary empty state is still the
     // honest thing to say about campaigns.
-    expect(screen.getByText(/No engagement campaigns yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/No campaigns yet/i)).toBeInTheDocument();
   });
 });

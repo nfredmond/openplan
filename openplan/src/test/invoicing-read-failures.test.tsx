@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * `const { data } = await supabase…` hands back `null` for both "there is
  * nothing here" and "this query failed", so the empty-state sentence written
  * for the first case states the second one as fact. On THIS module the false
- * sentences are about money: "No invoice records recorded yet for this
+ * sentences are about money: "Record your first invoice to start tracking
  * workspace" and a $0.00 outstanding balance, told to an agency that may be
  * owed hundreds of thousands of dollars by its funder under a Caltrans LAPM
  * grant reimbursement. (This is the agency invoicing ITS FUNDER — it is not
@@ -182,12 +182,12 @@ describe("the reimbursement lane does not render a failed read as an answer", ()
     await renderLane();
 
     expect(
-      screen.getAllByText(/No invoice records recorded yet for this workspace/i).length
+      screen.getAllByText(/Record your first invoice to start tracking what you are owed/i).length
     ).toBeGreaterThan(0);
     // Nothing failed, so nothing is disclosed. Without this assertion the two
     // tests below could not tell disclosure from a lane that always warns.
     expect(
-      screen.queryAllByText(/Part of this reimbursement lane could not be read/i)
+      screen.queryAllByText(/Part of this reimbursement view could not be read/i)
     ).toHaveLength(0);
     expect(
       screen.queryAllByText(/The invoice register could not be read/i)
@@ -206,7 +206,7 @@ describe("the reimbursement lane does not render a failed read as an answer", ()
     // it: an unread register has no total, and rendering one as zero tells an
     // agency it has claimed nothing from its funder.
     expect(
-      screen.queryAllByText(/No invoice records recorded yet for this workspace/i)
+      screen.queryAllByText(/Record your first invoice to start tracking what you are owed/i)
     ).toHaveLength(0);
     expect(screen.queryAllByText(/Net requested/i)).toHaveLength(0);
     expect(screen.queryAllByText(/^Outstanding$/i)).toHaveLength(0);
@@ -215,7 +215,7 @@ describe("the reimbursement lane does not render a failed read as an answer", ()
     // read rather than a finding about what this workspace is owed. Internal
     // page, so the database's own message is shown to the person who can act.
     expect(
-      screen.getAllByText(/Part of this reimbursement lane could not be read/i).length
+      screen.getAllByText(/Part of this reimbursement view could not be read/i).length
     ).toBeGreaterThan(0);
     expect(
       screen.getAllByText(/this workspace's reimbursement invoice register/i).length
@@ -251,7 +251,7 @@ describe("the reimbursement lane does not render a failed read as an answer", ()
       screen.getAllByText(/Invoice register tables are pending in the current database/i).length
     ).toBeGreaterThan(0);
     expect(
-      screen.queryAllByText(/No invoice records recorded yet for this workspace/i)
+      screen.queryAllByText(/Record your first invoice to start tracking what you are owed/i)
     ).toHaveLength(0);
     expect(
       screen.queryAllByText(/this workspace's reimbursement invoice register/i)

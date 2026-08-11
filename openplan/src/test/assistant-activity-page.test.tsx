@@ -121,7 +121,7 @@ describe("AssistantActivityPage", () => {
   it("renders the audit ledger with action labels, approval class, hash, and failure detail", async () => {
     await renderPage();
 
-    expect(screen.getByRole("heading", { name: "Planner Agent activity" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Planner Agent Activity" })).toBeInTheDocument();
 
     // Summary line above the list.
     expect(screen.getByText(/2 actions · 1 approval-gated · 1 failed/)).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe("AssistantActivityPage", () => {
     await renderPage();
 
     expect(
-      screen.getByText("Planner Agent activity needs a workspace")
+      screen.getByText("Planner Agent Activity needs a workspace")
     ).toBeInTheDocument();
     // "provisioned" is founder-provisioning vocabulary from a reversed posture;
     // the product is self-serve and the word must not come back.

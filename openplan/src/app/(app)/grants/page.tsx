@@ -155,7 +155,7 @@ export default async function GrantsPage({
       <WorkspaceMembershipRequired
         moduleLabel="Grants"
         title="Grants need a workspace"
-        description="Funding opportunities, awards, and reimbursement posture only mean something once they sit in a workspace next to the projects they pay for. You are signed in, but this account is not in one yet."
+        description="Funding opportunities, awards, and reimbursements only mean something once they sit in a workspace next to the projects they pay for. You are signed in, but this account is not in one yet."
       />
     );
   }

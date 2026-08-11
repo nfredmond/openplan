@@ -12,9 +12,9 @@ export function GrantsWorkspaceQueueSection({
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Workspace queue</p>
-          <h2 className="module-section-title">What should move next on the grants lane</h2>
+          <h2 className="module-section-title">What should move next in Grants</h2>
           <p className="module-section-description">
-            These commands come from the same workspace runtime already feeding the assistant and RTP surfaces, but filtered here to the grants operating lane.
+            These suggestions come from the same workspace review that feeds the assistant and the Regional Plan (RTP) module, narrowed here to grants work.
           </p>
         </div>
         <StatusBadge tone={grantsQueue.length > 0 ? "warning" : "success"}>

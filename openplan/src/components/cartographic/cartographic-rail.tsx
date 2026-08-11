@@ -8,17 +8,17 @@ import {
   Briefcase,
   CircuitBoard,
   ClipboardList,
-  CreditCard,
   Database,
   FileText,
   FolderKanban,
   Landmark,
   LayoutDashboard,
   Library,
+  LifeBuoy,
   Map as MapIcon,
   MessageSquareShare,
   PlaneTakeoff,
-  Radar,
+  Receipt,
   Route,
   ScrollText,
   Settings2,
@@ -30,7 +30,6 @@ import { cn } from "@/lib/utils";
 
 const ICONS = {
   overview: LayoutDashboard,
-  command: Radar,
   projects: FolderKanban,
   rtp: Route,
   plans: BookOpen,
@@ -46,9 +45,13 @@ const ICONS = {
   county: MapIcon,
   reports: FileText,
   aerial: PlaneTakeoff,
-  billing: CreditCard,
+  // Receipt, not CreditCard: the register holds invoices the agency SENDS
+  // (reimbursement claims to funders) — a payment-card glyph misread as
+  // OpenPlan charging the user, which is not a thing.
+  invoicing: Receipt,
   admin: Settings2,
   activity: ScrollText,
+  help: LifeBuoy,
 } satisfies Record<string, LucideIcon>;
 
 /**

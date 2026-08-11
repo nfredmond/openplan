@@ -103,4 +103,42 @@ describe("SignUpPage", () => {
     });
     expect(screen.queryByText(/Confirm your email to finish/i)).not.toBeInTheDocument();
   });
+
+  it("folds a recognized landing-page intent into the dashboard redirect", async () => {
+    // The landing page's two sign-up doors send ?intent=modeling|engagement.
+    // Folding it into the redirect target is what carries it through sign-in
+    // (and email confirmation) with no cookie, so the first dashboard visit
+    // can point the getting-started checklist at the matching step.
+    signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: { access_token: "t" } }, error: null });
+    searchParamsValue.set("intent", "engagement");
+
+    render(<SignUpPage />);
+    fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
+    fireEvent.change(screen.getByLabelText(/^Organization$/i), { target: { value: "Nevada County TC" } });
+    fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith(
+        `/sign-in?created=1&redirect=${encodeURIComponent("/dashboard?intent=engagement")}`
+      );
+    });
+  });
+
+  it("drops an unrecognized intent and never overrides an explicit redirect", async () => {
+    signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: { access_token: "t" } }, error: null });
+    searchParamsValue.set("intent", "modeling");
+    searchParamsValue.set("redirect", "/reports");
+
+    render(<SignUpPage />);
+    fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
+    fireEvent.change(screen.getByLabelText(/^Organization$/i), { target: { value: "Nevada County TC" } });
+    fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
+
+    await waitFor(() => {
+      // An explicit redirect wins; the intent is not bolted onto /reports.
+      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports");
+    });
+  });
 });

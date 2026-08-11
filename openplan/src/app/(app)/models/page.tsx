@@ -479,12 +479,14 @@ export default async function ModelsPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+        <div id="create-model">
         <ModelCreator
           projects={projectsData ?? []}
           scenarioSets={scenarioSetsData ?? []}
           projectsReadFailed={projectsReadFailed}
           scenarioSetsReadFailed={scenarioSetsReadFailed}
         />
+        </div>
 
         <article className="module-section-surface">
           <div className="module-section-header">
@@ -551,7 +553,14 @@ export default async function ModelsPage({
                 description={
                   hasActiveFilters
                     ? filteredEmptyDescription
-                    : "Create the first model record to track versions, readiness, and how each model connects to scenarios, datasets, reports, and linked plans."
+                    : "Models keeps track of the travel models your agency relies on — which version is current, what each one can honestly support, and how it connects to scenarios and reports. Create your first model record to give your runs a home."
+                }
+                action={
+                  hasActiveFilters ? undefined : (
+                    <a href="#create-model" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                      Create a model record
+                    </a>
+                  )
                 }
               />
             </div>

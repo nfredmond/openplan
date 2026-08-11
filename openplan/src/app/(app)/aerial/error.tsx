@@ -21,11 +21,11 @@ export default function AerialError({
   return (
     <div className="px-6 py-8">
       <ErrorState
-        title="The aerial surface hit an error."
+        title="Something went wrong in Aerial Imagery."
         description={
           error.digest
-            ? `Reference ${error.digest}. Try again, or return to the aerial missions list.`
-            : "Try again, or return to the aerial missions list."
+            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to the aerial missions list.`
+            : "Nothing has been deleted — this screen failed to load. Try again, or go back to the aerial missions list."
         }
         action={
           <div className="flex flex-wrap gap-3 text-sm">
@@ -34,13 +34,13 @@ export default function AerialError({
               onClick={reset}
               className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
             >
-              Retry
+              Try again
             </button>
             <Link
               href="/aerial"
               className="inline-flex items-center rounded border border-border px-3 py-1.5 font-medium text-foreground hover:bg-muted/40"
             >
-              Back to Aerial
+              Back to Aerial Imagery
             </Link>
           </div>
         }

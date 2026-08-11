@@ -103,6 +103,30 @@ describe("WorkspaceIntegrationKeysPanel", () => {
     vi.unstubAllGlobals();
   });
 
+  it("renders only the requested provider rows when a providerIds filter is given", async () => {
+    // The dashboard hoists the Anthropic row into the first-run checklist's
+    // AI step with providerIds={["anthropic"]}, and renders the remaining
+    // providers in the main panel — this filter is what keeps each provider
+    // row mounted exactly once across the two.
+    mockFetch({ GET: { body: payload() } });
+
+    render(
+      <WorkspaceIntegrationKeysPanel
+        workspaceId={WORKSPACE_ID}
+        canManage
+        providerIds={["anthropic"]}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: /Anthropic \(Claude\)/ })).toBeInTheDocument(),
+    );
+    expect(screen.queryByRole("heading", { name: /US Census Bureau/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Mapbox/ })).not.toBeInTheDocument();
+    // The configured count describes what is on screen, not the whole payload.
+    expect(screen.getByText("1 of 1 configured")).toBeInTheDocument();
+  });
+
   it("renders one row per provider from the GET payload, with status and signup link", async () => {
     const { calls } = mockFetch({ GET: { body: payload() } });
 

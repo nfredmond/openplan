@@ -187,7 +187,7 @@ describe("AppCopilot", () => {
     const chatBody = JSON.parse(String((chatCall![1] as RequestInit).body)) as { question: string; kind: string };
     expect(chatBody.question).toBe("Where should I focus this week?");
     expect(chatBody.kind).toBe("workspace");
-    expect(screen.queryByText(/AI chat is offline/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/no AI key is set up/)).not.toBeInTheDocument();
   });
 
   it("shows the offline state and falls back to the deterministic response on 503 ai_offline", async () => {
@@ -202,9 +202,14 @@ describe("AppCopilot", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("AI chat is offline — no API key configured. Suggested actions below still work.")
+        screen.getByText(/The Planner Agent can't chat yet because no AI key is set up/)
       ).toBeInTheDocument();
     });
+    // The honest state links straight to the dashboard step where an
+    // owner/admin adds the key — not to a dead end.
+    expect(
+      screen.getByRole("link", { name: /Turn on your AI assistant from the dashboard checklist/ })
+    ).toHaveAttribute("href", "/dashboard#workspace-ai-key");
 
     await waitFor(() => {
       expect(screen.getByText("Deterministic workspace brief")).toBeInTheDocument();

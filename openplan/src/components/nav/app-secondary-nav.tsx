@@ -2,124 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { navLabel } from "@/components/nav/nav-registry";
+import { findNavSection } from "@/components/nav/nav-registry";
 import { cn } from "@/lib/utils";
 
-type SecondarySection = {
-  title: string;
-  description?: string;
-  items: Array<{ href: string; description?: string }>;
-};
-
-// The grouping here is contextual — which neighbors make sense from where the
-// planner is standing — but every label resolves through the shared nav
-// registry, so a surface is named the same thing in every nav.
-const sectionMap: Array<{
-  match: string[];
-  section: SecondarySection;
-}> = [
-  {
-    match: ["/dashboard", "/command-center"],
-    section: {
-      title: "Overview",
-      items: [
-        { href: "/dashboard" },
-        { href: "/command-center" },
-        { href: "/projects" },
-        { href: "/reports" },
-      ],
-    },
-  },
-  {
-    match: ["/explore", "/safety"],
-    section: {
-      title: "Analysis Studio",
-      items: [
-        { href: "/explore" },
-        { href: "/safety" },
-        { href: "/reports" },
-      ],
-    },
-  },
-  {
-    match: ["/projects"],
-    section: {
-      title: "Projects",
-      items: [
-        { href: "/projects" },
-        { href: "/rtp" },
-        { href: "/plans" },
-        { href: "/programs" },
-      ],
-    },
-  },
-  {
-    match: ["/rtp", "/plans", "/programs", "/knowledge-base"],
-    section: {
-      title: "Planning System",
-      items: [
-        { href: "/rtp" },
-        { href: "/plans" },
-        { href: "/programs" },
-        { href: "/grants" },
-        { href: "/engagement" },
-        { href: "/knowledge-base" },
-      ],
-    },
-  },
-  {
-    match: ["/grants"],
-    section: {
-      title: "Funding",
-      items: [
-        { href: "/grants" },
-        { href: "/programs" },
-        { href: "/projects" },
-        { href: "/reports" },
-      ],
-    },
-  },
-  {
-    match: ["/engagement"],
-    section: {
-      title: "Engagement",
-      items: [
-        { href: "/engagement" },
-        { href: "/reports" },
-        { href: "/data-hub" },
-      ],
-    },
-  },
-  {
-    match: ["/scenarios", "/models", "/data-hub", "/county-runs"],
-    section: {
-      title: "Transportation Modeling",
-      items: [
-        { href: "/models" },
-        { href: "/scenarios" },
-        { href: "/county-runs" },
-        { href: "/data-hub" },
-      ],
-    },
-  },
-  {
-    match: ["/reports", "/invoicing", "/assistant-activity"],
-    section: {
-      title: "Operations",
-      items: [
-        { href: "/reports" },
-        { href: "/invoicing" },
-        { href: "/assistant-activity" },
-      ],
-    },
-  },
-];
-
+/**
+ * The contextual "you are here" panel. It carries NO grouping of its own:
+ * findNavSection() resolves the current path to its nav-registry group, so the
+ * section title and its members are exactly what the rail and the command
+ * palette show. A second, hand-maintained grouping used to live here and had
+ * drifted from the rail's — deriving from the registry makes that divergence
+ * impossible rather than merely unlikely.
+ */
 export function AppSecondaryNav() {
   const pathname = usePathname();
-  const section = sectionMap.find((entry) =>
-    entry.match.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
-  )?.section;
+  const section = findNavSection(pathname);
 
   if (!section) {
     return null;
@@ -128,9 +24,6 @@ export function AppSecondaryNav() {
   return (
     <div className="shell-ledger-panel gap-0">
       <p className="shell-panel-kicker">{section.title}</p>
-      {section.description ? (
-        <p className="mt-2 text-xs leading-5 text-muted-foreground">{section.description}</p>
-      ) : null}
       <ul className="mt-3 divide-y divide-border/60 border-t border-border/60">
         {section.items.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -162,12 +55,7 @@ export function AppSecondaryNav() {
                 )}
               >
                 <span className="min-w-0">
-                  <span className="block">{navLabel(item.href)}</span>
-                  {item.description ? (
-                    <span className="mt-1 block text-[0.72rem] leading-5 text-muted-foreground">
-                      {item.description}
-                    </span>
-                  ) : null}
+                  <span className="block">{item.label}</span>
                 </span>
                 {active ? (
                   <span className="text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-primary">

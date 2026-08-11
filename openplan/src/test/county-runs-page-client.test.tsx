@@ -108,10 +108,11 @@ describe("CountyRunsPageClient", () => {
     });
   });
 
-  it("renders the current pilot validation list surface", () => {
+  it("renders the model validation run list", () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
-    expect(screen.getByText("County onboarding")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Model Validation" })).toBeInTheDocument();
+    expect(screen.getByText("Screening-model validation")).toBeInTheDocument();
     expect(screen.getByText(/25 most recent runs/i)).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
     expect(screen.getByText("nevada-run")).toBeInTheDocument();

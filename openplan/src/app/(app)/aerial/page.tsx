@@ -21,7 +21,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { moduleMetadata } from "@/lib/ui/page-title";
 
-export const metadata = moduleMetadata("Aerial Ops");
+export const metadata = moduleMetadata("Aerial Imagery");
 
 /**
  * `?projectId=` is how this register is TOLD which project it was opened for.
@@ -298,10 +298,10 @@ export default async function AerialIndexPage({
         <article className="module-intro-card">
           <div className="module-intro-kicker">
             <PlaneTakeoff className="h-3.5 w-3.5" />
-            Aerial operations lane
+            Drone missions & imagery
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Aerial Ops</h1>
+            <h1 className="module-intro-title">Aerial Imagery</h1>
             <p className="module-intro-description">
               Plan flights, track what came back from them, and attach the imagery that is ready to verify to the project it belongs to.
             </p>

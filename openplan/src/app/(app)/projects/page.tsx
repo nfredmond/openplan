@@ -587,7 +587,9 @@ export default async function ProjectsPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <ProjectWorkspaceCreator />
+        <div id="create-project">
+          <ProjectWorkspaceCreator />
+        </div>
 
         <article className="module-section-surface">
           <div className="module-section-header">
@@ -640,7 +642,14 @@ export default async function ProjectsPage({
             </div>
           ) : projects.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No project records yet. Create your first project to start tracking work here.
+              Projects gives each piece of work your agency delivers — a corridor study, an intersection
+              fix, a trail segment — one record that plans, funding, models, and reports all connect to.
+              Create your first project to start tracking its milestones and money in one place.
+              <div className="mt-3">
+                <a href="#create-project" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                  Create a project
+                </a>
+              </div>
             </div>
           ) : (
             <>

@@ -170,15 +170,15 @@ export function CountyRunsPageClient({
   return (
     <section className="module-page pb-10">
       <div className="module-intro-card">
-        <div className="module-intro-kicker">County onboarding</div>
+        <div className="module-intro-kicker">Model Validation</div>
         <div className="module-intro-body">
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge tone="info">Pilot validation lane</StatusBadge>
+            <StatusBadge tone="info">Screening-model validation</StatusBadge>
             <StatusBadge tone="neutral">25 most recent runs</StatusBadge>
           </div>
-          <h1 className="module-intro-title">County runs</h1>
+          <h1 className="module-intro-title">Model Validation</h1>
           <p className="module-intro-description">
-            Bring a county into the modeling lane, from first setup through validation. Launch a run,
+            Bring a county into the modeling workflow, from first setup through validation. Launch a run,
             check its current stage, then open the detail page for its files, worker handoff, and caveats.
           </p>
         </div>
@@ -253,15 +253,15 @@ export function CountyRunsPageClient({
                       the records it was drawn from. Blurring them would let a
                       guess borrow the authority of a fact. */}
                   {workerAbsenceIsDeclared
-                    ? "This installation has no county onramp worker configured to receive the job, so nothing will be sent anywhere."
+                    ? "This installation has no processing worker configured to run county validation, so nothing will be sent anywhere."
                     : `${
                         preparedOnlyRunCount === 1
                           ? "A county run here was prepared rather than sent"
                           : `${preparedOnlyRunCount} county runs here were prepared rather than sent`
-                      }, which OpenPlan records only when no county onramp worker is configured to receive the job.`}{" "}
+                      }, which OpenPlan records only when no processing worker is configured to run county validation.`}{" "}
                   Launching still creates the run record and the full worker payload, and that
                   payload is usable — but the setup does not run until whoever operates this
-                  OpenPlan installation either configures a worker (
+                  OpenPlan installation either configures the validation worker (see{" "}
                   <code>workers/county_onramp_worker/DEPLOY.md</code>) or runs the prepared handoff
                   themselves and posts the manifest back.
                 </p>
@@ -334,7 +334,7 @@ export function CountyRunsPageClient({
           // same screen. Every other status keeps the shared wording.
           const enqueueHelp =
             item.enqueueStatus === "prepared"
-              ? "This county setup handoff is prepared, not sent — no county onramp worker was configured to receive it, so it will not start until an operator runs it or configures a worker."
+              ? "This county setup handoff is prepared, not sent — no processing worker was configured to run it, so it will not start until an operator runs it or configures a worker."
               : getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
 
           return (

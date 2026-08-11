@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FileText, FolderKanban, Landmark, Radar, ShieldCheck } from "lucide-react";
 import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
@@ -6,7 +7,9 @@ import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-ac
 import { BuildIdentityLine } from "@/components/dashboard/build-identity-line";
 import { DeploymentHealthPanel } from "@/components/dashboard/deployment-health-panel";
 import { FirstRunChecklist } from "@/components/onboarding/first-run-checklist";
+import { GettingStartedCard } from "@/components/onboarding/getting-started-card";
 import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
+import { RecentActionActivity } from "@/components/operations/recent-action-activity";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceGeographyPanel } from "@/components/workspaces/workspace-geography-panel";
@@ -34,7 +37,14 @@ import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
+import {
+  loadRecentActionExecutionsForWorkspace,
+  type RecentActionActivitySupabaseLike,
+} from "@/lib/operations/action-activity";
 import { evaluateDeploymentHealth } from "@/lib/config/deployment-health";
+import { hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
+import { INTEGRATION_PROVIDERS } from "@/lib/integrations/providers";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import {
   loadModelingWorkerFacts,
   readDeploymentEnvFacts,
@@ -68,7 +78,20 @@ function fmtDate(value: string | null): string {
   return parsed.toLocaleString();
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // What the person said they came for, carried from the public landing page
+  // through sign-up as a query parameter. It steers one step in the
+  // getting-started checklist and is never stored — an unrecognized or absent
+  // value simply means the checklist shows its default steps.
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const intentParam = resolvedSearchParams.intent;
+  const intent =
+    intentParam === "modeling" || intentParam === "engagement" ? intentParam : null;
+
   const supabase = await createClient();
 
   const {
@@ -101,7 +124,7 @@ export default async function DashboardPage() {
   // calls enforces the same rule server-side.
   const canManageWorkspace = workspaceRole === "owner" || workspaceRole === "admin";
 
-  const [runsResult, operationsSummary, homeGeographyResult] = workspaceId
+  const [runsResult, operationsSummary, homeGeographyResult, actionActivity] = workspaceId
     ? await Promise.all([
         supabase
           .from("runs")
@@ -134,6 +157,12 @@ export default async function DashboardPage() {
           .select(STAGE_GATE_BINDING_WORKSPACE_COLUMNS)
           .eq("id", workspaceId)
           .maybeSingle(),
+        // The recent-actions audit feed, absorbed from the retired Command
+        // Center page — the one thing it had that the dashboard did not.
+        loadRecentActionExecutionsForWorkspace(
+          supabase as unknown as RecentActionActivitySupabaseLike,
+          workspaceId
+        ),
       ])
     : [
         { data: [] },
@@ -145,7 +174,17 @@ export default async function DashboardPage() {
           fundingOpportunities: [],
         }),
         { data: null },
+        { executions: [], error: null },
       ];
+
+  // Whether this workspace's AI assistant can run at all: an Anthropic key the
+  // workspace stored itself, or the deployment's own environment key. Resolved
+  // with the SAME helper every AI route uses, so this boolean cannot disagree
+  // with what a request would actually experience. Only the boolean goes to
+  // the client — never the key.
+  const aiKeyConfigured = await withWorkspaceIntegrationContext(workspaceId, async () =>
+    hasAnthropicAccess()
+  );
 
   const runsData = runsResult.data ?? [];
   const homeGeography = parseWorkspaceHomeGeography(homeGeographyResult.data);
@@ -241,7 +280,7 @@ export default async function DashboardPage() {
     {
       key: "analysis-studio",
       href: "/explore",
-      title: "Open Analysis Studio",
+      title: "Open Corridor Analysis",
       description: "Run corridor analysis with map context, metrics, and report-ready outputs intact.",
       icon: Radar,
     },
@@ -366,18 +405,35 @@ export default async function DashboardPage() {
   ];
 
   const insightsView = (
-    <DashboardInsights
-      tiles={insightsTiles}
-      runsPerMonth={runsPerMonth(runsData)}
-      recentScores={recentOverallScores(runsData)}
-      lanePressure={lanePressure(insightLanes)}
-    />
+    <>
+      <DashboardInsights
+        tiles={insightsTiles}
+        runsPerMonth={runsPerMonth(runsData)}
+        recentScores={recentOverallScores(runsData)}
+        lanePressure={lanePressure(insightLanes)}
+      />
+      {/* The recent-actions audit feed, absorbed from the retired Command
+          Center page. It reads the same workspace audit record the Planner
+          Agent Activity page reads in full. */}
+      <RecentActionActivity
+        className="mt-6"
+        executions={actionActivity.executions}
+        error={actionActivity.error}
+        description="What has happened recently in this workspace — reports generated, funding decisions made, project records changed."
+        emptyDescription="Nothing has been recorded in this workspace yet. Report generation, funding decisions, and changes to project records show up here once they run."
+      />
+    </>
   );
 
-  // A brand-new user lands here on an auto-provisioned but empty workspace (the
-  // handle_new_user trigger creates the workspace on sign-up). Guide them with a
-  // stateful first-run checklist until they have real activity in any core lane.
-  const isFirstRun =
+  // A workspace with no activity in any core lane. This gates the quick
+  // actions — an empty workspace has no lead action to derive — and ONLY them.
+  // It used to gate the getting-started checklist too, which meant creating a
+  // single project removed the checklist forever, even with the home geography
+  // still unset. Activity is not the same as being set up: the checklist now
+  // stays until the home geography is set AND the user dismisses it
+  // (GettingStartedCard holds that rule), with a permanent low-key re-entry
+  // link in its place once dismissed.
+  const workspaceIsEmpty =
     kpis.totalRuns === 0 &&
     operationsSummary.counts.projects === 0 &&
     operationsSummary.counts.plans === 0 &&
@@ -388,15 +444,35 @@ export default async function DashboardPage() {
   // to it — the geography setter is what the step asks for, and it was
   // previously buried mid-page where a first-run user never reached it. It is
   // still mounted EXACTLY ONCE either way: the panel self-fetches, so a second
-  // mount would mean a second request and a second answer.
-  const hoistGeographyPanel = isFirstRun && !homeGeographyIsSet;
+  // mount would mean a second request and a second answer. The checklist
+  // renders whenever the geography is unset, so the hoist no longer depends on
+  // the workspace being empty.
+  const hoistGeographyPanel = !homeGeographyIsSet;
   const geographyPanel = (
     <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
   );
 
+  // Same hoisting rule for the AI key: while no Anthropic key resolves, the
+  // integration-keys panel's Anthropic row moves up into the checklist's first
+  // step, and the main panel below renders the remaining providers. Each
+  // provider row is mounted exactly once either way. Members cannot manage
+  // keys (the panel renders nothing for them), so nothing is hoisted for them.
+  const hoistAiKeyRow = !aiKeyConfigured && canManageWorkspace;
+  const nonAiProviderIds = INTEGRATION_PROVIDERS.map((provider) => provider.id).filter(
+    (id) => id !== "anthropic"
+  );
+
   const overviewView = (
     <>
-      {isFirstRun ? (
+      {/* The getting-started checklist. GettingStartedCard decides whether it
+          is on screen: always while the home geography is unset, otherwise
+          until this user dismisses it — and once dismissed, a permanent
+          low-key "Getting started" link stands in its place to reopen it. */}
+      <GettingStartedCard
+        userId={user.id}
+        workspaceId={workspaceId}
+        dismissible={homeGeographyIsSet}
+      >
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 dark:bg-primary/10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Get started</p>
           <h2 className="mt-1 text-lg font-semibold text-foreground">
@@ -406,19 +482,41 @@ export default async function DashboardPage() {
             {workspace?.name?.trim() ? `Set up ${workspace.name.trim()}` : "Set up your workspace"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Your workspace is ready and empty. These are the things that are actually configured — or
-            not — and what each one turns on.
+            {workspaceIsEmpty
+              ? "Your workspace is ready and empty. These are the things that are actually configured — or not — and what each one turns on."
+              : "The setup state of this workspace: what is actually configured — or not — and what each setting turns on."}
           </p>
           <FirstRunChecklist
+            aiKeyConfigured={aiKeyConfigured}
             homeGeographyIsSet={homeGeographyIsSet}
             homeGeographyLabel={homeGeographyLabel(homeGeography)}
             hasRuns={kpis.totalRuns > 0}
             canManageWorkspace={canManageWorkspace}
+            intent={intent}
+            engagementCampaignCount={
+              operationsSummary.moduleObservations?.engagement.campaigns ?? null
+            }
+            aiKeyControl={
+              hoistAiKeyRow ? (
+                <WorkspaceIntegrationKeysPanel
+                  workspaceId={workspaceId}
+                  canManage={canManageWorkspace}
+                  providerIds={["anthropic"]}
+                />
+              ) : null
+            }
           >
             {hoistGeographyPanel ? geographyPanel : null}
           </FirstRunChecklist>
+          <p className="mt-4 text-xs text-muted-foreground">
+            New to OpenPlan? The{" "}
+            <Link href="/help" className="font-semibold underline underline-offset-4 hover:text-foreground">
+              Help page
+            </Link>{" "}
+            explains what each module does and lists the full getting-started steps.
+          </p>
         </div>
-      ) : null}
+      </GettingStartedCard>
 
       {deploymentHealth ? <DeploymentHealthPanel health={deploymentHealth} /> : null}
 
@@ -458,8 +556,14 @@ export default async function DashboardPage() {
           slot in the pair above: three items in a two-column grid leave a lone
           half-width card, and this panel's per-provider rows want the width.
           Like the team panel, it renders nothing for a member — key management
-          is operator/owner work — so the row collapses cleanly for them. */}
-      <WorkspaceIntegrationKeysPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+          is operator/owner work — so the row collapses cleanly for them.
+          While the Anthropic row is hoisted into the checklist's AI step, this
+          panel renders the remaining providers only. */}
+      <WorkspaceIntegrationKeysPanel
+        workspaceId={workspaceId}
+        canManage={canManageWorkspace}
+        providerIds={hoistAiKeyRow ? nonAiProviderIds : undefined}
+      />
 
       <header className="module-header-grid">
         <DashboardWorkspaceIntro
@@ -493,8 +597,8 @@ export default async function DashboardPage() {
           honest path. The command board stays either way — it reports workspace
           state rather than offering a starting point, and on an empty workspace
           it reports zeros and says so. */}
-      <div className={isFirstRun ? undefined : "grid gap-6 xl:grid-cols-[1.04fr_0.96fr]"}>
-        {isFirstRun ? null : <DashboardQuickActions actions={actions} />}
+      <div className={workspaceIsEmpty ? undefined : "grid gap-6 xl:grid-cols-[1.04fr_0.96fr]"}>
+        {workspaceIsEmpty ? null : <DashboardQuickActions actions={actions} />}
 
         <WorkspaceCommandBoard summary={operationsSummary} />
       </div>

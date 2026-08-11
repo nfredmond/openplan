@@ -21,11 +21,11 @@ export default function ProgramsError({
   return (
     <div className="px-6 py-8">
       <ErrorState
-        title="The programs surface hit an error."
+        title="Something went wrong in Programming Cycles."
         description={
           error.digest
-            ? `Reference ${error.digest}. Try again, or return to the programs list.`
-            : "Try again, or return to the programs list."
+            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to Programming Cycles.`
+            : "Nothing has been deleted — this screen failed to load. Try again, or go back to Programming Cycles."
         }
         action={
           <div className="flex flex-wrap gap-3 text-sm">
@@ -34,13 +34,13 @@ export default function ProgramsError({
               onClick={reset}
               className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
             >
-              Retry
+              Try again
             </button>
             <Link
               href="/programs"
               className="inline-flex items-center rounded border border-border px-3 py-1.5 font-medium text-foreground hover:bg-muted/40"
             >
-              Back to Programs
+              Back to Programming Cycles
             </Link>
           </div>
         }

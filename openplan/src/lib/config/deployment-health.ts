@@ -187,7 +187,7 @@ function mapboxCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     detail:
       "No Mapbox token is configured, so every map renders blank — including the shell backdrop, Explore, Safety, and engagement maps.",
     remedy:
-      "Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (the legacy name NEXT_PUBLIC_MAPBOX_TOKEN is also accepted), then redeploy — public variables are inlined at build time.",
+      "Maps come back once whoever operates this deployment adds a Mapbox token — a free account covers normal planning use, and nothing about your data or your area is missing. For the operator: set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (the legacy name NEXT_PUBLIC_MAPBOX_TOKEN is also accepted), then redeploy — public variables are inlined at build time.",
   };
 }
 
@@ -214,7 +214,7 @@ function censusCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     detail:
       "No Census API key is configured. Equity choropleths stay empty, census-tract ingestion for a workspace's county does not populate, and ACS-backed corridor demographics are unavailable — these surfaces return no data rather than an error, so they look like 'nothing here' instead of 'not configured'.",
     remedy:
-      "A Census API key is free from the U.S. Census Bureau (api.census.gov/data/key_signup.html). Set it as CENSUS_API_KEY.",
+      "Demographic and equity data switch on once whoever operates this deployment adds a Census API key — the key is free from the U.S. Census Bureau (api.census.gov/data/key_signup.html). For the operator: set it as CENSUS_API_KEY.",
   };
 }
 
@@ -235,7 +235,8 @@ function anthropicCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     status: "warn",
     detail:
       "No Anthropic API key is configured. AI-assisted features — grant narrative drafting, engagement comment synthesis, translation and moderation, and the in-app assistant — are unavailable. Every other module works normally.",
-    remedy: "Set ANTHROPIC_API_KEY to an Anthropic API key.",
+    remedy:
+      "AI assistance switches on once whoever operates this deployment adds an Anthropic API key. For the operator: set ANTHROPIC_API_KEY to an Anthropic API key.",
   };
 }
 
@@ -285,8 +286,8 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
    * answer dressed as a complete one.
    */
   const executionOptions = pushDispatch.configured
-    ? `This deployment already configures a push endpoint (${MODELING_WORKER_URL_ENV}), so OpenPlan hands every worker-backed run to it and records at launch whether it was accepted — that answer, or the failure in its place, is on the launch panel and in the audit log.`
-    : `Two configurations give this deployment modeling compute and neither costs anything: run the worker as a long-lived poller (workers/aequilibrae_worker/DEPLOY.md), or run it behind its HTTP trigger and set ${MODELING_WORKER_URL_ENV} and ${MODELING_WORKER_TOKEN_ENV} so OpenPlan pushes each run to it and learns at launch whether anything took it.`;
+    ? `Whoever operates this deployment has already connected a modeling worker endpoint. For the operator: the push endpoint (${MODELING_WORKER_URL_ENV}) is configured, so OpenPlan hands every worker-backed run to it and records at launch whether it was accepted — that answer, or the failure in its place, is on the launch panel and in the audit log.`
+    : `Modeling runs are executed by a separate worker that whoever operates this deployment sets up once, at no cost. For the operator, either configuration works: run the worker as a long-lived poller (workers/aequilibrae_worker/DEPLOY.md), or run it behind its HTTP trigger and set ${MODELING_WORKER_URL_ENV} and ${MODELING_WORKER_TOKEN_ENV} so OpenPlan pushes each run to it and learns at launch whether anything took it.`;
 
   // Runs that have stopped moving are the strongest signal available, so they
   // are read first whatever the declaration says.

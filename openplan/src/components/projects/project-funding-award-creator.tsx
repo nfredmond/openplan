@@ -198,7 +198,7 @@ export function ProjectFundingAwardCreator({
 
         <div className="grid gap-3 md:grid-cols-3">
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Match posture</label>
+            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Local match status</label>
             <select className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35" value={matchPosture} onChange={(event) => setMatchPosture(event.target.value as (typeof FUNDING_AWARD_MATCH_POSTURE_OPTIONS)[number]["value"])}>
               {FUNDING_AWARD_MATCH_POSTURE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>

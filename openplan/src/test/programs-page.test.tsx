@@ -238,7 +238,7 @@ describe("ProgramsPage", () => {
   it("keeps artifact-backed linked reports in refresh posture when report generated_at is null", async () => {
     await renderPage();
 
-    expect(screen.getByRole("heading", { name: /^Programs$/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^Programming Cycles$/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Programming Packet/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Refresh Programming Packet/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Generate Programming Packet/i)).not.toBeInTheDocument();

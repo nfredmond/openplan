@@ -25,7 +25,7 @@ import { ReceivablesLane } from "./_components/receivables-lane";
 import { ReimbursementLane } from "./_components/reimbursement-lane";
 import { moduleMetadata } from "@/lib/ui/page-title";
 
-export const metadata = moduleMetadata("Invoicing");
+export const metadata = moduleMetadata("Invoices & Reimbursements");
 
 const DIRECTION_TABS: Array<{ value: InvoicingDirection; label: string }> = [
   { value: "reimbursement", label: "Funder reimbursements" },
@@ -73,8 +73,8 @@ export default async function InvoicingPage({
     return (
       <section className="space-y-6">
         <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoicing</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Invoicing could not be opened</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices &amp; Reimbursements</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Invoices &amp; Reimbursements could not be opened</h1>
         </header>
         <StateBlock
           tone="danger"
@@ -95,8 +95,8 @@ export default async function InvoicingPage({
   if (!selection.memberships.length) {
     return (
       <WorkspaceMembershipRequired
-        moduleLabel="Invoicing"
-        title="Invoicing needs a workspace"
+        moduleLabel="Invoices & Reimbursements"
+        title="Invoices & Reimbursements needs a workspace"
         description="Reimbursement invoices are workspace records. You are signed in, but no workspace membership was found for this account, so there is no invoice register to show yet."
         primaryHref="/projects"
         primaryLabel="Create or open project workspace"
@@ -109,7 +109,7 @@ export default async function InvoicingPage({
       <section className="space-y-6">
         <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoicing</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices &amp; Reimbursements</p>
             <h1 className="text-3xl font-semibold tracking-tight">Choose a workspace</h1>
             <p className="text-sm text-muted-foreground sm:text-base">
               Invoice registers are workspace-specific. This account has access to multiple workspaces, so pick the one whose reimbursement invoices you want to review.
@@ -164,7 +164,6 @@ export default async function InvoicingPage({
   }
 
   const membership = selection.membership;
-  const workspace = selection.workspace;
   const workspaceId = membership.workspace_id;
   const canWriteInvoices = canAccessWorkspaceAction("invoices.write", membership.role);
 
@@ -172,8 +171,8 @@ export default async function InvoicingPage({
     <section className="space-y-6">
       <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoicing</p>
-          <h1 className="text-3xl font-semibold tracking-tight">{workspace.name ?? "Workspace"} invoicing</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices &amp; Reimbursements</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Invoices &amp; Reimbursements</h1>
           <p className="text-sm text-muted-foreground sm:text-base">{DIRECTION_DESCRIPTIONS[direction]}</p>
         </div>
 
