@@ -12,6 +12,8 @@ let kbListResponse: { data: unknown[]; error: null | { message: string } } = { d
 
 /** The checksum dedup probe, addressable on its own so it can be made to fail. */
 let dedupResponse: { data: unknown; error: null | { message: string } } = { data: null, error: null };
+/** Every `.in(column, values)` the dedup probe applied. */
+const dedupInCalls: Array<[string, unknown]> = [];
 /** Service-role writes the upload performed, in order. */
 const serviceInserts: Array<{ table: string; rows: unknown }> = [];
 
@@ -61,10 +63,16 @@ vi.mock("@/lib/supabase/server", () => ({
       }),
     },
     from: (table: string) => ({
-      // The dedup probe: kb_documents filtered by workspace, checksum, status.
+      // The dedup probe: kb_documents filtered by workspace + checksum, with
+      // status narrowed by `.in` to the deduplicable outcomes (ready|stored).
       select: () => ({
         eq: () => ({
-          eq: () => ({ eq: () => ({ limit: () => ({ maybeSingle: async () => dedupResponse }) }) }),
+          eq: () => ({
+            in: (column: string, values: unknown) => {
+              dedupInCalls.push([column, values]);
+              return { limit: () => ({ maybeSingle: async () => dedupResponse }) };
+            },
+          }),
         }),
       }),
       insert: (rows: unknown) => {
@@ -148,6 +156,7 @@ describe("POST /api/knowledge-base/documents — the checksum dedup probe", () =
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
     dedupResponse = { data: null, error: null };
+    dedupInCalls.length = 0;
     serviceInserts.length = 0;
     auditInfo.mockClear();
     auditWarn.mockClear();
@@ -164,6 +173,9 @@ describe("POST /api/knowledge-base/documents — the checksum dedup probe", () =
     expect(body.deduped).toBe(true);
     expect(body.document.id).toBe("doc-existing");
     expect(serviceInserts).toEqual([]);
+    // The probe dedupes against BOTH terminal keep-states — ready (parsed) and
+    // stored (kept) — and nothing else: failed rows retry via re-upload.
+    expect(dedupInCalls).toEqual([["status", ["ready", "stored"]]]);
   });
 
   it("logs the failure and still ingests when the probe fails", async () => {

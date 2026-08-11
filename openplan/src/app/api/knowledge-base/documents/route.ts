@@ -1,26 +1,34 @@
 import { createHash, randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { BODY_LIMITS, readBytesWithLimit } from "@/lib/http/body-limit";
+import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+// Pure magic-byte sniffer (zero imports of its own): the BYTES decide whether
+// an "image" is an image, never the Content-Type header.
+import { sniffImageFormat } from "@/lib/aerial/imagery";
 import {
   buildKbChunkRows,
   buildKbDocumentPath,
   checkWorkspaceMembership,
   insertKbChunks,
   KB_DOCUMENT_COLUMNS,
+  KB_DOCUMENT_MAX_BYTES_ENV,
   KB_DOCUMENTS_BUCKET,
+  KB_STORED_DOCUMENT_NOTICE,
   looksLikePendingSchema,
+  resolveKbDocumentMaxBytes,
   type WorkspaceMembershipResult,
 } from "@/lib/knowledge-base/documents";
+import { KB_DOC_KINDS, type KbDocKind } from "@/lib/knowledge-base/types";
 import { chunkExtractedDocument } from "@/lib/knowledge-base/chunk";
 import {
   DocumentParseError,
   extractDocument,
   NoExtractableTextError,
   resolveSourceKind,
+  resolveStoredSourceKind,
 } from "@/lib/knowledge-base/extract";
 
 // Extraction (unpdf/mammoth) runs inline; allow more than the default budget on
@@ -31,9 +39,9 @@ export const maxDuration = 60;
 const uploadQuerySchema = z.object({
   workspaceId: z.string().uuid(),
   projectId: z.string().uuid().optional(),
-  docKind: z
-    .enum(["rtp", "comment_letter", "prior_study", "nofo", "staff_report", "policy", "other"])
-    .optional(),
+  // Derived from the shared taxonomy so a doc kind added there (e.g. 'drawing',
+  // 'exhibit' in 20260811000005) is uploadable without re-typing the list here.
+  docKind: z.enum(KB_DOC_KINDS as [KbDocKind, ...KbDocKind[]]).optional(),
   title: z.string().trim().min(1).max(200).optional(),
   filename: z.string().trim().max(255).optional(),
 });
@@ -120,40 +128,82 @@ export async function POST(request: NextRequest) {
       .split(";")[0]
       .trim()
       .toLowerCase();
-    const sourceKind = resolveSourceKind(declaredContentType, query.data.filename);
-    if (!sourceKind || sourceKind === "pasted_text") {
+    // Extractable resolution first (those documents become citable); stored
+    // resolution second; genuinely unknown formats stay on the 415 path.
+    const extractableKind = resolveSourceKind(declaredContentType, query.data.filename);
+    const storedResolution =
+      !extractableKind || extractableKind === "pasted_text"
+        ? resolveStoredSourceKind(declaredContentType, query.data.filename)
+        : null;
+    if ((!extractableKind || extractableKind === "pasted_text") && !storedResolution) {
       return NextResponse.json(
         {
           error:
-            "Unsupported document type. Upload a PDF, Word (.docx), plain-text, or Markdown file.",
+            "Unsupported document type. Upload a PDF, Word (.docx), plain-text, or Markdown file " +
+            "(these are indexed for citation), or an image (JPEG/PNG/TIFF), spreadsheet " +
+            "(.csv/.xlsx/.xls/.ods), CAD file (.dwg/.dxf), or office document " +
+            "(.pptx/.ppt/.doc/.rtf/.odt/.odp) to store for reference.",
         },
         { status: 415 }
       );
     }
 
-    const bodyRead = await readBytesWithLimit(request, BODY_LIMITS.kbDocumentRaw);
+    // The ceiling is the operator's, resolved per request so raising the env
+    // takes effect without a redeploy. Streamed: at 100 MiB, buffer-then-check
+    // would be the allocation the limit exists to prevent.
+    const maxBytes = resolveKbDocumentMaxBytes();
+    const bodyRead = await readBytesWithLimitStreaming(request, maxBytes);
     if (!bodyRead.ok) {
       audit.warn("kb_document_body_too_large", {
         byteLength: bodyRead.byteLength,
-        maxBytes: BODY_LIMITS.kbDocumentRaw,
+        maxBytes,
       });
-      return bodyRead.response;
+      return NextResponse.json(
+        {
+          error:
+            `This file is larger than the ${Math.floor(maxBytes / (1024 * 1024))} MiB per-file ceiling of this ` +
+            `deployment. Whoever operates it can raise ${KB_DOCUMENT_MAX_BYTES_ENV} — OpenPlan itself is free ` +
+            "and has no usage tiers.",
+          maxBytes,
+        },
+        { status: 413 }
+      );
     }
     if (bodyRead.byteLength === 0) {
       return NextResponse.json({ error: "The uploaded document is empty" }, { status: 400 });
     }
 
+    // For an image, the BYTES decide — cameras and transfer tools mislabel
+    // routinely, and a "photo" no viewer can open is worth catching at the door.
+    let storedContentType = storedResolution?.contentType ?? null;
+    if (storedResolution?.kind === "uploaded_image") {
+      const sniffed = sniffImageFormat(bodyRead.bytes);
+      if (!sniffed) {
+        return NextResponse.json(
+          {
+            error:
+              "This file was named or labeled as an image, but its contents are not a JPEG, PNG, or TIFF. " +
+              "Nothing was stored.",
+          },
+          { status: 415 }
+        );
+      }
+      storedContentType = sniffed.contentType;
+    }
+
     const checksum = createHash("sha256").update(bodyRead.bytes).digest("hex");
     const service = createServiceRoleClient();
 
-    // Idempotent dedup: a byte-identical document already parsed in this
-    // workspace is returned as-is instead of re-ingesting.
+    // Idempotent dedup: a byte-identical document already ingested in this
+    // workspace — parsed (`ready`) or kept (`stored`) — is returned as-is
+    // instead of re-ingesting. Failed rows are NOT deduped against: re-upload
+    // is the retry path.
     const existingResult = await service
       .from("kb_documents")
       .select(KB_DOCUMENT_COLUMNS)
       .eq("workspace_id", query.data.workspaceId)
       .eq("checksum", checksum)
-      .eq("status", "ready")
+      .in("status", ["ready", "stored"])
       .limit(1)
       .maybeSingle();
 
@@ -175,11 +225,78 @@ export async function POST(request: NextRequest) {
 
     const { error: uploadError } = await service.storage
       .from(KB_DOCUMENTS_BUCKET)
-      .upload(storagePath, bodyRead.bytes, { contentType: declaredContentType, upsert: false });
+      .upload(storagePath, bodyRead.bytes, {
+        // Stored kinds are recorded and served under the canonical type the
+        // accept list (or the image sniff) resolved, never the raw header.
+        contentType: storedResolution ? (storedContentType ?? declaredContentType) : declaredContentType,
+        upsert: false,
+      });
     if (uploadError) {
       audit.error("kb_document_storage_upload_failed", { message: uploadError.message });
       return NextResponse.json({ error: "Failed to store the document" }, { status: 500 });
     }
+
+    // ------------------------------------------------------------------
+    // STORED branch: keep the bytes, record the row, and STOP. No
+    // extraction, no chunks — a stored document must never become
+    // groundable by accident, and the absence of chunk rows (plus the
+    // RPC's status = 'ready' filter) is what makes that structural.
+    // ------------------------------------------------------------------
+    if (storedResolution) {
+      const { data: document, error: insertError } = await service
+        .from("kb_documents")
+        .insert({
+          id: documentId,
+          workspace_id: query.data.workspaceId,
+          project_id: query.data.projectId ?? null,
+          uploaded_by: user.id,
+          title: deriveTitle(query.data.title, query.data.filename),
+          doc_kind: query.data.docKind ?? "other",
+          source_kind: storedResolution.kind,
+          original_filename: query.data.filename ?? null,
+          content_type: storedContentType,
+          byte_size: bodyRead.byteLength,
+          storage_ref: `storage://${KB_DOCUMENTS_BUCKET}/${storagePath}`,
+          page_count: null,
+          chunk_count: 0,
+          char_count: null,
+          checksum,
+          status: "stored",
+          extraction_error: null,
+          extraction_source: "none",
+        })
+        .select(KB_DOCUMENT_COLUMNS)
+        .single();
+
+      if (insertError || !document) {
+        await service.storage.from(KB_DOCUMENTS_BUCKET).remove([storagePath]);
+        audit.error("kb_document_insert_failed", { message: insertError?.message ?? "unknown" });
+        if (looksLikePendingSchema(insertError?.message)) {
+          return membershipErrorResponse({ ok: false, kind: "schema_pending", message: "" });
+        }
+        return NextResponse.json({ error: "Failed to record the document" }, { status: 500 });
+      }
+
+      audit.info("kb_document_stored", {
+        workspaceId: query.data.workspaceId,
+        documentId,
+        sourceKind: storedResolution.kind,
+        bytes: bodyRead.byteLength,
+        durationMs: Date.now() - startedAt,
+      });
+      return NextResponse.json(
+        { document, stored: true, notice: KB_STORED_DOCUMENT_NOTICE },
+        { status: 201 }
+      );
+    }
+
+    // Every non-extractable accepted format returned inside the stored branch,
+    // so reaching here with no extractable kind is a logic error — refuse
+    // rather than cast past the type system.
+    if (!extractableKind || extractableKind === "pasted_text") {
+      return NextResponse.json({ error: "Unsupported document type." }, { status: 415 });
+    }
+    const sourceKind = extractableKind;
 
     // Extract + chunk BEFORE inserting the row so the persisted status is honest
     // (ready with real chunks, or failed with a real reason) in one write.
@@ -227,6 +344,9 @@ export async function POST(request: NextRequest) {
         checksum,
         status,
         extraction_error: extractionError,
+        // Where the indexed text came from — nothing was indexed on failure,
+        // so a failed row honestly records no source.
+        extraction_source: extractionError ? null : "text_layer",
       })
       .select(KB_DOCUMENT_COLUMNS)
       .single();

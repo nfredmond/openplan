@@ -18,7 +18,13 @@
 
 import mammoth from "mammoth";
 import { extractText, getDocumentProxy } from "unpdf";
-import type { ExtractedDocument, ExtractedPage, KbSourceKind } from "./types";
+import type {
+  ExtractedDocument,
+  ExtractedPage,
+  KbExtractableSourceKind,
+  KbSourceKind,
+  KbStoredSourceKind,
+} from "./types";
 
 /** No extractable text layer (e.g. a scanned PDF) — surfaced honestly, never faked. */
 export class NoExtractableTextError extends Error {
@@ -38,8 +44,8 @@ export class DocumentParseError extends Error {
   }
 }
 
-/** Content-type -> source kind for the supported upload formats. */
-const CONTENT_TYPE_SOURCE_KIND: Record<string, KbSourceKind> = {
+/** Content-type -> source kind for the extractable upload formats. */
+const CONTENT_TYPE_SOURCE_KIND: Record<string, KbExtractableSourceKind> = {
   "application/pdf": "uploaded_pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "uploaded_docx",
   "text/plain": "uploaded_txt",
@@ -48,7 +54,7 @@ const CONTENT_TYPE_SOURCE_KIND: Record<string, KbSourceKind> = {
 };
 
 /** Filename extension -> source kind, used only when the content type is generic. */
-const EXTENSION_SOURCE_KIND: Record<string, KbSourceKind> = {
+const EXTENSION_SOURCE_KIND: Record<string, KbExtractableSourceKind> = {
   pdf: "uploaded_pdf",
   docx: "uploaded_docx",
   txt: "uploaded_txt",
@@ -60,18 +66,136 @@ const EXTENSION_SOURCE_KIND: Record<string, KbSourceKind> = {
 /**
  * Resolve the upload source kind from the declared content type, falling back to
  * the filename extension when the content type is missing or generic
- * (`application/octet-stream`). Returns null when the format is unsupported.
+ * (`application/octet-stream`). Returns null when the format is not extractable
+ * — the caller then asks `resolveStoredSourceKind` before refusing with 415.
  */
 export function resolveSourceKind(
   contentType: string | null | undefined,
   filename: string | null | undefined
-): KbSourceKind | null {
+): KbExtractableSourceKind | null {
   const normalizedType = (contentType ?? "").split(";")[0].trim().toLowerCase();
   const byType = CONTENT_TYPE_SOURCE_KIND[normalizedType];
   if (byType) return byType;
 
   const ext = (filename ?? "").toLowerCase().split(".").pop() ?? "";
   return EXTENSION_SOURCE_KIND[ext] ?? null;
+}
+
+const STORED_SOURCE_KIND_SET: Record<KbStoredSourceKind, true> = {
+  uploaded_image: true,
+  uploaded_spreadsheet: true,
+  uploaded_cad: true,
+  uploaded_other: true,
+};
+
+/** Only extractable kinds get chunks; everything else is stored, never cited. */
+export function isExtractableSourceKind(kind: KbSourceKind): kind is KbExtractableSourceKind {
+  return !(kind in STORED_SOURCE_KIND_SET);
+}
+
+export type StoredResolution = {
+  kind: KbStoredSourceKind;
+  /**
+   * The content type the file will be recorded and served under. Canonical by
+   * construction — derived from the matched accept-list entry, never echoed
+   * from the request header — so the kb-documents bucket's allowed list stays
+   * a closed set. For images the upload route replaces this with what the
+   * BYTES sniff as, and refuses on a mismatch.
+   */
+  contentType: string;
+};
+
+/**
+ * THE STORED-KINDS ACCEPT LIST. Files OpenPlan will keep and serve back but
+ * deliberately does not read: images, spreadsheets, CAD, and an explicit set
+ * of office formats. Genuinely unknown types stay on the 415 path — "stored"
+ * must never become the drawer everything falls into, because a library that
+ * accepts anything can no longer say what its rows are.
+ */
+const STORED_CONTENT_TYPE_RESOLUTION: Record<string, StoredResolution> = {
+  // images — the route verifies these against the magic bytes after reading
+  "image/jpeg": { kind: "uploaded_image", contentType: "image/jpeg" },
+  "image/png": { kind: "uploaded_image", contentType: "image/png" },
+  "image/tiff": { kind: "uploaded_image", contentType: "image/tiff" },
+  // spreadsheets
+  "text/csv": { kind: "uploaded_spreadsheet", contentType: "text/csv" },
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+    kind: "uploaded_spreadsheet",
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  },
+  "application/vnd.ms-excel": { kind: "uploaded_spreadsheet", contentType: "application/vnd.ms-excel" },
+  // CAD
+  "image/vnd.dwg": { kind: "uploaded_cad", contentType: "image/vnd.dwg" },
+  "application/acad": { kind: "uploaded_cad", contentType: "image/vnd.dwg" },
+  "image/vnd.dxf": { kind: "uploaded_cad", contentType: "image/vnd.dxf" },
+  "application/dxf": { kind: "uploaded_cad", contentType: "image/vnd.dxf" },
+  // other: explicitly-listed office formats a planning office actually holds
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation": {
+    kind: "uploaded_other",
+    contentType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  },
+  "application/vnd.ms-powerpoint": { kind: "uploaded_other", contentType: "application/vnd.ms-powerpoint" },
+  "application/msword": { kind: "uploaded_other", contentType: "application/msword" },
+  "application/rtf": { kind: "uploaded_other", contentType: "application/rtf" },
+  "text/rtf": { kind: "uploaded_other", contentType: "application/rtf" },
+  "application/vnd.oasis.opendocument.text": {
+    kind: "uploaded_other",
+    contentType: "application/vnd.oasis.opendocument.text",
+  },
+  "application/vnd.oasis.opendocument.spreadsheet": {
+    kind: "uploaded_spreadsheet",
+    contentType: "application/vnd.oasis.opendocument.spreadsheet",
+  },
+  "application/vnd.oasis.opendocument.presentation": {
+    kind: "uploaded_other",
+    contentType: "application/vnd.oasis.opendocument.presentation",
+  },
+};
+
+/** Extension fallback for generic content types, mirroring the map above. */
+const STORED_EXTENSION_RESOLUTION: Record<string, StoredResolution> = {
+  jpg: { kind: "uploaded_image", contentType: "image/jpeg" },
+  jpeg: { kind: "uploaded_image", contentType: "image/jpeg" },
+  png: { kind: "uploaded_image", contentType: "image/png" },
+  tif: { kind: "uploaded_image", contentType: "image/tiff" },
+  tiff: { kind: "uploaded_image", contentType: "image/tiff" },
+  csv: { kind: "uploaded_spreadsheet", contentType: "text/csv" },
+  xlsx: {
+    kind: "uploaded_spreadsheet",
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  },
+  xls: { kind: "uploaded_spreadsheet", contentType: "application/vnd.ms-excel" },
+  ods: { kind: "uploaded_spreadsheet", contentType: "application/vnd.oasis.opendocument.spreadsheet" },
+  dwg: { kind: "uploaded_cad", contentType: "image/vnd.dwg" },
+  dxf: { kind: "uploaded_cad", contentType: "image/vnd.dxf" },
+  pptx: {
+    kind: "uploaded_other",
+    contentType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  },
+  ppt: { kind: "uploaded_other", contentType: "application/vnd.ms-powerpoint" },
+  doc: { kind: "uploaded_other", contentType: "application/msword" },
+  rtf: { kind: "uploaded_other", contentType: "application/rtf" },
+  odt: { kind: "uploaded_other", contentType: "application/vnd.oasis.opendocument.text" },
+  odp: { kind: "uploaded_other", contentType: "application/vnd.oasis.opendocument.presentation" },
+};
+
+/**
+ * Resolve a STORED source kind — asked only after `resolveSourceKind` returned
+ * null, so an extractable format never lands here (a `.csv` DECLARED as
+ * text/plain resolves extractable first and is indexed as the text its sender
+ * said it was; a `.csv` declared as text/csv or sent generically is stored).
+ * Returns null for genuinely unknown formats, which keeps them on the 415 path.
+ */
+export function resolveStoredSourceKind(
+  contentType: string | null | undefined,
+  filename: string | null | undefined
+): StoredResolution | null {
+  const normalizedType = (contentType ?? "").split(";")[0].trim().toLowerCase();
+  const byType = STORED_CONTENT_TYPE_RESOLUTION[normalizedType];
+  if (byType) return byType;
+
+  const ext = (filename ?? "").toLowerCase().split(".").pop() ?? "";
+  return STORED_EXTENSION_RESOLUTION[ext] ?? null;
 }
 
 /**
@@ -161,10 +285,13 @@ function extractPlainText(bytes: Uint8Array): ExtractedDocument {
 /**
  * Extract a document's text by source kind. `pasted_text` is handled by the
  * caller (the text arrives directly, not as bytes), so it is rejected here.
+ * Stored kinds are excluded by the parameter type on purpose: they have no
+ * extractor BY DESIGN, and giving them one is a deliberate future capability
+ * (OCR, spreadsheet parsing), never a fall-through.
  */
 export async function extractDocument(
   bytes: Uint8Array,
-  sourceKind: KbSourceKind
+  sourceKind: KbExtractableSourceKind
 ): Promise<ExtractedDocument> {
   switch (sourceKind) {
     case "uploaded_pdf":

@@ -96,6 +96,14 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "forces the aerial-imagery storage bucket private when provisioned public out-of-band; " +
       "WHERE-guarded, idempotent, a security repair — the 20260730000004 precedent verbatim",
   },
+  {
+    file: "20260811000005_document_library_stored_kinds.sql",
+    kind: "update",
+    reason:
+      "widens the kb-documents bucket's allowed_mime_types for the stored kinds and clears its " +
+      "file_size_limit (the ceiling moved to OPENPLAN_KB_DOCUMENT_MAX_BYTES, enforced by the " +
+      "route); WHERE-guarded to the one bucket row, touches no tenant data",
+  },
 ];
 
 /**

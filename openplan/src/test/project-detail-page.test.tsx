@@ -73,7 +73,12 @@ const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
 
 const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
-const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
+// `.in(...)` serves the report-packet enrichment; `.eq(...)` serves the
+// documents lane's library read (assigned below, after the chain helper exists).
+const reportArtifactsSelectMock = vi.fn(() => ({
+  in: reportArtifactsInMock,
+  eq: reportArtifactsLibraryEqMock,
+}));
 
 const reportRunsInMock = vi.fn();
 const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
@@ -128,10 +133,12 @@ const spendEntriesOrderMock = vi.fn(() => ({ limit: spendEntriesLimitMock }));
 const spendEntriesEqMock = vi.fn(() => ({ order: spendEntriesOrderMock }));
 const spendEntriesSelectMock = vi.fn(() => ({ eq: spendEntriesEqMock }));
 
-// Budget loader chain: select→eq(project)→in(status sent/paid)→limit.
+// client_invoices serves TWO lanes off the same first `.eq()`: the budget
+// loader continues `.in(status sent/paid).limit()`, the documents lane's
+// library read continues `.eq(project).order().limit()`.
 const clientInvoicesLimitMock = vi.fn();
 const clientInvoicesInMock = vi.fn(() => ({ limit: clientInvoicesLimitMock }));
-const clientInvoicesEqMock = vi.fn(() => ({ in: clientInvoicesInMock }));
+const clientInvoicesEqMock = vi.fn(() => ({ in: clientInvoicesInMock, eq: clientInvoicesLibraryEqMock }));
 const clientInvoicesSelectMock = vi.fn(() => ({ eq: clientInvoicesEqMock }));
 
 const risksLimitMock = vi.fn();
@@ -221,6 +228,45 @@ const aerialPackagesOrderMock = vi.fn();
 const aerialPackagesInMock = vi.fn(() => ({ order: aerialPackagesOrderMock }));
 const aerialPackagesSelectMock = vi.fn(() => ({ in: aerialPackagesInMock }));
 
+// The documents lane reads every Document Library source with the chain
+// select→eq(workspace)→eq(project)→order→limit. Each source keeps its own limit
+// mock so ONE source's read can be seeded or failed — a harness that cannot
+// fail a specific read cannot see the read-failure-as-absence defect class.
+// The kb chain additionally records its eq bindings, so a test can prove the
+// lane threads THIS page's project id rather than hardcoding one.
+const kbHeadCountEqMock = vi.fn<
+  () => Promise<{ count: number | null; error: { message: string } | null }>
+>(async () => ({ count: 0, error: null }));
+const kbLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
+const kbLibraryOrderMock = vi.fn(() => ({ limit: kbLibraryLimitMock }));
+const kbLibraryProjectEqMock = vi.fn((_column: string, _value: string) => ({ order: kbLibraryOrderMock }));
+const kbLibraryWorkspaceEqMock = vi.fn((_column: string, _value: string) => ({ eq: kbLibraryProjectEqMock }));
+const reportArtifactsLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
+// report_artifacts' first `.eq()` off select belongs to the library (the packet
+// enrichment goes `.in()`), so the continuation is eq(project)→order→limit.
+const reportArtifactsLibraryEqMock = vi.fn(() => ({
+  eq: vi.fn(() => ({ order: vi.fn(() => ({ limit: reportArtifactsLibraryLimitMock })) })),
+}));
+const grantExportsLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
+const invoicesLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
+// client_invoices' library read arrives as the SECOND `.eq()` (the first is
+// shared with the budget loader), so its continuation is order→limit.
+const clientInvoicesLibraryEqMock = vi.fn(() => ({
+  order: vi.fn(() => ({ limit: invoicesLibraryLimitMock })),
+}));
+const aerialImageryLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
+const aerialCustodyLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
+const modelRunArtifactsLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
+
+/** One library-source read chain: eq(workspace)→eq(project)→order→limit. */
+function libraryReadChain(limitMock: () => Promise<ProjectReadResult>) {
+  return {
+    eq: vi.fn(() => ({
+      eq: vi.fn(() => ({ order: vi.fn(() => ({ limit: limitMock })) })),
+    })),
+  };
+}
+
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
 const buildProjectControlsSummaryMock = vi.fn();
@@ -244,8 +290,26 @@ const fromMock = vi.fn((table: string) => {
     return { select: claimDecisionsSelectMock };
   }
   if (table === "kb_documents") {
-    // Head-count of project-linked knowledge-base documents.
-    return { select: vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ count: 0, error: null })) })) };
+    // Two readers share this table: the posture header's head-count
+    // (select {head:true}→eq→await) and the documents lane's library read
+    // (select→eq(workspace)→eq(project)→order→limit).
+    return {
+      select: vi.fn((_columns: string, options?: { head?: boolean }) =>
+        options?.head ? { eq: kbHeadCountEqMock } : { eq: kbLibraryWorkspaceEqMock }
+      ),
+    };
+  }
+  if (table === "funding_opportunity_application_exports") {
+    return { select: vi.fn(() => libraryReadChain(grantExportsLibraryLimitMock)) };
+  }
+  if (table === "aerial_imagery") {
+    return { select: vi.fn(() => libraryReadChain(aerialImageryLibraryLimitMock)) };
+  }
+  if (table === "aerial_artifact_custody") {
+    return { select: vi.fn(() => libraryReadChain(aerialCustodyLibraryLimitMock)) };
+  }
+  if (table === "model_run_artifacts") {
+    return { select: vi.fn(() => libraryReadChain(modelRunArtifactsLibraryLimitMock)) };
   }
   if (table === "model_run_kpis") {
     return { select: modelRunKpisSelectMock };
@@ -344,14 +408,6 @@ const fromMock = vi.fn((table: string) => {
         eq: vi.fn(() => ({
           maybeSingle: vi.fn(async () => ({ data: null, error: null })),
         })),
-      })),
-    };
-  }
-  if (table === "kb_documents") {
-    // Head-count of project-linked Knowledge Base documents.
-    return {
-      select: vi.fn(() => ({
-        eq: vi.fn(async () => ({ count: 0, error: null })),
       })),
     };
   }
@@ -642,6 +698,14 @@ describe("ProjectDetailPage", () => {
     aerialMissionsOrderMock.mockResolvedValue({ data: [], error: null });
     aerialPackagesOrderMock.mockResolvedValue({ data: [], error: null });
     safetyIngestsLimitMock.mockResolvedValue({ data: [], error: null });
+    kbHeadCountEqMock.mockResolvedValue({ count: 0, error: null });
+    kbLibraryLimitMock.mockResolvedValue({ data: [], error: null });
+    reportArtifactsLibraryLimitMock.mockResolvedValue({ data: [], error: null });
+    grantExportsLibraryLimitMock.mockResolvedValue({ data: [], error: null });
+    invoicesLibraryLimitMock.mockResolvedValue({ data: [], error: null });
+    aerialImageryLibraryLimitMock.mockResolvedValue({ data: [], error: null });
+    aerialCustodyLibraryLimitMock.mockResolvedValue({ data: [], error: null });
+    modelRunArtifactsLibraryLimitMock.mockResolvedValue({ data: [], error: null });
 
     reportsLimitMock.mockResolvedValue({
       data: [
@@ -1935,5 +1999,103 @@ describe("ProjectDetailPage", () => {
     expect(screen.queryByText(/No datasets linked yet\./i)).toBeNull();
     expect(screen.getByText(/Linked datasets could not be read, so this panel is unavailable/i)).toBeInTheDocument();
     expect(screen.getByText(/could not read datasets linked to this project/i)).toBeInTheDocument();
+  });
+
+  describe("documents lane", () => {
+    it("feeds the posture header the exact head-count and scopes every documents read to THIS project", async () => {
+      kbHeadCountEqMock.mockResolvedValue({ count: 3, error: null });
+
+      await renderPage();
+
+      // The head-count and the library read both bind the fixture's own ids —
+      // the binding is asserted, not just the render, so a loader hardcoding a
+      // project id cannot pass.
+      expect(kbHeadCountEqMock).toHaveBeenCalledWith("project_id", "project-1");
+      expect(kbLibraryWorkspaceEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
+      expect(kbLibraryProjectEqMock).toHaveBeenCalledWith("project_id", "project-1");
+
+      const kbCard = screen
+        .getByText("Knowledge Base", { selector: ".module-summary-label" })
+        .closest(".module-summary-card") as HTMLElement;
+      expect(within(kbCard).getByText("3")).toBeInTheDocument();
+
+      // The panel mounts, and with every source answering zero it says so
+      // honestly instead of rendering seven empty groups.
+      const panel = document.getElementById("project-documents") as HTMLElement;
+      expect(panel).not.toBeNull();
+      expect(within(panel).getByText(/No files are attached to this project yet\./)).toBeInTheDocument();
+    });
+
+    it("renders a seeded Knowledge Base file with its stored notice and a ROUTE download link", async () => {
+      kbLibraryLimitMock.mockResolvedValue({
+        data: [
+          {
+            id: "kb-1",
+            project_id: "project-1",
+            title: "Corridor letter scan",
+            doc_kind: "other",
+            source_kind: "uploaded_image",
+            byte_size: 2048,
+            storage_ref: "storage://kb-documents/workspace-1/kb-1/scan.png",
+            status: "stored",
+            extraction_error: null,
+            created_at: "2026-08-01T00:00:00.000Z",
+          },
+        ],
+        error: null,
+      });
+
+      await renderPage();
+
+      const panel = document.getElementById("project-documents") as HTMLElement;
+      const link = within(panel).getByRole("link", { name: "Corridor letter scan" });
+      // The app route, never a constructed storage URL.
+      expect(link).toHaveAttribute("href", "/api/knowledge-base/documents/kb-1/download");
+      expect(within(panel).getByText("Stored")).toBeInTheDocument();
+      // The stored notice: honest about "no text layer", never "processing".
+      expect(within(panel).getByText(/cannot be cited yet/)).toBeInTheDocument();
+      expect(within(panel).queryByText(/No files are attached to this project yet\./)).toBeNull();
+    });
+
+    it("says a library source could not be read instead of listing nothing", async () => {
+      reportArtifactsLibraryLimitMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table report_artifacts" },
+      });
+
+      await renderPage();
+
+      const panel = document.getElementById("project-documents") as HTMLElement;
+      expect(
+        within(panel).getByText(/report files could not be read, so this group is unavailable/)
+      ).toBeInTheDocument();
+      // The database's own message reaches the operator detail line.
+      expect(within(panel).getByText(/permission denied for table report_artifacts/)).toBeInTheDocument();
+    });
+
+    it("calls a pending migration pending, not failed and not empty", async () => {
+      kbLibraryLimitMock.mockResolvedValue({
+        data: null,
+        error: { message: "Could not find the table 'public.kb_documents' in the schema cache" },
+      });
+
+      await renderPage();
+
+      const panel = document.getElementById("project-documents") as HTMLElement;
+      expect(
+        within(panel).getByText(/does not carry knowledge base documents yet — apply the pending/)
+      ).toBeInTheDocument();
+      expect(within(panel).queryByText(/knowledge base documents could not be read/)).toBeNull();
+    });
+
+    it("keeps the posture header's honest null when the head-count read fails", async () => {
+      kbHeadCountEqMock.mockResolvedValue({ count: null, error: { message: "permission denied" } });
+
+      await renderPage();
+
+      expect(
+        screen.getByText("Document count unavailable — apply the Knowledge Base migration, then reload.")
+      ).toBeInTheDocument();
+    });
   });
 });

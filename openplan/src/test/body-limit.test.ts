@@ -7,6 +7,7 @@ import {
   readTextWithLimit,
 } from "@/lib/http/body-limit";
 import { GTFS_MAX_ARCHIVE_BYTES } from "@/lib/gtfs/limits";
+import { DEFAULT_KB_DOCUMENT_MAX_BYTES } from "@/lib/knowledge-base/documents";
 
 describe("readJsonWithLimit", () => {
   it("keeps the shared body limit constants explicit", () => {
@@ -28,9 +29,17 @@ describe("readJsonWithLimit", () => {
 
     for (const feed of measuredFeeds) {
       expect(BODY_LIMITS.gtfsFeedRaw, feed.agency).toBeGreaterThan(feed.bytes);
-      // And the limits that existed before it would have refused these outright.
-      expect(BODY_LIMITS.kbDocumentRaw).toBeLessThan(feed.bytes);
+      // And the largest limit that existed before the GTFS lane (the KB
+      // document cap, then 25 MiB — since raised) would have refused these
+      // outright, which is why gtfsFeedRaw could not reuse it.
+      expect(25 * 1024 * 1024).toBeLessThan(feed.bytes);
     }
+  });
+
+  it("keeps the KB transport default equal to the domain default so they cannot drift", () => {
+    // The route streams against resolveKbDocumentMaxBytes(); BODY_LIMITS
+    // documents the same number. If one moves without the other, this fails.
+    expect(BODY_LIMITS.kbDocumentRaw).toBe(DEFAULT_KB_DOCUMENT_MAX_BYTES);
   });
 
   it("keeps the transport ceiling above the GTFS lane's own archive limit", () => {

@@ -16,9 +16,18 @@ export const BODY_LIMITS = {
   // accepting the same number of English comments would be a limit that falls
   // hardest on the languages this product exists to serve.
   commentImportJson: 5 * 1024 * 1024,
-  // Knowledge Base document upload: 25 MiB raw bytes (matches the kb-documents
-  // bucket file_size_limit in 20260723000001_knowledge_base.sql).
-  kbDocumentRaw: 25 * 1024 * 1024,
+  // Knowledge Base document upload: 100 MiB raw bytes.
+  //
+  // THIS IS THE DEFAULT, NOT THE KNOWLEDGE BASE RULE. Like the aerial entry
+  // below, src/lib/knowledge-base/documents.ts owns the per-file ceiling
+  // (OPENPLAN_KB_DOCUMENT_MAX_BYTES, whose default is deliberately this same
+  // number so the two cannot drift), and the upload route streams with
+  // `readBytesWithLimitStreaming` against the RESOLVED ceiling — the refusal
+  // names the env instead of answering a bare 413. At this size the streaming
+  // reader is mandatory, for the reason documented on gtfsFeedRaw. The
+  // kb-documents bucket row carries no file_size_limit (20260811000005): the
+  // env ceiling is the one limit, enforced before the bytes go anywhere.
+  kbDocumentRaw: 100 * 1024 * 1024,
   // GTFS feed upload: 200 MiB raw ZIP.
   //
   // WHY 200 AND NOT A ROUNDER, SMALLER NUMBER. It was measured against real

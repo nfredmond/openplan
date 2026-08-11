@@ -6,12 +6,27 @@
  * evidence in the grounding contract (grants + assistant) via `retrieval.ts`.
  */
 
-export type KbSourceKind =
+/** Source kinds the extractor can pull a text layer from. These become `ready` (citable). */
+export type KbExtractableSourceKind =
   | "uploaded_pdf"
   | "uploaded_docx"
   | "uploaded_txt"
   | "uploaded_md"
   | "pasted_text";
+
+/**
+ * Source kinds OpenPlan STORES without attempting extraction. These become
+ * `stored`: findable and downloadable, never citable — no chunks are ever
+ * written for them, and the retrieval RPC filters on `status = 'ready'`, so a
+ * stored file cannot enter grounding by accident.
+ */
+export type KbStoredSourceKind =
+  | "uploaded_image"
+  | "uploaded_spreadsheet"
+  | "uploaded_cad"
+  | "uploaded_other";
+
+export type KbSourceKind = KbExtractableSourceKind | KbStoredSourceKind;
 
 export type KbDocKind =
   | "rtp"
@@ -20,9 +35,30 @@ export type KbDocKind =
   | "nofo"
   | "staff_report"
   | "policy"
-  | "other";
+  | "other"
+  | "drawing"
+  | "exhibit";
 
-export type KbDocumentStatus = "pending" | "extracting" | "ready" | "failed" | "archived";
+/**
+ * `stored` = kept for download and reference, extraction deliberately not
+ * attempted (distinct from `failed` = attempted and no text layer found).
+ */
+export type KbDocumentStatus =
+  | "pending"
+  | "extracting"
+  | "ready"
+  | "failed"
+  | "archived"
+  | "stored";
+
+/**
+ * Where a document's indexed text came from. `none` marks a stored file (no
+ * extraction attempted); `null` on a row means it predates the column and the
+ * answer was not recorded. Future values (`ocr`, `spreadsheet_parse`) arrive
+ * with the worker that actually implements them — they are deliberately not
+ * promised here.
+ */
+export type KbExtractionSource = "text_layer" | "pasted" | "none";
 
 /** All doc-kind values, for zod enums / UI selects. Keep in sync with the CHECK constraint. */
 export const KB_DOC_KINDS: readonly KbDocKind[] = [
@@ -33,6 +69,8 @@ export const KB_DOC_KINDS: readonly KbDocKind[] = [
   "staff_report",
   "policy",
   "other",
+  "drawing",
+  "exhibit",
 ] as const;
 
 /** One page of extracted text (1-based). DOCX / txt / md collapse to a single page. */

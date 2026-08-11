@@ -3032,12 +3032,14 @@ function buildKnowledgeBaseLaneResponse(context: WorkspaceAssistantContext, work
   const lane = moduleLaneOf(context, "knowledge_base");
   const documents = lane?.documents ?? null;
   const documentLine = documents
-    ? `${pluralize(documents.total, "document")}: ${documents.ready} ready, ${documents.inFlight} still extracting, ${documents.extractionFailed} failed extraction, ${documents.archived} archived — ${documents.linkedToProject} linked across ${pluralize(documents.projectCount, "project")}.`
+    ? `${pluralize(documents.total, "document")}: ${documents.ready} ready, ${documents.inFlight} still extracting, ${documents.extractionFailed} failed extraction, ${pluralize(documents.stored, "stored file")} that cannot be cited yet, ${documents.archived} archived — ${documents.linkedToProject} linked across ${pluralize(documents.projectCount, "project")}.`
     : laneUnknown(context, "the knowledge base corpus", ASSISTANT_READ_SUBJECTS.knowledgeBaseDocuments);
   const failureLine = documents
     ? documents.extractionFailed > 0
       ? `${documents.extractionFailed} document${documents.extractionFailed === 1 ? "" : "s"} failed text extraction — ${documents.extractionFailed === 1 ? "it is" : "they are"} invisible to retrieval until re-uploaded or re-extracted, so answers drawing on this corpus silently omit ${documents.extractionFailed === 1 ? "it" : "them"}.`
-      : "Every non-archived document extracted cleanly, so retrieval sees the whole corpus."
+      : documents.stored > 0
+        ? `No extraction failed, but OpenPlan did not index text from ${pluralize(documents.stored, "stored file")} — stored by design, not a failure — so retrieval sees the indexed corpus and cannot cite the stored ${documents.stored === 1 ? "file" : "files"}.`
+        : "Every non-archived document extracted cleanly, so retrieval sees the whole corpus."
     : laneUnknown(context, "extraction failures", ASSISTANT_READ_SUBJECTS.knowledgeBaseDocuments);
 
   if (workflowId === "knowledge-base-extraction") {

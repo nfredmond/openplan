@@ -183,11 +183,17 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     paletteKeywords: "datasets geometry",
   },
   {
+    // The Document Library grew out of the Knowledge Base (2026-08-11): the
+    // page now indexes every file OpenPlan holds for the workspace, so the
+    // label says what a planner is looking for ("where are my files?") while
+    // the href stays /knowledge-base — the path rename is deliberately
+    // deferred, and "knowledge base" stays searchable as the retired name.
     href: "/knowledge-base",
-    label: "Knowledge Base",
+    label: "Documents",
     railGroup: "library",
     icon: "knowledge",
-    paletteKeywords: "documents plans studies grounding citations",
+    paletteKeywords:
+      "documents files knowledge base plans studies grounding citations reports exports imagery artifacts library",
   },
   {
     href: "/aerial",

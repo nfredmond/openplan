@@ -487,6 +487,9 @@ describe("module lane loaders", () => {
             { id: "d2", project_id: "proj-1", status: "failed" },
             { id: "d3", project_id: null, status: "extracting" },
             { id: "d4", project_id: "proj-2", status: "ready" },
+            // stored = kept with NO extraction attempted (migration 20260811000005) — distinct from failed
+            { id: "d5", project_id: null, status: "stored" },
+            { id: "d6", project_id: "proj-1", status: "stored" },
           ],
           error: null,
         },
@@ -497,14 +500,21 @@ describe("module lane loaders", () => {
     if (context.moduleLane?.module !== "knowledge_base") throw new Error("wrong lane");
     expect(context.moduleLane.documents).toEqual(
       expect.objectContaining({
-        total: 4,
+        total: 6,
         ready: 2,
         inFlight: 1,
         extractionFailed: 1,
-        linkedToProject: 3,
+        stored: 2,
+        linkedToProject: 4,
         projectCount: 2,
       })
     );
+    // Every document lands in exactly one bucket: total reconciles with the bucket sum,
+    // and stored rows do not leak into extractionFailed (stored = never attempted).
+    const docs = context.moduleLane.documents;
+    if (!docs) throw new Error("documents lane missing");
+    expect(docs.ready + docs.inFlight + docs.extractionFailed + docs.stored + docs.archived).toBe(docs.total);
+    expect(docs.extractionFailed).toBe(1);
     const documentQuery = findQuery(supabase, "kb_documents");
     expect(documentQuery.select).toBe(MODULE_LANE_KB_DOCUMENT_COLUMNS);
     expect(documentQuery.filters).toContainEqual(["workspace_id", "ws-kb-1"]);
@@ -815,11 +825,13 @@ describe("module lane chat serialization", () => {
     const kb = baseContext("knowledge_base");
     kb.moduleLane = {
       module: "knowledge_base",
-      documents: { total: 4, ready: 2, inFlight: 1, extractionFailed: 1, archived: 0, linkedToProject: 3, projectCount: 2 },
+      documents: { total: 6, ready: 2, inFlight: 1, extractionFailed: 1, stored: 2, archived: 0, linkedToProject: 3, projectCount: 2 },
     };
     const kbText = buildAssistantChatContextLines(kb).join("\n");
-    expect(kbText).toContain("Knowledge base: 4 documents");
+    expect(kbText).toContain("Knowledge base: 6 documents");
+    // stored ≠ failed: both counts render, and the failed count stays 1 (not 3)
     expect(kbText).toContain("1 failed extraction");
+    expect(kbText).toContain("2 stored (did not index text, cannot be cited)");
     expect(kbText).toContain("3 linked across 2 projects");
 
     const hub = baseContext("data_hub");

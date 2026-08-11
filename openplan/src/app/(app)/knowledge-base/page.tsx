@@ -2,7 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
-import { KB_DOCUMENT_COLUMNS, type KbDocumentRow } from "@/lib/knowledge-base/documents";
+import {
+  KB_DOCUMENT_COLUMNS,
+  resolveKbDocumentMaxBytes,
+  type KbDocumentRow,
+} from "@/lib/knowledge-base/documents";
+import { loadDocumentLibrary } from "@/lib/document-library/query";
+import { DOCUMENT_LIBRARY_SOURCES } from "@/lib/document-library/sources";
+import type { DocumentLibrarySourceId } from "@/lib/document-library/types";
 import {
   KnowledgeBaseWorkspace,
   type KnowledgeBaseProjectOption,
@@ -10,7 +17,7 @@ import {
 
 import { moduleMetadata } from "@/lib/ui/page-title";
 
-export const metadata = moduleMetadata("Knowledge Base");
+export const metadata = moduleMetadata("Documents");
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -91,7 +98,22 @@ export default async function KnowledgeBasePage({
   // "No documents yet" is a claim about this workspace's corpus. A failed read
   // cannot make it — and here it invites a planner to re-upload a plan the
   // workspace already holds.
-  const documentsResult = await documentsQuery;
+  //
+  // The Document Library lane reads in parallel: a live union over every
+  // module that holds files, with the CALLER'S RLS client (two of its sources
+  // have no workspace_id column of their own — a service-role read of them
+  // would be a cross-tenant leak). Its per-source failures are its own; they
+  // do not gate the Knowledge Base list, and vice versa.
+  const [documentsResult, library] = await Promise.all([
+    documentsQuery,
+    loadDocumentLibrary(supabase, { workspaceId, projectId: initialProjectId }),
+  ]);
+
+  // `ReadFailureLog` is a class; the client component gets its sentence and
+  // the serializable outcomes, never the instance.
+  const sourceLabels = Object.fromEntries(
+    DOCUMENT_LIBRARY_SOURCES.map((source) => [source.id, source.label])
+  ) as Partial<Record<DocumentLibrarySourceId, string>>;
 
   return (
     <KnowledgeBaseWorkspace
@@ -102,6 +124,14 @@ export default async function KnowledgeBasePage({
       readFailures={{
         documents: Boolean(documentsResult.error),
         projects: Boolean(projectsResult.error),
+      }}
+      maxUploadBytes={resolveKbDocumentMaxBytes()}
+      library={{
+        entries: library.entries,
+        perSource: library.perSource,
+        limitPerSource: library.limitPerSource,
+        sourceLabels,
+        readFailureSummary: library.reads.describe(),
       }}
     />
   );

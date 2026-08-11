@@ -13,6 +13,7 @@ import {
   looksLikePendingSchema,
   type WorkspaceMembershipResult,
 } from "@/lib/knowledge-base/documents";
+import { KB_DOC_KINDS, type KbDocKind } from "@/lib/knowledge-base/types";
 import { chunkExtractedDocument } from "@/lib/knowledge-base/chunk";
 import { extractedFromText, NoExtractableTextError } from "@/lib/knowledge-base/extract";
 
@@ -23,9 +24,9 @@ const pasteBodySchema = z.object({
   projectId: z.string().uuid().optional(),
   title: z.string().trim().min(1).max(200),
   text: z.string().min(1).max(200000),
-  docKind: z
-    .enum(["rtp", "comment_letter", "prior_study", "nofo", "staff_report", "policy", "other"])
-    .optional(),
+  // Derived from the shared taxonomy so a doc kind added there is pasteable
+  // without re-typing the list here.
+  docKind: z.enum(KB_DOC_KINDS as [KbDocKind, ...KbDocKind[]]).optional(),
 });
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {
@@ -133,6 +134,7 @@ export async function POST(request: NextRequest) {
         checksum,
         status: "ready",
         extraction_error: null,
+        extraction_source: "pasted",
       })
       .select(KB_DOCUMENT_COLUMNS)
       .single();

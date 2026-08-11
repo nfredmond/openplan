@@ -6,8 +6,10 @@ import {
   DocumentParseError,
   extractDocument,
   extractedFromText,
+  isExtractableSourceKind,
   NoExtractableTextError,
   resolveSourceKind,
+  resolveStoredSourceKind,
 } from "@/lib/knowledge-base/extract";
 
 const CONTENT_TYPES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -62,9 +64,65 @@ describe("resolveSourceKind", () => {
     expect(resolveSourceKind("", "report.docx")).toBe("uploaded_docx");
   });
 
-  it("returns null for unsupported formats", () => {
+  it("returns null for non-extractable formats (they may still be storable)", () => {
     expect(resolveSourceKind("image/png", "scan.png")).toBeNull();
     expect(resolveSourceKind("application/octet-stream", "mystery")).toBeNull();
+  });
+});
+
+describe("resolveStoredSourceKind", () => {
+  it("maps images, spreadsheets, CAD, and listed office formats", () => {
+    expect(resolveStoredSourceKind("image/png", "scan.png")).toEqual({
+      kind: "uploaded_image",
+      contentType: "image/png",
+    });
+    expect(resolveStoredSourceKind("text/csv", "costs.csv")).toEqual({
+      kind: "uploaded_spreadsheet",
+      contentType: "text/csv",
+    });
+    expect(resolveStoredSourceKind("image/vnd.dwg", "site.dwg")).toEqual({
+      kind: "uploaded_cad",
+      contentType: "image/vnd.dwg",
+    });
+    expect(resolveStoredSourceKind("application/msword", "memo.doc")).toEqual({
+      kind: "uploaded_other",
+      contentType: "application/msword",
+    });
+  });
+
+  it("falls back to the filename extension for generic content types, answering the CANONICAL type", () => {
+    expect(resolveStoredSourceKind("application/octet-stream", "exhibit.tif")).toEqual({
+      kind: "uploaded_image",
+      contentType: "image/tiff",
+    });
+    expect(resolveStoredSourceKind("", "model.dxf")).toEqual({
+      kind: "uploaded_cad",
+      contentType: "image/vnd.dxf",
+    });
+    // Vendor spelling of the same declared type still lands on the canonical one.
+    expect(resolveStoredSourceKind("application/acad", "plan.dwg")).toEqual({
+      kind: "uploaded_cad",
+      contentType: "image/vnd.dwg",
+    });
+  });
+
+  it("keeps genuinely unknown formats on the refusal path", () => {
+    expect(resolveStoredSourceKind("application/zip", "bundle.zip")).toBeNull();
+    expect(resolveStoredSourceKind("text/html", "page.html")).toBeNull();
+    expect(resolveStoredSourceKind("image/svg+xml", "icon.svg")).toBeNull();
+    expect(resolveStoredSourceKind("application/octet-stream", "mystery")).toBeNull();
+    expect(resolveStoredSourceKind("application/x-msdownload", "setup.exe")).toBeNull();
+  });
+});
+
+describe("isExtractableSourceKind", () => {
+  it("splits the union exactly along the stored boundary", () => {
+    expect(isExtractableSourceKind("uploaded_pdf")).toBe(true);
+    expect(isExtractableSourceKind("pasted_text")).toBe(true);
+    expect(isExtractableSourceKind("uploaded_image")).toBe(false);
+    expect(isExtractableSourceKind("uploaded_spreadsheet")).toBe(false);
+    expect(isExtractableSourceKind("uploaded_cad")).toBe(false);
+    expect(isExtractableSourceKind("uploaded_other")).toBe(false);
   });
 });
 

@@ -444,6 +444,8 @@ export type KnowledgeBaseAssistantLaneSummary = {
     ready: number;
     inFlight: number;
     extractionFailed: number;
+    /** status = 'stored': kept for download/reference, no extraction ATTEMPTED (≠ failed, which tried and found none). */
+    stored: number;
     archived: number;
     linkedToProject: number;
     projectCount: number;
@@ -1945,6 +1947,7 @@ async function loadKnowledgeBaseLaneSummary(
           ready: documentRows.filter((row) => row.status === "ready").length,
           inFlight: documentRows.filter((row) => row.status === "pending" || row.status === "extracting").length,
           extractionFailed: documentRows.filter((row) => row.status === "failed").length,
+          stored: documentRows.filter((row) => row.status === "stored").length,
           archived: documentRows.filter((row) => row.status === "archived").length,
           linkedToProject: documentRows.filter((row) => Boolean(row.project_id)).length,
           projectCount: new Set(

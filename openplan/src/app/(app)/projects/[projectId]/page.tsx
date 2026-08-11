@@ -56,6 +56,8 @@ import {
 } from "@/lib/stage-gates/decision-queries";
 import { resolveWorkspaceStageGateBinding } from "@/lib/stage-gates/template-loader";
 import { buildProjectTimelineItems } from "./_components/_timeline";
+import { loadProjectDocumentsLane } from "./_components/_documents-lane";
+import { ProjectDocumentsPanel } from "./_components/project-documents-panel";
 import { buildProjectReportQueueItems } from "./_components/_report-queue";
 import {
   loadProjectRecordLanes,
@@ -337,16 +339,10 @@ export default async function ProjectDetailPage({
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-  // Cheap head-count of Knowledge Base documents attached to this project.
-  // Pending-schema tolerant: a missing kb_documents table reads as "count
-  // unavailable" (null), never as zero.
-  const kbDocumentCountResult = await supabase
-    .from("kb_documents")
-    .select("id", { count: "exact", head: true })
-    .eq("project_id", project.id);
-  const kbDocumentCount = kbDocumentCountResult.error
-    ? null
-    : kbDocumentCountResult.count ?? 0;
+  // The documents lane: the posture header's exact KB head-count (null on any
+  // failed read, never zero) plus the project's slice of the Document Library,
+  // with per-source read outcomes the panel below discloses itself.
+  const documentsLane = await loadProjectDocumentsLane(supabase, project.id, project.workspace_id);
 
   // Prefer runs attributed to THIS project (run-provenance migration). A
   // deployment without the project_id column falls back to the workspace-wide
@@ -1258,7 +1254,7 @@ export default async function ProjectDetailPage({
         deliverableCount={budgetInputs.deliverables.length}
         openRiskCount={openRiskCount}
         openIssueCount={openIssueCount}
-        kbDocumentCount={kbDocumentCount}
+        kbDocumentCount={documentsLane.kbCount}
         reportRecordCount={reportRecordCount}
         reportAttentionCount={reportAttentionCount}
         evidenceBackedReportCount={evidenceBackedReportCount}
@@ -1432,6 +1428,8 @@ export default async function ProjectDetailPage({
         projectPlaceLabel={project.place_label ?? null}
         timelineItems={timelineItems}
       />
+
+      <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} />
     </section>
   );
 }

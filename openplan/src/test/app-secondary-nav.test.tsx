@@ -61,7 +61,7 @@ describe("AppSecondaryNav", () => {
 
     expect(screen.getByText("Library")).toBeInTheDocument();
     expect(screen.getByText("Data Hub")).toBeInTheDocument();
-    expect(screen.getByText("Knowledge Base")).toBeInTheDocument();
+    expect(screen.getByText("Documents")).toBeInTheDocument();
     const aerialLink = screen.getByText("Aerial Imagery").closest("a");
     expect(aerialLink).toHaveAttribute("href", "/aerial");
     expect(screen.getByText("Current")).toBeInTheDocument();

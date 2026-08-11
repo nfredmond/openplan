@@ -95,7 +95,7 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     expect(items[4]).toEqual(["/engagement·Engagement"]);
     expect(items[5]).toEqual([
       "/data-hub·Data Hub",
-      "/knowledge-base·Knowledge Base",
+      "/knowledge-base·Documents",
       "/aerial·Aerial Imagery",
       "/help·Help",
     ]);
@@ -127,6 +127,12 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     // …and the retired "Analysis Studio" name still lands on Corridor Analysis.
     const explore = commands.find((command) => command.href === "/explore");
     expect(explore?.keywords).toContain("analysis studio");
+    // The retired "Knowledge Base" name still finds the Documents library, and
+    // the widened library is findable by what it now indexes.
+    const documents = commands.find((command) => command.href === "/knowledge-base");
+    expect(documents?.keywords).toContain("knowledge base");
+    expect(documents?.keywords).toContain("reports");
+    expect(documents?.keywords).toContain("imagery");
   });
 
   it("covers every registry href with a protected route prefix", () => {
@@ -166,6 +172,7 @@ describe("nav registry — the single source for every nav and the auth proxy", 
   it("resolves canonical labels and falls back to the href for unregistered surfaces", () => {
     expect(navLabel("/explore")).toBe("Corridor Analysis");
     expect(navLabel("/dashboard")).toBe("Overview");
+    expect(navLabel("/knowledge-base")).toBe("Documents");
     expect(navLabel("/invoicing")).toBe("Invoices & Reimbursements");
     expect(navLabel("/not-a-registered-surface")).toBe("/not-a-registered-surface");
   });

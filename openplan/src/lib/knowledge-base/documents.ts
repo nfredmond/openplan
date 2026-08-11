@@ -10,9 +10,55 @@
  * `storage://kb-documents/...`.
  */
 
-import type { DocumentChunk, KbDocKind, KbDocumentStatus, KbSourceKind } from "./types";
+import type {
+  DocumentChunk,
+  KbDocKind,
+  KbDocumentStatus,
+  KbExtractionSource,
+  KbSourceKind,
+} from "./types";
 
 export const KB_DOCUMENTS_BUCKET = "kb-documents";
+
+/**
+ * Per-file upload ceiling — the OPERATOR'S, not a tier. Follows the aerial
+ * imagery pattern (`src/lib/aerial/imagery.ts`): the bucket row carries no
+ * file_size_limit (20260811000005), the upload route streams against this
+ * resolved ceiling, and the refusal names the variable so the person who meets
+ * it knows exactly which knob their operator can turn. Unset does NOT mean
+ * unlimited: the bytes pass through the route's memory.
+ */
+export const KB_DOCUMENT_MAX_BYTES_ENV = "OPENPLAN_KB_DOCUMENT_MAX_BYTES";
+
+/**
+ * 100 MiB by default — sized for the corpus planners actually hold: adopted
+ * RTPs and EIRs routinely run 40–80 MB as scanned PDFs, and a georeferenced
+ * exhibit TIFF passes 25 MB easily. Kept equal to `BODY_LIMITS.kbDocumentRaw`
+ * (src/lib/http/body-limit.ts) so the documented transport default and the
+ * domain default cannot drift apart.
+ */
+export const DEFAULT_KB_DOCUMENT_MAX_BYTES = 100 * 1024 * 1024;
+
+export function resolveKbDocumentMaxBytes(
+  env: Record<string, string | undefined> = process.env
+): number {
+  const raw = env[KB_DOCUMENT_MAX_BYTES_ENV];
+  if (typeof raw === "string" && raw.trim() !== "") {
+    const parsed = Number(raw.trim());
+    if (Number.isFinite(parsed) && Number.isInteger(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return DEFAULT_KB_DOCUMENT_MAX_BYTES;
+}
+
+/**
+ * The one sentence a stored document gets, everywhere it appears. Honest on
+ * both edges: never "processing" (nothing is coming), and never "no text
+ * layer" (a stored CSV has text — OpenPlan deliberately did not index it).
+ */
+export const KB_STORED_DOCUMENT_NOTICE =
+  "Stored. OpenPlan did not index text from this file, so it cannot be cited yet.";
 
 /** Insert chunks in bounded batches so a large document stays under the request cap. */
 export const KB_CHUNK_INSERT_BATCH = 500;
@@ -59,7 +105,7 @@ export async function insertKbChunks(
 
 /** Columns returned for list / detail views (never the chunk bodies). */
 export const KB_DOCUMENT_COLUMNS =
-  "id, workspace_id, project_id, title, doc_kind, source_kind, original_filename, content_type, byte_size, storage_ref, page_count, chunk_count, char_count, status, extraction_error, citation_label, created_at, updated_at";
+  "id, workspace_id, project_id, title, doc_kind, source_kind, original_filename, content_type, byte_size, storage_ref, page_count, chunk_count, char_count, status, extraction_error, extraction_source, citation_label, created_at, updated_at";
 
 export type KbDocumentRow = {
   id: string;
@@ -77,6 +123,8 @@ export type KbDocumentRow = {
   char_count: number | null;
   status: KbDocumentStatus;
   extraction_error: string | null;
+  /** Null on rows that predate 20260811000005 — "not recorded", not "none". */
+  extraction_source: KbExtractionSource | null;
   citation_label: string | null;
   created_at: string;
   updated_at: string;

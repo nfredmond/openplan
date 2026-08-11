@@ -550,6 +550,8 @@ describe("knowledge base lane operations", () => {
         { id: "d1", project_id: "proj-1", status: "ready" },
         { id: "d2", project_id: null, status: "failed" },
         { id: "d3", project_id: null, status: "failed" },
+        // stored = no extraction ATTEMPTED (migration 20260811000005) — must not count as failed
+        { id: "d4", project_id: null, status: "stored" },
       ],
       error: null,
     },
@@ -569,8 +571,38 @@ describe("knowledge base lane operations", () => {
     const supabase = createRecordingSupabase({ workspaceId: "ws-k2", responses: kbResponses });
     const context = await loadLane("knowledge_base", supabase, "ws-k2");
     const response = buildAssistantResponse(context, "knowledge-base-extraction");
+    // stored must not inflate the failure count: 2 failed, not 3
     expect(response.summary).toContain("2 documents failed extraction");
     expect(response.findings.join("\n")).toContain("invisible to retrieval");
+    // the stored file is reported in its own words, never as a failure
+    expect(response.findings.join("\n")).toContain("1 stored file that cannot be cited yet");
+  });
+
+  it("stored files render honestly when nothing failed: not citable, but not a failure", async () => {
+    const supabase = createRecordingSupabase({
+      workspaceId: "ws-k3",
+      responses: {
+        kb_documents: {
+          data: [
+            { id: "d1", project_id: "proj-1", status: "ready" },
+            { id: "d2", project_id: null, status: "stored" },
+            { id: "d3", project_id: null, status: "stored" },
+          ],
+          error: null,
+        },
+      },
+    });
+    const context = await loadLane("knowledge_base", supabase, "ws-k3");
+    const response = buildAssistantResponse(context, "knowledge-base-extraction");
+    const text = response.findings.join("\n");
+    // stored ≠ failed: no failure is claimed…
+    expect(response.summary).toContain("No document is currently failing extraction");
+    expect(text).toContain("No extraction failed");
+    // …but the corpus is not presented as fully citable either, in the
+    // KB_STORED_DOCUMENT_NOTICE vocabulary ("did not index text")
+    expect(text).toContain("did not index text from 2 stored files");
+    expect(text).toContain("stored by design, not a failure");
+    expect(text).not.toContain("retrieval sees the whole corpus");
   });
 });
 

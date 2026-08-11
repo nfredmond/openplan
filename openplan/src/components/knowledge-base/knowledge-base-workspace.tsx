@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { FolderKanban, Loader2, Search, Trash2, Upload } from "lucide-react";
+import { Download, FolderKanban, Loader2, Search, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,8 +10,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { StatusTone } from "@/lib/ui/status";
 import { KB_DOC_KINDS, type KbDocKind, type KbDocumentStatus } from "@/lib/knowledge-base/types";
-import type { KbDocumentRow } from "@/lib/knowledge-base/documents";
+import {
+  DEFAULT_KB_DOCUMENT_MAX_BYTES,
+  KB_STORED_DOCUMENT_NOTICE,
+  type KbDocumentRow,
+} from "@/lib/knowledge-base/documents";
 import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
+import {
+  describeDocumentLibraryOrdering,
+  DOCUMENT_LIBRARY_SOURCE_IDS,
+  type DocumentLibraryBadgeTone,
+  type DocumentLibraryEntry,
+  type DocumentLibrarySourceId,
+  type DocumentSourceOutcome,
+} from "@/lib/document-library/types";
 
 const DOC_KIND_LABELS: Record<KbDocKind, string> = {
   rtp: "Regional Transportation Plan",
@@ -20,11 +32,20 @@ const DOC_KIND_LABELS: Record<KbDocKind, string> = {
   nofo: "Grant notice (NOFO)",
   staff_report: "Staff report",
   policy: "Policy / guidance",
+  drawing: "Drawing / plan sheet",
+  exhibit: "Exhibit / map",
   other: "Other",
 };
 
-const ACCEPTED_EXTENSIONS = ".pdf,.docx,.txt,.md,.markdown";
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+/**
+ * The file picker's suggestion list — the server's accept lists in
+ * `knowledge-base/extract.ts` remain the authority (the upload route refuses
+ * what they refuse), this only pre-filters the dialog. First the indexed
+ * formats, then the stored-for-reference ones.
+ */
+const ACCEPTED_EXTENSIONS =
+  ".pdf,.docx,.txt,.md,.markdown" +
+  ",.jpg,.jpeg,.png,.tif,.tiff,.csv,.xlsx,.xls,.ods,.dwg,.dxf,.pptx,.ppt,.doc,.rtf,.odt,.odp";
 /** How many passages one search asks for. The RPC caps at 25. */
 const SEARCH_LIMIT = 10;
 
@@ -66,6 +87,22 @@ function statusTone(status: KbDocumentStatus): StatusTone {
     case "pending":
     case "extracting":
       return "warning";
+    // "stored" lands in the default arm on purpose: kept by design, neither a
+    // success to celebrate nor a failure to flag.
+    default:
+      return "neutral";
+  }
+}
+
+/** Library badge tones (Lane B's vocabulary) mapped onto the app's StatusBadge tones. */
+function libraryBadgeTone(tone: DocumentLibraryBadgeTone): StatusTone {
+  switch (tone) {
+    case "positive":
+      return "success";
+    case "warning":
+      return "warning";
+    case "critical":
+      return "danger";
     default:
       return "neutral";
   }
@@ -98,6 +135,22 @@ export type KnowledgeBaseProjectOption = {
   status: string;
 };
 
+/**
+ * The Document Library lane, serialized by the page: `ReadFailureLog` is a
+ * class and cannot cross the server/client boundary, so the page sends its
+ * `describe()` sentence and the per-source outcomes instead. Everything here
+ * came from `loadDocumentLibrary` — the component only renders it and never
+ * reads or writes anything on its own.
+ */
+export type DocumentLibraryView = {
+  entries: DocumentLibraryEntry[];
+  perSource: Partial<Record<DocumentLibrarySourceId, DocumentSourceOutcome>>;
+  limitPerSource: number;
+  sourceLabels: Partial<Record<DocumentLibrarySourceId, string>>;
+  /** `reads.describe()` — null when every source read cleanly. */
+  readFailureSummary: string | null;
+};
+
 type KnowledgeBaseWorkspaceProps = {
   workspaceId: string;
   initialDocuments: KbDocumentRow[];
@@ -110,6 +163,14 @@ type KnowledgeBaseWorkspaceProps = {
    * corpus from an unreadable one, and says the first.
    */
   readFailures?: { documents: boolean; projects: boolean };
+  /**
+   * This deployment's per-file ceiling, resolved by the page from
+   * OPENPLAN_KB_DOCUMENT_MAX_BYTES. The server enforces it either way; this
+   * only lets the pre-flight check and the copy tell the truth about it.
+   */
+  maxUploadBytes?: number;
+  /** The cross-module file index. Absent = the page did not load it (older callers). */
+  library?: DocumentLibraryView | null;
 };
 
 export function KnowledgeBaseWorkspace({
@@ -118,6 +179,8 @@ export function KnowledgeBaseWorkspace({
   projects = [],
   initialProjectId = null,
   readFailures = { documents: false, projects: false },
+  maxUploadBytes = DEFAULT_KB_DOCUMENT_MAX_BYTES,
+  library = null,
 }: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
   const [documentList, setDocumentList] = useState<KbDocumentListState>(() => ({
@@ -137,7 +200,14 @@ export function KnowledgeBaseWorkspace({
   const [search, setSearch] = useState<KbSearchState>({ status: "idle" });
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Library filters: null = every source; the set = only the chips toggled on.
+  const [activeSources, setActiveSources] = useState<ReadonlySet<DocumentLibrarySourceId> | null>(
+    null
+  );
+  const [citableOnly, setCitableOnly] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const maxUploadMiB = Math.floor(maxUploadBytes / (1024 * 1024));
 
   const projectNameById = useMemo(
     () => new Map(projects.map((project) => [project.id, project.name])),
@@ -246,8 +316,11 @@ export function KnowledgeBaseWorkspace({
   }
 
   async function uploadFile(file: File) {
-    if (file.size > MAX_UPLOAD_BYTES) {
-      setError("That file is larger than the 25 MB limit.");
+    if (file.size > maxUploadBytes) {
+      setError(
+        `That file is larger than this deployment's ${maxUploadMiB} MiB per-file ceiling. ` +
+          "Whoever operates this deployment can raise it — OpenPlan itself has no usage tiers."
+      );
       return;
     }
     setBusy(true);
@@ -268,16 +341,21 @@ export function KnowledgeBaseWorkspace({
         hint?: string;
         warning?: string;
         deduped?: boolean;
+        stored?: boolean;
+        notice?: string;
       };
       if (!response.ok) {
         throw new Error([payload.error, payload.hint].filter(Boolean).join(" — ") || "Upload failed");
       }
       if (payload.document) {
         upsertDocument(payload.document);
-        if (payload.warning) {
+        if (payload.stored) {
+          // The route's own honest sentence: kept, findable, not citable.
+          setNotice(`Kept "${payload.document.title}". ${payload.notice ?? KB_STORED_DOCUMENT_NOTICE}`);
+        } else if (payload.warning) {
           setNotice(`Stored "${payload.document.title}", but its text could not be extracted: ${payload.warning}`);
         } else if (payload.deduped) {
-          setNotice("That document is already in your Knowledge Base.");
+          setNotice("That document is already in your library.");
         } else {
           setNotice(`Added "${payload.document.title}".`);
         }
@@ -350,16 +428,57 @@ export function KnowledgeBaseWorkspace({
     }
   }
 
+  // --- Document Library (cross-module file index) -------------------------
+  // Only sources the page actually QUERIED get a chip; an absent perSource key
+  // means the caller excluded the source, which is different from zero rows.
+  const librarySourceIds = library
+    ? DOCUMENT_LIBRARY_SOURCE_IDS.filter((id) => library.perSource[id] !== undefined)
+    : [];
+  const pendingLibrarySources = librarySourceIds.filter((id) => library?.perSource[id]?.pending);
+  const libraryEntries = library?.entries ?? [];
+  const filteredLibraryEntries = libraryEntries.filter(
+    (entry) =>
+      (activeSources === null || activeSources.has(entry.sourceId)) &&
+      (!citableOnly || entry.groundable)
+  );
+
+  function librarySourceLabel(id: DocumentLibrarySourceId): string {
+    return library?.sourceLabels[id] ?? id;
+  }
+
+  // The library is loaded SERVER-SIDE with the page's initial project scope.
+  // The selector above refetches only the Knowledge Base list, so a changed
+  // selection must not relabel the library — it keeps its loaded scope and
+  // offers a reload link to the new one instead of a false caption.
+  const libraryScopeName = initialProjectId
+    ? projectNameById.get(initialProjectId) ?? "the selected project"
+    : null;
+  const libraryScopeStale = projectId !== (initialProjectId ?? "");
+
+  function toggleLibrarySource(id: DocumentLibrarySourceId) {
+    setActiveSources((previous) => {
+      // From "all sources" to just the clicked one; clicking the only active
+      // chip returns to all — a filter with nothing selected shows everything
+      // rather than an empty shelf.
+      if (previous === null) return new Set([id]);
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next.size === 0 ? null : next;
+    });
+  }
+
   return (
     <section className="module-page">
       <header className="module-section-header">
-        <span className="module-section-label">Analyze</span>
-        <h1 className="module-section-title">Knowledge Base</h1>
+        <span className="module-section-label">Library</span>
+        <h1 className="module-section-title">Documents</h1>
         <p className="module-section-description">
-          Upload your agency&apos;s own documents — adopted plans, comment letters, prior studies, grant
-          notices — so the Planner Agent and Grant Writer can ground and cite from them. Retrieval is
-          keyword-based (screening-grade); scanned, image-only PDFs without a text layer are not supported
-          yet.
+          Your workspace&apos;s file cabinet. Upload your agency&apos;s own documents — adopted plans,
+          comment letters, prior studies, grant notices — so the Planner Agent and Grant Writer can
+          ground and cite from them; images, spreadsheets, CAD drawings, and other office files are
+          kept for reference and download. Retrieval is keyword-based (screening-grade); scanned,
+          image-only PDFs without a text layer are stored but not indexed yet.
         </p>
       </header>
 
@@ -449,7 +568,10 @@ export function KnowledgeBaseWorkspace({
             />
             <p className="module-note mt-2 flex items-center gap-2">
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-              PDF, Word (.docx), plain text, or Markdown. Up to 25 MB. Extraction runs immediately.
+              PDF, Word (.docx), plain text, and Markdown are indexed for citation — extraction runs
+              immediately. Images (JPEG/PNG/TIFF), spreadsheets, CAD files, and other office documents
+              are kept for reference: findable and downloadable, not citable. Up to {maxUploadMiB} MiB
+              per file on this deployment.
             </p>
           </TabsContent>
 
@@ -590,7 +712,7 @@ export function KnowledgeBaseWorkspace({
 
       <div className="module-section-surface">
         <div className="module-section-header">
-          <h2 className="module-section-title">Documents</h2>
+          <h2 className="module-section-title">Knowledge Base documents</h2>
           <p className="module-section-description">
             {listLoading
               ? "Loading documents…"
@@ -630,6 +752,8 @@ export function KnowledgeBaseWorkspace({
                           doc.page_count ? ` · ${doc.page_count} page${doc.page_count === 1 ? "" : "s"}` : ""
                         }`
                       : ""}
+                    {/* The one honest sentence a stored file gets, here too — never "processing". */}
+                    {doc.status === "stored" ? ` · ${KB_STORED_DOCUMENT_NOTICE}` : ""}
                     {doc.status === "failed" && doc.extraction_error ? ` · ${doc.extraction_error}` : ""}
                   </p>
                   <div className="module-record-meta">
@@ -652,6 +776,17 @@ export function KnowledgeBaseWorkspace({
                     {formatBytes(doc.byte_size) ? (
                       <span className="module-record-chip">{formatBytes(doc.byte_size)}</span>
                     ) : null}
+                    {/* Pasted text has no stored original — nothing to link, honestly nothing. */}
+                    {doc.storage_ref ? (
+                      <a
+                        href={`/api/knowledge-base/documents/${doc.id}/download`}
+                        className="module-record-chip inline-flex items-center gap-1"
+                        aria-label={`Download ${doc.title}`}
+                      >
+                        <Download className="size-3" />
+                        Download
+                      </a>
+                    ) : null}
                   </div>
                 </div>
                 <Button
@@ -668,6 +803,143 @@ export function KnowledgeBaseWorkspace({
           </ul>
         )}
       </div>
+
+      {library ? (
+        <div className="module-section-surface">
+          <div className="module-section-header">
+            <h2 className="module-section-title">All files in this workspace</h2>
+            <p className="module-section-description">
+              One index across every module that holds files — generated reports, grant application
+              exports, client invoices, aerial imagery and deliverables, model run outputs, and the
+              documents above. Each file stays where its module keeps it; this list only points at
+              it.{" "}
+              {/* The memo's decision: the merged ordering is LABELED, never presented as a global sort. */}
+              {describeDocumentLibraryOrdering(library.limitPerSource)}
+              {libraryScopeName
+                ? ` Scoped to ${libraryScopeName}.`
+                : " Covering the whole workspace."}
+            </p>
+          </div>
+
+          {libraryScopeStale ? (
+            <p className="module-note">
+              This file index still shows {libraryScopeName ? `${libraryScopeName}'s files` : "the whole workspace"}
+              {" — it does not follow the project selector above. "}
+              <Link
+                className="underline underline-offset-2"
+                href={projectId ? `/knowledge-base?projectId=${projectId}` : "/knowledge-base"}
+              >
+                Reload it for {selectedProjectName ?? "the whole workspace"}
+              </Link>
+              .
+            </p>
+          ) : null}
+
+          {library.readFailureSummary ? (
+            <p className="rounded-[0.5rem] border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+              {library.readFailureSummary}
+            </p>
+          ) : null}
+
+          {pendingLibrarySources.length > 0 ? (
+            // One template literal → one text node, so tests (and translations,
+            // later) see the sentence the planner sees.
+            <p className="module-note">
+              {`${pendingLibrarySources.map((id) => librarySourceLabel(id)).join(", ")}: ${
+                pendingLibrarySources.length === 1
+                  ? "this source is behind a database migration on this deployment, so its files are"
+                  : "these sources are behind a database migration on this deployment, so their files are"
+              } not listed here yet. That lane reads as unavailable, not as empty.`}
+            </p>
+          ) : null}
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {librarySourceIds.map((id) => {
+              const outcome = library.perSource[id];
+              const active = activeSources === null || activeSources.has(id);
+              const unavailable = Boolean(outcome?.pending || outcome?.failed);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => toggleLibrarySource(id)}
+                  aria-pressed={active}
+                  className={`module-record-chip transition-opacity ${active ? "" : "opacity-50"}`}
+                >
+                  {librarySourceLabel(id)}
+                  {/* A failed or pending lane has no count to claim. */}
+                  {unavailable ? " (unavailable)" : ` (${outcome?.count ?? 0})`}
+                </button>
+              );
+            })}
+            <label className="module-record-chip inline-flex cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={citableOnly}
+                onChange={(event) => setCitableOnly(event.target.checked)}
+              />
+              Citable only
+            </label>
+          </div>
+
+          {filteredLibraryEntries.length === 0 ? (
+            <div className="module-empty-state">
+              {libraryEntries.length > 0
+                ? "No files match the current filters. Clear a source chip or the citable-only filter to see the rest."
+                : library.readFailureSummary || pendingLibrarySources.length > 0
+                  ? "No files are listed — but some sources could not be read (see above), so this is not a statement about what the workspace holds."
+                  : "No files yet. Files appear here as reports are generated, grant applications are exported, imagery is uploaded, and documents are added above."}
+            </div>
+          ) : (
+            <ul className="module-record-list">
+              {filteredLibraryEntries.map((entry) => (
+                <li key={`${entry.sourceId}:${entry.id}`} className="module-record-row">
+                  <div className="module-record-main">
+                    <div className="module-record-head">
+                      <span className="module-record-title">{entry.title}</span>
+                      <StatusBadge tone={libraryBadgeTone(entry.badge.tone)}>
+                        {entry.badge.label}
+                      </StatusBadge>
+                    </div>
+                    {entry.detail ? (
+                      <p className="module-record-summary">{entry.detail}</p>
+                    ) : null}
+                    <div className="module-record-meta">
+                      <span className="module-record-chip">{librarySourceLabel(entry.sourceId)}</span>
+                      {formatDate(entry.createdAt) ? (
+                        <span className="module-record-stamp">{formatDate(entry.createdAt)}</span>
+                      ) : null}
+                      {formatBytes(entry.byteSize) ? (
+                        <span className="module-record-chip">{formatBytes(entry.byteSize)}</span>
+                      ) : null}
+                      {entry.projectId ? (
+                        <Link
+                          href={`/projects/${entry.projectId}`}
+                          className="module-record-chip inline-flex items-center gap-1"
+                        >
+                          <FolderKanban className="size-3" />
+                          {projectNameById.get(entry.projectId) ?? "Linked project"}
+                        </Link>
+                      ) : null}
+                      {/* Always the owning module's ROUTE, never a storage URL (Lane B's invariant). */}
+                      {entry.downloadHref ? (
+                        <a
+                          href={entry.downloadHref}
+                          className="module-record-chip inline-flex items-center gap-1"
+                          aria-label={`${entry.hasBytes ? "Download" : "Open"} ${entry.title}`}
+                        >
+                          <Download className="size-3" />
+                          {entry.hasBytes ? "Download" : "Open"}
+                        </a>
+                      ) : null}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

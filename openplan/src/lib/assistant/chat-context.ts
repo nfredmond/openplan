@@ -233,7 +233,7 @@ function moduleLaneLines(context: WorkspaceAssistantContext): string[] {
       } else {
         const d = lane.documents;
         lines.push(
-          `Knowledge base: ${d.total} documents (${d.ready} ready, ${d.inFlight} extracting, ${d.extractionFailed} failed extraction, ${d.archived} archived) · ${d.linkedToProject} linked across ${d.projectCount} projects`
+          `Knowledge base: ${d.total} documents (${d.ready} ready, ${d.inFlight} extracting, ${d.extractionFailed} failed extraction, ${d.stored} stored (did not index text, cannot be cited), ${d.archived} archived) · ${d.linkedToProject} linked across ${d.projectCount} projects`
         );
       }
       break;
