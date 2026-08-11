@@ -102,6 +102,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260811000004_aerial_processing_manifest_jobs.sql",
     migrationsAtRelease: 183,
   },
+  // 0.13.0 — the document library: KB generalized into the workspace file index.
+  {
+    tag: "0.13.0",
+    lastMigration: "20260811000005_document_library_stored_kinds.sql",
+    migrationsAtRelease: 184,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

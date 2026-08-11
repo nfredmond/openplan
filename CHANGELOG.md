@@ -19,6 +19,40 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.13.0 — 2026-08-11
+
+**One migration is required before the app deploys: `20260811000005`.** It
+widens the knowledge-base document types and adds one column; no existing
+data changes. Safe against a live database.
+
+### One place for every file: the Document Library
+
+The Knowledge Base page is now **Documents** — one filterable view of every
+file your workspace has uploaded *or produced*: knowledge-base documents,
+generated report packets, grant application exports, invoice PDFs, drone
+mission photos, and processed aerial products. Filter by where it came from,
+which project it belongs to, what kind of file it is, or "citable only."
+Every project page gains a **Documents panel** showing that project's
+complete file record.
+
+- **Upload more than text**: images, spreadsheets, CAD files, drawings, and
+  exhibits now belong in the library. Files without indexed text are marked
+  "stored — cannot be cited yet," honestly and by design; they never leak
+  into the AI assistant's citation sources. (Text extraction for scans and
+  spreadsheets is a planned worker capability; nothing pretends it exists
+  yet.)
+- **Downloads work everywhere**: uploaded knowledge-base documents are now
+  downloadable at all (previously they could be uploaded but never
+  retrieved), and every library row links through its module's own
+  access-checked download.
+- Files stay where their module keeps them — the library is an index with
+  each module's own permissions doing the guarding, so a file can never
+  appear to someone the module itself wouldn't show it to. Resident-submitted
+  engagement photos are deliberately not listed; they stay with the
+  moderation tools that understand their approval state.
+- The upload size limit is now operator-configurable
+  (`OPENPLAN_KB_DOCUMENT_MAX_BYTES`, default 100 MiB).
+
 ## 0.12.0 — 2026-08-11
 
 **Three migrations are required before the app deploys: `20260811000002`,
