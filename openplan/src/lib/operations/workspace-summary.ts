@@ -2,6 +2,10 @@ import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aeri
 import { loadWorkspaceAerialPostureInputs } from "@/lib/aerial/queries";
 import { computeNetInvoiceAmount } from "@/lib/invoicing/invoice-records";
 import {
+  isClosingSoonFundingOpportunity,
+  isOverdueFundingDecision,
+} from "@/lib/operations/funding-decision-status";
+import {
   GRANT_MODELING_PLANNING_CAVEAT,
   buildGrantDecisionModelingSupport,
   buildProjectGrantModelingEvidenceByProjectId,
@@ -454,13 +458,6 @@ export type WorkspaceOperationsSummary = {
   commandQueue: WorkspaceCommandQueueItem[];
   fullCommandQueue: WorkspaceCommandQueueItem[];
 };
-
-function daysUntil(value: string | null | undefined, now: Date) {
-  if (!value) return null;
-  const parsed = new Date(value).getTime();
-  if (!Number.isFinite(parsed)) return null;
-  return Math.round((parsed - now.getTime()) / 86400000);
-}
 
 function formatCurrency(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) return "$0";
@@ -1498,17 +1495,10 @@ export function buildWorkspaceOperationsSummary({
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
   ).length;
   const openFundingOpportunities = fundingOpportunities.filter((item) => ["open", "upcoming"].includes(item.opportunityStatus ?? "")).length;
-  const closingSoonFundingOpportunities = fundingOpportunities.filter((item) => {
-    if ((item.opportunityStatus ?? "") !== "open") return false;
-    const days = daysUntil(item.closesAt ?? item.decisionDueAt, now);
-    return days !== null && days <= 14;
-  }).length;
-  const overdueDecisionOpportunities = fundingOpportunities.filter((item) => {
-    if (!["open", "upcoming"].includes(item.opportunityStatus ?? "")) return false;
-    if ((item.decisionState ?? "") !== "monitor") return false;
-    const days = daysUntil(item.decisionDueAt, now);
-    return days !== null && days < 0;
-  });
+  const closingSoonFundingOpportunities = fundingOpportunities.filter((item) =>
+    isClosingSoonFundingOpportunity(item, now)
+  ).length;
+  const overdueDecisionOpportunities = fundingOpportunities.filter((item) => isOverdueFundingDecision(item, now));
 
   const fundingOpportunitiesByProjectId = new Map<string, WorkspaceOperationsFundingOpportunityRow[]>();
   fundingOpportunities.forEach((opportunity) => {
@@ -1619,11 +1609,9 @@ export function buildWorkspaceOperationsSummary({
       if (fundingProfileProjectIds.has(projectId)) return null;
       const project = projects.find((item) => item.id === projectId);
       if (!project) return null;
-      const closingSoonCount = opportunities.filter((opportunity) => {
-        if ((opportunity.opportunityStatus ?? "") !== "open") return false;
-        const days = daysUntil(opportunity.closesAt ?? opportunity.decisionDueAt, now);
-        return days !== null && days <= 14;
-      }).length;
+      const closingSoonCount = opportunities.filter((opportunity) =>
+        isClosingSoonFundingOpportunity(opportunity, now)
+      ).length;
       const openCount = opportunities.filter((opportunity) => ["open", "upcoming"].includes(opportunity.opportunityStatus ?? "")).length;
       return {
         project,
@@ -1965,11 +1953,7 @@ export function buildWorkspaceOperationsSummary({
   const firstComparisonBackedReport = reportRows.find(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
   );
-  const firstClosingOpportunity = fundingOpportunities.find((item) => {
-    if ((item.opportunityStatus ?? "") !== "open") return false;
-    const days = daysUntil(item.closesAt ?? item.decisionDueAt, now);
-    return days !== null && days <= 14;
-  });
+  const firstClosingOpportunity = fundingOpportunities.find((item) => isClosingSoonFundingOpportunity(item, now));
   const firstClosingProgram = firstClosingOpportunity?.programId
     ? programs.find((program) => program.id === firstClosingOpportunity.programId) ?? null
     : null;

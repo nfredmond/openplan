@@ -65,6 +65,12 @@ import {
   type WorkspaceOperationsSummary,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
+import {
+  isClosingSoonFundingOpportunity,
+  isOverdueFundingDecision,
+  isPendingFundingDecision,
+  type FundingOpportunityDeadlineFacts,
+} from "@/lib/operations/funding-decision-status";
 import type { AssistantTarget, AssistantTargetKind } from "@/lib/assistant/catalog";
 import {
   buildWorkspaceTransitSummary,
@@ -170,6 +176,22 @@ export const ASSISTANT_READ_SUBJECTS = {
   stageGateBinding: "the workspace row that names the bound stage-gate template",
   transitFeeds: "this workspace's transit feeds",
   transitFeedVersions: "the transit feed versions this workspace analyses with",
+  /**
+   * THE MODULE-LANE SUBJECTS. Where a module's own page already discloses the
+   * same failed read, the wording here matches that page exactly (crash imports,
+   * aerial missions) — one failure must read as one problem on both surfaces.
+   */
+  clientInvoices: "client invoices",
+  engagementModerationQueue: "the moderation queue of this workspace's campaigns",
+  crashImports: "this workspace's crash imports",
+  crashSeverityMix: "the severity mix of the latest ready crash import",
+  aerialMissions: "this workspace's aerial missions",
+  aerialProcessingJobs: "this workspace's aerial processing jobs",
+  aerialEvidencePackages: "this workspace's aerial evidence packages",
+  knowledgeBaseDocuments: "knowledge base documents",
+  dataHubDatasets: "data hub datasets",
+  dataHubConnectors: "data hub connectors",
+  dataRefreshJobs: "data refresh jobs",
 } as const;
 
 /**
@@ -252,8 +274,250 @@ function collectUnlessPending(reads: ReadFailureLog, subject: string, result: Re
   return pending;
 }
 
+/**
+ * The seven module lanes that ground the copilot on their own surface instead
+ * of falling back to the generic workspace context (the state before
+ * 2026-08-10: /grants, /invoicing, /engagement, /safety, /aerial,
+ * /knowledge-base and /data-hub were all invisible to the assistant).
+ *
+ * DESIGN CONSTRAINT, and why these are NOT new members of the
+ * `AssistantContext` union: `respond.ts` and `operations.ts` (owned by another
+ * lane) both dispatch on `context.kind` with a default branch that passes the
+ * remaining union members to their workspace builders. A new union member
+ * would fail their compile; a module-lane context that IS a
+ * `WorkspaceAssistantContext` (workspace grounding plus a `moduleLane` lens,
+ * with `kind` widened to name the surface) flows through both untouched and
+ * still serializes its module lines in `chat-context.ts`.
+ *
+ * FAILURE ≠ EMPTY IS IN THE TYPE. Every sub-summary below is `... | null`,
+ * and `null` means exactly one thing: THE READ FAILED, and the failure is
+ * also disclosed by name in `unreadable`. An empty module is zeros inside a
+ * non-null object. A serializer or tool that meets `null` must say the lane
+ * could not be read — never that it is empty.
+ */
+export type AssistantModuleLaneKind =
+  | "grants"
+  | "invoicing"
+  | "engagement"
+  | "safety"
+  | "aerial"
+  | "knowledge_base"
+  | "data_hub";
+
+export type GrantsAssistantLaneSummary = {
+  module: "grants";
+  opportunities: {
+    total: number;
+    /**
+     * Open/upcoming opportunities still marked 'monitor' whose decision due
+     * date has NOT lapsed. decision_state is NOT NULL DEFAULT 'monitor', so
+     * "awaiting a decision" can never mean a null decision_state.
+     */
+    awaitingDecision: number;
+    monitor: number;
+    pursue: number;
+    skip: number;
+    closingSoon: number;
+    overdueDecision: number;
+    lead: { id: string; title: string; status: string | null; decisionState: string | null; closesAt: string | null } | null;
+  } | null;
+  awards: {
+    total: number;
+    awardedAmount: number | null;
+    activeSpending: number;
+    riskFlagged: number;
+  } | null;
+};
+
+export type InvoicingAssistantLaneSummary = {
+  module: "invoicing";
+  /** Grant reimbursements — the agency invoicing its FUNDER (LAPM-style), not billing anyone for OpenPlan. */
+  reimbursements: {
+    invoiceCount: number;
+    linkedToAwardCount: number;
+    awardsWithInvoices: number;
+    draft: number;
+    internalReview: number;
+    submitted: number;
+    approvedForPayment: number;
+    paid: number;
+    rejected: number;
+    outstandingNetAmount: number | null;
+  } | null;
+  /** Client receivables — a consultancy invoicing its own clients. */
+  receivables: {
+    invoiceCount: number;
+    draft: number;
+    sent: number;
+    paid: number;
+    voided: number;
+    outstandingAmount: number | null;
+  } | null;
+};
+
+export type EngagementAssistantLaneSummary = {
+  module: "engagement";
+  campaigns: {
+    total: number;
+    draft: number;
+    active: number;
+    closed: number;
+    archived: number;
+    /** Active campaigns whose public submission window is open right now. */
+    publicOpen: number;
+  } | null;
+  /** Counts only — comment BODIES are deliberately not loaded into this context. */
+  moderation: {
+    pending: number;
+    flagged: number;
+  } | null;
+};
+
+export type SafetyAssistantLaneSummary = {
+  module: "safety";
+  ingests: {
+    /** Recent imports only — capped at the same 8 rows the safety page shows. */
+    recentCount: number;
+    ready: number;
+    failed: number;
+    noCoverage: number;
+    inFlight: number;
+    latest: {
+      sourceLabel: string | null;
+      coverageState: string;
+      severityCompleteness: string;
+      status: string;
+      crashCount: number;
+      geocodedCount: number;
+      truncated: boolean;
+      yearsRequested: number[];
+      fetchError: string | null;
+      createdAt: string;
+    } | null;
+  } | null;
+  /**
+   * Severity mix of the latest READY import. `null` when there is no ready
+   * import to count — `unreadable` (below) says whether the count itself
+   * failed, which is a different fact from "no ready import exists".
+   */
+  severityMix: {
+    ingestId: string;
+    fatal: number;
+    severeInjury: number;
+    injury: number;
+    pdo: number;
+  } | null;
+};
+
+export type AerialAssistantLaneSummary = {
+  module: "aerial";
+  missions: {
+    total: number;
+    planned: number;
+    active: number;
+    complete: number;
+    cancelled: number;
+  } | null;
+  processing: {
+    total: number;
+    active: number;
+    failed: number;
+    succeeded: number;
+    custodyComplete: number;
+    custodyPartial: number;
+    custodyNone: number;
+  } | null;
+  packages: {
+    total: number;
+    processing: number;
+    qaPending: number;
+    ready: number;
+    shared: number;
+    verificationReady: number;
+  } | null;
+};
+
+export type KnowledgeBaseAssistantLaneSummary = {
+  module: "knowledge_base";
+  documents: {
+    total: number;
+    ready: number;
+    inFlight: number;
+    extractionFailed: number;
+    archived: number;
+    linkedToProject: number;
+    projectCount: number;
+  } | null;
+};
+
+export type DataHubAssistantLaneSummary = {
+  module: "data_hub";
+  datasets: {
+    total: number;
+    ready: number;
+    stale: number;
+    error: number;
+    other: number;
+  } | null;
+  connectors: {
+    total: number;
+    active: number;
+    degraded: number;
+    offline: number;
+    withLastError: number;
+  } | null;
+  refreshJobs: {
+    /** Recent jobs only — same 8-row cap as the data hub page. */
+    recentCount: number;
+    failed: number;
+    latest: { status: string; jobName: string | null; errorSummary: string | null } | null;
+  } | null;
+};
+
+export type AssistantModuleLaneSummary =
+  | GrantsAssistantLaneSummary
+  | InvoicingAssistantLaneSummary
+  | EngagementAssistantLaneSummary
+  | SafetyAssistantLaneSummary
+  | AerialAssistantLaneSummary
+  | KnowledgeBaseAssistantLaneSummary
+  | DataHubAssistantLaneSummary;
+
+/**
+ * The exact projections the module-lane loaders ask the database for.
+ *
+ * Exported because the Supabase clients are untyped: a column deleted from one
+ * of these strings would render as `undefined` with every mocked test green.
+ * The lane tests assert on these strings AND on the loader passing them.
+ */
+export const MODULE_LANE_FUNDING_OPPORTUNITY_COLUMNS =
+  "id, title, opportunity_status, decision_state, closes_at, decision_due_at, updated_at";
+export const MODULE_LANE_FUNDING_AWARD_COLUMNS =
+  "id, title, awarded_amount, spending_status, risk_flag, updated_at";
+export const MODULE_LANE_REIMBURSEMENT_INVOICE_COLUMNS =
+  "id, funding_award_id, status, amount, net_amount, due_date";
+export const MODULE_LANE_CLIENT_INVOICE_COLUMNS = "id, status, total_amount, due_date";
+export const MODULE_LANE_ENGAGEMENT_CAMPAIGN_COLUMNS =
+  "id, title, status, allow_public_submissions, submissions_closed_at, updated_at";
+export const MODULE_LANE_CRASH_INGEST_COLUMNS =
+  "id, project_id, source_label, coverage_state, severity_completeness, status, crash_count, geocoded_count, truncated, years_requested, fetch_error, created_at";
+export const MODULE_LANE_AERIAL_MISSION_COLUMNS = "id, status, mission_type";
+export const MODULE_LANE_AERIAL_JOB_COLUMNS = "id, status, artifact_custody_state";
+export const MODULE_LANE_AERIAL_PACKAGE_COLUMNS = "id, status, verification_readiness";
+export const MODULE_LANE_KB_DOCUMENT_COLUMNS = "id, project_id, status, doc_kind, created_at";
+export const MODULE_LANE_DATASET_COLUMNS = "id, status, geography_scope, updated_at";
+export const MODULE_LANE_CONNECTOR_COLUMNS = "id, status, last_error_message, last_error_at, last_success_at";
+export const MODULE_LANE_REFRESH_JOB_COLUMNS = "id, status, job_name, error_summary, created_at";
+
 export type WorkspaceAssistantContext = {
-  kind: "workspace" | "analysis_studio";
+  /**
+   * `"workspace" | "analysis_studio"` plus the seven module-lane kinds — see
+   * `AssistantModuleLaneKind` above for why a module lane is a widened
+   * workspace context rather than a new union member. When `kind` names a
+   * module lane, `moduleLane` carries that module's summary (matching
+   * discriminant), set by `loadModuleLaneContext` without exception.
+   */
+  kind: "workspace" | "analysis_studio" | AssistantModuleLaneKind;
   workspace: {
     id: string | null;
     name: string | null;
@@ -288,6 +552,13 @@ export type WorkspaceAssistantContext = {
    * kind of rule this repository has been able to keep.
    */
   transit: WorkspaceTransitSummary;
+  /**
+   * The module lens over this workspace, present exactly when `kind` is a
+   * module-lane kind. Optional for the same reason `unreadable` is — contexts
+   * are built as literals by tests other lanes own — but `loadModuleLaneContext`
+   * always sets it, and its sub-summaries are `null` ONLY for a failed read.
+   */
+  moduleLane?: AssistantModuleLaneSummary;
   /**
    * The reads that FAILED while this context loaded — see
    * `AssistantContextReadFailure`. Empty means every lane answered.
@@ -840,6 +1111,25 @@ function daysUntil(value: string | null | undefined, now = new Date()): number |
   return Math.round((parsed - now.getTime()) / 86400000);
 }
 
+/**
+ * Adapter from the snake_case rows this file reads to the shared funding
+ * deadline convention (`@/lib/operations/funding-decision-status`), so the
+ * assistant surfaces and the workspace summary count deadlines identically.
+ */
+function fundingDeadlineFacts(row: {
+  opportunity_status?: string | null;
+  decision_state?: string | null;
+  closes_at?: string | null;
+  decision_due_at?: string | null;
+}): FundingOpportunityDeadlineFacts {
+  return {
+    opportunityStatus: row.opportunity_status ?? null,
+    decisionState: row.decision_state ?? null,
+    closesAt: row.closes_at ?? null,
+    decisionDueAt: row.decision_due_at ?? null,
+  };
+}
+
 function buildLatestArtifactGeneratedAtByReportId(
   rows: Array<{ report_id: string; generated_at: string | null }>
 ): Map<string, string | null> {
@@ -1188,6 +1478,607 @@ async function loadWorkspaceContext(
   };
 }
 
+// ── Module-lane summaries ──────────────────────────────────────────────────
+//
+// Each loader below reads ONLY what its serialization speaks: counts, one lead
+// record, one caveat. The row caps mirror the module's own page (8 recent
+// ingests, 8 refresh jobs, 200-row list caps) so the copilot and the page
+// count the same world. Every read runs on the caller's own session client —
+// RLS applies — and every failure is disclosed under a named subject while the
+// failed sub-summary goes `null`, never zero.
+
+function laneReadFailed(reads: ReadFailureLog, subject: string, result: ReadResultLike): boolean {
+  const pending = collectUnlessPending(reads, subject, result);
+  return !pending && Boolean(result?.error);
+}
+
+async function loadGrantsLaneSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<GrantsAssistantLaneSummary> {
+  const [opportunitiesResult, awardsResult] = await Promise.all([
+    supabase
+      .from("funding_opportunities")
+      .select(MODULE_LANE_FUNDING_OPPORTUNITY_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("funding_awards")
+      .select(MODULE_LANE_FUNDING_AWARD_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+  ]);
+
+  const opportunitiesFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.fundingOpportunities, opportunitiesResult);
+  const awardsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.fundingAwards, awardsResult);
+
+  const opportunityRows = (opportunitiesResult?.data ?? []) as Array<{
+    id: string;
+    title: string;
+    opportunity_status: string | null;
+    decision_state: string | null;
+    closes_at: string | null;
+    decision_due_at: string | null;
+  }>;
+  const awardRows = (awardsResult?.data ?? []) as Array<{
+    id: string;
+    title: string | null;
+    awarded_amount: number | null;
+    spending_status: string | null;
+    risk_flag: string | null;
+  }>;
+
+  const now = new Date();
+  const closing = opportunityRows
+    .map((row) => ({ row, days: daysUntil(row.closes_at, now) }))
+    .filter((entry): entry is { row: (typeof opportunityRows)[number]; days: number } => entry.days !== null && entry.days >= 0)
+    .sort((left, right) => left.days - right.days);
+
+  const awardedAmounts = awardRows
+    .map((row) => row.awarded_amount)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+  return {
+    module: "grants",
+    opportunities: opportunitiesFailed
+      ? null
+      : {
+          total: opportunityRows.length,
+          // The shared convention (funding-decision-status.ts): pending =
+          // open/upcoming + 'monitor'; overdue = pending past its due date;
+          // awaiting = pending, not yet overdue. NEVER `!row.decision_state`
+          // — the column is NOT NULL DEFAULT 'monitor', so that predicate
+          // counted zero forever while its tests passed on impossible rows.
+          awaitingDecision: opportunityRows.filter(
+            (row) =>
+              isPendingFundingDecision(fundingDeadlineFacts(row)) &&
+              !isOverdueFundingDecision(fundingDeadlineFacts(row), now)
+          ).length,
+          monitor: opportunityRows.filter((row) => row.decision_state === "monitor").length,
+          pursue: opportunityRows.filter((row) => row.decision_state === "pursue").length,
+          skip: opportunityRows.filter((row) => row.decision_state === "skip").length,
+          closingSoon: opportunityRows.filter((row) =>
+            isClosingSoonFundingOpportunity(fundingDeadlineFacts(row), now)
+          ).length,
+          overdueDecision: opportunityRows.filter((row) =>
+            isOverdueFundingDecision(fundingDeadlineFacts(row), now)
+          ).length,
+          lead: closing[0]
+            ? {
+                id: closing[0].row.id,
+                title: closing[0].row.title,
+                status: closing[0].row.opportunity_status ?? null,
+                decisionState: closing[0].row.decision_state ?? null,
+                closesAt: closing[0].row.closes_at ?? null,
+              }
+            : null,
+        },
+    awards: awardsFailed
+      ? null
+      : {
+          total: awardRows.length,
+          awardedAmount: awardedAmounts.length ? awardedAmounts.reduce((sum, value) => sum + value, 0) : null,
+          activeSpending: awardRows.filter((row) => row.spending_status === "active").length,
+          riskFlagged: awardRows.filter((row) => Boolean(row.risk_flag) && row.risk_flag !== "none").length,
+        },
+  };
+}
+
+async function loadInvoicingLaneSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<InvoicingAssistantLaneSummary> {
+  const [reimbursementResult, receivableResult] = await Promise.all([
+    supabase
+      .from("billing_invoice_records")
+      .select(MODULE_LANE_REIMBURSEMENT_INVOICE_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .order("due_date", { ascending: true })
+      .limit(200),
+    supabase
+      .from("client_invoices")
+      .select(MODULE_LANE_CLIENT_INVOICE_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(200),
+  ]);
+
+  const reimbursementFailed = laneReadFailed(
+    reads,
+    ASSISTANT_READ_SUBJECTS.reimbursementInvoices,
+    reimbursementResult
+  );
+  const receivableFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.clientInvoices, receivableResult);
+
+  const reimbursementRows = (reimbursementResult?.data ?? []) as Array<{
+    id: string;
+    funding_award_id: string | null;
+    status: string | null;
+    amount: number | null;
+    net_amount: number | null;
+  }>;
+  const receivableRows = (receivableResult?.data ?? []) as Array<{
+    id: string;
+    status: string | null;
+    total_amount: number | null;
+  }>;
+
+  const countReimbursement = (status: string) => reimbursementRows.filter((row) => row.status === status).length;
+  const outstandingNet = reimbursementRows
+    .filter((row) => row.status === "submitted" || row.status === "approved_for_payment")
+    .map((row) => row.net_amount)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  const outstandingReceivable = receivableRows
+    .filter((row) => row.status === "sent")
+    .map((row) => row.total_amount)
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+  return {
+    module: "invoicing",
+    reimbursements: reimbursementFailed
+      ? null
+      : {
+          invoiceCount: reimbursementRows.length,
+          linkedToAwardCount: reimbursementRows.filter((row) => Boolean(row.funding_award_id)).length,
+          awardsWithInvoices: new Set(
+            reimbursementRows.map((row) => row.funding_award_id).filter((value): value is string => Boolean(value))
+          ).size,
+          draft: countReimbursement("draft"),
+          internalReview: countReimbursement("internal_review"),
+          submitted: countReimbursement("submitted"),
+          approvedForPayment: countReimbursement("approved_for_payment"),
+          paid: countReimbursement("paid"),
+          rejected: countReimbursement("rejected"),
+          outstandingNetAmount: outstandingNet.length
+            ? outstandingNet.reduce((sum, value) => sum + value, 0)
+            : null,
+        },
+    receivables: receivableFailed
+      ? null
+      : {
+          invoiceCount: receivableRows.length,
+          draft: receivableRows.filter((row) => row.status === "draft").length,
+          sent: receivableRows.filter((row) => row.status === "sent").length,
+          paid: receivableRows.filter((row) => row.status === "paid").length,
+          voided: receivableRows.filter((row) => row.status === "void").length,
+          outstandingAmount: outstandingReceivable.length
+            ? outstandingReceivable.reduce((sum, value) => sum + value, 0)
+            : null,
+        },
+  };
+}
+
+async function loadEngagementLaneSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<EngagementAssistantLaneSummary> {
+  const campaignsResult = await supabase
+    .from("engagement_campaigns")
+    .select(MODULE_LANE_ENGAGEMENT_CAMPAIGN_COLUMNS)
+    .eq("workspace_id", workspaceId)
+    .order("updated_at", { ascending: false })
+    .limit(200);
+
+  const campaignsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.engagementCampaigns, campaignsResult);
+  const campaignRows = (campaignsResult?.data ?? []) as Array<{
+    id: string;
+    title: string;
+    status: string | null;
+    allow_public_submissions: boolean | null;
+    submissions_closed_at: string | null;
+  }>;
+
+  // Moderation queue COUNTS only — head counts keyed by this workspace's own
+  // campaign ids. Comment bodies never enter this context; substance reads
+  // belong to the chat tools, where they are budgeted and logged per question.
+  let moderation: EngagementAssistantLaneSummary["moderation"] = { pending: 0, flagged: 0 };
+  if (campaignsFailed) {
+    // Without the campaign list the queue cannot even be scoped; the campaign
+    // read failure above already discloses why.
+    moderation = null;
+  } else if (campaignRows.length > 0) {
+    const campaignIds = campaignRows.map((row) => row.id);
+    const [pendingResult, flaggedResult] = await Promise.all([
+      supabase
+        .from("engagement_items")
+        .select("id", { count: "exact", head: true })
+        .in("campaign_id", campaignIds)
+        .eq("status", "pending"),
+      supabase
+        .from("engagement_items")
+        .select("id", { count: "exact", head: true })
+        .in("campaign_id", campaignIds)
+        .eq("status", "flagged"),
+    ]);
+    const pendingFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.engagementModerationQueue, pendingResult);
+    const flaggedFailed = pendingFailed
+      ? true
+      : laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.engagementModerationQueue, flaggedResult);
+    moderation =
+      pendingFailed || flaggedFailed
+        ? null
+        : {
+            pending: (pendingResult as { count?: number | null })?.count ?? 0,
+            flagged: (flaggedResult as { count?: number | null })?.count ?? 0,
+          };
+  }
+
+  return {
+    module: "engagement",
+    campaigns: campaignsFailed
+      ? null
+      : {
+          total: campaignRows.length,
+          draft: campaignRows.filter((row) => row.status === "draft").length,
+          active: campaignRows.filter((row) => row.status === "active").length,
+          closed: campaignRows.filter((row) => row.status === "closed").length,
+          archived: campaignRows.filter((row) => row.status === "archived").length,
+          publicOpen: campaignRows.filter(
+            (row) => row.status === "active" && Boolean(row.allow_public_submissions) && !row.submissions_closed_at
+          ).length,
+        },
+    moderation,
+  };
+}
+
+async function loadSafetyLaneSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<SafetyAssistantLaneSummary> {
+  const ingestsResult = await supabase
+    .from("safety_crash_ingests")
+    .select(MODULE_LANE_CRASH_INGEST_COLUMNS)
+    .eq("workspace_id", workspaceId)
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  const ingestsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.crashImports, ingestsResult);
+  const ingestRows = (ingestsResult?.data ?? []) as Array<{
+    id: string;
+    source_label: string | null;
+    coverage_state: string;
+    severity_completeness: string;
+    status: string;
+    crash_count: number | null;
+    geocoded_count: number | null;
+    truncated: boolean | null;
+    years_requested: number[] | null;
+    fetch_error: string | null;
+    created_at: string;
+  }>;
+
+  const latest = ingestRows[0] ?? null;
+  const latestReady = ingestRows.find((row) => row.status === "ready") ?? null;
+
+  // Severity mix via head counts against the latest READY import — never by
+  // pulling crash rows into the prompt (an import can hold tens of thousands).
+  let severityMix: SafetyAssistantLaneSummary["severityMix"] = null;
+  if (!ingestsFailed && latestReady) {
+    const severityCount = (severity: string) =>
+      supabase
+        .from("safety_crashes")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", workspaceId)
+        .eq("ingest_id", latestReady.id)
+        .eq("severity", severity);
+    const [fatalResult, severeResult, injuryResult, pdoResult] = await Promise.all([
+      severityCount("fatal"),
+      severityCount("severe_injury"),
+      severityCount("injury"),
+      severityCount("pdo"),
+    ]);
+    const anyFailed = [fatalResult, severeResult, injuryResult, pdoResult].some((result) =>
+      Boolean((result as ReadResultLike)?.error)
+    );
+    if (anyFailed) {
+      const firstError = [fatalResult, severeResult, injuryResult, pdoResult].find((result) =>
+        Boolean((result as ReadResultLike)?.error)
+      );
+      laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.crashSeverityMix, firstError as ReadResultLike);
+    } else {
+      severityMix = {
+        ingestId: latestReady.id,
+        fatal: (fatalResult as { count?: number | null })?.count ?? 0,
+        severeInjury: (severeResult as { count?: number | null })?.count ?? 0,
+        injury: (injuryResult as { count?: number | null })?.count ?? 0,
+        pdo: (pdoResult as { count?: number | null })?.count ?? 0,
+      };
+    }
+  }
+
+  return {
+    module: "safety",
+    ingests: ingestsFailed
+      ? null
+      : {
+          recentCount: ingestRows.length,
+          ready: ingestRows.filter((row) => row.status === "ready").length,
+          failed: ingestRows.filter((row) => row.status === "failed").length,
+          noCoverage: ingestRows.filter((row) => row.status === "no_coverage").length,
+          inFlight: ingestRows.filter((row) => row.status === "pending" || row.status === "fetching").length,
+          latest: latest
+            ? {
+                sourceLabel: latest.source_label ?? null,
+                coverageState: latest.coverage_state,
+                severityCompleteness: latest.severity_completeness,
+                status: latest.status,
+                crashCount: Number(latest.crash_count ?? 0),
+                geocodedCount: Number(latest.geocoded_count ?? 0),
+                truncated: Boolean(latest.truncated),
+                yearsRequested: latest.years_requested ?? [],
+                fetchError: latest.fetch_error ?? null,
+                createdAt: latest.created_at,
+              }
+            : null,
+        },
+    severityMix,
+  };
+}
+
+async function loadAerialLaneSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<AerialAssistantLaneSummary> {
+  const [missionsResult, jobsResult, packagesResult] = await Promise.all([
+    supabase
+      .from("aerial_missions")
+      .select(MODULE_LANE_AERIAL_MISSION_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .limit(500),
+    supabase
+      .from("aerial_processing_jobs")
+      .select(MODULE_LANE_AERIAL_JOB_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .limit(200),
+    supabase
+      .from("aerial_evidence_packages")
+      .select(MODULE_LANE_AERIAL_PACKAGE_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .limit(500),
+  ]);
+
+  const missionsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.aerialMissions, missionsResult);
+  const jobsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.aerialProcessingJobs, jobsResult);
+  const packagesFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.aerialEvidencePackages, packagesResult);
+
+  const missionRows = (missionsResult?.data ?? []) as Array<{ id: string; status: string | null }>;
+  const jobRows = (jobsResult?.data ?? []) as Array<{
+    id: string;
+    status: string | null;
+    artifact_custody_state: string | null;
+  }>;
+  const packageRows = (packagesResult?.data ?? []) as Array<{
+    id: string;
+    status: string | null;
+    verification_readiness: string | null;
+  }>;
+
+  return {
+    module: "aerial",
+    missions: missionsFailed
+      ? null
+      : {
+          total: missionRows.length,
+          planned: missionRows.filter((row) => row.status === "planned").length,
+          active: missionRows.filter((row) => row.status === "active").length,
+          complete: missionRows.filter((row) => row.status === "complete").length,
+          cancelled: missionRows.filter((row) => row.status === "cancelled").length,
+        },
+    processing: jobsFailed
+      ? null
+      : {
+          total: jobRows.length,
+          active: jobRows.filter(
+            (row) => row.status === "requested" || row.status === "accepted" || row.status === "running"
+          ).length,
+          failed: jobRows.filter((row) => row.status === "failed" || row.status === "dispatch_failed").length,
+          succeeded: jobRows.filter((row) => row.status === "succeeded").length,
+          custodyComplete: jobRows.filter((row) => row.artifact_custody_state === "complete").length,
+          custodyPartial: jobRows.filter((row) => row.artifact_custody_state === "partial").length,
+          custodyNone: jobRows.filter((row) => row.artifact_custody_state === "none").length,
+        },
+    packages: packagesFailed
+      ? null
+      : {
+          total: packageRows.length,
+          processing: packageRows.filter((row) => row.status === "processing").length,
+          qaPending: packageRows.filter((row) => row.status === "qa_pending").length,
+          ready: packageRows.filter((row) => row.status === "ready").length,
+          shared: packageRows.filter((row) => row.status === "shared").length,
+          verificationReady: packageRows.filter((row) => row.verification_readiness === "ready").length,
+        },
+  };
+}
+
+async function loadKnowledgeBaseLaneSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<KnowledgeBaseAssistantLaneSummary> {
+  const documentsResult = await supabase
+    .from("kb_documents")
+    .select(MODULE_LANE_KB_DOCUMENT_COLUMNS)
+    .eq("workspace_id", workspaceId)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  const documentsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.knowledgeBaseDocuments, documentsResult);
+  const documentRows = (documentsResult?.data ?? []) as Array<{
+    id: string;
+    project_id: string | null;
+    status: string | null;
+  }>;
+
+  return {
+    module: "knowledge_base",
+    documents: documentsFailed
+      ? null
+      : {
+          total: documentRows.length,
+          ready: documentRows.filter((row) => row.status === "ready").length,
+          inFlight: documentRows.filter((row) => row.status === "pending" || row.status === "extracting").length,
+          extractionFailed: documentRows.filter((row) => row.status === "failed").length,
+          archived: documentRows.filter((row) => row.status === "archived").length,
+          linkedToProject: documentRows.filter((row) => Boolean(row.project_id)).length,
+          projectCount: new Set(
+            documentRows.map((row) => row.project_id).filter((value): value is string => Boolean(value))
+          ).size,
+        },
+  };
+}
+
+async function loadDataHubLaneSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<DataHubAssistantLaneSummary> {
+  const [datasetsResult, connectorsResult, refreshJobsResult] = await Promise.all([
+    supabase
+      .from("data_datasets")
+      .select(MODULE_LANE_DATASET_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("data_connectors")
+      .select(MODULE_LANE_CONNECTOR_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .limit(200),
+    supabase
+      .from("data_refresh_jobs")
+      .select(MODULE_LANE_REFRESH_JOB_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(8),
+  ]);
+
+  const datasetsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.dataHubDatasets, datasetsResult);
+  const connectorsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.dataHubConnectors, connectorsResult);
+  const refreshJobsFailed = laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.dataRefreshJobs, refreshJobsResult);
+
+  const datasetRows = (datasetsResult?.data ?? []) as Array<{ id: string; status: string | null }>;
+  const connectorRows = (connectorsResult?.data ?? []) as Array<{
+    id: string;
+    status: string | null;
+    last_error_message: string | null;
+  }>;
+  const refreshJobRows = (refreshJobsResult?.data ?? []) as Array<{
+    id: string;
+    status: string | null;
+    job_name: string | null;
+    error_summary: string | null;
+  }>;
+
+  return {
+    module: "data_hub",
+    datasets: datasetsFailed
+      ? null
+      : {
+          total: datasetRows.length,
+          ready: datasetRows.filter((row) => row.status === "ready").length,
+          stale: datasetRows.filter((row) => row.status === "stale").length,
+          error: datasetRows.filter((row) => row.status === "error").length,
+          other: datasetRows.filter(
+            (row) => row.status !== "ready" && row.status !== "stale" && row.status !== "error"
+          ).length,
+        },
+    connectors: connectorsFailed
+      ? null
+      : {
+          total: connectorRows.length,
+          active: connectorRows.filter((row) => row.status === "active").length,
+          degraded: connectorRows.filter((row) => row.status === "degraded").length,
+          offline: connectorRows.filter((row) => row.status === "offline").length,
+          withLastError: connectorRows.filter((row) => Boolean(row.last_error_message)).length,
+        },
+    refreshJobs: refreshJobsFailed
+      ? null
+      : {
+          recentCount: refreshJobRows.length,
+          failed: refreshJobRows.filter((row) => row.status === "failed").length,
+          latest: refreshJobRows[0]
+            ? {
+                status: refreshJobRows[0].status ?? "unknown",
+                jobName: refreshJobRows[0].job_name ?? null,
+                errorSummary: refreshJobRows[0].error_summary ?? null,
+              }
+            : null,
+        },
+  };
+}
+
+/**
+ * A module-lane context IS the workspace context, refocused: the same
+ * portfolio grounding every surface gets, plus the module's own summary and a
+ * `kind` naming the surface so the catalog offers the module's workflows.
+ */
+async function loadModuleLaneContext(
+  supabase: SupabaseLike,
+  userId: string,
+  target: AssistantTarget,
+  kind: AssistantModuleLaneKind
+): Promise<WorkspaceAssistantContext | null> {
+  const base = await loadWorkspaceContext(supabase, userId, target);
+  const workspaceId = base?.workspace.id;
+  if (!base || !workspaceId) {
+    return null;
+  }
+
+  const reads = new ReadFailureLog();
+  const moduleLane = await (() => {
+    switch (kind) {
+      case "grants":
+        return loadGrantsLaneSummary(supabase, reads, workspaceId);
+      case "invoicing":
+        return loadInvoicingLaneSummary(supabase, reads, workspaceId);
+      case "engagement":
+        return loadEngagementLaneSummary(supabase, reads, workspaceId);
+      case "safety":
+        return loadSafetyLaneSummary(supabase, reads, workspaceId);
+      case "aerial":
+        return loadAerialLaneSummary(supabase, reads, workspaceId);
+      case "knowledge_base":
+        return loadKnowledgeBaseLaneSummary(supabase, reads, workspaceId);
+      case "data_hub":
+        return loadDataHubLaneSummary(supabase, reads, workspaceId);
+    }
+  })();
+
+  return {
+    ...base,
+    kind,
+    moduleLane,
+    unreadable: [...(base.unreadable ?? []), ...reads.all],
+  };
+}
+
 async function loadProjectContext(
   supabase: SupabaseLike,
   userId: string,
@@ -1409,23 +2300,19 @@ async function loadProjectContext(
         opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
     )
     .sort((left, right) => new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime())[0] ?? null;
-  const overdueMonitoredFundingOpportunities = fundingOpportunities.filter((opportunity) => {
-    if (!["open", "upcoming"].includes(opportunity.opportunity_status ?? "")) return false;
-    if ((opportunity.decision_state ?? "") !== "monitor") return false;
-    const days = daysUntil(opportunity.decision_due_at);
-    return days !== null && days < 0;
-  });
+  const deadlineNow = new Date();
+  const overdueMonitoredFundingOpportunities = fundingOpportunities.filter((opportunity) =>
+    isOverdueFundingDecision(fundingDeadlineFacts(opportunity), deadlineNow)
+  );
   const leadOverdueFundingOpportunity = [...overdueMonitoredFundingOpportunities].sort((left, right) => {
     const leftDue = left.decision_due_at ? new Date(left.decision_due_at).getTime() : Number.POSITIVE_INFINITY;
     const rightDue = right.decision_due_at ? new Date(right.decision_due_at).getTime() : Number.POSITIVE_INFINITY;
     if (leftDue !== rightDue) return leftDue - rightDue;
     return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
   })[0] ?? null;
-  const closingSoonFundingOpportunities = fundingOpportunities.filter((opportunity) => {
-    if ((opportunity.opportunity_status ?? "") !== "open") return false;
-    const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
-    return days !== null && days <= 14;
-  });
+  const closingSoonFundingOpportunities = fundingOpportunities.filter((opportunity) =>
+    isClosingSoonFundingOpportunity(fundingDeadlineFacts(opportunity), deadlineNow)
+  );
   const leadClosingFundingOpportunity = [...closingSoonFundingOpportunities].sort((left, right) => {
     const leftDueRaw = left.closes_at ?? left.decision_due_at;
     const rightDueRaw = right.closes_at ?? right.decision_due_at;
@@ -1587,11 +2474,9 @@ async function loadProjectContext(
     fundingSummary: {
       opportunityCount: fundingOpportunities.length,
       openCount: fundingOpportunities.filter((opportunity) => ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")).length,
-      closingSoonCount: fundingOpportunities.filter((opportunity) => {
-        if ((opportunity.opportunity_status ?? "") !== "open") return false;
-        const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
-        return days !== null && days <= 14;
-      }).length,
+      closingSoonCount: fundingOpportunities.filter((opportunity) =>
+        isClosingSoonFundingOpportunity(fundingDeadlineFacts(opportunity), deadlineNow)
+      ).length,
       overdueDecisionCount: overdueMonitoredFundingOpportunities.length,
       pursueCount: actionableFundingOpportunities.filter((opportunity) => opportunity.decision_state === "pursue").length,
       awardCount: fundingAwards.length,
@@ -2336,11 +3221,10 @@ async function loadProgramContext(
   const fundingOpenCount = fundingOpportunities.filter((opportunity) =>
     ["open", "upcoming"].includes(opportunity.opportunity_status ?? "")
   ).length;
-  const closingSoonFundingOpportunities = fundingOpportunities.filter((opportunity) => {
-    if ((opportunity.opportunity_status ?? "") !== "open") return false;
-    const days = daysUntil(opportunity.closes_at ?? opportunity.decision_due_at);
-    return days !== null && days <= 14;
-  });
+  const fundingDeadlineNow = new Date();
+  const closingSoonFundingOpportunities = fundingOpportunities.filter((opportunity) =>
+    isClosingSoonFundingOpportunity(fundingDeadlineFacts(opportunity), fundingDeadlineNow)
+  );
   const fundingClosingSoonCount = closingSoonFundingOpportunities.length;
   const leadClosingFundingOpportunity = [...closingSoonFundingOpportunities].sort((left, right) => {
     const leftDueRaw = left.closes_at ?? left.decision_due_at;
@@ -2350,12 +3234,9 @@ async function loadProgramContext(
     if (leftDue !== rightDue) return leftDue - rightDue;
     return new Date(right.updated_at ?? 0).getTime() - new Date(left.updated_at ?? 0).getTime();
   })[0] ?? null;
-  const overdueMonitoredFundingOpportunities = fundingOpportunities.filter((opportunity) => {
-    if (!["open", "upcoming"].includes(opportunity.opportunity_status ?? "")) return false;
-    if ((opportunity.decision_state ?? "") !== "monitor") return false;
-    const days = daysUntil(opportunity.decision_due_at);
-    return days !== null && days < 0;
-  });
+  const overdueMonitoredFundingOpportunities = fundingOpportunities.filter((opportunity) =>
+    isOverdueFundingDecision(fundingDeadlineFacts(opportunity), fundingDeadlineNow)
+  );
   const fundingOverdueDecisionCount = overdueMonitoredFundingOpportunities.length;
   const leadOverdueFundingOpportunity = [...overdueMonitoredFundingOpportunities].sort((left, right) => {
     const leftDue = left.decision_due_at ? new Date(left.decision_due_at).getTime() : Number.POSITIVE_INFINITY;
@@ -3146,6 +4027,17 @@ export async function loadAssistantContext(
       return target.id ? loadReportContext(supabase, userId, target.id) : null;
     case "run":
       return target.id ? loadRunContext(supabase, userId, target.id, target.baselineRunId) : null;
+    case "grants":
+    case "invoicing":
+    case "engagement":
+    case "safety":
+    case "aerial":
+    case "knowledge_base":
+    case "data_hub":
+      // The switch discriminant is `target.kind as AssistantTargetKind` (the
+      // cast predates this change), so the case arms do not narrow `target.kind`
+      // itself; the cast here is tautological within these seven arms.
+      return loadModuleLaneContext(supabase, userId, target, target.kind as AssistantModuleLaneKind);
     case "analysis_studio":
       return loadWorkspaceContext(supabase, userId, target);
     case "workspace":

@@ -179,7 +179,7 @@ describe("buildAssistantChatTools", () => {
     loadAssistantContextMock.mockResolvedValue(workspaceContextFixture());
   });
 
-  it("exposes the seven read tools plus one propose tool per registry action", () => {
+  it("exposes the twelve read tools plus one propose tool per registry action", () => {
     const { tools } = buildTools();
     expect(Object.keys(tools).sort()).toEqual(
       [
@@ -190,6 +190,12 @@ describe("buildAssistantChatTools", () => {
         "list_pending_operations",
         "list_reports",
         "search_knowledge_base",
+        // Evidence-reading tools (same rules: session client, caps, no writes).
+        "get_model_run_results",
+        "explain_model_claim",
+        "search_grants_gov",
+        "list_workspace_records",
+        "get_engagement_responses",
         ...Object.keys(ACTION_METADATA).map((kind) => `propose_${kind}`),
       ].sort()
     );

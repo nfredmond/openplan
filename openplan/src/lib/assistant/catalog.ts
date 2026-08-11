@@ -12,7 +12,14 @@ export type AssistantTargetKind =
   | "model"
   | "report"
   | "rtp_packet_report"
-  | "run";
+  | "run"
+  | "grants"
+  | "invoicing"
+  | "engagement"
+  | "safety"
+  | "aerial"
+  | "knowledge_base"
+  | "data_hub";
 
 export type AssistantTarget = {
   kind: AssistantTargetKind;
@@ -615,6 +622,140 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
       prompt: "Compare this run to baseline and tell me what changed.",
     },
   ],
+  grants: [
+    {
+      id: "grants-brief",
+      label: "Grants brief",
+      description: "Summarize funding opportunities, decision states, and award posture across this workspace.",
+      prompt: "Give me the grants brief and the next operator move.",
+    },
+    {
+      id: "grants-decision-queue",
+      label: "Decision queue",
+      description: "Surface opportunities with overdue decisions or closing deadlines.",
+      prompt: "Which funding opportunities need a decision or are closing soon?",
+    },
+    {
+      id: "grants-awards",
+      label: "Award posture",
+      description: "Summarize recorded awards, spending status, and risk flags.",
+      prompt: "What is the state of this workspace's funding awards?",
+    },
+  ],
+  invoicing: [
+    {
+      id: "invoicing-brief",
+      label: "Invoicing brief",
+      description: "Summarize funder reimbursements and client receivables for this workspace.",
+      prompt: "Give me the invoicing brief and the next operator move.",
+    },
+    {
+      id: "invoicing-reimbursements",
+      label: "Reimbursement queue",
+      description: "Explain which grant-reimbursement invoices are outstanding, by funding award.",
+      prompt: "Which reimbursement invoices are still outstanding, and against which awards?",
+    },
+    {
+      id: "invoicing-receivables",
+      label: "Receivables posture",
+      description: "Summarize client invoices — what is drafted, sent, and unpaid.",
+      prompt: "What is outstanding in client receivables right now?",
+    },
+  ],
+  engagement: [
+    {
+      id: "engagement-brief",
+      label: "Engagement brief",
+      description: "Summarize campaigns by publication state and open public windows.",
+      prompt: "Give me the engagement brief and the next operator move.",
+    },
+    {
+      id: "engagement-moderation",
+      label: "Moderation queue",
+      description: "Report how many public submissions are pending or flagged for moderation.",
+      prompt: "What is waiting in the engagement moderation queue?",
+    },
+    {
+      id: "engagement-publication",
+      label: "Publication state",
+      description: "Explain which campaigns are live, staged as drafts, or closed.",
+      prompt: "Which engagement campaigns are live right now, and which are still drafts?",
+    },
+  ],
+  safety: [
+    {
+      id: "safety-brief",
+      label: "Safety brief",
+      description: "Summarize crash imports, coverage, and the latest ingest's posture.",
+      prompt: "Give me the safety data brief and the next operator move.",
+    },
+    {
+      id: "safety-coverage",
+      label: "Coverage check",
+      description: "Explain which years and coverage the crash data actually answers for, and where it is silent.",
+      prompt: "What years and geography does our crash data actually cover, and where is it silent?",
+    },
+    {
+      id: "safety-severity",
+      label: "Severity mix",
+      description: "Report the severity mix of the latest ready crash import, with its completeness caveat.",
+      prompt: "What is the severity mix of our latest crash import, and how complete is it?",
+    },
+  ],
+  aerial: [
+    {
+      id: "aerial-brief",
+      label: "Aerial brief",
+      description: "Summarize missions by status, processing jobs, and evidence-package readiness.",
+      prompt: "Give me the aerial operations brief and the next operator move.",
+    },
+    {
+      id: "aerial-jobs",
+      label: "Processing jobs",
+      description: "Report active and failed processing jobs and their artifact custody state.",
+      prompt: "What aerial processing jobs are active or failed, and is artifact custody complete?",
+    },
+    {
+      id: "aerial-packages",
+      label: "Package readiness",
+      description: "Explain which evidence packages are ready or shared, and which are still in QA.",
+      prompt: "Which aerial evidence packages are ready to use as evidence?",
+    },
+  ],
+  knowledge_base: [
+    {
+      id: "knowledge-base-brief",
+      label: "Knowledge base brief",
+      description: "Summarize the document corpus — counts by status and project linkage.",
+      prompt: "Give me the knowledge base brief and the next operator move.",
+    },
+    {
+      id: "knowledge-base-extraction",
+      label: "Extraction failures",
+      description: "Report documents whose text extraction failed and cannot be retrieved from.",
+      prompt: "Which knowledge base documents failed extraction and need attention?",
+    },
+  ],
+  data_hub: [
+    {
+      id: "data-hub-brief",
+      label: "Data hub brief",
+      description: "Summarize datasets, connectors, transit feeds, and refresh-job posture.",
+      prompt: "Give me the data hub brief and the next operator move.",
+    },
+    {
+      id: "data-hub-feeds",
+      label: "Feed states",
+      description: "Explain transit feed and connector states — what is current, degraded, or erroring.",
+      prompt: "What is the state of our data connectors and transit feeds?",
+    },
+    {
+      id: "data-hub-refresh",
+      label: "Refresh posture",
+      description: "Report recent refresh jobs and any failures.",
+      prompt: "Have any recent data refresh jobs failed, and what should I re-run?",
+    },
+  ],
 };
 
 export function getAssistantActions(kind: AssistantTargetKind): AssistantAction[] {
@@ -862,6 +1003,42 @@ export function resolveAssistantTarget(
     };
   }
 
+  // Module lanes. Each resolves the whole subtree — deep children included — to
+  // the module's own kind, so a planner on /engagement/<campaignId>/preview gets
+  // engagement grounding rather than the generic workspace context these seven
+  // modules used to fall back to. The id is the entity the path names when the
+  // route has one (engagement campaign, aerial mission) and null on the module
+  // roots, whose loaders are workspace-scoped.
+  if (segments[0] === "grants") {
+    return { kind: "grants", id: null, workspaceId, runId: null, baselineRunId: null };
+  }
+
+  if (segments[0] === "invoicing") {
+    return { kind: "invoicing", id: null, workspaceId, runId: null, baselineRunId: null };
+  }
+
+  if (segments[0] === "engagement") {
+    return { kind: "engagement", id: secondSegment, workspaceId, runId: null, baselineRunId: null };
+  }
+
+  if (segments[0] === "safety") {
+    return { kind: "safety", id: null, workspaceId, runId: null, baselineRunId: null };
+  }
+
+  if (segments[0] === "aerial") {
+    // Mission detail lives at /aerial/missions/[missionId]; the register root has no id.
+    const missionId = secondSegment === "missions" ? segments[2] ?? null : null;
+    return { kind: "aerial", id: missionId, workspaceId, runId: null, baselineRunId: null };
+  }
+
+  if (segments[0] === "knowledge-base") {
+    return { kind: "knowledge_base", id: null, workspaceId, runId: null, baselineRunId: null };
+  }
+
+  if (segments[0] === "data-hub") {
+    return { kind: "data_hub", id: null, workspaceId, runId: null, baselineRunId: null };
+  }
+
   return { kind: "workspace", id: null, workspaceId, runId: currentRunId, baselineRunId };
 }
 
@@ -939,6 +1116,47 @@ export function resolveAssistantWorkflowId(
   if (kind === "run" || kind === "analysis_studio") {
     if (includesAny(normalized, ["compare", "baseline", "delta", "changed"])) return "run-compare";
     return kind === "analysis_studio" ? "analysis-focus" : "run-brief";
+  }
+
+  if (kind === "grants") {
+    if (includesAny(normalized, ["decision", "deadline", "closing", "overdue", "due"])) return "grants-decision-queue";
+    if (includesAny(normalized, ["award", "spending", "risk", "obligat"])) return "grants-awards";
+    return "grants-brief";
+  }
+
+  if (kind === "invoicing") {
+    if (includesAny(normalized, ["reimburse", "award", "funder", "grant"])) return "invoicing-reimbursements";
+    if (includesAny(normalized, ["receivable", "client", "unpaid", "sent", "collect"])) return "invoicing-receivables";
+    return "invoicing-brief";
+  }
+
+  if (kind === "engagement") {
+    if (includesAny(normalized, ["moderat", "pending", "flagged", "queue", "review"])) return "engagement-moderation";
+    if (includesAny(normalized, ["live", "draft", "publish", "staged", "public", "open"])) return "engagement-publication";
+    return "engagement-brief";
+  }
+
+  if (kind === "safety") {
+    if (includesAny(normalized, ["coverage", "year", "silent", "geograph", "where"])) return "safety-coverage";
+    if (includesAny(normalized, ["severity", "fatal", "injur", "kabco", "mix"])) return "safety-severity";
+    return "safety-brief";
+  }
+
+  if (kind === "aerial") {
+    if (includesAny(normalized, ["job", "processing", "custody", "worker", "running"])) return "aerial-jobs";
+    if (includesAny(normalized, ["package", "ready", "evidence", "qa", "shared"])) return "aerial-packages";
+    return "aerial-brief";
+  }
+
+  if (kind === "knowledge_base") {
+    if (includesAny(normalized, ["fail", "extract", "error", "stuck"])) return "knowledge-base-extraction";
+    return "knowledge-base-brief";
+  }
+
+  if (kind === "data_hub") {
+    if (includesAny(normalized, ["feed", "connector", "gtfs", "transit", "degraded", "offline"])) return "data-hub-feeds";
+    if (includesAny(normalized, ["refresh", "job", "fail", "stale", "re-run", "rerun"])) return "data-hub-refresh";
+    return "data-hub-brief";
   }
 
   return validActions[0]?.id ?? "workspace-overview";

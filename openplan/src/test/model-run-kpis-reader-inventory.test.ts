@@ -185,6 +185,13 @@ describe("model_run_kpis reader inventory", () => {
         filePath: "src/app/api/models/[modelId]/runs/route.ts",
         classification: "ite-trip-gen-run-kpi-writer",
       }),
+      // The Planner Agent's get_model_run_results chat tool: a run_id-scoped
+      // SELECT through the user-session client (RLS applies), after the tool has
+      // verified the run belongs to the chat's workspace.
+      expect.objectContaining({
+        filePath: "src/lib/assistant/chat-tools.ts",
+        classification: "model-run-read-by-run-id",
+      }),
       expect.objectContaining({
         filePath: "src/lib/models/behavioral-onramp-kpis.ts",
         classification: "behavioral-manifest-writer-delete",

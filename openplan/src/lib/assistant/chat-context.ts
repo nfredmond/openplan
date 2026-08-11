@@ -5,6 +5,7 @@ import type {
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
 import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
+import { FUNDING_CLOSING_SOON_WINDOW_DAYS } from "@/lib/operations/funding-decision-status";
 
 /**
  * Pure serialization of an RLS-scoped AssistantContext into a compact,
@@ -92,6 +93,189 @@ function fundingSummaryLines(
   return lines;
 }
 
+/**
+ * One line saying a lane's read FAILED. Spoken instead of the counts, never
+ * beside them: a `null` sub-summary means the numbers are missing, not zero,
+ * and the model must not be handed a sentence it could mistake for "none".
+ */
+function laneUnreadableLine(subject: string): string {
+  return `${subject} could not be read while this context was assembled — treat those figures as missing, not zero.`;
+}
+
+function moduleLaneLines(context: WorkspaceAssistantContext): string[] {
+  const lane = context.moduleLane;
+  if (!lane) return [];
+  const lines: string[] = [];
+
+  switch (lane.module) {
+    case "grants": {
+      if (lane.opportunities === null) {
+        lines.push(laneUnreadableLine("Funding opportunities"));
+      } else {
+        const opp = lane.opportunities;
+        lines.push(
+          `Funding opportunities: ${opp.total} total (${opp.monitor} monitor, ${opp.pursue} pursue, ${opp.skip} skip; ${opp.awaitingDecision} awaiting a decision) · ${opp.closingSoon} closing within ${FUNDING_CLOSING_SOON_WINDOW_DAYS} days · ${opp.overdueDecision} overdue decisions`
+        );
+        if (opp.lead) {
+          lines.push(
+            `Next closing opportunity: "${opp.lead.title}" (status ${opp.lead.status ?? "unknown"}, decision ${opp.lead.decisionState ?? "undecided"}${fmtDate(opp.lead.closesAt) ? `, closes ${fmtDate(opp.lead.closesAt)}` : ""})`
+          );
+        }
+      }
+      if (lane.awards === null) {
+        lines.push(laneUnreadableLine("Funding awards"));
+      } else {
+        const awardTotal = fmtCurrency(lane.awards.awardedAmount);
+        lines.push(
+          `Funding awards: ${lane.awards.total} recorded${awardTotal ? ` (${awardTotal} awarded)` : ""} · ${lane.awards.activeSpending} actively spending · ${lane.awards.riskFlagged} risk-flagged`
+        );
+      }
+      break;
+    }
+
+    case "invoicing": {
+      if (lane.reimbursements === null) {
+        lines.push(laneUnreadableLine("Grant reimbursement invoices"));
+      } else {
+        const r = lane.reimbursements;
+        const outstanding = fmtCurrency(r.outstandingNetAmount);
+        lines.push(
+          `Funder reimbursements: ${r.invoiceCount} invoices across ${r.awardsWithInvoices} funding awards (${r.invoiceCount - r.linkedToAwardCount} not linked to an award) · ${r.draft} draft, ${r.internalReview} in internal review, ${r.submitted} submitted, ${r.approvedForPayment} approved for payment, ${r.paid} paid, ${r.rejected} rejected${outstanding ? ` · ${outstanding} net outstanding` : ""}`
+        );
+      }
+      if (lane.receivables === null) {
+        lines.push(laneUnreadableLine("Client invoices"));
+      } else {
+        const c = lane.receivables;
+        const outstanding = fmtCurrency(c.outstandingAmount);
+        lines.push(
+          `Client receivables: ${c.invoiceCount} invoices (${c.draft} draft, ${c.sent} sent, ${c.paid} paid, ${c.voided} void)${outstanding ? ` · ${outstanding} sent and unpaid` : ""}`
+        );
+      }
+      break;
+    }
+
+    case "engagement": {
+      if (lane.campaigns === null) {
+        lines.push(laneUnreadableLine("Engagement campaigns"));
+      } else {
+        const c = lane.campaigns;
+        lines.push(
+          `Engagement campaigns: ${c.total} total (${c.draft} draft, ${c.active} active, ${c.closed} closed, ${c.archived} archived) · ${c.publicOpen} currently open to public submissions`
+        );
+      }
+      if (lane.moderation === null) {
+        lines.push(laneUnreadableLine("The moderation queue"));
+      } else {
+        lines.push(
+          `Moderation queue: ${lane.moderation.pending} pending review · ${lane.moderation.flagged} flagged (counts only — submission text is not loaded into this context)`
+        );
+      }
+      break;
+    }
+
+    case "safety": {
+      if (lane.ingests === null) {
+        lines.push(laneUnreadableLine("Crash imports"));
+      } else {
+        const s = lane.ingests;
+        lines.push(
+          `Crash imports (${s.recentCount} most recent): ${s.ready} ready, ${s.failed} failed, ${s.noCoverage} no coverage, ${s.inFlight} in flight`
+        );
+        if (s.latest) {
+          const years = s.latest.yearsRequested.length ? s.latest.yearsRequested.join(", ") : "unspecified years";
+          lines.push(
+            `Latest import: ${s.latest.sourceLabel ?? "unknown source"} — status ${s.latest.status}, coverage ${s.latest.coverageState}, severity completeness ${s.latest.severityCompleteness}, ${s.latest.crashCount} crashes (${s.latest.geocodedCount} geocoded)${s.latest.truncated ? ", TRUNCATED" : ""} for years ${years}${s.latest.fetchError ? ` · fetch error: ${s.latest.fetchError}` : ""}`
+          );
+        } else {
+          lines.push("No crash data has been imported into this workspace yet.");
+        }
+      }
+      if (lane.severityMix) {
+        lines.push(
+          `Severity mix of latest ready import: ${lane.severityMix.fatal} fatal · ${lane.severityMix.severeInjury} severe injury · ${lane.severityMix.injury} other injury · ${lane.severityMix.pdo} property damage only`
+        );
+      }
+      break;
+    }
+
+    case "aerial": {
+      if (lane.missions === null) {
+        lines.push(laneUnreadableLine("Aerial missions"));
+      } else {
+        const m = lane.missions;
+        lines.push(
+          `Aerial missions: ${m.total} total (${m.planned} planned, ${m.active} active, ${m.complete} complete, ${m.cancelled} cancelled)`
+        );
+      }
+      if (lane.processing === null) {
+        lines.push(laneUnreadableLine("Aerial processing jobs"));
+      } else {
+        const j = lane.processing;
+        lines.push(
+          `Processing jobs: ${j.total} total — ${j.active} active, ${j.failed} failed, ${j.succeeded} succeeded · artifact custody complete on ${j.custodyComplete}, partial on ${j.custodyPartial}, none on ${j.custodyNone}`
+        );
+      }
+      if (lane.packages === null) {
+        lines.push(laneUnreadableLine("Aerial evidence packages"));
+      } else {
+        const p = lane.packages;
+        lines.push(
+          `Evidence packages: ${p.total} total (${p.processing} processing, ${p.qaPending} QA pending, ${p.ready} ready, ${p.shared} shared) · ${p.verificationReady} verification-ready`
+        );
+      }
+      break;
+    }
+
+    case "knowledge_base": {
+      if (lane.documents === null) {
+        lines.push(laneUnreadableLine("Knowledge base documents"));
+      } else {
+        const d = lane.documents;
+        lines.push(
+          `Knowledge base: ${d.total} documents (${d.ready} ready, ${d.inFlight} extracting, ${d.extractionFailed} failed extraction, ${d.archived} archived) · ${d.linkedToProject} linked across ${d.projectCount} projects`
+        );
+      }
+      break;
+    }
+
+    case "data_hub": {
+      if (lane.datasets === null) {
+        lines.push(laneUnreadableLine("Data hub datasets"));
+      } else {
+        const d = lane.datasets;
+        lines.push(
+          `Datasets: ${d.total} total (${d.ready} ready, ${d.stale} stale, ${d.error} in error, ${d.other} other states)`
+        );
+      }
+      if (lane.connectors === null) {
+        lines.push(laneUnreadableLine("Data connectors"));
+      } else {
+        const c = lane.connectors;
+        lines.push(
+          `Connectors: ${c.total} total (${c.active} active, ${c.degraded} degraded, ${c.offline} offline) · ${c.withLastError} carrying a last error`
+        );
+      }
+      if (lane.refreshJobs === null) {
+        lines.push(laneUnreadableLine("Data refresh jobs"));
+      } else {
+        const j = lane.refreshJobs;
+        lines.push(
+          `Refresh jobs (${j.recentCount} most recent): ${j.failed} failed${j.latest ? ` · latest ${j.latest.jobName ?? "job"} is ${j.latest.status}${j.latest.errorSummary ? ` (${j.latest.errorSummary})` : ""}` : ""}`
+        );
+      }
+      if (context.transit.readable === false) {
+        lines.push(laneUnreadableLine("Transit feeds"));
+      } else {
+        lines.push(`Transit feeds: ${context.transit.feeds.length} registered in this workspace`);
+      }
+      break;
+    }
+  }
+
+  return lines;
+}
+
 function operationsSummaryLines(operationsSummary: WorkspaceAssistantContext["operationsSummary"]): string[] {
   const counts = operationsSummary.counts;
   const lines = [
@@ -114,6 +298,20 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
   const lines: string[] = [`Current surface: ${context.kind.replace(/_/g, " ")}`, workspaceLine(context.workspace)];
 
   switch (context.kind) {
+    case "grants":
+    case "invoicing":
+    case "engagement":
+    case "safety":
+    case "aerial":
+    case "knowledge_base":
+    case "data_hub": {
+      // A module lane is workspace-shaped (see AssistantModuleLaneKind in
+      // context.ts): its own summary leads, the portfolio posture follows.
+      lines.push(...moduleLaneLines(context));
+      lines.push(...operationsSummaryLines(context.operationsSummary));
+      break;
+    }
+
     case "workspace":
     case "analysis_studio": {
       if (context.recentProject) {

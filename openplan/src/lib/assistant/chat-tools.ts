@@ -22,6 +22,44 @@ import {
   type AssistantApprovalAction,
 } from "@/lib/assistant/action-approval-server";
 import type { AssistantTargetKind } from "@/lib/assistant/catalog";
+import { normalizeModelRunKpiComparisonItems } from "@/lib/models/kpi-comparison";
+import {
+  LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
+  bandIntrazonalShare,
+} from "@/lib/models/zone-resolution";
+import {
+  MODELING_CLAIM_STATUSES,
+  MODELING_CLAIM_STATUS_RANK,
+  isModelingClaimStatus,
+  loadCountyRunModelingEvidence,
+  loadModelRunClaimStatuses,
+  modelingClaimReportLanguage,
+  modelingClaimStatusLabel,
+  type ModelingClaimDecision,
+  type ModelingClaimStatus,
+  type ModelingEvidenceSupabaseLike,
+} from "@/lib/models/evidence-backbone";
+import { isScreeningGradeStage } from "@/lib/models/caveat-gate";
+import {
+  getCountyRunAllowedClaim,
+  getCountyRunCaveats,
+  getCountyRunStageLabel,
+  type CountyRunStage,
+} from "@/lib/models/county-onramp";
+import {
+  GRANTS_GOV_DEFAULT_ROWS,
+  GRANTS_GOV_SEARCH_ENDPOINT,
+  GRANTS_GOV_SYNC_CAVEAT,
+  buildGrantsGovSearchBody,
+  parseGrantsGovSearchResponse,
+  truncateForField,
+  type GrantsGovSearchResult,
+} from "@/lib/grants/grants-gov";
+import {
+  getCachedGrantsGovResult,
+  setCachedGrantsGovResult,
+} from "@/lib/grants/grants-gov-cache";
+import { aggregateCampaignSurvey } from "@/lib/engagement/survey-responses";
 
 /**
  * Read-only chat tools for the Planner Agent streaming endpoint.
@@ -45,6 +83,14 @@ export const ASSISTANT_CHAT_TOOL_MAX_KB_SEARCHES = 3;
 export const ASSISTANT_CHAT_TOOL_LIST_LIMIT = 25;
 export const ASSISTANT_CHAT_TOOL_KB_EXCERPT_LIMIT = 8;
 export const ASSISTANT_CHAT_TOOL_OPERATIONS_LIMIT = 30;
+export const ASSISTANT_CHAT_TOOL_KPI_LIMIT = 100;
+export const ASSISTANT_CHAT_TOOL_VALIDATION_LIMIT = 50;
+export const ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_LIMIT = 10;
+export const ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_MAX_CHARS = 280;
+export const ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT = 25;
+/** grants.gov page size — the lib default, restated here only as the disclosed cap. */
+export const ASSISTANT_CHAT_TOOL_GRANTS_GOV_ROWS = GRANTS_GOV_DEFAULT_ROWS;
+const GRANTS_GOV_TOOL_TIMEOUT_MS = 10_000;
 
 export type ChatToolCallRecord = {
   toolCallId: string;
@@ -112,6 +158,14 @@ const ASSISTANT_TARGET_KIND_VALUES = [
   "report",
   "rtp_packet_report",
   "run",
+  // Module lanes (workspace-scoped; id optional) added by the contexts lane.
+  "grants",
+  "invoicing",
+  "engagement",
+  "safety",
+  "aerial",
+  "knowledge_base",
+  "data_hub",
 ] as const satisfies readonly AssistantTargetKind[];
 
 type ChatToolRefusal = { status: "refused"; reason: string };
@@ -423,6 +477,830 @@ function buildAssistantProposalTools(params: BuildAssistantChatToolsParams): Rec
   return tools;
 }
 
+/**
+ * Caveat sentences stored beside a KPI value, VERBATIM.
+ *
+ * Producers stash their honesty text under breakdown_json keys like
+ * `provenance`, `interpretation`, `zone_sample_skew_note` — the sentence IS the
+ * stored record, so it travels with the number unmodified. This extracts, it
+ * never composes: a caveat this function did not find is a caveat the producer
+ * did not record.
+ */
+const KPI_CAVEAT_KEY_PATTERN = /caveat|note|provenance|interpretation/i;
+
+function kpiBreakdownCaveats(breakdown: unknown): string[] {
+  if (!breakdown || typeof breakdown !== "object" || Array.isArray(breakdown)) return [];
+  const caveats: string[] = [];
+  for (const [key, value] of Object.entries(breakdown as Record<string, unknown>)) {
+    if (KPI_CAVEAT_KEY_PATTERN.test(key) && typeof value === "string" && value.trim().length > 0) {
+      caveats.push(value);
+    }
+  }
+  return caveats;
+}
+
+function finiteNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * What would move a recorded claim decision UP a tier, quoting the stored
+ * blockers rather than inventing new ones. Evidence decides; this only reads
+ * what the decision wrote down.
+ */
+function evidenceForHigherTier(
+  status: ModelingClaimStatus,
+  validationSummary: unknown,
+  reasons: string[]
+): string[] {
+  if (status === "claim_grade_passed") {
+    return ["This is the highest recorded claim tier."];
+  }
+  const notes: string[] = [];
+  const summary =
+    validationSummary && typeof validationSummary === "object"
+      ? (validationSummary as { missingRequiredMetricKeys?: unknown })
+      : null;
+  const missing = Array.isArray(summary?.missingRequiredMetricKeys)
+    ? summary.missingRequiredMetricKeys.filter((key): key is string => typeof key === "string")
+    : [];
+  for (const key of missing) {
+    notes.push(`Record the required validation metric: ${key}`);
+  }
+  for (const reason of reasons) {
+    notes.push(`Resolve, with recorded evidence: ${reason}`);
+  }
+  if (notes.length === 0) {
+    notes.push(
+      "The stored decision names no specific blocker. A higher tier needs a new validation pass whose required checks all pass — the agent cannot supply that evidence, only a run can."
+    );
+  }
+  return notes;
+}
+
+const MODELING_VALIDATION_RESULT_SELECT =
+  "track, metric_key, metric_label, observed_value, threshold_value, threshold_max_value, threshold_comparator, status, blocks_claim_grade, detail, evaluated_at";
+
+/** Validation rows for chat, details VERBATIM — the detail sentence is the record. */
+function projectValidationRows(rows: Array<Record<string, unknown>>) {
+  return rows.map((row) => ({
+    track: row.track ?? null,
+    metricKey: row.metric_key ?? null,
+    metricLabel: row.metric_label ?? null,
+    observedValue: finiteNumber(row.observed_value),
+    thresholdValue: finiteNumber(row.threshold_value),
+    thresholdMaxValue: finiteNumber(row.threshold_max_value),
+    thresholdComparator: row.threshold_comparator ?? null,
+    status: row.status ?? null,
+    blocksClaimGrade: typeof row.blocks_claim_grade === "boolean" ? row.blocks_claim_grade : null,
+    detail: typeof row.detail === "string" ? row.detail : null,
+    evaluatedAt: isoOrNull(row.evaluated_at),
+  }));
+}
+
+/** The tier vocabulary and its ranking, so the model explains the ladder it is on. */
+function claimTierLadder() {
+  return MODELING_CLAIM_STATUSES.map((status) => ({
+    tier: status,
+    rank: MODELING_CLAIM_STATUS_RANK[status],
+    label: modelingClaimStatusLabel(status),
+  }));
+}
+
+/** The closed kind enum for list_workspace_records. Every table+projection pair
+ * is a literal so the projection guard checks each column against the schema. */
+const WORKSPACE_RECORD_LIST_KINDS = [
+  "plans",
+  "programs",
+  "rtp_cycles",
+  "scenario_sets",
+  "models",
+  "model_runs",
+  "datasets",
+  "gtfs_feeds",
+  "campaigns",
+  "client_invoices",
+  "funding_awards",
+  "billing_invoices",
+] as const;
+
+type WorkspaceRecordListKind = (typeof WORKSPACE_RECORD_LIST_KINDS)[number];
+
+type WorkspaceRecordProjection = {
+  id: unknown;
+  title: unknown;
+  status: unknown;
+  updatedAt: string | null;
+};
+
+const WORKSPACE_RECORD_LISTS: Record<
+  WorkspaceRecordListKind,
+  {
+    /** Starts the query. from()/select() stay literal in each entry on purpose. */
+    query: (supabase: ChatToolsSupabaseLike) => any;
+    orderColumn: string;
+    project: (row: Record<string, unknown>) => WorkspaceRecordProjection;
+    note?: string;
+  }
+> = {
+  plans: {
+    query: (supabase) => supabase.from("plans").select("id, title, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.title ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  programs: {
+    query: (supabase) => supabase.from("programs").select("id, title, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.title ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  rtp_cycles: {
+    query: (supabase) => supabase.from("rtp_cycles").select("id, title, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.title ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  scenario_sets: {
+    query: (supabase) => supabase.from("scenario_sets").select("id, title, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.title ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  models: {
+    query: (supabase) => supabase.from("models").select("id, title, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.title ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  model_runs: {
+    query: (supabase) => supabase.from("model_runs").select("id, run_title, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.run_title ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  datasets: {
+    query: (supabase) => supabase.from("data_datasets").select("id, name, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.name ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  gtfs_feeds: {
+    // No updated_at on this table; loaded_at (when the feed data landed) is the
+    // honest recency signal, with created_at as the fallback for unloaded rows.
+    query: (supabase) => supabase.from("gtfs_feeds").select("id, agency_name, status, loaded_at, created_at"),
+    orderColumn: "created_at",
+    project: (row) => ({
+      id: row.id,
+      title: row.agency_name ?? null,
+      status: row.status ?? null,
+      updatedAt: isoOrNull(row.loaded_at) ?? isoOrNull(row.created_at),
+    }),
+    // NULL workspace_id marks a deployment-shared public feed; the workspace
+    // equality filter cannot match NULL, so those rows are honestly out of scope
+    // here — same rule the refresh proposal check documents above.
+    note: "Shared public feeds (owned by no workspace) are not listed here; the Data Hub shows them.",
+  },
+  campaigns: {
+    query: (supabase) => supabase.from("engagement_campaigns").select("id, title, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.title ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  client_invoices: {
+    query: (supabase) => supabase.from("client_invoices").select("id, invoice_number, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.invoice_number ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  funding_awards: {
+    query: (supabase) => supabase.from("funding_awards").select("id, title, spending_status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.title ?? null, status: row.spending_status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+  billing_invoices: {
+    query: (supabase) => supabase.from("billing_invoice_records").select("id, invoice_number, status, updated_at"),
+    orderColumn: "updated_at",
+    project: (row) => ({ id: row.id, title: row.invoice_number ?? null, status: row.status ?? null, updatedAt: isoOrNull(row.updated_at) }),
+  },
+};
+
+function grantsGovToolPayload(
+  result: GrantsGovSearchResult,
+  meta: { cached: boolean; fetchedAt: number }
+): ChatToolPayload {
+  return {
+    status: "ok",
+    cached: meta.cached,
+    fetchedAt: new Date(meta.fetchedAt).toISOString(),
+    // The lib's own caveat sentence, verbatim — it travels with every result set.
+    caveat: GRANTS_GOV_SYNC_CAVEAT,
+    hitCount: result.hitCount,
+    returnedCount: result.opportunities.length,
+    rowCap: ASSISTANT_CHAT_TOOL_GRANTS_GOV_ROWS,
+    truncated: result.hitCount > result.opportunities.length,
+    opportunities: result.opportunities.map((opportunity) => ({
+      id: opportunity.id,
+      number: opportunity.number,
+      title: opportunity.title,
+      agencyCode: opportunity.agencyCode,
+      agencyName: opportunity.agencyName,
+      status: opportunity.status,
+      openDate: opportunity.openDate,
+      closeDate: opportunity.closeDate,
+      cfdaList: opportunity.cfdaList,
+      detailUrl: opportunity.detailUrl,
+    })),
+  };
+}
+
+/**
+ * Evidence-reading tools: model-run results, claim-tier explanation, live
+ * grants.gov search, the generic record lister, and campaign input reads.
+ *
+ * All of them follow the same rules as the seven tools above: USER-SESSION
+ * client only (RLS scopes every read), hard disclosed row caps, refusals and
+ * honest unavailability instead of throws, and no write path of any kind —
+ * the tools EXPLAIN tiers, statuses and caveats but nothing they return can be
+ * written back.
+ */
+function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams): Record<string, Tool<any, any>> {
+  const { supabase, audit, budget, context } = params;
+  const workspaceId = context.workspace.id;
+
+  const getModelRunResults = tool({
+    description:
+      `Read one model run's recorded results: status, stored KPIs (max ${ASSISTANT_CHAT_TOOL_KPI_LIMIT} rows, values and units verbatim with their stored caveats), the zone-resolution diagnostic when recorded, validation checks, and the run's recorded claim tier. Nothing is recomputed — absent records are reported as absent.`,
+    inputSchema: z.object({
+      modelRunId: z.string().uuid().describe("The model run id (find it with list_workspace_records kind=model_runs)."),
+    }),
+    execute: guarded<{ modelRunId: string }>({
+      name: "get_model_run_results",
+      budget,
+      audit,
+      run: async (input) => {
+        if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
+
+        const { data: run, error: runError } = await supabase
+          .from("model_runs")
+          .select("id, run_title, status, engine_key, error_message, started_at, completed_at, updated_at")
+          .eq("id", input.modelRunId)
+          .eq("workspace_id", workspaceId)
+          .maybeSingle();
+        if (runError) throw new Error(runError.message ?? "model_runs query failed");
+        if (!run) {
+          return {
+            status: "not_found",
+            message:
+              "No model run with that id is visible in this workspace. It may not exist or may belong to a workspace this planner is not a member of.",
+          };
+        }
+        const runRow = run as Record<string, unknown>;
+
+        const { data: kpiData, error: kpiError } = await supabase
+          .from("model_run_kpis")
+          .select("kpi_name, kpi_label, kpi_category, value, unit, geometry_ref, breakdown_json")
+          .eq("run_id", input.modelRunId)
+          .order("kpi_category", { ascending: true })
+          .order("kpi_name", { ascending: true })
+          .limit(ASSISTANT_CHAT_TOOL_KPI_LIMIT);
+        if (kpiError) throw new Error(kpiError.message ?? "model_run_kpis query failed");
+        const kpiRows = (kpiData ?? []) as Array<Record<string, unknown>>;
+        const kpiItems = normalizeModelRunKpiComparisonItems(kpiRows);
+
+        // Zone resolution: the verdict is banded HERE from the stored share, via
+        // the one lib that owns the judgement — never read back off the row.
+        // (Same rule as the run page's zone-resolution panel.)
+        const zoneRow = kpiRows.find((row) => row.kpi_name === "intrazonal_trip_share");
+        const zoneShare = finiteNumber(zoneRow?.value);
+        let zoneResolution: Record<string, unknown>;
+        if (zoneRow && zoneShare !== null) {
+          const breakdown =
+            zoneRow.breakdown_json && typeof zoneRow.breakdown_json === "object"
+              ? (zoneRow.breakdown_json as Record<string, unknown>)
+              : {};
+          const zoneCount = finiteNumber(breakdown.zone_count);
+          const banded = bandIntrazonalShare(zoneShare * 100, zoneCount);
+          zoneResolution = {
+            status: "measured",
+            intrazonalSharePct: banded.intrazonalSharePct,
+            zoneCount,
+            band: banded.band,
+            supportsLinkLevelValidation: banded.supportsLinkLevelValidation,
+            summary: banded.summary,
+            caveat: banded.supportsLinkLevelValidation ? null : LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
+          };
+        } else {
+          zoneResolution = {
+            status: "not_recorded",
+            message:
+              "No zone-resolution diagnostic is recorded for this run — it may predate the diagnostic or have produced no trips. Do not treat that as a finding that the zone system is fine.",
+          };
+        }
+
+        const { data: validationData, error: validationError } = await supabase
+          .from("modeling_validation_results")
+          .select(MODELING_VALIDATION_RESULT_SELECT)
+          .eq("model_run_id", input.modelRunId)
+          .order("created_at", { ascending: true })
+          .limit(ASSISTANT_CHAT_TOOL_VALIDATION_LIMIT);
+        if (validationError) throw new Error(validationError.message ?? "modeling_validation_results query failed");
+        const validationRows = (validationData ?? []) as Array<Record<string, unknown>>;
+
+        const claimByRun = await loadModelRunClaimStatuses({
+          supabase: supabase as unknown as ModelingEvidenceSupabaseLike,
+          modelRunIds: [input.modelRunId],
+        });
+        const claim = claimByRun.get(input.modelRunId) ?? null;
+
+        const errorMessage =
+          typeof runRow.error_message === "string" && runRow.error_message.trim().length > 0
+            ? runRow.error_message
+            : null;
+
+        return {
+          status: "ok",
+          run: {
+            id: runRow.id,
+            title: runRow.run_title ?? null,
+            status: runRow.status ?? null,
+            engineKey: runRow.engine_key ?? null,
+            startedAt: isoOrNull(runRow.started_at),
+            completedAt: isoOrNull(runRow.completed_at),
+            updatedAt: isoOrNull(runRow.updated_at),
+            // A failed run's cause is quoted verbatim; an unrecorded cause is
+            // reported as unrecorded — never invented.
+            failure:
+              runRow.status === "failed"
+                ? {
+                    errorMessage,
+                    note: errorMessage
+                      ? "Quote the recorded failure message verbatim."
+                      : "This run failed and no failure cause was recorded. Say exactly that — do not invent a cause.",
+                  }
+                : null,
+          },
+          kpiCount: kpiRows.length,
+          kpiRowCap: ASSISTANT_CHAT_TOOL_KPI_LIMIT,
+          truncated: kpiRows.length === ASSISTANT_CHAT_TOOL_KPI_LIMIT,
+          note:
+            kpiRows.length === 0
+              ? "No KPIs are recorded for this run. That is a recorded absence, not a failed read."
+              : "Report each value with its unit and its caveats verbatim; never round a caveat away.",
+          kpis: kpiItems.map((item, index) => ({
+            name: item.name,
+            label: item.label,
+            category: item.category,
+            value: item.currentValue,
+            unit: item.unit,
+            geometryRef: item.geometryRef,
+            caveats: kpiBreakdownCaveats(kpiRows[index]?.breakdown_json),
+          })),
+          zoneResolution,
+          validation: {
+            resultCount: validationRows.length,
+            rowCap: ASSISTANT_CHAT_TOOL_VALIDATION_LIMIT,
+            note:
+              validationRows.length === 0
+                ? "No validation results are recorded against this run."
+                : "Validation details are the stored sentences, verbatim.",
+            results: projectValidationRows(validationRows),
+          },
+          claim: claim
+            ? { tier: claim.status, label: modelingClaimStatusLabel(claim.status), reason: claim.reason }
+            : {
+                tier: null,
+                label: modelingClaimStatusLabel(null),
+                message: "No claim decision is recorded for this run — a known absence, not an unknown.",
+              },
+        };
+      },
+    }),
+  });
+
+  const explainModelClaim = tool({
+    description:
+      "Explain a run's modeling claim tier: the recorded tier, its stored reasons verbatim, the tier ladder, and what recorded evidence would support a higher tier. Pass exactly one of modelRunId (a model run) or countyRunId (a county onramp run). Explanation only — this tool changes nothing, and evidence decides tiers, never the agent.",
+    inputSchema: z.object({
+      modelRunId: z.string().uuid().nullable().optional(),
+      countyRunId: z.string().uuid().nullable().optional(),
+    }),
+    execute: guarded<{ modelRunId?: string | null; countyRunId?: string | null }>({
+      name: "explain_model_claim",
+      budget,
+      audit,
+      run: async (input) => {
+        if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
+        const modelRunId = input.modelRunId ?? null;
+        const countyRunId = input.countyRunId ?? null;
+        if ((modelRunId === null) === (countyRunId === null)) {
+          return {
+            status: "invalid_payload",
+            message: "Pass exactly one of modelRunId or countyRunId.",
+          };
+        }
+
+        if (modelRunId) {
+          const { data: run, error: runError } = await supabase
+            .from("model_runs")
+            .select("id, run_title, status, engine_key")
+            .eq("id", modelRunId)
+            .eq("workspace_id", workspaceId)
+            .maybeSingle();
+          if (runError) throw new Error(runError.message ?? "model_runs query failed");
+          if (!run) {
+            return {
+              status: "not_found",
+              message: "No model run with that id is visible in this workspace.",
+            };
+          }
+          const runRow = run as Record<string, unknown>;
+
+          const { data: decisionData, error: decisionError } = await supabase
+            .from("modeling_claim_decisions")
+            .select("track, claim_status, status_reason, reasons_json, validation_summary_json, decided_at")
+            .eq("model_run_id", modelRunId)
+            .order("decided_at", { ascending: false })
+            .limit(10);
+          if (decisionError) throw new Error(decisionError.message ?? "modeling_claim_decisions query failed");
+          const decisionRows = (decisionData ?? []) as Array<Record<string, unknown>>;
+
+          const decisions = decisionRows
+            .filter((row) => isModelingClaimStatus(row.claim_status))
+            .map((row) => {
+              const tier = row.claim_status as ModelingClaimStatus;
+              const reasons = Array.isArray(row.reasons_json)
+                ? row.reasons_json.filter((reason): reason is string => typeof reason === "string")
+                : [];
+              const statusReason = typeof row.status_reason === "string" ? row.status_reason : null;
+              const validationSummary = row.validation_summary_json ?? null;
+              return {
+                track: row.track ?? null,
+                tier,
+                label: modelingClaimStatusLabel(tier),
+                // The stored decision, quoted — not paraphrased.
+                reason: statusReason,
+                reasons,
+                validationSummary,
+                decidedAt: isoOrNull(row.decided_at),
+                reportLanguage: modelingClaimReportLanguage({
+                  track: row.track,
+                  claimStatus: tier,
+                  statusReason: statusReason ?? "",
+                  reasons,
+                  validationSummary,
+                } as ModelingClaimDecision),
+                evidenceForHigherTier: evidenceForHigherTier(tier, validationSummary, reasons),
+              };
+            });
+
+          if (decisions.length === 0) {
+            return {
+              status: "ok",
+              subject: { kind: "model_run", id: runRow.id, title: runRow.run_title ?? null },
+              claimTier: null,
+              label: modelingClaimStatusLabel(null),
+              message:
+                "No claim decision is recorded for this run. That is a known absence, not an uncertainty: nothing here has been validated, so its outputs cannot make outward planning claims until validation evidence is recorded.",
+              tierLadder: claimTierLadder(),
+            };
+          }
+
+          return {
+            status: "ok",
+            subject: { kind: "model_run", id: runRow.id, title: runRow.run_title ?? null },
+            decisions,
+            tierLadder: claimTierLadder(),
+            note: "Quote the stored reasons verbatim. The agent may explain a tier but never change one — evidence decides.",
+          };
+        }
+
+        const { data: countyRun, error: countyError } = await supabase
+          .from("county_runs")
+          .select("id, run_name, stage, geography_label")
+          .eq("id", countyRunId)
+          .eq("workspace_id", workspaceId)
+          .maybeSingle();
+        if (countyError) throw new Error(countyError.message ?? "county_runs query failed");
+        if (!countyRun) {
+          return {
+            status: "not_found",
+            message: "No county run with that id is visible in this workspace.",
+          };
+        }
+        const countyRow = countyRun as Record<string, unknown>;
+        const stage = typeof countyRow.stage === "string" ? (countyRow.stage as CountyRunStage) : null;
+
+        const evidenceResult = await loadCountyRunModelingEvidence({
+          supabase: supabase as unknown as ModelingEvidenceSupabaseLike,
+          countyRunId: countyRunId as string,
+        });
+
+        const claimDecision = evidenceResult.evidence?.claimDecision ?? null;
+        return {
+          status: "ok",
+          subject: {
+            kind: "county_run",
+            id: countyRow.id,
+            title: countyRow.run_name ?? null,
+            geographyLabel: countyRow.geography_label ?? null,
+          },
+          stagePosture: {
+            stage,
+            stageLabel: stage ? getCountyRunStageLabel(stage) : null,
+            screeningGrade: isScreeningGradeStage(stage),
+            allowedClaim: stage ? getCountyRunAllowedClaim(stage) : null,
+            // The stage's caveat list, verbatim from the county-onramp lib.
+            caveats: stage ? getCountyRunCaveats(stage) : [],
+          },
+          evidence: evidenceResult.error
+            ? {
+                status: "unavailable",
+                message: `The modeling evidence record could not be read (${evidenceResult.error.message}). That is a failed read, not evidence of absence.`,
+              }
+            : {
+                status: "ok",
+                claimDecision: claimDecision
+                  ? {
+                      track: claimDecision.track,
+                      tier: claimDecision.claimStatus,
+                      label: modelingClaimStatusLabel(claimDecision.claimStatus),
+                      reason: claimDecision.statusReason,
+                      reasons: claimDecision.reasons,
+                      validationSummary: claimDecision.validationSummary,
+                      decidedAt: claimDecision.decidedAt,
+                      evidenceForHigherTier: evidenceForHigherTier(
+                        claimDecision.claimStatus,
+                        claimDecision.validationSummary,
+                        claimDecision.reasons
+                      ),
+                    }
+                  : {
+                      tier: null,
+                      label: modelingClaimStatusLabel(null),
+                      message: "No claim decision is recorded for this county run.",
+                    },
+                reportLanguage: evidenceResult.evidence?.reportLanguage ?? null,
+                validationResults: (evidenceResult.evidence?.validationResults ?? [])
+                  .slice(0, ASSISTANT_CHAT_TOOL_VALIDATION_LIMIT)
+                  .map((result) => ({
+                    track: result.track,
+                    metricKey: result.metricKey,
+                    metricLabel: result.metricLabel,
+                    observedValue: result.observedValue,
+                    thresholdValue: result.thresholdValue,
+                    thresholdMaxValue: result.thresholdMaxValue,
+                    thresholdComparator: result.thresholdComparator,
+                    status: result.status,
+                    blocksClaimGrade: result.blocksClaimGrade,
+                    detail: result.detail,
+                    evaluatedAt: result.evaluatedAt,
+                  })),
+              },
+          tierLadder: claimTierLadder(),
+        };
+      },
+    }),
+  });
+
+  const searchGrantsGov = tool({
+    description:
+      `Search live federal funding opportunities on grants.gov (Search2 API, transportation category, max ${ASSISTANT_CHAT_TOOL_GRANTS_GOV_ROWS} rows, results cached server-side for 30 minutes). Returns synopsis-level results with the standing caveat — the NOFO on grants.gov is the record.`,
+    inputSchema: z.object({
+      keyword: z.string().trim().max(120).optional().describe("Keywords, e.g. 'safe streets' or 'transit'."),
+      agencies: z
+        .string()
+        .trim()
+        .max(200)
+        .optional()
+        .describe('Pipe-joined sub-agency codes, e.g. "DOT-FTA|DOT-FRA".'),
+      eligibilities: z
+        .string()
+        .trim()
+        .max(200)
+        .optional()
+        .describe('Pipe-joined 2-digit applicant-eligibility codes, e.g. "01|02".'),
+    }),
+    execute: guarded<{ keyword?: string; agencies?: string; eligibilities?: string }>({
+      name: "search_grants_gov",
+      budget,
+      audit,
+      run: async (input) => {
+        let searchBody: ReturnType<typeof buildGrantsGovSearchBody>;
+        try {
+          searchBody = buildGrantsGovSearchBody({
+            keyword: input.keyword,
+            agencies: input.agencies,
+            eligibilities: input.eligibilities,
+            rows: ASSISTANT_CHAT_TOOL_GRANTS_GOV_ROWS,
+          });
+        } catch (error) {
+          return {
+            status: "invalid_query",
+            message: error instanceof Error ? error.message : "Invalid grants.gov filters.",
+          };
+        }
+
+        const cacheKey = JSON.stringify(searchBody);
+        const now = Date.now();
+        const cached = getCachedGrantsGovResult(cacheKey, now);
+        if (cached) {
+          return grantsGovToolPayload(cached.result, { cached: true, fetchedAt: cached.fetchedAt });
+        }
+
+        const unavailable = (why: string): ChatToolPayload => ({
+          status: "unavailable",
+          message: `grants.gov could not be searched (${why}). An unreachable API is not evidence that no opportunities exist — try again later or check grants.gov directly.`,
+        });
+
+        let payload: unknown;
+        try {
+          const upstream = await fetch(GRANTS_GOV_SEARCH_ENDPOINT, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(searchBody),
+            signal: AbortSignal.timeout(GRANTS_GOV_TOOL_TIMEOUT_MS),
+            cache: "no-store",
+          });
+          if (!upstream.ok) {
+            audit.warn("assistant_chat_grants_gov_non_ok", { status: upstream.status });
+            return unavailable(`upstream answered status ${upstream.status}`);
+          }
+          payload = await upstream.json();
+        } catch (error) {
+          audit.warn("assistant_chat_grants_gov_fetch_failed", {
+            message: error instanceof Error ? error.message : String(error),
+          });
+          return unavailable("the request failed or timed out");
+        }
+
+        const parsed = parseGrantsGovSearchResponse(payload);
+        if (!parsed) {
+          audit.warn("assistant_chat_grants_gov_parse_failed", {});
+          return unavailable("the response failed the defensive parse");
+        }
+
+        setCachedGrantsGovResult(cacheKey, { fetchedAt: now, result: parsed });
+        return grantsGovToolPayload(parsed, { cached: false, fetchedAt: now });
+      },
+    }),
+  });
+
+  const listWorkspaceRecords = tool({
+    description:
+      `List this workspace's records of one kind to find ids and current status (max ${ASSISTANT_CHAT_TOOL_LIST_LIMIT} rows, most recent first). Kinds: ${WORKSPACE_RECORD_LIST_KINDS.join(", ")}. Use it before proposing any action that needs a record id.`,
+    inputSchema: z.object({
+      kind: z.enum(WORKSPACE_RECORD_LIST_KINDS).describe("Which record kind to list."),
+    }),
+    execute: guarded<{ kind: WorkspaceRecordListKind }>({
+      name: "list_workspace_records",
+      budget,
+      audit,
+      run: async (input) => {
+        if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
+        const config = WORKSPACE_RECORD_LISTS[input.kind];
+        if (!config) {
+          return {
+            status: "invalid_payload",
+            message: `Unknown record kind ${String(input.kind)}. Valid kinds: ${WORKSPACE_RECORD_LIST_KINDS.join(", ")}.`,
+          };
+        }
+
+        const { data, error } = await config
+          .query(supabase)
+          .eq("workspace_id", workspaceId)
+          .order(config.orderColumn, { ascending: false })
+          .limit(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
+        if (error) throw new Error(error.message ?? `${input.kind} list query failed`);
+        const rows = (data ?? []) as Array<Record<string, unknown>>;
+
+        return {
+          status: "ok",
+          kind: input.kind,
+          recordCount: rows.length,
+          rowCap: ASSISTANT_CHAT_TOOL_LIST_LIMIT,
+          truncated: rows.length === ASSISTANT_CHAT_TOOL_LIST_LIMIT,
+          note: config.note ?? null,
+          records: rows.map(config.project),
+        };
+      },
+    }),
+  });
+
+  const getEngagementResponses = tool({
+    description:
+      `Read a campaign's public input: up to ${ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_LIMIT} approved comment excerpts (truncated to ${ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_MAX_CHARS} characters), moderation queue counts, and survey response counts per question. Individual survey answers are never surfaced in chat.`,
+    inputSchema: z.object({
+      campaignId: z.string().uuid().describe("The engagement campaign id (find it with list_workspace_records kind=campaigns)."),
+    }),
+    execute: guarded<{ campaignId: string }>({
+      name: "get_engagement_responses",
+      budget,
+      audit,
+      run: async (input) => {
+        if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
+
+        const { data: campaign, error: campaignError } = await supabase
+          .from("engagement_campaigns")
+          .select("id, title, status")
+          .eq("id", input.campaignId)
+          .eq("workspace_id", workspaceId)
+          .maybeSingle();
+        if (campaignError) throw new Error(campaignError.message ?? "engagement_campaigns query failed");
+        if (!campaign) {
+          return {
+            status: "not_found",
+            message: "No engagement campaign with that id is visible in this workspace.",
+          };
+        }
+        const campaignRow = campaign as Record<string, unknown>;
+
+        const { data: commentData, error: commentError } = await supabase
+          .from("engagement_items")
+          .select("id, title, body, source_type, created_at")
+          .eq("campaign_id", input.campaignId)
+          .eq("status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_LIMIT);
+        if (commentError) throw new Error(commentError.message ?? "engagement_items query failed");
+        const commentRows = (commentData ?? []) as Array<Record<string, unknown>>;
+
+        const [pendingResult, flaggedResult] = await Promise.all([
+          supabase
+            .from("engagement_items")
+            .select("id", { count: "exact", head: true })
+            .eq("campaign_id", input.campaignId)
+            .eq("status", "pending"),
+          supabase
+            .from("engagement_items")
+            .select("id", { count: "exact", head: true })
+            .eq("campaign_id", input.campaignId)
+            .eq("status", "flagged"),
+        ]);
+        const moderationFailed = Boolean(pendingResult?.error) || Boolean(flaggedResult?.error);
+
+        // Survey reads go through the ONE confined reader lib. On deployments
+        // where the response records are locked to the server-side reader, this
+        // read fails under the planner's own session permissions — which is the
+        // expected, honest outcome, reported as unavailable rather than as zero.
+        const survey = await aggregateCampaignSurvey(supabase as never, input.campaignId);
+        const surveyPayload = survey.error
+          ? {
+              status: "unavailable",
+              message:
+                `Survey response counts could not be read from this chat session (${survey.error.message}). ` +
+                "On this deployment the survey response records are confined to a server-side reader, so this is expected here — " +
+                "the campaign page shows the aggregated results. A failed read is not a campaign with zero responses.",
+            }
+          : {
+              status: "ok",
+              approvedResponseCount: survey.approvedResponseCount,
+              questionCount: survey.questions.length,
+              questionRowCap: ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT,
+              questions: survey.questions.slice(0, ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT).map((question) => ({
+                prompt: question.prompt,
+                questionType: question.questionType,
+                answeredCount: question.answeredCount,
+              })),
+              note: "Counts only — individual answers never appear in chat.",
+            };
+
+        return {
+          status: "ok",
+          campaign: { id: campaignRow.id, title: campaignRow.title ?? null, status: campaignRow.status ?? null },
+          comments: {
+            count: commentRows.length,
+            rowCap: ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_LIMIT,
+            truncated: commentRows.length === ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_LIMIT,
+            note: "Approved comments only, excerpted. Attribute them as public input, not as the agency's findings.",
+            excerpts: commentRows.map((row) => {
+              const body = typeof row.body === "string" ? row.body : "";
+              return {
+                id: row.id,
+                title: row.title ?? null,
+                sourceType: row.source_type ?? null,
+                createdAt: isoOrNull(row.created_at),
+                excerpt: truncateForField(body, ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_MAX_CHARS),
+                excerptTruncated: body.length > ASSISTANT_CHAT_TOOL_COMMENT_EXCERPT_MAX_CHARS,
+              };
+            }),
+          },
+          moderationQueue: moderationFailed
+            ? {
+                status: "unavailable",
+                message: "The moderation queue could not be counted. That is a failed read, not an empty queue.",
+              }
+            : {
+                status: "ok",
+                pending: (pendingResult as { count?: number | null })?.count ?? 0,
+                flagged: (flaggedResult as { count?: number | null })?.count ?? 0,
+              },
+          survey: surveyPayload,
+        };
+      },
+    }),
+  });
+
+  return {
+    get_model_run_results: getModelRunResults,
+    explain_model_claim: explainModelClaim,
+    search_grants_gov: searchGrantsGov,
+    list_workspace_records: listWorkspaceRecords,
+    get_engagement_responses: getEngagementResponses,
+  };
+}
+
 export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): ToolSet {
   const { supabase, context, userId, audit, budget } = params;
   const workspaceId = context.workspace.id;
@@ -697,6 +1575,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
     list_reports: listReports,
     list_pending_operations: listPendingOperations,
     get_grant_program_catalog: getGrantProgramCatalog,
+    ...buildAssistantEvidenceReadTools(params),
     ...buildAssistantProposalTools(params),
   };
 

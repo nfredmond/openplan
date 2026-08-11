@@ -1,8 +1,9 @@
-import type { AssistantQuickLink } from "@/lib/assistant/catalog";
+import { getAssistantActions, type AssistantQuickLink } from "@/lib/assistant/catalog";
 import { getActionMetadata } from "@/lib/runtime/action-metadata";
 import { isRelaunchableRunStatus, isWorkerExecutedRunMode } from "@/lib/models/run-modes";
 import type {
   AssistantContext,
+  AssistantModuleLaneKind,
   ModelAssistantContext,
   PlanAssistantContext,
   ProgramAssistantContext,
@@ -20,6 +21,7 @@ import {
 } from "@/lib/assistant/rtp-packet-posture";
 import { buildInvoiceTriageHref, buildInvoicingHref } from "@/lib/invoicing/triage-links";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
+import { FUNDING_CLOSING_SOON_WINDOW_DAYS } from "@/lib/operations/funding-decision-status";
 import {
   buildRtpReleaseReviewSummary,
   parseStoredRtpPublicReviewSummary,
@@ -702,6 +704,26 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             },
           }
         )
+      : null,
+    /**
+     * A WORKSPACE THAT HAS NEVER RUN A MODEL gets pointed at the guided first
+     * run. Keyed on `=== 0`, not falsiness — `modelRuns` is `null` when the
+     * count could not be measured, and inviting a first run over a failed read
+     * would tell a workspace with a thousand runs it has none. The model page
+     * itself carries the in-panel walkthrough (see `model-first-run-guide`).
+     */
+    context.operationsSummary.moduleObservations?.modeling?.modelRuns === 0
+      ? quickLink("workspace-first-model-run", "Set up your first model run", "/models", {
+          targetKind: "model",
+          actionClass: "inspect_readiness",
+          priority: "secondary",
+          statusLabel: "No model runs yet",
+          reason:
+            "No model run is recorded in this workspace. The models page is where you pick a study area, an engine, and a zone geography — and its copilot can walk you through those choices before you launch.",
+          approval: "safe",
+          auditEvent: "assistant.operation.workspace.first_model_run",
+          auditNote: "Navigation only. It creates no run and launches nothing.",
+        })
       : null,
     context.recentProject
       ? quickLink("workspace-project", `Open ${context.recentProject.name}`, `/projects/${context.recentProject.id}`, {
@@ -1809,6 +1831,42 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
           }
         )
       : null,
+    /**
+     * THE GUIDED FIRST RUN — an in-panel walkthrough, never a launch.
+     *
+     * Offered exactly when this model has NO recorded runs and the run tables
+     * are readable (`schemaPending` false — an empty list behind a pending
+     * migration is not evidence that nothing has run). The workflow it triggers
+     * is the model-launch workflow, whose response becomes the guided
+     * first-run walkthrough in that same zero-run state: it explains the study
+     * area, engine, and zone geography choices in the launcher's own words and
+     * links to the launcher.
+     *
+     * CREATION IS A RECORDED REFUSAL. `launch_model_run` is registered only for
+     * re-queueing an EXISTING run; creating a NEW run (`POST /runs`) takes the
+     * study area, the engine, and the zone geography in its body, and the
+     * catalog's registration note refuses that shape deliberately — every
+     * argument for the relaunch action depends on the agent supplying none of
+     * those. So this quick link navigates and explains; the planner makes every
+     * choice and presses launch themselves.
+     */
+    context.recentModelRuns.length === 0 && !context.schemaPending
+      ? quickLink("model-first-run-guide", "Plan the first model run in panel", `/models/${context.model.id}`, {
+          targetKind: "model",
+          actionClass: "inspect_readiness",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: "No runs yet",
+          reason:
+            "This model has no recorded runs. Planner Agent can walk through the study area, engine, and zone geography choices in the launcher's own words — you make each choice and launch it yourself.",
+          approval: "safe",
+          auditEvent: "assistant.operation.model.first_run_guide",
+          auditNote: "This reads and explains only. It creates no run and launches nothing.",
+          workflowId: laneWorkflow("model", "model-launch").workflowId,
+          prompt: "Walk me through setting up and launching this model's first run.",
+          promptLabel: "Plan the first model run in panel",
+        })
+      : null,
     quickLink("model-readiness-agent", "Check model readiness in panel", `/models/${context.model.id}`, {
       targetKind: "model",
       actionClass: "inspect_readiness",
@@ -2040,6 +2098,584 @@ function buildRunOperations(context: RunAssistantContext): AssistantQuickLink[] 
   ]);
 }
 
+/**
+ * An in-panel workflow trigger whose id PROVABLY resolves.
+ *
+ * `/api/assistant` gates every requested workflow through
+ * `resolveAssistantWorkflowId`, which accepts an id only when the CATALOG lists
+ * it for the context's kind — anything else silently falls back to a default
+ * workflow. A quick link carrying a hand-typed id that drifted from the catalog
+ * would therefore render, be clicked, and answer a different question than its
+ * label promised, with nothing failing anywhere. Reading the id, prompt, and
+ * label off the catalog action itself makes that drift unrepresentable: an id
+ * the catalog does not know throws here, in the builder, where a test sees it.
+ */
+function laneWorkflow(kind: AssistantModuleLaneKind | "model", workflowId: string) {
+  const action = getAssistantActions(kind).find((entry) => entry.id === workflowId);
+  if (!action) {
+    throw new Error(
+      `Assistant operations offered workflow "${workflowId}" for kind "${kind}", but the catalog does not list it — the in-panel trigger would silently answer a different workflow.`
+    );
+  }
+  return { workflowId: action.id, prompt: action.prompt, promptLabel: action.label };
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * MODULE-LANE OPERATIONS — READS ONLY, BY DESIGN.
+ *
+ * None of these lanes carries an `executeAction`, and that is a phase
+ * constraint, not an omission: this change adds grounding and navigation for
+ * the seven module surfaces, and registering a write action is an eight-file
+ * decision argued per action (see the catalog's refusal records). A quick link
+ * here either NAVIGATES to the module surface or triggers an in-panel
+ * read-and-summarise workflow. Guarded by
+ * `assistant-module-lane-operations.test.ts`, which fails if any module-lane
+ * link ever carries an `executeAction`.
+ *
+ * OFFER DISCIPLINE, inherited from the transit-refetch clause above: every
+ * signal condition keys on a NON-NULL lane sub-summary. `null` means the read
+ * FAILED (`context.ts` sets it for exactly that), and a failed read gets no
+ * offer — silence plus the read-failure disclosure the response already
+ * carries, never a link claiming pressure the copilot could not see.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+function buildGrantsLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const lane = context.moduleLane?.module === "grants" ? context.moduleLane : null;
+  const opportunities = lane?.opportunities ?? null;
+  const workspaceId = context.workspace.id;
+  const deadlineCount = opportunities ? opportunities.closingSoon + opportunities.overdueDecision : 0;
+  /**
+   * "Awards missing invoices" is the WORKSPACE summary's observation, not this
+   * lane's: the grants lane counts awards but never reads the invoice register,
+   * and the shared command queue already computes which project has committed
+   * awards with no reimbursement packet started. Reuse it rather than
+   * re-deriving a second version of the same judgement.
+   */
+  const reimbursementStartCommand = context.operationsSummary.commandQueue.find(
+    (item) => item.key === "start-project-reimbursement-packets"
+  );
+  const primaryWorkflow =
+    deadlineCount > 0 ? laneWorkflow("grants", "grants-decision-queue") : laneWorkflow("grants", "grants-brief");
+
+  return compactQuickLinks([
+    quickLink(
+      "grants-lane-brief-agent",
+      deadlineCount > 0 ? "Review grant decisions due in panel" : "Generate grants brief",
+      "/grants",
+      {
+        targetKind: "grants",
+        actionClass: "review_controls",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason:
+          deadlineCount > 0
+            ? "Opportunities are closing soon or already past their decision deadline, so the decision queue outranks a general brief."
+            : "Answers here in Planner Agent, without moving you off this page.",
+        approval: "safe",
+        auditEvent: "assistant.operation.grants.brief_agent",
+        auditNote: "This reads and summarises only. It changes no funding record.",
+        ...primaryWorkflow,
+      }
+    ),
+    opportunities && deadlineCount > 0
+      ? quickLink("grants-lane-deadlines", "Open closing funding windows", "/grants", {
+          targetKind: "grants",
+          actionClass: "review_controls",
+          priority: "primary",
+          statusLabel: `${opportunities.closingSoon} closing soon · ${opportunities.overdueDecision} overdue`,
+          reason: `${opportunities.closingSoon} funding ${opportunities.closingSoon === 1 ? "window closes" : "windows close"} within ${FUNDING_CLOSING_SOON_WINDOW_DAYS} days and ${opportunities.overdueDecision} ${opportunities.overdueDecision === 1 ? "decision has" : "decisions have"} lapsed their recorded deadline.${opportunities.lead ? ` ${opportunities.lead.title} is the first deadline to reopen.` : ""}`,
+          approval: "review",
+          auditEvent: "assistant.operation.grants.deadlines",
+          auditNote: "Navigation only. Pursue, monitor, and skip decisions still happen on the grants register.",
+        })
+      : null,
+    workspaceId && reimbursementStartCommand?.targetProjectId
+      ? quickLink(
+          "grants-lane-award-invoicing",
+          "Open uninvoiced award lane",
+          buildInvoicingHref({
+            workspaceId,
+            linkage: "unlinked",
+            overdue: "all",
+            projectId: reimbursementStartCommand.targetProjectId,
+          }),
+          {
+            targetKind: "invoicing",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: "Awards without invoices",
+            reason: `${reimbursementStartCommand.targetProjectName ?? "A project"} has committed award dollars recorded but no reimbursement invoicing started, so the award will sit unclaimed until the invoice trail opens.`,
+            approval: "review",
+            auditEvent: "assistant.operation.grants.award_invoicing",
+            auditNote: "Navigation only. Opens the invoice register narrowed to unlinked invoices for the lead project.",
+          }
+        )
+      : null,
+    quickLink("grants-lane-surface", "Open grants register", "/grants", {
+      targetKind: "grants",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Register open",
+      reason: "Use the grants register for the full opportunity and award record.",
+      approval: "safe",
+      auditEvent: "assistant.operation.grants.surface",
+      auditNote: "Navigation only. Any change still happens on the page it opens.",
+    }),
+  ]);
+}
+
+function buildInvoicingLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const lane = context.moduleLane?.module === "invoicing" ? context.moduleLane : null;
+  const reimbursements = lane?.reimbursements ?? null;
+  const workspaceId = context.workspace.id;
+  const unlinkedCount = reimbursements ? reimbursements.invoiceCount - reimbursements.linkedToAwardCount : 0;
+  const outstandingCount = reimbursements ? reimbursements.submitted + reimbursements.approvedForPayment : 0;
+  const primaryWorkflow =
+    outstandingCount > 0
+      ? laneWorkflow("invoicing", "invoicing-reimbursements")
+      : laneWorkflow("invoicing", "invoicing-brief");
+
+  return compactQuickLinks([
+    quickLink(
+      "invoicing-lane-brief-agent",
+      outstandingCount > 0 ? "Review outstanding reimbursements in panel" : "Generate invoicing brief",
+      buildInvoicingHref({ workspaceId, linkage: "all", overdue: "all" }),
+      {
+        targetKind: "invoicing",
+        actionClass: "review_controls",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason:
+          outstandingCount > 0
+            ? `${outstandingCount} reimbursement invoice${outstandingCount === 1 ? " is" : "s are"} submitted or approved and not yet paid, so the outstanding queue outranks a general brief.`
+            : "Answers here in Planner Agent, without moving you off this page.",
+        approval: "safe",
+        auditEvent: "assistant.operation.invoicing.brief_agent",
+        auditNote: "This reads and summarises only. It changes no invoice record.",
+        ...primaryWorkflow,
+      }
+    ),
+    workspaceId && reimbursements && unlinkedCount > 0
+      ? quickLink(
+          "invoicing-lane-unlinked",
+          `Open ${unlinkedCount} unlinked invoice${unlinkedCount === 1 ? "" : "s"}`,
+          buildInvoicingHref({ workspaceId, linkage: "unlinked", overdue: "all" }),
+          {
+            targetKind: "invoicing",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: `${unlinkedCount} unlinked`,
+            reason:
+              "Reimbursement invoices with no funding award attached cannot be reconciled against committed dollars, so the triage register narrowed to unlinked invoices is the honest place to start.",
+            approval: "review",
+            auditEvent: "assistant.operation.invoicing.unlinked",
+            auditNote: "Navigation only. Opens the invoice register narrowed to invoices with no funding award linked.",
+          }
+        )
+      : null,
+    quickLink(
+      "invoicing-lane-surface",
+      "Open invoicing register",
+      buildInvoicingHref({ workspaceId, linkage: "all", overdue: "all" }),
+      {
+        targetKind: "invoicing",
+        actionClass: "open_surface",
+        priority: "secondary",
+        statusLabel: "Register open",
+        reason: "Use the invoicing register for the full reimbursement and receivable record.",
+        approval: "safe",
+        auditEvent: "assistant.operation.invoicing.surface",
+        auditNote: "Navigation only. Any change still happens on the page it opens.",
+      }
+    ),
+  ]);
+}
+
+function buildEngagementLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const lane = context.moduleLane?.module === "engagement" ? context.moduleLane : null;
+  const campaigns = lane?.campaigns ?? null;
+  const moderation = lane?.moderation ?? null;
+  const moderationCount = moderation ? moderation.pending + moderation.flagged : 0;
+  /**
+   * The moderation link needs a campaign PAGE to land on and the lane summary
+   * deliberately carries counts only, so the destination comes from the
+   * workspace summary's own observation of the most recently updated active
+   * campaign. When that observation is absent the register is the honest
+   * fallback — never a guessed id.
+   */
+  const leadCampaign = context.operationsSummary.moduleObservations?.engagement?.leadActiveCampaign ?? null;
+  const primaryWorkflow =
+    moderationCount > 0
+      ? laneWorkflow("engagement", "engagement-moderation")
+      : laneWorkflow("engagement", "engagement-publication");
+
+  return compactQuickLinks([
+    quickLink(
+      "engagement-lane-brief-agent",
+      moderationCount > 0 ? "Review moderation queue in panel" : "Review publication state in panel",
+      "/engagement",
+      {
+        targetKind: "engagement",
+        actionClass: "review_controls",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason:
+          moderationCount > 0
+            ? "Public submissions are waiting on moderation, so the queue outranks a general brief."
+            : "Answers here in Planner Agent, without moving you off this page.",
+        approval: "safe",
+        auditEvent: "assistant.operation.engagement.brief_agent",
+        auditNote: "This reads counts only. Submission text is not loaded, and no campaign changes.",
+        ...primaryWorkflow,
+      }
+    ),
+    campaigns && campaigns.publicOpen > 0 && moderation && moderationCount > 0
+      ? quickLink(
+          "engagement-lane-moderation",
+          `Review ${moderationCount} waiting submission${moderationCount === 1 ? "" : "s"}`,
+          leadCampaign ? `/engagement/${leadCampaign.id}` : "/engagement",
+          {
+            targetKind: "engagement",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: `${moderation.pending} pending · ${moderation.flagged} flagged`,
+            reason: `${campaigns.publicOpen} campaign${campaigns.publicOpen === 1 ? " is" : "s are"} collecting public input right now while ${moderationCount} submission${moderationCount === 1 ? " waits" : "s wait"} in the moderation queue${leadCampaign ? ` — ${leadCampaign.title} is the live campaign to open first` : ""}.`,
+            approval: "review",
+            auditEvent: "assistant.operation.engagement.moderation",
+            auditNote: "Navigation only. Approving, flagging, or hiding a submission still happens in the campaign console.",
+          }
+        )
+      : null,
+    campaigns && campaigns.draft > 0
+      ? quickLink(
+          "engagement-lane-drafts",
+          `Open ${campaigns.draft} staged campaign${campaigns.draft === 1 ? "" : "s"}`,
+          "/engagement",
+          {
+            targetKind: "engagement",
+            actionClass: "review_controls",
+            priority: "secondary",
+            statusLabel: `${campaigns.draft} draft${campaigns.draft === 1 ? "" : "s"}`,
+            reason: `${campaigns.draft} campaign${campaigns.draft === 1 ? " is" : "s are"} staged as ${campaigns.draft === 1 ? "a draft" : "drafts"} and not collecting input yet. Each campaign's own page carries the guided publish flow when it is ready to go public.`,
+            approval: "review",
+            auditEvent: "assistant.operation.engagement.drafts",
+            auditNote: "Navigation only. Publishing runs through the campaign page's own publish flow, never from here.",
+          }
+        )
+      : null,
+    quickLink("engagement-lane-surface", "Open engagement register", "/engagement", {
+      targetKind: "engagement",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Register open",
+      reason: "Use the engagement register for the full campaign list and publication record.",
+      approval: "safe",
+      auditEvent: "assistant.operation.engagement.surface",
+      auditNote: "Navigation only. Any change still happens on the page it opens.",
+    }),
+  ]);
+}
+
+function buildSafetyLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const lane = context.moduleLane?.module === "safety" ? context.moduleLane : null;
+  const ingests = lane?.ingests ?? null;
+  const latestFetchError =
+    ingests?.latest && ingests.latest.status === "failed" ? ingests.latest.fetchError : null;
+  const primaryWorkflow =
+    lane?.severityMix != null ? laneWorkflow("safety", "safety-severity") : laneWorkflow("safety", "safety-brief");
+
+  return compactQuickLinks([
+    quickLink(
+      "safety-lane-brief-agent",
+      lane?.severityMix != null ? "Review severity mix in panel" : "Generate safety brief",
+      "/safety",
+      {
+        targetKind: "safety",
+        actionClass: "review_controls",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason:
+          lane?.severityMix != null
+            ? "A ready crash import has a countable severity mix, so the mix and its completeness caveat are the strongest read available."
+            : "Answers here in Planner Agent, without moving you off this page.",
+        approval: "safe",
+        auditEvent: "assistant.operation.safety.brief_agent",
+        auditNote: "This reads and summarises only. It changes no crash data.",
+        ...primaryWorkflow,
+      }
+    ),
+    ingests && ingests.failed > 0
+      ? quickLink(
+          "safety-lane-failed-ingests",
+          `Review ${ingests.failed} failed crash import${ingests.failed === 1 ? "" : "s"}`,
+          "/safety",
+          {
+            targetKind: "safety",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: `${ingests.failed} failed`,
+            reason: latestFetchError
+              ? `The most recent import failed and the source reported: ${latestFetchError}. Until it is retried, coverage claims stop at the last ready import.`
+              : `${ingests.failed} crash import${ingests.failed === 1 ? "" : "s"} failed, so coverage claims stop at the last ready import until ${ingests.failed === 1 ? "it is" : "they are"} retried.`,
+            approval: "review",
+            auditEvent: "assistant.operation.safety.failed_ingests",
+            auditNote: "Navigation only. Retrying an import still happens on the safety page.",
+          }
+        )
+      : null,
+    quickLink("safety-lane-surface", "Open safety data", "/safety", {
+      targetKind: "safety",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Surface open",
+      reason: "Use the safety page for the full import history and coverage record.",
+      approval: "safe",
+      auditEvent: "assistant.operation.safety.surface",
+      auditNote: "Navigation only. Any change still happens on the page it opens.",
+    }),
+  ]);
+}
+
+function buildAerialLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const lane = context.moduleLane?.module === "aerial" ? context.moduleLane : null;
+  const processing = lane?.processing ?? null;
+  const packages = lane?.packages ?? null;
+  const custodyPendingCount = processing ? processing.custodyPartial + processing.custodyNone : 0;
+  const primaryWorkflow =
+    (processing?.failed ?? 0) > 0 || custodyPendingCount > 0
+      ? laneWorkflow("aerial", "aerial-jobs")
+      : (packages?.ready ?? 0) > 0
+        ? laneWorkflow("aerial", "aerial-packages")
+        : laneWorkflow("aerial", "aerial-brief");
+
+  return compactQuickLinks([
+    quickLink(
+      "aerial-lane-brief-agent",
+      (processing?.failed ?? 0) > 0 || custodyPendingCount > 0
+        ? "Review processing jobs in panel"
+        : (packages?.ready ?? 0) > 0
+          ? "Review package readiness in panel"
+          : "Generate aerial brief",
+      "/aerial",
+      {
+        targetKind: "aerial",
+        actionClass: "review_controls",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason:
+          (processing?.failed ?? 0) > 0 || custodyPendingCount > 0
+            ? "Processing jobs have failed or hold incomplete artifact custody, so the job queue outranks a general brief."
+            : "Answers here in Planner Agent, without moving you off this page.",
+        approval: "safe",
+        auditEvent: "assistant.operation.aerial.brief_agent",
+        auditNote: "This reads and summarises only. It changes no mission, job, or package.",
+        ...primaryWorkflow,
+      }
+    ),
+    packages && packages.ready > 0
+      ? quickLink(
+          "aerial-lane-ready-packages",
+          `Review ${packages.ready} ready evidence package${packages.ready === 1 ? "" : "s"}`,
+          "/aerial",
+          {
+            targetKind: "aerial",
+            actionClass: "review_analysis",
+            priority: "primary",
+            statusLabel: `${packages.ready} ready`,
+            reason: `${packages.ready} evidence package${packages.ready === 1 ? " has" : "s have"} cleared QA and ${packages.ready === 1 ? "is" : "are"} ready to review${packages.verificationReady > 0 ? `, ${packages.verificationReady} of them verification-ready` : ""}.`,
+            approval: "review",
+            auditEvent: "assistant.operation.aerial.ready_packages",
+            auditNote: "Navigation only. Sharing or attaching a package still happens from the mission record.",
+          }
+        )
+      : null,
+    processing && custodyPendingCount > 0
+      ? quickLink(
+          "aerial-lane-custody",
+          `Check artifact custody on ${custodyPendingCount} job${custodyPendingCount === 1 ? "" : "s"}`,
+          "/aerial",
+          {
+            targetKind: "aerial",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: `${processing.custodyPartial} partial · ${processing.custodyNone} none`,
+            reason:
+              "Processing jobs finished without complete artifact custody, so the evidence they produced is not fully in OpenPlan's keeping yet. Each mission's record shows which artifacts are still outstanding.",
+            approval: "review",
+            auditEvent: "assistant.operation.aerial.custody",
+            auditNote: "Navigation only. Custody follow-up runs from each mission's own record.",
+          }
+        )
+      : null,
+    quickLink("aerial-lane-surface", "Open aerial operations", "/aerial", {
+      targetKind: "aerial",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Register open",
+      reason: "Use the aerial register for the full mission, processing, and package record.",
+      approval: "safe",
+      auditEvent: "assistant.operation.aerial.surface",
+      auditNote: "Navigation only. Any change still happens on the page it opens.",
+    }),
+  ]);
+}
+
+function buildKnowledgeBaseLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const lane = context.moduleLane?.module === "knowledge_base" ? context.moduleLane : null;
+  const documents = lane?.documents ?? null;
+  const primaryWorkflow =
+    (documents?.extractionFailed ?? 0) > 0
+      ? laneWorkflow("knowledge_base", "knowledge-base-extraction")
+      : laneWorkflow("knowledge_base", "knowledge-base-brief");
+
+  return compactQuickLinks([
+    quickLink(
+      "knowledge-base-lane-brief-agent",
+      (documents?.extractionFailed ?? 0) > 0 ? "Review extraction failures in panel" : "Generate knowledge base brief",
+      "/knowledge-base",
+      {
+        targetKind: "knowledge_base",
+        actionClass: "review_controls",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason:
+          (documents?.extractionFailed ?? 0) > 0
+            ? "Documents failed text extraction and cannot be retrieved from, so those failures outrank a general brief."
+            : "Answers here in Planner Agent, without moving you off this page.",
+        approval: "safe",
+        auditEvent: "assistant.operation.knowledge_base.brief_agent",
+        auditNote: "This reads and summarises only. It changes no document.",
+        ...primaryWorkflow,
+      }
+    ),
+    documents && documents.extractionFailed > 0
+      ? quickLink(
+          "knowledge-base-lane-extraction-failures",
+          `Review ${documents.extractionFailed} failed extraction${documents.extractionFailed === 1 ? "" : "s"}`,
+          "/knowledge-base",
+          {
+            targetKind: "knowledge_base",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: `${documents.extractionFailed} failed`,
+            reason: `${documents.extractionFailed} document${documents.extractionFailed === 1 ? "" : "s"} failed text extraction, so nothing can be retrieved from ${documents.extractionFailed === 1 ? "it" : "them"} — ${documents.extractionFailed === 1 ? "it is" : "they are"} invisible to every knowledge-base answer until re-uploaded or re-extracted.`,
+            approval: "review",
+            auditEvent: "assistant.operation.knowledge_base.extraction_failures",
+            auditNote: "Navigation only. Re-uploading or re-extracting a document still happens on the knowledge base page.",
+          }
+        )
+      : null,
+    quickLink("knowledge-base-lane-surface", "Open knowledge base", "/knowledge-base", {
+      targetKind: "knowledge_base",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Surface open",
+      reason: "Use the knowledge base for the full document corpus and its project linkage.",
+      approval: "safe",
+      auditEvent: "assistant.operation.knowledge_base.surface",
+      auditNote: "Navigation only. Any change still happens on the page it opens.",
+    }),
+  ]);
+}
+
+function buildDataHubLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  const lane = context.moduleLane?.module === "data_hub" ? context.moduleLane : null;
+  const datasets = lane?.datasets ?? null;
+  const connectors = lane?.connectors ?? null;
+  const refreshJobs = lane?.refreshJobs ?? null;
+  const attentionCount = datasets ? datasets.stale + datasets.error : 0;
+  const degradedConnectorCount = connectors ? connectors.degraded + connectors.offline : 0;
+  const primaryWorkflow =
+    (refreshJobs?.failed ?? 0) > 0
+      ? laneWorkflow("data_hub", "data-hub-refresh")
+      : degradedConnectorCount > 0
+        ? laneWorkflow("data_hub", "data-hub-feeds")
+        : laneWorkflow("data_hub", "data-hub-brief");
+
+  return compactQuickLinks([
+    quickLink(
+      "data-hub-lane-brief-agent",
+      (refreshJobs?.failed ?? 0) > 0
+        ? "Review failed refresh jobs in panel"
+        : degradedConnectorCount > 0
+          ? "Review connector states in panel"
+          : "Generate data hub brief",
+      "/data-hub",
+      {
+        targetKind: "data_hub",
+        actionClass: "review_controls",
+        executionMode: "future_agent_action",
+        priority: "primary",
+        statusLabel: "In-panel action",
+        reason:
+          (refreshJobs?.failed ?? 0) > 0
+            ? "Recent refresh jobs failed, so what did not refresh outranks a general brief."
+            : degradedConnectorCount > 0
+              ? "Connectors are degraded or offline, so their state outranks a general brief."
+              : "Answers here in Planner Agent, without moving you off this page.",
+        approval: "safe",
+        auditEvent: "assistant.operation.data_hub.brief_agent",
+        auditNote: "This reads and summarises only. It changes no dataset, connector, or feed.",
+        ...primaryWorkflow,
+      }
+    ),
+    datasets && attentionCount > 0
+      ? quickLink(
+          "data-hub-lane-stale-datasets",
+          `Review ${attentionCount} dataset${attentionCount === 1 ? "" : "s"} needing refresh`,
+          "/data-hub",
+          {
+            targetKind: "data_hub",
+            actionClass: "review_controls",
+            priority: "primary",
+            statusLabel: `${datasets.stale} stale · ${datasets.error} error`,
+            reason: `${attentionCount} dataset${attentionCount === 1 ? "'s own status says it is" : "s' own statuses say they are"} stale or erroring, so analyses drawing on ${attentionCount === 1 ? "it" : "them"} are working from data the hub itself no longer stands behind.`,
+            approval: "review",
+            auditEvent: "assistant.operation.data_hub.stale_datasets",
+            auditNote: "Navigation only. Refreshing a dataset still happens on the data hub page.",
+          }
+        )
+      : null,
+    quickLink("data-hub-lane-surface", "Open data hub", "/data-hub", {
+      targetKind: "data_hub",
+      actionClass: "open_surface",
+      priority: "secondary",
+      statusLabel: "Surface open",
+      reason: "Use the data hub for the full dataset, connector, and transit feed record.",
+      approval: "safe",
+      auditEvent: "assistant.operation.data_hub.surface",
+      auditNote: "Navigation only. Any change still happens on the page it opens.",
+    }),
+  ]);
+}
+
+function buildModuleLaneOperations(context: WorkspaceAssistantContext): AssistantQuickLink[] {
+  switch (context.kind) {
+    case "grants":
+      return buildGrantsLaneOperations(context);
+    case "invoicing":
+      return buildInvoicingLaneOperations(context);
+    case "engagement":
+      return buildEngagementLaneOperations(context);
+    case "safety":
+      return buildSafetyLaneOperations(context);
+    case "aerial":
+      return buildAerialLaneOperations(context);
+    case "knowledge_base":
+      return buildKnowledgeBaseLaneOperations(context);
+    case "data_hub":
+      return buildDataHubLaneOperations(context);
+    default:
+      return buildWorkspaceOperations(context);
+  }
+}
+
 export function buildAssistantOperations(context: AssistantContext): AssistantQuickLink[] {
   switch (context.kind) {
     case "project":
@@ -2061,6 +2697,14 @@ export function buildAssistantOperations(context: AssistantContext): AssistantQu
       return buildReportOperations(context);
     case "run":
       return buildRunOperations(context);
+    case "grants":
+    case "invoicing":
+    case "engagement":
+    case "safety":
+    case "aerial":
+    case "knowledge_base":
+    case "data_hub":
+      return buildModuleLaneOperations(context);
     case "analysis_studio":
     case "workspace":
     default:
