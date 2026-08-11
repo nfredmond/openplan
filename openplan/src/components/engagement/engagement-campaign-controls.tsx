@@ -55,6 +55,19 @@ type RtpCycleOption = {
   chapters: Array<{ id: string; title: string }>;
 };
 
+/**
+ * The full set of projects this campaign covers (20260810000003), lead
+ * included, read from the same GET as the map framing. Same three states and
+ * the same honesty rule as the RTP attachment above: while the set is loading
+ * or unreadable the checkboxes are not on screen and the form does not send
+ * `projectIds` at all, so a failed read can never silently unlink a campaign
+ * from the projects it covers.
+ */
+type LinkedProjects =
+  | { state: "loading" }
+  | { state: "unavailable" }
+  | { state: "ready"; ids: string[] };
+
 type Campaign = {
   id: string;
   title: string;
@@ -79,6 +92,7 @@ export function EngagementCampaignControls({
   const [status, setStatus] = useState(campaign.status);
   const [engagementType, setEngagementType] = useState(campaign.engagement_type);
   const [projectId, setProjectId] = useState(campaign.project_id ?? "");
+  const [linkedProjects, setLinkedProjects] = useState<LinkedProjects>({ state: "loading" });
   const [rtpCycleId, setRtpCycleId] = useState(campaign.rtp_cycle_id ?? "");
   const [rtpCycleChapterId, setRtpCycleChapterId] = useState(campaign.rtp_cycle_chapter_id ?? "");
   const [rtpTargets, setRtpTargets] = useState<{ state: "loading" } | { state: "unavailable" } | { state: "ready"; cycles: RtpCycleOption[] }>({ state: "loading" });
@@ -113,17 +127,26 @@ export function EngagementCampaignControls({
         const body = (await response.json().catch(() => ({}))) as { error?: string };
         setFramingError(body.error ?? "Could not read where the public map opens.");
         setRtpTargets({ state: "unavailable" });
+        setLinkedProjects({ state: "unavailable" });
         return;
       }
       const body = (await response.json()) as {
         mapFraming?: PortalMapFraming;
         submissionGeofence?: SubmissionGeofence;
         rtpTargets?: { cycles: RtpCycleOption[] } | null;
+        linkedProjectIds?: string[] | null;
       };
       setGeofence(body.submissionGeofence ?? null);
       // `null` from the server means the cycle read FAILED there — the server
       // says so rather than sending an empty list, and this stays honest to it.
       setRtpTargets(body.rtpTargets ? { state: "ready", cycles: body.rtpTargets.cycles } : { state: "unavailable" });
+      // Same contract: `null` means the covered-project read failed (or the
+      // deployment has not run its migration yet), never "covers nothing".
+      setLinkedProjects(
+        Array.isArray(body.linkedProjectIds)
+          ? { state: "ready", ids: body.linkedProjectIds }
+          : { state: "unavailable" }
+      );
       if (!body.mapFraming) {
         setFramingError("The campaign loaded, but it did not say where the public map opens.");
         return;
@@ -132,6 +155,7 @@ export function EngagementCampaignControls({
     } catch {
       setFramingError("Could not reach the server to read where the public map opens.");
       setRtpTargets({ state: "unavailable" });
+      setLinkedProjects({ state: "unavailable" });
     }
   }, [campaign.id]);
 
@@ -225,6 +249,14 @@ export function EngagementCampaignControls({
           status,
           engagementType,
           projectId: projectId || null,
+          // The FULL covered-project set, lead included, sent only when the
+          // stored set actually loaded — while it is loading or unreadable
+          // the checkboxes are not on screen, and omitting the field keeps
+          // coverage exactly as it was. The server unions the lead in
+          // regardless, so this list can never detach it.
+          ...(linkedProjects.state === "ready"
+            ? { projectIds: projectId ? [...new Set([...linkedProjects.ids, projectId])] : linkedProjects.ids }
+            : {}),
           // Sent only when the option list actually loaded. While the list is
           // loading or unreadable the selects are not on screen, and omitting
           // the fields keeps the stored attachment exactly as it was — a
@@ -314,21 +346,99 @@ export function EngagementCampaignControls({
 
         <div className="space-y-1.5">
           <label htmlFor="campaign-control-project" className="text-[0.82rem] font-semibold">
-            Linked project
+            Lead project
           </label>
           <select
             id="campaign-control-project"
             className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
             value={projectId}
-            onChange={(event) => setProjectId(event.target.value)}
+            onChange={(event) => {
+              const nextLead = event.target.value;
+              setProjectId(nextLead);
+              // The lead is always part of the covered set, so choosing a new
+              // lead checks its box. The old lead stays checked: the campaign
+              // still covers it unless somebody unchecks it on purpose.
+              if (nextLead) {
+                setLinkedProjects((previous) =>
+                  previous.state === "ready" && !previous.ids.includes(nextLead)
+                    ? { state: "ready", ids: [...previous.ids, nextLead] }
+                    : previous
+                );
+              }
+            }}
           >
-            <option value="">No linked project</option>
+            <option value="">No lead project</option>
             {projects.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.name}
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <p className="text-[0.82rem] font-semibold">
+            Projects this campaign covers
+            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+          </p>
+          {linkedProjects.state === "ready" ? (
+            projects.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                This workspace has no projects yet, so there is nothing to cover beyond the campaign
+                itself.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <div className="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-input bg-background p-3">
+                  {projects.map((project) => {
+                    const isLead = Boolean(projectId) && project.id === projectId;
+                    const checked = isLead || linkedProjects.ids.includes(project.id);
+                    return (
+                      <label key={project.id} className="flex items-start gap-2.5 text-sm">
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 h-4 w-4"
+                          checked={checked}
+                          // The lead cannot be unchecked here: it is covered by
+                          // definition. Change the lead above to move it.
+                          disabled={isLead}
+                          onChange={(event) => {
+                            const on = event.target.checked;
+                            setLinkedProjects((previous) => {
+                              if (previous.state !== "ready") return previous;
+                              const ids = on
+                                ? [...new Set([...previous.ids, project.id])]
+                                : previous.ids.filter((id) => id !== project.id);
+                              return { state: "ready", ids };
+                            });
+                          }}
+                        />
+                        <span>
+                          {project.name}
+                          {isLead ? (
+                            <span className="ml-1.5 text-[0.72rem] text-muted-foreground">lead — always covered</span>
+                          ) : null}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="text-[0.72rem] text-muted-foreground">
+                  A corridor-wide comment window is often about several projects at once. Every
+                  checked project shows this campaign in its engagement lane and in the project
+                  filter on the engagement catalog. Reports and RTP comment records still follow the
+                  lead project.
+                </p>
+              </div>
+            )
+          ) : linkedProjects.state === "loading" ? (
+            <p className="text-sm text-muted-foreground">Reading which projects this campaign covers…</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              The list of projects this campaign covers could not be read, so it cannot be changed
+              right now. The stored list, if any, is unchanged — saving this form will not touch it.
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">

@@ -117,7 +117,14 @@ const EXPECTED_RESTRICTIVE_POLICIES = 243;
 // EXPECTED_GATED_TABLES and EXPECTED_RESTRICTIVE_POLICIES do NOT move —
 // gtfs_feeds was already gated, and both new policies are role-blind at the
 // permissive layer on purpose, so the existing gate is what narrows them.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 218;
+//
+// 218 -> 220 (20260810000003): `engagement_campaign_projects` adds role-aware
+// INSERT and DELETE permissive policies via `workspace_member_can_write`, so
+// the gated-table and restrictive counts do not move. There is deliberately
+// NO UPDATE policy and no UPDATE grant on that table — a coverage row is an
+// immutable (campaign, project) pair, corrected by delete-and-insert — which
+// is why only two policies arrive instead of the usual three.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 220;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

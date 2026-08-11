@@ -81,7 +81,18 @@ const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
 const engagementCampaignsLimitMock = vi.fn();
 const engagementCampaignsOrderMock = vi.fn(() => ({ limit: engagementCampaignsLimitMock }));
 const engagementCampaignsEqMock = vi.fn(() => ({ order: engagementCampaignsOrderMock }));
-const engagementCampaignsSelectMock = vi.fn(() => ({ eq: engagementCampaignsEqMock }));
+// The lane reads campaigns COVERING the project (lead OR join membership,
+// 20260810000003), so the query arrives as `.or(...)` rather than `.eq(...)`.
+const engagementCampaignsOrMock = vi.fn(() => ({ order: engagementCampaignsOrderMock }));
+const engagementCampaignsSelectMock = vi.fn(() => ({
+  eq: engagementCampaignsEqMock,
+  or: engagementCampaignsOrMock,
+}));
+
+// The coverage join itself: no rows by default, so the lane behaves exactly
+// as it did when campaigns only carried a lead.
+const campaignProjectsEqMock = vi.fn(async () => ({ data: [], error: null }));
+const campaignProjectsSelectMock = vi.fn(() => ({ eq: campaignProjectsEqMock }));
 
 const engagementItemsLimitMock = vi.fn();
 const engagementItemsOrderMock = vi.fn(() => ({ limit: engagementItemsLimitMock }));
@@ -256,6 +267,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "engagement_campaigns") {
     return { select: engagementCampaignsSelectMock };
+  }
+  if (table === "engagement_campaign_projects") {
+    return { select: campaignProjectsSelectMock };
   }
   if (table === "engagement_items") {
     return { select: engagementItemsSelectMock };

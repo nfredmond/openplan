@@ -7,6 +7,7 @@ import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-ma
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
+import { escapeCsvField } from "@/lib/export/csv";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
@@ -41,15 +42,12 @@ type ExportCategoryRow = {
   slug: string | null;
 };
 
-function escapeCSVField(value: string | null | undefined): string {
-  if (value === null || value === undefined) return "";
-  const str = String(value);
-  if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
+// Escaping lives in the SHARED layer (`@/lib/export/csv`), which also
+// neutralizes leading formula characters — resident-authored free text flows
+// into this file, and a comment starting `=HYPERLINK(...)` must arrive as
+// text, not as code the planner's spreadsheet runs. Latitude/longitude below
+// are real numbers written bare on purpose: a number cannot carry a formula,
+// and those columns must stay computable.
 function buildCSV(items: ExportItemRow[], categoryMap: Map<string, string>): string {
   const headers = [
     "id", "title", "body", "submitted_by", "status", "source_type",
@@ -58,19 +56,19 @@ function buildCSV(items: ExportItemRow[], categoryMap: Map<string, string>): str
   ];
 
   const rows = items.map((item) => [
-    escapeCSVField(item.id),
-    escapeCSVField(item.title),
-    escapeCSVField(item.body),
-    escapeCSVField(item.submitted_by),
-    escapeCSVField(item.status),
-    escapeCSVField(item.source_type),
-    escapeCSVField(item.category_id),
-    escapeCSVField(item.category_id ? categoryMap.get(item.category_id) ?? "" : ""),
+    escapeCsvField(item.id),
+    escapeCsvField(item.title),
+    escapeCsvField(item.body),
+    escapeCsvField(item.submitted_by),
+    escapeCsvField(item.status),
+    escapeCsvField(item.source_type),
+    escapeCsvField(item.category_id),
+    escapeCsvField(item.category_id ? categoryMap.get(item.category_id) ?? "" : ""),
     item.latitude !== null ? String(item.latitude) : "",
     item.longitude !== null ? String(item.longitude) : "",
-    escapeCSVField(item.moderation_notes),
-    escapeCSVField(item.created_at),
-    escapeCSVField(item.updated_at),
+    escapeCsvField(item.moderation_notes),
+    escapeCsvField(item.created_at),
+    escapeCsvField(item.updated_at),
   ].join(","));
 
   return [headers.join(","), ...rows].join("\n");

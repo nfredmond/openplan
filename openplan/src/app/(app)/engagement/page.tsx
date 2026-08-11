@@ -16,6 +16,10 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import {
+  loadCampaignIdsCoveringProject,
+  type CampaignProjectsSupabaseLike,
+} from "@/lib/engagement/campaign-projects";
 import { getEngagementHandoffReadiness } from "@/lib/engagement/readiness";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { createClient } from "@/lib/supabase/server";
@@ -208,6 +212,26 @@ export default async function EngagementPage({
   const statusFilter = filters.status?.trim() || null;
   const hasActiveFilters = Boolean(projectFilterId || statusFilter);
 
+  // A campaign belongs in a project's filtered catalog when it LEADS with the
+  // project or when it covers it through engagement_campaign_projects
+  // (20260810000003). The coverage read is tolerant of the deploy window where
+  // the join table does not exist yet (lead-only is yesterday's behaviour); a
+  // REAL failure is disclosed, because a filter that silently dropped joined
+  // campaigns would present a shrunken list as the project's whole record.
+  const projectFilterCoverage = projectFilterId
+    ? await loadCampaignIdsCoveringProject(
+        supabase as unknown as CampaignProjectsSupabaseLike,
+        projectFilterId
+      )
+    : null;
+  if (projectFilterCoverage?.failed) {
+    reads.check("campaigns covering the filtered project", {
+      data: null,
+      error: { message: projectFilterCoverage.errorMessage ?? "no message reported" },
+    });
+  }
+  const coveredCampaignIds = new Set(projectFilterCoverage?.campaignIds ?? []);
+
   const campaignsInScope = ((campaignsData ?? []) as CampaignRow[])
     .map((campaign) => {
       const categoryCount = (categoriesByCampaign.get(campaign.id) ?? []).length;
@@ -227,7 +251,11 @@ export default async function EngagementPage({
         }),
       };
     })
-    .filter((campaign) => (projectFilterId ? campaign.project_id === projectFilterId : true));
+    .filter((campaign) =>
+      projectFilterId
+        ? campaign.project_id === projectFilterId || coveredCampaignIds.has(campaign.id)
+        : true
+    );
 
   const campaigns = campaignsInScope.filter((campaign) =>
     statusFilter ? campaign.status === statusFilter : true

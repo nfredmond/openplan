@@ -1,3 +1,4 @@
+import { csvCellForValue, escapeCsvField } from "@/lib/export/csv";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -19,36 +20,42 @@ function stringifyMetricValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-function escapeCsvCell(value: string): string {
-  if (value.includes('"') || value.includes(",") || value.includes("\n")) {
-    return `"${value.replaceAll('"', '""')}"`;
-  }
-
-  return value;
-}
-
-export function flattenMetricsForCsv(metrics: Record<string, unknown>): Record<string, string> {
-  const rows: Record<string, string> = {};
+/** Flatten WITHOUT stringifying, so the CSV writer still knows which values are numbers. */
+function flattenMetricsRaw(metrics: Record<string, unknown>): Record<string, unknown> {
+  const rows: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(metrics)) {
     if ((key === "dataQuality" || key === "mapViewState") && isRecord(value)) {
       for (const [nestedKey, nestedValue] of Object.entries(value)) {
-        rows[`${key}.${nestedKey}`] = stringifyMetricValue(nestedValue);
+        rows[`${key}.${nestedKey}`] = nestedValue;
       }
       continue;
     }
 
-    rows[key] = stringifyMetricValue(value);
+    rows[key] = value;
   }
 
   return rows;
 }
 
+export function flattenMetricsForCsv(metrics: Record<string, unknown>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(flattenMetricsRaw(metrics)).map(([key, value]) => [key, stringifyMetricValue(value)])
+  );
+}
+
+// CSV escaping is the SHARED layer (`@/lib/export/csv`): quoting plus formula
+// neutralization for string values. The serializers below hand it the RAW
+// value (via csvCellForValue), not a pre-stringified one, so a real number —
+// a negative score delta, a coordinate — stays a bare, computable number
+// while untrusted text starting `=` `+` `-` `@` is defused. Header keys are
+// our own identifiers; escapeCsvField keeps them RFC-4180-safe.
+
 export function serializeMetricsToCsv(metrics: Record<string, unknown>): string {
-  const flat = flattenMetricsForCsv(metrics);
+  const flat = flattenMetricsRaw(metrics);
   const keys = Object.keys(flat).sort((a, b) => a.localeCompare(b));
-  const header = keys.map(escapeCsvCell).join(",");
-  const values = keys.map((key) => escapeCsvCell(flat[key] ?? "")).join(",");
+  const header = keys.map(escapeCsvField).join(",");
+  const values = keys.map((key) => csvCellForValue(flat[key])).join(",");
   return `${header}\n${values}\n`;
 }
 
@@ -64,9 +71,9 @@ export function serializeRecordsToCsv(records: Array<Record<string, unknown>>): 
     }, new Set<string>())
   ).sort((a, b) => a.localeCompare(b));
 
-  const header = keys.map(escapeCsvCell).join(",");
+  const header = keys.map(escapeCsvField).join(",");
   const rows = records.map((record) =>
-    keys.map((key) => escapeCsvCell(stringifyMetricValue(record[key]))).join(",")
+    keys.map((key) => csvCellForValue(record[key])).join(",")
   );
 
   return `${header}\n${rows.join("\n")}\n`;

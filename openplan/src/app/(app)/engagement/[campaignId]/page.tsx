@@ -3,6 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { ArrowRight, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
 import { EngagementOperatorActions } from "@/components/engagement/engagement-operator-actions";
+import { CampaignPublishFlow } from "@/components/engagement/campaign-publish-flow";
+import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
+import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
@@ -44,6 +47,8 @@ import {
 import { LocationDisplayMap } from "@/components/engagement/location-display-map";
 import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
 import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
+import { getPublicPortalState } from "@/lib/engagement/public-portal";
+import { loadPortalPlaceCandidates } from "@/lib/engagement/public-portal-data";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
 import type { HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
@@ -187,7 +192,7 @@ export default async function EngagementCampaignDetailPage({
   // so each of them names the failure instead. See src/lib/ui/read-failures.ts.
   const reads = new ReadFailureLog();
 
-  const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult, rtpCycleResult, rtpChapterResult] = await Promise.all([
+  const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult, rtpCycleResult, rtpChapterResult, publicSlugResult] = await Promise.all([
     campaign.project_id
       ? supabase
           .from("projects")
@@ -226,6 +231,13 @@ export default async function EngagementCampaignDetailPage({
     campaign.rtp_cycle_chapter_id
       ? supabase.from("rtp_cycle_chapters").select("id, title").eq("id", campaign.rtp_cycle_chapter_id).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
+    // The printable public address (20260810000002). Read on its own rather
+    // than added to the main campaign select for the same deploy-before-migrate
+    // reason as the geofence flag on the campaign API route: a column that does
+    // not exist yet must degrade to one named failed read, not 404 the whole
+    // console. The share controls only SEND the slug when the planner edits it,
+    // so a failed read here can never silently clear a live address.
+    supabase.from("engagement_campaigns").select("public_slug").eq("id", campaign.id).maybeSingle(),
   ]);
 
   // Named in the moderator's words, because these labels are read back in a
@@ -237,6 +249,9 @@ export default async function EngagementCampaignDetailPage({
   const reportsUnreadable = reads.check("reports on the linked project", reportsResult);
   const rtpCycleUnreadable = reads.check("the RTP cycle this campaign is attached to", rtpCycleResult);
   const rtpChapterUnreadable = reads.check("the RTP chapter this campaign is targeted at", rtpChapterResult);
+  reads.check("this campaign's easy link name", publicSlugResult);
+  const publicSlug =
+    (publicSlugResult.data as { public_slug?: string | null } | null)?.public_slug ?? null;
   const rtpCycle = rtpCycleResult.data as { id: string; title: string; status: string } | null;
   const rtpChapter = rtpChapterResult.data as { id: string; title: string } | null;
 
@@ -429,10 +444,20 @@ export default async function EngagementCampaignDetailPage({
   // makes, so a moderator reviews located comments against exactly what the
   // resident was looking at when they wrote them — "move it to the other side"
   // is no more reviewable over a blank basemap than it was writable over one.
-  const [layerAccess, contextLayers, publishedContextLayers] = await Promise.all([
+  // The publish flow's campaign-area advisory reads the SAME candidates the
+  // public portal and the campaign GET route read (`loadPortalPlaceCandidates`),
+  // so what the flow says about the campaign's area is the fact residents get,
+  // not a second calculation. Its three-state answer already keeps a failed
+  // read from arriving as "no area".
+  const [layerAccess, contextLayers, publishedContextLayers, portalPlaceCandidates] = await Promise.all([
     loadCampaignAccess(supabase, campaign.id, user.id, "engagement.write"),
     loadCampaignContextLayerSummaries(supabase, campaign.id),
     loadParticipantContextLayers(supabase, campaign.id),
+    loadPortalPlaceCandidates(supabase, {
+      id: campaign.id,
+      workspace_id: campaign.workspace_id,
+      project_id: campaign.project_id,
+    }),
   ]);
   const canManageContextLayers = "allowed" in layerAccess && Boolean(layerAccess.allowed);
 
@@ -524,6 +549,21 @@ export default async function EngagementCampaignDetailPage({
     hasAnthropicAccess()
   );
 
+  // MODERATION HONESTY. A live portal shows APPROVED comments only, so a
+  // campaign that is live with submissions waiting and nothing yet approved is
+  // publicly indistinguishable from a campaign nobody responded to — "0
+  // published feedback" on the resident page while the queue fills. The banner
+  // states that plainly, near the top, from the same portal-state function the
+  // publish gate uses. It is withheld when the comments could not be read: a
+  // failed read licenses no count, in either direction.
+  const portalStateNow = getPublicPortalState(campaign);
+  const awaitingReviewCount = counts.moderationQueue.actionableCount;
+  const showModerationHonestyBanner =
+    !itemsUnreadable &&
+    portalStateNow.isPubliclyReachable &&
+    awaitingReviewCount > 0 &&
+    counts.statusCounts.approved === 0;
+
   // WHY THE DISCLOSURE BLOCK IS FIRST. The readiness checks, the moderation
   // counts and half the panels below are computed over the reads above, so what
   // failed is stated once, before any of it. This is an operator surface, so the
@@ -567,6 +607,18 @@ export default async function EngagementCampaignDetailPage({
             tone="danger"
             title="Part of this campaign could not be read"
             description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+          />
+        </div>
+      ) : null}
+
+      {showModerationHonestyBanner ? (
+        <div className="mb-4" data-testid="moderation-honesty-banner">
+          <StateBlock
+            tone="warning"
+            title={`${awaitingReviewCount} ${
+              awaitingReviewCount === 1 ? "submission is" : "submissions are"
+            } waiting for review — residents currently see none of them`}
+            description="The public page shows approved comments only. Until something is approved, this live portal reads to residents as if nobody has responded. Review the queue in the moderation sections below."
           />
         </div>
       ) : null}
@@ -671,6 +723,34 @@ export default async function EngagementCampaignDetailPage({
       </header>
 
       <div className="mt-6 space-y-6">
+        {/*
+          CONSOLE ORDER IS THE WORKFLOW ORDER. Setting a campaign up — taking
+          it public, writing the survey, closing the loop — comes before the
+          analysis panels, because every analysis panel is computed over
+          responses that do not exist until the campaign is published and
+          answered. Publishing used to be three forms with three save buttons
+          at the BOTTOM of this console; the guided flow now leads it.
+        */}
+        <CampaignPublishFlow
+          campaign={campaign}
+          campaignArea={{
+            state: portalPlaceCandidates.campaign.state,
+            label: portalPlaceCandidates.campaign.label,
+          }}
+        />
+
+        <EngagementSurveyBuilder
+          campaignId={campaign.id}
+          categories={builderCategories}
+          initialQuestions={surveyQuestions}
+        />
+
+        <EngagementCloseLoopBuilder
+          campaignId={campaign.id}
+          categories={builderCategories}
+          initialEntries={closeLoopEntries}
+        />
+
         <CampaignHandoffReadinessSection
           handoffReadiness={handoffReadiness}
           publicReviewCopyGuard={publicReviewCopyGuard}
@@ -1022,6 +1102,129 @@ export default async function EngagementCampaignDetailPage({
             </article>
           ) : null}
 
+
+          {nearDuplicates && nearDuplicates.groupCount > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Moderation</p>
+                  <h2 className="module-section-title">Near-duplicate comments</h2>
+                  <p className="module-section-description">
+                    Fuzzy trigram look-alikes the exact-duplicate check misses (paraphrases, typos, re-posts) — a
+                    screening aid to help collapse duplicates. Nothing is merged automatically.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <NearDuplicatesPanel analysis={nearDuplicates} snippetById={nearDuplicateSnippetById} />
+              </div>
+            </article>
+          ) : null}
+
+          {moderationQueue.queueItemCount > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Moderation</p>
+                  <h2 className="module-section-title">AI moderation assist</h2>
+                  <p className="module-section-description">
+                    A Claude pass over the review queue that flags possible toxicity, personal info, off-topic, or
+                    spam with a rationale — a triage aid. It never changes a comment&rsquo;s status; a moderator
+                    decides. Falls back to a deterministic PII/spam check when AI is offline.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <AiModerationPanel campaignId={campaign.id} queue={moderationQueue} />
+              </div>
+            </article>
+          ) : null}
+
+          {(items?.length ?? 0) > 0 && (
+            <EngagementBulkModeration
+              campaignId={campaign.id}
+              items={(items ?? []) as Array<{
+                id: string;
+                campaign_id: string;
+                category_id: string | null;
+                title: string | null;
+                status: string;
+                source_type: string;
+              }>}
+              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
+                id: c.id,
+                label: c.label,
+              }))}
+            />
+          )}
+
+          {items?.length ? (
+            <EngagementItemRegistry
+              items={(recentItems as Array<{
+                id: string;
+                campaign_id: string;
+                category_id: string | null;
+                title: string | null;
+                body: string;
+                submitted_by: string | null;
+                status: string;
+                source_type: string;
+                moderation_notes: string | null;
+                latitude: number | null;
+                longitude: number | null;
+                geometry: unknown;
+                votes_count: number | null;
+                parent_item_id: string | null;
+                updated_at: string;
+              }>).map((item) => ({
+                ...item,
+                photo_url: photoUrlByItemId.get(item.id) ?? null,
+              }))}
+              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
+                id: category.id,
+                label: category.label,
+              }))}
+              counts={counts}
+            />
+          ) : (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Moderation</p>
+                  <h2 className="module-section-title">Recent intake registry</h2>
+                  <p className="module-section-description">
+                    {itemsUnreadable
+                      ? "The comments on this campaign could not be read, so none can be listed here."
+                      : "Create the first item to open moderation state inside this campaign."}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                {itemsUnreadable ? (
+                  // NOT "No intake items yet". On a live campaign that sentence
+                  // says nobody in the community responded — the loudest false
+                  // claim this console can make, and a broken query cannot make
+                  // it.
+                  <StateBlock
+                    tone="danger"
+                    title="This campaign's comments could not be read"
+                    description="OpenPlan cannot say how much input this campaign has received. Nothing here means the campaign is empty — reload, and if it keeps failing the error is reported at the top of this page."
+                  />
+                ) : (
+                  <EmptyState
+                    title="No intake items yet"
+                    description="Add internal notes, meeting observations, or moderated public input to start the campaign record."
+                  />
+                )}
+              </div>
+            </article>
+          )}
+          {/*
+            ANALYSIS PANELS LAST IN THIS COLUMN, deliberately. Every one of
+            them is computed over responses, so before responses exist they are
+            blank space between a planner and the moderation queue. Setup and
+            moderation surfaces sit above them.
+          */}
           {counts.statusCounts.approved > 0 ? (
             <article className="module-section-surface">
               <div className="module-section-header">
@@ -1148,132 +1351,13 @@ export default async function EngagementCampaignDetailPage({
               </div>
             </article>
           ) : null}
-
-          {nearDuplicates && nearDuplicates.groupCount > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Moderation</p>
-                  <h2 className="module-section-title">Near-duplicate comments</h2>
-                  <p className="module-section-description">
-                    Fuzzy trigram look-alikes the exact-duplicate check misses (paraphrases, typos, re-posts) — a
-                    screening aid to help collapse duplicates. Nothing is merged automatically.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <NearDuplicatesPanel analysis={nearDuplicates} snippetById={nearDuplicateSnippetById} />
-              </div>
-            </article>
-          ) : null}
-
-          {moderationQueue.queueItemCount > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Moderation</p>
-                  <h2 className="module-section-title">AI moderation assist</h2>
-                  <p className="module-section-description">
-                    A Claude pass over the review queue that flags possible toxicity, personal info, off-topic, or
-                    spam with a rationale — a triage aid. It never changes a comment&rsquo;s status; a moderator
-                    decides. Falls back to a deterministic PII/spam check when AI is offline.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <AiModerationPanel campaignId={campaign.id} queue={moderationQueue} />
-              </div>
-            </article>
-          ) : null}
-
-          {(items?.length ?? 0) > 0 && (
-            <EngagementBulkModeration
-              campaignId={campaign.id}
-              items={(items ?? []) as Array<{
-                id: string;
-                campaign_id: string;
-                category_id: string | null;
-                title: string | null;
-                status: string;
-                source_type: string;
-              }>}
-              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
-                id: c.id,
-                label: c.label,
-              }))}
-            />
-          )}
-
-          {items?.length ? (
-            <EngagementItemRegistry
-              items={(recentItems as Array<{
-                id: string;
-                campaign_id: string;
-                category_id: string | null;
-                title: string | null;
-                body: string;
-                submitted_by: string | null;
-                status: string;
-                source_type: string;
-                moderation_notes: string | null;
-                latitude: number | null;
-                longitude: number | null;
-                geometry: unknown;
-                votes_count: number | null;
-                parent_item_id: string | null;
-                updated_at: string;
-              }>).map((item) => ({
-                ...item,
-                photo_url: photoUrlByItemId.get(item.id) ?? null,
-              }))}
-              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
-                id: category.id,
-                label: category.label,
-              }))}
-              counts={counts}
-            />
-          ) : (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Moderation</p>
-                  <h2 className="module-section-title">Recent intake registry</h2>
-                  <p className="module-section-description">
-                    {itemsUnreadable
-                      ? "The comments on this campaign could not be read, so none can be listed here."
-                      : "Create the first item to open moderation state inside this campaign."}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                {itemsUnreadable ? (
-                  // NOT "No intake items yet". On a live campaign that sentence
-                  // says nobody in the community responded — the loudest false
-                  // claim this console can make, and a broken query cannot make
-                  // it.
-                  <StateBlock
-                    tone="danger"
-                    title="This campaign's comments could not be read"
-                    description="OpenPlan cannot say how much input this campaign has received. Nothing here means the campaign is empty — reload, and if it keeps failing the error is reported at the top of this page."
-                  />
-                ) : (
-                  <EmptyState
-                    title="No intake items yet"
-                    description="Add internal notes, meeting observations, or moderated public input to start the campaign record."
-                  />
-                )}
-              </div>
-            </article>
-          )}
         </div>
       </div>
 
       <EngagementOperatorActions
-        campaign={campaign}
+        campaign={{ ...campaign, public_slug: publicSlug }}
         projects={(projects ?? []) as Array<{ id: string; name: string }>}
         categories={builderCategories}
-        surveyQuestions={surveyQuestions}
-        closeLoopEntries={closeLoopEntries}
       />
     </section>
   );

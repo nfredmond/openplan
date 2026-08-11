@@ -11,6 +11,7 @@ function campaign(overrides: Record<string, unknown> = {}) {
     status: "active",
     share_token: "abcdef0123456789abcdef01",
     public_description: "Tell us about downtown.",
+    public_slug: null,
     allow_public_submissions: true,
     submissions_closed_at: null,
     demographics_enabled: false,

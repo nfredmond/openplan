@@ -153,6 +153,9 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   { table: "project_meetings", column: "project_id", label: "meetings", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "data_dataset_project_links", column: "project_id", label: "linked datasets", severity: "evidence", behavior: "cascade", href: "/data-hub" },
   { table: "aerial_project_posture", column: "project_id", label: "aerial posture", severity: "evidence", behavior: "cascade", href: "/aerial" },
+  // A coverage row records that a campaign's public input was ABOUT this
+  // project; deleting the project silently disconnects that input from it.
+  { table: "engagement_campaign_projects", column: "project_id", label: "engagement campaign coverage links", severity: "evidence", behavior: "cascade", href: "/engagement" },
 
   // Work that survives but loses its attribution.
   { table: "models", column: "project_id", label: "models", severity: "evidence", behavior: "orphan", href: "/models" },

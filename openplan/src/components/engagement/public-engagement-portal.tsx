@@ -471,10 +471,13 @@ function SubmissionForm({
   onCancelReply,
   framing,
   contextLayers = null,
+  previewMode = false,
 }: {
   shareToken: string;
   categories: CategoryOption[];
   demographicsEnabled: boolean;
+  /** Operator preview: render the real form, send nothing. See the portal's own prop. */
+  previewMode?: boolean;
   /** The participant's language. Every string below comes through it. */
   translator: PortalTranslator;
   parentItemId?: string | null;
@@ -569,6 +572,9 @@ function SubmissionForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Belt behind the disabled button: a preview must never write to the
+    // public record, however the submit was triggered.
+    if (previewMode) return;
     setError(null);
     setIsSubmitting(true);
 
@@ -1073,7 +1079,11 @@ function SubmissionForm({
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">{t("page.submissionStatusDetail")}</p>
-          <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
+          <Button
+            type="submit"
+            disabled={isSubmitting || previewMode}
+            className="min-w-[13rem] justify-center"
+          >
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             {isSubmitting ? t("portal.submitting") : t("portal.submit")}
           </Button>
@@ -1120,6 +1130,7 @@ export function PublicEngagementPortal({
   locale,
   messages,
   renderLanguagePicker = false,
+  previewMode = false,
 }: {
   shareToken: string;
   acceptingSubmissions: boolean;
@@ -1246,6 +1257,23 @@ export function PublicEngagementPortal({
    * the capability below has no caller outside the tests.
    */
   renderLanguagePicker?: boolean;
+  /**
+   * OPERATOR PREVIEW: render exactly what a resident would see, and send
+   * NOTHING. Set only by the member-gated preview page
+   * (`/engagement/[campaignId]/preview`), never by a resident-facing route.
+   *
+   * Every network-calling surface in this component — the comment form, the
+   * photo upload it triggers, votes, per-comment translation, the survey form,
+   * the subscribe form — is short-circuited at the handler AND disabled at the
+   * button when this is true. Both layers on purpose: a disabled button is the
+   * honest UI, and the handler guard is what makes "a preview cannot write to
+   * the public record" a property of the component rather than of the markup.
+   *
+   * The forms still RENDER, because the point of a preview is to see the page
+   * residents will get — a preview that hides the submission form is previewing
+   * a different page.
+   */
+  previewMode?: boolean;
 }) {
   const hasSurvey = surveyQuestions.length > 0;
   /*
@@ -1323,6 +1351,8 @@ export function PublicEngagementPortal({
   }
 
   async function translateComment(itemId: string, language: TranslationLanguage) {
+    // Preview sends nothing — see `previewMode` on the props.
+    if (previewMode) return;
     setTranslations((previous) => ({ ...previous, [itemId]: { language, text: null, status: "loading" } }));
     try {
       const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/translate`, {
@@ -1369,6 +1399,8 @@ export function PublicEngagementPortal({
   }
 
   async function supportItem(itemId: string): Promise<number | null> {
+    // A preview vote would be an operator's thumb on their own public record.
+    if (previewMode) return null;
     if (supportedItemIds.has(itemId)) return null;
 
     const baseCount = voteCounts[itemId] ?? approvedItems.find((item) => item.id === itemId)?.votesCount ?? 0;
@@ -1539,7 +1571,7 @@ export function PublicEngagementPortal({
           <button
             type="button"
             onClick={() => void supportItem(item.id)}
-            disabled={supported}
+            disabled={supported || previewMode}
             aria-pressed={supported}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:border-[color:var(--pine)] hover:text-[color:var(--pine)] disabled:cursor-default disabled:opacity-70"
           >
@@ -1733,6 +1765,7 @@ export function PublicEngagementPortal({
                   parentItemId={replyTarget?.id ?? null}
                   replyingToLabel={replyTarget?.label ?? null}
                   onCancelReply={replyTarget ? () => setReplyTarget(null) : undefined}
+                  previewMode={previewMode}
                 />
               </>
             ) : null}
@@ -1749,7 +1782,12 @@ export function PublicEngagementPortal({
 
             {activeTab === "survey" && hasSurvey ? (
               acceptingSubmissions ? (
-                <PublicSurveyForm shareToken={shareToken} questions={surveyQuestions} messages={messages} />
+                <PublicSurveyForm
+                  shareToken={shareToken}
+                  questions={surveyQuestions}
+                  messages={messages}
+                  previewMode={previewMode}
+                />
               ) : (
                 <div className="public-success-state">
                   <ClipboardList className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
@@ -1827,7 +1865,7 @@ export function PublicEngagementPortal({
         <div className="space-y-5">
           {emailUpdatesAvailable ? (
             <article className="public-surface">
-              <PublicSubscribeForm shareToken={shareToken} />
+              <PublicSubscribeForm shareToken={shareToken} previewMode={previewMode} />
             </article>
           ) : null}
           {categories.length > 0 ? (

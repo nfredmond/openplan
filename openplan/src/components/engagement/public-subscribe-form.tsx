@@ -7,7 +7,14 @@ import { Input } from "@/components/ui/input";
 
 // Rendered ONLY when the campaign's email transport is configured (the portal
 // gates on emailUpdatesAvailable), so this never promises email that can't send.
-export function PublicSubscribeForm({ shareToken }: { shareToken: string }) {
+export function PublicSubscribeForm({
+  shareToken,
+  previewMode = false,
+}: {
+  shareToken: string;
+  /** Operator preview: render the form, subscribe nobody. See `PublicEngagementPortal`. */
+  previewMode?: boolean;
+}) {
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
   const [busy, setBusy] = useState(false);
@@ -16,6 +23,7 @@ export function PublicSubscribeForm({ shareToken }: { shareToken: string }) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (previewMode) return;
     setError(null);
     setMessage(null);
     setBusy(true);
@@ -60,7 +68,7 @@ export function PublicSubscribeForm({ shareToken }: { shareToken: string }) {
               onChange={(event) => setEmail(event.target.value)}
               className="flex-1"
             />
-            <Button type="submit" disabled={busy || !email}>
+            <Button type="submit" disabled={busy || !email || previewMode}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Notify me
             </Button>
           </div>

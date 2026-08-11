@@ -152,3 +152,98 @@ describe("PATCH /api/engagement/campaigns/[campaignId] — linking a project", (
     expect(campaignUpdateMock).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * The printable public address (20260810000002). The column had a public
+ * RESOLVER (/engage/{slug}) before anything could write it — the
+ * shipped-invisible defect class — so these hold the writer's whole contract:
+ * the value written is the value asked for (varied, so a hardcode cannot
+ * pass), a bad format is refused in planner words before any write, the
+ * database's uniqueness refusal reaches the planner as "taken" rather than as
+ * a raw constraint error, and clearing works through both spellings.
+ */
+describe("PATCH /api/engagement/campaigns/[campaignId] — the printable link name (publicSlug)", () => {
+  it("writes the slug it was asked to write — binding varied across two saves", async () => {
+    let response = await PATCH(patchRequest({ publicSlug: "jefferson-street-study" }), ctx);
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ public_slug: "jefferson-street-study" })
+    );
+
+    response = await PATCH(patchRequest({ publicSlug: "oak-avenue-plan" }), ctx);
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ public_slug: "oak-avenue-plan" })
+    );
+  });
+
+  it("normalizes before writing — a pasted ' Jefferson-Street-Study ' saves as the address the flyer reader reaches", async () => {
+    const response = await PATCH(patchRequest({ publicSlug: " Jefferson-Street-Study " }), ctx);
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ public_slug: "jefferson-street-study" })
+    );
+  });
+
+  it("refuses a name the public door would refuse, in planner words, before any write", async () => {
+    for (const bad of ["not a link name!", "ab", "-leading-hyphen", "a".repeat(65)]) {
+      const response = await PATCH(patchRequest({ publicSlug: bad }), ctx);
+      expect(response.status).toBe(400);
+      expect((await response.json()).error).toContain("lowercase letters");
+    }
+    expect(campaignUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("maps the uniqueness refusal to 'that link name is taken' — never a raw constraint error", async () => {
+    campaignUpdateMaybeSingle.mockResolvedValue({
+      data: null,
+      error: {
+        code: "23505",
+        message:
+          'duplicate key value violates unique constraint "engagement_campaigns_public_slug_unique"',
+      },
+    });
+
+    const response = await PATCH(patchRequest({ publicSlug: "downtown-plan" }), ctx);
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).toContain("taken");
+    expect(JSON.stringify(body)).not.toContain("duplicate key");
+    expect(JSON.stringify(body)).not.toContain("constraint");
+  });
+
+  it("keeps every other unique violation on the generic failure path", async () => {
+    campaignUpdateMaybeSingle.mockResolvedValue({
+      data: null,
+      error: {
+        code: "23505",
+        message: 'duplicate key value violates unique constraint "engagement_campaigns_share_token_key"',
+      },
+    });
+
+    const response = await PATCH(patchRequest({ publicSlug: "downtown-plan" }), ctx);
+    expect(response.status).toBe(500);
+  });
+
+  it("clears the slug on null, and on an emptied field", async () => {
+    let response = await PATCH(patchRequest({ publicSlug: null }), ctx);
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ public_slug: null })
+    );
+
+    response = await PATCH(patchRequest({ publicSlug: "   " }), ctx);
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ public_slug: null })
+    );
+  });
+
+  it("leaves the slug untouched when the request does not mention it", async () => {
+    const response = await PATCH(patchRequest({ publicDescription: "New words" }), ctx);
+    expect(response.status).toBe(200);
+    const updates = (campaignUpdateMock.mock.calls.at(-1) as unknown as [Record<string, unknown>])[0];
+    expect("public_slug" in updates).toBe(false);
+  });
+});

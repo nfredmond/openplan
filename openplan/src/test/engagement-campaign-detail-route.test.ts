@@ -82,6 +82,12 @@ const itemsEqCampaignMock = vi.fn(() => ({ order: itemsOrderMock }));
 const reportsOrderMock = vi.fn();
 const reportsEqProjectMock = vi.fn(() => ({ order: reportsOrderMock }));
 
+// The covered-project set (20260810000003), read by GET so the console can
+// show and edit which projects this campaign covers. Empty by default; the
+// dedicated join-maintenance tests live in
+// engagement-campaign-project-links-route.test.ts.
+const campaignProjectsEqMock = vi.fn();
+
 /**
  * The workspace's RTP cycles and chapters (the campaign console's attachment
  * options), read by GET and — on PATCH, per targeted id — verified against
@@ -174,6 +180,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "rtp_cycle_chapters") {
     return {
       select: () => ({ eq: rtpChaptersEqMock }),
+    };
+  }
+
+  if (table === "engagement_campaign_projects") {
+    return {
+      select: () => ({ eq: campaignProjectsEqMock }),
     };
   }
 
@@ -286,6 +298,9 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     });
     rtpCycleMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     rtpChapterMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    // No coverage rows by default; GET reports an empty covered set.
+    campaignProjectsEqMock.mockResolvedValue({ data: [], error: null });
 
     resolvePlaceBoundaryMock.mockResolvedValue({
       kind: "county",

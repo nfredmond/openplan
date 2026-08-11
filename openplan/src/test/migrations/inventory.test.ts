@@ -179,16 +179,29 @@ const EXPECTED = {
   // (the tract table carries no geometry of its own — it references tracts by
   // GEOID, so there is nothing for a GeoJSON view to convert) and writes every
   // policy literally rather than through a DO/EXECUTE loop.
-  policies: 577,
-  permissive: 334,
+  //
+  // 20260810000003 (engagement_campaign_projects) adds ONE table — the
+  // campaign-covers-project join, in which engagement_campaigns.project_id
+  // stays the LEAD and the join carries the full covered set including it.
+  // THREE permissive policies (select/insert/delete — no UPDATE, because a
+  // link row is an immutable pair and correcting one is delete-and-insert).
+  // Both writes are role-aware AT THE PERMISSIVE LAYER via
+  // workspace_member_can_write — the intended post-20260728000006 shape — so
+  // the table carries NO restrictive companion gates.
+  // So: +3 policies, +3 permissive, +0 restrictive, +2 permissiveWrites,
+  // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
+  // `views` holds at 7 and `expanded` at 264: no view, and every policy is
+  // written literally.
+  policies: 580,
+  permissive: 337,
   restrictive: 243,
-  permissiveWrites: 218,
+  permissiveWrites: 220,
   expanded: 264,
-  tablesWithPolicies: 116,
-  relations: 136,
-  tables: 129,
+  tablesWithPolicies: 117,
+  relations: 137,
+  tables: 130,
   views: 7,
-  rlsEnabledTables: 129,
+  rlsEnabledTables: 130,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

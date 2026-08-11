@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ENGAGEMENT_TYPES, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { CAMPAIGN_TEMPLATES, getCampaignTemplate } from "@/lib/engagement/campaign-templates";
 
 type ProjectOption = {
   id: string;
@@ -16,16 +17,35 @@ type ProjectOption = {
 type CreateResponse = {
   campaignId: string;
   error?: string;
+  template?: {
+    id: string;
+    applied: boolean;
+    error?: string;
+  };
 };
 
 export function EngagementCampaignCreator({ projects }: { projects: ProjectOption[] }) {
   const router = useRouter();
   const [projectId, setProjectId] = useState("");
+  const [templateId, setTemplateId] = useState("");
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [engagementType, setEngagementType] = useState<(typeof ENGAGEMENT_TYPES)[number]>("comment_collection");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedTemplate = templateId ? getCampaignTemplate(templateId) : null;
+
+  function handleTemplateChange(nextTemplateId: string) {
+    setTemplateId(nextTemplateId);
+    const template = nextTemplateId ? getCampaignTemplate(nextTemplateId) : null;
+    if (template) {
+      // Prefill, not lock: both fields stay editable, and what the planner
+      // types is what the server keeps.
+      setEngagementType(template.engagementType);
+      setSummary(template.suggestedSummary);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,6 +58,7 @@ export function EngagementCampaignCreator({ projects }: { projects: ProjectOptio
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           projectId: projectId || undefined,
+          templateId: templateId || undefined,
           title,
           summary,
           engagementType,
@@ -47,6 +68,19 @@ export function EngagementCampaignCreator({ projects }: { projects: ProjectOptio
       const payload = (await response.json()) as CreateResponse;
       if (!response.ok) {
         throw new Error(payload.error || "Failed to create engagement campaign");
+      }
+
+      if (payload.template && !payload.template.applied) {
+        // The campaign exists; the template's starter content does not, or not
+        // all of it. Staying here with the honest partial state beats landing
+        // on a console that looks like a blank campaign with no explanation.
+        setError(
+          `The campaign was created, but the template could not be fully applied` +
+            `${payload.template.error ? `: ${payload.template.error}` : "."} ` +
+            `Open the campaign to add its categories and survey questions manually.`
+        );
+        router.refresh();
+        return;
       }
 
       router.refresh();
@@ -77,6 +111,36 @@ export function EngagementCampaignCreator({ projects }: { projects: ProjectOptio
       </div>
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
+        <div className="space-y-1.5">
+          <label htmlFor="engagement-template" className="text-[0.82rem] font-semibold">
+            Start from a template
+            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+          </label>
+          <select
+            id="engagement-template"
+            className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+            value={templateId}
+            onChange={(event) => handleTemplateChange(event.target.value)}
+          >
+            <option value="">Blank campaign</option>
+            {CAMPAIGN_TEMPLATES.map((template) => (
+              <option key={template.id} value={template.id}>
+                {template.label}
+              </option>
+            ))}
+          </select>
+          {selectedTemplate ? (
+            <div className="rounded-[0.5rem] border border-input bg-muted/40 px-4 py-3 text-[0.78rem] text-muted-foreground">
+              <p>{selectedTemplate.description}</p>
+              <p className="mt-1.5">
+                Creates {selectedTemplate.categories.length} starter categories and{" "}
+                {selectedTemplate.questions.length} survey questions. The questions arrive as drafts —
+                nothing is shown to the public until you publish it from the survey builder.
+              </p>
+            </div>
+          ) : null}
+        </div>
+
         <div className="space-y-1.5">
           <label htmlFor="engagement-project" className="text-[0.82rem] font-semibold">
             Linked project

@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   aggregateCampaignSurvey,
   aggregateSurveyQuestion,
+  flattenSurveyAnswerForExport,
   insertSurveyResponse,
   loadApprovedSurveyAnswers,
   loadSurveyResponseSessions,
@@ -361,5 +362,80 @@ describe("aggregateCampaignSurvey — a zero is only a count when the reads succ
 
     expect(result.questions).toEqual([]);
     expect(result.error?.message).toBe("permission denied for relation");
+  });
+});
+
+describe("flattenSurveyAnswerForExport — the edges the route test's fixtures do not walk", () => {
+  const labels = new Map([
+    ["a1", "Bike lane"],
+    ["a2", "Bus stop"],
+  ]);
+
+  it("falls back honestly when an answer's option no longer exists anywhere", () => {
+    const flat = flattenSurveyAnswerForExport(
+      // answer_text null too: the submit-time label projection is also gone.
+      { question_type: "single_choice", answer_json: { option_id: "gone" }, answer_text: null },
+      labels
+    );
+    expect(flat.text).toBe("(removed option)");
+    expect(flat.value).toEqual({ option_label: "(removed option)" });
+  });
+
+  it("prefers the submit-time label snapshot over a re-resolved label for the CSV text", () => {
+    const flat = flattenSurveyAnswerForExport(
+      { question_type: "single_choice", answer_json: { option_id: "a1" }, answer_text: "Protected bike lane" },
+      labels
+    );
+    // The respondent chose "Protected bike lane"; the option has since been
+    // relabelled "Bike lane". The text keeps what they saw; the structured
+    // value re-resolves for machine readers.
+    expect(flat.text).toBe("Protected bike lane");
+    expect(flat.value).toEqual({ option_label: "Bike lane" });
+  });
+
+  it("derives lon/lat for a map point even when a note exists", () => {
+    const flat = flattenSurveyAnswerForExport(
+      {
+        question_type: "map_point",
+        answer_json: { geometry: { type: "Point", coordinates: [12.34567, -5.67891] }, note: "Here" },
+        answer_text: "Here",
+      },
+      labels
+    );
+    expect(flat.text).toBe("12.34567,-5.67891 — Here");
+    expect(flat.value).toEqual({ longitude: 12.34567, latitude: -5.67891, note: "Here" });
+  });
+
+  it("does not invent coordinates for unreadable geometry", () => {
+    const flat = flattenSurveyAnswerForExport(
+      { question_type: "map_point", answer_json: { geometry: { type: "Nonsense" } }, answer_text: null },
+      labels
+    );
+    expect(flat.text).toBe("(unreadable geometry)");
+    expect(flat.value).toEqual({});
+  });
+
+  it("emits a count and names for files — never sizes, mimes or storage paths", () => {
+    const flat = flattenSurveyAnswerForExport(
+      {
+        question_type: "file_upload",
+        answer_json: { files: [{ path: "up/x/a.jpg", mime: "image/jpeg", size: 999 }] },
+        answer_text: "a.jpg",
+      },
+      labels
+    );
+    expect(flat.text).toBe("1 file: a.jpg");
+    expect(flat.value).toEqual({ file_count: 1, file_names: ["a.jpg"] });
+    expect(JSON.stringify(flat)).not.toContain("999");
+    expect(JSON.stringify(flat)).not.toContain("up/x");
+  });
+
+  it("survives malformed answer_json without throwing", () => {
+    const flat = flattenSurveyAnswerForExport(
+      { question_type: "budget_allocation", answer_json: "not-an-object", answer_text: null },
+      labels
+    );
+    expect(flat.text).toBe("");
+    expect(flat.value).toEqual({ allocations: [] });
   });
 });

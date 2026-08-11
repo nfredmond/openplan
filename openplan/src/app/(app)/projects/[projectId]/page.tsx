@@ -44,6 +44,7 @@ import { POSTGREST_NO_ROWS_MATCHED } from "@/lib/http/write-outcome";
 import { StateBlock } from "@/components/ui/state-block";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
+import { loadEngagementCampaignsCoveringProject } from "@/lib/engagement/campaign-projects";
 import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, parseSortableDate, submittalPriority } from "./_components/_ordering";
 import { createClient } from "@/lib/supabase/server";
 import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
@@ -524,12 +525,11 @@ export default async function ProjectDetailPage({
     reads
   );
 
-  const engagementCampaignsResult = await supabase
-    .from("engagement_campaigns")
-    .select("id, title, status, updated_at, created_at")
-    .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
+  // A campaign covers this project either as its LEAD (`project_id`) or as a
+  // member of its coverage set (engagement_campaign_projects, 20260810000003).
+  // The loader owns the coverage read, its deploy-window tolerance, and the
+  // disclosure of a real coverage failure — see campaign-projects.ts.
+  const engagementCampaignsResult = await loadEngagementCampaignsCoveringProject(supabase, project.id, reads);
   const engagementCampaignLane = laneOutcome(reads, "engagement campaigns for this project", engagementCampaignsResult);
   const engagementCampaigns = engagementCampaignLane.rows as Array<{
         id: string;

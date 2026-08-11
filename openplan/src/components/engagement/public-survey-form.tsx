@@ -1246,7 +1246,8 @@ function FileUploadWidget({
   translator,
   shareToken,
   onChange,
-}: WidgetProps & { shareToken: string }) {
+  previewMode = false,
+}: WidgetProps & { shareToken: string; previewMode?: boolean }) {
   const cfg = cfgOf<{ max_files: number; max_size_bytes: number; accept: string[] }>(fileUploadConfigSchema, question.config);
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -1261,6 +1262,9 @@ function FileUploadWidget({
   }
 
   async function handleFile(file: File | null) {
+    // This is the one widget that talks to the server on selection rather than
+    // on submit, so the preview guard has to reach it individually.
+    if (previewMode) return;
     setUploadError(null);
     if (!file) return;
     if (files.length >= cfg.max_files) {
@@ -1339,7 +1343,7 @@ function FileUploadWidget({
             ref={inputRef}
             type="file"
             accept={cfg.accept.join(",")}
-            disabled={uploading}
+            disabled={uploading || previewMode}
             aria-label={question.promptText.text}
             // `file:me-3`, not `file:mr-3` — the gap belongs after the button in
             // reading order, which is its left on an Arabic page.
@@ -1375,6 +1379,7 @@ function QuestionField({
   error,
   initialAnswer,
   onChange,
+  previewMode = false,
 }: {
   question: PortalSurveyQuestion;
   translator: PortalTranslator;
@@ -1384,6 +1389,8 @@ function QuestionField({
   /** This participant's saved answer, when they are resuming. */
   initialAnswer?: unknown;
   onChange: (answer: unknown) => void;
+  /** Operator preview — reaches only the file widget, the one that uploads on selection. */
+  previewMode?: boolean;
 }) {
   const def = SURVEY_QUESTION_TYPES[question.questionType];
   const badgeText = questionBadgeText(question, translator);
@@ -1414,6 +1421,7 @@ function QuestionField({
             translator={translator}
             shareToken={shareToken}
             onChange={onChange}
+            previewMode={previewMode}
           />
         );
       default:
@@ -1521,9 +1529,17 @@ export function PublicSurveyForm({
   shareToken,
   questions,
   messages,
+  previewMode = false,
 }: {
   shareToken: string;
   questions: PortalSurveyQuestion[];
+  /**
+   * Operator preview: render the survey exactly as a resident gets it, and send
+   * nothing — no submit, no draft save, no draft resume. Guarded at every
+   * handler as well as at the buttons; see `previewMode` on
+   * `PublicEngagementPortal`, which is the only surface that sets this.
+   */
+  previewMode?: boolean;
   /**
    * OpenPlan's own participant copy in the participant's language, already
    * resolved server-side, plus which keys fell back to English.
@@ -1618,6 +1634,9 @@ export function PublicSurveyForm({
 
   // Reopen a saved draft on arrival. Runs once per share token.
   useEffect(() => {
+    // The only fetch in this form that fires without a click, so the preview
+    // guard has to live here too, not just on the buttons.
+    if (previewMode) return;
     let cancelled = false;
     const token = readStoredToken();
     if (!token) return;
@@ -1723,6 +1742,7 @@ export function PublicSurveyForm({
   }
 
   async function saveDraft() {
+    if (previewMode) return;
     setDraftNotice(null);
     setIsSavingDraft(true);
     try {
@@ -1772,6 +1792,7 @@ export function PublicSurveyForm({
   }
 
   async function discardDraft() {
+    if (previewMode) return;
     if (!resumeToken) return;
     setIsSavingDraft(true);
     try {
@@ -1811,6 +1832,7 @@ export function PublicSurveyForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (previewMode) return;
     setError(null);
     setFieldErrors({});
 
@@ -2067,6 +2089,7 @@ export function PublicSurveyForm({
             error={fieldErrors[question.id]}
             initialAnswer={restoredAnswers[question.id]}
             onChange={(answer) => setAnswer(question.id, answer)}
+            previewMode={previewMode}
           />
         ))}
 
@@ -2137,7 +2160,7 @@ export function PublicSurveyForm({
           type="button"
           variant="outline"
           size="sm"
-          disabled={isSavingDraft || isSubmitting}
+          disabled={isSavingDraft || isSubmitting || previewMode}
           onClick={() => void saveDraft()}
         >
           {isSavingDraft ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -2154,7 +2177,7 @@ export function PublicSurveyForm({
             type="button"
             variant="ghost"
             size="sm"
-            disabled={isSavingDraft || isSubmitting}
+            disabled={isSavingDraft || isSubmitting || previewMode}
             onClick={() => void discardDraft()}
           >
             <Trash2 className="h-4 w-4" />
@@ -2174,7 +2197,11 @@ export function PublicSurveyForm({
         <p className="text-xs text-muted-foreground">
           <Copy of={portalMessageView(translator, "portal.reviewNotice")} />
         </p>
-        <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
+        <Button
+          type="submit"
+          disabled={isSubmitting || previewMode}
+          className="min-w-[13rem] justify-center"
+        >
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           <Copy of={isSubmitting ? portalMessageView(translator, "survey.submitting") : portalMessageView(translator, "survey.submit")} />
         </Button>

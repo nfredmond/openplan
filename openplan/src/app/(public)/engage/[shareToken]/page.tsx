@@ -8,7 +8,7 @@ import {
 } from "@/components/engagement/portal-language-picker";
 import { PortalOperatorText } from "@/components/engagement/portal-operator-text";
 import { PortalAccessibilityNotice } from "@/components/engagement/portal-accessibility-notice";
-import { loadPublicPortalBundle } from "@/lib/engagement/public-portal-data";
+import { loadPublicPortalBundleForShareValue } from "@/lib/engagement/public-portal-data";
 import { PORTAL_LOCALE_QUERY_PARAM } from "@/lib/engagement/portal-i18n/locales";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
 import { formatPortalDateTime, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
@@ -86,7 +86,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { shareToken } = await params;
   const resolvedSearch = searchParams ? await searchParams : undefined;
-  const bundle = await loadPublicPortalBundle(shareToken, {
+  // Token OR printable slug — the resolver tries the token column first, and a
+  // slug only ever reaches the same active-campaign data the token path serves.
+  const bundle = await loadPublicPortalBundleForShareValue(shareToken, {
     requestedLocale: requestedLocaleFrom(resolvedSearch),
   });
 
@@ -164,7 +166,7 @@ export default async function PublicEngagementPage({
   const { shareToken } = await params;
   const resolvedSearch = searchParams ? await searchParams : undefined;
 
-  const bundle = await loadPublicPortalBundle(shareToken, {
+  const bundle = await loadPublicPortalBundleForShareValue(shareToken, {
     requestedLocale: requestedLocaleFrom(resolvedSearch),
   });
   if (!bundle) {

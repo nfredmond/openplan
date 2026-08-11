@@ -22,6 +22,17 @@ import {
   placeCanGeofence,
   SUBMISSION_GEOFENCE_COLUMN,
 } from "@/lib/engagement/geofence";
+import {
+  desiredCampaignProjectIds,
+  diffCampaignProjectLinks,
+  MAX_CAMPAIGN_PROJECT_LINKS,
+} from "@/lib/engagement/campaign-projects";
+import {
+  isPublicSlugCandidate,
+  normalizePublicSlugInput,
+  PUBLIC_SLUG_FORMAT_REFUSAL,
+  PUBLIC_SLUG_TAKEN_REFUSAL,
+} from "@/lib/engagement/campaign-slugs";
 
 // Setting a searched campaign area re-resolves the boundary through TIGERweb.
 export const runtime = "nodejs";
@@ -50,10 +61,28 @@ const patchCampaignSchema = z
     status: z.enum(ENGAGEMENT_CAMPAIGN_STATUSES).optional(),
     engagementType: z.enum(ENGAGEMENT_TYPES).optional(),
     projectId: z.union([z.string().uuid(), z.null()]).optional(),
+    /**
+     * The FULL set of projects this campaign covers (20260810000003), lead
+     * included — the console sends the whole checked list, not a delta, so a
+     * stale browser cannot re-add a link somebody else just removed without
+     * that removal being visible in the approval-shaped request body. The
+     * route unions the lead in server-side, so omitting it here cannot
+     * detach it.
+     */
+    projectIds: z.array(z.string().uuid()).max(MAX_CAMPAIGN_PROJECT_LINKS).optional(),
     rtpCycleId: z.union([z.string().uuid(), z.null()]).optional(),
     rtpCycleChapterId: z.union([z.string().uuid(), z.null()]).optional(),
     // Disable-only — see SHARE_TOKEN_IS_SERVER_MINTED above.
     shareToken: z.null().optional(),
+    /**
+     * The printable public address (20260810000002): /engage/{slug} instead of
+     * the 28-character token. Loose here (any short string or null) so the
+     * handler can normalize (trim + lowercase, exactly as the public resolution
+     * path does before matching) and then refuse a bad format with the same
+     * sentence the share-controls field uses — a zod issue would surface as a
+     * generic "invalid payload". Null (or an emptied field) clears it.
+     */
+    publicSlug: z.union([z.string().max(200), z.null()]).optional(),
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
     /**
      * How a resident who cannot use the portal takes part anyway
@@ -174,6 +203,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       { data: geofenceRow, error: geofenceError },
       { data: rtpCycleRows, error: rtpCyclesError },
       { data: rtpChapterRows, error: rtpChaptersError },
+      { data: campaignProjectRows, error: campaignProjectsError },
     ] =
       await Promise.all([
         access.campaign.project_id
@@ -240,6 +270,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
           .select("id, title, rtp_cycle_id")
           .eq("workspace_id", access.campaign.workspace_id)
           .order("sort_order", { ascending: true }),
+        // The FULL set of projects this campaign covers (20260810000003),
+        // lead included — the join table is the one source of truth for
+        // coverage, and the console edits it through PATCH `projectIds`.
+        // Read separately from `loadCampaignAccess` for the same
+        // deploy-before-migrate reason as the geofence flag above.
+        supabase
+          .from("engagement_campaign_projects")
+          .select("project_id")
+          .eq("campaign_id", access.campaign.id),
       ]);
 
     if (projectError) {
@@ -336,6 +375,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
       };
     }
 
+    /**
+     * The covered-project ids, or `null` when they could not be read.
+     *
+     * Failure-tolerant like the RTP targets above, including the window where
+     * 20260810000003 has not run yet: `null` means "unknown", the console
+     * hides the multi-select and does not send `projectIds` on save, so a
+     * failed read can never silently unlink a campaign from its projects.
+     */
+    let linkedProjectIds: string[] | null = null;
+    if (campaignProjectsError) {
+      audit.error("campaign_project_links_lookup_failed", {
+        campaignId: access.campaign.id,
+        message: campaignProjectsError.message,
+        code: campaignProjectsError.code ?? null,
+      });
+    } else {
+      linkedProjectIds = ((campaignProjectRows ?? []) as Array<{ project_id: string }>).map(
+        (row) => row.project_id
+      );
+    }
+
     const mapFraming = resolvePortalMapFraming({
       campaignPlace: placeCandidates.campaign,
       projectPlace: placeCandidates.project,
@@ -359,6 +419,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         counts,
         mapFraming,
         rtpTargets,
+        linkedProjectIds,
         /**
          * Everything the console needs to offer the location check honestly:
          * whether it is on, whether it CAN be on, and what the area is called.
@@ -572,6 +633,48 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    /**
+     * Every project in the requested coverage set is verified against THIS
+     * campaign's workspace before anything is written. One batch read through
+     * the caller's own client: a project the caller cannot see comes back
+     * absent, and a project they can see in another workspace comes back with
+     * the wrong workspace_id — both are refused as the same sentence, and the
+     * 404 is only reachable from a read that succeeded (the same rule as the
+     * lead-project check above).
+     */
+    let requestedProjectIds: string[] | null = null;
+    if (parsed.data.projectIds !== undefined) {
+      requestedProjectIds = [...new Set(parsed.data.projectIds)];
+      if (requestedProjectIds.length > 0) {
+        const linkScopeResult = await supabase
+          .from("projects")
+          .select("id, workspace_id")
+          .in("id", requestedProjectIds);
+
+        const linkScopeFailure = classifyRouteReadFailure("covered projects", linkScopeResult);
+        if (linkScopeFailure) {
+          audit.error("campaign_patch_project_links_check_failed", {
+            campaignId: access.campaign.id,
+            requestedCount: requestedProjectIds.length,
+            message: linkScopeFailure.message,
+          });
+          return NextResponse.json(linkScopeFailure.body, { status: linkScopeFailure.status });
+        }
+
+        const inWorkspace = new Set(
+          ((linkScopeResult.data ?? []) as Array<{ id: string; workspace_id: string | null }>)
+            .filter((row) => row.workspace_id === access.campaign.workspace_id)
+            .map((row) => row.id)
+        );
+        if (requestedProjectIds.some((id) => !inWorkspace.has(id))) {
+          return NextResponse.json(
+            { error: "Some of those projects are not in this workspace" },
+            { status: 404 }
+          );
+        }
+      }
+    }
+
     const updates: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
     if (parsed.data.summary !== undefined) updates.summary = parsed.data.summary;
@@ -585,6 +688,30 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     // Only null survives the schema, so this is the disable transition and
     // nothing else; no uniqueness check is needed to clear a column.
     if (parsed.data.shareToken !== undefined) updates.share_token = null;
+    if (parsed.data.publicSlug !== undefined) {
+      if (parsed.data.publicSlug === null) {
+        updates.public_slug = null;
+      } else {
+        // Trim + lowercase FIRST — the same normalization the public
+        // resolution path applies before matching — so "Jefferson-Street "
+        // saves as the address the flyer reader will actually reach.
+        const normalizedSlug = normalizePublicSlugInput(parsed.data.publicSlug);
+        if (normalizedSlug === "") {
+          // An emptied field is a deliberate clear, same as the accessibility
+          // fields below — not a format error about a value nobody typed.
+          updates.public_slug = null;
+        } else if (!isPublicSlugCandidate(normalizedSlug)) {
+          // Refused in words, and refused again by the table's format CHECK
+          // (20260810000002) if a future writer forgets this branch.
+          return NextResponse.json(
+            { error: PUBLIC_SLUG_FORMAT_REFUSAL, message: PUBLIC_SLUG_FORMAT_REFUSAL },
+            { status: 400 }
+          );
+        } else {
+          updates.public_slug = normalizedSlug;
+        }
+      }
+    }
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
     if (parsed.data.demographicsEnabled !== undefined) updates.demographics_enabled = parsed.data.demographicsEnabled;
@@ -720,35 +847,160 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const { data: updated, error: updateError } = await supabase
-      .from("engagement_campaigns")
-      .update(updates)
-      .eq("id", access.campaign.id)
-      .select("id")
-      .maybeSingle();
+    // A request may carry ONLY `projectIds`, which touches the join table and
+    // no campaign column; an empty `.update({})` would be refused by PostgREST,
+    // so the campaign write runs only when there is one.
+    if (Object.keys(updates).length > 0) {
+      const { data: updated, error: updateError } = await supabase
+        .from("engagement_campaigns")
+        .update(updates)
+        .eq("id", access.campaign.id)
+        .select("id")
+        .maybeSingle();
 
-    if (isWriteFailure(updateError)) {
-      audit.error("campaign_update_failed", {
-        campaignId: access.campaign.id,
-        message: updateError?.message ?? "unknown",
-        code: updateError?.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to update engagement campaign" }, { status: 500 });
+      // The slug is GLOBALLY unique (it is a path segment with no workspace
+      // context), so two campaigns wanting the same name is an ordinary
+      // planner-facing outcome, not a server failure. The database's own
+      // refusal is mapped to a sentence; a raw "duplicate key value violates
+      // unique constraint" must never be the answer a planner reads.
+      if (updateError?.code === "23505" && updateError.message?.includes("public_slug")) {
+        audit.warn("campaign_public_slug_taken", {
+          campaignId: access.campaign.id,
+          userId: user.id,
+        });
+        return NextResponse.json(
+          { error: PUBLIC_SLUG_TAKEN_REFUSAL, message: PUBLIC_SLUG_TAKEN_REFUSAL },
+          { status: 409 }
+        );
+      }
+
+      if (isWriteFailure(updateError)) {
+        audit.error("campaign_update_failed", {
+          campaignId: access.campaign.id,
+          message: updateError?.message ?? "unknown",
+          code: updateError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to update engagement campaign" }, { status: 500 });
+      }
+
+      if (writeMatchedNoRows({ data: updated, error: updateError })) {
+        // `loadCampaignAccess` read this exact campaign through the caller's own
+        // client and passed the role gate, so a write matching nothing is the
+        // database refusing what the application allowed — not a missing campaign.
+        // Before this branch existed the route answered `{ success: true }` over
+        // zero changed rows, which is the silent degrade this codebase refuses.
+        audit.error("campaign_update_matched_no_rows", {
+          campaignId: access.campaign.id,
+          workspaceId: access.campaign.workspace_id,
+          userId: user.id,
+          role: access.membership?.role ?? null,
+        });
+        return noRowsMatchedResponse({ subject: "engagement campaign", targetWasVerified: true });
+      }
     }
 
-    if (writeMatchedNoRows({ data: updated, error: updateError })) {
-      // `loadCampaignAccess` read this exact campaign through the caller's own
-      // client and passed the role gate, so a write matching nothing is the
-      // database refusing what the application allowed — not a missing campaign.
-      // Before this branch existed the route answered `{ success: true }` over
-      // zero changed rows, which is the silent degrade this codebase refuses.
-      audit.error("campaign_update_matched_no_rows", {
-        campaignId: access.campaign.id,
-        workspaceId: access.campaign.workspace_id,
-        userId: user.id,
-        role: access.membership?.role ?? null,
+    /**
+     * The coverage set (20260810000003), synced AFTER the campaign write so
+     * the lead the trigger just recorded is part of the "current" read. The
+     * desired set always unions the lead in, so this sync can never delete
+     * the lead's row — removing the lead from coverage is only possible by
+     * changing the lead itself.
+     *
+     * Runs only when the request carried `projectIds`. A rename PATCH, and
+     * the console while the link list is unreadable, leave coverage exactly
+     * as it was.
+     */
+    let projectLinksChanged: { added: number; removed: number } | null = null;
+    if (requestedProjectIds !== null) {
+      const currentLinks = await supabase
+        .from("engagement_campaign_projects")
+        .select("project_id")
+        .eq("campaign_id", access.campaign.id);
+
+      const currentLinksFailure = classifyRouteReadFailure("campaign project links", currentLinks);
+      if (currentLinksFailure) {
+        audit.error("campaign_project_links_read_failed", {
+          campaignId: access.campaign.id,
+          message: currentLinksFailure.message,
+        });
+        return NextResponse.json(
+          {
+            error: "The campaign saved, but its project list could not be read to update it",
+            hint: "Reload and try the project list again; the campaign's other fields were saved.",
+          },
+          { status: currentLinksFailure.status }
+        );
+      }
+
+      const current = ((currentLinks.data ?? []) as Array<{ project_id: string }>).map(
+        (row) => row.project_id
+      );
+      const desired = desiredCampaignProjectIds({
+        leadProjectId: nextProjectId,
+        requestedProjectIds,
       });
-      return noRowsMatchedResponse({ subject: "engagement campaign", targetWasVerified: true });
+      const { toAdd, toRemove } = diffCampaignProjectLinks(current, desired);
+
+      if (toRemove.length > 0) {
+        const { data: removedRows, error: removeError } = await supabase
+          .from("engagement_campaign_projects")
+          .delete()
+          .eq("campaign_id", access.campaign.id)
+          .in("project_id", toRemove)
+          .select("project_id");
+        if (removeError) {
+          audit.error("campaign_project_links_remove_failed", {
+            campaignId: access.campaign.id,
+            removeCount: toRemove.length,
+            message: removeError.message,
+            code: removeError.code ?? null,
+          });
+          return NextResponse.json(
+            { error: "The campaign saved, but its project list could not be updated" },
+            { status: 500 }
+          );
+        }
+        if ((removedRows?.length ?? 0) < toRemove.length) {
+          // The rows were just read through this same client, so a shortfall
+          // is the database refusing the delete (RLS), not a stale diff —
+          // reporting success over it would leave the console showing a list
+          // the planner believes they just changed.
+          audit.error("campaign_project_links_remove_matched_fewer_rows", {
+            campaignId: access.campaign.id,
+            expected: toRemove.length,
+            removed: removedRows?.length ?? 0,
+          });
+          return NextResponse.json(
+            { error: "The campaign saved, but part of its project list could not be removed" },
+            { status: 500 }
+          );
+        }
+      }
+
+      if (toAdd.length > 0) {
+        const { error: addError } = await supabase.from("engagement_campaign_projects").insert(
+          toAdd.map((projectId) => ({
+            workspace_id: access.campaign.workspace_id,
+            campaign_id: access.campaign.id,
+            project_id: projectId,
+            created_by: user.id,
+          }))
+        );
+        if (addError) {
+          audit.error("campaign_project_links_add_failed", {
+            campaignId: access.campaign.id,
+            addCount: toAdd.length,
+            message: addError.message,
+            code: addError.code ?? null,
+          });
+          return NextResponse.json(
+            { error: "The campaign saved, but its project list could not be updated" },
+            { status: 500 }
+          );
+        }
+      }
+
+      projectLinksChanged = { added: toAdd.length, removed: toRemove.length };
     }
 
     audit.info("campaign_updated", {
@@ -757,6 +1009,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       // A derived fact, never a token value: enough to reconstruct that the
       // public link was taken offline, and useless to anyone reading the log.
       shareTokenDisabled: parsed.data.shareToken === null,
+      // Changed/cleared, not the value: the slug is public by design, but the
+      // ledger convention here is derived facts, and the row itself records
+      // the value with better provenance than a log line.
+      publicSlugChanged: parsed.data.publicSlug !== undefined,
+      // Counts, not ids: enough to reconstruct that coverage changed and by
+      // how much; the join table itself records which rows, with provenance.
+      projectLinksAdded: projectLinksChanged?.added ?? 0,
+      projectLinksRemoved: projectLinksChanged?.removed ?? 0,
       durationMs: Date.now() - startedAt,
     });
 

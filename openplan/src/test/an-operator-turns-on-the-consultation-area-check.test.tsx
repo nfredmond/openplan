@@ -25,12 +25,8 @@ vi.mock("@/components/engagement/engagement-share-controls", () => ({
 vi.mock("@/components/engagement/engagement-item-composer", () => ({
   EngagementItemComposer: () => <div data-testid="item-composer" />,
 }));
-vi.mock("@/components/engagement/survey-builder", () => ({
-  EngagementSurveyBuilder: () => <div data-testid="survey-builder" />,
-}));
-vi.mock("@/components/engagement/close-loop-builder", () => ({
-  EngagementCloseLoopBuilder: () => <div data-testid="close-loop-builder" />,
-}));
+// The survey builder and close-loop builder used to be mounted by this section;
+// they now live on the campaign console page itself, above the analysis panels.
 
 import { EngagementOperatorActions } from "@/components/engagement/engagement-operator-actions";
 import { resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
@@ -48,6 +44,7 @@ const campaign = {
   allow_public_submissions: true,
   submissions_closed_at: null,
   public_description: null,
+  public_slug: null,
   demographics_enabled: false,
 };
 
@@ -102,8 +99,6 @@ function renderConsole() {
       campaign={campaign}
       projects={[]}
       categories={[]}
-      surveyQuestions={[]}
-      closeLoopEntries={[]}
     />
   );
 }

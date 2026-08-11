@@ -4,8 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Download, ExternalLink, Globe, Link2, Loader2, Lock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getPublicPortalReadiness, getPublicPortalState, normalizeShareToken } from "@/lib/engagement/public-portal";
+import { getPublicPortalState, normalizeShareToken } from "@/lib/engagement/public-portal";
+import {
+  isPublicSlugCandidate,
+  normalizePublicSlugInput,
+  PUBLIC_SLUG_FORMAT_REFUSAL,
+} from "@/lib/engagement/campaign-slugs";
 
 type ShareControlsCampaign = {
   id: string;
@@ -13,6 +19,13 @@ type ShareControlsCampaign = {
   status: string;
   share_token: string | null;
   public_description: string | null;
+  /**
+   * The printable public address (20260810000002), or null when none is set.
+   * The console page reads this column failure-tolerantly, so null can also
+   * mean "could not be read" during a deploy window — which is why the save
+   * below only sends the slug when the planner actually edited it.
+   */
+  public_slug: string | null;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
   demographics_enabled: boolean;
@@ -41,6 +54,7 @@ export function EngagementShareControls({
   // POST /share-token and cleared by PATCH { shareToken: null } — never typed.
   const shareToken = normalizeShareToken(campaign.share_token) ?? "";
   const [publicDescription, setPublicDescription] = useState(campaign.public_description ?? "");
+  const [publicSlug, setPublicSlug] = useState(campaign.public_slug ?? "");
   const [allowSubmissions, setAllowSubmissions] = useState(campaign.allow_public_submissions);
   const [demographicsEnabled, setDemographicsEnabled] = useState(campaign.demographics_enabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,14 +75,19 @@ export function EngagementShareControls({
     allow_public_submissions: allowSubmissions,
     submissions_closed_at: campaign.submissions_closed_at,
   });
-  const portalReadiness = getPublicPortalReadiness({
-    status: campaign.status,
-    share_token: shareToken,
-    public_description: publicDescription,
-    allow_public_submissions: allowSubmissions,
-    submissions_closed_at: campaign.submissions_closed_at,
-  });
   const shareUrl = portalState.portalPath ? `${browserOrigin}${portalState.portalPath}` : null;
+
+  // The SAME normalization and rule the route and the public resolver use —
+  // one shared module, so the field cannot accept what the door would refuse.
+  const normalizedSlug = normalizePublicSlugInput(publicSlug);
+  // Only an EDIT travels. The console reads public_slug failure-tolerantly, so
+  // an unedited field must never clear a slug that exists but could not be
+  // read; gating on change makes that impossible rather than unlikely.
+  const slugEdited = normalizedSlug !== (campaign.public_slug ?? "");
+  const slugUrl =
+    normalizedSlug !== "" && isPublicSlugCandidate(normalizedSlug)
+      ? `${browserOrigin}/engage/${normalizedSlug}`
+      : null;
   const embedUrl = portalState.isPubliclyReachable && shareToken ? `${browserOrigin}/embed/${shareToken}` : null;
   const embedSnippet = embedUrl
     ? `<iframe src="${escapeHtmlAttribute(embedUrl)}" width="100%" height="720" style="border:0" loading="lazy" title="${escapeHtmlAttribute(campaign.title)}"></iframe>`
@@ -91,6 +110,13 @@ export function EngagementShareControls({
   }, [embedSnippet]);
 
   async function handleSave() {
+    // Refuse a bad link name HERE, with the same sentence the server uses, so
+    // the planner is not told "saved" and then finds the address dead.
+    if (slugEdited && normalizedSlug !== "" && !isPublicSlugCandidate(normalizedSlug)) {
+      setError(PUBLIC_SLUG_FORMAT_REFUSAL);
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
@@ -102,6 +128,9 @@ export function EngagementShareControls({
           publicDescription: publicDescription || null,
           allowPublicSubmissions: allowSubmissions,
           demographicsEnabled,
+          // An emptied field is a deliberate clear; an untouched one sends
+          // nothing at all (see slugEdited above).
+          ...(slugEdited ? { publicSlug: normalizedSlug === "" ? null : normalizedSlug } : {}),
         }),
       });
 
@@ -262,6 +291,32 @@ export function EngagementShareControls({
           ) : null}
         </div>
 
+        <div className="space-y-1.5">
+          <label htmlFor="public-slug" className="text-[0.82rem] font-semibold">
+            Easy link name
+            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+          </label>
+          <p className="text-xs text-muted-foreground">
+            Give the portal a short name to make a printable address people can read off a flyer,
+            a slide, or a bus-shelter poster — like /engage/jefferson-street-study. Lowercase
+            letters, numbers, and hyphens only. It works alongside the share link above and only
+            answers while the campaign is Active. Save with the button below.
+          </p>
+          <Input
+            id="public-slug"
+            value={publicSlug}
+            onChange={(e) => setPublicSlug(e.target.value.toLowerCase())}
+            placeholder="jefferson-street-study"
+            maxLength={64}
+          />
+          {slugUrl ? (
+            <p className="text-xs text-muted-foreground">
+              {slugEdited ? "Will become: " : "Printable address: "}
+              <span className="font-mono text-foreground">{slugUrl}</span>
+            </p>
+          ) : null}
+        </div>
+
         {embedSnippet ? (
           <div className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -281,30 +336,17 @@ export function EngagementShareControls({
           </div>
         ) : null}
 
-        <div className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="font-semibold text-foreground">Share readiness: {portalReadiness.label}</p>
-              <p className="mt-1 text-muted-foreground">
-                {portalReadiness.completeCount} of {portalReadiness.totalChecks} checks complete · {portalReadiness.nextAction}
-              </p>
-            </div>
-          </div>
-          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-            {portalReadiness.checks.map((check) => (
-              <li key={check.id} className="flex items-start gap-2 rounded-lg border border-border/50 bg-background/70 px-3 py-2">
-                <span
-                  className={`mt-0.5 h-2.5 w-2.5 rounded-full ${check.passed ? "bg-emerald-500" : "bg-amber-500"}`}
-                  aria-hidden="true"
-                />
-                <span>
-                  <span className="block font-medium text-foreground">{check.label}</span>
-                  <span className="block text-xs text-muted-foreground">{check.detail}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/*
+          The step-by-step readiness checklist lives in ONE place now — the
+          guided publish flow at the top of this console — instead of being
+          repeated here. Two checklists computed from the same facts read as
+          two opinions the moment either one lags a save.
+        */}
+        <p className="text-xs text-muted-foreground">
+          Getting this campaign live step by step is handled by the Publish panel at the top of this
+          page. This section is the ongoing management surface: rotate or disable the link, adjust
+          the public settings, embed the portal, and export what came in.
+        </p>
 
         <div className="space-y-1.5">
           <label htmlFor="public-description" className="text-[0.82rem] font-semibold">
@@ -406,17 +448,29 @@ export function EngagementShareControls({
             One row per survey response received — when it arrived, through what channel, and its
             moderation status. It leaves out respondent names and contact details, device
             fingerprints, self-reported demographics (which are only ever read as suppressed
-            aggregates) and internal moderation notes. Answer content is not included yet. The file
-            opens with a few <code>#</code> lines describing itself.
+            aggregates) and internal moderation notes. Answer content exports separately — the
+            second file below carries what each respondent actually said, one row per answer, with
+            the question wording they were shown. Each file opens with a few <code>#</code> lines
+            describing itself.
           </p>
-          <a
-            href={`/api/engagement/campaigns/${campaign.id}/survey/export?format=csv`}
-            className="inline-flex w-fit items-center gap-1.5 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium shadow-xs transition hover:bg-accent hover:text-accent-foreground"
-            download
-          >
-            <Download className="h-4 w-4" />
-            Export survey response register (CSV)
-          </a>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href={`/api/engagement/campaigns/${campaign.id}/survey/export?format=csv`}
+              className="inline-flex w-fit items-center gap-1.5 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium shadow-xs transition hover:bg-accent hover:text-accent-foreground"
+              download
+            >
+              <Download className="h-4 w-4" />
+              Export survey response register (CSV)
+            </a>
+            <a
+              href={`/api/engagement/campaigns/${campaign.id}/survey/export?content=answers&format=csv`}
+              className="inline-flex w-fit items-center gap-1.5 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium shadow-xs transition hover:bg-accent hover:text-accent-foreground"
+              download
+            >
+              <Download className="h-4 w-4" />
+              Export survey answers (CSV)
+            </a>
+          </div>
         </div>
       </div>
     </article>

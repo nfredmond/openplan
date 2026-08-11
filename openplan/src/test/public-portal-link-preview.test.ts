@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const loadPublicPortalBundleMock = vi.fn();
 
 vi.mock("@/lib/engagement/public-portal-data", () => ({
-  loadPublicPortalBundle: (...args: unknown[]) => loadPublicPortalBundleMock(...args),
+  // The page resolves token OR slug through this entry point now
+  // (20260810000002); this file tests what the metadata SAYS, not how the
+  // value was resolved, so one mock serves both shapes.
+  loadPublicPortalBundleForShareValue: (...args: unknown[]) => loadPublicPortalBundleMock(...args),
 }));
 
 import { generateMetadata } from "@/app/(public)/engage/[shareToken]/page";

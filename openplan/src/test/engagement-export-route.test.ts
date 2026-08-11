@@ -209,6 +209,57 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
     expect(csvText).toContain("Safety");
   });
 
+  /**
+   * CSV formula injection: the body/title/submitted_by cells are resident-
+   * authored free text, and a cell opening with `=` `+` `-` `@` runs as a
+   * formula on the planner's own machine when they open their own export.
+   * The shared escaping layer prefixes a quote; the coordinate columns are
+   * machine numbers and must stay bare so the file stays computable.
+   */
+  it("neutralizes resident text a spreadsheet would execute, leaving numeric columns computable", async () => {
+    itemsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "66666666-6666-4666-8666-666666666666",
+          campaign_id: validCampaignId,
+          category_id: "55555555-5555-4555-8555-555555555555",
+          title: "@SUM(1+9)",
+          body: '=HYPERLINK("http://evil.example","click me")',
+          submitted_by: "+1 530 555 0100",
+          status: "approved",
+          source_type: "public",
+          latitude: 39.22,
+          longitude: -121.06,
+          geometry: null,
+          votes_count: 3,
+          moderation_notes: "-note that starts with a hyphen",
+          metadata_json: {},
+          created_at: "2026-03-20T12:00:00.000Z",
+          updated_at: "2026-03-20T12:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=csv`),
+      { params: Promise.resolve({ campaignId: validCampaignId }) }
+    );
+
+    expect(response.status).toBe(200);
+    const csvText = await response.text();
+
+    expect(csvText).toContain("'@SUM(1+9)");
+    expect(csvText).toContain("\"'=HYPERLINK");
+    expect(csvText).toContain("'+1 530 555 0100");
+    expect(csvText).toContain("'-note that starts with a hyphen");
+    // No cell anywhere opens with a live formula character.
+    expect(csvText).not.toMatch(/(^|,)=HYPERLINK/m);
+    expect(csvText).not.toMatch(/(^|,)@SUM/m);
+    // The machine-written coordinates stay bare numbers.
+    expect(csvText).toContain(",39.22,-121.06,");
+  });
+
   it("returns JSON export when format=json", async () => {
     const response = await GET(
       new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=json`),

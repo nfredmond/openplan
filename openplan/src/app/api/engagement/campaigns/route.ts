@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
+import { getCampaignTemplate } from "@/lib/engagement/campaign-templates";
+import { applyCampaignTemplate } from "./template-apply";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -22,6 +24,15 @@ const createCampaignSchema = z.object({
   summary: z.string().trim().max(2000).optional(),
   engagementType: z.enum(ENGAGEMENT_TYPES).optional(),
   status: z.enum(ENGAGEMENT_CAMPAIGN_STATUSES).optional(),
+  /**
+   * A campaign-template id from the in-repo registry
+   * (src/lib/engagement/campaign-templates.ts). Validated against the registry
+   * below rather than as an enum here, so the honest 400 can name the problem.
+   * Template content is applied server-side after the campaign insert, through
+   * the same validation the category and survey-question routes use — and every
+   * templated survey question lands as a DRAFT a person must publish.
+   */
+  templateId: z.string().trim().min(1).max(80).optional(),
 }).superRefine((value, context) => {
   if (value.rtpCycleChapterId && !value.rtpCycleId) {
     context.addIssue({
@@ -136,6 +147,12 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
+    const template = parsed.data.templateId ? getCampaignTemplate(parsed.data.templateId) : null;
+    if (parsed.data.templateId && !template) {
+      audit.warn("unknown_campaign_template", { templateId: parsed.data.templateId });
+      return NextResponse.json({ error: "Unknown campaign template" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -283,8 +300,14 @@ export async function POST(request: NextRequest) {
         rtp_cycle_id: nextRtpCycleId,
         rtp_cycle_chapter_id: nextRtpCycleChapterId,
         title: parsed.data.title.trim(),
-        summary: parsed.data.summary?.trim() || null,
-        engagement_type: parsed.data.engagementType ?? "comment_collection",
+        // The template's suggested texts are FALLBACKS: anything the planner
+        // typed (the creator prefills these fields for editing) wins over them.
+        summary: parsed.data.summary?.trim() || template?.suggestedSummary || null,
+        // The resident-facing portal description. The campaign is created in
+        // 'draft' status, so nothing is public until the planner activates it,
+        // and the text stays editable in the campaign console.
+        ...(template ? { public_description: template.suggestedPublicDescription } : {}),
+        engagement_type: parsed.data.engagementType ?? template?.engagementType ?? "comment_collection",
         status: parsed.data.status ?? "draft",
         created_by: user.id,
       })
@@ -305,8 +328,37 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       workspaceId,
       campaignId: campaign.id,
+      templateId: template?.id ?? null,
       durationMs: Date.now() - startedAt,
     });
+
+    if (template) {
+      const templateOutcome = await applyCampaignTemplate(supabase, audit, {
+        campaignId: campaign.id,
+        userId: user.id,
+        template,
+      });
+
+      if (templateOutcome.applied) {
+        audit.info("campaign_template_applied", {
+          userId: user.id,
+          workspaceId,
+          campaignId: campaign.id,
+          templateId: template.id,
+          categoriesCreated: templateOutcome.categoriesCreated,
+          questionsCreated: templateOutcome.questionsCreated,
+          optionsCreated: templateOutcome.optionsCreated,
+          durationMs: Date.now() - startedAt,
+        });
+      }
+      // A failed apply already audited inside the helper. The campaign exists
+      // either way, so the response says so and reports the template's own
+      // outcome instead of collapsing the two into one status code.
+      return NextResponse.json(
+        { campaignId: campaign.id, campaign, template: { id: template.id, ...templateOutcome } },
+        { status: 201 }
+      );
+    }
 
     return NextResponse.json({ campaignId: campaign.id, campaign }, { status: 201 });
   } catch (error) {

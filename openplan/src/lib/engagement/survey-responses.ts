@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
+  parseEngagementGeometry,
+  computeEngagementGeometryRepresentativePoint,
+} from "./geometry";
+import {
   SURVEY_QUESTION_TYPES,
   tallyChoice,
   summarizeLikert,
@@ -454,6 +458,170 @@ export async function loadApprovedSurveyAnswers(
     .eq("campaign_id", campaignId)
     .eq("engagement_survey_response_sessions.status", "approved");
   return { rows: (result.data ?? []) as SurveyAnswerRow[], error: result.error ?? null };
+}
+
+// ── Full answer export (SENSITIVE; the door answer CONTENT leaves through) ──
+
+/** One answer, ATTRIBUTED to its response session, as the export needs it.
+ * `question_prompt_snapshot` is the prompt AS THE RESPONDENT READ IT — the
+ * schema snapshots it at submit time precisely so history survives question
+ * edits, and the export must render the snapshot, never the live prompt. */
+export type SurveyAnswerExportRow = {
+  session_id: string;
+  question_id: string | null;
+  question_type: SurveyQuestionType;
+  question_prompt_snapshot: string | null;
+  answer_json: unknown;
+  answer_text: string | null;
+  created_at: string;
+};
+
+/**
+ * Every answer for a campaign, with its `session_id`, for the member-gated
+ * answer export. This is deliberately the ONLY reader that hands answer content
+ * out attributed to a response — `loadApprovedSurveyAnswers` above strips the
+ * session on purpose because aggregation must not be able to follow one
+ * respondent across questions. The export route may, because it sits behind the
+ * same workspace-member gate as the moderation register and is audited.
+ */
+export async function loadSurveyAnswersForExport(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<SurveyRowsResult<SurveyAnswerExportRow>> {
+  const result = await supabase
+    .from("engagement_survey_answers")
+    .select(
+      "session_id, question_id, question_type, question_prompt_snapshot, answer_json, answer_text, created_at"
+    )
+    .eq("campaign_id", campaignId)
+    .order("created_at", { ascending: true });
+  return { rows: (result.data ?? []) as SurveyAnswerExportRow[], error: result.error ?? null };
+}
+
+export type SurveyOptionLabelRow = { id: string; label: string };
+
+/**
+ * ALL option labels for a campaign — archived options INCLUDED, unlike every
+ * other definition read here. An answer outlives the option it named (options
+ * are soft-archived once responses exist), and an export that resolved labels
+ * only from the active set would render a resident's real choice as
+ * "(removed option)" the day an operator retired it.
+ */
+export async function loadSurveyOptionLabels(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<SurveyRowsResult<SurveyOptionLabelRow>> {
+  const result = await supabase
+    .from("engagement_survey_question_options")
+    .select("id, label")
+    .eq("campaign_id", campaignId);
+  return { rows: (result.data ?? []) as SurveyOptionLabelRow[], error: result.error ?? null };
+}
+
+/** A flattened answer: `text` for the CSV cell, `value` for the JSON export. */
+export type FlattenedSurveyAnswer = { text: string; value: Record<string, unknown> };
+
+const REMOVED_OPTION_LABEL = "(removed option)";
+
+/**
+ * Flatten one stored answer for export, per question type. Pure — no DB.
+ *
+ * TWO SNAPSHOTS ARE IN PLAY and each is preferred where it is the stronger
+ * record. `answer_text` was written by `validateSurveyAnswer` at submit time, so
+ * for option-bearing types it carries the labels the respondent actually saw —
+ * it wins over labels re-resolved today. The structured `value` re-resolves ids
+ * against `optionLabelById` (pass ALL options, archived included) so the JSON
+ * side stays machine-readable. Two types override the submit-time text:
+ * map_point always derives lon/lat from the stored geometry (its text snapshot
+ * is the note OR the coords, never reliably both), and file_upload always emits
+ * a count + file names, never bytes or storage internals.
+ */
+export function flattenSurveyAnswerForExport(
+  answer: Pick<SurveyAnswerExportRow, "question_type" | "answer_json" | "answer_text">,
+  optionLabelById: Map<string, string>
+): FlattenedSurveyAnswer {
+  const raw = (
+    answer.answer_json && typeof answer.answer_json === "object" ? answer.answer_json : {}
+  ) as Record<string, unknown>;
+  const snapshotText = (answer.answer_text ?? "").trim();
+  const label = (id: unknown) =>
+    typeof id === "string" ? optionLabelById.get(id) ?? REMOVED_OPTION_LABEL : REMOVED_OPTION_LABEL;
+
+  switch (answer.question_type) {
+    case "single_choice": {
+      const other = typeof raw.other_text === "string" ? raw.other_text.trim() : "";
+      if (other) return { text: snapshotText || other, value: { other_text: other } };
+      const optionLabel = label(raw.option_id);
+      return { text: snapshotText || optionLabel, value: { option_label: optionLabel } };
+    }
+    case "multiple_choice": {
+      const ids = Array.isArray(raw.option_ids) ? raw.option_ids : [];
+      const labels = ids.map(label);
+      const other = typeof raw.other_text === "string" && raw.other_text.trim() ? raw.other_text.trim() : null;
+      const parts = other ? [...labels, other] : labels;
+      return {
+        text: snapshotText || parts.join("; "),
+        value: other ? { option_labels: labels, other_text: other } : { option_labels: labels },
+      };
+    }
+    case "likert":
+    case "rating": {
+      const value = typeof raw.value === "number" ? raw.value : null;
+      return { text: snapshotText || (value === null ? "" : String(value)), value: { value } };
+    }
+    case "ranking": {
+      const ids = Array.isArray(raw.ranking) ? raw.ranking : [];
+      const labels = ids.map(label);
+      return { text: snapshotText || labels.join(" > "), value: { ranked_option_labels: labels } };
+    }
+    case "budget_allocation": {
+      const allocations = (Array.isArray(raw.allocations) ? raw.allocations : []).map((entry) => {
+        const rec = (entry && typeof entry === "object" ? entry : {}) as Record<string, unknown>;
+        return {
+          option_label: label(rec.option_id),
+          amount: typeof rec.amount === "number" ? rec.amount : null,
+        };
+      });
+      return {
+        text:
+          snapshotText ||
+          allocations.map((a) => `${a.option_label}: ${a.amount ?? "?"}`).join("; "),
+        value: { allocations },
+      };
+    }
+    case "map_point": {
+      const note = typeof raw.note === "string" && raw.note.trim() ? raw.note.trim() : null;
+      const parsed = parseEngagementGeometry(raw.geometry);
+      if (!parsed.ok) {
+        // No coordinates to state; the note (or the submit-time text) is all
+        // that can honestly leave.
+        return { text: snapshotText || note || "(unreadable geometry)", value: note ? { note } : {} };
+      }
+      const { longitude, latitude } = computeEngagementGeometryRepresentativePoint(parsed.geometry);
+      const coords = `${longitude.toFixed(5)},${latitude.toFixed(5)}`;
+      return {
+        text: note ? `${coords} — ${note}` : coords,
+        value: note ? { longitude, latitude, note } : { longitude, latitude },
+      };
+    }
+    case "free_text": {
+      const text = typeof raw.text === "string" ? raw.text : snapshotText;
+      return { text, value: { text } };
+    }
+    case "file_upload": {
+      const files = Array.isArray(raw.files) ? raw.files : [];
+      const names = files.map((entry, index) => {
+        const rec = (entry && typeof entry === "object" ? entry : {}) as Record<string, unknown>;
+        if (typeof rec.original_name === "string" && rec.original_name) return rec.original_name;
+        if (typeof rec.path === "string" && rec.path) return rec.path.split("/").pop() || `file ${index + 1}`;
+        return `file ${index + 1}`;
+      });
+      return {
+        text: `${files.length} file${files.length === 1 ? "" : "s"}${names.length ? `: ${names.join("; ")}` : ""}`,
+        value: { file_count: files.length, file_names: names },
+      };
+    }
+  }
 }
 
 /** Recent response sessions for one fingerprint (SENSITIVE, campaign_id-scoped).

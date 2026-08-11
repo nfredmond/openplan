@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { normalizeShareToken } from "@/lib/engagement/public-portal";
+import { isPublicSlugCandidate, normalizePublicSlugInput } from "@/lib/engagement/campaign-slugs";
 import { ENGAGEMENT_PHOTO_BUCKET, ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS } from "@/lib/engagement/photo";
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
@@ -871,20 +874,11 @@ export async function loadPublicPortalResult(
 
   const supabase = createServiceRoleClient();
 
-  const acceptLanguage =
-    localeRequest?.acceptLanguage !== undefined
-      ? localeRequest.acceptLanguage
-      : await readAcceptLanguageHeader();
-
-  const locale = resolvePortalLocale({
-    requested: localeRequest?.requestedLocale ?? null,
-    acceptLanguage,
-  });
-  const messages = buildPortalMessageBundle(locale);
+  const { locale, messages } = await resolvePortalLanguage(localeRequest);
 
   const campaignResult = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
+    .select(PUBLIC_PORTAL_CAMPAIGN_COLUMNS)
     .eq("share_token", shareToken)
     .eq("status", "active")
     .maybeSingle();
@@ -901,8 +895,61 @@ export async function loadPublicPortalResult(
 
   if (!campaignResult.data) return { status: "absent" };
 
-  const campaign = campaignResult.data as PublicPortalCampaign;
+  const bundle = await buildPublicPortalBundle(
+    supabase,
+    campaignResult.data as PublicPortalCampaign,
+    shareToken,
+    locale,
+    messages
+  );
 
+  return { status: "ok", bundle };
+}
+
+/**
+ * The columns the portal renders off the campaign row itself. One constant
+ * because THREE reads now issue it — the public token path, the slug path's
+ * final load, and the operator preview — and this repo's recurring defect is a
+ * column present in one copy of a select string and missing from another.
+ */
+const PUBLIC_PORTAL_CAMPAIGN_COLUMNS =
+  "id, workspace_id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats";
+
+/** The participant's language, resolved once per request — see `PublicPortalLocaleRequest`. */
+async function resolvePortalLanguage(localeRequest?: PublicPortalLocaleRequest): Promise<{
+  locale: ResolvedPortalLocale;
+  messages: PortalMessageBundle;
+}> {
+  const acceptLanguage =
+    localeRequest?.acceptLanguage !== undefined
+      ? localeRequest.acceptLanguage
+      : await readAcceptLanguageHeader();
+
+  const locale = resolvePortalLocale({
+    requested: localeRequest?.requestedLocale ?? null,
+    acceptLanguage,
+  });
+  return { locale, messages: buildPortalMessageBundle(locale) };
+}
+
+/** The service-role client, as this module actually uses it. */
+type PortalDataClient = ReturnType<typeof createServiceRoleClient>;
+
+/**
+ * Build the full portal bundle for a campaign row that has ALREADY passed its
+ * caller's gate. This function performs no authorization of its own — the
+ * public token path gates on `share_token` + `status = 'active'`, and the
+ * operator preview gates on workspace membership. Extracted so the operator
+ * preview renders the SAME bundle residents get, rather than a second
+ * implementation that can quietly disagree with the first.
+ */
+async function buildPublicPortalBundle(
+  supabase: PortalDataClient,
+  campaign: PublicPortalCampaign,
+  shareToken: string,
+  locale: ResolvedPortalLocale,
+  messages: PortalMessageBundle
+): Promise<PublicPortalBundle> {
   const [
     projectResult,
     placeCandidates,
@@ -1201,10 +1248,196 @@ export async function loadPublicPortalResult(
     ),
   };
 
-  return {
-    status: "ok",
-    bundle: { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps },
-  };
+  return { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps };
+}
+
+/**
+ * The slug shape `/engage/{value}` will even try against `public_slug`:
+ * lowercase kebab, 3-64 characters — the same rule migration 20260810000002
+ * CHECKs at the column. Checked here so a value that could never be a slug
+ * (an email, an uppercase paste, a path fragment) costs no query at all.
+ * The rule itself lives in `campaign-slugs.ts`, shared with the writer side
+ * (share controls + the campaign PATCH route); re-exported for existing
+ * importers of this module.
+ */
+export {
+  isPublicSlugCandidate,
+  PUBLIC_SLUG_MAX_LENGTH,
+  PUBLIC_SLUG_MIN_LENGTH,
+} from "@/lib/engagement/campaign-slugs";
+
+/**
+ * Resolve `/engage/{value}` where the value may be a share token OR a printable
+ * slug (20260810000002).
+ *
+ * TOKEN FIRST, deliberately. A share token (28 lowercase alphanumerics) is
+ * also a syntactically valid slug, so the two namespaces overlap and the order
+ * of lookup is the disambiguation rule. Trying the token column first means a
+ * slug can never shadow a live token — the token stays authoritative for the
+ * campaign that minted it, and the worst a colliding slug can do is lose to it.
+ * The alternative (a disjoint slug charset) was rejected because it would ban
+ * ordinary one-word slugs like "downtown" for the sake of a collision the
+ * lookup order already settles.
+ *
+ * THE SLUG PATH ADDS NO REACH. It requires `status = 'active'` itself, and it
+ * resolves only to a share token that is then loaded through the SAME
+ * token-gated path the public page has always used — so a slug can never serve
+ * a draft, a staged campaign, or anything the token path would refuse. A slug
+ * on a non-active campaign resolves to nothing, and that is the design: the
+ * printable address only works while the consultation is genuinely open to the
+ * public.
+ *
+ * SHIP ORDER: apply 20260810000002 before deploying this code. Until the
+ * column exists, the slug lookup fails and any /engage/ value that is not a
+ * live token renders the "could not load" disclosure rather than a 404 —
+ * honest, but a worse sentence than the truth.
+ */
+export async function loadPublicPortalResultForShareValue(
+  value: string,
+  localeRequest?: PublicPortalLocaleRequest
+): Promise<PublicPortalLoadResult> {
+  const byToken = await loadPublicPortalResult(value, localeRequest);
+  if (byToken.status !== "absent") return byToken;
+
+  // Lowercased before matching: a slug is printed on paper and typed back by
+  // hand, and "Downtown-Plan" must reach the same consultation as the flyer.
+  // The SAME normalization the writer side applies before saving.
+  const slug = normalizePublicSlugInput(value);
+  if (!isPublicSlugCandidate(slug)) return byToken;
+
+  const supabase = createServiceRoleClient();
+  const slugResult = await supabase
+    .from("engagement_campaigns")
+    .select("share_token")
+    .eq("public_slug", slug)
+    // A slug must never resolve a non-active campaign. The token path checks
+    // status again, so this filter is belt on top of braces — but this is the
+    // read that decides whether a guessable address answers at all, and it
+    // must not answer for a draft.
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (slugResult.error) {
+    // A failed lookup is not an absent campaign — same rule as the token path.
+    return {
+      status: "unreadable",
+      error: { message: slugResult.error.message ?? "no message reported" },
+    };
+  }
+
+  const token = normalizeShareToken(
+    (slugResult.data as { share_token?: string | null } | null)?.share_token
+  );
+  // A slugged campaign with no token has no public address yet; the readiness
+  // checks require a token before sharing, so this is "not published", which
+  // to the public is absence.
+  if (!token) return { status: "absent" };
+
+  return loadPublicPortalResult(token, localeRequest);
+}
+
+/**
+ * `loadPublicPortalBundle`'s shape over the token-or-slug resolution. Same
+ * compatibility contract, same staging-post throw — see the wrapper below.
+ */
+export async function loadPublicPortalBundleForShareValue(
+  value: string,
+  localeRequest?: PublicPortalLocaleRequest
+): Promise<PublicPortalBundle | null> {
+  const result = await loadPublicPortalResultForShareValue(value, localeRequest);
+  if (result.status === "unreadable") throw new PortalReadUnavailableError(result.error.message);
+  return result.status === "ok" ? result.bundle : null;
+}
+
+/**
+ * The three answers the operator preview can honestly give.
+ *
+ * `denied` covers both "no such campaign" and "not your workspace" ON PURPOSE:
+ * this loader runs on the service-role client, so distinguishing them would
+ * confirm to a non-member that a campaign id exists. The page renders both as
+ * its 404.
+ */
+export type PortalPreviewLoadResult =
+  | { status: "ok"; bundle: PublicPortalBundle }
+  | { status: "denied" }
+  | { status: "unreadable"; error: { message: string } };
+
+/**
+ * The portal bundle for a workspace member previewing their OWN campaign in
+ * ANY state — draft, staged, or live.
+ *
+ * THIS IS A SERVICE-ROLE READ AND THE `.eq()` FILTERS ARE THE ACCESS CONTROL.
+ * RLS enforces nothing here. The campaign read is scoped by id and DELIBERATELY
+ * carries no status filter — previewing a draft is the whole point — which is
+ * exactly why the membership read next to it is load-bearing: it is the only
+ * thing standing between a signed-in stranger and a draft consultation. The
+ * role gate is the same `engagement.read` check every campaign console read
+ * uses, via the shared role matrix.
+ *
+ * The PUBLIC path is untouched by this function existing: residents still reach
+ * a portal only through `share_token` + `status = 'active'`.
+ */
+export async function loadPortalPreviewResult(
+  campaignId: string,
+  userId: string,
+  localeRequest?: PublicPortalLocaleRequest
+): Promise<PortalPreviewLoadResult> {
+  if (!campaignId || !userId) return { status: "denied" };
+
+  const supabase = createServiceRoleClient();
+
+  const campaignResult = await supabase
+    .from("engagement_campaigns")
+    // `share_token` rides along so the preview can hand the portal component
+    // the same token residents' fetch URLs would use — though in preview mode
+    // the component never sends one.
+    .select(`${PUBLIC_PORTAL_CAMPAIGN_COLUMNS}, share_token`)
+    .eq("id", campaignId)
+    .maybeSingle();
+
+  if (campaignResult.error) {
+    return {
+      status: "unreadable",
+      error: { message: campaignResult.error.message ?? "no message reported" },
+    };
+  }
+
+  if (!campaignResult.data) return { status: "denied" };
+
+  const campaign = campaignResult.data as PublicPortalCampaign & { share_token: string | null };
+
+  const membershipResult = await supabase
+    .from("workspace_members")
+    .select("workspace_id, role")
+    .eq("workspace_id", campaign.workspace_id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  // A failed membership read is NOT a denial — but it is also not permission.
+  // It surfaces as itself so the page says "could not load" rather than either
+  // showing a draft to someone unverified or telling a member they lost access.
+  if (membershipResult.error) {
+    return {
+      status: "unreadable",
+      error: { message: membershipResult.error.message ?? "no message reported" },
+    };
+  }
+
+  const membership = membershipResult.data as { role: string } | null;
+  if (!membership || !canAccessWorkspaceAction("engagement.read", membership.role)) {
+    return { status: "denied" };
+  }
+
+  const { locale, messages } = await resolvePortalLanguage(localeRequest);
+  const bundle = await buildPublicPortalBundle(
+    supabase,
+    campaign,
+    normalizeShareToken(campaign.share_token) ?? "",
+    locale,
+    messages
+  );
+
+  return { status: "ok", bundle };
 }
 
 /**

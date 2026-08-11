@@ -31,28 +31,50 @@ const campaignEqMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
  */
 let sourceLocaleResult: { data: unknown; error: { message: string } | null } = { data: null, error: null };
 
+/**
+ * The campaign's own place-of-record, read by `loadPortalPlaceCandidates` for
+ * the publish flow's campaign-area advisory. Keyed on the projection (the
+ * place scope columns include `place_source`) so the main campaign read keeps
+ * its own mock sequencing, and configurable per test so the advisory's three
+ * states — set, unset, unreadable — are all reachable.
+ */
+let campaignPlaceResult: { data: Record<string, unknown> | null; error: { message: string } | null } = {
+  data: null,
+  error: null,
+};
+
 const campaignSelectMock = vi.fn((columns?: string) => {
   if (columns === "default_content_locale") {
     return { eq: () => ({ maybeSingle: async () => sourceLocaleResult }) };
+  }
+  if (columns?.includes("place_source")) {
+    return { eq: () => ({ maybeSingle: async () => campaignPlaceResult }) };
   }
   return { eq: campaignEqMock };
 });
 
 const projectMaybeSingleMock = vi.fn();
 const projectOrderMock = vi.fn();
-const projectSelectMock = vi.fn(() => ({
-  eq: (column: string) => {
-    if (column === "id") {
-      return { maybeSingle: projectMaybeSingleMock };
-    }
+const projectSelectMock = vi.fn((columns?: string) => {
+  // The linked project's place-of-record — a second framing candidate the
+  // portal place loader reads. Unset by default; nothing here tests it.
+  if (columns?.includes("place_source")) {
+    return { eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) };
+  }
+  return {
+    eq: (column: string) => {
+      if (column === "id") {
+        return { maybeSingle: projectMaybeSingleMock };
+      }
 
-    if (column === "workspace_id") {
-      return { order: projectOrderMock };
-    }
+      if (column === "workspace_id") {
+        return { order: projectOrderMock };
+      }
 
-    throw new Error(`Unexpected projects eq column: ${column}`);
-  },
-}));
+      throw new Error(`Unexpected projects eq column: ${column}`);
+    },
+  };
+});
 
 const categoriesOrderCreatedMock = vi.fn();
 const categoriesOrderSortMock = vi.fn(() => ({ order: categoriesOrderCreatedMock }));
@@ -264,6 +286,11 @@ const fromMock = vi.fn((table: string) => {
       error: translationReadError,
     }));
   }
+  // The workspace home geography — the portal place loader's third framing
+  // candidate. Unset: these tests exercise the campaign candidate only.
+  if (table === "workspaces") {
+    return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) };
+  }
   // Operator notifications (loadOperatorNotifications) — select → eq → order → limit.
   if (table === "engagement_notifications") {
     return { select: () => ({ eq: () => ({ order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) }) }) }) };
@@ -394,6 +421,7 @@ describe("EngagementCampaignDetailPage", () => {
     translationRows = [];
     translationReadError = null;
     sourceLocaleResult = { data: null, error: null };
+    campaignPlaceResult = { data: null, error: null };
     surveyQuestionsReadError = null;
     membershipMaybeSingleMock.mockResolvedValue({
       data: { workspace_id: "workspace-1", role: "admin" },
@@ -1263,6 +1291,321 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.queryByText(/not attached to an RTP cycle/i)).not.toBeInTheDocument();
       // Named in the top-of-page disclosure with the other failed reads.
       expect(screen.getByText(/Part of this campaign could not be read/i)).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * ONE GUIDED PUBLISH FLOW, NEAR THE TOP.
+   *
+   * Publishing used to be three forms with three save buttons at the bottom of
+   * a ~20-section console: a planner who generated a link but never flipped the
+   * status to Active shipped a URL that 404s for every resident. The flow is
+   * driven by the SAME `getPublicPortalReadiness` the portal gate reads, so
+   * these tests vary the campaign row and assert the steps follow it.
+   */
+  describe("the guided publish flow", () => {
+    function campaignRow(overrides: Record<string, unknown> = {}) {
+      return {
+        id: "campaign-1",
+        workspace_id: "workspace-1",
+        project_id: "project-1",
+        rtp_cycle_id: null,
+        rtp_cycle_chapter_id: null,
+        title: "Downtown listening campaign",
+        summary: "Collect downtown safety feedback.",
+        status: "active",
+        engagement_type: "comment_collection",
+        share_token: "share-token",
+        public_description: null,
+        allow_public_submissions: true,
+        submissions_closed_at: null,
+        created_at: "2026-03-01T00:00:00.000Z",
+        updated_at: "2026-03-28T22:00:00.000Z",
+        ...overrides,
+      };
+    }
+
+    it("collapses to a live summary when the portal is already reachable", async () => {
+      // The default fixture is active with a token → live.
+      await renderPage();
+
+      const flow = screen.getByTestId("campaign-publish-flow");
+      expect(within(flow).getByText(/This campaign is live/i)).toBeInTheDocument();
+      expect(within(flow).getByRole("link", { name: /Preview the resident view/i })).toHaveAttribute(
+        "href",
+        "/engagement/campaign-1/preview"
+      );
+      // No setup steps on a live campaign.
+      expect(screen.queryByTestId("publish-step-share_token")).not.toBeInTheDocument();
+    });
+
+    it("derives the setup steps from the campaign's real saved state", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({
+          status: "draft",
+          share_token: null,
+          public_description: null,
+          allow_public_submissions: false,
+        }),
+        error: null,
+      });
+
+      await renderPage();
+
+      const flow = screen.getByTestId("campaign-publish-flow");
+      expect(within(flow).getByText(/0 of 4 steps complete/i)).toBeInTheDocument();
+      expect(screen.getByTestId("publish-step-share_token")).toHaveAttribute("data-state", "todo");
+      expect(screen.getByTestId("publish-step-active_status")).toHaveAttribute("data-state", "todo");
+      expect(within(flow).getByRole("button", { name: /Generate link/i })).toBeInTheDocument();
+      expect(within(flow).getByRole("button", { name: /Set the campaign to Active/i })).toBeInTheDocument();
+      expect(within(flow).queryByText(/This campaign is live/i)).not.toBeInTheDocument();
+    });
+
+    it("marks the steps the campaign has genuinely completed as done", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({
+          status: "draft",
+          public_description: "Tell us how the downtown corridor should change over the next decade.",
+        }),
+        error: null,
+      });
+
+      await renderPage();
+
+      // Token saved + description long enough + submissions on = three done…
+      expect(screen.getByTestId("publish-step-share_token")).toHaveAttribute("data-state", "done");
+      expect(screen.getByTestId("publish-step-public_description")).toHaveAttribute("data-state", "done");
+      expect(screen.getByTestId("publish-step-submission_mode")).toHaveAttribute("data-state", "done");
+      // …and only the status flip is left.
+      expect(screen.getByTestId("publish-step-active_status")).toHaveAttribute("data-state", "todo");
+      expect(screen.getByText(/3 of 4 steps complete/i)).toBeInTheDocument();
+    });
+
+    it("reads the campaign-area advisory from the campaign's real place of record", async () => {
+      campaignPlaceResult = {
+        data: {
+          place_source: "tigerweb",
+          place_label: "Franklin County, Ohio",
+          place_min_lon: -83.2,
+          place_min_lat: 39.85,
+          place_max_lon: -82.8,
+          place_max_lat: 40.1,
+        },
+        error: null,
+      };
+
+      await renderPage();
+
+      expect(screen.getByTestId("publish-area-advisory")).toHaveTextContent(
+        /Campaign area on record: Franklin County, Ohio/
+      );
+      expect(screen.queryByText(/No campaign area is set/i)).not.toBeInTheDocument();
+    });
+
+    it("states the consequences of publishing without a campaign area", async () => {
+      await renderPage();
+
+      const advisory = screen.getByTestId("publish-area-advisory");
+      expect(advisory).toHaveTextContent(/No campaign area is set/i);
+      expect(advisory).toHaveTextContent(/location check .* cannot be turned on/i);
+    });
+
+    it("does not render a failed area read as a missing area", async () => {
+      campaignPlaceResult = { data: null, error: { message: "statement timeout" } };
+
+      await renderPage();
+
+      const advisory = screen.getByTestId("publish-area-advisory");
+      expect(advisory).toHaveTextContent(/could not be read/i);
+      expect(advisory).toHaveTextContent(/failed read, not a missing area/i);
+      expect(screen.queryByText(/No campaign area is set/i)).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * MODERATION HONESTY. A live portal shows approved comments only, so a live
+   * campaign with a filling queue and nothing approved reads to residents as a
+   * consultation nobody answered. The console must say so — and must not say
+   * so out of a failed read, a dead portal, or a queue that has published work.
+   */
+  describe("the moderation honesty banner", () => {
+    const BANNER_PATTERN = /waiting for review — residents currently see none of them/i;
+
+    function pendingItem(id: string, status = "pending") {
+      return {
+        id,
+        campaign_id: "campaign-1",
+        category_id: null,
+        title: null,
+        body: `Comment ${id}`,
+        submitted_by: "Resident",
+        status,
+        source_type: "public_comment",
+        moderation_notes: null,
+        latitude: null,
+        longitude: null,
+        metadata_json: {},
+        created_at: "2026-03-28T20:00:00.000Z",
+        updated_at: "2026-03-28T21:30:00.000Z",
+      };
+    }
+
+    it("appears when the campaign is live with submissions waiting and none published", async () => {
+      itemsOrderMock.mockResolvedValueOnce({
+        data: [pendingItem("item-1"), pendingItem("item-2", "flagged")],
+        error: null,
+      });
+
+      await renderPage();
+
+      const banner = screen.getByTestId("moderation-honesty-banner");
+      expect(banner).toHaveTextContent(/2 submissions are waiting for review/);
+      expect(banner).toHaveTextContent(/residents currently see none of them/);
+    });
+
+    it("uses the singular for a single waiting submission", async () => {
+      itemsOrderMock.mockResolvedValueOnce({ data: [pendingItem("item-1")], error: null });
+
+      await renderPage();
+
+      expect(screen.getByTestId("moderation-honesty-banner")).toHaveTextContent(
+        /1 submission is waiting for review/
+      );
+    });
+
+    it("does not appear when the portal is not publicly reachable", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "campaign-1",
+          workspace_id: "workspace-1",
+          project_id: "project-1",
+          rtp_cycle_id: null,
+          rtp_cycle_chapter_id: null,
+          title: "Downtown listening campaign",
+          summary: "Collect downtown safety feedback.",
+          status: "draft",
+          engagement_type: "comment_collection",
+          share_token: "share-token",
+          public_description: null,
+          allow_public_submissions: true,
+          submissions_closed_at: null,
+          created_at: "2026-03-01T00:00:00.000Z",
+          updated_at: "2026-03-28T22:00:00.000Z",
+        },
+        error: null,
+      });
+      itemsOrderMock.mockResolvedValueOnce({ data: [pendingItem("item-1")], error: null });
+
+      await renderPage();
+
+      expect(screen.queryByTestId("moderation-honesty-banner")).not.toBeInTheDocument();
+      expect(screen.queryByText(BANNER_PATTERN)).not.toBeInTheDocument();
+    });
+
+    it("does not appear once something is published for residents to see", async () => {
+      // The default items fixture holds one APPROVED item; add a pending one.
+      itemsOrderMock.mockResolvedValueOnce({
+        data: [
+          pendingItem("item-1"),
+          { ...pendingItem("item-2"), status: "approved" },
+        ],
+        error: null,
+      });
+
+      await renderPage();
+
+      expect(screen.queryByTestId("moderation-honesty-banner")).not.toBeInTheDocument();
+    });
+
+    it("does not appear when the queue is empty", async () => {
+      // Default fixture: one approved item, nothing pending.
+      await renderPage();
+
+      expect(screen.queryByTestId("moderation-honesty-banner")).not.toBeInTheDocument();
+    });
+
+    /**
+     * MUTATION HONESTY (2026-08-10): removing the page's explicit
+     * `!itemsUnreadable` guard did NOT fail this test, because a failed items
+     * read already yields an empty list and therefore a zero queue count — the
+     * `awaitingReviewCount > 0` clause catches it coincidentally. The explicit
+     * guard is a second line of defense for a future where the counts stop
+     * travelling with the read result. What this test DOES pin down is the
+     * user-visible behaviour: no banner may render out of a failed read,
+     * whichever clause enforces it (verified: deleting BOTH clauses fails it).
+     */
+    it("is withheld when the comments could not be read — a failed read licenses no count", async () => {
+      itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+
+      await renderPage();
+
+      expect(screen.queryByTestId("moderation-honesty-banner")).not.toBeInTheDocument();
+      expect(screen.queryByText(BANNER_PATTERN)).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * THE CONSOLE ORDER IS THE WORKFLOW ORDER, AND NOTHING WENT MISSING.
+   *
+   * The reorder moved the setup surfaces (publish flow, survey builder,
+   * close-the-loop) and the moderation surfaces above the analysis panels,
+   * which are computed over responses that do not exist until the campaign is
+   * live and answered. A reorder is exactly the kind of change that silently
+   * drops a section, so this asserts every key section is still mounted AND
+   * that the order holds.
+   */
+  describe("console section order", () => {
+    function assertPrecedes(earlier: Element, later: Element) {
+      // DOCUMENT_POSITION_FOLLOWING: `later` comes after `earlier` in the DOM.
+      expect(earlier.compareDocumentPosition(later) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+
+    it("keeps every key section mounted after the reorder", async () => {
+      await renderPage();
+
+      // Setup surfaces.
+      expect(screen.getByTestId("campaign-publish-flow")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Survey & form questions/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /You said \/ We did/i })).toBeInTheDocument();
+      // Full-width readiness/report sections.
+      expect(screen.getByText(/Campaign handoff decision/i)).toBeInTheDocument();
+      expect(screen.getByText(/Reports built on this campaign/i)).toBeInTheDocument();
+      expect(screen.getByText(/RTP attachment/)).toBeInTheDocument();
+      // Left column.
+      expect(screen.getByText(/Current categories/i)).toBeInTheDocument();
+      expect(screen.getByText(/Source and geography breakdown/i)).toBeInTheDocument();
+      // Right column: portal surfaces, intake, moderation, analysis.
+      expect(screen.getByText(/Put your project on the map/i)).toBeInTheDocument();
+      expect(screen.getByText(/Comments that did not come through the portal/i)).toBeInTheDocument();
+      expect(screen.getByText(/If a resident cannot use the portal/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /publish this campaign in your community.s languages/i })
+      ).toBeInTheDocument();
+      expect(screen.getByTestId("engagement-bulk-moderation")).toBeInTheDocument();
+      expect(screen.getByTestId("engagement-item-registry")).toBeInTheDocument();
+      expect(screen.getByTestId("engagement-synthesis-panel")).toBeInTheDocument();
+      expect(screen.getByTestId("representativeness-panel")).toBeInTheDocument();
+      // Operator Actions footer.
+      expect(screen.getByTestId("engagement-campaign-controls")).toBeInTheDocument();
+      expect(screen.getByTestId("engagement-share-controls")).toBeInTheDocument();
+      expect(screen.getByTestId("engagement-item-composer")).toBeInTheDocument();
+    });
+
+    it("puts the publish flow and both builders above the analysis panels", async () => {
+      await renderPage();
+
+      const synthesis = screen.getByTestId("engagement-synthesis-panel");
+      assertPrecedes(screen.getByTestId("campaign-publish-flow"), synthesis);
+      assertPrecedes(screen.getByRole("heading", { name: /Survey & form questions/i }), synthesis);
+      assertPrecedes(screen.getByRole("heading", { name: /You said \/ We did/i }), synthesis);
+    });
+
+    it("keeps moderation above the analysis panels in the working column", async () => {
+      await renderPage();
+
+      const synthesis = screen.getByTestId("engagement-synthesis-panel");
+      assertPrecedes(screen.getByTestId("engagement-bulk-moderation"), synthesis);
+      assertPrecedes(screen.getByTestId("engagement-item-registry"), synthesis);
     });
   });
 });
