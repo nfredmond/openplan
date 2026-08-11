@@ -1,0 +1,109 @@
+{
+  "template_id": "parks_and_open_space_plan_v0.1",
+  "template_name": "Parks and open space plan",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "parks_plan",
+    "parks_and_recreation_plan",
+    "open_space_plan"
+  ],
+  "description": "A plan for parks, trails, facilities and open space: what exists, who can reach it, what is needed, and what gets built and maintained first.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Access analysis — who can reach a park on foot without crossing a barrier — is what separates a parks plan from an inventory. It is a named deliverable for that reason.",
+    "Maintenance is usually the constraint, not capital. Recording capital and maintenance priorities in the same deliverable keeps the plan from committing to facilities nobody can keep up.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "inventory",
+      "title": "Park, facility and open space inventory",
+      "offset_days": 90,
+      "summary": "Every site, its size, its facilities and its condition."
+    },
+    {
+      "key": "access_analysis",
+      "title": "Level of service and access analysis",
+      "offset_days": 135,
+      "summary": "Who is within a reasonable walk of a park, and who is separated from one by a barrier."
+    },
+    {
+      "key": "needs_assessment",
+      "title": "Needs assessment",
+      "offset_days": 180,
+      "summary": "What the community asks for, from surveys, programming data and use observation."
+    },
+    {
+      "key": "priorities",
+      "title": "Capital and maintenance priorities",
+      "offset_days": 240,
+      "summary": "What to build, what to renew and what to maintain, in one ranked list rather than two competing ones."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft parks and open space plan",
+      "offset_days": 300,
+      "summary": "The complete draft assembled for review."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final parks and open space plan",
+      "offset_days": 375,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule and the survey approach confirmed."
+    },
+    {
+      "key": "survey_closes",
+      "title": "Community survey closes",
+      "offset_days": 120,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The survey window ends so results can inform the needs assessment."
+    },
+    {
+      "key": "public_workshops",
+      "title": "Public workshops",
+      "offset_days": 165,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "Workshops held in more than one part of the service area."
+    },
+    {
+      "key": "advisory_review",
+      "title": "Parks board or advisory body review",
+      "offset_days": 315,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The body responsible for parks reviews the draft."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 330,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the plan",
+      "offset_days": 390,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the governing body."
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "template_id": "housing_needs_plan_v0.1",
+  "template_name": "Housing needs plan or housing element",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "housing_element",
+    "housing_plan",
+    "housing_needs_assessment"
+  ],
+  "description": "A plan for housing: who needs what, what stands in the way, where capacity exists, and the programs the agency commits to.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Housing plans are among the most heavily regulated planning documents there are, and the required contents, review steps, outside approvals and deadlines differ by state and country. Nothing here states a requirement — confirm what your jurisdiction asks for and add the records it needs, including any review by an outside agency before adoption.",
+    "The site inventory is the deliverable most often challenged after adoption. Record the evidence for each site's capacity as you go, not afterwards.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "needs_assessment",
+      "title": "Housing needs assessment",
+      "offset_days": 105,
+      "summary": "Households, incomes, cost burden, overcrowding, homelessness and special housing needs, with sources named."
+    },
+    {
+      "key": "constraints_analysis",
+      "title": "Constraints analysis",
+      "offset_days": 165,
+      "summary": "The governmental and non-governmental barriers to producing housing, described concretely rather than generally."
+    },
+    {
+      "key": "site_inventory",
+      "title": "Site inventory and capacity analysis",
+      "offset_days": 225,
+      "summary": "The sites relied on for capacity, each with the evidence that it can realistically develop."
+    },
+    {
+      "key": "access_and_equity",
+      "title": "Housing access and equity assessment",
+      "offset_days": 255,
+      "summary": "Patterns of segregation, displacement risk and access to opportunity, and the actions proposed in response."
+    },
+    {
+      "key": "draft_programs",
+      "title": "Draft goals, policies and housing programs",
+      "offset_days": 330,
+      "summary": "The commitments the agency proposes to make, each with a responsible party and a timeframe."
+    },
+    {
+      "key": "public_draft",
+      "title": "Public review draft",
+      "offset_days": 390,
+      "summary": "The complete draft released for public review."
+    },
+    {
+      "key": "final_element",
+      "title": "Final housing element or plan",
+      "offset_days": 480,
+      "summary": "The draft revised after public and any outside-agency review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule and the engagement approach confirmed."
+    },
+    {
+      "key": "community_meetings",
+      "title": "Community meetings on housing need",
+      "offset_days": 120,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "Renters, owners, service providers and people who have been priced out are heard early."
+    },
+    {
+      "key": "stakeholder_roundtable",
+      "title": "Builder and service provider roundtable",
+      "offset_days": 210,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The people who produce and operate housing test the draft programs for realism."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 400,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment."
+    },
+    {
+      "key": "hearing",
+      "title": "Public hearing on the draft",
+      "offset_days": 450,
+      "milestone_type": "hearing",
+      "phase_code": "outreach",
+      "summary": "The hearing held before adoption."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the housing element or plan",
+      "offset_days": 495,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the governing body."
+    }
+  ]
+}

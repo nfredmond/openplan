@@ -151,6 +151,8 @@ async function renderBoardFromRealBuilders() {
 
   render(
     <ProjectDeliveryBoard
+      assigneeRoster={{ ok: true, members: [] }}
+      canWrite
       project={PROJECT}
       projectControlsSummary={controlsSummary}
       invoiceSummary={controlsSummary.invoiceSummary}

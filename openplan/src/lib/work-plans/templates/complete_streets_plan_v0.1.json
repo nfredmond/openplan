@@ -1,0 +1,105 @@
+{
+  "template_id": "complete_streets_plan_v0.1",
+  "template_name": "Complete streets plan",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "complete_streets_plan",
+    "complete_streets_policy"
+  ],
+  "description": "A plan and policy that makes designing for every road user the routine practice of an agency, rather than something argued for project by project.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "The hardest part of this work is the last deliverable, not the plan itself: a policy that does not change the project-delivery checklist changes nothing.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and stakeholder map",
+      "offset_days": 21,
+      "summary": "The task list, the schedule, and which internal departments must agree for the policy to hold."
+    },
+    {
+      "key": "policy_audit",
+      "title": "Existing policy, standards and practice audit",
+      "offset_days": 75,
+      "summary": "What the current standards, manuals and habits already require, and where they conflict with the goal."
+    },
+    {
+      "key": "street_typologies",
+      "title": "Street typology and design toolkit",
+      "offset_days": 135,
+      "summary": "A typology for the network with the design treatments appropriate to each type."
+    },
+    {
+      "key": "network_priorities",
+      "title": "Network priorities and candidate projects",
+      "offset_days": 180,
+      "summary": "Where the typology changes what gets built first, expressed as a candidate project list."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft complete streets plan and policy",
+      "offset_days": 240,
+      "summary": "The complete draft, including the policy language proposed for adoption."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final complete streets plan and policy",
+      "offset_days": 315,
+      "summary": "The draft revised after review."
+    },
+    {
+      "key": "delivery_checklist",
+      "title": "Project-delivery checklist",
+      "offset_days": 330,
+      "summary": "The step-by-step check that puts the policy into every project, including the exceptions process and who may approve one."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope and the departments that must be in the room confirmed."
+    },
+    {
+      "key": "staff_workshop",
+      "title": "Interdepartmental staff workshop",
+      "offset_days": 60,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "Public works, planning, maintenance and emergency services work through the trade-offs together."
+    },
+    {
+      "key": "public_open_house",
+      "title": "Public open house",
+      "offset_days": 200,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The typology and priorities shown publicly."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 255,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft plan and policy language are released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the policy",
+      "offset_days": 330,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the body whose adoption makes the policy binding on projects."
+    }
+  ]
+}

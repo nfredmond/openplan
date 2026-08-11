@@ -1,0 +1,115 @@
+{
+  "template_id": "transportation_improvement_program_cycle_v0.1",
+  "template_name": "Transportation improvement program cycle",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "transportation_improvement_program",
+    "programming_cycle",
+    "call_for_projects"
+  ],
+  "description": "One programming cycle: opening a call for projects, receiving and scoring applications, demonstrating financial constraint, and adopting the program.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "The dates in a real programming cycle are usually fixed by the agency that receives the adopted program, not by the agency running the call. Replace these offsets with those dates as soon as you have them.",
+    "It assumes a competitive call with published criteria. A formula or continuous-application program keeps the scoring and adoption steps but not the call window.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "call_package",
+      "title": "Call-for-projects package",
+      "offset_days": 30,
+      "summary": "Eligibility, evaluation criteria, application forms and the schedule, published together so applicants see the same rules."
+    },
+    {
+      "key": "application_log",
+      "title": "Application log and completeness review",
+      "offset_days": 90,
+      "summary": "Every application received, logged, and checked for completeness before scoring begins."
+    },
+    {
+      "key": "scoring_results",
+      "title": "Technical scoring results and recommended program",
+      "offset_days": 120,
+      "summary": "Scores with the reasoning behind each one, and the resulting recommended list."
+    },
+    {
+      "key": "draft_program",
+      "title": "Draft program document",
+      "offset_days": 150,
+      "summary": "The draft program with its financial-constraint demonstration and project detail."
+    },
+    {
+      "key": "comment_record",
+      "title": "Public comment record and responses",
+      "offset_days": 195,
+      "summary": "Every comment received and the agency's response to it."
+    },
+    {
+      "key": "final_program",
+      "title": "Final program document",
+      "offset_days": 225,
+      "summary": "The adopted program in the form the receiving agency expects."
+    },
+    {
+      "key": "amendment_procedure",
+      "title": "Amendment and administrative-modification procedure",
+      "offset_days": 240,
+      "summary": "Written rules for what changes require an amendment and what may be handled administratively, agreed before the first change arrives."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "cycle_opens",
+      "title": "Call for projects opens",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "programming",
+      "summary": "The application window opens and the criteria are public."
+    },
+    {
+      "key": "applications_due",
+      "title": "Applications due",
+      "offset_days": 75,
+      "milestone_type": "schedule",
+      "phase_code": "programming",
+      "summary": "The application window closes."
+    },
+    {
+      "key": "committee_recommendation",
+      "title": "Committee recommendation",
+      "offset_days": 135,
+      "milestone_type": "decision",
+      "phase_code": "programming",
+      "summary": "The technical or policy committee recommends a program to the board."
+    },
+    {
+      "key": "public_comment_opens",
+      "title": "Public comment period opens",
+      "offset_days": 160,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft program is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Board adoption of the program",
+      "offset_days": 215,
+      "milestone_type": "decision",
+      "phase_code": "programming",
+      "summary": "The governing board adopts the program."
+    },
+    {
+      "key": "transmittal",
+      "title": "Adopted program transmitted to the reviewing agency",
+      "offset_days": 240,
+      "milestone_type": "other",
+      "phase_code": "closeout",
+      "summary": "The program is sent to whichever agency incorporates or approves it."
+    }
+  ]
+}

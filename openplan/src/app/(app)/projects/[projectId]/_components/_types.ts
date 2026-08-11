@@ -105,6 +105,19 @@ export type RtpCycleRow = {
   horizon_end_year: number | null;
 };
 
+/**
+ * THE TWO OWNER LANES, on every record type that has them.
+ *
+ * `owner_label` is free text — a consultant, a partner agency, a name with no
+ * account. `assignee_user_id` is an accountable teammate in this workspace
+ * (20260811000006). Both render, side by side; neither is ever shown as the
+ * other, and an assignee id that no longer resolves to a member renders the
+ * explicit departed sentence rather than a stale name or a blank.
+ *
+ * Optional, not `| null`, on purpose: a deployment that has not applied
+ * 20260811000006 yet returns rows without the key at all, and that is a
+ * different fact from an unassigned row.
+ */
 export type MilestoneRow = {
   id: string;
   title: string;
@@ -113,6 +126,7 @@ export type MilestoneRow = {
   phase_code: string;
   status: string;
   owner_label: string | null;
+  assignee_user_id?: string | null;
   target_date: string | null;
   actual_date: string | null;
   notes: string | null;
@@ -125,6 +139,8 @@ export type SubmittalRow = {
   submittal_type: string;
   status: string;
   agency_label: string | null;
+  /** See MilestoneRow: agency_label names the REVIEWER, this names the teammate. */
+  assignee_user_id?: string | null;
   reference_number: string | null;
   due_date: string | null;
   submitted_at: string | null;
@@ -337,6 +353,8 @@ export type DeliverableRow = {
   title: string;
   summary: string | null;
   owner_label: string | null;
+  /** See MilestoneRow. */
+  assignee_user_id?: string | null;
   due_date: string | null;
   status: string;
   created_at: string;
@@ -359,6 +377,8 @@ export type IssueRow = {
   severity: string;
   status: string;
   owner_label: string | null;
+  /** See MilestoneRow. */
+  assignee_user_id?: string | null;
   created_at: string;
 };
 

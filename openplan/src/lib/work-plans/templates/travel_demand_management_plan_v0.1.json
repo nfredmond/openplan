@@ -1,0 +1,107 @@
+{
+  "template_id": "travel_demand_management_plan_v0.1",
+  "template_name": "Travel demand management plan",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "travel_demand_management_plan",
+    "tdm_plan",
+    "commute_program"
+  ],
+  "description": "A plan to change how existing trips are made — mode, time and necessity — through programs, incentives and partnerships rather than construction.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "It assumes measures the agency can actually deliver or require. Where a measure depends on employers or developers, name the partner in the record rather than leaving the action ownerless.",
+    "A measure with no monitoring is a measure nobody can defend later, which is why the monitoring framework is a deliverable rather than a chapter.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and partner list",
+      "offset_days": 14,
+      "summary": "The task list, the schedule, and the employers, institutions and operators whose participation the plan assumes."
+    },
+    {
+      "key": "travel_baseline",
+      "title": "Commute and travel behavior baseline",
+      "offset_days": 60,
+      "summary": "How people travel today, from surveys and available data, stated with its sample and its limits."
+    },
+    {
+      "key": "program_review",
+      "title": "Review of existing programs and incentives",
+      "offset_days": 90,
+      "summary": "What is already offered, who uses it, and what it has achieved."
+    },
+    {
+      "key": "measure_evaluation",
+      "title": "Candidate measures and expected effects",
+      "offset_days": 135,
+      "summary": "Each candidate measure with the evidence for its effect, the population it reaches and what it requires to run."
+    },
+    {
+      "key": "monitoring_framework",
+      "title": "Monitoring framework and performance measures",
+      "offset_days": 165,
+      "summary": "What will be measured, how often, and what result would count as the program working."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft travel demand management plan",
+      "offset_days": 195,
+      "summary": "The complete draft with measures, partners and the monitoring commitment."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final travel demand management plan",
+      "offset_days": 255,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, partners and the survey approach confirmed."
+    },
+    {
+      "key": "survey_closes",
+      "title": "Travel survey closes",
+      "offset_days": 45,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The baseline survey window ends so analysis can begin."
+    },
+    {
+      "key": "employer_workshop",
+      "title": "Employer and institution workshop",
+      "offset_days": 75,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The partners whose participation the plan depends on see the measures before they are proposed."
+    },
+    {
+      "key": "draft_review_opens",
+      "title": "Review of the draft plan opens",
+      "offset_days": 210,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released to partners and the public for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the plan",
+      "offset_days": 270,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption or acceptance by the sponsoring body."
+    }
+  ]
+}

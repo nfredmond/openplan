@@ -39,6 +39,13 @@ export type ProjectDeliverableBudgetRow = {
   /** Absent when the deployment has not applied 20260727000012 yet. */
   budget_amount?: number | string | null;
   percent_complete?: number | string | null;
+  /**
+   * The accountable teammate (20260811000006). Absent when that migration is
+   * still pending — which is a different fact from `null`, and the reason the
+   * pending flag beside it exists: null means "nobody is assigned", absent
+   * means "this deployment cannot answer the question yet".
+   */
+  assignee_user_id?: string | null;
 };
 
 export type ProjectSpendEntryRow = {
@@ -67,6 +74,13 @@ export type ProjectBudgetInputs = {
     deliverables: boolean;
     /** True when the budget columns (not the table) are still pending. */
     deliverableBudgetColumns: boolean;
+    /**
+     * True when `assignee_user_id` (not the table, not the budget columns) is
+     * still pending. Surfaced rather than swallowed: without it the deliverable
+     * list would render every row as unassigned, which is a statement about the
+     * team's work rather than about the database's schema.
+     */
+    deliverableAssigneeColumn: boolean;
     statedBudget: boolean;
     spendEntries: boolean;
     clientInvoices: boolean;
@@ -107,8 +121,19 @@ const MAX_DELIVERABLE_ROWS = 200;
 const MAX_SPEND_ENTRY_ROWS = 500;
 const MAX_CLIENT_INVOICE_ROWS = 200;
 
+/**
+ * Three projections, narrowing in the order the columns shipped, so a
+ * deployment behind ONE migration does not lose the columns of another.
+ *
+ * A two-step ladder (full → legacy) would have been simpler and wrong: a
+ * deployment carrying the budget columns but not yet `assignee_user_id` would
+ * fall all the way back to the 2026-03 column set and render "no budget basis"
+ * over budgets it actually has — a schema gap presented as a finding about an
+ * agency's money.
+ */
 const DELIVERABLE_SELECT_LEGACY = "id, title, summary, owner_label, due_date, status, created_at";
-const DELIVERABLE_SELECT = `${DELIVERABLE_SELECT_LEGACY}, budget_amount, percent_complete`;
+const DELIVERABLE_SELECT_WITH_BUDGET = `${DELIVERABLE_SELECT_LEGACY}, budget_amount, percent_complete`;
+const DELIVERABLE_SELECT = `${DELIVERABLE_SELECT_WITH_BUDGET}, assignee_user_id`;
 
 type QueryResult = { data: unknown[] | null; error: { message?: string } | null };
 
@@ -145,6 +170,10 @@ export async function loadProjectBudgetInputs(
       .limit(MAX_DELIVERABLE_ROWS)) as QueryResult;
 
   let deliverablesResult = await selectDeliverables(DELIVERABLE_SELECT);
+  const deliverableAssigneeColumnPending = looksLikePendingSchema(deliverablesResult.error?.message);
+  if (deliverableAssigneeColumnPending) {
+    deliverablesResult = await selectDeliverables(DELIVERABLE_SELECT_WITH_BUDGET);
+  }
   const deliverableBudgetColumnsPending = looksLikePendingSchema(deliverablesResult.error?.message);
   if (deliverableBudgetColumnsPending) {
     deliverablesResult = await selectDeliverables(DELIVERABLE_SELECT_LEGACY);
@@ -231,6 +260,10 @@ export async function loadProjectBudgetInputs(
     pending: {
       deliverables: deliverablesPending,
       deliverableBudgetColumns: deliverableBudgetColumnsPending,
+      // A budget-column fallback necessarily dropped the assignee too, so it
+      // reports pending as well — otherwise the panel would say the assignee
+      // question was answered by a projection that never asked it.
+      deliverableAssigneeColumn: deliverableAssigneeColumnPending || deliverableBudgetColumnsPending,
       statedBudget: statedBudgetPending,
       spendEntries: spendEntriesPending,
       clientInvoices: clientInvoicesPending,

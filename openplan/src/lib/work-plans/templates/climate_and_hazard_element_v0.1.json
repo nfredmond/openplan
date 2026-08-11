@@ -1,0 +1,108 @@
+{
+  "template_id": "climate_and_hazard_element_v0.1",
+  "template_name": "Climate and hazard resilience element",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "climate_action_plan",
+    "hazard_mitigation_element",
+    "resilience_plan"
+  ],
+  "description": "An element or standalone plan addressing hazards and climate: exposure, vulnerability, a measured baseline, the actions the agency commits to, and how progress will be tracked.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Hazard and climate documents are frequently reviewed by an outside agency before adoption when they are tied to disaster or grant programs. Add that review milestone if it applies to you; none is assumed here.",
+    "The baseline deliverable is deliberately flexible: an emissions inventory, a risk baseline, or both, depending on what the element is for. Name which one yours is in the record.",
+    "An action with no responsible party and no measure is a sentence, not a commitment. The monitoring framework exists to make that visible before adoption.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "hazard_assessment",
+      "title": "Hazard and exposure assessment",
+      "offset_days": 120,
+      "summary": "The hazards the community faces and what is exposed to each, mapped where the data allows."
+    },
+    {
+      "key": "vulnerability_assessment",
+      "title": "Vulnerability assessment",
+      "offset_days": 180,
+      "summary": "Which people, places and systems are most at risk, and why — including the ones least able to recover."
+    },
+    {
+      "key": "baseline_inventory",
+      "title": "Baseline inventory",
+      "offset_days": 210,
+      "summary": "The emissions inventory, the risk baseline, or both, with methods and sources stated."
+    },
+    {
+      "key": "strategies_and_actions",
+      "title": "Strategies, actions and responsible parties",
+      "offset_days": 285,
+      "summary": "Each action with the party responsible and the outcome it is meant to produce."
+    },
+    {
+      "key": "monitoring_framework",
+      "title": "Monitoring and progress reporting framework",
+      "offset_days": 315,
+      "summary": "What is measured, how often, and where the results are reported publicly."
+    },
+    {
+      "key": "draft_element",
+      "title": "Draft element or plan",
+      "offset_days": 375,
+      "summary": "The complete draft assembled for review."
+    },
+    {
+      "key": "final_element",
+      "title": "Final element or plan",
+      "offset_days": 450,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule and the technical approach confirmed."
+    },
+    {
+      "key": "technical_advisory_group",
+      "title": "Technical advisory group convened",
+      "offset_days": 60,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Emergency management, public works, utilities, health and community organizations meet as one group."
+    },
+    {
+      "key": "community_workshops",
+      "title": "Community workshops",
+      "offset_days": 225,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The people most exposed describe what they need, before actions are fixed."
+    },
+    {
+      "key": "draft_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 390,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the element or plan",
+      "offset_days": 465,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the governing body."
+    }
+  ]
+}

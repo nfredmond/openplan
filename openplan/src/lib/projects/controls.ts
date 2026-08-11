@@ -4,6 +4,20 @@ import {
   type BillingInvoiceSummary,
 } from "@/lib/invoicing/invoice-records";
 import type { StatusTone } from "@/lib/ui/status";
+/**
+ * Overdue and next-deadline shaping comes from the shared deadline convention
+ * (2026-08-11), not from private copies in this file. `isPast`,
+ * `sortByEarliestDate` and `sortDeadlineItems` used to live here; the personal
+ * work queue at `/my-work` needed the same three across projects, and a second
+ * implementation of "is this overdue" is how one screen calls a milestone late
+ * while another calls it upcoming. The bodies moved unchanged — this module's
+ * own tests pass untouched, which is the proof.
+ */
+import {
+  isDeadlinePast,
+  sortByEarliestDate,
+  sortDeadlineItems,
+} from "@/lib/work/deadlines";
 
 export type ProjectMilestoneRecordLike = {
   id?: string | null;
@@ -99,36 +113,8 @@ export type ProjectControlsSummary = {
   };
 };
 
-function isPast(dateInput: string | null | undefined, now: Date): boolean {
-  if (!dateInput) {
-    return false;
-  }
-
-  const parsed = new Date(dateInput);
-  if (Number.isNaN(parsed.getTime())) {
-    return false;
-  }
-
-  return parsed.getTime() < now.getTime();
-}
-
-function sortByEarliestDate<T extends { target_date?: string | null; due_date?: string | null }>(records: T[]): T[] {
-  return [...records].sort((left, right) => {
-    const leftDate = new Date(left.target_date ?? left.due_date ?? "9999-12-31").getTime();
-    const rightDate = new Date(right.target_date ?? right.due_date ?? "9999-12-31").getTime();
-    return leftDate - rightDate;
-  });
-}
-
-function sortDeadlineItems(items: ProjectControlDeadlineItem[]): ProjectControlDeadlineItem[] {
-  return [...items].sort((left, right) => {
-    if (left.isOverdue !== right.isOverdue) {
-      return left.isOverdue ? -1 : 1;
-    }
-
-    return new Date(left.deadlineAt).getTime() - new Date(right.deadlineAt).getTime();
-  });
-}
+/** The shared convention's name for this file's former local `isPast`. */
+const isPast = isDeadlinePast;
 
 export function buildProjectControlsSummary(
   milestones: ProjectMilestoneRecordLike[] | null | undefined,

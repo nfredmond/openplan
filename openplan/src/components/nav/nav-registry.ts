@@ -71,6 +71,17 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     paletteKeywords: "home dashboard overview command center operations cross-domain",
   },
   {
+    // Second in the group, directly under Overview: the workspace's own state
+    // first, then the reader's. Everything below it is a module you go INTO;
+    // this is the one surface that comes to you, so it sits above Projects
+    // rather than inside them.
+    href: "/my-work",
+    label: "My Work",
+    railGroup: "workspace",
+    icon: "work",
+    paletteKeywords: "my work assigned to me deadlines due overdue unassigned tasks queue",
+  },
+  {
     href: "/projects",
     label: "Projects",
     railGroup: "workspace",

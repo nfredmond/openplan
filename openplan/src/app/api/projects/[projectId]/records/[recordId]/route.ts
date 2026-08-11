@@ -1,33 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { isOnRoster, loadWorkspaceRoster, type RosterServiceClient } from "@/lib/workspaces/roster";
 
 const paramsSchema = z.object({
   projectId: z.string().uuid(),
   recordId: z.string().uuid(),
 });
 
+/**
+ * STATUS IS NOW OPTIONAL ON THE FOUR ASSIGNABLE TYPES, and that is the one
+ * subtle thing about this schema.
+ *
+ * It was required, because a transition was the only edit this route made. With
+ * assignment added, requiring it would force the reassignment UI to send the
+ * status it happens to be holding — which is a stale-write hazard by
+ * construction: two planners open the same board, one advances the status, the
+ * other reassigns, and the second write silently rolls the first one back.
+ *
+ * THE REASSIGNMENT UI IS `src/components/projects/record-assignee-control.tsx`,
+ * named here because this sentence asserted it for a while before it existed:
+ * `assigneeUserId` shipped with route tests and no sender, so assignment was
+ * create-time only and a departed member's work could be handed to nobody.
+ * `every-api-route-has-a-caller` could not see it — the route had callers, the
+ * FIELD had none — which is why
+ * `src/test/every-record-patch-field-is-sent-by-a-caller.test.ts` now derives
+ * this schema's accepted fields and requires each one to have a sender.
+ *
+ * So each field is written ONLY when present, and `atLeastOneFieldToWrite`
+ * below refuses a body that would otherwise be an expensive no-op. Risks keep a
+ * required status: they carry no assignee (no due date, so no personal queue
+ * could ever surface them), which leaves status as their only editable field.
+ */
 const updateRecordSchema = z.discriminatedUnion("recordType", [
   z.object({
     recordType: z.literal("milestone"),
-    status: z.enum(["not_started", "scheduled", "in_progress", "blocked", "complete"]),
+    status: z.enum(["not_started", "scheduled", "in_progress", "blocked", "complete"]).optional(),
     note: z.string().trim().max(2000).optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
   }),
   z.object({
     recordType: z.literal("submittal"),
-    status: z.enum(["draft", "internal_review", "submitted", "accepted", "revise_and_resubmit"]),
+    status: z.enum(["draft", "internal_review", "submitted", "accepted", "revise_and_resubmit"]).optional(),
     note: z.string().trim().max(4000).optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
   }),
   z.object({
     recordType: z.literal("deliverable"),
-    status: z.enum(["not_started", "in_progress", "blocked", "complete"]),
+    status: z.enum(["not_started", "in_progress", "blocked", "complete"]).optional(),
     // NUMERIC(14,2) not-to-exceed budget; only written when provided.
     budgetAmount: z.number().min(0).max(999_999_999_999.99).nullable().optional(),
     percentComplete: z.number().min(0).max(100).nullable().optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
   }),
   // Risks and issues were creatable from day one and movable by nobody: the
   // create route accepted both vocabularies, this route knew neither, so a
@@ -40,9 +68,26 @@ const updateRecordSchema = z.discriminatedUnion("recordType", [
   }),
   z.object({
     recordType: z.literal("issue"),
-    status: z.enum(["open", "in_progress", "blocked", "resolved"]),
+    status: z.enum(["open", "in_progress", "blocked", "resolved"]).optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
   }),
-]);
+]).superRefine((value, ctx) => {
+  // A PATCH that names no field is not a partial update, it is a request that
+  // would answer 200 having changed nothing but `updated_at`. Say so instead.
+  const writes =
+    value.status !== undefined ||
+    ("assigneeUserId" in value && value.assigneeUserId !== undefined) ||
+    ("note" in value && value.note !== undefined) ||
+    ("budgetAmount" in value && value.budgetAmount !== undefined) ||
+    ("percentComplete" in value && value.percentComplete !== undefined);
+
+  if (!writes) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Nothing to update: send a status, an assignee, or a field this record type accepts.",
+    });
+  }
+});
 
 type RouteContext = {
   params: Promise<{ projectId: string; recordId: string }>;
@@ -102,19 +147,71 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, project.workspace_id);
     if (!writeAccess.ok) return writeAccess.response;
 
+    // Reassignment carries the same membership rule as first assignment, and
+    // for the same reason it is enforced here rather than by a CHECK: the
+    // question spans projects, workspace_members and the record itself.
+    // Clearing an assignee (explicit null) needs no lookup — nobody is being
+    // named. See the POST route's header for why the roster is read with the
+    // service role.
+    const nextAssigneeUserId =
+      "assigneeUserId" in parsed.data ? parsed.data.assigneeUserId ?? null : null;
+    if (nextAssigneeUserId) {
+      const roster = await loadWorkspaceRoster(
+        createServiceRoleClient() as unknown as RosterServiceClient,
+        user.id,
+        project.workspace_id,
+        { resolveEmails: false }
+      );
+
+      if (!roster.ok) {
+        audit.error("assignee_roster_read_failed", {
+          projectId: project.id,
+          workspaceId: project.workspace_id,
+          reason: roster.reason,
+          message: roster.message,
+        });
+        return NextResponse.json(
+          { error: "Could not verify that the assignee is a member of this workspace" },
+          { status: 500 }
+        );
+      }
+
+      if (!isOnRoster(roster.members, nextAssigneeUserId)) {
+        audit.warn("assignee_not_a_member", {
+          projectId: project.id,
+          workspaceId: project.workspace_id,
+          assigneeUserId: nextAssigneeUserId,
+        });
+        return NextResponse.json(
+          { error: "The assignee is not a member of this project's workspace" },
+          { status: 400 }
+        );
+      }
+    }
+
     const updatedAt = new Date().toISOString();
+    /**
+     * Only the fields the request actually named. `assigneeUserId: null` is a
+     * real instruction ("unassign"), which is why the test is against
+     * `undefined` and never against falsiness.
+     */
+    const assigneeUpdate =
+      "assigneeUserId" in parsed.data && parsed.data.assigneeUserId !== undefined
+        ? { assignee_user_id: parsed.data.assigneeUserId }
+        : {};
 
     if (parsed.data.recordType === "milestone") {
       const { data, error } = await supabase
         .from("project_milestones")
         .update({
-          status: parsed.data.status,
+          ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
           ...(parsed.data.note !== undefined ? { notes: parsed.data.note.trim() || null } : {}),
+          ...assigneeUpdate,
           updated_at: updatedAt,
         })
         .eq("id", parsedParams.data.recordId)
         .eq("project_id", project.id)
-        .select("id, title, summary, milestone_type, phase_code, status, owner_label, target_date, actual_date, notes, created_at, updated_at")
+        .select("id, title, summary, milestone_type, phase_code, status, owner_label, assignee_user_id, target_date, actual_date, notes, created_at, updated_at")
         .maybeSingle();
 
       if (error && isWriteFailure(error)) {
@@ -143,7 +240,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         projectId: project.id,
         recordId: data.id,
         recordType: "milestone",
-        status: parsed.data.status,
+        status: parsed.data.status ?? null,
         durationMs: Date.now() - startedAt,
       });
 
@@ -154,14 +251,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const { data, error } = await supabase
         .from("project_deliverables")
         .update({
-          status: parsed.data.status,
+          ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
           ...(parsed.data.budgetAmount !== undefined ? { budget_amount: parsed.data.budgetAmount } : {}),
           ...(parsed.data.percentComplete !== undefined ? { percent_complete: parsed.data.percentComplete } : {}),
+          ...assigneeUpdate,
           updated_at: updatedAt,
         })
         .eq("id", parsedParams.data.recordId)
         .eq("project_id", project.id)
-        .select("id, title, summary, owner_label, due_date, status, budget_amount, percent_complete, created_at, updated_at")
+        .select("id, title, summary, owner_label, assignee_user_id, due_date, status, budget_amount, percent_complete, created_at, updated_at")
         .maybeSingle();
 
       if (error && isWriteFailure(error)) {
@@ -187,7 +285,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         projectId: project.id,
         recordId: data.id,
         recordType: "deliverable",
-        status: parsed.data.status,
+        status: parsed.data.status ?? null,
         durationMs: Date.now() - startedAt,
       });
 
@@ -231,7 +329,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         projectId: project.id,
         recordId: data.id,
         recordType: "risk",
-        status: parsed.data.status,
+        status: parsed.data.status ?? null,
         durationMs: Date.now() - startedAt,
       });
 
@@ -242,12 +340,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const { data, error } = await supabase
         .from("project_issues")
         .update({
-          status: parsed.data.status,
+          ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
+          ...assigneeUpdate,
           updated_at: updatedAt,
         })
         .eq("id", parsedParams.data.recordId)
         .eq("project_id", project.id)
-        .select("id, title, description, severity, status, owner_label, created_at, updated_at")
+        .select("id, title, description, severity, status, owner_label, assignee_user_id, created_at, updated_at")
         .maybeSingle();
 
       if (error && isWriteFailure(error)) {
@@ -273,7 +372,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         projectId: project.id,
         recordId: data.id,
         recordType: "issue",
-        status: parsed.data.status,
+        status: parsed.data.status ?? null,
         durationMs: Date.now() - startedAt,
       });
 
@@ -283,13 +382,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const { data, error } = await supabase
       .from("project_submittals")
       .update({
-        status: parsed.data.status,
+        ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
         ...(parsed.data.note !== undefined ? { notes: parsed.data.note.trim() || null } : {}),
+        ...assigneeUpdate,
         updated_at: updatedAt,
       })
       .eq("id", parsedParams.data.recordId)
       .eq("project_id", project.id)
-      .select("id, title, submittal_type, status, agency_label, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at")
+      .select("id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at")
       .maybeSingle();
 
     if (error && isWriteFailure(error)) {
@@ -315,7 +415,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       projectId: project.id,
       recordId: data.id,
       recordType: "submittal",
-      status: parsed.data.status,
+      status: parsed.data.status ?? null,
       durationMs: Date.now() - startedAt,
     });
 

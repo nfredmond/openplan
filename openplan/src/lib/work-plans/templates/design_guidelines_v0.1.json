@@ -1,0 +1,101 @@
+{
+  "template_id": "design_guidelines_v0.1",
+  "template_name": "Design guidelines",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "design_guidelines",
+    "design_standards",
+    "form_standards"
+  ],
+  "description": "Guidelines that describe what good development looks like in a particular place, and the review process that applies them consistently.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Guidelines that cannot be applied consistently by a reviewer are decoration. The review-process deliverable is what turns them into practice, and it is where most of the argument belongs.",
+    "Whether guidelines are advisory or binding is a local decision with real legal consequences. This template does not assume either — state which yours are in the document itself.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "context_study",
+      "title": "Context study",
+      "offset_days": 75,
+      "summary": "The building types, streets, materials, setbacks and patterns already present, documented before anything is prescribed."
+    },
+    {
+      "key": "guideline_framework",
+      "title": "Guideline framework and organization",
+      "offset_days": 135,
+      "summary": "How the guidelines will be structured and which areas or building types each part covers."
+    },
+    {
+      "key": "illustrated_draft",
+      "title": "Illustrated draft guidelines",
+      "offset_days": 225,
+      "summary": "The guidelines with the images and diagrams that make them usable by an applicant."
+    },
+    {
+      "key": "review_process",
+      "title": "Design review process recommendations",
+      "offset_days": 255,
+      "summary": "Who reviews what, against which criteria, at which stage, and how a decision may be appealed."
+    },
+    {
+      "key": "public_review_draft",
+      "title": "Public review draft",
+      "offset_days": 300,
+      "summary": "The complete draft guidelines and process released for comment."
+    },
+    {
+      "key": "final_guidelines",
+      "title": "Final design guidelines",
+      "offset_days": 390,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, the area covered and the intended legal status confirmed."
+    },
+    {
+      "key": "walking_tour",
+      "title": "Walking tour and community workshop",
+      "offset_days": 60,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The context studied on foot with the people who live and build there."
+    },
+    {
+      "key": "advisory_workshop",
+      "title": "Advisory body workshop on the draft",
+      "offset_days": 240,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The body that will apply the guidelines tests them against real applications."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 315,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the guidelines",
+      "offset_days": 405,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the body whose adoption gives the guidelines their standing."
+    }
+  ]
+}

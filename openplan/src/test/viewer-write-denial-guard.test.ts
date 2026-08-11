@@ -67,8 +67,16 @@ const WRITER_GATE_MIGRATIONS = [
 // the three restrictive `_writer_only_*` gates. `gtfs_tract_service` in the same
 // migration does NOT count: it is derived by a spatial join at ingest and is
 // service-role-authored, so it has no permissive write for a gate to narrow.
-const EXPECTED_GATED_TABLES = 81;
-const EXPECTED_RESTRICTIVE_POLICIES = 243;
+// 82 since 20260811000007 added `work_notifications`, the daily deadline
+// reminder. Its permissive mark-read UPDATE is deliberately ROLE-BLIND
+// (recipient AND membership, no role test), following engagement_notifications
+// — so it enters `tablesNeedingGate()` and carries the three restrictive
+// `_writer_only_*` companions, +3 below. Deliberate rather than copied: the
+// alternative was `workspace_member_can_write` at the permissive layer, which
+// would have moved neither number and would have made this the one table where
+// a viewer writes.
+const EXPECTED_GATED_TABLES = 82;
+const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // 198 rather than 197 since 20260728000012 added `vmt_significance_screenings`.
 // Its INSERT policy is role-AWARE (it calls `workspace_member_can_write`), which
 // is why the gated-table and restrictive-policy counts above did NOT move: a
@@ -131,7 +139,15 @@ const EXPECTED_RESTRICTIVE_POLICIES = 243;
 // `FOR ALL` role-blind shape its older aerial siblings carry: a flight plan's
 // altitude and overlap are safety-relevant authored numbers, and "viewer
 // cannot write" holds at the database, not only at the route.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 223;
+//
+// 223 -> 224 (20260811000007): `work_notifications` adds ONE permissive write —
+// the recipient's mark-read UPDATE. There is no permissive INSERT and no
+// permissive DELETE, on purpose: the rows are EVIDENCE that a person was told
+// something was due, authored by the service-role sweep, so the person they are
+// about must not be able to mint or destroy one. The three restrictive gates
+// still cover all three commands, because the command a table does not use
+// today is the one a future route reaches for.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 224;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

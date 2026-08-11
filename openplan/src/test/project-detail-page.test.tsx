@@ -13,6 +13,35 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 
+/**
+ * The workspace roster, read by the page through the SERVICE-ROLE client so
+ * that an assignee id becomes a person. Two separate reads on
+ * `workspace_members` — the caller's own membership (eq/eq/maybeSingle), then
+ * the team (eq/order/limit) — so the fake distinguishes them by chain shape,
+ * which is also what makes "the page verified the caller first" observable.
+ */
+const createServiceRoleClientMock = vi.fn();
+const rosterCallerMock = vi.fn<() => Promise<{ data: unknown; error: { message: string } | null }>>();
+const rosterMembersMock = vi.fn<() => Promise<{ data: unknown; error: { message: string } | null }>>();
+const rosterGetUserByIdMock = vi.fn<(id: string) => Promise<{ data: { user: { email?: string | null } | null } }>>();
+
+function serviceRoleClientStub() {
+  return {
+    from: (table: string) => {
+      if (table !== "workspace_members") throw new Error(`Unexpected service table: ${table}`);
+      return {
+        select: (_columns: string) => ({
+          eq: () => ({
+            eq: () => ({ maybeSingle: rosterCallerMock }),
+            order: () => ({ limit: rosterMembersMock }),
+          }),
+        }),
+      };
+    },
+    auth: { admin: { getUserById: rosterGetUserByIdMock } },
+  };
+}
+
 const projectSingleMock = vi.fn();
 // maybeSingle serves the budget loader's tolerant projects.budget_amount read.
 const projectBudgetMaybeSingleMock = vi.fn();
@@ -458,6 +487,7 @@ vi.mock("next/link", () => ({
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/workspaces/current", () => ({
@@ -571,6 +601,19 @@ describe("ProjectDetailPage", () => {
         },
       },
     });
+
+    createServiceRoleClientMock.mockImplementation(() => serviceRoleClientStub());
+    rosterCallerMock.mockResolvedValue({ data: { user_id: "user-1" }, error: null });
+    rosterMembersMock.mockResolvedValue({
+      data: [
+        { user_id: "user-1", role: "owner" },
+        { user_id: "user-2", role: "member" },
+      ],
+      error: null,
+    });
+    rosterGetUserByIdMock.mockImplementation(async (id: string) => ({
+      data: { user: { email: id === "user-2" ? "priya@example.gov" : "lead@example.gov" } },
+    }));
 
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: "workspace-1", role: "owner" },
@@ -2096,6 +2139,161 @@ describe("ProjectDetailPage", () => {
       expect(
         screen.getByText("Document count unavailable — apply the Knowledge Base migration, then reload.")
       ).toBeInTheDocument();
+    });
+  });
+  /**
+   * WHO IS ACCOUNTABLE FOR THIS WORK — assignees resolved against the workspace
+   * roster, rendered by the real delivery board and risk log this page mounts.
+   *
+   * The three failure shapes here all look like "no name on the record", and
+   * conflating any two of them is the defect:
+   *   - the roster could not be READ (say so; claim nothing about the team),
+   *   - the assignee has LEFT the workspace (the shared departed sentence,
+   *     never a stale name and never a blank),
+   *   - nobody is assigned (silence — and owner_label may still name someone).
+   */
+  describe("project record assignees", () => {
+    const ASSIGNED_MILESTONE = {
+      id: "milestone-a",
+      title: "LAPM authorization packet ready",
+      summary: null,
+      milestone_type: "authorization",
+      phase_code: "initiation",
+      status: "scheduled",
+      owner_label: "District liaison",
+      assignee_user_id: "user-2",
+      target_date: "2026-09-01",
+      actual_date: null,
+      notes: null,
+      created_at: "2026-08-01T00:00:00.000Z",
+    };
+
+    it("asks the database for assignee_user_id everywhere it renders one", async () => {
+      // A mocked Supabase client answers whatever columns it was asked for, so
+      // a projection that stopped requesting the column would render every row
+      // as unassigned with every assertion below still green. The projection
+      // string itself is the only thing that can be checked here.
+      await renderPage();
+
+      for (const [name, mock] of [
+        ["milestones", milestonesSelectMock],
+        ["submittals", submittalsSelectMock],
+        ["deliverables", deliverablesSelectMock],
+        ["issues", issuesSelectMock],
+      ] as const) {
+        // The select mocks are declared with no parameters (they only build the
+        // chain), so the recorded argument has to be read off an unknown tuple.
+        const projections = (mock.mock.calls as unknown as unknown[][]).map((call) =>
+          String(call[0])
+        );
+        expect(projections.length, `${name}: nothing was selected`).toBeGreaterThan(0);
+        expect(
+          projections.some((columns) => columns.includes("assignee_user_id")),
+          `${name}: the projection never asks for assignee_user_id`
+        ).toBe(true);
+      }
+    });
+
+    it("names the teammate on an assigned record, and both owner lanes side by side", async () => {
+      milestonesLimitMock.mockResolvedValue({ data: [ASSIGNED_MILESTONE], error: null });
+      deliverablesLimitMock.mockResolvedValue({
+        data: [
+          {
+            id: "deliverable-1",
+            title: "Existing Conditions Memo",
+            summary: null,
+            owner_label: "Consultant",
+            assignee_user_id: "user-2",
+            due_date: null,
+            status: "in_progress",
+            created_at: "2026-03-28T18:00:00.000Z",
+            budget_amount: null,
+            percent_complete: null,
+          },
+        ],
+        error: null,
+      });
+
+      await renderPage();
+
+      const milestones = document.getElementById("project-milestones") as HTMLElement;
+      expect(within(milestones).getByText("priya@example.gov")).toBeInTheDocument();
+
+      // The free-text owner lane survives beside the teammate lane; neither is
+      // rendered as the other.
+      const deliverablesPanel = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(deliverablesPanel).getByText("Consultant")).toBeInTheDocument();
+      expect(within(deliverablesPanel).getByText("priya@example.gov")).toBeInTheDocument();
+    });
+
+    it("says a departed assignee left, rather than a stale name or a blank", async () => {
+      milestonesLimitMock.mockResolvedValue({
+        data: [{ ...ASSIGNED_MILESTONE, assignee_user_id: "user-departed" }],
+        error: null,
+      });
+      issuesLimitMock.mockResolvedValue({
+        data: [
+          {
+            id: "issue-1",
+            title: "Traffic count package still missing",
+            description: null,
+            severity: "high",
+            status: "open",
+            owner_label: null,
+            assignee_user_id: "user-departed",
+            created_at: "2026-08-01T00:00:00.000Z",
+          },
+        ],
+        error: null,
+      });
+
+      await renderPage();
+
+      const milestones = document.getElementById("project-milestones") as HTMLElement;
+      expect(within(milestones).getByText("Unassigned — previously a member")).toBeInTheDocument();
+      const issues = document.getElementById("project-issues") as HTMLElement;
+      expect(within(issues).getByText("Unassigned — previously a member")).toBeInTheDocument();
+    });
+
+    it("says the roster could not be read instead of reporting the whole team departed", async () => {
+      // The reassuring, wrong answer: resolve every assigned record against an
+      // empty member list and every one of them reads as "previously a member".
+      rosterMembersMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table workspace_members" },
+      });
+      milestonesLimitMock.mockResolvedValue({ data: [ASSIGNED_MILESTONE], error: null });
+
+      await renderPage();
+
+      const milestones = document.getElementById("project-milestones") as HTMLElement;
+      expect(
+        within(milestones).getByText("Assignee unavailable — the team roster could not be read")
+      ).toBeInTheDocument();
+      expect(within(milestones).queryByText("Unassigned — previously a member")).toBeNull();
+      expect(within(milestones).queryByText("priya@example.gov")).toBeNull();
+      // And the page's own banner names the failed read for an operator.
+      expect(screen.getByText(/could not read this workspace's team roster/i)).toBeInTheDocument();
+    });
+
+    it("stays silent on records nobody is assigned to", async () => {
+      // Without this the assertions above would pass on a board that printed a
+      // chip on every row regardless.
+      milestonesLimitMock.mockResolvedValue({
+        data: [{ ...ASSIGNED_MILESTONE, assignee_user_id: null }],
+        error: null,
+      });
+
+      await renderPage();
+
+      const milestones = document.getElementById("project-milestones") as HTMLElement;
+      expect(within(milestones).queryByText("priya@example.gov")).toBeNull();
+      expect(within(milestones).queryByText("Unassigned — previously a member")).toBeNull();
+      expect(
+        within(milestones).queryByText("Assignee unavailable — the team roster could not be read")
+      ).toBeNull();
+      // The record itself still renders — silence is about the assignee only.
+      expect(within(milestones).getByText("LAPM authorization packet ready")).toBeInTheDocument();
     });
   });
 });

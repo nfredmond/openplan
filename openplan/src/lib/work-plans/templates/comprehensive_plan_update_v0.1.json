@@ -1,0 +1,136 @@
+{
+  "template_id": "comprehensive_plan_update_v0.1",
+  "template_name": "Comprehensive plan update",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "comprehensive_plan",
+    "comprehensive_plan_update",
+    "general_plan_update"
+  ],
+  "description": "A full update of a community's comprehensive or general plan: baseline, vision, alternatives, a preferred direction, drafted elements, public review and adoption.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "It assumes a two-body process — an advisory body that recommends and a governing body that adopts. Where your process differs, rename or delete those milestones rather than working around them.",
+    "The required elements, the update interval and the review by outside agencies differ by state and country. Nothing here states a requirement; add the elements and reviews your own law asks for.",
+    "This is roughly a two-and-a-half-year sequence. A focused update of one or two elements uses the same order over a much shorter span.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan_and_engagement",
+      "title": "Work plan and community engagement strategy",
+      "offset_days": 45,
+      "summary": "The schedule for the update and how the community — including the parts of it that do not attend meetings — will be involved."
+    },
+    {
+      "key": "baseline_report",
+      "title": "Baseline conditions report",
+      "offset_days": 180,
+      "summary": "Population, housing, jobs, land, infrastructure, environment and hazards as they stand, with sources named."
+    },
+    {
+      "key": "issues_and_vision",
+      "title": "Issues and vision report",
+      "offset_days": 270,
+      "summary": "What the community says matters, gathered before alternatives are drawn."
+    },
+    {
+      "key": "alternatives_report",
+      "title": "Land use and growth alternatives report",
+      "offset_days": 390,
+      "summary": "Alternative growth and land use patterns with their consequences analysed side by side."
+    },
+    {
+      "key": "preferred_alternative",
+      "title": "Preferred alternative and policy framework",
+      "offset_days": 450,
+      "summary": "The direction chosen and the policy structure that will carry it."
+    },
+    {
+      "key": "draft_elements",
+      "title": "Draft plan elements",
+      "offset_days": 600,
+      "summary": "Each element drafted — land use, mobility, housing, environment, safety, services and any others your plan carries."
+    },
+    {
+      "key": "public_draft_plan",
+      "title": "Public review draft plan",
+      "offset_days": 690,
+      "summary": "The complete document, map series and supporting analysis assembled for review."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final plan document",
+      "offset_days": 840,
+      "summary": "The draft revised in response to comments, with the comment record attached."
+    },
+    {
+      "key": "implementation_program",
+      "title": "Implementation program",
+      "offset_days": 870,
+      "summary": "The actions the plan commits to, who is responsible for each, and how progress will be reported."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Update kickoff",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule, committee structure and the engagement strategy confirmed."
+    },
+    {
+      "key": "community_workshops",
+      "title": "First round of community workshops",
+      "offset_days": 150,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The community describes the issues before any alternative exists."
+    },
+    {
+      "key": "alternatives_open_house",
+      "title": "Open house on growth alternatives",
+      "offset_days": 420,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The alternatives shown publicly while the preferred direction is still open."
+    },
+    {
+      "key": "advisory_study_sessions",
+      "title": "Advisory body study sessions on the draft",
+      "offset_days": 630,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The recommending body works through the draft elements in public session."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft plan opens",
+      "offset_days": 700,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The complete draft is released for comment."
+    },
+    {
+      "key": "advisory_hearing",
+      "title": "Advisory body hearing and recommendation",
+      "offset_days": 780,
+      "milestone_type": "hearing",
+      "phase_code": "outreach",
+      "summary": "The recommending body holds its hearing and forwards a recommendation."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption by the governing body",
+      "offset_days": 870,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "The governing body adopts the updated plan."
+    }
+  ]
+}

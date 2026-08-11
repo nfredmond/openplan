@@ -9,6 +9,53 @@ import {
 } from "@/lib/assistant/action-approval-server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
+import { isOnRoster, loadWorkspaceRoster, type RosterServiceClient } from "@/lib/workspaces/roster";
+
+/**
+ * ASSIGNING WORK TO A PERSON. Four of the seven record types carry an optional
+ * `assigneeUserId` (20260811000006). Two rules govern it, and both are enforced
+ * below rather than in the database:
+ *
+ * 1. THE ASSIGNEE MUST BE A MEMBER OF THIS PROJECT'S WORKSPACE. Postgres cannot
+ *    express that as a CHECK (it spans three tables), so the write path owns it.
+ *    The check goes through `loadWorkspaceRoster`, which reads with the service
+ *    role behind its own caller-membership check — an RLS read of
+ *    workspace_members returns ONE row (members_read_own), so validating a
+ *    teammate against it would refuse every teammate but the caller. That exact
+ *    bug shipped once already, on /api/invoicing/staff.
+ * 2. THE PLANNER AGENT MAY NOT ASSIGN ANYONE. The `create_project_record`
+ *    action's payload is title/type/status/notes on a submittal and nothing
+ *    else; a request carrying those PLUS an assignee hashes identically to what
+ *    a planner approved, because the hash covers the ACTION the route rebuilds,
+ *    not the body it received. `refuseOutOfScopeAgentRequest` is the answer to
+ *    that, and the allowed key list below is copied from the action's own
+ *    effect in src/lib/runtime/action-registry.ts.
+ *
+ * AND NO ASSIGNMENT ACTION WAS REGISTERED — refused deliberately, argued here
+ * so the next session inherits the argument instead of re-running it. An
+ * assignee id LOOKS like the safe payload shape the registry already accepts
+ * (an id the model verified against a workspace row, no authored prose). It is
+ * not, for the reason the RTP horizon-band refusal established: the
+ * consequential content is the PAIRING. Assigning work is authoring a
+ * commitment on a named colleague's behalf — it puts a person's name on a dated
+ * obligation, it lands in that person's work queue and their reminder digest,
+ * and the approver's only control is noticing that a plausible teammate is the
+ * wrong teammate. An agent working a queue of unassigned records also has a
+ * standing incentive to empty it, which is the completion-signal shape that
+ * refused the RTP band assignment. If a shape is ever argued, it is a
+ * copy-forward: reassigning to the person already named on a sibling record,
+ * with the route reading the id off that row rather than off the payload.
+ */
+
+/** Exactly the keys `create_project_record`'s effect sends to this endpoint. */
+const CREATE_PROJECT_RECORD_ACTION_KEYS = [
+  "recordType",
+  "title",
+  "submittalType",
+  "status",
+  "notes",
+] as const;
 
 const paramsSchema = z.object({
   projectId: z.string().uuid(),
@@ -23,6 +70,7 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     phaseCode: z.enum(["initiation", "procurement", "environmental", "outreach", "programming", "ps_e", "row_utilities", "advertise_award", "construction", "closeout", "other"]).optional(),
     status: z.enum(["not_started", "scheduled", "in_progress", "blocked", "complete"]).optional(),
     ownerLabel: z.string().trim().max(120).optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
     targetDate: z.string().trim().max(30).optional(),
     actualDate: z.string().trim().max(30).optional(),
     notes: z.string().trim().max(2000).optional(),
@@ -33,6 +81,7 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     submittalType: z.enum(["authorization_packet", "invoice_backup", "environmental_package", "hearing_record", "ps_e", "reimbursement", "progress_report", "other"]).optional(),
     status: z.enum(["draft", "internal_review", "submitted", "accepted", "revise_and_resubmit"]).optional(),
     agencyLabel: z.string().trim().max(160).optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
     referenceNumber: z.string().trim().max(160).optional(),
     dueDate: z.string().trim().max(30).optional(),
     submittedAt: z.string().trim().max(40).optional(),
@@ -44,6 +93,7 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     title: z.string().trim().min(1).max(160),
     summary: z.string().trim().max(2000).optional(),
     ownerLabel: z.string().trim().max(120).optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
     dueDate: z.string().trim().max(30).optional(),
     status: z.enum(["not_started", "in_progress", "blocked", "complete"]).optional(),
     // NUMERIC(14,2): not-to-exceed budget for this deliverable.
@@ -65,6 +115,7 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     severity: z.enum(["low", "medium", "high", "critical"]).optional(),
     status: z.enum(["open", "in_progress", "blocked", "resolved"]).optional(),
     ownerLabel: z.string().trim().max(120).optional(),
+    assigneeUserId: z.string().uuid().nullable().optional(),
   }),
   z.object({
     recordType: z.literal("decision"),
@@ -155,12 +206,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
             phase_code: parsed.data.phaseCode ?? "initiation",
             status: parsed.data.status ?? "not_started",
             owner_label: parsed.data.ownerLabel?.trim() || null,
+            // Absent stays absent: sending the key as null on a deployment
+            // behind 20260811000006 would fail the whole insert.
+            ...(parsed.data.assigneeUserId !== undefined ? { assignee_user_id: parsed.data.assigneeUserId } : {}),
             target_date: parsed.data.targetDate?.trim() || null,
             actual_date: parsed.data.actualDate?.trim() || null,
             notes: parsed.data.notes?.trim() || null,
             created_by: user.id,
           })
-          .select("id, title, summary, milestone_type, phase_code, status, owner_label, target_date, actual_date, notes, created_at")
+          .select("id, title, summary, milestone_type, phase_code, status, owner_label, assignee_user_id, target_date, actual_date, notes, created_at")
           .single();
         if (error) throw new Error(error.message);
         return { recordType: "milestone", record: data };
@@ -175,6 +229,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             submittal_type: parsed.data.submittalType ?? "other",
             status: parsed.data.status ?? "draft",
             agency_label: parsed.data.agencyLabel?.trim() || null,
+            ...(parsed.data.assigneeUserId !== undefined ? { assignee_user_id: parsed.data.assigneeUserId } : {}),
             reference_number: parsed.data.referenceNumber?.trim() || null,
             due_date: parsed.data.dueDate?.trim() || null,
             submitted_at: parsed.data.submittedAt?.trim() || null,
@@ -182,7 +237,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             notes: parsed.data.notes?.trim() || null,
             created_by: user.id,
           })
-          .select("id, title, submittal_type, status, agency_label, reference_number, due_date, submitted_at, review_cycle, notes, created_at")
+          .select("id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at")
           .single();
         if (error) throw new Error(error.message);
         return { recordType: "submittal", record: data };
@@ -196,6 +251,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             title: parsed.data.title,
             summary: parsed.data.summary?.trim() || null,
             owner_label: parsed.data.ownerLabel?.trim() || null,
+            ...(parsed.data.assigneeUserId !== undefined ? { assignee_user_id: parsed.data.assigneeUserId } : {}),
             due_date: parsed.data.dueDate?.trim() || null,
             status: parsed.data.status ?? "not_started",
             // Only sent when provided — an absent field must not become 0.
@@ -203,7 +259,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             ...(parsed.data.percentComplete !== undefined ? { percent_complete: parsed.data.percentComplete } : {}),
             created_by: user.id,
           })
-          .select("id, title, summary, owner_label, due_date, status, budget_amount, percent_complete, created_at")
+          .select("id, title, summary, owner_label, assignee_user_id, due_date, status, budget_amount, percent_complete, created_at")
           .single();
         if (error) throw new Error(error.message);
         return { recordType: "deliverable", record: data };
@@ -237,9 +293,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
             severity: parsed.data.severity ?? "medium",
             status: parsed.data.status ?? "open",
             owner_label: parsed.data.ownerLabel?.trim() || null,
+            ...(parsed.data.assigneeUserId !== undefined ? { assignee_user_id: parsed.data.assigneeUserId } : {}),
             created_by: user.id,
           })
-          .select("id, title, description, severity, status, owner_label, created_at")
+          .select("id, title, description, severity, status, owner_label, assignee_user_id, created_at")
           .single();
         if (error) throw new Error(error.message);
         return { recordType: "issue", record: data };
@@ -281,12 +338,71 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const serviceSupabase = createServiceRoleClient();
     let approval: AssistantApprovalVerification | null = null;
+    const executionSource = readAssistantExecutionSource(request);
 
-    if (readAssistantExecutionSource(request) === "planner_agent_quick_link" && parsed.data.recordType !== "submittal") {
+    if (executionSource === "planner_agent_quick_link" && parsed.data.recordType !== "submittal") {
       return NextResponse.json(
         { error: "Planner Agent project-record execution only supports reimbursement submittals" },
         { status: 403 }
       );
+    }
+
+    // A narrow action may not ride a wide route. Assigning a person is the
+    // field this closes today, but the check is over the whole body on purpose:
+    // anything the endpoint accepts and the action does not send is something a
+    // planner did not approve.
+    const outOfScope = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: payload,
+      allowedKeys: CREATE_PROJECT_RECORD_ACTION_KEYS,
+      actionKind: "create_project_record",
+    });
+    if (outOfScope) {
+      audit.warn("agent_request_out_of_scope", { rejectedKeys: outOfScope.rejectedKeys });
+      return NextResponse.json(
+        { error: outOfScope.error, details: outOfScope.details },
+        { status: 403 }
+      );
+    }
+
+    // An assignee has to be a member of THIS project's workspace. Only asked
+    // when one was actually sent — an unassigned record costs no lookup.
+    const assigneeUserId =
+      "assigneeUserId" in parsed.data ? parsed.data.assigneeUserId ?? null : null;
+    if (assigneeUserId) {
+      const roster = await loadWorkspaceRoster(
+        serviceSupabase as unknown as RosterServiceClient,
+        user.id,
+        project.workspace_id,
+        { resolveEmails: false }
+      );
+
+      if (!roster.ok) {
+        // A failed roster read is a failed read. Answering 400 here would
+        // accuse a real teammate of not belonging to the workspace.
+        audit.error("assignee_roster_read_failed", {
+          projectId: project.id,
+          workspaceId: project.workspace_id,
+          reason: roster.reason,
+          message: roster.message,
+        });
+        return NextResponse.json(
+          { error: "Could not verify that the assignee is a member of this workspace" },
+          { status: 500 }
+        );
+      }
+
+      if (!isOnRoster(roster.members, assigneeUserId)) {
+        audit.warn("assignee_not_a_member", {
+          projectId: project.id,
+          workspaceId: project.workspace_id,
+          assigneeUserId,
+        });
+        return NextResponse.json(
+          { error: "The assignee is not a member of this project's workspace" },
+          { status: 400 }
+        );
+      }
     }
 
     if (parsed.data.recordType === "submittal") {

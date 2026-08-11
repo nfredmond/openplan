@@ -1,0 +1,107 @@
+{
+  "template_id": "transit_development_plan_v0.1",
+  "template_name": "Transit development plan",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "transit_development_plan",
+    "short_range_transit_plan",
+    "transit_plan"
+  ],
+  "description": "A short-range plan for a transit operator: how the service performs now, what riders and non-riders need, and what the network should look like within the next few years.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "It assumes an operator with existing service and recorded ridership. A plan that establishes a first service needs a feasibility study ahead of this one.",
+    "Service changes usually carry their own public notice and equity review obligations. Those differ by operator and by funder, and none are stated here.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and data request",
+      "offset_days": 14,
+      "summary": "The task list, the schedule, and the ridership, cost and operations data the analysis depends on."
+    },
+    {
+      "key": "system_inventory",
+      "title": "Existing service, fleet and facilities inventory",
+      "offset_days": 75,
+      "summary": "Routes, spans, frequencies, vehicles, stops and facilities as they actually operate today."
+    },
+    {
+      "key": "performance_analysis",
+      "title": "Performance and market analysis",
+      "offset_days": 120,
+      "summary": "Ridership and productivity by route and time of day, set against where people live, work and need to travel."
+    },
+    {
+      "key": "rider_survey",
+      "title": "Rider and community survey summary",
+      "offset_days": 150,
+      "summary": "What riders and non-riders say about span, frequency, reliability, fares and access to stops."
+    },
+    {
+      "key": "service_alternatives",
+      "title": "Service alternatives and resource implications",
+      "offset_days": 195,
+      "summary": "Network options with the vehicles, operators and facilities each would require, stated as resources rather than as a budget."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft transit development plan",
+      "offset_days": 240,
+      "summary": "The complete draft, including the recommended network and its phasing."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final transit development plan",
+      "offset_days": 315,
+      "summary": "The draft revised after public and board review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 10,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, data access and operator staff involvement confirmed."
+    },
+    {
+      "key": "operator_workshop",
+      "title": "Operations and driver workshop",
+      "offset_days": 60,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The people who run the service describe what the data cannot show."
+    },
+    {
+      "key": "board_study_session",
+      "title": "Board study session on alternatives",
+      "offset_days": 210,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The governing board sees the options before the draft commits to one."
+    },
+    {
+      "key": "public_hearing",
+      "title": "Public hearing on the recommended network",
+      "offset_days": 275,
+      "milestone_type": "hearing",
+      "phase_code": "outreach",
+      "summary": "The formal opportunity for riders to respond to proposed changes."
+    },
+    {
+      "key": "adoption",
+      "title": "Board adoption of the plan",
+      "offset_days": 330,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the transit board or governing body."
+    }
+  ]
+}

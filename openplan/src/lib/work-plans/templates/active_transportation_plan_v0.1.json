@@ -1,0 +1,112 @@
+{
+  "template_id": "active_transportation_plan_v0.1",
+  "template_name": "Active transportation plan",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "active_transportation_plan",
+    "bicycle_pedestrian_plan",
+    "walk_bike_plan"
+  ],
+  "description": "A plan for walking, cycling and rolling: the network that exists, the network people need, and the order in which the gaps get closed.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "It assumes the agency is leading the plan with its own staff or a consultant already on board, so the first offsets are short. A plan that starts with procurement needs those milestones added at the front.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and engagement strategy",
+      "offset_days": 21,
+      "summary": "The task list, the schedule, and how the agency will reach people who do not attend meetings."
+    },
+    {
+      "key": "network_inventory",
+      "title": "Existing network and conditions inventory",
+      "offset_days": 90,
+      "summary": "Sidewalks, crossings, bikeways, trails, lighting and the barriers between them — including the gaps, which are the point."
+    },
+    {
+      "key": "demand_and_priority",
+      "title": "Demand and priority analysis",
+      "offset_days": 120,
+      "summary": "Where short trips already happen, where people are underserved, and where the network would carry the most people if it existed."
+    },
+    {
+      "key": "engagement_round_one",
+      "title": "First-round engagement summary",
+      "offset_days": 150,
+      "summary": "What people said and where they said it, including mapped public input, before any network is drawn."
+    },
+    {
+      "key": "draft_network",
+      "title": "Draft network recommendations and facility types",
+      "offset_days": 195,
+      "summary": "The proposed network with a facility type for each segment and the reasoning behind each choice."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft active transportation plan",
+      "offset_days": 250,
+      "summary": "The complete draft assembled for public review."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final active transportation plan",
+      "offset_days": 330,
+      "summary": "The draft revised after review, with the comment record attached."
+    },
+    {
+      "key": "implementation_program",
+      "title": "Prioritized project list and implementation program",
+      "offset_days": 345,
+      "summary": "The projects in delivery order, with the maintenance and design work each one implies."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule and the engagement approach confirmed with the team."
+    },
+    {
+      "key": "community_events",
+      "title": "Community events and pop-up outreach complete",
+      "offset_days": 140,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "Outreach taken to where people already are, not only to a meeting room."
+    },
+    {
+      "key": "network_open_house",
+      "title": "Open house on the draft network",
+      "offset_days": 210,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The proposed network shown publicly while it can still change."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft plan opens",
+      "offset_days": 270,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the plan",
+      "offset_days": 350,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the body with authority over the network."
+    }
+  ]
+}

@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Library,
   LifeBuoy,
+  ListChecks,
   Map as MapIcon,
   MessageSquareShare,
   PlaneTakeoff,
@@ -30,6 +31,9 @@ import { cn } from "@/lib/utils";
 
 const ICONS = {
   overview: LayoutDashboard,
+  // A checklist, not a person glyph: /my-work is a queue of dated work, and an
+  // avatar would read as an account or profile page.
+  work: ListChecks,
   projects: FolderKanban,
   rtp: Route,
   plans: BookOpen,

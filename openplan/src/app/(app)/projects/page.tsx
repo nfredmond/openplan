@@ -25,6 +25,11 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { StateBlock } from "@/components/ui/state-block";
+import { ProjectPortfolioTable } from "@/components/projects/project-portfolio-table";
+import { WorkPlanTemplateApplier } from "@/components/projects/work-plan-template-applier";
+import { buildProjectPortfolioSummary } from "@/lib/projects/portfolio";
+import { loadProjectPortfolioInputs } from "@/lib/projects/portfolio-queries";
+import { workPlanTemplateRegistry } from "@/lib/work-plans/built-in";
 import { createClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -471,6 +476,35 @@ export default async function ProjectsPage({
   const portfolioCountsUnknown = projectsReadFailed;
   const reportCountsUnknown = projectsReadFailed || reportsReadFailed;
   const rtpCountsUnknown = projectsReadFailed || rtpLinksReadFailed;
+  /**
+   * THE PORTFOLIO TABLE'S OWN READS — six batched lanes, one per source, not one
+   * set of reads per project. `filteredProjects` rather than `projects`, so the
+   * status filter above governs the table and the cards together; the loader
+   * caps the list and says so on screen.
+   */
+  const portfolioInputs = await loadProjectPortfolioInputs(supabase, {
+    workspaceId,
+    projectIds: filteredProjects.map((project) => project.id),
+  });
+  // Fold the loader's failures into the page's single banner. They are already
+  // classified and labelled by the loader (which is the only module that knows
+  // which tables it read); re-checking them here just puts them in one place.
+  for (const failure of portfolioInputs.reads.all) {
+    reads.check(failure.label, { error: { message: failure.message } });
+  }
+  const portfolioSummary = buildProjectPortfolioSummary({
+    projects: filteredProjects.map((project) => ({
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      deliveryPhase: project.delivery_phase,
+      updatedAt: project.updated_at,
+    })),
+    inputs: portfolioInputs,
+    now: new Date(),
+  });
+  const workPlanTemplates = workPlanTemplateRegistry.list();
+
   const packetQueueProjects = projects.filter(
     (project) =>
       project.reportSummary.attentionCount > 0 ||
@@ -585,6 +619,20 @@ export default async function ProjectsPage({
           </div>
         </article>
       </header>
+
+      {/* ABOVE the cards, deliberately: the comparative view comes first, and
+          the cards below keep everything they always said. Both are skipped
+          when the portfolio read failed — a table of "—" over a list that
+          already says why would be noise. */}
+      {projectsReadFailed ? null : (
+        <div className="space-y-6">
+          <ProjectPortfolioTable summary={portfolioSummary} />
+          <WorkPlanTemplateApplier
+            projects={filteredProjects.map((project) => ({ id: project.id, name: project.name }))}
+            templates={workPlanTemplates}
+          />
+        </div>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
         <div id="create-project">

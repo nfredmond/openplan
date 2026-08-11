@@ -846,6 +846,36 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       rationale: `RLS rationale ${suffix}`,
     }),
   },
+  {
+    /**
+     * The one table here whose read policy is about a PERSON and not only about
+     * a workspace: `recipient_user_id = auth.uid() AND <member>`
+     * (20260811000007). The fixture is addressed to tenant B's user, so the
+     * standard four probes ask exactly the right questions — anon and tenant A
+     * see nothing, and the recipient sees their own reminder.
+     *
+     * What this probe canNOT see, stated so nobody assumes otherwise: it does
+     * not prove that a tenant-B member who is NOT the recipient is refused,
+     * because the harness only has one member per tenant. That half is asserted
+     * against the policy text; a second member per tenant is the change that
+     * would prove it live.
+     */
+    table: "work_notifications",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, userBId, projectBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      recipient_user_id: userBId,
+      kind: "deliverable_due",
+      subject_table: "project_deliverables",
+      subject_id: randomUUID(),
+      project_id: projectBId,
+      due_on: "2099-12-31",
+      title: `RLS reminder ${suffix}`,
+      body: `RLS reminder body ${suffix}`,
+    }),
+  },
 ];
 
 const INSERT_ORDER = [
@@ -916,7 +946,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(58);
+    expect(tables).toHaveLength(59);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -975,6 +1005,7 @@ describe("workspace RLS isolation inventory", () => {
       "subscriptions",
       "title_vi_policies",
       "usage_events",
+      "work_notifications",
       "workspace_invitations",
       "workspace_members",
     ]);

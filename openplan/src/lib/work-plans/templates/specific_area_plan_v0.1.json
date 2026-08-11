@@ -1,0 +1,115 @@
+{
+  "template_id": "specific_area_plan_v0.1",
+  "template_name": "Specific plan or area plan",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "specific_plan",
+    "area_plan",
+    "neighborhood_plan"
+  ],
+  "description": "A plan for one district, corridor or neighbourhood: conditions, concepts, a preferred concept, development standards, infrastructure and phasing, and adoption.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "A specific or area plan usually carries its own environmental review and often its own standards. Those are separate work plans; the review milestone here is only the point at which they must already be underway.",
+    "It assumes an area small enough for direct engagement — workshops and a charrette rather than a regional campaign.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and engagement approach",
+      "offset_days": 30,
+      "summary": "The task list, the schedule, and how residents, property owners and businesses in the area will be reached."
+    },
+    {
+      "key": "area_conditions",
+      "title": "Area conditions and opportunities report",
+      "offset_days": 120,
+      "summary": "Land, ownership, buildings, infrastructure, access, environment and market context for the plan area."
+    },
+    {
+      "key": "concept_alternatives",
+      "title": "Concept alternatives",
+      "offset_days": 210,
+      "summary": "Illustrated alternatives for land use, mobility and public realm, drawn to be compared."
+    },
+    {
+      "key": "preferred_concept",
+      "title": "Preferred concept and standards outline",
+      "offset_days": 270,
+      "summary": "The direction chosen, with the outline of the development standards that will implement it."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft plan — land use, mobility, public realm and standards",
+      "offset_days": 390,
+      "summary": "The complete draft, including the regulating standards the plan will apply."
+    },
+    {
+      "key": "infrastructure_and_phasing",
+      "title": "Infrastructure and phasing plan",
+      "offset_days": 420,
+      "summary": "The facilities needed to serve what the plan allows, and the order in which they must arrive."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final plan document",
+      "offset_days": 510,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, boundary and engagement approach confirmed."
+    },
+    {
+      "key": "community_workshop",
+      "title": "First community workshop",
+      "offset_days": 90,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The area's residents, owners and businesses describe what the plan must address."
+    },
+    {
+      "key": "design_charrette",
+      "title": "Design charrette",
+      "offset_days": 195,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "Alternatives worked through with the community in the room."
+    },
+    {
+      "key": "advisory_review",
+      "title": "Advisory body review of the draft",
+      "offset_days": 420,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The recommending body reviews the draft plan and standards."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 450,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the plan",
+      "offset_days": 540,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the governing body."
+    }
+  ]
+}

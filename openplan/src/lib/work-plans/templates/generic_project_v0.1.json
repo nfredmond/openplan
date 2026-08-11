@@ -1,0 +1,67 @@
+{
+  "template_id": "generic_project_v0.1",
+  "template_name": "Generic planning project — starter work plan",
+  "version": "0.1",
+  "practice_area": "general",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [],
+  "description": "A short, deliberately plain sequence that most planning projects share: agree the work plan, establish the baseline, produce a draft, take it out for review, and finish. It carries no assumptions about the kind of plan, the funding source, or the jurisdiction.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do; nothing here is a required scope.",
+    "Every date is calculated from the kickoff date you enter, using round day offsets. They are placeholders for a real schedule, not commitments.",
+    "No jurisdiction is assumed. Nothing here reflects any state's or funder's procedural requirements; a project subject to those needs the milestones its own rules require.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and schedule",
+      "summary": "The agreed scope, task list, schedule and roles for the project, confirmed with the team after kickoff.",
+      "offset_days": 21
+    },
+    {
+      "key": "existing_conditions",
+      "title": "Existing conditions summary",
+      "summary": "What is true today, and where each fact came from — the baseline every later recommendation is measured against.",
+      "offset_days": 90
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft plan document",
+      "summary": "The complete draft, assembled for internal review before it goes out publicly.",
+      "offset_days": 210
+    },
+    {
+      "key": "final_plan",
+      "title": "Final plan document",
+      "summary": "The draft revised in response to review comments, with the comment record attached.",
+      "offset_days": 300
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff",
+      "title": "Project kickoff meeting",
+      "summary": "The team, the scope and the schedule confirmed in one room.",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation"
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review period opens",
+      "summary": "The draft is released for comment. Set the closing date to whatever period your agency has committed to.",
+      "offset_days": 225,
+      "milestone_type": "schedule",
+      "phase_code": "outreach"
+    },
+    {
+      "key": "adoption_decision",
+      "title": "Adoption or acceptance decision",
+      "summary": "The decision that ends the project — by whichever body has that authority here.",
+      "offset_days": 330,
+      "milestone_type": "decision",
+      "phase_code": "closeout"
+    }
+  ]
+}

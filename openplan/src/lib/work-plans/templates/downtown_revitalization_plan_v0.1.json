@@ -1,0 +1,107 @@
+{
+  "template_id": "downtown_revitalization_plan_v0.1",
+  "template_name": "Downtown or corridor revitalization plan",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "downtown_plan",
+    "revitalization_plan",
+    "main_street_plan"
+  ],
+  "description": "A plan to bring activity back to a commercial district: market reality, physical conditions, the people already invested there, and a sequence of actions with named partners.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Revitalization plans fail on implementation rather than analysis. The action plan is a separate deliverable for that reason, and every action in it should name a partner who has agreed to it.",
+    "The market assessment must be allowed to say the district cannot support what people hope for. A plan built on a market conclusion nobody tested is the most expensive kind of optimism.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "market_assessment",
+      "title": "Market and economic assessment",
+      "offset_days": 90,
+      "summary": "What the district can realistically support, by use and over what period, with the data behind it."
+    },
+    {
+      "key": "physical_conditions",
+      "title": "Physical conditions assessment",
+      "offset_days": 120,
+      "summary": "Buildings, storefronts, public realm, parking, access and vacancy, surveyed rather than estimated."
+    },
+    {
+      "key": "business_and_resident_input",
+      "title": "Business and resident input summary",
+      "offset_days": 150,
+      "summary": "What the people already invested in the district say they need."
+    },
+    {
+      "key": "strategy_framework",
+      "title": "Revitalization strategy framework",
+      "offset_days": 210,
+      "summary": "Catalyst sites, public realm improvements, programs and policy changes, organized into a strategy."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft revitalization plan",
+      "offset_days": 285,
+      "summary": "The complete draft assembled for review."
+    },
+    {
+      "key": "action_plan",
+      "title": "Action plan with partners and sequence",
+      "offset_days": 315,
+      "summary": "Each action with its partner, its funding pathway and its place in the sequence."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final revitalization plan",
+      "offset_days": 375,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, district boundary and partners confirmed."
+    },
+    {
+      "key": "merchant_walkabout",
+      "title": "Merchant and property owner walkabout",
+      "offset_days": 60,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The district walked with the people who operate in it."
+    },
+    {
+      "key": "community_visioning",
+      "title": "Community visioning session",
+      "offset_days": 135,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The wider community describes what the district should become."
+    },
+    {
+      "key": "draft_open_house",
+      "title": "Open house on the draft plan",
+      "offset_days": 300,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft and its action list shown publicly."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the plan",
+      "offset_days": 390,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the governing body or the sponsoring organization."
+    }
+  ]
+}

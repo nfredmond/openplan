@@ -156,6 +156,13 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   // A coverage row records that a campaign's public input was ABOUT this
   // project; deleting the project silently disconnects that input from it.
   { table: "engagement_campaign_projects", column: "project_id", label: "engagement campaign coverage links", severity: "evidence", behavior: "cascade", href: "/engagement" },
+  // A reminder is the record that a named person WAS TOLD a deadline on this
+  // project was coming (20260811000007). `evidence` rather than `blocking`:
+  // nothing outside OpenPlan relies on it, so it must not stop a delete — but
+  // it is exactly the kind of row whose disappearance nobody notices, and "were
+  // we warned?" is a question that gets asked after a deadline is missed rather
+  // than before.
+  { table: "work_notifications", column: "project_id", label: "deadline reminders", severity: "evidence", behavior: "cascade", href: "/my-work" },
 
   // Work that survives but loses its attribution.
   { table: "models", column: "project_id", label: "models", severity: "evidence", behavior: "orphan", href: "/models" },

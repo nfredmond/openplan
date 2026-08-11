@@ -5,9 +5,17 @@ const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 
-// workspace_members
+// workspace_members through the RLS client. FAITHFUL TO members_read_own: the
+// only SELECT policy on workspace_members is user_id = auth.uid(), so an RLS
+// lookup can only ever match the CALLER's own row. The mock therefore consults
+// the user_id filter it was given — a lookup for anyone else answers null,
+// exactly as production does. This is what makes the service-role refactor of
+// the staff link check mutation-testable: revert the route to the RLS client
+// and the teammate-link test below fails with the live bug's 400.
 const membersMaybeSingleMock = vi.fn();
-const membersEqUserMock = vi.fn(() => ({ maybeSingle: membersMaybeSingleMock }));
+const membersEqUserMock = vi.fn((_column: string, userId: string) => ({
+  maybeSingle: () => membersMaybeSingleMock(userId),
+}));
 const membersEqWorkspaceMock = vi.fn(() => ({ eq: membersEqUserMock }));
 const membersSelectMock = vi.fn(() => ({ eq: membersEqWorkspaceMock }));
 
@@ -111,6 +119,28 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+// The SERVICE-ROLE client, used only by the staff route's roster helper for
+// teammate-link validation. It reads workspace_members without RLS, which is
+// why it can see the whole team.
+const serviceRosterCallerCheckMock = vi.fn();
+const serviceRosterListMock = vi.fn();
+const serviceFromMock = vi.fn((table: string) => {
+  if (table !== "workspace_members") {
+    throw new Error(`Service role touched unexpected table: ${table}`);
+  }
+  const chain = {
+    eq: () => chain,
+    maybeSingle: () => serviceRosterCallerCheckMock(),
+    order: () => chain,
+    limit: () => serviceRosterListMock(),
+  };
+  return { select: () => chain };
+});
+const createServiceRoleClientMock = vi.fn(() => ({
+  from: serviceFromMock,
+  auth: { admin: { getUserById: vi.fn() } },
+}));
+
 const mockAudit = {
   info: vi.fn(),
   warn: vi.fn(),
@@ -119,6 +149,7 @@ const mockAudit = {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: () => createServiceRoleClientMock(),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -158,8 +189,23 @@ beforeEach(() => {
 
   authGetUserMock.mockResolvedValue({ data: { user: { id: USER } } });
 
-  membersMaybeSingleMock.mockResolvedValue({
-    data: { workspace_id: WORKSPACE, role: "owner" },
+  // Default RLS behavior: only the CALLER's own membership row is visible
+  // (members_read_own). Tests that change the caller's role still override
+  // with mockResolvedValueOnce, which ignores the argument.
+  membersMaybeSingleMock.mockImplementation(async (userId: string) =>
+    userId === USER
+      ? { data: { workspace_id: WORKSPACE, role: "owner" }, error: null }
+      : { data: null, error: null }
+  );
+
+  // Service-role roster: the caller passes the helper's membership check, and
+  // the team contains the caller AND a teammate.
+  serviceRosterCallerCheckMock.mockResolvedValue({ data: { user_id: USER }, error: null });
+  serviceRosterListMock.mockResolvedValue({
+    data: [
+      { user_id: USER, role: "owner" },
+      { user_id: LINKED_USER, role: "member" },
+    ],
     error: null,
   });
 
@@ -271,11 +317,32 @@ describe("POST /api/invoicing/staff", () => {
     );
   });
 
-  it("refuses linking a user who is not a member of the workspace", async () => {
-    // First workspace_members call: the caller's own membership; second: the link target.
-    membersMaybeSingleMock
-      .mockResolvedValueOnce({ data: { workspace_id: WORKSPACE, role: "owner" }, error: null })
-      .mockResolvedValueOnce({ data: null, error: null });
+  it("links a TEAMMATE — the roster must come from the service role, because RLS shows only the caller", async () => {
+    // THE RECORDED LIVE BUG this guards against: the route used to validate
+    // the linked user through the RLS client, and members_read_own means that
+    // lookup matches only when you link YOURSELF — every real teammate got a
+    // 400 and invoicing_staff.user_id was unreachable for its purpose. The
+    // RLS mock in this file is filter-faithful, so reverting the route to the
+    // RLS client makes this exact test fail with that 400 again.
+    const response = await postStaff(
+      jsonRequest("http://localhost/api/invoicing/staff", "POST", {
+        workspaceId: WORKSPACE,
+        name: "T. Mate",
+        userId: LINKED_USER,
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(staffInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({ workspace_id: WORKSPACE, user_id: LINKED_USER })
+    );
+  });
+
+  it("refuses linking a user who is not on the workspace roster", async () => {
+    serviceRosterListMock.mockResolvedValueOnce({
+      data: [{ user_id: USER, role: "owner" }],
+      error: null,
+    });
 
     const response = await postStaff(
       jsonRequest("http://localhost/api/invoicing/staff", "POST", {
@@ -288,6 +355,27 @@ describe("POST /api/invoicing/staff", () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({
       error: "Linked user is not a member of the requested workspace",
+    });
+    expect(staffInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("answers 500 when the roster read fails — a failed read is not a non-member", async () => {
+    serviceRosterListMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "connection lost" },
+    });
+
+    const response = await postStaff(
+      jsonRequest("http://localhost/api/invoicing/staff", "POST", {
+        workspaceId: WORKSPACE,
+        name: "J. Doe",
+        userId: LINKED_USER,
+      })
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Could not verify the linked user's workspace membership",
     });
     expect(staffInsertMock).not.toHaveBeenCalled();
   });

@@ -16,9 +16,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { AssigneePicker } from "@/components/workspaces/assignee-picker";
 
 type ProjectRecordComposerProps = {
   projectId: string;
+  /**
+   * Required, not optional: the assignee pickers below cannot load a roster
+   * without it, and an optional prop the page forgot to pass would render four
+   * forms whose assignee field silently never works. The workspace is the
+   * project's own (`project.workspace_id`), never the caller's "current" one —
+   * a member of two workspaces can be looking at either.
+   */
+  workspaceId: string;
 };
 
 function FormError({ error }: { error: string | null }) {
@@ -30,7 +39,7 @@ function FormError({ error }: { error: string | null }) {
   );
 }
 
-export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps) {
+export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordComposerProps) {
   const router = useRouter();
 
   const [milestoneTitle, setMilestoneTitle] = useState("");
@@ -39,6 +48,10 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
   const [milestonePhaseCode, setMilestonePhaseCode] = useState("initiation");
   const [milestoneStatus, setMilestoneStatus] = useState("scheduled");
   const [milestoneOwner, setMilestoneOwner] = useState("");
+  // The teammate lane, beside the free-text owner above. Null is the only
+  // starting value: a composer that pre-selected somebody would be inventing
+  // an assignment nobody made.
+  const [milestoneAssignee, setMilestoneAssignee] = useState<string | null>(null);
   const [milestoneTargetDate, setMilestoneTargetDate] = useState("");
   const [milestoneActualDate, setMilestoneActualDate] = useState("");
   const [milestoneNotes, setMilestoneNotes] = useState("");
@@ -49,6 +62,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
   const [submittalType, setSubmittalType] = useState("authorization_packet");
   const [submittalStatus, setSubmittalStatus] = useState("draft");
   const [submittalAgency, setSubmittalAgency] = useState("");
+  const [submittalAssignee, setSubmittalAssignee] = useState<string | null>(null);
   const [submittalReferenceNumber, setSubmittalReferenceNumber] = useState("");
   const [submittalDueDate, setSubmittalDueDate] = useState("");
   const [submittalSubmittedAt, setSubmittalSubmittedAt] = useState("");
@@ -60,6 +74,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
   const [deliverableTitle, setDeliverableTitle] = useState("");
   const [deliverableSummary, setDeliverableSummary] = useState("");
   const [deliverableOwner, setDeliverableOwner] = useState("");
+  const [deliverableAssignee, setDeliverableAssignee] = useState<string | null>(null);
   const [deliverableDueDate, setDeliverableDueDate] = useState("");
   const [deliverableStatus, setDeliverableStatus] = useState("not_started");
   const [deliverableBudget, setDeliverableBudget] = useState("");
@@ -80,6 +95,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
   const [issueSeverity, setIssueSeverity] = useState("medium");
   const [issueStatus, setIssueStatus] = useState("open");
   const [issueOwner, setIssueOwner] = useState("");
+  const [issueAssignee, setIssueAssignee] = useState<string | null>(null);
   const [issueError, setIssueError] = useState<string | null>(null);
   const [issueSaving, setIssueSaving] = useState(false);
 
@@ -127,6 +143,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
         phaseCode: milestonePhaseCode,
         status: milestoneStatus,
         ownerLabel: milestoneOwner,
+        assigneeUserId: milestoneAssignee ?? undefined,
         targetDate: milestoneTargetDate,
         actualDate: milestoneActualDate,
         notes: milestoneNotes,
@@ -137,6 +154,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
       setMilestonePhaseCode("initiation");
       setMilestoneStatus("scheduled");
       setMilestoneOwner("");
+      setMilestoneAssignee(null);
       setMilestoneTargetDate("");
       setMilestoneActualDate("");
       setMilestoneNotes("");
@@ -158,6 +176,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
         submittalType,
         status: submittalStatus,
         agencyLabel: submittalAgency,
+        assigneeUserId: submittalAssignee ?? undefined,
         referenceNumber: submittalReferenceNumber,
         dueDate: submittalDueDate,
         submittedAt: submittalSubmittedAt ? new Date(submittalSubmittedAt).toISOString() : undefined,
@@ -168,6 +187,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
       setSubmittalType("authorization_packet");
       setSubmittalStatus("draft");
       setSubmittalAgency("");
+      setSubmittalAssignee(null);
       setSubmittalReferenceNumber("");
       setSubmittalDueDate("");
       setSubmittalSubmittedAt("");
@@ -190,6 +210,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
         title: deliverableTitle,
         summary: deliverableSummary,
         ownerLabel: deliverableOwner,
+        assigneeUserId: deliverableAssignee ?? undefined,
         dueDate: deliverableDueDate,
         status: deliverableStatus,
         budgetAmount: deliverableBudget.trim() ? Number.parseFloat(deliverableBudget) : undefined,
@@ -198,6 +219,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
       setDeliverableTitle("");
       setDeliverableSummary("");
       setDeliverableOwner("");
+      setDeliverableAssignee(null);
       setDeliverableDueDate("");
       setDeliverableStatus("not_started");
       setDeliverableBudget("");
@@ -246,12 +268,14 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
         severity: issueSeverity,
         status: issueStatus,
         ownerLabel: issueOwner,
+        assigneeUserId: issueAssignee ?? undefined,
       });
       setIssueTitle("");
       setIssueDescription("");
       setIssueSeverity("medium");
       setIssueStatus("open");
       setIssueOwner("");
+      setIssueAssignee(null);
     } catch (error) {
       setIssueError(error instanceof Error ? error.message : "Failed to save issue");
     } finally {
@@ -424,12 +448,26 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                 </select>
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
                 <label htmlFor="milestone-owner" className="text-sm font-medium">
                   Owner
                 </label>
                 <Input id="milestone-owner" value={milestoneOwner} onChange={(e) => setMilestoneOwner(e.target.value)} placeholder="Elena / Owen / Consultant" />
+                <p className="text-xs text-muted-foreground">Free text — a consultant, a partner agency, anyone without an account here.</p>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="milestone-assignee" className="text-sm font-medium">
+                  Assignee
+                </label>
+                <AssigneePicker
+                  id="milestone-assignee"
+                  label="Assignee"
+                  workspaceId={workspaceId}
+                  value={milestoneAssignee}
+                  onChange={setMilestoneAssignee}
+                />
+                <p className="text-xs text-muted-foreground">A teammate in this workspace. Optional, and separate from Owner.</p>
               </div>
               <div className="space-y-2">
                 <label htmlFor="milestone-target-date" className="text-sm font-medium">
@@ -518,12 +556,26 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                 <Input id="submittal-review-cycle" type="number" min="1" max="10" value={submittalReviewCycle} onChange={(e) => setSubmittalReviewCycle(e.target.value)} />
               </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label htmlFor="submittal-agency" className="text-sm font-medium">
                   Agency / reviewer
                 </label>
                 <Input id="submittal-agency" value={submittalAgency} onChange={(e) => setSubmittalAgency(e.target.value)} placeholder="Caltrans D3 Local Assistance" />
+                <p className="text-xs text-muted-foreground">Who reviews the packet — a different question from who prepares it.</p>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="submittal-assignee" className="text-sm font-medium">
+                  Assignee
+                </label>
+                <AssigneePicker
+                  id="submittal-assignee"
+                  label="Assignee"
+                  workspaceId={workspaceId}
+                  value={submittalAssignee}
+                  onChange={setSubmittalAssignee}
+                />
+                <p className="text-xs text-muted-foreground">The teammate who owes this packet. Optional.</p>
               </div>
               <div className="space-y-2">
                 <label htmlFor="submittal-reference-number" className="text-sm font-medium">
@@ -597,7 +649,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                 placeholder="What needs to be delivered, for whom, and at what quality bar?"
               />
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
                 <label htmlFor="deliverable-owner" className="text-sm font-medium">
                   Owner
@@ -608,6 +660,20 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                   onChange={(e) => setDeliverableOwner(e.target.value)}
                   placeholder="Elena / Owen / Consultant"
                 />
+                <p className="text-xs text-muted-foreground">Free text — a consultant, a partner agency, anyone without an account here.</p>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="deliverable-assignee" className="text-sm font-medium">
+                  Assignee
+                </label>
+                <AssigneePicker
+                  id="deliverable-assignee"
+                  label="Assignee"
+                  workspaceId={workspaceId}
+                  value={deliverableAssignee}
+                  onChange={setDeliverableAssignee}
+                />
+                <p className="text-xs text-muted-foreground">A teammate in this workspace. Optional, and separate from Owner.</p>
               </div>
               <div className="space-y-2">
                 <label htmlFor="deliverable-due" className="text-sm font-medium">
@@ -742,7 +808,7 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
               </label>
               <Textarea id="issue-description" value={issueDescription} onChange={(e) => setIssueDescription(e.target.value)} rows={4} placeholder="Describe the active blocker or operational problem." />
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2">
                 <label htmlFor="issue-severity" className="text-sm font-medium">
                   Severity
@@ -770,6 +836,20 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                   Owner
                 </label>
                 <Input id="issue-owner" value={issueOwner} onChange={(e) => setIssueOwner(e.target.value)} placeholder="Priya / Consultant" />
+                <p className="text-xs text-muted-foreground">Free text — anyone without an account here.</p>
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="issue-assignee" className="text-sm font-medium">
+                  Assignee
+                </label>
+                <AssigneePicker
+                  id="issue-assignee"
+                  label="Assignee"
+                  workspaceId={workspaceId}
+                  value={issueAssignee}
+                  onChange={setIssueAssignee}
+                />
+                <p className="text-xs text-muted-foreground">A teammate in this workspace. Optional, and separate from Owner.</p>
               </div>
             </div>
             <FormError error={issueError} />

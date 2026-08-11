@@ -1,0 +1,115 @@
+{
+  "template_id": "environmental_review_v0.1",
+  "template_name": "Environmental review — phased work plan",
+  "version": "0.1",
+  "practice_area": "general",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "environmental_review",
+    "environmental_document"
+  ],
+  "description": "The phases an environmental review passes through — scoping, baseline studies, impact analysis, a public draft, responses to comments, and a determination — with no statute assumed.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "No law is named here on purpose. The length of public review, the notices required, the form of the determination and who issues it are set by the law your project is reviewed under. Enter those dates and records yourself.",
+    "Environmental review precedes final design. If your work plan has design deliverables, they belong after the determination milestone, not beside it.",
+    "Consultation with resource agencies and with tribes or indigenous nations is a real and often long-lead task. It appears here as one milestone; your context may require several.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "scoping_memo",
+      "title": "Scoping memo",
+      "offset_days": 30,
+      "summary": "The action being reviewed, the study area, and the resources the review will examine, agreed before studies are commissioned."
+    },
+    {
+      "key": "technical_studies_plan",
+      "title": "Technical studies plan",
+      "offset_days": 45,
+      "summary": "Which studies are needed, who performs them, and when each is due."
+    },
+    {
+      "key": "baseline_studies",
+      "title": "Baseline resource studies",
+      "offset_days": 150,
+      "summary": "The natural, cultural, community, traffic, noise and air conditions as they exist, each with its method stated."
+    },
+    {
+      "key": "impact_analysis",
+      "title": "Impact analysis and mitigation measures",
+      "offset_days": 240,
+      "summary": "The effects identified, their significance, and the measures proposed to avoid, minimize or mitigate them."
+    },
+    {
+      "key": "draft_document",
+      "title": "Draft environmental document",
+      "offset_days": 300,
+      "summary": "The complete draft prepared for public and agency review."
+    },
+    {
+      "key": "comment_responses",
+      "title": "Comment-response record",
+      "offset_days": 390,
+      "summary": "Every substantive comment received and the response to it."
+    },
+    {
+      "key": "final_document",
+      "title": "Final environmental document",
+      "offset_days": 420,
+      "summary": "The final document incorporating the responses and any changes they required."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 10,
+      "milestone_type": "schedule",
+      "phase_code": "environmental",
+      "summary": "Scope, the review path and the schedule confirmed with the lead agency."
+    },
+    {
+      "key": "scoping_opens",
+      "title": "Scoping period opens",
+      "offset_days": 40,
+      "milestone_type": "schedule",
+      "phase_code": "environmental",
+      "summary": "Agencies and the public are asked what the review should examine."
+    },
+    {
+      "key": "agency_consultation",
+      "title": "Consultation with reviewing and resource agencies underway",
+      "offset_days": 120,
+      "milestone_type": "other",
+      "phase_code": "environmental",
+      "summary": "The long-lead consultations are started early enough not to hold up the draft."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 315,
+      "milestone_type": "schedule",
+      "phase_code": "environmental",
+      "summary": "The draft document is released for comment for the period your process requires."
+    },
+    {
+      "key": "public_hearing",
+      "title": "Public hearing on the draft document",
+      "offset_days": 345,
+      "milestone_type": "hearing",
+      "phase_code": "environmental",
+      "summary": "The hearing held during or after the review period, where one is held."
+    },
+    {
+      "key": "determination",
+      "title": "Environmental determination issued",
+      "offset_days": 450,
+      "milestone_type": "decision",
+      "phase_code": "environmental",
+      "summary": "The lead agency issues its determination or clearance."
+    }
+  ]
+}

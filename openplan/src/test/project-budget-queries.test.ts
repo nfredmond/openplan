@@ -162,6 +162,72 @@ describe("loadProjectBudgetInputs", () => {
     expect(inputs.deliverables).toEqual([]);
   });
 
+  /**
+   * THE DELIVERABLE PROJECTION IS A LADDER, NOT A SWITCH.
+   *
+   * Two migrations have added columns to project_deliverables — budgets
+   * (20260727000012) and the assignee (20260811000006) — and a deployment can
+   * be behind either or both. A two-step full→legacy fallback would have
+   * answered "behind the assignee migration" by dropping all the way back to
+   * the 2026-03 column set, and the panel would then have reported "no budget
+   * basis" over budgets the database actually holds: a schema gap rendered as a
+   * finding about an agency's money.
+   *
+   * This fake answers by PROJECTION, which is the only way to see the rung.
+   */
+  function laddered(pendingColumns: string[]) {
+    const row = {
+      id: "deliverable-1",
+      title: "Existing Conditions Memo",
+      budget_amount: 1000,
+      percent_complete: 50,
+      assignee_user_id: "user-2",
+    };
+    const asked: string[] = [];
+    const client = {
+      from: (table: string) => {
+        if (table !== "project_deliverables") return chain(table === "projects" ? OK_STATED_BUDGET : OK_ROWS);
+        return {
+          select: (columns: string) => {
+            asked.push(columns);
+            const missing = pendingColumns.find((column) => columns.includes(column));
+            return chain(
+              missing
+                ? { data: null, error: { message: `column project_deliverables.${missing} does not exist` } }
+                : { data: [row], error: null }
+            );
+          },
+        };
+      },
+    } as unknown as ProjectBudgetQuerySupabaseLike;
+    return { client, asked };
+  }
+
+  it("drops only the assignee column when only that migration is pending", async () => {
+    const { client, asked } = laddered(["assignee_user_id"]);
+    const inputs = await loadProjectBudgetInputs(client, "project-1");
+
+    expect(inputs.pending.deliverableAssigneeColumn).toBe(true);
+    // The rung that matters: the budget columns were NOT collateral damage.
+    expect(inputs.pending.deliverableBudgetColumns).toBe(false);
+    expect(inputs.deliverables[0]).toMatchObject({ budget_amount: 1000, percent_complete: 50 });
+    expect(asked[0]).toContain("assignee_user_id");
+    expect(asked[1]).toContain("budget_amount");
+    expect(asked[1]).not.toContain("assignee_user_id");
+  });
+
+  it("falls all the way back when both migrations are pending, and says so about both", async () => {
+    const { client, asked } = laddered(["assignee_user_id", "budget_amount"]);
+    const inputs = await loadProjectBudgetInputs(client, "project-1");
+
+    expect(inputs.pending.deliverableAssigneeColumn).toBe(true);
+    expect(inputs.pending.deliverableBudgetColumns).toBe(true);
+    expect(asked).toHaveLength(3);
+    expect(asked[2]).not.toContain("budget_amount");
+    // The deliverables themselves still load — the list is not the casualty.
+    expect(inputs.deliverables).toHaveLength(1);
+  });
+
   it("reports nothing unreadable when every read answers", async () => {
     // Without this the assertions above would pass on a loader that always
     // claims failure, and the honest empty case is the common one.
@@ -177,6 +243,7 @@ describe("loadProjectBudgetInputs", () => {
     expect(inputs.pending).toEqual({
       deliverables: false,
       deliverableBudgetColumns: false,
+      deliverableAssigneeColumn: false,
       statedBudget: false,
       spendEntries: false,
       clientInvoices: false,

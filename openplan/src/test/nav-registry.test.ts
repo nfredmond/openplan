@@ -72,6 +72,10 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     );
     expect(items[0]).toEqual([
       "/dashboard·Overview",
+      // Position 2 in the Workspace group, above Projects: the personal work
+      // queue is the one surface that comes to the planner rather than being
+      // gone into (design memo 2026-08-11).
+      "/my-work·My Work",
       "/projects·Projects",
       "/reports·Reports",
       "/assistant-activity·Planner Agent Activity",

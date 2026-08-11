@@ -9,6 +9,11 @@ import {
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
 import { DeliverableUpdateControls } from "@/components/projects/deliverable-update-controls";
+import {
+  RecordAssigneeChip,
+  type ProjectAssigneeRoster,
+} from "@/components/projects/record-assignee";
+import { RecordAssigneeControl } from "@/components/projects/record-assignee-control";
 import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import { postureLabel } from "@/lib/invoicing/reimbursement-profile-binding";
 import { reimbursementProfileRegistry } from "@/lib/invoicing/reimbursement-profiles";
@@ -87,6 +92,26 @@ type ProjectDeliveryBoardProps = {
   deliverables: DeliverableRow[] | null;
   /** Per-deliverable budget/burn summaries keyed by deliverable id (may be empty pre-migration). */
   budgetSummaryByDeliverableId: Map<string, DeliverableBudgetSummary>;
+  /**
+   * The workspace roster, or an explicit failure. Required, not optional: an
+   * optional roster prop the page forgot to pass would render every assigned
+   * record as if nobody owned it, and nothing would fail.
+   */
+  assigneeRoster: ProjectAssigneeRoster;
+  /**
+   * True when the deliverable projection could not ask for `assignee_user_id`
+   * because 20260811000006 is not applied here. Disclosed once, in the
+   * deliverables panel — not as a chip on every row.
+   */
+  deliverableAssigneeColumnPending?: boolean;
+  /**
+   * Whether this member may change records at all. Required, not optional: an
+   * optional write flag defaulting to true is how a read-only viewer gets a
+   * control that 403s, and defaulting to false is how everyone else loses one
+   * silently. The route enforces the same rule server-side — this only decides
+   * whether a planner is offered something that would work.
+   */
+  canWrite: boolean;
 };
 
 export function ProjectDeliveryBoard({
@@ -112,6 +137,9 @@ export function ProjectDeliveryBoard({
   prioritizedProjectInvoices,
   deliverables,
   budgetSummaryByDeliverableId,
+  assigneeRoster,
+  deliverableAssigneeColumnPending = false,
+  canWrite,
 }: ProjectDeliveryBoardProps) {
   return (
     <>
@@ -462,6 +490,9 @@ export function ProjectDeliveryBoard({
                       <StatusBadge tone={toneForMilestoneStatus(milestone.status)}>{titleize(milestone.status)}</StatusBadge>
                       <StatusBadge tone="neutral">{titleize(milestone.phase_code)}</StatusBadge>
                       <StatusBadge tone="info">{titleize(milestone.milestone_type)}</StatusBadge>
+                      {/* The teammate lane. owner_label — the external-party
+                          lane — still renders in its own line below. */}
+                      <RecordAssigneeChip roster={assigneeRoster} assigneeUserId={milestone.assignee_user_id} />
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -482,6 +513,15 @@ export function ProjectDeliveryBoard({
                         currentStatus={milestone.status}
                       />
                     </div>
+                    {/* Reassign or unassign — the chip above only READS. */}
+                    <RecordAssigneeControl
+                      projectId={project.id}
+                      workspaceId={project.workspace_id}
+                      recordId={milestone.id}
+                      recordType="milestone"
+                      currentAssigneeUserId={milestone.assignee_user_id}
+                      canWrite={canWrite}
+                    />
                   </div>
                 </div>
               ))}
@@ -526,6 +566,9 @@ export function ProjectDeliveryBoard({
                     <div className="module-record-kicker">
                       <StatusBadge tone={toneForSubmittalStatus(submittal.status)}>{titleize(submittal.status)}</StatusBadge>
                       <StatusBadge tone="info">{titleize(submittal.submittal_type)}</StatusBadge>
+                      {/* agency_label (below) names the REVIEWING agency; this
+                          names the teammate who owes the packet. */}
+                      <RecordAssigneeChip roster={assigneeRoster} assigneeUserId={submittal.assignee_user_id} />
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -545,6 +588,15 @@ export function ProjectDeliveryBoard({
                         currentStatus={submittal.status}
                       />
                     </div>
+                    {/* Who owes the packet can change; the chip above only READS. */}
+                    <RecordAssigneeControl
+                      projectId={project.id}
+                      workspaceId={project.workspace_id}
+                      recordId={submittal.id}
+                      recordType="submittal"
+                      currentAssigneeUserId={submittal.assignee_user_id}
+                      canWrite={canWrite}
+                    />
                   </div>
                 </div>
               ))}
@@ -622,6 +674,13 @@ export function ProjectDeliveryBoard({
             </div>
           </div>
         </div>
+        {deliverableAssigneeColumnPending ? (
+          <div className="module-alert mt-5 text-sm">
+            Deliverable assignees are not shown here yet: this deployment is behind migration
+            20260811000006, so the list could not ask the database who is assigned. Nobody is being
+            reported as unassigned — the question has not been asked.
+          </div>
+        ) : null}
         {!deliverables || deliverables.length === 0 ? (
           <div className="module-empty-state mt-5 text-sm">No deliverables yet. Add the first required output in the creation lane.</div>
         ) : (
@@ -635,6 +694,9 @@ export function ProjectDeliveryBoard({
                     <div className="module-record-kicker">
                       <StatusBadge tone={toneForDeliverableStatus(deliverable.status)}>{titleize(deliverable.status)}</StatusBadge>
                       {deliverable.owner_label ? <StatusBadge tone="neutral">{deliverable.owner_label}</StatusBadge> : null}
+                      {/* Both lanes, side by side: the free-text owner above,
+                          the accountable teammate here. */}
+                      <RecordAssigneeChip roster={assigneeRoster} assigneeUserId={deliverable.assignee_user_id} />
                       {budgetSummary ? (
                         <>
                           <StatusBadge tone={deliverableBudgetPaceTone(budgetSummary.paceStatus)}>
@@ -668,6 +730,20 @@ export function ProjectDeliveryBoard({
                       currentStatus={deliverable.status}
                       currentBudgetAmount={budgetSummary?.budgetAmount ?? null}
                       currentPercentComplete={budgetSummary?.percentComplete ?? null}
+                    />
+                    {/*
+                      Reassignment. `assignee_user_id` is UNDEFINED here when the
+                      projection could not ask for it (the panel discloses that
+                      once, above), and the control renders nothing rather than
+                      offering "Unassigned" as an answer nobody gave.
+                    */}
+                    <RecordAssigneeControl
+                      projectId={project.id}
+                      workspaceId={project.workspace_id}
+                      recordId={deliverable.id}
+                      recordType="deliverable"
+                      currentAssigneeUserId={deliverable.assignee_user_id}
+                      canWrite={canWrite}
                     />
                   </div>
                 </div>

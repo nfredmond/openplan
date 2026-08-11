@@ -1,0 +1,113 @@
+{
+  "template_id": "corridor_study_v0.1",
+  "template_name": "Corridor study",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "corridor_study",
+    "corridor_improvement_study"
+  ],
+  "description": "A study of one street or highway corridor: what it does today, what it fails to do, what could be changed, and which changes to pursue first.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "It assumes a consultant-led study under a notice to proceed. An in-house study runs the same sequence without the procurement steps — change the anchor to the kickoff date and adjust the early offsets.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan, schedule and communication protocol",
+      "offset_days": 14,
+      "summary": "The agreed task list, schedule, meeting cadence and who speaks for which agency, confirmed after kickoff."
+    },
+    {
+      "key": "existing_conditions",
+      "title": "Existing conditions and data summary",
+      "offset_days": 75,
+      "summary": "Traffic, transit, walking and cycling counts, collision history, land use and known constraints along the corridor, each with its source named."
+    },
+    {
+      "key": "needs_and_opportunities",
+      "title": "Corridor needs and opportunities memo",
+      "offset_days": 120,
+      "summary": "What the data and the community together say the corridor is failing to do, stated before any solution is proposed."
+    },
+    {
+      "key": "alternatives_screening",
+      "title": "Alternatives development and screening memo",
+      "offset_days": 180,
+      "summary": "Concepts developed against the agreed criteria, with the reasons any concept was screened out written down."
+    },
+    {
+      "key": "draft_report",
+      "title": "Draft corridor study report",
+      "offset_days": 255,
+      "summary": "The complete draft assembled for technical and public review."
+    },
+    {
+      "key": "final_report",
+      "title": "Final corridor study report",
+      "offset_days": 330,
+      "summary": "The draft revised in response to comments, with the comment record attached."
+    },
+    {
+      "key": "implementation_plan",
+      "title": "Implementation and phasing plan",
+      "offset_days": 345,
+      "summary": "A prioritized project list with planning-level cost estimates prepared by your team, sequenced into near, medium and long term."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 10,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule, data sources and roles confirmed with everyone who has a part in the study."
+    },
+    {
+      "key": "data_collection_complete",
+      "title": "Field data collection complete",
+      "offset_days": 60,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "Counts, observations and inventory work finished so analysis can start from a settled dataset."
+    },
+    {
+      "key": "public_workshop_needs",
+      "title": "First public workshop — needs and opportunities",
+      "offset_days": 135,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The corridor's problems described publicly before alternatives exist, so input shapes them rather than reacting to them."
+    },
+    {
+      "key": "technical_advisory_review",
+      "title": "Technical advisory review of alternatives",
+      "offset_days": 200,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "Partner agencies and internal reviewers see the alternatives before the draft is written."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 270,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment. Set the closing date to the period your agency has committed to."
+    },
+    {
+      "key": "acceptance",
+      "title": "Study accepted by the sponsoring body",
+      "offset_days": 350,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "The decision that closes the study, by whichever body has that authority here."
+    }
+  ]
+}

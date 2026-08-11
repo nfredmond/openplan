@@ -159,6 +159,17 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
       "member can reach them through PostgREST at all; the confinement of the reads is enforced " +
       "separately by engagement-notifications-reader-inventory.test.ts.",
   },
+  "src/lib/notifications/work.ts": {
+    functions: ["sweepWorkDeadlines"],
+    reason:
+      "work_notifications has a SELECT and a mark-read UPDATE policy and NO insert policy " +
+      "(20260811000007), on the engagement_notifications model: the rows are authored by the " +
+      "daily deadline sweep, which runs from /api/cron/sweep-deadlines with no auth.uid() at " +
+      "all. It matters more here than in most of this list — a reminder is EVIDENCE that a " +
+      "person was told something was due, so the person it is about must not be able to write " +
+      "one, and a workspace-member INSERT policy would let anyone mint a reminder for a " +
+      "colleague. Reached only from that cron route, which passes createServiceRoleClient().",
+  },
   "src/lib/observability/action-audit.ts": {
     functions: ["recordAssistantActionExecution"],
     reason:

@@ -1,0 +1,114 @@
+{
+  "template_id": "annexation_study_v0.1",
+  "template_name": "Annexation or boundary change study",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "annexation_study",
+    "boundary_change_study"
+  ],
+  "description": "A study of a proposed municipal boundary change: what is there, what services it would need, what it would cost and yield, and what the deciding authority requires.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Who decides a boundary change differs everywhere — a county body, a state or provincial commission, a court, or the governing body itself. This template assumes an external reviewing authority; delete that milestone if your process has none, and add the steps yours requires.",
+    "The fiscal analysis compares the cost of serving an area with the revenue it would generate. It contains no figures here and should never be applied with placeholder numbers left in it.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "boundary_analysis",
+      "title": "Boundary, ownership and existing conditions analysis",
+      "offset_days": 60,
+      "summary": "The area proposed, who owns it, what is built there, and what serves it today."
+    },
+    {
+      "key": "service_capacity",
+      "title": "Service and infrastructure capacity analysis",
+      "offset_days": 120,
+      "summary": "Water, sewer, roads, drainage, police, fire and other services: what the area needs and whether capacity exists."
+    },
+    {
+      "key": "fiscal_analysis",
+      "title": "Fiscal analysis",
+      "offset_days": 165,
+      "summary": "The cost of serving the area set against the revenue it would generate, with every assumption stated."
+    },
+    {
+      "key": "land_use_and_prezoning",
+      "title": "Land use and prezoning recommendations",
+      "offset_days": 210,
+      "summary": "What the area would be designated and zoned on the day the change takes effect."
+    },
+    {
+      "key": "draft_report",
+      "title": "Draft study report",
+      "offset_days": 255,
+      "summary": "The complete draft, including the recommendation and its conditions."
+    },
+    {
+      "key": "application_package",
+      "title": "Application package for the reviewing authority",
+      "offset_days": 300,
+      "summary": "The submission the deciding authority requires, assembled to its own checklist."
+    },
+    {
+      "key": "final_report",
+      "title": "Final study report",
+      "offset_days": 330,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 10,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, boundary and the decision path confirmed."
+    },
+    {
+      "key": "owner_and_resident_outreach",
+      "title": "Property owner and resident outreach begins",
+      "offset_days": 135,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The people whose land and services are affected hear about it from the agency first."
+    },
+    {
+      "key": "service_provider_meetings",
+      "title": "Service provider and affected agency meetings",
+      "offset_days": 150,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "Every agency that would gain or lose responsibility is at the table."
+    },
+    {
+      "key": "public_meeting",
+      "title": "Public meeting on the proposal",
+      "offset_days": 270,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The study and its recommendation shown publicly."
+    },
+    {
+      "key": "governing_body_action",
+      "title": "Governing body action on the proposal",
+      "offset_days": 345,
+      "milestone_type": "decision",
+      "phase_code": "other",
+      "summary": "The initiating body acts on the proposed change."
+    },
+    {
+      "key": "authority_decision",
+      "title": "Decision by the reviewing authority",
+      "offset_days": 420,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "The body with authority over boundary changes issues its decision."
+    }
+  ]
+}

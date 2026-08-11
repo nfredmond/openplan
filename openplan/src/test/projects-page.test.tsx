@@ -12,7 +12,7 @@ const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const projectsOrderMock = vi.fn();
 const projectsEqMock = vi.fn(() => ({ order: projectsOrderMock }));
-const projectsSelectMock = vi.fn(() => ({ eq: projectsEqMock }));
+const projectsSelectMock = vi.fn((_columns?: string) => ({ eq: projectsEqMock }));
 
 const reportsOrderMock = vi.fn();
 const reportsInMock = vi.fn(() => ({ order: reportsOrderMock }));
@@ -31,9 +31,45 @@ const aerialMissionsSelectMock = vi.fn(() => ({ in: aerialMissionsInMock }));
 const aerialPackagesInMock = vi.fn();
 const aerialPackagesSelectMock = vi.fn(() => ({ in: aerialPackagesInMock }));
 
+/**
+ * The portfolio table's six batched lanes (2026-08-11) read five further
+ * tables, plus a second, narrower projection of `projects` for the stated
+ * budget. This file's assertions are all about the CARDS, so those lanes answer
+ * empty here — `project-portfolio.test.ts` is where their rows and filters are
+ * exercised, and `the-portfolio-table-is-reachable.test.tsx` is where the table
+ * itself is rendered from real rows.
+ */
+const PORTFOLIO_LANE_TABLES = [
+  "project_deliverables",
+  "project_milestones",
+  "project_submittals",
+  "project_spend_entries",
+  "client_invoices",
+];
+
+function emptyLaneBuilder() {
+  const builder: Record<string, unknown> = {
+    then: <T,>(resolve: (value: { data: unknown[]; error: null }) => T) =>
+      Promise.resolve(resolve({ data: [], error: null })),
+  };
+  for (const method of ["select", "eq", "in", "order", "limit"]) {
+    builder[method] = () => builder;
+  }
+  return builder;
+}
+
 const fromMock = vi.fn((table: string) => {
+  if (PORTFOLIO_LANE_TABLES.includes(table)) {
+    return { select: () => emptyLaneBuilder() };
+  }
   if (table === "projects") {
-    return { select: projectsSelectMock };
+    // Two projections of one table: the card list's, and the portfolio
+    // loader's `id, budget_amount`. Discriminated on the column that only the
+    // second one asks for.
+    return {
+      select: (columns: string) =>
+        columns.includes("budget_amount") ? emptyLaneBuilder() : projectsSelectMock(columns),
+    };
   }
   if (table === "reports") {
     return { select: reportsSelectMock };
@@ -56,6 +92,8 @@ const fromMock = vi.fn((table: string) => {
 
 vi.mock("next/navigation", () => ({
   redirect: (...args: unknown[]) => redirectMock(...args),
+  // The work-plan applier beside the portfolio table is a client component.
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }));
 
 vi.mock("next/link", () => ({

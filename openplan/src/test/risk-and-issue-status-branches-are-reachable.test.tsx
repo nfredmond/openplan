@@ -234,6 +234,7 @@ vi.mock("next/navigation", () => ({
 import { PATCH as patchRecord } from "@/app/api/projects/[projectId]/records/[recordId]/route";
 
 const PROJECT_ID = "11111111-1111-4111-8111-111111111111";
+const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
 const RISK_ID = "dddd1111-3333-4333-8333-333333333333";
 const ISSUE_ID = "eeee1111-3333-4333-8333-333333333333";
 
@@ -471,6 +472,9 @@ describe("a planner can move a risk and an issue from the project page", () => {
     render(
       <ProjectRiskAndDecisionLog
         projectId={PROJECT_ID}
+        workspaceId={WORKSPACE_ID}
+        canWrite
+        assigneeRoster={{ ok: true, members: [] }}
         risks={lanes.risks}
         issues={lanes.issues}
         decisions={lanes.decisions}
@@ -569,6 +573,9 @@ describe("a planner can move a risk and an issue from the project page", () => {
     render(
       <ProjectRiskAndDecisionLog
         projectId={PROJECT_ID}
+        workspaceId={WORKSPACE_ID}
+        canWrite
+        assigneeRoster={{ ok: true, members: [] }}
         risks={lanes.risks}
         issues={lanes.issues}
         decisions={lanes.decisions}

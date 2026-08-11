@@ -1,0 +1,100 @@
+{
+  "template_id": "historic_preservation_plan_v0.1",
+  "template_name": "Historic preservation plan",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "historic_preservation_plan",
+    "cultural_resources_plan"
+  ],
+  "description": "A plan for identifying, evaluating and protecting historic and cultural resources: context, survey, evaluation, policy, review procedures and incentives.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Survey and designation practice is shaped by national, state and local programs where you are, and consultation with tribes or indigenous nations may be required or appropriate. This template names none of them; add the consultation and review steps your context requires.",
+    "Designation affects private property owners directly. The outreach milestone sits before the evaluation deliverable for that reason, not after it.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "context_statement",
+      "title": "Historic context statement",
+      "offset_days": 120,
+      "summary": "The themes, periods and property types that make a resource significant here, written before anything is evaluated against them."
+    },
+    {
+      "key": "survey_and_inventory",
+      "title": "Resource survey and inventory",
+      "offset_days": 210,
+      "summary": "The properties surveyed and recorded, with the level of survey stated."
+    },
+    {
+      "key": "evaluation",
+      "title": "Evaluation findings and designation recommendations",
+      "offset_days": 270,
+      "summary": "Which resources appear significant, against which criteria, and what designation is recommended."
+    },
+    {
+      "key": "policy_and_incentives",
+      "title": "Preservation policies, procedures and incentives",
+      "offset_days": 315,
+      "summary": "The review procedures for altering a resource, and the incentives that make preservation practical for an owner."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft preservation plan",
+      "offset_days": 375,
+      "summary": "The complete draft assembled for review."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final preservation plan",
+      "offset_days": 450,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, survey area and the consultation approach confirmed."
+    },
+    {
+      "key": "owner_outreach",
+      "title": "Property owner and community outreach",
+      "offset_days": 150,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "Owners hear what a survey is and what designation would and would not mean, before evaluation."
+    },
+    {
+      "key": "advisory_review",
+      "title": "Preservation commission or advisory body review",
+      "offset_days": 300,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The body that will apply the policies reviews them."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 390,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the plan",
+      "offset_days": 465,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the governing body."
+    }
+  ]
+}

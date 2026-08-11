@@ -1,0 +1,111 @@
+{
+  "template_id": "ca_environmental_review_v0.1",
+  "template_name": "Environmental review under the California Environmental Quality Act",
+  "version": "0.1",
+  "practice_area": "general",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "ceqa_review",
+    "environmental_review_california"
+  ],
+  "description": "The sequence a California lead agency runs when reviewing a project under the state's environmental quality act: preliminary review, the document-type decision, technical studies, a public draft, responses, and certification or adoption.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "This template assumes a project in California reviewed under the California Environmental Quality Act, and it is the only assumption in the set that names a state. A project anywhere else should use the jurisdiction-neutral environmental review template instead.",
+    "The offsets are placeholders, not the review periods. California's review periods, notice requirements and filing steps vary by document type and by whether a state agency is a reviewing agency — confirm the ones that apply to your project and replace these dates.",
+    "It stops at certification or adoption. Post-approval mitigation monitoring runs for the life of the project and belongs in its own record set.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "jurisdiction": {
+    "country": "US",
+    "subdivision": "CA",
+    "label": "California, United States"
+  },
+  "deliverables": [
+    {
+      "key": "project_description",
+      "title": "Project description and preliminary review",
+      "offset_days": 30,
+      "summary": "A description stable enough to review, and the preliminary determination of whether the activity is subject to review at all."
+    },
+    {
+      "key": "initial_study",
+      "title": "Initial study and environmental checklist",
+      "offset_days": 105,
+      "summary": "The checklist analysis that supports the decision on which kind of document is required."
+    },
+    {
+      "key": "technical_studies",
+      "title": "Supporting technical studies",
+      "offset_days": 180,
+      "summary": "The traffic, biological, cultural, noise, air and other studies the initial study identified as necessary."
+    },
+    {
+      "key": "draft_document",
+      "title": "Draft environmental document for public review",
+      "offset_days": 255,
+      "summary": "The complete draft prepared for the public review period."
+    },
+    {
+      "key": "comment_responses",
+      "title": "Responses to comments received",
+      "offset_days": 345,
+      "summary": "Written responses to the substantive environmental comments received during review."
+    },
+    {
+      "key": "final_document",
+      "title": "Final environmental document",
+      "offset_days": 375,
+      "summary": "The final document incorporating the responses."
+    },
+    {
+      "key": "findings_and_monitoring",
+      "title": "Findings and mitigation monitoring and reporting program",
+      "offset_days": 395,
+      "summary": "The findings the decision-making body must make and the program that will track every adopted mitigation measure."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 10,
+      "milestone_type": "schedule",
+      "phase_code": "environmental",
+      "summary": "Scope, the review path and the schedule confirmed with the lead agency."
+    },
+    {
+      "key": "document_type_decision",
+      "title": "Decision on the type of environmental document",
+      "offset_days": 60,
+      "milestone_type": "decision",
+      "phase_code": "environmental",
+      "summary": "The lead agency decides which document the project requires, on the record."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review period opens",
+      "offset_days": 270,
+      "milestone_type": "schedule",
+      "phase_code": "environmental",
+      "summary": "The draft is circulated for the review period that applies to it."
+    },
+    {
+      "key": "public_hearing",
+      "title": "Public hearing on the draft document",
+      "offset_days": 330,
+      "milestone_type": "hearing",
+      "phase_code": "environmental",
+      "summary": "The hearing held before the decision-making body acts."
+    },
+    {
+      "key": "certification_or_adoption",
+      "title": "Certification or adoption of the final document",
+      "offset_days": 400,
+      "milestone_type": "decision",
+      "phase_code": "environmental",
+      "summary": "The decision-making body certifies or adopts the final document and makes its findings."
+    }
+  ]
+}

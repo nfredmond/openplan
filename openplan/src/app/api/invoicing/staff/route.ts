@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { isOnRoster, loadWorkspaceRoster, type RosterServiceClient } from "@/lib/workspaces/roster";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const STAFF_SELECT =
@@ -133,19 +134,45 @@ export async function POST(request: NextRequest) {
 
     // A staff row may optionally link to a workspace member's account; a user
     // outside this workspace is a cross-workspace link and is refused.
+    //
+    // The check goes through the service-role roster helper, NOT the RLS
+    // client. The only SELECT policy on workspace_members is members_read_own
+    // (user_id = auth.uid()), so an RLS lookup of the LINKED user matches only
+    // when the caller links THEMSELVES — this route shipped that way and
+    // answered 400 for every actual teammate, which made
+    // invoicing_staff.user_id unreachable for its purpose. The helper performs
+    // its own caller-membership check before the service-role read.
     if (parsed.data.userId) {
-      const { data: linkedMember, error: linkedMemberError } = await supabase
-        .from("workspace_members")
-        .select("workspace_id, user_id")
-        .eq("workspace_id", parsed.data.workspaceId)
-        .eq("user_id", parsed.data.userId)
-        .maybeSingle();
+      // The structural cast is this repo's documented pattern (clients are
+      // untyped by design); assigning the concrete supabase-js client into the
+      // structural slice trips TS2589.
+      const roster = await loadWorkspaceRoster(
+        createServiceRoleClient() as unknown as RosterServiceClient,
+        user.id,
+        parsed.data.workspaceId,
+        { resolveEmails: false }
+      );
 
-      if (linkedMemberError || !linkedMember) {
+      if (!roster.ok) {
+        // A failed roster read is a failed read, not a non-member: answering
+        // 400 here would accuse a real teammate of not belonging.
+        audit.error("staff_link_roster_read_failed", {
+          workspaceId: parsed.data.workspaceId,
+          linkedUserId: parsed.data.userId,
+          reason: roster.reason,
+          message: roster.message,
+        });
+        return NextResponse.json(
+          { error: "Could not verify the linked user's workspace membership" },
+          { status: 500 }
+        );
+      }
+
+      if (!isOnRoster(roster.members, parsed.data.userId)) {
         audit.warn("staff_user_workspace_mismatch", {
           workspaceId: parsed.data.workspaceId,
           linkedUserId: parsed.data.userId,
-          message: linkedMemberError?.message ?? null,
+          message: null,
         });
         return NextResponse.json({ error: "Linked user is not a member of the requested workspace" }, { status: 400 });
       }

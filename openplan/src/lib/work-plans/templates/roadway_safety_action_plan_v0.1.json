@@ -1,0 +1,107 @@
+{
+  "template_id": "roadway_safety_action_plan_v0.1",
+  "template_name": "Roadway safety action plan",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "safety_plan",
+    "safety_action_plan",
+    "roadway_safety_plan"
+  ],
+  "description": "A data-driven plan that names where and why people are being killed and seriously injured on the road network, and commits the agency to a set of countermeasures.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Grant programs that recognize safety plans commonly expect a formally adopted document, a standing safety committee and a public engagement record. Confirm what your funder asks for before relying on this sequence.",
+    "The analysis assumes you can obtain several years of collision records for your area. Where those records are incomplete, say so in the plan rather than presenting a partial network as the whole picture.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and data agreement",
+      "offset_days": 14,
+      "summary": "The task list, the schedule, and written agreement on which collision and roadway datasets will be used and who supplies them."
+    },
+    {
+      "key": "crash_analysis",
+      "title": "Collision analysis and high-injury network",
+      "offset_days": 75,
+      "summary": "Where serious and fatal injuries concentrate, by mode and by road type, with the years and data source stated."
+    },
+    {
+      "key": "systemic_analysis",
+      "title": "Systemic risk assessment",
+      "offset_days": 110,
+      "summary": "The roadway characteristics associated with severe outcomes, so locations without a crash history are not treated as safe."
+    },
+    {
+      "key": "engagement_summary",
+      "title": "Community engagement summary",
+      "offset_days": 150,
+      "summary": "Where people report feeling unsafe, mapped alongside the recorded data, including the places the data misses."
+    },
+    {
+      "key": "countermeasure_toolbox",
+      "title": "Countermeasure toolbox and project list",
+      "offset_days": 190,
+      "summary": "Proven treatments matched to the crash and risk patterns found, assembled into a prioritized project list."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft safety action plan",
+      "offset_days": 240,
+      "summary": "The complete draft, including the implementation and evaluation commitments."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final safety action plan",
+      "offset_days": 300,
+      "summary": "The draft revised after review, ready for the adopting body."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 10,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, data access and the roles of police, public works, health and school partners confirmed."
+    },
+    {
+      "key": "safety_committee_convened",
+      "title": "Safety committee convened",
+      "offset_days": 45,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "The standing group that will carry the plan after adoption meets for the first time."
+    },
+    {
+      "key": "public_input_opens",
+      "title": "Public input on safety concerns opens",
+      "offset_days": 120,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "Residents can report unsafe locations while the analysis is still open to what they say."
+    },
+    {
+      "key": "draft_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 255,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft plan is released for comment."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the plan and the safety commitment",
+      "offset_days": 320,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "The governing body adopts the plan, which is usually what a funder is looking for."
+    }
+  ]
+}

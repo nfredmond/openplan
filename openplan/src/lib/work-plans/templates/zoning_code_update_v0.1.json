@@ -1,0 +1,124 @@
+{
+  "template_id": "zoning_code_update_v0.1",
+  "template_name": "Zoning code update",
+  "version": "0.1",
+  "practice_area": "land_use",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "zoning_code_update",
+    "development_code_update",
+    "zoning_ordinance_update"
+  ],
+  "description": "A rewrite or major amendment of a zoning or development code: diagnosis, outline, module drafts, the map, public review and adoption.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "A code update is drafted in modules because reviewing a whole code at once produces no useful comment. The module drafts are deliberately separate deliverables.",
+    "The map is the part the public reacts to. Releasing standards without the map that applies them produces review comments about the wrong thing.",
+    "Adoption procedure, notice and hearing requirements for a code change are set locally and by state or national law. None are stated here.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "diagnosis_report",
+      "title": "Code diagnosis report",
+      "offset_days": 90,
+      "summary": "What the current code blocks, allows, contradicts or leaves ambiguous, tested against the adopted plan."
+    },
+    {
+      "key": "annotated_outline",
+      "title": "Annotated outline of the new code",
+      "offset_days": 150,
+      "summary": "The structure of the new code, agreed before any section is written."
+    },
+    {
+      "key": "module_drafts",
+      "title": "Module drafts — zones, uses and development standards",
+      "offset_days": 270,
+      "summary": "The substantive modules drafted for review one at a time."
+    },
+    {
+      "key": "procedures_module",
+      "title": "Administration and procedures module",
+      "offset_days": 330,
+      "summary": "Applications, review paths, decision bodies, appeals and nonconformities."
+    },
+    {
+      "key": "zoning_map_draft",
+      "title": "Draft zoning map and consistency review",
+      "offset_days": 390,
+      "summary": "The map as it would apply, with every proposed change checked against the adopted plan."
+    },
+    {
+      "key": "public_review_draft",
+      "title": "Public review draft code",
+      "offset_days": 450,
+      "summary": "The assembled code and map released together for public review."
+    },
+    {
+      "key": "final_code",
+      "title": "Final code and map for adoption",
+      "offset_days": 570,
+      "summary": "The draft revised after review, in the form the adopting body will act on."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule and the review structure confirmed."
+    },
+    {
+      "key": "stakeholder_interviews",
+      "title": "Stakeholder interviews complete",
+      "offset_days": 60,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "Applicants, staff, builders and neighbourhood groups describe how the current code behaves in practice."
+    },
+    {
+      "key": "staff_working_sessions",
+      "title": "Staff working sessions on the modules",
+      "offset_days": 300,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The people who will administer the code test each module against real cases."
+    },
+    {
+      "key": "advisory_workshops",
+      "title": "Advisory body workshops",
+      "offset_days": 420,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The recommending body works through the draft code and map."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft code opens",
+      "offset_days": 465,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft code and map are released for comment."
+    },
+    {
+      "key": "hearings",
+      "title": "Public hearings on the code and map",
+      "offset_days": 525,
+      "milestone_type": "hearing",
+      "phase_code": "outreach",
+      "summary": "The hearings held before adoption."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the code and map",
+      "offset_days": 585,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "The governing body adopts the new code."
+    }
+  ]
+}

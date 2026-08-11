@@ -2,6 +2,11 @@ import { AlertTriangle, MessagesSquare, Scale, Siren } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
 import {
+  RecordAssigneeChip,
+  type ProjectAssigneeRoster,
+} from "@/components/projects/record-assignee";
+import { RecordAssigneeControl } from "@/components/projects/record-assignee-control";
+import {
   fmtDateTime,
   titleize,
   toneForDecision,
@@ -23,6 +28,19 @@ type ProjectRiskAndDecisionLogProps = {
    * puts that mistake in front of the compiler instead of in front of a planner.
    */
   projectId: string;
+  /**
+   * The PROJECT's workspace, for the issue lane's reassignment picker. Required
+   * for the same reason `projectId` is — a roster cannot be loaded without it,
+   * and an optional prop the page forgot to pass would render a picker that
+   * silently never works.
+   */
+  workspaceId: string;
+  /**
+   * Whether this member may change records. Required, not optional: see the
+   * delivery board's prop of the same name for why a default in either
+   * direction is a defect.
+   */
+  canWrite: boolean;
   risks: RiskRow[] | null;
   issues: IssueRow[] | null;
   decisions: DecisionRow[] | null;
@@ -39,6 +57,15 @@ type ProjectRiskAndDecisionLogProps = {
   issuesReadFailed?: boolean;
   decisionsReadFailed?: boolean;
   meetingsReadFailed?: boolean;
+  /**
+   * The workspace roster, or an explicit failure, for the issue lane's
+   * assignee. Required for the same reason `projectId` is: an optional prop the
+   * page forgot to pass would render assigned issues as owned by nobody, and
+   * nothing would fail. Risks, decisions and meetings carry no assignee — they
+   * have no due date, so a personal queue could never surface them and an
+   * assignee column on them would be an unread promise.
+   */
+  assigneeRoster: ProjectAssigneeRoster;
 };
 
 /** The one sentence every unreadable lane shows, in the lane's own words. */
@@ -48,6 +75,8 @@ function readFailureCopy(label: string): string {
 
 export function ProjectRiskAndDecisionLog({
   projectId,
+  workspaceId,
+  canWrite,
   risks,
   issues,
   decisions,
@@ -56,6 +85,7 @@ export function ProjectRiskAndDecisionLog({
   issuesReadFailed = false,
   decisionsReadFailed = false,
   meetingsReadFailed = false,
+  assigneeRoster,
 }: ProjectRiskAndDecisionLogProps) {
   return (
     <>
@@ -132,6 +162,9 @@ export function ProjectRiskAndDecisionLog({
                       <StatusBadge tone={toneForRiskSeverity(issue.severity)}>{titleize(issue.severity)}</StatusBadge>
                       <StatusBadge tone="neutral">{titleize(issue.status)}</StatusBadge>
                       {issue.owner_label ? <StatusBadge tone="neutral">{issue.owner_label}</StatusBadge> : null}
+                      {/* The teammate lane, beside the free-text owner above —
+                          both render, neither stands in for the other. */}
+                      <RecordAssigneeChip roster={assigneeRoster} assigneeUserId={issue.assignee_user_id} />
                     </div>
                     <div className="space-y-1.5">
                       <h3 className="module-record-title">{issue.title}</h3>
@@ -145,6 +178,16 @@ export function ProjectRiskAndDecisionLog({
                         currentStatus={issue.status}
                       />
                     </div>
+                    {/* Reassign or unassign — the chip above only READS. Risks
+                        get no such control: they carry no assignee column. */}
+                    <RecordAssigneeControl
+                      projectId={projectId}
+                      workspaceId={workspaceId}
+                      recordId={issue.id}
+                      recordType="issue"
+                      currentAssigneeUserId={issue.assignee_user_id}
+                      canWrite={canWrite}
+                    />
                   </div>
                 </div>
               ))}

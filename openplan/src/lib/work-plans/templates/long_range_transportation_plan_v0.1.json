@@ -1,0 +1,119 @@
+{
+  "template_id": "long_range_transportation_plan_v0.1",
+  "template_name": "Long-range transportation plan update",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "kickoff",
+  "applies_to_plan_types": [
+    "regional_plan",
+    "long_range_transportation_plan",
+    "regional_transportation_plan"
+  ],
+  "description": "A multi-year update of a region's long-range transportation plan: forecasts, scenarios, policies, a financially constrained project list, and the public process that gets it adopted.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "This is a long update — roughly two and a half years from kickoff to adoption. Regions that update on a shorter cycle should compress the offsets rather than delete the steps.",
+    "The financial element and the project lists are the parts most tightly governed by whoever funds the plan. Nothing here states what your funder requires; confirm it and add the records it implies.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan_and_participation",
+      "title": "Work plan and public participation plan",
+      "offset_days": 45,
+      "summary": "The schedule for the update and the written commitment on how the public and partner agencies will be involved."
+    },
+    {
+      "key": "baseline_conditions",
+      "title": "Regional baseline conditions report",
+      "offset_days": 150,
+      "summary": "Travel, land use, demographics, safety and system condition as they stand at the start of the update."
+    },
+    {
+      "key": "forecasts",
+      "title": "Growth forecasts and travel model results",
+      "offset_days": 270,
+      "summary": "The demographic and travel forecasts the plan rests on, with the assumptions and the model's limitations stated."
+    },
+    {
+      "key": "scenarios",
+      "title": "Scenario analysis report",
+      "offset_days": 390,
+      "summary": "How the region performs under alternative growth and investment patterns, measured against the plan's own performance measures."
+    },
+    {
+      "key": "preferred_scenario",
+      "title": "Preferred scenario and policy framework",
+      "offset_days": 450,
+      "summary": "The direction chosen, and the policies that follow from it."
+    },
+    {
+      "key": "financial_element",
+      "title": "Financial element",
+      "offset_days": 540,
+      "summary": "Revenue assumptions and the demonstration that the plan's costs stay inside them, with every assumption sourced."
+    },
+    {
+      "key": "project_lists",
+      "title": "Short-term and long-term project lists",
+      "offset_days": 570,
+      "summary": "The programmed and planned projects with their costs, funding sources and horizon periods."
+    },
+    {
+      "key": "public_draft_plan",
+      "title": "Public review draft plan",
+      "offset_days": 660,
+      "summary": "The complete document assembled for public review."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final plan document",
+      "offset_days": 780,
+      "summary": "The draft revised in response to comments, with the comment-response record attached."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Update kickoff",
+      "offset_days": 0,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule, committee structure and the participation plan confirmed."
+    },
+    {
+      "key": "scenario_workshops",
+      "title": "Regional scenario workshops",
+      "offset_days": 420,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The public and member agencies weigh the alternatives while the preferred direction is still open."
+    },
+    {
+      "key": "draft_release",
+      "title": "Public review draft released",
+      "offset_days": 675,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft plan and its supporting analysis are published for comment."
+    },
+    {
+      "key": "public_hearings",
+      "title": "Public hearings on the draft plan",
+      "offset_days": 720,
+      "milestone_type": "hearing",
+      "phase_code": "outreach",
+      "summary": "The formal hearings held before adoption."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption of the updated plan",
+      "offset_days": 795,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "Adoption by the region's governing board."
+    }
+  ]
+}

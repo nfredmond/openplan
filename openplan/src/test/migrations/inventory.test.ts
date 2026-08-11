@@ -212,16 +212,27 @@ const EXPECTED = {
   // So: +1 policy, +1 permissive, +0 restrictive, +0 permissiveWrites,
   // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
   // `views` holds at 7 and `expanded` at 264.
-  policies: 585,
-  permissive: 342,
-  restrictive: 243,
-  permissiveWrites: 223,
+  //
+  // 20260811000007 (work_notifications) adds ONE table — one deadline reminder
+  // for one person, written by the daily sweep with the service role. FIVE
+  // policies: a recipient-scoped SELECT, a recipient-scoped mark-read UPDATE,
+  // and the three restrictive `_writer_only_*` gates that a role-blind
+  // workspace write requires. NO permissive INSERT and no permissive DELETE:
+  // the row is evidence that someone was told, so its subject may not author or
+  // destroy it.
+  // So: +5 policies, +2 permissive, +3 restrictive, +1 permissiveWrites,
+  // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
+  // `views` holds at 7 and `expanded` at 264 — every policy here is literal.
+  policies: 590,
+  permissive: 344,
+  restrictive: 246,
+  permissiveWrites: 224,
   expanded: 264,
-  tablesWithPolicies: 119,
-  relations: 139,
-  tables: 132,
+  tablesWithPolicies: 120,
+  relations: 140,
+  tables: 133,
   views: 7,
-  rlsEnabledTables: 132,
+  rlsEnabledTables: 133,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

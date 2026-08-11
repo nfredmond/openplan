@@ -55,6 +55,8 @@ const EXTERNAL_CALLERS: Record<string, string> = {
     "Vercel Cron, scheduled in vercel.json. Closes transit-feed ingests that stopped responding, so a version row written `pending` before any network work cannot sit on a Data Hub card forever. Authenticated by CRON_SECRET, never from a session.",
   "api/cron/reap-model-runs":
     "Vercel Cron, scheduled in vercel.json. Recorded here EXPLICITLY: it was passing only because `src/lib/models/worker-backed-launch.ts` happens to mention the path inside backticks in a docblock, which this guard's own call-site pattern accepts. Rewording that comment would have broken the build for a reason nobody could have guessed.",
+  "api/cron/sweep-deadlines":
+    "Vercel Cron, scheduled in vercel.json at 0 13 * * *. The daily deadline digest: it writes one work_notifications row per person per due record and sends the email when a transport is configured. Authenticated by CRON_SECRET compared with timingSafeSecretEquals, never from a session — nothing in the product calls it, and nothing should, because a user-triggered sweep would let one person mail the whole team.",
   "api/aerial/missions/[missionId]/export":
     "410 Gone tombstone for the superseded perimeter export (see src/lib/aerial/dji-export.ts) — its only callers are pre-supersession bookmarks and scripts OUTSIDE this codebase, which the 410 body redirects to the flight-plan export lane. NOTE (2026-08-11, measured): this entry is NOT what lets the route pass the orphan scan — the generous tail matcher accepts the bare word `export`, which appears in every TS module, so five aerial components match it spuriously. Deliberateness is therefore carried by the named tombstone assertion below, which fails if this entry is ever deleted.",
 };

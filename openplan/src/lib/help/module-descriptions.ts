@@ -14,6 +14,8 @@
 export const MODULE_DESCRIPTIONS: Record<string, string> = {
   "/dashboard":
     "Your workspace home. It shows what is configured, what is waiting on you across every module, your run history, and — for owners and admins — what this deployment is currently able to do.",
+  "/my-work":
+    "Everything with a date on it, in one queue: what is assigned to you, what nobody has picked up, which projects are held at a stage gate, and the grant, obligation and invoice deadlines the workspace is carrying.",
   "/projects":
     "One record per project, from scoping through delivery: milestones, decisions, risks, issues, meetings, funding, and the stage-gate board your delivery process follows.",
   "/reports":

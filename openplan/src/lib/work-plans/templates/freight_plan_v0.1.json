@@ -1,0 +1,106 @@
+{
+  "template_id": "freight_plan_v0.1",
+  "template_name": "Freight mobility plan",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "freight_plan",
+    "goods_movement_plan"
+  ],
+  "description": "A plan for how goods move through a place: the network that carries them, the bottlenecks and conflicts, and the improvements worth pursuing.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Freight work depends on data held by private carriers and shippers. Where you cannot obtain it, say which questions remain unanswered rather than filling the gap with assumptions.",
+    "Communities next to freight facilities carry most of the impacts and are usually the least represented in freight planning. The engagement deliverable exists to make that a named task.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and data strategy",
+      "offset_days": 14,
+      "summary": "The task list, the schedule, and how industry data will be obtained, protected and used."
+    },
+    {
+      "key": "network_inventory",
+      "title": "Freight network, facilities and land use inventory",
+      "offset_days": 75,
+      "summary": "Truck routes, rail, terminals, warehousing and the land uses around them."
+    },
+    {
+      "key": "flow_analysis",
+      "title": "Goods movement flow and bottleneck analysis",
+      "offset_days": 120,
+      "summary": "Where freight moves, where it slows, and where it conflicts with other users, including the last mile."
+    },
+    {
+      "key": "engagement_summary",
+      "title": "Industry and community engagement summary",
+      "offset_days": 150,
+      "summary": "What carriers, shippers and neighbours each say about the same corridors."
+    },
+    {
+      "key": "strategies",
+      "title": "Issues, strategies and candidate improvements",
+      "offset_days": 195,
+      "summary": "The problems worth solving, the strategies available, and the projects that follow."
+    },
+    {
+      "key": "draft_plan",
+      "title": "Draft freight plan",
+      "offset_days": 240,
+      "summary": "The complete draft assembled for review."
+    },
+    {
+      "key": "final_plan",
+      "title": "Final freight plan",
+      "offset_days": 300,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 10,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, data agreements and the advisory structure confirmed."
+    },
+    {
+      "key": "advisory_group",
+      "title": "Freight advisory group convened",
+      "offset_days": 45,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Carriers, shippers, terminal operators and community representatives meet as one group."
+    },
+    {
+      "key": "site_visits",
+      "title": "Facility site visits and interviews complete",
+      "offset_days": 90,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "The network seen from inside the operations that use it."
+    },
+    {
+      "key": "public_review_opens",
+      "title": "Public review of the draft opens",
+      "offset_days": 255,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The draft is released for comment, including to the neighbourhoods affected."
+    },
+    {
+      "key": "adoption",
+      "title": "Adoption or acceptance of the plan",
+      "offset_days": 315,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "The decision that closes the plan."
+    }
+  ]
+}

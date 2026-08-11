@@ -46,7 +46,8 @@ import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
 import { loadEngagementCampaignsCoveringProject } from "@/lib/engagement/campaign-projects";
 import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, parseSortableDate, submittalPriority } from "./_components/_ordering";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { loadProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
 import { loadRtpHorizonBandsByCycle } from "@/lib/rtp/financial-element-queries";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -61,6 +62,7 @@ import { ProjectDocumentsPanel } from "./_components/project-documents-panel";
 import { buildProjectReportQueueItems } from "./_components/_report-queue";
 import {
   loadProjectRecordLanes,
+  loadProjectScheduleLanes,
   type ProjectRecordLaneSupabaseLike,
 } from "./_components/_record-lanes";
 import { ProjectUnreadableNotice } from "./_components/project-unreadable-notice";
@@ -88,7 +90,6 @@ import type {
   FundingAwardRow,
   FundingOpportunityRow,
   LinkedDatasetItem,
-  MilestoneRow,
   ProjectFundingProfileRow,
   ProjectReportRow,
   ProjectRow,
@@ -96,7 +97,6 @@ import type {
   RecentRun,
   ReportArtifactRow,
   RtpCycleRow,
-  SubmittalRow,
   TimelineItem,
   WorkspaceRow,
 } from "./_components/_types";
@@ -454,25 +454,20 @@ export default async function ProjectDetailPage({
   });
   const { decisions: recentGateDecisions, summary: stageGateSummary } = stageGateBoard;
 
-  const milestoneResult = await supabase
-    .from("project_milestones")
-    .select("id, title, summary, milestone_type, phase_code, status, owner_label, target_date, actual_date, notes, created_at")
-    .eq("project_id", project.id)
-    .order("target_date", { ascending: true })
-    .limit(8);
-  const milestones = looksLikePendingSchema(milestoneResult.error?.message) ? [] : ((milestoneResult.data ?? []) as MilestoneRow[]);
-  const projectMilestonesPending = looksLikePendingSchema(milestoneResult.error?.message);
-  const projectMilestonesReadFailed = projectMilestonesPending ? false : reads.check("this project's milestones", milestoneResult);
-
-  const submittalResult = await supabase
-    .from("project_submittals")
-    .select("id, title, submittal_type, status, agency_label, reference_number, due_date, submitted_at, review_cycle, notes, created_at")
-    .eq("project_id", project.id)
-    .order("due_date", { ascending: true })
-    .limit(8);
-  const submittals = looksLikePendingSchema(submittalResult.error?.message) ? [] : ((submittalResult.data ?? []) as SubmittalRow[]);
-  const projectSubmittalsPending = looksLikePendingSchema(submittalResult.error?.message);
-  const projectSubmittalsReadFailed = projectSubmittalsPending ? false : reads.check("this project's submittals", submittalResult);
+  // The two dated control lanes. Projections, caps and the pending-vs-failed
+  // distinction all live in the loader — see _record-lanes.ts.
+  const {
+    milestones,
+    milestonesPending: projectMilestonesPending,
+    milestonesReadFailed: projectMilestonesReadFailed,
+    submittals,
+    submittalsPending: projectSubmittalsPending,
+    submittalsReadFailed: projectSubmittalsReadFailed,
+  } = await loadProjectScheduleLanes(
+    supabase as unknown as ProjectRecordLaneSupabaseLike,
+    project.id,
+    reads
+  );
 
   // Budget & pace inputs: ALL deliverables (with their budget columns), the
   // stated project budget, the spend ledger, and billed client-invoice lines —
@@ -502,6 +497,18 @@ export default async function ProjectDetailPage({
   // The board and timeline keep their original six-row recency window; the
   // budget snapshot above deliberately sees the full deliverable list.
   const deliverables = budgetInputs.deliverables.slice(0, 6);
+
+  // WHO IS ON THIS TEAM, so an assignee id on a deliverable, milestone,
+  // submittal or issue becomes a person. Service role behind the loader's own
+  // caller-membership check, and a failed read comes back as an explicit
+  // failure rather than an empty team — see src/lib/projects/assignee-roster.ts
+  // for why those two must not be conflated.
+  const assigneeRoster = await loadProjectAssigneeRoster(
+    createServiceRoleClient(),
+    user.id,
+    project.workspace_id,
+    reads
+  );
 
   // The four narrative record lanes, each of which renders its own
   // "No X recorded yet." and feeds a header count. See _record-lanes.ts for why
@@ -1288,7 +1295,7 @@ export default async function ProjectDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-6">
-          <ProjectRecordComposer projectId={project.id} />
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} />
           <WorkspaceRuntimeCue summary={operationsSummary} />
           <WorkspaceCommandBoard
             summary={operationsSummary}
@@ -1384,6 +1391,9 @@ export default async function ProjectDetailPage({
         prioritizedProjectInvoices={prioritizedProjectInvoices}
         deliverables={deliverables}
         budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
+        assigneeRoster={assigneeRoster}
+        deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
+        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
       />
 
       <ProjectBudgetPanel
@@ -1402,6 +1412,8 @@ export default async function ProjectDetailPage({
 
       <ProjectRiskAndDecisionLog
         projectId={project.id}
+        workspaceId={project.workspace_id}
+        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
         risks={risks}
         issues={issues}
         decisions={decisions}
@@ -1410,6 +1422,7 @@ export default async function ProjectDetailPage({
         issuesReadFailed={issuesReadFailed}
         decisionsReadFailed={decisionsReadFailed}
         meetingsReadFailed={meetingsReadFailed}
+        assigneeRoster={assigneeRoster}
       />
 
       <ProjectEvidenceAndActivity

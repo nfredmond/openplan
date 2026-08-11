@@ -1,0 +1,106 @@
+{
+  "template_id": "feasibility_study_v0.1",
+  "template_name": "Feasibility study",
+  "version": "0.1",
+  "practice_area": "transportation",
+  "anchor": "notice_to_proceed",
+  "applies_to_plan_types": [
+    "feasibility_study",
+    "alternatives_analysis"
+  ],
+  "description": "A focused study of whether a proposed project can work: purpose and need, concepts, evaluation against agreed criteria, and a recommendation the sponsor can act on.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "The single most important record here is the criteria milestone. A study whose evaluation criteria are agreed after the concepts exist will be argued about rather than used.",
+    "It stops short of design. A study that recommends a project usually hands off to environmental review and then to design — those are separate work plans.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "work_plan",
+      "title": "Work plan and schedule",
+      "offset_days": 14,
+      "summary": "The task list, the schedule and the decision the study is meant to inform."
+    },
+    {
+      "key": "purpose_and_need",
+      "title": "Purpose and need statement",
+      "offset_days": 45,
+      "summary": "The problem in the sponsor's own words, agreed before concepts are drawn."
+    },
+    {
+      "key": "existing_conditions",
+      "title": "Existing conditions summary",
+      "offset_days": 75,
+      "summary": "What is true at the site today — physical, operational, environmental and ownership — with sources named."
+    },
+    {
+      "key": "concepts",
+      "title": "Concept alternatives",
+      "offset_days": 120,
+      "summary": "The concepts considered, each described well enough to be evaluated and costed at a planning level by your team."
+    },
+    {
+      "key": "evaluation",
+      "title": "Evaluation matrix and findings",
+      "offset_days": 150,
+      "summary": "Every concept scored against the agreed criteria, with the reasoning shown."
+    },
+    {
+      "key": "draft_report",
+      "title": "Draft feasibility report",
+      "offset_days": 195,
+      "summary": "The complete draft, including the recommendation and what it depends on."
+    },
+    {
+      "key": "final_report",
+      "title": "Final feasibility report",
+      "offset_days": 255,
+      "summary": "The draft revised after review."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "kickoff_meeting",
+      "title": "Project kickoff meeting",
+      "offset_days": 7,
+      "milestone_type": "schedule",
+      "phase_code": "initiation",
+      "summary": "Scope, schedule and the decision to be informed confirmed."
+    },
+    {
+      "key": "criteria_agreed",
+      "title": "Evaluation criteria agreed",
+      "offset_days": 40,
+      "milestone_type": "decision",
+      "phase_code": "initiation",
+      "summary": "The criteria and their weighting settled in writing before concepts are compared."
+    },
+    {
+      "key": "stakeholder_review",
+      "title": "Stakeholder review of concepts",
+      "offset_days": 165,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "Affected agencies and owners see the concepts before the draft recommends one."
+    },
+    {
+      "key": "public_information_meeting",
+      "title": "Public information meeting",
+      "offset_days": 210,
+      "milestone_type": "schedule",
+      "phase_code": "outreach",
+      "summary": "The concepts and the recommendation shown publicly."
+    },
+    {
+      "key": "acceptance",
+      "title": "Study accepted by the sponsor",
+      "offset_days": 270,
+      "milestone_type": "decision",
+      "phase_code": "closeout",
+      "summary": "The sponsor accepts the study and decides whether to proceed."
+    }
+  ]
+}

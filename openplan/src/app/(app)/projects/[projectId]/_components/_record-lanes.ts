@@ -1,5 +1,13 @@
 import type { ReadFailureLog } from "@/lib/ui/read-failures";
-import type { DecisionRow, IssueRow, MeetingRow, RiskRow } from "./_types";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import type {
+  DecisionRow,
+  IssueRow,
+  MeetingRow,
+  MilestoneRow,
+  RiskRow,
+  SubmittalRow,
+} from "./_types";
 
 /**
  * The four narrative record lanes of a project control room — risks, issues,
@@ -67,7 +75,7 @@ const LANES = {
   },
   issues: {
     table: "project_issues",
-    columns: "id, title, description, severity, status, owner_label, created_at",
+    columns: "id, title, description, severity, status, owner_label, assignee_user_id, created_at",
     label: "project issues",
   },
   decisions: {
@@ -125,5 +133,72 @@ export async function loadProjectRecordLanes(
     issuesReadFailed: issues.failed,
     decisionsReadFailed: decisions.failed,
     meetingsReadFailed: meetings.failed,
+  };
+}
+
+/**
+ * The two DATED control lanes — milestones and submittals.
+ *
+ * They lived inline on the project page until the assignee column arrived and
+ * pushed that file past its line cap, which was the nudge to put them where
+ * they belonged anyway: beside the other record projections, in the module
+ * whose header explains why a `.select()` string is kept as a greppable
+ * literal. Their shape differs from the four lanes above — each is ordered by
+ * its own date, capped at 8, and tolerates a PENDING MIGRATION separately from
+ * a failed read — so they get their own loader rather than another LANES entry.
+ *
+ * Three outcomes per lane, and the page renders different words for each:
+ * pending (apply the migration), failed (say so), or an answer.
+ */
+const SCHEDULE_LANE_LIMIT = 8;
+
+const MILESTONE_COLUMNS =
+  "id, title, summary, milestone_type, phase_code, status, owner_label, assignee_user_id, target_date, actual_date, notes, created_at";
+const SUBMITTAL_COLUMNS =
+  "id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at";
+
+export type ProjectScheduleLanes = {
+  milestones: MilestoneRow[];
+  milestonesPending: boolean;
+  milestonesReadFailed: boolean;
+  submittals: SubmittalRow[];
+  submittalsPending: boolean;
+  submittalsReadFailed: boolean;
+};
+
+export async function loadProjectScheduleLanes(
+  supabase: ProjectRecordLaneSupabaseLike,
+  projectId: string,
+  reads: ReadFailureLog
+): Promise<ProjectScheduleLanes> {
+  const milestoneResult = await supabase
+    .from("project_milestones")
+    .select(MILESTONE_COLUMNS)
+    .eq("project_id", projectId)
+    .order("target_date", { ascending: true })
+    .limit(SCHEDULE_LANE_LIMIT);
+  const milestonesPending = looksLikePendingSchema(milestoneResult.error?.message);
+  const milestonesReadFailed = milestonesPending
+    ? false
+    : reads.check("this project's milestones", milestoneResult);
+
+  const submittalResult = await supabase
+    .from("project_submittals")
+    .select(SUBMITTAL_COLUMNS)
+    .eq("project_id", projectId)
+    .order("due_date", { ascending: true })
+    .limit(SCHEDULE_LANE_LIMIT);
+  const submittalsPending = looksLikePendingSchema(submittalResult.error?.message);
+  const submittalsReadFailed = submittalsPending
+    ? false
+    : reads.check("this project's submittals", submittalResult);
+
+  return {
+    milestones: milestonesPending ? [] : ((milestoneResult.data ?? []) as MilestoneRow[]),
+    milestonesPending,
+    milestonesReadFailed,
+    submittals: submittalsPending ? [] : ((submittalResult.data ?? []) as SubmittalRow[]),
+    submittalsPending,
+    submittalsReadFailed,
   };
 }

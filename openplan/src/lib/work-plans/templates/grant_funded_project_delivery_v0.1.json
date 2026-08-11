@@ -1,0 +1,115 @@
+{
+  "template_id": "grant_funded_project_delivery_v0.1",
+  "template_name": "Grant-funded project delivery",
+  "version": "0.1",
+  "practice_area": "general",
+  "anchor": "award",
+  "applies_to_plan_types": [
+    "grant_funded_project",
+    "grant_delivery"
+  ],
+  "description": "Delivering a project after the money is awarded: agreement, authorization, procurement, progress reporting, reimbursement and closeout — the administrative spine every grant carries.",
+  "scope_notes": [
+    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the award date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "Offsets run from the award date because that is the date every grant obligation is counted from. Your agreement's own milestone dates override every offset here — enter them as soon as the agreement is executed.",
+    "It is deliberately administrative. The technical work the grant pays for is a separate work plan applied alongside this one.",
+    "Reimbursement timing, allowable costs and records retention are set by the agreement and by whoever audits it. None of them are stated here.",
+    "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+  ],
+  "deliverables": [
+    {
+      "key": "agreement_package",
+      "title": "Executed agreement package and project file",
+      "offset_days": 30,
+      "summary": "The signed agreement, its exhibits, the approved scope and schedule, filed where the whole team can find them."
+    },
+    {
+      "key": "delivery_schedule",
+      "title": "Delivery schedule with funder milestone dates",
+      "offset_days": 45,
+      "summary": "The project schedule with every date the agreement requires entered as a real deadline."
+    },
+    {
+      "key": "procurement_package",
+      "title": "Procurement package",
+      "offset_days": 75,
+      "summary": "The solicitation for the consultant or contractor services the project needs, prepared to the standard the agreement requires."
+    },
+    {
+      "key": "progress_report_first",
+      "title": "First progress report",
+      "offset_days": 120,
+      "summary": "The first report in the format and cadence the agreement sets."
+    },
+    {
+      "key": "reimbursement_package_first",
+      "title": "First reimbursement request package",
+      "offset_days": 135,
+      "summary": "The first invoice with its supporting documentation, assembled the way every later one will be."
+    },
+    {
+      "key": "records_file",
+      "title": "Monitoring and records file",
+      "offset_days": 300,
+      "summary": "The documentation an auditor would ask for, assembled as the work happens rather than at closeout."
+    },
+    {
+      "key": "closeout_package",
+      "title": "Closeout package",
+      "offset_days": 700,
+      "summary": "Final report, final invoice, and the records retained for the period the agreement requires."
+    }
+  ],
+  "milestones": [
+    {
+      "key": "award_accepted",
+      "title": "Award accepted and agreement executed",
+      "offset_days": 0,
+      "milestone_type": "agreement",
+      "phase_code": "initiation",
+      "summary": "The agreement is signed by both parties."
+    },
+    {
+      "key": "authorization_confirmed",
+      "title": "Funding authorization confirmed in writing",
+      "offset_days": 45,
+      "milestone_type": "authorization",
+      "phase_code": "procurement",
+      "summary": "Written confirmation that costs may be incurred — the step that most often gets skipped and most often costs money."
+    },
+    {
+      "key": "contract_award",
+      "title": "Consultant or contractor contract awarded",
+      "offset_days": 105,
+      "milestone_type": "agreement",
+      "phase_code": "procurement",
+      "summary": "The delivery team is under contract."
+    },
+    {
+      "key": "midpoint_review",
+      "title": "Midpoint progress review with the funder",
+      "offset_days": 365,
+      "milestone_type": "schedule",
+      "phase_code": "other",
+      "summary": "Scope, schedule and spend reviewed while there is still time to change them."
+    },
+    {
+      "key": "final_invoice",
+      "title": "Final invoice submitted",
+      "offset_days": 720,
+      "milestone_type": "invoice",
+      "phase_code": "closeout",
+      "summary": "The last reimbursement request goes in."
+    },
+    {
+      "key": "closeout_accepted",
+      "title": "Closeout accepted by the funder",
+      "offset_days": 760,
+      "milestone_type": "closeout",
+      "phase_code": "closeout",
+      "summary": "The funder confirms the project is complete and the file may close."
+    }
+  ]
+}
