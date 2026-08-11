@@ -19,6 +19,60 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.14.0 — 2026-08-11
+
+**Two migrations are required before the app deploys: `20260811000006` and
+`20260811000007`.** The first adds one nullable column to four project record
+tables; the second creates the reminder table. Both additive and safe against
+a live database. **Also new: a scheduled job.** `/api/cron/sweep-deadlines`
+runs daily at 13:00 UTC and needs `CRON_SECRET` set, exactly like the two
+existing reapers. Without it, nothing breaks — reminders simply never
+generate.
+
+### Work has an owner
+
+Deliverables, milestones, submittals, and issues can now be assigned to a
+teammate — and reassigned or cleared later from the project board. The old
+free-text owner field stays for people outside your workspace (a
+subconsultant, an agency contact with no login), and both show side by side.
+When someone leaves the workspace, their work says "Unassigned — previously a
+member" rather than showing a blank or a name that no longer means anything,
+and it surfaces as work that needs picking up.
+
+### My Work
+
+A new daily page: everything assigned to you across every project, projects
+blocked at a stage gate, and the workspace's own deadlines — grant decisions,
+award obligation dates, invoice windows. Switch between what's assigned to
+you, what nobody has picked up, and everything on your projects.
+
+### Deadline reminders
+
+One digest a day per person: what's due within a week and everything already
+overdue, in your notification inbox and by email where email is configured.
+Running the sweep twice in a day cannot send it twice.
+
+### A portfolio view, and work plans that start full
+
+The projects page opens with a table across every project — phase, budget
+burn, next deadline, open assignments. A budget with incomplete spend records
+shows "—" instead of a misleading number. And **23 starter work plans** now
+ship with OpenPlan, covering transportation practice (corridor study, safety
+action plan, active transportation, transit development, long-range plan,
+programming cycle, complete streets, travel demand management, freight,
+feasibility, grant-funded delivery, environmental review) and land-use
+practice (comprehensive plan, specific/area plan, zoning update, housing
+needs, annexation, design guidelines, downtown revitalization, parks and open
+space, climate and hazard, historic preservation). Pick one, give it a start
+date, and the deliverables and milestones land on the project ready to edit.
+They are starting points drawn from standard practice, not requirements —
+each says so, and none of them names who does the work.
+
+### Fixed
+
+- Linking an invoicing staff record to a teammate has never worked; the
+  membership check could only ever see the person making the request. Fixed.
+
 ## 0.13.0 — 2026-08-11
 
 **One migration is required before the app deploys: `20260811000005`.** It

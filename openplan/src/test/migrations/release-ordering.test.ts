@@ -108,6 +108,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260811000005_document_library_stored_kinds.sql",
     migrationsAtRelease: 184,
   },
+  // 0.14.0 — assignees, My Work, deadline digests, portfolio, work-plan templates.
+  {
+    tag: "0.14.0",
+    lastMigration: "20260811000007_work_notifications.sql",
+    migrationsAtRelease: 186,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
