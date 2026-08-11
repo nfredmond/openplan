@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { ArrowLeft, Download, Hexagon, PlaneTakeoff } from "lucide-react";
+import { ArrowLeft, Hexagon, PlaneTakeoff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -11,6 +11,7 @@ import { Inspector, InspectorField, InspectorGroup, InspectorEmpty } from "@/com
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { AerialProcessingFreshness } from "@/components/aerial/aerial-processing-freshness";
+import { FlightPlanEditor } from "@/components/aerial/flight-plan-editor";
 import { AerialProcessingJobsPanel } from "@/components/aerial/aerial-processing-jobs-panel";
 import { AerialProcessingRequestForm } from "@/components/aerial/aerial-processing-request";
 import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
@@ -479,13 +480,13 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
               <InspectorField
                 label="Posture cached"
                 value={formatDateTime(projectAerialPostureUpdatedAt)}
-                hint="Saved on the project and refreshed whenever an evidence package changes."
+                hint="Saved on the project and refreshed when a mission is logged, a mission's status changes, or an evidence package changes."
               />
             </>
           ) : (
             <InspectorEmpty
               title="Posture not yet cached"
-              description="Will populate after the first evidence-package mutation on this project's missions."
+              description="Will populate the next time a mission is logged for this project, a mission's status changes, or an evidence package changes. This mission predates that writeback."
             />
           )}
         </InspectorGroup>
@@ -520,8 +521,10 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             // "or request ODM processing" used to close this line, but nothing
             // in this section requests anything. Requesting imagery processing
             // now has its own section below, so this one describes only what it
-            // actually does.
-            description="Draw the area of interest and export a DJI waypoint file for pilot handoff."
+            // actually does. The old "Export DJI JSON" perimeter export that
+            // lived here is superseded by the flight-plan section below, which
+            // exports the actual survey grid.
+            description="Draw the area of interest the flight plan below will fill."
             trailing={
               <StatusBadge tone={hasAoi ? "success" : "neutral"}>
                 {hasAoi ? `${aoiVertexCount} vertex polygon` : "No AOI yet"}
@@ -535,15 +538,19 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
                   {hasAoi ? "Edit AOI" : "Draw AOI"}
                 </Link>
               </Button>
-              {hasAoi ? (
-                <Button asChild variant="outline">
-                  <a href={`/api/aerial/missions/${mission.id}/export?format=dji-json`}>
-                    <Download className="h-4 w-4" />
-                    Export DJI JSON
-                  </a>
-                </Button>
-              ) : null}
             </div>
+          </WorksurfaceSection>
+          <WorksurfaceSection
+            id="aerial-mission-flight-plan"
+            label="Flight plan"
+            title="Survey flight plan & exports"
+            description="Plan the photogrammetry flight for this mission's AOI: camera, ground resolution or altitude, overlaps, speed, and margin. Generate the grid, review every assumption, save it, then export for DJI Pilot 2, Litchi, or any GIS."
+          >
+            <FlightPlanEditor
+              missionId={mission.id}
+              aoiGeojson={mission.aoi_geojson ?? null}
+              canEdit={!isReadOnlyWorkspaceRole(membership.role)}
+            />
           </WorksurfaceSection>
           <WorksurfaceSection
             id="aerial-mission-processing"

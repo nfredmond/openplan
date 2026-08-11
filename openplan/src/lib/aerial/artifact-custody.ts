@@ -172,10 +172,12 @@ export type AerialCustodyFailureCode = (typeof AERIAL_CUSTODY_FAILURE_CODES)[num
  * exported so a test can assert the string itself.
  */
 export const AERIAL_ARTIFACT_CUSTODY_COLUMNS =
-  "kind, ordinal, state, storage_bucket, storage_path, byte_size, checksum_sha256, content_type, declared_size_bytes, source_expires_at, source_host, failure_code, failure_detail, attempt_count, held_at";
+  "id, kind, ordinal, state, storage_bucket, storage_path, byte_size, checksum_sha256, content_type, declared_size_bytes, source_expires_at, source_host, failure_code, failure_detail, attempt_count, held_at";
 
 /** The custody row as workspace members read it. Carries no credential. */
 export type AerialArtifactCustodyRecord = {
+  /** The row's own id — what the download route addresses a held artifact by. */
+  id: string;
   kind: string;
   ordinal: number;
   state: AerialArtifactCustodyState;

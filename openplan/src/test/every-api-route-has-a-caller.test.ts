@@ -55,6 +55,8 @@ const EXTERNAL_CALLERS: Record<string, string> = {
     "Vercel Cron, scheduled in vercel.json. Closes transit-feed ingests that stopped responding, so a version row written `pending` before any network work cannot sit on a Data Hub card forever. Authenticated by CRON_SECRET, never from a session.",
   "api/cron/reap-model-runs":
     "Vercel Cron, scheduled in vercel.json. Recorded here EXPLICITLY: it was passing only because `src/lib/models/worker-backed-launch.ts` happens to mention the path inside backticks in a docblock, which this guard's own call-site pattern accepts. Rewording that comment would have broken the build for a reason nobody could have guessed.",
+  "api/aerial/missions/[missionId]/export":
+    "410 Gone tombstone for the superseded perimeter export (see src/lib/aerial/dji-export.ts) — its only callers are pre-supersession bookmarks and scripts OUTSIDE this codebase, which the 410 body redirects to the flight-plan export lane. NOTE (2026-08-11, measured): this entry is NOT what lets the route pass the orphan scan — the generous tail matcher accepts the bare word `export`, which appears in every TS module, so five aerial components match it spuriously. Deliberateness is therefore carried by the named tombstone assertion below, which fails if this entry is ever deleted.",
 };
 
 /**
@@ -80,6 +82,9 @@ const KNOWN_UNWIRED: readonly string[] = [
   // Wire it or delete it; do not leave it as a second way to compute the same
   // answer that can drift from the first.
   "api/assistant-activity",
+  // (2026-08-11) api/aerial/missions/[missionId]/flight-plan stood here while
+  // its editor was in a concurrent lane; the flight-plan editor on the mission
+  // page now calls it, so the line is gone — the ratchet working as designed.
   // EMPTY, and that is the goal state rather than a missing list. Every API
   // route in this repo now has a caller in the product, or an EXTERNAL_CALLERS
   // entry naming what calls it from outside. Adding a line here means shipping
@@ -199,6 +204,32 @@ describe("every API route has a caller", () => {
       stale,
       "These routes now HAVE callers. Delete them from KNOWN_UNWIRED — the list may only shrink."
     ).toEqual([]);
+  });
+
+  it("excuses the superseded aerial export tombstone by NAME, never by accident", () => {
+    /**
+     * The static-prefix + tail matcher above cannot tell
+     * `missions/[id]/export` apart from `missions/[id]/flight-plan/export`:
+     * its tail check is a bare substring, and `export` is a word every TS
+     * module contains, so the tombstone would pass the orphan scan with no
+     * allowlist entry at all — a pass by accident, which is how a deliberate
+     * 410 quietly becomes an unexamined one. This assertion is what makes the
+     * pass deliberate: the entry must exist, must say 410, and the route must
+     * still BE the tombstone it was excused as. Deleting either fails by name.
+     */
+    const tombstone = "api/aerial/missions/[missionId]/export";
+    const reason = EXTERNAL_CALLERS[tombstone];
+    expect(
+      reason,
+      "The superseded aerial export tombstone lost its named EXTERNAL_CALLERS entry. Restore it (or, if the route is being deleted or revived, delete this assertion WITH a recorded reason)."
+    ).toBeTruthy();
+    expect(reason).toContain("410");
+
+    const routeSource = readFileSync(
+      path.join(process.cwd(), "src/app/api", "aerial/missions/[missionId]/export", "route.ts"),
+      "utf8"
+    );
+    expect(routeSource, "the excused route no longer answers 410 Gone — it grew a real capability, so it needs a real caller, not an excuse").toContain("410");
   });
 
   it("names a real route in every allowlist entry", () => {

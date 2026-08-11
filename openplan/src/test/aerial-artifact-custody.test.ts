@@ -597,6 +597,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
 describe("aerial artifact custody — the record a person reads", () => {
   const record = (overrides: Partial<AerialArtifactCustodyRecord>): AerialArtifactCustodyRecord => ({
+    id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
     kind: "orthomosaic",
     ordinal: 0,
     state: "held",

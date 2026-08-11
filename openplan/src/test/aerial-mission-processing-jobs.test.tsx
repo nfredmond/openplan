@@ -461,11 +461,13 @@ describe("aerial mission processing jobs are visible", () => {
     expect(text).toMatch(/time-limited links the processing worker issued/i);
     expect(text).toMatch(/OpenPlan records the list, not the files/i);
     expect(text).toMatch(/link expired/i);
+    expect(text).toMatch(/link expires/i);
 
-    // The live link is offered; the expired one is not a link at all.
-    const link = screen.getByRole("link", { name: /download from the processing worker/i });
-    expect(link).toHaveAttribute("href", "https://worker.example.com/artifacts/ortho.tif?sig=abc");
-    expect(screen.getAllByRole("link", { name: /download from the processing worker/i })).toHaveLength(1);
+    // The worker's URL is a bearer credential and is never rendered as a link —
+    // downloads go through the custody route, and nothing is in custody here.
+    expect(screen.queryByRole("link", { name: /download from the processing worker/i })).toBeNull();
+    expect(container.innerHTML).not.toContain("sig=abc");
+    expect(container.innerHTML).not.toContain("sig=def");
   });
 
   it("says outputs are unreadable rather than absent when the artifact JSON is not a list", async () => {
@@ -829,6 +831,11 @@ describe("the silence boundary itself", () => {
     for (const column of ["kind", "state", "byte_size", "source_expires_at"]) {
       expect(projection).toContain(column);
     }
+    // `id` is what the download control addresses a held row by — dropped from
+    // the projection, every download href would carry "undefined" while this
+    // suite's fixtures kept passing. `toContain("id")` would be vacuous here
+    // (`processing_job_id` contains it), so the bare column is matched exactly.
+    expect(projection).toMatch(/(^|,\s*)id\s*(,|$)/);
   });
 
   it("says the outputs are only vendor links when nothing has been taken", async () => {
@@ -881,6 +888,7 @@ describe("the silence boundary itself", () => {
     custodyOrderMock.mockResolvedValue({
       data: [
         {
+          id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
           processing_job_id: "job-1",
           kind: "orthomosaic",
           ordinal: 0,
@@ -932,6 +940,147 @@ describe("the silence boundary itself", () => {
     // different places, and only one is a statement about this mission.
     expect(container.textContent).toMatch(/could not read its own record/i);
     expect(container.textContent).not.toMatch(/OpenPlan records the list, not the files/i);
+  });
+
+  /**
+   * CUSTODY STOPS BEING WRITE-ONLY. The bytes have been sha256-verified in the
+   * private bucket since custody shipped, and until this control existed NO
+   * surface could hand them back — the panel's only download affordance pointed
+   * at `entry.downloadUrl`, which `redactArtifactDescriptors` had made
+   * permanently null. These assert the read half: a held artifact gets a
+   * download control through the authed route, a not-held one never does, and
+   * the dead vendor-link branch is gone even when a legacy row still carries a
+   * live worker URL.
+   */
+  it("renders a download control per held artifact, addressed by its own job and custody row", async () => {
+    // TWO jobs, each holding one artifact under a DIFFERENT custody id. One
+    // fixture cannot tell "threads the binding" from "hardcodes its value"
+    // (see a-wiring-test-must-vary-the-binding): with two, a control that
+    // hardcodes either id renders a wrong href for the other and fails below.
+    const custodyIdA = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+    const custodyIdB = "ffffffff-ffff-4fff-8fff-ffffffffffff";
+    const vendorArtifacts = [
+      {
+        kind: "orthomosaic",
+        // A legacy row that still carries a live worker URL: the panel must
+        // not render it as a link — it is a bearer credential, and the branch
+        // that did so was dead for redacted rows anyway.
+        downloadUrl: "https://worker.example.com/artifacts/ortho.tif?sig=abc",
+        expiresAt: isoAhead(6 * HOUR),
+        sizeBytes: 1_200_000,
+        contentType: "image/tiff",
+      },
+    ];
+    jobsLimitMock.mockResolvedValue({
+      data: [
+        jobRow({ status: "succeeded", progress: 100, artifacts: vendorArtifacts }),
+        jobRow({
+          id: "job-2",
+          request_id: "req-0002",
+          status: "succeeded",
+          progress: 100,
+          artifacts: vendorArtifacts,
+        }),
+      ],
+      error: null,
+    });
+    const heldRow = (id: string, processingJobId: string) => ({
+      id,
+      processing_job_id: processingJobId,
+      kind: "orthomosaic",
+      ordinal: 0,
+      state: "held",
+      storage_bucket: "aerial-artifacts",
+      storage_path: `${WORKSPACE_ID}/${MISSION_ID}/${processingJobId}/orthomosaic.tif`,
+      byte_size: 5_242_880,
+      checksum_sha256: "a".repeat(64),
+      source_expires_at: "2099-01-01T00:00:00.000Z",
+      failure_code: null,
+      failure_detail: null,
+      attempt_count: 1,
+      held_at: "2026-07-30T00:00:00.000Z",
+    });
+    custodyOrderMock.mockResolvedValue({
+      data: [heldRow(custodyIdA, "job-1"), heldRow(custodyIdB, "job-2")],
+      error: null,
+    });
+
+    const container = await renderMissionPage();
+
+    // Each control goes through the authed custody route, bound to ITS job and
+    // ITS custody row.
+    const linkA = container.querySelector(
+      `a[href="/api/aerial/processing-jobs/job-1/artifacts/${custodyIdA}/download"]`
+    );
+    const linkB = container.querySelector(
+      `a[href="/api/aerial/processing-jobs/job-2/artifacts/${custodyIdB}/download"]`
+    );
+    expect(linkA).not.toBeNull();
+    expect(linkB).not.toBeNull();
+    expect(linkA?.textContent).toMatch(/download/i);
+    // And no cross-wired pairing exists.
+    expect(
+      container.querySelector(
+        `a[href="/api/aerial/processing-jobs/job-1/artifacts/${custodyIdB}/download"]`
+      )
+    ).toBeNull();
+    // What the planner is downloading: kind, stored size, checksum prefix.
+    expect(container.textContent).toContain("5.0 MB");
+    expect(container.textContent).toContain(`SHA-256 ${"a".repeat(12)}`);
+    // The dead vendor-link branch is gone, and the credential is not on screen.
+    expect(container.textContent).not.toMatch(/download from the processing worker/i);
+    expect(container.innerHTML).not.toContain("sig=abc");
+  });
+
+  it("renders no download control for an artifact that is not held", async () => {
+    const custodyId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+    jobsLimitMock.mockResolvedValue({
+      data: [
+        jobRow({
+          status: "succeeded",
+          progress: 100,
+          artifacts: [
+            {
+              kind: "orthomosaic",
+              downloadUrl: "https://worker.example.com/artifacts/ortho.tif?sig=abc",
+              expiresAt: isoAhead(6 * HOUR),
+              sizeBytes: 1_200_000,
+              contentType: "image/tiff",
+            },
+          ],
+        }),
+      ],
+      error: null,
+    });
+    custodyOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: custodyId,
+          processing_job_id: "job-1",
+          kind: "orthomosaic",
+          ordinal: 0,
+          state: "failed",
+          storage_bucket: null,
+          storage_path: null,
+          byte_size: null,
+          checksum_sha256: null,
+          source_expires_at: isoAhead(6 * HOUR),
+          failure_code: "http_error",
+          failure_detail:
+            "The orthomosaic could not be taken into OpenPlan's custody: worker.example.com answered HTTP 504 instead of the file.",
+          attempt_count: 1,
+          held_at: null,
+        },
+      ],
+      error: null,
+    });
+
+    const container = await renderMissionPage();
+
+    // Nothing offers bytes that are not there — not the custody route, and not
+    // the worker's credential.
+    expect(container.querySelector('a[href*="/artifacts/"]')).toBeNull();
+    expect(container.textContent).not.toMatch(/download from the processing worker/i);
   });
 
 });

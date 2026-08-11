@@ -10,6 +10,7 @@ import {
 import {
   AERIAL_PROCESSING_ARTIFACT_CUSTODY_NOTE,
   describeAerialImagerySourceHost,
+  formatArtifactKindLabel,
   readAerialProcessingArtifacts,
   type AerialProcessingJobSummary,
 } from "@/lib/aerial/catalog";
@@ -32,10 +33,13 @@ import { formatFileSize } from "@/lib/models/evidence-packet";
  *     outright that the work may still be running on the worker. It never
  *     invents a completion it cannot observe.
  *
- *  2. Artifacts are vendor JSON, not files this system holds. The list is
- *     rendered as what it is — kinds, sizes, and time-limited links the WORKER
- *     issued — with the custody note attached. Nothing here implies OpenPlan can
- *     hand the file back after the link expires, because today it cannot.
+ *  2. The output list is vendor JSON; what is DOWNLOADABLE is what custody
+ *     holds. The list renders the worker's descriptors as metadata (kinds,
+ *     sizes, link expiries — never the worker's URL, which is a credential),
+ *     and the custody section renders a download control for exactly the
+ *     artifacts whose bytes sit in OpenPlan's own bucket. A held artifact is
+ *     downloadable after the worker's link lapses; a not-held one is never
+ *     presented as if it were.
  *
  *  3. Nothing is normalized away. An artifact kind this build does not know is
  *     printed as itself; entries the reader could not parse are COUNTED and
@@ -140,25 +144,41 @@ function ArtifactList({
 }) {
   const reading = readAerialProcessingArtifacts(job.artifacts, now);
 
+  // A held custody row is downloadable whatever shape the vendor JSON is in —
+  // the bytes live in OpenPlan's own bucket. So the custody section renders
+  // beside every branch below, including the malformed one: bytes this
+  // deployment holds must never be hidden by a vendor descriptor it cannot read.
+  const custodySection = (
+    <CustodyNote job={job} custody={custody} unreadableReason={custodyUnreadableReason} />
+  );
+  const hasCustodyFacts = custody.length > 0 || custodyUnreadableReason !== null;
+
   if (reading.malformed) {
     return (
-      <StateBlock
-        className="mt-3"
-        compact
-        tone="warning"
-        title="The recorded outputs could not be read"
-        description="This job's artifacts column holds something that is not a list of artifacts. The worker reported outputs, but OpenPlan cannot describe them — treat this as unknown, not as none."
-      />
+      <div className="mt-3">
+        <StateBlock
+          compact
+          tone="warning"
+          title="The recorded outputs could not be read"
+          description="This job's artifacts column holds something that is not a list of artifacts. The worker reported outputs, but OpenPlan cannot describe them — treat this as unknown, not as none."
+        />
+        {hasCustodyFacts ? custodySection : null}
+      </div>
     );
   }
 
-  if (!reading.recorded) return null;
+  if (!reading.recorded) {
+    return hasCustodyFacts ? <div className="mt-3">{custodySection}</div> : null;
+  }
 
   if (reading.entries.length === 0 && reading.unreadableEntryCount === 0) {
     return (
-      <p className="mt-3 text-xs text-muted-foreground">
-        The worker recorded an empty output list for this job.
-      </p>
+      <div className="mt-3">
+        <p className="text-xs text-muted-foreground">
+          The worker recorded an empty output list for this job.
+        </p>
+        {hasCustodyFacts ? custodySection : null}
+      </div>
     );
   }
 
@@ -184,24 +204,15 @@ function ArtifactList({
             </div>
             <p className="mt-1 text-[0.68rem] text-muted-foreground">
               {entry.expired === true ? (
-                <>Worker link expired {formatTimestamp(entry.expiresAt)}. Re-request processing to get a fresh one.</>
-              ) : entry.expired === false && entry.downloadUrl ? (
-                <>
-                  <a
-                    className="text-sky-600 underline dark:text-sky-400"
-                    href={entry.downloadUrl}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    Download from the processing worker
-                  </a>{" "}
-                  — link expires {formatTimestamp(entry.expiresAt)}.
-                </>
+                <>Worker link expired {formatTimestamp(entry.expiresAt)}.</>
+              ) : entry.expired === false ? (
+                <>Worker link expires {formatTimestamp(entry.expiresAt)}.</>
               ) : entry.downloadUrl ? (
                 <>The worker gave a link with no usable expiry, so whether it still works is unknown.</>
               ) : (
                 <>The worker reported this output without a download link.</>
-              )}
+              )}{" "}
+              Whether OpenPlan holds its own copy is stated below.
             </p>
           </li>
         ))}
@@ -213,8 +224,63 @@ function ArtifactList({
           read, and {reading.unreadableEntryCount === 1 ? "is" : "are"} not listed above.
         </p>
       ) : null}
-      <CustodyNote job={job} custody={custody} unreadableReason={custodyUnreadableReason} />
+      {custodySection}
     </div>
+  );
+}
+
+/**
+ * One download control per artifact OpenPlan actually holds.
+ *
+ * WHY THESE LINKS AND NOT THE WORKER'S. The panel used to render "Download from
+ * the processing worker" against `entry.downloadUrl` — a branch that had been
+ * dead since `redactArtifactDescriptors` began stripping worker URLs from the
+ * job row (they are bearer credentials and the column is member-readable). So
+ * custody was write-only: sha256-verified bytes sat in the private bucket and
+ * NO surface could hand them back. This list is the read half. Each control
+ * goes through the authed download route, which verifies membership and the
+ * row's own scope before minting a short-lived signed URL.
+ *
+ * Only `held` rows get a control — the others have no bytes behind them, and
+ * their recorded reasons are already in the custody sentence above this list.
+ */
+function HeldArtifactDownloads({
+  job,
+  custody,
+}: {
+  job: AerialProcessingJobRow;
+  custody: AerialArtifactCustodyRecord[];
+}) {
+  const held = custody.filter(
+    (record) => record.state === "held" && typeof record.id === "string" && record.id.length > 0
+  );
+  if (held.length === 0) return null;
+
+  return (
+    <ul className="mt-1.5 space-y-1">
+      {held.map((record) => (
+        <li
+          key={record.id}
+          className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[0.68rem]"
+        >
+          <a
+            className="font-medium text-sky-600 underline dark:text-sky-400"
+            href={`/api/aerial/processing-jobs/${job.id}/artifacts/${record.id}/download`}
+          >
+            Download {formatArtifactKindLabel(record.kind).toLowerCase()}
+            {record.ordinal > 0 ? ` (${record.ordinal + 1})` : ""}
+          </a>
+          {record.byte_size !== null ? (
+            <span className="text-muted-foreground">{formatFileSize(record.byte_size)}</span>
+          ) : null}
+          {record.checksum_sha256 ? (
+            <span className="font-mono text-muted-foreground">
+              SHA-256 {record.checksum_sha256.slice(0, 12)}…
+            </span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -276,6 +342,8 @@ function CustodyNote({
       >
         {posture.detail}
       </p>
+      {/* The read half of custody: a control per artifact OpenPlan holds. */}
+      <HeldArtifactDownloads job={job} custody={custody} />
       {/* Offered only when something is still saveable — see the component. */}
       <AerialCustodyRetry processingJobId={job.id} recoverableCount={posture.recoverableCount} />
     </div>

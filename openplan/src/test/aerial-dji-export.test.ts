@@ -1,9 +1,35 @@
 import { describe, expect, it } from "vitest";
+import { NextRequest } from "next/server";
 import {
   buildDjiMissionExport,
   isAoiPolygonGeoJson,
   type AoiPolygonGeoJson,
 } from "@/lib/aerial/dji-export";
+import { GET as supersededExportRoute } from "@/app/api/aerial/missions/[missionId]/export/route";
+
+/**
+ * SUPERSEDED LANE (2026-08-11). The perimeter export below is replaced by the
+ * flight-plan exports (src/lib/aerial/flight-exports.ts, served by
+ * /api/aerial/missions/[missionId]/flight-plan/export). The builder tests are
+ * KEPT because the module still exists in the tree (isAoiPolygonGeoJson is
+ * live) and a test that stops describing shipped code should be deleted with
+ * the code, not before it. The route test asserts the tombstone: 410, with
+ * copy that points a stranded caller at the replacement.
+ */
+
+describe("superseded DJI export route", () => {
+  it("answers 410 Gone and points at the flight-plan exports", async () => {
+    const response = await supersededExportRoute(
+      new NextRequest(
+        "http://localhost/api/aerial/missions/00000000-0000-4000-8000-000000000009/export?format=dji-json"
+      )
+    );
+    expect(response.status).toBe(410);
+    const body = await response.json();
+    expect(body.error).toContain("no longer exists");
+    expect(body.error).toContain("/flight-plan/export");
+  });
+});
 
 const nevadaCountySquare: AoiPolygonGeoJson = {
   type: "Polygon",

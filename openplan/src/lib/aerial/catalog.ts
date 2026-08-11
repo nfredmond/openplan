@@ -559,7 +559,7 @@ export type AerialProcessingArtifactReading = {
   malformed: boolean;
 };
 
-function formatArtifactKindLabel(kind: string): string {
+export function formatArtifactKindLabel(kind: string): string {
   switch (kind) {
     case "orthomosaic":
       return "Orthomosaic";

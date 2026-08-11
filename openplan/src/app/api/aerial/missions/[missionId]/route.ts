@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { rebuildAerialProjectPosture } from "@/lib/aerial/posture-writeback";
 
 const paramsSchema = z.object({
   missionId: z.string().uuid(),
@@ -68,12 +69,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Load mission to resolve workspace, then verify membership.
-    const { data: mission, error: missionError } = await supabase
+    // Load mission to resolve workspace, then verify membership. The project
+    // link and current status are read here so the posture writeback below can
+    // tell a status change from a rename without a second round trip.
+    const { data: missionRow, error: missionError } = await supabase
       .from("aerial_missions")
-      .select("id, workspace_id")
+      .select("id, workspace_id, project_id, status")
       .eq("id", parsedParams.data.missionId)
       .maybeSingle();
+    const mission = missionRow as {
+      id: string;
+      workspace_id: string;
+      project_id: string | null;
+      status: string;
+    } | null;
 
     if (missionError) {
       audit.error("aerial_mission_load_failed", { missionId: parsedParams.data.missionId, message: missionError.message });
@@ -142,6 +151,42 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       fields: Object.keys(parsed.data),
       durationMs: Date.now() - startedAt,
     });
+
+    // The saved project posture counts missions BY STATUS, so only a status
+    // change can move it — a rename, a geography edit, or an AOI redraw leaves
+    // it exactly as it was, and rebuilding on those would be churn, not
+    // freshness. A PATCH cannot move a mission between projects (the schema has
+    // no projectId field, and unknown keys are stripped), so the one project
+    // whose posture can go stale is the one this mission already belongs to.
+    const statusChanged =
+      parsed.data.status !== undefined && parsed.data.status !== mission.status;
+
+    if (statusChanged && mission.project_id) {
+      const postureResult = await rebuildAerialProjectPosture({
+        supabase,
+        projectId: mission.project_id,
+        workspaceId: mission.workspace_id,
+      });
+
+      if (postureResult.error) {
+        audit.warn("aerial_posture_rebuild_failed", {
+          missionId: mission.id,
+          projectId: mission.project_id,
+          workspaceId: mission.workspace_id,
+          message: postureResult.error.message,
+          code: postureResult.error.code ?? null,
+        });
+      } else {
+        audit.info("aerial_posture_rebuilt", {
+          missionId: mission.id,
+          projectId: mission.project_id,
+          workspaceId: mission.workspace_id,
+          missionCount: postureResult.posture?.missionCount ?? 0,
+          readyPackageCount: postureResult.posture?.readyPackageCount ?? 0,
+          verificationReadiness: postureResult.posture?.verificationReadiness ?? "none",
+        });
+      }
+    }
 
     return NextResponse.json({ mission: updated });
   } catch (error) {

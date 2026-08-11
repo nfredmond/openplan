@@ -17,6 +17,7 @@ import {
   type AerialMissionStatus,
   type AerialMissionType,
 } from "@/lib/aerial/catalog";
+import { AerialMissionLauncher, type AerialMissionLauncherProject } from "@/components/aerial/aerial-mission-launcher";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { moduleMetadata } from "@/lib/ui/page-title";
@@ -116,6 +117,35 @@ export default async function AerialIndexPage({
 
   const focusProject = (projectResult.data ?? null) as { id: string; name: string | null } | null;
   const focusLabel = focusProject ? focusProject.name?.trim() || "the project this page was opened for" : null;
+
+  // The picker's page size, not a place or a policy: when a workspace has more
+  // projects than this, the launcher says so on screen instead of silently
+  // offering a partial list as the whole one.
+  const PROJECT_PICKER_LIMIT = 200;
+
+  // The project list behind the "Start a mission" picker. Every mission belongs
+  // to a project (the API requires it — the link is what carries imagery into
+  // the evidence chain), so the register can only offer creation if it can also
+  // offer the workspace's projects to hang the mission on.
+  const projectListResult = await supabase
+    .from("projects")
+    .select("id, name")
+    .eq("workspace_id", workspaceId)
+    .order("created_at", { ascending: false })
+    .limit(PROJECT_PICKER_LIMIT);
+
+  const projectListUnreadable = reads.check(
+    "this workspace's projects (needed to start a new mission)",
+    projectListResult
+  );
+
+  const projectListRaw = Array.isArray(projectListResult.data)
+    ? (projectListResult.data as Array<{ id: string; name: string | null }>)
+    : [];
+  const launcherProjects: AerialMissionLauncherProject[] = projectListRaw.map((project) => ({
+    id: project.id,
+    name: project.name?.trim() || "Untitled project",
+  }));
 
   // Filtered in the database, not in memory. The register is capped at 100 rows,
   // so narrowing after the fetch would silently drop a project's older missions
@@ -355,6 +385,7 @@ export default async function AerialIndexPage({
       ariaLabel="Aerial operations"
       header={header}
       worksurface={
+        <>
         <WorksurfaceSection
           id="aerial-missions-list"
           label="Missions"
@@ -392,12 +423,31 @@ export default async function AerialIndexPage({
               ) : (
                 <EmptyState
                   title="No aerial missions recorded yet"
-                  description="Once missions are created for this workspace, they will appear here with their packages and verification state."
+                  description="Log the first one in the Start a mission section below; it will appear here with its packages and verification state."
                 />
               )
             }
           />
         </WorksurfaceSection>
+
+        <WorksurfaceSection
+          id="aerial-mission-launcher"
+          label="New mission"
+          title="Start a mission"
+          description={
+            focusLabel
+              ? `Log a new flight. The form starts on ${focusLabel} because this page was opened for it; any project in this workspace can be chosen instead.`
+              : "Log a new flight. Every mission is linked to a project — choose which one this flight is for."
+          }
+        >
+          <AerialMissionLauncher
+            projects={launcherProjects}
+            projectsUnreadable={projectListUnreadable}
+            projectListTruncatedAt={launcherProjects.length >= PROJECT_PICKER_LIMIT ? PROJECT_PICKER_LIMIT : null}
+            initialProjectId={focusProject?.id ?? null}
+          />
+        </WorksurfaceSection>
+        </>
       }
     />
   );

@@ -192,16 +192,26 @@ const EXPECTED = {
   // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
   // `views` holds at 7 and `expanded` at 264: no view, and every policy is
   // written literally.
-  policies: 580,
-  permissive: 337,
+  //
+  // 20260811000001 (aerial_flight_plans) adds ONE table — the planner-authored
+  // flight plan, one per mission. FOUR permissive policies (one read, three
+  // writes), every write role-aware AT THE PERMISSIVE LAYER via
+  // workspace_member_can_write — the intended post-20260728000006 shape — so
+  // the table carries NO restrictive companion gates.
+  // So: +4 policies, +4 permissive, +0 restrictive, +3 permissiveWrites,
+  // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
+  // `views` holds at 7 and `expanded` at 264: no view, and every policy is
+  // written literally.
+  policies: 584,
+  permissive: 341,
   restrictive: 243,
-  permissiveWrites: 220,
+  permissiveWrites: 223,
   expanded: 264,
-  tablesWithPolicies: 117,
-  relations: 137,
-  tables: 130,
+  tablesWithPolicies: 118,
+  relations: 138,
+  tables: 131,
   views: 7,
-  rlsEnabledTables: 130,
+  rlsEnabledTables: 131,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

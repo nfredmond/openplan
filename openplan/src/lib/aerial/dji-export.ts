@@ -1,3 +1,28 @@
+/**
+ * SUPERSEDED 2026-08-11 — do not build new callers on this module.
+ *
+ * This was OpenPlan's first aerial export: it walked the AOI's PERIMETER as
+ * waypoints in a private JSON shape ("natford-dji-1") that no DJI app could
+ * import directly, with a hardcoded 90 m / 5 m/s default nobody had authored.
+ * It is replaced by the flight-plan lane:
+ *
+ *   - planner-authored parameters:  aerial_flight_plans (+ camera registry,
+ *     src/lib/aerial/camera-registry.ts)
+ *   - survey grid generation:       src/lib/aerial/survey-grid.ts
+ *   - real exports (DJI WPML .kmz, Litchi CSV, generic KML):
+ *     src/lib/aerial/flight-exports.ts, served by
+ *     /api/aerial/missions/[missionId]/flight-plan/export
+ *
+ * Its API route (the old per-mission `export` endpoint, one path segment up
+ * from the flight-plan lane) now answers 410 Gone pointing at the new
+ * exports, and is excused BY NAME in every-api-route-has-a-caller.test.ts —
+ * deliberately not by a literal path written here, because a path in prose
+ * can satisfy that guard's matcher by accident. The `isAoiPolygonGeoJson`
+ * guard below is still live — several pages validate mission AOIs with it —
+ * which is why this file stays rather than being deleted; the history of the
+ * shape it exported is in git either way.
+ */
+
 export type AoiPolygonGeoJson = {
   type: "Polygon";
   coordinates: [number, number][][];

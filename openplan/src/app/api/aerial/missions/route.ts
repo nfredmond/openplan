@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
+import { rebuildAerialProjectPosture } from "@/lib/aerial/posture-writeback";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const AERIAL_MISSION_STATUSES = ["planned", "active", "complete", "cancelled"] as const;
@@ -92,6 +93,37 @@ export async function POST(request: NextRequest) {
       workspaceId: access.project.workspace_id,
       durationMs: Date.now() - startedAt,
     });
+
+    // The saved posture counts missions by status, so a brand-new mission —
+    // even a planned one with no packages — changes it. Without this call the
+    // project's cached aerial summary stayed stale until the first
+    // evidence-package mutation, and the mission page said so out loud.
+    // A rebuild failure is disclosed in the audit log but does not undo the
+    // create: the mission row is already real, and the posture is a cache.
+    const postureResult = await rebuildAerialProjectPosture({
+      supabase,
+      projectId: access.project.id,
+      workspaceId: access.project.workspace_id,
+    });
+
+    if (postureResult.error) {
+      audit.warn("aerial_posture_rebuild_failed", {
+        missionId: mission.id,
+        projectId: access.project.id,
+        workspaceId: access.project.workspace_id,
+        message: postureResult.error.message,
+        code: postureResult.error.code ?? null,
+      });
+    } else {
+      audit.info("aerial_posture_rebuilt", {
+        missionId: mission.id,
+        projectId: access.project.id,
+        workspaceId: access.project.workspace_id,
+        missionCount: postureResult.posture?.missionCount ?? 0,
+        readyPackageCount: postureResult.posture?.readyPackageCount ?? 0,
+        verificationReadiness: postureResult.posture?.verificationReadiness ?? "none",
+      });
+    }
 
     return NextResponse.json({ missionId: mission.id, mission }, { status: 201 });
   } catch (error) {

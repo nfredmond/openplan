@@ -32,16 +32,9 @@ export const runtime = "nodejs";
  * WHO MAY CALL IT. Either the deployment operator (the same bearer token the
  * worker's callbacks carry — so this is a valid cron/sweep target) or a signed-in
  * workspace member with write access to the job's workspace. A viewer cannot:
- * taking custody writes storage objects and rows.
- *
- * WHAT DOES NOT EXIST YET, stated here so nobody reads the member path as a
- * shipped affordance: NOTHING IN `src/` CALLS THIS ROUTE. The member branch was
- * built so a retry can one day be a button on the mission page instead of a
- * runbook, but that button has not been built, and no surface yet shows a
- * planner that an artifact is outstanding in the first place. Today the only
- * real caller is an operator with the bearer token. `every-api-route-has-a-caller`
- * does not catch this: its scan is satisfied by this path appearing as TEXT in
- * `src/lib/aerial/artifact-custody.ts`'s failure sentences, not by a call site.
+ * taking custody writes storage objects and rows. The member path's in-product
+ * caller is `AerialCustodyRetry` on the mission page, offered whenever the
+ * custody posture says something is still saveable.
  */
 
 const bodySchema = z.object({

@@ -124,7 +124,14 @@ const EXPECTED_RESTRICTIVE_POLICIES = 243;
 // NO UPDATE policy and no UPDATE grant on that table — a coverage row is an
 // immutable (campaign, project) pair, corrected by delete-and-insert — which
 // is why only two policies arrive instead of the usual three.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 220;
+//
+// 220 -> 223 (20260811000001): `aerial_flight_plans` adds role-aware INSERT,
+// UPDATE and DELETE permissive policies via `workspace_member_can_write`, so
+// the gated-table and restrictive counts do not move. Deliberately NOT the
+// `FOR ALL` role-blind shape its older aerial siblings carry: a flight plan's
+// altitude and overlap are safety-relevant authored numbers, and "viewer
+// cannot write" holds at the database, not only at the route.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 223;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [
