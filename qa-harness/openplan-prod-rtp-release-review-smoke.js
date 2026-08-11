@@ -335,7 +335,7 @@ async function main() {
     await screenshot('prod-rtp-release-review-dashboard');
 
     await page.goto(`${productionBaseUrl}/explore`, { waitUntil: 'networkidle' });
-    await page.getByRole('heading', { name: /Corridor analysis workspace/i }).waitFor({ timeout: 30000 });
+    await page.getByRole('heading', { name: /Corridor Analysis/i }).waitFor({ timeout: 30000 });
     await page.getByText(/What needs attention next/i).first().waitFor({ timeout: 30000 });
     await page.getByText(new RegExp(projectName, 'i')).first().waitFor({ timeout: 30000 });
     const analysisRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();

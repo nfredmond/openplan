@@ -322,7 +322,7 @@ async function main() {
     await screenshot('local-analysis-report-linkage-02-model-history');
 
     await page.goto(`${baseUrl}/explore?runId=${ids.sourceAnalysisRunId}#analysis-run-history`, { waitUntil: 'networkidle' });
-    await page.getByRole('heading', { name: /Corridor analysis workspace/i }).waitFor({ timeout: 30000 });
+    await page.getByRole('heading', { name: /Corridor Analysis/i }).waitFor({ timeout: 30000 });
     await page.getByRole('heading', { name: /Analysis run history/i }).waitFor({ timeout: 30000 });
     await page.getByText(ids.sourceAnalysisRunTitle, { exact: false }).first().waitFor({ timeout: 30000 });
     notes.push('Verified Analysis Studio can deep-link back to the generated run output.');
