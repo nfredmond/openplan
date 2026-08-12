@@ -135,6 +135,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260812000010_award_expenditure_deadline.sql",
     migrationsAtRelease: 194,
   },
+  // 0.18.0 — the self-help measure fund: receipts, ordinance rules as data,
+  // sub-recipient claims, and the oversight record that reconciles.
+  {
+    tag: "0.18.0",
+    lastMigration: "20260812000014_measure_off_the_top_and_atomic_allocation.sql",
+    migrationsAtRelease: 198,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

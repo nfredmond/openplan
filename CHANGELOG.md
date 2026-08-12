@@ -19,6 +19,48 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.18.0 — 2026-08-12
+
+**Four migrations are required before the app deploys: `20260812000011`
+through `20260812000014`.** They add the measure fund, its claims, the
+reminder, and the off-the-top records with an atomic allocation function.
+All additive and safe against a live database.
+
+### If your agency administers a voter-approved measure
+
+A county or city passes a transportation sales tax or an infrastructure levy;
+money arrives every quarter, an ordinance says how it divides, cities and
+districts claim against it, and a citizens' oversight committee wants to see
+all of it. OpenPlan now runs that fund.
+
+- **Receipts against forecast**, with a balance and the periods that have not
+  been reported yet named as unreported — never counted as zero.
+- **Your ordinance's own rules**, described rather than coded: percentage
+  splits by purpose, return-to-source shares by a basis your agency records
+  (population, road miles — whatever the ordinance names), off-the-top
+  administration clauses with annual caps, and reserves. OpenPlan never
+  supplies a population figure or an expected receipt; every input names
+  where your agency got it.
+- **Claims from cities and districts** — submitted, reviewed, approved, paid
+  — checked against the categories your measure actually funds, with backup
+  documents in the document library.
+- **An oversight page and an annual statement** a committee can audit: what
+  came in, what the ordinance took out first, what was left, and where it
+  went. Both reconcile, and where the figures cannot fully close, the reason
+  is printed rather than the gap being left to the reader.
+
+Adding a second measure — a different county, a different ordinance, another
+state — is a matter of describing it. Nothing about any particular measure is
+built into OpenPlan.
+
+### One limitation, stated
+
+If your ordinance holds back a reserve, OpenPlan computes it but does not yet
+record the amount held per period, so the subtraction on the oversight page
+cannot fully close. The page says so and names a held-back reserve as a
+possible cause rather than implying money went missing. Recording reserves
+per period is the fix and it needs a future migration.
+
 ## 0.17.0 — 2026-08-11
 
 **One migration is required, and the order matters more than usual:
