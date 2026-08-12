@@ -134,6 +134,22 @@ export type RtpRegistryCycle = {
   modelingCountyRunId: string | null;
   comparisonBackedProjectCount: number;
   staleModelingProjectCount: number;
+  /**
+   * What has been copied out of a plan DOCUMENT into this cycle.
+   *
+   * `null` means the question could not be answered — the staging table could
+   * not be read, or the migration has not run — and a surface must say so
+   * rather than showing "nothing was copied", which is a different answer.
+   */
+  transcription: RtpCycleTranscriptionCounts | null;
+};
+
+/** Counts of transcribed proposals staged against one cycle. Never a score. */
+export type RtpCycleTranscriptionCounts = {
+  /** Copied out of a document and saved into this plan by a person. */
+  acceptedCount: number;
+  /** Copied out and still waiting for somebody to decide. */
+  waitingCount: number;
 };
 
 export type PacketAttentionCounts = {

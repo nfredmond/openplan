@@ -9,6 +9,11 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import {
+  completeExtractionAcceptance,
+  extractionProvenanceColumns,
+  resolveExtractionCandidate,
+} from "@/lib/rtp/extraction/acceptance";
 
 const PORTFOLIO_ROLES = RTP_PORTFOLIO_ROLE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 
@@ -89,6 +94,26 @@ const costBasisYearSchema = z.preprocess(
 /** Which period of the plan this project's cost sits in. Verified against the link's own cycle before it is stored. */
 const horizonBandIdSchema = z.preprocess(blankToNull, z.string().uuid().nullable());
 
+/**
+ * The transcription this link's cost, basis year, role or period was copied
+ * from, when there was one.
+ *
+ * THE PAIRING ARGUMENT, because this is the delicate one. An assistant action
+ * that assigns a project to a horizon band stays refused, and the refusal is
+ * not about unverified ids — it is that the PAIRING is authored content: the
+ * schema records which period a project is planned for nowhere else, and the
+ * band sets the escalation exponent. None of that changes here. What changes is
+ * where the pairing comes from: when the adopted plan's own project table
+ * prints "Project X — Constrained — 2023–2032 — $12.4M", copying that row
+ * records a judgement the agency already made and its board ratified, on a page
+ * this link will cite by number and quote verbatim.
+ *
+ * And the project is never inferred. A `programmed_project` candidate stages a
+ * NAME STRING; a person binds it to a project, which is why `projectId` here
+ * still comes from the URL and never from anything a model produced.
+ */
+const fromExtractionCandidateIdSchema = z.string().uuid().optional();
+
 const createLinkSchema = z.object({
   rtpCycleId: z.string().uuid(),
   portfolioRole: z.enum(PORTFOLIO_ROLES).optional(),
@@ -97,6 +122,7 @@ const createLinkSchema = z.object({
   horizonBandId: horizonBandIdSchema.optional(),
   estimatedCost: programmedCostSchema.optional(),
   costBasisYear: costBasisYearSchema.optional(),
+  fromExtractionCandidateId: fromExtractionCandidateIdSchema,
 });
 
 const updateLinkSchema = z.object({
@@ -108,6 +134,7 @@ const updateLinkSchema = z.object({
   horizonBandId: horizonBandIdSchema.optional(),
   estimatedCost: programmedCostSchema.optional(),
   costBasisYear: costBasisYearSchema.optional(),
+  fromExtractionCandidateId: fromExtractionCandidateIdSchema,
 });
 
 const deleteLinkSchema = z.object({
@@ -305,6 +332,16 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       if (bandRefusal) return bandRefusal;
     }
 
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "programmed_project",
+      rtpCycleId: cycle.id,
+      workspaceId: project.workspace_id,
+    });
+    if (!candidate.ok) return candidate.response;
+
     const { data, error } = await supabase
       .from("project_rtp_cycle_links")
       .insert({
@@ -321,6 +358,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
         estimated_cost: payload.data.estimatedCost ?? null,
         cost_basis_year: payload.data.costBasisYear ?? null,
         created_by: user.id,
+        ...extractionProvenanceColumns(candidate.candidate),
       })
       .select(LINK_RESULT_COLUMNS)
       .single();
@@ -348,12 +386,26 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       );
     }
 
-    audit.info("created", { projectId: project.id, rtpCycleId: cycle.id, durationMs: Date.now() - startedAt });
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: (data as { id?: string } | null)?.id,
+      reviewedBy: user.id,
+      context: { projectId: project.id, rtpCycleId: cycle.id },
+    });
+
+    audit.info("created", {
+      projectId: project.id,
+      rtpCycleId: cycle.id,
+      extractionCandidateId: candidate.candidate?.id ?? null,
+      durationMs: Date.now() - startedAt,
+    });
     return NextResponse.json({
       link: {
         ...data,
         cycle,
       },
+      ...acceptance,
     });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
@@ -506,6 +558,22 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
     }
 
+    // AFTER the "nothing to change" refusal, deliberately. Provenance is never
+    // an edit on its own: a link marked as transcribed from p.44 while its cost
+    // is still the one somebody typed would be a citation to a figure the
+    // document does not contain. The cycle comes from the STORED link row, the
+    // same place the horizon-band check reads it from and for the same reason.
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "programmed_project",
+      rtpCycleId: link.rtp_cycle_id,
+      workspaceId: link.workspace_id,
+    });
+    if (!candidate.ok) return candidate.response;
+    Object.assign(updates, extractionProvenanceColumns(candidate.candidate));
+
     const { data, error } = await supabase
       .from("project_rtp_cycle_links")
       .update(updates)
@@ -545,8 +613,21 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       return noRowsMatchedResponse({ subject: "RTP link", targetWasVerified: true });
     }
 
-    audit.info("updated", { projectId: routeParams.data.projectId, linkId: link.id, durationMs: Date.now() - startedAt });
-    return NextResponse.json({ link: data });
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: link.id,
+      reviewedBy: user.id,
+      context: { projectId: routeParams.data.projectId, linkId: link.id },
+    });
+
+    audit.info("updated", {
+      projectId: routeParams.data.projectId,
+      linkId: link.id,
+      extractionCandidateId: candidate.candidate?.id ?? null,
+      durationMs: Date.now() - startedAt,
+    });
+    return NextResponse.json({ link: data, ...acceptance });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update RTP link" }, { status: 500 });

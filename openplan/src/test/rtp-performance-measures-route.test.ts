@@ -57,6 +57,7 @@ import { NextRequest } from "next/server";
  */
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 
@@ -70,6 +71,7 @@ const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -110,6 +112,8 @@ let membershipRead: QueryResult;
 let cycleRead: QueryResult;
 let measureRead: QueryResult;
 let measureWrite: QueryResult;
+let candidateRead: QueryResult;
+let candidateFlip: QueryResult;
 
 const STORED_MEASURE = {
   id: MEASURE_ID,
@@ -146,9 +150,22 @@ function installClient() {
             : measureRead
         );
       }
+      // The staging table a transcribed measure is accepted from. Reads answer
+      // `candidateRead`; the flip that marks it accepted answers
+      // `candidateFlip`, and keeping them apart is what lets a test fail the
+      // flip alone without pretending the lookup failed too.
+      if (table === "rtp_extraction_candidates") {
+        return makeChain(table, (ops) => (ops.includes("update") ? candidateFlip : candidateRead));
+      }
       throw new Error(`Unexpected table: ${table}`);
     }),
   });
+  createServiceRoleClientMock.mockImplementation(() => ({
+    from: (table: string) => {
+      if (table !== "rtp_extraction_candidates") throw new Error(`Unexpected service-role table: ${table}`);
+      return makeChain(table, (ops) => (ops.includes("update") ? candidateFlip : candidateRead));
+    },
+  }));
 }
 
 const routeContext = { params: Promise.resolve({ rtpCycleId: CYCLE_ID }) };
@@ -200,6 +217,8 @@ beforeEach(() => {
   cycleRead = { data: { id: CYCLE_ID, workspace_id: WORKSPACE_ID }, error: null };
   measureRead = { data: { id: MEASURE_ID, measure_key: "fatalities" }, error: null };
   measureWrite = { data: STORED_MEASURE, error: null };
+  candidateRead = { data: PENDING_MEASURE_CANDIDATE, error: null };
+  candidateFlip = { data: { id: CANDIDATE_ID }, error: null };
   installClient();
 });
 
@@ -797,5 +816,206 @@ describe("the route audits itself", () => {
       "rtp_cycles.performance_measures.delete",
       expect.anything()
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A BASELINE TRANSCRIBED OUT OF AN ADOPTED PLAN.
+//
+// A baseline is a measurement of the world, and a model cannot measure. What
+// makes a transcribed one legitimate is not that a model produced it but that
+// the agency's own adopted document prints it on a page this row will cite,
+// and that a person read the quote and accepted it. Everything the route
+// refuses about a typed measure it refuses about a transcribed one — and the
+// one this file is built around, the blank box that is not a zero, holds in
+// both directions.
+// ---------------------------------------------------------------------------
+
+const CANDIDATE_ID = "77777777-7777-4777-8777-777777777777";
+const FINANCIAL_CANDIDATE_ID = "88888888-8888-4888-8888-888888888888";
+
+const PENDING_MEASURE_CANDIDATE = {
+  id: CANDIDATE_ID,
+  workspace_id: WORKSPACE_ID,
+  rtp_cycle_id: CYCLE_ID,
+  target_kind: "performance_measure",
+  status: "pending",
+  quote_verified: true,
+};
+
+/**
+ * Every `.eq()` on the staging-table LOOKUP, in order — cut off at the flip.
+ *
+ * The flip is an `update` on the same table and carries its own `.eq()`s, so a
+ * naive filter would concatenate two differently-shaped queries and the
+ * scoping assertion would pass on the wrong three.
+ */
+function candidateLookupFilters(): unknown[][] {
+  const flipAt = dbCalls.findIndex(
+    (entry) => entry.table === "rtp_extraction_candidates" && entry.method === "update"
+  );
+  const beforeFlip = flipAt === -1 ? dbCalls : dbCalls.slice(0, flipAt);
+  return beforeFlip
+    .filter((entry) => entry.table === "rtp_extraction_candidates" && entry.method === "eq")
+    .map((call) => call.args);
+}
+
+function candidateFlipValues(): Record<string, unknown> | null {
+  const call = dbCalls.find((entry) => entry.table === "rtp_extraction_candidates" && entry.method === "update");
+  return call ? (call.args[0] as Record<string, unknown>) : null;
+}
+
+describe("performance measures — accepting a transcription", () => {
+  it("a hand-typed measure asks the staging table nothing", async () => {
+    const response = await postMeasure(jsonRequest("POST", VALID_CREATE), routeContext);
+
+    expect(response.status).toBe(201);
+    expect(dbCalls.some((entry) => entry.table === "rtp_extraction_candidates")).toBe(false);
+    expect(createServiceRoleClientMock).not.toHaveBeenCalled();
+    expect(insertedRow()).not.toHaveProperty("extraction_candidate_id");
+  });
+
+  it("records the page a transcribed baseline came from and marks the passage accepted", async () => {
+    const response = await postMeasure(
+      jsonRequest("POST", {
+        ...VALID_CREATE,
+        baselineValue: 12,
+        baselineYear: 2024,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(insertedRow()!.extraction_candidate_id).toBe(CANDIDATE_ID);
+    expect(insertedRow()!.baseline_value).toBe(12);
+    expect(candidateLookupFilters()).toEqual([
+      ["id", CANDIDATE_ID],
+      ["rtp_cycle_id", CYCLE_ID],
+      ["workspace_id", WORKSPACE_ID],
+    ]);
+    expect(candidateFlipValues()).toMatchObject({
+      status: "accepted",
+      accepted_row_id: MEASURE_ID,
+      reviewed_by: USER_ID,
+    });
+    expect(body.extractionCandidate).toEqual({ id: CANDIDATE_ID, recorded: true });
+  });
+
+  it("a blank baseline is STILL not a zero when the value was transcribed", async () => {
+    /**
+     * The measure the plan prints with a target and no stated baseline. The
+     * transcribed path must land NULL, exactly as the typed path does — a
+     * transcription that quietly wrote 0 would have the agency assert a
+     * measurement its own document does not contain.
+     */
+    const response = await postMeasure(
+      jsonRequest("POST", {
+        ...VALID_CREATE,
+        baselineValue: "",
+        targetValue: 0,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+
+    expect(response.status).toBe(201);
+    expect(insertedRow()!.baseline_value).toBeNull();
+    expect(insertedRow()!.target_value).toBe(0);
+  });
+
+  it("refuses a passage staged as a financial line, and writes nothing", async () => {
+    candidateRead = {
+      data: { ...PENDING_MEASURE_CANDIDATE, id: FINANCIAL_CANDIDATE_ID, target_kind: "financial_line" },
+      error: null,
+    };
+
+    const response = await postMeasure(
+      jsonRequest("POST", { ...VALID_CREATE, fromExtractionCandidateId: FINANCIAL_CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe("That transcription belongs somewhere else in the plan");
+    expect(wroteAnything()).toBe(false);
+  });
+
+  it("refuses a passage a colleague already accepted", async () => {
+    candidateRead = { data: { ...PENDING_MEASURE_CANDIDATE, status: "accepted" }, error: null };
+
+    const response = await postMeasure(
+      jsonRequest("POST", { ...VALID_CREATE, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(409);
+    expect(wroteAnything()).toBe(false);
+  });
+
+  it("a failed staging-table read is not an empty one", async () => {
+    candidateRead = { data: null, error: { message: "connection terminated unexpectedly" } };
+
+    const response = await postMeasure(
+      jsonRequest("POST", { ...VALID_CREATE, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(500);
+    expect(wroteAnything()).toBe(false);
+  });
+
+  it("the same bad payload is refused whether or not it names a transcription", async () => {
+    const CASES: Array<{ name: string; payload: Record<string, unknown> }> = [
+      { name: "a baseline that is not a number", payload: { ...VALID_CREATE, baselineValue: "about twelve" } },
+      { name: "a baseline year before 1900", payload: { ...VALID_CREATE, baselineYear: 1492 } },
+      { name: "an empty measure key", payload: { ...VALID_CREATE, measureKey: "  " } },
+      { name: "a body naming its own workspace", payload: { ...VALID_CREATE, workspaceId: OTHER_WORKSPACE_ID } },
+    ];
+
+    for (const testCase of CASES) {
+      dbCalls.length = 0;
+      const typed = await postMeasure(jsonRequest("POST", testCase.payload), routeContext);
+      const typedBody = await typed.json();
+      const typedWrote = wroteAnything();
+
+      dbCalls.length = 0;
+      const transcribed = await postMeasure(
+        jsonRequest("POST", { ...testCase.payload, fromExtractionCandidateId: CANDIDATE_ID }),
+        routeContext
+      );
+      const transcribedBody = await transcribed.json();
+
+      expect(typed.status, testCase.name).toBe(400);
+      expect(transcribed.status, testCase.name).toBe(typed.status);
+      expect(transcribedBody.error, testCase.name).toBe(typedBody.error);
+      expect(typedWrote, testCase.name).toBe(false);
+      expect(wroteAnything(), testCase.name).toBe(false);
+      // And the strict schema is what refuses the unknown key, so the resolver
+      // never even ran.
+      expect(dbCalls.some((entry) => entry.table === "rtp_extraction_candidates"), testCase.name).toBe(false);
+    }
+  });
+
+  it("a PATCH naming only a transcription is still 'nothing to update'", async () => {
+    const response = await patchMeasure(
+      jsonRequest("PATCH", { measureId: MEASURE_ID, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe("Invalid performance measure update payload");
+    expect(wroteAnything()).toBe(false);
+  });
+
+  it("a PATCH that takes the document's baseline records where it came from", async () => {
+    const response = await patchMeasure(
+      jsonRequest("PATCH", { measureId: MEASURE_ID, baselineValue: 14, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(200);
+    expect(updatedRow()).toMatchObject({ baseline_value: 14, extraction_candidate_id: CANDIDATE_ID });
+    expect(candidateFlipValues()).toMatchObject({ status: "accepted", accepted_row_id: MEASURE_ID });
   });
 });

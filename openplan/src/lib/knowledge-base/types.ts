@@ -52,13 +52,45 @@ export type KbDocumentStatus =
   | "stored";
 
 /**
- * Where a document's indexed text came from. `none` marks a stored file (no
- * extraction attempted); `null` on a row means it predates the column and the
- * answer was not recorded. Future values (`ocr`, `spreadsheet_parse`) arrive
- * with the worker that actually implements them — they are deliberately not
- * promised here.
+ * Where a document's indexed text came from — ONE vocabulary, written once.
+ *
+ * `text_layer` the characters the document's own author embedded.
+ * `pasted`     a planner typed or pasted the text in.
+ * `ocr`        a machine read pictures of words on a scanned page. Materially
+ *              weaker provenance than `text_layer`: a 3 can be read as an 8,
+ *              a decimal point can be lost in a scan artefact. Every surface
+ *              that shows a transcribed figure has to be able to say which of
+ *              these it was, which is why this is a vocabulary and not a
+ *              boolean. Arrived with 20260811000010 and the OCR worker that
+ *              actually implements it.
+ * `none`       a stored file; no extraction was attempted.
+ * `null` on a row means it predates 20260811000005 and the answer was not
+ * recorded — "not known", never "none".
+ *
+ * `spreadsheet_parse` is deliberately absent: nothing parses a spreadsheet, and
+ * a value here would be the schema describing a capability the product does not
+ * have (20260811000005's own argument, kept).
+ *
+ * THERE IS NO CONFIDENCE OR ACCURACY COMPANION TO THIS COLUMN, EVER. The
+ * recogniser can emit per-word confidence figures and the worker deliberately
+ * does not collect them: a number the machine invents about its own accuracy
+ * reads to every human as a quality signal, and "OCR confidence 94%" beside a
+ * dollar figure in an adopted plan is a machine vouching for a planning number.
+ *
+ * Pinned to BOTH database CHECKs — the original in 20260811000005 and the
+ * widened one in 20260811000010 — by
+ * `src/test/kb-ocr-extraction-source-vocabulary.test.ts`, in the shape
+ * `GTFS_MEDIAN_HEADWAY_BASES` established: two copies of one vocabulary is the
+ * shape that shipped a form the database refused at the end.
+ *
+ * NOTE for the RTP extraction lane: `rtp_extraction_runs.extraction_source`
+ * carries a deliberate SUBSET of this vocabulary — only `text_layer` and `ocr`,
+ * the two ways a document's text can reach an extraction run. That is a
+ * narrowing, not a second vocabulary, and it must stay a subset of this one.
  */
-export type KbExtractionSource = "text_layer" | "pasted" | "none";
+export const KB_EXTRACTION_SOURCES = ["text_layer", "pasted", "ocr", "none"] as const;
+
+export type KbExtractionSource = (typeof KB_EXTRACTION_SOURCES)[number];
 
 /** All doc-kind values, for zod enums / UI selects. Keep in sync with the CHECK constraint. */
 export const KB_DOC_KINDS: readonly KbDocKind[] = [

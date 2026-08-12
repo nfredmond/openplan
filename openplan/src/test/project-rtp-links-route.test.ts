@@ -18,6 +18,7 @@ import { NextRequest } from "next/server";
  */
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 
@@ -36,6 +37,7 @@ const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -94,6 +96,29 @@ let rtpCycleRead: QueryResult;
  */
 let linkDeleteResult: QueryResult;
 
+/**
+ * A transcribed programmed cost, staged off the adopted plan's own project
+ * table, and what the flip that marks it accepted answers.
+ */
+const CANDIDATE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+let candidateRead: QueryResult;
+let candidateFlip: QueryResult;
+
+function pendingProjectCandidate(overrides: Record<string, unknown> = {}): QueryResult {
+  return {
+    data: {
+      id: CANDIDATE_ID,
+      workspace_id: WORKSPACE_ID,
+      rtp_cycle_id: CYCLE_ID,
+      target_kind: "programmed_project",
+      status: "pending",
+      quote_verified: true,
+      ...overrides,
+    },
+    error: null,
+  };
+}
+
 function installClient() {
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
@@ -149,9 +174,21 @@ function installClient() {
       if (table === "rtp_cycles") {
         return makeChain(table, () => rtpCycleRead);
       }
+      // The staging table a transcribed programmed cost is accepted from.
+      // Lookup and flip are separate fixtures so a test can fail one without
+      // pretending the other failed too.
+      if (table === "rtp_extraction_candidates") {
+        return makeChain(table, (ops) => (ops.includes("update") ? candidateFlip : candidateRead));
+      }
       throw new Error(`Unexpected table: ${table}`);
     }),
   });
+  createServiceRoleClientMock.mockImplementation(() => ({
+    from: (table: string) => {
+      if (table !== "rtp_extraction_candidates") throw new Error(`Unexpected service-role table: ${table}`);
+      return makeChain(table, (ops) => (ops.includes("update") ? candidateFlip : candidateRead));
+    },
+  }));
 }
 
 function patchRequest(body: Record<string, unknown>) {
@@ -783,5 +820,267 @@ describe("DELETE /api/projects/[projectId]/rtp-links — a delete that changed n
     for (const column of ["estimated_cost", "cost_basis_year", "horizon_band_id"]) {
       expect(projections[1]).not.toContain(column);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A PROGRAMMED COST TRANSCRIBED OFF THE ADOPTED PLAN'S OWN PROJECT TABLE.
+//
+// The assistant action that assigns a project to a horizon band STAYS REFUSED,
+// and nothing here weakens it. Its argument is that the PAIRING is authored
+// content — the schema records which period a project is planned for nowhere
+// else, and the band sets the escalation exponent. That is still true of a
+// model choosing a band. It is not true of copying a row the agency's board
+// already adopted and printed, which is what these tests exercise.
+//
+// The project is never inferred either: a `programmed_project` passage stages a
+// NAME STRING, and the project id here comes from the URL a person navigated
+// to. There is no fuzzy match anywhere in this path.
+// ---------------------------------------------------------------------------
+
+describe("project RTP links — accepting a transcription", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    dbCalls.length = 0;
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    modelRunRead = { data: { id: MODEL_RUN_ID, workspace_id: WORKSPACE_ID }, error: null };
+    horizonBandRead = {
+      data: { id: HORIZON_BAND_ID, rtp_cycle_id: CYCLE_ID, workspace_id: WORKSPACE_ID },
+      error: null,
+    };
+    rtpCycleRead = {
+      data: {
+        id: CYCLE_ID,
+        workspace_id: WORKSPACE_ID,
+        title: "2050 RTP",
+        status: "draft",
+        geography_label: null,
+        horizon_start_year: 2026,
+        horizon_end_year: 2050,
+      },
+      error: null,
+    };
+    candidateRead = pendingProjectCandidate();
+    candidateFlip = { data: { id: CANDIDATE_ID }, error: null };
+    installClient();
+  });
+
+  function postRequest(body: Record<string, unknown>) {
+    return new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/rtp-links`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+
+  function linkInsertPayload(): Record<string, unknown> | undefined {
+    const call = dbCalls.find((entry) => entry.table === "project_rtp_cycle_links" && entry.method === "insert");
+    return call?.args[0] as Record<string, unknown> | undefined;
+  }
+
+  function touchedStagingTable(): boolean {
+    return dbCalls.some((call) => call.table === "rtp_extraction_candidates");
+  }
+
+  /** The lookup's `.eq()`s, cut off before the flip's own. */
+  function candidateLookupFilters(): unknown[][] {
+    const flipAt = dbCalls.findIndex(
+      (entry) => entry.table === "rtp_extraction_candidates" && entry.method === "update"
+    );
+    return (flipAt === -1 ? dbCalls : dbCalls.slice(0, flipAt))
+      .filter((entry) => entry.table === "rtp_extraction_candidates" && entry.method === "eq")
+      .map((call) => call.args);
+  }
+
+  function candidateFlipValues(): Record<string, unknown> | undefined {
+    const call = dbCalls.find((entry) => entry.table === "rtp_extraction_candidates" && entry.method === "update");
+    return call?.args[0] as Record<string, unknown> | undefined;
+  }
+
+  it("a hand-typed link asks the staging table nothing", async () => {
+    const response = await postRtpLink(
+      postRequest({ rtpCycleId: CYCLE_ID, estimatedCost: 4_200_000, costBasisYear: 2026 }),
+      routeContext
+    );
+
+    expect(response.status).toBe(200);
+    expect(touchedStagingTable()).toBe(false);
+    expect(createServiceRoleClientMock).not.toHaveBeenCalled();
+    expect(linkInsertPayload()).not.toHaveProperty("extraction_candidate_id");
+  });
+
+  it("records the page a transcribed cost, basis year, role and period came from", async () => {
+    const response = await postRtpLink(
+      postRequest({
+        rtpCycleId: CYCLE_ID,
+        portfolioRole: "constrained",
+        horizonBandId: HORIZON_BAND_ID,
+        estimatedCost: 12_400_000,
+        costBasisYear: 2026,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(linkInsertPayload()).toMatchObject({
+      project_id: PROJECT_ID,
+      rtp_cycle_id: CYCLE_ID,
+      portfolio_role: "constrained",
+      horizon_band_id: HORIZON_BAND_ID,
+      estimated_cost: 12_400_000,
+      cost_basis_year: 2026,
+      extraction_candidate_id: CANDIDATE_ID,
+    });
+    expect(candidateLookupFilters()).toEqual([
+      ["id", CANDIDATE_ID],
+      ["rtp_cycle_id", CYCLE_ID],
+      ["workspace_id", WORKSPACE_ID],
+    ]);
+    expect(candidateFlipValues()).toMatchObject({ status: "accepted", reviewed_by: USER_ID });
+    expect(body.extractionCandidate).toEqual({ id: CANDIDATE_ID, recorded: true });
+  });
+
+  it("an UNPRICED transcribed project is still unpriced, never zero", async () => {
+    /**
+     * The plan lists the project in its constrained programme and prints no
+     * cost for it. NULL means UNPRICED all the way to the fiscal-constraint
+     * check, and a transcription that wrote 0 would make an uncosted project
+     * look costed and flip the plan's balance.
+     */
+    const response = await postRtpLink(
+      postRequest({
+        rtpCycleId: CYCLE_ID,
+        portfolioRole: "constrained",
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+
+    expect(response.status).toBe(200);
+    expect(linkInsertPayload()!.estimated_cost).toBeNull();
+    expect(linkInsertPayload()!.estimated_cost).not.toBe(0);
+  });
+
+  it("a band from ANOTHER plan cycle is refused for a transcription too", async () => {
+    horizonBandRead = {
+      data: { id: HORIZON_BAND_ID, rtp_cycle_id: OTHER_CYCLE_ID, workspace_id: WORKSPACE_ID },
+      error: null,
+    };
+
+    const typed = await postRtpLink(
+      postRequest({ rtpCycleId: CYCLE_ID, horizonBandId: HORIZON_BAND_ID, estimatedCost: 1 }),
+      routeContext
+    );
+    dbCalls.length = 0;
+    const transcribed = await postRtpLink(
+      postRequest({
+        rtpCycleId: CYCLE_ID,
+        horizonBandId: HORIZON_BAND_ID,
+        estimatedCost: 1,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+
+    expect(typed.status).toBe(400);
+    expect(transcribed.status).toBe(400);
+    expect((await transcribed.json()).error).toBe("Horizon band not found in this RTP cycle");
+    expect(linkInsertPayload()).toBeUndefined();
+    // The band refusal comes first, so the passage is never even looked up —
+    // and it is certainly never marked accepted.
+    expect(touchedStagingTable()).toBe(false);
+  });
+
+  it("a negative programmed cost is refused whether or not a transcription is named", async () => {
+    const typed = await postRtpLink(
+      postRequest({ rtpCycleId: CYCLE_ID, estimatedCost: -1 }),
+      routeContext
+    );
+    const typedBody = await typed.json();
+    dbCalls.length = 0;
+    const transcribed = await postRtpLink(
+      postRequest({ rtpCycleId: CYCLE_ID, estimatedCost: -1, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+    const transcribedBody = await transcribed.json();
+
+    expect(typed.status).toBe(400);
+    expect(transcribed.status).toBe(400);
+    expect(transcribedBody.details).toBe(typedBody.details);
+    expect(transcribedBody.details).toContain("Leave it blank for a project that is not costed yet");
+    expect(touchedStagingTable()).toBe(false);
+  });
+
+  it("refuses a passage staged as a financial line", async () => {
+    candidateRead = pendingProjectCandidate({ target_kind: "financial_line" });
+
+    const response = await postRtpLink(
+      postRequest({ rtpCycleId: CYCLE_ID, estimatedCost: 1, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe("That transcription belongs somewhere else in the plan");
+    expect(linkInsertPayload()).toBeUndefined();
+  });
+
+  it("a PATCH naming only a transcription is still 'nothing to update'", async () => {
+    const response = await patchRtpLink(
+      patchRequest({ linkId: LINK_ID, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe("No updatable fields provided");
+    expect(linkUpdateHappened()).toBe(false);
+    expect(touchedStagingTable()).toBe(false);
+  });
+
+  it("a PATCH that takes the document's cost records where it came from", async () => {
+    const response = await patchRtpLink(
+      patchRequest({ linkId: LINK_ID, estimatedCost: 12_400_000, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(200);
+    expect(linkUpdatePayload()).toMatchObject({
+      estimated_cost: 12_400_000,
+      extraction_candidate_id: CANDIDATE_ID,
+    });
+    expect(candidateFlipValues()).toMatchObject({ status: "accepted", accepted_row_id: LINK_ID });
+  });
+
+  it("the PATCH scopes the lookup by the STORED link's cycle, not one from the body", async () => {
+    /**
+     * The same reasoning the horizon-band check rests on: a cycle id taken
+     * from the body would let a caller name the plan their passage belongs to
+     * and defeat the scoping entirely. Two things hold that line — the update
+     * schema has no `rtpCycleId` field at all (so the one sent here is
+     * stripped), and the resolver is threaded from `link.rtp_cycle_id`.
+     *
+     * MUTATION: bind the lookup to `link.workspace_id` instead
+     *   => this fails on the filter list. Sending `rtpCycleId` in the body and
+     *      reading it back does NOT fail, because zod strips it — which is why
+     *      the assertion is on the STORED value rather than on the absence of
+     *      the body one.
+     */
+    await patchRtpLink(
+      patchRequest({
+        linkId: LINK_ID,
+        estimatedCost: 5,
+        rtpCycleId: OTHER_CYCLE_ID,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+
+    expect(candidateLookupFilters()).toEqual([
+      ["id", CANDIDATE_ID],
+      ["rtp_cycle_id", CYCLE_ID],
+      ["workspace_id", WORKSPACE_ID],
+    ]);
   });
 });

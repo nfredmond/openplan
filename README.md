@@ -39,7 +39,16 @@ schema, and your data are yours.
 - `qa-harness/` — local and production smoke-check scripts.
 - `scripts/` — validation, modeling, and operator utilities.
 - `schemas/` — reusable schemas.
-- `workers/` — Python modeling workers (AequilibraE screening runs, county validation).
+- `workers/` — Python workers (AequilibraE screening runs, county validation, drone photogrammetry,
+  OCR for scanned documents).
+
+Two walkthroughs worth knowing about once OpenPlan is running:
+
+- [`openplan/docs/READING_AN_ADOPTED_PLAN.md`](openplan/docs/READING_AN_ADOPTED_PLAN.md) — how a
+  planner points OpenPlan at last cycle's adopted RTP and gets its figures and its own policy text
+  back, each citing the page it came from, with nothing entering the plan until a person saves it.
+- [`openplan/docs/SELF_HOSTING.md`](openplan/docs/SELF_HOSTING.md) — every service, every setting,
+  and what to do when one of them misbehaves.
 
 ## Running OpenPlan on one computer
 

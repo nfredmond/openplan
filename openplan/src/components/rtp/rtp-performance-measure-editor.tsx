@@ -31,6 +31,11 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Gauge, Loader2, PencilLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ExtractionProvenanceChip } from "@/components/rtp/extraction-provenance-chip";
+import {
+  transcriptionDocumentHref,
+  type TranscriptionRecord,
+} from "@/lib/rtp/extraction/display";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -61,6 +66,17 @@ export type RtpPerformanceMeasureEditorProps = {
   rtpCycleId: string;
   measures: ReadonlyArray<RtpPerformanceMeasureRow>;
   canWrite: boolean;
+  /**
+   * Which of these measures were copied out of a document, keyed by measure id,
+   * so a transcribed baseline cites the page it was read off (Nathaniel's Q2
+   * decision, 2026-08-11).
+   *
+   * A measure that is not in here was typed by a person and shows no chip —
+   * permanently, with no backfill. A baseline is a measurement of the world,
+   * and where that measurement came from is exactly the thing a reader of a
+   * performance measure most needs.
+   */
+  transcriptions?: Readonly<Record<string, TranscriptionRecord>>;
 };
 
 /** House convention for planner-facing numbers: a fixed locale, so a server render and a client render agree. */
@@ -540,7 +556,12 @@ function MeasureFields({
   );
 }
 
-export function RtpPerformanceMeasureEditor({ rtpCycleId, measures, canWrite }: RtpPerformanceMeasureEditorProps) {
+export function RtpPerformanceMeasureEditor({
+  rtpCycleId,
+  measures,
+  canWrite,
+  transcriptions,
+}: RtpPerformanceMeasureEditorProps) {
   const router = useRouter();
   // `"create"` for the new-measure form, a measure id while editing that row, `null` when closed.
   const [openForm, setOpenForm] = useState<string | null>(null);
@@ -715,6 +736,14 @@ export function RtpPerformanceMeasureEditor({ rtpCycleId, measures, canWrite }: 
                         ) : null}
                       </div>
                       <h3 className="module-record-title">{measure.label}</h3>
+                      {/* The page this baseline was copied from. Nothing for a typed one. */}
+                      {transcriptions?.[measure.id] ? (
+                        <ExtractionProvenanceChip
+                          record={transcriptions[measure.id]}
+                          audience="planner"
+                          documentHref={transcriptionDocumentHref(transcriptions[measure.id])}
+                        />
+                      ) : null}
                     </div>
 
                     {canWrite ? (

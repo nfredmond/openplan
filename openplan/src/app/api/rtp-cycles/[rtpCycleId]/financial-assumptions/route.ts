@@ -33,6 +33,17 @@
  * because it does not read as an error in any total: it silently offsets a real
  * revenue or cost line somewhere else in the same sum, and the resulting
  * balance looks like arithmetic that worked.
+ *
+ * A LINE COPIED OUT OF AN ADOPTED PLAN COMES THROUGH THIS SAME DOOR.
+ * `fromExtractionCandidateId` names a transcription a planner reviewed on the
+ * document-review screen; everything else about the request is identical, and
+ * so is everything this route does with it. The cross-cycle band check, the
+ * amount ceiling, the negative refusal and every 400 above apply to a figure
+ * read off page 112 exactly as they apply to one somebody typed — there is no
+ * second writer, so there is no second set of rules to get wrong. The only
+ * additions are the `extraction_candidate_id` written beside the row, which is
+ * what lets a board packet print "2026 RTP, p. 112" against the number, and the
+ * flip that marks the transcription reviewed.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -49,6 +60,11 @@ import {
   writeMatchedNoRows,
 } from "@/lib/http/write-outcome";
 import type { RtpFiscalEntryKind } from "@/lib/rtp/fiscal-constraint";
+import {
+  completeExtractionAcceptance,
+  extractionProvenanceColumns,
+  resolveExtractionCandidate,
+} from "@/lib/rtp/extraction/acceptance";
 
 /**
  * The ledger's vocabulary, keyed BY the fiscal engine's own union so the
@@ -125,6 +141,15 @@ const sourceNameSchema = z.string().trim().min(1).max(200);
 
 const paramsSchema = z.object({ rtpCycleId: z.string().uuid() });
 
+/**
+ * The transcription this value was copied from, when there was one.
+ *
+ * Optional and absent for every hand-typed line, which is why nothing else in
+ * this file changes shape: a request without it takes the identical path it
+ * took before the document-ingestion lane existed.
+ */
+const fromExtractionCandidateIdSchema = z.string().uuid().optional();
+
 const createAssumptionSchema = z.object({
   horizonBandId: z.string().uuid(),
   entryKind: z.enum(RTP_FISCAL_ENTRY_KINDS),
@@ -132,9 +157,17 @@ const createAssumptionSchema = z.object({
   amount: amountSchema,
   amountBasisYear: optionalYearSchema,
   notes: optionalNotesSchema,
+  fromExtractionCandidateId: fromExtractionCandidateIdSchema,
 });
 
-/** Everything PATCH may change. Named so the "no changes" refinement cannot drift from the schema. */
+/**
+ * Everything PATCH may change. Named so the "no changes" refinement cannot
+ * drift from the schema — and note what is NOT in it:
+ * `fromExtractionCandidateId` is provenance, never an edit. A body naming a
+ * transcription and changing no value is the ordinary "No changes were
+ * requested" 400 it has always been, because the alternative is a candidate
+ * marked accepted while the ledger still shows the planner's old figure.
+ */
 const UPDATABLE_FIELDS = [
   "horizonBandId",
   "entryKind",
@@ -153,6 +186,7 @@ const updateAssumptionSchema = z
     amount: amountSchema.optional(),
     amountBasisYear: optionalYearSchema,
     notes: optionalNotesSchema,
+    fromExtractionCandidateId: fromExtractionCandidateIdSchema,
   })
   .refine((value) => UPDATABLE_FIELDS.some((field) => value[field] !== undefined), {
     message: "No changes were requested",
@@ -403,6 +437,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const band = await resolveHorizonBandInCycle(supabase, audit, cycle.value, payload.data.horizonBandId);
     if (!band.ok) return band.response;
 
+    // Resolved BEFORE the insert, so a transcription that is not this plan's,
+    // is already reviewed, or was staged for another part of the plan refuses
+    // without writing anything. Answers `{ candidate: null }` for the ordinary
+    // hand-typed line and issues no query at all.
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "financial_line",
+      rtpCycleId: cycle.value.cycleId,
+      workspaceId: cycle.value.workspaceId,
+    });
+    if (!candidate.ok) return candidate.response;
+
     const { data, error } = await supabase
       .from("rtp_financial_assumptions")
       .insert({
@@ -418,6 +466,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         amount_basis_year: payload.data.amountBasisYear ?? null,
         notes: payload.data.notes || null,
         created_by: cycle.value.userId,
+        ...extractionProvenanceColumns(candidate.candidate),
       })
       .select(ASSUMPTION_COLUMNS)
       .maybeSingle();
@@ -438,13 +487,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return insertNotReadableBackResponse({ subject: "financial assumption" });
     }
 
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: (data as { id?: string } | null)?.id,
+      reviewedBy: cycle.value.userId,
+      context: { rtpCycleId: cycle.value.cycleId },
+    });
+
     audit.info("created", {
       rtpCycleId: cycle.value.cycleId,
       horizonBandId: band.value,
       entryKind: payload.data.entryKind,
+      extractionCandidateId: candidate.candidate?.id ?? null,
       durationMs: Date.now() - startedAt,
     });
-    return NextResponse.json({ assumption: data });
+    return NextResponse.json({ assumption: data, ...acceptance });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to save this financial assumption" }, { status: 500 });
@@ -521,6 +579,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (payload.data.amountBasisYear !== undefined) updates.amount_basis_year = payload.data.amountBasisYear;
     if (payload.data.notes !== undefined) updates.notes = payload.data.notes || null;
 
+    // The reconciliation case: the adopted document disagrees with a figure
+    // already in the ledger, and the planner is taking the document's. The line
+    // now cites the page it came from, replacing whatever provenance it had —
+    // which for a hand-typed line was none.
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "financial_line",
+      rtpCycleId: cycle.value.cycleId,
+      workspaceId: cycle.value.workspaceId,
+    });
+    if (!candidate.ok) return candidate.response;
+    Object.assign(updates, extractionProvenanceColumns(candidate.candidate));
+
     const { data, error } = await supabase
       .from("rtp_financial_assumptions")
       .update(updates)
@@ -546,13 +619,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return noRowsMatchedResponse({ subject: "financial assumption", targetWasVerified: true });
     }
 
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: existing.id,
+      reviewedBy: cycle.value.userId,
+      context: { rtpCycleId: cycle.value.cycleId },
+    });
+
     audit.info("updated", {
       rtpCycleId: cycle.value.cycleId,
       assumptionId: existing.id,
       fields: Object.keys(updates),
+      extractionCandidateId: candidate.candidate?.id ?? null,
       durationMs: Date.now() - startedAt,
     });
-    return NextResponse.json({ assumption: data });
+    return NextResponse.json({ assumption: data, ...acceptance });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update this financial assumption" }, { status: 500 });

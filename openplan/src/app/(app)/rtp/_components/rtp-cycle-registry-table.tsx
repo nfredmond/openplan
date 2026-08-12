@@ -35,6 +35,14 @@ type Props = {
   filtersStatus: string | null;
   selectedPacketFilter: PacketAttentionFilter;
   recentOnly: boolean;
+  /** Whether previous (archived) plans are being shown. Off by default. */
+  showArchived: boolean;
+  /** How many archived plans this workspace has, whether or not they are shown. */
+  archivedCycleCount: number;
+  /** The staged-transcription counts could not be read; rows must not show zeroes. */
+  transcriptionCountsUnavailable: boolean;
+  /** The scan hit its ceiling, so the per-cycle counts are a floor. */
+  transcriptionCountsTruncated: boolean;
   selectedQueueActionFilter: QueueActionFilter;
   selectedQueueTraceStateFilter: QueueTraceStateFilter;
   packetAttentionCounts: PacketAttentionCounts;
@@ -54,6 +62,10 @@ export function RtpCycleRegistryTable({
   filtersStatus,
   selectedPacketFilter,
   recentOnly,
+  showArchived,
+  archivedCycleCount,
+  transcriptionCountsUnavailable,
+  transcriptionCountsTruncated,
   selectedQueueActionFilter,
   selectedQueueTraceStateFilter,
   packetAttentionCounts,
@@ -65,6 +77,25 @@ export function RtpCycleRegistryTable({
   currentFundingGapReviewCount,
   currentReimbursementFollowThroughCount,
 }: Props) {
+  /**
+   * ONE PLACE THAT SPELLS THE REGISTRY'S FILTER STATE.
+   *
+   * Eight links here rebuilt the same object by hand, and adding the archived
+   * toggle meant editing all eight or having one of them silently drop it — the
+   * class of defect where a filter survives every click but one. A link now
+   * names only what it CHANGES.
+   */
+  const registryHref = (overrides: Parameters<typeof buildRtpRegistryHref>[0] = {}) =>
+    buildRtpRegistryHref({
+      status: filtersStatus,
+      packet: selectedPacketFilter,
+      recent: recentOnly,
+      queueAction: selectedQueueActionFilter,
+      queueTraceState: selectedQueueTraceStateFilter,
+      archived: showArchived,
+      ...overrides,
+    });
+
   return (
     <section className="space-y-4">
       <article className="module-section-surface">
@@ -85,13 +116,7 @@ export function RtpCycleRegistryTable({
                   return (
                     <Link
                       key={option.value}
-                      href={buildRtpRegistryHref({
-                        status: active ? null : option.value,
-                        packet: selectedPacketFilter,
-                        recent: recentOnly,
-                        queueAction: selectedQueueActionFilter,
-                        queueTraceState: selectedQueueTraceStateFilter,
-                      })}
+                      href={registryHref({ status: active ? null : option.value })}
                       className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                     >
                       {option.label}
@@ -100,6 +125,29 @@ export function RtpCycleRegistryTable({
                 })}
               </div>
             </div>
+            {/*
+              PREVIOUS PLANS, ONE CLICK AWAY AND NOT IN THE WAY.
+
+              An agency loading its last three adopted plans in to read figures
+              out of them archives each one; without this the plan they are
+              actually writing is the fourth row down. The count is on the
+              button so the registry never silently hides work.
+            */}
+            {archivedCycleCount > 0 || showArchived ? (
+              <div>
+                <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Previous plans</p>
+                <div className="flex flex-wrap justify-end gap-2">
+                  <Link
+                    href={registryHref({ archived: !showArchived })}
+                    className={showArchived ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
+                  >
+                    {showArchived
+                      ? `Hide archived plans · ${archivedCycleCount}`
+                      : `Show archived plans · ${archivedCycleCount}`}
+                  </Link>
+                </div>
+              </div>
+            ) : null}
             <div>
               <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Packet attention</p>
               <div className="flex flex-wrap justify-end gap-2">
@@ -115,13 +163,7 @@ export function RtpCycleRegistryTable({
                   return (
                     <Link
                       key={option.value}
-                      href={buildRtpRegistryHref({
-                        status: filtersStatus,
-                        packet: active ? "all" : option.value,
-                        recent: recentOnly,
-                        queueAction: selectedQueueActionFilter,
-                        queueTraceState: selectedQueueTraceStateFilter,
-                      })}
+                      href={registryHref({ packet: active ? "all" : option.value })}
                       className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                     >
                       {option.label} · {option.count}
@@ -134,25 +176,13 @@ export function RtpCycleRegistryTable({
               <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recent queue work</p>
               <div className="flex flex-wrap justify-end gap-2">
                 <Link
-                  href={buildRtpRegistryHref({
-                    status: filtersStatus,
-                    packet: selectedPacketFilter,
-                    recent: false,
-                    queueAction: selectedQueueActionFilter,
-                    queueTraceState: selectedQueueTraceStateFilter,
-                  })}
+                  href={registryHref({ recent: false })}
                   className={!recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                 >
                   All queue history
                 </Link>
                 <Link
-                  href={buildRtpRegistryHref({
-                    status: filtersStatus,
-                    packet: selectedPacketFilter,
-                    recent: true,
-                    queueAction: selectedQueueActionFilter,
-                    queueTraceState: selectedQueueTraceStateFilter,
-                  })}
+                  href={registryHref({ recent: true })}
                   className={recentOnly ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                 >
                   Recent only · {recentQueueCyclesCount}
@@ -177,13 +207,7 @@ export function RtpCycleRegistryTable({
                   return (
                     <Link
                       key={option.value}
-                      href={buildRtpRegistryHref({
-                        status: filtersStatus,
-                        packet: selectedPacketFilter,
-                        recent: recentOnly,
-                        queueAction: active ? "all" : option.value,
-                        queueTraceState: selectedQueueTraceStateFilter,
-                      })}
+                      href={registryHref({ queueAction: active ? "all" : option.value })}
                       className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                     >
                       {option.label} · {option.count}
@@ -205,13 +229,7 @@ export function RtpCycleRegistryTable({
                   return (
                     <Link
                       key={option.value}
-                      href={buildRtpRegistryHref({
-                        status: filtersStatus,
-                        packet: selectedPacketFilter,
-                        recent: recentOnly,
-                        queueAction: selectedQueueActionFilter,
-                        queueTraceState: active ? "all" : option.value,
-                      })}
+                      href={registryHref({ queueTraceState: active ? "all" : option.value })}
                       className={active ? "openplan-inline-label" : "openplan-inline-label openplan-inline-label-muted"}
                     >
                       {option.label} · {option.count}
@@ -267,13 +285,7 @@ export function RtpCycleRegistryTable({
             <p className="mt-1 text-xs text-muted-foreground">Queue evidence exists, but the cycle has changed since it was recorded.</p>
             {queueTraceStateCounts.outpaced > 0 ? (
               <Link
-                href={buildRtpRegistryHref({
-                  status: filtersStatus,
-                  packet: selectedPacketFilter,
-                  recent: recentOnly,
-                  queueAction: selectedQueueActionFilter,
-                  queueTraceState: "outpaced",
-                })}
+                href={registryHref({ queueTraceState: "outpaced" })}
                 className="module-inline-action mt-3 w-fit"
               >
                 Focus outpaced
@@ -287,13 +299,7 @@ export function RtpCycleRegistryTable({
             <p className="mt-1 text-xs text-muted-foreground">Cycles still missing durable queue-action coverage.</p>
             {queueTraceStateCounts.unrecorded > 0 ? (
               <Link
-                href={buildRtpRegistryHref({
-                  status: filtersStatus,
-                  packet: selectedPacketFilter,
-                  recent: recentOnly,
-                  queueAction: selectedQueueActionFilter,
-                  queueTraceState: "unrecorded",
-                })}
+                href={registryHref({ queueTraceState: "unrecorded" })}
                 className="module-inline-action mt-3 w-fit"
               >
                 Focus trace gaps
@@ -314,6 +320,11 @@ export function RtpCycleRegistryTable({
           {selectedQueueTraceStateFilter !== "all"
             ? ` with trace freshness ${selectedQueueTraceStateFilter}`
             : ""}
+          {showArchived
+            ? ", including archived plans"
+            : archivedCycleCount > 0
+              ? `, with ${archivedCycleCount} archived plan${archivedCycleCount === 1 ? "" : "s"} hidden`
+              : ""}
           .
         </p>
 
@@ -357,6 +368,25 @@ export function RtpCycleRegistryTable({
                       </CartographicSelectionLink>
                       <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
                       <StatusBadge tone={cycle.readiness.tone}>{cycle.readiness.label}</StatusBadge>
+                      {/*
+                        READ FROM A DOCUMENT — the label that tells a planner
+                        which of these cycles was built by transcribing a plan
+                        PDF rather than typed in. It is a count of records, not
+                        a quality mark, and a cycle whose counts could not be
+                        read says so instead of showing nothing.
+                      */}
+                      {transcriptionCountsUnavailable ? (
+                        <StatusBadge tone="warning">Copied text unknown</StatusBadge>
+                      ) : cycle.transcription &&
+                        cycle.transcription.acceptedCount + cycle.transcription.waitingCount > 0 ? (
+                        <StatusBadge tone="info">
+                          {`Read from a document · ${cycle.transcription.acceptedCount} saved`}
+                          {cycle.transcription.waitingCount > 0
+                            ? `, ${cycle.transcription.waitingCount} waiting`
+                            : ""}
+                          {transcriptionCountsTruncated ? " (at least)" : ""}
+                        </StatusBadge>
+                      ) : null}
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {cycle.summary?.trim() || "No cycle summary yet. Add the planning scope, board/adoption posture, and intended review frame."}
@@ -599,6 +629,12 @@ export function RtpCycleRegistryTable({
                     Open RTP cycle shell
                     <ArrowRight className="h-4 w-4" />
                   </Link>
+                  {cycle.transcription && cycle.transcription.waitingCount > 0 ? (
+                    <Link href={`/rtp/${cycle.id}/extraction`} className="module-inline-action w-fit">
+                      Review {cycle.transcription.waitingCount} copied from a document
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  ) : null}
                   {cycle.packetReport ? (
                     <Link href={cycle.packetNavigationHref} className="module-inline-action w-fit">
                       Open linked packet

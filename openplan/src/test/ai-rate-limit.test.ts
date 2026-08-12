@@ -40,6 +40,7 @@ describe("checkAiUsageRateLimit", () => {
       "engagement_synthesis",
       "engagement_moderation",
       "document_narrative_draft",
+      "rtp_document_extraction",
     ]);
     expect(gte).toHaveBeenCalledWith("occurred_at", new Date(1_000_000_000_000 - 300_000).toISOString());
   });

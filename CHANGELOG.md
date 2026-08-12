@@ -19,6 +19,85 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Three migrations are required before the app deploys: `20260811000008`,
+`20260811000009`, and `20260811000010`.** The first two create the staging
+tables that hold what OpenPlan copied out of a plan document and add one
+nullable column to four RTP tables recording which transcription a figure came
+from. The third widens the document library to accept text recognised from
+scans and adds the OCR job tables. All additive and safe against a live
+database.
+
+**Optional new settings.** `OPENPLAN_RTP_EXTRACTION_MODEL` chooses the model
+that reads plan documents (unset uses the strong default — see `.env.example`
+for why the cheap one is the wrong economy here). The five
+`OPENPLAN_KB_OCR_*` settings enable reading SCANNED plans; without them a
+scanned PDF is stored and honestly marked unreadable, and everything else works
+unchanged.
+
+### OpenPlan can read last cycle's adopted plan
+
+Upload an adopted RTP and OpenPlan reads it, copying out revenue and cost
+lines, performance measures, planning periods, programmed project costs, the
+plan's dollar year, and the plan's own policy and goal text — each one with the
+page it came from and the sentence it was copied from.
+
+**Nothing enters your plan until you save it**, and saving runs exactly the
+same checks as a figure typed by hand. Every proposal is shown beside the
+document's own words, and a figure that is not in the words it quotes is thrown
+away rather than shown to you: a reading says "41 proposed; 6 dropped because
+their figures were not in the text they cited" instead of quietly showing 35.
+
+There is no confidence score anywhere, and no way to accept in bulk. Both are
+deliberate.
+
+**The most useful moment is the conflict.** Each proposal is compared — in
+OpenPlan, not by the model — against what your plan already records. Same
+revenue source, different figure, shown side by side with the page and the
+quote. That is how you catch a ledger typed out of a draft the adopted plan
+later superseded.
+
+**Provenance follows the figure.** A saved figure names its source document and
+page in the app, on your public plan page, and in the body of the board packet
+— not in an appendix. Edit the figure afterwards and the chip says the agency
+changed it, rather than continuing to cite a page that no longer says that.
+
+Walkthrough: `openplan/docs/READING_AN_ADOPTED_PLAN.md`.
+
+### The plan's own words, copied word for word
+
+Policy, goal and action statements are transcribed verbatim or not at all —
+never summarised, never paraphrased, never two statements joined together. They
+wait in a staging queue where **you** choose which chapter of your plan each
+block belongs in; OpenPlan never guesses that pairing. A chapter's published
+text is still only what you write in the chapter editor.
+
+### Scanned plans
+
+Most adopted plans older than a few years are scans with no text in them.
+OpenPlan now ships an OCR worker (`workers/ocr_worker/`) that turns them into
+citable, page-anchored text. Without it configured, a scanned document says
+this deployment has no OCR service — rather than saying scans are unsupported,
+which would be untrue.
+
+### Previous plans stay out of the way
+
+Reading prior plans means loading them into the registry, where they live as
+archived cycles. The registry now hides archived plans by default and offers
+them behind a **Show archived plans** button carrying their count, so a decade
+of history does not bury the plan you are writing. A cycle that has had a
+document read into it is labelled with how many figures were saved and how many
+are still waiting.
+
+Deleting a document that backs saved figures is refused, and the refusal names
+the plan and the count.
+
+### No AI assistant can do any of this
+
+Not reading a document, not accepting a figure, not setting one aside, and not
+placing a paragraph into a chapter. Every one of those is an HTTP route a
+signed-in person calls. The 2026-08-05 refusals covering RTP financial writes
+are untouched and stay refused.
+
 ## 0.14.0 — 2026-08-11
 
 **Two migrations are required before the app deploys: `20260811000006` and

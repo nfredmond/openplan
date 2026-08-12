@@ -11,7 +11,7 @@
     "lint": "eslint --max-warnings 0",
     "test": "vitest run",
     "test:workspace-selection-hardening": "vitest run src/test/workspace-membership-current.test.ts src/test/workspace-membership-query-guard.test.ts src/test/plans-route.test.ts src/test/programs-route.test.ts src/test/funding-opportunities-route.test.ts src/test/models-route.test.ts src/test/rtp-cycles-route.test.ts src/test/engagement-campaigns-route.test.ts src/test/current-workspace-route.test.ts src/test/assistant-context-route.test.ts src/test/assistant-route.test.ts",
-    "test:rls-live": "OPENPLAN_RLS_LIVE_TEST=1 vitest run src/test/rls-isolation.test.ts src/test/rls-viewer-denial.test.ts src/test/migration-schema-drift.test.ts src/test/policies-are-enforced-guard.test.ts src/test/gtfs-feed-status-mirrors-its-current-version.test.ts src/test/gtfs-persist.test.ts",
+    "test:rls-live": "OPENPLAN_RLS_LIVE_TEST=1 vitest run src/test/rls-isolation.test.ts src/test/rls-viewer-denial.test.ts src/test/migration-schema-drift.test.ts src/test/policies-are-enforced-guard.test.ts src/test/gtfs-feed-status-mirrors-its-current-version.test.ts src/test/gtfs-persist.test.ts src/test/rtp-extraction-rls.test.ts",
     "test:watch": "vitest",
     "seed:workspace-isolation": "tsx scripts/seed-local-workspace-isolation.ts",
     "worker:aequilibrae": "bash ../workers/aequilibrae_worker/run.sh",

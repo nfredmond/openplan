@@ -10,6 +10,43 @@ import {
   buildRtpCycleWorkflowSummary,
   RTP_CYCLE_STATUS_OPTIONS,
 } from "@/lib/rtp/catalog";
+import {
+  completeExtractionAcceptance,
+  isOnlyExtractionProvenance,
+  resolveExtractionCandidate,
+} from "@/lib/rtp/extraction/acceptance";
+
+/**
+ * THE PLAN'S COST BASIS YEAR AND INFLATION RATE, and why they arrive here.
+ *
+ * `rtp_cycles.financial_basis_year` and `rtp_cycles.annual_inflation_rate` were
+ * added by 20260805000003 and, until this change, were READ in five places —
+ * the fiscal-constraint engine, the board export, the public plan page, the
+ * chapter-draft facts and the assistant's context — and WRITTEN by nothing at
+ * all. There was no door. That is the repo's named shipped-invisible defect
+ * class wearing its most consequential shape: the two numbers that decide
+ * whether a plan reports constant dollars or year-of-expenditure dollars, and
+ * no way for the agency to state either.
+ *
+ * They are the whole content of a `cycle_financial_basis` transcription
+ * (Nathaniel's Q5, 2026-08-11), so the document-ingestion lane cannot land
+ * without a writer for them. Both fields are added to the ORDINARY payload, not
+ * to a transcription-only path: a capability a machine's output can reach and a
+ * planner's typing cannot is exactly the second writer this lane exists to
+ * avoid.
+ *
+ * WHAT SETTING THEM COSTS, which the review surface states before the click.
+ * A cycle with no rate reports constant dollars and discloses that it did.
+ * Setting a rate re-derives the escalated value of every line in the plan, so
+ * it is never inferred, never defaulted, and only ever transcribed when the
+ * adopted document states that exact figure.
+ *
+ * The rate is a FRACTION — 0.03, not 3 — matching the column's
+ * `BETWEEN 0 AND 1` CHECK. Three per cent typed as `3` is refused rather than
+ * quietly read as three hundred per cent a year.
+ */
+const MIN_FINANCIAL_BASIS_YEAR = 1900;
+const MAX_FINANCIAL_BASIS_YEAR = 2200;
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -31,8 +68,27 @@ const patchRtpCycleSchema = z
     // Nullable so a cycle can be un-pinned, not only moved.
     anchorLatitude: z.union([z.number().min(-90).max(90), z.null()]).optional(),
     anchorLongitude: z.union([z.number().min(-180).max(180), z.null()]).optional(),
+    financialBasisYear: z
+      .union([
+        z.number().int().min(MIN_FINANCIAL_BASIS_YEAR).max(MAX_FINANCIAL_BASIS_YEAR),
+        z.null(),
+      ])
+      .optional(),
+    annualInflationRate: z.union([z.number().min(0).max(1), z.null()]).optional(),
+    /**
+     * The reviewed transcription these values were copied from, when there was
+     * one. `rtp_cycles` carries no `extraction_candidate_id` column on purpose
+     * (20260811000009's header): a cycle is not a transcribed artifact, and the
+     * candidate itself already records what it proposed and which page it came
+     * from. So acceptance here marks the candidate and writes no provenance
+     * column — which is why the flip below is the only thing this field adds.
+     */
+    fromExtractionCandidateId: z.string().uuid().optional(),
   })
-  .refine((value) => Object.values(value).some((item) => item !== undefined), {
+  // Naming a transcription is not an edit. Without the exclusion, a body
+  // carrying nothing but a candidate id would pass this check, mark the
+  // transcription accepted, and change no value in the plan.
+  .refine((value) => !isOnlyExtractionProvenance(value), {
     message: "At least one field must be updated",
   })
   .superRefine((value, context) => {
@@ -166,13 +222,35 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (payload.data.summary !== undefined) updates.summary = payload.data.summary;
     if (payload.data.anchorLatitude !== undefined) updates.anchor_latitude = payload.data.anchorLatitude;
     if (payload.data.anchorLongitude !== undefined) updates.anchor_longitude = payload.data.anchorLongitude;
+    // `!== undefined`, not truthiness: a basis year of null CLEARS the year and
+    // an inflation rate of 0 is a real answer — a plan that programmes in
+    // constant dollars and says so. `|| null` here would silently discard the
+    // second one and report escalation the agency did not adopt.
+    if (payload.data.financialBasisYear !== undefined) updates.financial_basis_year = payload.data.financialBasisYear;
+    if (payload.data.annualInflationRate !== undefined) {
+      updates.annual_inflation_rate = payload.data.annualInflationRate;
+    }
+
+    // Resolved after the edit is assembled and before the write, so a
+    // transcription belonging to another plan refuses without changing
+    // anything. The cycle scoping the lookup is the one this request has
+    // already proven the caller may write.
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "cycle_financial_basis",
+      rtpCycleId: cycle.id,
+      workspaceId: cycle.workspace_id,
+    });
+    if (!candidate.ok) return candidate.response;
 
     const { data: updatedCycle, error: updateError } = await supabase
       .from("rtp_cycles")
       .update(updates)
       .eq("id", cycle.id)
       .select(
-        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, anchor_latitude, anchor_longitude, created_at, updated_at"
+        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, anchor_latitude, anchor_longitude, financial_basis_year, annual_inflation_rate, created_at, updated_at"
       )
       .single();
 
@@ -204,13 +282,26 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       publicReviewCloseAt: updatedCycle.public_review_close_at,
     });
 
-    audit.info("cycle_updated", { rtpCycleId: cycle.id, durationMs: Date.now() - startedAt });
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: cycle.id,
+      reviewedBy: user.id,
+      context: { rtpCycleId: cycle.id },
+    });
+
+    audit.info("cycle_updated", {
+      rtpCycleId: cycle.id,
+      extractionCandidateId: candidate.candidate?.id ?? null,
+      durationMs: Date.now() - startedAt,
+    });
     return NextResponse.json({
       cycle: {
         ...updatedCycle,
         readiness,
         workflow: buildRtpCycleWorkflowSummary({ status: updatedCycle.status, readiness }),
       },
+      ...acceptance,
     });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });

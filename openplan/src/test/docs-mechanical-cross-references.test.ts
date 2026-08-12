@@ -22,6 +22,12 @@ const OPERATOR_DOCS = [
   path.join(REPO_ROOT, "README.md"),
   path.join(APP_ROOT, "docs", "FIRST_DEPLOYMENT.md"),
   path.join(APP_ROOT, "docs", "SELF_HOSTING.md"),
+  // (2026-08-11) The plan-reading walkthrough. It is the first doc written for
+  // the PLANNER rather than for whoever installs the software, and it earns a
+  // place here for the same reason the other three are here: it names an OCR
+  // worker directory, four env vars and a sibling doc, and every one of those
+  // is a mechanical reference that can rot.
+  path.join(APP_ROOT, "docs", "READING_AN_ADOPTED_PLAN.md"),
 ];
 
 /** App env-var namespaces — generic ALL_CAPS words in prose are not env vars. */

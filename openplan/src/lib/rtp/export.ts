@@ -26,6 +26,10 @@ import {
 } from "@/lib/rtp/comment-response";
 import { parseOptionalAmount } from "@/lib/money/optional-amount";
 import {
+  exportProvenanceLine,
+  type TranscriptionRecord,
+} from "@/lib/rtp/extraction/display";
+import {
   buildPortfolioPriorityNarrative,
   buildRtpPriorityRationale,
   computeRtpPriorityScore,
@@ -569,6 +573,21 @@ export type RtpExportOptions = {
   horizonBands: ReadonlyArray<{ id: string; label: string; startYear: number; endYear: number }> | null;
   /** What the public said and what the agency answered. */
   commentResponse: RtpCommentResponseSummary | null;
+  /**
+   * Which figures in this document were copied out of a plan document, keyed by
+   * the id of the row that carries them.
+   *
+   * IN THE BODY, NOT AN APPENDIX (Nathaniel's Q2 decision, 2026-08-11). A board
+   * member reading a programmed cost in the packet is the person who most needs
+   * to know it was copied from page 44 of the adopted plan and what that page
+   * says — and they need it beside the figure, at the meeting, not in a table
+   * at the back.
+   *
+   * `null` means the citations were not supplied to this document; an empty
+   * object means nothing in this plan was transcribed. The two are different
+   * and only the second one is a statement about the plan.
+   */
+  transcriptions: Readonly<Record<string, TranscriptionRecord>> | null;
 };
 
 type RtpExportSubject = {
@@ -718,6 +737,7 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
 
   if (enabledSectionKeys.includes("project_lists")) {
     const bands = options?.horizonBands ?? [];
+    const transcriptions = options?.transcriptions ?? null;
     const bandById = new Map(bands.map((band) => [band.id, band]));
     // Grouped exactly as the on-screen lists are, so the document a board reads
     // and the page a planner edits cannot present the plan differently.
@@ -734,9 +754,21 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
       groups.set(key, group);
     }
 
+    // NULL IS NOT AN EMPTY MAP. "The citations were not supplied to this
+    // document" and "nothing in this plan was copied out of a document" are
+    // different facts, and only the second one is a statement about the plan.
+    // The first is stated rather than skipped, because a packet that silently
+    // dropped its page citations looks exactly like a plan somebody typed by
+    // hand.
+    const citationsUnavailable =
+      transcriptions === null
+        ? '<p class="muted">Where these figures came from could not be read when this document was generated, so no page citations are shown against them. This does not mean they were entered by hand.</p>'
+        : "";
+
     sections.push(`
   <section class="section">
     <h2>Project lists</h2>
+    ${citationsUnavailable}
     ${
       groups.size === 0
         ? '<p class="muted">No projects are linked to this plan yet.</p>'
@@ -761,9 +793,16 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
           <ul>${group.rows
             .map((row) => {
               const cost = parseOptionalAmount(row.estimated_cost);
+              // The page this cost was copied from, printed with the figure.
+              // Nothing at all for a cost somebody typed — the absence of a
+              // citation is the honest rendering of a hand-entered number.
+              const transcription = transcriptions?.[row.id] ?? null;
+              const citation = transcription
+                ? `<span class="muted"> — ${esc(exportProvenanceLine(transcription))}</span>`
+                : "";
               return `<li>${esc(row.project?.name ?? "Linked project")} — ${esc(
                 cost === null ? "no cost recorded" : formatRtpExportCurrency(cost)
-              )}${row.cost_basis_year && cost !== null ? esc(` (${row.cost_basis_year} dollars)`) : ""}</li>`;
+              )}${row.cost_basis_year && cost !== null ? esc(` (${row.cost_basis_year} dollars)`) : ""}${citation}</li>`;
             })
             .join("")}</ul>
         </div>`;

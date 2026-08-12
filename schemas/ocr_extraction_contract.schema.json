@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:openplan:schemas:ocr_extraction_contract",
+  "title": "OpenPlan OCR extraction contract (openplan-ocr-extraction.v1)",
+  "description": "Service-level contract between a planning application (e.g. OpenPlan) and an OCR worker (workers/ocr_worker, or any worker that speaks this contract). The consumer POSTs an OcrRequest to the worker's /api/v1/ocr-requests endpoint with one signed, time-limited link to a PDF; the worker recognises text and POSTs OcrCallback payloads to the consumer's callbackUrl as the job advances. Both directions authenticate with a pre-shared bearer token. THE PAGE IS THE ANCHOR AND THE CONTRACT'S WHOLE POINT: a succeeded callback carries text PER PAGE, one entry per page of the source document in ascending order with no gaps, so an excerpt the consumer later shows a planner can name the page it came from. A page the recogniser found no text on is delivered with an EMPTY string, never omitted — dropping it would silently renumber every page after it. OCR is TRANSCRIPTION: the worker never summarises, never reorders, never repairs, and never reports a certainty, likelihood or confidence for what it read. This file is committed at the repository root and is the single source of truth; the worker's Python constants and the consumer's zod schemas are hand mirrors, each cross-checked against this file by their own test suites. Bump schemaVersion for any breaking change.",
+  "$defs": {
+    "OcrRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "requestId", "callbackUrl", "externalRef", "documentTitle", "source"],
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "enum": ["openplan-ocr-extraction.v1"]
+        },
+        "requestId": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "description": "Caller-generated idempotency key echoed by every callback. A retried submission with the same requestId must not create a second job; the worker answers the SAME accepted callback body instead."
+        },
+        "callbackUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTP(S) endpoint on the consumer that receives OcrCallback payloads. Bearer-authenticated with the shared callback token."
+        },
+        "externalRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["system", "documentId", "workspaceId"],
+          "properties": {
+            "system": { "type": "string", "description": "Consumer identifier, e.g. \"openplan\"." },
+            "documentId": { "type": "string", "description": "Consumer-side document id (OpenPlan: kb_documents.id)." },
+            "workspaceId": { "type": "string", "description": "Consumer-side tenant scope (OpenPlan: workspaces.id)." },
+            "projectId": { "type": "string", "description": "Optional consumer-side project id." }
+          }
+        },
+        "documentTitle": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "source": { "$ref": "#/$defs/PdfSource" },
+        "languages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": { "type": "string", "minLength": 2, "maxLength": 32, "pattern": "^[A-Za-z_]{2,32}$" },
+          "description": "Tesseract language codes to recognise with, in priority order (e.g. [\"eng\"], [\"spa\",\"eng\"]). REQUIRED TO BE SUPPLIED BY THE CONSUMER RATHER THAN DEFAULTED IN THE WORKER when the deployment cares: OpenPlan is not a United-States-only product, and a worker that silently assumes English would return garbage for a plan adopted in Spanish and give no sign it had done so. The worker refuses a language it has no trained data for, naming the code and what it does have."
+        },
+        "maxPages": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Optional ceiling. A document with more pages than this is REFUSED (a failed callback naming both numbers) rather than truncated — a half-read document whose later pages simply do not exist would be indistinguishable, downstream, from a document that ends there."
+        },
+        "maxCallbackBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "description": "Optional ceiling on the serialized size of the succeeded callback, as the CONSUMER will enforce it. The worker measures its assembled payload against this before sending; over the ceiling it sends a failed callback naming the measured size and the ceiling, so the operator meets a sentence instead of a stalled job or a 413 retry loop."
+        },
+        "notes": { "type": "string", "maxLength": 2048 }
+      }
+    },
+    "PdfSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Signed, time-limited link to the PDF. Must stay valid long enough for the worker to download it; recognition itself happens after the download, so the link does not need to outlive the job."
+        },
+        "filename": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "sizeBytes": { "type": "integer", "minimum": 1 },
+        "checksumSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Lowercase hex SHA-256 of the source bytes. When present the worker verifies it and FAILS the job naming the mismatch — a corrupted download would otherwise produce recognised text attributed to a document nobody could distrust."
+        }
+      }
+    },
+    "OcrCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "requestId", "callbackId", "jobReference", "status", "occurredAt"],
+      "properties": {
+        "schemaVersion": { "type": "string", "enum": ["openplan-ocr-extraction.v1"] },
+        "requestId": { "type": "string", "minLength": 8, "maxLength": 128 },
+        "callbackId": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "description": "Unique per delivery. The contract allows redeliveries; consumers dedupe on this."
+        },
+        "jobReference": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "status": {
+          "type": "string",
+          "enum": ["accepted", "running", "succeeded", "failed", "canceled"]
+        },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "progress": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "message": {
+          "type": "string",
+          "maxLength": 2048,
+          "description": "One honest sentence naming the stage and the cause. Never a certainty, confidence or likelihood about what was recognised — that would be the machine grading its own transcription."
+        },
+        "pageCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Pages in the SOURCE document. On a succeeded callback this must equal pages.length; the worker cross-checks it against the PDF's own page count before sending and fails the job on a mismatch rather than delivering pages whose numbers might have shifted."
+        },
+        "pages": {
+          "type": "array",
+          "maxItems": 5000,
+          "items": { "$ref": "#/$defs/OcrPage" },
+          "description": "REQUIRED when status is 'succeeded'. One entry per page of the source, page numbers 1..pageCount ascending with no gaps and no duplicates. A page with no recognised text carries an empty string; it is never omitted, because omitting it would renumber every page after it."
+        },
+        "engine": { "$ref": "#/$defs/OcrEngine" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "succeeded" } }, "required": ["status"] },
+          "then": {
+            "required": ["pages", "pageCount"],
+            "description": "A succeeded OCR job with no pages is not a success — it is a failure that did not say so."
+          }
+        }
+      ]
+    },
+    "OcrPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["page", "text"],
+      "properties": {
+        "page": { "type": "integer", "minimum": 1, "description": "1-based page number in the SOURCE document." },
+        "text": {
+          "type": "string",
+          "maxLength": 200000,
+          "description": "The recognised text of exactly this page, verbatim in reading order as the recogniser produced it. Empty when nothing was recognised."
+        }
+      }
+    },
+    "OcrEngine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "maxLength": 64, "description": "e.g. \"ocrmypdf+tesseract\"." },
+        "version": { "type": "string", "maxLength": 64 },
+        "languages": {
+          "type": "array",
+          "maxItems": 8,
+          "items": { "type": "string", "maxLength": 32 },
+          "description": "The languages actually used, which the consumer records: text recognised with the wrong language pack is the failure mode a reader cannot see."
+        },
+        "pagesWithText": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many of the delivered pages carry any text at all. A COUNT, not a score: it lets the consumer say '148 of 212 pages produced text' instead of implying a quality judgement nobody measured."
+        }
+      }
+    }
+  },
+  "oneOf": [{ "$ref": "#/$defs/OcrRequest" }, { "$ref": "#/$defs/OcrCallback" }]
+}

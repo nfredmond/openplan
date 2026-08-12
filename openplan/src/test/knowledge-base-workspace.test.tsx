@@ -95,13 +95,99 @@ describe("KnowledgeBaseWorkspace", () => {
           doc({
             status: "failed",
             chunk_count: 0,
-            extraction_error: "No extractable text layer was found.",
+            extraction_error: "Could not parse the PDF (Invalid XRef stream header).",
           }),
         ]}
       />
     );
     expect(screen.getByText("failed")).toBeInTheDocument();
-    expect(screen.getByText(/No extractable text layer/)).toBeInTheDocument();
+    // A parser failure that is NOT the no-text-layer one passes through
+    // verbatim: paraphrasing it would lose the only detail identifying the
+    // problem. (The no-text-layer message is handled separately below, because
+    // its stored wording carries a claim about the DEPLOYMENT that goes stale.)
+    expect(screen.getByText(/Invalid XRef stream header/)).toBeInTheDocument();
+  });
+
+  /**
+   * A scan is not "unsupported" — it is unread, and whether it CAN be read
+   * depends on this deployment.
+   *
+   * The stored `extraction_error` ends "OCR is not enabled", written at upload
+   * time. Showing it verbatim tells a planner on an OCR-equipped deployment
+   * that their working capability does not exist — the same class of live false
+   * statement `describeAerialProcessingAvailability` was written to remove.
+   */
+  const SCANNED = {
+    status: "failed" as const,
+    source_kind: "uploaded_pdf" as const,
+    chunk_count: 0,
+    extraction_error:
+      "No extractable text layer was found. Scanned or image-only documents are not supported yet — OCR is not enabled.",
+  };
+
+  it("offers OCR on a scanned PDF when this deployment has a worker", () => {
+    render(
+      <KnowledgeBaseWorkspace
+        workspaceId="ws-1"
+        initialDocuments={[doc(SCANNED)]}
+        ocrConfigured
+      />
+    );
+    expect(screen.getByRole("button", { name: /Read 2045 RTP with OCR/ })).toBeInTheDocument();
+    expect(screen.getByText(/It can be read with OCR/)).toBeInTheDocument();
+    expect(screen.queryByText(/OCR is not enabled/)).not.toBeInTheDocument();
+  });
+
+  it("offers no button and says why when this deployment has none", () => {
+    render(<KnowledgeBaseWorkspace workspaceId="ws-1" initialDocuments={[doc(SCANNED)]} />);
+    // A button that answers 501 would be worse than no button.
+    expect(screen.queryByRole("button", { name: /with OCR/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/needs an OCR service, which this deployment does not have/)).toBeInTheDocument();
+  });
+
+  it("posts to the OCR route and reports what was started", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ status: "accepted", detail: "The OCR service is reading this document." }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <KnowledgeBaseWorkspace
+        workspaceId="ws-1"
+        initialDocuments={[doc(SCANNED)]}
+        ocrConfigured
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Read 2045 RTP with OCR/ }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith("/api/knowledge-base/documents/doc-1/ocr", {
+        method: "POST",
+      })
+    );
+    // The row is NOT flipped to "ready" here: OCR takes minutes and this screen
+    // may not assert an outcome nothing has reported.
+    await waitFor(() =>
+      expect(screen.getByText(/The OCR service is reading this document/)).toBeInTheDocument()
+    );
+    expect(screen.getByText("failed")).toBeInTheDocument();
+  });
+
+  it("discloses OCR provenance on a document that was read that way", () => {
+    render(
+      <KnowledgeBaseWorkspace
+        workspaceId="ws-1"
+        initialDocuments={[
+          doc({ status: "ready", chunk_count: 12, extraction_source: "ocr", page_count: 212 }),
+        ]}
+        ocrConfigured
+      />
+    );
+    // The disclosure a transcribed figure depends on — and a disclosure, never
+    // a confidence score.
+    expect(screen.getByText(/Read with OCR/)).toBeInTheDocument();
+    expect(screen.getByText(/check a figure against the original/)).toBeInTheDocument();
   });
 
   it("optimistically removes a document on delete", async () => {

@@ -7,6 +7,7 @@ import {
   resolveKbDocumentMaxBytes,
   type KbDocumentRow,
 } from "@/lib/knowledge-base/documents";
+import { isKbOcrWorkerConfigured } from "@/lib/knowledge-base/ocr-availability";
 import { loadDocumentLibrary } from "@/lib/document-library/query";
 import { DOCUMENT_LIBRARY_SOURCES } from "@/lib/document-library/sources";
 import type { DocumentLibrarySourceId } from "@/lib/document-library/types";
@@ -126,6 +127,9 @@ export default async function KnowledgeBasePage({
         projects: Boolean(projectsResult.error),
       }}
       maxUploadBytes={resolveKbDocumentMaxBytes()}
+      // Server-only env vars: resolved here and passed down, never read in the
+      // client component, where they would land in a browser bundle.
+      ocrConfigured={isKbOcrWorkerConfigured()}
       library={{
         entries: library.entries,
         perSource: library.perSource,

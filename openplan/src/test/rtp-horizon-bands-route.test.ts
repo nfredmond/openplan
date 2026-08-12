@@ -17,6 +17,7 @@ import { NextRequest } from "next/server";
  */
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
@@ -91,6 +92,7 @@ const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -158,6 +160,11 @@ describe("/api/rtp-cycles/[rtpCycleId]/horizon-bands", () => {
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     setMembership(WORKSPACE_A, "member");
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
+    // `rtp_extraction_candidates` has no client write policy, so the flip that
+    // marks a transcription accepted goes through the service role. It shares
+    // the recording chain, which is what lets the assertions below read the
+    // update the route actually built.
+    createServiceRoleClientMock.mockImplementation(() => ({ from: fromMock }));
   });
 
   it("refuses an unauthenticated caller with 401 and touches no table", async () => {
@@ -501,5 +508,202 @@ describe("/api/rtp-cycles/[rtpCycleId]/horizon-bands", () => {
     expect(await response.json()).toMatchObject({
       error: expect.stringMatching(/was not saved/i),
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A PERIOD TRANSCRIBED OUT OF THE ADOPTED PLAN'S OWN TABLE.
+//
+// The band rules do not relax for it. A period copied off a page still has to
+// end after it starts, still may not overlap another period of the same plan,
+// and — the one that matters most — still may not carry an escalation target
+// year the document did not state, because filling that field deletes the
+// public document's "midpoint assumed and disclosed" caveat.
+// ---------------------------------------------------------------------------
+
+const CANDIDATE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const MEASURE_CANDIDATE_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+
+function pendingBandCandidate(overrides: Record<string, unknown> = {}) {
+  return {
+    data: {
+      id: CANDIDATE_ID,
+      workspace_id: WORKSPACE_A,
+      rtp_cycle_id: RTP_CYCLE_ID,
+      target_kind: "horizon_band",
+      status: "pending",
+      quote_verified: true,
+      ...overrides,
+    },
+    error: null,
+  };
+}
+
+const TRANSCRIBED_BAND = { label: "2023–2032", startYear: 2023, endYear: 2032 };
+
+describe("/api/rtp-cycles/[rtpCycleId]/horizon-bands — accepting a transcription", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    recorded.length = 0;
+    for (const key of Object.keys(queued)) delete queued[key];
+
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    setMembership(WORKSPACE_A, "member");
+    createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
+    createServiceRoleClientMock.mockImplementation(() => ({ from: fromMock }));
+  });
+
+  it("a hand-typed period asks the staging table nothing", async () => {
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+    queueResult("rtp_horizon_bands", { data: storedBandRow(), error: null });
+
+    const response = await postBand(request("POST", TRANSCRIBED_BAND), routeContext);
+
+    expect(response.status).toBe(200);
+    expect(queriesFor("rtp_extraction_candidates")).toEqual([]);
+    expect(createServiceRoleClientMock).not.toHaveBeenCalled();
+    const inserted = argsOf("rtp_horizon_bands", "insert")?.[0] as Record<string, unknown>;
+    expect(inserted).not.toHaveProperty("extraction_candidate_id");
+  });
+
+  it("records the page a transcribed period came from and marks the passage accepted", async () => {
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+    queueResult("rtp_extraction_candidates", pendingBandCandidate());
+    queueResult("rtp_horizon_bands", { data: storedBandRow({ id: BAND_ID }), error: null });
+    queueResult("rtp_extraction_candidates", { data: { id: CANDIDATE_ID }, error: null });
+
+    const response = await postBand(
+      request("POST", { ...TRANSCRIBED_BAND, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    const inserted = argsOf("rtp_horizon_bands", "insert")?.[0] as Record<string, unknown>;
+    expect(inserted.extraction_candidate_id).toBe(CANDIDATE_ID);
+    // Still null, because the document did not state one. This is the caveat
+    // the whole band lane is careful about.
+    expect(inserted.escalation_target_year).toBeNull();
+
+    const flip = queriesFor("rtp_extraction_candidates")[1];
+    const update = flip?.calls.find((call) => call.method === "update")?.args[0] as Record<string, unknown>;
+    expect(update).toMatchObject({ status: "accepted", accepted_row_id: BAND_ID, reviewed_by: USER_ID });
+    expect(body.extractionCandidate).toEqual({ id: CANDIDATE_ID, recorded: true });
+  });
+
+  it("the lookup is scoped to this plan and this workspace", async () => {
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+    queueResult("rtp_extraction_candidates", pendingBandCandidate());
+    queueResult("rtp_horizon_bands", { data: storedBandRow(), error: null });
+    queueResult("rtp_extraction_candidates", { data: { id: CANDIDATE_ID }, error: null });
+
+    await postBand(
+      request("POST", { ...TRANSCRIBED_BAND, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    const lookup = queriesFor("rtp_extraction_candidates")[0];
+    const scoping = lookup.calls.filter((call) => call.method === "eq").map((call) => call.args);
+    expect(scoping).toEqual([
+      ["id", CANDIDATE_ID],
+      ["rtp_cycle_id", RTP_CYCLE_ID],
+      ["workspace_id", WORKSPACE_A],
+    ]);
+  });
+
+  it("refuses a passage staged for a different part of the plan, and writes nothing", async () => {
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+    queueResult(
+      "rtp_extraction_candidates",
+      pendingBandCandidate({ id: MEASURE_CANDIDATE_ID, target_kind: "performance_measure" })
+    );
+
+    const response = await postBand(
+      request("POST", { ...TRANSCRIBED_BAND, fromExtractionCandidateId: MEASURE_CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: "That transcription belongs somewhere else in the plan",
+    });
+    expect(queriesFor("rtp_horizon_bands")).toEqual([]);
+  });
+
+  it("the same incoherent years are refused whether or not a transcription is named", async () => {
+    /**
+     * Both runs get an authorization read and NOTHING else queued. The year
+     * check sits between authorization and the resolver, so if naming a
+     * transcription ever bought a payload past a rule — or if the resolver
+     * were moved above the check — the harness would throw "No queued Supabase
+     * result" instead of quietly passing.
+     */
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+
+    const typed = await postBand(
+      request("POST", { label: "Backwards", startYear: 2035, endYear: 2026 }),
+      routeContext
+    );
+    const transcribed = await postBand(
+      request("POST", {
+        label: "Backwards",
+        startYear: 2035,
+        endYear: 2026,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+
+    expect(typed.status).toBe(400);
+    expect(transcribed.status).toBe(400);
+    expect(queriesFor("rtp_extraction_candidates")).toEqual([]);
+    expect(queriesFor("rtp_horizon_bands")).toEqual([]);
+  });
+
+  it("an escalation year outside the period is refused for a transcription too", async () => {
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+
+    const response = await postBand(
+      request("POST", {
+        ...TRANSCRIBED_BAND,
+        escalationTargetYear: 2045,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext
+    );
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toContain("must fall inside the period");
+    expect(queriesFor("rtp_horizon_bands")).toEqual([]);
+  });
+
+  it("a PATCH naming only a transcription is still 'nothing to update'", async () => {
+    const response = await patchBand(
+      request("PATCH", { bandId: BAND_ID, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Invalid horizon period update payload" });
+    expect(fromMock).not.toHaveBeenCalled();
+  });
+
+  it("a PATCH that changes a value records the page it came from", async () => {
+    queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
+    queueResult("rtp_horizon_bands", { data: storedBandRow(), error: null });
+    queueResult("rtp_extraction_candidates", pendingBandCandidate());
+    queueResult("rtp_horizon_bands", { data: storedBandRow({ end_year: 2032 }), error: null });
+    queueResult("rtp_extraction_candidates", { data: { id: CANDIDATE_ID }, error: null });
+
+    const response = await patchBand(
+      request("PATCH", { bandId: BAND_ID, endYear: 2032, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext
+    );
+
+    expect(response.status).toBe(200);
+    const update = argsOf("rtp_horizon_bands", "update", 1)?.[0] as Record<string, unknown>;
+    expect(update).toMatchObject({ end_year: 2032, extraction_candidate_id: CANDIDATE_ID });
   });
 });

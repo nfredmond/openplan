@@ -1,0 +1,52 @@
+# OpenPlan self-hosted OCR worker, in one command:
+#
+#     docker compose up -d --build
+#
+# One service. It turns a scanned PDF into per-page text and hands it back to
+# OpenPlan over the OCR extraction contract on port 8585.
+#
+# NETWORKING, STATED PLAINLY because every failure here is silent otherwise:
+# the worker runs with `network_mode: host` so that links which say "localhost"
+# or "127.0.0.1" — the signed document URL a local Supabase mints, and the
+# app's http://localhost:3000 callback URL — reach the MACHINE, not the inside
+# of a container where nothing is listening. On Linux this works as-is. On
+# Docker Desktop (macOS/Windows) enable "host networking" in
+# Settings -> Resources -> Network, or, if your Supabase and OpenPlan are hosted
+# (https URLs), delete the network_mode line and publish the port instead (see
+# the commented alternative at the bottom).
+
+services:
+  ocr-worker:
+    build: .
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      # The worker listens on this port ON THE HOST (host networking).
+      OCR_WORKER_PORT: "8585"
+      # Refuse a document with more pages than this rather than reading part of
+      # it: a document read only as far as a ceiling looks, from every screen
+      # downstream, exactly like a document that ends there.
+      OCR_WORKER_MAX_PAGES: "2000"
+      # 90 minutes. A 300-page scan on a few cores takes tens of minutes; this
+      # is the point at which the worker stops and SAYS it stopped.
+      OCR_WORKER_TIMEOUT_SECONDS: "5400"
+      # Cores ocrmypdf may use for one document. Unset lets it decide.
+      # OCR_WORKER_JOBS: "8"
+      # Used only when a request names no languages. OpenPlan always names them
+      # (OPENPLAN_KB_OCR_LANGUAGES on the app side).
+      OCR_WORKER_DEFAULT_LANGUAGES: "eng"
+      # Both bearer tokens come from your .env file (same directory), never
+      # from this file. See DEPLOY.md step 2.
+      OPENPLAN_KB_OCR_WORKER_TOKEN: "${OPENPLAN_KB_OCR_WORKER_TOKEN}"
+      OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN: "${OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN}"
+    # OCR is CPU-bound across every core it can reach. Nothing here limits that
+    # on purpose: on a shared machine, cap it with `cpus:` or OCR_WORKER_JOBS.
+
+# Bridge-network alternative (hosted Supabase + hosted app, where every URL is
+# a public https one): replace `network_mode: host` with
+#
+#     ports:
+#       - "8585:8585"
+#
+# and make sure the OpenPlan deployment can reach this machine at whatever
+# address you set OPENPLAN_KB_OCR_WORKER_URL to.

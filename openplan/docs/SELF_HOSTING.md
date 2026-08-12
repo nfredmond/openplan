@@ -224,6 +224,11 @@ A Census API key is **free** and issued instantly at
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
 | `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to a worker. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted — and `/county-runs` says so *before* the first launch rather than after it, since the URL is the same test the dispatcher itself applies. Unlike the modeling worker there is nothing extra to declare: configuring the URL is the declaration. |
 | `OPENPLAN_AERIAL_PROCESSING_*` | Aerial Ops integration with an external processing platform. |
+| `OPENPLAN_RTP_EXTRACTION_MODEL` | Which Claude model transcribes an adopted plan document into staged figures and verbatim chapter text. Unset uses the strong default rather than the cheap one, on purpose: the job is copying figures out of a table, and a model that paraphrases a number is the whole failure mode. Every figure is checked against the words it quoted before it is staged, so a cheaper model does not produce wrong figures — it produces *fewer* figures, each dropped one a planner then types by hand. |
+| `OPENPLAN_KB_OCR_WORKER_URL` / `_TOKEN` | Optional. Turns SCANNED documents into citable, page-anchored text using the OCR worker in `workers/ocr_worker/`. **Required together** — a URL with no token is treated as unconfigured, because the endpoint spends a machine's cores on request. Without them, a scanned PDF is stored and marked unreadable, and the library says *this deployment has no OCR service* rather than saying scans are unsupported. |
+| `OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN` / `OPENPLAN_KB_OCR_CALLBACK_URL` | The token the worker presents when it delivers recognised text, and the public origin it delivers to. **Without the token the callback route answers 503 and no recognised text can ever land**, so a job runs to completion and delivers nothing. The URL falls back to the request origin in development; set it in production. |
+| `OPENPLAN_KB_OCR_LANGUAGES` | Tesseract language codes (`eng`, `spa`, `vie`, `chi_sim`…), comma- or plus-separated, in priority order. Unset means `eng`. **Not cosmetic:** a Spanish-language plan recognised with the English model comes back looking exactly like text and saying nothing, and nothing downstream can tell. Install the matching `tesseract-ocr-<lang>` package in the worker image. |
+| `OPENPLAN_KB_OCR_CALLBACK_MAX_BYTES` | Largest OCR delivery this deployment accepts, in bytes. Unset means 4 MiB — deliberately under the 4.5 MB request-body limit a Vercel Function enforces and cannot be raised past. A self-hosted deployment can raise it to whatever its reverse proxy allows. A document whose text exceeds the ceiling FAILS naming both numbers rather than delivering part of itself. |
 | `LODES_YEAR` | Pins the LEHD LODES vintage used for commute flows. |
 | `OPENPLAN_MONTHLY_RUN_CAP` | An optional per-workspace monthly cap on expensive runs. **Unset means unlimited**, which is the default and the right setting for a self-hosted deployment. Set it only if you run a public deployment and need to protect your own compute. It is an operator limit, not a tier — model-run launches count 5×, everything else 1×, and the refusal names you rather than offering an upgrade. |
 
@@ -491,6 +496,31 @@ unused.
 > Self-hosting is the posture, and each deployment runs its own worker. That is why the one-click
 > blueprint above exists — the answer to "standing one up is a project" is to make it a button, not
 > to run it for you. Nothing about this is a reduced tier; OpenPlan is free either way.
+
+---
+
+## 6. Reading adopted plan documents (optional OCR worker)
+
+OpenPlan can read an adopted RTP PDF and copy figures and verbatim policy text out of it, each
+citing the page it came from. **A PDF with a text layer needs nothing extra** — the document library
+already reads those page by page, and the plan-reading walkthrough in
+[`docs/READING_AN_ADOPTED_PLAN.md`](READING_AN_ADOPTED_PLAN.md) is written for the planner doing it.
+
+**Scans are the gap.** Most adopted plans older than a few years are pictures of pages with no text
+in them. OpenPlan stores them, marks them unreadable and refuses to cite them, which is honest but
+useless. The OCR worker in [`workers/ocr_worker/`](../../workers/ocr_worker/DEPLOY.md) closes it:
+`ocrmypdf` + Tesseract, per page so the page stays the anchor. Its `DEPLOY.md` is a short checklist,
+and the four `OPENPLAN_KB_OCR_*` variables in the optional table above are what wires it up.
+
+**Success looks like:** a scanned document in the library grows a **Read with OCR** button, and after
+the job finishes its status is **Ready** with a page count. A deployment with no worker configured
+says so on that document rather than saying scans are unsupported — the two are different answers,
+and a planner deciding whether to retype three hundred pages is owed the right one.
+
+Transcription itself needs `ANTHROPIC_API_KEY` (or a per-workspace key) like every other AI surface,
+and `OPENPLAN_RTP_EXTRACTION_MODEL` if you want to choose the model. Without a key the reading is
+refused outright rather than degraded — there is no honest offline answer to "what does page 112
+say".
 
 ---
 

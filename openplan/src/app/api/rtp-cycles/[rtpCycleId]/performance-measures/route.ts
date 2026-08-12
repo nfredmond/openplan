@@ -12,6 +12,12 @@ import {
   noRowsMatchedResponse,
   writeMatchedNoRows,
 } from "@/lib/http/write-outcome";
+import {
+  completeExtractionAcceptance,
+  extractionProvenanceColumns,
+  isOnlyExtractionProvenance,
+  resolveExtractionCandidate,
+} from "@/lib/rtp/extraction/acceptance";
 
 /**
  * The performance measures of an RTP cycle: a baseline, a target, and the
@@ -152,6 +158,23 @@ const sortOrderField = () =>
 const measureKeyField = z.string().trim().min(1).max(120);
 const labelField = z.string().trim().min(1).max(200);
 
+/**
+ * The transcription this measure was copied from, when there was one.
+ *
+ * It has to be DECLARED here rather than tolerated, because both payloads are
+ * `.strict()` and a strict schema answers 400 for a key it does not know. That
+ * is the right default and it is why this field is spelled out: the alternative
+ * — dropping `.strict()` so an unknown key is silently stripped — is the exact
+ * defect this repo has already paid for, where a guard "proving" a payload
+ * could not set a field passed because the field never reached the code.
+ *
+ * A baseline is still a measurement of the world. What makes a transcribed one
+ * legitimate is not that a model produced it but that the agency's own adopted
+ * document prints it on a page this row will cite, and that a person read the
+ * quote and accepted it.
+ */
+const fromExtractionCandidateIdSchema = z.string().uuid().optional();
+
 const createMeasureSchema = z
   .object({
     measureKey: measureKeyField,
@@ -164,6 +187,7 @@ const createMeasureSchema = z
     dataSource: nullableTextField(300),
     notes: nullableTextField(2000),
     sortOrder: sortOrderField(),
+    fromExtractionCandidateId: fromExtractionCandidateIdSchema,
   })
   .strict();
 
@@ -180,12 +204,15 @@ const updateMeasureSchema = z
     dataSource: nullableTextField(300),
     notes: nullableTextField(2000),
     sortOrder: sortOrderField(),
+    fromExtractionCandidateId: fromExtractionCandidateIdSchema,
   })
   .strict()
-  .refine(
-    (value) => Object.keys(value).some((key) => key !== "measureId" && value[key as keyof typeof value] !== undefined),
-    { message: "At least one field must be updated." }
-  );
+  // Provenance is not an edit: naming a transcription and changing no value is
+  // still "nothing was requested", because the alternative is a measure marked
+  // as transcribed from a page while its baseline is the one somebody typed.
+  .refine((value) => !isOnlyExtractionProvenance(value, "measureId"), {
+    message: "At least one field must be updated.",
+  });
 
 const deleteMeasureSchema = z.object({ measureId: z.string().uuid() }).strict();
 
@@ -351,6 +378,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!resolved.ok) return resolved.response;
     const { supabase, userId, workspaceId, cycleId } = resolved.context;
 
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "performance_measure",
+      rtpCycleId: cycleId,
+      workspaceId,
+    });
+    if (!candidate.ok) return candidate.response;
+
     const insertPayload = {
       workspace_id: workspaceId,
       rtp_cycle_id: cycleId,
@@ -368,6 +405,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // measurement, so an absent one really is 0.
       sort_order: payload.data.sortOrder ?? 0,
       created_by: userId,
+      ...extractionProvenanceColumns(candidate.candidate),
     };
 
     const { data, error } = await supabase
@@ -393,12 +431,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return insertNotReadableBackResponse({ subject: "performance measure" });
     }
 
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: (data as { id?: string } | null)?.id,
+      reviewedBy: userId,
+      context: { rtpCycleId: cycleId },
+    });
+
     audit.info("created", {
       rtpCycleId: cycleId,
       measureKey: payload.data.measureKey,
+      extractionCandidateId: candidate.candidate?.id ?? null,
       durationMs: Date.now() - startedAt,
     });
-    return NextResponse.json({ measure: data }, { status: 201 });
+    return NextResponse.json({ measure: data, ...acceptance }, { status: 201 });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to create the performance measure" }, { status: 500 });
@@ -458,6 +505,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
     }
 
+    // Only once a real edit is established. The reconciliation case: the
+    // adopted document's baseline differs from the one in the plan, and the
+    // planner is taking the document's and citing its page.
+    const candidate = await resolveExtractionCandidate({
+      supabase: writeContext.supabase as unknown as Parameters<
+        typeof resolveExtractionCandidate
+      >[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "performance_measure",
+      rtpCycleId: writeContext.cycleId,
+      workspaceId: writeContext.workspaceId,
+    });
+    if (!candidate.ok) return candidate.response;
+    Object.assign(updates, extractionProvenanceColumns(candidate.candidate));
+
     const { data, error } = await writeContext.supabase
       .from("rtp_performance_measures")
       .update(updates)
@@ -490,12 +553,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return noRowsMatchedResponse({ subject: "performance measure", targetWasVerified: true });
     }
 
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: found.measure.id,
+      reviewedBy: writeContext.userId,
+      context: { rtpCycleId: writeContext.cycleId },
+    });
+
     audit.info("updated", {
       rtpCycleId: writeContext.cycleId,
       measureId: found.measure.id,
+      extractionCandidateId: candidate.candidate?.id ?? null,
       durationMs: Date.now() - startedAt,
     });
-    return NextResponse.json({ measure: data });
+    return NextResponse.json({ measure: data, ...acceptance });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update the performance measure" }, { status: 500 });

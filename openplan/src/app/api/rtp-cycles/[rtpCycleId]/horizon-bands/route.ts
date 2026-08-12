@@ -44,6 +44,12 @@ import {
 } from "@/lib/http/write-outcome";
 import type { RtpHorizonBandInput } from "@/lib/rtp/fiscal-constraint";
 import { authorizeRtpCycleWrite } from "@/lib/rtp/cycle-write-authorization";
+import {
+  completeExtractionAcceptance,
+  extractionProvenanceColumns,
+  isOnlyExtractionProvenance,
+  resolveExtractionCandidate,
+} from "@/lib/rtp/extraction/acceptance";
 
 type RouteSupabase = Awaited<ReturnType<typeof createClient>>;
 type ApiAudit = ReturnType<typeof createApiAuditLogger>;
@@ -133,6 +139,18 @@ const sortOrderSchema = z.number().int().min(0).max(9999);
 
 const paramsSchema = z.object({ rtpCycleId: z.string().uuid() });
 
+/**
+ * The transcription this period was copied from, when there was one.
+ *
+ * A period read out of an adopted plan's own table comes through this same
+ * door, with the same year rules and the same overlap refusal. Note especially
+ * what a transcribed band still may NOT carry: `escalationTargetYear` unless
+ * the document states that exact year — filling it otherwise deletes the public
+ * document's "midpoint assumed and disclosed" caveat, which is the reason
+ * freeform band creation is refused to the assistant entirely.
+ */
+const fromExtractionCandidateIdSchema = z.string().uuid().optional();
+
 const createBandSchema = z.object({
   label: labelSchema,
   startYear: requiredYearSchema,
@@ -140,6 +158,7 @@ const createBandSchema = z.object({
   escalationTargetYear: nullableYearSchema.optional(),
   costEstimateBasis: z.enum(COST_ESTIMATE_BASES).optional(),
   sortOrder: sortOrderSchema.optional(),
+  fromExtractionCandidateId: fromExtractionCandidateIdSchema,
 });
 
 const updateBandSchema = z
@@ -151,12 +170,15 @@ const updateBandSchema = z
     escalationTargetYear: nullableYearSchema.optional(),
     costEstimateBasis: z.enum(COST_ESTIMATE_BASES).optional(),
     sortOrder: sortOrderSchema.optional(),
+    fromExtractionCandidateId: fromExtractionCandidateIdSchema,
   })
-  .refine(
-    (value) =>
-      Object.entries(value).some(([key, item]) => key !== "bandId" && item !== undefined),
-    { message: "At least one field must be updated" }
-  );
+  // Provenance is not an edit. `isOnlyExtractionProvenance` excludes the
+  // candidate id from the count, so a body naming a transcription and changing
+  // no value is the 400 it has always been rather than a candidate marked
+  // accepted while the period keeps its old years.
+  .refine((value) => !isOnlyExtractionProvenance(value, "bandId"), {
+    message: "At least one field must be updated",
+  });
 
 const deleteBandSchema = z.object({ bandId: z.string().uuid() });
 
@@ -342,6 +364,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: yearProblem }, { status: 400 });
     }
 
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "horizon_band",
+      rtpCycleId: parsedParams.data.rtpCycleId,
+      workspaceId: authorization.workspaceId,
+    });
+    if (!candidate.ok) return candidate.response;
+
     const insertPayload = {
       // Both scoping columns come from what the route PROVED, never from the
       // body: the workspace from the caller's membership, the cycle from the URL
@@ -355,6 +387,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       cost_estimate_basis: payload.data.costEstimateBasis ?? DEFAULT_COST_ESTIMATE_BASIS,
       sort_order: payload.data.sortOrder ?? 0,
       created_by: authorization.userId,
+      ...extractionProvenanceColumns(candidate.candidate),
     };
 
     const { data, error } = await supabase
@@ -399,12 +432,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return insertNotReadableBackResponse({ subject: "horizon period" });
     }
 
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: (data as { id?: string } | null)?.id,
+      reviewedBy: authorization.userId,
+      context: { rtpCycleId: parsedParams.data.rtpCycleId },
+    });
+
     audit.info("created", {
       rtpCycleId: parsedParams.data.rtpCycleId,
       bandId: (data as { id?: string } | null)?.id ?? null,
+      extractionCandidateId: candidate.candidate?.id ?? null,
       durationMs: Date.now() - startedAt,
     });
-    return NextResponse.json({ band: data });
+    return NextResponse.json({ band: data, ...acceptance });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to create the horizon period" }, { status: 500 });
@@ -485,6 +527,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
     }
 
+    // Resolved only AFTER a real edit is established, so provenance can never
+    // be the only thing this write changes.
+    const candidate = await resolveExtractionCandidate({
+      supabase: supabase as unknown as Parameters<typeof resolveExtractionCandidate>[0]["supabase"],
+      audit,
+      candidateId: payload.data.fromExtractionCandidateId,
+      targetKind: "horizon_band",
+      rtpCycleId: parsedParams.data.rtpCycleId,
+      workspaceId: authorization.workspaceId,
+    });
+    if (!candidate.ok) return candidate.response;
+    Object.assign(updates, extractionProvenanceColumns(candidate.candidate));
+
     const { data, error } = await supabase
       .from("rtp_horizon_bands")
       .update(updates)
@@ -532,12 +587,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return noRowsMatchedResponse({ subject: "horizon period", targetWasVerified: true });
     }
 
+    const acceptance = await completeExtractionAcceptance({
+      audit,
+      candidate: candidate.candidate,
+      acceptedRowId: existing.band.id,
+      reviewedBy: authorization.userId,
+      context: { rtpCycleId: parsedParams.data.rtpCycleId },
+    });
+
     audit.info("updated", {
       rtpCycleId: parsedParams.data.rtpCycleId,
       bandId: existing.band.id,
+      extractionCandidateId: candidate.candidate?.id ?? null,
       durationMs: Date.now() - startedAt,
     });
-    return NextResponse.json({ band: data });
+    return NextResponse.json({ band: data, ...acceptance });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to update the horizon period" }, { status: 500 });

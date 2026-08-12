@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Download, FolderKanban, Loader2, Search, Trash2, Upload } from "lucide-react";
+import { Download, FolderKanban, Loader2, ScanText, Search, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +16,11 @@ import {
   type KbDocumentRow,
 } from "@/lib/knowledge-base/documents";
 import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
+import {
+  describeUnreadableDocument,
+  documentCanBeOcred,
+  KB_OCR_PROVENANCE_NOTICE,
+} from "@/lib/knowledge-base/ocr-availability";
 import {
   describeDocumentLibraryOrdering,
   DOCUMENT_LIBRARY_SOURCE_IDS,
@@ -171,6 +176,16 @@ type KnowledgeBaseWorkspaceProps = {
   maxUploadBytes?: number;
   /** The cross-module file index. Absent = the page did not load it (older callers). */
   library?: DocumentLibraryView | null;
+  /**
+   * Whether this deployment has an OCR service, resolved by the page from
+   * OPENPLAN_KB_OCR_WORKER_URL + _TOKEN (server-only env vars that must never
+   * reach a browser bundle — hence a prop, not a read).
+   *
+   * This decides which honest sentence a scanned document gets, so it defaults
+   * to FALSE: a caller that forgot to pass it under-promises rather than
+   * offering a button that answers 501.
+   */
+  ocrConfigured?: boolean;
 };
 
 export function KnowledgeBaseWorkspace({
@@ -181,6 +196,7 @@ export function KnowledgeBaseWorkspace({
   readFailures = { documents: false, projects: false },
   maxUploadBytes = DEFAULT_KB_DOCUMENT_MAX_BYTES,
   library = null,
+  ocrConfigured = false,
 }: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
   const [documentList, setDocumentList] = useState<KbDocumentListState>(() => ({
@@ -200,6 +216,8 @@ export function KnowledgeBaseWorkspace({
   const [search, setSearch] = useState<KbSearchState>({ status: "idle" });
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  /** Which document's OCR request is in flight, so only its own button spins. */
+  const [ocrBusyId, setOcrBusyId] = useState<string | null>(null);
   // Library filters: null = every source; the set = only the chips toggled on.
   const [activeSources, setActiveSources] = useState<ReadonlySet<DocumentLibrarySourceId> | null>(
     null
@@ -276,6 +294,43 @@ export function KnowledgeBaseWorkspace({
       setDocumentList({ status: "failed", scopeProjectId: nextProjectId });
     } finally {
       setListLoading(false);
+    }
+  }
+
+  /**
+   * Ask the OCR service to read a scanned document.
+   *
+   * The row is left as it is on success: OCR of a long scan takes minutes, and
+   * flipping the badge to "ready" here would be this screen asserting an
+   * outcome nothing has reported yet. The notice says what was started, and the
+   * list is refreshed when the planner comes back to it.
+   */
+  async function requestOcr(documentId: string, documentTitle: string) {
+    setOcrBusyId(documentId);
+    setError(null);
+    setNotice(null);
+    try {
+      const response = await fetch(`/api/knowledge-base/documents/${documentId}/ocr`, {
+        method: "POST",
+      });
+      const payload = (await response.json()) as { detail?: string; error?: string };
+      if (!response.ok) {
+        throw new Error(
+          payload.detail || payload.error || "The request to read this document was not accepted"
+        );
+      }
+      setNotice(
+        payload.detail ??
+          `OCR started for “${documentTitle}”. Reading a long scan can take many minutes.`
+      );
+    } catch (ocrError) {
+      setError(
+        ocrError instanceof Error
+          ? ocrError.message
+          : "The request to read this document was not accepted"
+      );
+    } finally {
+      setOcrBusyId(null);
     }
   }
 
@@ -754,7 +809,20 @@ export function KnowledgeBaseWorkspace({
                       : ""}
                     {/* The one honest sentence a stored file gets, here too — never "processing". */}
                     {doc.status === "stored" ? ` · ${KB_STORED_DOCUMENT_NOTICE}` : ""}
-                    {doc.status === "failed" && doc.extraction_error ? ` · ${doc.extraction_error}` : ""}
+                    {/*
+                      NOT the stored `extraction_error` verbatim. That string was
+                      written at upload time and ends "OCR is not enabled" — a
+                      claim about the DEPLOYMENT, recorded as a fact, that stops
+                      being true the day an operator wires up a worker. The
+                      parser's finding survives; the deployment half is
+                      re-derived from what is true now.
+                    */}
+                    {doc.status === "failed"
+                      ? ` · ${describeUnreadableDocument(doc.extraction_error, ocrConfigured)}`
+                      : ""}
+                    {doc.status === "ready" && doc.extraction_source === "ocr"
+                      ? ` · ${KB_OCR_PROVENANCE_NOTICE}`
+                      : ""}
                   </p>
                   <div className="module-record-meta">
                     <span className="module-record-stamp">{formatDate(doc.created_at)}</span>
@@ -789,6 +857,29 @@ export function KnowledgeBaseWorkspace({
                     ) : null}
                   </div>
                 </div>
+                {/*
+                  The one place a planner can act on a scan. Rendered only when
+                  the document is a failed PDF AND this deployment has an OCR
+                  service: a button that answers 501 would be worse than no
+                  button, and the sentence above already says why it is absent.
+                */}
+                {ocrConfigured && documentCanBeOcred(doc) ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={ocrBusyId === doc.id}
+                    onClick={() => void requestOcr(doc.id, doc.title)}
+                    aria-label={`Read ${doc.title} with OCR`}
+                  >
+                    {ocrBusyId === doc.id ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <ScanText className="size-4" />
+                    )}
+                    Read with OCR
+                  </Button>
+                ) : null}
                 <Button
                   type="button"
                   variant="ghost"

@@ -3,7 +3,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 /**
  * Per-workspace rate limit on AI calls (assistant chat, grant narrative drafts,
  * engagement synthesis, engagement moderation scans, document narrative drafts
- * for report sections and RTP chapters).
+ * for report sections and RTP chapters, RTP document extraction).
  *
  * This bounds Anthropic spend against a scripted loop. It is independent of the
  * optional operator run cap (src/lib/config/run-cap.ts) and always applies,
@@ -17,6 +17,10 @@ export const AI_RATE_LIMIT_BUCKET_KEYS = [
   "engagement_synthesis",
   "engagement_moderation",
   "document_narrative_draft",
+  // One event PER MODEL CALL, not per run: transcribing an adopted RTP is many
+  // calls over one document, and metering the run would understate the spend by
+  // an order of magnitude.
+  "rtp_document_extraction",
 ] as const;
 export const AI_RATE_LIMIT_WINDOW_SECONDS = 300;
 export const AI_RATE_LIMIT_MAX_PER_WINDOW = 20;

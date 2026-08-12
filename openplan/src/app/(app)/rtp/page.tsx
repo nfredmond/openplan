@@ -58,7 +58,20 @@ type RtpPageSearchParams = Promise<{
   recent?: string;
   queueAction?: string;
   queueTraceState?: string;
+  archived?: string;
 }>;
+
+/**
+ * How many staged transcription rows the registry will read across every cycle
+ * in the workspace before it stops counting.
+ *
+ * An agency that transcribes a decade of prior plans can hold thousands of
+ * them, and this page is already a heavy read. When the ceiling is reached the
+ * counts on the rows are DISCLOSED as partial rather than shown as if they were
+ * whole — a truncated count that looks complete is the same defect as a failed
+ * read that looks empty.
+ */
+const TRANSCRIPTION_COUNT_SCAN_LIMIT = 2000;
 
 type RtpCycleRow = {
   id: string;
@@ -172,6 +185,19 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   const recentOnly = normalizeRecentQueueFilter(filters.recent);
   const selectedQueueActionFilter = normalizeQueueActionFilter(filters.queueAction);
   const selectedQueueTraceStateFilter = normalizeQueueTraceStateFilter(filters.queueTraceState);
+  /*
+    ARCHIVED PLANS ARE OFF BY DEFAULT (2026-08-11).
+
+    A prior adopted plan lives in this registry as an ARCHIVED cycle — that is
+    the whole of the vocabulary, and no fifth status was added for it: the four
+    the schema has (draft, public_review, adopted, archived) already say what a
+    previous plan is. What changed is the default view. An agency that loads its
+    last three plan updates in to read figures out of them ends up with a
+    registry where the plan they are actually writing is the fourth row down.
+    They are one explicit click away, with their count on the button, and asking
+    for `?status=archived` still shows them.
+  */
+  const showArchived = filters.archived === "1";
   const supabase = await createClient();
   const {
     data: { user },
@@ -228,7 +254,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     ? null
     : (((defaultModelingClaimResult.data ?? []) as ModelingClaimDecisionDefaultRow[])[0]?.county_run_id ?? null);
   const rtpCycleIds = ((rtpCyclesData ?? []) as RtpCycleRow[]).map((cycle) => cycle.id);
-  const [projectRtpLinksResult, initialPacketReportsResult] = await Promise.all([
+  const [projectRtpLinksResult, initialPacketReportsResult, transcriptionCandidatesResult] = await Promise.all([
     rtpCycleIds.length
       ? supabase
           .from("project_rtp_cycle_links")
@@ -243,6 +269,16 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           .eq("report_type", "board_packet")
           .order("updated_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
+    // What has been copied out of a plan DOCUMENT into each cycle. Two columns
+    // and nothing else: the registry says how many and how many are waiting,
+    // never what any of them say.
+    rtpCycleIds.length
+      ? supabase
+          .from("rtp_extraction_candidates")
+          .select("rtp_cycle_id, status")
+          .in("rtp_cycle_id", rtpCycleIds)
+          .limit(TRANSCRIPTION_COUNT_SCAN_LIMIT)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const packetReportsResult =
@@ -254,6 +290,27 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           .eq("report_type", "board_packet")
           .order("updated_at", { ascending: false })
       : initialPacketReportsResult;
+
+  /*
+    A read that FAILED leaves every cycle's transcription counts NULL, and the
+    row then says the question could not be answered. Rendering zeroes would
+    tell a planner nothing has been copied out of their documents, which is a
+    finding this query is in no position to make.
+  */
+  const transcriptionReadFailed =
+    classifyRead(reads, "what has been copied out of this workspace's plan documents", transcriptionCandidatesResult) !==
+    "ok";
+  const transcriptionRows = transcriptionReadFailed
+    ? []
+    : ((transcriptionCandidatesResult.data ?? []) as Array<{ rtp_cycle_id: string; status: string }>);
+  const transcriptionCountsTruncated = transcriptionRows.length >= TRANSCRIPTION_COUNT_SCAN_LIMIT;
+  const transcriptionByCycleId = new Map<string, { acceptedCount: number; waitingCount: number }>();
+  for (const row of transcriptionRows) {
+    const current = transcriptionByCycleId.get(row.rtp_cycle_id) ?? { acceptedCount: 0, waitingCount: 0 };
+    if (row.status === "accepted") current.acceptedCount += 1;
+    if (row.status === "pending") current.waitingCount += 1;
+    transcriptionByCycleId.set(row.rtp_cycle_id, current);
+  }
 
   classifyRead(reads, "the projects linked to these cycles", projectRtpLinksResult);
   const projectRtpLinks = projectRtpLinksResult.error
@@ -391,7 +448,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     packetSectionsByReportId.set(section.report_id, current);
   }
 
-  const allCycles = ((rtpCyclesData ?? []) as RtpCycleRow[])
+  const statusFilteredCycles = ((rtpCyclesData ?? []) as RtpCycleRow[])
     .map((cycle) => {
       const cycleLinks = linksByCycleId.get(cycle.id) ?? [];
       const packetReport = latestPacketReportByCycleId.get(cycle.id) ?? null;
@@ -577,9 +634,23 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           const evidence = projectGrantModelingEvidenceByProjectId.get(link.project_id);
           return evidence?.leadComparisonReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED;
         }).length,
+        transcription: transcriptionReadFailed
+          ? null
+          : transcriptionByCycleId.get(cycle.id) ?? { acceptedCount: 0, waitingCount: 0 },
       };
     })
     .filter((cycle) => (filters.status ? cycle.status === filters.status : true));
+
+  // The archived count is taken BEFORE the default view hides them, because the
+  // button that offers them has to say how many there are.
+  const archivedCycleCount = statusFilteredCycles.filter((cycle) => cycle.status === "archived").length;
+
+  // Asking for the archived status explicitly is asking to see them; so is the
+  // toggle. Otherwise a previous plan stays out of the way of the current one.
+  const allCycles =
+    showArchived || filters.status === "archived"
+      ? statusFilteredCycles
+      : statusFilteredCycles.filter((cycle) => cycle.status !== "archived");
 
   const packetAttentionCounts = {
     reset: allCycles.filter((cycle) => cycle.packetAttention === "reset").length,
@@ -863,6 +934,10 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           filtersStatus={filters.status ?? null}
           selectedPacketFilter={selectedPacketFilter}
           recentOnly={recentOnly}
+          showArchived={showArchived}
+          archivedCycleCount={archivedCycleCount}
+          transcriptionCountsUnavailable={transcriptionReadFailed}
+          transcriptionCountsTruncated={transcriptionCountsTruncated}
           selectedQueueActionFilter={selectedQueueActionFilter}
           selectedQueueTraceStateFilter={selectedQueueTraceStateFilter}
           packetAttentionCounts={packetAttentionCounts}

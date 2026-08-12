@@ -67,6 +67,11 @@ import {
   type RtpFinancialElementSupabaseLike,
 } from "@/lib/rtp/financial-element-queries";
 import {
+  indexTranscriptions,
+  loadRtpTranscriptionProvenance,
+  type RtpTranscriptionSupabaseLike,
+} from "@/lib/rtp/extraction/provenance-queries";
+import {
   buildRtpCommentResponseRecord,
   loadRtpCommentResponseRecord,
   rtpCommentResponseUnreadableFrom,
@@ -810,10 +815,57 @@ export async function buildRtpCycleExportInput(input: {
     return refusal("rtp_report_financial_element_load_failed", financialReadFailure);
   }
 
+  /*
+    WHICH FIGURES IN THIS PACKET WERE COPIED OUT OF A PLAN DOCUMENT.
+
+    NOT a refusal when it fails, unlike the financial reads above, and the
+    difference is worth stating. An unreadable ledger makes the document assert
+    something false about the plan's money; unreadable citations only make it
+    silent about where figures came from. Silence is still a loss on a board
+    document, so it is DISCLOSED: `transcriptions: null` makes the project-list
+    section say the citations could not be read, which an empty map does not.
+  */
+  const transcriptionProvenance = await loadRtpTranscriptionProvenance(
+    supabase as unknown as RtpTranscriptionSupabaseLike,
+    cycle.id
+  );
+  const transcriptionsUnreadable = Boolean(
+    transcriptionProvenance.results.candidates.error || transcriptionProvenance.results.runs.error
+  );
+  if (transcriptionsUnreadable) {
+    audit.warn("rtp_export_transcription_provenance_unreadable", { rtpCycleId: cycle.id });
+  }
+
   const commentResponseLoad = await loadRtpCommentResponseRecord(
     supabase as unknown as RtpCommentResponseSupabaseLike,
     cycle.id
   );
+
+  /*
+    Row id -> the citation that row carries, or NULL when the citations could
+    not be read. `indexTranscriptions` compares each accepted transcription
+    against the row it became, so a figure the agency revised after copying it
+    is printed as revised rather than citing a page that no longer matches.
+  */
+  const transcriptions = transcriptionsUnreadable
+    ? null
+    : Object.fromEntries(
+        indexTranscriptions(transcriptionProvenance.transcriptions, {
+          lines: financialElement.lines,
+          measures: financialElement.measures,
+          bands: financialElement.bands,
+          programmedProjects: linkedProjects.map((link) => ({
+            id: link.id,
+            projectId: link.project_id,
+            projectName: link.project?.name ?? null,
+            horizonBandId: link.horizon_band_id ?? null,
+            portfolioRole: link.portfolio_role,
+            estimatedCost: link.estimated_cost ?? null,
+            costBasisYear: link.cost_basis_year ?? null,
+          })),
+          cycle: { id: cycle.id, financialBasisYear: cycle.financial_basis_year ?? null },
+        })
+      );
 
   const fiscalConstraint = buildRtpFiscalConstraint({
     cycleHorizonStartYear: cycle.horizon_start_year,
@@ -862,6 +914,7 @@ export async function buildRtpCycleExportInput(input: {
         fundingSourceContextReadiness,
         fiscalConstraint,
         horizonBands: financialElement.bands,
+        transcriptions,
         commentResponse: buildRtpCommentResponseRecord({
           campaigns: commentResponseLoad.campaigns,
           comments: commentResponseLoad.comments,

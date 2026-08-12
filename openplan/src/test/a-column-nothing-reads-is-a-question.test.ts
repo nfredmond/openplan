@@ -82,7 +82,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
     "access_requests.onboarding_needs",
     "access_requests.organization_type",
     "access_requests.provisioned_workspace_id",
-    "access_requests.reviewed_at",
     "access_requests.reviewed_by_user_id",
     "access_requests.role_title",
     "access_requests.service_lane",
@@ -90,7 +89,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
     "access_request_review_events.access_request_id",
     "access_request_review_events.previous_status",
     "access_request_review_events.reviewer_user_id",
-    "billing_webhook_receipts.failure_reason",
     "billing_webhook_receipts.payload_hash",
     "billing_webhook_receipts.processed_at",
     "subscriptions.current_period_start",
@@ -212,7 +210,27 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   })),
 ];
 
-/** Columns whose name is too generic to attribute to one table by grep. */
+/**
+ * Columns whose name is too generic to attribute to one table by grep.
+ *
+ * (2026-08-11) `reviewed_at` and `failure_reason` joined this list, and the
+ * reason is worth recording because they arrived by tripping the INERT alarm
+ * below rather than by anyone noticing. This scan collects bare snake_case
+ * identifiers out of the source and asks whether a column NAME appears; it has
+ * no idea which table an appearance belongs to. So when the document-
+ * transcription lane shipped `rtp_extraction_candidates.reviewed_at` and
+ * `rtp_extraction_runs.failure_reason`, the guard reported that
+ * `access_requests.reviewed_at` and `billing_webhook_receipts.failure_reason`
+ * had "gained a reader — the paid tier is coming back". Neither had; two
+ * unrelated tables had grown columns with the same ordinary names.
+ *
+ * Excusing the NAME rather than the two columns is the honest response: a name
+ * this guard cannot attribute proves nothing about either table, and leaving it
+ * in would make the next collision look like a finding too. What still guards
+ * the commercial schema for real is `no-paid-tier-guard.test.ts`, which
+ * forbids the imports, the routes and the live surfaces rather than grepping
+ * for a word.
+ */
 const TOO_GENERIC = new Set([
   "id",
   "name",
@@ -225,6 +243,8 @@ const TOO_GENERIC = new Set([
   "workspace_id",
   "user_id",
   "project_id",
+  "reviewed_at",
+  "failure_reason",
 ]);
 
 /** Tables Postgres or an extension owns; not ours to explain. */

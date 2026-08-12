@@ -223,16 +223,61 @@ const EXPECTED = {
   // So: +5 policies, +2 permissive, +3 restrictive, +1 permissiveWrites,
   // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
   // `views` holds at 7 and `expanded` at 264 — every policy here is literal.
-  policies: 590,
-  permissive: 344,
+  //
+  // 20260811000008 (rtp_extraction_runs, rtp_extraction_candidates) adds TWO
+  // tables — the staging floor between a model transcribing an adopted RTP and
+  // that plan's own numbers entering OpenPlan. ONE permissive policy each:
+  // member SELECT. NO write policies at all, following aerial_imagery and
+  // kb_documents: a candidate row is a claim that some text was quoted
+  // verbatim off a page, and a client writing one directly through PostgREST
+  // would be a claim that never met the verifier. `authenticated` is GRANTed
+  // SELECT only; every write is an authed route using the service role.
+  // So: +2 policies, +2 permissive, +0 restrictive, +0 permissiveWrites,
+  // +2 tablesWithPolicies, +2 relations, +2 tables, +2 rlsEnabledTables.
+  // `views` holds at 7 and `expanded` at 264 — both policies are literal
+  // (written inside a pg_policies-guarded DO block, which is plain SQL text
+  // rather than EXECUTE format, so nothing is rendered).
+  //
+  // 20260811000009 (the four extraction_candidate_id provenance columns) moves
+  // NOTHING here, and that zero is the entry: it adds one nullable column and
+  // one partial index to each of four existing tables, creating no relation, no
+  // policy and no grant. Recorded so a reader diffing the migration directory
+  // against these notes does not have to re-derive its absence.
+  //
+  // 20260811000010 (kb_ocr_jobs, kb_ocr_job_callbacks) adds TWO tables for the
+  // OCR lane — one job per scanned document sent to a self-hosted recogniser,
+  // and the idempotency ledger for its callbacks. They take DIFFERENT postures,
+  // which is why the two counts move by different amounts:
+  //   * kb_ocr_jobs — ONE permissive policy, member SELECT. No write policy: a
+  //     client-written job row would be a way to make a document claim text
+  //     nobody recognised. Every write is an authed route or the
+  //     bearer-authenticated callback route, both using the service role.
+  //   * kb_ocr_job_callbacks — ZERO policies, row security ON. Unreadable by
+  //     every client role regardless of grants, which is the strongest of the
+  //     three postures and the one aerial_processing_callbacks reached the slow
+  //     way (its member-read policy was dropped in 20260730000004). The ledger
+  //     is plumbing; a planner reads the JOB, not the deliveries that advanced
+  //     it. So it is a table with RLS and no policies — counted in `tables` and
+  //     `rlsEnabledTables`, deliberately NOT in `tablesWithPolicies`.
+  // So: +1 policy, +1 permissive, +0 restrictive, +0 permissiveWrites,
+  // +1 tablesWithPolicies, +2 relations, +2 tables, +2 rlsEnabledTables.
+  // `views` holds at 7 and `expanded` at 264: no view, and the one policy is
+  // written literally.
+  //
+  // The same migration widens kb_documents.extraction_source's CHECK to admit
+  // 'ocr'. That moves nothing here — it drops and re-adds a constraint on an
+  // existing table — and it is recorded because a reader diffing the migration
+  // directory would otherwise have to re-derive the absence.
+  policies: 593,
+  permissive: 347,
   restrictive: 246,
   permissiveWrites: 224,
   expanded: 264,
-  tablesWithPolicies: 120,
-  relations: 140,
-  tables: 133,
+  tablesWithPolicies: 123,
+  relations: 144,
+  tables: 137,
   views: 7,
-  rlsEnabledTables: 133,
+  rlsEnabledTables: 137,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

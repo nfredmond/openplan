@@ -25,6 +25,7 @@ import { NextRequest } from "next/server";
  */
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 
@@ -60,10 +61,29 @@ const OTHER_CYCLE_ASSUMPTION_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const NOW = "2026-08-05T00:00:00.000Z";
 const INSERTED_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 
+/**
+ * TRANSCRIPTIONS STAGED OFF AN ADOPTED PLAN. A figure read out of a document
+ * reaches the ledger through THIS route and no other, so every refusal above
+ * applies to it unchanged — which is what the block at the bottom of this file
+ * proves, by sending each bad payload twice.
+ */
+const CANDIDATE_ID = "e1111111-1111-4111-8111-111111111111";
+/** A real transcription, staged against the agency's OTHER plan. */
+const OTHER_CYCLE_CANDIDATE_ID = "e2222222-2222-4222-8222-222222222222";
+/** One a colleague already accepted five minutes ago. */
+const ACCEPTED_CANDIDATE_ID = "e3333333-3333-4333-8333-333333333333";
+/** A pending one staged as a performance measure, not a ledger line. */
+const MEASURE_CANDIDATE_ID = "e4444444-4444-4444-8444-444444444444";
+/** What the model read off page 112 — the amount the document prints. */
+const TRANSCRIBED_AMOUNT = 12_400_000;
+const TRANSCRIBED_QUOTE =
+  "Table 6-2: Local sales tax measure, 2023–2032, $12.4 million (2026 dollars).";
+
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), requestId: "test" };
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -188,6 +208,13 @@ function installClient() {
     auth: { getUser: authGetUserMock },
     from: vi.fn((table: string) => makeChain(table)),
   });
+  // The staging table has no write policy for anybody, so the candidate flip
+  // goes through the service role. It reads and writes the SAME in-memory
+  // tables, which is what lets a test assert the candidate row actually
+  // changed rather than that a mock was called.
+  createServiceRoleClientMock.mockImplementation(() => ({
+    from: (table: string) => makeChain(table),
+  }));
 }
 
 function seed(role = "admin") {
@@ -254,8 +281,95 @@ function seed(role = "admin") {
         updated_at: NOW,
       },
     ],
+    rtp_extraction_candidates: [
+      {
+        id: CANDIDATE_ID,
+        workspace_id: WORKSPACE_ID,
+        rtp_cycle_id: CYCLE_ID,
+        target_kind: "financial_line",
+        status: "pending",
+        quote_verified: true,
+        source_page: 112,
+        source_quote: TRANSCRIBED_QUOTE,
+        // What the MACHINE proposed. Nothing in the route reads this — the
+        // reviewer's browser carries the values into the request body where a
+        // person can see them — and it stays exactly as staged so "what did
+        // the planner change?" is answerable forever.
+        proposed_json: {
+          horizonBandId: BAND_ID,
+          entryKind: "revenue",
+          sourceName: "Local sales tax measure",
+          amount: TRANSCRIBED_AMOUNT,
+          amountBasisYear: 2026,
+        },
+        accepted_row_id: null,
+        reviewed_by: null,
+        reviewed_at: null,
+        created_at: NOW,
+      },
+      {
+        id: OTHER_CYCLE_CANDIDATE_ID,
+        workspace_id: WORKSPACE_ID,
+        rtp_cycle_id: OTHER_CYCLE_ID,
+        target_kind: "financial_line",
+        status: "pending",
+        quote_verified: true,
+        source_page: 44,
+        source_quote: "The other plan's own table.",
+        proposed_json: { amount: 1 },
+        accepted_row_id: null,
+        reviewed_by: null,
+        reviewed_at: null,
+        created_at: NOW,
+      },
+      {
+        id: ACCEPTED_CANDIDATE_ID,
+        workspace_id: WORKSPACE_ID,
+        rtp_cycle_id: CYCLE_ID,
+        target_kind: "financial_line",
+        status: "accepted",
+        quote_verified: true,
+        source_page: 112,
+        source_quote: TRANSCRIBED_QUOTE,
+        proposed_json: { amount: TRANSCRIBED_AMOUNT },
+        accepted_row_id: ASSUMPTION_ID,
+        reviewed_by: USER_ID,
+        reviewed_at: NOW,
+        created_at: NOW,
+      },
+      {
+        id: MEASURE_CANDIDATE_ID,
+        workspace_id: WORKSPACE_ID,
+        rtp_cycle_id: CYCLE_ID,
+        target_kind: "performance_measure",
+        status: "pending",
+        quote_verified: true,
+        source_page: 88,
+        source_quote: "Fatalities: 12 (2024 baseline).",
+        proposed_json: { measureKey: "fatalities" },
+        accepted_row_id: null,
+        reviewed_by: null,
+        reviewed_at: null,
+        created_at: NOW,
+      },
+    ],
   };
 }
+
+/** The staged transcription as it stands right now, straight out of the store. */
+function candidateRow(id = CANDIDATE_ID): Row {
+  const row = (tables.rtp_extraction_candidates ?? []).find((entry) => entry.id === id);
+  if (!row) throw new Error(`no candidate ${id} in the fake database`);
+  return row;
+}
+
+/**
+ * The LOOKUPS against the staging table — not the flip, which is an update on
+ * the same table through the service role. Keeping them apart is what lets the
+ * scoping assertion below read one query rather than two of different shapes.
+ */
+const candidateQueries = () =>
+  queries.filter((query) => query.table === "rtp_extraction_candidates" && query.operation === "select");
 
 function request(method: "POST" | "PATCH" | "DELETE", body: unknown, cycleId = CYCLE_ID) {
   return new NextRequest(`http://localhost/api/rtp-cycles/${cycleId}/financial-assumptions`, {
@@ -710,5 +824,378 @@ describe("the route audits itself", () => {
       "rtp_cycles.financial_assumptions.update",
       "rtp_cycles.financial_assumptions.delete",
     ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ACCEPTING A FIGURE TRANSCRIBED OUT OF AN ADOPTED PLAN.
+//
+// The point of the whole ingestion design is that there is NO second writer.
+// A figure read off page 112 of the plan the board adopted comes through this
+// route, this zod schema, this cross-cycle band check and this amount ceiling,
+// exactly as a figure somebody typed does. The block below is the proof, and
+// the shape of the proof matters: every refusal is sent TWICE — once as an
+// ordinary request and once carrying a candidate id — and the two answers must
+// be identical. A refusal that softened for a transcribed value would be the
+// second writer arriving disguised as the first.
+// ---------------------------------------------------------------------------
+
+describe("POST — accepting a transcription", () => {
+  it("a hand-typed line is written EXACTLY as it was before this feature existed", async () => {
+    /**
+     * MUTATION: `...extractionProvenanceColumns(candidate.candidate)` ->
+     *   `extraction_candidate_id: candidate.candidate?.id ?? null`
+     *   => fails: expected { …, extraction_candidate_id: null } not to have
+     *      property "extraction_candidate_id". The production consequence is
+     *      the upgrade window — naming a column 20260811000009 has not created
+     *      yet is a PGRST204 on every hand-typed save.
+     */
+    const response = await postAssumption(request("POST", validLine), routeContext());
+
+    expect(response.status).toBe(200);
+    expect(writtenValues("insert")).not.toHaveProperty("extraction_candidate_id");
+    // No lookup, and no service-role client constructed at all.
+    expect(candidateQueries()).toEqual([]);
+    expect(createServiceRoleClientMock).not.toHaveBeenCalled();
+    expect(await response.json()).not.toHaveProperty("extractionCandidate");
+  });
+
+  it("records which reviewed transcription the figure came from, and marks it accepted", async () => {
+    const response = await postAssumption(
+      request("POST", {
+        horizonBandId: BAND_ID,
+        entryKind: "revenue",
+        sourceName: "Local sales tax measure",
+        amount: TRANSCRIBED_AMOUNT,
+        amountBasisYear: 2026,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext(),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(writtenValues("insert").extraction_candidate_id).toBe(CANDIDATE_ID);
+    expect(writtenValues("insert").amount).toBe(TRANSCRIBED_AMOUNT);
+
+    // The candidate now names the row it became, so "what did the planner do
+    // with this proposal?" is answerable from the candidate alone.
+    const candidate = candidateRow();
+    expect(candidate.status).toBe("accepted");
+    expect(candidate.accepted_row_id).toBe(INSERTED_ID);
+    expect(candidate.reviewed_by).toBe(USER_ID);
+    expect(typeof candidate.reviewed_at).toBe("string");
+
+    expect(body.extractionCandidate).toEqual({ id: CANDIDATE_ID, recorded: true });
+  });
+
+  it("the lookup is scoped to this plan and this workspace", async () => {
+    /**
+     * MUTATION: drop `.eq("rtp_cycle_id", rtpCycleId)` from the resolver
+     *   => this fails on the filter list AND "refuses a transcription staged
+     *      against the agency's OTHER plan" fails: the other plan's figure
+     *      lands in this plan's ledger citing a page it never appeared on.
+     */
+    await postAssumption(
+      request("POST", { ...validLine, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext(),
+    );
+
+    expect(candidateQueries()).toHaveLength(1);
+    expect(candidateQueries()[0].filters).toEqual([
+      { column: "id", value: CANDIDATE_ID },
+      { column: "rtp_cycle_id", value: CYCLE_ID },
+      { column: "workspace_id", value: WORKSPACE_ID },
+    ]);
+  });
+
+  it("an EDITED acceptance stores the planner's number and leaves the machine's on the candidate", async () => {
+    /**
+     * The reviewer reads the quote, sees the model mis-copied a digit, and
+     * corrects it before accepting. Both numbers survive: the ledger has the
+     * one the human wrote, the candidate still has the one the machine
+     * proposed, and the difference between them is auditable forever.
+     *
+     * MUTATION: have the route read `proposed_json.amount` instead of the
+     *   payload
+     *   => fails: expected 12400000 to be 12500000. That mutation is the whole
+     *      feature inverted — a machine authoring the planning number with a
+     *      human-shaped click in front of it.
+     */
+    const CORRECTED = 12_500_000;
+    const response = await postAssumption(
+      request("POST", {
+        horizonBandId: BAND_ID,
+        entryKind: "revenue",
+        sourceName: "Local sales tax measure",
+        amount: CORRECTED,
+        amountBasisYear: 2026,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext(),
+    );
+
+    expect(response.status).toBe(200);
+    expect(writtenValues("insert").amount).toBe(CORRECTED);
+
+    const candidate = candidateRow();
+    expect(candidate.status).toBe("accepted");
+    expect((candidate.proposed_json as Record<string, unknown>).amount).toBe(TRANSCRIBED_AMOUNT);
+    expect(candidate.source_quote).toBe(TRANSCRIBED_QUOTE);
+    expect(candidate.source_page).toBe(112);
+  });
+
+  it("refuses a transcription staged against the agency's OTHER plan", async () => {
+    const response = await postAssumption(
+      request("POST", { ...validLine, fromExtractionCandidateId: OTHER_CYCLE_CANDIDATE_ID }),
+      routeContext(),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.error).toBe("That transcription is not part of this plan");
+    expect(ledgerWrites("insert")).toEqual([]);
+    expect(candidateRow(OTHER_CYCLE_CANDIDATE_ID).status).toBe("pending");
+  });
+
+  it("refuses a transcription a colleague already accepted", async () => {
+    const response = await postAssumption(
+      request("POST", { ...validLine, fromExtractionCandidateId: ACCEPTED_CANDIDATE_ID }),
+      routeContext(),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body.error).toBe("That transcription has already been reviewed");
+    // The duplicate this refusal exists to prevent: the same page's figure
+    // recorded in the ledger twice.
+    expect(ledgerWrites("insert")).toEqual([]);
+    expect(tables.rtp_financial_assumptions).toHaveLength(2);
+  });
+
+  it("refuses a transcription staged for a different part of the plan", async () => {
+    const response = await postAssumption(
+      request("POST", { ...validLine, fromExtractionCandidateId: MEASURE_CANDIDATE_ID }),
+      routeContext(),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("That transcription belongs somewhere else in the plan");
+    expect(ledgerWrites("insert")).toEqual([]);
+    expect(candidateRow(MEASURE_CANDIDATE_ID).status).toBe("pending");
+  });
+
+  it("saves the figure even when the review list could not be updated, and says so", async () => {
+    /**
+     * The row landed and the flip did not. Reporting a failure here is how
+     * duplicate revenue lines get made — the planner retries a write that
+     * already succeeded — so the answer is 200 with a sentence saying the
+     * document review may still list this passage as waiting.
+     *
+     * MUTATION: let `recordExtractionCandidateAccepted` rethrow instead of
+     *   returning `recorded: false`
+     *   => fails: 500 for 200, with the ledger row already written.
+     */
+    createServiceRoleClientMock.mockImplementation(() => {
+      throw new Error("Missing required environment variable: SUPABASE_SERVICE_ROLE_KEY");
+    });
+
+    const response = await postAssumption(
+      request("POST", { ...validLine, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext(),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(writtenValues("insert").extraction_candidate_id).toBe(CANDIDATE_ID);
+    expect(body.extractionCandidate.recorded).toBe(false);
+    expect(body.extractionCandidate.warning).toContain("twice");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "extraction_candidate_not_marked_accepted",
+      expect.objectContaining({ extractionCandidateId: CANDIDATE_ID }),
+    );
+  });
+});
+
+describe("every refusal answers the same for a transcribed value as for a typed one", () => {
+  /**
+   * THE ASSERTION THIS LANE EXISTS FOR. Each case below is sent twice against
+   * a fresh database — once plain, once naming a valid pending transcription
+   * of the right kind in the right plan — and the two answers must match on
+   * status, on error text and on having written nothing.
+   *
+   * MUTATION: move the `resolveExtractionCandidate` call ABOVE the zod parse
+   *   and short-circuit validation when a candidate resolves
+   *   => every case here fails with 200 for 400 and a ledger row written.
+   */
+  const CASES: Array<{ name: string; payload: Record<string, unknown>; status: number }> = [
+    {
+      name: "a negative amount",
+      payload: { ...validLine, amount: -1 },
+      status: 400,
+    },
+    {
+      name: "an amount past what the ledger column holds",
+      payload: { ...validLine, amount: 100_000_000_000_000 },
+      status: 400,
+    },
+    {
+      name: "an amount that is not a number",
+      payload: { ...validLine, amount: "1200000" },
+      status: 400,
+    },
+    {
+      name: "an entry kind the fiscal engine does not know",
+      payload: { ...validLine, entryKind: "grant_match" },
+      status: 400,
+    },
+    {
+      name: "an empty source name",
+      payload: { ...validLine, sourceName: "   " },
+      status: 400,
+    },
+    {
+      name: "a horizon band belonging to the agency's OTHER plan",
+      payload: { ...validLine, horizonBandId: OTHER_CYCLE_BAND_ID },
+      status: 400,
+    },
+    {
+      name: "a horizon band belonging to another workspace",
+      payload: { ...validLine, horizonBandId: FOREIGN_BAND_ID },
+      status: 400,
+    },
+  ];
+
+  for (const testCase of CASES) {
+    it(testCase.name, async () => {
+      const typed = await postAssumption(request("POST", testCase.payload), routeContext());
+      const typedBody = await typed.json();
+      const typedWrites = ledgerWrites("insert").length;
+
+      // A clean database, so the second run cannot be judged against the
+      // first's leftovers.
+      vi.clearAllMocks();
+      queries = [];
+      writes = [];
+      createApiAuditLoggerMock.mockReturnValue(mockAudit);
+      authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+      seed();
+      installClient();
+
+      const transcribed = await postAssumption(
+        request("POST", { ...testCase.payload, fromExtractionCandidateId: CANDIDATE_ID }),
+        routeContext(),
+      );
+      const transcribedBody = await transcribed.json();
+
+      expect(typed.status).toBe(testCase.status);
+      expect(transcribed.status).toBe(typed.status);
+      expect(transcribedBody.error).toBe(typedBody.error);
+      expect(transcribedBody.details).toBe(typedBody.details);
+
+      expect(typedWrites).toBe(0);
+      expect(ledgerWrites("insert")).toEqual([]);
+      // And the transcription is untouched: a refused payload leaves the
+      // passage waiting for review rather than burning it.
+      expect(candidateRow().status).toBe("pending");
+    });
+  }
+
+  it("a viewer may not accept a transcription any more than they may type a line", async () => {
+    seed("viewer");
+
+    const response = await postAssumption(
+      request("POST", { ...validLine, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext(),
+    );
+
+    expect(response.status).toBe(403);
+    expect(ledgerWrites("insert")).toEqual([]);
+    expect(candidateRow().status).toBe("pending");
+  });
+
+  it("a transcription cannot be accepted through ANOTHER workspace's plan", async () => {
+    const response = await postAssumption(
+      request("POST", { ...validLine, fromExtractionCandidateId: CANDIDATE_ID }, FOREIGN_CYCLE_ID),
+      routeContext(FOREIGN_CYCLE_ID),
+    );
+
+    expect(response.status).toBe(404);
+    expect(ledgerWrites("insert")).toEqual([]);
+    expect(candidateRow().status).toBe("pending");
+  });
+});
+
+describe("PATCH — taking the document's figure over the one in the ledger", () => {
+  it("naming a transcription and changing nothing is still 'no changes'", async () => {
+    /**
+     * The silent failure this prevents: a candidate marked accepted while the
+     * ledger keeps the planner's old number, so the plan cites a page for a
+     * figure that page does not contain.
+     *
+     * MUTATION: add "fromExtractionCandidateId" to UPDATABLE_FIELDS
+     *   => fails: 200 for 400, and the candidate flips to accepted having
+     *      changed no value.
+     */
+    const response = await patchAssumption(
+      request("PATCH", { assumptionId: ASSUMPTION_ID, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext(),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.details).toContain("No changes were requested");
+    expect(ledgerWrites("update")).toEqual([]);
+    expect(candidateRow().status).toBe("pending");
+  });
+
+  it("replaces a figure with the document's and records where it came from", async () => {
+    const response = await patchAssumption(
+      request("PATCH", {
+        assumptionId: ASSUMPTION_ID,
+        amount: TRANSCRIBED_AMOUNT,
+        fromExtractionCandidateId: CANDIDATE_ID,
+      }),
+      routeContext(),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(writtenValues("update").amount).toBe(TRANSCRIBED_AMOUNT);
+    expect(writtenValues("update").extraction_candidate_id).toBe(CANDIDATE_ID);
+
+    const candidate = candidateRow();
+    expect(candidate.status).toBe("accepted");
+    expect(candidate.accepted_row_id).toBe(ASSUMPTION_ID);
+    expect(body.extractionCandidate).toEqual({ id: CANDIDATE_ID, recorded: true });
+  });
+
+  it("an ordinary edit still carries no provenance column", async () => {
+    const response = await patchAssumption(
+      request("PATCH", { assumptionId: ASSUMPTION_ID, amount: 42 }),
+      routeContext(),
+    );
+
+    expect(response.status).toBe(200);
+    expect(writtenValues("update")).not.toHaveProperty("extraction_candidate_id");
+    expect(candidateQueries()).toEqual([]);
+  });
+
+  it("refuses the same bad amount whether or not it names a transcription", async () => {
+    const typed = await patchAssumption(
+      request("PATCH", { assumptionId: ASSUMPTION_ID, amount: -5 }),
+      routeContext(),
+    );
+    const transcribed = await patchAssumption(
+      request("PATCH", { assumptionId: ASSUMPTION_ID, amount: -5, fromExtractionCandidateId: CANDIDATE_ID }),
+      routeContext(),
+    );
+
+    expect(typed.status).toBe(400);
+    expect(transcribed.status).toBe(400);
+    expect((await transcribed.json()).details).toBe((await typed.json()).details);
+    expect(ledgerWrites("update")).toEqual([]);
+    expect(candidateRow().status).toBe("pending");
   });
 });

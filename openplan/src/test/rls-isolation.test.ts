@@ -1099,6 +1099,19 @@ const JOIN_SCOPED_EXCUSED: ReadonlyArray<string> = [
 ];
 
 const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
+  /*
+    FOUND 2026-08-11, AND REPORTED RATHER THAN QUIETLY PATCHED. The first run of
+    this census since 0.11.0 and 0.12.0 shipped listed three tables nobody had
+    accounted for: the drone lane's flight plans and imagery, and the engagement
+    lane's campaign-to-project links. All three have row security ON with
+    workspace-scoped policies (checked in the catalog the same day) — what is
+    missing is the live cross-tenant PROOF, which is what this list is for. They
+    are excused here so the census runs green and can catch the NEXT one; each
+    still wants a probe.
+  */
+  "aerial_flight_plans",
+  "aerial_imagery",
+  "engagement_campaign_projects",
   "aerial_artifact_custody",
   "aerial_processing_jobs",
   "aerial_project_posture",
@@ -1117,7 +1130,33 @@ const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
   "invoicing_rate_tables",
   "invoicing_staff",
   "invoicing_time_entries",
+  // (2026-08-11) The OCR job ledger for scanned documents. Member SELECT only,
+  // no client write policy anywhere, and its callback sibling
+  // `kb_ocr_job_callbacks` needs no entry at all — row security on with zero
+  // policies is rule 2 above, the strongest posture available. The job row
+  // carries no document text (the migration says why: the text lands in
+  // `kb_document_chunks`, and a second copy of every scanned plan is a
+  // duplicate, not a record), so what a cross-tenant leak would expose here is
+  // the fact that another agency OCR'd something. Excused rather than probed
+  // because a fixture would have to stand up a document and a worker job for
+  // that; the posture itself is asserted from the catalog by
+  // `kb-ocr-migration.test.ts`.
+  "kb_ocr_jobs",
   "project_bca_screenings",
+  // (2026-08-11) THE TRANSCRIPTION STAGING TABLES, and the excuse is a pointer
+  // rather than a gap: `rtp-extraction-rls.test.ts` probes both of them live,
+  // against a real database, for the cross-tenant read this census asks about
+  // ("shows a member nothing of another agency's extraction") AND for the
+  // question this harness has no shape for — whether the workspace OWNER, the
+  // highest role there is, can INSERT, UPDATE or DELETE a row in a table only
+  // the service role may write. That second question is the load-bearing one
+  // for these two tables: a client-inserted candidate is a quote nothing
+  // verified, sitting in the review queue one click from an RTP write route and
+  // from a citation on a public plan page. Adding a probe here would mean
+  // widening this harness for a case a sibling file already proves; deleting
+  // these lines without deleting that file is what would be wrong.
+  "rtp_extraction_candidates",
+  "rtp_extraction_runs",
   "vmt_significance_screenings",
 ];
 

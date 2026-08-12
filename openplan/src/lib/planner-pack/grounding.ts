@@ -255,13 +255,34 @@ export function extractHardClaims(text: string): string[] {
   return cores;
 }
 
+/**
+ * EVERY numeric core present in `text`, consequential or not.
+ *
+ * Different from {@link extractHardClaims}, which keeps only the figures a
+ * grant reviewer would act on. Narrative prose needs that filter — "2 phases"
+ * is noise and checking it would make the belt useless. TRANSCRIPTION needs the
+ * opposite: `src/lib/rtp/extraction/verify.ts` must be able to prove that a
+ * baseline of `3` is in the words the model quoted, and a filter that ignored
+ * small integers would wave exactly that figure through.
+ *
+ * Exported for that caller. The pattern and the magnitude normaliser stay
+ * private, so there is still one implementation of "what number is this" in the
+ * repository — reimplementing it beside a second copy is how "$4.2 billion"
+ * starts matching a "$4.2 million" fact again.
+ */
+export function numericCoresIn(text: string): Set<string> {
+  const cores = new Set<string>();
+  for (const match of text.matchAll(NUMERIC_TOKEN_PATTERN)) {
+    cores.add(numericCore(match[0]));
+  }
+  return cores;
+}
+
 /** All numeric cores present anywhere in the given fact claim texts. */
 function factNumericCores(texts: Iterable<string>): Set<string> {
   const cores = new Set<string>();
   for (const text of texts) {
-    for (const match of text.matchAll(NUMERIC_TOKEN_PATTERN)) {
-      cores.add(numericCore(match[0]));
-    }
+    for (const core of numericCoresIn(text)) cores.add(core);
   }
   return cores;
 }

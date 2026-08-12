@@ -14,10 +14,19 @@ export function buildRtpRegistryHref(filters: {
   recent?: boolean | null;
   queueAction?: QueueActionFilter | null;
   queueTraceState?: QueueTraceStateFilter | null;
+  /**
+   * Show plans the agency has archived — previous adopted plans, kept for the
+   * record and for reading figures out of. Off by default so the registry shows
+   * the plan being worked on rather than a decade of history.
+   */
+  archived?: boolean | null;
 }) {
   const params = new URLSearchParams();
   if (filters.status) {
     params.set("status", filters.status);
+  }
+  if (filters.archived) {
+    params.set("archived", "1");
   }
   if (filters.packet && filters.packet !== "all") {
     params.set("packet", filters.packet);

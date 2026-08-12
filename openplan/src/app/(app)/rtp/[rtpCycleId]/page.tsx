@@ -67,6 +67,12 @@ import {
 } from "@/lib/scenarios/comparison-summary";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
+  indexTranscriptions,
+  loadRtpTranscriptionProvenance,
+  type RtpTranscriptionSupabaseLike,
+} from "@/lib/rtp/extraction/provenance-queries";
+import type { TranscriptionRecord } from "@/lib/rtp/extraction/display";
+import {
   loadRtpFinancialElement,
   type RtpFinancialElementSupabaseLike,
 } from "@/lib/rtp/financial-element-queries";
@@ -261,6 +267,56 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     reads,
     "the performance measures of this plan",
     financialElement.results.measures
+  );
+
+  /*
+    WHICH OF THOSE FIGURES WERE COPIED OUT OF A DOCUMENT, and from which page.
+
+    A SEPARATE READ, deliberately, rather than a column added to the three
+    shared projections above: those strings are read by this page, the public
+    plan document, the export, the board packet and the assistant context, and
+    naming a not-yet-migrated column in them would take the whole financial
+    element down across a deploy window. This read fails on its own, and the
+    only consequence of its failing is that the page citations are missing —
+    which is disclosed by name rather than left to look like figures nobody
+    transcribed.
+  */
+  const transcriptionProvenance = await loadRtpTranscriptionProvenance(
+    supabase as unknown as RtpTranscriptionSupabaseLike,
+    cycle.id
+  );
+  classifyRead(
+    reads,
+    "which figures in this plan were copied out of a document",
+    transcriptionProvenance.results.candidates
+  );
+  classifyRead(
+    reads,
+    "the documents those figures were copied from",
+    transcriptionProvenance.results.runs
+  );
+
+  // Row id -> the citation that row carries. `indexTranscriptions` compares
+  // each accepted transcription against the row it became, so a figure a
+  // planner corrected after accepting shows a chip that says the agency changed
+  // it rather than one that goes on citing a page for a number that page does
+  // not contain. A row with no entry here was typed by hand and shows nothing.
+  const transcriptionsByRowId: Record<string, TranscriptionRecord> = Object.fromEntries(
+    indexTranscriptions(transcriptionProvenance.transcriptions, {
+      lines: financialElement.lines,
+      measures: financialElement.measures,
+      bands: financialElement.bands,
+      programmedProjects: projectLinks.map((link) => ({
+        id: link.id,
+        projectId: link.project_id,
+        projectName: link.project?.name ?? null,
+        horizonBandId: link.horizon_band_id,
+        portfolioRole: link.portfolio_role,
+        estimatedCost: link.estimated_cost,
+        costBasisYear: link.cost_basis_year,
+      })),
+      cycle: { id: cycle.id, financialBasisYear: cycle.financial_basis_year },
+    })
   );
 
   // Whether this planner may change any of it. The editors take it as a prop so
@@ -841,6 +897,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             measures={financialElement.measures}
             measuresReadFailed={performanceMeasuresState === "failed"}
             canWrite={canWritePlans}
+            lineTranscriptions={transcriptionsByRowId}
+            measureTranscriptions={transcriptionsByRowId}
           />
 
           <RtpCommentResponseSection summary={commentResponseSummary} />

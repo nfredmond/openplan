@@ -68,6 +68,12 @@ import {
   loadRtpFinancialElement,
   type RtpFinancialElementSupabaseLike,
 } from "@/lib/rtp/financial-element-queries";
+import {
+  indexTranscriptions,
+  loadRtpTranscriptionProvenance,
+  type RtpTranscriptionSupabaseLike,
+} from "@/lib/rtp/extraction/provenance-queries";
+import { ExtractionProvenanceCitation } from "@/components/rtp/extraction-provenance-chip";
 
 /** The columns the gate needs, and every one of them is rendered below. */
 const CYCLE_COLUMNS =
@@ -529,6 +535,51 @@ export default async function PublicRtpDocumentPage({
   );
 
   /*
+    WHICH PUBLISHED FIGURES WERE COPIED OUT OF THE PLAN DOCUMENT, and from which
+    page. Nathaniel's Q2 decision, 2026-08-11: provenance EVERYWHERE, including
+    the public plan page — a resident reading a baseline is owed the page it was
+    read off, in the agency's own document, quoted.
+
+    Read separately from the financial element for the reason the loader's own
+    header gives: naming a not-yet-migrated column in those shared projections
+    would take this whole page's financial element down across a deploy window.
+    A failure HERE costs the citations and nothing else, and it is disclosed —
+    a missing chip is indistinguishable from a figure the agency typed, so
+    swallowing this error would silently delete a disclosure the agency made.
+  */
+  const transcriptionProvenance = await loadRtpTranscriptionProvenance(
+    supabase as unknown as RtpTranscriptionSupabaseLike,
+    cycle.id
+  );
+  reads.check(
+    "the pages this plan's figures were copied from",
+    transcriptionProvenance.results.candidates
+  );
+  reads.check(
+    "the documents this plan's figures were copied from",
+    transcriptionProvenance.results.runs
+  );
+
+  // Row id -> its citation. The comparison behind this is the same one the
+  // review screen uses, so a figure the agency revised after copying says so on
+  // the published page instead of citing a page that no longer matches it.
+  const citationByRowId = indexTranscriptions(transcriptionProvenance.transcriptions, {
+    lines: financial.lines,
+    measures: financial.measures,
+    bands: financial.bands,
+    programmedProjects: links.map((link) => ({
+      id: link.id,
+      projectId: normalizeProject(link.projects)?.id ?? link.id,
+      projectName: normalizeProject(link.projects)?.name ?? null,
+      horizonBandId: link.horizon_band_id,
+      portfolioRole: link.portfolio_role,
+      estimatedCost: link.estimated_cost,
+      costBasisYear: link.cost_basis_year,
+    })),
+    cycle: { id: cycle.id, financialBasisYear: cycle.financial_basis_year ?? null },
+  });
+
+  /*
     RULE 3, IN ONE LINE. The fiscal engine is scrupulous about missing DATA and
     blind to a failed READ: an empty project-link array from a broken query is
     indistinguishable, to it, from a plan that programmes nothing — which
@@ -797,6 +848,19 @@ export default async function PublicRtpDocumentPage({
                 {measure.notes?.trim() ? (
                   <p className="mt-1 text-xs text-muted-foreground">{measure.notes}</p>
                 ) : null}
+                {/*
+                  WHERE THIS BASELINE CAME FROM. A measure copied out of the
+                  agency's own adopted document names it, names the page, and
+                  prints the sentence — a resident cannot open the document, so
+                  the quote on the page IS the check available to them. A
+                  measure somebody typed shows nothing at all, which is the
+                  truth about it.
+                */}
+                <ExtractionProvenanceCitation
+                  record={citationByRowId.get(measure.id)}
+                  audience="public"
+                  className="mt-2"
+                />
               </li>
             ))}
           </ul>
@@ -877,6 +941,11 @@ export default async function PublicRtpDocumentPage({
                             project?.summary?.trim() ||
                             "No description has been published for this project yet."}
                         </p>
+                        <ExtractionProvenanceCitation
+                          record={citationByRowId.get(link.id)}
+                          audience="public"
+                          className="mt-2"
+                        />
                       </li>
                     );
                   })}

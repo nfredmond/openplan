@@ -10,7 +10,8 @@
  * editors; it does no I/O of its own, so the page stays the single place that
  * decides what was read and what failed.
  */
-import { Coins, Target } from "lucide-react";
+import Link from "next/link";
+import { Coins, ScrollText, Target } from "lucide-react";
 import { RtpFinancialLedgerEditor } from "@/components/rtp/rtp-financial-ledger-editor";
 import { RtpHorizonBandEditor } from "@/components/rtp/rtp-horizon-band-editor";
 import { RtpPerformanceMeasureEditor } from "@/components/rtp/rtp-performance-measure-editor";
@@ -27,6 +28,12 @@ import {
 type BandProp = React.ComponentProps<typeof RtpHorizonBandEditor>["bands"];
 type LineProp = React.ComponentProps<typeof RtpFinancialLedgerEditor>["lines"];
 type MeasureProp = React.ComponentProps<typeof RtpPerformanceMeasureEditor>["measures"];
+/**
+ * Which rows were copied out of a document, keyed by row id. Passed straight
+ * through to the two editors, which render the page citation beside the figure
+ * (Q2 — provenance everywhere, including in-app).
+ */
+type TranscriptionProp = React.ComponentProps<typeof RtpFinancialLedgerEditor>["transcriptions"];
 
 /** Whole dollars: a financial element is read in millions, and cents are noise. */
 const PLAN_MONEY_FORMATTER = new Intl.NumberFormat("en-US", {
@@ -52,6 +59,8 @@ export function RtpFinancialElementSection({
   measures,
   measuresReadFailed,
   canWrite,
+  lineTranscriptions,
+  measureTranscriptions,
 }: {
   rtpCycleId: string;
   cycleHorizonStartYear: number | null;
@@ -65,6 +74,8 @@ export function RtpFinancialElementSection({
   measures: MeasureProp;
   measuresReadFailed: boolean;
   canWrite: boolean;
+  lineTranscriptions: TranscriptionProp;
+  measureTranscriptions: TranscriptionProp;
 }) {
   // Computed here rather than on the page: it is a pure function of data the
   // page already passes down, and keeping it beside the markup that renders it
@@ -105,6 +116,18 @@ export function RtpFinancialElementSection({
         <Coins className="h-5 w-5" />
       </span>
     </div>
+
+    {/*
+      THE WAY IN TO THE DOCUMENT LANE, from the section whose figures it fills.
+      A capability nobody can reach from the surface it serves is this
+      repository's most expensive recurring defect; the review screen is
+      reachable from here because this is where a planner is when they are
+      about to retype a revenue table out of a PDF.
+    */}
+    <Link href={`/rtp/${rtpCycleId}/extraction`} className="module-inline-action w-fit">
+      <ScrollText className="h-4 w-4" />
+      Copy these figures out of the plan document
+    </Link>
 
     {readFailed ? (
       <StateBlock
@@ -187,6 +210,7 @@ export function RtpFinancialElementSection({
           bands={bands}
           lines={lines}
           canWrite={canWrite}
+          transcriptions={lineTranscriptions}
         />
       </div>
     )}
@@ -217,6 +241,7 @@ export function RtpFinancialElementSection({
         rtpCycleId={rtpCycleId}
         measures={measures}
         canWrite={canWrite}
+        transcriptions={measureTranscriptions}
       />
     )}
   </article>

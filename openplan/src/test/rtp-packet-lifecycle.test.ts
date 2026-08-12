@@ -254,7 +254,14 @@ function buildTableMock(table: string) {
     table === "rtp_horizon_bands" ||
     table === "rtp_financial_assumptions" ||
     table === "rtp_performance_measures" ||
-    table === "engagement_closeloop_entries"
+    table === "engagement_closeloop_entries" ||
+    // Where each figure in the packet came from. The export body cites the
+    // document and page of anything transcribed out of a plan document
+    // (Q2, 2026-08-11), so the generate route reads the staging tables too.
+    // Empty is the truthful answer for this fixture: nothing here was
+    // transcribed, and the packet therefore prints no citations.
+    table === "rtp_extraction_candidates" ||
+    table === "rtp_extraction_runs"
   ) {
     const empty: Record<string, unknown> = {};
     for (const method of ["select", "eq", "in", "order", "limit", "not", "is"]) {

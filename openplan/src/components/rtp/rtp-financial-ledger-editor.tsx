@@ -68,6 +68,11 @@ import { Loader2, PencilLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ExtractionProvenanceChip } from "@/components/rtp/extraction-provenance-chip";
+import {
+  transcriptionDocumentHref,
+  type TranscriptionRecord,
+} from "@/lib/rtp/extraction/display";
 import { parseOptionalAmount } from "@/lib/money/optional-amount";
 import type { RtpFiscalEntryKind } from "@/lib/rtp/fiscal-constraint";
 
@@ -94,6 +99,16 @@ export type RtpFinancialLedgerEditorProps = {
   bands: ReadonlyArray<RtpFinancialLedgerBand>;
   lines: ReadonlyArray<RtpFinancialLedgerLine>;
   canWrite: boolean;
+  /**
+   * Which of these lines were copied out of a document, keyed by line id, so
+   * each one can cite its page beside the figure (Nathaniel's Q2 decision,
+   * 2026-08-11: provenance everywhere).
+   *
+   * A line that is not in here was TYPED BY HAND and shows no chip. That is not
+   * a gap to fill in later — `extraction_candidate_id IS NULL` means a person
+   * entered it, permanently, and there is no backfill anywhere in this feature.
+   */
+  transcriptions?: Readonly<Record<string, TranscriptionRecord>>;
 };
 
 /**
@@ -345,6 +360,7 @@ export function RtpFinancialLedgerEditor({
   bands,
   lines,
   canWrite,
+  transcriptions,
 }: RtpFinancialLedgerEditorProps) {
   const router = useRouter();
   const [addingBandId, setAddingBandId] = useState<string | null>(null);
@@ -672,6 +688,17 @@ export function RtpFinancialLedgerEditor({
             {line.amountBasisYear ? ` · in ${line.amountBasisYear} dollars` : ""}
           </p>
           {line.notes ? <p className="text-[0.7rem] text-muted-foreground">{line.notes}</p> : null}
+          {/*
+            THE PAGE THIS FIGURE CAME FROM, beside the figure. Nothing renders
+            for a line somebody typed — see `transcriptions` above.
+          */}
+          {transcriptions?.[line.id] ? (
+            <ExtractionProvenanceChip
+              record={transcriptions[line.id]}
+              audience="planner"
+              documentHref={transcriptionDocumentHref(transcriptions[line.id])}
+            />
+          ) : null}
         </div>
 
         <div className="flex items-center gap-3">

@@ -106,6 +106,16 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "aerial/processing-callback/route.ts":
     "worker callback authenticated by a shared bearer token, not by a session",
 
+  // The same shape, for the OCR lane. The self-hosted recogniser posts
+  // per-page text back here for a job a workspace member already authorized at
+  // the request route (which DOES carry the role gate: a viewer cannot ask for
+  // OCR). There is no session on this request and no workspace role to check —
+  // the caller is a machine reporting on work it was handed, holding
+  // OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN, and the job row it names is what
+  // scopes the write to one document in one workspace.
+  "knowledge-base/ocr-callback/route.ts":
+    "worker callback authenticated by a shared bearer token, not by a session",
+
   // A READ that has to be a POST. It answers "does this transit feed have any
   // stops inside this study area" before a model run is queued, and the study
   // area is a corridor polygon — hundreds of kilobytes of coordinates that do

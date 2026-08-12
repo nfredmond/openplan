@@ -40,6 +40,16 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+/*
+  What has been copied out of a plan DOCUMENT into each cycle. Two columns and
+  a cap: the registry labels a cycle with how many transcriptions were saved
+  and how many are waiting, and shows "Copied text unknown" rather than zeroes
+  when this read fails.
+*/
+const transcriptionCandidatesLimitMock = vi.fn();
+const transcriptionCandidatesInMock = vi.fn(() => ({ limit: transcriptionCandidatesLimitMock }));
+const transcriptionCandidatesSelectMock = vi.fn(() => ({ in: transcriptionCandidatesInMock }));
+
 const modelingClaimLimitMock = vi.fn();
 const modelingClaimOrderMock = vi.fn(() => ({ limit: modelingClaimLimitMock }));
 const modelingClaimNotMock = vi.fn(() => ({ order: modelingClaimOrderMock }));
@@ -79,6 +89,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "modeling_claim_decisions") {
     return { select: modelingClaimSelectMock };
+  }
+  if (table === "rtp_extraction_candidates") {
+    return { select: transcriptionCandidatesSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -251,6 +264,11 @@ describe("RtpPage", () => {
 
     modelingClaimLimitMock.mockResolvedValue({
       data: [{ county_run_id: "county-run-1" }],
+      error: null,
+    });
+
+    transcriptionCandidatesLimitMock.mockResolvedValue({
+      data: [],
       error: null,
     });
 
