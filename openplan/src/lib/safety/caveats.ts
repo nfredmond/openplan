@@ -19,11 +19,78 @@ export const SAFETY_CRASH_DATA_NARRATIVE_CAVEAT =
   "Crash counts reflect reported collisions retrieved from the source agency and may be incomplete for the period shown.";
 
 /**
- * CCRS geocodes roughly 78% of records statewide. A map is therefore always a
- * subset of what was reported, and saying so is not optional.
+ * A map is always a subset of what was reported, and saying so is not optional.
+ *
+ * NO PERCENTAGE APPEARS IN THIS SENTENCE, deliberately. The geocoded share is
+ * wildly local: probed 2026-08-11, one state's 2025 file geolocated 77.7% of
+ * records statewide and 99.6% in one rural county of it. A constant quoting the
+ * statewide figure would describe almost no actual extract correctly, in either
+ * direction. Every acquisition already stores its own reported and geocoded
+ * counts, so the number a planner sees is computed from THEIR extract — see
+ * `describeGeocodingShortfall`.
  */
 export const SAFETY_GEOCODING_CAVEAT =
   "Only crashes with usable coordinates can be mapped. Reported crashes that the source agency did not geolocate are counted in the totals but do not appear on the map.";
+
+/**
+ * The geocoded share of ONE extract, in a sentence, or null when there is
+ * nothing to disclose.
+ *
+ * Returns null rather than a cheerful "100% mapped" when nothing was dropped:
+ * a disclosure that fires on every acquisition trains a reader to skip it, and
+ * the fact worth interrupting for is the shortfall.
+ *
+ * `null` is also the answer when the counts are unusable — a percentage computed
+ * from an unreadable denominator is an invented figure, and this module's whole
+ * posture is that a number that could not be read is not a number.
+ */
+export function describeGeocodingShortfall(
+  reportedCount: number,
+  geocodedCount: number
+): string | null {
+  if (!Number.isFinite(reportedCount) || !Number.isFinite(geocodedCount)) return null;
+  if (reportedCount <= 0 || geocodedCount < 0 || geocodedCount > reportedCount) return null;
+  const missing = reportedCount - geocodedCount;
+  if (missing <= 0) return null;
+  const share = Math.round((geocodedCount / reportedCount) * 1000) / 10;
+  return (
+    `${missing.toLocaleString()} of the ${reportedCount.toLocaleString()} reported crashes in this ` +
+    `retrieval carry no coordinates from the source agency (${share}% were mapped). ` +
+    SAFETY_GEOCODING_CAVEAT
+  );
+}
+
+/**
+ * Collisions the source reported while supplying no casualty count at all.
+ *
+ * The band exists because a missing count used to parse to zero, and zero killed
+ * plus zero injured is the definition of property-damage-only — so these were
+ * stored, painted and counted as crashes where nobody was hurt. Measured against
+ * one state's live 2025 file on 2026-08-11: 4.7% statewide, 9.5% in one rural
+ * county. The number has to be visible wherever severity counts are, or the
+ * bands quietly fail to add up to the total and a reader fills the gap in with
+ * "property damage".
+ */
+export const SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT =
+  "Some reported collisions carry no casualty count from the source agency, so they cannot be placed in a severity band. They are counted in the total and in no severity band — their absence from the fatal, serious, injury and property-damage figures is missing information, not a mild outcome.";
+
+export const SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT =
+  "Collisions for which the source agency reported no casualty count are counted in the total but placed in no severity band.";
+
+/**
+ * Property-damage-only collisions, and why they are off by default.
+ *
+ * A planner's reason, not a technical one: PDO reporting thresholds vary by
+ * agency, by dollar limit, by whether a unit was dispatched, and they drift over
+ * time — so PDO counts are not comparable across jurisdictions or years, and a
+ * grant reviewer will discount a headline "crashes" number built on them. They
+ * are still worth having: PDO is the only stratum dense enough to see a pattern
+ * at one intersection over five years, and the benefit-cost screen monetizes a
+ * property-damage dimension. So they are included, retrievable, filterable —
+ * and off until asked for, with this sentence attached.
+ */
+export const SAFETY_PDO_COMPARABILITY_CAVEAT =
+  "Property-damage-only collisions are reported inconsistently between agencies and over time, so counts including them are not comparable across places or years. They are excluded from these figures until you switch them on.";
 
 /**
  * CCRS `Crashes_*` cannot separate suspected-serious-injury (KABCO A) from

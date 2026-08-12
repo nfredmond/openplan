@@ -109,7 +109,11 @@ function routedFetch(crash = mockCrashResponse(), ingestRes = mockIngestResponse
   );
 }
 
-function mockCrashResponse(features: unknown[] = [], matchedCount = features.length) {
+function mockCrashResponse(
+  features: unknown[] = [],
+  matchedCount = features.length,
+  undrawableCount = 0
+) {
   return {
     ok: true,
     json: async () => ({
@@ -117,7 +121,8 @@ function mockCrashResponse(features: unknown[] = [], matchedCount = features.len
       features,
       returnedCount: features.length,
       matchedCount,
-      truncated: features.length < matchedCount,
+      undrawableCount,
+      truncated: features.length + undrawableCount < matchedCount,
       limit: 2000,
     }),
   } as Response;
@@ -138,19 +143,40 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea();
 
     await waitFor(() => {
-      expect(screen.getByText(/1,180 reported/)).toBeInTheDocument();
+      // Scoped to the header pairing. The geocoding disclosure below also names
+      // the reported total, and a bare /1,180 reported/ would now match both.
+      expect(screen.getByText(/1,180 reported ·/)).toBeInTheDocument();
     });
     expect(screen.getByText(/1,089 mappable/)).toBeInTheDocument();
   });
 
-  it("explains the ungeocoded crashes that are counted but not plotted", async () => {
+  it("computes the geocoded share from THIS extract, not from a constant", async () => {
+    // The geocoded share is wildly local — 77.7% statewide and 99.6% in one
+    // rural county of the same state, probed the same day — so a constant in
+    // the caveat would describe almost no real acquisition correctly. Both
+    // counts are already on the acquisition row; the sentence is computed.
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} />);
 
     await waitFor(() => {
-      // 1180 - 1089 = 91 crashes that exist but cannot be mapped.
-      expect(screen.getByText(/91 reported crashes have no coordinates/)).toBeInTheDocument();
+      // 1180 - 1089 = 91 crashes that exist but cannot be mapped, 92.3% mapped.
+      expect(
+        screen.getByText(/91 of the 1,180 reported crashes in this retrieval carry no coordinates/)
+      ).toBeInTheDocument();
     });
+    expect(screen.getByText(/92\.3% were mapped/)).toBeInTheDocument();
     expect(screen.getByText(/do not appear on the map/i)).toBeInTheDocument();
+  });
+
+  it("says nothing about geocoding when nothing was dropped", async () => {
+    // A disclosure that fires on every acquisition trains a reader to skip it.
+    render(
+      <SafetyWorkspace
+        workspaceId="ws-1"
+        latestIngest={ingest({ crashCount: 1180, geocodedCount: 1180 })}
+      />
+    );
+    await waitFor(() => expect(screen.getByText(/1,180 reported ·/)).toBeInTheDocument());
+    expect(screen.queryByText(/carry no coordinates/i)).toBeNull();
   });
 
   it("discloses that a KSI total cannot be derived from this source", async () => {
@@ -204,7 +230,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea("ca-county"); // GEOID 06057 -> Nevada County -> CCRS 29
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
     await waitFor(() => {
       const post = fetchMock.mock.calls.find(
         (c) => String(c[0]).includes("/ingest")
@@ -226,7 +252,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea("ca-city");
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
     await waitFor(() => {
       const post = fetchMock.mock.calls.find((c) => String(c[0]).includes("/ingest"));
       expect(post).toBeDefined();
@@ -242,7 +268,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea("tx-county"); // Harris County, TX
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
     await waitFor(() => {
       const post = fetchMock.mock.calls.find((c) => String(c[0]).includes("/ingest"));
       expect(post).toBeDefined();
@@ -345,8 +371,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea();
-    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/0 reported/)).toBeInTheDocument();
@@ -364,8 +390,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea();
-    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/2 killed or seriously injured/)).toBeInTheDocument();
@@ -424,6 +450,11 @@ describe("SafetyWorkspace coverage disclosure", () => {
       injuredCount: 0,
       pedestrianInvolved: false,
       bicyclistInvolved: false,
+      motorcyclistInvolved: false,
+      collisionType: "rear_end",
+      lighting: "daylight",
+      weather: "clear",
+      sourceAttributes: {},
       latitude: 1,
       longitude: 2,
       ...over,
@@ -438,7 +469,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea("tx-county");
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     // The counts the source reported, both of them.
     await waitFor(() => expect(screen.getByText(/5 reported/)).toBeInTheDocument());
@@ -460,8 +491,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea("tx-county");
-    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
     expect(screen.queryByLabelText(/Acquisition history/i)).not.toBeInTheDocument();
@@ -487,8 +518,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
       <SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} />
     );
     selectStudyArea("tx-county");
-    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() => expect(screen.getByText(/fatality census/i)).toBeInTheDocument());
     expect(screen.queryByText(/killed or seriously injured/i)).not.toBeInTheDocument();
@@ -503,15 +534,51 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea("tx-county");
-    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() => expect(screen.getByText(/Showing 2 of 2 mappable/i)).toBeInTheDocument());
 
-    fireEvent.change(screen.getByRole("combobox", { name: /Mode/i }), {
-      target: { value: "pedestrian" },
-    });
+    // The generated filter panel, driven the way a planner drives it. The
+    // control is the one `CRASH_FILTER_FACETS` produced — nothing in this test
+    // names a facet the component invented locally, because the component no
+    // longer has any local facets to invent.
+    fireEvent.click(screen.getByRole("button", { name: /^Pedestrian/ }));
 
+    await waitFor(() => expect(screen.getByText(/Showing 1 of 2 mappable/i)).toBeInTheDocument());
+  });
+
+  it("disables a facet the covering source has no field for, and says why", async () => {
+    // NOT A DESCRIBED FIXTURE. The coverage declaration here comes from the REAL
+    // adapter the real registry resolves for an area only a read-only source
+    // covers — a fatality census, which records no lighting at all. Left
+    // enabled, the control would return nothing, and nothing on a safety screen
+    // reads as "no crash in this corridor happened after dark". That is a claim
+    // about a road built on a missing column.
+    const response = await realReadOnlyResponse([
+      liveRecord({ externalId: "a", severity: "fatal" }),
+      liveRecord({ externalId: "b", severity: "injury" }),
+    ]);
+    vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response) as unknown as typeof fetch);
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument()
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
+
+    await waitFor(() => expect(screen.getByText(/Showing 2 of 2 mappable/i)).toBeInTheDocument());
+
+    const lighting = screen.getByRole("group", { name: /Lighting/i });
+    expect(lighting).toHaveTextContent(/does not record lighting/i);
+    expect(lighting).toHaveTextContent(/not a finding/i);
+    expect(screen.getByRole("button", { name: /^Dark — no street lights/ })).toBeDisabled();
+
+    // A facet the source CAN answer stays live on the same screen, so the
+    // disabled state above is a statement about that dimension and not an
+    // outage of the whole panel.
+    fireEvent.click(screen.getByRole("button", { name: /^Injury/ }));
     await waitFor(() => expect(screen.getByText(/Showing 1 of 2 mappable/i)).toBeInTheDocument());
   });
 
@@ -521,8 +588,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea("tx-county");
-    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
     await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
 
     // The mocked picker emits a different polygon for a different pick.
@@ -563,8 +630,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea("tx-county");
-    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
-    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() =>
       expect(screen.getByText(/Sources checked for this study area:/i)).toBeInTheDocument()
@@ -587,5 +654,43 @@ describe("SafetyWorkspace coverage disclosure", () => {
     await waitFor(() => {
       expect(screen.getByText(/Showing 0 of 4,213 crashes/)).toBeInTheDocument();
     });
+  });
+});
+
+/**
+ * A row the query matched and the response could not render is a THIRD thing,
+ * distinct from "beyond the display cap" and from "not in the record".
+ *
+ * Without its own sentence, `returnedCount` silently falls below `matchedCount`
+ * and the page reports truncation — sending a planner to widen the view looking
+ * for records that are already in the table and undrawable.
+ */
+describe("crashes the response could not draw", () => {
+  it("names them separately from the display cap", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => mockCrashResponse([], 10, 3)) as unknown as typeof fetch
+    );
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} />);
+    selectStudyArea();
+
+    await waitFor(() =>
+      expect(screen.getByText(/3 matching crashes could not be drawn/)).toBeInTheDocument()
+    );
+    expect(screen.getByText(/missing from the map rather than absent from the record/)).toBeInTheDocument();
+  });
+
+  it("says nothing when every matching crash was drawn", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => mockCrashResponse([], 10, 0)) as unknown as typeof fetch
+    );
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} />);
+    selectStudyArea();
+
+    await waitFor(() => expect(screen.getByText(/Showing 0 of 10 crashes/)).toBeInTheDocument());
+    expect(screen.queryByText(/could not be drawn/)).toBeNull();
   });
 });

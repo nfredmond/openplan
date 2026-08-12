@@ -38,11 +38,22 @@
 import { fetchJsonWithRetry } from "@/lib/data-sources/http";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 import {
+  deriveSeverityFromCounts,
+  mapCrashDimension,
+  toCasualtyCount,
+  type CrashCollisionType,
+  type CrashDimension,
+  type CrashLighting,
+  type CrashSeverity,
+  type CrashWeather,
+} from "@/lib/safety/vocabulary";
+import { CCRS_CRASH_COLUMNS, CCRS_DIMENSION_SUPPORT, CCRS_VOCABULARY } from "./ccrs-vocabulary";
+import { fetchCcrsParties } from "./ccrs-parties";
+import {
   CrashSourceUnavailableError,
   type CrashFetchParams,
   type CrashFetchResult,
   type CrashRecord,
-  type CrashSeverity,
   type CrashSourceAdapter,
 } from "./types";
 
@@ -113,16 +124,25 @@ function toCoordinate(value: unknown): number | null {
 }
 
 /**
- * Derive a KABCO-aligned bucket from the two count columns CCRS actually has.
+ * Derive a severity band from the two count columns CCRS actually has.
  *
- * `severe_injury` is intentionally unreachable here — see the field notes. If a
- * later slice adds the ExtentOfInjuryCode join, it upgrades rows in place rather
- * than changing this function's contract.
+ * TAKES RAW VALUES, NOT NUMBERS, and that signature is the fix. It used to take
+ * two numbers, which meant its caller had already run a missing count through
+ * `Math.max(0, …)` and handed it a 0 — so a collision whose casualty counts CCRS
+ * never supplied arrived here as "nobody killed, nobody injured" and left as
+ * property-damage-only. Probed 2025: 18,967 statewide records carry both counts
+ * NULL (4.7%), 112 of 1,180 in one rural county (9.5%), and the person-level
+ * table has no rows for them either — the outcome is genuinely unknown, not
+ * zero. `NumberKilled` additionally carries '-1' in the wild, which the old
+ * clamp also turned into 0.
+ *
+ * `severe_injury` remains intentionally unreachable here: it comes from the
+ * person-level join, which upgrades rows in place afterwards.
+ *
+ * Numbers still work as inputs, so a caller with genuine counts is unaffected.
  */
-export function deriveCcrsSeverity(killedCount: number, injuredCount: number): CrashSeverity {
-  if (killedCount > 0) return "fatal";
-  if (injuredCount > 0) return "injury";
-  return "pdo";
+export function deriveCcrsSeverity(killedRaw: unknown, injuredRaw: unknown): CrashSeverity {
+  return deriveSeverityFromCounts(toCasualtyCount(killedRaw), toCasualtyCount(injuredRaw));
 }
 
 /** CCRS spells the involved party in MotorVehicleInvolvedWithDesc. */
@@ -260,27 +280,80 @@ async function countForYear(
   return Math.trunc(toFiniteNumber(rows[0]?.n));
 }
 
+/**
+ * The columns this adapter requests, and the complete list of them.
+ *
+ * DELIBERATELY NARROW. `Crashes_2025` has 75 columns; these ten are the ones
+ * with a reader shipping in this release. The rest are not "not yet mapped" —
+ * several are refused on purpose, and the refusals are argued in
+ * `ccrs-vocabulary.ts` (free-text violation codes, undocumented code-only
+ * fields, a field that is 46% null) and in
+ * `src/test/refused-crash-person-fields.test.ts` (everything that identifies a
+ * person or alleges fault). Adding a column here is a product decision, not a
+ * widening of a fetch.
+ */
+const CCRS_REQUESTED_COLUMNS = [
+  CCRS_CRASH_COLUMNS.collisionId,
+  CCRS_CRASH_COLUMNS.crashDateTime,
+  CCRS_CRASH_COLUMNS.latitude,
+  CCRS_CRASH_COLUMNS.longitude,
+  CCRS_CRASH_COLUMNS.numberKilled,
+  CCRS_CRASH_COLUMNS.numberInjured,
+  CCRS_CRASH_COLUMNS.involvedWith,
+  CCRS_CRASH_COLUMNS.collisionType,
+  CCRS_CRASH_COLUMNS.lighting,
+  CCRS_CRASH_COLUMNS.weather,
+] as const;
+
+/**
+ * Map the three descriptor-driven dimensions off one CCRS row.
+ *
+ * Every unrecognised value is counted and its raw string kept: the tally is what
+ * lets the ingest disclose "N values in this facet could not be classified", and
+ * the raw string is what lets a later descriptor pick the value up without a
+ * re-ingest being the only way to learn what was lost. Nothing is fuzzy-matched.
+ */
+function mapCcrsDimensions(row: Record<string, unknown>): {
+  collisionType: CrashCollisionType | null;
+  lighting: CrashLighting | null;
+  weather: CrashWeather | null;
+  sourceAttributes: Record<string, string>;
+  unmapped: CrashDimension[];
+} {
+  const sourceAttributes: Record<string, string> = {};
+  const unmapped: CrashDimension[] = [];
+
+  const read = (dimension: CrashDimension, column: string) => {
+    const mapping = mapCrashDimension(CCRS_VOCABULARY, dimension, row[column]);
+    if (mapping === null) return null;
+    if (mapping.unmapped && mapping.raw !== null) {
+      sourceAttributes[column] = mapping.raw;
+      unmapped.push(dimension);
+    }
+    return mapping.value;
+  };
+
+  return {
+    collisionType: read("collision_type", CCRS_CRASH_COLUMNS.collisionType) as CrashCollisionType | null,
+    lighting: read("lighting", CCRS_CRASH_COLUMNS.lighting) as CrashLighting | null,
+    weather: read("weather", CCRS_CRASH_COLUMNS.weather) as CrashWeather | null,
+    sourceAttributes,
+    unmapped,
+  };
+}
+
 async function fetchYearRecords(
   resourceId: string,
   bbox: StudyAreaBbox,
   countyCode: number | undefined,
   remaining: number,
   signal?: AbortSignal
-): Promise<{ records: CrashRecord[]; truncated: boolean }> {
+): Promise<{ records: CrashRecord[]; truncated: boolean; unmapped: Partial<Record<CrashDimension, number>> }> {
   const where = buildWhere({ bbox, countyCode, requireCoordinates: true });
-  const columns = [
-    "Collision Id",
-    "Crash Date Time",
-    "Latitude",
-    "Longitude",
-    "NumberKilled",
-    "NumberInjured",
-    "MotorVehicleInvolvedWithDesc",
-  ]
-    .map((c) => `"${c}"`)
-    .join(",");
+  const columns = CCRS_REQUESTED_COLUMNS.map((c) => `"${c}"`).join(",");
 
   const records: CrashRecord[] = [];
+  const unmapped: Partial<Record<CrashDimension, number>> = {};
   let offset = 0;
 
   while (records.length < remaining) {
@@ -292,26 +365,45 @@ async function fetchYearRecords(
     );
 
     for (const row of rows) {
-      const latitude = toCoordinate(row["Latitude"]);
-      const longitude = toCoordinate(row["Longitude"]);
-      const externalId = row["Collision Id"] == null ? "" : String(row["Collision Id"]).trim();
+      const latitude = toCoordinate(row[CCRS_CRASH_COLUMNS.latitude]);
+      const longitude = toCoordinate(row[CCRS_CRASH_COLUMNS.longitude]);
+      const rawId = row[CCRS_CRASH_COLUMNS.collisionId];
+      const externalId = rawId == null ? "" : String(rawId).trim();
       // A row without usable coordinates or a case id cannot be mapped or
       // deduplicated, so it is dropped rather than stored half-formed. The
       // count query above is what keeps such rows visible to the operator.
       if (latitude === null || longitude === null || !externalId) continue;
 
-      const killedCount = Math.max(0, Math.trunc(toFiniteNumber(row["NumberKilled"])));
-      const injuredCount = Math.max(0, Math.trunc(toFiniteNumber(row["NumberInjured"])));
-      const collisionDate = toCollisionDate(row["Crash Date Time"]);
+      // NOT clamped to zero. `toCasualtyCount` yields null for a missing or
+      // negative count, which is what makes the `unknown` severity band
+      // reachable instead of collapsing into property-damage-only.
+      const killedCount = toCasualtyCount(row[CCRS_CRASH_COLUMNS.numberKilled]);
+      const injuredCount = toCasualtyCount(row[CCRS_CRASH_COLUMNS.numberInjured]);
+      const collisionDate = toCollisionDate(row[CCRS_CRASH_COLUMNS.crashDateTime]);
+      const dimensions = mapCcrsDimensions(row);
+      for (const dimension of dimensions.unmapped) {
+        unmapped[dimension] = (unmapped[dimension] ?? 0) + 1;
+      }
 
       records.push({
         externalId,
         collisionDate,
         collisionYear: collisionYearFromDate(collisionDate),
-        severity: deriveCcrsSeverity(killedCount, injuredCount),
+        severity: deriveSeverityFromCounts(killedCount, injuredCount),
         killedCount,
         injuredCount,
-        ...deriveInvolvement(row["MotorVehicleInvolvedWithDesc"]),
+        ...deriveInvolvement(row[CCRS_CRASH_COLUMNS.involvedWith]),
+        // Crash-level involvement flags UNDERCOUNT, measurably: probed 2025, the
+        // crash-level bicycle flag reports 10,221 collisions where 11,944 carry
+        // a bicyclist party row (+16.9%), and pedestrians 12,789 vs 13,177
+        // (+3.0%). Motorcyclists have no crash-level flag at all. The ingest
+        // recomputes all three from person rows when it retrieved them, and
+        // records which basis it used — see `ingest.ts`.
+        motorcyclistInvolved: false,
+        collisionType: dimensions.collisionType,
+        lighting: dimensions.lighting,
+        weather: dimensions.weather,
+        sourceAttributes: dimensions.sourceAttributes,
         latitude,
         longitude,
         // CCRS is a California-only system, so every record is state 06. This
@@ -323,12 +415,12 @@ async function fetchYearRecords(
 
     if (rows.length < limit) {
       // Source exhausted for this year.
-      return { records, truncated: false };
+      return { records, truncated: false, unmapped };
     }
     offset += rows.length;
   }
 
-  return { records, truncated: true };
+  return { records, truncated: true, unmapped };
 }
 
 export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashFetchResult> {
@@ -342,6 +434,7 @@ export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashF
     .sort((a, b) => b - a);
 
   const records: CrashRecord[] = [];
+  const unmappedByDimension: Partial<Record<CrashDimension, number>> = {};
   let matchedTotal = 0;
   let geocodedTotal = 0;
   let truncated = false;
@@ -375,6 +468,10 @@ export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashF
     );
     records.push(...page.records);
     truncated = truncated || page.truncated;
+    for (const [dimension, count] of Object.entries(page.unmapped)) {
+      const key = dimension as CrashDimension;
+      unmappedByDimension[key] = (unmappedByDimension[key] ?? 0) + count;
+    }
   }
 
   return {
@@ -385,6 +482,7 @@ export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashF
       new Set(records.map((r) => r.collisionYear).filter((y): y is number => typeof y === "number"))
     ).sort((a, b) => a - b),
     truncated,
+    unmappedByDimension,
   };
 }
 
@@ -396,6 +494,10 @@ export const ccrsAdapter: CrashSourceAdapter = {
   license: "Other (Public Domain)",
   coverageState: "ccrs_ca_statewide",
   severityCompleteness: "fatal_injury_only",
+  // Declared in the descriptor beside the mapping tables, not here: capability
+  // and translation are one statement about a source, and splitting them is how
+  // they drift.
+  dimensions: CCRS_DIMENSION_SUPPORT,
   earliestYear: CCRS_EARLIEST_YEAR,
   persistable: true,
   // California only — a national backstop's records in state 06 are redundant
@@ -403,4 +505,5 @@ export const ccrsAdapter: CrashSourceAdapter = {
   coversStateFips: ["06"],
   covers: overlapsCalifornia,
   fetch: fetchCcrsCrashes,
+  fetchParties: fetchCcrsParties,
 };

@@ -400,3 +400,23 @@ export type MeetingRow = {
   attendees_summary: string | null;
   created_at: string;
 };
+
+/**
+ * The `safety_crash_ingests` columns this page's coverage board renders.
+ *
+ * A SUBSET of what the query asks for: the read uses
+ * `SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION` because the RTP safety criterion
+ * needs the rest of the row, and this type names only the fields the board
+ * itself reads. It lives here rather than inline in the page for the ordinary
+ * reason — the page is at its line ceiling — and naming it makes the board's
+ * actual dependency legible.
+ */
+export type ProjectSafetyIngestRow = {
+  id: string;
+  status: string;
+  source_label: string | null;
+  coverage_state: string;
+  crash_count: number | null;
+  geocoded_count: number | null;
+  created_at: string;
+};

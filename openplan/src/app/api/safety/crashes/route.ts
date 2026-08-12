@@ -6,7 +6,14 @@ import {
   checkWorkspaceMembership,
   type WorkspaceMembershipResult,
 } from "@/lib/workspaces/membership";
-import { CRASH_SEVERITIES } from "@/lib/safety/sources/types";
+import {
+  applyCrashFiltersToQuery,
+  CRASH_FILTER_FACETS,
+  CRASH_QUERY_PROJECTION,
+  parseFacetParam,
+  type CrashFilterSelection,
+} from "@/lib/safety/crash-filters";
+import { toStoredCrashProperties } from "@/lib/safety/crash-properties";
 
 /**
  * Crash query for the Safety map and list.
@@ -35,19 +42,35 @@ const querySchema = z.object({
   minLat: z.coerce.number().min(-90).max(90),
   maxLon: z.coerce.number().min(-180).max(180),
   maxLat: z.coerce.number().min(-90).max(90),
-  severity: z
-    .string()
-    .optional()
-    .transform((value) => (value ? value.split(",").map((s) => s.trim()).filter(Boolean) : undefined))
-    .refine(
-      (values) => !values || values.every((v) => (CRASH_SEVERITIES as readonly string[]).includes(v)),
-      { message: "Unknown severity" }
-    ),
-  mode: z.enum(["all", "pedestrian", "bicyclist", "vru"]).optional(),
   yearFrom: z.coerce.number().int().min(1900).max(2100).optional(),
   yearTo: z.coerce.number().int().min(1900).max(2100).optional(),
   limit: z.coerce.number().int().min(1).max(MAX_LIMIT).optional(),
 });
+
+/**
+ * THE FACET FILTERS ARE NOT SPELLED HERE.
+ *
+ * They used to be: a hand-written `severity` refinement and a `mode` enum, whose
+ * twin lived in `safety-workspace.tsx` for the live lane and was documented as
+ * having been "written to mirror" this one. Both are now generated from
+ * `CRASH_FILTER_FACETS`, so a facet cannot be filterable in one lane and dead in
+ * the other. `parseFacetParam` returns null — not an empty list — for a value
+ * outside the vocabulary, which is what turns a typo into a 400 rather than into
+ * a silently unfiltered total.
+ *
+ * `mode` is gone as a parameter name. It was a single-choice enum over two of
+ * the three involvement flags; `involvement` is the multi-select over all three,
+ * and motorcyclists are reachable for the first time.
+ */
+function parseFacetSelection(params: URLSearchParams): CrashFilterSelection | null {
+  const selection: CrashFilterSelection = {};
+  for (const facet of CRASH_FILTER_FACETS) {
+    const parsed = parseFacetParam(facet, params.get(facet.id));
+    if (parsed === null) return null;
+    if (parsed.length > 0) selection[facet.id] = parsed;
+  }
+  return selection;
+}
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {
   if (result.kind === "schema_pending") {
@@ -81,6 +104,16 @@ export async function GET(request: NextRequest) {
     if (query.minLon >= query.maxLon || query.minLat >= query.maxLat) {
       return NextResponse.json({ error: "Invalid bounding box" }, { status: 400 });
     }
+
+    const facetSelection = parseFacetSelection(request.nextUrl.searchParams);
+    if (facetSelection === null) {
+      return NextResponse.json({ error: "Invalid crash query parameters" }, { status: 400 });
+    }
+    const selection: CrashFilterSelection = {
+      ...facetSelection,
+      ...(query.yearFrom === undefined ? {} : { yearFrom: query.yearFrom }),
+      ...(query.yearTo === undefined ? {} : { yearTo: query.yearTo }),
+    };
 
     const supabase = await createClient();
     const {
@@ -126,6 +159,7 @@ export async function GET(request: NextRequest) {
             features: [],
             returnedCount: 0,
             matchedCount: 0,
+            undrawableCount: 0,
             truncated: false,
             limit,
           },
@@ -146,6 +180,9 @@ export async function GET(request: NextRequest) {
       or: (filter: string) => CrashFilterable;
     };
 
+    // Scope first (workspace, viewport, project), then the shared facet
+    // interpreter. The scope predicates stay here because they are not filters a
+    // planner chooses — they are the boundary of what this request may see.
     const applyFilters = <T>(builder: T): T => {
       let q = builder as unknown as CrashFilterable;
       q = q
@@ -156,25 +193,15 @@ export async function GET(request: NextRequest) {
         .lte("latitude", query.maxLat);
 
       if (projectIngestIds) q = q.in("ingest_id", projectIngestIds);
-      if (query.severity?.length) q = q.in("severity", query.severity);
-      if (query.yearFrom !== undefined) q = q.gte("collision_year", query.yearFrom);
-      if (query.yearTo !== undefined) q = q.lte("collision_year", query.yearTo);
-      if (query.mode === "pedestrian") q = q.eq("pedestrian_involved", true);
-      if (query.mode === "bicyclist") q = q.eq("bicyclist_involved", true);
-      if (query.mode === "vru") q = q.or("pedestrian_involved.eq.true,bicyclist_involved.eq.true");
 
-      return q as unknown as T;
+      return applyCrashFiltersToQuery(q, selection) as unknown as T;
     };
 
     const [countResult, rowsResult] = await Promise.all([
       applyFilters(supabase.from("safety_crashes").select("id", { count: "exact", head: true })),
-      applyFilters(
-        supabase
-          .from("safety_crashes")
-          .select(
-            "id,external_id,collision_date,collision_year,severity,killed_count,injured_count,pedestrian_involved,bicyclist_involved,latitude,longitude,source_id"
-          )
-      ).order("collision_date", { ascending: false, nullsFirst: false }).limit(limit),
+      applyFilters(supabase.from("safety_crashes").select(CRASH_QUERY_PROJECTION))
+        .order("collision_date", { ascending: false, nullsFirst: false })
+        .limit(limit),
     ]);
 
     if (rowsResult.error) {
@@ -185,44 +212,51 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to load crash data" }, { status: 500 });
     }
 
-    const rows = (rowsResult.data ?? []) as Array<Record<string, unknown>>;
+    const rows = (rowsResult.data ?? []) as unknown as Array<Record<string, unknown>>;
     const matchedCount = countResult.error ? rows.length : countResult.count ?? rows.length;
+
+    // Built through the shared reader so this route and the shared backdrop
+    // layer cannot disagree about what a row means — in particular about a
+    // casualty count the source never supplied, which must stay null and never
+    // become a zero that reads as "nobody was hurt".
+    const features = rows.flatMap((row) => {
+      const properties = toStoredCrashProperties(row);
+      if (!properties) return [];
+      const longitude = Number(row.longitude);
+      const latitude = Number(row.latitude);
+      if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return [];
+      return [
+        {
+          // GeoJSON so the map can consume it directly.
+          type: "Feature" as const,
+          geometry: { type: "Point" as const, coordinates: [longitude, latitude] },
+          properties,
+        },
+      ];
+    });
+
+    // Rows the response could not render honestly. Reported rather than
+    // swallowed: silently returning fewer features than were matched is how a
+    // count on screen stops agreeing with the record behind it.
+    const undrawableCount = rows.length - features.length;
 
     audit.info("safety_crash_list_loaded", {
       workspaceId: query.workspaceId,
-      returnedCount: rows.length,
+      returnedCount: features.length,
       matchedCount,
+      undrawableCount,
       durationMs: Date.now() - startedAt,
     });
 
     return NextResponse.json(
       {
-        // GeoJSON so the map can consume it directly.
         type: "FeatureCollection",
-        features: rows.map((row) => ({
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [Number(row.longitude), Number(row.latitude)],
-          },
-          properties: {
-            kind: "safety_crash",
-            id: row.id,
-            externalId: row.external_id,
-            sourceId: row.source_id,
-            collisionDate: row.collision_date,
-            collisionYear: row.collision_year,
-            severity: row.severity,
-            killedCount: row.killed_count,
-            injuredCount: row.injured_count,
-            pedestrianInvolved: row.pedestrian_involved,
-            bicyclistInvolved: row.bicyclist_involved,
-          },
-        })),
+        features,
         // Load-bearing for honest UI copy: "showing N of M crashes in view".
-        returnedCount: rows.length,
+        returnedCount: features.length,
         matchedCount,
-        truncated: rows.length < matchedCount,
+        undrawableCount,
+        truncated: features.length + undrawableCount < matchedCount,
         limit,
       },
       { status: 200 }

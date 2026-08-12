@@ -269,16 +269,43 @@ const EXPECTED = {
   // 'ocr'. That moves nothing here — it drops and re-adds a constraint on an
   // existing table — and it is recorded because a reader diffing the migration
   // directory would otherwise have to re-derive the absence.
-  policies: 593,
-  permissive: 347,
+  //
+  // 20260812000001 (the neutral crash dimensions) moves NOTHING here, and the
+  // zero is the entry: it adds columns and CHECK constraints to two existing
+  // tables and issues the first GRANT/REVOKE either has ever had. Privileges are
+  // not schema shapes — they are replayed by `grant-inventory.ts` and asserted by
+  // the locked-door guard — so no count below can see them.
+  //
+  // 20260812000002 (safety_crash_parties) adds ONE table — one person in one
+  // observed collision, carrying a neutral role, an age BAND and an injury
+  // outcome. ONE permissive policy: member SELECT. NO write policies at all,
+  // following aerial_imagery and the OCR job tables: every write is an authed
+  // route using the service role after a membership check, so a client-side
+  // write policy would be a hole in a table that holds injury outcomes. `anon`
+  // is granted nothing and never will be.
+  // So: +1 policy, +1 permissive, +0 restrictive, +0 permissiveWrites,
+  // +1 tablesWithPolicies, +1 relation, +1 table, +1 rlsEnabledTable.
+  // `views` holds at 7 and `expanded` at 264: no view, and the policy is written
+  // literally inside a pg_policies-guarded DO block, which is plain SQL text
+  // rather than EXECUTE format, so nothing is rendered.
+  //
+  // 20260812000003 (safety_crash_evidence_counts) moves NOTHING here, and the
+  // zero is the entry: it creates one SECURITY INVOKER function that groups
+  // severity and person-role counts for a set of acquisitions, and functions are
+  // neither relations nor policies. Its REVOKE/GRANT is a privilege, replayed by
+  // `grant-inventory.ts` rather than counted below. Recorded because a reader
+  // diffing the migration directory against these notes would otherwise have to
+  // re-derive the absence.
+  policies: 594,
+  permissive: 348,
   restrictive: 246,
   permissiveWrites: 224,
   expanded: 264,
-  tablesWithPolicies: 123,
-  relations: 144,
-  tables: 137,
+  tablesWithPolicies: 124,
+  relations: 145,
+  tables: 138,
   views: 7,
-  rlsEnabledTables: 137,
+  rlsEnabledTables: 138,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

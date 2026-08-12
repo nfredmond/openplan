@@ -14,7 +14,8 @@ import {
 } from "@/lib/cartographic/crash-layer-coverage";
 import { homeGeographyBbox, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 import { resolveCrashSources } from "@/lib/safety/sources/registry";
-import { isCrashSeverity } from "@/lib/safety/sources/types";
+import { readCrashRowFacts } from "@/lib/safety/crash-properties";
+import { CRASH_QUERY_PROJECTION } from "@/lib/safety/crash-filters";
 
 /**
  * Acquired collisions as a shared map layer.
@@ -53,15 +54,37 @@ import { isCrashSeverity } from "@/lib/safety/sources/types";
 const HOME_GEOGRAPHY_EXTENT_COLUMNS =
   "home_geography_source, home_geography_label, home_min_lon, home_min_lat, home_max_lon, home_max_lat";
 
-type CrashRow = {
+/**
+ * The crash columns this layer asks for, GENERATED — never hand-written.
+ *
+ * `CRASH_QUERY_PROJECTION` is derived from the facet registry in
+ * `src/lib/safety/crash-filters.ts`, which takes every column name from
+ * `src/lib/safety/vocabulary.ts`. This route used to spell its own list, which
+ * made it a THIRD reader of those names beside the two that are generated —
+ * and the consequence was not hypothetical: adding a dimension to the
+ * vocabulary flowed automatically into the Safety workbench query and the
+ * export, and would silently NOT have reached this shared backdrop layer. The
+ * facet would have been filterable everywhere and invisible on the map every
+ * other module draws on.
+ *
+ * The embed is appended by COMPOSITION rather than by restating the columns.
+ * It is the only thing this route needs that the shared projection has no
+ * business knowing about: `/api/safety/crashes` keys features by external id
+ * and source, while this one attributes each crash to the project its
+ * ACQUISITION was run for.
+ */
+const CRASH_LAYER_PROJECTION = `${CRASH_QUERY_PROJECTION},safety_crash_ingests!inner(project_id)`;
+
+/**
+ * What THIS route reads off a crash row by name.
+ *
+ * Deliberately short. The collision FACTS are read by `readCrashRowFacts` from
+ * the same row object, so listing them again here would be a second inventory
+ * of the same columns drifting beside the generated projection. The index
+ * signature is what lets the row go straight to that reader with no cast.
+ */
+type CrashRow = Record<string, unknown> & {
   id: string;
-  severity: string;
-  collision_date: string | null;
-  collision_year: number | string | null;
-  killed_count: number | string | null;
-  injured_count: number | string | null;
-  pedestrian_involved: boolean | null;
-  bicyclist_involved: boolean | null;
   latitude: number | string | null;
   longitude: number | string | null;
   /**
@@ -169,6 +192,7 @@ export async function GET(request: NextRequest) {
             acquiredAreas: NO_ACQUIRED_AREAS,
             anyUngeocoded: false,
             anySeverityIncomplete: false,
+            unclassifiedCount: 0,
             returnedCount: 0,
             matchedCount: 0,
             droppedCount: 0,
@@ -233,12 +257,7 @@ export async function GET(request: NextRequest) {
     const [crashResult, ingestResult] = await Promise.all([
       supabase
         .from("safety_crashes")
-        .select(
-          "id, severity, collision_date, collision_year, killed_count, injured_count, " +
-            "pedestrian_involved, bicyclist_involved, latitude, longitude, " +
-            "safety_crash_ingests!inner(project_id)",
-          { count: "exact" }
-        )
+        .select(CRASH_LAYER_PROJECTION, { count: "exact" })
         .eq("workspace_id", workspaceId)
         .order("collision_date", { ascending: false, nullsFirst: false })
         .order("id", { ascending: true })
@@ -275,15 +294,20 @@ export async function GET(request: NextRequest) {
       const lat = coerceLat(row.latitude);
       const lng = coerceLng(row.longitude);
       if (lat === null || lng === null) return [];
-      // A severity outside the KABCO vocabulary cannot be coloured or labelled
-      // honestly. The table's CHECK makes it unreachable today; if it ever is
-      // reached, the row is counted as undrawable rather than painted as a
+      // The SHARED reader, not a local copy. A severity outside the vocabulary
+      // cannot be coloured or labelled honestly, so `readCrashRowFacts` returns
+      // null and the row is counted as undrawable rather than painted as a
       // severity it is not.
-      if (!isCrashSeverity(row.severity)) return [];
-      const collisionYear =
-        row.collision_year === null || row.collision_year === undefined
-          ? null
-          : coerceInt(row.collision_year);
+      //
+      // WHAT THIS REPLACED, AND WHY IT MATTERED. Both casualty counts used to go
+      // through `coerceInt`, which returns 0 for anything unreadable — so a
+      // collision whose counts the source never supplied was published to the
+      // shared map as "0 killed, 0 injured" and rendered in the inspector as a
+      // crash where nobody was hurt. That is roughly 5% of one state's records
+      // and 9.5% in one rural county of it. Null now travels to the screen and
+      // the inspector says "not reported".
+      const facts = readCrashRowFacts(row);
+      if (!facts) return [];
       return [
         {
           type: "Feature" as const,
@@ -293,13 +317,7 @@ export async function GET(request: NextRequest) {
             kind: "safety_crash",
             crashId: row.id,
             projectId: projectIdOf(row.safety_crash_ingests),
-            severity: row.severity,
-            collisionDate: row.collision_date,
-            collisionYear,
-            killedCount: coerceInt(row.killed_count),
-            injuredCount: coerceInt(row.injured_count),
-            pedestrianInvolved: row.pedestrian_involved === true,
-            bicyclistInvolved: row.bicyclist_involved === true,
+            ...facts,
           },
         },
       ];
@@ -336,6 +354,13 @@ export async function GET(request: NextRequest) {
     // the layer as covering ground it holds no rows for.
     const acquiredAreas = summarizeAcquiredAreas(readyIngests.map(extentOf), bbox);
 
+    // Counted off the DRAWN set — the only population this response can honestly
+    // count, since both reads are capped. The copy says "of the collisions drawn
+    // here" for that reason.
+    const unclassifiedCount = features.filter(
+      (feature) => feature.properties.severity === "unknown"
+    ).length;
+
     const coverageNotes = describeCrashLayerCoverage({
       scopeState,
       scopeLabel: homeGeography?.home_geography_label ?? null,
@@ -344,6 +369,7 @@ export async function GET(request: NextRequest) {
       acquiredAreas,
       anyUngeocoded,
       anySeverityIncomplete,
+      unclassifiedCount,
       returnedCount: features.length,
       matchedCount,
       droppedCount,

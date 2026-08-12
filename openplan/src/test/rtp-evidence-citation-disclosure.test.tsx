@@ -250,6 +250,7 @@ describe("RTP evidence-run picker — every offered and cited run is disclosed, 
         initialEvidenceRunId={null}
         modelingEvidence={null}
         evidenceRunDisclosure={null}
+        safetyEvidence={null}
         criteria={CA_CRITERIA}
         {...overrides}
       />

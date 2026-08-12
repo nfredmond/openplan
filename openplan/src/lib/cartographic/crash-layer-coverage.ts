@@ -75,6 +75,7 @@ import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import {
   SAFETY_GEOCODING_CAVEAT,
   SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
+  SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
 } from "@/lib/safety/caveats";
 
 /**
@@ -175,6 +176,22 @@ export type CrashLayerCoverageInput = {
   anyUngeocoded: boolean;
   /** True when a contributing source cannot separate suspected serious injuries. */
   anySeverityIncomplete: boolean;
+  /**
+   * Of the points DRAWN, how many carry no casualty count from the source and
+   * are therefore in no severity band.
+   *
+   * Counted off the drawn set rather than off the record, because that is what
+   * this response can honestly count — the acquisition history and the crash
+   * read are both capped. The sentence below says "of the collisions drawn
+   * here" for exactly that reason.
+   *
+   * WHY IT HAS TO BE SAID. The legend has five entries and four of them are
+   * severity rungs; a reader who sees the fifth grey and no sentence assumes it
+   * is the mildest rung. These collisions were literally stored as
+   * property-damage-only until the band existed, and that mistake is the one the
+   * disclosure exists to stop being made again by eye.
+   */
+  unclassifiedCount: number;
   /** Crash points this response actually carries. */
   returnedCount: number;
   /** Crash rows matching the workspace scope in the database. */
@@ -361,6 +378,16 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
       `Crashes: ${count.toLocaleString()} acquired ${count === 1 ? "collision" : "collisions"} could not be ` +
         `drawn because the stored coordinates or severity value were unusable, so ` +
         `${count === 1 ? "it is" : "they are"} missing from the map rather than absent from the record.`
+    );
+  }
+
+  if (input.unclassifiedCount > 0) {
+    const count = input.unclassifiedCount;
+    notes.push(
+      `Crashes: ${count.toLocaleString()} of the ${count === 1 ? "collision" : "collisions"} drawn here ` +
+        `${count === 1 ? "carries" : "carry"} no casualty count from the source, so ` +
+        `${count === 1 ? "it is" : "they are"} in no severity band. ` +
+        SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT
     );
   }
 

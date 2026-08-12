@@ -8,6 +8,7 @@ import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap } from "./safety-crash-map";
+import { CrashExportButton } from "./crash-export-button";
 import {
   COVERAGE_STATE_COPY,
   SEVERITY_LABELS,
@@ -20,41 +21,74 @@ import {
   type SafetyProjectOption,
 } from "@/lib/safety/client-types";
 import {
+  describeGeocodingShortfall,
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_FATAL_ONLY_CAVEAT,
-  SAFETY_GEOCODING_CAVEAT,
   SAFETY_LIVE_READ_CAVEAT,
   SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
+  SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
 } from "@/lib/safety/caveats";
-import type { CrashSeverity } from "@/lib/safety/sources/types";
-
-const SEVERITY_ORDER: CrashSeverity[] = ["fatal", "severe_injury", "injury", "pdo"];
-
-type CrashModeFilter = "all" | "pedestrian" | "bicyclist" | "vru";
+import {
+  CRASH_FILTER_DEFAULTS,
+  CRASH_FILTER_FACETS,
+  crashFeatureMatchesFilters,
+  crashFilterSearchParams,
+  describeCrashDimensions,
+  facetValues,
+  type CrashFilterSelection,
+} from "@/lib/safety/crash-filters";
+import { CrashFilterPanel, type CrashFacetCounts } from "./crash-filter-panel";
 
 /**
- * Apply the severity and mode filters to LIVE crash points.
+ * Keep only the LIVE crash points that match the current filters.
  *
- * Stored crashes are filtered by the query route in Postgres. A live read never
- * reaches Postgres, so the same two filters have to be applied here or the
- * controls would be dead for exactly the planners the live lane exists for —
- * the shipped-invisible failure repeated one level down. The predicates are
- * written to mirror the route's (`severity IN (…)`, `mode` over the two VRU
- * booleans) so the two lanes cannot answer differently.
+ * Stored crashes are filtered by the query route in Postgres; a live read never
+ * reaches Postgres, so the same filters have to be applied here or the controls
+ * would be dead for exactly the planners the live lane exists for.
+ *
+ * WHAT THIS USED TO BE, AND WHY IT IS NOW ONE LINE. It was a hand-written set of
+ * predicates whose own comment said they were "written to mirror" the route's.
+ * That is a convention, and a convention only written down has already been
+ * violated somewhere — a facet added to the route and not here is a filter that
+ * silently answers differently depending on whether the planner acquired the
+ * data or read it live. Both lanes now walk the single declaration in
+ * `crash-filters.ts`, and `src/test/one-crash-filter-definition.test.ts` drives
+ * both interpreters over the same corpus and asserts they select the same rows.
  */
-export function filterLiveCrashFeatures(
+function filterLiveCrashFeatures(
   features: SafetyCrashFeature[],
-  severities: CrashSeverity[],
-  mode: CrashModeFilter
+  filters: CrashFilterSelection
 ): SafetyCrashFeature[] {
-  return features.filter((feature) => {
-    const properties = feature.properties;
-    if (severities.length > 0 && !severities.includes(properties.severity)) return false;
-    if (mode === "pedestrian") return properties.pedestrianInvolved;
-    if (mode === "bicyclist") return properties.bicyclistInvolved;
-    if (mode === "vru") return properties.pedestrianInvolved || properties.bicyclistInvolved;
-    return true;
-  });
+  return features.filter((feature) => crashFeatureMatchesFilters(feature.properties, filters));
+}
+
+/**
+ * How many of the crashes on screen carry each facet value.
+ *
+ * Counted off the VISIBLE features and captioned as such in the panel. They are
+ * not a census of the record — a stored query is filtered in Postgres before it
+ * arrives — and presenting them as one would let a planner read "Fatal (3)"
+ * under an active filter as "this corridor had three fatal crashes".
+ */
+function countFacetValues(features: SafetyCrashFeature[]): CrashFacetCounts {
+  const counts: CrashFacetCounts = {};
+  for (const facet of CRASH_FILTER_FACETS) {
+    const bucket: Record<string, number> = {};
+    for (const value of facetValues(facet)) bucket[value] = 0;
+    for (const feature of features) {
+      const properties = feature.properties as unknown as Record<string, unknown>;
+      if (facet.kind === "in") {
+        const value = properties[facet.property];
+        if (typeof value === "string" && value in bucket) bucket[value] += 1;
+      } else {
+        for (const option of facet.options) {
+          if (properties[option.property] === true) bucket[option.value] += 1;
+        }
+      }
+    }
+    counts[facet.id] = bucket;
+  }
+  return counts;
 }
 
 /**
@@ -92,6 +126,36 @@ export function splitLiveReadYears(
     answered: yearsRequested.filter((year) => covered.has(year)),
     silent: yearsRequested.filter((year) => !covered.has(year)),
   };
+}
+
+/**
+ * A casualty count, or the honest absence of one.
+ *
+ * The one string this must never produce is "0" for a count the source did not
+ * supply. A detail card saying nobody was killed in a collision whose outcome
+ * was never recorded is the most consequential thing this page could get wrong,
+ * and it is what the product did until the `unknown` severity band existed.
+ */
+function describeCasualty(value: number | null): string {
+  return value === null ? "not reported" : value.toLocaleString();
+}
+
+/** One labelled fact on the collision card. Muted styling marks an absence. */
+function CrashDetailLine({
+  label,
+  value,
+  muted,
+}: {
+  label: string;
+  value: string;
+  muted: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={muted ? "italic text-muted-foreground" : ""}>{value}</dd>
+    </div>
+  );
 }
 
 /**
@@ -196,8 +260,13 @@ export function SafetyWorkspace({
    * claim a stored record that does not exist.
    */
   const [liveRead, setLiveRead] = useState<SafetyLiveCrashRead | null>(null);
-  const [severities, setSeverities] = useState<CrashSeverity[]>([]);
-  const [mode, setMode] = useState<CrashModeFilter>("all");
+  // One selection object, shared by the query route and the live predicate.
+  // Opens with property-damage-only withheld — see `CRASH_FILTER_DEFAULTS` for
+  // the planner's reason and for why that default could not ship before the
+  // `unknown` severity band existed.
+  const [filters, setFilters] = useState<CrashFilterSelection>(CRASH_FILTER_DEFAULTS);
+  /** The collision whose detail card is open, by feature id. */
+  const [selectedCrashId, setSelectedCrashId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ingesting, setIngesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -244,8 +313,9 @@ export function SafetyWorkspace({
         maxLon: String(bbox.maxLon),
         maxLat: String(bbox.maxLat),
       });
-      if (severities.length) params.set("severity", severities.join(","));
-      if (mode !== "all") params.set("mode", mode);
+      // Serialized from the same declaration the route parses back, so a facet
+      // cannot be sent under a name the route does not read.
+      for (const [key, value] of crashFilterSearchParams(filters)) params.set(key, value);
 
       const res = await fetch(`/api/safety/crashes?${params.toString()}`);
       if (!res.ok) {
@@ -258,7 +328,7 @@ export function SafetyWorkspace({
     } finally {
       setLoading(false);
     }
-  }, [workspaceId, severities, mode, bbox]);
+  }, [workspaceId, filters, bbox]);
 
   useEffect(() => {
     void loadCrashes();
@@ -315,6 +385,11 @@ export function SafetyWorkspace({
           yearsCovered: Array.isArray(body.yearsCovered) ? (body.yearsCovered as number[]) : [],
           collection,
           retrievedAt: new Date().toISOString(),
+          // Carried even though a live read stores nothing: the SAME filter
+          // panel renders both lanes, so without it the panel would offer a
+          // fatality census facets it cannot answer and show the empty result as
+          // if it were a finding.
+          dimensionCoverage: body.dimensionCoverage,
         });
         return;
       }
@@ -349,6 +424,14 @@ export function SafetyWorkspace({
               .map((entry) => (typeof entry?.label === "string" ? entry.label : null))
               .filter((label): label is string => Boolean(label))
           : undefined,
+        dimensionCoverage: body.dimensionCoverage,
+        partyCompleteness:
+          typeof body.partyCompleteness === "string" ? body.partyCompleteness : undefined,
+        // Null, not zero, whenever people were not retrieved. A zero would say
+        // the collisions involved nobody.
+        partyCount: typeof body.partyCount === "number" ? body.partyCount : null,
+        involvementBasis:
+          typeof body.involvementBasis === "string" ? body.involvementBasis : null,
       };
       setIngest(summary);
       setHistory((current) => [
@@ -386,9 +469,9 @@ export function SafetyWorkspace({
   const visibleFeatures: SafetyCrashFeature[] = useMemo(
     () =>
       liveRead
-        ? filterLiveCrashFeatures(liveRead.collection.features, severities, mode)
+        ? filterLiveCrashFeatures(liveRead.collection.features, filters)
         : (response?.features ?? []),
-    [liveRead, response, severities, mode]
+    [liveRead, response, filters]
   );
 
   // Which of the requested years the source actually answered with records.
@@ -398,32 +481,43 @@ export function SafetyWorkspace({
     [liveRead]
   );
 
-  const severityCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const feature of visibleFeatures) {
-      const severity = feature.properties.severity;
-      counts[severity] = (counts[severity] ?? 0) + 1;
-    }
-    return counts;
-  }, [visibleFeatures]);
+  const facetCounts = useMemo(() => countFacetValues(visibleFeatures), [visibleFeatures]);
+  const severityCounts = facetCounts.severity ?? {};
 
   const collection: SafetyCrashCollection | null =
     liveRead || response ? { type: "FeatureCollection", features: visibleFeatures } : null;
 
-  const toggleSeverity = (severity: CrashSeverity) => {
-    setSeverities((current) =>
-      current.includes(severity) ? current.filter((s) => s !== severity) : [...current, severity]
-    );
-  };
+  // The coverage declaration of whichever source produced the points ON SCREEN.
+  // Read off the live read first for the same reason `activeCompleteness` is: a
+  // stale acquisition's capability describing a fatality census's points would
+  // offer facets that source has no field for.
+  const activeDimensionCoverage = liveRead
+    ? liveRead.dimensionCoverage
+    : (ingest?.dimensionCoverage ?? undefined);
+
+  // Is there anything to filter? A planner in a state with no adapter must be
+  // told that, not shown a panel of controls that can only return nothing.
+  const sourceConfigured = Boolean(liveRead) || Boolean(ingest && ingest.status !== "no_coverage");
+
+  const selectedCrash = useMemo(
+    () => visibleFeatures.find((feature) => feature.properties.id === selectedCrashId) ?? null,
+    [visibleFeatures, selectedCrashId]
+  );
+
+  // Collisions on screen the source never classified. Stated beside the severity
+  // figures or the bands quietly fail to add up to the total, and a reader fills
+  // the gap in with "property damage" — which is exactly the wrong answer, since
+  // these are the records that used to BE property damage by mistake.
+  const unclassifiedVisible = severityCounts.unknown ?? 0;
+
+  const geocodingNote = ingest
+    ? describeGeocodingShortfall(ingest.crashCount, ingest.geocodedCount)
+    : null;
 
   const projectNameById = useMemo(
     () => new Map(projects.map((project) => [project.id, project.name])),
     [projects]
   );
-
-  // The gap between reported and mappable crashes is the number this page must
-  // never hide: an ungeocoded crash is a real crash that cannot be plotted.
-  const ungeocoded = ingest ? Math.max(0, ingest.crashCount - ingest.geocodedCount) : 0;
 
   // The completeness of the source behind the points ON SCREEN, which is the
   // live read whenever there is one. Reading it off `ingest` would let a stale
@@ -606,12 +700,12 @@ export function SafetyWorkspace({
                 Sources checked for this study area: {ingest.checkedSourceLabels.join(", ")}.
               </p>
             )}
-            {ungeocoded > 0 && (
-              <p className="text-muted-foreground">
-                {ungeocoded.toLocaleString()} reported crashes have no coordinates from the source
-                agency and are counted above but not shown on the map. {SAFETY_GEOCODING_CAVEAT}
-              </p>
-            )}
+            {/* COMPUTED FROM THIS EXTRACT, not from a constant. The geocoded
+                share is wildly local — 77.7% statewide and 99.6% in one rural
+                county of the same state, probed the same day — so a fixed
+                percentage would describe almost no real acquisition correctly.
+                The acquisition row already stores both counts. */}
+            {geocodingNote && <p className="text-muted-foreground">{geocodingNote}</p>}
             {ksiCount !== null && (
               <p>
                 <span className="font-medium">{ksiCount.toLocaleString()} killed or seriously injured</span>{" "}
@@ -658,46 +752,97 @@ export function SafetyWorkspace({
         )}
       </section>
 
-      <section className="flex flex-wrap items-center gap-3" aria-label="Crash filters">
-        <div className="flex flex-wrap gap-2">
-          {SEVERITY_ORDER.map((severity) => (
-            <button
-              key={severity}
-              type="button"
-              onClick={() => toggleSeverity(severity)}
-              aria-pressed={severities.includes(severity)}
-              className={`rounded-full border px-3 py-1 text-xs ${
-                severities.includes(severity) ? "bg-foreground text-background" : ""
-              }`}
-            >
-              {SEVERITY_LABELS[severity]}
-              {severityCounts[severity] ? ` (${severityCounts[severity]})` : ""}
-            </button>
-          ))}
-        </div>
-        <label className="flex items-center gap-2 text-xs">
-          <span className="text-muted-foreground">Mode</span>
-          <select
-            value={mode}
-            onChange={(event) => setMode(event.target.value as typeof mode)}
-            className="rounded-md border px-2 py-1"
-          >
-            {/* "Any mode", not "All crashes" — this filter selects mode of
-                travel, and a coverage-sounding label would overstate a dataset
-                that omits ungeocoded records. */}
-            <option value="all">Any mode</option>
-            <option value="vru">Pedestrian or bicyclist</option>
-            <option value="pedestrian">Pedestrian</option>
-            <option value="bicyclist">Bicyclist</option>
-          </select>
-        </label>
-      </section>
+      {/* Controls generated from the one facet declaration in
+          `crash-filters.ts`, so a facet cannot be filterable in the API and
+          unreachable here. Facets the active source has no field for render
+          disabled with the reason rather than returning an empty list. */}
+      <CrashFilterPanel
+        selection={filters}
+        onChange={setFilters}
+        counts={facetCounts}
+        dimensionCoverage={activeDimensionCoverage}
+        sourceConfigured={sourceConfigured}
+        noSourceMessage={
+          bbox
+            ? "No crash source has answered for this study area yet, so there is nothing to filter. Use the retrieval button at the top of the page; if no source covers this area, OpenPlan will say so rather than showing an empty map."
+            : "Filters appear once a study area is set and a source has answered for it. Controls over an empty record would return nothing, and nothing would read as a finding."
+        }
+      />
+
+      {/* The severity bands never account for these, so the count is stated
+          rather than left as the difference between two numbers. */}
+      {unclassifiedVisible > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {unclassifiedVisible.toLocaleString()} of the collisions shown carry no casualty count from
+          the source. {SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT}
+        </p>
+      )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="h-[520px] w-full overflow-hidden rounded-lg border">
-        <SafetyCrashMap collection={collection} bbox={mapBbox} />
+        <SafetyCrashMap collection={collection} bbox={mapBbox} onSelect={setSelectedCrashId} />
       </div>
+
+      {/* THE PER-COLLISION RECORD. Every dimension appears, including the ones
+          the source said nothing about: a row reading "not reported for this
+          collision" and a row reading "this source does not record it" are
+          different facts, and a blank slot would be read as neither. */}
+      {selectedCrash && (
+        <section className="rounded-lg border p-4 text-sm" aria-label="Selected collision">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-medium">
+              {SEVERITY_LABELS[selectedCrash.properties.severity]} collision
+            </h2>
+            <button
+              type="button"
+              onClick={() => setSelectedCrashId(null)}
+              className="rounded-md border px-2 py-1 text-xs"
+            >
+              Close
+            </button>
+          </div>
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
+            <CrashDetailLine
+              label="Date"
+              value={
+                selectedCrash.properties.collisionDate ??
+                (selectedCrash.properties.collisionYear !== null
+                  ? String(selectedCrash.properties.collisionYear)
+                  : "not reported")
+              }
+              muted={selectedCrash.properties.collisionDate === null}
+            />
+            {/* Never a zero for a count the source did not supply. */}
+            <CrashDetailLine
+              label="People killed"
+              value={describeCasualty(selectedCrash.properties.killedCount)}
+              muted={selectedCrash.properties.killedCount === null}
+            />
+            <CrashDetailLine
+              label="People injured"
+              value={describeCasualty(selectedCrash.properties.injuredCount)}
+              muted={selectedCrash.properties.injuredCount === null}
+            />
+            {describeCrashDimensions(
+              selectedCrash.properties as unknown as Record<string, unknown>,
+              activeDimensionCoverage
+            ).map((row) => (
+              <CrashDetailLine
+                key={row.label}
+                label={row.label}
+                value={row.value}
+                muted={row.state !== "reported"}
+              />
+            ))}
+          </dl>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Source record {selectedCrash.properties.externalId} from{" "}
+            {selectedCrash.properties.sourceId}. Fields shown as not reported are absent from the
+            source record, not zero.
+          </p>
+        </section>
+      )}
 
       {history.length > 0 && (
         <section className="rounded-lg border p-4" aria-label="Import history">
@@ -742,8 +887,41 @@ export function SafetyWorkspace({
             : response
               ? `Showing ${response.returnedCount.toLocaleString()} of ${response.matchedCount.toLocaleString()} crashes matching these filters in view.`
               : "No crashes loaded."}{" "}
+        {/* Rows the query matched and could not render — an unusable coordinate
+            pair or a severity outside the vocabulary. Named separately from the
+            display cap, because "there are more beyond the cap" sends a planner
+            to widen the view while "these are in the table and undrawable"
+            sends them to the record. */}
+        {response && response.undrawableCount > 0
+          ? `${response.undrawableCount.toLocaleString()} matching ${
+              response.undrawableCount === 1 ? "crash" : "crashes"
+            } could not be drawn because the stored coordinates or severity value were unusable, so ${
+              response.undrawableCount === 1 ? "it is" : "they are"
+            } missing from the map rather than absent from the record. `
+          : ""}
         {SAFETY_CRASH_DATA_CAVEAT}
       </p>
+
+      {/* The collisions on screen, in a file. Not a re-query written here: the
+          same filter selection is serialized through `crashFilterSearchParams`,
+          and the file itself is built by the one pure builder both the stored
+          route and this browser use, so an export can never describe a
+          different query from the one that produced it. */}
+      <CrashExportButton
+        workspaceId={workspaceId}
+        projectId={projectId || null}
+        bbox={bbox}
+        filters={filters}
+        studyAreaLabel={place?.label ?? (corridorText.trim() || null)}
+        liveFeatures={liveRead ? visibleFeatures : null}
+        liveSourceLabel={liveRead?.sourceLabel ?? null}
+        liveAttribution={liveRead?.attribution ?? null}
+        disabledReason={
+          !liveRead && (response?.matchedCount ?? 0) === 0
+            ? "Nothing matches these filters in this extent yet, so there is nothing to export."
+            : null
+        }
+      />
     </div>
   );
 }

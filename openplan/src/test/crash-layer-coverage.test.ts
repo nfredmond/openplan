@@ -33,6 +33,7 @@ function input(overrides: Partial<CrashLayerCoverageInput> = {}): CrashLayerCove
     acquiredAreas: { areaCount: 1, outsideHomeCount: 0, uncomparableCount: 0 },
     anyUngeocoded: false,
     anySeverityIncomplete: false,
+    unclassifiedCount: 0,
     returnedCount: 12,
     matchedCount: 12,
     droppedCount: 0,
@@ -489,5 +490,38 @@ describe("summarizeAcquiredAreas", () => {
       outsideHomeCount: 0,
       uncomparableCount: 0,
     });
+  });
+});
+
+/**
+ * THE FIFTH LEGEND ENTRY IS NOT A SEVERITY RUNG.
+ *
+ * `unknown` is the band for a collision the source reported with no casualty
+ * count at all — 4.7% of one state's 2025 records, 9.5% in one rural county of
+ * it. Those points are painted, and the legend has four rungs plus this one, so
+ * a reader with no sentence to go on takes the fifth grey for the mildest rung.
+ * These records were literally stored as property-damage-only until the band
+ * existed; the disclosure is what stops that mistake being made again by eye.
+ */
+describe("collisions the source never classified", () => {
+  it("says how many of the drawn points carry no casualty count", () => {
+    const notes = describeCrashLayerCoverage(input({ unclassifiedCount: 7 }));
+    const note = notes.find((entry) => entry.includes("no casualty count"));
+    expect(note).toBeDefined();
+    expect(note).toContain("7 of the collisions drawn here");
+    expect(note).toMatch(/in no severity band/i);
+  });
+
+  it("reads correctly for a single collision", () => {
+    const note = describeCrashLayerCoverage(input({ unclassifiedCount: 1 })).find((entry) =>
+      entry.includes("no casualty count")
+    );
+    expect(note).toContain("1 of the collision drawn here carries");
+  });
+
+  it("says nothing when every drawn collision was classified", () => {
+    // A disclosure that fires unconditionally is one a reader learns to skip.
+    const notes = describeCrashLayerCoverage(input({ unclassifiedCount: 0 }));
+    expect(notes.some((entry) => entry.includes("no casualty count"))).toBe(false);
   });
 });

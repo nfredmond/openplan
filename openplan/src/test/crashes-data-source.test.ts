@@ -239,6 +239,7 @@ describe("crash disclosure reaches the existing Explore seam", () => {
     yearsQueried: [],
     crashesPerSquareMile: 0,
     crashDensityBasis: "none" as const,
+    unclassifiedCrashes: 0,
     reportedTotal: 0,
     mappedTotal: 0,
     truncated: false,

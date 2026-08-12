@@ -42,6 +42,11 @@ export const CRASH_SEVERITY_LEGEND_ORDER: readonly CrashSeverity[] = [
   "severe_injury",
   "injury",
   "pdo",
+  // Last, because it is not a rung on the severity ramp — it is the band for a
+  // collision whose casualty counts the source never supplied. It has to be in
+  // the legend: those points are painted, and a painted dot with no legend entry
+  // is a reader guessing which rung it belongs to.
+  "unknown",
 ];
 
 export const CRASH_SEVERITY_COLOR: Record<CrashSeverity, string> = {
@@ -49,15 +54,20 @@ export const CRASH_SEVERITY_COLOR: Record<CrashSeverity, string> = {
   severe_injury: "#fb923c",
   injury: "#facc15",
   pdo: "#64748b",
+  // Deliberately NOT on the red→slate ramp. An unclassified collision must not
+  // read as a mild one, and it must not read as a severe one either.
+  unknown: "#94a3b8",
 };
 
 /**
- * Colour for a severity value that is not one of the four buckets.
+ * Colour for a severity value outside the vocabulary entirely.
  *
- * Reachable only if a row is written outside the `safety_crashes` severity
- * CHECK, which cannot happen today — but a paint expression needs a fallback,
- * and a fallback that reuses one of the real colours would render an unknown
- * severity as a confident one.
+ * Distinct from the `unknown` BAND above, which is a real, stored, legended
+ * value meaning "the source supplied no casualty count". This is the paint
+ * expression's last resort for a string the CHECK constraint should never have
+ * admitted. It shares the band's colour on purpose: both mean "do not read a
+ * severity off this dot", and giving them different greys would invite someone
+ * to work out which grey is which.
  */
 export const CRASH_SEVERITY_UNKNOWN_COLOR = "#94a3b8";
 
@@ -67,4 +77,5 @@ export const CRASH_SEVERITY_LEGEND_LABEL: Record<CrashSeverity, string> = {
   severe_injury: "Serious",
   injury: "Injury",
   pdo: "PDO",
+  unknown: "Not classified",
 };

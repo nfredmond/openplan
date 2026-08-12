@@ -26,6 +26,11 @@ function record(overrides: Partial<CrashRecord> = {}): CrashRecord {
     injuredCount: 1,
     pedestrianInvolved: false,
     bicyclistInvolved: false,
+    motorcyclistInvolved: false,
+    collisionType: "rear_end",
+    lighting: "daylight",
+    weather: "clear",
+    sourceAttributes: {},
     latitude: 39.2,
     longitude: -121.0,
     ...overrides,
@@ -33,12 +38,23 @@ function record(overrides: Partial<CrashRecord> = {}): CrashRecord {
 }
 
 /** Minimal stand-in for the service-role client's chained query builders. */
-function fakeService(options: { captureUpserts?: unknown[][]; updates?: Record<string, unknown>[] } = {}) {
+function fakeService(
+  options: {
+    captureUpserts?: unknown[][];
+    updates?: Record<string, unknown>[];
+    /** Make the person-row write fail, to prove the acquisition survives it. */
+    partyError?: boolean;
+  } = {}
+) {
   const upserts = options.captureUpserts ?? [];
   const updates = options.updates ?? [];
+  const partyUpserts: unknown[][] = [];
+  const upsertOptions: unknown[] = [];
   return {
     upserts,
     updates,
+    partyUpserts,
+    upsertOptions,
     from(table: string) {
       if (table === "safety_crash_ingests") {
         return {
@@ -55,10 +71,32 @@ function fakeService(options: { captureUpserts?: unknown[][]; updates?: Record<s
           }),
         };
       }
+      if (table === "safety_crash_parties") {
+        return {
+          upsert: async (rows: unknown[]) => {
+            partyUpserts.push(rows);
+            return { error: options.partyError ? { message: "party write failed" } : null };
+          },
+        };
+      }
       return {
-        upsert: async (rows: unknown[]) => {
+        // The crash upsert reads its ids back from the WRITE — batches are
+        // bounded at 500 so they cannot hit PostgREST's response cap, and a
+        // re-ingest gets the existing ids rather than appearing to write nothing.
+        // The fake answers with one row per input, keyed on the same external id;
+        // a fake returning nothing would make every person row unattachable and
+        // the party assertions would pass while storing no people.
+        upsert: (rows: unknown[], opts?: unknown) => {
           upserts.push(rows);
-          return { error: null };
+          upsertOptions.push(opts);
+          const written = (rows as Array<Record<string, unknown>>).map((row, index) => ({
+            id: `crash-${index}`,
+            external_id: row.external_id,
+          }));
+          return {
+            select: async () => ({ data: written, error: null }),
+            then: (resolve: (value: { error: null }) => unknown) => resolve({ error: null }),
+          };
         },
       };
     },
@@ -102,6 +140,11 @@ describe("toCrashRows", () => {
       injured_count: 1,
       pedestrian_involved: true,
       bicyclist_involved: false,
+      motorcyclist_involved: false,
+      collision_type: "rear_end",
+      lighting: "daylight",
+      weather: "clear",
+      source_attributes: {},
       latitude: 39.2,
       longitude: -121.0,
     });
@@ -146,6 +189,7 @@ describe("ingestCrashesForStudyArea", () => {
       years: [2025],
       countyCode: 29,
       enrichSeriousInjury: false,
+      includeParties: false,
     });
 
     expect(result.status).toBe("ready");
@@ -178,6 +222,7 @@ describe("ingestCrashesForStudyArea", () => {
       bbox: CA_BBOX,
       years: [2025],
       enrichSeriousInjury: false,
+      includeParties: false,
     });
 
     expect(result.status).toBe("failed");
@@ -214,6 +259,9 @@ describe("ingestCrashesForStudyArea", () => {
       workspaceId: "ws-1",
       bbox: CA_BBOX,
       years: [2025],
+      // The person-row pull is a separate lane with its own tests below; keeping
+      // it out of this one leaves the KSI assertion about the KSI join alone.
+      includeParties: false,
     });
 
     expect(result.seriousInjuryUpgrades).toBe(1);
@@ -250,6 +298,7 @@ describe("ingestCrashesForStudyArea", () => {
       workspaceId: "ws-1",
       bbox: CA_BBOX,
       years: [2025],
+      includeParties: false,
     });
 
     expect(result.status).toBe("ready");
@@ -262,23 +311,7 @@ describe("ingestCrashesForStudyArea", () => {
   });
 
   it("upserts on the natural key so re-ingest cannot duplicate rows", async () => {
-    const upsertArgs: unknown[][] = [];
-    const service = {
-      from(table: string) {
-        if (table === "safety_crash_ingests") {
-          return {
-            insert: () => ({ select: () => ({ single: async () => ({ data: { id: "i" }, error: null }) }) }),
-            update: () => ({ eq: async () => ({ error: null }) }),
-          };
-        }
-        return {
-          upsert: async (rows: unknown[], opts: unknown) => {
-            upsertArgs.push([rows, opts]);
-            return { error: null };
-          },
-        };
-      },
-    };
+    const service = fakeService();
 
     const { ccrsAdapter } = await import("@/lib/safety/sources/ccrs");
     const fetchSpy = vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue({
@@ -295,9 +328,10 @@ describe("ingestCrashesForStudyArea", () => {
       bbox: CA_BBOX,
       years: [2025],
       enrichSeriousInjury: false,
+      includeParties: false,
     });
 
-    expect(upsertArgs[0][1]).toMatchObject({ onConflict: "workspace_id,source_id,external_id" });
+    expect(service.upsertOptions[0]).toMatchObject({ onConflict: "workspace_id,source_id,external_id" });
     fetchSpy.mockRestore();
   });
 });

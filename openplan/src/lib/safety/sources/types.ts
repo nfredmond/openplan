@@ -28,17 +28,30 @@
  */
 
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import {
+  CRASH_SEVERITIES,
+  isCrashSeverity,
+  type CrashAgeBand,
+  type CrashCollisionType,
+  type CrashDimension,
+  type CrashDimensionCapability,
+  type CrashLighting,
+  type CrashPartyRole,
+  type CrashPersonInjury,
+  type CrashSeverity,
+  type CrashWeather,
+} from "@/lib/safety/vocabulary";
 
 /**
- * KABCO-aligned severity buckets.
- *
- * `severe_injury` is KABCO "A" (suspected serious injury). Fatal + severe_injury
- * together are the "KSI" measure that SS4A and HSIP are built on, which is why
- * the bucket exists even for sources that cannot populate it directly — see
- * `CrashSeverityCompleteness`.
+ * The severity band and the neutral vocabulary it belongs to now live in
+ * `src/lib/safety/vocabulary.ts`, which is the single declaration of every
+ * dimension's values AND of the column names that store them. They are
+ * re-exported here so the adapter contract still reads as one file, and so the
+ * dozens of existing `from "./types"` imports keep working — but nothing may
+ * spell a vocabulary value anywhere except that module and a source descriptor.
  */
-export const CRASH_SEVERITIES = ["fatal", "severe_injury", "injury", "pdo"] as const;
-export type CrashSeverity = (typeof CRASH_SEVERITIES)[number];
+export { CRASH_SEVERITIES, isCrashSeverity };
+export type { CrashSeverity };
 
 /**
  * How completely a source can express severity. Rendered to the operator so a
@@ -69,10 +82,53 @@ export type CrashRecord = {
   collisionDate: string | null;
   collisionYear: number | null;
   severity: CrashSeverity;
-  killedCount: number;
-  injuredCount: number;
+  /**
+   * People killed / injured, or NULL when the source supplied no count.
+   *
+   * NULLABLE ON PURPOSE, and this is the correction the `unknown` severity band
+   * exists to make possible. A missing count used to parse to 0, and zero killed
+   * plus zero injured is the definition of property-damage-only — so a collision
+   * whose outcome the source never recorded was stored, filtered and counted as
+   * a crash where nobody was hurt. That is roughly 4.7% of one state's 2025
+   * records and 9.5% in one rural county of it. A count that could not be read
+   * is not zero, all the way to the column and the screen.
+   */
+  killedCount: number | null;
+  injuredCount: number | null;
   pedestrianInvolved: boolean;
   bicyclistInvolved: boolean;
+  /**
+   * Motorcyclist involvement.
+   *
+   * A third vulnerable-road-user flag beside pedestrian and bicyclist, because
+   * motorcyclists are a distinct countermeasure audience and were invisible at
+   * every layer of this product. Sources that cannot express it declare
+   * `party_role` support below `supplied`, which is what stops a `false` here
+   * from reading as "no motorcyclist was involved".
+   */
+  motorcyclistInvolved: boolean;
+  /**
+   * Neutral dimensions, or NULL when the SOURCE does not record the dimension at
+   * all. Distinguish carefully: `"unknown"` means the source records lighting
+   * and had none for this crash; `null` means the source has no lighting field,
+   * which is a fact about the source and is disclosed once per ingest via
+   * `CrashSourceAdapter.dimensions`.
+   */
+  collisionType: CrashCollisionType | null;
+  lighting: CrashLighting | null;
+  weather: CrashWeather | null;
+  /**
+   * Values the source supplied that its descriptor does not declare, kept
+   * verbatim under their source column name.
+   *
+   * A value we could not classify is preserved rather than dropped, so an
+   * operator can audit what the mapping is missing and a later descriptor can
+   * pick it up without a re-ingest being the only way to find out what was lost.
+   * NOTHING outside `src/lib/safety/sources/**` may read a key out of this blob:
+   * the moment a screen does, a source's private spelling has become part of the
+   * product's vocabulary.
+   */
+  sourceAttributes: Record<string, string>;
   latitude: number;
   longitude: number;
   /**
@@ -90,6 +146,33 @@ export type CrashRecord = {
    * fatal would render as CCRS. Undefined falls back to the summarizing adapter.
    */
   sourceId?: string;
+};
+
+/**
+ * One person in one collision.
+ *
+ * ROWS, NOT A SUMMARY. A per-crash summary blob cannot answer "pedestrian
+ * fatalities among people 65 or older", which is precisely the question a safety
+ * action plan is built on; and a summary computed at ingest freezes the age
+ * banding, so changing a band would mean re-ingesting every workspace.
+ *
+ * WHAT IS NOT HERE IS THE DESIGN. No name, no race or ethnicity, no sex, no
+ * exact age, no licence, no vehicle description, no sobriety or fault
+ * allegation, no seat position or airbag detail, no report number. Those fields
+ * exist in the source and are never requested — refused in the SELECT, not
+ * merely left off a screen. `src/test/refused-crash-person-fields.test.ts`
+ * carries the argument and fails if one is ever added.
+ */
+export type CrashPartyRecord = {
+  /** The crash this person was in — the source's own case id. */
+  crashExternalId: string;
+  /** Stable per-person id within the source, e.g. case id + party number. */
+  externalPartyId: string;
+  role: CrashPartyRole;
+  ageBand: CrashAgeBand;
+  injury: CrashPersonInjury;
+  /** Unmapped source spellings, same contract as `CrashRecord.sourceAttributes`. */
+  sourceAttributes: Record<string, string>;
 };
 
 /**
@@ -111,6 +194,16 @@ export type CrashFetchResult = {
   yearsCovered: number[];
   /** True when a caller-supplied cap stopped paging before the source was exhausted. */
   truncated: boolean;
+  /**
+   * How many values, per dimension, the source supplied but the descriptor does
+   * not declare. Absent keys mean none fell through.
+   *
+   * Kept as a tally rather than a flag because the useful sentence names a
+   * number: a facet that failed to classify 314 of 400,000 rows is usable and a
+   * facet that failed on a third of them is not, and only the count separates
+   * them.
+   */
+  unmappedByDimension?: Partial<Record<CrashDimension, number>>;
 };
 
 export type CrashFetchParams = {
@@ -142,6 +235,20 @@ export type CrashSourceAdapter = {
   license: string;
   coverageState: SafetyCoverageState;
   severityCompleteness: CrashSeverityCompleteness;
+  /**
+   * What this source can say about each neutral dimension.
+   *
+   * REQUIRED, not optional, and that is the mechanism that keeps a facet honest
+   * across sources. It is written onto every ingest row, and the filter panel
+   * renders a `not_supplied` dimension as a disabled control naming the reason
+   * rather than as a control that returns nothing. Without it, "this source has
+   * no lighting field" and "no crash here happened after dark" are the same
+   * empty list on screen, and only one of them is a finding.
+   *
+   * A new jurisdiction supplies this in its descriptor. Nothing branches on an
+   * adapter id to decide which facets to show.
+   */
+  dimensions: CrashDimensionCapability;
   /** Earliest year the source holds; used to clamp requested years honestly. */
   earliestYear: number;
   /**
@@ -165,6 +272,34 @@ export type CrashSourceAdapter = {
   /** True when this adapter can serve the given study area. */
   covers: (bbox: StudyAreaBbox) => boolean;
   fetch: (params: CrashFetchParams) => Promise<CrashFetchResult>;
+  /**
+   * Person-level rows for crashes this adapter already returned.
+   *
+   * OPTIONAL, and the absence is itself the declaration: a source with no person
+   * table simply does not define it, which must agree with its `party_role` and
+   * `person_injury` capability above. Defining it here rather than letting the
+   * ingest branch on an adapter id is what keeps the ingest jurisdiction-neutral
+   * — the sequence asks "can this source do people?", never "is this source
+   * California?".
+   *
+   * A throw is not fatal to an ingest: the crashes are real and worth keeping,
+   * and the run records that person rows were not retrieved instead of recording
+   * that there were none.
+   */
+  fetchParties?: (params: CrashPartyFetchParams) => Promise<CrashPartyRecord[]>;
+};
+
+/**
+ * Which already-fetched crashes to pull person rows for.
+ *
+ * Keyed by the crashes rather than by a bbox because person tables generally
+ * carry no coordinates — they can only be reached by case id, batched. Passing
+ * the year alongside lets a per-year-partitioned source pick its table without
+ * the ingest knowing that it is partitioned.
+ */
+export type CrashPartyFetchParams = {
+  crashes: ReadonlyArray<{ externalId: string; collisionYear: number | null }>;
+  signal?: AbortSignal;
 };
 
 /**
@@ -196,8 +331,4 @@ export class CrashSourceUnavailableError extends Error {
     this.name = "CrashSourceUnavailableError";
     this.sourceId = sourceId;
   }
-}
-
-export function isCrashSeverity(value: unknown): value is CrashSeverity {
-  return typeof value === "string" && (CRASH_SEVERITIES as readonly string[]).includes(value);
 }

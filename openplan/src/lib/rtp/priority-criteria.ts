@@ -13,8 +13,25 @@
 
 export type RtpPriorityLevel = "local" | "county" | "state" | "federal";
 
-/** What informs a criterion's score (drives which evidence the UI surfaces). */
-export type RtpPriorityEvidence = "modeling_vmt" | "modeling_ghg" | "equity_overlay" | "engagement" | "manual";
+/**
+ * What informs a criterion's score (drives which evidence the UI surfaces).
+ *
+ * `manual` means the planner rates it from their own knowledge and OpenPlan has
+ * nothing observed to put beside it. It is not a resting place: a criterion sits
+ * there until the module that holds its evidence can be read, and `safety` moved
+ * off it once crash acquisitions could be counted per project.
+ *
+ * NONE OF THESE AUTO-SET A SCORE. The marker selects which facts appear next to
+ * the 0–3 control; the planner always sets the number. See the refusal argued in
+ * `src/lib/rtp/safety-evidence.ts`.
+ */
+export type RtpPriorityEvidence =
+  | "modeling_vmt"
+  | "modeling_ghg"
+  | "safety_crashes"
+  | "equity_overlay"
+  | "engagement"
+  | "manual";
 
 export interface RtpPriorityCriterion {
   key: string;
@@ -73,7 +90,11 @@ export const RTP_PRIORITY_CRITERIA: RtpPriorityCriterion[] = [
     description: "Reduces fatalities and severe injuries under a Safe System approach.",
     level: "federal",
     weight: 3,
-    evidence: "manual",
+    // The observed collisions in the project's linked crash acquisition are
+    // shown beside this rating, exactly as a model run's VMT is shown beside the
+    // VMT criterion. They inform it; they never set it — see
+    // `src/lib/rtp/safety-evidence.ts` for why a derived safety score is refused.
+    evidence: "safety_crashes",
   },
   {
     key: "equity",

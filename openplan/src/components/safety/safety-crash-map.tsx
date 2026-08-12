@@ -3,7 +3,16 @@
 import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { SafetyCrashCollection } from "@/lib/safety/client-types";
+import { SEVERITY_LABELS, type SafetyCrashCollection } from "@/lib/safety/client-types";
+import {
+  CRASH_SEVERITY_COLOR,
+  CRASH_SEVERITY_LEGEND_ORDER,
+  CRASH_SEVERITY_UNKNOWN_COLOR,
+} from "@/lib/cartographic/crash-severity-palette";
+import { isCrashSeverity } from "@/lib/safety/vocabulary";
+// The casualty sentence is SHARED with the shell map's inspector. Both used to
+// own a copy and both got it wrong the same way — a null count rendered as 0.
+import { describeCrashCasualtyLine } from "@/lib/cartographic/crash-feature-to-selection";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
@@ -23,33 +32,55 @@ const MAPBOX_TOKEN = resolvePublicMapboxToken(
 const INITIAL_ZOOM = 3.4;
 
 /**
- * Severity palette, matched to the Explore crash overlay
- * (explore-analysis-layer-install.ts) so the same crash reads the same colour
- * wherever it appears. PDO is the one addition — Explore's crash layer drops
- * property-damage-only entirely, while CCRS reports it.
+ * Severity paint, BUILT FROM THE SHARED PALETTE rather than from a local copy.
+ *
+ * This file used to hold its own `match` expression, and the palette module said
+ * so in a standing note: the two agreed on the real bands but not on the
+ * fallback, because this map had no explicit `pdo` case, so property-damage-only
+ * and every unrecognised severity painted the same slate. That mattered the
+ * moment a fifth band arrived — `unknown`, for a collision whose casualty counts
+ * the source never supplied — because a hand-written expression that has not
+ * heard of it paints it as property damage, which is the precise falsehood the
+ * band was added to stop. Generating the expression means a band added to the
+ * vocabulary cannot be silently mis-painted here.
  */
 const SEVERITY_COLOR: mapboxgl.ExpressionSpecification = [
   "match",
   ["get", "severity"],
-  "fatal",
-  "#ef4444",
-  "severe_injury",
-  "#fb923c",
-  "injury",
-  "#facc15",
-  "#64748b",
-];
+  ...CRASH_SEVERITY_LEGEND_ORDER.flatMap((severity) => [severity, CRASH_SEVERITY_COLOR[severity]]),
+  CRASH_SEVERITY_UNKNOWN_COLOR,
+] as mapboxgl.ExpressionSpecification;
 
 type SafetyCrashMapProps = {
   collection: SafetyCrashCollection | null;
   /** [minLon, minLat, maxLon, maxLat] — the study area to frame on load. */
   bbox: [number, number, number, number] | null;
+  /**
+   * Called with a feature id when a planner clicks a collision, or null when
+   * they click empty map. Optional so the map stays usable without a detail
+   * surface to open.
+   */
+  onSelect?: (crashId: string | null) => void;
 };
 
-export function SafetyCrashMap({ collection, bbox }: SafetyCrashMapProps) {
+/** Popup content is assembled as HTML, so every interpolated value is escaped. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export function SafetyCrashMap({ collection, bbox, onSelect }: SafetyCrashMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const loadedRef = useRef(false);
+  // The map is built once, so the click handlers close over a ref rather than
+  // over the prop — otherwise selecting a collision would call whichever
+  // callback existed at mount forever.
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
 
   // Create the map once; data updates are handled by the effect below so a
   // filter change never tears down and rebuilds the map.
@@ -109,26 +140,46 @@ export function SafetyCrashMap({ collection, bbox }: SafetyCrashMapProps) {
         const feature = event.features?.[0];
         if (!feature) return;
         const props = feature.properties ?? {};
-        const date = typeof props.collisionDate === "string" ? props.collisionDate : "Date unknown";
-        const severity = String(props.severity ?? "unknown").replace(/_/g, " ");
-        const killed = Number(props.killedCount ?? 0);
-        const injured = Number(props.injuredCount ?? 0);
+        const date = typeof props.collisionDate === "string" ? props.collisionDate : "Date not reported";
+        // The band's own label, not a de-underscored raw value. `unknown` reads
+        // "Not classified — no casualty count reported", which is a sentence
+        // that has to survive into the popup: "unknown" alone would be taken for
+        // an unknown SEVERITY rather than for an absent report.
+        const severity = isCrashSeverity(props.severity)
+          ? SEVERITY_LABELS[props.severity]
+          : "Severity not recognised";
         const modes = [
           props.pedestrianInvolved ? "pedestrian" : null,
           props.bicyclistInvolved ? "bicyclist" : null,
+          props.motorcyclistInvolved ? "motorcyclist" : null,
         ].filter(Boolean);
 
         popup
           .setLngLat(event.lngLat)
           .setHTML(
             `<div style="font-size:12px;line-height:1.4">
-               <strong style="text-transform:capitalize">${severity}</strong><br/>
-               ${date}<br/>
-               ${killed} killed · ${injured} injured
-               ${modes.length ? `<br/>Involved: ${modes.join(", ")}` : ""}
+               <strong>${escapeHtml(severity)}</strong><br/>
+               ${escapeHtml(date)}<br/>
+               ${escapeHtml(describeCrashCasualtyLine(props.killedCount, props.injuredCount))}
+               ${modes.length ? `<br/>Involved: ${escapeHtml(modes.join(", "))}` : ""}
              </div>`
           )
           .addTo(map);
+      });
+
+      // Clicking a collision opens its full record; clicking empty map closes
+      // it. The popup is a summary and cannot state which fields the source
+      // omitted — that distinction needs the acquisition's coverage declaration,
+      // which lives on the page, not on the point.
+      map.on("click", "safety-crash-core", (event) => {
+        const feature = event.features?.[0];
+        const id = feature?.properties?.id;
+        if (typeof id === "string") onSelectRef.current?.(id);
+      });
+
+      map.on("click", (event) => {
+        const hits = map.queryRenderedFeatures(event.point, { layers: ["safety-crash-core"] });
+        if (hits.length === 0) onSelectRef.current?.(null);
       });
 
       map.on("mouseleave", "safety-crash-core", () => {

@@ -289,3 +289,48 @@ describe("GET /api/safety/crashes project filter", () => {
     expect(res.status).toBe(500);
   });
 });
+
+/**
+ * THE FILTERS AS A PLANNER'S BROWSER ACTUALLY SENDS THEM.
+ *
+ * `one-crash-filter-definition.test.ts` proves the two interpreters agree; this
+ * proves the route is wired to one of them. The parameter names come from the
+ * facet registry, so `mode` (a single-choice enum over two of the three
+ * involvement flags) is gone and `involvement` (a multi-select over all three,
+ * motorcyclists included) has taken its place.
+ */
+describe("GET /api/safety/crashes facet parameters", () => {
+  const crashQuery = (extra: string) =>
+    new NextRequest(
+      `http://localhost/api/safety/crashes?workspaceId=${WORKSPACE_ID}&minLon=-121.3&minLat=39.1&maxLon=-120&maxLat=39.6${extra}`
+    );
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+  });
+
+  it("400s on a severity outside the vocabulary instead of silently unfiltering", async () => {
+    // Quietly dropping an unrecognised filter is how a planner reads a total for
+    // a population they never asked for.
+    expect((await GET(crashQuery("&severity=fatal,catastrophic"))).status).toBe(400);
+  });
+
+  it("400s on an involvement value outside the vocabulary", async () => {
+    expect((await GET(crashQuery("&involvement=scooterist"))).status).toBe(400);
+  });
+
+  it("accepts the neutral dimensions the vocabulary declares", async () => {
+    for (const query of [
+      "&severity=fatal,unknown",
+      "&lighting=dark_unlighted",
+      "&weather=rain,fog",
+      "&collision_type=vehicle_pedestrian",
+      "&involvement=pedestrian,bicyclist,motorcyclist",
+    ]) {
+      const res = await GET(crashQuery(query));
+      expect(res.status, `${query} was rejected`).not.toBe(400);
+    }
+  });
+});

@@ -31,6 +31,7 @@ function renderLinker(overrides: {
       availableCycles={overrides.availableCycles ?? []}
       existingLinks={overrides.existingLinks ?? []}
       availableRuns={[]}
+      safetyEvidence={null}
       criteria={[]}
       canWrite
     />

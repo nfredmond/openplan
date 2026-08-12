@@ -25,15 +25,64 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import {
+  CRASH_DIMENSION_COLUMNS,
+  CRASH_INVOLVEMENT_COLUMNS,
+  type CrashDimension,
+  type CrashDimensionCapability,
+  type CrashPartyRole,
+} from "./vocabulary";
 import type { SafetyCrashCollection, SafetyCrashFeature } from "./client-types";
 import { readCrashesForStudyArea, type CrashSourceIdentity } from "./read-only-lane";
 import { CCRS_SOURCE_ID } from "./sources/ccrs";
 import { fetchSeriousInjuryCollisionIds } from "./sources/ccrs-injury";
 import { resolveCrashSource } from "./sources/registry";
-import type { CrashRecord } from "./sources/types";
+import type { CrashPartyRecord, CrashRecord, CrashSourceAdapter } from "./sources/types";
 
 /** Rows written per upsert batch — keeps each PostgREST call modest. */
 const UPSERT_BATCH_SIZE = 500;
+
+export type CrashPartyCompleteness = "retrieved" | "not_retrieved" | "not_supported";
+export type CrashInvolvementBasis = "party_rows" | "crash_flags";
+
+/**
+ * The per-dimension disclosure written onto every ingest row.
+ *
+ * THE MECHANISM THAT KEEPS A MISSING FACET FROM READING AS A FINDING. Every
+ * neutral dimension column is nullable, because a source that does not record
+ * lighting writes NULL — and a filter panel that renders NULL as an empty result
+ * has just told a planner that no crash in their corridor happened after dark.
+ * With this on the ingest, the panel renders that facet disabled and says the
+ * source does not record it. Adding a jurisdiction means adding a descriptor
+ * that declares its own capability; it does not mean touching the panel.
+ */
+export type CrashDimensionCoverage = Record<string, { support: string; unmapped?: number }>;
+
+export function buildDimensionCoverage(
+  capability: CrashDimensionCapability,
+  unmapped: Partial<Record<CrashDimension, number>> = {}
+): CrashDimensionCoverage {
+  const coverage: CrashDimensionCoverage = {};
+  for (const [dimension, support] of Object.entries(capability)) {
+    const fellThrough = unmapped[dimension as CrashDimension];
+    coverage[dimension] =
+      typeof fellThrough === "number" && fellThrough > 0 ? { support, unmapped: fellThrough } : { support };
+  }
+  return coverage;
+}
+
+/**
+ * Whether a source has a person table at all.
+ *
+ * Read off the adapter's own optional `fetchParties`, never off its id: the
+ * ingest must not know which source is Californian. `not_retrieved` says the
+ * capability exists and this run does not have its rows — which is a different
+ * sentence from "this source has no people in it", and only one of them can
+ * honestly accompany a zero.
+ */
+function partyPostureFor(adapter: CrashSourceAdapter): CrashPartyCompleteness {
+  return typeof adapter.fetchParties === "function" ? "not_retrieved" : "not_supported";
+}
 
 export type IngestCrashesParams = {
   service: SupabaseClient;
@@ -50,6 +99,17 @@ export type IngestCrashesParams = {
    * SS4A and HSIP actually run on.
    */
   enrichSeriousInjury?: boolean;
+  /**
+   * Retrieve person-level rows (role, age band, injury outcome) alongside the
+   * crashes. Defaults to ON.
+   *
+   * On by default because the crash-level involvement flags are measurably low —
+   * see `applyPartyInvolvement` for the figures — so a run without person rows
+   * publishes vulnerable-road-user counts that are known to be under. It
+   * degrades exactly like the serious-injury join: a failure keeps the crashes
+   * and records `party_completeness: 'not_retrieved'`, never "there were none".
+   */
+  includeParties?: boolean;
   /**
    * Whether this caller is permitted to WRITE. Defaults to `true`, so every
    * existing caller is unchanged.
@@ -109,6 +169,28 @@ export type IngestCrashesResult = {
   /** Injury crashes upgraded to KABCO A by the injured-person join. */
   seriousInjuryUpgrades: number;
   /**
+   * What happened to the person-level pull.
+   *
+   * `not_supported` — this source has no person table at all.
+   * `not_retrieved` — it has one and the pull failed or was switched off. NOT
+   *                   the same as "there were no people", which is why the
+   *                   count below is null rather than 0 in that state.
+   * `retrieved`     — person rows were stored.
+   */
+  partyCompleteness: CrashPartyCompleteness;
+  /** People stored, or null when they were not retrieved. Never 0-for-unknown. */
+  partyCount: number | null;
+  /**
+   * Which basis the pedestrian / bicyclist / motorcyclist flags rest on.
+   *
+   * Recorded because the two bases disagree by up to 17%: crash-level flags
+   * undercount, person rows do not. A figure whose basis is unrecorded cannot be
+   * compared with the same figure from another run.
+   */
+  involvementBasis: CrashInvolvementBasis | null;
+  /** Per-dimension capability plus how many values fell outside the mapping. */
+  dimensionCoverage: CrashDimensionCoverage;
+  /**
    * Live crash points, present ONLY for `read_only`. A stored acquisition
    * returns null here because its points are read back from `safety_crashes`,
    * which is the one place a persisted crash may come from.
@@ -144,6 +226,15 @@ function toIngestRow(params: {
   };
 }
 
+/**
+ * THE ONE PLACE a neutral field becomes a column name.
+ *
+ * The column strings come from `vocabulary.ts` rather than being spelled here,
+ * so the storage name, the filter predicate and the query projection are
+ * generated from a single declaration per dimension. A second hand-written copy
+ * of this mapping is how a facet ends up filterable in the API and dead in the
+ * UI.
+ */
 export function toCrashRows(
   records: CrashRecord[],
   context: { workspaceId: string; ingestId: string; sourceId: string }
@@ -155,14 +246,102 @@ export function toCrashRows(
     external_id: record.externalId,
     collision_date: record.collisionDate,
     collision_year: record.collisionYear,
-    severity: record.severity,
+    [CRASH_DIMENSION_COLUMNS.severity]: record.severity,
+    // Null, not zero. The column dropped its NOT NULL in
+    // 20260812000001 precisely so an unsupplied count could stay unsupplied.
     killed_count: record.killedCount,
     injured_count: record.injuredCount,
     pedestrian_involved: record.pedestrianInvolved,
     bicyclist_involved: record.bicyclistInvolved,
+    [CRASH_INVOLVEMENT_COLUMNS.motorcyclist]: record.motorcyclistInvolved,
+    [CRASH_DIMENSION_COLUMNS.collision_type]: record.collisionType,
+    [CRASH_DIMENSION_COLUMNS.lighting]: record.lighting,
+    [CRASH_DIMENSION_COLUMNS.weather]: record.weather,
+    source_attributes: record.sourceAttributes,
     latitude: record.latitude,
     longitude: record.longitude,
   }));
+}
+
+/**
+ * Person rows for one acquisition.
+ *
+ * `crashIdByExternalId` is required rather than optional: a party row that
+ * cannot be attached to a stored crash is dropped, because a person with no
+ * collision is not a record of anything and a dangling foreign key would fail
+ * the whole batch.
+ */
+export function toCrashPartyRows(
+  parties: CrashPartyRecord[],
+  context: {
+    workspaceId: string;
+    ingestId: string;
+    sourceId: string;
+    crashIdByExternalId: ReadonlyMap<string, string>;
+  }
+) {
+  const rows: Array<Record<string, unknown>> = [];
+  for (const party of parties) {
+    const crashId = context.crashIdByExternalId.get(party.crashExternalId);
+    if (!crashId) continue;
+    rows.push({
+      workspace_id: context.workspaceId,
+      ingest_id: context.ingestId,
+      source_id: context.sourceId,
+      crash_id: crashId,
+      external_party_id: party.externalPartyId,
+      [CRASH_DIMENSION_COLUMNS.party_role]: party.role,
+      age_band: party.ageBand,
+      [CRASH_DIMENSION_COLUMNS.person_injury]: party.injury,
+      source_attributes: party.sourceAttributes,
+    });
+  }
+  return rows;
+}
+
+/**
+ * Recompute the three involvement flags from person rows.
+ *
+ * WHY THIS IS NOT COSMETIC. The crash-level flags UNDERCOUNT, measurably: probed
+ * against one state's 2025 file, the crash-level bicycle flag names 10,221
+ * collisions where 11,944 carry a bicyclist party row (+16.9%), pedestrians
+ * 12,789 vs 13,177 (+3.0%), and motorcyclists have no crash-level flag at all
+ * while 12,513 collisions involve a motorcycle. Every vulnerable-road-user
+ * figure this product has shown was low.
+ *
+ * Only crashes that actually received person rows are recomputed. A crash the
+ * person query returned nothing for keeps its crash-level flags: "no party rows
+ * came back for this collision" is not evidence that no pedestrian was in it,
+ * and zeroing the flag would replace an undercount with a fabrication. WHICH
+ * basis was used is recorded on the ingest either way.
+ */
+export function applyPartyInvolvement(
+  records: CrashRecord[],
+  parties: CrashPartyRecord[]
+): { records: CrashRecord[]; recomputed: number } {
+  const rolesByCrash = new Map<string, Set<CrashPartyRole>>();
+  for (const party of parties) {
+    const bucket = rolesByCrash.get(party.crashExternalId) ?? new Set<CrashPartyRole>();
+    bucket.add(party.role);
+    rolesByCrash.set(party.crashExternalId, bucket);
+  }
+
+  let recomputed = 0;
+  const out = records.map((record) => {
+    const roles = rolesByCrash.get(record.externalId);
+    if (!roles) return record;
+    recomputed += 1;
+    return {
+      ...record,
+      // OR, not replace: a crash-level flag that fired is a positive report from
+      // the source and stands even where the person rows do not echo it.
+      pedestrianInvolved: record.pedestrianInvolved || roles.has("pedestrian"),
+      bicyclistInvolved: record.bicyclistInvolved || roles.has("bicyclist"),
+      motorcyclistInvolved: record.motorcyclistInvolved || roles.has("motorcyclist"),
+    };
+  });
+
+  return { records: out, recomputed };
 }
 
 /**
@@ -197,6 +376,17 @@ export function toLiveCrashCollection(
         injuredCount: record.injuredCount,
         pedestrianInvolved: record.pedestrianInvolved,
         bicyclistInvolved: record.bicyclistInvolved,
+        // THE LIVE LANE'S HALF OF THE FILTER SEAM. These four ride the feature
+        // because the live lane's filter predicate reads the FEATURE, not a
+        // database row — a facet the properties do not carry is a facet that
+        // silently excludes every live crash the moment a planner touches it.
+        // `crashFilterProperties()` in `crash-filters.ts` is the list, and
+        // `one-crash-filter-definition.test.ts` fails if this projection falls
+        // behind it.
+        motorcyclistInvolved: record.motorcyclistInvolved,
+        collisionType: record.collisionType,
+        lighting: record.lighting,
+        weather: record.weather,
       },
     };
   });
@@ -291,6 +481,10 @@ export async function ingestCrashesForStudyArea(
       yearsCovered: [],
       severityCompleteness: resolution.adapter.severityCompleteness,
       seriousInjuryUpgrades: 0,
+      partyCompleteness: partyPostureFor(resolution.adapter),
+      partyCount: null,
+      involvementBasis: null,
+      dimensionCoverage: buildDimensionCoverage(resolution.adapter.dimensions),
       crashes: null,
       checkedSources: [{ id: resolution.adapter.id, label: resolution.adapter.label }],
       error:
@@ -331,6 +525,16 @@ export async function ingestCrashesForStudyArea(
         yearsCovered: live.fetched.yearsCovered,
         severityCompleteness: live.adapter.severityCompleteness,
         seriousInjuryUpgrades: 0,
+        // A live read stores nothing, so it stores no people either — and it
+        // still discloses what the source COULD have said, because the same
+        // filter panel renders both lanes.
+        partyCompleteness: partyPostureFor(live.adapter),
+        partyCount: null,
+        involvementBasis: "crash_flags",
+        dimensionCoverage: buildDimensionCoverage(
+          live.adapter.dimensions,
+          live.fetched.unmappedByDimension
+        ),
         crashes: toLiveCrashCollection(records, live.adapter.id),
         checkedSources: live.checked,
         error: null,
@@ -356,6 +560,10 @@ export async function ingestCrashesForStudyArea(
         yearsCovered: [],
         severityCompleteness: live.adapter.severityCompleteness,
         seriousInjuryUpgrades: 0,
+        partyCompleteness: partyPostureFor(live.adapter),
+        partyCount: null,
+        involvementBasis: null,
+        dimensionCoverage: buildDimensionCoverage(live.adapter.dimensions),
         crashes: null,
         checkedSources: live.checked,
         error: live.message,
@@ -387,6 +595,10 @@ export async function ingestCrashesForStudyArea(
         yearsCovered: [],
         severityCompleteness: "fatal_only",
         seriousInjuryUpgrades: 0,
+        partyCompleteness: "not_supported",
+        partyCount: null,
+        involvementBasis: null,
+        dimensionCoverage: {},
         crashes: null,
         checkedSources: live.checked,
         error: null,
@@ -426,6 +638,10 @@ export async function ingestCrashesForStudyArea(
       yearsCovered: [],
       severityCompleteness: "fatal_only",
       seriousInjuryUpgrades: 0,
+      partyCompleteness: "not_supported",
+      partyCount: null,
+      involvementBasis: null,
+      dimensionCoverage: {},
       crashes: null,
       checkedSources: live.checked,
       error: null,
@@ -478,19 +694,87 @@ export async function ingestCrashesForStudyArea(
       }
     }
 
+    // PERSON ROWS. Same degradation contract as the KSI join above: a failure
+    // keeps the crashes and records that people were not retrieved. It is the
+    // adapter's own optional capability that decides whether to try — the ingest
+    // never asks which source this is.
+    let partyCompleteness = partyPostureFor(adapter);
+    let parties: CrashPartyRecord[] = [];
+    let involvementBasis: CrashInvolvementBasis = "crash_flags";
+    if (adapter.fetchParties && params.includeParties !== false) {
+      try {
+        parties = await adapter.fetchParties({
+          crashes: records.map((record) => ({
+            externalId: record.externalId,
+            collisionYear: record.collisionYear,
+          })),
+          signal: params.signal,
+        });
+        partyCompleteness = "retrieved";
+        const involvement = applyPartyInvolvement(records, parties);
+        records = involvement.records;
+        if (involvement.recomputed > 0) involvementBasis = "party_rows";
+      } catch {
+        // Left at `not_retrieved`. The crashes are real and worth keeping, and
+        // an empty person table is a claim this run cannot make.
+        parties = [];
+      }
+    }
+
     const rows = toCrashRows(records, {
       workspaceId: params.workspaceId,
       ingestId,
       sourceId: adapter.id,
     });
 
+    // The crash ids come back from the WRITE rather than from a follow-up
+    // SELECT, for two reasons: a batch is bounded at 500 rows and so cannot hit
+    // PostgREST's default 1,000-row response cap, and a re-ingest of an
+    // already-stored study area returns the existing ids instead of appearing
+    // to have written nothing.
+    const crashIdByExternalId = new Map<string, string>();
     for (let offset = 0; offset < rows.length; offset += UPSERT_BATCH_SIZE) {
       const batch = rows.slice(offset, offset + UPSERT_BATCH_SIZE);
-      const { error: upsertError } = await params.service
+      const { data: written, error: upsertError } = await params.service
         .from("safety_crashes")
-        .upsert(batch, { onConflict: "workspace_id,source_id,external_id" });
+        .upsert(batch, { onConflict: "workspace_id,source_id,external_id" })
+        .select("id,external_id");
       if (upsertError) throw new Error(`Failed to persist crashes: ${upsertError.message}`);
+      for (const row of (written ?? []) as Array<{ id?: unknown; external_id?: unknown }>) {
+        if (typeof row.id === "string" && row.external_id != null) {
+          crashIdByExternalId.set(String(row.external_id), row.id);
+        }
+      }
     }
+
+    let partyCount: number | null = null;
+    if (partyCompleteness === "retrieved") {
+      const partyRows = toCrashPartyRows(parties, {
+        workspaceId: params.workspaceId,
+        ingestId,
+        sourceId: adapter.id,
+        crashIdByExternalId,
+      });
+      for (let offset = 0; offset < partyRows.length; offset += UPSERT_BATCH_SIZE) {
+        const batch = partyRows.slice(offset, offset + UPSERT_BATCH_SIZE);
+        const { error: partyError } = await params.service
+          .from("safety_crash_parties")
+          .upsert(batch, { onConflict: "workspace_id,source_id,external_party_id" });
+        // A person-row failure does NOT fail the acquisition — the crashes are
+        // already stored and are worth keeping — but it must not leave the run
+        // claiming people were retrieved when some were not.
+        if (partyError) {
+          partyCompleteness = "not_retrieved";
+          partyCount = null;
+          break;
+        }
+        partyCount = (partyCount ?? 0) + batch.length;
+      }
+      if (partyCompleteness === "retrieved" && partyRows.length === 0) partyCount = 0;
+    }
+    if (partyCompleteness !== "retrieved") involvementBasis = "crash_flags";
+
+    const dimensionCoverage = buildDimensionCoverage(adapter.dimensions, fetched.unmappedByDimension);
 
     await params.service
       .from("safety_crash_ingests")
@@ -500,6 +784,12 @@ export async function ingestCrashesForStudyArea(
         geocoded_count: fetched.geocodedTotal,
         truncated: fetched.truncated,
         severity_completeness: severityCompleteness,
+        dimension_coverage: dimensionCoverage,
+        party_completeness: partyCompleteness,
+        // Null, not zero, whenever people were not retrieved: a count that could
+        // not be read is not a count of none.
+        party_count: partyCount,
+        involvement_basis: involvementBasis,
       })
       .eq("id", ingestId);
 
@@ -518,6 +808,10 @@ export async function ingestCrashesForStudyArea(
       yearsCovered: fetched.yearsCovered,
       severityCompleteness,
       seriousInjuryUpgrades,
+      partyCompleteness,
+      partyCount,
+      involvementBasis,
+      dimensionCoverage,
       // Stored crashes are read back from `safety_crashes` — the one place a
       // persisted crash point may come from — so none travel in this response.
       crashes: null,
@@ -547,6 +841,10 @@ export async function ingestCrashesForStudyArea(
       yearsCovered: [],
       severityCompleteness: adapter.severityCompleteness,
       seriousInjuryUpgrades: 0,
+      partyCompleteness: partyPostureFor(adapter),
+      partyCount: null,
+      involvementBasis: null,
+      dimensionCoverage: buildDimensionCoverage(adapter.dimensions),
       crashes: null,
       checkedSources: [],
       error: message,

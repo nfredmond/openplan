@@ -47,10 +47,14 @@ import {
   type ProjectEngagementCampaignRowLike,
 } from "@/lib/grants/engagement-evidence";
 import { bcaAnalysisInputsSchema } from "@/lib/bca/schema";
+import { buildBcaCrashInputSuggestion } from "@/lib/safety/bca-evidence";
 import {
-  buildBcaCrashInputSuggestion,
-  type BcaCrashSeverityCounts,
-} from "@/lib/safety/bca-evidence";
+  SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION,
+  latestReadyIngestByProject,
+  loadSafetyCrashEvidence,
+  readSafetyCrashEvidenceIngest,
+  type SafetyCrashEvidenceSupabaseLike,
+} from "@/lib/safety/crash-evidence";
 import {
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
@@ -396,81 +400,49 @@ export default async function GrantsPage({
   // crash acquisition per project, plus the observed severity mix of its stored
   // (geocoded) crash points. Any read failure — including a pending safety
   // schema — simply offers no suggestion; nothing here invents a count.
+  //
+  // THIS USED TO BE AN N+1. Four `count(*)` HEAD requests PER PROJECT, so a
+  // twenty-project workspace opened this page with eighty round-trips whose only
+  // product was eighty integers, and it got worse exactly as a workspace got
+  // more useful. `safety_crash_evidence_counts` (20260812000003) groups all of
+  // them into one call. It is SECURITY INVOKER, so this reader's own RLS still
+  // scopes every counted row.
+  //
+  // It also used to count only four bands, which silently dropped the `unknown`
+  // band the same release introduced — the collisions a source reported no
+  // casualty count for. Those are now counted and disclosed by the shared
+  // evidence shape rather than vanishing between the total and its parts.
   const projectCrashIngestResult = await supabase
     .from("safety_crash_ingests")
-    .select(
-      "id, project_id, status, source_label, attribution, severity_completeness, crash_count, geocoded_count, truncated, years_requested, created_at"
-    )
+    .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
     .eq("workspace_id", membership.workspace_id)
     .eq("status", "ready")
     .not("project_id", "is", null)
     .order("created_at", { ascending: false });
-  const projectCrashIngestRows = projectCrashIngestResult.error
+  const projectCrashIngests = projectCrashIngestResult.error
     ? []
-    : ((projectCrashIngestResult.data ?? []) as Array<{
-        id: string;
-        project_id: string;
-        status: string;
-        source_label: string | null;
-        attribution: string | null;
-        severity_completeness: string;
-        crash_count: number | null;
-        geocoded_count: number | null;
-        truncated: boolean | null;
-        years_requested: number[] | null;
-        created_at: string;
-      }>);
-  const latestCrashIngestByProjectId = new Map<string, (typeof projectCrashIngestRows)[number]>();
-  for (const row of projectCrashIngestRows) {
-    if (!latestCrashIngestByProjectId.has(row.project_id)) {
-      latestCrashIngestByProjectId.set(row.project_id, row);
-    }
-  }
-  const crashSeverityCount = async (ingestId: string, severity: string): Promise<number> => {
-    const { count, error } = await supabase
-      .from("safety_crashes")
-      .select("id", { count: "exact", head: true })
-      .eq("ingest_id", ingestId)
-      .eq("severity", severity);
-    if (error) throw new Error(error.message);
-    return count ?? 0;
-  };
+    : ((projectCrashIngestResult.data ?? []) as unknown as Array<Record<string, unknown>>).flatMap((row) => {
+        const ingest = readSafetyCrashEvidenceIngest(row);
+        return ingest ? [ingest] : [];
+      });
+  const latestCrashIngestByProjectId = latestReadyIngestByProject(projectCrashIngests);
+  const crashEvidenceByIngestId = await loadSafetyCrashEvidence(
+    supabase as unknown as SafetyCrashEvidenceSupabaseLike,
+    membership.workspace_id,
+    Array.from(latestCrashIngestByProjectId.values())
+  );
   const crashEvidenceByProjectId = new Map<
     string,
     { ingestId: string; suggestion: NonNullable<ReturnType<typeof buildBcaCrashInputSuggestion>> }
   >();
-  await Promise.all(
-    Array.from(latestCrashIngestByProjectId.entries()).map(async ([crashProjectId, row]) => {
-      try {
-        const [fatal, severeInjury, injury, pdo] = await Promise.all([
-          crashSeverityCount(row.id, "fatal"),
-          crashSeverityCount(row.id, "severe_injury"),
-          crashSeverityCount(row.id, "injury"),
-          crashSeverityCount(row.id, "pdo"),
-        ]);
-        const severityCounts: BcaCrashSeverityCounts = { fatal, severeInjury, injury, pdo };
-        const suggestion = buildBcaCrashInputSuggestion(
-          {
-            id: row.id,
-            status: row.status,
-            sourceLabel: row.source_label,
-            attribution: row.attribution,
-            severityCompleteness: row.severity_completeness,
-            crashCount: Number(row.crash_count ?? 0),
-            geocodedCount: Number(row.geocoded_count ?? 0),
-            truncated: Boolean(row.truncated),
-            yearsRequested: row.years_requested ?? [],
-          },
-          severityCounts
-        );
-        if (suggestion) {
-          crashEvidenceByProjectId.set(crashProjectId, { ingestId: row.id, suggestion });
-        }
-      } catch {
-        // A failed severity read means no suggestion for this project — never a guess.
-      }
-    })
-  );
+  for (const [crashProjectId, ingest] of latestCrashIngestByProjectId) {
+    const evidence = crashEvidenceByIngestId.get(ingest.id);
+    if (!evidence) continue;
+    // Null means "offer nothing" — a failed count, a zero-crash retrieval, or an
+    // acquisition whose stored collisions are all unclassified. Never zeros.
+    const suggestion = buildBcaCrashInputSuggestion(evidence);
+    if (suggestion) crashEvidenceByProjectId.set(crashProjectId, { ingestId: ingest.id, suggestion });
+  }
   const engagementEvidenceByProjectId = buildProjectEngagementEvidenceByProjectId(
     (engagementCampaignsData ?? []) as ProjectEngagementCampaignRowLike[]
   );

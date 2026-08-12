@@ -37,6 +37,10 @@ import {
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_CRASH_DATA_NARRATIVE_CAVEAT,
   SAFETY_GEOCODING_CAVEAT,
+  SAFETY_PDO_COMPARABILITY_CAVEAT,
+  SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
+  SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT,
+  describeGeocodingShortfall,
   SAFETY_SCREENING_CAVEAT,
   SAFETY_SCREENING_NARRATIVE_CAVEAT,
   SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
@@ -229,5 +233,63 @@ describe("safety and shared-map crash claim boundaries", () => {
   it("discloses that a KSI total cannot be derived from the current source", () => {
     expect(SAFETY_SEVERITY_COMPLETENESS_CAVEAT).toMatch(/serious injur/i);
     expect(SAFETY_SEVERITY_COMPLETENESS_CAVEAT).toMatch(/cannot be derived/i);
+  });
+});
+
+/**
+ * The two disclosures this lane added, and the constant it deliberately did NOT
+ * add.
+ */
+describe("the claims the crash filters make on a planner's behalf", () => {
+  it("refuses to let an unclassified collision read as a mild one", () => {
+    // These records were stored as property-damage-only until the `unknown`
+    // band existed, because a missing count parsed to zero. The sentence has to
+    // say the classification is missing, not that the outcome was mild.
+    expect(SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT).toMatch(/no casualty count/i);
+    expect(SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT).toMatch(/counted in the total/i);
+    expect(SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT).toMatch(/missing information, not a mild outcome/i);
+  });
+
+  it("keeps the unclassified narrative variant to one sentence", () => {
+    const sentences = SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT.split(/(?<=\.)\s+/).filter(Boolean);
+    expect(sentences).toHaveLength(1);
+  });
+
+  it("says why property-damage-only counts are not comparable", () => {
+    expect(SAFETY_PDO_COMPARABILITY_CAVEAT).toMatch(/not comparable/i);
+    expect(SAFETY_PDO_COMPARABILITY_CAVEAT).toMatch(/agencies|places|years/i);
+  });
+
+  it("quotes no fixed geocoding percentage anywhere in the shipped copy", () => {
+    // THE DEFECT THIS PREVENTS. The geocoded share is wildly local: 77.7%
+    // statewide and 99.6% in one rural county of the same state, probed the
+    // same day. A constant would describe almost no real extract correctly, in
+    // either direction, while sounding precise.
+    for (const caveat of [
+      SAFETY_CRASH_DATA_CAVEAT,
+      SAFETY_GEOCODING_CAVEAT,
+      SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
+      SAFETY_PDO_COMPARABILITY_CAVEAT,
+    ]) {
+      expect(caveat).not.toMatch(/\d+(\.\d+)?\s?%/);
+    }
+  });
+
+  it("computes the geocoding shortfall from the extract's own two counts", () => {
+    expect(describeGeocodingShortfall(1180, 1089)).toMatch(/91 of the 1,180 reported crashes/);
+    expect(describeGeocodingShortfall(1180, 1089)).toMatch(/92\.3% were mapped/);
+    // A different extract, a different sentence — which is the whole point.
+    expect(describeGeocodingShortfall(1180, 1175)).toMatch(/99\.6% were mapped/);
+  });
+
+  it("says nothing rather than inventing a share it cannot compute", () => {
+    // A percentage from an unreadable denominator is a fabricated figure, and
+    // a cheerful "100% mapped" on every clean acquisition trains a reader to
+    // skip the disclosure that matters.
+    expect(describeGeocodingShortfall(1180, 1180)).toBeNull();
+    expect(describeGeocodingShortfall(0, 0)).toBeNull();
+    expect(describeGeocodingShortfall(Number.NaN, 5)).toBeNull();
+    // More mapped than reported is a broken row, not a 110% success rate.
+    expect(describeGeocodingShortfall(10, 12)).toBeNull();
   });
 });

@@ -19,6 +19,7 @@ import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks
 import { RtpLinkCostEditor, type RtpLinkCostBandOption } from "@/components/projects/rtp-link-cost-editor";
 import type { RtpPriorityScores } from "@/lib/rtp/priority-scoring";
 import type { RtpEvidenceRunDisclosure, RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
+import type { RtpSafetyEvidence } from "@/lib/rtp/safety-evidence";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 type AvailableCycle = {
@@ -67,6 +68,7 @@ export function ProjectRtpLinker({
   availableCycles,
   existingLinks,
   availableRuns,
+  safetyEvidence,
   criteria,
   canWrite,
 }: {
@@ -74,6 +76,12 @@ export function ProjectRtpLinker({
   availableCycles: AvailableCycle[];
   existingLinks: ExistingLink[];
   availableRuns: AvailableRun[];
+  /**
+   * Observed collisions from this PROJECT's newest ready crash acquisition.
+   * One value for the whole component rather than one per link: a project's
+   * crash record does not change because it appears in a second plan cycle.
+   */
+  safetyEvidence: RtpSafetyEvidence | null;
   /**
    * Criteria with the policy bases this workspace's jurisdiction may cite,
    * resolved on the server. Threaded rather than imported so the editor cannot
@@ -221,6 +229,7 @@ export function ProjectRtpLinker({
                     initialEvidenceRunId={link.evidenceModelRunId}
                     modelingEvidence={link.modelingEvidence}
                     evidenceRunDisclosure={link.evidenceRunDisclosure}
+                    safetyEvidence={safetyEvidence}
                     criteria={criteria}
                   />
                   <div className="mt-3">

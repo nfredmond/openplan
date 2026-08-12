@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, FileStack, FolderKanban, Target } from "lucide-react";
 import { ProjectRtpLinker } from "@/components/projects/project-rtp-linker";
 import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
+import type { RtpSafetyEvidence } from "@/lib/rtp/safety-evidence";
 import {
   ReportPacketCommandQueue,
   type ReportPacketCommandQueueItem,
@@ -76,6 +77,11 @@ type ProjectPostureHeaderProps = {
   workspaceRtpCycles: RtpCycleRow[];
   existingRtpLinks: ExistingRtpLink[];
   availableModelRuns: AvailableModelRun[];
+  /**
+   * Observed collisions from this project's newest ready crash acquisition, or
+   * null when none is linked. Rendered beside the safety priority criterion.
+   */
+  rtpSafetyEvidence: RtpSafetyEvidence | null;
   /** Priority criteria carrying this workspace's jurisdiction's policy bases. */
   rtpPriorityCriteria: readonly ResolvedRtpPriorityCriterion[];
   /** Whether this member may change the project. */
@@ -120,6 +126,7 @@ export function ProjectPostureHeader({
   workspaceRtpCycles,
   existingRtpLinks,
   availableModelRuns,
+  rtpSafetyEvidence,
   rtpPriorityCriteria,
   canWriteProjects,
   deliverableCount,
@@ -339,6 +346,7 @@ export function ProjectPostureHeader({
               }))}
               existingLinks={existingRtpLinks}
               availableRuns={availableModelRuns}
+              safetyEvidence={rtpSafetyEvidence}
               criteria={rtpPriorityCriteria}
               canWrite={canWriteProjects}
             />

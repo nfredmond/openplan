@@ -40,6 +40,8 @@ import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { loadReportRunCitationLinksForReports, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { RTP_EVIDENCE_KPI_NAMES, loadRtpEvidenceRunDisclosures, summarizeRtpModelingEvidence, type RtpEvidenceSupabaseLike, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
 import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
+import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION, type SafetyCrashEvidenceSupabaseLike } from "@/lib/safety/crash-evidence";
+import { loadProjectRtpSafetyEvidence } from "@/lib/rtp/safety-evidence";
 import { POSTGREST_NO_ROWS_MATCHED } from "@/lib/http/write-outcome";
 import { StateBlock } from "@/components/ui/state-block";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
@@ -94,6 +96,7 @@ import type {
   ProjectReportRow,
   ProjectRow,
   ProjectRtpLinkRow,
+  ProjectSafetyIngestRow,
   RecentRun,
   ReportArtifactRow,
   RtpCycleRow,
@@ -986,22 +989,31 @@ export default async function ProjectDetailPage({
   // counts, so no crash-point rows are read here.
   const safetyIngestResult = await supabase
     .from("safety_crash_ingests")
-    .select("id, status, source_label, coverage_state, crash_count, geocoded_count, created_at")
+    // The shared evidence projection plus `coverage_state`, which only the
+    // crosslink board below reads. Generated rather than hand-written: a
+    // `.select()` string is not type-checked in this codebase, and a consumer
+    // that silently omitted `party_completeness` would print "person records
+    // were not retrieved" onto an acquisition that has them.
+    .select(`${SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION}, coverage_state`)
     .eq("project_id", project.id)
     .order("created_at", { ascending: false })
     .limit(8);
   const safetyLane = laneOutcome(reads, "crash acquisitions linked to this project", safetyIngestResult);
   const safetyIngestsPending = safetyLane.pending;
-  const projectSafetyIngests = safetyLane.rows as Array<{
-        id: string;
-        status: string;
-        source_label: string | null;
-        coverage_state: string;
-        crash_count: number | null;
-        geocoded_count: number | null;
-        created_at: string;
-      }>;
+  const projectSafetyIngests = safetyLane.rows as ProjectSafetyIngestRow[];
   const latestProjectSafetyIngest = projectSafetyIngests[0] ?? null;
+
+  // The observed collisions the RTP safety criterion shows beside its rating.
+  // Counted in ONE grouped round-trip through `safety_crash_evidence_counts`,
+  // whose SECURITY INVOKER definition means this reader's own RLS scopes every
+  // counted row. A failed count yields null counts — never zeros, which on a
+  // safety screen read as good news. Null overall means nothing has been
+  // retrieved for this project, which renders as a gap, not as an absence of
+  // collisions.
+  const rtpSafetyEvidence = await loadProjectRtpSafetyEvidence(
+    supabase as unknown as SafetyCrashEvidenceSupabaseLike,
+    { workspaceId: project.workspace_id, projectId: project.id, ingestRows: safetyLane.rows }
+  );
 
   const {
     missions: aerialMissions,
@@ -1256,6 +1268,7 @@ export default async function ProjectDetailPage({
         workspaceRtpCycles={workspaceRtpCycles}
         existingRtpLinks={existingRtpLinks}
         availableModelRuns={availableModelRuns}
+        rtpSafetyEvidence={rtpSafetyEvidence}
         rtpPriorityCriteria={resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria}
         canWriteProjects={canAccessWorkspaceAction("plans.write", membership.role)}
         deliverableCount={budgetInputs.deliverables.length}

@@ -8,6 +8,10 @@ import {
   type LayerKey,
 } from "@/components/cartographic/cartographic-context";
 import {
+  CRASH_SEVERITY_LEGEND_LABEL,
+  CRASH_SEVERITY_LEGEND_ORDER,
+} from "@/lib/cartographic/crash-severity-palette";
+import {
   TRANSIT_SERVICE_TIER_COLOR,
   TRANSIT_SERVICE_TIER_LEGEND_LABEL,
   TRANSIT_SERVICE_TIER_LEGEND_ORDER,
@@ -85,11 +89,18 @@ describe("CartographicMapLegend", () => {
   });
 
   /**
-   * All four KABCO buckets are keyed, including the serious-injury bucket no
-   * currently storable source can populate. That is deliberate: the ramp
-   * documents what a colour MEANS, while the layers panel's coverage notes say
-   * which buckets the acquired sources could actually distinguish. Dropping the
-   * bucket would leave a future full-KABCO source painting an unlabelled colour.
+   * EVERY severity band is keyed, including the two that are not rungs on the
+   * ramp. The serious-injury bucket is kept because the ramp documents what a
+   * colour MEANS — a future full-KABCO source would otherwise paint an
+   * unlabelled colour — and `unknown` is kept because those points ARE painted:
+   * they are collisions the source reported without any casualty count, and a
+   * painted dot with no legend entry leaves the reader guessing which rung it
+   * belongs to.
+   *
+   * The expected text is DERIVED from the shared palette rather than typed. It
+   * used to be the literal "FatalSeriousInjuryPDO", which meant adding a band
+   * made this test fail with "expected undefined to be defined" — a message that
+   * says nothing about the real change and invites deleting the band.
    */
   it("keys every crash severity bucket when the crash layer is enabled", () => {
     renderLegend([], ["crashes"]);
@@ -98,14 +109,22 @@ describe("CartographicMapLegend", () => {
 
     expect(screen.getByText("Crash severity")).toBeInTheDocument();
 
+    const expectedText = CRASH_SEVERITY_LEGEND_ORDER.map(
+      (severity) => CRASH_SEVERITY_LEGEND_LABEL[severity],
+    ).join("");
     const severityLabels = Array.from(
       document.querySelectorAll(".op-cart-legend__ramp-labels"),
-    ).find((node) => node.textContent === "FatalSeriousInjuryPDO");
-    expect(severityLabels).toBeDefined();
+    ).find((node) => node.textContent === expectedText);
+    expect(severityLabels, `expected a ramp labelled "${expectedText}"`).toBeDefined();
 
     const severityRamp = severityLabels?.previousElementSibling;
     expect(severityRamp?.classList.contains("op-cart-legend__ramp")).toBe(true);
-    expect(severityRamp?.children).toHaveLength(4);
+    expect(severityRamp?.children).toHaveLength(CRASH_SEVERITY_LEGEND_ORDER.length);
+
+    // A collision the source never classified must not be keyed as a mild one:
+    // its swatch is off the red-to-slate ramp entirely.
+    expect(CRASH_SEVERITY_LEGEND_ORDER).toContain("unknown");
+    expect(CRASH_SEVERITY_LEGEND_LABEL.unknown).toBe("Not classified");
   });
 
   /**

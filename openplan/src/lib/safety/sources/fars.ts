@@ -46,6 +46,7 @@
 
 import { fetchJsonWithRetry } from "@/lib/data-sources/http";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import { CRASH_LEVEL_ONLY_DIMENSION_SUPPORT } from "@/lib/safety/vocabulary";
 import {
   CrashSourceUnavailableError,
   type CrashFetchParams,
@@ -240,12 +241,24 @@ export function toFarsCrashRecord(row: Record<string, unknown>, year: number): C
     // FARS is a fatality census: every record in it is, by definition, fatal.
     severity: "fatal",
     killedCount,
-    // FARS carries no injury counts on the crash record. Reporting 0 here is
-    // the schema's floor, not a finding — `severityCompleteness: "fatal_only"`
-    // is what stops a caller reading it as "nobody was hurt".
-    injuredCount: 0,
+    // FARS carries no injury count on the crash record — so this is NULL, not
+    // zero. It used to be 0, which said "nobody was injured in this fatal
+    // crash"; the truth is that the question was never asked.
+    // `severityCompleteness: "fatal_only"` says the same thing at the source
+    // level, and now the column agrees with it.
+    injuredCount: null,
     pedestrianInvolved: toCount(pick(fields, "PEDS", "PEDESTRIANS")) > 0,
     bicyclistInvolved: toCount(pick(fields, "BICYCLISTS", "PEDALCYCLISTS", "BIKES")) > 0,
+    // No motorcyclist count exists on this record. `party_role: "partial"` in
+    // the capability declaration below is what keeps this false from reading as
+    // "no motorcyclist was involved".
+    motorcyclistInvolved: false,
+    // This source records none of the three environmental dimensions. NULL, not
+    // "unknown": "unknown" would claim the source asked and got no answer.
+    collisionType: null,
+    lighting: null,
+    weather: null,
+    sourceAttributes: {},
     latitude,
     longitude,
     stateFips,
@@ -315,6 +328,14 @@ export const farsAdapter: CrashSourceAdapter = {
   license: "U.S. Government Work (public domain)",
   coverageState: "fars_fatal_only",
   severityCompleteness: "fatal_only",
+  // A fatality census knows almost nothing about the neutral dimensions, and
+  // saying so explicitly is the whole point: a lighting facet rendered as an
+  // empty list here would read as "no fatal crash in this corridor happened
+  // after dark", which is a finding this source cannot support. `party_role` is
+  // `partial` rather than `not_supplied` because pedestrian and bicyclist
+  // involvement ARE derivable from crash-level counts — there are simply no
+  // person rows and no motorcyclist signal.
+  dimensions: CRASH_LEVEL_ONLY_DIMENSION_SUPPORT,
   earliestYear: FARS_EARLIEST_YEAR,
   persistable: false,
   covers: coversFarsGeography,

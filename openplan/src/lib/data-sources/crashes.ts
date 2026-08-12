@@ -83,6 +83,17 @@ export interface CrashSummary {
   yearsQueried: number[];
   crashesPerSquareMile: number;
   crashDensityBasis: CrashDensityBasis;
+  /**
+   * Mappable crashes the source reported WITHOUT any casualty count, so they
+   * could not be placed in a severity band at all.
+   *
+   * Not a rounding error: it is 4.7% of one state's 2025 records statewide and
+   * 9.5% in one rural county of it. These crashes are in `reportedTotal` and in
+   * no severity tally, which is the honest arrangement — but only if the number
+   * is visible, because otherwise the severity counts silently fail to add up to
+   * the total and a reader assumes the difference is property damage.
+   */
+  unclassifiedCrashes: number;
   /** Crashes the source matched, geocoded or not. */
   reportedTotal: number;
   /** Of those, how many carried usable coordinates and could be mapped. */
@@ -140,8 +151,13 @@ export type CrashPointFeature = GeoJSON.Feature<
     severityBucket: CrashPointSeverityBucket;
     severityLabel: string;
     collisionYear: number | null;
-    fatalCount: number;
-    injuryCount: number;
+    /**
+     * NULL when the source supplied no count. A fatality census, for instance,
+     * records no injury count at all — reporting 0 there would say nobody was
+     * hurt in a fatal crash.
+     */
+    fatalCount: number | null;
+    injuryCount: number | null;
     pedestrianInvolved: boolean;
     bicyclistInvolved: boolean;
   }
@@ -182,9 +198,16 @@ function labelForSeverityBucket(severity: CrashPointSeverityBucket): string {
  * Property-damage-only crashes are dropped from the map layer: they are the
  * bulk of any record-level file and would bury the KSI points the layer exists
  * to show. They remain in `reportedTotal`.
+ *
+ * UNCLASSIFIED crashes are dropped too, and for the opposite reason: this layer
+ * paints a severity, and a collision whose casualty counts the source never
+ * supplied has none to paint. Plotting it in any of the three colours would
+ * assert an outcome nobody reported. They remain in `reportedTotal` and are
+ * counted separately in `unclassifiedCrashes`, so the corridor scorecard can say
+ * how much of the record it could not classify instead of quietly shrinking.
  */
 function toPointFeature(record: CrashRecord, sourceId: string): CrashPointFeature | null {
-  if (record.severity === "pdo") return null;
+  if (record.severity === "pdo" || record.severity === "unknown") return null;
   const severityBucket: CrashPointSeverityBucket = record.severity;
 
   return {
@@ -222,6 +245,7 @@ function emptySummary(
     yearsQueried: [],
     crashesPerSquareMile: 0,
     crashDensityBasis: "none",
+    unclassifiedCrashes: 0,
     reportedTotal: 0,
     mappedTotal: 0,
     truncated: false,
@@ -242,13 +266,22 @@ export function summarizeCrashFetch(
   let bicyclistFatalities = 0;
   let severeInjuryCrashes = 0;
   let injuryCrashes = 0;
+  let unclassifiedCrashes = 0;
 
   const points: CrashPointFeature[] = [];
 
   for (const record of fetched.records) {
+    // Counted, never silently skipped. These are collisions the source reported
+    // and did not classify; leaving them out of every tally would make the
+    // scorecard's own numbers unaccountable against `reportedTotal`.
+    if (record.severity === "unknown") unclassifiedCrashes += 1;
+
     if (record.severity === "fatal") {
       totalFatalCrashes += 1;
-      totalFatalities += Math.max(1, record.killedCount);
+      // A fatal record has a positive, readable killed count by construction —
+      // that is what made it fatal. The floor of 1 is belt-and-braces for a
+      // source that flags fatality without a count.
+      totalFatalities += Math.max(1, record.killedCount ?? 1);
       if (record.pedestrianInvolved) pedestrianFatalities += 1;
       if (record.bicyclistInvolved) bicyclistFatalities += 1;
     }
@@ -287,6 +320,7 @@ export function summarizeCrashFetch(
     yearsQueried,
     crashesPerSquareMile: Math.round((densityCount / annualBasis / area) * 10) / 10,
     crashDensityBasis: fatalOnly ? "fatal_only" : "injury_and_fatal",
+    unclassifiedCrashes,
     reportedTotal: fetched.matchedTotal,
     mappedTotal: fetched.geocodedTotal,
     truncated: fetched.truncated,
@@ -521,6 +555,13 @@ export function buildCrashSourceSnapshot(
       ? ` ${crashes.reportedTotal.toLocaleString()} crashes matched, ${crashes.mappedTotal.toLocaleString()} carried coordinates and are mappable.`
       : "";
 
+  // Say the number, or the severity counts quietly fail to add up to the total
+  // and a reader fills the gap in with "property damage".
+  const unclassifiedNote =
+    crashes.unclassifiedCrashes > 0
+      ? ` ${crashes.unclassifiedCrashes.toLocaleString()} of the mapped crashes carry no casualty count from the source and are not classified by severity — they are counted in the total and in no severity band.`
+      : "";
+
   const merged = crashes.contributingSources ?? [];
   const mergeNote =
     merged.length >= 2
@@ -545,7 +586,8 @@ export function buildCrashSourceSnapshot(
     truncated: crashes.truncated,
     ...(merged.length >= 2 ? { contributingSources: merged } : {}),
     ...(unavailable.length > 0 ? { unavailableBackstops: unavailable } : {}),
-    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}${mergeNote}${backstopGapNote}`,
+    unclassifiedCrashes: crashes.unclassifiedCrashes,
+    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}${unclassifiedNote}${mergeNote}${backstopGapNote}`,
   };
 }
 
@@ -586,10 +628,19 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
           .join(" and ")} could not be reached this run, so any crashes outside the coverage of ${crashes.sourceLabel} are not included — treat a low count with caution if this study area extends beyond that source.`
       : "";
 
+  // The unclassified share belongs in the deterministic narrative, not only in
+  // the snapshot: this line is what the AI narrative and the report read, and a
+  // severity breakdown that does not account for every reported crash invites
+  // the reader to assume the remainder was minor.
+  const unclassifiedNote =
+    crashes.unclassifiedCrashes > 0
+      ? ` ${crashes.unclassifiedCrashes} mapped crashes carry no casualty count from the source and are not classified by severity.`
+      : "";
+
   return (
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
     `${crashes.bicyclistFatalities} involving a bicyclist). ${densityLabel}: ` +
-    `${crashes.crashesPerSquareMile}/sq mi/yr.${mergeNote}${backstopGapNote}`
+    `${crashes.crashesPerSquareMile}/sq mi/yr.${unclassifiedNote}${mergeNote}${backstopGapNote}`
   );
 }

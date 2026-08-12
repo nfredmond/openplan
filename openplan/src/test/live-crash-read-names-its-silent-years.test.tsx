@@ -88,6 +88,11 @@ function record(year: number, id: string): CrashRecord {
     injuredCount: 0,
     pedestrianInvolved: false,
     bicyclistInvolved: false,
+    motorcyclistInvolved: false,
+    collisionType: "rear_end",
+    lighting: "daylight",
+    weather: "clear",
+    sourceAttributes: {},
     latitude: 30.3,
     longitude: -97.2,
   };

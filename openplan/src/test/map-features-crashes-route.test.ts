@@ -51,7 +51,10 @@ const crashLimitMock = vi.fn();
 const crashOrderIdMock = vi.fn(() => ({ limit: crashLimitMock }));
 const crashOrderDateMock = vi.fn(() => ({ order: crashOrderIdMock }));
 const crashEqMock = vi.fn(() => ({ order: crashOrderDateMock }));
-const crashSelectMock = vi.fn(() => ({ eq: crashEqMock }));
+// Typed to receive its arguments for the same reason `ingestSelectMock` below
+// is: the crash projection is a STRING the tests have to read, because an
+// untyped Supabase client turns a missing column into a runtime `undefined`.
+const crashSelectMock = vi.fn((..._args: unknown[]) => ({ eq: crashEqMock }));
 
 const ingestLimitMock = vi.fn();
 const ingestOrderMock = vi.fn(() => ({ limit: ingestLimitMock }));
@@ -91,6 +94,8 @@ vi.mock("@/lib/workspaces/current", async () => {
 
 import { GET as getCrashes } from "@/app/api/map-features/crashes/route";
 import { MAP_FEATURE_LAYER_LIMIT } from "@/lib/cartographic/layer-disclosure";
+import { CRASH_QUERY_PROJECTION } from "@/lib/safety/crash-filters";
+import { CRASH_DIMENSIONS, CRASH_DIMENSION_SPECS } from "@/lib/safety/vocabulary";
 
 type CrashPayload = {
   type: string;
@@ -235,6 +240,14 @@ describe("GET /api/map-features/crashes", () => {
       injuredCount: 0,
       pedestrianInvolved: true,
       bicyclistInvolved: false,
+      // Absent from this fixture row, and therefore NULL on the feature —
+      // "this source does not record the dimension", which the inspector omits
+      // rather than showing as an empty value. Distinct from the string
+      // "unknown", which means the source records it and said nothing here.
+      motorcyclistInvolved: false,
+      collisionType: null,
+      lighting: null,
+      weather: null,
     });
     expect(payload.features[1].geometry.coordinates).toEqual([-121.02, 39.24]);
     expect(payload.features[1].properties).toMatchObject({
@@ -248,6 +261,59 @@ describe("GET /api/map-features/crashes", () => {
     // Scoped to the workspace, and capped like its map-feature siblings.
     expect(crashEqMock).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
     expect(crashLimitMock).toHaveBeenCalledWith(MAP_FEATURE_LAYER_LIMIT);
+  });
+
+  it("never publishes a zero for a casualty count the source did not supply", async () => {
+    // THE DEFECT THIS PINS. Both counts used to go through an integer coercion
+    // that returned 0 for anything unreadable, so a collision the source
+    // reported without any casualty count was published to the shared map as
+    // "0 killed, 0 injured" and inspected as a crash where nobody was hurt.
+    // Measured against one state's live 2025 file: 4.7% of records statewide,
+    // 9.5% in one rural county. A count that could not be read is not zero.
+    asMember();
+    crashLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: CRASH_A,
+          severity: "unknown",
+          collision_date: "2025-02-02",
+          collision_year: 2025,
+          killed_count: null,
+          injured_count: null,
+          pedestrian_involved: false,
+          bicyclist_involved: false,
+          latitude: 39.22,
+          longitude: -121.06,
+          safety_crash_ingests: { project_id: null },
+        },
+        {
+          // A negative count is a data error in the feed (observed in the wild
+          // as '-1'). Clamping it to zero would turn "this row is wrong" into
+          // "nobody died".
+          id: CRASH_B,
+          severity: "unknown",
+          collision_date: "2025-02-03",
+          collision_year: 2025,
+          killed_count: "-1",
+          injured_count: null,
+          pedestrian_involved: false,
+          bicyclist_involved: false,
+          latitude: 39.24,
+          longitude: -121.02,
+          safety_crash_ingests: { project_id: null },
+        },
+      ],
+      error: null,
+      count: 2,
+    });
+    ingestLimitMock.mockResolvedValue({ data: [READY_INGEST], error: null, count: 1 });
+
+    const payload = (await (await getCrashes(bareRequest())).json()) as CrashPayload;
+    expect(payload.features).toHaveLength(2);
+    for (const feature of payload.features) {
+      expect(feature.properties.killedCount).toBeNull();
+      expect(feature.properties.injuredCount).toBeNull();
+    }
   });
 
   /**
@@ -356,6 +422,52 @@ describe("GET /api/map-features/crashes", () => {
         expect(selected, `ingest select is missing ${column}`).toContain(column);
       }
     });
+  });
+
+  /**
+   * THE THIRD READER THAT USED TO EXIST HERE.
+   *
+   * This route hand-wrote its own crash column list, which made it a third
+   * spelling of names the workbench query and the export CSV both GENERATE from
+   * `src/lib/safety/vocabulary.ts`. The consequence was silent and one-directional:
+   * a seventh dimension added to the vocabulary reached the filter panel, the
+   * Safety query and the export automatically, and would never have reached the
+   * shared map backdrop — the layer every other module draws crashes on. The
+   * facet would have been filterable everywhere and blank in the inspector.
+   *
+   * Asserted against the vocabulary rather than against a copied list, so this
+   * test does not need editing when a dimension is added: it is the mechanism
+   * that makes the new column arrive here. It reads the `.select()` STRING for
+   * the reason stated above — the Supabase client is untyped by decision, so a
+   * missing column is a runtime `undefined`, never a compile error.
+   */
+  it("projects every crash-table dimension the vocabulary declares, generated not copied", async () => {
+    asMember();
+    await getCrashes(bareRequest());
+
+    const selected = String(crashSelectMock.mock.calls[0]?.[0] ?? "");
+    const projected = selected.split(",").map((part) => part.trim());
+
+    const crashDimensionColumns = CRASH_DIMENSIONS.filter(
+      (dimension) => CRASH_DIMENSION_SPECS[dimension].table === "crash"
+    ).map((dimension) => CRASH_DIMENSION_SPECS[dimension].column);
+    // The fixture must actually have something to check, or a vocabulary that
+    // lost every crash-level dimension would pass this vacuously.
+    expect(crashDimensionColumns.length).toBeGreaterThanOrEqual(4);
+
+    for (const column of crashDimensionColumns) {
+      expect(projected, `crash select is missing the ${column} dimension`).toContain(column);
+    }
+
+    // The whole generated projection, not a subset of it: the counts, the
+    // coordinates and the involvement booleans travel by the same mechanism.
+    for (const column of CRASH_QUERY_PROJECTION.split(",")) {
+      expect(projected, `crash select is missing ${column}`).toContain(column.trim());
+    }
+
+    // And the one thing this route adds by composition — the acquisition embed
+    // that attributes a crash to the project it was gathered for.
+    expect(selected).toContain("safety_crash_ingests!inner(project_id)");
   });
 
   /**

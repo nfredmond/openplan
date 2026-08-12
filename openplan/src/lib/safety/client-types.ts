@@ -14,10 +14,35 @@ export type SafetyCrashProperties = {
   collisionDate: string | null;
   collisionYear: number | null;
   severity: CrashSeverity;
-  killedCount: number;
-  injuredCount: number;
+  /**
+   * NULLABLE, all the way to the screen. A source that supplied no casualty
+   * count has not told us that nobody was hurt, and a `0` in this slot is that
+   * claim being made on its behalf. Renderers must say "not reported" — see
+   * `SEVERITY_LABELS.unknown` for the band that goes with it.
+   */
+  killedCount: number | null;
+  injuredCount: number | null;
   pedestrianInvolved: boolean;
   bicyclistInvolved: boolean;
+  /**
+   * The third vulnerable-road-user flag. Motorcyclists were invisible at every
+   * layer of this product while one state's 2025 file alone carries 12,513
+   * collisions involving a motorcycle.
+   */
+  motorcyclistInvolved: boolean;
+  /**
+   * The neutral dimensions, or NULL when the SOURCE does not record the
+   * dimension at all.
+   *
+   * READ THE DIFFERENCE CAREFULLY, because the two states must never render the
+   * same. `"unknown"` means the source records lighting and supplied none for
+   * this crash. `null` means the source has no lighting field — a fact about the
+   * feed, disclosed once per acquisition in `dimensionCoverage`, and the reason
+   * the filter panel disables a facet instead of returning an empty list.
+   */
+  collisionType: string | null;
+  lighting: string | null;
+  weather: string | null;
 };
 
 export type SafetyCrashFeature = GeoJSON.Feature<GeoJSON.Point, SafetyCrashProperties>;
@@ -30,7 +55,17 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   returnedCount: number;
   /** How many crashes matched the filters in the database. */
   matchedCount: number;
-  /** True when returnedCount < matchedCount — the map is showing a subset. */
+  /**
+   * Matched rows the response could not render honestly — an unusable
+   * coordinate pair or a severity outside the vocabulary.
+   *
+   * Reported rather than swallowed. Without it, `returnedCount` silently drops
+   * below `matchedCount` and the UI reports truncation, sending a planner to
+   * look for records that are in the table and undrawable rather than beyond a
+   * cap.
+   */
+  undrawableCount: number;
+  /** True when the map is showing a subset because of the cap. */
   truncated: boolean;
   limit: number;
 };
@@ -60,6 +95,22 @@ export type SafetyIngestSummary = {
    * true rather than implying the fuller one.
    */
   checkedSourceLabels?: string[];
+  /**
+   * `safety_crash_ingests.dimension_coverage` — per-dimension source capability.
+   *
+   * Deliberately typed as `unknown` rather than as a record: it arrives from
+   * PostgREST as untyped JSONB (this codebase has no generated Supabase types,
+   * by decision), so the only honest thing a consumer can do is read it through
+   * `facetAvailability`, which yields `"unknown"` for anything it cannot parse
+   * instead of assuming the source supplied the dimension.
+   */
+  dimensionCoverage?: unknown;
+  /** Whether person-level rows were retrieved for this acquisition. */
+  partyCompleteness?: string;
+  /** People stored, or null when they were not retrieved. Never 0-for-unknown. */
+  partyCount?: number | null;
+  /** `party_rows` or `crash_flags` — which basis the involvement flags rest on. */
+  involvementBasis?: string | null;
 };
 
 /**
@@ -90,6 +141,13 @@ export type SafetyLiveCrashRead = {
   /** The crash points themselves. They exist nowhere else. */
   collection: SafetyCrashCollection;
   retrievedAt: string;
+  /**
+   * The same per-dimension capability an acquisition records, for the source
+   * this read came from. A live read stores nothing, but the SAME filter panel
+   * renders both lanes — so if this were absent the panel would offer facets a
+   * fatality census cannot answer and present the empty result as a finding.
+   */
+  dimensionCoverage?: unknown;
 };
 
 /** A workspace project offered on the ingest launcher's attach selector. */
@@ -122,6 +180,14 @@ export const SEVERITY_LABELS: Record<CrashSeverity, string> = {
   severe_injury: "Serious injury",
   injury: "Injury",
   pdo: "Property damage only",
+  /**
+   * NOT "unknown severity" and emphatically not blank. These are collisions the
+   * source reported while supplying no casualty count at all — 4.7% of one
+   * state's 2025 records, 9.5% in one rural county of it. They used to be stored
+   * as property-damage-only, because a missing count parsed to zero. The label
+   * has to say that the classification is missing, not that the outcome was mild.
+   */
+  unknown: "Not classified — no casualty count reported",
 };
 
 /**

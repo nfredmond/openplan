@@ -38,6 +38,11 @@ function record(overrides: Partial<CrashRecord> = {}): CrashRecord {
     injuredCount: 0,
     pedestrianInvolved: false,
     bicyclistInvolved: false,
+    motorcyclistInvolved: false,
+    collisionType: "rear_end",
+    lighting: "daylight",
+    weather: "clear",
+    sourceAttributes: {},
     latitude: 0,
     longitude: 0,
     ...overrides,
@@ -64,9 +69,20 @@ function fakeService() {
         };
       }
       return {
-        upsert: async (rows: unknown[]) => {
+        // The crash upsert now reads its ids back from the WRITE, so the fake
+        // has to answer `.select()` — and it answers with a row per input, keyed
+        // on the same external id, because a fake that returned nothing would
+        // make every person row look unattachable and quietly pass.
+        upsert: (rows: unknown[]) => {
           upserts.push(rows);
-          return { error: null };
+          const written = (rows as Array<Record<string, unknown>>).map((row, index) => ({
+            id: `crash-${index}`,
+            external_id: row.external_id,
+          }));
+          return {
+            select: async () => ({ data: written, error: null }),
+            then: (resolve: (value: { error: null }) => unknown) => resolve({ error: null }),
+          };
         },
       };
     },

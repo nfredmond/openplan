@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,12 @@ import {
   type RtpEvidenceRunDisclosure,
   type RtpModelingEvidence,
 } from "@/lib/rtp/modeling-evidence";
+import {
+  formatRtpSafetyEvidenceLine,
+  RTP_SAFETY_EVIDENCE_INFORMS_ONLY,
+  RTP_SAFETY_NO_ACQUISITION_LINE,
+  type RtpSafetyEvidence,
+} from "@/lib/rtp/safety-evidence";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 function serialize(scores: RtpPriorityScores): string {
@@ -48,6 +55,7 @@ export function RtpPriorityScoreEditor({
   initialEvidenceRunId,
   modelingEvidence,
   evidenceRunDisclosure,
+  safetyEvidence,
   criteria,
 }: {
   projectId: string;
@@ -65,6 +73,15 @@ export function RtpPriorityScoreEditor({
   modelingEvidence: RtpModelingEvidence | null;
   /** Engine + status + claim tier of the currently linked run. Disclosure only — a warning never blocks or unlinks a citation. */
   evidenceRunDisclosure: RtpEvidenceRunDisclosure | null;
+  /**
+   * Observed collisions from the project's newest ready crash acquisition, or
+   * null when none is linked. Rendered beside the safety criterion; it informs
+   * the rating and never sets it (`src/lib/rtp/safety-evidence.ts`).
+   *
+   * Per PROJECT, not per RTP link: a project's crash record does not change
+   * because it appears in a second plan cycle.
+   */
+  safetyEvidence: RtpSafetyEvidence | null;
   /**
    * The criteria with the policy bases this workspace's jurisdiction may cite.
    * Passed in rather than imported: importing the taxonomy directly is what let
@@ -252,6 +269,45 @@ export function RtpPriorityScoreEditor({
                     {criterion.description}
                     {criterion.policyBasis ? <span className="italic"> ({criterion.policyBasis})</span> : null}
                   </p>
+                  {/*
+                    `criterion.evidence` decides what appears here. Until this
+                    block existed the field was declared on every criterion and
+                    read by nothing — the modeling evidence was rendered above by
+                    a hard-coded block, so adding an evidence kind changed no
+                    screen. Driving the render off the marker is what makes the
+                    safety seam live and the next one cheap.
+                  */}
+                  {criterion.evidence === "safety_crashes" ? (
+                    <div className="mt-1.5 rounded border border-border/60 bg-muted/20 px-2 py-1.5">
+                      {safetyEvidence ? (
+                        <>
+                          <p className="text-[0.7rem] text-foreground">
+                            {formatRtpSafetyEvidenceLine(safetyEvidence)}
+                          </p>
+                          <p className="mt-1 text-[0.7rem] text-muted-foreground">
+                            {safetyEvidence.citationText}
+                          </p>
+                          {safetyEvidence.warnings.map((warning) => (
+                            <p key={warning} className="mt-1 text-[0.7rem] text-muted-foreground">
+                              {warning}
+                            </p>
+                          ))}
+                        </>
+                      ) : (
+                        // NOT a blank, and not "no crashes". A project nobody has
+                        // retrieved crash data for is a project nobody has looked at.
+                        <p className="text-[0.7rem] text-muted-foreground">
+                          {RTP_SAFETY_NO_ACQUISITION_LINE}{" "}
+                          <Link href="/safety" className="underline underline-offset-2">
+                            Retrieve crash data
+                          </Link>
+                        </p>
+                      )}
+                      <p className="mt-1 text-[0.7rem] italic text-muted-foreground">
+                        {RTP_SAFETY_EVIDENCE_INFORMS_ONLY}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
                 <select
                   aria-label={`Rate: ${criterion.label}`}
