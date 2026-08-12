@@ -147,6 +147,17 @@ export type VerifyExtractionResult = {
  * Symmetry is what keeps this safe. Because the same function runs on both
  * sides, nothing it does can admit a quote whose characters are not in the
  * passage — it can only forgive how they were spaced.
+ *
+ * WHAT IT DELIBERATELY DOES NOT FORGIVE, so the next reader does not file it as
+ * a bug: unicode dashes. NFKC leaves an en-dash, em-dash and minus sign as
+ * themselves, so a model that retypes the plan's "2025–2050" with a plain
+ * hyphen produces a quote that is not found in the passage, and the candidate
+ * is discarded. That is an over-refusal, and it is the safe direction: folding
+ * dashes together would mean the stored quote no longer appears in the stored
+ * passage character for character, which is the one property that lets a
+ * planner check a `quote_verified` claim by eye. A dropped candidate costs a
+ * re-extraction; a quote that cannot be found in the page it cites costs the
+ * credibility of every other one.
  */
 export function normalizeForQuoteMatch(text: string): string {
   return text.normalize("NFKC").replace(/\s+/g, " ").trim();

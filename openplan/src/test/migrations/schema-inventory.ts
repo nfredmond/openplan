@@ -54,6 +54,16 @@ export type SchemaInventory = {
   rlsEnabled(table: string): boolean;
   /** Tables carrying a foreign key into `parent`. */
   childrenOf(parent: string): string[];
+  /**
+   * The migration that first created this table, or undefined for a view or an
+   * unknown relation.
+   *
+   * Birth order is not trivia: a table's privileges at creation depend on the
+   * default privileges in force at that moment, and a schema-wide GRANT issued
+   * before a table existed never touched it. A guard that cannot tell when a
+   * table was born will credit it with grants it never received.
+   */
+  createdIn(table: string): string | undefined;
 };
 
 function bare(name: string): string {
@@ -64,6 +74,8 @@ export function loadSchemaInventory(options: { dir?: string } = {}): SchemaInven
   const dir = options.dir ?? MIGRATIONS_DIR;
 
   const tableColumns = new Map<string, Set<string>>();
+  /** First migration to CREATE TABLE each name. A re-`CREATE … IF NOT EXISTS` never moves it. */
+  const createdIn = new Map<string, string>();
   const viewNames = new Set<string>();
   const rlsTables = new Set<string>();
   const parents = new Map<string, Set<string>>();
@@ -88,6 +100,8 @@ export function loadSchemaInventory(options: { dir?: string } = {}): SchemaInven
       const open = (match.index ?? 0) + match[0].length - 1;
       const afterClose = matchingParen(sql, open);
       if (afterClose === -1) continue;
+
+      if (!createdIn.has(table)) createdIn.set(table, file);
 
       const body = sql.slice(open + 1, afterClose - 1);
       const columns = tableColumns.get(table) ?? new Set<string>();
@@ -156,5 +170,6 @@ export function loadSchemaInventory(options: { dir?: string } = {}): SchemaInven
     hasColumn: (relation, column) => columnsOf(relation)?.has(column.toLowerCase()) ?? false,
     rlsEnabled: (table) => rlsTables.has(bare(table)),
     childrenOf: (parent) => [...(parents.get(bare(parent)) ?? new Set<string>())].sort(),
+    createdIn: (table) => createdIn.get(bare(table)),
   };
 }

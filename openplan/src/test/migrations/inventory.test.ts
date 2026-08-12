@@ -9,6 +9,7 @@ import {
   classifyWorkspaceScope,
   isWriteCommand,
   loadPolicyInventory,
+  parsePolicyRoles,
   type PolicyStatement,
 } from "./policy-inventory";
 import { loadSchemaInventory } from "./schema-inventory";
@@ -443,6 +444,27 @@ describe("migration policy inventory", () => {
     expect(insert).toHaveLength(1);
     expect(classifyRoleAwareness(insert[0]).kind).toBe("matched");
   });
+
+  /**
+   * Who a policy is addressed to — the half of an access decision that has to
+   * agree with the GRANT. Every policy in the repo omits `TO`, which is
+   * `TO PUBLIC`, so the interesting cases are the ones the corpus does not have
+   * yet and the residue that refuses to guess.
+   */
+  it("reads a policy's audience, and refuses to guess at one it cannot parse", () => {
+    const roles = (body: string) => parsePolicyRoles("fixture.sql", "p", body);
+
+    expect(roles(" FOR SELECT USING (true)")).toEqual(["public"]);
+    expect(roles(" AS RESTRICTIVE FOR UPDATE USING (true) WITH CHECK (true)")).toEqual(["public"]);
+    expect(roles(" FOR SELECT TO anon USING (true)")).toEqual(["anon"]);
+    expect(roles(' FOR ALL TO anon, "authenticated" USING (true)')).toEqual(["anon", "authenticated"]);
+    // No USING at all is legal SQL (`FOR INSERT WITH CHECK`), and TO may sit last.
+    expect(roles(" FOR INSERT TO authenticated WITH CHECK (true)")).toEqual(["authenticated"]);
+
+    // A clause the head grammar does not contain must throw. Reporting
+    // "addressed to PUBLIC" instead would silently satisfy every caller.
+    expect(() => roles(" FOR SELECT AS SOMETHING_NEW USING (true)")).toThrow(/cannot read/i);
+  });
 });
 
 describe("policy classifiers", () => {
@@ -454,6 +476,7 @@ describe("policy classifiers", () => {
     table: "t",
     command: "INSERT",
     kind: "PERMISSIVE",
+    roles: ["public"],
     body,
   });
 

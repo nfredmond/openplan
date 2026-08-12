@@ -52,6 +52,16 @@ export type PolicyStatement = {
   table: string;
   command: PolicyCommand;
   kind: PolicyKind;
+  /**
+   * The roles the policy is addressed to, lowercased. `["public"]` when the
+   * statement has no `TO` clause, which is Postgres's default and means every
+   * role — that is every policy in this repo today.
+   *
+   * It matters because a policy is only half of an access decision: the other
+   * half is the GRANT, and the two are checked against the SAME role. A policy
+   * addressed to a role that holds no privilege is a door with no handle.
+   */
+  roles: readonly string[];
   /** Everything after the table name — the AS/FOR/USING/WITH CHECK clauses. */
   body: string;
 };
@@ -72,6 +82,44 @@ const CREATE_POLICY =
 
 const DROP_POLICY =
   /DROP\s+POLICY\s+(?:IF\s+EXISTS\s+)?"?([A-Za-z0-9_]+)"?\s+ON\s+(?:([A-Za-z0-9_]+)\.)?"?([A-Za-z0-9_]+)"?/gi;
+
+/**
+ * The roles a `CREATE POLICY` addresses, read out of the clauses between the
+ * table name and the first `USING` / `WITH CHECK`.
+ *
+ * That head is a closed grammar — `[AS PERMISSIVE|RESTRICTIVE] [FOR cmd]
+ * [TO roles]` — so anything left over after removing those three is something
+ * this parser does not understand, and it throws. The alternative is the silent
+ * shrink this module tree exists to prevent: a head it misreads would report
+ * `["public"]`, i.e. "addressed to everyone", which is the answer that makes
+ * every downstream check pass.
+ */
+export function parsePolicyRoles(file: string, policy: string, body: string): readonly string[] {
+  const head = body.split(/\bUSING\b|\bWITH\s+CHECK\b/i)[0];
+
+  const roleClause = head.match(/\bTO\s+([A-Za-z0-9_",\s]+)$/i);
+  const residue = head
+    .replace(/\bAS\s+(?:PERMISSIVE|RESTRICTIVE)\b/i, " ")
+    .replace(/\bFOR\s+(?:INSERT|UPDATE|DELETE|SELECT|ALL)\b/i, " ")
+    .replace(/\bTO\s+[A-Za-z0-9_",\s]+$/i, " ")
+    .trim();
+
+  if (residue) {
+    throw new Error(
+      `${file}: policy "${policy}" has a clause this parser cannot read before its USING/WITH CHECK: ` +
+        `"${residue.slice(0, 120)}".\nTeach parsePolicyRoles in src/test/migrations/policy-inventory.ts. ` +
+        "Guessing would report the policy as addressed to PUBLIC, which silently satisfies every " +
+        "check built on it."
+    );
+  }
+
+  if (!roleClause) return ["public"];
+
+  return roleClause[1]
+    .split(",")
+    .map((role) => role.trim().replace(/"/g, "").toLowerCase())
+    .filter(Boolean);
+}
 
 function parseCreates(
   file: string,
@@ -104,6 +152,7 @@ function parseCreates(
         table,
         command: command as PolicyCommand,
         kind: /\bAS\s+RESTRICTIVE\b/i.test(rest) ? "RESTRICTIVE" : "PERMISSIVE",
+        roles: parsePolicyRoles(file, policy, rest),
         body: rest,
       },
     });

@@ -19,13 +19,27 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**Three migrations are required before the app deploys: `20260811000008`,
-`20260811000009`, and `20260811000010`.** The first two create the staging
-tables that hold what OpenPlan copied out of a plan document and add one
-nullable column to four RTP tables recording which transcription a figure came
-from. The third widens the document library to accept text recognised from
-scans and adds the OCR job tables. All additive and safe against a live
-database.
+**Four migrations are required before the app deploys: `20260811000008`,
+`20260811000009`, `20260811000010`, and `20260811000011`.** The first two create
+the staging tables that hold what OpenPlan copied out of a plan document and add
+one nullable column to four RTP tables recording which transcription a figure
+came from. The third widens the document library to accept text recognised from
+scans and adds the OCR job tables. The fourth is a fix — see below. All additive
+and safe against a live database.
+
+### Fixed: the My Work notification inbox was unreadable on 0.14.0
+
+If you are running 0.14.0, opening **My Work** shows an error where the deadline
+reminders should be, and marking one read does nothing. The reminders were
+being created correctly by the nightly deadline sweep; the table they live in
+was created without the database permission a signed-in person needs to read
+it, so the app was refused before its own access rules were ever consulted.
+
+`20260811000011` grants exactly that permission — read, and mark-read, and
+nothing else. Reminders stay something only the daily sweep can create and only
+you can mark read; nobody, including you, can delete one. No data was lost and
+nothing needs re-running: the reminders were there the whole time and appear as
+soon as the migration is applied.
 
 **Optional new settings.** `OPENPLAN_RTP_EXTRACTION_MODEL` chooses the model
 that reads plan documents (unset uses the strong default — see `.env.example`

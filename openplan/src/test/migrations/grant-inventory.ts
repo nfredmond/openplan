@@ -44,6 +44,42 @@ import { loadSchemaInventory } from "./schema-inventory";
  *     residue on ~110 never-revoked tables is a much larger change with its own
  *     blast radius; see `20260805000005`'s header, where that is recorded as a
  *     decision rather than an oversight.
+ *
+ * ---------------------------------------------------------------------------
+ * A SECOND QUESTION, ADDED 2026-08-11: what does a client role HOLD at HEAD?
+ *
+ * The denial invariant above only ever looks at triples some migration revoked.
+ * A table that revoked nothing has no denial, so nothing here could see
+ * `work_notifications` ship in v0.14.0 with RLS, two permissive policies and no
+ * GRANT at all — a locked door that reported `permission denied for table
+ * work_notifications` to every signed-in planner who opened their inbox.
+ *
+ * Answering "is this privilege held" needs one thing the denial replay did not:
+ * the privileges a table is born with. Two rules, both read out of the corpus
+ * rather than assumed:
+ *
+ *   1. DEFAULT PRIVILEGES AT BIRTH. Supabase's bootstrap grants full DML on
+ *      every new table in `public` to `anon` and `authenticated`; `20260804000001`
+ *      revoked that default, so tables created from that migration onward are
+ *      born with nothing. `ALTER DEFAULT PRIVILEGES … ON TABLES` statements are
+ *      parsed in file order and applied to the tables created after them, so the
+ *      boundary is derived, never a hardcoded filename.
+ *   2. A BLANKET GRANT CANNOT REACH A TABLE THAT DID NOT EXIST YET.
+ *      `20260804000002` loops `pg_tables`; the expander renders that against
+ *      every table in the corpus, INCLUDING tables created months later. Left
+ *      uncorrected, every post-2026-08-04 table would look fully granted and the
+ *      locked-door guard would be vacuous on exactly the tables it exists for.
+ *
+ * Both refinements are invisible to `denials()` by construction: a birth grant
+ * precedes every statement in its own creation migration, and any REVOKE wipes
+ * it, so no denial's `heldBy` can be a birth grant or a pre-birth blanket.
+ *
+ * One deliberate imprecision, harmless and recorded: the birth set is modelled
+ * as the OLD bootstrap's full DML. Newer Supabase CLIs bootstrap `Dxtm` only and
+ * `20260804000002` grants the four DML privileges back by loop, so the two paths
+ * agree on SELECT/INSERT/UPDATE/DELETE — the only privileges an RLS policy can
+ * ever be about — and differ only on TRUNCATE/REFERENCES/TRIGGER for tables born
+ * before that migration.
  */
 
 /** The roles a browser or an anonymous visitor can ever be acting as. */
@@ -78,12 +114,28 @@ export type GrantEvent = {
    * over the schema, and so says nothing about this table in particular.
    */
   reach: "named" | "blanket";
+  /**
+   * `statement` — a GRANT/REVOKE somebody wrote.
+   * `default-privileges` — no statement at all: the privileges the table was
+   * born holding, under the default privileges in force at its creation.
+   */
+  origin: "statement" | "default-privileges";
   table: string;
   role: ClientRole;
   privilege: TablePrivilege;
   /** Non-empty when the statement is column-scoped, which never confers the table privilege. */
   columns: readonly string[];
 };
+
+/**
+ * Whether a client role can reach a table's rows at all for one command.
+ *
+ * `column` is a real and deliberate answer, not a near-miss:
+ * `document_narrative_drafts` grants members UPDATE on exactly four columns, so
+ * its permissive UPDATE policy is reachable even though the table-level
+ * privilege is correctly absent.
+ */
+export type PrivilegeHold = "table" | "column" | "none";
 
 export type Denial = {
   table: string;
@@ -123,6 +175,10 @@ export type GrantInventory = {
   columnGrants(): readonly ColumnGrant[];
   /** Tables named by at least one revoke. */
   revokedTables(): readonly string[];
+  /** Whether `role` can exercise `privilege` on `table` at HEAD, and how. */
+  holds(table: string, role: ClientRole, privilege: TablePrivilege): PrivilegeHold;
+  /** The statement (or birth) responsible for a table-level hold, or null. */
+  heldBy(table: string, role: ClientRole, privilege: TablePrivilege): GrantEvent | null;
 };
 
 const NON_TABLE_OBJECTS =
@@ -309,9 +365,119 @@ function withoutLeadingSpace(sql: string, start: number, end: number): { text: s
 
 const keyOf = (table: string, role: ClientRole, privilege: TablePrivilege) => `${table}|${role}|${privilege}`;
 
+/**
+ * `ALTER DEFAULT PRIVILEGES [FOR ROLE r] [IN SCHEMA s] GRANT|REVOKE … ON TABLES TO|FROM …`
+ *
+ * Only the `postgres` role in `public` is modelled, because that is the role
+ * every CLI-applied migration and every Studio statement creates tables as —
+ * `20260804000001`'s header says so and gives the reason. A statement `FOR ROLE
+ * supabase_admin` governs objects the application never creates.
+ */
+const DEFAULT_PRIVILEGES_ON_TABLES =
+  /ALTER\s+DEFAULT\s+PRIVILEGES\s+(?:FOR\s+(?:ROLE|USER)\s+([A-Za-z0-9_"]+)\s+)?(?:IN\s+SCHEMA\s+([A-Za-z0-9_"]+)\s+)?(GRANT|REVOKE)\s+([\s\S]*?)\s+ON\s+TABLES\s+(?:TO|FROM)\s+([\s\S]*?);/gi;
+
+type BirthPrivileges = ReadonlyMap<ClientRole, ReadonlySet<TablePrivilege>>;
+
+function snapshot(state: Map<ClientRole, Set<TablePrivilege>>): BirthPrivileges {
+  return new Map([...state].map(([role, privileges]) => [role, new Set(privileges)]));
+}
+
+/**
+ * The privileges a table created by each migration is born holding, per client role.
+ *
+ * Index i answers for tables created by `files[i]`. The state advances only
+ * BETWEEN files, so a migration that both flips the defaults and creates a table
+ * would be modelled a file too late — which is why that combination throws
+ * rather than being quietly rounded off.
+ */
+function birthPrivilegesByFile(
+  files: readonly string[],
+  dir: string,
+  createdInFile: ReadonlySet<string>
+): BirthPrivileges[] {
+  // Supabase's bootstrap: every table `postgres` creates in `public` is granted
+  // full DML to anon and authenticated. PUBLIC is granted nothing on tables by
+  // any Postgres default, which is why it starts empty.
+  const state = new Map<ClientRole, Set<TablePrivilege>>([
+    ["anon", new Set(TABLE_PRIVILEGES)],
+    ["authenticated", new Set(TABLE_PRIVILEGES)],
+    ["public", new Set()],
+  ]);
+
+  return files.map((file) => {
+    const atCreation = snapshot(state);
+    const sql = blankComments(readMigration(file, dir));
+    let flips = 0;
+
+    for (const match of sql.matchAll(DEFAULT_PRIVILEGES_ON_TABLES)) {
+      const [, forRole, inSchema, verb, privilegeText, roleText] = match;
+      if (forRole && forRole.replace(/"/g, "").toLowerCase() !== "postgres") continue;
+      if (inSchema && inSchema.replace(/"/g, "").toLowerCase() !== "public") continue;
+
+      const roles = splitTopLevel(roleText, ",")
+        .map((role) => role.trim().replace(/"/g, "").toLowerCase())
+        .filter((role): role is ClientRole => (CLIENT_ROLES as readonly string[]).includes(role));
+      if (!roles.length) continue;
+
+      const privileges = /^\s*ALL\b/i.test(privilegeText)
+        ? [...TABLE_PRIVILEGES]
+        : splitTopLevel(privilegeText, ",")
+            .map((part) => part.trim().toUpperCase())
+            .filter((part): part is TablePrivilege => (TABLE_PRIVILEGES as readonly string[]).includes(part));
+
+      if (!privileges.length) {
+        throw new Error(
+          `grant-inventory could not read the default privileges in ${file}: "${match[0].trim().slice(0, 160)}".\n` +
+            "Teach birthPrivilegesByFile the new spelling. A default-privilege change it cannot read makes " +
+            "every table created afterwards look more granted than it is."
+        );
+      }
+
+      flips += 1;
+      for (const role of roles) {
+        const held = state.get(role) ?? new Set<TablePrivilege>();
+        privileges.forEach((privilege) =>
+          verb.toUpperCase() === "GRANT" ? held.add(privilege) : held.delete(privilege)
+        );
+        state.set(role, held);
+      }
+    }
+
+    if (flips && createdInFile.has(file)) {
+      throw new Error(
+        `${file} both changes ALTER DEFAULT PRIVILEGES for a client role and creates a table. ` +
+          "grant-inventory models the default-privilege state per FILE, so it cannot say whether that " +
+          "table was born before or after the flip. Split the two into separate migrations."
+      );
+    }
+
+    return atCreation;
+  });
+}
+
 export function loadGrantInventory(options: { dir?: string } = {}): GrantInventory {
   const dir = options.dir ?? MIGRATIONS_DIR;
-  const tables = loadSchemaInventory({ dir }).tables();
+  const schema = loadSchemaInventory({ dir });
+  const tables = schema.tables();
+  const files = migrationFiles(dir);
+
+  const fileIndexOf = new Map(files.map((file, index) => [file, index]));
+  const bornAt = new Map<string, number>();
+  for (const table of tables) {
+    const file = schema.createdIn(table);
+    const index = file === undefined ? undefined : fileIndexOf.get(file);
+    if (index === undefined) {
+      throw new Error(
+        `grant-inventory cannot place the birth of public.${table}: the schema inventory lists it as a ` +
+          "table but names no CREATE TABLE migration for it. Without a birth order every schema-wide " +
+          "GRANT would be credited to it, including ones issued before it existed."
+      );
+    }
+    bornAt.set(table, index);
+  }
+
+  const filesThatCreateTables = new Set([...bornAt.values()].map((index) => files[index]));
+  const birthPrivileges = birthPrivilegesByFile(files, dir, filesThatCreateTables);
 
   type Ordered = { order: readonly [number, number, number, number]; event: GrantEvent };
   const ordered: Ordered[] = [];
@@ -324,18 +490,58 @@ export function loadGrantInventory(options: { dir?: string } = {}): GrantInvento
     tableNames: readonly string[]
   ) => {
     for (const table of tableNames) {
+      // A grant cannot reach a table that did not exist when it ran. Only blanket
+      // reach can produce such a pairing — a by-name grant on a future table is a
+      // migration that fails to apply — so this never silences a real statement.
+      if (parsed.reach === "blanket" && (bornAt.get(table) ?? 0) > order[0]) continue;
+
       for (const role of parsed.roles) {
         for (const { privilege, columns } of parsed.privileges) {
           ordered.push({
             order,
-            event: { file, line, kind: parsed.kind, reach: parsed.reach, table, role, privilege, columns },
+            event: {
+              file,
+              line,
+              kind: parsed.kind,
+              reach: parsed.reach,
+              origin: "statement",
+              table,
+              role,
+              privilege,
+              columns,
+            },
           });
         }
       }
     }
   };
 
-  migrationFiles(dir).forEach((file, fileIndex) => {
+  // The privileges each table is born with, ordered before every statement in
+  // its own creation migration (offset -1) so the replay below sees them first.
+  for (const [table, index] of bornAt) {
+    for (const [role, privileges] of birthPrivileges[index]) {
+      for (const privilege of privileges) {
+        ordered.push({
+          order: [index, -1, 0, 0],
+          event: {
+            file: files[index],
+            line: 0,
+            kind: "grant",
+            // Never `named`: a default privilege is about every new table, so it
+            // can no more re-establish a deliberate denial than a blanket grant can.
+            reach: "blanket",
+            origin: "default-privileges",
+            table,
+            role,
+            privilege,
+            columns: [],
+          },
+        });
+      }
+    }
+  }
+
+  files.forEach((file, fileIndex) => {
     const sql = blankComments(readMigration(file, dir));
 
     for (const statement of topLevelStatements(sql)) {
@@ -476,6 +682,12 @@ export function loadGrantInventory(options: { dir?: string } = {}): GrantInvento
     violations: () => denials.filter((denial) => denial.violation),
     columnGrants: () => columnGrants,
     revokedTables: () => revokedTables,
+    holds: (table, role, privilege) => {
+      const key = keyOf(bareTable(table), role, privilege);
+      if (held.has(key)) return "table";
+      return (heldColumns.get(key)?.size ?? 0) > 0 ? "column" : "none";
+    },
+    heldBy: (table, role, privilege) => held.get(keyOf(bareTable(table), role, privilege)) ?? null,
   };
 }
 

@@ -1,0 +1,70 @@
+-- The grants `20260811000007` forgot — the notification inbox was a locked door.
+--
+-- WHAT SHIPPED BROKEN. `work_notifications` went out in v0.14.0 with RLS
+-- enabled, two permissive policies (`work_notifications_read` for SELECT,
+-- `work_notifications_update` for mark-read) and three restrictive writer
+-- gates — and not one GRANT statement. Since `20260804000001` flipped default
+-- privileges to deny for `anon` and `authenticated`, a table created after it
+-- is born with NO client privileges at all; its own header promised
+-- "Forgetting the grant fails LOUD (permission denied on first use in dev)".
+-- It did fail loud, at the only place nobody was looking: a real browser.
+--
+-- THE LIVE SYMPTOM, confirmed against the local stack on 2026-08-11 before
+-- this migration was written:
+--
+--   SELECT grantee, privilege_type FROM information_schema.role_table_grants
+--    WHERE table_name = 'work_notifications';
+--   -- postgres and service_role only. `authenticated` held nothing.
+--
+-- So the daily sweep (service role) wrote reminders correctly, and every
+-- signed-in planner who opened /my-work got `permission denied for table
+-- work_notifications` instead of their inbox. RLS was never reached: a GRANT
+-- and a policy are two separate locks and both have to open.
+--
+-- WHY THE TESTS WERE GREEN. The unit suites for the inbox, the mark-read route
+-- and the sweep all run against fakes, which model row filtering and not
+-- privileges. The live RLS suite, which uses a real database, is env-gated and
+-- runs nightly. Nothing that blocks a merge could see it.
+--
+-- WHAT NOW GUARDS IT. `src/test/a-policy-without-a-grant-is-a-locked-door.test.ts`
+-- reads the migration corpus and fails when a table's permissive policy for a
+-- command promises a signed-in user access the privilege system does not
+-- allow. It is a static guard on purpose — `npm run qa:gate` has no database,
+-- and a check that only runs nightly cannot stop this shipping again.
+--
+-- ---------------------------------------------------------------------------
+-- WHAT IS GRANTED, AND WHAT IS DELIBERATELY NOT
+--
+-- SELECT and UPDATE to `authenticated`, and nothing else: those are exactly
+-- the two commands the table's permissive policies allow, so this restores
+-- reachability without widening the audited posture by one privilege.
+--
+-- No INSERT and no DELETE to `authenticated`. That is the v0.14.0 argument,
+-- preserved verbatim from `20260811000007`'s header: "WRITTEN BY THE SERVICE
+-- ROLE ONLY — there is no INSERT policy, following engagement_notifications:
+-- rows are authored by /api/cron/sweep-deadlines, which has no auth.uid().
+-- Members may only flip read state." The subject of a notification may not
+-- mint one and may not destroy one; "you were told about this on the 4th" is
+-- only worth anything if the person told cannot edit the record of it away.
+-- The restrictive `_writer_only_insert` / `_writer_only_delete` gates already
+-- refuse both, and this migration makes the refusal true at the privilege
+-- layer too, where a future permissive policy alone cannot undo it.
+--
+-- `anon` gets nothing. A reminder names a person, a workspace and a due date;
+-- an anon grant would offer all three through PostgREST to anyone holding the
+-- publishable key.
+--
+-- The revoke runs first, and that ordering is not cosmetic: Postgres drops
+-- column privileges along with the table-level ones, so a revoke placed after
+-- a grant destroys it (the trap `20260805000005`'s header documents at
+-- length). It also records the INSERT/DELETE denial in the corpus, so the
+-- grant-composition guard can see a future blanket GRANT widening it.
+--
+-- Idempotent: every statement below re-runs as a no-op.
+-- ---------------------------------------------------------------------------
+
+REVOKE ALL ON TABLE public.work_notifications FROM PUBLIC, anon, authenticated;
+
+GRANT SELECT, UPDATE ON TABLE public.work_notifications TO authenticated;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.work_notifications TO service_role;
