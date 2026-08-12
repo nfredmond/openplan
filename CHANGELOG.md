@@ -19,6 +19,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.15.0 — 2026-08-11
+
 **Four migrations are required before the app deploys: `20260811000008`,
 `20260811000009`, `20260811000010`, and `20260811000011`.** The first two create
 the staging tables that hold what OpenPlan copied out of a plan document and add

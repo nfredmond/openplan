@@ -114,6 +114,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260811000007_work_notifications.sql",
     migrationsAtRelease: 186,
   },
+  // 0.15.0 — reading an adopted plan (transcription with page provenance),
+  // the OCR worker, and the grant fix for 0.14.0's notification inbox.
+  {
+    tag: "0.15.0",
+    lastMigration: "20260811000011_work_notifications_grants.sql",
+    migrationsAtRelease: 190,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
