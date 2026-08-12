@@ -117,7 +117,16 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     label: "Programming Cycles",
     railGroup: "plans",
     icon: "programs",
-    paletteKeywords: "rtip stip funding windows programs",
+    // "local measure" and its neighbours are here because a voter-approved
+    // sales-tax fund lives at /programs/<id>/measure — a CHILD of a program
+    // record, since the measure IS a program (`program_type = 'local_measure'`).
+    // No registry entry can point at it: entries are static prefixes and that
+    // path has an id in the middle. A planner who types "measure" or "sales
+    // tax" into the palette would otherwise get nothing at all, which is the
+    // shipped-invisible defect in its cheapest form.
+    paletteKeywords:
+      "rtip stip funding windows programs local measure sales tax self-help ordinance oversight " +
+      "committee allocation claims",
   },
   {
     href: "/grants",

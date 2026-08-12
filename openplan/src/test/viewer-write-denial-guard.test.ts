@@ -147,7 +147,47 @@ const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // about must not be able to mint or destroy one. The three restrictive gates
 // still cover all three commands, because the command a table does not use
 // today is the one a future route reaches for.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 224;
+//
+// 224 -> 239 (20260812000011): the self-help local measure fund adds six tables
+// and fifteen permissive write policies, EVERY one of them role-aware through
+// `workspace_member_can_write`. The two counts above are untouched for the same
+// reason as the RTP financial tables: a policy that consults the role needs no
+// restrictive partner to supply one, so these six never enter
+// `tablesNeedingGate()`.
+//
+// The distinction is load-bearing here rather than stylistic, and more so than
+// usual. What a viewer could otherwise write is what an ordinance says the
+// money splits into, what the fund received, and the population figure a
+// jurisdiction's share is divided by — three inputs that flow straight onto a
+// public oversight page a citizens' committee reads. Verified by mutation:
+// swapping any of the fifteen to the bare-membership shape puts its table into
+// `tablesNeedingGate()` and fails the first assertion in this file.
+//
+// Fifteen rather than eighteen because three of the six tables are deliberately
+// narrower — no DELETE on `measure_recipients`, no UPDATE on
+// `measure_allocation_rules` or `measure_recipient_basis_values`. The arguments
+// are in that migration's header; each is a record that must not be edited away
+// rather than an omission.
+//
+// 239 -> 247 (20260812000012): claims against the measure fund add three tables
+// and eight permissive write policies, every one role-aware through
+// `workspace_member_can_write`, so none of them enters `tablesNeedingGate()`
+// either.
+//
+// What a viewer could otherwise write here is the sharper end of the same
+// argument: a claim's amount, and — through `measure_claims.status` — whether
+// public money is recorded as having been approved and paid. The DELETE policy
+// on `measure_claims` narrows further still, to `status = 'draft'`, so even a
+// writer cannot erase a submitted claim.
+//
+// 247 -> 249 (20260812000014): `measure_period_off_the_top` adds two permissive
+// write policies, both role-aware through `workspace_member_can_write`, so it
+// never enters `tablesNeedingGate()` either. What a viewer could otherwise
+// write here is what the agency took for administration before a cent reached
+// the ordinance's own purposes — and, through the fiscal-year cap that is
+// evaluated against these rows, how much more it may take. Two rather than
+// three: the table has no UPDATE policy at all.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 249;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

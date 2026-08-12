@@ -100,6 +100,11 @@ import {
   type DrawdownInvoiceLike,
 } from "@/lib/invoicing/drawdown-ledger";
 import { resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
+import {
+  MEASURE_CLAIM_AWAITING_DECISION_STATUSES,
+  MEASURE_CLAIM_STATUSES,
+  MEASURE_CLAIM_SWEEP_COLUMNS,
+} from "@/lib/measures/claims";
 import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 import { isPendingFundingDecision } from "@/lib/operations/funding-decision-status";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
@@ -123,7 +128,8 @@ import { enqueueEmail } from "./engagement";
 
 /**
  * The `kind` vocabulary, matching the CHECK constraint as the migration corpus
- * leaves it — 20260811000007 created six, 20260812000010 added the seventh.
+ * leaves it — 20260811000007 created six, 20260812000010 added the seventh,
+ * 20260812000013 the eighth.
  */
 export const WORK_NOTIFICATION_KINDS = [
   "deliverable_due",
@@ -133,6 +139,7 @@ export const WORK_NOTIFICATION_KINDS = [
   "grant_decision_due",
   "award_obligation_due",
   "award_expenditure_due",
+  "measure_claim_review_due",
 ] as const;
 
 export type WorkNotificationKind = (typeof WORK_NOTIFICATION_KINDS)[number];
@@ -261,12 +268,26 @@ export type SweepSourceContext = {
    * whose whole purpose is a dollar figure must not name the wrong unit.
    */
   awardCurrencyCodes: ReadonlyMap<string, string>;
+  /**
+   * Measure fund id → the currency the ordinance's fund is denominated in.
+   *
+   * `measure_funds.currency_code` is NOT NULL with NO DEFAULT (20260812000011),
+   * deliberately, so the code exists for every fund that exists — which means
+   * an absence here is a FAILED READ and never a fund with no currency. The
+   * claim-review reminder therefore states the amount only when the code is
+   * present, and says the amount could not be read otherwise. It does not fall
+   * back to USD: a reminder about a Canadian county's fund that prints a US
+   * figure is worse than one that prints none, and this architecture may not
+   * assume the US.
+   */
+  measureCurrencyCodes: ReadonlyMap<string, string>;
   unavailable: boolean;
 };
 
 const EMPTY_SWEEP_CONTEXT: SweepSourceContext = {
   awardLedgers: new Map(),
   awardCurrencyCodes: new Map(),
+  measureCurrencyCodes: new Map(),
   unavailable: false,
 };
 
@@ -600,6 +621,7 @@ async function loadAwardDrawdownLedgers(
   const unavailable: SweepSourceContext = {
     awardLedgers: new Map(),
     awardCurrencyCodes: new Map(),
+    measureCurrencyCodes: new Map(),
     unavailable: true,
   };
   const awardIds = [...new Set(rows.map((row) => asString(row.id)).filter((id): id is string => !!id))];
@@ -654,7 +676,12 @@ async function loadAwardDrawdownLedgers(
       if (built.ok) awardLedgers.set(awardId, built.ledger);
     }
 
-    return { awardLedgers, awardCurrencyCodes: await loadAwardCurrencyCodes(client, rows), unavailable: false };
+    return {
+      awardLedgers,
+      awardCurrencyCodes: await loadAwardCurrencyCodes(client, rows),
+      measureCurrencyCodes: new Map(),
+      unavailable: false,
+    };
   } catch {
     return unavailable;
   }
@@ -874,6 +901,202 @@ const invoiceWindowsSource: SweepSource = {
     }),
 };
 
+/* ── the eighth source: a measure claim nobody has answered ─────────────── */
+
+/**
+ * The statuses a claim must NOT be in to be waiting on the agency.
+ *
+ * Derived by SUBTRACTION from the two vocabularies `claims.ts` exports, never
+ * retyped. `staticFilters` can express `notIn` but not `in`, and the obvious
+ * fix — writing out `['draft','approved','paid','denied','withdrawn']` here —
+ * would be a third copy of the lifecycle that goes stale the day a status is
+ * added. Adding one there now automatically excludes it here, which is the safe
+ * direction: a new status the sweep has never heard of should not start
+ * generating reminders on its own.
+ */
+const MEASURE_CLAIM_SETTLED_STATUSES: readonly string[] = MEASURE_CLAIM_STATUSES.filter(
+  (status) => !(MEASURE_CLAIM_AWAITING_DECISION_STATUSES as readonly string[]).includes(status)
+);
+
+/** Whole days between two ISO dates, in UTC. Never negative. */
+function daysWaiting(submittedOn: string, now: Date): number {
+  const submitted = new Date(`${submittedOn}T00:00:00Z`).getTime();
+  if (Number.isNaN(submitted)) return 0;
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.max(0, Math.round((today - submitted) / 86400000));
+}
+
+/**
+ * The sentence in a claim-review reminder. Exported because it is the only
+ * place this lane states an amount, and a sentence reachable only through the
+ * whole sweep is a sentence no fixture ever produces.
+ *
+ * THE AMOUNT IS OMITTED RATHER THAN GUESSED. `measure_funds.currency_code` is
+ * NOT NULL, so a missing code means the second read failed — and a figure with
+ * the wrong unit on it is worse than no figure at all.
+ */
+export function measureClaimWaitingSentence(input: {
+  amount: number | null;
+  currencyCode: string | null;
+  submittedOn: string;
+  waitedDays: number;
+}): string {
+  const when = formatWorkDeadlineDate(input.submittedOn) ?? input.submittedOn;
+  const howLong =
+    input.waitedDays === 0
+      ? "It arrived today."
+      : `It has been waiting ${input.waitedDays} ${input.waitedDays === 1 ? "day" : "days"}.`;
+  const money =
+    input.amount !== null && input.currencyCode
+      ? `The claim is for ${reminderMoney(input.amount, input.currencyCode)}.`
+      : "OpenPlan could not read this fund's currency, so the amount is not stated here.";
+  return (
+    `Submitted ${when} and still waiting on a decision. ${howLong} ${money} ` +
+    "No review deadline is recorded for this measure, so this is not an overdue notice — it is a claim " +
+    "nobody has answered yet."
+  );
+}
+
+/**
+ * The currency each measure fund is denominated in, for the claims just read.
+ *
+ * A second read rather than an embed: `measure_claims` reaches `measure_funds`
+ * through a COMPOSITE foreign key `(measure_fund_id, workspace_id)`
+ * (20260812000011), and PostgREST's embed resolution over composite keys is not
+ * something a cron should depend on. One `in()` over the handful of funds in
+ * the batch is cheaper to reason about and fails visibly.
+ */
+async function loadMeasureFundCurrencies(
+  client: WorkSweepClient,
+  rows: Array<Record<string, unknown>>,
+  limit: number
+): Promise<SweepSourceContext> {
+  const unavailable: SweepSourceContext = {
+    awardLedgers: new Map(),
+    awardCurrencyCodes: new Map(),
+    measureCurrencyCodes: new Map(),
+    unavailable: true,
+  };
+  const fundIds = [
+    ...new Set(rows.map((row) => asString(row.measure_fund_id)).filter((id): id is string => !!id)),
+  ];
+  if (fundIds.length === 0) return EMPTY_SWEEP_CONTEXT;
+
+  try {
+    const result = await client
+      .from("measure_funds")
+      .select("id, currency_code")
+      .in("id", fundIds)
+      .limit(limit);
+    if (result.error) return unavailable;
+
+    const measureCurrencyCodes = new Map<string, string>();
+    for (const row of (result.data ?? []) as Array<Record<string, unknown>>) {
+      const id = asString(row.id);
+      const code = asString(row.currency_code);
+      if (id && code) measureCurrencyCodes.set(id, code);
+    }
+    return {
+      awardLedgers: new Map(),
+      awardCurrencyCodes: new Map(),
+      measureCurrencyCodes,
+      unavailable: false,
+    };
+  } catch {
+    return unavailable;
+  }
+}
+
+/**
+ * A CLAIM AGAINST A LOCAL MEASURE FUND THAT NOBODY HAS DECIDED.
+ *
+ * ============================================================================
+ * THIS SOURCE IS THE ONE THAT IS NOT ABOUT A DEADLINE
+ * ============================================================================
+ *
+ * Nothing OpenPlan holds says when a decision on a claim is DUE. There is no
+ * review-window column on `measure_funds` and no ordinance text this product
+ * parses. So `isOverdue` is FALSE unconditionally — not "false for now", not
+ * "false unless the claim is old". A 30-day default invented here would be
+ * OpenPlan telling an agency it had missed a standard nobody adopted, printed
+ * in a digest subject line as "1 overdue".
+ *
+ * What the reminder does instead is state the facts it has: the day the claim
+ * arrived, how long it has waited, and how much it is for. Those are enough for
+ * the person who recorded it to act, and none of them is invented.
+ *
+ * `due_on` is `submitted_on`, which never changes once a claim leaves draft
+ * (`measure_claims_left_draft_has_a_date`), so the idempotency index produces
+ * exactly ONE reminder per claim per person, ever. This is deliberately not a
+ * daily nag: a queue somebody is already working through does not need to be
+ * re-announced, and a reminder that arrives every morning is one people filter.
+ *
+ * THE RECIPIENT is `created_by`, the invoice-window posture: sub-recipients do
+ * not have OpenPlan accounts, so the person who recorded the claim is the one
+ * who will chase it. Claims carry no assignee and the reminder says so.
+ */
+const measureClaimReviewsSource: SweepSource = {
+  kind: "measure_claim_review_due",
+  table: "measure_claims",
+  // SEAM L2 -> L3: the narrow sweep projection Lane 2 exports, plus the one
+  // column it does not carry. `created_by` is appended rather than added to
+  // that constant because the constant is Lane 2's and the recipient question
+  // is this module's — but the append is the whole extent of the re-spelling,
+  // and `measure-claim-review-reminder.test.ts` asserts the composed string.
+  select: `${MEASURE_CLAIM_SWEEP_COLUMNS}, created_by`,
+  dateColumn: "submitted_on",
+  dateColumnKind: "date",
+  recipientColumn: "created_by",
+  staticFilters: [{ kind: "notIn", column: "status", values: MEASURE_CLAIM_SETTLED_STATUSES }],
+  loadContext: loadMeasureFundCurrencies,
+  toCandidates: (rows, now, context) =>
+    rows.flatMap((row) => {
+      const workspaceId = asString(row.workspace_id);
+      const submittedOn = workDeadlineDueOn(asString(row.submitted_on));
+      const recipient = asString(row.created_by);
+      if (!workspaceId || !submittedOn || !recipient) return [];
+
+      const fundId = asString(row.measure_fund_id);
+      const currencyCode = fundId ? context.measureCurrencyCodes.get(fundId) ?? null : null;
+      const rawAmount = row.amount;
+      const amount =
+        typeof rawAmount === "number"
+          ? rawAmount
+          : typeof rawAmount === "string" && rawAmount.trim() && Number.isFinite(Number(rawAmount))
+            ? Number(rawAmount)
+            : null;
+
+      const reference = asString(row.id);
+      const year = asString(row.fiscal_year_label);
+      return [
+        {
+          workspace_id: workspaceId,
+          recipient_user_id: recipient,
+          kind: "measure_claim_review_due" as const,
+          subject_table: "measure_claims",
+          subject_id: String(reference ?? ""),
+          // Measure claims belong to a fund, not to a project. NULL rather than
+          // a guess: `work_notifications.project_id` is a real foreign key and
+          // attaching an unrelated project would file the reminder under the
+          // wrong piece of work on /my-work.
+          project_id: null,
+          due_on: submittedOn,
+          title: `Measure claim awaiting a decision${year ? ` · ${year}` : ""}`,
+          body: `${measureClaimWaitingSentence({
+            amount,
+            currencyCode,
+            submittedOn,
+            waitedDays: daysWaiting(submittedOn, now),
+          })} You recorded this claim; measure claims carry no assignee.`,
+          // NOT A DEADLINE. See the source header — this is the one deliberate
+          // constant in the file, and changing it to `isDeadlinePast(...)` would
+          // report every claim submitted before today as overdue.
+          isOverdue: false,
+        },
+      ];
+    }),
+};
+
 export const WORK_SWEEP_SOURCES: readonly SweepSource[] = [
   deliverablesSource,
   milestonesSource,
@@ -882,6 +1105,7 @@ export const WORK_SWEEP_SOURCES: readonly SweepSource[] = [
   awardObligationsSource,
   awardExpendituresSource,
   invoiceWindowsSource,
+  measureClaimReviewsSource,
 ];
 
 // ── the client slice ────────────────────────────────────────────────────────

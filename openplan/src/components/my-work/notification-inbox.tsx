@@ -42,12 +42,18 @@ export type NotificationInboxProps = {
 
 /**
  * Plain-language names for the reminder kinds (20260811000007's CHECK, widened
- * by 20260812000010).
+ * by 20260812000010 and 20260812000013).
  *
  * "Award obligation" and "Award lapse" are deliberately different words for the
  * two award deadlines: one is the date the money must be committed, the other
  * the date an unspent balance goes back to the funder. A shared label would
  * merge the two on the one surface where a planner glances rather than reads.
+ *
+ * "Claim waiting" is deliberately NOT "Claim due". Every other label here names
+ * a deadline; that one names a claim against a local measure fund that nobody
+ * has decided, and OpenPlan holds no date by which a decision was owed. A badge
+ * reading "due" beside it would put a deadline on the surface a planner glances
+ * at, which is the one place the reminder's own careful wording never reaches.
  */
 const KIND_LABELS: Record<string, string> = {
   deliverable_due: "Deliverable",
@@ -57,6 +63,7 @@ const KIND_LABELS: Record<string, string> = {
   grant_decision_due: "Grant decision",
   award_obligation_due: "Award obligation",
   award_expenditure_due: "Award lapse",
+  measure_claim_review_due: "Claim waiting",
 };
 
 export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: NotificationInboxProps) {

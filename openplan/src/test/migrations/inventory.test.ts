@@ -296,16 +296,88 @@ const EXPECTED = {
   // `grant-inventory.ts` rather than counted below. Recorded because a reader
   // diffing the migration directory against these notes would otherwise have to
   // re-derive the absence.
-  policies: 594,
-  permissive: 348,
+  //
+  // 20260812000011 (the self-help local measure fund) adds SIX tables — the
+  // measure, its accounting periods, its effective-dated allocation rules, its
+  // sub-recipients, the apportionment figures a person states for them, and
+  // what each period allocated. TWENTY-ONE permissive policies and NO
+  // restrictive ones, and the zero is the deliberate part: every write policy
+  // calls `workspace_member_can_write`, so it is role-AWARE at the permissive
+  // layer and needs no `_writer_only_*` companion to supply the role. That is
+  // the shape argued for `rtp_horizon_bands` and `engagement_context_layers`,
+  // and adding gates anyway would fail viewer-write-denial-guard's "keeps the
+  // gate list honest" assertion — a gate over a table with no role-blind policy
+  // is either dead weight or a sign the inventory cannot read the policies.
+  //
+  // The 21 rather than 24 is also deliberate, three tables being narrower than
+  // the usual read/insert/update/delete set:
+  //   * measure_recipients — no DELETE (the invoicing_clients posture: a body
+  //     that has been paid public money must keep appearing on the record that
+  //     paid it; `is_active` retires it).
+  //   * measure_allocation_rules — no UPDATE (a rule version is what an
+  //     ordinance said on a date; an amendment is a new effective-dated row).
+  //   * measure_recipient_basis_values — no UPDATE (a stated figure with a
+  //     named source and a stater is a record, restated by a new vintage).
+  // Each table's GRANT names exactly those commands, so the locked-door guard
+  // holds without widening the audited posture by one privilege.
+  // So: +21 policies, +21 permissive, +0 restrictive, +15 permissiveWrites
+  // (3+3+2+2+2+3), +6 tablesWithPolicies, +6 relations, +6 tables,
+  // +6 rlsEnabledTables. `views` holds at 7 and `expanded` at 264: no view, and
+  // every policy is written literally rather than through EXECUTE format.
+  //
+  // 20260812000012 (claims against the measure fund) adds THREE more: the
+  // claims themselves, the link onto kb_documents that carries their backup,
+  // and the maintenance-of-effort record. ELEVEN permissive policies, no
+  // restrictive ones — the same role-aware shape as 20260812000011, and the
+  // same reason.
+  //
+  // Eleven rather than twelve because `measure_claim_documents` has no UPDATE
+  // policy: an attachment ASSERTS that this document substantiates this claim,
+  // and an assertion is withdrawn by detaching rather than edited.
+  //
+  // One of the eight write policies is doing more than a role check, and it is
+  // worth naming here because a future reader counting policies will not see
+  // it: `measure_claims_delete` is
+  //
+  //     USING (workspace_member_can_write(workspace_id) AND status = 'draft')
+  //
+  // so a submitted or paid claim cannot be deleted by anyone, through any
+  // route. That is a mechanism rather than a convention — a second writer
+  // inherits it without knowing it exists — and it is asserted by name in
+  // `measure-claims-migration.test.ts`.
+  //
+  // So: +11 policies, +11 permissive, +0 restrictive, +8 permissiveWrites
+  // (3+2+3), +3 tablesWithPolicies, +3 relations, +3 tables, +3
+  // rlsEnabledTables. `views` holds at 7 and `expanded` at 264.
+  //
+  // 20260812000014 (what the fund took off the top, and the atomic replacement)
+  // adds ONE table, `measure_period_off_the_top`. THREE permissive policies and
+  // no restrictive ones — the same role-aware shape as the two migrations above.
+  //
+  // Three rather than four because there is no UPDATE: a period's off-the-top
+  // is replaced wholesale together with its category allocations, never edited
+  // in place, and a table with no UPDATE policy cannot be edited in place by a
+  // future route that forgot why. Its GRANT names exactly SELECT, INSERT,
+  // DELETE for the same reason.
+  //
+  // The migration also creates `replace_measure_period_allocation`, which moves
+  // none of these counts: this inventory is about tables, views and policies,
+  // and a function's EXECUTE grant is audited by
+  // `measure-off-the-top-migration.test.ts` instead.
+  //
+  // So: +3 policies, +3 permissive, +0 restrictive, +2 permissiveWrites
+  // (INSERT + DELETE), +1 tablesWithPolicies, +1 relations, +1 tables, +1
+  // rlsEnabledTables. `views` holds at 7 and `expanded` at 264.
+  policies: 629,
+  permissive: 383,
   restrictive: 246,
-  permissiveWrites: 224,
+  permissiveWrites: 249,
   expanded: 264,
-  tablesWithPolicies: 124,
-  relations: 145,
-  tables: 138,
+  tablesWithPolicies: 134,
+  relations: 155,
+  tables: 148,
   views: 7,
-  rlsEnabledTables: 138,
+  rlsEnabledTables: 148,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

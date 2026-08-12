@@ -748,6 +748,13 @@ export default async function ProgramDetailPage({
           <div className="module-intro-kicker">
             <StatusBadge tone={programStatusTone(program.status)}>{formatProgramStatusLabel(program.status)}</StatusBadge>
             <span className="module-record-chip"><span>Type</span><strong>{formatProgramTypeLabel(program.program_type)}</strong></span>
+            {/* The only door to the measure fund, and shown for a local measure alone:
+                an RTIP row has no ordinance, receipts or sub-recipients. */}
+            {program.program_type === "local_measure" ? (
+              <Link href={`/programs/${programId}/measure`} className="module-record-chip">
+                <span>Measure fund</span><strong>Receipts, allocations &amp; claims</strong>
+              </Link>
+            ) : null}
           </div>
           <p className="text-[0.73rem] text-muted-foreground">
             {readinessBasisUnreadable

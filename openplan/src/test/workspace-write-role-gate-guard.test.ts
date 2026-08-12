@@ -80,6 +80,14 @@ const RECOGNIZED_GATES = [
   // failed this guard. The prover below is what makes recognizing the wrapper
   // safe: its defining file must itself perform a real role check.
   "authorizeRtpCycleWrite",
+  // The measure-fund lane's gate, extracted before its second caller rather
+  // than after — eight routes need the same three facts (who, which workspace,
+  // does this measure sit in it) and must not answer them eight times. It is
+  // the only gate here that chooses between TWO matrix actions: `programs.write`
+  // for the clerical record, `invoices.write` for a decision that moves money
+  // out of a public fund. The prover below still applies — its defining file
+  // calls `canAccessWorkspaceAction` for real.
+  "authorizeMeasureWrite",
   "loadModelAccess",
   "loadPlanAccess",
   "loadProgramAccess",

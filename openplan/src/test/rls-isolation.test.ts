@@ -1158,6 +1158,61 @@ const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
   "rtp_extraction_candidates",
   "rtp_extraction_runs",
   "vmt_significance_screenings",
+  /*
+    (2026-08-12) THE SELF-HELP LOCAL MEASURE FUND — six tables, excused with the
+    honest reason: the boundary is written and the live cross-tenant PROOF is
+    still owed. Every one has row security on, a workspace-membership SELECT
+    policy, and role-aware write policies through `workspace_member_can_write`
+    (asserted statically from the migration corpus by
+    `local-measure-fund-migration.test.ts`).
+
+    What raises the stake above the usual excuse, recorded so whoever writes
+    these probes knows what to aim at: these rows denormalize `workspace_id` and
+    reach their parent through a COMPOSITE foreign key into
+    `(id, workspace_id)`. That constraint is what stops a child from being
+    parented across tenants, and a static guard can only prove the constraint
+    was written — not that Postgres refuses the insert. A probe here should try
+    the cross-tenant parenting directly, not merely the cross-tenant read.
+  */
+  "measure_funds",
+  "measure_fund_periods",
+  "measure_allocation_rules",
+  "measure_recipients",
+  "measure_recipient_basis_values",
+  "measure_allocations",
+  /*
+    (2026-08-12) CLAIMS AGAINST THE MEASURE FUND — three more, excused with the
+    same honest reason and one addition worth aiming a probe at.
+
+    `measure_claims` carries a row-level rule the others do not: its DELETE
+    policy is `workspace_member_can_write(workspace_id) AND status = 'draft'`,
+    so a submitted or paid claim must be undeletable BY ANYONE, including a
+    workspace owner. A static guard can prove that predicate was written; only
+    a live probe can prove Postgres enforces it. A probe here should attempt the
+    delete of a submitted claim as an owner and require zero rows affected —
+    not merely attempt a cross-tenant read.
+  */
+  "measure_claims",
+  "measure_claim_documents",
+  "measure_moe_records",
+  /*
+    (2026-08-12) WHAT THE FUND TOOK OFF THE TOP — excused with the same honest
+    reason, and with the sharpest probe target in the group.
+
+    These rows are the ONLY record of money an agency removed from a
+    voter-approved fund before the ordinance's own purposes were cut, and the
+    fiscal-year cap in `buildMeasureCapWindow` is evaluated by summing them. A
+    tenant that could read another's rows would learn what a neighbouring
+    agency takes for administration; a tenant that could WRITE them could
+    inflate another fund's year-to-date total and stop that agency taking money
+    it is entitled to, or delete rows and let it take the cap twice.
+
+    A probe here should attempt the cross-tenant DELETE specifically, not only
+    the read: the composite `(period_id, workspace_id)` foreign key is what
+    stops a row being parented across tenants, and nothing but a live attempt
+    can show Postgres enforcing it.
+  */
+  "measure_period_off_the_top",
 ];
 
 liveDescribe("the probe list covers the schema", () => {
