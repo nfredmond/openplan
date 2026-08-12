@@ -42,7 +42,7 @@ describe("map controls appear only on map surfaces", () => {
   });
 
   it("renders on a map surface", () => {
-    pathnameMock.mockReturnValue("/explore");
+    pathnameMock.mockReturnValue("/safety");
 
     render(
       <MapSurfaceOnly>
@@ -60,7 +60,7 @@ describe("map controls appear only on map surfaces", () => {
    */
   it("treats a nested route as the same surface", () => {
     expect(isMapSurfaceRoute("/aerial/9a7c1f22-0000-4000-8000-000000000001")).toBe(true);
-    expect(isMapSurfaceRoute("/explore")).toBe(true);
+    expect(isMapSurfaceRoute("/safety/corridors")).toBe(true);
   });
 
   /**
@@ -103,9 +103,30 @@ describe("map controls appear only on map surfaces", () => {
   });
 
   it("declares the surfaces the map is actually worked on", () => {
-    expect(MAP_SURFACE_ROUTES).toEqual(
-      expect.arrayContaining(["/explore", "/safety", "/aerial"])
-    );
+    expect(MAP_SURFACE_ROUTES).toEqual(expect.arrayContaining(["/safety", "/aerial"]));
+  });
+
+  /**
+   * `/explore` IS NOT ONE OF THEM, AND THAT IS THE COUNTERINTUITIVE PART.
+   *
+   * It is the page where a map fills the working area, so it reads like the
+   * strongest member of this list. But the map it fills the area with is its
+   * OWN `mapboxgl.Map`, built in `explore/_components/use-explore-map-instance`,
+   * and the shared backdrop suppresses itself on that route entirely. The
+   * shared controls therefore control nothing a planner can see.
+   *
+   * Listing it here was not merely useless. The panel mounted, CSS hid it, and
+   * the hidden-but-present element still satisfied the `:has(.op-cart-layers)`
+   * rule that reserves the 272px right gutter — so the studio was squeezed by
+   * ~256px to make room for a control that rendered nothing, and paid for its
+   * `/api/map-features/counts` fetch on every visit.
+   *
+   * This comes back only when workspace layers actually draw on Explore's own
+   * instance. Do not re-add it to make a layers panel appear there.
+   */
+  it("does not treat corridor analysis as a shared-map surface", () => {
+    expect(isMapSurfaceRoute("/explore")).toBe(false);
+    expect(MAP_SURFACE_ROUTES).not.toContain("/explore");
   });
 
   /**

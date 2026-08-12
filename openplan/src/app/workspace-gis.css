@@ -1,0 +1,405 @@
+/*
+  The workspace's own GIS layers: the uploader, the coordinate-system picker,
+  the placement preview and the layer manager.
+
+  Its own file rather than more of `cartographic.css`, because these surfaces
+  live in the Data Hub rather than on the map shell — the only thing they share
+  with the map is the `op-cart-btn` button, which they reuse deliberately so the
+  two do not drift into two button styles.
+
+  EVERY COLOUR IS A TOKEN. The themed-surfaces guard requires an ink colour
+  wherever a background is set, and the reason outlives the guard: a panel that
+  sets a light background and inherits dark text renders as black-on-black for
+  every planner using the dark theme, and nobody writing the light theme ever
+  sees it.
+*/
+
+.op-gis-manager {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+  color: var(--ink);
+}
+
+.op-gis-manager__error,
+.op-gis-style__error,
+.op-gis-versions__error,
+.op-gis-delete__error,
+.op-crs-picker__error {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--danger, #b3261e);
+}
+
+.op-gis-manager__empty,
+.op-gis-manager__readonly {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.op-gis-manager__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── One layer in the list ────────────────────────────────────────────────── */
+
+.op-gis-layer {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.op-gis-layer__hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.op-gis-layer__swatch {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+html.dark .op-gis-layer__swatch {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.op-gis-layer__ident {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.op-gis-layer__sub {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+/*
+  The caveat list. Rendered whenever a layer has one, never collapsed here: on
+  this screen the planner is deciding what to do with the layer, and "this
+  coordinate system is your statement, not the file's" is exactly the fact that
+  decision turns on.
+*/
+.op-gis-layer__notes {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.op-gis-layer__panel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── The four style controls ──────────────────────────────────────────────── */
+
+.op-gis-style {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px 14px;
+  color: var(--ink);
+}
+.op-gis-style legend,
+.op-gis-versions h5 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 0;
+  margin: 0 0 6px;
+}
+.op-gis-style label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.op-gis-style label > span {
+  color: var(--muted);
+}
+.op-gis-style__note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ── Upload history ───────────────────────────────────────────────────────── */
+
+.op-gis-versions ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+.op-gis-versions li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Deleting ─────────────────────────────────────────────────────────────── */
+
+.op-gis-delete__dialog {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--map-1);
+  color: var(--ink);
+  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+html.dark .op-gis-delete__dialog {
+  background: rgba(255, 255, 255, 0.04);
+}
+.op-gis-delete__dialog ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* ── The upload wizard ────────────────────────────────────────────────────── */
+
+.op-gis-wizard {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--panel);
+  color: var(--ink);
+}
+.op-gis-wizard__drop {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+}
+.op-gis-wizard__drop-title {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+.op-gis-wizard__drop-hint,
+.op-gis-wizard__hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.op-gis-wizard__status {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+/*
+  A refusal is not an error toast. It gets room, because every refusal in this
+  lane names what OpenPlan needed and what the planner can do instead — the
+  geodatabase one carries a four-click export path — and truncating it to a
+  single line throws away the only actionable thing in it.
+*/
+.op-gis-wizard__refusal,
+.op-gis-wizard__confirm,
+.op-gis-wizard__progress,
+.op-gis-wizard__done,
+.op-gis-wizard__ask {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.op-gis-wizard__refusal h4,
+.op-gis-wizard__confirm h4,
+.op-gis-wizard__ask h4 {
+  margin: 0;
+  font-size: 13.5px;
+}
+.op-gis-wizard__refusal p,
+.op-gis-wizard__confirm p,
+.op-gis-wizard__ask p,
+.op-gis-wizard__progress p,
+.op-gis-wizard__done p {
+  margin: 0;
+}
+.op-gis-wizard__export {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.op-gis-wizard__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.op-gis-wizard__field > span {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.op-gis-wizard__ack {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--map-1);
+  color: var(--ink);
+}
+html.dark .op-gis-wizard__ack {
+  background: rgba(255, 255, 255, 0.04);
+}
+.op-gis-wizard__actions {
+  display: flex;
+  gap: 8px;
+}
+.op-gis-wizard progress {
+  width: 100%;
+}
+
+/* ── The placement preview ────────────────────────────────────────────────── */
+
+.op-gis-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.op-gis-preview__map img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  display: block;
+}
+.op-gis-preview__no-map {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.op-gis-preview__facts {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.op-gis-preview__facts dt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.op-gis-preview__facts dd {
+  margin: 2px 0 0;
+  line-height: 1.55;
+  color: var(--ink);
+}
+/*
+  The claim-tier sentence. Given weight on purpose: it is the difference between
+  a coordinate system the FILE stated and one a PERSON stated, and that
+  distinction is the thing this whole screen exists to keep visible.
+*/
+.op-gis-preview__asserted {
+  color: var(--ink);
+}
+.op-gis-preview__aside {
+  color: var(--muted);
+}
+.op-gis-preview__warnings {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.op-gis-preview__datum {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ── The coordinate-system picker ─────────────────────────────────────────── */
+
+.op-crs-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.op-crs-picker__scope,
+.op-crs-picker__empty {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.op-crs-picker__filter input {
+  width: 100%;
+}
+.op-crs-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* Bounded height: a region query legitimately returns dozens of systems, and
+     an unbounded list would push the confirm step off the screen. */
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.op-crs-picker__option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  color: var(--ink);
+  font: inherit;
+}
+.op-crs-picker__option:hover:not(:disabled) {
+  background: var(--map-1);
+}
+html.dark .op-crs-picker__option:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+}
+.op-crs-picker__name {
+  font-weight: 600;
+}
+.op-crs-picker__meta,
+.op-crs-picker__area,
+.op-crs-picker__caveat {
+  font-size: 11px;
+  color: var(--muted);
+}
+.op-crs-picker__meta {
+  font-family: var(--font-mono);
+}

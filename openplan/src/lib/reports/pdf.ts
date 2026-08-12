@@ -70,7 +70,15 @@ export async function renderHtmlToPdf(
   const browser = await launchBrowser();
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    // puppeteer-core 25 removed `networkidle0`, which this used to pass (the
+    // move off 23.x was forced by GHSA-jmr9-qjv8-65gv). `load` is the right
+    // replacement HERE rather than merely the available one: the packet HTML
+    // is self-contained, issues no XHR, and names only system fonts
+    // (see the stylesheet in reports/html.ts), so there is no late-arriving
+    // subresource for a network idle to have been waiting on. If a future
+    // packet embeds a webfont or fetches anything, this needs a
+    // `document.fonts.ready` wait added back with the mocks widened to match.
+    await page.setContent(html, { waitUntil: "load" });
     const pdf = await page.pdf({
       format,
       printBackground: true,

@@ -6,6 +6,7 @@ import {
   LAYER_KEYS,
   useCartographicLayers,
   useCartographicLayerStatus,
+  useWorkspaceMapLayers,
   type LayerKey,
 } from "./cartographic-context";
 import { useTheme } from "@/components/theme-provider";
@@ -55,6 +56,13 @@ function formatChip(count: number | null | undefined): string | undefined {
 export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: string | null }) {
   const { layers, toggleLayer } = useCartographicLayers();
   const { layerStatus } = useCartographicLayerStatus();
+  const {
+    workspaceLayers,
+    workspaceLayerVisibility,
+    toggleWorkspaceLayer,
+    workspaceLayerStatus,
+    workspaceCatalogError,
+  } = useWorkspaceMapLayers();
   const { resolvedTheme } = useTheme();
   const [counts, setCounts] = useState<MapFeatureCounts | null>(null);
   const [themeMounted, setThemeMounted] = useState(false);
@@ -100,12 +108,36 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
    * refresh, and a note naming the previous workspace's data under the new
    * workspace's map would be an affirmatively false claim.
    */
-  const coverageNotes = LAYER_KEYS.flatMap((key) => {
-    const status = layerStatus[key];
-    if (!status) return [];
-    if (status.workspaceId !== workspaceId) return [];
-    return status.notes;
-  });
+  const coverageNotes = [
+    ...LAYER_KEYS.flatMap((key) => {
+      const status = layerStatus[key];
+      if (!status) return [];
+      if (status.workspaceId !== workspaceId) return [];
+      return status.notes;
+    }),
+    /*
+      The workspace's own layers put their sentences in the SAME block, not a
+      section of their own.
+
+      This is where "Parcels: 214,391 shapes in this view — more than OpenPlan
+      draws at once. Zoom in." appears, and it is the most important sentence on
+      this panel: it is the only thing on screen distinguishing a layer that is
+      too dense to draw from a layer that is empty. Putting it beside the built-in
+      layers' caveats rather than in a separate list is deliberate — a planner
+      reading "N coverage notes" should find every reason the map is not showing
+      them everything, from one summary, in one place.
+
+      A note carried by a version — an asserted coordinate system, a NAD27 datum
+      caveat — rides in this same list, because the route sends it with every
+      viewport read for exactly that reason.
+    */
+    ...workspaceLayers.flatMap((listing) => {
+      const status = workspaceLayerStatus[listing.layer.id];
+      if (!status) return [];
+      if (status.workspaceId !== workspaceId) return [];
+      return status.notes;
+    }),
+  ];
 
   return (
     <aside className="op-cart-layers" aria-label="Map layers">
@@ -130,6 +162,79 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
           );
         })}
       </ul>
+      {workspaceLayers.length > 0 || workspaceCatalogError ? (
+        /*
+          THE AGENCY'S OWN LAYERS, in their own group under their own heading.
+
+          Separated from the nine above because they are a different KIND of
+          thing and the distinction is load-bearing: everything above is a record
+          OpenPlan keeps, and everything here is a file the agency uploaded. A
+          planner who cannot tell those apart cannot tell whether a wrong shape
+          is OpenPlan's fault or their own shapefile's.
+
+          The swatch carries the layer's actual drawn colour rather than a
+          generic bullet, so the list is readable against a map with four layers
+          on it — which is the whole reason a colour control exists.
+        */
+        <>
+          <div className="op-cart-layers__hd op-cart-layers__hd--sub">Your map layers</div>
+          {/*
+            A FAILED READ SAYS SO, rather than rendering as an empty list.
+
+            These two states produce the same empty array and mean opposite
+            things: "this agency has uploaded nothing" and "OpenPlan could not
+            find out". Shown ABOVE the list and as an alert, because whatever
+            follows it — nothing, or a partial list from an earlier read — has
+            to be read in its light.
+          */}
+          {workspaceCatalogError ? (
+            <p className="op-cart-layer-item__note" role="alert">
+              {workspaceCatalogError}
+            </p>
+          ) : null}
+          <ul className="op-cart-layers__list" role="list">
+            {workspaceLayers.map((listing) => {
+              const layer = listing.layer;
+              const version = layer.currentVersion;
+              return (
+                <li key={layer.id}>
+                  <label className="op-cart-layer-item">
+                    <input
+                      type="checkbox"
+                      checked={workspaceLayerVisibility[layer.id] === true}
+                      onChange={() => toggleWorkspaceLayer(layer.id)}
+                    />
+                    <span
+                      className="op-cart-layer-item__swatch"
+                      style={{ backgroundColor: layer.style.color }}
+                      aria-hidden
+                    />
+                    <span className="op-cart-layer-item__label">{layer.name}</span>
+                    {/*
+                      The chip is the layer's STORED shape count, not the number
+                      drawn in this window — those differ constantly as the map
+                      moves, and a chip that changed on every pan would read as
+                      the layer gaining and losing shapes. A layer with no
+                      finished upload gets no chip at all, and says so in words
+                      instead, because a "0" here would read as an empty file.
+                    */}
+                    {version ? (
+                      <span className="op-cart-layer-item__chip">
+                        {formatChip(version.featureCount)}
+                      </span>
+                    ) : null}
+                  </label>
+                  {!version ? (
+                    <p className="op-cart-layer-item__note" role="note">
+                      No finished upload yet — nothing is drawn for this layer.
+                    </p>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      ) : null}
       {coverageNotes.length > 0 ? (
         /*
           COLLAPSED BY DEFAULT, BUT PRESENT AND COUNTED.

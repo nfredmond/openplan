@@ -368,16 +368,39 @@ const EXPECTED = {
   // So: +3 policies, +3 permissive, +0 restrictive, +2 permissiveWrites
   // (INSERT + DELETE), +1 tablesWithPolicies, +1 relations, +1 tables, +1
   // rlsEnabledTables. `views` holds at 7 and `expanded` at 264.
-  policies: 629,
-  permissive: 383,
+  // 20260812000015-18 (workspace GIS layers) add FOUR tables — the layer, its
+  // versions, its PostGIS features, and the references that make deletion
+  // refusable — for a total of 14 permissive policies and no restrictive ones,
+  // the role-aware shape every new table now takes.
+  //
+  // Four policies each on the layer and version tables; THREE each on the
+  // feature and reference tables, and both threes are load-bearing. A stored
+  // shape is never edited in place — a corrected file is a new version — so
+  // there is no UPDATE policy on `workspace_gis_features` and its GRANT names
+  // exactly SELECT, INSERT, DELETE. An adoption is a fact with a date rather
+  // than a field to edit, so `workspace_gis_layer_references` is the same
+  // shape. A table with no UPDATE policy cannot be edited in place by a future
+  // route that forgot why, which is the point of leaving it out.
+  //
+  // The two PostGIS functions (`workspace_gis_append_features`,
+  // `workspace_gis_features_in_bbox`) and the current-version trigger move none
+  // of these counts — this inventory is about tables, views and policies — and
+  // are audited by `workspace-gis-migration.test.ts` instead.
+  //
+  // So: +14 policies, +14 permissive, +0 restrictive, +10 permissiveWrites
+  // (3+3+2+2), +4 tablesWithPolicies, +4 relations, +4 tables, +4
+  // rlsEnabledTables. `views` holds at 7 and `expanded` at 264 — every policy
+  // here is written literally inside a DO block, none through EXECUTE format().
+  policies: 643,
+  permissive: 397,
   restrictive: 246,
-  permissiveWrites: 249,
+  permissiveWrites: 259,
   expanded: 264,
-  tablesWithPolicies: 134,
-  relations: 155,
-  tables: 148,
+  tablesWithPolicies: 138,
+  relations: 159,
+  tables: 152,
   views: 7,
-  rlsEnabledTables: 148,
+  rlsEnabledTables: 152,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

@@ -27,7 +27,16 @@ import { stripSourceComments } from "./helpers/source-text";
  * which that guard cannot see.
  */
 
-const CSS_FILES = ["src/app/globals.css", "src/app/cartographic.css"];
+/**
+ * Every hand-written stylesheet in the app. A new one that is not listed here is
+ * a guard with a hole in it — the rule below can only see the files it is given,
+ * so adding a stylesheet means adding it here in the same change.
+ */
+const CSS_FILES = [
+  "src/app/globals.css",
+  "src/app/cartographic.css",
+  "src/app/workspace-gis.css",
+];
 
 /** Background tokens whose value inverts between light and dark. */
 const INVERTING_BACKGROUND_TOKENS = ["--pine", "--accent", "--accent-2", "--primary"];

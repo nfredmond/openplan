@@ -13,7 +13,9 @@ export type CartographicInspectorSelection = {
     | "rtp"
     | "census_tract"
     | "engagement"
-    | "safety_crash";
+    | "safety_crash"
+    /** A shape from one of the workspace's own uploaded GIS layers. */
+    | "workspace_gis_feature";
   title: string;
   kicker?: string;
   avatarChar?: string;

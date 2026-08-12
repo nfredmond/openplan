@@ -114,7 +114,50 @@ function callSitePattern(prefix: string): RegExp {
   return new RegExp(`["'\`}]${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
 }
 
-/** `api/models/[modelId]/runs` -> `/api/models`, plus `["runs"]`. */
+/**
+ * `api/models/[modelId]/runs` -> `/api/models`, plus `["runs"]`.
+ *
+ * ═══ MEASURED BLIND SPOT — RECORDED 2026-08-12, NOT YET FIXED ═══
+ *
+ * The prefix stops at the FIRST dynamic segment and everything after it becomes
+ * an unordered bag of words, each checked with a bare case-sensitive
+ * `String.includes` against the whole file. The two halves need not come from
+ * the same line, the same expression, or even the same kind of token — so a
+ * SIBLING route's call site can supply the prefix while an unrelated word
+ * anywhere in the file supplies the tail.
+ *
+ * Found by mutation while auditing the workspace-GIS lane: breaking the ONLY
+ * caller of `/api/workspace-gis/layers/[layerId]/references` did not turn this
+ * guard red. Its evidence was the DELETE-layer fetch a few lines above (prefix
+ * `/api/workspace-gis/layers`) plus the word "references" appearing in a
+ * docblock — `/** … export path, references, counts. *\/`. Deleting the whole
+ * `fetchWorkspaceGisLayerReferences` function still passed; only deleting the
+ * comment as well turned it red.
+ *
+ * The scale was then measured across the repository rather than guessed. Of 231
+ * routes, 120 have a static segment after their first dynamic one. Deleting
+ * every plausible call site for each in turn leaves 85 OF THOSE 120 STILL
+ * GREEN. Concrete examples beyond the one above:
+ *
+ *   - `api/measures/[measureId]/statement` — prefix from the `/public-share`
+ *     fetch, tail from a docblock containing the word "statement".
+ *   - `api/models/[modelId]/runs/[modelRunId]/kpis` — prefix from the
+ *     `/vmt-significance` fetch, tail from `const [kpis, setKpis] = useState`.
+ *   - `api/scenarios/[scenarioSetId]/spine/indicator-snapshots` — tail from a
+ *     ternary's string literal used as a tab key.
+ *
+ * This guard still does what its name says for the case it was built for — a
+ * route with NO caller anywhere — and the `aerial/.../export` tombstone below
+ * exists because that limit was already known for one route. What is now known
+ * is that it is 85 routes, not one.
+ *
+ * THE FIX, when someone takes it: require the full path shape inside a single
+ * expression, and admit today's loosely-evidenced routes to a shrink-only
+ * ratchet beside `KNOWN_UNWIRED` so no NEW route can join them. That is a real
+ * piece of work — each of the 85 needs its caller confirmed by hand before it
+ * can be called evidence — and it was deliberately not bundled into the
+ * workspace-GIS session that found it.
+ */
 function staticParts(routeDir: string): { prefix: string; tail: string[] } {
   const segments = routeDir.split("/");
   const leading: string[] = [];

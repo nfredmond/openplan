@@ -66,6 +66,21 @@ export const BODY_LIMITS = {
   // ceiling — so an operator raising the env raises the enforced limit, and
   // the refusal names the env instead of answering a bare 413.
   aerialImageRaw: 64 * 1024 * 1024,
+  // One BATCH of a workspace GIS layer ingest: 4 MiB of GeoJSON features.
+  //
+  // THIS IS A TRANSPORT CEILING FOR A FILE THAT IS NEVER TRANSPORTED WHOLE. A
+  // county parcel shapefile is 50-200 MB and no serverless request body will
+  // ever hold it — Vercel refuses a request body over roughly 4.5 MB before any
+  // handler runs, whatever this table says. So the browser parses and reprojects
+  // the file locally and posts its features in batches against an open ingest,
+  // and this number is what one batch may weigh. It sits deliberately BELOW the
+  // platform ceiling so an over-large batch meets OpenPlan's refusal — which
+  // says to send fewer features per batch — instead of an opaque platform 413
+  // with nothing in it a planner or a client could act on.
+  //
+  // The batch SIZE in features (`WORKSPACE_GIS_INGEST_BATCH_SIZE`) is advisory
+  // and lives with the ingest contract; this is the bound that is enforced.
+  workspaceGisFeatureBatch: 4 * 1024 * 1024,
 } as const;
 
 export type ReadJsonWithLimitResult<T> =

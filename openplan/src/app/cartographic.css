@@ -531,6 +531,40 @@ html.dark .op-cart-layer-item:hover {
   color: var(--muted);
 }
 /*
+  The agency's own uploaded layers, grouped under their own sub-heading. The
+  top border is what separates "records OpenPlan keeps" from "files you gave
+  it" — a distinction a planner needs when a shape looks wrong, because it
+  decides whose fault it is.
+*/
+.op-cart-layers__hd--sub {
+  border-top: 1px solid var(--line);
+  border-bottom: none;
+  padding-top: 10px;
+}
+/* The layer's real drawn colour, so a four-layer map is readable from the list. */
+.op-cart-layer-item__swatch {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+html.dark .op-cart-layer-item__swatch {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+/*
+  A per-layer sentence, for the one state that cannot wait for the coverage
+  block: a layer whose upload never finished draws nothing, and the checkbox
+  above it would otherwise be a control that does nothing with no explanation.
+*/
+.op-cart-layer-item__note {
+  margin: 0;
+  padding: 0 14px 8px 46px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+/*
   Coverage notes for the equity layer. Rendered whether or not the layer is
   toggled on: the chip beside "Equity priority" shows for every row regardless
   of the checkbox, and a number without its explanation is the unexplained
@@ -881,13 +915,20 @@ html.dark .op-cart-zoom button:hover {
 
 /* ---------- Route override: map-owning routes hide layers + inspector ---------- */
 
-/* The CartographicMapBackdrop handles its own route suppression; we still
-   need to hide layers + inspector + zoom on /explore so the studio doesn't
-   fight for the right rail. That's applied via body-level class. */
-body[data-map-owner="true"] .op-cart-layers,
-body[data-map-owner="true"] .op-cart-legend,
-body[data-map-owner="true"] .op-cart-inspector,
-body[data-map-owner="true"] .op-cart-zoom {
+/* The CartographicMapBackdrop handles its own route suppression. The inspector
+   is hidden here because it is NOT inside `MapSurfaceOnly` — it mounts on every
+   page — and on a route that owns its own map it would open over the studio
+   describing a selection made on a map that is not drawn.
+
+   `.op-cart-layers`, `.op-cart-legend` and `.op-cart-zoom` used to be in this
+   list too, and hiding them was the wrong instrument. They only ever appeared
+   here because `/explore` was listed as a map surface; `display: none` left
+   them mounted, so each still paid for its own fetch, and `:has(.op-cart-layers)`
+   still saw the element and held the 272px gutter open — squeezing the studio
+   by ~256px to reserve room for a control nobody could see. `/explore` is no
+   longer a map surface (see `lib/navigation/map-surfaces`), so those three
+   never mount on it and there is nothing left to hide. */
+body[data-map-owner="true"] .op-cart-inspector {
   display: none;
 }
 

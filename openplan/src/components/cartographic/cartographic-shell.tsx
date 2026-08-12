@@ -153,9 +153,9 @@ export async function CartographicShell({ children }: { children: React.ReactNod
           for a map being used as wallpaper. Zooming background decoration is not
           a thing a planner came to the page to do.
 
-          On `/explore` this renders and CSS then hides it, because that route
-          owns its own map and its own controls; see the `data-map-owner` rule in
-          cartographic.css.
+          It used to render on `/explore` and be hidden again by CSS. `/explore`
+          is no longer a map surface at all — it draws its own map and ships its
+          own NavigationControl — so this simply does not mount there now.
         */}
         <MapSurfaceOnly>
           <CartographicZoomControls />

@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "mapbox-gl/dist/mapbox-gl.css";
 @import "./cartographic.css";
+@import "./workspace-gis.css";
 
 @custom-variant dark (&:is(.dark *));
 

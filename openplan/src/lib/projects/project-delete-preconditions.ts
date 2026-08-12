@@ -173,6 +173,11 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   { table: "funding_opportunities", column: "project_id", label: "funding opportunities", severity: "evidence", behavior: "orphan", href: "/grants" },
   { table: "safety_crash_ingests", column: "project_id", label: "crash acquisitions", severity: "evidence", behavior: "orphan", href: "/safety" },
   { table: "kb_documents", column: "project_id", label: "knowledge-base documents", severity: "evidence", behavior: "orphan", href: "/knowledge-base" },
+  // A workspace GIS layer scoped to a project (20260812000015). ON DELETE SET
+  // NULL, so the layer and every shape in it survive — what is lost is the
+  // statement that this bike network or this parcel extract was uploaded FOR
+  // this project, after which it reads as agency-wide data of unknown origin.
+  { table: "workspace_gis_layers", column: "project_id", label: "map layers", severity: "evidence", behavior: "orphan", href: "/data-hub" },
   { table: "project_corridors", column: "project_id", label: "corridors", severity: "evidence", behavior: "orphan", href: "/projects/{projectId}" },
   { table: "aerial_missions", column: "project_id", label: "aerial missions", severity: "evidence", behavior: "orphan", href: "/aerial" },
   { table: "aerial_evidence_packages", column: "project_id", label: "aerial evidence packages", severity: "evidence", behavior: "orphan", href: "/aerial" },

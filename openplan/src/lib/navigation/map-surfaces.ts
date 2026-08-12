@@ -22,13 +22,41 @@
  * shared map its working canvas.
  */
 export const MAP_SURFACE_ROUTES = [
-  /** Corridor study: the map IS the analysis. */
-  "/explore",
   /** Crash points, filters and coverage disclosure are read on the map. */
   "/safety",
   /** Missions and AOIs are geographic by definition. */
   "/aerial",
 ] as const;
+
+/*
+  `/explore` WAS LISTED HERE AND HAD TO COME OFF (2026-08-12).
+
+  It looks like the strongest candidate on the list — the map IS the corridor
+  analysis — and that is exactly why it was wrong. `/explore` does not use the
+  SHARED map at all. It builds its own `mapboxgl.Map` in
+  `explore/_components/use-explore-map-instance.ts`, inside a stage painted at
+  96–98% opacity over a surface that is itself 92–94% opaque, and the shared
+  backdrop suppresses itself on this route (`MAP_OWNING_ROUTES`) and never even
+  fetches the workspace layer catalog.
+
+  So listing it here mounted a layers panel for a map that is not on the screen.
+  CSS then hid the panel again (`body[data-map-owner="true"]`), which left the
+  worst of both: a mounted component firing a `/api/map-features/counts` request
+  on every visit, rendering nothing — and, because `:has(.op-cart-layers)` sees
+  a `display: none` element perfectly well, still holding open the 272px gutter
+  the panel would have occupied. The one page in OpenPlan where a map fills the
+  working area was ~256px narrower to reserve room for an invisible control.
+
+  The rule this list encodes is "the map is always VISIBLE, and its controls
+  appear where the map is READ". `/explore` reads a DIFFERENT map, so the shared
+  controls have nothing to control. Drawing workspace GIS layers on Explore's
+  own instance is a real and worthwhile piece of work — roughly 700–900 lines
+  across the backdrop, a new shared layer-painting module and Explore's own
+  hooks, with the blast radius covering every authenticated page — and it is
+  what would earn `/explore` its place back. Until then the honest arrangement
+  is no control rather than a hidden one, and the Data Hub says where uploaded
+  layers actually appear.
+*/
 
 /*
   `/dashboard` WAS listed here and should not have been.

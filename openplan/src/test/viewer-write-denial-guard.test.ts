@@ -187,7 +187,19 @@ const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // the ordinance's own purposes — and, through the fiscal-year cap that is
 // evaluated against these rows, how much more it may take. Two rather than
 // three: the table has no UPDATE policy at all.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 249;
+//
+// 249 -> 259 (20260812000015-18): the workspace GIS lane adds four tables and
+// ten permissive write policies — four on the layer, four on its versions, and
+// three each on the features and references tables minus the UPDATEs neither of
+// those has. Every one is role-aware through `workspace_member_can_write`, so
+// none enters `tablesNeedingGate()` and EXPECTED_GATED_TABLES does not move.
+//
+// What a viewer could otherwise write here is geometry: which shapes every map
+// in the workspace draws, and — through `workspace_gis_layers.current_version_id`
+// — which upload of them. A layer in the wrong place looks exactly like a layer
+// in the right place, so "read everything, change nothing" has to hold at the
+// database for this lane in particular.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 259;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

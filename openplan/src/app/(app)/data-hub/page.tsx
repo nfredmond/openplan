@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Database,
   FolderKanban,
+  Layers,
   Link2,
   RefreshCw,
   ShieldAlert,
@@ -14,6 +15,12 @@ import {
 import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-composer";
 import { GtfsIngestPanel } from "@/components/data-hub/gtfs-ingest-panel";
 import { TitleViServiceEquityPanel } from "@/components/data-hub/title-vi-service-equity-panel";
+import { WorkspaceGisManager } from "@/components/workspace-gis/workspace-gis-manager";
+import {
+  HOME_GEOGRAPHY_COLUMNS,
+  homeGeographyBbox,
+  parseWorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -43,6 +50,7 @@ import {
 } from "@/lib/transit/feed-registry-card";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 
 export const metadata = moduleMetadata("Data Hub");
 
@@ -207,6 +215,51 @@ export default async function DataHubPage() {
   }
 
   const workspaceId = membership.workspace_id;
+
+  /*
+    The workspace's own geography, read for ONE thing: narrowing the
+    coordinate-system picker in the map-layer uploader below.
+
+    Its absence is a real state, not an error — plenty of workspaces have never
+    stated a geography — and it is passed down as `null`, whereupon the picker
+    tells the planner its list is not narrowed to their area. Substituting a
+    default place here would be the "nothing is hardcoded" rule broken in the
+    one spot where a wrong answer costs the most: a coordinate-system shortlist
+    for somebody else's state.
+  */
+  const workspaceGeographyRead = await supabase
+    .from("workspaces")
+    .select(HOME_GEOGRAPHY_COLUMNS)
+    .eq("id", workspaceId)
+    .maybeSingle();
+  /*
+    A FAILED READ IS NOT "NO GEOGRAPHY STATED", and collapsing the two here
+    would put a false sentence in front of the planner at the worst possible
+    moment. `null` reaches the coordinate-system picker as "this workspace has
+    not stated a geography" — a statement about their configuration. If the
+    query merely failed, that statement is simply untrue, and the planner would
+    go looking for a setting that is already set.
+
+    So the failure is carried separately and the picker says which of the two it
+    is looking at. This is the shape `a-page-may-not-discard-a-read-error`
+    exists to enforce, and it caught this exact ternary.
+  */
+  const workspaceGeographyReads = new ReadFailureLog();
+  const workspaceGeographyUnreadable = workspaceGeographyReads.check(
+    "this workspace's own geography",
+    workspaceGeographyRead
+  );
+  const workspaceHomeGeography = workspaceGeographyUnreadable
+    ? null
+    : homeGeographyBbox(parseWorkspaceHomeGeography(workspaceGeographyRead.data));
+  const workspaceHomeBbox: [number, number, number, number] | null = workspaceHomeGeography
+    ? [
+        workspaceHomeGeography.minLon,
+        workspaceHomeGeography.minLat,
+        workspaceHomeGeography.maxLon,
+        workspaceHomeGeography.maxLat,
+      ]
+    : null;
 
   /**
    * BUILT OUTSIDE THE `Promise.all`, AND CAST DOWN TO WHAT IT IS USED AS.
@@ -659,6 +712,51 @@ export default async function DataHubPage() {
         today={todayIso}
         readOnly={isReadOnlyWorkspaceRole(membership.role)}
       />
+
+      {/*
+        THE AGENCY'S OWN GIS FILES — the Data Hub's job in one section.
+
+        This is where a planning department brings the layers it already has:
+        the bike network, city limits, zoning, parcels. They are uploaded once
+        here and become toggles on the Layers panel of the maps a planner READS
+        — Safety and Aerial today — which is the whole point: the alternative is
+        a planner who has their own parcel fabric and no way to see it beside
+        the work they are doing in this product. Corridor Analysis draws its own
+        separate map and does not carry them yet; `lib/navigation/map-surfaces`
+        records why, and saying so here beats a promise a planner would go
+        looking for and not find.
+
+        The workspace's home geography is passed down for ONE purpose: narrowing
+        the coordinate-system picker for a shapefile that carries no .prj, from
+        every system OpenPlan holds to the few dozen defined to cover this
+        agency's area. A workspace that has stated no geography passes `null` and
+        the picker says its list is not narrowed to anywhere — never a
+        substituted place.
+      */}
+      <section className="module-section-surface" aria-label="Your map layers">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
+              <Layers className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">Your map layers</p>
+              <h2 className="module-section-title">The GIS files your agency already has</h2>
+            </div>
+          </div>
+        </div>
+        <p className="module-summary-detail">
+          Upload a GeoJSON, KML, KMZ or zipped shapefile and it becomes a layer you can switch on
+          from the Layers panel on Safety and Aerial. Old files are expected: a State Plane
+          shapefile in feet with no .prj works — OpenPlan asks which coordinate system it is in
+          rather than guessing, and shows you where it lands before storing anything.
+        </p>
+        <WorkspaceGisManager
+          homeGeography={workspaceHomeBbox}
+          homeGeographyUnreadable={workspaceGeographyUnreadable}
+          readOnly={isReadOnlyWorkspaceRole(membership.role)}
+        />
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-3">
         <article className="module-section-surface">

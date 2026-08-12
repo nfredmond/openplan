@@ -70,10 +70,26 @@ export const SPATIAL_FILE_FORMATS = ["geojson", "kml", "kmz", "shapefile_zip"] a
 export type SpatialFileFormat = (typeof SPATIAL_FILE_FORMATS)[number];
 
 /**
+ * Formats this importer can RECOGNISE but not read, which is a different thing
+ * from a file it does not understand.
+ *
+ * A planner handing OpenPlan a file geodatabase has a real, common, entirely
+ * reasonable file. Telling them "unsupported format" would be true of the bytes
+ * and useless to the person: it teaches them nothing and suggests their data is
+ * the problem. Naming the format, saying this installation has no conversion
+ * service, and giving the four clicks in ArcGIS Pro that produce something
+ * OpenPlan does read turns a dead end into a task.
+ */
+export const SPATIAL_FILE_CONVERTIBLE_FORMATS = ["file_geodatabase", "personal_geodatabase"] as const;
+export type SpatialFileConvertibleFormat = (typeof SPATIAL_FILE_CONVERTIBLE_FORMATS)[number];
+
+/**
  * How the file's coordinate reference system was established.
  *
- * There is deliberately no member meaning "assumed". The importer reads the
- * answer from the file, or from a specification that fixes it, or it refuses.
+ * There is deliberately no member meaning "assumed" or "guessed". The importer
+ * reads the answer from the file, or from a specification that fixes it, or a
+ * NAMED PERSON states it — and that last one is its own basis precisely so it
+ * can never be recorded as, or mistaken for, evidence the file provided.
  */
 export const SPATIAL_FILE_SRS_BASES = [
   /** Read from a shapefile's `.prj` WKT. */
@@ -84,6 +100,12 @@ export const SPATIAL_FILE_SRS_BASES = [
   "geojson_rfc7946_default",
   /** OGC KML 2.2 §6.1: KML coordinates are WGS84. */
   "kml_specification",
+  /**
+   * A person told OpenPlan which system the file is in, because the file did
+   * not say. This is a CLAIM, not evidence, and every surface that shows it
+   * says so and names who made it. It may never be promoted to `prj_file`.
+   */
+  "planner_asserted",
 ] as const;
 export type SpatialFileSrsBasis = (typeof SPATIAL_FILE_SRS_BASES)[number];
 
@@ -95,6 +117,23 @@ export type SpatialFileSrs = {
   /** What a planner reads: "WGS 84", "NAD83 / California zone 2 (ftUS)". */
   name: string;
   basis: SpatialFileSrsBasis;
+  /**
+   * The projected system the coordinates were converted FROM, when OpenPlan
+   * reprojected them. Null when the file was already longitude/latitude.
+   *
+   * Kept even though `srs` now describes WGS 84, because "this layer was
+   * converted out of California zone 3 survey feet" is the fact a planner needs
+   * when the layer turns out to sit fifty metres off the street.
+   */
+  reprojectedFrom?: {
+    authority: string | null;
+    code: string | null;
+    name: string;
+    /** The unit the file's own numbers were in: "US survey foot", "metre". */
+    unit: string;
+  } | null;
+  /** The measured datum caveat carried by the source system, when it has one. */
+  datumNote?: string | null;
 };
 
 /** Geometry kinds a normalized import can carry. */
@@ -113,13 +152,20 @@ export type SpatialFileImportRefusalReason =
   | "empty"
   | "srs_undetermined"
   | "srs_unsupported"
-  | "no_drawable_features";
+  | "no_drawable_features"
+  /** A real GIS format that has to be converted before OpenPlan can read it. */
+  | "conversion_required";
 
 export type SpatialFileImportRefusal = {
   ok: false;
   reason: SpatialFileImportRefusalReason;
   /** Shown to the planner. Always names the real cause and the next step. */
   message: string;
+  /**
+   * Set only for `conversion_required`, so a caller can offer the conversion
+   * worker when one is configured instead of only printing the message.
+   */
+  convertibleFormat?: SpatialFileConvertibleFormat;
 };
 
 export type SpatialFileImport = {
@@ -148,7 +194,101 @@ export type SpatialFileImport = {
   droppedFeatureCount: number;
   truncated: boolean;
   bbox: [number, number, number, number] | null;
+  /**
+   * The attribute columns the features carry, in the file's own order.
+   *
+   * Empty when the upload carried no attribute table. A caller uses this for a
+   * label-field picker and for an inspector: a bike-network layer whose click
+   * target is an empty popup is a layer nobody can work with, which is what
+   * this importer shipped before it read the .dbf at all.
+   */
+  attributeFields: SpatialFileAttributeField[];
+  /**
+   * Which text encoding the attributes were read with, and how that was
+   * decided. Null when there were no attributes.
+   *
+   * DISCLOSED BECAUSE THE FALLBACK IS A GUESS. A shapefile's .dbf carries bytes,
+   * not text, and only a .cpg file states the encoding outright. Without one,
+   * `Ruta Peñasco` and `Ruta PeÃ±asco` are the same bytes read two ways, and
+   * OpenPlan has to say which reading it used rather than present either as
+   * simply what the file says.
+   */
+  attributeEncoding: SpatialFileAttributeEncoding | null;
+  /**
+   * Why the features carry no attributes, when a table was present but unusable.
+   * Null when attributes were read, and null when there was no table at all.
+   */
+  attributesUnavailableReason: string | null;
 };
+
+/** A column of a shapefile's attribute table. */
+export type SpatialFileAttributeField = {
+  name: string;
+  /** dBASE's own type letter, mapped: what a caller can expect in the value. */
+  type: "text" | "number" | "date" | "boolean" | "unreadable";
+};
+
+export type SpatialFileAttributeEncoding = {
+  /** The encoding actually used, e.g. "utf-8", "windows-1252". */
+  label: string;
+  /**
+   * `cpg_file` — the archive stated it. `dbf_language_driver` — the .dbf header
+   * byte named a code page. `fallback` — neither did, and this is a guess that
+   * the caller must disclose.
+   */
+  basis: "cpg_file" | "dbf_language_driver" | "fallback";
+};
+
+/**
+ * A coordinate system this importer has been TOLD to read a file as, together
+ * with the arithmetic that places it.
+ *
+ * THE FUNCTION IS PASSED IN, NOT LOOKED UP. This module runs in the browser and
+ * the CRS registry is well over a megabyte of server-side data; more
+ * importantly, WHICH system a file is in is a decision with a claim attached,
+ * and the server makes it. So the caller resolves the system, binds the
+ * projection to it, and hands this module something that can only compute.
+ */
+export type SpatialFileCrs = {
+  authority: string | null;
+  code: string | null;
+  name: string;
+  /** The unit the file's coordinates are in: "US survey foot", "metre". */
+  unit: string;
+  kind: "geographic" | "projected";
+  /** One position in the file's own units to longitude/latitude in degrees. */
+  toLngLat: (x: number, y: number) => [number, number];
+  /** The measured datum caveat, when the source datum carries one. */
+  datumNote?: string | null;
+};
+
+/** What the resolver was given to decide on. */
+export type SpatialFileCrsEvidence = {
+  /** Verbatim `.prj` text, or null when the shapefile carried none. */
+  prjText: string | null;
+  /** The shapefile's own base name, for a message a planner can act on. */
+  filename: string;
+};
+
+export type SpatialFileCrsDecision =
+  | { ok: true; crs: SpatialFileCrs; basis: "prj_file" | "planner_asserted" }
+  | { ok: false; reason: SpatialFileImportRefusalReason; message: string };
+
+/**
+ * Decide what coordinate system a shapefile is in.
+ *
+ * OPTIONAL, AND ITS ABSENCE IS NOT A DEFAULT. With no resolver this importer
+ * behaves exactly as it did before reprojection existed: it accepts a
+ * geographic `.prj`, refuses a projected one by name, and refuses a shapefile
+ * with no `.prj` at all. That is what the engagement lane still wants — a
+ * campaign context layer is never reprojected — and it means "what does
+ * OpenPlan do when no registry is available?" has a real answer rather than a
+ * silent WGS 84.
+ */
+export type SpatialFileCrsResolver = (evidence: SpatialFileCrsEvidence) => SpatialFileCrsDecision;
+export type SpatialFileCrsResolverAsync = (
+  evidence: SpatialFileCrsEvidence
+) => SpatialFileCrsDecision | Promise<SpatialFileCrsDecision>;
 
 export type SpatialFileImportResult = SpatialFileImport | SpatialFileImportRefusal;
 
@@ -194,6 +334,61 @@ export function detectSpatialFileFormat(filename: string, bytes: Uint8Array): Sp
   return null;
 }
 
+/** The Jet/ACE database signature at byte 4 of a `.mdb` — a personal geodatabase. */
+const JET_SIGNATURES = ["Standard Jet DB", "Standard ACE DB"];
+
+/**
+ * Recognise a real GIS format this importer cannot READ.
+ *
+ * DETECTED FROM THE BYTES, NOT THE NAME. A file geodatabase is a DIRECTORY, so
+ * a planner sending one has zipped it — the zip is indistinguishable from a
+ * shapefile zip by extension, and its own name is often `data.zip`. What gives
+ * it away is what is inside: `.gdbtable` files, or a `something.gdb/` prefix on
+ * every entry. Without this the file falls into generic "unsupported format"
+ * copy, which is both unhelpful and, for a file that is perfectly good GIS
+ * data, close to untrue.
+ */
+export function detectConvertibleFormat(
+  filename: string,
+  bytes: Uint8Array
+): SpatialFileConvertibleFormat | null {
+  if (looksLikeZip(bytes)) {
+    const archive = readZipEntryNames(bytes).map((name) => name.toLowerCase());
+    if (archive.some((name) => name.endsWith(".gdbtable") || name.includes(".gdb/"))) {
+      return "file_geodatabase";
+    }
+    return null;
+  }
+
+  const header = new TextDecoder("ascii", { fatal: false }).decode(bytes.subarray(4, 30));
+  if (JET_SIGNATURES.some((signature) => header.startsWith(signature))) return "personal_geodatabase";
+  if (extensionOf(filename) === "gdb") return "file_geodatabase";
+  return null;
+}
+
+/**
+ * What a planner is told when they hand OpenPlan a geodatabase.
+ *
+ * NAMES THE FORMAT, SAYS WHAT THIS INSTALLATION CANNOT DO, AND GIVES THE FREE
+ * WAY OUT. The export path matters more than the rest of it: converting a
+ * geodatabase to a shapefile is four clicks in software the planner already
+ * has, takes a minute, and needs nobody's permission or budget. Sending them
+ * away to ask an operator to configure a conversion service would be a worse
+ * answer to a problem they can solve themselves right now.
+ */
+export function describeConvertibleFormatRefusal(format: SpatialFileConvertibleFormat): string {
+  const name = format === "file_geodatabase" ? "file geodatabase (.gdb)" : "personal geodatabase (.mdb)";
+  return (
+    `This is an Esri ${name}. It is real GIS data and there is nothing wrong with it — OpenPlan simply cannot ` +
+    `read that format directly, and this installation has no conversion service configured. ` +
+    `The quickest fix is on your side and takes about a minute: in ArcGIS Pro, right-click the layer in the ` +
+    `Contents pane → Data → Export Features, and save it as a shapefile or GeoJSON. In QGIS, right-click the ` +
+    `layer → Export → Save Features As… and choose GeoJSON. Then upload that. ` +
+    `(If your organisation wants OpenPlan to convert these itself, an operator can configure a conversion ` +
+    `worker — see the self-hosting guide.)`
+  );
+}
+
 // ── Entry points ─────────────────────────────────────────────────────────────
 
 export type SpatialFileImportInput = {
@@ -221,14 +416,23 @@ export type InflateRawAsync = (
  * Synchronous import, for environments with a synchronous inflate — node, where
  * the caller passes `zlib.inflateRawSync` (see the engagement adapter).
  */
-export function importSpatialFile(input: SpatialFileImportInput, inflateRaw: InflateRawSync): SpatialFileImportResult {
+export function importSpatialFile(
+  input: SpatialFileImportInput,
+  inflateRaw: InflateRawSync,
+  resolveCrs?: SpatialFileCrsResolver
+): SpatialFileImportResult {
   const plan = planImport(input);
   if (plan.kind === "refusal") return plan.refusal;
-  if (plan.kind === "direct") return completeImport(input, plan.format, null);
+  if (plan.kind === "direct") return completeImport(input, plan.format, null, null);
 
   const inflated = inflateEntriesSync(plan.entries, inflateRaw);
   if (!inflated.ok) return inflated;
-  return completeImport(input, plan.format, inflated.files);
+
+  const decision =
+    plan.format === "shapefile_zip" && resolveCrs
+      ? resolveCrs({ prjText: readShapefilePrjText(inflated.files), filename: input.filename })
+      : null;
+  return completeImport(input, plan.format, inflated.files, decision);
 }
 
 /**
@@ -238,11 +442,12 @@ export function importSpatialFile(input: SpatialFileImportInput, inflateRaw: Inf
  */
 export async function importSpatialFileAsync(
   input: SpatialFileImportInput,
-  inflateRaw: InflateRawAsync = webInflateRaw
+  inflateRaw: InflateRawAsync = webInflateRaw,
+  resolveCrs?: SpatialFileCrsResolverAsync
 ): Promise<SpatialFileImportResult> {
   const plan = planImport(input);
   if (plan.kind === "refusal") return plan.refusal;
-  if (plan.kind === "direct") return completeImport(input, plan.format, null);
+  if (plan.kind === "direct") return completeImport(input, plan.format, null, null);
 
   const files: ZipFile[] = [];
   for (const entry of plan.entries) {
@@ -256,7 +461,12 @@ export async function importSpatialFileAsync(
       return inflateFailureRefusal(entry.name, entry.uncompressedSize);
     }
   }
-  return completeImport(input, plan.format, files);
+
+  const decision =
+    plan.format === "shapefile_zip" && resolveCrs
+      ? await resolveCrs({ prjText: readShapefilePrjText(files), filename: input.filename })
+      : null;
+  return completeImport(input, plan.format, files, decision);
 }
 
 /** The browser/universal inflate: `DecompressionStream` over a raw deflate
@@ -310,6 +520,21 @@ function planImport(input: SpatialFileImportInput): ImportPlan {
     return { kind: "refusal", refusal: refuse("empty", "The uploaded file is empty.") };
   }
 
+  // Recognised-but-unreadable is checked BEFORE format detection, because a
+  // zipped file geodatabase looks exactly like a shapefile zip from outside.
+  const convertible = detectConvertibleFormat(input.filename, input.bytes);
+  if (convertible) {
+    return {
+      kind: "refusal",
+      refusal: {
+        ok: false,
+        reason: "conversion_required",
+        message: describeConvertibleFormatRefusal(convertible),
+        convertibleFormat: convertible,
+      },
+    };
+  }
+
   const format = detectSpatialFileFormat(input.filename, input.bytes);
   if (!format) {
     return {
@@ -332,7 +557,8 @@ function planImport(input: SpatialFileImportInput): ImportPlan {
 function completeImport(
   input: SpatialFileImportInput,
   format: SpatialFileFormat,
-  files: ZipFile[] | null
+  files: ZipFile[] | null,
+  decision: SpatialFileCrsDecision | null
 ): SpatialFileImportResult {
   const read =
     format === "geojson"
@@ -341,11 +567,11 @@ function completeImport(
         ? readKmlUpload(decodeUtf8(input.bytes))
         : format === "kmz"
           ? readKmzUpload(files ?? [])
-          : readShapefileUpload(files ?? []);
+          : readShapefileUpload(files ?? [], decision);
 
   if (!read.ok) return read;
 
-  return normalize(format, read.srs, read.candidates, input.featureCap, read.undrawableCount ?? 0);
+  return normalize(format, read, input.featureCap);
 }
 
 // ── Normalization, bounds, and the disclosure counts ─────────────────────────
@@ -353,13 +579,38 @@ function completeImport(
 type Candidate = {
   geometry: GeoJSON.Geometry;
   properties: Record<string, unknown>;
+  /**
+   * Which record of the source file this shape came from, zero-based.
+   *
+   * A shapefile joins its geometry to its attributes BY POSITION and by nothing
+   * else, and the positions counted are ALL records — including the null shapes
+   * and the MultiPatch records this reader does not draw. Indexing the
+   * attribute table by position among the DRAWN shapes instead would silently
+   * shift every parcel's owner by however many undrawable records preceded it.
+   *
+   * Only a shapefile has a separate attribute file to align with; GeoJSON and
+   * KML carry their properties on the feature itself, so their readers leave
+   * this at 0 and nothing reads it.
+   */
+  recordIndex?: number;
 };
+
+/** One position in the file's units to longitude/latitude degrees. */
+type PositionTransform = (x: number, y: number) => [number, number];
 
 type ReaderResult =
   | {
       ok: true;
       srs: SpatialFileSrs;
       candidates: Candidate[];
+      /**
+       * Applied to every position before the WGS84 range check, when the file
+       * was projected. Null when its coordinates are already lon/lat.
+       */
+      transform?: PositionTransform | null;
+      attributeFields?: SpatialFileAttributeField[];
+      attributeEncoding?: SpatialFileAttributeEncoding | null;
+      attributesUnavailableReason?: string | null;
       /**
        * Shapes the reader positively identified and deliberately did not turn
        * into a candidate — a MultiPatch, or a record of a shape type this reader
@@ -413,13 +664,35 @@ type Bounds = { west: number; south: number; east: number; north: number };
  * not drawn, because half a parcel boundary is a wrong parcel boundary rather
  * than an incomplete one.
  */
-function normalizeGeometry(geometry: GeoJSON.Geometry, bounds: Bounds): GeoJSON.Geometry | null {
+function normalizeGeometry(
+  geometry: GeoJSON.Geometry,
+  bounds: Bounds,
+  transform: PositionTransform | null
+): GeoJSON.Geometry | null {
   const kept: Bounds = { west: 180, south: 90, east: -180, north: -90 };
 
   const walk = (value: unknown, depth: number): unknown => {
     if (depth === 0) {
-      if (!isDrawableLngLat(value)) return null;
-      const [lng, lat] = (value as number[]).map(roundCoordinate);
+      // THE PROJECTION RUNS FIRST AND THE RANGE CHECK STILL RUNS AFTER IT. The
+      // second net is not weakened by reprojection — it is the thing that
+      // catches a file read as the wrong system, whose eastings convert into
+      // latitudes of 400 degrees. A transform that throws or returns nonsense
+      // drops the position exactly as an unusable raw coordinate does.
+      let position = value;
+      if (transform) {
+        if (!Array.isArray(value) || value.length < 2) return null;
+        const [x, y] = value as number[];
+        if (typeof x !== "number" || typeof y !== "number" || !Number.isFinite(x) || !Number.isFinite(y)) {
+          return null;
+        }
+        try {
+          position = transform(x, y);
+        } catch {
+          return null;
+        }
+      }
+      if (!isDrawableLngLat(position)) return null;
+      const [lng, lat] = (position as number[]).map(roundCoordinate);
       kept.west = Math.min(kept.west, lng);
       kept.east = Math.max(kept.east, lng);
       kept.south = Math.min(kept.south, lat);
@@ -470,11 +743,12 @@ const BASE_KIND: Record<string, SpatialFileGeometryKind> = {
 
 function normalize(
   format: SpatialFileFormat,
-  srs: SpatialFileSrs,
-  candidates: Candidate[],
-  featureCap: number | null,
-  undrawableCount: number
+  read: Extract<ReaderResult, { ok: true }>,
+  featureCap: number | null
 ): SpatialFileImportResult {
+  const { srs, candidates } = read;
+  const undrawableCount = read.undrawableCount ?? 0;
+  const transform = read.transform ?? null;
   const bounds: Bounds = { west: 180, south: 90, east: -180, north: -90 };
   const features: GeoJSON.Feature[] = [];
   const kinds = new Set<SpatialFileGeometryKind>();
@@ -492,7 +766,7 @@ function normalize(
       continue;
     }
 
-    const geometry = normalizeGeometry(candidate.geometry, bounds);
+    const geometry = normalizeGeometry(candidate.geometry, bounds, transform);
     if (!geometry) {
       dropped += 1;
       continue;
@@ -513,9 +787,14 @@ function normalize(
   if (features.length === 0) {
     return refuse(
       "no_drawable_features",
-      `Every feature in this ${describeSpatialFileFormat(format)} had coordinates outside the valid longitude/latitude range, ` +
-        "so none of them could be placed on the map. That usually means the file is in a projected coordinate " +
-        "system (feet or metres) rather than degrees. Re-export it as WGS 84 / EPSG:4326."
+      transform
+        ? `Every feature in this ${describeSpatialFileFormat(format)} failed to convert into longitude and latitude, ` +
+            `or landed outside the valid range once converted. Read as ` +
+            `${srs.reprojectedFrom?.name ?? "the stated coordinate system"} its coordinates do not describe a place ` +
+            `on Earth, which means the file is not in that system. Check the coordinate system and try again.`
+        : `Every feature in this ${describeSpatialFileFormat(format)} had coordinates outside the valid longitude/latitude range, ` +
+            "so none of them could be placed on the map. That usually means the file is in a projected coordinate " +
+            "system (feet or metres) rather than degrees. Re-export it as WGS 84 / EPSG:4326."
     );
   }
 
@@ -535,6 +814,9 @@ function normalize(
       number,
       number,
     ],
+    attributeFields: read.attributeFields ?? [],
+    attributeEncoding: read.attributeEncoding ?? null,
+    attributesUnavailableReason: read.attributesUnavailableReason ?? null,
   };
 }
 
@@ -954,39 +1236,355 @@ function isArchiveNoise(name: string): boolean {
   return name.startsWith("__MACOSX/") || base.startsWith("._") || base === ".DS_Store";
 }
 
-function readShapefileUpload(files: ZipFile[]): ReaderResult {
+/**
+ * The pieces of a shapefile, matched by STEM rather than by extension alone.
+ *
+ * A zip can hold several shapefiles, or a shapefile beside a stray `.prj` from
+ * a different layer. Pairing `roads.shp` with `parcels.prj` would place the
+ * roads in whatever system the parcels were in, so the stem has to match.
+ */
+type ShapefileParts = { shp: ZipFile; prj: ZipFile | null; dbf: ZipFile | null; cpg: ZipFile | null };
+
+function findShapefileParts(files: ZipFile[]): ShapefileParts | null {
   const usable = files.filter((file) => !isArchiveNoise(file.name));
   const shp = usable.find((file) => file.name.toLowerCase().endsWith(".shp"));
-  if (!shp) {
+  if (!shp) return null;
+
+  const stem = stripExtension(baseName(shp.name)).toLowerCase();
+  const sibling = (extension: string): ZipFile | null =>
+    usable.find(
+      (file) =>
+        file.name.toLowerCase().endsWith(extension) &&
+        stripExtension(baseName(file.name)).toLowerCase() === stem
+    ) ?? null;
+
+  return { shp, prj: sibling(".prj"), dbf: sibling(".dbf"), cpg: sibling(".cpg") };
+}
+
+/** The `.prj` text of a shapefile zip, for a caller that resolves the CRS. */
+export function readShapefilePrjText(files: ZipFile[]): string | null {
+  const parts = findShapefileParts(files);
+  return parts?.prj ? decodeUtf8(parts.prj.bytes) : null;
+}
+
+function readShapefileUpload(files: ZipFile[], decision: SpatialFileCrsDecision | null): ReaderResult {
+  const parts = findShapefileParts(files);
+  if (!parts) {
     return refuse(
       "unreadable",
       "This zip contains no .shp file. A shapefile upload must be a zip of the whole shapefile — at least the " +
         ".shp and the .prj, and normally the .shx and .dbf as well."
     );
   }
+  const { shp, prj, dbf, cpg } = parts;
 
-  const stem = stripExtension(baseName(shp.name)).toLowerCase();
-  const prj = usable.find(
-    (file) =>
-      file.name.toLowerCase().endsWith(".prj") && stripExtension(baseName(file.name)).toLowerCase() === stem
-  );
+  // ── The coordinate system ──────────────────────────────────────────────────
+  let srs: SpatialFileSrs;
+  let transform: PositionTransform | null = null;
 
-  if (!prj) {
+  if (decision) {
+    // A resolver was supplied and has already decided, on the server, with the
+    // registry. Its answer is used AS GIVEN — this module does not second-guess
+    // it and, deliberately, cannot: it has no registry to check it against.
+    if (!decision.ok) return refuse(decision.reason, decision.message);
+    const { crs, basis } = decision;
+    srs =
+      crs.kind === "projected"
+        ? {
+            authority: "EPSG",
+            code: "4326",
+            name: "WGS 84",
+            basis,
+            reprojectedFrom: { authority: crs.authority, code: crs.code, name: crs.name, unit: crs.unit },
+            datumNote: crs.datumNote ?? null,
+          }
+        : {
+            authority: crs.authority,
+            code: crs.code,
+            name: crs.name,
+            basis,
+            reprojectedFrom: null,
+            datumNote: crs.datumNote ?? null,
+          };
+    if (crs.kind === "projected") transform = crs.toLngLat;
+  } else if (!prj) {
     return refuse(
       "srs_undetermined",
       `This shapefile has no .prj file, so its coordinate system cannot be established. OpenPlan will not guess a ` +
         `projection — a layer placed on a guess can be tens of metres from where it belongs and still look right. ` +
         `Re-export "${baseName(shp.name)}" from your GIS with its .prj included, or supply the layer as GeoJSON.`
     );
+  } else {
+    const read = readPrj(decodeUtf8(prj.bytes));
+    if (!read.ok) return read;
+    srs = read.srs;
   }
-
-  const srs = readPrj(decodeUtf8(prj.bytes));
-  if (!srs.ok) return srs;
 
   const geometry = readShpGeometry(shp.bytes);
   if (!geometry.ok) return geometry;
 
-  return { ok: true, srs: srs.srs, candidates: geometry.candidates, undrawableCount: geometry.undrawableCount };
+  // ── The attributes ─────────────────────────────────────────────────────────
+  let attributeFields: SpatialFileAttributeField[] = [];
+  let attributeEncoding: SpatialFileAttributeEncoding | null = null;
+  let attributesUnavailableReason: string | null = null;
+
+  if (dbf) {
+    const table = readDbf(dbf.bytes, cpg ? decodeUtf8(cpg.bytes) : null);
+    if (!table.ok) {
+      attributesUnavailableReason = table.why;
+    } else if (table.rows.length !== geometry.recordCount) {
+      // ATTRIBUTES ARE POSITIONAL. A shapefile's Nth .dbf row belongs to its Nth
+      // .shp record and there is no key joining them; if the two files disagree
+      // on how many records exist, any alignment is a guess, and a guess here
+      // labels every parcel with a neighbour's owner. Dropping the attributes
+      // and saying so is the only honest option — the geometry is still right.
+      attributesUnavailableReason =
+        `The .dbf attribute table holds ${table.rows.length.toLocaleString()} rows but the .shp holds ` +
+        `${geometry.recordCount.toLocaleString()} shapes. A shapefile matches the two by position and nothing ` +
+        `else, so OpenPlan cannot tell which attributes belong to which shape and has left them off rather than ` +
+        `attach them to the wrong ones. The geometry is unaffected. Re-export the layer from your GIS.`;
+    } else {
+      attributeFields = table.fields;
+      attributeEncoding = table.encoding;
+      for (const candidate of geometry.candidates) {
+        candidate.properties = table.rows[candidate.recordIndex ?? 0] ?? {};
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    srs,
+    candidates: geometry.candidates,
+    undrawableCount: geometry.undrawableCount,
+    transform,
+    attributeFields,
+    attributeEncoding,
+    attributesUnavailableReason,
+  };
+}
+
+// ── .dbf — the attribute table ───────────────────────────────────────────────
+
+/**
+ * Which text encoding a .dbf's LANGUAGE DRIVER byte names.
+ *
+ * dBASE stores a code page identifier in byte 29 of the header. It is not
+ * always set and not always right, which is why a `.cpg` file beats it — but
+ * when a `.cpg` is absent it is real evidence, and using it is better than
+ * going straight to a Western European guess for a file that says it is Greek.
+ *
+ * Only the encodings a `TextDecoder` actually implements are listed; an
+ * identifier that maps to something unavailable falls through to the fallback
+ * and is DISCLOSED as a fallback, which is the honest outcome.
+ */
+const DBF_LANGUAGE_DRIVERS: Record<number, string> = {
+  0x01: "cp437",
+  0x02: "cp850",
+  0x03: "windows-1252",
+  0x08: "cp865",
+  0x09: "cp437",
+  0x0a: "cp850",
+  0x4d: "gbk",
+  0x4e: "euc-kr",
+  0x4f: "big5",
+  0x50: "windows-874",
+  0x57: "windows-1252",
+  0x58: "windows-1252",
+  0x59: "windows-1252",
+  0x64: "cp852",
+  0x65: "cp866",
+  0x66: "cp865",
+  0x87: "cp852",
+  0xc8: "windows-1250",
+  0xc9: "windows-1251",
+  0xca: "windows-1254",
+  0xcb: "windows-1253",
+  0xcc: "windows-1257",
+};
+
+/**
+ * The encoding OpenPlan reads attribute bytes with when nothing states one.
+ *
+ * Windows-1252 rather than UTF-8, and that is a considered choice about which
+ * failure is worse. ArcGIS on Windows has written .dbf files in the system code
+ * page for thirty years, which in the United States is this one. Reading such a
+ * file as UTF-8 turns every accented character into a replacement character —
+ * `Cañada` becomes `Ca?ada` — and the damage is silent and permanent once
+ * stored. Reading a genuinely UTF-8 file as windows-1252 turns the same
+ * character into visible mojibake (`CaÃ±ada`), which a planner spots
+ * immediately and can report. Both are wrong; only one is visible.
+ */
+const DBF_FALLBACK_ENCODING = "windows-1252";
+
+type DbfTable =
+  | {
+      ok: true;
+      fields: SpatialFileAttributeField[];
+      /**
+       * One slot per RECORD, in file order, so `rows[n]` belongs to the .shp's
+       * nth record. A deleted record keeps its slot as null rather than being
+       * dropped: removing it would shift every later row onto the wrong shape,
+       * which is the exact silent mislabelling this reader exists to avoid.
+       */
+      rows: (Record<string, unknown> | null)[];
+      encoding: SpatialFileAttributeEncoding;
+    }
+  | { ok: false; why: string };
+
+/** Normalize what a `.cpg` says into a label `TextDecoder` will accept. */
+function cpgToEncodingLabel(cpgText: string): string | null {
+  const raw = cpgText.trim().toLowerCase().replace(/\s+/g, "");
+  if (raw.length === 0) return null;
+  // A .cpg often holds a bare code-page NUMBER — "65001", "1252", "8859-1".
+  const numeric = /^(?:cp|windows-?|ibm)?(\d{3,5})$/.exec(raw);
+  if (numeric) {
+    const page = Number(numeric[1]);
+    if (page === 65001) return "utf-8";
+    if (page >= 1250 && page <= 1258) return `windows-${page}`;
+    return `cp${page}`;
+  }
+  if (/^utf-?8$/.test(raw)) return "utf-8";
+  if (/^iso-?8859-?(\d+)$/.test(raw)) return raw.replace(/^iso-?8859-?/, "iso-8859-");
+  return raw;
+}
+
+/** A decoder for `label`, or null when this runtime has no such encoding. */
+function decoderFor(label: string): TextDecoder | null {
+  try {
+    return new TextDecoder(label, { fatal: false });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read a dBASE III/IV attribute table.
+ *
+ * Deliberately narrow: character, numeric, date and logical fields, which is
+ * everything a shapefile written by ArcGIS or QGIS in the last three decades
+ * actually contains. A memo field points into a `.dbt` this reader does not
+ * open, and it comes back null rather than as the raw block number — a number
+ * that looks like data and is not is worse than an empty cell.
+ */
+function readDbf(bytes: Uint8Array, cpgText: string | null): DbfTable {
+  const HEADER_BYTES = 32;
+  const FIELD_DESCRIPTOR_BYTES = 32;
+  const FIELD_TERMINATOR = 0x0d;
+
+  if (bytes.byteLength < HEADER_BYTES) {
+    return { ok: false, why: "The .dbf attribute table in this archive is too short to be a dBASE file." };
+  }
+
+  const view = viewOf(bytes);
+  const recordCount = view.getUint32(4, true);
+  const headerLength = view.getUint16(8, true);
+  const recordLength = view.getUint16(10, true);
+  const languageDriver = view.getUint8(29);
+
+  if (headerLength < HEADER_BYTES || recordLength === 0 || headerLength > bytes.byteLength) {
+    return { ok: false, why: "The .dbf attribute table in this archive does not carry a readable dBASE header." };
+  }
+
+  type Descriptor = { name: string; type: string; length: number; offset: number };
+  const descriptors: Descriptor[] = [];
+  let cursor = HEADER_BYTES;
+  let fieldOffset = 1; // Past the record's deletion flag.
+  const asciiDecoder = new TextDecoder("ascii", { fatal: false });
+
+  while (cursor + FIELD_DESCRIPTOR_BYTES <= headerLength && bytes[cursor] !== FIELD_TERMINATOR) {
+    const nameBytes = bytes.subarray(cursor, cursor + 11);
+    const terminator = nameBytes.indexOf(0);
+    const name = asciiDecoder.decode(terminator === -1 ? nameBytes : nameBytes.subarray(0, terminator)).trim();
+    const type = String.fromCharCode(bytes[cursor + 11]).toUpperCase();
+    const length = bytes[cursor + 16];
+    if (name.length > 0 && length > 0) {
+      descriptors.push({ name, type, length, offset: fieldOffset });
+    }
+    fieldOffset += length;
+    cursor += FIELD_DESCRIPTOR_BYTES;
+  }
+
+  if (descriptors.length === 0) {
+    return { ok: false, why: "The .dbf attribute table in this archive declares no columns." };
+  }
+
+  // Encoding: the .cpg states it, else the header's language driver names it,
+  // else a disclosed guess. Never silently.
+  let encoding: SpatialFileAttributeEncoding = { label: DBF_FALLBACK_ENCODING, basis: "fallback" };
+  let decoder: TextDecoder | null = null;
+
+  const cpgLabel = cpgText === null ? null : cpgToEncodingLabel(cpgText);
+  if (cpgLabel) {
+    decoder = decoderFor(cpgLabel);
+    if (decoder) encoding = { label: cpgLabel, basis: "cpg_file" };
+  }
+  if (!decoder) {
+    const driverLabel = DBF_LANGUAGE_DRIVERS[languageDriver];
+    if (driverLabel) {
+      decoder = decoderFor(driverLabel);
+      if (decoder) encoding = { label: driverLabel, basis: "dbf_language_driver" };
+    }
+  }
+  if (!decoder) {
+    decoder = decoderFor(DBF_FALLBACK_ENCODING) ?? new TextDecoder("utf-8", { fatal: false });
+  }
+
+  const fields: SpatialFileAttributeField[] = descriptors.map((descriptor) => ({
+    name: descriptor.name,
+    type:
+      descriptor.type === "C"
+        ? "text"
+        : descriptor.type === "N" || descriptor.type === "F" || descriptor.type === "Y" || descriptor.type === "B"
+          ? "number"
+          : descriptor.type === "D"
+            ? "date"
+            : descriptor.type === "L"
+              ? "boolean"
+              : "unreadable",
+  }));
+
+  const rows: (Record<string, unknown> | null)[] = [];
+  const available = Math.max(0, Math.floor((bytes.byteLength - headerLength) / recordLength));
+  // The header's record count and the file's actual length disagree in the wild
+  // — a truncated download, or a writer that never updated the header. Reading
+  // past the end would decode adjacent bytes as text, so the smaller wins.
+  const readable = Math.min(recordCount, available);
+
+  for (let record = 0; record < readable; record += 1) {
+    const start = headerLength + record * recordLength;
+    if (bytes[start] === 0x2a) {
+      rows.push(null); // Deleted record — the slot stays, see `rows`.
+      continue;
+    }
+    const row: Record<string, unknown> = {};
+    for (let index = 0; index < descriptors.length; index += 1) {
+      const descriptor = descriptors[index];
+      const from = start + descriptor.offset;
+      const raw = decoder.decode(bytes.subarray(from, from + descriptor.length)).trim();
+      const field = fields[index];
+
+      if (raw.length === 0) {
+        row[descriptor.name] = null;
+      } else if (field.type === "number") {
+        const value = Number(raw);
+        row[descriptor.name] = Number.isFinite(value) ? value : null;
+      } else if (field.type === "date") {
+        row[descriptor.name] = /^\d{8}$/.test(raw)
+          ? `${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}`
+          : null;
+      } else if (field.type === "boolean") {
+        row[descriptor.name] = /^[TtYy]$/.test(raw) ? true : /^[FfNn]$/.test(raw) ? false : null;
+      } else if (field.type === "unreadable") {
+        row[descriptor.name] = null;
+      } else {
+        row[descriptor.name] = raw;
+      }
+    }
+    rows.push(row);
+  }
+
+  return { ok: true, fields, rows, encoding };
 }
 
 // ── .prj → SRS ───────────────────────────────────────────────────────────────
@@ -1136,7 +1734,17 @@ const SHP_ABSENT: ShpRecord = { kind: "absent" };
 const SHP_UNDRAWABLE: ShpRecord = { kind: "undrawable" };
 
 type ShpResult =
-  | { ok: true; candidates: Candidate[]; undrawableCount: number }
+  | {
+      ok: true;
+      candidates: Candidate[];
+      undrawableCount: number;
+      /**
+       * Every record the .shp held, drawn or not. This is the number the
+       * attribute table must agree with — the .dbf has one row per record, not
+       * one row per drawable shape.
+       */
+      recordCount: number;
+    }
   | SpatialFileImportRefusal;
 
 /**
@@ -1173,6 +1781,7 @@ function readShpGeometry(bytes: Uint8Array): ShpResult {
 
   const candidates: Candidate[] = [];
   let undrawableCount = 0;
+  let recordCount = 0;
   let cursor = SHP_HEADER_BYTES;
 
   while (cursor + 8 <= end) {
@@ -1182,10 +1791,11 @@ function readShpGeometry(bytes: Uint8Array): ShpResult {
 
     const record = readShpRecord(view, contentStart, contentLength);
     if (record.kind === "geometry") {
-      candidates.push({ geometry: record.geometry, properties: {} });
+      candidates.push({ geometry: record.geometry, properties: {}, recordIndex: recordCount });
     } else if (record.kind === "undrawable") {
       undrawableCount += 1;
     }
+    recordCount += 1;
 
     cursor = contentStart + contentLength;
   }
@@ -1206,7 +1816,7 @@ function readShpGeometry(bytes: Uint8Array): ShpResult {
     );
   }
 
-  return { ok: true, candidates, undrawableCount };
+  return { ok: true, candidates, undrawableCount, recordCount };
 }
 
 function readShpRecord(view: DataView, start: number, length: number): ShpRecord {

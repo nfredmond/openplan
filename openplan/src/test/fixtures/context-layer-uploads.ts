@@ -211,3 +211,81 @@ export function buildProjectedShapefileZip(): Uint8Array {
     { name: "corridor.prj", data: encoder.encode(PROJECTED_PRJ) },
   ]);
 }
+
+// ── .dbf — the attribute table ───────────────────────────────────────────────
+
+export type DbfField = {
+  /** Up to ten characters; dBASE truncates and the reader must see what it gets. */
+  name: string;
+  /** dBASE's type letter: C character, N numeric, D date, L logical, M memo. */
+  type: "C" | "N" | "D" | "L" | "M";
+  length: number;
+};
+
+/**
+ * A real dBASE III attribute table, written byte by byte for the same reason
+ * the .shp writer above exists: the layout IS the specification the reader is
+ * being held to, and a checked-in binary would make that unreviewable.
+ *
+ * `values` are written as raw BYTES, not as text, so a test can hand this the
+ * windows-1252 encoding of a name and prove the reader decodes it rather than
+ * assuming UTF-8. `deleted` marks a record with dBASE's 0x2A flag.
+ */
+export function buildDbf(options: {
+  fields: DbfField[];
+  records: (Uint8Array | null)[][];
+  /** Byte 29, the language driver identifier. 0 means "not stated". */
+  languageDriver?: number;
+  /** Record indices to mark deleted. */
+  deleted?: number[];
+  /** Override the header's record count, to build a file that lies about itself. */
+  declaredRecordCount?: number;
+}): Uint8Array {
+  const { fields, records } = options;
+  const headerLength = 32 + fields.length * 32 + 1;
+  const recordLength = 1 + fields.reduce((total, field) => total + field.length, 0);
+  const out = new Uint8Array(headerLength + records.length * recordLength + 1);
+  const view = new DataView(out.buffer);
+
+  out[0] = 0x03;
+  out[1] = 26 - 0; // year since 1900, arbitrary but real
+  out[2] = 8;
+  out[3] = 12;
+  view.setUint32(4, options.declaredRecordCount ?? records.length, true);
+  view.setUint16(8, headerLength, true);
+  view.setUint16(10, recordLength, true);
+  out[29] = options.languageDriver ?? 0;
+
+  fields.forEach((field, index) => {
+    const at = 32 + index * 32;
+    const nameBytes = encoder.encode(field.name.slice(0, 10));
+    out.set(nameBytes, at);
+    out[at + 11] = field.type.charCodeAt(0);
+    out[at + 16] = field.length;
+  });
+  out[32 + fields.length * 32] = 0x0d;
+
+  records.forEach((record, recordIndex) => {
+    let at = headerLength + recordIndex * recordLength;
+    out[at] = options.deleted?.includes(recordIndex) ? 0x2a : 0x20;
+    at += 1;
+    fields.forEach((field, fieldIndex) => {
+      const value = record[fieldIndex];
+      // dBASE pads with spaces; writing zeros instead would make an unset field
+      // indistinguishable from one holding NUL bytes.
+      out.fill(0x20, at, at + field.length);
+      if (value) out.set(value.subarray(0, field.length), at);
+      at += field.length;
+    });
+  });
+
+  out[out.length - 1] = 0x1a; // end-of-file marker
+  return out;
+}
+
+/** Bytes of `text` in windows-1252, for testing that the reader is not assuming UTF-8. */
+export function windows1252(text: string): Uint8Array {
+  const out = new Uint8Array(text.length);
+  for (let index = 0; index < text.length; index += 1) out[index] = text.charCodeAt(index) & 0xff;
+  return out;
+}

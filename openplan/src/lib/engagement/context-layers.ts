@@ -25,6 +25,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { MapLayerDisclosure } from "@/lib/cartographic/layer-disclosure";
+import { describeSpatialFileSrs } from "@/lib/geo/crs/describe";
+import type { SpatialFileSrsBasis } from "@/lib/geo/spatial-file-import";
 
 type QueryClient = Pick<SupabaseClient, "from">;
 
@@ -54,7 +56,19 @@ export const CONTEXT_LAYER_SRS_BASES = [
   /** OGC KML 2.2 §6.1: KML coordinates are WGS84. */
   "kml_specification",
 ] as const;
-export type ContextLayerSrsBasis = (typeof CONTEXT_LAYER_SRS_BASES)[number];
+/**
+ * The bases a CONTEXT LAYER can be stored with — the four above, which is what
+ * migration 20260729000002's CHECK constraint allows.
+ *
+ * The TYPE, however, is the shared importer's wider union. That is deliberate
+ * and is not a loosening: the importer now also produces `planner_asserted` for
+ * workspace GIS layers, where a person states the coordinate system of a
+ * shapefile that carries no .prj. The engagement path never supplies a CRS
+ * resolver, so it cannot produce that basis, and the database refuses it if
+ * anything ever tries. Narrowing the type here instead would mean the two
+ * vocabularies drift apart and every shared function needs a conversion.
+ */
+export type ContextLayerSrsBasis = SpatialFileSrsBasis;
 
 export type ContextLayerSrs = {
   /** Registry that issued the code, e.g. "EPSG". Null when the file named none. */
@@ -405,48 +419,18 @@ export function contextLayerPublicationWarning(layerName: string): string {
 }
 
 /**
- * Whether a stored SRS is WGS 84 itself, by identifier or by name.
- *
- * Name matching is a fallback, not the primary test: ESRI-written .prj files
- * routinely carry no AUTHORITY at all, and "GCS_WGS_1984" is what they say
- * instead. Anything this cannot confirm is treated as NOT WGS 84, which errs
- * toward disclosing a datum note that was not strictly needed rather than
- * suppressing one that was.
- */
-function isWgs84Identifier(srs: ContextLayerSrs): boolean {
-  if (srs.authority?.toUpperCase() === "EPSG" && srs.code === "4326") return true;
-  if (srs.code?.toUpperCase() === "CRS84") return true;
-  return /^(gcs_)?wgs[ _]?(19)?84$/i.test(srs.name.trim());
-}
-
-/**
  * How a layer's coordinate reference system is explained back to the operator.
  *
- * Reads as a statement of fact about the file, never as reassurance: the planner
- * must be able to tell "your .prj said WGS 84" from "GeoJSON is WGS84 by
- * specification and this file named no other", because those are different
- * amounts of evidence.
+ * ONE SENTENCE, PRODUCT-WIDE. The wording moved to `@/lib/geo/crs/describe`
+ * when workspace GIS layers arrived, because two panels writing their own
+ * version of this drift, and the drift is invisible: the day one of them stops
+ * saying "no datum transformation was applied" is the day that stops being
+ * disclosed, with nothing in the code that does the work having changed.
+ *
+ * This alias stays because the engagement lane's callers read better for it and
+ * because it is the seam where a context layer's narrower vocabulary meets the
+ * shared one.
  */
 export function describeContextLayerSrs(srs: ContextLayerSrs): string {
-  const identifier = srs.authority && srs.code ? `${srs.authority}:${srs.code}` : null;
-  const named = identifier ? `${srs.name} (${identifier})` : srs.name;
-
-  switch (srs.basis) {
-    case "prj_file":
-      return (
-        `Coordinate system read from the shapefile's .prj file: ${named}.` +
-        // A geographic CRS on a datum other than WGS 84 is already in degrees,
-        // so it draws correctly enough for a portal map — but the coordinates
-        // are used AS GIVEN. Saying so is the honest version: the alternative is
-        // to relabel the layer "WGS 84" and let a survey-grade user believe a
-        // transformation happened that did not.
-        (isWgs84Identifier(srs) ? "" : " Coordinates are drawn as given; no datum transformation to WGS 84 is applied, which can shift positions by a metre or two.")
-      );
-    case "geojson_crs_member":
-      return `Coordinate system read from the file's own crs member: ${named}.`;
-    case "geojson_rfc7946_default":
-      return `The file named no coordinate system. GeoJSON is defined as ${named} by RFC 7946, so it was read as that — not guessed.`;
-    case "kml_specification":
-      return `KML is defined as ${named} by the OGC specification, so it was read as that — not guessed.`;
-  }
+  return describeSpatialFileSrs(srs);
 }
