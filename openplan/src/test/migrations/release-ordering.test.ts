@@ -142,6 +142,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260812000014_measure_off_the_top_and_atomic_allocation.sql",
     migrationsAtRelease: 198,
   },
+  // 0.19.0 — workspace GIS layers: 6,688 coordinate systems, legacy
+  // shapefiles placed where they belong, and the prime-meridian correction.
+  {
+    tag: "0.19.0",
+    lastMigration: "20260812000018_workspace_gis_layer_references.sql",
+    migrationsAtRelease: 201,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

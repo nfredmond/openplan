@@ -19,6 +19,47 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.19.0 — 2026-08-12
+
+**Three migrations are required before the app deploys: `20260812000015`,
+`20260812000016`, and `20260812000018`.** They add the layer catalogue, the
+feature store (PostGIS), and the reference record that refuses to delete a
+layer something depends on. All additive.
+
+**Security:** this release upgrades `puppeteer-core` (23 → 25) for
+[GHSA-jmr9-qjv8-65gv](https://github.com/advisories/GHSA-jmr9-qjv8-65gv). If
+you generate PDFs with Chrome, redeploy rather than waiting.
+
+### Your agency's own map layers
+
+Upload the GIS files your agency already has — bike network, city limits,
+zoning, whatever you keep in ArcGIS or QGIS — and turn them on over the map.
+GeoJSON, KML, KMZ and zipped shapefiles.
+
+**Old files are the point.** A shapefile in State Plane feet, with a `.prj`
+or without one, is what most planning departments actually have. OpenPlan
+reads 6,688 coordinate systems and reprojects your file to where it belongs.
+When there is no `.prj`, it asks you which system the file is in and records
+that **you** said so — permanently distinguishable from a system it read out
+of the file, on every screen that shows the layer. If the result lands
+somewhere the coordinate system is not used, OpenPlan refuses and tells you
+what it expected and what it got, rather than drawing your city in the ocean.
+
+A layer with more features than can be drawn cleanly draws **nothing** and
+tells you how many there are, instead of showing you part of your data as if
+it were all of it.
+
+Layers appear on the Safety and Aerial maps today. Corridor Analysis draws
+its own map and does not show them yet.
+
+### Not in this release, so you know before you try
+
+**Geodatabases (`.gdb`) are not read.** Export to shapefile or GeoJSON from
+ArcGIS Pro or QGIS and upload that — OpenPlan says exactly this when you try
+one, rather than calling the format unsupported. **Original files are not
+kept**: OpenPlan stores the reprojected shapes, so if you pick the wrong
+coordinate system, the fix is to upload again and delete the old layer.
+
 ## 0.18.0 — 2026-08-12
 
 **Four migrations are required before the app deploys: `20260812000011`
