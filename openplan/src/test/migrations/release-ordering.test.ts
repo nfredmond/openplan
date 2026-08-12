@@ -128,6 +128,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260812000003_safety_crash_severity_counts.sql",
     migrationsAtRelease: 193,
   },
+  // 0.17.0 — the drawdown ledger, the reimbursement worksheet, lapse dates,
+  // and the two money figures that were wrong before it.
+  {
+    tag: "0.17.0",
+    lastMigration: "20260812000010_award_expenditure_deadline.sql",
+    migrationsAtRelease: 194,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

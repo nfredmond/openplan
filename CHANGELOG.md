@@ -19,6 +19,63 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.17.0 — 2026-08-11
+
+**One migration is required, and the order matters more than usual:
+`20260812000010` must be applied BEFORE this code deploys.** It adds a
+nullable expenditure-deadline column to funding awards, and this release's
+award close-out and project funding panel both ask for that column by name —
+so code-first would break those two screens until the migration lands.
+
+**Two money figures were wrong before this release. Read this if you invoice
+a funder.**
+
+- **A rejected invoice was counted as money you had claimed.** The register
+  said "all non-rejected invoice records" above a total that included the
+  rejected ones, and that same total was subtracted from your committed award
+  dollars. On our worked example, a rejected $55,000 claim told the agency it
+  had **$16,999.50 left to bill when the real figure was $80,999.50**. The
+  same over-count reached RTP roll-ups, report snapshots, and what the AI
+  assistant believed. Every one of those now excludes rejected claims and
+  reports them separately.
+- **"Claimed" meant two different things on one screen.** The project funding
+  panel counted draft invoices as claimed; the printable form did not. Both
+  now come from a single ledger, and drafts are shown separately as drafts.
+
+Nothing in your database was wrong — the arithmetic reading it was. No data
+migration is needed for either fix.
+
+### The drawdown ledger
+
+Every award now shows the whole picture in one place: authorized, claimed,
+paid, outstanding, retention held, retention still to come, drafts not yet
+claimed, rejected, and what authorization remains. An award with no recorded
+authorization says so rather than showing $0. An over-claimed award shows a
+negative remainder rather than hiding the overrun at zero.
+
+### A reimbursement worksheet you can work from
+
+Download an award's reimbursement packet: your recorded costs, in the shape
+the exhibit expects, with the invoice register and the period you chose.
+**It is deliberately not a funder's form** — it says on every page that
+OpenPlan prepared it from your records and that you must check it against the
+exhibit your funder currently publishes. That sentence now survives on
+deployments without Chrome, where it previously appeared only on the first
+and last pages.
+
+### Lapse dates, before they lapse
+
+Awards can carry an expenditure deadline — the date unspent money goes away —
+and the daily reminder names the award, the date, and the amount at risk from
+the ledger. Awards created before this release can be given one; previously
+the field could only be set at creation.
+
+### Beyond US funders
+
+The reimbursement profile now declares its own currency, and packets name it.
+Where no profile declares one, the document says US dollars are OpenPlan's
+assumption rather than printing a dollar sign and hoping.
+
 ## 0.16.0 — 2026-08-11
 
 **Three migrations are required before the app deploys: `20260812000001`,
