@@ -22,7 +22,7 @@ import path from "node:path";
  *    here and the double-run test fails.
  */
 
-import { blankComments, readMigration } from "../migrations/read-migrations";
+import { blankComments, migrationFiles, readMigration } from "../migrations/read-migrations";
 
 export const WORK_NOTIFICATIONS_MIGRATION = "20260811000007_work_notifications.sql";
 
@@ -44,15 +44,49 @@ export function workNotificationUniqueKey(): string[] {
 }
 
 /**
- * The `kind` values the CHECK constraint accepts, as the migration declares
- * them. The code holds a copy; this is what stops the copy drifting into a
- * sweep whose every insert is rejected.
+ * The `kind` values the CHECK constraint accepts AFTER the whole corpus has
+ * been applied. The code holds a copy; this is what stops the copy drifting
+ * into a sweep whose every insert is rejected.
+ *
+ * WHY IT SCANS EVERY MIGRATION rather than only the create-table one. The
+ * vocabulary grows: 20260812000010 drops the inline CHECK and re-adds it with a
+ * seventh kind, and a reader pinned to 20260811000007 would report the
+ * six-value list — i.e. it would call the NEW kind illegal and fail a sweep
+ * that the database accepts, or (worse, in the other direction) pass a stale
+ * list while the constraint had moved on. Files are walked in filename order,
+ * which is application order, and the LAST declaration wins exactly as it does
+ * in Postgres.
  */
 export function migrationKindVocabulary(): string[] {
-  const sql = blankComments(readMigration(WORK_NOTIFICATIONS_MIGRATION));
-  const match = sql.match(/kind\s+text\s+NOT\s+NULL\s+CHECK\s*\(\s*kind\s+IN\s*\(([^)]*)\)/i);
-  if (!match) return [];
-  return match[1]
+  // Both spellings the corpus uses for this constraint: the inline column CHECK
+  // in the create-table, and a named ADD CONSTRAINT that replaces it. Anchored
+  // on `work_notifications` in the same statement so another table's `kind`
+  // vocabulary can never answer here.
+  const declarations = [
+    /CREATE\s+TABLE[^;]*?\bwork_notifications\b[^;]*?\bkind\s+text\s+NOT\s+NULL\s+CHECK\s*\(\s*kind\s+IN\s*\(([^)]*)\)/gi,
+    /ALTER\s+TABLE\s+(?:public\.)?work_notifications\s+ADD\s+CONSTRAINT\s+[A-Za-z0-9_]+\s+CHECK\s*\(\s*kind\s+IN\s*\(([^)]*)\)/gi,
+  ];
+
+  let latest: string | null = null;
+  for (const file of migrationFiles()) {
+    const sql = blankComments(readMigration(file));
+    if (!/work_notifications/i.test(sql)) continue;
+    // Within a file, order is byte offset — two declarations in one migration
+    // apply in the order they are written, not in the order this array lists
+    // the two spellings.
+    const inFile: Array<{ at: number; values: string }> = [];
+    for (const pattern of declarations) {
+      pattern.lastIndex = 0;
+      for (const match of sql.matchAll(pattern)) {
+        inFile.push({ at: match.index ?? 0, values: match[1] });
+      }
+    }
+    inFile.sort((left, right) => left.at - right.at);
+    if (inFile.length > 0) latest = inFile[inFile.length - 1].values;
+  }
+
+  if (latest === null) return [];
+  return latest
     .split(",")
     .map((value) => value.trim().replace(/^'|'$/g, ""))
     .filter(Boolean);

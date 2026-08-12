@@ -75,6 +75,17 @@ function emptyResult() {
       invoice_due: { scanned: 0, candidates: 0, pending: false, failed: false, message: null, truncated: true },
       grant_decision_due: { scanned: 0, candidates: 0, pending: false, failed: false, message: null, truncated: false },
       award_obligation_due: { scanned: 0, candidates: 0, pending: false, failed: false, message: null, truncated: false },
+      // Read fine, reminders sent — but the second read that carries the
+      // amount at risk did not come back, which the operator hears about.
+      award_expenditure_due: {
+        scanned: 1,
+        candidates: 1,
+        pending: false,
+        failed: false,
+        message: null,
+        truncated: false,
+        contextUnavailable: true,
+      },
     },
     notificationsCreated: 4,
     digestsComposed: 2,
@@ -142,6 +153,10 @@ describe("the deadline sweep cron route", () => {
     expect(body.digestsComposed).toBe(2);
     expect(body.departedRecipients).toBe(1);
     expect(body.unreadableSources).toEqual(["milestone_due:failed", "submittal_due:pending_migration"]);
+    // A source that ANSWERED but could not price what it was about is neither
+    // "unreadable" nor silent: it is its own line, or a lapse reminder that
+    // shipped without its figure looks identical to one that had none to give.
+    expect(body.sourcesMissingDetail).toEqual(["award_expenditure_due"]);
   });
 
   it("answers 500 rather than a cheerful 200 when the sweep throws", async () => {

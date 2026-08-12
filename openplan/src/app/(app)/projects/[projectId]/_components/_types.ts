@@ -240,6 +240,13 @@ export type FundingAwardRow = {
   match_amount: number | string;
   match_posture: string;
   obligation_due_at: string | null;
+  /**
+   * The lapse date: when an unspent balance returns to the funder
+   * (`expenditure_deadline_at`, 20260812000010). Optional because whether it
+   * arrives is a property of the caller's `.select()`; `undefined` is a page
+   * that did not ask, `null` is an award with no lapse date recorded.
+   */
+  expenditure_deadline_at?: string | null;
   spending_status: string;
   risk_flag: string;
   notes: string | null;

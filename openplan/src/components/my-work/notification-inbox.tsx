@@ -40,7 +40,15 @@ export type NotificationInboxProps = {
   sweepConfigured: boolean;
 };
 
-/** Plain-language names for the six reminder kinds (20260811000007's CHECK). */
+/**
+ * Plain-language names for the reminder kinds (20260811000007's CHECK, widened
+ * by 20260812000010).
+ *
+ * "Award obligation" and "Award lapse" are deliberately different words for the
+ * two award deadlines: one is the date the money must be committed, the other
+ * the date an unspent balance goes back to the funder. A shared label would
+ * merge the two on the one surface where a planner glances rather than reads.
+ */
 const KIND_LABELS: Record<string, string> = {
   deliverable_due: "Deliverable",
   milestone_due: "Milestone",
@@ -48,6 +56,7 @@ const KIND_LABELS: Record<string, string> = {
   invoice_due: "Invoice",
   grant_decision_due: "Grant decision",
   award_obligation_due: "Award obligation",
+  award_expenditure_due: "Award lapse",
 };
 
 export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: NotificationInboxProps) {

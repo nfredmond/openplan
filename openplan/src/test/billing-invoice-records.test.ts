@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  BILLING_INVOICE_STATUSES,
   buildBillingInvoicePriorityQueue,
+  CLAIMED_INVOICE_STATUSES,
+  computeInvoiceRetentionWithheld,
   computeNetInvoiceAmount,
   computeRetentionAmount,
+  isClaimedInvoiceStatus,
   filterBillingInvoiceRecordsByLinkage,
   filterBillingInvoiceRecordsByOverdueStatus,
   summarizeAwardSubstantiation,
@@ -18,6 +22,22 @@ describe("billing invoice record helpers", () => {
 
   it("prefers explicit retention amount when present", () => {
     expect(computeNetInvoiceAmount("8000", "250", 5)).toBe(7750);
+    expect(computeInvoiceRetentionWithheld("8000", "250", 5)).toBe(250);
+  });
+
+  it("partitions the status vocabulary into claimed and not claimed", () => {
+    // Derived from BILLING_INVOICE_STATUSES so a status added to the CHECK
+    // constraint cannot land on neither side of the partition unnoticed.
+    expect([...CLAIMED_INVOICE_STATUSES]).toEqual([
+      "internal_review",
+      "submitted",
+      "approved_for_payment",
+      "paid",
+    ]);
+    expect(BILLING_INVOICE_STATUSES.filter((status) => !isClaimedInvoiceStatus(status))).toEqual([
+      "draft",
+      "rejected",
+    ]);
   });
 
   it("summarizes drafts, submitted invoices, overdue items, and paid totals", () => {
@@ -32,6 +52,14 @@ describe("billing invoice record helpers", () => {
       "2026-03-15T12:00:00.000Z"
     );
 
+    // Hand-derived from the five rows above:
+    //   draft      10,000 less 10% =  9,000
+    //   submitted   7,500 less  5% =  7,125
+    //   approved    5,000 less  0  =  5,000
+    //   paid        1,200 less  0  =  1,200
+    //   rejected      900 less  0  =    900
+    // total 23,225; claimed (all but draft and rejected) 7,125 + 5,000 + 1,200
+    // = 13,325; rejected 900.
     expect(summary).toEqual({
       totalCount: 5,
       draftCount: 1,
@@ -40,10 +68,54 @@ describe("billing invoice record helpers", () => {
       overdueCount: 2,
       overdueNetAmount: 16125,
       totalNetAmount: 23225,
+      claimedNetAmount: 13325,
       outstandingNetAmount: 12125,
       paidNetAmount: 1200,
       draftNetAmount: 9000,
+      rejectedCount: 1,
+      rejectedNetAmount: 900,
     });
+  });
+
+  /**
+   * THE DEFECT THIS PINS. `totalNetAmount` includes rejected invoices, and two
+   * surfaces captioned it "all non-rejected invoice records" / "already in
+   * reimbursement flow" while /grants subtracted it from committed award
+   * dollars to show what was left to bill. A rejected claim therefore both
+   * inflated what an agency appeared to have requested and removed the same
+   * money from what it appeared able to still request. `claimedNetAmount` is
+   * the figure those captions describe.
+   */
+  it("separates what was actually claimed from the register total when a claim was rejected", () => {
+    const summary = summarizeBillingInvoiceRecords(
+      [
+        { status: "paid", amount: 20000, retention_percent: 0 },
+        { status: "submitted", amount: 10000, retention_percent: 0 },
+        { status: "draft", amount: 4000, retention_percent: 0 },
+        { status: "rejected", amount: 55000, retention_percent: 0 },
+      ],
+      "2026-03-15T12:00:00.000Z"
+    );
+
+    expect(summary.totalNetAmount).toBe(89000);
+    expect(summary.claimedNetAmount).toBe(30000);
+    expect(summary.rejectedNetAmount).toBe(55000);
+    expect(summary.rejectedCount).toBe(1);
+    // Every dollar is in exactly one of the three buckets.
+    expect(summary.claimedNetAmount + summary.draftNetAmount + summary.rejectedNetAmount).toBe(
+      summary.totalNetAmount
+    );
+  });
+
+  it("counts approved-for-payment as claimed but not as paid", () => {
+    const summary = summarizeBillingInvoiceRecords(
+      [{ status: "approved_for_payment", amount: 5000, retention_percent: 0 }],
+      "2026-03-15T12:00:00.000Z"
+    );
+
+    // A funder's approval is a promise, not a deposit.
+    expect(summary.claimedNetAmount).toBe(5000);
+    expect(summary.paidNetAmount).toBe(0);
   });
 
   it("separates linked versus unlinked invoice dollars for reimbursement mismatch review", () => {
@@ -62,6 +134,10 @@ describe("billing invoice record helpers", () => {
       unlinkedCount: 2,
       linkedNetAmount: 7700,
       unlinkedNetAmount: 3500,
+      // Both links are claimed statuses, so the claimed side matches the census
+      // here; on the unlinked side the $1,500 draft is not a claim.
+      linkedClaimedNetAmount: 7700,
+      unlinkedClaimedNetAmount: 2000,
       linkedOutstandingNetAmount: 2700,
       unlinkedOutstandingNetAmount: 2000,
       linkedPaidNetAmount: 5000,

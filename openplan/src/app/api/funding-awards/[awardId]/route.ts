@@ -145,6 +145,18 @@ const patchFundingAwardSchema = z
     // and `undefined` (leave alone) has to stay distinguishable from `null`
     // (there is no obligation deadline).
     obligationDueAt: z.string().datetime().nullable().optional(),
+    /**
+     * The lapse date — when an unspent balance goes back to the funder
+     * (`expenditure_deadline_at`, 20260812000010).
+     *
+     * It was accepted at creation and NOWHERE ELSE, which made the whole
+     * expenditure-reminder lane unreachable for every award that already
+     * existed: there was no request that could give one a lapse date, ever.
+     * Nullable for the same reason `obligationDueAt` is — clearing a deadline
+     * that no longer applies is a real edit, and `undefined` (leave alone) must
+     * stay distinguishable from `null` (there is none).
+     */
+    expenditureDeadlineAt: z.string().datetime().nullable().optional(),
     spendingStatus: z.enum(FUNDING_AWARD_SPENDING_STATUSES).optional(),
     riskFlag: z.enum(FUNDING_AWARD_RISK_FLAGS).optional(),
     notes: z.string().trim().max(4000).nullable().optional(),
@@ -167,6 +179,7 @@ const FIELD_EDIT_KEYS = [
   "matchAmount",
   "matchPosture",
   "obligationDueAt",
+  "expenditureDeadlineAt",
   "riskFlag",
   "notes",
 ] as const;
@@ -397,6 +410,7 @@ function buildFieldPatch(payload: z.infer<typeof patchFundingAwardSchema>): Reco
   if (payload.matchAmount !== undefined) patch.match_amount = payload.matchAmount;
   if (payload.matchPosture !== undefined) patch.match_posture = payload.matchPosture;
   if (payload.obligationDueAt !== undefined) patch.obligation_due_at = payload.obligationDueAt;
+  if (payload.expenditureDeadlineAt !== undefined) patch.expenditure_deadline_at = payload.expenditureDeadlineAt;
   if (payload.riskFlag !== undefined) patch.risk_flag = payload.riskFlag;
   if (payload.notes !== undefined) patch.notes = payload.notes ? payload.notes.trim() : null;
 

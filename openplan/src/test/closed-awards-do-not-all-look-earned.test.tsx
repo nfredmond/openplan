@@ -5,6 +5,12 @@ vi.mock("@/components/projects/project-funding-profile-editor", () => ({
   ProjectFundingProfileEditor: () => <div data-testid="project-funding-profile-editor" />,
 }));
 
+// The award row now carries a lapse-date control, which is a client component
+// using `useRouter` to refresh after a save.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 vi.mock("@/components/projects/project-funding-award-creator", () => ({
   ProjectFundingAwardCreator: () => <div data-testid="project-funding-award-creator" />,
 }));
@@ -25,6 +31,7 @@ import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
  */
 
 const PROJECT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const WORKSPACE_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 
 /** The tone classes StatusBadge paints, by the CSS variable each one names. */
 const SUCCESS_TONE = "--pine";
@@ -68,6 +75,8 @@ function renderPanelWithAward(closure: ClosureColumns) {
   return render(
     <ProjectFundingPanel
       projectId={PROJECT_ID}
+      workspaceId={WORKSPACE_ID}
+      canWriteAwards
       projectFundingProfile={null}
       projectFundingProfilePending={false}
       fundingAwardsPending={false}
@@ -187,6 +196,8 @@ describe("a closed funding award on the project funding lane", () => {
     render(
       <ProjectFundingPanel
         projectId={PROJECT_ID}
+      workspaceId={WORKSPACE_ID}
+      canWriteAwards
         projectFundingProfile={null}
         projectFundingProfilePending={false}
         fundingAwardsPending={false}

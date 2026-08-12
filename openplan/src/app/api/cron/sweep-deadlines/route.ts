@@ -68,6 +68,10 @@ export async function GET(request: NextRequest) {
       .filter(([, outcome]) => outcome.failed || outcome.pending)
       .map(([kind, outcome]) => `${kind}:${outcome.pending ? "pending_migration" : "failed"}`);
 
+    const detailless = Object.entries(result.perSource)
+      .filter(([, outcome]) => outcome.contextUnavailable)
+      .map(([kind]) => kind);
+
     audit.info("cron_sweep_deadlines_completed", {
       notificationsCreated: result.notificationsCreated,
       digestsComposed: result.digestsComposed,
@@ -81,6 +85,12 @@ export async function GET(request: NextRequest) {
         .filter(([, outcome]) => outcome.truncated)
         .map(([kind]) => kind),
       unreadableSources: unreadable,
+      // Reminders that went out WITHOUT the detail a second read would have
+      // carried — today, the amount still unclaimed on a lapsing award. The
+      // reminder is worth more than its figure, so it is never withheld; the
+      // operator is told rather than the planner being shown a number nobody
+      // could read.
+      sourcesMissingDetail: detailless,
       writeError: result.writeError,
     });
 
@@ -95,6 +105,7 @@ export async function GET(request: NextRequest) {
         departedRecipients: result.departedRecipients,
         workspacesWithoutRoster: result.workspacesWithoutRoster.length,
         unreadableSources: unreadable,
+        sourcesMissingDetail: detailless,
         writeError: result.writeError,
       },
       { status: 200 }

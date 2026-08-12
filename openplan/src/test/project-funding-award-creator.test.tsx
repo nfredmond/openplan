@@ -93,6 +93,68 @@ describe("ProjectFundingAwardCreator", () => {
     expect(screen.getByText(/No invoice coverage was checked/)).toBeTruthy();
   });
 
+  it("offers both award deadlines, and sends the lapse date it was given", async () => {
+    /**
+     * THE ONLY PLACE A LAPSE DATE CAN BE ENTERED, so this is the test that says
+     * the column is reachable at all. A capability no planner can get to is
+     * this repository's most-repeated defect, and a reminder about a date
+     * nobody can type in is exactly that shape.
+     *
+     * The two fields are asserted TOGETHER and given different values: a form
+     * that wired the new input to the obligation state — or that posted the
+     * same string twice — passes a single-field fixture and fails this one.
+     *
+     * MUTATION-VERIFIED: pointing `expenditureDeadlineAt` at the obligation
+     * state fails on the obligation assertion; dropping the field from the POST
+     * body fails on the lapse one.
+     */
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ awardId: "award-1", closureBasis: null }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderCreator();
+    fillRequiredFields();
+    fireEvent.change(screen.getByLabelText("Obligation due"), {
+      target: { value: "2026-09-30T00:00" },
+    });
+    fireEvent.change(screen.getByLabelText(/Expenditure deadline/), {
+      target: { value: "2028-06-30T00:00" },
+    });
+    submit();
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
+
+    expect(new Date(String(body.obligationDueAt)).toISOString()).toBe(
+      new Date("2026-09-30T00:00").toISOString()
+    );
+    expect(new Date(String(body.expenditureDeadlineAt)).toISOString()).toBe(
+      new Date("2028-06-30T00:00").toISOString()
+    );
+    // The field says what it is for, in the words a planner uses for it.
+    expect(screen.getByText(/funds must be spent by/i)).toBeTruthy();
+  });
+
+  it("sends no lapse date when the field is left blank", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 201,
+      json: async () => ({ awardId: "award-1", closureBasis: null }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderCreator();
+    fillRequiredFields();
+    submit();
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
+    expect(body.expenditureDeadlineAt).toBeUndefined();
+  });
+
   it("will not send an import closure with no stated basis", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);

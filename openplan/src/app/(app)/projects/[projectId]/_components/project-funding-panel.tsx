@@ -3,6 +3,8 @@ import { CalendarClock } from "lucide-react";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
 import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
+import { ReimbursementWorksheetDownload } from "@/components/invoicing/reimbursement-worksheet-download";
+import { AwardExpenditureDeadlineControl } from "@/components/projects/award-expenditure-deadline-control";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import {
@@ -21,8 +23,8 @@ import {
   fundingOpportunityDecisionTone,
   fundingOpportunityStatusTone,
 } from "@/lib/programs/catalog";
+import { buildAwardDrawdownLedger, type AwardDrawdownLedger } from "@/lib/invoicing/drawdown-ledger";
 import {
-  buildAwardClaimProgress,
   buildProjectFundingProfileScan,
   buildProjectFundingStackSummary,
   projectFundingProfileScanTone,
@@ -105,6 +107,23 @@ type ComparisonBackedFundingReport = {
 
 type ProjectFundingPanelProps = {
   projectId: string;
+  /**
+   * The workspace this project belongs to, needed by the per-award reimbursement
+   * worksheet download (the route answers 404 on a workspace mismatch rather
+   * than disclosing that an award exists elsewhere).
+   *
+   * Required, with no fallback to a lookup inside this component: a panel that
+   * quietly guessed its own workspace would produce worksheet links that fail as
+   * "award not found", which reads as missing data and is a wiring bug.
+   */
+  workspaceId: string;
+  /**
+   * Whether this reader may edit an award — `programs.write`, the action the
+   * award PATCH route authorizes on. Required, not optional: an optional write
+   * flag defaulting either way is how a control ends up offered to someone the
+   * server will refuse, or hidden from someone it would have accepted.
+   */
+  canWriteAwards: boolean;
   projectFundingProfile: ProjectFundingProfileRow | null;
   projectFundingProfilePending: boolean;
   fundingAwardsPending: boolean;
@@ -148,6 +167,8 @@ type ProjectFundingPanelProps = {
 
 export function ProjectFundingPanel({
   projectId,
+  workspaceId,
+  canWriteAwards,
   projectFundingProfile,
   projectFundingProfilePending,
   fundingAwardsPending,
@@ -181,11 +202,34 @@ export function ProjectFundingPanel({
     unlinkedInvoiceCount: unlinkedProjectInvoices.length,
     unlinkedInvoiceAmount: unlinkedProjectInvoiceSummary.totalNetAmount,
   });
-  // Per-award claim posture from the linked reimbursement invoices only —
-  // unlinked project invoices deliberately never count toward an award here.
-  const awardClaimProgress = buildAwardClaimProgress(
-    fundingAwards,
-    Array.from(invoiceRecordsByFundingAwardId.values()).flat()
+  /**
+   * Per-award claim posture from the linked reimbursement invoices only —
+   * unlinked project invoices deliberately never count toward an award here.
+   *
+   * `buildAwardDrawdownLedger`, and NOT a second summariser living in
+   * `projects/funding.ts`. There were two: this line and the worksheet button
+   * ten lines below it — which calls itself "the printable form of the two
+   * lines above" — answered "how much has this award claimed" differently. The
+   * panel summed NET over every non-rejected status including drafts; the
+   * worksheet sums GROSS over the four claimed statuses. On an award with a
+   * $50,000 draft the two disagreed by $50,000, and a planner comparing the
+   * screen to the PDF they had just downloaded had no way to tell which was
+   * right. The old function is deleted rather than fixed: two definitions of
+   * claimed is the defect, and a corrected second definition is still a second
+   * definition.
+   */
+  const awardDrawdownLedgers = new Map<string, AwardDrawdownLedger>(
+    fundingAwards.flatMap((award) => {
+      const built = buildAwardDrawdownLedger({
+        award: {
+          awarded_amount: award.awarded_amount,
+          match_amount: award.match_amount,
+          match_posture: award.match_posture,
+        },
+        invoiceRead: { ok: true, invoices: invoiceRecordsByFundingAwardId.get(award.id) ?? [] },
+      });
+      return built.ok ? [[award.id, built.ledger] as const] : [];
+    })
   );
 
   return (
@@ -368,7 +412,7 @@ export function ProjectFundingPanel({
               {fundingAwards.map((award) => {
                 const awardInvoiceSummary = invoiceSummaryByFundingAwardId.get(award.id);
                 const awardInvoices = invoiceRecordsByFundingAwardId.get(award.id) ?? [];
-                const claimProgress = awardClaimProgress.get(award.id) ?? null;
+                const drawdownLedger = awardDrawdownLedgers.get(award.id) ?? null;
                 const isClosedOut = award.spending_status === FUNDING_AWARD_CLOSED_SPENDING_STATUS;
 
                 return (
@@ -415,18 +459,53 @@ export function ProjectFundingPanel({
                         Awarded {fmtCurrency(award.awarded_amount)} · Match {fmtCurrency(award.match_amount)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
                       </p>
 
-                      {claimProgress ? (
+                      {/*
+                        The lapse date sits with the obligation date because
+                        they are the pair a planner confuses, and OpenPlan
+                        cannot afford to help: obligating is committing the
+                        money, expending is spending it, and the reminder lane
+                        fires off this one. It renders even when unset — an
+                        award with no lapse date gets no expenditure reminder,
+                        and silence about that is indistinguishable from having
+                        one.
+                      */}
+                      <AwardExpenditureDeadlineControl
+                        awardId={award.id}
+                        expenditureDeadlineAt={award.expenditure_deadline_at}
+                        canWrite={canWriteAwards}
+                      />
+
+                      {/*
+                        Gross claimed beside net paid, each labelled, because
+                        that is what the ledger holds and what the worksheet
+                        prints. Labelling them is not decoration: an unlabelled
+                        "claimed" next to an unlabelled "paid" invites the
+                        reader to subtract two figures that are not on the same
+                        basis.
+                      */}
+                      {drawdownLedger ? (
                         <p className="mt-1 text-[0.73rem] text-muted-foreground">
-                          Claim progress: awarded {claimProgress.awardedAmount !== null ? fmtCurrency(claimProgress.awardedAmount) : "not entered"} · claimed {fmtCurrency(claimProgress.claimedToDate)} · paid {fmtCurrency(claimProgress.paidToDate)}
-                          {claimProgress.remaining !== null
-                            ? claimProgress.remaining >= 0
-                              ? ` · ${fmtCurrency(claimProgress.remaining)} not yet claimed`
-                              : ` · claims exceed the award by ${fmtCurrency(Math.abs(claimProgress.remaining))}`
+                          Claim progress: awarded {drawdownLedger.authorizedAmount !== null ? fmtCurrency(drawdownLedger.authorizedAmount) : "not entered"} · claimed {fmtCurrency(drawdownLedger.claimedGrossToDate)} gross · paid {fmtCurrency(drawdownLedger.paidToDate)} net
+                          {drawdownLedger.remainingAuthorized !== null
+                            ? drawdownLedger.remainingAuthorized >= 0
+                              ? ` · ${fmtCurrency(drawdownLedger.remainingAuthorized)} not yet claimed`
+                              : ` · claims exceed the award by ${fmtCurrency(Math.abs(drawdownLedger.remainingAuthorized))}`
+                            : ""}
+                          {drawdownLedger.draftedCount > 0
+                            ? ` · ${fmtCurrency(drawdownLedger.draftedNotClaimed)} drafted and not yet claimed, counted in none of the above`
                             : ""}
                         </p>
                       ) : null}
 
                       {isClosedOut ? <FundingAwardClosureProvenance award={award} /> : null}
+
+                      {/*
+                        The printable form of the two lines above. Offered on a
+                        closed award as well as an open one: a close-out does not
+                        end the need to evidence what was claimed, and audits
+                        arrive after the money stops moving.
+                      */}
+                      <ReimbursementWorksheetDownload awardId={award.id} workspaceId={workspaceId} />
 
                       <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -436,7 +515,7 @@ export function ProjectFundingPanel({
                             </p>
                             <p className="mt-1 text-sm text-muted-foreground">
                               {awardInvoices.length > 0
-                                ? `${awardInvoices.length} linked invoice record${awardInvoices.length === 1 ? "" : "s"} totaling ${fmtCurrency(awardInvoiceSummary?.totalNetAmount ?? 0)} net requested.`
+                                ? `${awardInvoices.length} linked invoice record${awardInvoices.length === 1 ? "" : "s"} totaling ${fmtCurrency(awardInvoiceSummary?.claimedNetAmount ?? 0)} net requested.${(awardInvoiceSummary?.rejectedCount ?? 0) > 0 ? ` ${fmtCurrency(awardInvoiceSummary?.rejectedNetAmount ?? 0)} rejected, not counted.` : ""}`
                                 : "No invoice records are linked to this award yet."}
                             </p>
                           </div>

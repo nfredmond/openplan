@@ -73,6 +73,11 @@ export type ReimbursementProfileBinding = {
   framingNote: string | null;
   /** The profile's pre-submission documentation guidance; null when the profile declares none. */
   documentationChecklist: readonly ReimbursementDocumentationChecklistItem[] | null;
+  /**
+   * ISO-4217 code the profile declares for its money, or null when it declares
+   * none. Null is not "USD" — a surface that assumes dollars must say so.
+   */
+  currencyCode: string | null;
 };
 
 /**
@@ -217,5 +222,6 @@ function toBinding(
     formPackStatus: descriptor.formPackStatus ?? null,
     framingNote: descriptor.framingNote ?? null,
     documentationChecklist: descriptor.documentationChecklist ?? null,
+    currencyCode: descriptor.currencyCode ?? null,
   };
 }

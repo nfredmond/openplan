@@ -53,5 +53,7 @@ export const US_CA_LAPM_REIMBURSEMENT_PROFILE: ReimbursementProfileDescriptor = 
   // carries the interim default for workspaces whose jurisdiction has no
   // profile of its own. This profile carried that default only while it was
   // the sole one authored.
+  // Caltrans reimburses in US dollars.
+  currencyCode: "USD",
   isInterimDefault: false,
 };

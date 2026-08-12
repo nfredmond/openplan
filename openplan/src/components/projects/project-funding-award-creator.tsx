@@ -57,6 +57,7 @@ export function ProjectFundingAwardCreator({
   const [matchAmount, setMatchAmount] = useState("");
   const [matchPosture, setMatchPosture] = useState<(typeof FUNDING_AWARD_MATCH_POSTURE_OPTIONS)[number]["value"]>("partial");
   const [obligationDueAt, setObligationDueAt] = useState("");
+  const [expenditureDeadlineAt, setExpenditureDeadlineAt] = useState("");
   const [spendingStatus, setSpendingStatus] = useState<(typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"]>("not_started");
   const [riskFlag, setRiskFlag] = useState<(typeof FUNDING_AWARD_RISK_FLAG_OPTIONS)[number]["value"]>("none");
   const [notes, setNotes] = useState("");
@@ -99,6 +100,7 @@ export function ProjectFundingAwardCreator({
           matchAmount: matchAmount ? Number(matchAmount) : 0,
           matchPosture,
           obligationDueAt: toIsoDateTime(obligationDueAt),
+          expenditureDeadlineAt: toIsoDateTime(expenditureDeadlineAt),
           // The two are mutually exclusive at the API — sending both is a 400,
           // because they are two statements about the same field.
           spendingStatus: isAlreadyClosed ? undefined : spendingStatus,
@@ -126,6 +128,7 @@ export function ProjectFundingAwardCreator({
       setMatchAmount("");
       setMatchPosture("partial");
       setObligationDueAt("");
+      setExpenditureDeadlineAt("");
       setSpendingStatus("not_started");
       setRiskFlag("none");
       setNotes("");
@@ -180,9 +183,48 @@ export function ProjectFundingAwardCreator({
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Obligation due</label>
-            <Input type="datetime-local" value={obligationDueAt} onChange={(event) => setObligationDueAt(event.target.value)} />
+            <label
+              className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+              htmlFor="funding-award-obligation-due"
+            >
+              Obligation due
+            </label>
+            <Input
+              id="funding-award-obligation-due"
+              type="datetime-local"
+              value={obligationDueAt}
+              onChange={(event) => setObligationDueAt(event.target.value)}
+            />
           </div>
+        </div>
+
+        {/*
+          THE TWO AWARD DEADLINES ARE NOT THE SAME DEADLINE, and the field is
+          labelled to say so. Obligating is committing the money; expending is
+          spending it, and the expenditure date is the one that loses an agency
+          its funds. Both are optional and neither is ever filled in by OpenPlan:
+          a lapse date it derived from a program name would be a date somebody
+          plans around and nobody agreed to.
+        */}
+        <div className="space-y-1.5">
+          <label
+            className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            htmlFor="funding-award-expenditure-deadline"
+          >
+            Expenditure deadline (funds lapse)
+          </label>
+          <Input
+            id="funding-award-expenditure-deadline"
+            type="datetime-local"
+            value={expenditureDeadlineAt}
+            onChange={(event) => setExpenditureDeadlineAt(event.target.value)}
+            aria-describedby="funding-award-expenditure-deadline-help"
+          />
+          <p id="funding-award-expenditure-deadline-help" className="text-xs text-muted-foreground">
+            The date the funds must be spent by, if your agreement sets one — separate from the
+            obligation date above. Recording it turns on a daily reminder that names what is still
+            unclaimed on this award. Leave it blank if your agreement does not set one.
+          </p>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">

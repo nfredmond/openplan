@@ -9,6 +9,28 @@ export const BILLING_INVOICE_STATUSES = [
 
 export type BillingInvoiceStatus = (typeof BILLING_INVOICE_STATUSES)[number];
 
+/**
+ * The statuses that mean "this has been claimed from the funder".
+ *
+ * `draft` has not been sent and `rejected` never will be paid, so neither is a
+ * claim against an award's authorization. Everything else — including
+ * `approved_for_payment`, which is a promise rather than a deposit — is.
+ *
+ * Exported because the drawdown ledger and the invoice register must partition
+ * the same rows the same way. Two definitions of "claimed" is two answers to
+ * how much of an award has been drawn down.
+ */
+export const CLAIMED_INVOICE_STATUSES = [
+  "internal_review",
+  "submitted",
+  "approved_for_payment",
+  "paid",
+] as const satisfies readonly BillingInvoiceStatus[];
+
+export function isClaimedInvoiceStatus(status: string): boolean {
+  return (CLAIMED_INVOICE_STATUSES as readonly string[]).includes(status);
+}
+
 export type BillingInvoiceRecordLike = {
   status?: string | null;
   amount?: number | string | null;
@@ -32,17 +54,44 @@ export type BillingInvoiceSummary = {
   paidCount: number;
   overdueCount: number;
   overdueNetAmount: number;
+  /**
+   * EVERY record's net, rejected and draft included.
+   *
+   * Read the name literally: it is the total of the register, not the total
+   * that was requested from a funder. It was captioned "all non-rejected
+   * invoice records" on two surfaces while including rejected ones, and fed a
+   * "money left to bill" subtraction, so a rejected $55,000 claim silently
+   * removed $55,000 from what an agency believed it could still invoice. Use
+   * `claimedNetAmount` for any figure that means "asked for and not withdrawn";
+   * this one stays as it is so that nothing else silently changes meaning.
+   */
   totalNetAmount: number;
+  /**
+   * Σ net over CLAIMED_INVOICE_STATUSES — what was actually claimed from a
+   * funder and has not been rejected. This is the figure "net requested" means.
+   */
+  claimedNetAmount: number;
   outstandingNetAmount: number;
   paidNetAmount: number;
   draftNetAmount: number;
+  /** Reported, never folded in: an unreported amount is not zero. */
+  rejectedCount: number;
+  rejectedNetAmount: number;
 };
 
 export type BillingInvoiceLinkageSummary = {
   linkedCount: number;
   unlinkedCount: number;
+  /** Register totals for the linkage census: every record, rejected included. */
   linkedNetAmount: number;
   unlinkedNetAmount: number;
+  /**
+   * Σ net over CLAIMED, per side of the linkage split. Any sentence that says
+   * "requested" or "claimed" must read these; `linkedNetAmount` above counts
+   * money the funder refused and is a census figure only.
+   */
+  linkedClaimedNetAmount: number;
+  unlinkedClaimedNetAmount: number;
   linkedOutstandingNetAmount: number;
   unlinkedOutstandingNetAmount: number;
   linkedPaidNetAmount: number;
@@ -101,6 +150,12 @@ function roundCurrency(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+/**
+ * Round to the cent. Exported so every module that accumulates invoice money
+ * rounds at the same points and the totals on two surfaces agree exactly.
+ */
+export const roundCurrencyAmount = roundCurrency;
+
 export function parseCurrencyAmount(value: number | string | null | undefined): number {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0;
@@ -116,6 +171,41 @@ export function parseCurrencyAmount(value: number | string | null | undefined): 
 
 export function computeRetentionAmount(amount: number, retentionPercent: number): number {
   return roundCurrency(Math.max(0, amount) * Math.max(0, retentionPercent) / 100);
+}
+
+/**
+ * How much of this invoice the funder is withholding as retention.
+ *
+ * The precedence — an explicit `retention_amount` when it is positive, the
+ * percentage otherwise — is the one `computeNetInvoiceAmount` has always
+ * applied; it is extracted here so the withheld amount and the net amount can
+ * never be computed from two different rules. Without it, a ledger reporting
+ * "retention held" beside "paid to date" would be doing that arithmetic a
+ * second time.
+ *
+ * Clamped into `[0, max(0, gross)]` so the identity the ledger relies on holds
+ * for every row the schema permits (`amount >= 0` and `retention_amount >= 0`
+ * are CHECKed independently, so a retention larger than the invoice is
+ * storable):
+ *
+ *     computeNetInvoiceAmount(a, ra, rp) === round2(max(0, a) - computeInvoiceRetentionWithheld(a, ra, rp))
+ *
+ * A worksheet that printed gross, retention and net from an unclamped
+ * retention would show three numbers that do not add up.
+ */
+export function computeInvoiceRetentionWithheld(
+  amountInput: number | string | null | undefined,
+  retentionAmountInput?: number | string | null,
+  retentionPercentInput?: number | string | null
+): number {
+  const amount = Math.max(0, parseCurrencyAmount(amountInput));
+  const explicitRetentionAmount = parseCurrencyAmount(retentionAmountInput);
+
+  if (explicitRetentionAmount > 0) {
+    return roundCurrency(Math.min(explicitRetentionAmount, amount));
+  }
+
+  return computeRetentionAmount(amount, parseCurrencyAmount(retentionPercentInput));
 }
 
 export function computeNetInvoiceAmount(
@@ -206,6 +296,15 @@ export function summarizeBillingInvoiceRecords(
         summary.outstandingNetAmount = roundCurrency(summary.outstandingNetAmount + netAmount);
       }
 
+      if (isClaimedInvoiceStatus(status)) {
+        summary.claimedNetAmount = roundCurrency(summary.claimedNetAmount + netAmount);
+      }
+
+      if (status === "rejected") {
+        summary.rejectedCount += 1;
+        summary.rejectedNetAmount = roundCurrency(summary.rejectedNetAmount + netAmount);
+      }
+
       if (isOverdue(status, record.due_date, now)) {
         summary.overdueCount += 1;
         summary.overdueNetAmount = roundCurrency(summary.overdueNetAmount + netAmount);
@@ -221,11 +320,37 @@ export function summarizeBillingInvoiceRecords(
       overdueCount: 0,
       overdueNetAmount: 0,
       totalNetAmount: 0,
+      claimedNetAmount: 0,
       outstandingNetAmount: 0,
       paidNetAmount: 0,
       draftNetAmount: 0,
+      rejectedCount: 0,
+      rejectedNetAmount: 0,
     }
   );
+}
+
+/**
+ * Committed award dollars a workspace or project may still claim.
+ *
+ * Extracted because it had two definitions in two callers — the grants page and
+ * `buildProjectFundingStackSummary` — and BOTH subtracted `totalNetAmount`,
+ * which counts claims the funder REFUSED. A rejected $64,000 invoice therefore
+ * removed $64,000 from what an agency believed it could still invoice, in the
+ * one direction of error that causes an award to lapse unspent. Drafts are
+ * excluded for the same reason from the other side: nothing has been asked of
+ * anyone yet, so those dollars are still claimable.
+ *
+ * Clamped at zero deliberately. This is a PORTFOLIO figure spanning many
+ * awards, where a negative would be a meaningless mixture; per award,
+ * `AwardDrawdownLedger.remainingAuthorized` is unclamped so that an over-claim
+ * against a single authorization stays visible.
+ */
+export function uninvoicedCommittedAwardAmount(
+  committedAwardAmount: number,
+  summary: Pick<BillingInvoiceSummary, "claimedNetAmount">
+): number {
+  return Math.max(roundCurrency(committedAwardAmount - summary.claimedNetAmount), 0);
 }
 
 export function summarizeBillingInvoiceLinkage(
@@ -242,6 +367,8 @@ export function summarizeBillingInvoiceLinkage(
     unlinkedCount: unlinkedSummary.totalCount,
     linkedNetAmount: linkedSummary.totalNetAmount,
     unlinkedNetAmount: unlinkedSummary.totalNetAmount,
+    linkedClaimedNetAmount: linkedSummary.claimedNetAmount,
+    unlinkedClaimedNetAmount: unlinkedSummary.claimedNetAmount,
     linkedOutstandingNetAmount: linkedSummary.outstandingNetAmount,
     unlinkedOutstandingNetAmount: unlinkedSummary.outstandingNetAmount,
     linkedPaidNetAmount: linkedSummary.paidNetAmount,

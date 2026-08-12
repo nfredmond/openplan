@@ -449,8 +449,19 @@ export async function ReimbursementLane({
               </div>
               <div className="bg-background/70 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Net requested</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.totalNetAmount)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">All non-rejected invoice records in this workspace register.</p>
+                {/*
+                  `claimedNetAmount`, never `totalNetAmount`. This caption said
+                  "all non-rejected invoice records" above a figure that summed
+                  the whole register, rejected claims included — the caption was
+                  right about what the number should mean and the number was
+                  wrong. Drafts are excluded too: a draft has not been requested
+                  of anyone.
+                */}
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.claimedNetAmount)}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Claimed from funders: in review, submitted, approved, or paid. {invoiceSummary.draftCount} draft and {invoiceSummary.rejectedCount} rejected record{invoiceSummary.rejectedCount === 1 ? "" : "s"} are excluded
+                  {invoiceSummary.rejectedCount > 0 ? `, holding ${formatCurrency(invoiceSummary.rejectedNetAmount)} the funder refused` : ""}.
+                </p>
               </div>
               <div className="bg-background/70 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Outstanding</p>
@@ -664,10 +675,10 @@ export async function ReimbursementLane({
         {!invoiceRegisterUnavailable ? (
           <p className="mt-3 text-xs text-muted-foreground">
             {linkageFilter === "all"
-              ? `${activeProjectFilterName ? `${activeProjectFilterName} register scope currently tracks` : `Workspace invoice register currently tracks`} ${formatCurrency(registerScopedInvoiceSummary.totalNetAmount)} net requested, with ${formatCurrency(registerScopedInvoiceSummary.outstandingNetAmount)} still in review or payment flow.`
+              ? `${activeProjectFilterName ? `${activeProjectFilterName} register scope currently tracks` : `Workspace invoice register currently tracks`} ${formatCurrency(registerScopedInvoiceSummary.claimedNetAmount)} net requested, with ${formatCurrency(registerScopedInvoiceSummary.outstandingNetAmount)} still in review or payment flow.`
               : linkageFilter === "linked"
-                ? `Award-linked records currently account for ${formatCurrency(registerScopedLinkageSummary.linkedNetAmount)} net requested, with ${formatCurrency(registerScopedLinkageSummary.linkedOutstandingNetAmount)} still outstanding inside the reimbursement chain.`
-                : `Unlinked records currently account for ${formatCurrency(registerScopedLinkageSummary.unlinkedNetAmount)} net requested, with ${formatCurrency(registerScopedLinkageSummary.unlinkedOutstandingNetAmount)} still outstanding outside the reimbursement chain.`}
+                ? `Award-linked records currently account for ${formatCurrency(registerScopedLinkageSummary.linkedClaimedNetAmount)} net requested, with ${formatCurrency(registerScopedLinkageSummary.linkedOutstandingNetAmount)} still outstanding inside the reimbursement chain.`
+                : `Unlinked records currently account for ${formatCurrency(registerScopedLinkageSummary.unlinkedClaimedNetAmount)} net requested, with ${formatCurrency(registerScopedLinkageSummary.unlinkedOutstandingNetAmount)} still outstanding outside the reimbursement chain.`}
             {activeLinkageFilterOption.overdueCount > 0
               ? ` ${activeLinkageFilterOption.overdueCount} overdue record${activeLinkageFilterOption.overdueCount === 1 ? " is" : "s are"} already late, totaling ${formatCurrency(activeLinkageFilterOption.overdueNetAmount)}.`
               : ""}

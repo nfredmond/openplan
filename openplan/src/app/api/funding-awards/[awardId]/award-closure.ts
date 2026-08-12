@@ -66,7 +66,7 @@ export type CloseableFundingAward = {
 
 /** The columns every read of an award-for-closure must select. */
 export const CLOSEABLE_FUNDING_AWARD_COLUMNS =
-  "id, workspace_id, project_id, title, awarded_amount, match_amount, match_posture, risk_flag, notes, spending_status, obligation_due_at, closure_basis, closed_at, closed_by, closure_note, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
+  "id, workspace_id, project_id, title, awarded_amount, match_amount, match_posture, risk_flag, notes, spending_status, obligation_due_at, expenditure_deadline_at, closure_basis, closed_at, closed_by, closure_note, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
 
 export type FundingAwardAuditLogger = {
   info: (event: string, context?: Record<string, unknown>) => void;

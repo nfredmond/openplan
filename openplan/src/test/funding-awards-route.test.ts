@@ -200,6 +200,53 @@ describe("/api/funding-awards", () => {
     );
   });
 
+  it("stores an expenditure deadline, and writes no milestone for it", async () => {
+    /**
+     * The lapse date (20260812000010) is a SECOND award deadline, not a synonym
+     * for the obligation one. Two things are asserted together because they are
+     * one decision: the column is written, and no mirror milestone is created
+     * for it. A milestone here would put the same lapse on a planner's list
+     * twice — once from the reminder sweep and once from the milestone source —
+     * and /my-work only de-duplicates the obligation pair.
+     */
+    const response = await postFundingAwards(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "ATP award",
+        awardedAmount: 1750000,
+        expenditureDeadlineAt: "2027-06-30T00:00:00.000Z",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(awardsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expenditure_deadline_at: "2027-06-30T00:00:00.000Z",
+        // The two dates are independent: sending one must not fill in the other.
+        obligation_due_at: null,
+      })
+    );
+    expect(milestonesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("records no expenditure deadline when none was entered", async () => {
+    // Never "today", never the obligation date, never a program default: an
+    // agency that did not state a lapse date does not have one in OpenPlan.
+    const response = await postFundingAwards(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "ATP award",
+        awardedAmount: 1750000,
+        obligationDueAt: "2026-07-01T00:00:00.000Z",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(awardsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({ expenditure_deadline_at: null })
+    );
+  });
+
   it("skips milestone creation when obligationDueAt is not provided", async () => {
     const response = await postFundingAwards(
       jsonRequest({

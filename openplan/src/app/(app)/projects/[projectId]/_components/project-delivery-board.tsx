@@ -257,7 +257,7 @@ export function ProjectDeliveryBoard({
             <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : invoicesReadFailed ? "Invoice records unavailable" : "No invoice records yet"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               {invoiceSummary.totalCount
-                ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.totalNetAmount)}.`
+                ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.claimedNetAmount)}.${invoiceSummary.rejectedCount > 0 ? ` ${fmtCurrency(invoiceSummary.rejectedNetAmount)} rejected, not counted.` : ""}`
                 : "Add invoices here as you bill for project work, and this will track what is paid and what is late."}
             </p>
             <div className="mt-3">

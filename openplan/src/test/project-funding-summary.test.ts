@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildAwardClaimProgress,
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
   projectFundingStackTone,
@@ -117,78 +116,5 @@ describe("project funding stack summary", () => {
       uninvoicedAwardAmount: 300_000,
     });
     expect(projectFundingReimbursementTone(summary.reimbursementStatus)).toBe("warning");
-  });
-});
-
-describe("buildAwardClaimProgress", () => {
-  const AWARD_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
-  const AWARD_B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
-
-  it("sums claimed and paid net of retention, per award, linked invoices only", () => {
-    const progress = buildAwardClaimProgress(
-      [
-        { id: AWARD_A, awarded_amount: 1_000_000 },
-        { id: AWARD_B, awarded_amount: "250000" },
-      ],
-      [
-        // Net 90,000 after 10% retention — claimed but not paid.
-        { funding_award_id: AWARD_A, status: "submitted", amount: 100_000, retention_percent: 10, retention_amount: 0, due_date: null },
-        // Net 200,000 via an explicit retention amount — paid.
-        { funding_award_id: AWARD_A, status: "paid", amount: 210_000, retention_percent: 0, retention_amount: 10_000, due_date: null },
-        // A rejected claim is the register's void analog: counts nowhere.
-        { funding_award_id: AWARD_A, status: "rejected", amount: 999_999, retention_percent: 0, retention_amount: 0, due_date: null },
-        // Another award's invoice never leaks across.
-        { funding_award_id: AWARD_B, status: "paid", amount: 50_000, retention_percent: 0, retention_amount: 0, due_date: null },
-        // Unlinked invoices are attributed to no award at all.
-        { funding_award_id: null, status: "paid", amount: 77_000, retention_percent: 0, retention_amount: 0, due_date: null },
-      ]
-    );
-
-    expect(progress.get(AWARD_A)).toEqual({
-      awardedAmount: 1_000_000,
-      claimedToDate: 290_000,
-      paidToDate: 200_000,
-      remaining: 710_000,
-    });
-    expect(progress.get(AWARD_B)).toEqual({
-      awardedAmount: 250_000,
-      claimedToDate: 50_000,
-      paidToDate: 50_000,
-      remaining: 200_000,
-    });
-  });
-
-  it("keeps remaining null without an awarded amount, and discloses overclaims as negative", () => {
-    const progress = buildAwardClaimProgress(
-      [
-        { id: AWARD_A, awarded_amount: null },
-        { id: AWARD_B, awarded_amount: 100_000 },
-      ],
-      [
-        { funding_award_id: AWARD_A, status: "submitted", amount: 40_000, retention_percent: 0, retention_amount: 0, due_date: null },
-        { funding_award_id: AWARD_B, status: "paid", amount: 120_000, retention_percent: 0, retention_amount: 0, due_date: null },
-      ]
-    );
-
-    // No awarded amount → no remaining, never an implied zero baseline.
-    expect(progress.get(AWARD_A)).toEqual({
-      awardedAmount: null,
-      claimedToDate: 40_000,
-      paidToDate: 0,
-      remaining: null,
-    });
-    // Claims past the award stay visible as a negative remaining, unclamped.
-    expect(progress.get(AWARD_B)?.remaining).toBe(-20_000);
-  });
-
-  it("tolerates null inputs and awards without ids", () => {
-    expect(buildAwardClaimProgress(null, null).size).toBe(0);
-    expect(buildAwardClaimProgress([{ id: null, awarded_amount: 5 }], []).size).toBe(0);
-    expect(buildAwardClaimProgress([{ id: AWARD_A, awarded_amount: 5 }], undefined).get(AWARD_A)).toEqual({
-      awardedAmount: 5,
-      claimedToDate: 0,
-      paidToDate: 0,
-      remaining: 5,
-    });
   });
 });

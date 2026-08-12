@@ -631,7 +631,7 @@ export default async function ProjectDetailPage({
   const fundingAwardsResult = await supabase
     .from("funding_awards")
     .select(
-      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title)"
+      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title)"
     )
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
@@ -778,12 +778,11 @@ export default async function ProjectDetailPage({
     fundingOpportunities,
     awardLinkedProjectInvoices
   );
-  const fundingNeedAmount = fundingStackSummary.fundingNeedAmount;
-  const committedFundingAmount = fundingStackSummary.committedFundingAmount;
-  const committedMatchAmount = fundingStackSummary.committedMatchAmount;
-  const likelyFundingAmount = fundingStackSummary.likelyFundingAmount;
-  const remainingFundingGap = fundingStackSummary.unfundedAfterLikelyAmount;
-  const awardWatchCount = fundingStackSummary.awardRiskCount;
+  // One destructure of one object, rather than six aliasing assignments. Two of
+  // them rename (`unfundedAfterLikelyAmount` is the gap the panel calls
+  // remaining; `awardRiskCount` is the watch count), which is the only reason
+  // the aliases existed at all.
+  const { fundingNeedAmount, committedFundingAmount, committedMatchAmount, likelyFundingAmount, unfundedAfterLikelyAmount: remainingFundingGap, awardRiskCount: awardWatchCount } = fundingStackSummary;
   const nextObligationAward = fundingAwards.find((award) => award.obligation_due_at === fundingStackSummary.nextObligationAt) ?? null;
   const pursueFundingCount = fundingOpportunities.filter((item) => item.decision_state === "pursue").length;
   const monitorFundingCount = fundingOpportunities.filter((item) => item.decision_state === "monitor").length;
@@ -1353,6 +1352,8 @@ export default async function ProjectDetailPage({
 
       <ProjectFundingPanel
         projectId={project.id}
+        workspaceId={project.workspace_id}
+        canWriteAwards={canAccessWorkspaceAction("programs.write", membership.role)}
         projectFundingProfile={projectFundingProfile}
         projectFundingProfilePending={projectFundingProfilePending}
         fundingAwardsPending={fundingAwardsPending}

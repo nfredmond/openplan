@@ -83,8 +83,24 @@
  * one signal that says nobody has looked, and it does so on a row whose whole
  * purpose is to prove somebody was told. Agent proposes, evidence decides —
  * and being told is evidence.
+ *
+ * SETTING AN AWARD'S LAPSE DATE (2026-08-12, the seventh source below) is
+ * refused too: it is a term of an executed funding agreement, recorded nowhere
+ * OpenPlan can read, and a plausible wrong date is indistinguishable from a
+ * correct one on an approval sheet. All three refusals are now EXECUTABLE, in
+ * `src/test/refused-award-deadline-actions-stay-refused.test.ts` — prose in a
+ * header is a convention, and every convention only written down has been
+ * violated at least once.
  */
 
+import {
+  buildAwardDrawdownLedger,
+  toDrawdownInvoiceRead,
+  type AwardDrawdownLedger,
+  type DrawdownInvoiceLike,
+} from "@/lib/invoicing/drawdown-ledger";
+import { resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
+import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 import { isPendingFundingDecision } from "@/lib/operations/funding-decision-status";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import {
@@ -105,7 +121,10 @@ import {
 
 import { enqueueEmail } from "./engagement";
 
-/** The `kind` vocabulary, matching the CHECK constraint in 20260811000007. */
+/**
+ * The `kind` vocabulary, matching the CHECK constraint as the migration corpus
+ * leaves it — 20260811000007 created six, 20260812000010 added the seventh.
+ */
 export const WORK_NOTIFICATION_KINDS = [
   "deliverable_due",
   "milestone_due",
@@ -113,6 +132,7 @@ export const WORK_NOTIFICATION_KINDS = [
   "invoice_due",
   "grant_decision_due",
   "award_obligation_due",
+  "award_expenditure_due",
 ] as const;
 
 export type WorkNotificationKind = (typeof WORK_NOTIFICATION_KINDS)[number];
@@ -167,6 +187,15 @@ export type WorkSweepSourceOutcome = {
   message: string | null;
   /** The read filled its cap, so this sweep saw a floor and not the total. */
   truncated: boolean;
+  /**
+   * A source that needs a SECOND read (see `loadContext`) could not get it, so
+   * its reminders went out without the figure that read would have carried.
+   * Reported rather than absorbed, for the same reason
+   * `workspaceNamesUnavailable` is: the reminder is worth more than its
+   * detail, and a swallowed read is how a page starts stating things nobody
+   * established. False for every source that needs no second read.
+   */
+  contextUnavailable: boolean;
 };
 
 export type WorkSweepResult = {
@@ -199,11 +228,47 @@ export type WorkSweepResult = {
   workspaceNamesUnavailable: boolean;
 };
 
-// ── the six sources ─────────────────────────────────────────────────────────
+// ── the seven sources ───────────────────────────────────────────────────────
 
 type StaticFilter =
   | { kind: "neq"; column: string; value: string }
   | { kind: "notIn"; column: string; values: readonly string[] };
+
+/**
+ * What a SECOND read gives a source, when one row is not enough to say the
+ * thing the reminder has to say.
+ *
+ * Exactly one source needs this today: an expenditure deadline is only
+ * actionable next to the money it threatens, and that money is a position over
+ * an award's whole invoice register rather than a column on the award. Rather
+ * than let the sweep compute it — a second definition of a figure the ledger
+ * already owns — the context read hands `buildAwardDrawdownLedger` its rows and
+ * the source quotes the result.
+ *
+ * `unavailable` is the honest middle: the reminder still goes out, and it says
+ * the amount could not be read instead of printing a number that would be
+ * wrong. A capped read counts as unavailable too — a truncated invoice list
+ * UNDERSTATES what has been claimed and therefore OVERSTATES what is left,
+ * which is the direction that would tell an agency it has money it does not.
+ */
+export type SweepSourceContext = {
+  /** Award id → its drawdown position. Empty unless a source asked for one. */
+  awardLedgers: ReadonlyMap<string, AwardDrawdownLedger>;
+  /**
+   * Award id → the ISO-4217 code its workspace's reimbursement process
+   * declares. Absent means no profile declared one; the sentence then says USD
+   * and says that it is an assumption. Never defaulted silently — a reminder
+   * whose whole purpose is a dollar figure must not name the wrong unit.
+   */
+  awardCurrencyCodes: ReadonlyMap<string, string>;
+  unavailable: boolean;
+};
+
+const EMPTY_SWEEP_CONTEXT: SweepSourceContext = {
+  awardLedgers: new Map(),
+  awardCurrencyCodes: new Map(),
+  unavailable: false,
+};
 
 type SweepSource = {
   kind: WorkNotificationKind;
@@ -221,8 +286,26 @@ type SweepSource = {
   /** The column naming the person this reminder is for. */
   recipientColumn: string;
   staticFilters: readonly StaticFilter[];
-  /** Rows → candidates. Per-source because two sources filter on shared predicates. */
-  toCandidates: (rows: Array<Record<string, unknown>>, now: Date) => Candidate[];
+  /**
+   * An optional second read, run only when the first returned rows. It may
+   * fail without failing the source: what it carries is detail, and the
+   * deadline is the reminder.
+   */
+  loadContext?: (
+    client: WorkSweepClient,
+    rows: Array<Record<string, unknown>>,
+    limit: number
+  ) => Promise<SweepSourceContext>;
+  /**
+   * Rows → candidates. Per-source because two sources filter on shared
+   * predicates. `context` is `EMPTY_SWEEP_CONTEXT` for every source that
+   * declares no `loadContext`, so the six original sources ignore it.
+   */
+  toCandidates: (
+    rows: Array<Record<string, unknown>>,
+    now: Date,
+    context: SweepSourceContext
+  ) => Candidate[];
 };
 
 function asString(value: unknown): string | null {
@@ -483,6 +566,273 @@ const awardObligationsSource: SweepSource = {
     }),
 };
 
+/**
+ * ── THE LAPSE DEADLINE, AND THE MONEY IT THREATENS ────────────────────────
+ *
+ * `expenditure_deadline_at` (20260812000010) is the date an unspent balance
+ * goes back to the funder. It is NOT a near-duplicate of the obligation
+ * deadline above: obligating is committing the money and expending is spending
+ * it, and a planner told the wrong one of the two is worse off than one told
+ * nothing. Two columns, two kinds, two sentences.
+ *
+ * WHY THIS ONE CARRIES A FIGURE when no other reminder does. "A deadline is
+ * coming" is enough for a deliverable; for a lapse it is not, because the
+ * action it should trigger depends entirely on whether there is $2,000 or
+ * $2,000,000 left to draw down. The figure is the drawdown ledger's
+ * `remainingAuthorized` — authorized minus claimed — and it is QUOTED, never
+ * recomputed: `buildAwardDrawdownLedger` is the one definition of what an award
+ * has claimed, and a second one written here would be a number that disagrees
+ * with the ledger panel on the same award.
+ *
+ * A ZERO IS NEVER PRINTED AS THE AMOUNT AT RISK. Unread invoices, a capped
+ * read, and an award with no amount recorded each get their own sentence saying
+ * so. "$0 at risk" is the one thing this reminder must never say when what it
+ * means is "we could not tell".
+ */
+const AWARD_LEDGER_INVOICE_COLUMNS =
+  "funding_award_id, status, amount, retention_percent, retention_amount";
+
+async function loadAwardDrawdownLedgers(
+  client: WorkSweepClient,
+  rows: Array<Record<string, unknown>>,
+  limit: number
+): Promise<SweepSourceContext> {
+  const unavailable: SweepSourceContext = {
+    awardLedgers: new Map(),
+    awardCurrencyCodes: new Map(),
+    unavailable: true,
+  };
+  const awardIds = [...new Set(rows.map((row) => asString(row.id)).filter((id): id is string => !!id))];
+  if (awardIds.length === 0) return EMPTY_SWEEP_CONTEXT;
+
+  try {
+    const result = await client
+      .from("billing_invoice_records")
+      // Deliberately NOT `DRAWDOWN_INVOICE_COLUMNS`: this read needs only the
+      // four fields the claimed total is built from, and asking for a column
+      // this sentence does not use would make the whole reminder fail on any
+      // deployment that has one of the two 2026-08-12 migrations and not the
+      // other.
+      .select(AWARD_LEDGER_INVOICE_COLUMNS)
+      .in("funding_award_id", awardIds)
+      .limit(limit);
+
+    const read = toDrawdownInvoiceRead({
+      data: (result.data ?? null) as DrawdownInvoiceLike[] | null,
+      error: result.error,
+    });
+    if (!read.ok) return unavailable;
+    // A capped invoice read understates what has been claimed and therefore
+    // OVERSTATES what is left to spend. Wrong in the direction that tells an
+    // agency it has money it does not, so it is reported as unread instead.
+    // The cap counts only the invoices of awards whose lapse date falls inside
+    // the seven-day window — a handful on any ordinary day — so reaching it is
+    // remarkable, and on the day it happens the sweep says so.
+    if (read.invoices.length >= limit) return unavailable;
+
+    const byAward = new Map<string, DrawdownInvoiceLike[]>();
+    for (const invoice of read.invoices) {
+      const awardId = asString((invoice as Record<string, unknown>).funding_award_id);
+      if (!awardId) continue;
+      const existing = byAward.get(awardId) ?? [];
+      existing.push(invoice);
+      byAward.set(awardId, existing);
+    }
+
+    const awardLedgers = new Map<string, AwardDrawdownLedger>();
+    for (const row of rows) {
+      const awardId = asString(row.id);
+      if (!awardId) continue;
+      const built = buildAwardDrawdownLedger({
+        award: {
+          awarded_amount: (row.awarded_amount ?? null) as number | string | null,
+          match_amount: (row.match_amount ?? null) as number | string | null,
+          match_posture: asString(row.match_posture),
+        },
+        invoiceRead: { ok: true, invoices: byAward.get(awardId) ?? [] },
+      });
+      if (built.ok) awardLedgers.set(awardId, built.ledger);
+    }
+
+    return { awardLedgers, awardCurrencyCodes: await loadAwardCurrencyCodes(client, rows), unavailable: false };
+  } catch {
+    return unavailable;
+  }
+}
+
+/**
+ * The currency each award's reminder should name, from its workspace's bound
+ * reimbursement process.
+ *
+ * WHY THIS READS THE WORKSPACE. The currency is a property of the funding
+ * process, and the process is resolved from where the workspace operates — the
+ * same resolution the reimbursement worksheet performs. Without it this
+ * reminder formatted the figure as US dollars unconditionally, so an agency
+ * outside the US was told a plausible number in the wrong unit, on the one
+ * notification in the product whose entire point is the amount.
+ *
+ * A FAILURE HERE IS NOT A FAILURE OF THE SWEEP. An unreadable workspace row
+ * costs the reminder its currency label, not its existence: the sentence falls
+ * back to naming USD as an assumption. Losing a lapse warning entirely because
+ * a name lookup failed would be far worse than labelling it conservatively.
+ */
+async function loadAwardCurrencyCodes(
+  client: WorkSweepClient,
+  rows: Array<Record<string, unknown>>
+): Promise<Map<string, string>> {
+  const byAward = new Map<string, string>();
+  const workspaceIds = [
+    ...new Set(rows.map((row) => asString(row.workspace_id)).filter((id): id is string => !!id)),
+  ];
+  if (workspaceIds.length === 0) return byAward;
+
+  try {
+    const result = await client
+      .from("workspaces")
+      .select("id, home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code")
+      .in("id", workspaceIds);
+
+    if (result.error || !result.data) return byAward;
+
+    const codeByWorkspace = new Map<string, string>();
+    for (const workspace of result.data as Array<Record<string, unknown>>) {
+      const workspaceId = asString(workspace.id);
+      if (!workspaceId) continue;
+      const resolution = resolveReimbursementProfile({
+        workspaceJurisdiction: resolveJurisdiction(parseWorkspaceHomeGeography(workspace)),
+      });
+      const code = resolution.kind === "resolved" ? resolution.binding.currencyCode : null;
+      if (code) codeByWorkspace.set(workspaceId, code);
+    }
+
+    for (const row of rows) {
+      const awardId = asString(row.id);
+      const workspaceId = asString(row.workspace_id);
+      if (!awardId || !workspaceId) continue;
+      const code = codeByWorkspace.get(workspaceId);
+      if (code) byAward.set(awardId, code);
+    }
+  } catch {
+    // Deliberately swallowed: see the note above. The reminder still goes out.
+  }
+
+  return byAward;
+}
+
+/**
+ * Money in a reminder, to the cent.
+ *
+ * Not `formatCurrency` from the grants page helper: that one rounds to whole
+ * dollars and renders a null as `$0`. Both are wrong here — this figure is the
+ * reason the reminder exists, and a null that reads as zero is the defect this
+ * whole lane is written against.
+ */
+function reminderMoney(value: number, currencyCode: string | null | undefined): string {
+  const code = currencyCode?.trim().toUpperCase() || "USD";
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: code,
+      // The CODE, not the symbol. This sentence is one line in an inbox with no
+      // room for a currency footnote, and "$119,999.67" is the same string for
+      // US, Canadian, Australian and a dozen other dollars. The figure is the
+      // whole reason the reminder exists; naming its unit costs four characters.
+      currencyDisplay: "code",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    // An unrecognized code must not cost a planner their lapse warning.
+    return `${value.toFixed(2)} ${code}`;
+  }
+}
+
+/**
+ * What is at stake on the lapse date — or, honestly, why that cannot be said.
+ *
+ * FIVE BRANCHES, and none of them may collapse into another. The two that state
+ * no figure are the point of the function: an unread invoice register and an
+ * award with no recorded amount both mean "OpenPlan cannot tell you", and the
+ * one thing this sentence must never say in either case is "$0 at risk", which
+ * reads as a finding and would stop a planner acting. `remaining === 0` is a
+ * genuinely different fact — every authorized dollar HAS been claimed — and it
+ * gets its own words for that reason.
+ *
+ * Exported for test: all five were reachable only through the sweep, and three
+ * of them survived mutation because no fixture ever produced them.
+ */
+export function expenditureAtRiskSentence(
+  ledger: AwardDrawdownLedger | undefined,
+  contextUnavailable: boolean,
+  currencyCode?: string | null
+): string {
+  if (contextUnavailable || !ledger) {
+    return "OpenPlan could not read this award's invoices, so the amount at risk is not stated here.";
+  }
+  const remaining = ledger.remainingAuthorized;
+  if (remaining === null) {
+    return "No awarded amount is recorded on this award, so OpenPlan cannot say how much is at risk.";
+  }
+  if (remaining > 0) {
+    return `${reminderMoney(remaining, currencyCode)} of this award is authorized and not yet claimed.`;
+  }
+  if (remaining === 0) {
+    return "Every authorized dollar on this award has already been claimed.";
+  }
+  return `Claims against this award already exceed the authorized amount by ${reminderMoney(
+    Math.abs(remaining),
+    currencyCode
+  )}.`;
+}
+
+const awardExpendituresSource: SweepSource = {
+  kind: "award_expenditure_due",
+  table: "funding_awards",
+  select:
+    "id, workspace_id, project_id, title, expenditure_deadline_at, spending_status, awarded_amount, match_amount, match_posture, created_by",
+  dateColumn: "expenditure_deadline_at",
+  dateColumnKind: "timestamptz",
+  recipientColumn: "created_by",
+  // Money already fully spent cannot lapse — the same filter the obligation
+  // source uses, and for the same reason.
+  staticFilters: [{ kind: "neq", column: "spending_status", value: "fully_spent" }],
+  loadContext: loadAwardDrawdownLedgers,
+  toCandidates: (rows, now, context) =>
+    rows.flatMap((row) => {
+      const workspaceId = asString(row.workspace_id);
+      const dueOn = workDeadlineDueOn(asString(row.expenditure_deadline_at));
+      const recipient = asString(row.created_by);
+      if (!workspaceId || !dueOn || !recipient) return [];
+      const isOverdue = isDeadlinePast(asString(row.expenditure_deadline_at), now);
+      const title = asString(row.title) ?? "(untitled award)";
+      const awardId = asString(row.id);
+      const atRisk = expenditureAtRiskSentence(
+        awardId ? context.awardLedgers.get(awardId) : undefined,
+        context.unavailable,
+        awardId ? context.awardCurrencyCodes.get(awardId) : undefined
+      );
+      return [
+        {
+          workspace_id: workspaceId,
+          recipient_user_id: recipient,
+          kind: "award_expenditure_due" as const,
+          subject_table: "funding_awards",
+          subject_id: String(row.id),
+          project_id: asString(row.project_id),
+          due_on: dueOn,
+          title,
+          body: `${deadlineSentence(
+            `Funds on ${title} must be expended`,
+            null,
+            dueOn,
+            isOverdue
+          )} ${atRisk} You recorded this award; expenditure deadlines carry no assignee.`,
+          isOverdue,
+        },
+      ];
+    }),
+};
+
 const invoiceWindowsSource: SweepSource = {
   kind: "invoice_due",
   table: "billing_invoice_records",
@@ -530,6 +880,7 @@ export const WORK_SWEEP_SOURCES: readonly SweepSource[] = [
   submittalsSource,
   grantDecisionsSource,
   awardObligationsSource,
+  awardExpendituresSource,
   invoiceWindowsSource,
 ];
 
@@ -576,7 +927,15 @@ export type SweepWorkDeadlinesOptions = {
 };
 
 function emptyOutcome(): WorkSweepSourceOutcome {
-  return { scanned: 0, candidates: 0, pending: false, failed: false, message: null, truncated: false };
+  return {
+    scanned: 0,
+    candidates: 0,
+    pending: false,
+    failed: false,
+    message: null,
+    truncated: false,
+    contextUnavailable: false,
+  };
 }
 
 async function readSource(
@@ -709,7 +1068,15 @@ export async function sweepWorkDeadlines(
   const candidates: Candidate[] = [];
   for (const source of WORK_SWEEP_SOURCES) {
     const { rows, outcome } = await readSource(client, source, now, horizonDays, limit);
-    const produced = source.toCandidates(rows, now);
+    // The second read, when a source declares one, and only when the first
+    // found something: a failure here costs the reminder its figure, never the
+    // reminder itself.
+    const context =
+      source.loadContext && rows.length > 0
+        ? await source.loadContext(client, rows, limit)
+        : EMPTY_SWEEP_CONTEXT;
+    outcome.contextUnavailable = context.unavailable;
+    const produced = source.toCandidates(rows, now, context);
     outcome.candidates = produced.length;
     perSource[source.kind] = outcome;
     candidates.push(...produced);

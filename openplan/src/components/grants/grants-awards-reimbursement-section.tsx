@@ -93,7 +93,20 @@ export function GrantsAwardsReimbursementSection({
   trackedMatchAmount: number;
   uninvoicedCommittedAmount: number;
   awardWatchCount: number;
-  linkedInvoiceSummary: { totalNetAmount: number; paidNetAmount: number; outstandingNetAmount: number };
+  /**
+   * `claimedNetAmount`, not `totalNetAmount`. The register total includes
+   * rejected claims; a "Requested" figure that counts money the funder refused
+   * overstates what has been drawn and understates what is left to invoice.
+   * `rejectedNetAmount`/`rejectedCount` are carried so the refused amount can be
+   * DISCLOSED rather than merely dropped — an unreported amount is not zero.
+   */
+  linkedInvoiceSummary: {
+    claimedNetAmount: number;
+    paidNetAmount: number;
+    outstandingNetAmount: number;
+    rejectedNetAmount: number;
+    rejectedCount: number;
+  };
   reimbursementNotStartedCount: number;
   reimbursementActiveCount: number;
   reimbursementPaidCount: number;
@@ -156,13 +169,18 @@ export function GrantsAwardsReimbursementSection({
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Requested</p>
-          <p className="module-summary-value text-base leading-tight">{formatCurrency(linkedInvoiceSummary.totalNetAmount)}</p>
-          <p className="module-summary-detail">Award-linked invoice dollars already in reimbursement flow.</p>
+          <p className="module-summary-value text-base leading-tight">{formatCurrency(linkedInvoiceSummary.claimedNetAmount)}</p>
+          <p className="module-summary-detail">
+            Award-linked invoice dollars claimed from funders — in review, submitted, approved, or paid. Drafts are not yet claims.
+            {linkedInvoiceSummary.rejectedCount > 0
+              ? ` ${formatCurrency(linkedInvoiceSummary.rejectedNetAmount)} across ${linkedInvoiceSummary.rejectedCount} rejected record${linkedInvoiceSummary.rejectedCount === 1 ? "" : "s"} is excluded here and from Uninvoiced.`
+              : ""}
+          </p>
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Uninvoiced</p>
           <p className="module-summary-value text-base leading-tight">{formatCurrency(uninvoicedCommittedAmount)}</p>
-          <p className="module-summary-detail">Committed award dollars not yet reflected in invoice records.</p>
+          <p className="module-summary-detail">Committed award dollars not yet claimed from a funder. A rejected claim leaves its dollars here, still available to re-invoice.</p>
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Award risk</p>

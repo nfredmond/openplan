@@ -108,5 +108,7 @@ export const US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE: ReimbursementProfileDescr
   // Carries the interim default for workspaces whose jurisdiction has no
   // profile of its own — the nationwide floor, disclosed as assumed whenever
   // it applies that way. Not a statement that any workspace chose it.
+  // US federal-aid reimbursement is in US dollars.
+  currencyCode: "USD",
   isInterimDefault: true,
 };

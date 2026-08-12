@@ -1,6 +1,6 @@
 import {
-  computeNetInvoiceAmount,
   summarizeBillingInvoiceRecords,
+  uninvoicedCommittedAwardAmount,
   type BillingInvoiceRecordLike,
 } from "@/lib/invoicing/invoice-records";
 
@@ -76,6 +76,12 @@ export type ProjectFundingSnapshot = {
   remainingFundingGap: number;
   remainingMatchGap: number;
   unfundedAfterLikelyAmount: number;
+  /**
+   * Σ net over the CLAIMED statuses — what has actually been asked of a funder
+   * and not withdrawn. Drafts have not been sent and rejected claims never will
+   * be paid, so neither counts here, and neither is subtracted from
+   * `uninvoicedAwardAmount` below.
+   */
   requestedReimbursementAmount: number;
   paidReimbursementAmount: number;
   outstandingReimbursementAmount: number;
@@ -179,11 +185,16 @@ export function buildProjectFundingStackSummary(
   const unfundedAfterLikelyAmount = Math.max(fundingNeedAmount - totalPotentialFundingAmount, 0);
   const awardRiskCount = awards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
   const reimbursementSummary = summarizeBillingInvoiceRecords(invoices);
-  const requestedReimbursementAmount = reimbursementSummary.totalNetAmount;
+  // `claimedNetAmount`, never `totalNetAmount`. The total is the whole register
+  // including rejected claims, and subtracting it from the committed award
+  // amount below told an agency that money a funder REFUSED had already been
+  // taken off what it may still invoice — the one direction of error that
+  // causes an award to lapse unspent.
+  const requestedReimbursementAmount = reimbursementSummary.claimedNetAmount;
   const paidReimbursementAmount = reimbursementSummary.paidNetAmount;
   const outstandingReimbursementAmount = reimbursementSummary.outstandingNetAmount;
   const draftReimbursementAmount = reimbursementSummary.draftNetAmount;
-  const uninvoicedAwardAmount = Math.max(committedFundingAmount - requestedReimbursementAmount, 0);
+  const uninvoicedAwardAmount = uninvoicedCommittedAwardAmount(committedFundingAmount, reimbursementSummary);
   const nextObligationAt = awards
     .map((award) => award.obligation_due_at)
     .filter((value): value is string => Boolean(value))
@@ -312,92 +323,6 @@ export function buildProjectFundingStackSummary(
 }
 
 export type ProjectFundingStackSummary = ReturnType<typeof buildProjectFundingStackSummary>;
-
-// ── Award claim progress ──────────────────────────────────────────────────
-
-export type AwardClaimAwardLike = {
-  id?: string | null;
-  awarded_amount?: number | string | null;
-};
-
-export type AwardClaimInvoiceLike = BillingInvoiceRecordLike & {
-  funding_award_id?: string | null;
-};
-
-export type AwardClaimProgress = {
-  /** null when no parseable awarded amount was entered — never an implied zero. */
-  awardedAmount: number | null;
-  /** Net (after retention) of every non-rejected invoice linked to this award. */
-  claimedToDate: number;
-  /** Net of the linked invoices already marked paid. */
-  paidToDate: number;
-  /**
-   * awardedAmount − claimedToDate. null without an awarded amount; negative
-   * when claims exceed the award — an overclaim is disclosed, never clamped.
-   */
-  remaining: number | null;
-};
-
-function roundClaimCurrency(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-/** Unlike this file's toNumber, an absent/unparseable award amount is null, not 0. */
-function parseAwardedAmount(value: number | string | null | undefined): number | null {
-  if (value === null || value === undefined) return null;
-  const parsed = typeof value === "number" ? value : Number.parseFloat(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-/**
- * Per-award claim posture from the reimbursement register: how much of each
- * award has been claimed (net of retention) and paid. Only invoices linked by
- * funding_award_id count — attribution is explicit, never inferred — and a
- * "rejected" invoice (the register's void analog) counts nowhere. Pure and
- * tolerant: null inputs yield an empty map, and an award without an id is
- * skipped because nothing could ever be attributed to it.
- */
-export function buildAwardClaimProgress(
-  awards: AwardClaimAwardLike[] | null | undefined,
-  invoices: AwardClaimInvoiceLike[] | null | undefined
-): Map<string, AwardClaimProgress> {
-  const progress = new Map<string, AwardClaimProgress>();
-  const invoiceRecords = invoices ?? [];
-
-  for (const award of awards ?? []) {
-    if (!award.id) continue;
-
-    const linked = invoiceRecords.filter(
-      (invoice) => invoice.funding_award_id === award.id && invoice.status !== "rejected"
-    );
-    const claimedToDate = roundClaimCurrency(
-      linked.reduce(
-        (total, invoice) =>
-          total + computeNetInvoiceAmount(invoice.amount, invoice.retention_amount, invoice.retention_percent),
-        0
-      )
-    );
-    const paidToDate = roundClaimCurrency(
-      linked
-        .filter((invoice) => invoice.status === "paid")
-        .reduce(
-          (total, invoice) =>
-            total + computeNetInvoiceAmount(invoice.amount, invoice.retention_amount, invoice.retention_percent),
-          0
-        )
-    );
-    const awardedAmount = parseAwardedAmount(award.awarded_amount);
-
-    progress.set(award.id, {
-      awardedAmount,
-      claimedToDate,
-      paidToDate,
-      remaining: awardedAmount === null ? null : roundClaimCurrency(awardedAmount - claimedToDate),
-    });
-  }
-
-  return progress;
-}
 
 function scanStatusPriority(status: ProjectFundingProfileScanStatus): number {
   if (status === "blocked") return 0;

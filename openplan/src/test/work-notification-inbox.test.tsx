@@ -8,7 +8,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { WorkNotificationInboxPanel } from "@/components/my-work/notification-inbox";
-import { loadWorkNotifications, type WorkNotificationInbox } from "@/lib/notifications/work";
+import {
+  loadWorkNotifications,
+  WORK_NOTIFICATION_KINDS,
+  type WorkNotificationInbox,
+} from "@/lib/notifications/work";
 
 import { FakeWorkDb } from "./helpers/fake-work-notification-tables";
 
@@ -90,6 +94,38 @@ describe("the reminder panel", () => {
     // reader's own zone.
     expect(screen.getByText("Aug 1, 2026")).toBeTruthy();
     expect(screen.getByRole("heading", { name: /Reminders \(2\)/ })).toBeTruthy();
+  });
+
+  it("has a plain-language badge for every kind the sweep can write", async () => {
+    /**
+     * The panel falls back to the generic word "Reminder" for a kind it does
+     * not know, so a seventh kind shipping without a label degrades silently on
+     * the one surface a planner glances at rather than reads. Driven off
+     * `WORK_NOTIFICATION_KINDS` — the vocabulary the migration's CHECK is
+     * pinned to — so adding a kind and forgetting the label fails here.
+     *
+     * MUTATION-VERIFIED: deleting `award_expenditure_due` from `KIND_LABELS`
+     * fails this test with the badge reading "Reminder".
+     */
+    const everyKind = WORK_NOTIFICATION_KINDS.map((kind, index) => ({
+      id: `n-${kind}`,
+      recipient_user_id: ALICE,
+      is_read: false,
+      kind,
+      title: `Reminder about ${kind}`,
+      body: "",
+      due_on: `2026-08-1${index}`,
+      project_id: null,
+      created_at: "2026-08-11T13:00:00.000Z",
+    }));
+
+    await renderPanel(await inboxFrom(everyKind));
+
+    expect(screen.queryAllByText("Reminder")).toEqual([]);
+    // And the two award deadlines do not share a word: one is the date the
+    // money must be committed, the other the date it goes back to the funder.
+    expect(screen.getByText("Award obligation")).toBeTruthy();
+    expect(screen.getByText("Award lapse")).toBeTruthy();
   });
 
   it("renders nothing at all when there is nothing to say", async () => {

@@ -166,6 +166,55 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
     expect(patch).not.toHaveProperty("closure_basis");
   });
 
+  /**
+   * THE LAPSE DATE, which used to be settable only at creation.
+   *
+   * `expenditure_deadline_at` had no PATCH branch, so every award already in a
+   * database was permanently incapable of carrying one — and the expenditure
+   * reminder built on that column could never fire for any of them.
+   */
+  it("sets a lapse date on an award that already exists", async () => {
+    const response = await patchFundingAward(
+      patchRequest({ expenditureDeadlineAt: "2027-06-30T00:00:00.000Z" }),
+      context()
+    );
+
+    expect(response.status).toBe(200);
+    expect(lastUpdatePatch()).toEqual({ expenditure_deadline_at: "2027-06-30T00:00:00.000Z" });
+  });
+
+  it("clears a lapse date on an explicit null, and leaves it alone when unmentioned", async () => {
+    await patchFundingAward(patchRequest({ expenditureDeadlineAt: null }), context());
+    // `null` is "this award has no lapse date", a real edit.
+    expect(lastUpdatePatch()).toEqual({ expenditure_deadline_at: null });
+
+    await patchFundingAward(patchRequest({ notes: "Scope note" }), context());
+    // Absent is "do not touch it" — the column must not be written at all.
+    expect(lastUpdatePatch()).not.toHaveProperty("expenditure_deadline_at");
+  });
+
+  it("does not confuse the lapse date with the obligation date", async () => {
+    await patchFundingAward(
+      patchRequest({
+        obligationDueAt: "2027-01-31T00:00:00.000Z",
+        expenditureDeadlineAt: "2027-06-30T00:00:00.000Z",
+      }),
+      context()
+    );
+
+    // Obligating is committing the money; expending is spending it. One
+    // request, two columns, two different dates.
+    expect(lastUpdatePatch()).toEqual({
+      obligation_due_at: "2027-01-31T00:00:00.000Z",
+      expenditure_deadline_at: "2027-06-30T00:00:00.000Z",
+    });
+  });
+
+  it("refuses a lapse date that is not an instant", async () => {
+    const response = await patchFundingAward(patchRequest({ expenditureDeadlineAt: "2027-06-30" }), context());
+    expect(response.status).toBe(400);
+  });
+
   it("rebuilds the funding posture only when the edit moves award money", async () => {
     await patchFundingAward(patchRequest({ notes: "Scope note" }), context());
     expect(rebuildProjectRtpPostureMock).not.toHaveBeenCalled();
@@ -268,6 +317,29 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
     // that can fail after the first landed, or edits silently dropped while the
     // response reports success.
     expect(response.status).toBe(400);
+    expect(awardUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses to fold a lapse-date edit into a close-out either", async () => {
+    invoicesEqSecondMock.mockResolvedValue({
+      data: [
+        { status: "paid", amount: 1_000_000, retention_percent: 0, retention_amount: 0, net_amount: 1_000_000, due_date: null },
+      ],
+      error: null,
+    });
+
+    const response = await patchFundingAward(
+      patchRequest({ spendingStatus: "fully_spent", expenditureDeadlineAt: "2027-06-30T00:00:00.000Z" }),
+      context()
+    );
+
+    // A field the refusal list forgets is a field that rides a close-out into
+    // the database on the strength of a different decision. Every editable
+    // column belongs in FIELD_EDIT_KEYS; this pins the newest one there.
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      details: expect.stringContaining("expenditureDeadlineAt"),
+    });
     expect(awardUpdateMock).not.toHaveBeenCalled();
   });
 

@@ -71,6 +71,18 @@ const createFundingAwardSchema = z.object({
   matchAmount: z.number().min(0).optional(),
   matchPosture: z.enum(FUNDING_AWARD_MATCH_POSTURES).optional(),
   obligationDueAt: z.string().datetime().optional(),
+  /**
+   * The LAPSE date — when the funds must be expended, which is a different
+   * deadline from `obligationDueAt` with a different consequence. Optional and
+   * never derived: OpenPlan has no way to know a program's lapse rule, and a
+   * date it invented would be one an agency plans around.
+   *
+   * Unlike the obligation date this writes NO mirror milestone. The obligation
+   * milestone exists for the project timeline and /my-work already de-duplicates
+   * it against the award; a second auto-milestone here would put the same lapse
+   * on a planner's list twice.
+   */
+  expenditureDeadlineAt: z.string().datetime().optional(),
   spendingStatus: z.enum(FUNDING_AWARD_OPEN_SPENDING_STATUSES).optional(),
   riskFlag: z.enum(FUNDING_AWARD_RISK_FLAGS).optional(),
   notes: z.string().trim().max(4000).optional(),
@@ -79,7 +91,7 @@ const createFundingAwardSchema = z.object({
 
 /** The columns every award response echoes back. */
 const FUNDING_AWARD_COLUMNS =
-  "id, workspace_id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, spending_status, risk_flag, notes, closure_basis, closed_at, closed_by, closure_note, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
+  "id, workspace_id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, risk_flag, notes, closure_basis, closed_at, closed_by, closure_note, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("funding-awards.list", request);
@@ -230,6 +242,7 @@ export async function POST(request: NextRequest) {
         match_amount: parsed.data.matchAmount ?? 0,
         match_posture: parsed.data.matchPosture ?? "partial",
         obligation_due_at: parsed.data.obligationDueAt ?? null,
+        expenditure_deadline_at: parsed.data.expenditureDeadlineAt ?? null,
         // The status and the closure provenance are written together, never
         // apart: the schema's coherence CHECK refuses `fully_spent` with no
         // basis, so an asserted closure carries its own account or the insert

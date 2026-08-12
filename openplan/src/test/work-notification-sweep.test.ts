@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  expenditureAtRiskSentence,
   loadWorkNotifications,
   sweepWorkDeadlines,
   WORK_DEADLINE_HORIZON_DAYS,
@@ -10,6 +11,19 @@ import {
   WORK_SWEEP_SOURCES,
   type WorkSweepClient,
 } from "@/lib/notifications/work";
+import { buildAwardDrawdownLedger, type AwardDrawdownLedger } from "@/lib/invoicing/drawdown-ledger";
+
+/**
+ * A real, empty ledger from the real builder — not a hand-written object
+ * literal. Every field the branch tests below do not vary must be whatever the
+ * ledger genuinely produces for an award with no invoices, so that a change to
+ * its shape reaches these tests instead of passing them by.
+ */
+const EMPTY_LEDGER: AwardDrawdownLedger = (() => {
+  const built = buildAwardDrawdownLedger({ award: {}, invoiceRead: { ok: true, invoices: [] } });
+  if (!built.ok) throw new Error("empty fixture ledger failed to build");
+  return built.ledger;
+})();
 
 import {
   FakeWorkDb,
@@ -221,11 +235,102 @@ function fixtures() {
         project_id: PROJECT_TWO,
         title: "Closed-out award",
         obligation_due_at: "2026-08-16T00:00:00.000Z",
+        // The same row carries a lapse date, so the `fully_spent` filter is
+        // proven for BOTH award kinds by one fixture: money already spent
+        // cannot lapse, and a reminder that it might would be an alarm about
+        // nothing.
+        expenditure_deadline_at: "2026-08-16T00:00:00.000Z",
         spending_status: "fully_spent",
+        awarded_amount: 500000,
+        match_amount: 0,
+        match_posture: "not_required",
+        created_by: BOB,
+      },
+      // THE LAPSE AWARD. Its four invoices below are the whole point: the
+      // reminder has to say what is still unclaimed, and the figure comes from
+      // the drawdown ledger rather than from arithmetic written in the sweep.
+      {
+        id: "fa-lapse",
+        workspace_id: WORKSPACE_ONE,
+        project_id: PROJECT_TWO,
+        title: "Corridor construction award",
+        obligation_due_at: null,
+        expenditure_deadline_at: "2026-08-15T00:00:00.000Z",
+        spending_status: "active",
+        awarded_amount: 250000,
+        match_amount: 32362.5,
+        match_posture: "secured",
         created_by: BOB,
       },
     ],
     billing_invoice_records: [
+      /**
+       * THE LAPSE AWARD'S REGISTER, hand-derived.
+       *
+       * Authorized 250,000.00. CLAIMED is {internal_review, submitted,
+       * approved_for_payment, paid}, so the claimed gross is 80,000.00 +
+       * 33,333.33 = 113,333.33 — the draft has not been claimed from the funder
+       * and the rejected claim never will be. 250,000.00 − 113,333.33 =
+       * 136,666.67 still authorized and unclaimed, which is the figure the
+       * reminder must print to the cent.
+       *
+       * None of these four carries a `due_date` or a `created_by`, so the
+       * invoice-window source cannot pick them up: this fixture is about the
+       * lapse reminder, and an extra invoice reminder would muddy every count
+       * in the suite.
+       */
+      {
+        id: "bi-lapse-paid",
+        workspace_id: WORKSPACE_ONE,
+        project_id: PROJECT_TWO,
+        funding_award_id: "fa-lapse",
+        invoice_number: "2026-101",
+        status: "paid",
+        amount: 80000,
+        retention_percent: 5,
+        retention_amount: 0,
+        due_date: null,
+        created_by: null,
+      },
+      {
+        id: "bi-lapse-approved",
+        workspace_id: WORKSPACE_ONE,
+        project_id: PROJECT_TWO,
+        funding_award_id: "fa-lapse",
+        invoice_number: "2026-102",
+        status: "approved_for_payment",
+        amount: 33333.33,
+        retention_percent: 10,
+        retention_amount: 0,
+        due_date: null,
+        created_by: null,
+      },
+      {
+        id: "bi-lapse-draft",
+        workspace_id: WORKSPACE_ONE,
+        project_id: PROJECT_TWO,
+        funding_award_id: "fa-lapse",
+        invoice_number: "2026-103",
+        status: "draft",
+        amount: 9000,
+        retention_percent: 0,
+        retention_amount: 0,
+        due_date: null,
+        created_by: null,
+      },
+      {
+        id: "bi-lapse-rejected",
+        workspace_id: WORKSPACE_ONE,
+        project_id: PROJECT_TWO,
+        funding_award_id: "fa-lapse",
+        invoice_number: "2026-104",
+        status: "rejected",
+        amount: 55000,
+        retention_percent: 0,
+        retention_amount: 0,
+        due_date: null,
+        created_by: null,
+      },
       {
         id: "bi-overdue",
         workspace_id: WORKSPACE_ONE,
@@ -343,6 +448,7 @@ describe("the daily deadline sweep", () => {
         `${ALICE}:fo-pending`,
         `${BOB}:bi-overdue`,
         `${BOB}:fa-1`,
+        `${BOB}:fa-lapse`,
         `${BOB}:m-1`,
         `${BOB}:s-1`,
         `${CAROL}:d-other-workspace`,
@@ -352,9 +458,9 @@ describe("the daily deadline sweep", () => {
     // Each row carries the workspace of its OWN record, not of the sweep.
     const carolRow = db.notifications.find((row) => row.recipient_user_id === CAROL);
     expect(carolRow?.workspace_id).toBe(WORKSPACE_TWO);
-    expect(db.notifications.filter((row) => row.workspace_id === WORKSPACE_ONE)).toHaveLength(7);
+    expect(db.notifications.filter((row) => row.workspace_id === WORKSPACE_ONE)).toHaveLength(8);
 
-    expect(result.notificationsCreated).toBe(8);
+    expect(result.notificationsCreated).toBe(9);
     expect(result.digestsComposed).toBe(3);
     expect(result.horizonDays).toBe(WORK_DEADLINE_HORIZON_DAYS);
   });
@@ -387,7 +493,7 @@ describe("the daily deadline sweep", () => {
   it("runs twice and creates nothing, and mails nothing, the second time", async () => {
     const db = makeDb();
     const first = await run(db);
-    expect(first.notificationsCreated).toBe(8);
+    expect(first.notificationsCreated).toBe(9);
     expect(first.digestsComposed).toBe(3);
     const outboxAfterFirst = db.outbox.length;
     expect(outboxAfterFirst).toBe(3);
@@ -396,7 +502,7 @@ describe("the daily deadline sweep", () => {
 
     expect(second.notificationsCreated).toBe(0);
     expect(second.digestsComposed).toBe(0);
-    expect(db.notifications).toHaveLength(8);
+    expect(db.notifications).toHaveLength(9);
     expect(db.outbox).toHaveLength(outboxAfterFirst);
 
     // And it did TRY — the idempotency is the database's, not a pre-read that
@@ -429,7 +535,7 @@ describe("the daily deadline sweep", () => {
     const { db, tables } = makeDbWithFixtures();
 
     const first = await run(db);
-    expect(first.notificationsCreated).toBe(8);
+    expect(first.notificationsCreated).toBe(9);
     expect(first.digestsComposed).toBe(3);
     expect(db.outbox).toHaveLength(3);
 
@@ -514,7 +620,7 @@ describe("the daily deadline sweep", () => {
     // Bob's invoice is overdue by `invoicePriority`, not by a second date test
     // written here: unsettled AND past due.
     const bob = db.outbox.find((row) => row.to_email === "bob@example.gov");
-    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 3 due in the next 7 days");
+    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days");
     expect(String(bob?.body)).toContain("Invoice 2026-014");
 
     const overdueRow = db.notifications.find((row) => row.subject_id === "d-overdue");
@@ -532,6 +638,113 @@ describe("the daily deadline sweep", () => {
     for (const excluded of ["d-complete", "d-far", "d-unassigned", "fo-decided", "fa-spent", "bi-paid"]) {
       expect(subjects, `${excluded} must not produce a reminder`).not.toContain(excluded);
     }
+    // `fa-spent` carries BOTH award dates, so its single absence above proves
+    // the `fully_spent` filter on both award sources at once.
+    expect(
+      db.notifications.filter((row) => row.kind === "award_expenditure_due").map((row) => row.subject_id)
+    ).toEqual(["fa-lapse"]);
+  });
+
+  /**
+   * ── THE LAPSE REMINDER ────────────────────────────────────────────────────
+   *
+   * Federal money that dies on a date is the most consequential thing this
+   * product reminds anyone of, so this reminder says three things and each is
+   * asserted: WHICH award, WHEN, and HOW MUCH is still at stake.
+   *
+   * The amount is the drawdown ledger's, quoted. The fixture is hand-derived
+   * (see the invoice rows above) so the assertion is one exact string and not a
+   * band: 250,000.00 authorized − 113,333.33 claimed = 136,666.67. A draft is
+   * not a claim and a rejected invoice never will be, so a sweep that summed
+   * the register instead of asking the ledger would print 177,666.67 or
+   * 122,666.67 and fail here.
+   *
+   * MUTATION-VERIFIED (each reverted, all reported in the lane's handoff):
+   * deleting `loadContext` from the source; replacing the quoted
+   * `remainingAuthorized` with a subtraction written in the sweep; returning
+   * zeros instead of `unavailable` when the invoice read fails; dropping the
+   * `>= limit` cap check; and removing the `ADD CONSTRAINT` from
+   * 20260812000010, which fails the kind-vocabulary test above.
+   */
+  it("names the award, the date and the unclaimed amount on a lapse deadline", async () => {
+    const db = makeDb();
+    const result = await run(db);
+
+    const lapse = db.notifications.find((row) => row.subject_id === "fa-lapse");
+    expect(lapse?.kind).toBe("award_expenditure_due");
+    expect(lapse?.recipient_user_id).toBe(BOB);
+    expect(lapse?.subject_table).toBe("funding_awards");
+    expect(lapse?.due_on).toBe("2026-08-15");
+    expect(lapse?.title).toBe("Corridor construction award");
+    expect(lapse?.body).toBe(
+      "Funds on Corridor construction award must be expended — due Aug 15, 2026. " +
+        // The ISO code, not "$": this line is the whole reminder, and a bare
+        // dollar sign is the same glyph for a dozen different currencies.
+        "USD\u00a0136,666.67 of this award is authorized and not yet claimed. " +
+        "You recorded this award; expenditure deadlines carry no assignee."
+    );
+    expect(result.perSource.award_expenditure_due.candidates).toBe(1);
+    expect(result.perSource.award_expenditure_due.contextUnavailable).toBe(false);
+
+    // The lapse and the obligation are separate reminders in separate words —
+    // a planner told the wrong one of the two acts on the wrong deadline.
+    const obligation = db.notifications.find((row) => row.subject_id === "fa-1");
+    expect(obligation?.kind).toBe("award_obligation_due");
+    expect(String(obligation?.body)).toContain("must be obligated");
+    expect(String(lapse?.body)).not.toContain("obligated");
+  });
+
+  it("says the amount could not be read rather than showing zero at risk", async () => {
+    // The invoice read fails; the deadline is still real and still arrives.
+    const db = new FakeWorkDb({
+      tables: fixtures(),
+      errors: { billing_invoice_records: { message: "permission denied for table billing_invoice_records" } },
+    });
+    db.emails.set(BOB, "bob@example.gov");
+
+    const result = await run(db);
+
+    const lapse = db.notifications.find((row) => row.subject_id === "fa-lapse");
+    expect(lapse, "the reminder is worth more than its figure").toBeDefined();
+    expect(lapse?.body).toBe(
+      "Funds on Corridor construction award must be expended — due Aug 15, 2026. " +
+        "OpenPlan could not read this award's invoices, so the amount at risk is not stated here. " +
+        "You recorded this award; expenditure deadlines carry no assignee."
+    );
+    // Never a number, and never a zero — an unread amount is not $0 at risk.
+    expect(String(lapse?.body)).not.toContain("$");
+    // …and the swallowed read is reported rather than absorbed.
+    expect(result.perSource.award_expenditure_due.contextUnavailable).toBe(true);
+    expect(result.perSource.award_expenditure_due.candidates).toBe(1);
+  });
+
+  it("treats a capped invoice read as unread, because a partial register overstates what is left", async () => {
+    // Two of the four invoices — which would leave out claims and make the
+    // award look richer than it is. The wrong direction to be wrong in, so no
+    // figure is printed at all.
+    const db = makeDb();
+    const result = await run(db, { limitPerSource: 2 });
+
+    expect(result.perSource.award_expenditure_due.contextUnavailable).toBe(true);
+    const lapse = db.notifications.find((row) => row.subject_id === "fa-lapse");
+    expect(String(lapse?.body)).toContain("could not read this award's invoices");
+    expect(String(lapse?.body)).not.toContain("$");
+  });
+
+  it("writes the lapse reminder once when the sweep runs twice", async () => {
+    const db = makeDb();
+    await run(db);
+    await run(db);
+
+    // The new kind inherits the unique index rather than a check of its own:
+    // (subject_table, subject_id, recipient_user_id, due_on) is the same key
+    // the other six are de-duplicated by.
+    expect(db.notifications.filter((row) => row.subject_id === "fa-lapse")).toHaveLength(1);
+    // One digest mentioned it, on the first day only. The second run wrote no
+    // row, so it composed no email — which is the whole guarantee.
+    expect(
+      db.outbox.filter((row) => String(row.body).includes("Corridor construction award"))
+    ).toHaveLength(1);
   });
 
   it("dates the reminder by the calendar day the record is due, in UTC", async () => {
@@ -613,7 +826,7 @@ describe("the daily deadline sweep", () => {
     const result = await run(db);
 
     // The reminder matters more than its heading — nobody's digest is withheld.
-    expect(result.notificationsCreated).toBe(8);
+    expect(result.notificationsCreated).toBe(9);
     expect(db.outbox).toHaveLength(3);
     const alice = db.outbox.find((row) => row.to_email === "alice@example.gov");
     expect(String(alice?.body)).toContain("Here is what is on your plate.");
@@ -627,7 +840,7 @@ describe("the daily deadline sweep", () => {
     // No emails resolved at all: the auth lookup answered null for everyone.
     const result = await run(db);
 
-    expect(result.notificationsCreated).toBe(8);
+    expect(result.notificationsCreated).toBe(9);
     expect(result.digestsComposed).toBe(3);
     expect(result.emailUnavailable).toBe(3);
     expect(result.emailsSkipped).toBe(0);
@@ -716,5 +929,112 @@ describe("the reminder inbox read", () => {
     expect(inbox.ok).toBe(false);
     if (inbox.ok) return;
     expect(inbox.pending).toBe(true);
+  });
+});
+
+/**
+ * THE FIVE THINGS THE LAPSE REMINDER CAN SAY ABOUT THE MONEY.
+ *
+ * `expenditureAtRiskSentence` had three branches no test ever reached — they
+ * survived mutation, meaning the code could have been deleted or inverted and
+ * the suite would have stayed green. Two of them are the honest ones: an
+ * unreadable invoice register and an award with no recorded amount. Those are
+ * exactly the branches that must never degrade into "$0 at risk", which reads
+ * as a finding a planner would act on and is in fact "we could not tell".
+ *
+ * Called directly rather than driven through the sweep. Producing all five
+ * through the sweep would need five databases, and four of them would be
+ * fixtures describing the branch rather than exercising it.
+ */
+describe("what the lapse reminder says is at risk", () => {
+  function ledgerWithRemaining(remaining: number | null): AwardDrawdownLedger {
+    return { ...EMPTY_LEDGER, remainingAuthorized: remaining };
+  }
+
+  it("states the amount still claimable, naming the currency", () => {
+    expect(expenditureAtRiskSentence(ledgerWithRemaining(136666.67), false, "USD")).toBe(
+      "USD 136,666.67 of this award is authorized and not yet claimed."
+    );
+  });
+
+  it("names a non-US currency the reimbursement process declares", () => {
+    // The figure is the whole reminder. Printing a euro award as US dollars
+    // would be a plausible number under the wrong unit.
+    expect(expenditureAtRiskSentence(ledgerWithRemaining(1000), false, "EUR")).toContain("EUR");
+    expect(expenditureAtRiskSentence(ledgerWithRemaining(1000), false, "EUR")).not.toContain("USD");
+  });
+
+  it("falls back to USD when no process declared a currency, rather than dropping the figure", () => {
+    expect(expenditureAtRiskSentence(ledgerWithRemaining(1000), false, null)).toContain("USD");
+    expect(expenditureAtRiskSentence(ledgerWithRemaining(1000), false, undefined)).toContain("USD");
+  });
+
+  it("survives a currency code Intl does not know", () => {
+    // A bad code in a registry entry must cost the label, never the warning.
+    const sentence = expenditureAtRiskSentence(ledgerWithRemaining(1000), false, "NOTACODE");
+    expect(sentence).toContain("1000.00 NOTACODE");
+    expect(sentence).toContain("authorized and not yet claimed");
+  });
+
+  /** BRANCH 1 — the invoice register could not be read. */
+  it("says the amount is UNKNOWN when the invoice read failed, and never says zero", () => {
+    const sentence = expenditureAtRiskSentence(ledgerWithRemaining(500000), true);
+
+    expect(sentence).toBe(
+      "OpenPlan could not read this award's invoices, so the amount at risk is not stated here."
+    );
+    // The ledger handed in has half a million remaining; an unavailable context
+    // must not quote it, and must not turn it into a zero either.
+    expect(sentence).not.toMatch(/\d/);
+  });
+
+  it("says the same when there is no ledger at all for the award", () => {
+    expect(expenditureAtRiskSentence(undefined, false)).toBe(
+      "OpenPlan could not read this award's invoices, so the amount at risk is not stated here."
+    );
+  });
+
+  /** BRANCH 2 — the award carries no recorded amount. */
+  it("says the amount is UNKNOWN when no awarded amount was recorded", () => {
+    const sentence = expenditureAtRiskSentence(ledgerWithRemaining(null), false);
+
+    expect(sentence).toBe(
+      "No awarded amount is recorded on this award, so OpenPlan cannot say how much is at risk."
+    );
+    // `awarded_amount` is NOT NULL DEFAULT 0, so a zero there is indistinguishable
+    // from "nobody entered it". Reporting "$0.00 at risk" would state a fact the
+    // database does not hold, in the reassuring direction.
+    expect(sentence).not.toContain("0.00");
+    expect(sentence).not.toMatch(/\$/);
+  });
+
+  /** BRANCH 3 — fully claimed. A real zero, and a different sentence. */
+  it("distinguishes a genuine zero from an unknown one", () => {
+    const claimedOut = expenditureAtRiskSentence(ledgerWithRemaining(0), false);
+
+    expect(claimedOut).toBe("Every authorized dollar on this award has already been claimed.");
+    // The whole point of the branch: this is a FINDING, and it must not read
+    // like either of the two "we could not tell" sentences above.
+    expect(claimedOut).not.toContain("could not read");
+    expect(claimedOut).not.toContain("cannot say");
+    expect(claimedOut).not.toContain("0.00");
+  });
+
+  it("discloses an over-claim as an over-claim, not as a negative remainder", () => {
+    expect(expenditureAtRiskSentence(ledgerWithRemaining(-2500), false, "USD")).toBe(
+      "Claims against this award already exceed the authorized amount by USD 2,500.00."
+    );
+  });
+
+  it("gives all five branches five different sentences", () => {
+    const sentences = [
+      expenditureAtRiskSentence(ledgerWithRemaining(1000), false, "USD"),
+      expenditureAtRiskSentence(ledgerWithRemaining(null), false),
+      expenditureAtRiskSentence(ledgerWithRemaining(0), false),
+      expenditureAtRiskSentence(ledgerWithRemaining(-1000), false, "USD"),
+      expenditureAtRiskSentence(undefined, true),
+    ];
+
+    expect(new Set(sentences).size).toBe(5);
   });
 });

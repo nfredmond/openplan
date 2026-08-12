@@ -7,9 +7,11 @@
  * the string through the reports stack's `renderReportPdf`, which is THE one
  * PDF pipeline — this module deliberately owns no rendering.
  *
- * Every user-entered string passes through `esc` (the same escaping pattern as
- * src/lib/reports/html.ts): an invoice description is client-facing paper, and
- * markup smuggled into it must arrive as text, not as markup.
+ * Every user-entered string passes through `esc` (now shared from
+ * ./html-escape, because the reimbursement worksheet builder needs the same
+ * escaping and a second copy would be the one that drifts): an invoice
+ * description is client-facing paper, and markup smuggled into it must arrive
+ * as text, not as markup.
  *
  * Conventions shared with receivables.ts: record-like tolerant types
  * (snake_case, number|string|null), no jurisdiction assumptions. Currency
@@ -17,6 +19,7 @@
  * the same USD presentation the rest of the invoicing surface uses.
  */
 
+import { esc } from "./html-escape";
 import { parseCurrencyAmount } from "./invoice-records";
 import type { EngagementBilledSummary } from "./receivables";
 
@@ -70,15 +73,6 @@ export type ClientInvoicePdfData = {
   /** Billed position of the engagement, for the not-to-exceed context line. */
   engagementBilled?: EngagementBilledSummary | null;
 };
-
-function esc(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
 
 function formatAmount(value: number | string | null | undefined, currencyCode: string | null | undefined): string {
   const numeric = parseCurrencyAmount(value);

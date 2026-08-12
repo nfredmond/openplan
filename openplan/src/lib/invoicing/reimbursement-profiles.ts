@@ -108,6 +108,22 @@ export type ReimbursementProfileDescriptor = {
    */
   documentationChecklist?: readonly ReimbursementDocumentationChecklistItem[];
   /**
+   * ISO-4217 code for the money a packet under this process is claimed in.
+   *
+   * Declared on the PROFILE because the currency is a property of the funding
+   * process, not of OpenPlan: a draw is denominated in whatever the funder
+   * pays. Every money figure on a reimbursement worksheet used to be formatted
+   * `currency: "USD"` with nothing on the document naming a currency at all, so
+   * a packet for a funder outside the United States printed plausible-looking
+   * amounts under the wrong unit and said nothing about it.
+   *
+   * Optional, and its absence is DISCLOSED rather than silently defaulted: a
+   * packet whose profile declares no currency says that it is showing US
+   * dollars and that the process did not state one. "Defaulting to USD" is only
+   * honest if the reader is told it happened.
+   */
+  currencyCode?: string;
+  /**
    * True for the one profile applied when nothing has told us which
    * jurisdiction a workspace operates in. See `INTERIM_DEFAULT_RATIONALE`.
    */

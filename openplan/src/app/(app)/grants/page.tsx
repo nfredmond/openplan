@@ -24,6 +24,7 @@ import {
   buildBillingInvoicePriorityQueue,
   resolveExactBillingInvoiceAwardMatch,
   summarizeBillingInvoiceRecords,
+  uninvoicedCommittedAwardAmount,
 } from "@/lib/invoicing/invoice-records";
 import { resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
 import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
@@ -550,7 +551,7 @@ export default async function GrantsPage({
   const trackedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
   const awardLinkedInvoices = fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
   const linkedInvoiceSummary = summarizeBillingInvoiceRecords(awardLinkedInvoices);
-  const uninvoicedCommittedAmount = Math.max(committedAwardAmount - linkedInvoiceSummary.totalNetAmount, 0);
+  const uninvoicedCommittedAmount = uninvoicedCommittedAwardAmount(committedAwardAmount, linkedInvoiceSummary);
   const awardWatchCount = fundingAwards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
   const fundingNeedAnchorProjects = projectOptions
     .map((project) => {
