@@ -19,6 +19,51 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.16.0 — 2026-08-11
+
+**Three migrations are required before the app deploys: `20260812000001`,
+`20260812000002`, and `20260812000003`.** They add the collision detail
+columns, the people table, and a counting function. All additive and safe
+against a live database.
+
+**Read this if you already have crash data.** Two columns change meaning:
+killed and injured counts used to be stored as `0` when the source did not
+report them, which is indistinguishable from "nobody was hurt." They can now
+be empty, and empty is shown as "not reported." Rows imported before this
+release keep their zeros — OpenPlan will not rewrite history it cannot
+verify. If you need those older rows corrected, re-import the years in
+question.
+
+### Collisions you can actually analyze
+
+The safety map used to filter by severity and mode. It now filters by year,
+severity, mode, collision type, violation category, lighting, weather, time
+of day, and day of week — and clicking a collision shows every field the
+source provided, saying plainly which fields it did not. Summary tables sit
+beside the map with the coverage and completeness notes attached to the
+numbers that depend on them, and **Export** downloads exactly what you are
+looking at, filters stated in the file.
+
+The California source (CCRS) publishes seventy-five fields about each
+collision. OpenPlan was reading seven of them. It now reads the ones a safety
+analysis needs, including the people involved — as role, age band, and
+outcome. Names, exact ages, gender, race, licence and vehicle numbers are
+never stored, and the AI assistant cannot read the people table at all.
+
+### Crash evidence reaches your plan and your grants
+
+The RTP safety criterion, benefit-cost screening, and grant narratives can
+now cite observed collisions instead of asking you to retype counts from
+memory. The evidence informs a rating **you** set; OpenPlan never turns
+collisions into a priority score on your behalf.
+
+### Ready for states beyond California
+
+Crash severity, collision type, lighting, weather and the rest are now
+described in words that mean the same thing anywhere. California's data is
+one adapter behind that vocabulary, so adding another state's feed is a
+matter of describing it, not rewriting the safety module.
+
 ## 0.15.0 — 2026-08-11
 
 **Four migrations are required before the app deploys: `20260811000008`,

@@ -121,6 +121,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260811000011_work_notifications_grants.sql",
     migrationsAtRelease: 190,
   },
+  // 0.16.0 — the neutral crash vocabulary, deep collision filtering, people
+  // as role/band/outcome, and safety evidence reaching RTP, BCA and grants.
+  {
+    tag: "0.16.0",
+    lastMigration: "20260812000003_safety_crash_severity_counts.sql",
+    migrationsAtRelease: 193,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
