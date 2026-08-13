@@ -27,6 +27,30 @@ function sentBody(): Record<string, unknown> {
 // Two different templates: varied binding.
 const TEMPLATE_BINDINGS = [CAMPAIGN_TEMPLATES[0], CAMPAIGN_TEMPLATES[CAMPAIGN_TEMPLATES.length - 1]];
 
+
+/**
+ * The creator is a guided flow now: the form lives behind a "New campaign"
+ * button, and its answers are spread over three steps. These helpers open it
+ * and walk it.
+ *
+ * WHAT THESE TESTS CANNOT PROVE: anything visual. jsdom applies no stylesheet
+ * and has no box model, so it cannot show that the sheet is on screen,
+ * full-height on a phone, that focus moved into it, or that the page behind is
+ * inert. `src/test/guided-flow-jsdom-dialog-shim.ts` only supplies `showModal`
+ * so the component mounts. Layout is measured in a real browser.
+ */
+function openFlow() {
+  fireEvent.click(screen.getByRole("button", { name: /^new campaign$/i }));
+}
+
+function next() {
+  fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
+}
+
+function submitFlow() {
+  fireEvent.click(screen.getByRole("button", { name: /^create campaign$/i }));
+}
+
 describe("EngagementCampaignCreator template selection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -47,16 +71,21 @@ describe("EngagementCampaignCreator template selection", () => {
 
       render(<EngagementCampaignCreator projects={[]} />);
 
+      openFlow();
       fireEvent.change(screen.getByLabelText(/Start from a template/), { target: { value: template.id } });
 
-      // Prefills come from the chosen entry, not from any fixed template.
-      expect((screen.getByLabelText(/Summary/) as HTMLTextAreaElement).value).toBe(template.suggestedSummary);
-      expect((screen.getByLabelText(/Engagement type/) as HTMLSelectElement).value).toBe(template.engagementType);
       // The planner is told what will be created, and that questions are drafts.
       expect(screen.getByText(/arrive as drafts/i)).toBeInTheDocument();
 
-      fireEvent.change(screen.getByLabelText(/Title/), { target: { value: "Templated campaign" } });
-      fireEvent.submit(screen.getByRole("button", { name: /Create campaign/ }).closest("form")!);
+      next();
+      // Prefills come from the chosen entry, not from any fixed template.
+      expect((screen.getByLabelText(/Engagement type/) as HTMLSelectElement).value).toBe(template.engagementType);
+      fireEvent.change(screen.getByLabelText(/^Title$/), { target: { value: "Templated campaign" } });
+
+      next();
+      expect((screen.getByLabelText(/Summary/) as HTMLTextAreaElement).value).toBe(template.suggestedSummary);
+
+      submitFlow();
 
       await waitFor(() => {
         expect(pushMock).toHaveBeenCalledWith("/engagement/campaign-1?created=1");
@@ -71,8 +100,11 @@ describe("EngagementCampaignCreator template selection", () => {
 
     render(<EngagementCampaignCreator projects={[]} />);
 
-    fireEvent.change(screen.getByLabelText(/Title/), { target: { value: "Blank campaign" } });
-    fireEvent.submit(screen.getByRole("button", { name: /Create campaign/ }).closest("form")!);
+    openFlow();
+    next();
+    fireEvent.change(screen.getByLabelText(/^Title$/), { target: { value: "Blank campaign" } });
+    next();
+    submitFlow();
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/engagement/campaign-2?created=1");
@@ -80,7 +112,7 @@ describe("EngagementCampaignCreator template selection", () => {
     expect(sentBody().templateId).toBeUndefined();
   });
 
-  it("stays put and says so when the campaign was created but the template was not fully applied", async () => {
+  it("says so on the page, and does not navigate, when the template was not fully applied", async () => {
     const template = CAMPAIGN_TEMPLATES[0];
     fetchMock.mockResolvedValue({
       ok: true,
@@ -92,9 +124,12 @@ describe("EngagementCampaignCreator template selection", () => {
 
     render(<EngagementCampaignCreator projects={[]} />);
 
+    openFlow();
     fireEvent.change(screen.getByLabelText(/Start from a template/), { target: { value: template.id } });
-    fireEvent.change(screen.getByLabelText(/Title/), { target: { value: "Half-applied" } });
-    fireEvent.submit(screen.getByRole("button", { name: /Create campaign/ }).closest("form")!);
+    next();
+    fireEvent.change(screen.getByLabelText(/^Title$/), { target: { value: "Half-applied" } });
+    next();
+    submitFlow();
 
     await waitFor(() => {
       expect(screen.getByText(/could not be fully applied/i)).toBeInTheDocument();

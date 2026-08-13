@@ -88,9 +88,6 @@ type PendingConfirm = {
   resolve: (answer: boolean) => void;
 };
 
-const FOCUSABLE =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 export function useConfirmDialog(): {
   confirm: (request: ConfirmRequest) => Promise<boolean>;
   confirmDialog: React.ReactNode;
@@ -143,7 +140,7 @@ export function ConfirmDialog({
   request: ConfirmRequest;
   onSettle: (answer: boolean) => void;
 }) {
-  const panelRef = React.useRef<HTMLDivElement | null>(null);
+  const dialogRef = React.useRef<HTMLDialogElement | null>(null);
   const cancelRef = React.useRef<HTMLButtonElement | null>(null);
   const headlineId = React.useId();
   const consequenceId = React.useId();
@@ -157,6 +154,11 @@ export function ConfirmDialog({
   );
 
   React.useEffect(() => {
+    // `showModal()`, never the `open` ATTRIBUTE. The attribute gives a
+    // non-modal dialog: no top layer, no inert background, no focus
+    // containment, no Escape. It is the single most common way this element is
+    // used wrong, and it looks identical on screen until someone tabs.
+    dialogRef.current?.showModal();
     // The safe button takes focus, never the destructive one. A planner who
     // opens this and hits Enter out of habit must not delete anything.
     cancelRef.current?.focus();
@@ -166,51 +168,40 @@ export function ConfirmDialog({
     };
   }, []);
 
-  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.stopPropagation();
-      onSettle(false);
-      return;
-    }
-    if (event.key !== "Tab") return;
-
-    const panel = panelRef.current;
-    if (!panel) return;
-    const focusable = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
-    if (focusable.length === 0) return;
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement as HTMLElement | null;
-
-    // Wrapped, not merely bounded. Tab off the end of a modal that lets focus
-    // escape puts the keyboard on the page behind it, where the planner cannot
-    // see what they are operating.
-    if (event.shiftKey && (active === first || !panel.contains(active))) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && (active === last || !panel.contains(active))) {
-      event.preventDefault();
-      first.focus();
-    }
-  };
-
   const body = (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onKeyDown={onKeyDown}
+    <dialog
+      ref={dialogRef}
+      role="alertdialog"
+      // Redundant beside `showModal()`, which makes the dialog modal in the
+      // accessibility tree by itself — kept because it is the only observable
+      // trace of modality in a test environment that has no top layer.
+      aria-modal="true"
+      aria-labelledby={headlineId}
+      aria-describedby={consequenceId}
+      // The focus trap, the inert background, the Escape key, and stacking
+      // above everything on the page are the element's own behaviour now — not
+      // forty lines of hand-rolled Tab wrapping that the next modal would have
+      // copied slightly wrong. Top-layer stacking is the load-bearing part: a
+      // `z-50` portal opened from inside a guided flow would be DRAWN BEHIND
+      // the flow and invisible, and this question is asked from inside one.
+      onCancel={(event) => {
+        event.preventDefault();
+        onSettle(false);
+      }}
       onMouseDown={(event) => {
+        // Clicks on the backdrop report the dialog itself as the target; the
+        // panel below stops them. Declining is the safe answer, so the
+        // backdrop may close THIS — it may never close a form with typed work.
         if (event.target === event.currentTarget) onSettle(false);
       }}
       data-testid="confirm-dialog-backdrop"
+      className="m-auto w-full max-w-lg overflow-hidden rounded-[0.5rem] border border-border bg-background p-0 text-foreground shadow-xl backdrop:bg-black/50"
     >
       <div
-        ref={panelRef}
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby={headlineId}
-        aria-describedby={consequenceId}
-        className="w-full max-w-lg overflow-hidden rounded-[0.5rem] border border-border bg-background text-foreground shadow-xl"
+        className="w-full"
+        onMouseDown={(event) => {
+          event.stopPropagation();
+        }}
       >
         <div className="flex items-start gap-3 border-b border-border px-5 py-4">
           <span
@@ -295,7 +286,7 @@ export function ConfirmDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 
   if (typeof document === "undefined") return null;

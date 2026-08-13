@@ -1,12 +1,41 @@
 "use client";
 
+/**
+ * Registering the sources, datasets and refresh runs the Data Hub governs.
+ *
+ * WHY THREE BUTTONS INSTEAD OF THREE TABS. `/data-hub` is a catalogue you go to
+ * in order to LOOK at what you have. Above it sat 844 lines of composer: three
+ * tabbed forms carrying forty-two controls between them, all mounted, all the
+ * time, whether or not anybody came to register anything. Tabs made it look
+ * smaller than it was — the page still had to make room for the tallest one.
+ *
+ * Each record type is now its own guided flow behind its own button, because
+ * they are three different jobs. A person registering a Census connector is not
+ * halfway through logging last night's refresh, and a tab strip claimed they
+ * might be.
+ *
+ * WHAT SURVIVED THE MOVE. Every one of the forty-two fields, every option in
+ * every list, every enable/disable rule, and — the part worth checking — the
+ * REQUEST BODY, unchanged field for field:
+ *   - `rowCount` and `recordsWritten` still go as numbers or not at all,
+ *     never as an empty string;
+ *   - `startedAt` / `completedAt` are still converted to ISO, and omitted when
+ *     blank rather than sent as `""`;
+ *   - `relationshipType` is still sent only when a project was chosen;
+ *   - `thematicMetricKey` / `thematicMetricLabel` are still sent only when the
+ *     dataset is actually bound to a geometry — sending a metric for a dataset
+ *     bound to nothing would name a column no map layer reads;
+ *   - the error surfaced is still the server's own three-part sentence
+ *     (`error — details — hint`), not a generic one.
+ */
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Database, Link2, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
+import { Database, Link2, RefreshCw, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { GuidedFlow, GuidedFlowRow, useGuidedFlow } from "@/components/ui/guided-flow";
 
 const selectClassName = "module-select";
 
@@ -28,13 +57,159 @@ type DataHubRecordComposerProps = {
   datasets: DatasetOption[];
 };
 
-function FormError({ error }: { error: string | null }) {
-  if (!error) return null;
+/** The metric lists depend on what the dataset is bound to. */
+const THEMATIC_METRICS: Record<string, ReadonlyArray<{ value: string; label: string }>> = {
+  analysis_corridor: [
+    { value: "overallScore", label: "Overall score" },
+    { value: "accessibilityScore", label: "Accessibility score" },
+    { value: "safetyScore", label: "Safety score" },
+    { value: "equityScore", label: "Equity score" },
+  ],
+  analysis_crash_points: [
+    { value: "severityBucket", label: "Crash severity bucket" },
+    { value: "pedestrianInvolved", label: "Pedestrian involvement" },
+    { value: "bicyclistInvolved", label: "Bicyclist involvement" },
+    { value: "fatalCount", label: "Fatality count" },
+    { value: "injuryCount", label: "Injury count" },
+  ],
+  analysis_tracts: [
+    { value: "pctMinority", label: "Minority share" },
+    { value: "pctBelowPoverty", label: "Poverty share" },
+    { value: "medianIncome", label: "Median income" },
+    { value: "isDisadvantaged", label: "Proxy disadvantaged flag" },
+    { value: "zeroVehiclePct", label: "Zero-vehicle households" },
+    { value: "transitCommutePct", label: "Transit commute share" },
+  ],
+};
 
+/** The three attachments that actually bind a dataset to drawn geometry. */
+function isGeometryBound(attachment: string): boolean {
   return (
-    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-      {error}
-    </p>
+    attachment === "analysis_tracts" ||
+    attachment === "analysis_corridor" ||
+    attachment === "analysis_crash_points"
+  );
+}
+
+type ConnectorValues = {
+  connectorName: string;
+  connectorKey: string;
+  connectorType: string;
+  connectorCategory: string;
+  connectorStatus: string;
+  connectorCadence: string;
+  connectorAuthMode: string;
+  connectorEndpointUrl: string;
+  connectorOwner: string;
+  connectorDescription: string;
+  connectorPolicyMonitorEnabled: boolean;
+};
+
+type DatasetValues = {
+  datasetName: string;
+  datasetConnectorId: string;
+  datasetProjectId: string;
+  datasetRelationshipType: string;
+  datasetStatus: string;
+  datasetGeographyScope: string;
+  datasetGeometryAttachment: string;
+  datasetThematicMetricKey: string;
+  datasetThematicMetricLabel: string;
+  datasetCoverageSummary: string;
+  datasetVintageLabel: string;
+  datasetSourceUrl: string;
+  datasetLicenseLabel: string;
+  datasetSchemaVersion: string;
+  datasetChecksum: string;
+  datasetRowCount: string;
+  datasetRefreshCadence: string;
+  datasetCitationText: string;
+  datasetNotes: string;
+};
+
+type JobValues = {
+  jobName: string;
+  jobConnectorId: string;
+  jobDatasetId: string;
+  jobType: string;
+  jobStatus: string;
+  jobRefreshMode: string;
+  jobStartedAt: string;
+  jobCompletedAt: string;
+  jobRecordsWritten: string;
+  jobTriggeredBy: string;
+  jobErrorSummary: string;
+};
+
+const CONNECTOR_INITIAL: ConnectorValues = {
+  connectorName: "",
+  connectorKey: "",
+  connectorType: "custom",
+  connectorCategory: "internal",
+  connectorStatus: "active",
+  connectorCadence: "manual",
+  connectorAuthMode: "none",
+  connectorEndpointUrl: "",
+  connectorOwner: "",
+  connectorDescription: "",
+  connectorPolicyMonitorEnabled: false,
+};
+
+const DATASET_INITIAL: DatasetValues = {
+  datasetName: "",
+  datasetConnectorId: "",
+  datasetProjectId: "",
+  datasetRelationshipType: "reference",
+  datasetStatus: "draft",
+  datasetGeographyScope: "corridor",
+  datasetGeometryAttachment: "none",
+  datasetThematicMetricKey: "",
+  datasetThematicMetricLabel: "",
+  datasetCoverageSummary: "",
+  datasetVintageLabel: "",
+  datasetSourceUrl: "",
+  datasetLicenseLabel: "",
+  datasetSchemaVersion: "",
+  datasetChecksum: "",
+  datasetRowCount: "",
+  datasetRefreshCadence: "manual",
+  datasetCitationText: "",
+  datasetNotes: "",
+};
+
+const JOB_INITIAL: JobValues = {
+  jobName: "",
+  jobConnectorId: "",
+  jobDatasetId: "",
+  jobType: "refresh",
+  jobStatus: "queued",
+  jobRefreshMode: "manual",
+  jobStartedAt: "",
+  jobCompletedAt: "",
+  jobRecordsWritten: "",
+  jobTriggeredBy: "",
+  jobErrorSummary: "",
+};
+
+const CADENCE_OPTIONS = [
+  { value: "manual", label: "Manual" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "annual", label: "Annual" },
+  { value: "ad_hoc", label: "Ad hoc" },
+];
+
+function Options({ options }: { options: ReadonlyArray<{ value: string; label: string }> }) {
+  return (
+    <>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </>
   );
 }
 
@@ -45,56 +220,7 @@ export function DataHubRecordComposer({
   datasets,
 }: DataHubRecordComposerProps) {
   const router = useRouter();
-
-  const [connectorName, setConnectorName] = useState("");
-  const [connectorKey, setConnectorKey] = useState("");
-  const [connectorType, setConnectorType] = useState("custom");
-  const [connectorCategory, setConnectorCategory] = useState("internal");
-  const [connectorStatus, setConnectorStatus] = useState("active");
-  const [connectorCadence, setConnectorCadence] = useState("manual");
-  const [connectorAuthMode, setConnectorAuthMode] = useState("none");
-  const [connectorEndpointUrl, setConnectorEndpointUrl] = useState("");
-  const [connectorOwner, setConnectorOwner] = useState("");
-  const [connectorDescription, setConnectorDescription] = useState("");
-  const [connectorPolicyMonitorEnabled, setConnectorPolicyMonitorEnabled] = useState(false);
-  const [connectorError, setConnectorError] = useState<string | null>(null);
-  const [connectorSaving, setConnectorSaving] = useState(false);
-
-  const [datasetName, setDatasetName] = useState("");
-  const [datasetConnectorId, setDatasetConnectorId] = useState("");
-  const [datasetProjectId, setDatasetProjectId] = useState("");
-  const [datasetRelationshipType, setDatasetRelationshipType] = useState("reference");
-  const [datasetStatus, setDatasetStatus] = useState("draft");
-  const [datasetGeographyScope, setDatasetGeographyScope] = useState("corridor");
-  const [datasetGeometryAttachment, setDatasetGeometryAttachment] = useState("none");
-  const [datasetThematicMetricKey, setDatasetThematicMetricKey] = useState("");
-  const [datasetThematicMetricLabel, setDatasetThematicMetricLabel] = useState("");
-  const [datasetCoverageSummary, setDatasetCoverageSummary] = useState("");
-  const [datasetVintageLabel, setDatasetVintageLabel] = useState("");
-  const [datasetSourceUrl, setDatasetSourceUrl] = useState("");
-  const [datasetLicenseLabel, setDatasetLicenseLabel] = useState("");
-  const [datasetSchemaVersion, setDatasetSchemaVersion] = useState("");
-  const [datasetChecksum, setDatasetChecksum] = useState("");
-  const [datasetRowCount, setDatasetRowCount] = useState("");
-  const [datasetRefreshCadence, setDatasetRefreshCadence] = useState("manual");
-  const [datasetCitationText, setDatasetCitationText] = useState("");
-  const [datasetNotes, setDatasetNotes] = useState("");
-  const [datasetError, setDatasetError] = useState<string | null>(null);
-  const [datasetSaving, setDatasetSaving] = useState(false);
-
-  const [jobName, setJobName] = useState("");
-  const [jobConnectorId, setJobConnectorId] = useState("");
-  const [jobDatasetId, setJobDatasetId] = useState("");
-  const [jobType, setJobType] = useState("refresh");
-  const [jobStatus, setJobStatus] = useState("queued");
-  const [jobRefreshMode, setJobRefreshMode] = useState("manual");
-  const [jobStartedAt, setJobStartedAt] = useState("");
-  const [jobCompletedAt, setJobCompletedAt] = useState("");
-  const [jobRecordsWritten, setJobRecordsWritten] = useState("");
-  const [jobTriggeredBy, setJobTriggeredBy] = useState("");
-  const [jobErrorSummary, setJobErrorSummary] = useState("");
-  const [jobError, setJobError] = useState<string | null>(null);
-  const [jobSaving, setJobSaving] = useState(false);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
 
   async function submitRecord(payload: Record<string, unknown>) {
     const response = await fetch("/api/data-hub/records", {
@@ -106,739 +232,760 @@ export function DataHubRecordComposer({
     const data = (await response.json()) as { error?: string; details?: string; hint?: string };
 
     if (!response.ok) {
-      throw new Error([data.error, data.details, data.hint].filter(Boolean).join(" — ") || "Failed to save record");
+      // The server's own three parts, joined and unedited: `error` says what
+      // happened, `details` and `hint` say what to do about it.
+      throw new Error(
+        [data.error, data.details, data.hint].filter(Boolean).join(" — ") || "Failed to save record"
+      );
     }
 
     router.refresh();
   }
 
-  async function handleConnectorSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setConnectorError(null);
-    setConnectorSaving(true);
-
-    try {
+  const connectorFlow = useGuidedFlow<ConnectorValues>({
+    id: "data-hub-connector",
+    title: "New connector",
+    submitLabel: "Add connector",
+    initialValues: CONNECTOR_INITIAL,
+    steps: [
+      {
+        id: "identity",
+        title: "What is this source called?",
+        hint: "A connector is one place data comes from — an agency API, a file drop, a vendor feed.",
+        fields: [
+          {
+            name: "connectorName",
+            label: "Connector name",
+            required: true,
+            requiredMessage: "Give the source a name you will recognise in a list.",
+          },
+          { name: "connectorKey", label: "Connector key" },
+          { name: "connectorDescription", label: "Description" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="connectorName" label="Connector name">
+              <Input {...flow.text("connectorName")} placeholder="Census ACS 5-Year" />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="connectorKey"
+              label="Short key (optional)"
+              hint="A short machine-friendly name, if you use one. Lowercase with dashes."
+            >
+              <Input {...flow.text("connectorKey")} placeholder="census-acs5" />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="connectorDescription"
+              label="Description (optional)"
+              hint="What this source gives you, why it matters, and anything that trips people up."
+            >
+              <Textarea
+                {...flow.text("connectorDescription")}
+                rows={4}
+                placeholder="What this source provides, why it matters, and any operating caveats."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "kind",
+        title: "What kind of source is it?",
+        hint: "This is how the Data Hub groups and reports on it later.",
+        fields: [
+          { name: "connectorType", label: "Source type", required: true },
+          { name: "connectorCategory", label: "Category", required: true },
+          { name: "connectorStatus", label: "Status", required: true },
+          { name: "connectorCadence", label: "Cadence", required: true },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="connectorType" label="Source type">
+              <select {...flow.text("connectorType")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "census", label: "Census" },
+                    { value: "lodes", label: "LODES" },
+                    { value: "gtfs", label: "GTFS" },
+                    { value: "crashes", label: "Crashes" },
+                    { value: "parcel", label: "Parcel" },
+                    { value: "manual", label: "Manual" },
+                    { value: "custom", label: "Custom" },
+                    { value: "policy", label: "Policy" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="connectorCategory" label="Who publishes it">
+              <select {...flow.text("connectorCategory")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "federal", label: "Federal" },
+                    { value: "state", label: "State" },
+                    { value: "regional", label: "Regional" },
+                    { value: "local", label: "Local" },
+                    { value: "vendor", label: "Vendor" },
+                    { value: "internal", label: "Internal" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="connectorStatus"
+              label="Is it working right now?"
+              hint="Degraded means it answers but not reliably. Offline means it does not answer."
+            >
+              <select {...flow.text("connectorStatus")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "draft", label: "Draft" },
+                    { value: "active", label: "Active" },
+                    { value: "degraded", label: "Degraded" },
+                    { value: "offline", label: "Offline" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="connectorCadence"
+              label="How often does it update?"
+              hint="How often the publisher releases new data — not how often you fetch it."
+            >
+              <select {...flow.text("connectorCadence")} className={selectClassName}>
+                <Options options={CADENCE_OPTIONS} />
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "access",
+        title: "How do you reach it, and who looks after it?",
+        hint: "All optional. Fill in what you know now; the record can be edited later.",
+        fields: [
+          { name: "connectorEndpointUrl", label: "Endpoint or source URL" },
+          { name: "connectorAuthMode", label: "Auth mode" },
+          { name: "connectorOwner", label: "Owner label" },
+          { name: "connectorPolicyMonitorEnabled", label: "Policy monitoring" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="connectorEndpointUrl" label="Endpoint or source URL">
+              <Input
+                {...flow.text("connectorEndpointUrl")}
+                placeholder="https://api.census.gov/data/2023/acs/acs5"
+              />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="connectorAuthMode"
+              label="How you sign in to it"
+              hint="Recorded so somebody else can pick this up. No key or password is stored here."
+            >
+              <select {...flow.text("connectorAuthMode")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "none", label: "None" },
+                    { value: "api_key", label: "API key" },
+                    { value: "oauth", label: "OAuth" },
+                    { value: "service_account", label: "Service account" },
+                    { value: "manual_upload", label: "Manual upload" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="connectorOwner"
+              label="Who looks after it (optional)"
+              hint="A person or a team, so the next person knows who to ask."
+            >
+              <Input {...flow.text("connectorOwner")} placeholder="Priya / Data Ops" />
+            </GuidedFlowRow>
+            <div className="space-y-1.5">
+              <label className="module-note flex items-center gap-3 text-sm text-foreground">
+                <input
+                  {...flow.fieldProps("connectorPolicyMonitorEnabled")}
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-input"
+                  checked={flow.values.connectorPolicyMonitorEnabled}
+                  onChange={(event) =>
+                    flow.setValue("connectorPolicyMonitorEnabled", event.target.checked)
+                  }
+                />
+                Watch this source for policy and bulletin changes
+              </label>
+            </div>
+          </>
+        ),
+      },
+    ],
+    onSubmit: async (values) => {
       await submitRecord({
         recordType: "connector",
-        displayName: connectorName,
-        key: connectorKey,
-        sourceType: connectorType,
-        category: connectorCategory,
-        status: connectorStatus,
-        cadence: connectorCadence,
-        authMode: connectorAuthMode,
-        endpointUrl: connectorEndpointUrl,
-        ownerLabel: connectorOwner,
-        description: connectorDescription,
-        policyMonitorEnabled: connectorPolicyMonitorEnabled,
+        displayName: values.connectorName,
+        key: values.connectorKey,
+        sourceType: values.connectorType,
+        category: values.connectorCategory,
+        status: values.connectorStatus,
+        cadence: values.connectorCadence,
+        authMode: values.connectorAuthMode,
+        endpointUrl: values.connectorEndpointUrl,
+        ownerLabel: values.connectorOwner,
+        description: values.connectorDescription,
+        policyMonitorEnabled: values.connectorPolicyMonitorEnabled,
       });
+      setSavedNotice(`Connector “${values.connectorName}” saved.`);
+    },
+  });
 
-      setConnectorName("");
-      setConnectorKey("");
-      setConnectorType("custom");
-      setConnectorCategory("internal");
-      setConnectorStatus("active");
-      setConnectorCadence("manual");
-      setConnectorAuthMode("none");
-      setConnectorEndpointUrl("");
-      setConnectorOwner("");
-      setConnectorDescription("");
-      setConnectorPolicyMonitorEnabled(false);
-    } catch (error) {
-      setConnectorError(error instanceof Error ? error.message : "Failed to save connector");
-    } finally {
-      setConnectorSaving(false);
-    }
-  }
-
-  async function handleDatasetSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setDatasetError(null);
-    setDatasetSaving(true);
-
-    try {
+  const datasetFlow = useGuidedFlow<DatasetValues>({
+    id: "data-hub-dataset",
+    title: "New dataset",
+    submitLabel: "Add dataset",
+    initialValues: DATASET_INITIAL,
+    steps: [
+      {
+        id: "identity",
+        title: "What is this dataset, and what does it belong to?",
+        hint: "A dataset is one body of data you actually use — not the place it came from.",
+        fields: [
+          {
+            name: "datasetName",
+            label: "Dataset name",
+            required: true,
+            requiredMessage: "Give the dataset a name you will recognise in a list.",
+          },
+          { name: "datasetConnectorId", label: "Connector" },
+          { name: "datasetProjectId", label: "Linked project" },
+          { name: "datasetRelationshipType", label: "Project relationship" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="datasetName" label="Dataset name">
+              <Input
+                {...flow.text("datasetName")}
+                placeholder="Equity indicators for study corridors"
+              />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetConnectorId"
+              label="Where it came from (optional)"
+              hint="Pick the connector it arrives through, or leave it as a manual import."
+            >
+              <select {...flow.text("datasetConnectorId")} className={selectClassName}>
+                {/* An empty list says so in the placeholder rather than adding a
+                    second option with the same empty value. */}
+                <option value="">
+                  {connectors.length === 0
+                    ? "No connectors registered yet — manual import"
+                    : "No connector / manual import"}
+                </option>
+                {connectors.map((connector) => (
+                  <option key={connector.id} value={connector.id}>
+                    {connector.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetProjectId"
+              label="Linked project (optional)"
+              hint="Linking it means it shows up on that project's data lane."
+            >
+              <select {...flow.text("datasetProjectId")} className={selectClassName}>
+                <option value="">Not linked yet</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetRelationshipType"
+              label="How the project uses it"
+              hint="Only recorded when a project is linked."
+            >
+              <select
+                {...flow.text("datasetRelationshipType")}
+                className={selectClassName}
+                disabled={!flow.values.datasetProjectId}
+              >
+                <Options
+                  options={[
+                    { value: "primary_input", label: "Primary input" },
+                    { value: "reference", label: "Reference" },
+                    { value: "evidence", label: "Evidence" },
+                    { value: "baseline", label: "Baseline" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "coverage",
+        title: "What does it cover, and how fresh is it?",
+        fields: [
+          { name: "datasetStatus", label: "Status", required: true },
+          { name: "datasetGeographyScope", label: "Geography", required: true },
+          { name: "datasetCoverageSummary", label: "Coverage summary" },
+          { name: "datasetVintageLabel", label: "Vintage" },
+          { name: "datasetRefreshCadence", label: "Refresh cadence", required: true },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="datasetStatus" label="Status">
+              <select {...flow.text("datasetStatus")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "draft", label: "Draft" },
+                    { value: "ready", label: "Ready" },
+                    { value: "refreshing", label: "Refreshing" },
+                    { value: "stale", label: "Stale" },
+                    { value: "error", label: "Error" },
+                    { value: "archived", label: "Archived" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetGeographyScope"
+              label="What area it describes"
+              hint="Pick the smallest unit the data is reported at."
+            >
+              <select {...flow.text("datasetGeographyScope")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "corridor", label: "Corridor" },
+                    { value: "tract", label: "Tract" },
+                    { value: "county", label: "County" },
+                    { value: "region", label: "Region" },
+                    { value: "statewide", label: "Statewide" },
+                    { value: "national", label: "National" },
+                    { value: "route", label: "Route" },
+                    { value: "point", label: "Point" },
+                    { value: "none", label: "Not spatial" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="datasetCoverageSummary" label="Coverage summary (optional)">
+              <Input
+                {...flow.text("datasetCoverageSummary")}
+                placeholder="Study area focus zones + comparator geographies"
+              />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetVintageLabel"
+              label="Vintage (optional)"
+              hint="Which edition or year this is. It is what stops a five-year-old table passing as current."
+            >
+              <Input {...flow.text("datasetVintageLabel")} placeholder="ACS 2023 / Fall 2025" />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="datasetRefreshCadence" label="How often you refresh it">
+              <select {...flow.text("datasetRefreshCadence")} className={selectClassName}>
+                <Options options={CADENCE_OPTIONS} />
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "map",
+        title: "Should this draw on a map?",
+        hint: "Optional. Binding it to geometry is what lets a map colour something by one of its numbers.",
+        fields: [
+          { name: "datasetGeometryAttachment", label: "Geometry attachment", required: true },
+          { name: "datasetThematicMetricKey", label: "Thematic metric" },
+          { name: "datasetThematicMetricLabel", label: "Thematic label" },
+        ],
+        render: (flow) => {
+          const attachment = flow.values.datasetGeometryAttachment;
+          const bound = isGeometryBound(attachment);
+          const metrics = THEMATIC_METRICS[attachment] ?? THEMATIC_METRICS.analysis_tracts;
+          return (
+            <>
+              <GuidedFlowRow flow={flow} name="datasetGeometryAttachment" label="What it draws on">
+                <select
+                  {...flow.fieldProps("datasetGeometryAttachment")}
+                  className={selectClassName}
+                  value={attachment}
+                  onChange={(event) =>
+                    // Changing what it draws on changes which metrics exist, so
+                    // a metric picked for the previous binding is cleared rather
+                    // than sent as a name the new layer does not have.
+                    flow.setValues({
+                      datasetGeometryAttachment: event.target.value,
+                      datasetThematicMetricKey: "",
+                    })
+                  }
+                >
+                  <Options
+                    options={[
+                      { value: "none", label: "Nothing — it is just a record" },
+                      { value: "analysis_tracts", label: "Census tracts in the analysis" },
+                      { value: "analysis_corridor", label: "The analysis corridor" },
+                      { value: "analysis_crash_points", label: "Crash points in the analysis" },
+                    ]}
+                  />
+                </select>
+              </GuidedFlowRow>
+              <GuidedFlowRow
+                flow={flow}
+                name="datasetThematicMetricKey"
+                label="Which number colours the map"
+                hint={bound ? undefined : "Pick something for it to draw on first."}
+              >
+                <select
+                  {...flow.text("datasetThematicMetricKey")}
+                  className={selectClassName}
+                  disabled={!bound}
+                >
+                  <option value="">Select metric</option>
+                  <Options options={metrics} />
+                </select>
+              </GuidedFlowRow>
+              <GuidedFlowRow
+                flow={flow}
+                name="datasetThematicMetricLabel"
+                label="What to call it on the legend (optional)"
+              >
+                <Input
+                  {...flow.text("datasetThematicMetricLabel")}
+                  disabled={!bound}
+                  placeholder={
+                    attachment === "analysis_corridor"
+                      ? "Safety score / Corridor equity score"
+                      : attachment === "analysis_crash_points"
+                        ? "Crash severity / VRU involvement"
+                        : "Equity disadvantage screening / Transit dependence"
+                  }
+                />
+              </GuidedFlowRow>
+            </>
+          );
+        },
+      },
+      {
+        id: "provenance",
+        title: "Where did it come from, and how should it be cited?",
+        hint: "All optional, and all of it is what lets somebody else defend this number in a hearing.",
+        fields: [
+          { name: "datasetSourceUrl", label: "Source URL" },
+          { name: "datasetLicenseLabel", label: "License and permitted use" },
+          { name: "datasetSchemaVersion", label: "Schema version" },
+          { name: "datasetChecksum", label: "Checksum" },
+          { name: "datasetRowCount", label: "Row count" },
+          { name: "datasetCitationText", label: "Citation" },
+          { name: "datasetNotes", label: "Notes" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="datasetSourceUrl" label="Source URL">
+              <Input {...flow.text("datasetSourceUrl")} placeholder="https://api.census.gov/data/..." />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetLicenseLabel"
+              label="What you are allowed to do with it"
+            >
+              <Input
+                {...flow.text("datasetLicenseLabel")}
+                placeholder="Public domain / CC BY / vendor-restricted"
+              />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="datasetSchemaVersion" label="Schema version">
+              <Input {...flow.text("datasetSchemaVersion")} placeholder="v2026.03" />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetChecksum"
+              label="Checksum / digest"
+              hint="Lets you prove later that the file has not changed."
+            >
+              <Input {...flow.text("datasetChecksum")} placeholder="sha256:..." />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="datasetRowCount" label="How many rows">
+              <Input {...flow.text("datasetRowCount")} type="number" min="0" placeholder="1842" />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetCitationText"
+              label="How to cite it"
+              hint="The exact wording for reports, hearings and exported evidence packs."
+            >
+              <Textarea
+                {...flow.text("datasetCitationText")}
+                rows={3}
+                placeholder="How this dataset should be cited in reports, hearings, or exported evidence packs."
+              />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="datasetNotes"
+              label="Notes"
+              hint="Caveats, QA findings, assumptions made at import, anything still to clean up."
+            >
+              <Textarea
+                {...flow.text("datasetNotes")}
+                rows={4}
+                placeholder="Known caveats, QA notes, import assumptions, or pending cleanup steps."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    onSubmit: async (values) => {
+      const bound = isGeometryBound(values.datasetGeometryAttachment);
       await submitRecord({
         recordType: "dataset",
-        name: datasetName,
-        connectorId: datasetConnectorId || undefined,
-        projectId: datasetProjectId || undefined,
-        relationshipType: datasetProjectId ? datasetRelationshipType : undefined,
-        status: datasetStatus,
-        geographyScope: datasetGeographyScope,
-        geometryAttachment: datasetGeometryAttachment,
-        thematicMetricKey:
-          datasetGeometryAttachment === "analysis_tracts" ||
-          datasetGeometryAttachment === "analysis_corridor" ||
-          datasetGeometryAttachment === "analysis_crash_points"
-            ? datasetThematicMetricKey || undefined
-            : undefined,
-        thematicMetricLabel:
-          datasetGeometryAttachment === "analysis_tracts" ||
-          datasetGeometryAttachment === "analysis_corridor" ||
-          datasetGeometryAttachment === "analysis_crash_points"
-            ? datasetThematicMetricLabel || undefined
-            : undefined,
-        coverageSummary: datasetCoverageSummary,
-        vintageLabel: datasetVintageLabel,
-        sourceUrl: datasetSourceUrl,
-        licenseLabel: datasetLicenseLabel,
-        schemaVersion: datasetSchemaVersion,
-        checksum: datasetChecksum,
-        rowCount: datasetRowCount ? Number(datasetRowCount) : undefined,
-        refreshCadence: datasetRefreshCadence,
-        citationText: datasetCitationText,
-        notes: datasetNotes,
+        name: values.datasetName,
+        connectorId: values.datasetConnectorId || undefined,
+        projectId: values.datasetProjectId || undefined,
+        relationshipType: values.datasetProjectId ? values.datasetRelationshipType : undefined,
+        status: values.datasetStatus,
+        geographyScope: values.datasetGeographyScope,
+        geometryAttachment: values.datasetGeometryAttachment,
+        thematicMetricKey: bound ? values.datasetThematicMetricKey || undefined : undefined,
+        thematicMetricLabel: bound ? values.datasetThematicMetricLabel || undefined : undefined,
+        coverageSummary: values.datasetCoverageSummary,
+        vintageLabel: values.datasetVintageLabel,
+        sourceUrl: values.datasetSourceUrl,
+        licenseLabel: values.datasetLicenseLabel,
+        schemaVersion: values.datasetSchemaVersion,
+        checksum: values.datasetChecksum,
+        rowCount: values.datasetRowCount ? Number(values.datasetRowCount) : undefined,
+        refreshCadence: values.datasetRefreshCadence,
+        citationText: values.datasetCitationText,
+        notes: values.datasetNotes,
       });
+      setSavedNotice(`Dataset “${values.datasetName}” saved.`);
+    },
+  });
 
-      setDatasetName("");
-      setDatasetConnectorId("");
-      setDatasetProjectId("");
-      setDatasetRelationshipType("reference");
-      setDatasetStatus("draft");
-      setDatasetGeographyScope("corridor");
-      setDatasetGeometryAttachment("none");
-      setDatasetThematicMetricKey("");
-      setDatasetThematicMetricLabel("");
-      setDatasetCoverageSummary("");
-      setDatasetVintageLabel("");
-      setDatasetSourceUrl("");
-      setDatasetLicenseLabel("");
-      setDatasetSchemaVersion("");
-      setDatasetChecksum("");
-      setDatasetRowCount("");
-      setDatasetRefreshCadence("manual");
-      setDatasetCitationText("");
-      setDatasetNotes("");
-    } catch (error) {
-      setDatasetError(error instanceof Error ? error.message : "Failed to save dataset");
-    } finally {
-      setDatasetSaving(false);
-    }
-  }
-
-  async function handleRefreshJobSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setJobError(null);
-    setJobSaving(true);
-
-    try {
+  const jobFlow = useGuidedFlow<JobValues>({
+    id: "data-hub-refresh-job",
+    title: "Log a refresh run",
+    submitLabel: "Add refresh job",
+    initialValues: JOB_INITIAL,
+    steps: [
+      {
+        id: "what",
+        title: "What ran, and against what?",
+        hint: "A refresh job is the record of one attempt to bring data up to date.",
+        fields: [
+          {
+            name: "jobName",
+            label: "Job name",
+            required: true,
+            requiredMessage: "Give the run a name you will recognise in the history.",
+          },
+          { name: "jobConnectorId", label: "Connector" },
+          { name: "jobDatasetId", label: "Dataset" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="jobName" label="Job name">
+              <Input {...flow.text("jobName")} placeholder="Weekly ACS refresh check" />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="jobConnectorId" label="Connector (optional)">
+              <select {...flow.text("jobConnectorId")} className={selectClassName}>
+                <option value="">
+                  {connectors.length === 0 ? "No connectors registered yet" : "No connector selected"}
+                </option>
+                {connectors.map((connector) => (
+                  <option key={connector.id} value={connector.id}>
+                    {connector.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="jobDatasetId" label="Dataset (optional)">
+              <select {...flow.text("jobDatasetId")} className={selectClassName}>
+                <option value="">
+                  {datasets.length === 0 ? "No datasets registered yet" : "No dataset selected"}
+                </option>
+                {datasets.map((dataset) => (
+                  <option key={dataset.id} value={dataset.id}>
+                    {dataset.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "outcome",
+        title: "What kind of run was it, and how did it go?",
+        fields: [
+          { name: "jobType", label: "Job type", required: true },
+          { name: "jobStatus", label: "Status", required: true },
+          { name: "jobRefreshMode", label: "Execution mode", required: true },
+          { name: "jobRecordsWritten", label: "Records written" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="jobType" label="What it was doing">
+              <select {...flow.text("jobType")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "ingest", label: "Ingest — first load" },
+                    { value: "refresh", label: "Refresh — bring up to date" },
+                    { value: "validation", label: "Validation — check it" },
+                    { value: "backfill", label: "Backfill — fill in history" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="jobStatus" label="How it ended">
+              <select {...flow.text("jobStatus")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "queued", label: "Queued" },
+                    { value: "running", label: "Running" },
+                    { value: "succeeded", label: "Succeeded" },
+                    { value: "failed", label: "Failed" },
+                    { value: "cancelled", label: "Cancelled" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="jobRefreshMode" label="What started it">
+              <select {...flow.text("jobRefreshMode")} className={selectClassName}>
+                <Options
+                  options={[
+                    { value: "manual", label: "Somebody ran it" },
+                    { value: "scheduled", label: "A schedule ran it" },
+                    { value: "pipeline", label: "A pipeline ran it" },
+                    { value: "analysis_runtime", label: "An analysis run needed it" },
+                  ]}
+                />
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="jobRecordsWritten" label="Rows written (optional)">
+              <Input {...flow.text("jobRecordsWritten")} type="number" min="0" placeholder="0" />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "when",
+        title: "When did it run, and is there anything to note?",
+        hint: "All optional. Leave the times blank if you are recording this after the fact.",
+        fields: [
+          { name: "jobStartedAt", label: "Started at" },
+          { name: "jobCompletedAt", label: "Completed at" },
+          { name: "jobTriggeredBy", label: "Triggered by" },
+          { name: "jobErrorSummary", label: "Failure note" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="jobStartedAt" label="Started at">
+              <Input {...flow.text("jobStartedAt")} type="datetime-local" />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="jobCompletedAt" label="Finished at">
+              <Input {...flow.text("jobCompletedAt")} type="datetime-local" />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="jobTriggeredBy" label="Who or what started it">
+              <Input {...flow.text("jobTriggeredBy")} placeholder="Manual QA sweep / nightly cron" />
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="jobErrorSummary"
+              label="What happened (optional)"
+              hint="What failed, what was refreshed, or what still needs somebody's attention."
+            >
+              <Textarea
+                {...flow.text("jobErrorSummary")}
+                rows={4}
+                placeholder="Optional summary of what failed, what was refreshed, or what still needs attention."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    onSubmit: async (values) => {
       await submitRecord({
         recordType: "refreshJob",
-        jobName,
-        connectorId: jobConnectorId || undefined,
-        datasetId: jobDatasetId || undefined,
-        jobType,
-        status: jobStatus,
-        refreshMode: jobRefreshMode,
-        startedAt: jobStartedAt ? new Date(jobStartedAt).toISOString() : undefined,
-        completedAt: jobCompletedAt ? new Date(jobCompletedAt).toISOString() : undefined,
-        recordsWritten: jobRecordsWritten ? Number(jobRecordsWritten) : undefined,
-        triggeredByLabel: jobTriggeredBy,
-        errorSummary: jobErrorSummary,
+        jobName: values.jobName,
+        connectorId: values.jobConnectorId || undefined,
+        datasetId: values.jobDatasetId || undefined,
+        jobType: values.jobType,
+        status: values.jobStatus,
+        refreshMode: values.jobRefreshMode,
+        startedAt: values.jobStartedAt ? new Date(values.jobStartedAt).toISOString() : undefined,
+        completedAt: values.jobCompletedAt
+          ? new Date(values.jobCompletedAt).toISOString()
+          : undefined,
+        recordsWritten: values.jobRecordsWritten ? Number(values.jobRecordsWritten) : undefined,
+        triggeredByLabel: values.jobTriggeredBy,
+        errorSummary: values.jobErrorSummary,
       });
-
-      setJobName("");
-      setJobConnectorId("");
-      setJobDatasetId("");
-      setJobType("refresh");
-      setJobStatus("queued");
-      setJobRefreshMode("manual");
-      setJobStartedAt("");
-      setJobCompletedAt("");
-      setJobRecordsWritten("");
-      setJobTriggeredBy("");
-      setJobErrorSummary("");
-    } catch (error) {
-      setJobError(error instanceof Error ? error.message : "Failed to save refresh job");
-    } finally {
-      setJobSaving(false);
-    }
-  }
-
-  const connectorSelectOptions = connectors.length > 0 ? connectors : [{ id: "", label: "No connectors yet" }];
-  const datasetSelectOptions = datasets.length > 0 ? datasets : [{ id: "", label: "No datasets yet", connectorId: null }];
+      setSavedNotice(`Refresh run “${values.jobName}” saved.`);
+    },
+  });
 
   return (
     <article className="module-section-surface">
       <div className="module-section-heading">
         <p className="module-section-label">Create records</p>
-        <h2 className="module-section-title">Register connectors, datasets, and refresh jobs</h2>
+        <h2 className="module-section-title">Register a source, a dataset, or a refresh run</h2>
         <p className="module-section-description">
-          This is the first real operator surface for OpenPlan&apos;s data fabric: not just hidden helpers, but governed source records tied back to projects and refresh activity.
+          These three records are how OpenPlan knows where your numbers came from. A connector is a
+          place data comes from; a dataset is a body of data you use; a refresh run is one attempt to
+          bring a dataset up to date.
         </p>
       </div>
 
-      <Tabs defaultValue="connector" className="mt-5">
-        <TabsList variant="line" className="module-tabs-list">
-          <TabsTrigger value="connector" className="module-tab-trigger">
-            <Link2 className="h-4 w-4" />
-            Connector
-          </TabsTrigger>
-          <TabsTrigger value="dataset" className="module-tab-trigger">
-            <Database className="h-4 w-4" />
-            Dataset
-          </TabsTrigger>
-          <TabsTrigger value="refresh-job" className="module-tab-trigger">
-            <RefreshCw className="h-4 w-4" />
-            Refresh Job
-          </TabsTrigger>
-        </TabsList>
+      <div className="mt-5 flex flex-wrap gap-2">
+        <Button type="button" onClick={connectorFlow.open}>
+          <Link2 className="mr-1.5 h-4 w-4" />
+          Add a connector
+        </Button>
+        <Button type="button" variant="outline" onClick={datasetFlow.open}>
+          <Database className="mr-1.5 h-4 w-4" />
+          Add a dataset
+        </Button>
+        <Button type="button" variant="outline" onClick={jobFlow.open}>
+          <RefreshCw className="mr-1.5 h-4 w-4" />
+          Log a refresh run
+        </Button>
+      </div>
 
-        <TabsContent value="connector" className="pt-4">
-          <form className="space-y-4" onSubmit={handleConnectorSubmit}>
-            <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-              <div className="space-y-2">
-                <label htmlFor="connector-name" className="text-sm font-medium">
-                  Connector name
-                </label>
-                <Input
-                  id="connector-name"
-                  value={connectorName}
-                  onChange={(event) => setConnectorName(event.target.value)}
-                  placeholder="Census ACS 5-Year"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="connector-key" className="text-sm font-medium">
-                  Connector key
-                </label>
-                <Input
-                  id="connector-key"
-                  value={connectorKey}
-                  onChange={(event) => setConnectorKey(event.target.value)}
-                  placeholder="census-acs5"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-2">
-                <label htmlFor="connector-type" className="text-sm font-medium">
-                  Source type
-                </label>
-                <select id="connector-type" className={selectClassName} value={connectorType} onChange={(event) => setConnectorType(event.target.value)}>
-                  <option value="census">Census</option>
-                  <option value="lodes">LODES</option>
-                  <option value="gtfs">GTFS</option>
-                  <option value="crashes">Crashes</option>
-                  <option value="parcel">Parcel</option>
-                  <option value="manual">Manual</option>
-                  <option value="custom">Custom</option>
-                  <option value="policy">Policy</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="connector-category" className="text-sm font-medium">
-                  Category
-                </label>
-                <select id="connector-category" className={selectClassName} value={connectorCategory} onChange={(event) => setConnectorCategory(event.target.value)}>
-                  <option value="federal">Federal</option>
-                  <option value="state">State</option>
-                  <option value="regional">Regional</option>
-                  <option value="local">Local</option>
-                  <option value="vendor">Vendor</option>
-                  <option value="internal">Internal</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="connector-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="connector-status" className={selectClassName} value={connectorStatus} onChange={(event) => setConnectorStatus(event.target.value)}>
-                  <option value="draft">Draft</option>
-                  <option value="active">Active</option>
-                  <option value="degraded">Degraded</option>
-                  <option value="offline">Offline</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="connector-cadence" className="text-sm font-medium">
-                  Cadence
-                </label>
-                <select id="connector-cadence" className={selectClassName} value={connectorCadence} onChange={(event) => setConnectorCadence(event.target.value)}>
-                  <option value="manual">Manual</option>
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="annual">Annual</option>
-                  <option value="ad_hoc">Ad hoc</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2 md:col-span-2">
-                <label htmlFor="connector-url" className="text-sm font-medium">
-                  Endpoint or source URL
-                </label>
-                <Input
-                  id="connector-url"
-                  value={connectorEndpointUrl}
-                  onChange={(event) => setConnectorEndpointUrl(event.target.value)}
-                  placeholder="https://api.census.gov/data/2023/acs/acs5"
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="connector-auth" className="text-sm font-medium">
-                  Auth mode
-                </label>
-                <select id="connector-auth" className={selectClassName} value={connectorAuthMode} onChange={(event) => setConnectorAuthMode(event.target.value)}>
-                  <option value="none">None</option>
-                  <option value="api_key">API key</option>
-                  <option value="oauth">OAuth</option>
-                  <option value="service_account">Service account</option>
-                  <option value="manual_upload">Manual upload</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-[0.9fr_1.1fr]">
-              <div className="space-y-2">
-                <label htmlFor="connector-owner" className="text-sm font-medium">
-                  Owner label
-                </label>
-                <Input
-                  id="connector-owner"
-                  value={connectorOwner}
-                  onChange={(event) => setConnectorOwner(event.target.value)}
-                  placeholder="Priya / Data Ops"
-                />
-              </div>
-              <label className="module-note flex items-center gap-3 text-sm text-foreground">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-input"
-                  checked={connectorPolicyMonitorEnabled}
-                  onChange={(event) => setConnectorPolicyMonitorEnabled(event.target.checked)}
-                />
-                Enable policy / bulletin monitoring for this connector
-              </label>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="connector-description" className="text-sm font-medium">
-                Description
-              </label>
-              <Textarea
-                id="connector-description"
-                value={connectorDescription}
-                onChange={(event) => setConnectorDescription(event.target.value)}
-                rows={4}
-                placeholder="What this source provides, why it matters, and any operating caveats."
-              />
-            </div>
-
-            <FormError error={connectorError} />
-            <Button type="submit" disabled={connectorSaving}>
-              {connectorSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving connector…
-                </>
-              ) : (
-                "Add connector"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
-
-        <TabsContent value="dataset" className="pt-4">
-          <form className="space-y-4" onSubmit={handleDatasetSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="dataset-name" className="text-sm font-medium">
-                Dataset name
-              </label>
-              <Input
-                id="dataset-name"
-                value={datasetName}
-                onChange={(event) => setDatasetName(event.target.value)}
-                placeholder="Equity indicators for study corridors"
-                required
-              />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="dataset-connector" className="text-sm font-medium">
-                  Connector
-                </label>
-                <select id="dataset-connector" className={selectClassName} value={datasetConnectorId} onChange={(event) => setDatasetConnectorId(event.target.value)}>
-                  <option value="">No connector / manual import</option>
-                  {connectorSelectOptions.map((connector) => (
-                    <option key={connector.id || connector.label} value={connector.id} disabled={!connector.id}>
-                      {connector.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-project" className="text-sm font-medium">
-                  Linked project
-                </label>
-                <select id="dataset-project" className={selectClassName} value={datasetProjectId} onChange={(event) => setDatasetProjectId(event.target.value)}>
-                  <option value="">Not linked yet</option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-relationship" className="text-sm font-medium">
-                  Project relationship
-                </label>
-                <select id="dataset-relationship" className={selectClassName} value={datasetRelationshipType} onChange={(event) => setDatasetRelationshipType(event.target.value)} disabled={!datasetProjectId}>
-                  <option value="primary_input">Primary input</option>
-                  <option value="reference">Reference</option>
-                  <option value="evidence">Evidence</option>
-                  <option value="baseline">Baseline</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-2">
-                <label htmlFor="dataset-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="dataset-status" className={selectClassName} value={datasetStatus} onChange={(event) => setDatasetStatus(event.target.value)}>
-                  <option value="draft">Draft</option>
-                  <option value="ready">Ready</option>
-                  <option value="refreshing">Refreshing</option>
-                  <option value="stale">Stale</option>
-                  <option value="error">Error</option>
-                  <option value="archived">Archived</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-geo" className="text-sm font-medium">
-                  Geography
-                </label>
-                <select id="dataset-geo" className={selectClassName} value={datasetGeographyScope} onChange={(event) => setDatasetGeographyScope(event.target.value)}>
-                  <option value="corridor">Corridor</option>
-                  <option value="tract">Tract</option>
-                  <option value="county">County</option>
-                  <option value="region">Region</option>
-                  <option value="statewide">Statewide</option>
-                  <option value="national">National</option>
-                  <option value="route">Route</option>
-                  <option value="point">Point</option>
-                  <option value="none">Not spatial</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-vintage" className="text-sm font-medium">
-                  Vintage
-                </label>
-                <Input id="dataset-vintage" value={datasetVintageLabel} onChange={(event) => setDatasetVintageLabel(event.target.value)} placeholder="ACS 2023 / Fall 2025" />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-cadence" className="text-sm font-medium">
-                  Refresh cadence
-                </label>
-                <select id="dataset-cadence" className={selectClassName} value={datasetRefreshCadence} onChange={(event) => setDatasetRefreshCadence(event.target.value)}>
-                  <option value="manual">Manual</option>
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                  <option value="annual">Annual</option>
-                  <option value="ad_hoc">Ad hoc</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="dataset-coverage" className="text-sm font-medium">
-                  Coverage summary
-                </label>
-                <Input id="dataset-coverage" value={datasetCoverageSummary} onChange={(event) => setDatasetCoverageSummary(event.target.value)} placeholder="Study area focus zones + comparator geographies" />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-geometry-attachment" className="text-sm font-medium">
-                  Geometry attachment
-                </label>
-                <select
-                  id="dataset-geometry-attachment"
-                  className={selectClassName}
-                  value={datasetGeometryAttachment}
-                  onChange={(event) => setDatasetGeometryAttachment(event.target.value)}
-                >
-                  <option value="none">Coverage only</option>
-                  <option value="analysis_tracts">Bind to analysis tracts</option>
-                  <option value="analysis_corridor">Bind to analysis corridor</option>
-                  <option value="analysis_crash_points">Bind to analysis crash points</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-thematic-metric" className="text-sm font-medium">
-                  Thematic metric
-                </label>
-                <select
-                  id="dataset-thematic-metric"
-                  className={selectClassName}
-                  value={datasetThematicMetricKey}
-                  onChange={(event) => setDatasetThematicMetricKey(event.target.value)}
-                  disabled={datasetGeometryAttachment === "none"}
-                >
-                  <option value="">Select metric</option>
-                  {datasetGeometryAttachment === "analysis_corridor" ? (
-                    <>
-                      <option value="overallScore">Overall score</option>
-                      <option value="accessibilityScore">Accessibility score</option>
-                      <option value="safetyScore">Safety score</option>
-                      <option value="equityScore">Equity score</option>
-                    </>
-                  ) : datasetGeometryAttachment === "analysis_crash_points" ? (
-                    <>
-                      <option value="severityBucket">Crash severity bucket</option>
-                      <option value="pedestrianInvolved">Pedestrian involvement</option>
-                      <option value="bicyclistInvolved">Bicyclist involvement</option>
-                      <option value="fatalCount">Fatality count</option>
-                      <option value="injuryCount">Injury count</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="pctMinority">Minority share</option>
-                      <option value="pctBelowPoverty">Poverty share</option>
-                      <option value="medianIncome">Median income</option>
-                      <option value="isDisadvantaged">Proxy disadvantaged flag</option>
-                      <option value="zeroVehiclePct">Zero-vehicle households</option>
-                      <option value="transitCommutePct">Transit commute share</option>
-                    </>
-                  )}
-                </select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="dataset-thematic-label" className="text-sm font-medium">
-                Thematic label (optional)
-              </label>
-              <Input
-                id="dataset-thematic-label"
-                value={datasetThematicMetricLabel}
-                onChange={(event) => setDatasetThematicMetricLabel(event.target.value)}
-                placeholder={datasetGeometryAttachment === "analysis_corridor" ? "Safety score / Corridor equity score" : datasetGeometryAttachment === "analysis_crash_points" ? "Crash severity / VRU involvement" : "Equity disadvantage screening / Transit dependence"}
-                disabled={datasetGeometryAttachment === "none"}
-              />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="dataset-url" className="text-sm font-medium">
-                  Source URL
-                </label>
-                <Input id="dataset-url" value={datasetSourceUrl} onChange={(event) => setDatasetSourceUrl(event.target.value)} placeholder="https://api.census.gov/data/..." />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-license" className="text-sm font-medium">
-                  License and permitted use
-                </label>
-                <Input id="dataset-license" value={datasetLicenseLabel} onChange={(event) => setDatasetLicenseLabel(event.target.value)} placeholder="Public domain / CC BY / vendor-restricted" />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="dataset-schema" className="text-sm font-medium">
-                  Schema version
-                </label>
-                <Input id="dataset-schema" value={datasetSchemaVersion} onChange={(event) => setDatasetSchemaVersion(event.target.value)} placeholder="v2026.03" />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-checksum" className="text-sm font-medium">
-                  Checksum / digest
-                </label>
-                <Input id="dataset-checksum" value={datasetChecksum} onChange={(event) => setDatasetChecksum(event.target.value)} placeholder="sha256:..." />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="dataset-rows" className="text-sm font-medium">
-                  Row count
-                </label>
-                <Input id="dataset-rows" type="number" min="0" value={datasetRowCount} onChange={(event) => setDatasetRowCount(event.target.value)} placeholder="1842" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="dataset-citation" className="text-sm font-medium">
-                Citation / provenance note
-              </label>
-              <Textarea
-                id="dataset-citation"
-                value={datasetCitationText}
-                onChange={(event) => setDatasetCitationText(event.target.value)}
-                rows={3}
-                placeholder="How this dataset should be cited in reports, hearings, or exported evidence packs."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="dataset-notes" className="text-sm font-medium">
-                Notes
-              </label>
-              <Textarea
-                id="dataset-notes"
-                value={datasetNotes}
-                onChange={(event) => setDatasetNotes(event.target.value)}
-                rows={4}
-                placeholder="Known caveats, QA notes, import assumptions, or pending cleanup steps."
-              />
-            </div>
-
-            <FormError error={datasetError} />
-            <Button type="submit" disabled={datasetSaving}>
-              {datasetSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving dataset…
-                </>
-              ) : (
-                "Add dataset"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
-
-        <TabsContent value="refresh-job" className="pt-4">
-          <form className="space-y-4" onSubmit={handleRefreshJobSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="job-name" className="text-sm font-medium">
-                Job name
-              </label>
-              <Input id="job-name" value={jobName} onChange={(event) => setJobName(event.target.value)} placeholder="Weekly ACS refresh check" required />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="job-connector" className="text-sm font-medium">
-                  Connector
-                </label>
-                <select id="job-connector" className={selectClassName} value={jobConnectorId} onChange={(event) => setJobConnectorId(event.target.value)}>
-                  <option value="">No connector selected</option>
-                  {connectorSelectOptions.map((connector) => (
-                    <option key={connector.id || connector.label} value={connector.id} disabled={!connector.id}>
-                      {connector.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="job-dataset" className="text-sm font-medium">
-                  Dataset
-                </label>
-                <select id="job-dataset" className={selectClassName} value={jobDatasetId} onChange={(event) => setJobDatasetId(event.target.value)}>
-                  <option value="">No dataset selected</option>
-                  {datasetSelectOptions.map((dataset) => (
-                    <option key={dataset.id || dataset.label} value={dataset.id} disabled={!dataset.id}>
-                      {dataset.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-2">
-                <label htmlFor="job-type" className="text-sm font-medium">
-                  Job type
-                </label>
-                <select id="job-type" className={selectClassName} value={jobType} onChange={(event) => setJobType(event.target.value)}>
-                  <option value="ingest">Ingest</option>
-                  <option value="refresh">Refresh</option>
-                  <option value="validation">Validation</option>
-                  <option value="backfill">Backfill</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="job-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="job-status" className={selectClassName} value={jobStatus} onChange={(event) => setJobStatus(event.target.value)}>
-                  <option value="queued">Queued</option>
-                  <option value="running">Running</option>
-                  <option value="succeeded">Succeeded</option>
-                  <option value="failed">Failed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="job-mode" className="text-sm font-medium">
-                  Execution mode
-                </label>
-                <select id="job-mode" className={selectClassName} value={jobRefreshMode} onChange={(event) => setJobRefreshMode(event.target.value)}>
-                  <option value="manual">Manual</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="pipeline">Pipeline</option>
-                  <option value="analysis_runtime">Analysis runtime</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="job-records" className="text-sm font-medium">
-                  Records written
-                </label>
-                <Input id="job-records" type="number" min="0" value={jobRecordsWritten} onChange={(event) => setJobRecordsWritten(event.target.value)} placeholder="0" />
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="job-started" className="text-sm font-medium">
-                  Started at
-                </label>
-                <Input id="job-started" type="datetime-local" value={jobStartedAt} onChange={(event) => setJobStartedAt(event.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="job-completed" className="text-sm font-medium">
-                  Completed at
-                </label>
-                <Input id="job-completed" type="datetime-local" value={jobCompletedAt} onChange={(event) => setJobCompletedAt(event.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="job-triggered" className="text-sm font-medium">
-                  Triggered by
-                </label>
-                <Input id="job-triggered" value={jobTriggeredBy} onChange={(event) => setJobTriggeredBy(event.target.value)} placeholder="Manual QA sweep / nightly cron" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="job-error" className="text-sm font-medium">
-                Failure note / operator summary
-              </label>
-              <Textarea
-                id="job-error"
-                value={jobErrorSummary}
-                onChange={(event) => setJobErrorSummary(event.target.value)}
-                rows={4}
-                placeholder="Optional summary of what failed, what was refreshed, or what still needs attention."
-              />
-            </div>
-
-            <FormError error={jobError} />
-            <Button type="submit" disabled={jobSaving}>
-              {jobSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving refresh job…
-                </>
-              ) : (
-                "Add refresh job"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
-      </Tabs>
+      {savedNotice ? (
+        <p role="status" className="mt-4 text-sm text-muted-foreground">
+          {savedNotice} It is in the catalogue below.
+        </p>
+      ) : null}
 
       <div className="module-alert mt-5 text-sm">
         <div className="flex items-start gap-3">
           <ShieldAlert className="mt-0.5 h-4.5 w-4.5" />
           <p>
-            This first pass is deliberately operator-focused: create the governance records now, then wire automated ingestion and policy diffing into the same objects instead of inventing parallel hidden state later.
+            Register the governance records first. Automated ingestion and policy diffing are wired
+            into these same objects later, rather than into parallel hidden state.
           </p>
         </div>
       </div>
+
+      <GuidedFlow flow={connectorFlow} />
+      <GuidedFlow flow={datasetFlow} />
+      <GuidedFlow flow={jobFlow} />
     </article>
   );
 }

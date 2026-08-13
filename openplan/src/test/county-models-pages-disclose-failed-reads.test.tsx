@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -252,11 +252,27 @@ describe("/models when a read fails", () => {
    *
    * ModelCreator is deliberately NOT stubbed in this file, so these assertions
    * run against the real dropdown a planner sees.
+   *
+   * The pickers moved into a guided flow, so getting to them now means doing
+   * what a planner does: press the button, then walk to the step the pickers
+   * are on. `openTheModelCreator` is that walk, and it is deliberately NOT a
+   * shortcut past the flow — a disclosure a planner cannot reach is the defect
+   * this block exists to catch.
    */
+  async function openTheModelCreator() {
+    fireEvent.click(screen.getByTestId("model-creator-open"));
+    // The flow will not walk past its own required answer, which is the point
+    // of it — so this types one, exactly as a planner would.
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "A model" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    await waitFor(() => expect(screen.getByLabelText(/Primary project/i)).toBeInTheDocument());
+  }
+
   it("does not present an unreadable project list as a workspace with no projects", async () => {
     setTable("projects", { data: null, error: { message: "permission denied for table projects" } });
 
     await renderModels();
+    await openTheModelCreator();
 
     // The picker itself is rendered for real, and it says the list is incomplete.
     expect(screen.getByTestId("model-creator-projects-unreadable")).toHaveTextContent(
@@ -273,6 +289,7 @@ describe("/models when a read fails", () => {
     });
 
     await renderModels();
+    await openTheModelCreator();
 
     expect(screen.getByTestId("model-creator-scenario-sets-unreadable")).toHaveTextContent(
       /does not mean there are none/i
@@ -285,6 +302,7 @@ describe("/models when a read fails", () => {
     setTable("scenario_sets", { data: [{ id: "set-1", title: "2050 baseline" }], error: null });
 
     await renderModels();
+    await openTheModelCreator();
 
     expect(screen.queryByTestId("model-creator-projects-unreadable")).toBeNull();
     expect(screen.queryByTestId("model-creator-scenario-sets-unreadable")).toBeNull();

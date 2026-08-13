@@ -133,6 +133,17 @@ describe("RtpHorizonBandEditor", () => {
     expect(screen.getByLabelText(/what this period is called/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^first year$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^last year$/i)).toBeInTheDocument();
+
+    // The money questions live on the flow's second step. Getting there needs
+    // the years, because the primitive refuses to advance past a blank
+    // required field — which is the point of it.
+    fireEvent.change(screen.getByLabelText(/what this period is called/i), {
+      target: { value: "First ten years" },
+    });
+    fireEvent.change(screen.getByLabelText(/^first year$/i), { target: { value: "2026" } });
+    fireEvent.change(screen.getByLabelText(/^last year$/i), { target: { value: "2035" } });
+    fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
+
     expect(screen.getByLabelText(/year money in this period is treated as spent/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/how costs are reported for this period/i)).toBeInTheDocument();
   });
@@ -170,6 +181,8 @@ describe("RtpHorizonBandEditor", () => {
     });
     fireEvent.change(screen.getByLabelText(/^first year$/i), { target: { value: "2026" } });
     fireEvent.change(screen.getByLabelText(/^last year$/i), { target: { value: "2035" } });
+    // The money questions are the flow's second step.
+    fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
     fireEvent.click(screen.getByRole("button", { name: /add period/i }));
 
     const alert = await screen.findByRole("alert");
@@ -197,6 +210,8 @@ describe("RtpHorizonBandEditor", () => {
     });
     fireEvent.change(screen.getByLabelText(/^first year$/i), { target: { value: "2026" } });
     fireEvent.change(screen.getByLabelText(/^last year$/i), { target: { value: "2035" } });
+    // The money questions are the flow's second step.
+    fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
     fireEvent.click(screen.getByRole("button", { name: /add period/i }));
 
     const status = await screen.findByRole("status");
@@ -214,6 +229,8 @@ describe("RtpHorizonBandEditor", () => {
     });
     fireEvent.change(screen.getByLabelText(/^first year$/i), { target: { value: "2026" } });
     fireEvent.change(screen.getByLabelText(/^last year$/i), { target: { value: "2035" } });
+    // The money questions are the flow's second step.
+    fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
     fireEvent.click(screen.getByRole("button", { name: /add period/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
@@ -247,6 +264,7 @@ describe("RtpHorizonBandEditor", () => {
     });
     fireEvent.change(screen.getByLabelText(/^first year$/i), { target: { value: "2036" } });
     fireEvent.change(screen.getByLabelText(/^last year$/i), { target: { value: "2045" } });
+    fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
     fireEvent.click(screen.getByRole("button", { name: /add period/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());

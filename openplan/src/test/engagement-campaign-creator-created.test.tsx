@@ -10,6 +10,30 @@ vi.mock("next/navigation", () => ({
 
 const fetchMock = vi.fn();
 
+
+/**
+ * The creator is a guided flow now: the form lives behind a "New campaign"
+ * button, and its answers are spread over three steps. These helpers open it
+ * and walk it.
+ *
+ * WHAT THESE TESTS CANNOT PROVE: anything visual. jsdom applies no stylesheet
+ * and has no box model, so it cannot show that the sheet is on screen,
+ * full-height on a phone, that focus moved into it, or that the page behind is
+ * inert. `src/test/guided-flow-jsdom-dialog-shim.ts` only supplies `showModal`
+ * so the component mounts. Layout is measured in a real browser.
+ */
+function openFlow() {
+  fireEvent.click(screen.getByRole("button", { name: /^new campaign$/i }));
+}
+
+function next() {
+  fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
+}
+
+function submitFlow() {
+  fireEvent.click(screen.getByRole("button", { name: /^create campaign$/i }));
+}
+
 describe("EngagementCampaignCreator create-success surfacing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,8 +52,11 @@ describe("EngagementCampaignCreator create-success surfacing", () => {
 
     render(<EngagementCampaignCreator projects={[]} />);
 
-    fireEvent.change(screen.getByLabelText(/Title/), { target: { value: "Corridor listening" } });
-    fireEvent.submit(screen.getByRole("button", { name: /Create campaign/ }).closest("form")!);
+    openFlow();
+    next();
+    fireEvent.change(screen.getByLabelText(/^Title$/), { target: { value: "Corridor listening" } });
+    next();
+    submitFlow();
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/engagement/campaign-9?created=1");
@@ -44,8 +71,11 @@ describe("EngagementCampaignCreator create-success surfacing", () => {
 
     render(<EngagementCampaignCreator projects={[]} />);
 
-    fireEvent.change(screen.getByLabelText(/Title/), { target: { value: "Corridor listening" } });
-    fireEvent.submit(screen.getByRole("button", { name: /Create campaign/ }).closest("form")!);
+    openFlow();
+    next();
+    fireEvent.change(screen.getByLabelText(/^Title$/), { target: { value: "Corridor listening" } });
+    next();
+    submitFlow();
 
     await waitFor(() => {
       expect(screen.getByText(/Failed to create engagement campaign/)).toBeInTheDocument();

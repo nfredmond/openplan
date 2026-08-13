@@ -14,11 +14,17 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 const PROJECT_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
-function activateDeliverableTab() {
-  const trigger = screen.getByRole("tab", { name: /deliverable/i });
-  // Radix tab triggers activate on pointer-down, not click.
-  fireEvent.mouseDown(trigger);
-  fireEvent.click(trigger);
+/**
+ * The seven always-open forms became seven buttons, each opening a guided flow.
+ * Getting to the money fields now means doing what a planner does: press "Add a
+ * deliverable", name it, and walk to the second step. Deliberately not a
+ * shortcut past the flow — the whole point of these assertions is that a real
+ * planner's answers reach the request.
+ */
+function openDeliverableFlow(title = "Draft board-ready safety memo") {
+  fireEvent.click(screen.getByTestId("project-record-open-deliverable"));
+  fireEvent.change(screen.getByLabelText("Name"), { target: { value: title } });
+  fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
 }
 
 /**
@@ -54,18 +60,11 @@ describe("ProjectRecordComposer — deliverable budget fields", () => {
 
   it("sends budgetAmount and percentComplete when entered", async () => {
     render(<ProjectRecordComposer projectId={PROJECT_ID} workspaceId={WORKSPACE_ID} />);
-    activateDeliverableTab();
+    openDeliverableFlow();
 
-    fireEvent.change(screen.getByLabelText("Deliverable title"), {
-      target: { value: "Draft board-ready safety memo" },
-    });
-    fireEvent.change(screen.getByLabelText("Budget (not to exceed)"), {
-      target: { value: "25000" },
-    });
-    fireEvent.change(screen.getByLabelText("Percent complete"), {
-      target: { value: "40" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Add deliverable" }));
+    fireEvent.change(screen.getByLabelText("Budget"), { target: { value: "25000" } });
+    fireEvent.change(screen.getByLabelText("How far along is it?"), { target: { value: "40" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add the deliverable" }));
 
     await waitFor(() => expect(recordCalls(fetchMock)).toHaveLength(1));
 
@@ -92,13 +91,25 @@ describe("ProjectRecordComposer — deliverable budget fields", () => {
    */
   it("offers the roster on the deliverable form and sends the chosen teammate", async () => {
     render(<ProjectRecordComposer projectId={PROJECT_ID} workspaceId={WORKSPACE_ID} />);
-    activateDeliverableTab();
+    // A second flow with its own picker, opened first, so the assertion below
+    // is over MORE THAN ONE roster call — one form pointing at the wrong
+    // workspace is the bug, and a single call cannot show it.
+    fireEvent.click(screen.getByTestId("project-record-open-milestone"));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "A milestone" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    await waitFor(() => expect(screen.getByLabelText("Assign it to someone")).toBeInTheDocument());
+    // Abandoning it asks first, because there is typed work in it.
+    fireEvent.click(screen.getByRole("button", { name: /Close without saving/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /Throw it away/i }));
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    openDeliverableFlow();
 
     // EVERY picker asks for THIS project's workspace, not a current-workspace
     // guess: a member of two workspaces would otherwise be offered the wrong
-    // team. Asserted over all roster calls rather than "at least one", because
-    // several tabs mount a picker and one of them pointing elsewhere is exactly
-    // the bug — a `some()` here passed a mutation that broke a single form.
+    // team. Asserted over ALL roster calls rather than "at least one", because
+    // one form pointing elsewhere is exactly the bug — a `some()` here passed a
+    // mutation that broke a single form. A picker only mounts while its flow is
+    // open now, so the milestone flow is opened as well to get a second one.
     const rosterCalls = () =>
       (fetchMock.mock.calls as Array<[string, RequestInit?]>).filter(([url]) =>
         String(url).startsWith("/api/workspaces/roster")
@@ -108,17 +119,14 @@ describe("ProjectRecordComposer — deliverable budget fields", () => {
       expect(String(url)).toBe(`/api/workspaces/roster?workspaceId=${WORKSPACE_ID}`);
     }
 
-    const picker = await screen.findByLabelText("Assignee");
+    const picker = await screen.findByLabelText("Assign it to someone");
     await waitFor(() => expect(within(picker).queryByText(/priya@example.gov/)).not.toBeNull());
 
-    fireEvent.change(screen.getByLabelText("Deliverable title"), {
-      target: { value: "Draft board-ready safety memo" },
-    });
     // The free-text owner lane stays usable at the same time — they are not
     // alternatives, and a planner may well need both.
     fireEvent.change(screen.getByLabelText("Owner"), { target: { value: "Consultant" } });
     fireEvent.change(picker, { target: { value: "user-2" } });
-    fireEvent.click(screen.getByRole("button", { name: "Add deliverable" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add the deliverable" }));
 
     await waitFor(() => expect(recordCalls(fetchMock)).toHaveLength(1));
 
@@ -134,12 +142,9 @@ describe("ProjectRecordComposer — deliverable budget fields", () => {
     // Without this the test above would pass on a composer that always sent a
     // value, and "Unassigned" would be unreachable.
     render(<ProjectRecordComposer projectId={PROJECT_ID} workspaceId={WORKSPACE_ID} />);
-    activateDeliverableTab();
+    openDeliverableFlow();
 
-    fireEvent.change(screen.getByLabelText("Deliverable title"), {
-      target: { value: "Draft board-ready safety memo" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Add deliverable" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add the deliverable" }));
 
     await waitFor(() => expect(recordCalls(fetchMock)).toHaveLength(1));
 
@@ -149,12 +154,9 @@ describe("ProjectRecordComposer — deliverable budget fields", () => {
 
   it("omits the fields entirely when left blank — never sends 0", async () => {
     render(<ProjectRecordComposer projectId={PROJECT_ID} workspaceId={WORKSPACE_ID} />);
-    activateDeliverableTab();
+    openDeliverableFlow();
 
-    fireEvent.change(screen.getByLabelText("Deliverable title"), {
-      target: { value: "Draft board-ready safety memo" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Add deliverable" }));
+    fireEvent.click(screen.getByRole("button", { name: "Add the deliverable" }));
 
     await waitFor(() => expect(recordCalls(fetchMock)).toHaveLength(1));
 

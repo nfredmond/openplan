@@ -1053,6 +1053,9 @@ export function ExploreWorkbench({
             />
 
             <ExploreStudyBriefControls
+              projects={workspaceProjects}
+              selectedProjectId={selectedProjectId}
+              onSelectedProjectIdChange={setSelectedProjectId}
               queryText={queryText}
               isQueryTooLong={isQueryTooLong}
               reportTemplate={reportTemplate}

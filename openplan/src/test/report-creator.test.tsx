@@ -22,6 +22,28 @@ vi.mock("next/link", () => ({
 
 import { ReportCreator } from "@/components/reports/report-creator";
 
+/**
+ * These tests now drive a guided flow: the form is behind a "New report"
+ * button, so every case opens the sheet first, and the two cases that submit
+ * walk to the last step.
+ *
+ * WHAT THEY CANNOT PROVE, because jsdom applies no stylesheet and has no box
+ * model: that the sheet is visible, full-height on a phone, centred on a
+ * desktop, that the footer stays on screen, that focus moved into it, or that
+ * the page behind is inert. `src/test/guided-flow-jsdom-dialog-shim.ts` supplies
+ * `showModal` so the component mounts at all — it models nothing else. Those
+ * are browser measurements.
+ */
+function openFlow() {
+  fireEvent.click(screen.getByRole("button", { name: /^new report$/i }));
+}
+
+function goToStep(n: number) {
+  for (let i = 1; i < n; i += 1) {
+    fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
+  }
+}
+
 describe("ReportCreator", () => {
   beforeEach(() => {
     pushMock.mockReset();
@@ -54,6 +76,8 @@ describe("ReportCreator", () => {
       />
     );
 
+    openFlow();
+
     expect(screen.getByText(/This project already has 2 report records\./i)).toBeInTheDocument();
     expect(screen.getByText(/1 refresh recommended and 1 without packet\./i)).toBeInTheDocument();
     expect(screen.getByText(/Review Downtown Safety Packet before creating another packet/i)).toBeInTheDocument();
@@ -80,6 +104,8 @@ describe("ReportCreator", () => {
         }}
       />
     );
+
+    openFlow();
 
     expect(screen.getByText(/This project already has 1 report record\./i)).toBeInTheDocument();
     expect(screen.getByText(/Latest packet looks current\./i)).toBeInTheDocument();
@@ -126,6 +152,9 @@ describe("ReportCreator", () => {
         ]}
       />
     );
+
+    openFlow();
+    goToStep(3);
 
     expect(screen.getByLabelText("Modeling evidence")).toHaveValue("county-run-screening");
     expect(screen.getByText(/Validation evidence exists, but critical APE remains screening-grade\./i)).toBeInTheDocument();
@@ -177,6 +206,9 @@ describe("ReportCreator", () => {
         ]}
       />
     );
+
+    openFlow();
+    goToStep(3);
 
     fireEvent.change(screen.getByLabelText("Modeling evidence"), {
       target: { value: "" },

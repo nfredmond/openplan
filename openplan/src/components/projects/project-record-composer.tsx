@@ -1,21 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ClipboardCheck,
   FileText,
   Flag,
-  Loader2,
   MessagesSquare,
   Scale,
   Siren,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 import { AssigneePicker } from "@/components/workspaces/assignee-picker";
 
 /**
@@ -38,7 +42,7 @@ export type ProjectRecordComposerType = (typeof PROJECT_RECORD_COMPOSER_TYPES)[n
 /**
  * The trigger for each type: its icon, and its name as it appears in the
  * heading. Plural in the heading because the heading describes a capability
- * ("add milestones"), singular on the tab because a tab opens one form.
+ * ("add milestones"), singular on the button because a button opens one form.
  */
 const RECORD_TYPE_META: Record<
   ProjectRecordComposerType,
@@ -82,15 +86,69 @@ type ProjectRecordComposerProps = {
   recordTypes?: readonly ProjectRecordComposerType[];
 };
 
-function FormError({ error }: { error: string | null }) {
-  if (!error) return null;
+const selectClassName = "module-select";
+
+/**
+ * A teammate picker that carries the flow's own DOM id for the field.
+ *
+ * The id arrives by SPREADING `flow.fieldProps("…")` at the call site rather
+ * than by passing the field's name in: the guard reads the field name as a
+ * string literal beside `fieldProps`, and a helper that took the name and
+ * called `fieldProps` inside would hide four fields from it.
+ *
+ * Defined at module scope, not inside the composer: a component declared inside
+ * another component is a NEW type on every render, so React tears the picker
+ * down and rebuilds it each keystroke — which lost the chosen teammate before
+ * it ever reached the request.
+ */
+function AssigneeRow({
+  id,
+  workspaceId: pickerWorkspaceId,
+  value,
+  onChange,
+}: {
+  id: string;
+  workspaceId: string;
+  value: string | null;
+  onChange: (next: string | null) => void;
+}) {
   return (
-    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-      {error}
-    </p>
+    <div className="space-y-1.5">
+      <AssigneePicker
+        id={id}
+        label="Assign it to someone"
+        workspaceId={pickerWorkspaceId}
+        value={value}
+        onChange={onChange}
+      />
+      <p className="text-[0.78rem] text-muted-foreground">
+        Someone on your team in this workspace. Optional, and separate from the owner name above.
+      </p>
+    </div>
   );
 }
 
+
+/**
+ * Seven full forms used to be painted on the project page at all times, one per
+ * tab, whether or not anybody was adding a record — the single largest block of
+ * permanently-visible form in the app, sitting on top of the lists a planner
+ * came to read. Now the page carries seven buttons, and each opens the same
+ * questions a few at a time.
+ *
+ * WHAT DID NOT CHANGE. Every field, every option, the same one POST to
+ * `/api/projects/[projectId]/records` with byte-identical bodies — including
+ * the three date conversions (`new Date(x).toISOString()` for the two
+ * datetime-local fields and the submittal's submitted-at), the review cycle's
+ * `parseInt(…) || 1`, and the deliverable's two `parseFloat`-or-`undefined`
+ * numbers. Blank still means "not answered", not zero.
+ *
+ * WHAT DID CHANGE, ON PURPOSE. The four titles that carried the browser's
+ * `required` attribute are now declared required in the flow's step data. A
+ * `required` attribute is not validation in a stepped form — it fires only
+ * while its control is on screen — and the flow checks every step's answers at
+ * submit whatever is mounted.
+ */
 export function ProjectRecordComposer({
   projectId,
   workspaceId,
@@ -104,294 +162,871 @@ export function ProjectRecordComposer({
   const offered = PROJECT_RECORD_COMPOSER_TYPES.filter((type) => recordTypes.includes(type));
   const shows = (type: ProjectRecordComposerType) => offered.includes(type);
 
-  const [milestoneTitle, setMilestoneTitle] = useState("");
-  const [milestoneSummary, setMilestoneSummary] = useState("");
-  const [milestoneType, setMilestoneType] = useState("authorization");
-  const [milestonePhaseCode, setMilestonePhaseCode] = useState("initiation");
-  const [milestoneStatus, setMilestoneStatus] = useState("scheduled");
-  const [milestoneOwner, setMilestoneOwner] = useState("");
-  // The teammate lane, beside the free-text owner above. Null is the only
-  // starting value: a composer that pre-selected somebody would be inventing
-  // an assignment nobody made.
-  const [milestoneAssignee, setMilestoneAssignee] = useState<string | null>(null);
-  const [milestoneTargetDate, setMilestoneTargetDate] = useState("");
-  const [milestoneActualDate, setMilestoneActualDate] = useState("");
-  const [milestoneNotes, setMilestoneNotes] = useState("");
-  const [milestoneError, setMilestoneError] = useState<string | null>(null);
-  const [milestoneSaving, setMilestoneSaving] = useState(false);
+  const submitRecord = React.useCallback(
+    async (payload: Record<string, unknown>) => {
+      const response = await fetch(`/api/projects/${projectId}/records`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-  const [submittalTitle, setSubmittalTitle] = useState("");
-  const [submittalType, setSubmittalType] = useState("authorization_packet");
-  const [submittalStatus, setSubmittalStatus] = useState("draft");
-  const [submittalAgency, setSubmittalAgency] = useState("");
-  const [submittalAssignee, setSubmittalAssignee] = useState<string | null>(null);
-  const [submittalReferenceNumber, setSubmittalReferenceNumber] = useState("");
-  const [submittalDueDate, setSubmittalDueDate] = useState("");
-  const [submittalSubmittedAt, setSubmittalSubmittedAt] = useState("");
-  const [submittalReviewCycle, setSubmittalReviewCycle] = useState("1");
-  const [submittalNotes, setSubmittalNotes] = useState("");
-  const [submittalError, setSubmittalError] = useState<string | null>(null);
-  const [submittalSaving, setSubmittalSaving] = useState(false);
+      const data = (await response.json()) as { error?: string; details?: string };
 
-  const [deliverableTitle, setDeliverableTitle] = useState("");
-  const [deliverableSummary, setDeliverableSummary] = useState("");
-  const [deliverableOwner, setDeliverableOwner] = useState("");
-  const [deliverableAssignee, setDeliverableAssignee] = useState<string | null>(null);
-  const [deliverableDueDate, setDeliverableDueDate] = useState("");
-  const [deliverableStatus, setDeliverableStatus] = useState("not_started");
-  const [deliverableBudget, setDeliverableBudget] = useState("");
-  const [deliverablePercentComplete, setDeliverablePercentComplete] = useState("");
-  const [deliverableError, setDeliverableError] = useState<string | null>(null);
-  const [deliverableSaving, setDeliverableSaving] = useState(false);
+      if (!response.ok) {
+        throw new Error(data.details || data.error || "Failed to save record");
+      }
 
-  const [riskTitle, setRiskTitle] = useState("");
-  const [riskDescription, setRiskDescription] = useState("");
-  const [riskSeverity, setRiskSeverity] = useState("medium");
-  const [riskStatus, setRiskStatus] = useState("open");
-  const [riskMitigation, setRiskMitigation] = useState("");
-  const [riskError, setRiskError] = useState<string | null>(null);
-  const [riskSaving, setRiskSaving] = useState(false);
+      // The flow closes when this resolves, so the refresh happens while the
+      // sheet is still up and the planner is handed back to a list that already
+      // contains what they just added.
+      router.refresh();
+    },
+    [projectId, router]
+  );
 
-  const [issueTitle, setIssueTitle] = useState("");
-  const [issueDescription, setIssueDescription] = useState("");
-  const [issueSeverity, setIssueSeverity] = useState("medium");
-  const [issueStatus, setIssueStatus] = useState("open");
-  const [issueOwner, setIssueOwner] = useState("");
-  const [issueAssignee, setIssueAssignee] = useState<string | null>(null);
-  const [issueError, setIssueError] = useState<string | null>(null);
-  const [issueSaving, setIssueSaving] = useState(false);
-
-  const [decisionTitle, setDecisionTitle] = useState("");
-  const [decisionRationale, setDecisionRationale] = useState("");
-  const [decisionStatus, setDecisionStatus] = useState("proposed");
-  const [decisionImpact, setDecisionImpact] = useState("");
-  const [decisionAt, setDecisionAt] = useState("");
-  const [decisionError, setDecisionError] = useState<string | null>(null);
-  const [decisionSaving, setDecisionSaving] = useState(false);
-
-  const [meetingTitle, setMeetingTitle] = useState("");
-  const [meetingNotes, setMeetingNotes] = useState("");
-  const [meetingAt, setMeetingAt] = useState("");
-  const [meetingAttendees, setMeetingAttendees] = useState("");
-  const [meetingError, setMeetingError] = useState<string | null>(null);
-  const [meetingSaving, setMeetingSaving] = useState(false);
-
-  async function submitRecord(payload: Record<string, unknown>) {
-    const response = await fetch(`/api/projects/${projectId}/records`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = (await response.json()) as { error?: string; details?: string };
-
-    if (!response.ok) {
-      throw new Error(data.details || data.error || "Failed to save record");
-    }
-
-    router.refresh();
-  }
-
-  async function handleMilestoneSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMilestoneError(null);
-    setMilestoneSaving(true);
-    try {
-      await submitRecord({
+  // ───────────────────────────────────────────────────────── milestone
+  type MilestoneValues = {
+    milestoneTitle: string;
+    milestoneSummary: string;
+    milestoneType: string;
+    milestonePhaseCode: string;
+    milestoneStatus: string;
+    milestoneOwner: string;
+    milestoneAssignee: string | null;
+    milestoneTargetDate: string;
+    milestoneActualDate: string;
+    milestoneNotes: string;
+  };
+  const milestoneSteps: GuidedFlowStep<MilestoneValues>[] = [
+    {
+      id: "what",
+      title: "What has to happen?",
+      hint: "A milestone is a date the project has to hit — an approval, a hearing, a hand-off.",
+      fields: [
+        {
+          name: "milestoneTitle",
+          label: "a name",
+          required: true,
+          requiredMessage: "Name the milestone before you add it.",
+        },
+        { name: "milestoneSummary", label: "a description" },
+        { name: "milestoneType", label: "a kind" },
+        { name: "milestonePhaseCode", label: "a phase" },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="milestoneTitle" label="Name">
+            <Input {...flow.text("milestoneTitle")} placeholder="LAPM authorization checklist packet ready" />
+          </GuidedFlowRow>
+          <GuidedFlowRow flow={flow} name="milestoneSummary" label="What is it, in a sentence?">
+            <Textarea
+              {...flow.text("milestoneSummary")}
+              rows={3}
+              placeholder="What phase gate or checkpoint does this milestone represent?"
+            />
+          </GuidedFlowRow>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="milestoneType" label="Kind of milestone">
+              <select className={selectClassName} {...flow.text("milestoneType")}>
+                <option value="authorization">Authorization</option>
+                <option value="agreement">Agreement</option>
+                <option value="schedule">Schedule</option>
+                <option value="hearing">Hearing</option>
+                <option value="invoice">Invoice</option>
+                <option value="deliverable">Deliverable</option>
+                <option value="decision">Decision</option>
+                <option value="permit">Permit</option>
+                <option value="closeout">Closeout</option>
+                <option value="other">Other</option>
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="milestonePhaseCode" label="Which phase of the project?">
+              <select className={selectClassName} {...flow.text("milestonePhaseCode")}>
+                <option value="initiation">Initiation</option>
+                <option value="procurement">Procurement</option>
+                <option value="environmental">Environmental</option>
+                <option value="outreach">Outreach</option>
+                <option value="programming">Programming</option>
+                <option value="ps_e">PS&amp;E</option>
+                <option value="row_utilities">ROW / Utilities</option>
+                <option value="advertise_award">Advertise / Award</option>
+                <option value="construction">Construction</option>
+                <option value="closeout">Closeout</option>
+                <option value="other">Other</option>
+              </select>
+            </GuidedFlowRow>
+          </div>
+        </>
+      ),
+    },
+    {
+      id: "who-and-when",
+      title: "Who owns it, and when is it due?",
+      hint: "All optional — you can fill these in later.",
+      fields: [
+        { name: "milestoneStatus", label: "a status" },
+        { name: "milestoneOwner", label: "an owner" },
+        { name: "milestoneAssignee", label: "a teammate" },
+        { name: "milestoneTargetDate", label: "a target date" },
+        { name: "milestoneActualDate", label: "the date it happened" },
+        { name: "milestoneNotes", label: "notes" },
+      ],
+      render: (flow) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="milestoneStatus" label="Where does it stand?">
+              <select className={selectClassName} {...flow.text("milestoneStatus")}>
+                <option value="not_started">Not started</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="in_progress">In progress</option>
+                <option value="blocked">Blocked</option>
+                <option value="complete">Complete</option>
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="milestoneOwner" label="Owner">
+              <Input {...flow.text("milestoneOwner")} placeholder="Elena / Owen / Consultant" />
+            </GuidedFlowRow>
+          </div>
+          <AssigneeRow
+            {...flow.fieldProps("milestoneAssignee")}
+            workspaceId={workspaceId}
+            value={flow.values.milestoneAssignee}
+            onChange={(next) => flow.setValue("milestoneAssignee", next)}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="milestoneTargetDate" label="Target date">
+              <Input type="date" {...flow.text("milestoneTargetDate")} />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="milestoneActualDate" label="Date it actually happened">
+              <Input type="date" {...flow.text("milestoneActualDate")} />
+            </GuidedFlowRow>
+          </div>
+          <GuidedFlowRow flow={flow} name="milestoneNotes" label="Notes">
+            <Textarea
+              {...flow.text("milestoneNotes")}
+              rows={4}
+              placeholder="Context, dependencies, or why this milestone is blocked."
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+  ];
+  const milestoneFlow = useGuidedFlow<MilestoneValues>({
+    id: "project-record-milestone",
+    title: "Add a milestone",
+    submitLabel: "Add the milestone",
+    initialValues: {
+      milestoneTitle: "",
+      milestoneSummary: "",
+      milestoneType: "authorization",
+      milestonePhaseCode: "initiation",
+      milestoneStatus: "scheduled",
+      milestoneOwner: "",
+      milestoneAssignee: null,
+      milestoneTargetDate: "",
+      milestoneActualDate: "",
+      milestoneNotes: "",
+    },
+    steps: milestoneSteps,
+    onSubmit: (values) =>
+      submitRecord({
         recordType: "milestone",
-        title: milestoneTitle,
-        summary: milestoneSummary,
-        milestoneType,
-        phaseCode: milestonePhaseCode,
-        status: milestoneStatus,
-        ownerLabel: milestoneOwner,
-        assigneeUserId: milestoneAssignee ?? undefined,
-        targetDate: milestoneTargetDate,
-        actualDate: milestoneActualDate,
-        notes: milestoneNotes,
-      });
-      setMilestoneTitle("");
-      setMilestoneSummary("");
-      setMilestoneType("authorization");
-      setMilestonePhaseCode("initiation");
-      setMilestoneStatus("scheduled");
-      setMilestoneOwner("");
-      setMilestoneAssignee(null);
-      setMilestoneTargetDate("");
-      setMilestoneActualDate("");
-      setMilestoneNotes("");
-    } catch (error) {
-      setMilestoneError(error instanceof Error ? error.message : "Failed to save milestone");
-    } finally {
-      setMilestoneSaving(false);
-    }
-  }
+        title: values.milestoneTitle,
+        summary: values.milestoneSummary,
+        milestoneType: values.milestoneType,
+        phaseCode: values.milestonePhaseCode,
+        status: values.milestoneStatus,
+        ownerLabel: values.milestoneOwner,
+        assigneeUserId: values.milestoneAssignee ?? undefined,
+        targetDate: values.milestoneTargetDate,
+        actualDate: values.milestoneActualDate,
+        notes: values.milestoneNotes,
+      }),
+  });
 
-  async function handleSubmittalSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSubmittalError(null);
-    setSubmittalSaving(true);
-    try {
-      await submitRecord({
+  // ───────────────────────────────────────────────────────── submittal
+  type SubmittalValues = {
+    submittalTitle: string;
+    submittalType: string;
+    submittalStatus: string;
+    submittalReviewCycle: string;
+    submittalAgency: string;
+    submittalAssignee: string | null;
+    submittalReferenceNumber: string;
+    submittalDueDate: string;
+    submittalSubmittedAt: string;
+    submittalNotes: string;
+  };
+  const submittalSteps: GuidedFlowStep<SubmittalValues>[] = [
+    {
+      id: "what",
+      title: "What are you sending, and to whom?",
+      hint: "A submittal is a package that goes out for someone else to review.",
+      fields: [
+        {
+          name: "submittalTitle",
+          label: "a name",
+          required: true,
+          requiredMessage: "Name the submittal before you add it.",
+        },
+        { name: "submittalType", label: "a kind" },
+        { name: "submittalAgency", label: "the reviewing agency" },
+        { name: "submittalReferenceNumber", label: "a reference number" },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="submittalTitle" label="Name">
+            <Input {...flow.text("submittalTitle")} placeholder="Invoice backup packet" />
+          </GuidedFlowRow>
+          <GuidedFlowRow flow={flow} name="submittalType" label="Kind of package">
+            <select className={selectClassName} {...flow.text("submittalType")}>
+              <option value="authorization_packet">Authorization packet</option>
+              <option value="invoice_backup">Invoice backup</option>
+              <option value="environmental_package">Environmental package</option>
+              <option value="hearing_record">Hearing record</option>
+              <option value="ps_e">PS&amp;E</option>
+              <option value="reimbursement">Reimbursement</option>
+              <option value="progress_report">Progress report</option>
+              <option value="other">Other</option>
+            </select>
+          </GuidedFlowRow>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="submittalAgency" label="Who reviews it?">
+              <Input {...flow.text("submittalAgency")} placeholder="Caltrans D3 Local Assistance" />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="submittalReferenceNumber" label="Their reference number">
+              <Input {...flow.text("submittalReferenceNumber")} placeholder="INV-7 / EX-10-A" />
+            </GuidedFlowRow>
+          </div>
+        </>
+      ),
+    },
+    {
+      id: "where",
+      title: "Where is it up to?",
+      hint: "All optional. Review cycle 1 means this is the first time it has gone out.",
+      fields: [
+        { name: "submittalStatus", label: "a status" },
+        { name: "submittalReviewCycle", label: "a review cycle" },
+        { name: "submittalAssignee", label: "a teammate" },
+        { name: "submittalDueDate", label: "a due date" },
+        { name: "submittalSubmittedAt", label: "the date it went out" },
+        { name: "submittalNotes", label: "notes" },
+      ],
+      render: (flow) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="submittalStatus" label="Where does it stand?">
+              <select className={selectClassName} {...flow.text("submittalStatus")}>
+                <option value="draft">Draft</option>
+                <option value="internal_review">Internal review</option>
+                <option value="submitted">Submitted</option>
+                <option value="accepted">Accepted</option>
+                <option value="revise_and_resubmit">Revise and resubmit</option>
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow
+              flow={flow}
+              name="submittalReviewCycle"
+              label="Which round of review?"
+              hint="1 the first time it goes out, 2 after the first round of comments, and so on."
+            >
+              <Input type="number" min="1" max="10" {...flow.text("submittalReviewCycle")} />
+            </GuidedFlowRow>
+          </div>
+          <AssigneeRow
+            {...flow.fieldProps("submittalAssignee")}
+            workspaceId={workspaceId}
+            value={flow.values.submittalAssignee}
+            onChange={(next) => flow.setValue("submittalAssignee", next)}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="submittalDueDate" label="Due date">
+              <Input type="date" {...flow.text("submittalDueDate")} />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="submittalSubmittedAt" label="When it was sent">
+              <Input type="datetime-local" {...flow.text("submittalSubmittedAt")} />
+            </GuidedFlowRow>
+          </div>
+          <GuidedFlowRow flow={flow} name="submittalNotes" label="Notes">
+            <Textarea
+              {...flow.text("submittalNotes")}
+              rows={4}
+              placeholder="Resubmittal comments, backup requirements, or review conditions."
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+  ];
+  const submittalFlow = useGuidedFlow<SubmittalValues>({
+    id: "project-record-submittal",
+    title: "Add a submittal",
+    submitLabel: "Add the submittal",
+    initialValues: {
+      submittalTitle: "",
+      submittalType: "authorization_packet",
+      submittalStatus: "draft",
+      submittalReviewCycle: "1",
+      submittalAgency: "",
+      submittalAssignee: null,
+      submittalReferenceNumber: "",
+      submittalDueDate: "",
+      submittalSubmittedAt: "",
+      submittalNotes: "",
+    },
+    steps: submittalSteps,
+    onSubmit: (values) =>
+      submitRecord({
         recordType: "submittal",
-        title: submittalTitle,
-        submittalType,
-        status: submittalStatus,
-        agencyLabel: submittalAgency,
-        assigneeUserId: submittalAssignee ?? undefined,
-        referenceNumber: submittalReferenceNumber,
-        dueDate: submittalDueDate,
-        submittedAt: submittalSubmittedAt ? new Date(submittalSubmittedAt).toISOString() : undefined,
-        reviewCycle: Number.parseInt(submittalReviewCycle, 10) || 1,
-        notes: submittalNotes,
-      });
-      setSubmittalTitle("");
-      setSubmittalType("authorization_packet");
-      setSubmittalStatus("draft");
-      setSubmittalAgency("");
-      setSubmittalAssignee(null);
-      setSubmittalReferenceNumber("");
-      setSubmittalDueDate("");
-      setSubmittalSubmittedAt("");
-      setSubmittalReviewCycle("1");
-      setSubmittalNotes("");
-    } catch (error) {
-      setSubmittalError(error instanceof Error ? error.message : "Failed to save submittal");
-    } finally {
-      setSubmittalSaving(false);
-    }
-  }
+        title: values.submittalTitle,
+        submittalType: values.submittalType,
+        status: values.submittalStatus,
+        agencyLabel: values.submittalAgency,
+        assigneeUserId: values.submittalAssignee ?? undefined,
+        referenceNumber: values.submittalReferenceNumber,
+        dueDate: values.submittalDueDate,
+        submittedAt: values.submittalSubmittedAt
+          ? new Date(values.submittalSubmittedAt).toISOString()
+          : undefined,
+        reviewCycle: Number.parseInt(values.submittalReviewCycle, 10) || 1,
+        notes: values.submittalNotes,
+      }),
+  });
 
-  async function handleDeliverableSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setDeliverableError(null);
-    setDeliverableSaving(true);
-    try {
-      await submitRecord({
+  // ─────────────────────────────────────────────────────── deliverable
+  type DeliverableValues = {
+    deliverableTitle: string;
+    deliverableSummary: string;
+    deliverableOwner: string;
+    deliverableAssignee: string | null;
+    deliverableDueDate: string;
+    deliverableStatus: string;
+    deliverableBudget: string;
+    deliverablePercentComplete: string;
+  };
+  const deliverableSteps: GuidedFlowStep<DeliverableValues>[] = [
+    {
+      id: "what",
+      title: "What are you producing?",
+      hint: "A deliverable is something the project owes somebody — a memo, a drawing set, a dataset.",
+      fields: [
+        {
+          name: "deliverableTitle",
+          label: "a name",
+          required: true,
+          requiredMessage: "Name the deliverable before you add it.",
+        },
+        { name: "deliverableSummary", label: "a description" },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="deliverableTitle" label="Name">
+            <Input {...flow.text("deliverableTitle")} placeholder="Draft board-ready safety memo" />
+          </GuidedFlowRow>
+          <GuidedFlowRow flow={flow} name="deliverableSummary" label="What is it, in a sentence?">
+            <Textarea
+              {...flow.text("deliverableSummary")}
+              rows={3}
+              placeholder="What has to be delivered, for whom, and to what standard?"
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+    {
+      id: "who-and-when",
+      title: "Who is doing it, and by when?",
+      hint: "All optional. Leave the money and percentage blank if you are not tracking them.",
+      fields: [
+        { name: "deliverableOwner", label: "an owner" },
+        { name: "deliverableAssignee", label: "a teammate" },
+        { name: "deliverableDueDate", label: "a due date" },
+        { name: "deliverableStatus", label: "a status" },
+        { name: "deliverableBudget", label: "a budget" },
+        { name: "deliverablePercentComplete", label: "a percentage" },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="deliverableOwner" label="Owner">
+            <Input {...flow.text("deliverableOwner")} placeholder="Elena / Owen / Consultant" />
+          </GuidedFlowRow>
+          <AssigneeRow
+            {...flow.fieldProps("deliverableAssignee")}
+            workspaceId={workspaceId}
+            value={flow.values.deliverableAssignee}
+            onChange={(next) => flow.setValue("deliverableAssignee", next)}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="deliverableDueDate" label="Due date">
+              <Input type="date" {...flow.text("deliverableDueDate")} />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="deliverableStatus" label="Where does it stand?">
+              <select className={selectClassName} {...flow.text("deliverableStatus")}>
+                <option value="not_started">Not started</option>
+                <option value="in_progress">In progress</option>
+                <option value="blocked">Blocked</option>
+                <option value="complete">Complete</option>
+              </select>
+            </GuidedFlowRow>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow
+              flow={flow}
+              name="deliverableBudget"
+              label="Budget"
+              hint="Leave blank if this deliverable is not budgeted separately. Blank means unknown, not zero."
+            >
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                {...flow.text("deliverableBudget")}
+                placeholder="Optional — leave blank if not budgeted"
+              />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="deliverablePercentComplete" label="How far along is it?">
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                {...flow.text("deliverablePercentComplete")}
+                placeholder="Optional — 0 to 100"
+              />
+            </GuidedFlowRow>
+          </div>
+        </>
+      ),
+    },
+  ];
+  const deliverableFlow = useGuidedFlow<DeliverableValues>({
+    id: "project-record-deliverable",
+    title: "Add a deliverable",
+    submitLabel: "Add the deliverable",
+    initialValues: {
+      deliverableTitle: "",
+      deliverableSummary: "",
+      deliverableOwner: "",
+      deliverableAssignee: null,
+      deliverableDueDate: "",
+      deliverableStatus: "not_started",
+      deliverableBudget: "",
+      deliverablePercentComplete: "",
+    },
+    steps: deliverableSteps,
+    onSubmit: (values) =>
+      submitRecord({
         recordType: "deliverable",
-        title: deliverableTitle,
-        summary: deliverableSummary,
-        ownerLabel: deliverableOwner,
-        assigneeUserId: deliverableAssignee ?? undefined,
-        dueDate: deliverableDueDate,
-        status: deliverableStatus,
-        budgetAmount: deliverableBudget.trim() ? Number.parseFloat(deliverableBudget) : undefined,
-        percentComplete: deliverablePercentComplete.trim() ? Number.parseFloat(deliverablePercentComplete) : undefined,
-      });
-      setDeliverableTitle("");
-      setDeliverableSummary("");
-      setDeliverableOwner("");
-      setDeliverableAssignee(null);
-      setDeliverableDueDate("");
-      setDeliverableStatus("not_started");
-      setDeliverableBudget("");
-      setDeliverablePercentComplete("");
-    } catch (error) {
-      setDeliverableError(error instanceof Error ? error.message : "Failed to save deliverable");
-    } finally {
-      setDeliverableSaving(false);
-    }
-  }
+        title: values.deliverableTitle,
+        summary: values.deliverableSummary,
+        ownerLabel: values.deliverableOwner,
+        assigneeUserId: values.deliverableAssignee ?? undefined,
+        dueDate: values.deliverableDueDate,
+        status: values.deliverableStatus,
+        budgetAmount: values.deliverableBudget.trim()
+          ? Number.parseFloat(values.deliverableBudget)
+          : undefined,
+        percentComplete: values.deliverablePercentComplete.trim()
+          ? Number.parseFloat(values.deliverablePercentComplete)
+          : undefined,
+      }),
+  });
 
-  async function handleRiskSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setRiskError(null);
-    setRiskSaving(true);
-    try {
-      await submitRecord({
+  // ───────────────────────────────────────────────────────────── risk
+  type RiskValues = {
+    riskTitle: string;
+    riskDescription: string;
+    riskSeverity: string;
+    riskStatus: string;
+    riskMitigation: string;
+  };
+  const riskSteps: GuidedFlowStep<RiskValues>[] = [
+    {
+      id: "what",
+      title: "What could go wrong?",
+      hint: "A risk has not happened yet. If it already has, log it as an issue instead.",
+      fields: [
+        {
+          name: "riskTitle",
+          label: "a name",
+          required: true,
+          requiredMessage: "Say what the risk is before you add it.",
+        },
+        { name: "riskDescription", label: "a description" },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="riskTitle" label="The risk, in a line">
+            <Input
+              {...flow.text("riskTitle")}
+              placeholder="Schedule compression may weaken review quality"
+            />
+          </GuidedFlowRow>
+          <GuidedFlowRow flow={flow} name="riskDescription" label="What would happen?">
+            <Textarea
+              {...flow.text("riskDescription")}
+              rows={4}
+              placeholder="Describe the risk and what could go wrong if it is ignored."
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+    {
+      id: "how-bad",
+      title: "How bad would it be, and what is the plan?",
+      fields: [
+        { name: "riskSeverity", label: "a severity" },
+        { name: "riskStatus", label: "a status" },
+        { name: "riskMitigation", label: "a mitigation" },
+      ],
+      render: (flow) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="riskSeverity" label="How serious?">
+              <select className={selectClassName} {...flow.text("riskSeverity")}>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="riskStatus" label="Where does it stand?">
+              <select className={selectClassName} {...flow.text("riskStatus")}>
+                <option value="open">Open</option>
+                <option value="watch">Watch</option>
+                <option value="mitigated">Mitigated</option>
+                <option value="closed">Closed</option>
+              </select>
+            </GuidedFlowRow>
+          </div>
+          <GuidedFlowRow flow={flow} name="riskMitigation" label="What would you do about it?">
+            <Textarea
+              {...flow.text("riskMitigation")}
+              rows={4}
+              placeholder="What is the mitigation path, owner, or fallback?"
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+  ];
+  const riskFlow = useGuidedFlow<RiskValues>({
+    id: "project-record-risk",
+    title: "Log a risk",
+    submitLabel: "Log the risk",
+    initialValues: {
+      riskTitle: "",
+      riskDescription: "",
+      riskSeverity: "medium",
+      riskStatus: "open",
+      riskMitigation: "",
+    },
+    steps: riskSteps,
+    onSubmit: (values) =>
+      submitRecord({
         recordType: "risk",
-        title: riskTitle,
-        description: riskDescription,
-        severity: riskSeverity,
-        status: riskStatus,
-        mitigation: riskMitigation,
-      });
-      setRiskTitle("");
-      setRiskDescription("");
-      setRiskSeverity("medium");
-      setRiskStatus("open");
-      setRiskMitigation("");
-    } catch (error) {
-      setRiskError(error instanceof Error ? error.message : "Failed to save risk");
-    } finally {
-      setRiskSaving(false);
-    }
-  }
+        title: values.riskTitle,
+        description: values.riskDescription,
+        severity: values.riskSeverity,
+        status: values.riskStatus,
+        mitigation: values.riskMitigation,
+      }),
+  });
 
-  async function handleIssueSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIssueError(null);
-    setIssueSaving(true);
-    try {
-      await submitRecord({
+  // ──────────────────────────────────────────────────────────── issue
+  type IssueValues = {
+    issueTitle: string;
+    issueDescription: string;
+    issueSeverity: string;
+    issueStatus: string;
+    issueOwner: string;
+    issueAssignee: string | null;
+  };
+  const issueSteps: GuidedFlowStep<IssueValues>[] = [
+    {
+      id: "what",
+      title: "What is blocking the work?",
+      hint: "An issue is happening now. Something that might happen later is a risk.",
+      fields: [
+        {
+          name: "issueTitle",
+          label: "a name",
+          required: true,
+          requiredMessage: "Say what the problem is before you add it.",
+        },
+        { name: "issueDescription", label: "a description" },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="issueTitle" label="The problem, in a line">
+            <Input {...flow.text("issueTitle")} placeholder="Traffic count package still missing" />
+          </GuidedFlowRow>
+          <GuidedFlowRow flow={flow} name="issueDescription" label="What is going on?">
+            <Textarea
+              {...flow.text("issueDescription")}
+              rows={4}
+              placeholder="Describe the blocker and what it is holding up."
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+    {
+      id: "who",
+      title: "How urgent is it, and who is on it?",
+      fields: [
+        { name: "issueSeverity", label: "a severity" },
+        { name: "issueStatus", label: "a status" },
+        { name: "issueOwner", label: "an owner" },
+        { name: "issueAssignee", label: "a teammate" },
+      ],
+      render: (flow) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="issueSeverity" label="How serious?">
+              <select className={selectClassName} {...flow.text("issueSeverity")}>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="issueStatus" label="Where does it stand?">
+              <select className={selectClassName} {...flow.text("issueStatus")}>
+                <option value="open">Open</option>
+                <option value="in_progress">In progress</option>
+                <option value="blocked">Blocked</option>
+                <option value="resolved">Resolved</option>
+              </select>
+            </GuidedFlowRow>
+          </div>
+          <GuidedFlowRow flow={flow} name="issueOwner" label="Owner">
+            <Input {...flow.text("issueOwner")} placeholder="Priya / Consultant" />
+          </GuidedFlowRow>
+          <AssigneeRow
+            {...flow.fieldProps("issueAssignee")}
+            workspaceId={workspaceId}
+            value={flow.values.issueAssignee}
+            onChange={(next) => flow.setValue("issueAssignee", next)}
+          />
+        </>
+      ),
+    },
+  ];
+  const issueFlow = useGuidedFlow<IssueValues>({
+    id: "project-record-issue",
+    title: "Log an issue",
+    submitLabel: "Log the issue",
+    initialValues: {
+      issueTitle: "",
+      issueDescription: "",
+      issueSeverity: "medium",
+      issueStatus: "open",
+      issueOwner: "",
+      issueAssignee: null,
+    },
+    steps: issueSteps,
+    onSubmit: (values) =>
+      submitRecord({
         recordType: "issue",
-        title: issueTitle,
-        description: issueDescription,
-        severity: issueSeverity,
-        status: issueStatus,
-        ownerLabel: issueOwner,
-        assigneeUserId: issueAssignee ?? undefined,
-      });
-      setIssueTitle("");
-      setIssueDescription("");
-      setIssueSeverity("medium");
-      setIssueStatus("open");
-      setIssueOwner("");
-      setIssueAssignee(null);
-    } catch (error) {
-      setIssueError(error instanceof Error ? error.message : "Failed to save issue");
-    } finally {
-      setIssueSaving(false);
-    }
-  }
+        title: values.issueTitle,
+        description: values.issueDescription,
+        severity: values.issueSeverity,
+        status: values.issueStatus,
+        ownerLabel: values.issueOwner,
+        assigneeUserId: values.issueAssignee ?? undefined,
+      }),
+  });
 
-  async function handleDecisionSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setDecisionError(null);
-    setDecisionSaving(true);
-    try {
-      await submitRecord({
+  // ───────────────────────────────────────────────────────── decision
+  type DecisionValues = {
+    decisionTitle: string;
+    decisionRationale: string;
+    decisionStatus: string;
+    decisionAt: string;
+    decisionImpact: string;
+  };
+  const decisionSteps: GuidedFlowStep<DecisionValues>[] = [
+    {
+      id: "what",
+      title: "What was decided?",
+      hint: "Write it so somebody reading in two years knows what was chosen and why.",
+      fields: [
+        {
+          name: "decisionTitle",
+          label: "a decision",
+          required: true,
+          requiredMessage: "Say what was decided before you record it.",
+        },
+        {
+          name: "decisionRationale",
+          label: "the reasoning",
+          required: true,
+          requiredMessage: "Say why it was decided. A decision with no reason cannot be revisited.",
+        },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="decisionTitle" label="The decision, in a line">
+            <Input
+              {...flow.text("decisionTitle")}
+              placeholder="Use VMT-first narrative for public packet"
+            />
+          </GuidedFlowRow>
+          <GuidedFlowRow flow={flow} name="decisionRationale" label="Why?">
+            <Textarea
+              {...flow.text("decisionRationale")}
+              rows={4}
+              placeholder="Why was this decided, on what basis, and what was traded off?"
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+    {
+      id: "standing",
+      title: "Where does it stand, and what does it change?",
+      fields: [
+        { name: "decisionStatus", label: "a status" },
+        { name: "decisionAt", label: "a date" },
+        { name: "decisionImpact", label: "the effects" },
+      ],
+      render: (flow) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="decisionStatus" label="Is it settled?">
+              <select className={selectClassName} {...flow.text("decisionStatus")}>
+                <option value="proposed">Proposed</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="decisionAt" label="When was it decided?">
+              <Input type="datetime-local" {...flow.text("decisionAt")} />
+            </GuidedFlowRow>
+          </div>
+          <GuidedFlowRow flow={flow} name="decisionImpact" label="What does it change?">
+            <Textarea
+              {...flow.text("decisionImpact")}
+              rows={4}
+              placeholder="What downstream scope, quality, schedule, or policy effects does this create?"
+            />
+          </GuidedFlowRow>
+        </>
+      ),
+    },
+  ];
+  const decisionFlow = useGuidedFlow<DecisionValues>({
+    id: "project-record-decision",
+    title: "Record a decision",
+    submitLabel: "Record the decision",
+    initialValues: {
+      decisionTitle: "",
+      decisionRationale: "",
+      decisionStatus: "proposed",
+      decisionAt: "",
+      decisionImpact: "",
+    },
+    steps: decisionSteps,
+    onSubmit: (values) =>
+      submitRecord({
         recordType: "decision",
-        title: decisionTitle,
-        rationale: decisionRationale,
-        status: decisionStatus,
-        impactSummary: decisionImpact,
-        decidedAt: decisionAt ? new Date(decisionAt).toISOString() : undefined,
-      });
-      setDecisionTitle("");
-      setDecisionRationale("");
-      setDecisionStatus("proposed");
-      setDecisionImpact("");
-      setDecisionAt("");
-    } catch (error) {
-      setDecisionError(error instanceof Error ? error.message : "Failed to save decision");
-    } finally {
-      setDecisionSaving(false);
-    }
-  }
+        title: values.decisionTitle,
+        rationale: values.decisionRationale,
+        status: values.decisionStatus,
+        impactSummary: values.decisionImpact,
+        decidedAt: values.decisionAt ? new Date(values.decisionAt).toISOString() : undefined,
+      }),
+  });
 
-  async function handleMeetingSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMeetingError(null);
-    setMeetingSaving(true);
-    try {
-      await submitRecord({
+  // ────────────────────────────────────────────────────────── meeting
+  type MeetingValues = {
+    meetingTitle: string;
+    meetingAt: string;
+    meetingAttendees: string;
+    meetingNotes: string;
+  };
+  const meetingSteps: GuidedFlowStep<MeetingValues>[] = [
+    {
+      id: "what",
+      title: "Which meeting?",
+      fields: [
+        {
+          name: "meetingTitle",
+          label: "a name",
+          required: true,
+          requiredMessage: "Name the meeting before you add it.",
+        },
+        { name: "meetingAt", label: "a time" },
+        { name: "meetingAttendees", label: "who was there" },
+      ],
+      render: (flow) => (
+        <>
+          <GuidedFlowRow flow={flow} name="meetingTitle" label="Name">
+            <Input {...flow.text("meetingTitle")} placeholder="Weekly project sync" />
+          </GuidedFlowRow>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <GuidedFlowRow flow={flow} name="meetingAt" label="When was it?">
+              <Input type="datetime-local" {...flow.text("meetingAt")} />
+            </GuidedFlowRow>
+            <GuidedFlowRow flow={flow} name="meetingAttendees" label="Who was there?">
+              <Input {...flow.text("meetingAttendees")} placeholder="Nathaniel, Elena, Owen" />
+            </GuidedFlowRow>
+          </div>
+        </>
+      ),
+    },
+    {
+      id: "notes",
+      title: "What came out of it?",
+      hint: "Key points, action items, and anything still open.",
+      fields: [{ name: "meetingNotes", label: "notes" }],
+      render: (flow) => (
+        <GuidedFlowRow flow={flow} name="meetingNotes" label="Notes">
+          <Textarea
+            {...flow.text("meetingNotes")}
+            rows={7}
+            placeholder="Key points, action items, and open questions."
+          />
+        </GuidedFlowRow>
+      ),
+    },
+  ];
+  const meetingFlow = useGuidedFlow<MeetingValues>({
+    id: "project-record-meeting",
+    title: "Add meeting notes",
+    submitLabel: "Add the meeting",
+    initialValues: {
+      meetingTitle: "",
+      meetingAt: "",
+      meetingAttendees: "",
+      meetingNotes: "",
+    },
+    steps: meetingSteps,
+    onSubmit: (values) =>
+      submitRecord({
         recordType: "meeting",
-        title: meetingTitle,
-        notes: meetingNotes,
-        meetingAt: meetingAt ? new Date(meetingAt).toISOString() : undefined,
-        attendeesSummary: meetingAttendees,
-      });
-      setMeetingTitle("");
-      setMeetingNotes("");
-      setMeetingAt("");
-      setMeetingAttendees("");
-    } catch (error) {
-      setMeetingError(error instanceof Error ? error.message : "Failed to save meeting");
-    } finally {
-      setMeetingSaving(false);
-    }
-  }
+        title: values.meetingTitle,
+        notes: values.meetingNotes,
+        meetingAt: values.meetingAt ? new Date(values.meetingAt).toISOString() : undefined,
+        attendeesSummary: values.meetingAttendees,
+      }),
+  });
+
+  // Every flow is built on every render — hooks cannot be conditional — but a
+  // page only OFFERS the types it was asked for, and only renders those sheets.
+  const flowsByType: Record<ProjectRecordComposerType, { open: () => void; sheet: React.ReactNode }> = {
+    milestone: { open: milestoneFlow.open, sheet: <GuidedFlow flow={milestoneFlow} /> },
+    submittal: { open: submittalFlow.open, sheet: <GuidedFlow flow={submittalFlow} /> },
+    deliverable: { open: deliverableFlow.open, sheet: <GuidedFlow flow={deliverableFlow} /> },
+    risk: { open: riskFlow.open, sheet: <GuidedFlow flow={riskFlow} /> },
+    issue: { open: issueFlow.open, sheet: <GuidedFlow flow={issueFlow} /> },
+    decision: { open: decisionFlow.open, sheet: <GuidedFlow flow={decisionFlow} /> },
+    meeting: { open: meetingFlow.open, sheet: <GuidedFlow flow={meetingFlow} /> },
+  };
 
   return (
     <article className="module-section-surface">
@@ -399,629 +1034,108 @@ export function ProjectRecordComposer({
         <p className="module-section-label">Create records</p>
         <h2 className="module-section-title">Add {listRecordTypes(offered)}</h2>
         <p className="module-section-description">
-          This control layer turns each project into an active operating workspace instead of a passive record.
+          Keeping these up to date is what turns the project page from a filing cabinet into
+          something you can actually run the work from. Each button asks a few short questions.
         </p>
       </div>
 
-      <Tabs defaultValue={offered[0]} className="mt-5">
-        {/*
-          The FILLED variant, not the underlined `module-tabs-list` the rest of
-          this page uses. The project page's own tab strip is directly above
-          this one, and when both wore the same visual language the page showed
-          two identical strips stacked — a reader could not tell which one they
-          were about to move. Form-picker and page-section are different kinds
-          of control and now look like it.
-        */}
-        <TabsList variant="default" className="flex-wrap" data-testid="project-record-composer-types">
-          {offered.map((type) => {
-            const { label, Icon } = RECORD_TYPE_META[type];
-            return (
-              <TabsTrigger key={type} value={type}>
-                <Icon className="h-4 w-4" />
-                {label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-
+      {/*
+        Written out one by one rather than mapped, because the project page's
+        tab strip deep-links to these ids and the guard that checks every anchor
+        has something to scroll to reads LITERAL `id="…"` attributes out of the
+        source. A mapped `id={`${type}-add`}` renders the right thing and is
+        invisible to that guard — an anchor nothing can prove exists.
+      */}
+      <div className="mt-5 flex flex-wrap gap-2" data-testid="project-record-composer-types">
         {shows("milestone") ? (
-        <TabsContent value="milestone" className="pt-4">
-          <form className="space-y-4" onSubmit={handleMilestoneSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="milestone-title" className="text-sm font-medium">
-                Milestone title
-              </label>
-              <Input
-                id="milestone-title"
-                value={milestoneTitle}
-                onChange={(e) => setMilestoneTitle(e.target.value)}
-                placeholder="LAPM authorization checklist packet ready"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="milestone-summary" className="text-sm font-medium">
-                Summary
-              </label>
-              <Textarea
-                id="milestone-summary"
-                value={milestoneSummary}
-                onChange={(e) => setMilestoneSummary(e.target.value)}
-                rows={4}
-                placeholder="What phase gate or operator checkpoint does this milestone represent?"
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="milestone-type" className="text-sm font-medium">
-                  Milestone type
-                </label>
-                <select id="milestone-type" className="module-select" value={milestoneType} onChange={(e) => setMilestoneType(e.target.value)}>
-                  <option value="authorization">Authorization</option>
-                  <option value="agreement">Agreement</option>
-                  <option value="schedule">Schedule</option>
-                  <option value="hearing">Hearing</option>
-                  <option value="invoice">Invoice</option>
-                  <option value="deliverable">Deliverable</option>
-                  <option value="decision">Decision</option>
-                  <option value="permit">Permit</option>
-                  <option value="closeout">Closeout</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="milestone-phase" className="text-sm font-medium">
-                  Phase code
-                </label>
-                <select id="milestone-phase" className="module-select" value={milestonePhaseCode} onChange={(e) => setMilestonePhaseCode(e.target.value)}>
-                  <option value="initiation">Initiation</option>
-                  <option value="procurement">Procurement</option>
-                  <option value="environmental">Environmental</option>
-                  <option value="outreach">Outreach</option>
-                  <option value="programming">Programming</option>
-                  <option value="ps_e">PS&E</option>
-                  <option value="row_utilities">ROW / Utilities</option>
-                  <option value="advertise_award">Advertise / Award</option>
-                  <option value="construction">Construction</option>
-                  <option value="closeout">Closeout</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="milestone-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="milestone-status" className="module-select" value={milestoneStatus} onChange={(e) => setMilestoneStatus(e.target.value)}>
-                  <option value="not_started">Not started</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="in_progress">In progress</option>
-                  <option value="blocked">Blocked</option>
-                  <option value="complete">Complete</option>
-                </select>
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-2">
-                <label htmlFor="milestone-owner" className="text-sm font-medium">
-                  Owner
-                </label>
-                <Input id="milestone-owner" value={milestoneOwner} onChange={(e) => setMilestoneOwner(e.target.value)} placeholder="Elena / Owen / Consultant" />
-                <p className="text-xs text-muted-foreground">Free text — a consultant, a partner agency, anyone without an account here.</p>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="milestone-assignee" className="text-sm font-medium">
-                  Assignee
-                </label>
-                <AssigneePicker
-                  id="milestone-assignee"
-                  label="Assignee"
-                  workspaceId={workspaceId}
-                  value={milestoneAssignee}
-                  onChange={setMilestoneAssignee}
-                />
-                <p className="text-xs text-muted-foreground">A teammate in this workspace. Optional, and separate from Owner.</p>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="milestone-target-date" className="text-sm font-medium">
-                  Target date
-                </label>
-                <Input id="milestone-target-date" type="date" value={milestoneTargetDate} onChange={(e) => setMilestoneTargetDate(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="milestone-actual-date" className="text-sm font-medium">
-                  Actual date
-                </label>
-                <Input id="milestone-actual-date" type="date" value={milestoneActualDate} onChange={(e) => setMilestoneActualDate(e.target.value)} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="milestone-notes" className="text-sm font-medium">
-                Notes
-              </label>
-              <Textarea
-                id="milestone-notes"
-                value={milestoneNotes}
-                onChange={(e) => setMilestoneNotes(e.target.value)}
-                rows={4}
-                placeholder="Capture control-room context, dependency notes, or why this milestone is blocked."
-              />
-            </div>
-            <FormError error={milestoneError} />
-            <Button type="submit" disabled={milestoneSaving}>
-              {milestoneSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving milestone…
-                </>
-              ) : (
-                "Add milestone"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
+          <Button
+            type="button"
+            variant="outline"
+            id="milestone-add"
+            data-testid="project-record-open-milestone"
+            onClick={flowsByType.milestone.open}
+          >
+            <Flag className="mr-1.5 h-4 w-4" />
+            Add a milestone
+          </Button>
         ) : null}
-
         {shows("submittal") ? (
-        <TabsContent value="submittal" className="pt-4">
-          <form className="space-y-4" onSubmit={handleSubmittalSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="submittal-title" className="text-sm font-medium">
-                Submittal title
-              </label>
-              <Input
-                id="submittal-title"
-                value={submittalTitle}
-                onChange={(e) => setSubmittalTitle(e.target.value)}
-                placeholder="Invoice backup packet"
-                required
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="submittal-type" className="text-sm font-medium">
-                  Submittal type
-                </label>
-                <select id="submittal-type" className="module-select" value={submittalType} onChange={(e) => setSubmittalType(e.target.value)}>
-                  <option value="authorization_packet">Authorization packet</option>
-                  <option value="invoice_backup">Invoice backup</option>
-                  <option value="environmental_package">Environmental package</option>
-                  <option value="hearing_record">Hearing record</option>
-                  <option value="ps_e">PS&amp;E</option>
-                  <option value="reimbursement">Reimbursement</option>
-                  <option value="progress_report">Progress report</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="submittal-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="submittal-status" className="module-select" value={submittalStatus} onChange={(e) => setSubmittalStatus(e.target.value)}>
-                  <option value="draft">Draft</option>
-                  <option value="internal_review">Internal review</option>
-                  <option value="submitted">Submitted</option>
-                  <option value="accepted">Accepted</option>
-                  <option value="revise_and_resubmit">Revise and resubmit</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="submittal-review-cycle" className="text-sm font-medium">
-                  Review cycle
-                </label>
-                <Input id="submittal-review-cycle" type="number" min="1" max="10" value={submittalReviewCycle} onChange={(e) => setSubmittalReviewCycle(e.target.value)} />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <label htmlFor="submittal-agency" className="text-sm font-medium">
-                  Agency / reviewer
-                </label>
-                <Input id="submittal-agency" value={submittalAgency} onChange={(e) => setSubmittalAgency(e.target.value)} placeholder="Caltrans D3 Local Assistance" />
-                <p className="text-xs text-muted-foreground">Who reviews the packet — a different question from who prepares it.</p>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="submittal-assignee" className="text-sm font-medium">
-                  Assignee
-                </label>
-                <AssigneePicker
-                  id="submittal-assignee"
-                  label="Assignee"
-                  workspaceId={workspaceId}
-                  value={submittalAssignee}
-                  onChange={setSubmittalAssignee}
-                />
-                <p className="text-xs text-muted-foreground">The teammate who owes this packet. Optional.</p>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="submittal-reference-number" className="text-sm font-medium">
-                  Reference number
-                </label>
-                <Input id="submittal-reference-number" value={submittalReferenceNumber} onChange={(e) => setSubmittalReferenceNumber(e.target.value)} placeholder="INV-7 / EX-10-A" />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="submittal-due-date" className="text-sm font-medium">
-                  Due date
-                </label>
-                <Input id="submittal-due-date" type="date" value={submittalDueDate} onChange={(e) => setSubmittalDueDate(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="submittal-submitted-at" className="text-sm font-medium">
-                  Submitted at
-                </label>
-                <Input id="submittal-submitted-at" type="datetime-local" value={submittalSubmittedAt} onChange={(e) => setSubmittalSubmittedAt(e.target.value)} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="submittal-notes" className="text-sm font-medium">
-                Notes
-              </label>
-              <Textarea
-                id="submittal-notes"
-                value={submittalNotes}
-                onChange={(e) => setSubmittalNotes(e.target.value)}
-                rows={4}
-                placeholder="Capture resubmittal comments, backup requirements, or review conditions."
-              />
-            </div>
-            <FormError error={submittalError} />
-            <Button type="submit" disabled={submittalSaving}>
-              {submittalSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving submittal…
-                </>
-              ) : (
-                "Add submittal"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
+          <Button
+            type="button"
+            variant="outline"
+            id="submittal-add"
+            data-testid="project-record-open-submittal"
+            onClick={flowsByType.submittal.open}
+          >
+            <FileText className="mr-1.5 h-4 w-4" />
+            Add a submittal
+          </Button>
         ) : null}
-
         {shows("deliverable") ? (
-        <TabsContent value="deliverable" className="pt-4">
-          <form className="space-y-4" onSubmit={handleDeliverableSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="deliverable-title" className="text-sm font-medium">
-                Deliverable title
-              </label>
-              <Input
-                id="deliverable-title"
-                value={deliverableTitle}
-                onChange={(e) => setDeliverableTitle(e.target.value)}
-                placeholder="Draft board-ready safety memo"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="deliverable-summary" className="text-sm font-medium">
-                Summary
-              </label>
-              <Textarea
-                id="deliverable-summary"
-                value={deliverableSummary}
-                onChange={(e) => setDeliverableSummary(e.target.value)}
-                rows={4}
-                placeholder="What needs to be delivered, for whom, and at what quality bar?"
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-2">
-                <label htmlFor="deliverable-owner" className="text-sm font-medium">
-                  Owner
-                </label>
-                <Input
-                  id="deliverable-owner"
-                  value={deliverableOwner}
-                  onChange={(e) => setDeliverableOwner(e.target.value)}
-                  placeholder="Elena / Owen / Consultant"
-                />
-                <p className="text-xs text-muted-foreground">Free text — a consultant, a partner agency, anyone without an account here.</p>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="deliverable-assignee" className="text-sm font-medium">
-                  Assignee
-                </label>
-                <AssigneePicker
-                  id="deliverable-assignee"
-                  label="Assignee"
-                  workspaceId={workspaceId}
-                  value={deliverableAssignee}
-                  onChange={setDeliverableAssignee}
-                />
-                <p className="text-xs text-muted-foreground">A teammate in this workspace. Optional, and separate from Owner.</p>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="deliverable-due" className="text-sm font-medium">
-                  Due date
-                </label>
-                <Input id="deliverable-due" type="date" value={deliverableDueDate} onChange={(e) => setDeliverableDueDate(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="deliverable-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="deliverable-status" className="module-select" value={deliverableStatus} onChange={(e) => setDeliverableStatus(e.target.value)}>
-                  <option value="not_started">Not started</option>
-                  <option value="in_progress">In progress</option>
-                  <option value="blocked">Blocked</option>
-                  <option value="complete">Complete</option>
-                </select>
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="deliverable-budget" className="text-sm font-medium">
-                  Budget (not to exceed)
-                </label>
-                <Input
-                  id="deliverable-budget"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={deliverableBudget}
-                  onChange={(e) => setDeliverableBudget(e.target.value)}
-                  placeholder="Optional — leave blank if not budgeted"
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="deliverable-percent-complete" className="text-sm font-medium">
-                  Percent complete
-                </label>
-                <Input
-                  id="deliverable-percent-complete"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={deliverablePercentComplete}
-                  onChange={(e) => setDeliverablePercentComplete(e.target.value)}
-                  placeholder="Optional — 0 to 100"
-                />
-              </div>
-            </div>
-            <FormError error={deliverableError} />
-            <Button type="submit" disabled={deliverableSaving}>
-              {deliverableSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving deliverable…
-                </>
-              ) : (
-                "Add deliverable"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
+          <Button
+            type="button"
+            variant="outline"
+            id="deliverable-add"
+            data-testid="project-record-open-deliverable"
+            onClick={flowsByType.deliverable.open}
+          >
+            <ClipboardCheck className="mr-1.5 h-4 w-4" />
+            Add a deliverable
+          </Button>
         ) : null}
-
         {shows("risk") ? (
-        <TabsContent value="risk" className="pt-4">
-          <form className="space-y-4" onSubmit={handleRiskSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="risk-title" className="text-sm font-medium">
-                Risk title
-              </label>
-              <Input id="risk-title" value={riskTitle} onChange={(e) => setRiskTitle(e.target.value)} placeholder="Schedule compression may weaken review quality" required />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="risk-description" className="text-sm font-medium">
-                Description
-              </label>
-              <Textarea id="risk-description" value={riskDescription} onChange={(e) => setRiskDescription(e.target.value)} rows={4} placeholder="Describe the risk and what could go wrong if it is ignored." />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="risk-severity" className="text-sm font-medium">
-                  Severity
-                </label>
-                <select id="risk-severity" className="module-select" value={riskSeverity} onChange={(e) => setRiskSeverity(e.target.value)}>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="risk-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="risk-status" className="module-select" value={riskStatus} onChange={(e) => setRiskStatus(e.target.value)}>
-                  <option value="open">Open</option>
-                  <option value="watch">Watch</option>
-                  <option value="mitigated">Mitigated</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="risk-mitigation" className="text-sm font-medium">
-                Mitigation
-              </label>
-              <Textarea id="risk-mitigation" value={riskMitigation} onChange={(e) => setRiskMitigation(e.target.value)} rows={4} placeholder="What is the mitigation path, owner, or contingency?" />
-            </div>
-            <FormError error={riskError} />
-            <Button type="submit" disabled={riskSaving}>
-              {riskSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving risk…
-                </>
-              ) : (
-                "Add risk"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
+          <Button
+            type="button"
+            variant="outline"
+            id="risk-add"
+            data-testid="project-record-open-risk"
+            onClick={flowsByType.risk.open}
+          >
+            <AlertTriangle className="mr-1.5 h-4 w-4" />
+            Log a risk
+          </Button>
         ) : null}
-
         {shows("issue") ? (
-        <TabsContent value="issue" className="pt-4">
-          <form className="space-y-4" onSubmit={handleIssueSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="issue-title" className="text-sm font-medium">
-                Issue title
-              </label>
-              <Input id="issue-title" value={issueTitle} onChange={(e) => setIssueTitle(e.target.value)} placeholder="Traffic count package still missing" required />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="issue-description" className="text-sm font-medium">
-                Description
-              </label>
-              <Textarea id="issue-description" value={issueDescription} onChange={(e) => setIssueDescription(e.target.value)} rows={4} placeholder="Describe the active blocker or operational problem." />
-            </div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-2">
-                <label htmlFor="issue-severity" className="text-sm font-medium">
-                  Severity
-                </label>
-                <select id="issue-severity" className="module-select" value={issueSeverity} onChange={(e) => setIssueSeverity(e.target.value)}>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="issue-status" className="text-sm font-medium">
-                  Status
-                </label>
-                <select id="issue-status" className="module-select" value={issueStatus} onChange={(e) => setIssueStatus(e.target.value)}>
-                  <option value="open">Open</option>
-                  <option value="in_progress">In progress</option>
-                  <option value="blocked">Blocked</option>
-                  <option value="resolved">Resolved</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="issue-owner" className="text-sm font-medium">
-                  Owner
-                </label>
-                <Input id="issue-owner" value={issueOwner} onChange={(e) => setIssueOwner(e.target.value)} placeholder="Priya / Consultant" />
-                <p className="text-xs text-muted-foreground">Free text — anyone without an account here.</p>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="issue-assignee" className="text-sm font-medium">
-                  Assignee
-                </label>
-                <AssigneePicker
-                  id="issue-assignee"
-                  label="Assignee"
-                  workspaceId={workspaceId}
-                  value={issueAssignee}
-                  onChange={setIssueAssignee}
-                />
-                <p className="text-xs text-muted-foreground">A teammate in this workspace. Optional, and separate from Owner.</p>
-              </div>
-            </div>
-            <FormError error={issueError} />
-            <Button type="submit" disabled={issueSaving}>
-              {issueSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving issue…
-                </>
-              ) : (
-                "Add issue"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
+          <Button
+            type="button"
+            variant="outline"
+            id="issue-add"
+            data-testid="project-record-open-issue"
+            onClick={flowsByType.issue.open}
+          >
+            <Siren className="mr-1.5 h-4 w-4" />
+            Log an issue
+          </Button>
         ) : null}
-
         {shows("decision") ? (
-        <TabsContent value="decision" className="pt-4">
-          <form className="space-y-4" onSubmit={handleDecisionSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="decision-title" className="text-sm font-medium">
-                Decision title
-              </label>
-              <Input id="decision-title" value={decisionTitle} onChange={(e) => setDecisionTitle(e.target.value)} placeholder="Use VMT-first narrative for public packet" required />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="decision-rationale" className="text-sm font-medium">
-                Rationale
-              </label>
-              <Textarea id="decision-rationale" value={decisionRationale} onChange={(e) => setDecisionRationale(e.target.value)} rows={4} placeholder="Why was this decision made, on what basis, and with what tradeoffs?" required />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="decision-status" className="text-sm font-medium">
-                  Decision state
-                </label>
-                <select id="decision-status" className="module-select" value={decisionStatus} onChange={(e) => setDecisionStatus(e.target.value)}>
-                  <option value="proposed">Proposed</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="decision-date" className="text-sm font-medium">
-                  Decision date
-                </label>
-                <Input id="decision-date" type="datetime-local" value={decisionAt} onChange={(e) => setDecisionAt(e.target.value)} />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="decision-impact" className="text-sm font-medium">
-                Impact summary
-              </label>
-              <Textarea id="decision-impact" value={decisionImpact} onChange={(e) => setDecisionImpact(e.target.value)} rows={4} placeholder="What downstream scope, quality, schedule, or policy effects does this decision create?" />
-            </div>
-            <FormError error={decisionError} />
-            <Button type="submit" disabled={decisionSaving}>
-              {decisionSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving decision…
-                </>
-              ) : (
-                "Add decision"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
+          <Button
+            type="button"
+            variant="outline"
+            id="decision-add"
+            data-testid="project-record-open-decision"
+            onClick={flowsByType.decision.open}
+          >
+            <Scale className="mr-1.5 h-4 w-4" />
+            Record a decision
+          </Button>
         ) : null}
-
         {shows("meeting") ? (
-        <TabsContent value="meeting" className="pt-4">
-          <form className="space-y-4" onSubmit={handleMeetingSubmit}>
-            <div className="space-y-2">
-              <label htmlFor="meeting-title" className="text-sm font-medium">
-                Meeting title
-              </label>
-              <Input id="meeting-title" value={meetingTitle} onChange={(e) => setMeetingTitle(e.target.value)} placeholder="Weekly project sync" required />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="meeting-at" className="text-sm font-medium">
-                  Meeting time
-                </label>
-                <Input id="meeting-at" type="datetime-local" value={meetingAt} onChange={(e) => setMeetingAt(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="meeting-attendees" className="text-sm font-medium">
-                  Attendees
-                </label>
-                <Input id="meeting-attendees" value={meetingAttendees} onChange={(e) => setMeetingAttendees(e.target.value)} placeholder="Nathaniel, Elena, Owen" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="meeting-notes" className="text-sm font-medium">
-                Notes
-              </label>
-              <Textarea id="meeting-notes" value={meetingNotes} onChange={(e) => setMeetingNotes(e.target.value)} rows={5} placeholder="Key points, action items, and open questions." />
-            </div>
-            <FormError error={meetingError} />
-            <Button type="submit" disabled={meetingSaving}>
-              {meetingSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" /> Saving meeting…
-                </>
-              ) : (
-                "Add meeting"
-              )}
-            </Button>
-          </form>
-        </TabsContent>
+          <Button
+            type="button"
+            variant="outline"
+            id="meeting-add"
+            data-testid="project-record-open-meeting"
+            onClick={flowsByType.meeting.open}
+          >
+            <MessagesSquare className="mr-1.5 h-4 w-4" />
+            Add meeting notes
+          </Button>
         ) : null}
-      </Tabs>
+      </div>
+
+      {offered.map((type) => (
+        <React.Fragment key={type}>{flowsByType[type].sheet}</React.Fragment>
+      ))}
     </article>
   );
 }

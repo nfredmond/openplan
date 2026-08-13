@@ -236,7 +236,7 @@ async function main() {
       ),
       publicPage.getByRole('button', { name: /^submit feedback$/i }).click(),
     ]);
-    await publicPage.getByText(/Your input has been received/i).waitFor({ timeout: 20000 });
+    await publicPage.getByText(/Thank you\. We have what you sent\./i).waitFor({ timeout: 20000 });
     notes.push('Submitted public feedback through the share portal and received the public success state.');
     await screenshot(publicPage, 'local-engagement-report-handoff-01-public-submit');
 

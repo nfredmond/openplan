@@ -39,8 +39,26 @@ import { useRouter } from "next/navigation";
 import { CalendarRange, Loader2, PencilLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useConfirmDialog } from "@/components/ui/confirm-dialog";
+import { GuidedFlow, GuidedFlowRow, useGuidedFlow } from "@/components/ui/guided-flow";
 import { Input } from "@/components/ui/input";
 import type { RtpHorizonBandInput } from "@/lib/rtp/fiscal-constraint";
+
+/**
+ * WHY ADDING A PERIOD IS A SHEET AND EDITING ONE IS NOT (2026-08-13).
+ *
+ * The financial element stacks three long editors on one page, and this one is
+ * the entry point to all of them: nothing else in the element can be filled in
+ * until at least one period exists. Adding a period is a bounded create — a
+ * name, two years, two choices — that ends and hands the planner back to the
+ * list, so it belongs in a `GuidedFlow`.
+ *
+ * Editing an existing period does NOT. The per-period form opens IN THE ROW it
+ * belongs to, beside the years and the assumed spend year it is changing, and
+ * beside any refusal the server attached to that row. Covering the list of
+ * periods with a modal that edits one of them takes away the timeline the
+ * planner is reading while they decide. That is rule R1, and it is why this
+ * file still contains a `<form>`.
+ */
 
 /**
  * The band shape is imported, not restated. The fiscal-constraint engine and
@@ -472,7 +490,6 @@ function HorizonBandForm({
 export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizonBandEditorProps) {
   const router = useRouter();
   const { confirm, confirmDialog } = useConfirmDialog();
-  const [isAdding, setIsAdding] = useState(false);
   const [editingBandId, setEditingBandId] = useState<string | null>(null);
   const [pendingBandId, setPendingBandId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -497,6 +514,56 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
     return error && error.bandId === bandId ? error.message : null;
   }
 
+  /**
+   * The write itself, THROWING on refusal.
+   *
+   * Two callers need the same request and two different failure shapes: the
+   * inline edit form wants the message scoped to its row, the add sheet wants
+   * it inside the sheet. Extracting the request means the refusal parsing —
+   * every field the server can put words in, in the server's order — is written
+   * once and cannot drift between them.
+   */
+  async function writeBand(values: BandValues, bandId: string | null) {
+    const response = await fetch(`/api/rtp-cycles/${rtpCycleId}/horizon-bands`, {
+      method: bandId ? "PATCH" : "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        ...(bandId ? { bandId } : {}),
+        label: values.label,
+        startYear: values.startYear,
+        endYear: values.endYear,
+        // null, not undefined: clearing this field means "go back to assuming
+        // the midpoint", which an omitted key would silently decline to do.
+        escalationTargetYear: values.escalationTargetYear,
+        costEstimateBasis: values.costEstimateBasis,
+        // One PAST the highest in use, not the count. After a removal the
+        // count collides with a sort order already taken, and
+        // `buildRtpFiscalConstraint` sorts bands by `sortOrder` first — two
+        // periods sharing one would leave their order decided by the tie-
+        // breakers rather than by the agency.
+        ...(bandId ? {} : { sortOrder: nextSortOrder(bands) }),
+      }),
+    });
+
+    // `.catch` because a refusal is not guaranteed to carry a JSON body — a
+    // 413, a proxy error page or an empty response would otherwise surface a
+    // JSON parse error in place of the reason the write was refused.
+    const payload = (await response.json().catch(() => ({}))) as {
+      error?: unknown;
+      details?: unknown;
+      hint?: unknown;
+      created?: unknown;
+      record?: unknown;
+    };
+    if (!response.ok) {
+      // A duplicate period name also answers 409 with two parts, and the
+      // second one is the part that explains why two periods may not share a
+      // name. Both are surfaced word-for-word.
+      throw new Error(describeWriteRefusal(payload, response.status, "Saving this planning period"));
+    }
+    return payload;
+  }
+
   async function submitBand(values: BandValues, bandId: string | null) {
     setError(null);
     setNotice(null);
@@ -504,50 +571,13 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
     setPendingBandId(bandId);
 
     try {
-      const response = await fetch(`/api/rtp-cycles/${rtpCycleId}/horizon-bands`, {
-        method: bandId ? "PATCH" : "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...(bandId ? { bandId } : {}),
-          label: values.label,
-          startYear: values.startYear,
-          endYear: values.endYear,
-          // null, not undefined: clearing this field means "go back to assuming
-          // the midpoint", which an omitted key would silently decline to do.
-          escalationTargetYear: values.escalationTargetYear,
-          costEstimateBasis: values.costEstimateBasis,
-          // One PAST the highest in use, not the count. After a removal the
-          // count collides with a sort order already taken, and
-          // `buildRtpFiscalConstraint` sorts bands by `sortOrder` first — two
-          // periods sharing one would leave their order decided by the tie-
-          // breakers rather than by the agency.
-          ...(bandId ? {} : { sortOrder: nextSortOrder(bands) }),
-        }),
-      });
-
-      // `.catch` because a refusal is not guaranteed to carry a JSON body — a
-      // 413, a proxy error page or an empty response would otherwise surface a
-      // JSON parse error in place of the reason the write was refused.
-      const payload = (await response.json().catch(() => ({}))) as {
-        error?: unknown;
-        details?: unknown;
-        hint?: unknown;
-        created?: unknown;
-        record?: unknown;
-      };
-      if (!response.ok) {
-        // A duplicate period name also answers 409 with two parts, and the
-        // second one is the part that explains why two periods may not share a
-        // name. Both are surfaced word-for-word.
-        throw new Error(describeWriteRefusal(payload, response.status, "Saving this planning period"));
-      }
+      const payload = await writeBand(values, bandId);
 
       // A 201 that wrote the row and could not read it back is a SUCCESS whose
       // consequence is invisible — the refresh below cannot show what the
       // database will not hand over. Say so, or the planner adds it twice.
       setNotice(describeUnreadableCreate(payload));
 
-      setIsAdding(false);
       setEditingBandId(null);
       router.refresh();
     } catch (caught) {
@@ -620,6 +650,210 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
     }
   }
 
+  /**
+   * Adding a period, as two questions.
+   *
+   * The validation the inline form did by hand is now DECLARED: `label`,
+   * `startYear` and `endYear` are required fields of their steps, and the two
+   * relationships between the years are `check`s. The primitive runs every
+   * step's checks at submit time whatever step is on screen, and walks the
+   * planner back to the one that failed — so a bad escalation year cannot be
+   * hidden behind a Next press, which is the class of defect that shipped on
+   * the public portal in this same week.
+   */
+  const addFlow = useGuidedFlow<{
+    label: string;
+    startYear: string;
+    endYear: string;
+    escalationTargetYear: string;
+    costEstimateBasis: RtpHorizonBandInput["costEstimateBasis"];
+  }>({
+    id: "rtp-band-new",
+    title: "Add a planning period",
+    submitLabel: "Add period",
+    initialValues: EMPTY_DRAFT,
+    steps: [
+      {
+        id: "years",
+        title: "What is this period called, and which years does it cover?",
+        hint: "A planning period is a span of years. Money raised in it pays for what is built in it.",
+        fields: [
+          {
+            name: "label",
+            label: "Name",
+            required: true,
+            requiredMessage: "Give this period a name, so costs and revenue can be attributed to it.",
+          },
+          {
+            name: "startYear",
+            label: "First year",
+            required: true,
+            requiredMessage: "Enter the first year of this period.",
+          },
+          {
+            name: "endYear",
+            label: "Last year",
+            required: true,
+            requiredMessage: "Enter the last year of this period.",
+          },
+        ],
+        check: (values) => {
+          const startYear = parseOptionalYear(values.startYear);
+          const endYear = parseOptionalYear(values.endYear);
+          if (startYear === null || endYear === null) return null;
+          if (endYear < startYear) {
+            return {
+              field: "endYear",
+              message: "The last year of a period cannot come before its first year.",
+            };
+          }
+          return null;
+        },
+        render: (flow) => (
+          <>
+            <GuidedFlowRow
+              flow={flow}
+              name="label"
+              label="What this period is called"
+              hint="Your agency's own name for it — “First ten years”, “2035–2050”, “Phase 2”. It appears on every financial table in this plan."
+            >
+              <Input {...flow.text("label")} placeholder="First ten years" maxLength={LABEL_MAX_LENGTH} />
+            </GuidedFlowRow>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <GuidedFlowRow flow={flow} name="startYear" label="First year">
+                <Input
+                  {...flow.text("startYear")}
+                  type="number"
+                  inputMode="numeric"
+                  min={YEAR_MIN}
+                  max={YEAR_MAX}
+                />
+              </GuidedFlowRow>
+              <GuidedFlowRow flow={flow} name="endYear" label="Last year">
+                <Input
+                  {...flow.text("endYear")}
+                  type="number"
+                  inputMode="numeric"
+                  min={YEAR_MIN}
+                  max={YEAR_MAX}
+                />
+              </GuidedFlowRow>
+            </div>
+          </>
+        ),
+      },
+      {
+        id: "money",
+        title: "When is money in this period treated as spent?",
+        hint: "This decides how every escalated dollar in the period is calculated.",
+        fields: [
+          { name: "escalationTargetYear", label: "Year money is treated as spent" },
+          { name: "costEstimateBasis", label: "How costs are reported", required: true },
+        ],
+        check: (values) => {
+          const startYear = parseOptionalYear(values.startYear);
+          const endYear = parseOptionalYear(values.endYear);
+          const target = parseOptionalYear(values.escalationTargetYear);
+          if (target === null || startYear === null || endYear === null) return null;
+          if (target < startYear || target > endYear) {
+            return {
+              field: "escalationTargetYear",
+              message: `The year money is treated as spent has to fall inside this period — between ${startYear} and ${endYear}.`,
+            };
+          }
+          return null;
+        },
+        render: (flow) => {
+          const startYear = parseOptionalYear(flow.values.startYear);
+          const endYear = parseOptionalYear(flow.values.endYear);
+          const target = parseOptionalYear(flow.values.escalationTargetYear);
+          // Live, so the assumption is visible while the years are still being
+          // typed. A blank box gives a planner no way to know an assumption is
+          // being made on their behalf.
+          const previewMidpoint =
+            startYear !== null && endYear !== null && endYear >= startYear
+              ? bandMidpoint(startYear, endYear)
+              : null;
+          const selectedBasis = COST_BASIS_OPTIONS.find(
+            (option) => option.value === flow.values.costEstimateBasis
+          );
+
+          return (
+            <>
+              <GuidedFlowRow
+                flow={flow}
+                name="escalationTargetYear"
+                label="Year money in this period is treated as spent (optional)"
+              >
+                <Input
+                  {...flow.text("escalationTargetYear")}
+                  type="number"
+                  inputMode="numeric"
+                  min={YEAR_MIN}
+                  max={YEAR_MAX}
+                  placeholder={
+                    previewMidpoint === null
+                      ? "Leave blank to use the middle of the period"
+                      : String(previewMidpoint)
+                  }
+                />
+                <p className="text-[0.78rem] text-muted-foreground">
+                  {target !== null ? (
+                    <>Costs and revenue in this period will be escalated to {target} dollars.</>
+                  ) : previewMidpoint !== null ? (
+                    <>
+                      Leave this blank and the middle of the period &mdash;{" "}
+                      <strong>{previewMidpoint}</strong> &mdash; is assumed, and every table says so.
+                    </>
+                  ) : (
+                    <>Leave this blank and the middle of the period is assumed, and every table says so.</>
+                  )}
+                </p>
+              </GuidedFlowRow>
+
+              <GuidedFlowRow flow={flow} name="costEstimateBasis" label="How costs are reported for this period">
+                <select {...flow.text("costEstimateBasis")} className={SELECT_CLASS}>
+                  {COST_BASIS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {selectedBasis ? (
+                  <p className="text-[0.78rem] text-muted-foreground">{selectedBasis.hint}</p>
+                ) : null}
+              </GuidedFlowRow>
+            </>
+          );
+        },
+      },
+    ],
+    onSubmit: async (draft) => {
+      setError(null);
+      setNotice(null);
+      const startYear = parseOptionalYear(draft.startYear);
+      const endYear = parseOptionalYear(draft.endYear);
+      // Belt and braces: the steps' own checks have already refused a missing
+      // year, so this cannot be reached — but a number the server would reject
+      // must never leave here as `null`.
+      if (startYear === null || endYear === null) {
+        return "Enter both a first year and a last year for this period.";
+      }
+      const payload = await writeBand(
+        {
+          label: draft.label.trim(),
+          startYear,
+          endYear,
+          escalationTargetYear: parseOptionalYear(draft.escalationTargetYear),
+          costEstimateBasis: draft.costEstimateBasis,
+        },
+        null
+      );
+      setNotice(describeUnreadableCreate(payload));
+      router.refresh();
+    },
+  });
+
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -630,15 +864,15 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
             belongs to one of them.
           </p>
         </div>
-        {canWrite && orderedBands.length > 0 && !isAdding ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => setIsAdding(true)}>
+        {canWrite && orderedBands.length > 0 ? (
+          <Button type="button" variant="outline" size="sm" onClick={addFlow.open}>
             <Plus className="mr-1.5 h-4 w-4" />
             Add a period
           </Button>
         ) : null}
       </div>
 
-      {orderedBands.length === 0 && !isAdding ? (
+      {orderedBands.length === 0 ? (
         <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-center">
           <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
             <CalendarRange className="h-5 w-5" />
@@ -656,7 +890,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
             years for.
           </p>
           {canWrite ? (
-            <Button type="button" size="sm" className="mt-4" onClick={() => setIsAdding(true)}>
+            <Button type="button" size="sm" className="mt-4" onClick={addFlow.open}>
               <Plus className="mr-1.5 h-4 w-4" />
               Add the first period
             </Button>
@@ -679,7 +913,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
 
       {/* A failure with no row to attach to — a create, or a refusal after the
           edited row stopped being rendered — still has to be visible. */}
-      {errorFor(null) && !isAdding ? (
+      {errorFor(null) ? (
         <p
           role="alert"
           className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300"
@@ -751,7 +985,6 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
                         disabled={isSaving}
                         onClick={() => {
                           setEditingBandId(band.id);
-                          setIsAdding(false);
                           setError(null);
                         }}
                       >
@@ -790,22 +1023,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
         </ul>
       ) : null}
 
-      {isAdding ? (
-        <HorizonBandForm
-          idPrefix="rtp-band-new"
-          heading="Add a planning period"
-          initialDraft={EMPTY_DRAFT}
-          submitLabel="Add period"
-          isSaving={isSaving && pendingBandId === null}
-          isBlocked={isSaving && pendingBandId !== null}
-          serverError={errorFor(null)}
-          onSubmit={(values) => void submitBand(values, null)}
-          onCancel={() => {
-            setIsAdding(false);
-            setError(null);
-          }}
-        />
-      ) : null}
+      <GuidedFlow flow={addFlow} />
       {confirmDialog}
     </section>
   );

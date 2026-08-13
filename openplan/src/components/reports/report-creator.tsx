@@ -1,13 +1,51 @@
 "use client";
 
+/**
+ * Making a new report packet, as three questions instead of a wall of fields.
+ *
+ * WHY THIS IS A SHEET AND NOT A FORM ON THE PAGE. `/reports` is a place you go
+ * to READ your reports. Until this change the first thing on that page was a
+ * ten-control form for making another one — project, title, type, summary, a
+ * modelling-evidence select, and a scrolling list of analysis runs — painted
+ * open whether or not anybody came to make anything. Creating a report is
+ * episodic: you do it, it ends, and it hands you back to the list. That is
+ * exactly the shape `GuidedFlow` exists for.
+ *
+ * WHAT SURVIVED THE MOVE, DELIBERATELY. Every field, every default, and every
+ * disclosure the old form carried:
+ *   - the stale-packet guidance for the chosen project, including the link to
+ *     the report it suggests you read first — the whole point of that panel is
+ *     to talk somebody OUT of creating a duplicate, so it has to be beside the
+ *     project picker, on the first step, before anything is typed;
+ *   - the county-run default (the newest run in this workspace that carries a
+ *     claim decision) and the claim-status label, reason and validation
+ *     tally beside it. A report that cites a screening-grade run must say so
+ *     while it is being attached, not afterwards;
+ *   - the suggested title, shown live, and the promise that leaving the box
+ *     blank sends that exact title rather than an empty one;
+ *   - the workspace filter on both run lists, and the pruning of a chosen run
+ *     when the project moves to another workspace.
+ *
+ * WHY THE PRUNING MOVED FROM AN EFFECT TO THE onChange. The old component
+ * pruned run selections in a `useEffect` on the derived workspace id. The flow
+ * owns its answers, so the pruning happens where the project actually changes —
+ * one place, no render-loop, and nothing to keep in sync.
+ */
+
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Check, FilePlus2, Loader2, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Check, FilePlus2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/state-block";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowController,
+} from "@/components/ui/guided-flow";
 import {
   REPORT_TYPE_OPTIONS,
   defaultReportTitle,
@@ -54,6 +92,9 @@ type ProjectReportGuidance = {
   recommendedReportId: string | null;
   recommendedReportTitle: string | null;
 };
+
+const SELECT_CLASS =
+  "flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35";
 
 function formatReportCountLabel(count: number) {
   return `${count} report record${count === 1 ? "" : "s"}`;
@@ -132,6 +173,15 @@ function formatValidationSummary(value: Record<string, unknown> | null) {
   return parts.length > 0 ? parts.join(" / ") : null;
 }
 
+type ReportFlowValues = {
+  projectId: string;
+  reportType: ReportType;
+  title: string;
+  summary: string;
+  modelingCountyRunId: string;
+  runIds: string[];
+};
+
 export function ReportCreator({
   projects,
   runs,
@@ -144,144 +194,382 @@ export function ReportCreator({
   reportGuidanceByProject?: Record<string, ProjectReportGuidance>;
 }) {
   const router = useRouter();
-  const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [reportType, setReportType] = useState<ReportType>("project_status");
-  const [selectedRunIds, setSelectedRunIds] = useState<string[]>([]);
-  const [modelingCountyRunId, setModelingCountyRunId] = useState(() =>
-    pickDefaultModelingCountyRunId(projects[0]?.workspace_id ?? null, modelingCountyRuns)
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const selectedProject =
-    projects.find((project) => project.id === projectId) ?? null;
-  const selectedWorkspaceId = selectedProject?.workspace_id ?? null;
-  const availableRuns = useMemo(
-    () =>
-      selectedProject
-        ? runs.filter((run) => run.workspace_id === selectedProject.workspace_id)
-        : [],
-    [runs, selectedProject]
+  const initialValues = useMemo<ReportFlowValues>(
+    () => ({
+      projectId: projects[0]?.id ?? "",
+      reportType: "project_status",
+      title: "",
+      summary: "",
+      modelingCountyRunId: pickDefaultModelingCountyRunId(
+        projects[0]?.workspace_id ?? null,
+        modelingCountyRuns
+      ),
+      runIds: [],
+    }),
+    [projects, modelingCountyRuns]
   );
-  const availableModelingCountyRuns = useMemo(
-    () =>
-      selectedWorkspaceId
-        ? modelingCountyRuns.filter((run) => run.workspace_id === selectedWorkspaceId)
-        : [],
-    [modelingCountyRuns, selectedWorkspaceId]
-  );
-  const selectedModelingCountyRun =
-    availableModelingCountyRuns.find((run) => run.id === modelingCountyRunId) ?? null;
-  const selectedModelingValidationSummary = formatValidationSummary(
-    selectedModelingCountyRun?.validationSummary ?? null
-  );
-  const selectedProjectGuidance = projectId
-    ? reportGuidanceByProject[projectId] ?? null
-    : null;
-  const suggestedTitle = selectedProject
-    ? defaultReportTitle(selectedProject.name, reportType)
-    : "Select a project first";
 
-  useEffect(() => {
-    setSelectedRunIds((current) =>
-      current.filter((runId) =>
-        runs.some(
-          (run) =>
-            run.id === runId &&
-            (!selectedWorkspaceId ||
-              run.workspace_id === selectedWorkspaceId)
-        )
-      )
-    );
-  }, [selectedWorkspaceId, runs]);
+  function projectFor(values: ReportFlowValues) {
+    return projects.find((project) => project.id === values.projectId) ?? null;
+  }
 
-  useEffect(() => {
-    setModelingCountyRunId((current) => {
-      if (
-        current &&
-        availableModelingCountyRuns.some((run) => run.id === current)
-      ) {
-        return current;
-      }
+  function suggestedTitleFor(values: ReportFlowValues) {
+    const project = projectFor(values);
+    return project ? defaultReportTitle(project.name, values.reportType) : "Select a project first";
+  }
 
-      return pickDefaultModelingCountyRunId(selectedWorkspaceId, modelingCountyRuns);
+  /**
+   * Moving the project moves the workspace, and a run belongs to exactly one.
+   * Anything chosen for the old workspace is dropped rather than sent to a
+   * server that would refuse it — and the county-run default is re-picked for
+   * the new one, so the honest default follows the project.
+   */
+  function chooseProject(flow: GuidedFlowController<ReportFlowValues>, nextProjectId: string) {
+    const workspaceId = projects.find((project) => project.id === nextProjectId)?.workspace_id ?? null;
+    flow.setValues({
+      projectId: nextProjectId,
+      runIds: flow.values.runIds.filter((runId) =>
+        runs.some((run) => run.id === runId && (!workspaceId || run.workspace_id === workspaceId))
+      ),
+      modelingCountyRunId: pickDefaultModelingCountyRunId(workspaceId, modelingCountyRuns),
     });
-  }, [availableModelingCountyRuns, modelingCountyRuns, selectedWorkspaceId]);
+  }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+  const flow = useGuidedFlow<ReportFlowValues>({
+    id: "report-creator",
+    title: "New report",
+    description: "A report packet gathers what you have decided and what backs it up, in one place.",
+    submitLabel: "Create report",
+    initialValues,
+    steps: [
+      {
+        id: "project",
+        title: "Which project is this report about?",
+        hint: "Reports live on a project, so the packet and its history stay with the work.",
+        fields: [
+          {
+            name: "projectId",
+            label: "Project",
+            required: true,
+            requiredMessage: "Pick the project this report is about.",
+          },
+        ],
+        render: (flowState) => {
+          const guidance = flowState.values.projectId
+            ? reportGuidanceByProject[flowState.values.projectId] ?? null
+            : null;
 
-    try {
+          return (
+            <>
+              <GuidedFlowRow flow={flowState} name="projectId" label="Project">
+                <select
+                  {...flowState.fieldProps("projectId")}
+                  className={SELECT_CLASS}
+                  value={flowState.values.projectId}
+                  onChange={(event) => chooseProject(flowState, event.target.value)}
+                >
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </GuidedFlowRow>
+
+              {guidance ? (
+                <div
+                  className={`rounded-[0.5rem] border px-4 py-3 text-sm ${
+                    guidance.refreshRecommendedCount > 0 || guidance.noPacketCount > 0
+                      ? "border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
+                      : guidance.comparisonBackedCount > 0
+                        ? "border-sky-300/70 bg-sky-50 text-sky-950 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100"
+                        : "border-border/70 bg-muted/35 text-foreground"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 h-4.5 w-4.5 shrink-0" />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <p className="font-semibold">
+                        This project already has {formatReportCountLabel(guidance.reportCount)}.
+                      </p>
+                      <p className="text-xs leading-relaxed text-current/80">
+                        {formatGuidanceCounts(guidance)}
+                        {guidance.recommendedReportTitle
+                          ? ` Review ${guidance.recommendedReportTitle} before creating another packet unless you need a separate report record.`
+                          : " Review the latest report before creating another packet unless you need a separate record."}
+                      </p>
+                      {guidance.recommendedReportId ? (
+                        <Link
+                          href={`/reports/${guidance.recommendedReportId}`}
+                          className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-3 py-1 text-[0.72rem] font-medium text-current transition-colors hover:border-current/35"
+                        >
+                          Open existing report
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          );
+        },
+      },
+      {
+        id: "about",
+        title: "What kind of report, and what should it be called?",
+        hint: "The type decides which sections the packet starts with. You can leave the name to us.",
+        fields: [
+          { name: "reportType", label: "Report type", required: true },
+          { name: "title", label: "Title" },
+          { name: "summary", label: "Summary" },
+        ],
+        render: (flowState) => {
+          const suggested = suggestedTitleFor(flowState.values);
+          return (
+            <>
+              <GuidedFlowRow
+                flow={flowState}
+                name="reportType"
+                label="Report type"
+                hint="Pick the closest one — you can add or remove sections later."
+              >
+                <select {...flowState.text("reportType")} className={SELECT_CLASS}>
+                  {REPORT_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </GuidedFlowRow>
+
+              <GuidedFlowRow
+                flow={flowState}
+                name="title"
+                label="Title (optional)"
+                hint={`Leave it blank and the report is called “${suggested}”.`}
+              >
+                <Input {...flowState.text("title")} placeholder={suggested} />
+              </GuidedFlowRow>
+
+              <GuidedFlowRow
+                flow={flowState}
+                name="summary"
+                label="Summary (optional)"
+                hint="One or two sentences for whoever opens this next: what it covers, what to look at."
+              >
+                <Textarea {...flowState.text("summary")} rows={3} />
+              </GuidedFlowRow>
+            </>
+          );
+        },
+      },
+      {
+        id: "evidence",
+        title: "What analysis should this report cite?",
+        hint: "Optional. You can attach analysis later, and a report with nothing attached simply makes no modelling claims.",
+        fields: [
+          { name: "modelingCountyRunId", label: "Modeling evidence" },
+          { name: "runIds", label: "Linked analysis runs" },
+        ],
+        render: (flowState) => {
+          const project = projectFor(flowState.values);
+          const workspaceId = project?.workspace_id ?? null;
+          const availableRuns = workspaceId
+            ? runs.filter((run) => run.workspace_id === workspaceId)
+            : [];
+          const availableModelingCountyRuns = workspaceId
+            ? modelingCountyRuns.filter((run) => run.workspace_id === workspaceId)
+            : [];
+          const selectedModelingCountyRun =
+            availableModelingCountyRuns.find(
+              (run) => run.id === flowState.values.modelingCountyRunId
+            ) ?? null;
+          const selectedValidationSummary = formatValidationSummary(
+            selectedModelingCountyRun?.validationSummary ?? null
+          );
+
+          function toggleRun(runId: string) {
+            flowState.setValue(
+              "runIds",
+              flowState.values.runIds.includes(runId)
+                ? flowState.values.runIds.filter((id) => id !== runId)
+                : [...flowState.values.runIds, runId]
+            );
+          }
+
+          return (
+            <>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <label
+                    htmlFor={flowState.fieldProps("modelingCountyRunId").id}
+                    className="text-[0.82rem] font-semibold"
+                  >
+                    Modeling evidence
+                  </label>
+                  {selectedModelingCountyRun?.claimStatus ? (
+                    <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                      {modelingClaimStatusLabel(selectedModelingCountyRun.claimStatus)}
+                    </span>
+                  ) : (
+                    <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Optional
+                    </span>
+                  )}
+                </div>
+                <select {...flowState.text("modelingCountyRunId")} className={SELECT_CLASS}>
+                  <option value="">Do not attach modeling evidence</option>
+                  {availableModelingCountyRuns.map((run) => (
+                    <option key={run.id} value={run.id}>
+                      {formatModelingRunOptionText(run)}
+                    </option>
+                  ))}
+                </select>
+                {selectedModelingCountyRun ? (
+                  <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3 text-sm">
+                    <p className="font-medium text-foreground">
+                      {selectedModelingCountyRun.geographyLabel ?? "County run"} ·{" "}
+                      {selectedModelingCountyRun.stage ?? "stage not recorded"}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {selectedModelingCountyRun.statusReason ??
+                        "No structured assignment claim decision is recorded for this run yet."}
+                      {selectedValidationSummary ? ` Validation: ${selectedValidationSummary}.` : ""}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {availableModelingCountyRuns.length > 0
+                      ? "Choose the county-run evidence this packet should cite, or leave it unattached when the report should not make assignment-model claims."
+                      : "No county-run modeling evidence is available for this project workspace yet."}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[0.82rem] font-semibold">Linked analysis runs</p>
+                  <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {flowState.values.runIds.length} selected
+                  </span>
+                </div>
+                <div
+                  {...flowState.fieldProps("runIds")}
+                  tabIndex={-1}
+                  className="max-h-56 space-y-1.5 overflow-y-auto rounded-xl border border-border/70 bg-background/70 p-2.5 outline-none"
+                >
+                  {availableRuns.length === 0 ? (
+                    <p className="px-2 py-3 text-center text-sm text-muted-foreground">
+                      No runs available for the selected project.
+                    </p>
+                  ) : (
+                    availableRuns.map((run) => {
+                      const isSelected = flowState.values.runIds.includes(run.id);
+                      return (
+                        <label
+                          key={run.id}
+                          className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors ${
+                            isSelected
+                              ? "border-primary/30 bg-primary/5"
+                              : "border-border/70 bg-card/70 hover:border-border hover:bg-card"
+                          }`}
+                        >
+                          <span
+                            className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors ${
+                              isSelected
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-input bg-background"
+                            }`}
+                          >
+                            {isSelected && <Check className="h-3 w-3" />}
+                          </span>
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={isSelected}
+                            onChange={() => toggleRun(run.id)}
+                          />
+                          <span className="min-w-0">
+                            <span className="block text-sm font-medium text-foreground">
+                              {run.title}
+                            </span>
+                            <span className="block text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                              {new Date(run.created_at).toLocaleString()}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </>
+          );
+        },
+      },
+    ],
+    onSubmit: async (values) => {
+      const project = projects.find((entry) => entry.id === values.projectId) ?? null;
       const response = await fetch("/api/reports", {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          projectId,
+          projectId: values.projectId,
+          // A blank title sends the suggested one, never an empty string the
+          // API would refuse — this is the promise the hint above makes.
           title:
-            title.trim() ||
-            (selectedProject ? defaultReportTitle(selectedProject.name, reportType) : title),
-          summary,
-          reportType,
-          runIds: selectedRunIds,
-          ...(modelingCountyRunId ? { modelingCountyRunId } : {}),
+            values.title.trim() ||
+            (project ? defaultReportTitle(project.name, values.reportType) : values.title),
+          summary: values.summary,
+          reportType: values.reportType,
+          runIds: values.runIds,
+          ...(values.modelingCountyRunId
+            ? { modelingCountyRunId: values.modelingCountyRunId }
+            : {}),
         }),
       });
 
-      const payload = (await response.json()) as CreateResponse & {
-        error?: string;
-      };
+      const payload = (await response.json()) as CreateResponse & { error?: string };
 
       if (!response.ok) {
         throw new Error(payload.error || "Failed to create report");
       }
 
+      // After the await, so the sheet closes before the page moves under it.
       router.refresh();
       router.push(`/reports/${payload.reportId}`);
-    } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Failed to create report"
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  function toggleRun(runId: string) {
-    setSelectedRunIds((current) =>
-      current.includes(runId)
-        ? current.filter((id) => id !== runId)
-        : [...current, runId]
-    );
-  }
+    },
+  });
 
   return (
     <article className="rounded-[0.75rem] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-      <div className="flex items-center gap-3">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
-          <FilePlus2 className="h-5 w-5" />
-        </span>
-        <div>
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-            Create
-          </p>
-          <h2 className="text-xl font-semibold tracking-tight">
-            New report packet
-          </h2>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
+            <FilePlus2 className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Create
+            </p>
+            <h2 className="text-xl font-semibold tracking-tight">New report packet</h2>
+          </div>
         </div>
+        {projects.length > 0 ? (
+          <Button type="button" onClick={flow.open}>
+            <FilePlus2 className="mr-1.5 h-4 w-4" />
+            New report
+          </Button>
+        ) : null}
       </div>
 
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        Select a project, choose a report type, and optionally attach analysis
-        runs. The report will open with a preconfigured section set and an
-        audit-ready artifact history.
+        A report packet is one place to put what you decided and what backs it up. Answer three
+        questions and it opens with its sections already set up.
       </p>
 
       {projects.length === 0 ? (
@@ -292,273 +580,9 @@ export function ReportCreator({
             compact
           />
         </div>
-      ) : (
-        <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        {/* Project selector */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="report-project"
-            className="text-[0.82rem] font-semibold"
-          >
-            Project
-          </label>
-          <select
-            id="report-project"
-            className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-            value={projectId}
-            onChange={(event) => setProjectId(event.target.value)}
-            required
-          >
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-          {selectedProjectGuidance ? (
-            <div
-              className={`rounded-[0.5rem] border px-4 py-3 text-sm ${
-                selectedProjectGuidance.refreshRecommendedCount > 0 ||
-                selectedProjectGuidance.noPacketCount > 0
-                  ? "border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100"
-                  : selectedProjectGuidance.comparisonBackedCount > 0
-                    ? "border-sky-300/70 bg-sky-50 text-sky-950 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100"
-                  : "border-border/70 bg-muted/35 text-foreground"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 h-4.5 w-4.5 shrink-0" />
-                <div className="min-w-0 flex-1 space-y-1">
-                  <p className="font-semibold">
-                    This project already has {formatReportCountLabel(selectedProjectGuidance.reportCount)}.
-                  </p>
-                  <p className="text-xs leading-relaxed text-current/80">
-                    {formatGuidanceCounts(selectedProjectGuidance)}
-                    {selectedProjectGuidance.recommendedReportTitle
-                      ? ` Review ${selectedProjectGuidance.recommendedReportTitle} before creating another packet unless you need a separate report record.`
-                      : " Review the latest report before creating another packet unless you need a separate record."}
-                  </p>
-                  {selectedProjectGuidance.recommendedReportId ? (
-                    <Link
-                      href={`/reports/${selectedProjectGuidance.recommendedReportId}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-3 py-1 text-[0.72rem] font-medium text-current transition-colors hover:border-current/35"
-                    >
-                      Open existing report
-                    </Link>
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          ) : null}
-        </div>
+      ) : null}
 
-        {/* Title + type row */}
-        <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-          <div className="space-y-1.5">
-            <label
-              htmlFor="report-title"
-              className="text-[0.82rem] font-semibold"
-            >
-              Title
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">
-                optional
-              </span>
-            </label>
-            <Input
-              id="report-title"
-              placeholder={suggestedTitle}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Leave blank to use <span className="font-medium">{suggestedTitle}</span>.
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <label
-              htmlFor="report-type"
-              className="text-[0.82rem] font-semibold"
-            >
-              Report type
-            </label>
-            <select
-              id="report-type"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={reportType}
-              onChange={(event) =>
-                setReportType(event.target.value as ReportType)
-              }
-            >
-              {REPORT_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Summary */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="report-summary"
-            className="text-[0.82rem] font-semibold"
-          >
-            Summary
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">
-              optional
-            </span>
-          </label>
-          <Textarea
-            id="report-summary"
-            placeholder="Describe what this packet covers and what reviewers should focus on."
-            value={summary}
-            onChange={(event) => setSummary(event.target.value)}
-            rows={3}
-          />
-        </div>
-
-        {/* Modeling evidence selector */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <label
-              htmlFor="report-modeling-county-run"
-              className="text-[0.82rem] font-semibold"
-            >
-              Modeling evidence
-            </label>
-            {selectedModelingCountyRun?.claimStatus ? (
-              <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                {modelingClaimStatusLabel(selectedModelingCountyRun.claimStatus)}
-              </span>
-            ) : (
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Optional
-              </span>
-            )}
-          </div>
-          <select
-            id="report-modeling-county-run"
-            className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-            value={modelingCountyRunId}
-            onChange={(event) => setModelingCountyRunId(event.target.value)}
-          >
-            <option value="">Do not attach modeling evidence</option>
-            {availableModelingCountyRuns.map((run) => (
-              <option key={run.id} value={run.id}>
-                {formatModelingRunOptionText(run)}
-              </option>
-            ))}
-          </select>
-          {selectedModelingCountyRun ? (
-            <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3 text-sm">
-              <p className="font-medium text-foreground">
-                {selectedModelingCountyRun.geographyLabel ?? "County run"} ·{" "}
-                {selectedModelingCountyRun.stage ?? "stage not recorded"}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                {selectedModelingCountyRun.statusReason ??
-                  "No structured assignment claim decision is recorded for this run yet."}
-                {selectedModelingValidationSummary
-                  ? ` Validation: ${selectedModelingValidationSummary}.`
-                  : ""}
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              {availableModelingCountyRuns.length > 0
-                ? "Choose the county-run evidence this packet should cite, or leave it unattached when the report should not make assignment-model claims."
-                : "No county-run modeling evidence is available for this project workspace yet."}
-            </p>
-          )}
-        </div>
-
-        {/* Run selector */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-[0.82rem] font-semibold">
-              Linked analysis runs
-            </label>
-            <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              {selectedRunIds.length} selected
-            </span>
-          </div>
-          <div className="max-h-56 space-y-1.5 overflow-y-auto rounded-xl border border-border/70 bg-background/70 p-2.5">
-            {availableRuns.length === 0 ? (
-              <p className="px-2 py-3 text-center text-sm text-muted-foreground">
-                No runs available for the selected project.
-              </p>
-            ) : (
-              availableRuns.map((run) => {
-                const isSelected = selectedRunIds.includes(run.id);
-                return (
-                  <label
-                    key={run.id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors ${
-                      isSelected
-                        ? "border-primary/30 bg-primary/5"
-                        : "border-border/70 bg-card/70 hover:border-border hover:bg-card"
-                    }`}
-                  >
-                    <span
-                      className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors ${
-                        isSelected
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-input bg-background"
-                      }`}
-                    >
-                      {isSelected && <Check className="h-3 w-3" />}
-                    </span>
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={isSelected}
-                      onChange={() => toggleRun(run.id)}
-                    />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium text-foreground">
-                        {run.title}
-                      </span>
-                      <span className="block text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
-                        {new Date(run.created_at).toLocaleString()}
-                      </span>
-                    </span>
-                  </label>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Error */}
-        {error ? (
-          <p className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-            {error}
-          </p>
-        ) : null}
-
-        {/* Submit */}
-        <Button
-          type="submit"
-          disabled={isSubmitting || !projectId}
-          className="w-full sm:w-auto"
-        >
-          {isSubmitting ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Creating…
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-2">
-              <FilePlus2 className="h-4 w-4" />
-              Create report
-            </span>
-          )}
-        </Button>
-        </form>
-      )}
+      <GuidedFlow flow={flow} />
     </article>
   );
 }

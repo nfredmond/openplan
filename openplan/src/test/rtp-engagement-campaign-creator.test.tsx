@@ -58,9 +58,30 @@ function stubFetch({ projectsOk = true }: { projectsOk?: boolean } = {}) {
   return { postBodies };
 }
 
+/**
+ * The creator is a guided flow now: a "New campaign" button opens a sheet whose
+ * three steps are title/type, plan target + linked project, then status and
+ * summary. `openToProjectStep` opens it and walks to the step the project
+ * picker lives on, which is where these tests do their work.
+ *
+ * WHAT THEY CANNOT PROVE: anything visual. jsdom applies no stylesheet and has
+ * no box model — sheet visibility, full-height on a phone, focus containment
+ * and background inertness are browser measurements, not assertions here.
+ * `src/test/guided-flow-jsdom-dialog-shim.ts` only makes the element mount.
+ */
+function openToProjectStep() {
+  fireEvent.click(screen.getByRole("button", { name: /^new campaign$/i }));
+  fireEvent.change(screen.getByLabelText(/Campaign title/), { target: { value: "Placeholder" } });
+  fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
+}
+
 async function createCampaign(title: string) {
+  // Back to the first step to set the real title, then forward to the end.
+  fireEvent.click(screen.getByRole("button", { name: /^back$/i }));
   fireEvent.change(screen.getByLabelText(/Campaign title/), { target: { value: title } });
-  fireEvent.click(screen.getByRole("button", { name: /Create RTP engagement target/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
+  fireEvent.click(screen.getByRole("button", { name: /^create campaign$/i }));
 }
 
 describe("the RTP-side campaign creator can link a project", () => {
@@ -73,6 +94,7 @@ describe("the RTP-side campaign creator can link a project", () => {
     const { postBodies } = stubFetch();
 
     render(<RtpEngagementCampaignCreator rtpCycleId={RTP_CYCLE_ID} chapterOptions={[]} />);
+    openToProjectStep();
 
     const projectSelect = (await screen.findByLabelText(/Linked project/)) as HTMLSelectElement;
     expect(screen.getByRole("option", { name: "Downtown Mobility Plan" })).toBeInTheDocument();
@@ -94,6 +116,7 @@ describe("the RTP-side campaign creator can link a project", () => {
     const { postBodies } = stubFetch();
 
     render(<RtpEngagementCampaignCreator rtpCycleId={RTP_CYCLE_ID} chapterOptions={[]} />);
+    openToProjectStep();
     await screen.findByLabelText(/Linked project/);
 
     await createCampaign("Whole-plan comment window");
@@ -106,6 +129,7 @@ describe("the RTP-side campaign creator can link a project", () => {
     const { postBodies } = stubFetch({ projectsOk: false });
 
     render(<RtpEngagementCampaignCreator rtpCycleId={RTP_CYCLE_ID} chapterOptions={[]} />);
+    openToProjectStep();
 
     // Unknown, not "no projects": the failure is named, and it does not gate
     // the create — the link can be made later from the campaign console.
