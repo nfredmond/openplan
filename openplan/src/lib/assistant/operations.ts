@@ -28,16 +28,13 @@ import {
 } from "@/lib/rtp/catalog";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { formatMoney } from "@/lib/money/format";
 
 function formatCurrency(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "$0";
   }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 function buildAnalysisHref(runId: string, baselineRunId?: string | null): string {

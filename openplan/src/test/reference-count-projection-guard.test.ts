@@ -206,16 +206,37 @@ describe("reference count projections", () => {
   });
 
   it("routes the project-delete precondition through the shared helper", () => {
-    const route = readFileSync(
-      path.join(process.cwd(), "src/app/api/projects/[projectId]/route.ts"),
-      "utf8"
-    );
+    const read = (relative: string) => readFileSync(path.join(process.cwd(), relative), "utf8");
 
-    // Behavioural, not textual: the route must delegate, and must therefore own
-    // no count of its own for the projection decision to have one home.
-    expect(route).toContain("countReferences");
+    // The delegation chain, followed rather than assumed. Since 2026-08-12 the
+    // counting sits behind `readProjectDeleteOutcome`, because TWO surfaces now
+    // need the same answer: the DELETE route, and the pre-flight the delete
+    // dialog calls so a planner learns what is attached BEFORE reaching for an
+    // irreversible action. A second copy of the counting would let the question
+    // and the enforcement disagree, which is worse than not asking at all.
+    const deleteRoute = read("src/app/api/projects/[projectId]/route.ts");
+    const preflightRoute = read("src/app/api/projects/[projectId]/delete-preflight/route.ts");
+    const sharedReader = read("src/lib/projects/project-delete-outcome.ts");
+
+    // The CALL, not the import. A guard that matched `import { countReferences }`
+    // stayed green with the call replaced — the same failure recorded in
+    // CLAUDE.md, reproduced by mutation while writing this.
+    expect(deleteRoute).toMatch(/await readProjectDeleteOutcome\(/);
+    expect(preflightRoute).toMatch(/await readProjectDeleteOutcome\(/);
+    expect(sharedReader).toMatch(/await countReferences\(/);
+    expect(sharedReader).toMatch(/await countConstrainedCostedPlacements\(/);
+
+    // Behavioural, not textual: neither route, nor the reader between them, may
+    // own a count of its own — that is what keeps the projection decision in
+    // one home.
     expect(
-      selectSites.filter((site) => site.file.endsWith("projects/[projectId]/route.ts") && site.isCount)
+      selectSites.filter(
+        (site) =>
+          site.isCount &&
+          (site.file.includes("projects/[projectId]/route.ts") ||
+            site.file.includes("projects/[projectId]/delete-preflight/route.ts") ||
+            site.file === "src/lib/projects/project-delete-outcome.ts")
+      )
     ).toEqual([]);
 
     // TWO counts in the helper as of 2026-08-10: the dynamic-table reference

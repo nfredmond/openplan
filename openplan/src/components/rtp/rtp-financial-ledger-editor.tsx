@@ -68,11 +68,13 @@ import { Loader2, PencilLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ExtractionProvenanceChip } from "@/components/rtp/extraction-provenance-chip";
 import {
   transcriptionDocumentHref,
   type TranscriptionRecord,
 } from "@/lib/rtp/extraction/display";
+import { formatMoney } from "@/lib/money/format";
 import { parseOptionalAmount } from "@/lib/money/optional-amount";
 import type { RtpFiscalEntryKind } from "@/lib/rtp/fiscal-constraint";
 
@@ -144,33 +146,18 @@ function isCostKind(kind: RtpFiscalEntryKind): boolean {
 /**
  * Money is written WITH cents or WITHOUT them, never with one digit of them.
  *
- * A single formatter carrying `minimumFractionDigits: 0` with
- * `maximumFractionDigits: 2` renders 1000000.5 as "$1,000,000.5" — a figure in
+ * A single formatter allowing between zero and two fraction digits renders
+ * 1000000.5 as "$1,000,000.5" — a figure in
  * an adopted financial element showing half of its cents, which reads as a typo
  * in precisely the document where a reader cannot afford to wonder. It also
  * turns an ordinary floating-point sum (0.1 + 0.2 = 0.30000000000000004) into
  * "$0.3". So the two spellings are separate formatters and the choice is made
  * per figure: a whole number of dollars is written whole, and anything else is
- * written to the cent the ledger column actually stores.
+ * written to the cent the ledger column actually stores. That is `precision:
+ * "auto"` in `src/lib/money/format.ts`, which is where the rule now lives.
  */
-const WHOLE_DOLLAR_FORMATTER = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
-const DOLLARS_AND_CENTS_FORMATTER = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
 function formatCurrency(value: number): string {
-  return Number.isInteger(value)
-    ? WHOLE_DOLLAR_FORMATTER.format(value)
-    : DOLLARS_AND_CENTS_FORMATTER.format(value);
+  return formatMoney(value, { precision: "auto" });
 }
 
 const SELECT_CLASS =
@@ -363,6 +350,7 @@ export function RtpFinancialLedgerEditor({
   transcriptions,
 }: RtpFinancialLedgerEditorProps) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [addingBandId, setAddingBandId] = useState<string | null>(null);
   const [editingLineId, setEditingLineId] = useState<string | null>(null);
   const [draft, setDraft] = useState<LineDraft>(EMPTY_DRAFT);
@@ -520,9 +508,12 @@ export function RtpFinancialLedgerEditor({
   async function handleDelete(line: RtpFinancialLedgerLine) {
     // Asked before, not undone after: the row is deleted outright, and it is
     // money in a financial element a board may already have adopted.
-    const confirmed = window.confirm(
-      `Remove “${line.sourceName}” (${formatAmount(line.amount)}) from this plan's financial element? This cannot be undone, and the fiscal-constraint check will be recomputed without it.`
-    );
+    const confirmed = await confirm({
+      headline: `Remove “${line.sourceName}” (${formatAmount(line.amount)}) from this plan's financial element?`,
+      consequence:
+        "This cannot be undone, and the fiscal-constraint check will be recomputed without it.",
+      confirmLabel: "Remove this line",
+    });
     if (!confirmed) return;
 
     await submitLedgerWrite(
@@ -918,6 +909,7 @@ export function RtpFinancialLedgerEditor({
           );
         })}
       </div>
+      {confirmDialog}
     </section>
   );
 }

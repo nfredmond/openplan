@@ -17,6 +17,7 @@ import {
   PROGRAM_DISCONTINUED_CAVEAT,
 } from "@/lib/data-sources/equity-designation/disclosure";
 import type { Justice40Determination, Justice40Status } from "@/lib/data-sources/equity-designation/types";
+import { formatMoney } from "@/lib/money/format";
 
 const REPORT_REQUEST_MAX_BODY_BYTES = BODY_LIMITS.documentJson;
 
@@ -116,8 +117,7 @@ function fmt(n: number | null | undefined): string {
 }
 
 function fmtCurrency(n: number | null | undefined): string {
-  if (n === null || n === undefined) return NOT_MEASURED;
-  return "$" + n.toLocaleString("en-US");
+  return formatMoney(n, { precision: "whole", absent: NOT_MEASURED });
 }
 
 function pct(n: number | null | undefined): string {

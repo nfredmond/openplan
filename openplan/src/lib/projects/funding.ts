@@ -3,6 +3,7 @@ import {
   uninvoicedCommittedAwardAmount,
   type BillingInvoiceRecordLike,
 } from "@/lib/invoicing/invoice-records";
+import { formatMoney } from "@/lib/money/format";
 
 export type ProjectFundingProfileLike = {
   funding_need_amount?: number | string | null;
@@ -340,11 +341,7 @@ function daysUntil(value: string | null | undefined, now: Date): number | null {
 }
 
 function formatScanCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 export function projectFundingProfileScanTone(

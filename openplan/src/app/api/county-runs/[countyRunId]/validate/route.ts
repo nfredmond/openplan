@@ -77,7 +77,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const parsedManifest = countyOnrampManifestSchema.safeParse(countyRun.manifest_json ?? null);
     if (!parsedManifest.success) {
       audit.warn("county_run_manifest_missing", { countyRunId: parsedParams.data.countyRunId });
-      return NextResponse.json({ error: "County run does not have a stored onramp manifest yet" }, { status: 400 });
+      return NextResponse.json({ error: "This county run has not brought in its worker output file yet, so there is nothing to work from." }, { status: 400 });
     }
 
     const manifest = parsedManifest.data;
@@ -92,13 +92,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const scaffold = manifest.summary.scaffold ?? null;
 
     if (!runDir) {
-      reasons.push("County run directory is not recorded in the onramp manifest.");
+      reasons.push("The worker output file does not record where this run's files were written.");
     }
     if (!runOutputDir || !(await pathExists(runOutputDir))) {
       reasons.push("County run output directory is missing, so the validator cannot be prepared yet.");
     }
     if (!countsCsvPath) {
-      reasons.push("Validation scaffold CSV path is not recorded in the onramp manifest.");
+      reasons.push("The worker output file does not record where the traffic-count template was written.");
     } else if (!(await pathExists(countsCsvPath))) {
       reasons.push("Registered scaffold CSV file was not found on disk.");
     }

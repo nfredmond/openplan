@@ -6,6 +6,7 @@ import { Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ActionFeedback } from "@/components/ui/action-feedback";
 
 export function ProjectFundingProfileEditor({
   projectId,
@@ -91,8 +92,9 @@ export function ProjectFundingProfileEditor({
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save funding profile
         </Button>
-        {message ? <p className="text-sm text-emerald-700 dark:text-emerald-300">{message}</p> : null}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        {/* One renderer for every save outcome in the product — and the roles
+            it carries are why a screen reader now hears this one at all. */}
+        <ActionFeedback state={{ busy: isSaving, error, details: null, message }} />
       </div>
     </div>
   );

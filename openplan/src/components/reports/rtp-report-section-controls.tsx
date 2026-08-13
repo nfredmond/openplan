@@ -138,12 +138,18 @@ export function RtpReportSectionControls({
 
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
-        throw new Error(payload.error || "Failed to update packet sections");
+        throw new Error(
+          payload.error || "Could not save which sections go in this board packet"
+        );
       }
 
       router.refresh();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to update packet sections");
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Could not save which sections go in this board packet"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -172,7 +178,8 @@ export function RtpReportSectionControls({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        {describeRtpPacketPresetStage(presetStage)} is the current default. You can tune the packet here, then reset back to the cycle-stage preset any time.
+        {describeRtpPacketPresetStage(presetStage)} is the current default. Choose which sections this
+        board packet includes here, and reset back to the default for this stage at any time.
       </p>
 
       {error ? <p className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}

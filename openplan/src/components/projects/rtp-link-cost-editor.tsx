@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { formatMoney } from "@/lib/money/format";
 
 export type RtpLinkCostBandOption = {
   id: string;
@@ -27,12 +28,6 @@ export type RtpLinkCostBandOption = {
   startYear: number;
   endYear: number;
 };
-
-const CURRENCY = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 function numberToInput(value: number | string | null): string {
   if (value === null || value === undefined) return "";
@@ -113,7 +108,7 @@ export function RtpLinkCostEditor({
         <span className="text-muted-foreground">
           {storedCost ? (
             <>
-              <span className="font-medium text-foreground">{CURRENCY.format(Number(storedCost))}</span>
+              <span className="font-medium text-foreground">{formatMoney(Number(storedCost), { precision: "whole" })}</span>
               {initialCostBasisYear ? ` in ${initialCostBasisYear} dollars` : null}
               {band ? ` · ${band.label}` : " · no period assigned"}
             </>

@@ -28,6 +28,7 @@ import {
   stripFactCitationTokens,
   type NarrativeFact,
 } from "@/lib/grants/narrative-grounding";
+import { formatMoney } from "@/lib/money/format";
 
 export type DocumentNarrativeTargetKind = "report_section" | "rtp_chapter";
 export type DocumentNarrativeDraftStatus = "draft" | "accepted" | "dismissed";
@@ -171,11 +172,7 @@ export type ReportSectionFactsInput = {
 };
 
 function formatAmount(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(value) ? value : 0);
+  return formatMoney(Number.isFinite(value) ? value : 0, { precision: "whole" });
 }
 
 function fundingSnapshotClaims(snapshot: ProjectFundingSnapshot, projectName: string): string[] {

@@ -59,6 +59,7 @@ import {
   type NarrativeFact,
 } from "@/lib/grants/narrative-grounding";
 import type { GrantApplicationEvidenceKind } from "@/lib/grants/program-catalog";
+import { formatMoney } from "@/lib/money/format";
 
 /** Fields of the funding-opportunity row the evidence assembly reads. */
 export type NarrativeEvidenceOpportunity = {
@@ -222,11 +223,7 @@ type QueryBuilderLike = QueryResultLike & {
 type SupabaseQueryClientLike = { from: (table: string) => QueryBuilderLike };
 
 function formatAmount(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 function fundingSummaryClaims(

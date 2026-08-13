@@ -74,6 +74,7 @@ import {
   type RtpTranscriptionSupabaseLike,
 } from "@/lib/rtp/extraction/provenance-queries";
 import { ExtractionProvenanceCitation } from "@/components/rtp/extraction-provenance-chip";
+import { formatMoney } from "@/lib/money/format";
 
 /** The columns the gate needs, and every one of them is rendered below. */
 const CYCLE_COLUMNS =
@@ -109,12 +110,6 @@ const CHAPTER_COLUMNS =
 const LINK_COLUMNS =
   "id, portfolio_role, priority_rationale, horizon_band_id, estimated_cost, cost_basis_year, " +
   "projects(id, name, summary)";
-
-const MONEY = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 /**
  * A deadline stated in an unnamed time zone is a deadline a resident can miss.
@@ -784,9 +779,9 @@ export default async function PublicRtpDocumentPage({
                             {band.startYear}–{band.endYear}
                           </span>
                         </td>
-                        <td className="py-2 pr-3 tabular-nums">{MONEY.format(band.revenue)}</td>
-                        <td className="py-2 pr-3 tabular-nums">{MONEY.format(band.totalCost)}</td>
-                        <td className="py-2 pr-3 tabular-nums">{MONEY.format(band.balance)}</td>
+                        <td className="py-2 pr-3 tabular-nums">{formatMoney(band.revenue, { precision: "whole" })}</td>
+                        <td className="py-2 pr-3 tabular-nums">{formatMoney(band.totalCost, { precision: "whole" })}</td>
+                        <td className="py-2 pr-3 tabular-nums">{formatMoney(band.balance, { precision: "whole" })}</td>
                         <td className="py-2 text-xs text-muted-foreground">
                           {rtpFiscalVerdictLabel(band.verdict)}
                           {band.blockers.map((blocker) => (
@@ -923,7 +918,7 @@ export default async function PublicRtpDocumentPage({
                               <span className="text-muted-foreground">No cost recorded</span>
                             ) : (
                               <>
-                                {MONEY.format(cost)}
+                                {formatMoney(cost, { precision: "whole" })}
                                 {link.cost_basis_year ? (
                                   <span className="ml-1 text-xs text-muted-foreground">
                                     ({link.cost_basis_year} dollars)

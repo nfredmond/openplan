@@ -747,7 +747,7 @@ export function FundingAwardCloseoutPanel({
           route, which settles it per project.
         */}
         {canClose
-          ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and rebuilds this project's RTP funding posture. A closed award can be re-opened with a written reason, and each closed award shows how it was closed — earned against invoices, or recorded on import."
+          ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and updates how this project's funding is counted in the long-range plan. A closed award can be re-opened with a written reason, and each closed award shows how it was closed — earned against invoices, or recorded on import."
           : "Close-out marks an award fully spent once its paid invoices cover the awarded amount. Recording one is a write action and this view is not offering it; the server decides per project who may record a close-out."}
       </p>
       <ul className="mt-3 space-y-3">

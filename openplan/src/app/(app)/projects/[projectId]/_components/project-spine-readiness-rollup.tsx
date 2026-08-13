@@ -25,10 +25,12 @@ export function ProjectSpineReadinessRollup({
             <GitBranch className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Shared planning spine</p>
-            <h2 className="module-section-title">Connected-output readiness rollup</h2>
+            <p className="module-section-label">Everything linked to this project</p>
+            <h2 className="module-section-title">Is the work on this project up to date?</h2>
             <p className="module-section-description">
-              A supervised-workbench check of whether this project’s RTP, report, funding, engagement, analysis, and aerial evidence lanes look current, stale, or not linked.
+              Whether this project&apos;s plan, report, funding, engagement, analysis, and aerial
+              records are current, out of date, or not linked yet. It says what looks stale; a person
+              decides whether it matters.
             </p>
           </div>
         </div>

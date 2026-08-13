@@ -1,8 +1,16 @@
 import Link from "next/link";
-import { BookOpen, ExternalLink, LifeBuoy, Wrench } from "lucide-react";
+import { BookOpen, ExternalLink, Gauge, LifeBuoy, Wrench } from "lucide-react";
 
 import { buildRailGroups } from "@/components/nav/nav-registry";
 import { MODULE_DESCRIPTIONS } from "@/lib/help/module-descriptions";
+import {
+  describePublishedErrorEnvelope,
+  SCREENING_GRADE_NOT_SAFE_TO_CONCLUDE,
+  SCREENING_GRADE_SAFE_TO_CONCLUDE,
+  SCREENING_GRADE_SUMMARY,
+  SCREENING_GRADE_TITLE,
+  SCREENING_GRADE_YOUR_RUN_NOTE,
+} from "@/lib/help/screening-grade";
 import { NEW_WORKSPACE_GETTING_STARTED_STEPS } from "@/lib/onboarding/getting-started";
 import { moduleMetadata } from "@/lib/ui/page-title";
 
@@ -78,6 +86,74 @@ export default function HelpPage() {
             <li key={step}>{step}</li>
           ))}
         </ol>
+      </article>
+
+      {/*
+        THE ONE DEFINITION OF "SCREENING-GRADE".
+        Every badge, caveat, and popover carrying that phrase links here. The
+        error envelope is COMPUTED from the published example records
+        (`describePublishedErrorEnvelope`) rather than typed, so publishing a
+        new validation example updates this page and /legal together — and no
+        page can quietly keep quoting an old ceiling.
+      */}
+      <article id="screening-grade" className="mt-6 module-section-surface scroll-mt-24">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">
+              <Gauge className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+              Reading results
+            </p>
+            <h2 className="module-section-title">{SCREENING_GRADE_TITLE}</h2>
+            <p className="module-section-description">{SCREENING_GRADE_SUMMARY}</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-6 lg:grid-cols-2">
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              What you can conclude from it
+            </h3>
+            <ul className="mt-2 list-disc space-y-1.5 pl-6 text-sm leading-6 text-foreground/90">
+              {SCREENING_GRADE_SAFE_TO_CONCLUDE.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              What it is not
+            </h3>
+            <ul className="mt-2 list-disc space-y-1.5 pl-6 text-sm leading-6 text-foreground/90">
+              {SCREENING_GRADE_NOT_SAFE_TO_CONCLUDE.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
+          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            How far off it can be
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-foreground/90">
+            {describePublishedErrorEnvelope()}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {SCREENING_GRADE_YOUR_RUN_NOTE}
+          </p>
+        </div>
+
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
+          The formal version of this boundary — what an agency is agreeing to when it publishes
+          something OpenPlan produced — is in the{" "}
+          <a
+            href="/legal"
+            className="font-semibold underline underline-offset-4 hover:text-foreground"
+          >
+            legal notice
+          </a>
+          .
+        </p>
       </article>
 
       {/* Which features run on an AI key. The list mirrors the dashboard

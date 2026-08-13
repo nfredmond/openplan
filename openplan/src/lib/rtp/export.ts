@@ -36,6 +36,7 @@ import {
   priorityTierLabel,
 } from "@/lib/rtp/priority-scoring";
 import type { PortfolioFundingSnapshot, ProjectFundingProfileScan } from "@/lib/projects/funding";
+import { formatMoney } from "@/lib/money/format";
 
 export type RtpExportCycle = {
   id: string;
@@ -222,11 +223,7 @@ function formatRtpExportDateTime(value: string | null | undefined): string {
 
 function formatRtpExportCurrency(value: number | null | undefined): string {
   const amount = typeof value === "number" && Number.isFinite(value) ? value : 0;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return formatMoney(amount, { precision: "whole" });
 }
 
 function resolveEnabledSectionKeys(sectionKeys?: string[]): RtpExportSectionKey[] {

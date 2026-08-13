@@ -22,6 +22,7 @@
 import { esc } from "./html-escape";
 import { parseCurrencyAmount } from "./invoice-records";
 import type { EngagementBilledSummary } from "./receivables";
+import { formatMoney, isSupportedCurrency } from "@/lib/money/format";
 
 export type ClientInvoicePdfWorkspace = {
   name?: string | null;
@@ -77,14 +78,13 @@ export type ClientInvoicePdfData = {
 function formatAmount(value: number | string | null | undefined, currencyCode: string | null | undefined): string {
   const numeric = parseCurrencyAmount(value);
   const code = currencyCode?.trim().toUpperCase() || "USD";
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: code }).format(numeric);
-  } catch {
-    // An unrecognized currency code must not sink the document: show the
-    // number with the code the row actually carries. Escaped like every other
-    // user-entered string — the column is free text.
-    return `${numeric.toFixed(2)} ${esc(code)}`;
-  }
+  // An unrecognized currency code must not sink the document: show the number
+  // with the code the row actually carries. Escaped like every other
+  // user-entered string — the column is free text, which is why this fallback
+  // stays here rather than inside the shared formatter.
+  if (!isSupportedCurrency(code)) return `${numeric.toFixed(2)} ${esc(code)}`;
+  // An invoice is a ledger of record: cents, in the invoice's own currency.
+  return formatMoney(numeric, { precision: "cents", currency: code });
 }
 
 function formatQuantity(value: number | string | null | undefined): string {

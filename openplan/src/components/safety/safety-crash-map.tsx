@@ -15,6 +15,7 @@ import { isCrashSeverity } from "@/lib/safety/vocabulary";
 import { describeCrashCasualtyLine } from "@/lib/cartographic/crash-feature-to-selection";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 
 // Both accepted env names, resolved through the shared helper so this map has
 // the same token story as every other one. Reading only the newer name meant an
@@ -217,8 +218,24 @@ export function SafetyCrashMap({ collection, bbox, onSelect }: SafetyCrashMapPro
 
   if (!MAPBOX_TOKEN) {
     return (
-      <div className="flex h-full items-center justify-center rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-        Mapbox token not configured — set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to view the crash map.
+      // What is off, what still works, and who can turn it on — before any
+      // variable name a planner has no way to set.
+      <div
+        className="flex h-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground"
+        data-testid="safety-crash-map-unavailable"
+      >
+        <p className="font-medium text-foreground">The crash map can&apos;t be drawn</p>
+        <p>
+          This OpenPlan deployment has no map key configured. The crash counts and rates on this
+          page are unaffected — only the map is missing. Whoever runs this deployment can add the
+          key.
+        </p>
+        <OperatorDetail className="text-left">
+          <p>
+            Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and
+            rebuild.
+          </p>
+        </OperatorDetail>
       </div>
     );
   }

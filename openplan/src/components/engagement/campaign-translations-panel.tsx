@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Languages, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import type { StatusTone } from "@/lib/ui/status";
@@ -163,6 +164,7 @@ export function CampaignTranslationsPanel({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   const targetLocales = useMemo(
     () => PORTAL_LOCALES.filter((locale) => locale !== sourceLocale),
@@ -350,7 +352,16 @@ export function CampaignTranslationsPanel({
   }
 
   async function publishMachine(keys: string[]) {
-    if (!window.confirm(PUBLISH_MACHINE_CONSEQUENCE)) return;
+    // The consequence constant is passed through untouched: the panel and the
+    // dialog must warn about the same thing in the same words.
+    const confirmed = await confirm({
+      headline: "Publish the model's wording to the public portal?",
+      consequence: PUBLISH_MACHINE_CONSEQUENCE,
+      confirmLabel: "Publish as a machine translation",
+      cancelLabel: "Not yet",
+      tone: "caution",
+    });
+    if (!confirmed) return;
     const body = await post(`machine:${keys.join(",")}`, {
       action: "publish_machine",
       locale,
@@ -369,7 +380,14 @@ export function CampaignTranslationsPanel({
   }
 
   async function accept(keys: string[]) {
-    if (!window.confirm(ACCEPT_CONSEQUENCE)) return;
+    const confirmed = await confirm({
+      headline: "Accept this wording as your agency's own?",
+      consequence: ACCEPT_CONSEQUENCE,
+      confirmLabel: "Accept this wording",
+      cancelLabel: "Not yet",
+      tone: "caution",
+    });
+    if (!confirmed) return;
     // Sliced to what the route accepts. The response reports how many were
     // actually promoted, so a batch that ran into the cap tells the operator a
     // true number rather than a hopeful one.
@@ -381,11 +399,12 @@ export function CampaignTranslationsPanel({
   }
 
   async function withdraw(field: CampaignTranslatableField) {
-    if (
-      !window.confirm(
-        `Withdraw the ${englishName} translation of “${field.label}”? Participants reading ${englishName} will see it as the project team wrote it, with the disclosure that it is not translated.`
-      )
-    ) {
+    const confirmed = await confirm({
+      headline: `Withdraw the ${englishName} translation of “${field.label}”?`,
+      consequence: `Participants reading ${englishName} will see it as the project team wrote it, with the disclosure that it is not translated.`,
+      confirmLabel: "Withdraw this translation",
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -836,6 +855,7 @@ export function CampaignTranslationsPanel({
           ))}
         </div>
       )}
+      {confirmDialog}
     </article>
   );
 }

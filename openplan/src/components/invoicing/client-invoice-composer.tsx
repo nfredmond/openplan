@@ -6,6 +6,7 @@ import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ActionFeedback } from "@/components/ui/action-feedback";
 import {
   computeLineItemAmount,
   summarizeClientInvoiceTotals,
@@ -16,10 +17,7 @@ import {
   type RateEntryLike,
   type TimeEntryLike,
 } from "@/lib/invoicing/time-billing";
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
-}
+import { formatMoney } from "@/lib/money/format";
 
 export type InvoiceClientOption = { id: string; name: string };
 export type InvoiceEngagementOption = {
@@ -256,10 +254,10 @@ export function ClientInvoiceComposer({
           defaultRateEntries,
         });
         if (resolved.source === "engagement_table") {
-          return `${category} — ${formatCurrency(resolved.rate ?? 0)}/hour from the engagement rate table`;
+          return `${category} — ${formatMoney(resolved.rate ?? 0, { precision: "cents" })}/hour from the engagement rate table`;
         }
         if (resolved.source === "default_table") {
-          return `${category} — ${formatCurrency(resolved.rate ?? 0)}/hour from the workspace default rate table`;
+          return `${category} — ${formatMoney(resolved.rate ?? 0, { precision: "cents" })}/hour from the workspace default rate table`;
         }
         return `${category} — no rate found in any table; enter the amount manually`;
       });
@@ -370,7 +368,7 @@ export function ClientInvoiceComposer({
 
       if (payload.nteWarning) {
         setNteNotice(
-          `This invoice takes the engagement to ${formatCurrency(payload.nteWarning.billedToDate)} billed against its ${formatCurrency(payload.nteWarning.notToExceed)} not-to-exceed — ${formatCurrency(payload.nteWarning.overBy)} over. Recorded as a warning; nothing was blocked.`
+          `This invoice takes the engagement to ${formatMoney(payload.nteWarning.billedToDate, { precision: "cents" })} billed against its ${formatMoney(payload.nteWarning.notToExceed, { precision: "cents" })} not-to-exceed — ${formatMoney(payload.nteWarning.overBy, { precision: "cents" })} over. Recorded as a warning; nothing was blocked.`
         );
       }
 
@@ -667,7 +665,7 @@ export function ClientInvoiceComposer({
                         ) : null}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-foreground">{formatCurrency(lineAmountPreview(line))}</span>
+                        <span className="text-sm font-semibold text-foreground">{formatMoney(lineAmountPreview(line), { precision: "cents" })}</span>
                         <button
                           type="button"
                           className="openplan-inline-label openplan-inline-label-muted"
@@ -707,21 +705,15 @@ export function ClientInvoiceComposer({
               </div>
             </div>
 
-            {message ? (
-              <p className="border-l-2 border-emerald-400 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200">
-                {message}
-              </p>
-            ) : null}
+            {/* The save outcome goes through the shared renderer. `nteNotice`
+                stays its own element on purpose: it is not the outcome of this
+                save but a caution about the not-to-exceed ceiling, and it
+                appears ALONGSIDE a successful save. */}
+            <ActionFeedback state={{ busy: isSaving, error, details: null, message }} />
 
             {nteNotice ? (
               <p className="border-l-2 border-amber-400 bg-amber-50/80 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
                 {nteNotice}
-              </p>
-            ) : null}
-
-            {error ? (
-              <p className="border-l-2 border-red-400 bg-red-50/80 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200">
-                {error}
               </p>
             ) : null}
 
@@ -751,20 +743,20 @@ export function ClientInvoiceComposer({
           <dl className="mt-4 space-y-3 text-sm text-muted-foreground">
             <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
               <dt>Subtotal</dt>
-              <dd className="font-semibold text-foreground">{formatCurrency(totals.subtotalAmount)}</dd>
+              <dd className="font-semibold text-foreground">{formatMoney(totals.subtotalAmount, { precision: "cents" })}</dd>
             </div>
             <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
               <dt>Retention ({totals.retentionPercent.toFixed(2)}%)</dt>
-              <dd className="font-semibold text-foreground">{formatCurrency(totals.retentionAmount)}</dd>
+              <dd className="font-semibold text-foreground">{formatMoney(totals.retentionAmount, { precision: "cents" })}</dd>
             </div>
             <div className="space-y-1 pt-1">
               <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Invoice total</dt>
-              <dd className="text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(totals.totalAmount)}</dd>
+              <dd className="text-2xl font-semibold tracking-tight text-foreground">{formatMoney(totals.totalAmount, { precision: "cents" })}</dd>
             </div>
           </dl>
           {selectedEngagement?.notToExceedAmount != null ? (
             <p className="mt-5 border-l-2 border-[color:var(--pine)] bg-[color:var(--pine)]/6 px-3 py-3 text-sm text-foreground">
-              {selectedEngagement.title} carries a {formatCurrency(selectedEngagement.notToExceedAmount)} not-to-exceed.
+              {selectedEngagement.title} carries a {formatMoney(selectedEngagement.notToExceedAmount, { precision: "cents" })} not-to-exceed.
               Billing past it records a warning on save — it never blocks.
             </p>
           ) : null}

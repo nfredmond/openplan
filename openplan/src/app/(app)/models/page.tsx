@@ -21,6 +21,7 @@ import {
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 export const metadata = moduleMetadata("Models");
 
@@ -401,18 +402,10 @@ export default async function ModelsPage({
                   : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
               </p>
             ) : null}
-            {reads.any ? (
-              // This is an internal page, so the database's own message is shown:
-              // the reader here is the person who can act on it.
-              <div
-                className="rounded-[0.75rem] border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-foreground"
-                data-testid="models-read-failures"
-                role="alert"
-              >
-                <p>{reads.describe()}</p>
-                <p className="mt-1.5 text-[0.75rem] text-muted-foreground">{reads.messages().join(" · ")}</p>
-              </div>
-            ) : null}
+            {/* Internal page, so the database's own message stays on it — in the
+                notice's operator disclosure, where it is not the first thing a
+                planner reads. */}
+            <ReadFailureNotice reads={reads} testId="models-read-failures" title="Part of this catalog could not be read" />
           </div>
 
           <div className="module-summary-grid cols-3">

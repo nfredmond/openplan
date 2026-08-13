@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import type { WorkspaceGisLayerListing } from "@/lib/workspace-gis/types";
 
@@ -187,6 +187,41 @@ type CartographicContextValue = {
   setWorkspaceLayer: (layerId: string, on: boolean) => void;
   workspaceLayerStatus: Record<string, MapLayerStatus>;
   registerWorkspaceLayerStatus: (layerId: string, status: MapLayerStatus) => void;
+  /**
+   * READING THE MAP, as opposed to reading the page.
+   *
+   * ═══ THE PROBLEM THIS SOLVES, AND THE ONE IT REFUSES TO CREATE ═══
+   *
+   * The route content sits on `.op-cart-surface`, a fixed panel covering ~74% of
+   * the window at `--panel` — 94% opaque in light palettes, 92% in dark, over an
+   * 18px backdrop blur. Composited, a solid accent-orange fill directly beneath
+   * it moves the panel by under 4% of one channel; a 2px line beneath a blur of
+   * that radius contributes on the order of 1/255. It is a tint, not a window.
+   * So on Safety and Aerial an uploaded layer was visible only in the margins.
+   *
+   * Lowering the opacity cannot fix it and makes everything else worse at the
+   * same time. `--muted` — kickers, meta rows, placeholders, at 10.5–12px —
+   * measures 3.37:1 light and 3.45:1 dark against a worst-case background AT
+   * TODAY'S opacity. At 0.85 it is 2.84 / 2.72; at 0.80, 2.57 / 2.28. The
+   * translucency needed to see a hairline through a blur is several times the
+   * translucency that makes ordinary body text unreadable.
+   *
+   * The two demands are not in tension because the setting is wrong. They are in
+   * tension because they are DIFFERENT MOMENTS. The opacity is correct for
+   * reading a page and wrong for reading a map, and averaging them produces a
+   * setting that serves neither. So the moment becomes explicit: while this is
+   * on, the surface steps aside entirely and the map is at full, unblurred
+   * opacity; while it is off, every page in the product is bit-for-bit what it
+   * was. The surface's own opacity value never changes.
+   *
+   * Per session and never persisted, and cleared whenever the control that sets
+   * it unmounts — which is what happens the moment a planner navigates off a map
+   * surface. A planner who lands on the RTP registry must never find the page
+   * missing because of a choice they made on Safety twenty minutes ago.
+   */
+  mapReading: boolean;
+  setMapReading: (on: boolean) => void;
+  toggleMapReading: () => void;
 };
 
 const CartographicContext = createContext<CartographicContextValue | null>(null);
@@ -204,6 +239,42 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
   );
   const [visibilityWorkspaceId, setVisibilityWorkspaceId] = useState<string | null>(null);
   const [workspaceCatalogError, setWorkspaceCatalogError] = useState<string | null>(null);
+  const [mapReading, setMapReadingState] = useState(false);
+
+  /*
+    THE BODY ATTRIBUTE IS THE PUBLIC HALF OF THIS STATE.
+
+    Everything that has to move when the page steps aside — the surface, the
+    header, the canvas's own colour treatment — is styled from CSS that cannot
+    read React state, and several of those elements are rendered by components
+    that have no reason to know this mode exists. One attribute on `body` lets
+    the stylesheet do it in one place. `inert`, which CSS cannot express, is
+    still applied by the surface component itself.
+
+    Removed on unmount rather than left behind: the shell unmounts on sign-out,
+    and a stale `data-map-reading` on the body of the sign-in page would hide
+    nothing but would be a lie about the app's state that the next mount reads.
+  */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const body = document.body;
+    if (mapReading) {
+      body.dataset.mapReading = "true";
+    } else {
+      delete body.dataset.mapReading;
+    }
+    return () => {
+      delete body.dataset.mapReading;
+    };
+  }, [mapReading]);
+
+  const setMapReading = useCallback((on: boolean) => {
+    setMapReadingState(on);
+  }, []);
+
+  const toggleMapReading = useCallback(() => {
+    setMapReadingState((prev) => !prev);
+  }, []);
 
   const registerWorkspaceCatalogError = useCallback((message: string | null) => {
     setWorkspaceCatalogError(message);
@@ -322,6 +393,9 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
       setWorkspaceLayer,
       workspaceLayerStatus,
       registerWorkspaceLayerStatus,
+      mapReading,
+      setMapReading,
+      toggleMapReading,
     }),
     [
       selection,
@@ -343,6 +417,9 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
       setWorkspaceLayer,
       workspaceLayerStatus,
       registerWorkspaceLayerStatus,
+      mapReading,
+      setMapReading,
+      toggleMapReading,
     ],
   );
 
@@ -426,6 +503,35 @@ export function useWorkspaceMapLayers() {
     setWorkspaceLayer: ctx.setWorkspaceLayer,
     workspaceLayerStatus: ctx.workspaceLayerStatus,
     registerWorkspaceLayerStatus: ctx.registerWorkspaceLayerStatus,
+  };
+}
+
+/**
+ * Whether the page has stepped aside so the map can be read, and how to change
+ * that.
+ *
+ * Outside a provider this reports `false` and does nothing, for the reason every
+ * hook in this file returns an inert value rather than throwing: the overview
+ * surface and the map dock are rendered in tests and on routes that own their
+ * own map, and a component asking "is the page hidden?" must not be the thing
+ * that crashes the page.
+ */
+export function useCartographicMapReading() {
+  const ctx = useContext(CartographicContext);
+  if (!ctx) {
+    return {
+      mapReading: false,
+      setMapReading: NOOP as (on: boolean) => void,
+      toggleMapReading: NOOP,
+      /** A selection is open, so Escape already means "clear it". */
+      hasSelection: false,
+    };
+  }
+  return {
+    mapReading: ctx.mapReading,
+    setMapReading: ctx.setMapReading,
+    toggleMapReading: ctx.toggleMapReading,
+    hasSelection: ctx.selection !== null,
   };
 }
 

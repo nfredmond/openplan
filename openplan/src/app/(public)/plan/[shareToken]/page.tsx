@@ -29,6 +29,7 @@ import {
   type RtpEvidenceSupabaseLike,
   type RtpModelingEvidenceKpiRow,
 } from "@/lib/rtp/modeling-evidence";
+import { formatMoney } from "@/lib/money/format";
 
 export const metadata = {
   title: "What we're funding and why · Regional Transportation Plan",
@@ -191,8 +192,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     list.push({ title: row.title, amount });
     awardsByProject.set(row.project_id, list);
   }
-  const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-
+  
   // Engine + status + claim tier travel with the title: a run's name alone
   // cannot tell a reader whether it is a calibrated run or a failed sketch.
   const [kpiResult, evidenceDisclosures] = await Promise.all([
@@ -384,7 +384,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
               {entry.awards.length > 0 ? (
                 <p className="mt-2 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground">Committed funding</span>:{" "}
-                  {currency.format(entry.awards.reduce((sum, award) => sum + award.amount, 0))} across{" "}
+                  {formatMoney(entry.awards.reduce((sum, award) => sum + award.amount, 0), { precision: "whole" })} across{" "}
                   {entry.awards.length === 1 ? "1 award" : `${entry.awards.length} awards`} ·{" "}
                   {entry.awards.map((award) => award.title).join(" · ")}
                 </p>

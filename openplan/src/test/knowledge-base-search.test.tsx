@@ -229,7 +229,7 @@ describe("Knowledge Base search is reachable from the Knowledge Base page", () =
     await waitFor(() =>
       expect(screen.getByText(/No passage in the searched documents matched/)).toBeInTheDocument()
     );
-    expect(screen.getByText(/1 of the 2 documents listed below is not indexed yet/)).toBeInTheDocument();
+    expect(screen.getByText(/1 of the 2 documents listed below has no readable text yet/)).toBeInTheDocument();
     expect(screen.queryByText(/could not be run/)).not.toBeInTheDocument();
   });
 
@@ -277,7 +277,7 @@ describe("Knowledge Base search is reachable from the Knowledge Base page", () =
       expect(screen.getByText(/1 passage matched/)).toBeInTheDocument()
     );
     expect(
-      screen.getByText(/1 of the 2 documents listed below is not indexed yet/)
+      screen.getByText(/1 of the 2 documents listed below has no readable text yet/)
     ).toBeInTheDocument();
   });
 

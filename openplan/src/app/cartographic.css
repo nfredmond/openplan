@@ -372,7 +372,15 @@ html.dark .op-cart-rail__btn:hover {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+  /* `opacity`, `transform` and `visibility` are here for map-reading mode (see
+     the block after the responsive overrides at the end of this file). In the
+     normal state opacity is 1 and there is no transform, so listing them costs
+     nothing and changes nothing — but a transition declared only inside the
+     mode's own rule animates the exit and snaps the return. */
+  transition:
+    left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1),
+    opacity 0.18s ease,
+    transform 0.18s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 /* THE MAP CONTROLS RESERVE THAT SPACE, SO THEIR ABSENCE MUST RELEASE IT.
 
@@ -1251,5 +1259,140 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
      its palette swatch and the mode toggle, which are still both labelled. */
   .op-cart-appearance > [role="group"] span {
     display: none;
+  }
+}
+
+/* =========================================================================
+   MAP-READING MODE — the page steps aside so the map can be read
+   =========================================================================
+
+   WHAT THIS IS FOR. `.op-cart-surface` is 92–94% opaque over an 18px backdrop
+   blur and covers roughly three quarters of the window. Composited, a shape
+   drawn on the map beneath it moves the panel by a fraction of one channel — a
+   tint, not a window. On Safety and Aerial that left an agency's own uploaded
+   layer visible only in the 16px gutters. The obvious fix is the wrong one:
+   the translucency needed to see a 2px line through that blur is several times
+   the translucency at which `--muted` body text drops below 3:1 in both
+   themes. There is no single opacity that serves reading a page AND reading a
+   map, because those are two different moments.
+
+   WHAT DEPENDS ON THESE RULES — READ BEFORE CHANGING ANY OF THEM. Everything
+   in this block is scoped to `body[data-map-reading="true"]`, which is set by
+   `CartographicProvider` and only ever while `CartographicMapReadingToggle` is
+   mounted — and that control mounts only inside `MapSurfaceOnly`. Off a map
+   surface the attribute is absent and NOTHING here applies, which is what keeps
+   the ~20 other modules, every form and every table bit-for-bit unchanged. If
+   you ever find yourself wanting to set this attribute from somewhere else,
+   that is the moment to re-read this comment: the guarantee that ordinary pages
+   are untouched rests entirely on where the attribute comes from.
+
+   The surface's own `background`/`--panel` value is never modified here. That
+   is deliberate and is the point of the whole design.
+   ========================================================================= */
+
+body[data-map-reading="true"] .op-cart-surface {
+  opacity: 0;
+  /* A short slide toward the right edge, so the page reads as having stepped
+     out of the way rather than having been deleted. */
+  transform: translateX(18px);
+  /* Belt and braces with `inert`, which the component applies: pointer events
+     stop at the CSS layer and focus stops at the attribute layer, so neither
+     mechanism is load-bearing on its own. */
+  pointer-events: none;
+  /* Delayed to the end of the fade, so the panel is not yanked out of the
+     render tree mid-transition. `visibility` rather than `display` because
+     `display` cannot be transitioned and would snap. */
+  visibility: hidden;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s cubic-bezier(0.2, 0.7, 0.3, 1),
+    visibility 0s linear 0.18s;
+}
+
+/* The header, the rail, the map dock, the zoom controls and the account card
+   all STAY. Hiding them would make this a full-screen map mode, which is a
+   different and worse thing: the planner would lose the layer checkboxes, the
+   coverage notes and the way back at the same moment they lose the page. */
+
+/* ---------- The control itself ---------- */
+
+.op-cart-mapread {
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* It must never be the thing that scrolls away or shrinks: the layers panel
+     below it takes all the flexible height in the dock. */
+  flex: 0 0 auto;
+}
+
+.op-cart-mapread__btn {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  /* `--panel-solid` and `--ink`, not the accent pair: `--accent-foreground` is
+     defined once on :root and once on .dark and is NOT re-stated per palette,
+     so an accent-filled button's text contrast varies with the palette. Ink on
+     the solid panel is the one pairing this product guarantees in all ten. */
+  background: var(--panel-solid);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.op-cart-mapread__btn:hover {
+  border-color: var(--muted);
+}
+/* The pressed ring is DECORATION. The state is carried by `aria-pressed` and
+   restated in words in the status line below, so a planner who cannot see a
+   1px accent ring — or who has forced colours on — still knows the mode is on. */
+.op-cart-mapread__btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+/* The global `:focus-visible` rule paints a 3px outline at a 3px offset. No
+   ancestor of this button clips overflow (`.op-cart-mapdock` does not), so the
+   ring is fully visible; this only keeps it off the panel edge. */
+.op-cart-mapread__btn:focus-visible {
+  outline-offset: 2px;
+}
+
+.op-cart-mapread__state {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  /* `--ink-2`, not `--muted`. This sentence is the only text telling a planner
+     how to get their page back, and `--muted` measures 3.75:1 on solid white in
+     the light palette — under the 4.5:1 body floor before any map is involved.
+     (That is a real defect in the light palette's secondary text and it is
+     bigger than this file; it is not fixed here, only avoided.) */
+  color: var(--ink-2);
+}
+
+/* ---------- Reduced motion ---------- */
+
+/* `prefers-reduced-motion` had no block in this file at all, so the surface's
+   rail-hover `left` transition ignored it too. Both are handled here: the mode
+   change and the layout shift become instant, and the mode still works. */
+@media (prefers-reduced-motion: reduce) {
+  .op-cart-surface {
+    transition: none;
+  }
+  body[data-map-reading="true"] .op-cart-surface {
+    transform: none;
+    transition: none;
+  }
+  .op-cart-mapread__btn {
+    transition: none;
   }
 }

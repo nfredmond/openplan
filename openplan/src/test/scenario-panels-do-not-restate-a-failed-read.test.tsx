@@ -210,7 +210,7 @@ describe("the scenario entry registry, rendered for real, never restates a faile
     expect(screen.getByText(/Nothing\s+shown here means one is missing/i)).toBeInTheDocument();
     expect(screen.getByText(/An empty registry here\s+is a failed read/i)).toBeInTheDocument();
     expect(screen.getByText(/readiness cannot be counted\.\s+This is not a count of zero/i)).toBeInTheDocument();
-    expect(screen.getByText(/the baseline's posture is unknown/i)).toBeInTheDocument();
+    expect(screen.getByText(/cannot say whether it has a baseline/i)).toBeInTheDocument();
   });
 
   it("does not say no model is anchored when the models read failed", async () => {

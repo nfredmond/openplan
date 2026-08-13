@@ -2,12 +2,22 @@
 
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Download, FolderKanban, Loader2, ScanText, Search, Trash2, Upload } from "lucide-react";
+import {
+  Download,
+  Filter,
+  FolderKanban,
+  Loader2,
+  ScanText,
+  Search,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 import type { StatusTone } from "@/lib/ui/status";
 import { KB_DOC_KINDS, type KbDocKind, type KbDocumentStatus } from "@/lib/knowledge-base/types";
 import {
@@ -16,6 +26,14 @@ import {
   type KbDocumentRow,
 } from "@/lib/knowledge-base/documents";
 import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
+import {
+  describeKbDocumentListResult,
+  isKbDocumentSort,
+  KB_DOCUMENT_SORT_LABELS,
+  KB_DOCUMENT_SORTS,
+  resolveKbDocumentListFilters,
+  type KbDocumentSort,
+} from "@/lib/knowledge-base/document-list-filters";
 import {
   describeUnreadableDocument,
   documentCanBeOcred,
@@ -80,8 +98,33 @@ type KbSearchState =
  * "N documents linked to <Project>" — a count and a scope, both invented.
  */
 type KbDocumentListState =
-  | { status: "loaded"; scopeProjectId: string }
+  | {
+      status: "loaded";
+      scopeProjectId: string;
+      /**
+       * What the read that produced these rows ACTUALLY narrowed by, echoed
+       * back by the route. Held apart from the controls' own state because a
+       * planner mid-edit has a half-typed filter the rows do not reflect: the
+       * caption describes this, never the boxes.
+       */
+      applied: AppliedDocumentFilters;
+    }
   | { status: "failed"; scopeProjectId: string };
+
+/** The route's `appliedFilters` echo — the shape of `KbDocumentListFilters`. */
+type AppliedDocumentFilters = {
+  nameTerm: string | null;
+  sort: KbDocumentSort;
+  addedFrom: string | null;
+  addedTo: string | null;
+};
+
+const UNFILTERED_DOCUMENTS: AppliedDocumentFilters = {
+  nameTerm: null,
+  sort: "newest",
+  addedFrom: null,
+  addedTo: null,
+};
 
 function statusTone(status: KbDocumentStatus): StatusTone {
   switch (status) {
@@ -199,10 +242,16 @@ export function KnowledgeBaseWorkspace({
   ocrConfigured = false,
 }: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
-  const [documentList, setDocumentList] = useState<KbDocumentListState>(() => ({
-    status: readFailures.documents ? "failed" : "loaded",
-    scopeProjectId: initialProjectId ?? "",
-  }));
+  const [documentList, setDocumentList] = useState<KbDocumentListState>(() =>
+    readFailures.documents
+      ? { status: "failed", scopeProjectId: initialProjectId ?? "" }
+      : {
+          status: "loaded",
+          scopeProjectId: initialProjectId ?? "",
+          // The page's own first read applies no filters.
+          applied: UNFILTERED_DOCUMENTS,
+        }
+  );
   const [mode, setMode] = useState<"upload" | "paste">("upload");
   const [docKind, setDocKind] = useState<KbDocKind>("other");
   const [title, setTitle] = useState("");
@@ -214,6 +263,12 @@ export function KnowledgeBaseWorkspace({
   const [listLoading, setListLoading] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState<KbSearchState>({ status: "idle" });
+  // The list controls. These are what the planner has TYPED; `documentList`
+  // holds what the loaded rows were actually read with.
+  const [nameQuery, setNameQuery] = useState("");
+  const [sort, setSort] = useState<KbDocumentSort>("newest");
+  const [addedFrom, setAddedFrom] = useState("");
+  const [addedTo, setAddedTo] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   /** Which document's OCR request is in flight, so only its own button spins. */
@@ -239,10 +294,18 @@ export function KnowledgeBaseWorkspace({
     ? projectNameById.get(documentList.scopeProjectId) ?? "the selected project"
     : null;
 
-  // Only `ready` documents are indexed by the search RPC. A planner reading
-  // "nothing matched" is owed the fact that some of their corpus was never
-  // looked at — otherwise an extraction failure reads as an absent passage.
+  // Only documents whose text was successfully read are indexed by the search
+  // RPC. A planner reading "nothing matched" is owed the fact that some of
+  // their corpus was never looked at — otherwise an extraction failure reads as
+  // an absent passage.
   const unsearchableCount = documents.filter((entry) => entry.status !== "ready").length;
+  const listIsNarrowed =
+    documentList.status === "loaded" &&
+    Boolean(
+      documentList.applied.nameTerm ||
+        documentList.applied.addedFrom ||
+        documentList.applied.addedTo
+    );
 
   /**
    * What the search could NOT look at. This is owed to the planner on BOTH
@@ -250,31 +313,62 @@ export function KnowledgeBaseWorkspace({
    * answer, so a corpus with documents that never finished extracting turns a
    * partial result into an apparently complete one. Same fact, same sentence,
    * whether or not anything matched.
+   *
+   * The DENOMINATOR is the trap. The list below can be narrowed by name and by
+   * date; the search below is not — it covers the whole project or workspace
+   * scope. So a filtered list may show 2 unreadable documents out of 3 while the
+   * search looked at hundreds. When the list is narrowed the sentence counts
+   * only what it can see and says so, rather than passing a filtered subset off
+   * as the searched corpus.
    */
   const coverageCaveat = documentList.status === "failed"
     ? "The document list could not be read, so this screen cannot say how many of your documents were searchable."
-    : unsearchableCount > 0
-      ? `${unsearchableCount} of the ${documents.length} document${documents.length === 1 ? "" : "s"} listed below ${unsearchableCount === 1 ? "is" : "are"} not indexed yet (only documents with status "ready" are searched).`
-      : "";
+    : unsearchableCount === 0
+      ? ""
+      : listIsNarrowed
+        ? `Among the documents shown below — a filtered view, not everything the search covers — ${unsearchableCount} ${unsearchableCount === 1 ? "has" : "have"} no readable text yet, so ${unsearchableCount === 1 ? "it was" : "they were"} not searched. Clear the filters to see how many there are in total.`
+        : `${unsearchableCount} of the ${documents.length} document${documents.length === 1 ? "" : "s"} listed below ${unsearchableCount === 1 ? "has" : "have"} no readable text yet, so ${unsearchableCount === 1 ? "it was" : "they were"} not searched. Only documents OpenPlan has finished reading can be searched.`;
 
   function upsertDocument(document: KbDocumentRow) {
     setDocuments((prev) => [document, ...prev.filter((entry) => entry.id !== document.id)]);
   }
 
-  async function changeProject(nextProjectId: string) {
-    setProjectId(nextProjectId);
+  /**
+   * Re-read the list from the server with the current project scope, name
+   * filter, date range, and order.
+   *
+   * ALWAYS a server read, never a filter over the rows in the browser. The read
+   * is capped at `KB_DOCUMENT_LIST_LIMIT`, so a workspace holding more than that
+   * has documents the browser has never seen — filtering what is loaded would
+   * leave exactly those documents unfindable, which is the reason these controls
+   * exist. The same argument already applied to the project selector.
+   */
+  async function reloadDocuments(overrides?: {
+    projectId?: string;
+    nameQuery?: string;
+    sort?: KbDocumentSort;
+    addedFrom?: string;
+    addedTo?: string;
+  }) {
+    const nextProjectId = overrides?.projectId ?? projectId;
+    const nextName = overrides?.nameQuery ?? nameQuery;
+    const nextSort = overrides?.sort ?? sort;
+    const nextFrom = overrides?.addedFrom ?? addedFrom;
+    const nextTo = overrides?.addedTo ?? addedTo;
+
     setError(null);
     setNotice(null);
     setListLoading(true);
     try {
-      // Refetch instead of filtering the loaded page client-side: the initial
-      // list is capped at 200 workspace-wide, so a client-side filter could
-      // silently miss a project's older documents.
-      const params = new URLSearchParams({ workspaceId });
+      const params = new URLSearchParams({ workspaceId, sort: nextSort });
       if (nextProjectId) params.set("projectId", nextProjectId);
+      if (nextName.trim()) params.set("q", nextName.trim());
+      if (nextFrom) params.set("addedFrom", nextFrom);
+      if (nextTo) params.set("addedTo", nextTo);
       const response = await fetch(`/api/knowledge-base/documents?${params.toString()}`);
       const payload = (await response.json()) as {
         documents?: KbDocumentRow[];
+        appliedFilters?: AppliedDocumentFilters;
         error?: string;
         hint?: string;
       };
@@ -284,17 +378,37 @@ export function KnowledgeBaseWorkspace({
         );
       }
       setDocuments(payload.documents ?? []);
-      setDocumentList({ status: "loaded", scopeProjectId: nextProjectId });
+      setDocumentList({
+        status: "loaded",
+        scopeProjectId: nextProjectId,
+        // The ROUTE'S echo when it sent one. Falling back to a local resolve of
+        // the same inputs keeps an older deployment honest rather than claiming
+        // the list is unfiltered when it is not.
+        applied:
+          payload.appliedFilters ??
+          resolveKbDocumentListFilters({
+            q: nextName,
+            sort: nextSort,
+            addedFrom: nextFrom,
+            addedTo: nextTo,
+          }),
+      });
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Failed to load documents");
-      // The rows on screen belong to the scope the planner just LEFT. Keeping
-      // them would restate them as this project's documents — a count and a
-      // link for a project whose list was never read. Drop them and say so.
+      // The rows on screen belong to the scope and filters the planner just
+      // LEFT. Keeping them would restate them as this project's documents, or
+      // as this filter's matches — a count and a scope, both invented. Drop
+      // them and say so.
       setDocuments([]);
       setDocumentList({ status: "failed", scopeProjectId: nextProjectId });
     } finally {
       setListLoading(false);
     }
+  }
+
+  async function changeProject(nextProjectId: string) {
+    setProjectId(nextProjectId);
+    await reloadDocuments({ projectId: nextProjectId });
   }
 
   /**
@@ -532,8 +646,9 @@ export function KnowledgeBaseWorkspace({
           Your workspace&apos;s file cabinet. Upload your agency&apos;s own documents — adopted plans,
           comment letters, prior studies, grant notices — so the Planner Agent and Grant Writer can
           ground and cite from them; images, spreadsheets, CAD drawings, and other office files are
-          kept for reference and download. Retrieval is keyword-based (screening-grade); scanned,
-          image-only PDFs without a text layer are stored but not indexed yet.
+          kept for reference and download. Retrieval is keyword-based (
+          <ScreeningGradeLink />); scanned, image-only PDFs without a text layer are stored but not
+          indexed yet.
         </p>
       </header>
 
@@ -659,7 +774,8 @@ export function KnowledgeBaseWorkspace({
           <h2 className="module-section-title">Search these documents</h2>
           <p className="module-section-description">
             Keyword search across the passages of every document that finished extracting. It matches
-            on any significant word and ranks by relevance — screening-grade, not semantic — and
+            on any significant word and ranks by relevance — <ScreeningGradeLink />, not semantic —
+            and
             returns up to {SEARCH_LIMIT} passages.{" "}
             {projectId
               ? `Scoped to ${selectedProjectName ?? "the selected project"} plus documents not attached to any project.`
@@ -767,19 +883,135 @@ export function KnowledgeBaseWorkspace({
 
       <div className="module-section-surface">
         <div className="module-section-header">
-          <h2 className="module-section-title">Knowledge Base documents</h2>
-          <p className="module-section-description">
+          <h2 className="module-section-title">Your documents</h2>
+          <p className="module-section-description" data-testid="kb-list-caption">
             {listLoading
               ? "Loading documents…"
               : documentList.status === "failed"
                 ? listScopeName
                   ? `The list of documents linked to ${listScopeName} could not be read, so this screen cannot say how many there are.`
                   : "The document list could not be read, so this screen cannot say how many documents this workspace has."
-                : `${documents.length} document${documents.length === 1 ? "" : "s"} ${
-                    listScopeName ? `linked to ${listScopeName}` : "in this workspace"
-                  }.`}
+                : describeKbDocumentListResult({
+                    count: documents.length,
+                    filters: documentList.applied,
+                    scopeLabel: listScopeName,
+                  })}
           </p>
         </div>
+
+        {/*
+          FIND A FILE BY ITS NAME. The search box above looks inside documents;
+          this looks at what they are called — which is what a planner has when
+          they remember the file and not the sentence. Every control here
+          re-reads from the server (see `reloadDocuments`), so a document past
+          the list cap is reachable by name even though it was never on screen.
+        */}
+        <form
+          className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void reloadDocuments();
+          }}
+        >
+          <label className="grid gap-1 text-sm sm:col-span-2">
+            <span className="text-foreground/70">Find by name or filename</span>
+            <Input
+              value={nameQuery}
+              onChange={(event) => setNameQuery(event.target.value)}
+              placeholder="e.g. 2045 RTP, scour-report.pdf"
+              aria-label="Find documents by name or filename"
+              maxLength={200}
+              disabled={listLoading}
+            />
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span className="text-foreground/70">Order</span>
+            <select
+              className="module-select"
+              value={sort}
+              aria-label="Order the document list"
+              disabled={listLoading}
+              onChange={(event) => {
+                const next = event.target.value;
+                if (!isKbDocumentSort(next)) return;
+                setSort(next);
+                void reloadDocuments({ sort: next });
+              }}
+            >
+              {KB_DOCUMENT_SORTS.map((option) => (
+                <option key={option} value={option}>
+                  {KB_DOCUMENT_SORT_LABELS[option]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="grid gap-1 text-sm">
+            <span className="text-foreground/70">Added between</span>
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={addedFrom}
+                onChange={(event) => setAddedFrom(event.target.value)}
+                aria-label="Added on or after"
+                disabled={listLoading}
+              />
+              <Input
+                type="date"
+                value={addedTo}
+                onChange={(event) => setAddedTo(event.target.value)}
+                aria-label="Added on or before"
+                disabled={listLoading}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-4">
+            <Button type="submit" variant="outline" size="sm" disabled={listLoading}>
+              {listLoading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Filter className="size-4" />
+              )}
+              Apply
+            </Button>
+            {nameQuery || addedFrom || addedTo || sort !== "newest" ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={listLoading}
+                onClick={() => {
+                  setNameQuery("");
+                  setSort("newest");
+                  setAddedFrom("");
+                  setAddedTo("");
+                  void reloadDocuments({
+                    nameQuery: "",
+                    sort: "newest",
+                    addedFrom: "",
+                    addedTo: "",
+                  });
+                }}
+              >
+                Clear filters
+              </Button>
+            ) : null}
+          </div>
+        </form>
+
+        {/*
+          A DATE THE SERVER COULD NOT USE. The route drops an unparseable day
+          rather than refusing the whole read, so without this the planner would
+          see an unnarrowed list under a narrowed-looking form. Compared against
+          the ECHO, never against the local guess.
+        */}
+        {documentList.status === "loaded" &&
+        ((addedFrom && !documentList.applied.addedFrom) ||
+          (addedTo && !documentList.applied.addedTo)) ? (
+          <p className="module-note mt-2">
+            One of the dates was not a date this screen could use, so the list was not narrowed by
+            it. The documents below cover the whole date range.
+          </p>
+        ) : null}
 
         {documents.length === 0 ? (
           <div className="module-empty-state">
@@ -787,9 +1019,14 @@ export function KnowledgeBaseWorkspace({
               ? listScopeName
                 ? `The list of documents linked to ${listScopeName} could not be read, so it is not shown. This does not mean none are linked — do not re-upload on the strength of this screen.`
                 : "The document list could not be read, so it is not shown. This does not mean the workspace has no documents — do not re-upload on the strength of this screen."
-              : projectId
-                ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
-                : "No documents yet. Upload a plan or paste text above to start building this workspace's library."}
+              : listIsNarrowed
+                ? // A filtered empty result is a statement about the FILTERS, not
+                  // about the corpus. Saying "no documents yet" here would invite
+                  // a planner to re-upload a plan the workspace already holds.
+                  "No documents match these filters. Clearing them will show what is there — this is not a statement that the workspace has none."
+                : projectId
+                  ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
+                  : "No documents yet. Upload a plan or paste text above to start building this workspace's library."}
           </div>
         ) : (
           <ul className="module-record-list">

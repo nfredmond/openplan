@@ -67,7 +67,7 @@
   --map-park: #cfd9b9;
   --ink: #1a1a1a;
   --ink-2: #4a4a4a;
-  --muted: #8a8379;
+  --muted: #716b63;
   --line: rgba(0, 0, 0, 0.1);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -164,7 +164,7 @@
   --map-park: #1f2d23;
   --ink: #f0ede6;
   --ink-2: #c4beb1;
-  --muted: #7a8089;
+  --muted: #90959c;
   --line: rgba(255, 255, 255, 0.1);
   --panel: rgba(22, 28, 31, 0.92);
   --panel-solid: #1c2225;
@@ -265,7 +265,7 @@
   --map-park: #d8dde0;
   --ink: #16191c;
   --ink-2: #43484d;
-  --muted: #71787f;
+  --muted: #686d74;
   --line: rgba(0, 0, 0, 0.1);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -284,7 +284,7 @@
   --map-park: #21262b;
   --ink: #eceff2;
   --ink-2: #c0c6cc;
-  --muted: #838b93;
+  --muted: #8f969e;
   --line: rgba(255, 255, 255, 0.1);
   --panel: rgba(24, 28, 32, 0.92);
   --panel-solid: #1e2227;
@@ -304,7 +304,7 @@
   --map-park: #c6d7cf;
   --ink: #101a24;
   --ink-2: #3b4b5a;
-  --muted: #6c7e8f;
+  --muted: #5e6e7d;
   --line: rgba(12, 32, 52, 0.12);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -323,7 +323,7 @@
   --map-park: #1a2a2c;
   --ink: #e9eef5;
   --ink-2: #bac7d6;
-  --muted: #7d8ea1;
+  --muted: #8696a7;
   --line: rgba(190, 214, 240, 0.12);
   --panel: rgba(20, 27, 39, 0.92);
   --panel-solid: #1a2130;
@@ -343,7 +343,7 @@
   --map-park: #cbdcbb;
   --ink: #141a12;
   --ink-2: #414c3c;
-  --muted: #6f7c68;
+  --muted: #64705e;
   --line: rgba(20, 40, 20, 0.12);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -362,7 +362,7 @@
   --map-park: #1d2f20;
   --ink: #eaf1e9;
   --ink-2: #bccbba;
-  --muted: #7d8d7c;
+  --muted: #8c9a8b;
   --line: rgba(200, 230, 200, 0.12);
   --panel: rgba(22, 30, 24, 0.92);
   --panel-solid: #1a231d;
@@ -382,7 +382,7 @@
   --map-park: #cdd4c4;
   --ink: #190f1d;
   --ink-2: #4a3d51;
-  --muted: #7b6f82;
+  --muted: #73687a;
   --line: rgba(40, 20, 50, 0.12);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -401,7 +401,7 @@
   --map-park: #242a24;
   --ink: #f0eaf4;
   --ink-2: #c9bed2;
-  --muted: #8b7f95;
+  --muted: #998ea2;
   --line: rgba(226, 210, 240, 0.12);
   --panel: rgba(28, 22, 34, 0.92);
   --panel-solid: #201a26;
@@ -2539,6 +2539,194 @@
 
   .analysis-explore-rail {
     background: linear-gradient(180deg, rgba(8, 14, 20, 0.98), rgba(9, 16, 24, 0.96));
+  }
+
+  /*
+    ── THE AGENCY'S OWN UPLOADED LAYERS, IN EXPLORE'S RAIL ──
+
+    Deliberately in this page's single dark vocabulary rather than in the
+    shell's theme tokens. Corridor Analysis commits to one look — its map is
+    dark-v11 in both app themes, and the rail is read against that map — so a
+    panel here that flipped with the app theme would be a light box beside a
+    permanently dark map. The contrast below is measured against this rail's own
+    background (~#0a1018), not against `--panel`: the label reads at roughly
+    14:1 and the notes at roughly 8:1, both comfortably past the 4.5:1 body
+    floor at these sizes.
+  */
+  .analysis-workspace-layers {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .analysis-workspace-layer {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    border-radius: 0.45rem;
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    background: rgba(15, 23, 32, 0.7);
+    padding: 0.5rem 0.6rem;
+    cursor: pointer;
+    transition: border-color 140ms ease, background-color 140ms ease;
+  }
+
+  .analysis-workspace-layer:hover,
+  .analysis-workspace-layer:focus-within {
+    border-color: rgba(125, 211, 252, 0.55);
+    background: rgba(19, 30, 41, 0.85);
+  }
+
+  /*
+    THE FOCUS RING IS ON THE ROW, NOT ONLY ON THE 13px CHECKBOX. A planner
+    tabbing this list is being told which LAYER they are on, and the row is the
+    thing that means. `:focus-visible` on the input drives it so a pointer click
+    does not paint a ring nobody asked for.
+  */
+  .analysis-workspace-layer:has(input:focus-visible) {
+    outline: 2px solid rgba(125, 211, 252, 0.9);
+    outline-offset: 2px;
+  }
+
+  .analysis-workspace-layer input[type="checkbox"] {
+    flex: none;
+    width: 0.85rem;
+    height: 0.85rem;
+    accent-color: #38bdf8;
+  }
+
+  .analysis-workspace-layer__swatch {
+    flex: none;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 0.2rem;
+    /*
+      A pale ring so a dark layer colour is still a visible chip against a dark
+      rail — the swatch has to be legible for EVERY colour a planner can pick,
+      including one they typed themselves.
+    */
+    box-shadow: 0 0 0 1px rgba(226, 232, 240, 0.35);
+  }
+
+  .analysis-workspace-layer__label {
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: rgba(241, 245, 249, 0.92);
+    overflow-wrap: anywhere;
+  }
+
+  .analysis-workspace-layer__note {
+    margin-top: 0.3rem;
+    padding-left: 0.6rem;
+    font-size: 0.72rem;
+    line-height: 1.55;
+    color: rgba(226, 232, 240, 0.72);
+  }
+
+  .analysis-workspace-layers__notes {
+    margin-top: 0.7rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 0.6rem;
+  }
+
+  .analysis-workspace-layers__notes-summary {
+    cursor: pointer;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(203, 213, 225, 0.9);
+  }
+
+  .analysis-workspace-layers__notes-summary:focus-visible {
+    outline: 2px solid rgba(125, 211, 252, 0.9);
+    outline-offset: 2px;
+  }
+
+  .analysis-studio-inline-link {
+    color: rgba(125, 211, 252, 0.95);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .analysis-studio-inline-link:focus-visible {
+    outline: 2px solid rgba(125, 211, 252, 0.9);
+    outline-offset: 2px;
+  }
+
+  /*
+    ── THE HOVER READOUT, ON THE MAP ──
+
+    Bottom-left, clear of the navigation and fullscreen controls Mapbox docks
+    top-right and of the scale control's own corner. `pointer-events: none` is
+    load-bearing rather than tidy: a readout that follows the pointer and also
+    catches it would swallow the very hover that produced it, and the panel
+    would flicker on and off as the planner moved across a parcel.
+  */
+  .analysis-explore-workspace-hover {
+    position: absolute;
+    left: 1rem;
+    bottom: 2.6rem;
+    z-index: 10;
+    max-width: min(80%, 22rem);
+    pointer-events: none;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(125, 211, 252, 0.22);
+    background: rgba(7, 15, 22, 0.94);
+    padding: 0.65rem 0.8rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .analysis-explore-workspace-hover__layer {
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(125, 211, 252, 0.92);
+  }
+
+  .analysis-explore-workspace-hover__label {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(241, 245, 249, 0.96);
+    overflow-wrap: anywhere;
+  }
+
+  .analysis-explore-workspace-hover__attrs {
+    margin-top: 0.45rem;
+    display: grid;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    line-height: 1.5;
+  }
+
+  .analysis-explore-workspace-hover__attrs > div {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+  }
+
+  .analysis-explore-workspace-hover__attrs dt {
+    color: rgba(148, 163, 184, 0.92);
+    overflow-wrap: anywhere;
+  }
+
+  .analysis-explore-workspace-hover__attrs dd {
+    color: rgba(241, 245, 249, 0.92);
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+
+  /*
+    A planner who has asked their system to stop animating gets no transition
+    here. The row still changes on hover and focus — the CHANGE is the
+    information, and removing it would remove the affordance rather than the
+    motion.
+  */
+  @media (prefers-reduced-motion: reduce) {
+    .analysis-workspace-layer {
+      transition: none;
+    }
   }
 
   .analysis-explore-rail-header {

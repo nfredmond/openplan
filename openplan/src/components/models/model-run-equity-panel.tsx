@@ -9,6 +9,7 @@ import {
   type EquityKpiRowLike,
   type EquityScreen,
 } from "@/lib/models/equity-screen";
+import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 
 /**
  * Equity / EJ screening panel for a succeeded AequilibraE run: real ACS
@@ -149,7 +150,14 @@ export function ModelRunEquityPanel({ modelId, modelRunId }: Props) {
                 />
               </div>
               <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
-                {screen.provenance ?? EQUITY_SCREENING_CAVEAT}
+                {screen.provenance ?? EQUITY_SCREENING_CAVEAT}{" "}
+                {/*
+                  The caveat itself is a plain string shared with the report and
+                  grant lanes, so the way to what "screening" permits is added
+                  beside it rather than inside it — one explanation, reached from
+                  every surface that asserts the grade.
+                */}
+                <ScreeningGradeLink>What screening-grade means</ScreeningGradeLink>.
               </p>
             </div>
           )}

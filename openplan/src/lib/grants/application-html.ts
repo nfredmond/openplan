@@ -23,6 +23,7 @@ import { GRANT_MODELING_PLANNING_CAVEAT } from "@/lib/grants/modeling-evidence";
 import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import type { ApplicationAttachmentRow, ApplicationSectionRow } from "@/lib/grants/application";
+import { formatMoney } from "@/lib/money/format";
 
 /** The standing caveat lines every packaged application carries on its cover. */
 export const APPLICATION_EXPORT_STANDING_CAVEATS: readonly string[] = [
@@ -128,11 +129,7 @@ function formatAmount(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return "Not set";
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "Not set";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(numeric);
+  return formatMoney(numeric, { precision: "whole" });
 }
 
 /** Required checklist items with nothing behind them: neither attached nor N/A. */

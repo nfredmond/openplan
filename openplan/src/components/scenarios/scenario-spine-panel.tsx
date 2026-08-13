@@ -235,12 +235,16 @@ export function ScenarioSpinePanel({ scenarioSetId }: { scenarioSetId: string })
       const response = await fetch(`/api/scenarios/${scenarioSetId}/spine`);
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        setLoadError(body?.error ?? "Could not load the scenario spine.");
+        setLoadError(
+          body?.error ?? "Could not load the assumptions and data behind these scenarios."
+        );
         return;
       }
       setSpine((await response.json()) as SpineResponse);
     } catch {
-      setLoadError("Could not reach OpenPlan to load the scenario spine.");
+      setLoadError(
+        "Could not reach OpenPlan to load the assumptions and data behind these scenarios."
+      );
     } finally {
       setLoading(false);
     }
@@ -349,13 +353,18 @@ export function ScenarioSpinePanel({ scenarioSetId }: { scenarioSetId: string })
   }
 
   if (loading) {
-    return <p className="mt-4 text-sm text-muted-foreground">Loading the scenario spine…</p>;
+    return (
+      <p className="mt-4 text-sm text-muted-foreground">
+        Loading the assumptions and data behind these scenarios…
+      </p>
+    );
   }
 
   if (loadError || !spine) {
     return (
       <p role="alert" className="mt-4 rounded-md border border-border/70 px-3 py-2 text-sm text-muted-foreground">
-        {loadError ?? "Could not load the scenario spine."} This is a problem reading the records, not a
+        {loadError ?? "Could not load the assumptions and data behind these scenarios."} This is a
+        problem reading the records, not a
         statement that there are none.
       </p>
     );
@@ -367,8 +376,9 @@ export function ScenarioSpinePanel({ scenarioSetId }: { scenarioSetId: string })
     <div className="space-y-4">
       {spine.schemaPending ? (
         <p className="rounded-md border border-amber-300/70 bg-amber-50/70 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-          The scenario spine tables have not been created on this deployment yet, so there is nothing to
-          read or write. This is a pending migration, not an empty scenario set.
+          The place these assumptions, data packages, and measurements are stored has not been set up
+          on this deployment yet, so there is nothing to read or write. Whoever operates this
+          deployment applies a database update to switch it on. This is not an empty scenario set.
         </p>
       ) : null}
 

@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { WorkNotificationInbox } from "@/lib/notifications/work";
 import { formatWorkDeadlineDate } from "@/lib/work/deadlines";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 
 /**
- * THE REMINDER PANEL — what the daily sweep told you, and when.
+ * THE REMINDER PANEL — what the daily check told you, and when.
  *
  * WHY IT SITS ABOVE THE QUEUE RATHER THAN INSIDE IT. The queue below is the
  * live state of the world: every dated record, re-read on every page load. This
@@ -103,11 +104,37 @@ export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: Notificat
     return (
       <article className="module-section-surface">
         <h2 className="module-section-title">Reminders</h2>
-        <p className="module-alert" role="status">
-          {inbox.pending
-            ? "Reminders cannot be listed on this deployment yet: the database is missing the table they live in. Apply the pending migrations (20260811000007 adds it) and reload."
-            : `Your reminders could not be read, so this panel is unavailable rather than empty — it does not mean nothing is due. The database said: ${inbox.message}`}
-        </p>
+        {/* Two facts, two registers: the planner learns what this panel is and
+            is not saying, and the migration number or the database's own words
+            wait underneath for whoever can act on them. */}
+        <div className="module-alert" role="status">
+          {inbox.pending ? (
+            <>
+              <p>
+                Reminders cannot be listed on this deployment yet: the database is missing the table
+                they live in. Whoever runs this OpenPlan can apply the pending migrations, and then
+                this panel will fill in.
+              </p>
+              <OperatorDetail>
+                <p>
+                  Migration 20260811000007 adds the table these reminders are read from. Apply the
+                  pending migrations and reload.
+                </p>
+              </OperatorDetail>
+            </>
+          ) : (
+            <>
+              <p>
+                Your reminders could not be read, so this panel is unavailable rather than empty —
+                it does not mean nothing is due. Reload, and if it persists ask whoever runs this
+                OpenPlan to look at the detail below.
+              </p>
+              <OperatorDetail>
+                <p className="break-words font-mono">The database said: {inbox.message}</p>
+              </OperatorDetail>
+            </>
+          )}
+        </div>
       </article>
     );
   }
@@ -117,12 +144,22 @@ export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: Notificat
     return (
       <article className="module-section-surface">
         <h2 className="module-section-title">Reminders</h2>
-        <p className="module-note">
-          Daily deadline reminders are switched off on this deployment: no CRON_SECRET is
-          configured, so the sweep that writes them cannot run. Whoever operates this instance can
-          set it and schedule <code>/api/cron/sweep-deadlines</code> daily. The deadlines
-          themselves are listed below either way.
-        </p>
+        {/* What is off and who can turn it on, in the planner's sentence. The
+            secret's name and the schedule to add are the operator's business
+            and stay out of it — folded away, not dropped. */}
+        <div className="module-note">
+          <p>
+            Daily deadline reminders are switched off on this deployment, so nothing arrives here on
+            its own. Whoever runs this OpenPlan can switch them on. The deadlines themselves are
+            listed below either way.
+          </p>
+          <OperatorDetail>
+            <p>
+              No CRON_SECRET is configured, so the daily check that writes these reminders cannot
+              run. Set it, then schedule <code>/api/cron/sweep-deadlines</code> daily.
+            </p>
+          </OperatorDetail>
+        </div>
       </article>
     );
   }
@@ -145,7 +182,7 @@ export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: Notificat
         </Button>
       </div>
       <p className="module-note">
-        What the daily sweep flagged for you — everything due within a week, and everything already
+        What the daily check flagged for you — everything due within a week, and everything already
         overdue. Marking one read removes it from here; it does not change the record itself.
       </p>
       {inbox.truncated ? (

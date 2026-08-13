@@ -9,6 +9,7 @@ import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import { ParticipantMapLegend } from "./participant-map-legend";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -387,10 +388,13 @@ export function LocationDisplayMap({
           There is a map for this campaign, but this OpenPlan deployment has no map key configured, so
           it can&apos;t be drawn. Commenting and surveys work without it.
         </p>
-        <p className="mt-1.5">
-          Whoever runs this deployment can set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token
-          (it begins with pk.) to enable maps.
-        </p>
+        <p className="mt-1.5">Whoever runs this deployment can add a map key to enable maps.</p>
+        <OperatorDetail>
+          <p>
+            Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and
+            rebuild.
+          </p>
+        </OperatorDetail>
       </div>
     );
   }

@@ -362,9 +362,10 @@ export function ProjectPostureHeader({
             </span>
             <div className="module-section-heading">
               <p className="module-section-label">Reporting</p>
-              <h2 className="module-section-title">Packet freshness and regeneration cues</h2>
+              <h2 className="module-section-title">Are this project’s reports up to date?</h2>
               <p className="module-section-description">
-                Project-level reporting should tell the team whether they already have a usable packet, need to regenerate one, or still need the first report record.
+                Whether the team already has a report they can hand over, needs to generate a fresh
+                one, or has not made the first one yet.
               </p>
             </div>
           </div>
@@ -379,7 +380,7 @@ export function ProjectPostureHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Needs attention</p>
             <p className="module-summary-value">{reportAttentionCount}</p>
-            <p className="module-summary-detail">Reports that still need packet updates or governance review.</p>
+            <p className="module-summary-detail">Reports that need regenerating or a review sign-off.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Evidence-backed</p>
@@ -389,12 +390,12 @@ export function ProjectPostureHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Refresh recommended</p>
             <p className="module-summary-value">{refreshRecommendedReportCount}</p>
-            <p className="module-summary-detail">Report packets that drifted after generation.</p>
+            <p className="module-summary-detail">Reports whose underlying records changed after the report was made.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Governance holds</p>
             <p className="module-summary-value">{governanceHoldReportCount}</p>
-            <p className="module-summary-detail">Packets that surfaced a blocked gate in the latest evidence snapshot.</p>
+            <p className="module-summary-detail">Reports held back by a review check that did not pass.</p>
           </div>
         </div>
 
@@ -405,10 +406,10 @@ export function ProjectPostureHeader({
         ) : (
           <div className="mt-5 space-y-4">
             <ReportPacketCommandQueue
-              title="Project packet queue"
-              description="The next report packet actions inside this project, ordered before the full report list below."
+              title="What to do next on this project’s reports"
+              description="The next report actions on this project, ahead of the full report list below."
               items={projectReportQueueItems}
-              emptyLabel="No queued report packet work in this project right now."
+              emptyLabel="Nothing is waiting on this project’s reports right now."
             />
 
             <div className="grid gap-4 md:grid-cols-[0.92fr_1.08fr]">

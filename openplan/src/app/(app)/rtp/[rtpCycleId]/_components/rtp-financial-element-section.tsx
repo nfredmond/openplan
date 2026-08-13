@@ -24,6 +24,7 @@ import {
   rtpFiscalVerdictTone,
   type RtpFiscalConstraintInput,
 } from "@/lib/rtp/fiscal-constraint";
+import { formatMoney } from "@/lib/money/format";
 
 type BandProp = React.ComponentProps<typeof RtpHorizonBandEditor>["bands"];
 type LineProp = React.ComponentProps<typeof RtpFinancialLedgerEditor>["lines"];
@@ -36,14 +37,9 @@ type MeasureProp = React.ComponentProps<typeof RtpPerformanceMeasureEditor>["mea
 type TranscriptionProp = React.ComponentProps<typeof RtpFinancialLedgerEditor>["transcriptions"];
 
 /** Whole dollars: a financial element is read in millions, and cents are noise. */
-const PLAN_MONEY_FORMATTER = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 function formatPlanMoney(value: number): string {
-  return PLAN_MONEY_FORMATTER.format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 export function RtpFinancialElementSection({

@@ -1,4 +1,5 @@
 import { Route as RouteIcon, ShieldCheck } from "lucide-react";
+import { ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
 import { formatUsdWholeAmount } from "./_helpers";
 
 type Props = {
@@ -76,6 +77,12 @@ export function RtpRegistryOverview({
             <p className="module-summary-detail">
               {likelyCoveredProjectCount} more look coverable from pursued funding, {unfundedProjectCount} still carry a gap, and linked award invoices show {formatUsdWholeAmount(paidReimbursementTotal)} paid, {formatUsdWholeAmount(outstandingReimbursementTotal)} outstanding, and {formatUsdWholeAmount(uninvoicedAwardTotal)} not yet invoiced.
             </p>
+            {/*
+              Same three `billing_invoice_records` figures the invoicing register
+              renders to the cent. Rounded here; said so here. See
+              `src/lib/money/format.ts`.
+            */}
+            <p className="module-summary-detail mt-1">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
           </div>
         </div>
       </article>

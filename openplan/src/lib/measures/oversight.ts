@@ -13,6 +13,7 @@ import type {
   MeasureReceiptLedger,
   MeasureReceiptLedgerResult,
 } from "@/lib/measures/receipts";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * THE OVERSIGHT RECORD — what a resident and a citizens' oversight committee
@@ -167,22 +168,16 @@ export const MEASURE_OVERSIGHT_COPY = {
  * refuses.
  *
  * `currency_code` carries a `^[A-Z]{3}$` CHECK but not a membership test
- * against ISO 4217, so a typo reaches here as a RangeError from the formatter.
- * A public page that 500s because somebody typed "USF" is worse than one that
- * prints the code beside the number, and silently substituting USD would
- * mislabel the unit on every figure — which is the one thing a money page may
- * never do.
+ * against ISO 4217, so a typo reaches the formatter as a RangeError. A public
+ * page that 500s because somebody typed "USF" is worse than one that prints
+ * the code beside the number, and silently substituting USD would mislabel the
+ * unit on every figure — which is the one thing a money page may never do.
+ * `formatMoney` holds that fallback for every surface now; `currencyDisplay:
+ * "code"` stays because a resident reading a fund report should not have to
+ * infer which country's dollar a "$" means.
  */
 export function formatOversightMoney(value: number, currencyCode: string): string {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currencyCode,
-      currencyDisplay: "code",
-    }).format(value);
-  } catch {
-    return `${currencyCode} ${value.toFixed(2)}`;
-  }
+  return formatMoney(value, { precision: "cents", currency: currencyCode, currencyDisplay: "code" });
 }
 
 /**

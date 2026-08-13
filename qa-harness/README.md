@@ -11,6 +11,8 @@ Purpose: keep one-off but reusable production QA scripts outside the app runtime
 - `openplan-local-analysis-report-linkage-smoke.js` — local browser/API smoke for the Analysis flow: corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, analysis-summary report linkage, generated artifact, and artifact source-context traceability.
 - `local-spine-smoke.js` — local-only NCTC seed/API/browser smoke proving one canonical project flows through RTP, grants, engagement, analysis/county-run, reports, map, Data Hub, and aerial evidence rows without duplicate project creation. Before creating its report, it removes prior harness-owned `NCTC Phase 1 Spine Smoke%` reports and dependent report rows in local Supabase.
 - `local-aerial-evidence-smoke.js` — local-only NCTC Aerial evidence spine smoke. It refuses Vercel and Supabase project URLs, seeds the NCTC fixture, cleans prior harness-owned mission/package rows in the deterministic NCTC project, scopes a deterministic QA user to that workspace, creates a project-linked mission, attaches AOI through mission PATCH, creates one ready evidence package, verifies exact seeded-plus-new aerial posture counts, renders `/aerial` and mission detail, and confirms the map AOI feature without creating a project.
+- `map-reading-geometry.test.js` — no browser, no server. Verifies the rectangle arithmetic in `map-reading-geometry.js` against the cartographic shell's own CSS box geometry at 1920x1080: with the page panel showing, under a quarter of the window is map (~13%); with map-reading mode on, over 60% is. Run it with `npm run check:map-reading-geometry`.
+- `openplan-local-map-reading-audit.js` — local signed-in Playwright audit of the same question against a real page. It measures every element painting over the map by computed style (not by selector, so a hidden panel counts as hidden), presses the "Read the map" control by keyboard, and asserts the uncovered map area clears the floor, the page panel is `inert`, the layers panel survives, and Escape brings the page back. jsdom has no layout, so this is the only check that can see the covered fraction at all. Needs `OPENPLAN_BASE_URL`, `OPENPLAN_MAP_READING_EMAIL` and `OPENPLAN_MAP_READING_PASSWORD`.
 - `openplan-prod-auth-smoke.js` — creates a dedicated QA auth user plus QA records in production, verifies redirect continuity and authenticated route flow, and writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-authenticated-smoke.md`.
 - `openplan-prod-engagement-smoke.js` — creates a dedicated QA auth user, proves the unprovisioned `/engagement` state, bootstraps a workspace, and then drives the live engagement catalog/detail UI through campaign creation, category creation, intake item entry, moderation approval, and catalog refresh. Writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-engagement-smoke.md`.
 - `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
@@ -46,6 +48,9 @@ npm run local-engagement-report-handoff-smoke
 npm run local-analysis-report-linkage-smoke
 npm run local-spine-smoke
 npm run local-aerial-evidence-smoke
+npm run check:map-reading-geometry
+OPENPLAN_BASE_URL=http://localhost:3000 OPENPLAN_MAP_READING_EMAIL=you@example.test \
+  OPENPLAN_MAP_READING_PASSWORD=… npm run local-map-reading-audit
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke
 npm run prod-report-funding-smoke

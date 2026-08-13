@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Loader2, MessageSquareText } from "lucide-react";
+import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 import type { CorridorEngagementSummary } from "@/lib/engagement/corridor-join";
 
 /**
@@ -130,7 +131,8 @@ export function ModelRunEngagementPanel({ modelId, modelRunId }: Props) {
 
               <p className="text-[0.7rem] leading-relaxed text-muted-foreground">
                 Approved public comments spatially joined to this run&apos;s corridor (PostGIS). Sentiment is from
-                the campaign&apos;s AI synthesis; unclassified comments are counted separately. Screening-grade.
+                the campaign&apos;s AI synthesis; unclassified comments are counted separately.{" "}
+                <ScreeningGradeLink>Screening-grade</ScreeningGradeLink>.
               </p>
             </div>
           )}

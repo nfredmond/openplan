@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
+import { ActionFeedback } from "@/components/ui/action-feedback";
 
 /**
  * The planner-facing control for an existing deliverable.
@@ -201,8 +202,9 @@ export function DeliverableUpdateControls({
           )}
         </Button>
       </form>
-      {message ? <p className="text-xs text-emerald-700 dark:text-emerald-300">{message}</p> : null}
-      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+      {/* One renderer for every save outcome in the product — and the roles
+          it carries are why a screen reader now hears this one at all. */}
+      <ActionFeedback state={{ busy: isSaving, error, details: null, message }} />
     </div>
   );
 }

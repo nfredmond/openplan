@@ -410,7 +410,7 @@ describe("DashboardPage", () => {
       screen.queryByText("The shortest complete path through OpenPlan — from context to a board-ready packet.")
     ).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Project or county context/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Packet assembly/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Build the report packet/i })).not.toBeInTheDocument();
 
     expect(screen.getByText("Quick actions")).toBeInTheDocument();
   });

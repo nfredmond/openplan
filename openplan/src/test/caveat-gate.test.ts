@@ -85,4 +85,18 @@ describe("describeScreeningGradeRefusal", () => {
     expect(describeScreeningGradeRefusal(1)).toMatch(/1 screening-grade source held back/);
     expect(describeScreeningGradeRefusal(3)).toMatch(/3 screening-grade sources held back/);
   });
+
+  /**
+   * THIS STRING RENDERS. It is the line under the county-run "Held back"
+   * banner, so it is planner copy, and it used to end
+   * "(pass acceptScreeningGrade:true to include)" — the name of a function
+   * parameter, addressed to nobody who can reach one.
+   */
+  it("names no code parameter, because a planner is the one reading it", () => {
+    const copy = describeScreeningGradeRefusal(2);
+    expect(copy).not.toMatch(/acceptScreeningGrade/);
+    expect(copy).not.toMatch(/:\s*true/);
+    // The meaning it may not lose: including them is still the reader's choice.
+    expect(copy).toMatch(/until you choose to include them/);
+  });
 });

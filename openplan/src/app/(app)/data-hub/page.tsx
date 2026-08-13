@@ -718,13 +718,18 @@ export default async function DataHubPage() {
 
         This is where a planning department brings the layers it already has:
         the bike network, city limits, zoning, parcels. They are uploaded once
-        here and become toggles on the Layers panel of the maps a planner READS
-        — Safety and Aerial today — which is the whole point: the alternative is
-        a planner who has their own parcel fabric and no way to see it beside
-        the work they are doing in this product. Corridor Analysis draws its own
-        separate map and does not carry them yet; `lib/navigation/map-surfaces`
-        records why, and saying so here beats a promise a planner would go
-        looking for and not find.
+        here and become toggles on the maps a planner READS: Safety, Aerial, and
+        — since 2026-08-12 — Corridor Analysis. That is the whole point: the
+        alternative is a planner who has their own parcel fabric and no way to
+        see it beside the work they are doing in this product.
+
+        The Corridor Analysis sentence used to say the opposite, and this file
+        is where the correction had to land. Explore builds its own Mapbox
+        instance and the shell backdrop suppresses itself there, so the one page
+        a planner opens IN ORDER TO READ A MAP was the one page their own layers
+        never reached. It now calls the same binding the shell does
+        (`use-workspace-gis-map-binding`), with its own anchor so the agency's
+        reference layers sit beneath the corridor rather than over it.
 
         The workspace's home geography is passed down for ONE purpose: narrowing
         the coordinate-system picker for a shapefile that carries no .prj, from
@@ -747,7 +752,8 @@ export default async function DataHubPage() {
         </div>
         <p className="module-summary-detail">
           Upload a GeoJSON, KML, KMZ or zipped shapefile and it becomes a layer you can switch on
-          from the Layers panel on Safety and Aerial. Old files are expected: a State Plane
+          from the Layers panel on Safety and Aerial, and from the map layers panel in Corridor
+          Analysis. Old files are expected: a State Plane
           shapefile in feet with no .prj works — OpenPlan asks which coordinate system it is in
           rather than guessing, and shows you where it lands before storing anything.
         </p>

@@ -82,6 +82,7 @@ import {
   rtpCommentResponseUnreadableFrom,
   type RtpCommentResponseSupabaseLike,
 } from "@/lib/rtp/comment-response";
+import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -1094,20 +1095,33 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                   </div>
                   <div className="module-metric-card">
                     <p className="module-metric-label">Paid reimbursements</p>
-                    <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(paidReimbursementTotal)}</p>
+                    <p className="module-metric-value text-sm">{formatMoney(paidReimbursementTotal, { precision: "whole" })}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
                   </div>
                   <div className="module-metric-card">
                     <p className="module-metric-label">Outstanding requests</p>
-                    <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(outstandingReimbursementTotal)}</p>
+                    <p className="module-metric-value text-sm">{formatMoney(outstandingReimbursementTotal, { precision: "whole" })}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
                   </div>
                   <div className="module-metric-card">
                     <p className="module-metric-label">Uninvoiced awards</p>
-                    <p className="module-metric-value text-sm">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(uninvoicedAwardTotal)}</p>
+                    <p className="module-metric-value text-sm">{formatMoney(uninvoicedAwardTotal, { precision: "whole" })}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
                   </div>
                 </div>
+
+                {/*
+                  THE RECONCILIATION DISCLOSURE. The three reimbursement cards
+                  above restate the SAME `billing_invoice_records` the invoicing
+                  register renders to the cent. Rounding them to the dollar is
+                  the right call for a plan summary — but a planner reconciling a
+                  draw against the plan and finding two different numbers for one
+                  fact has no way to tell which is the rounding. So the surface
+                  says that it rounds, once, beside the figures, and names where
+                  the exact figure lives. Do not delete this line while those
+                  cards round.
+                */}
+                <p className="text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
 
                 <p className="text-xs text-muted-foreground">
                   {/*

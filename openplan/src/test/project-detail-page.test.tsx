@@ -1166,7 +1166,7 @@ describe("ProjectDetailPage", () => {
   it("surfaces project-linked report freshness guidance", async () => {
     await renderPage();
 
-    expect(screen.getByText(/Packet freshness and regeneration cues/i)).toBeInTheDocument();
+    expect(screen.getByText(/Are this project’s reports up to date\?/i)).toBeInTheDocument();
     expect(screen.getByText(/Downtown Safety Packet needs attention/i)).toBeInTheDocument();
     expect(
       screen.getByText(/Next action: open this report and regenerate the packet, then review the governance hold before release reuse\./i)
@@ -1174,7 +1174,7 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/1 need attention/i)).toBeInTheDocument();
     expect(screen.getByText(/Showing 2 most recent report records/i)).toBeInTheDocument();
     expect(screen.getAllByText(/^2$/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Reports that still need packet updates or governance review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reports that need regenerating or a review sign-off/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Evidence-backed/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
@@ -1209,7 +1209,7 @@ describe("ProjectDetailPage", () => {
       "href",
       "/engagement?projectId=project-1"
     );
-    expectLinkByHref(/Packet assembly/i, "/reports");
+    expectLinkByHref(/Build the report packet/i, "/reports");
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
     expect(

@@ -18,7 +18,9 @@ import { CartographicProvider } from "./cartographic-context";
 import { CartographicZoomControls } from "./cartographic-zoom-controls";
 import { CartographicHeader } from "./cartographic-header";
 import { CartographicInspectorDockConnected } from "./cartographic-inspector-dock-connected";
+import { CartographicLayerDeepLink } from "./cartographic-layer-deep-link";
 import { CartographicLayersPanel } from "./cartographic-layers-panel";
+import { CartographicMapReadingToggle } from "./cartographic-map-reading-toggle";
 import { MapSurfaceOnly } from "./map-surface-only";
 import { CartographicMapBackdrop } from "./cartographic-map-backdrop";
 import { CartographicMapLegend } from "./cartographic-map-legend";
@@ -137,10 +139,36 @@ export async function CartographicShell({ children }: { children: React.ReactNod
             by construction, at any height, in any palette, on any viewport.
           */}
           <div className="op-cart-mapdock">
+            {/*
+              THE "READ THE MAP" CONTROL SITS IN THE DOCK, NOT IN THE LAYERS
+              PANEL'S HEADER.
+
+              The header was the obvious home for it and it cannot live there:
+              below 1100px the panel collapses to its coverage notes and hides
+              `__hd`, `__list` and `__ft`, and a workspace with no coverage
+              notes hides the panel outright. The control that gets the page out
+              of the way of the map would disappear on exactly the narrow
+              screens where the page covers the most of it — and it would take
+              keyboard focus with it. As a dock child it stands on its own.
+
+              It also comes FIRST, above the layers list: the planner's reading
+              order is "show me the map, then which layers", and it is the one
+              control here that changes the whole screen.
+            */}
+            <CartographicMapReadingToggle />
+
             <CartographicLayersPanel workspaceId={membership?.workspace_id ?? null} />
 
             <CartographicMapLegend />
           </div>
+
+          {/*
+            Renders nothing. It reads `?layer=<id>` from a "Show on the map"
+            link in the layer library and switches that layer on. Inside
+            `MapSurfaceOnly` because the parameter only means anything where the
+            shared map's controls exist.
+          */}
+          <CartographicLayerDeepLink />
         </MapSurfaceOnly>
 
         <CartographicInspectorDockConnected />

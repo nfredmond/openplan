@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure-form-shell";
 import type { MeasureReceiptLedger } from "@/lib/measures/receipts";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * The fund's periods: what arrived, what did not, and applying the ordinance.
@@ -58,9 +59,13 @@ export type MeasurePanelPeriod = {
   allocationRowCount: number;
 };
 
-function formatMoney(value: number | null, currencyCode: string): string {
-  if (value === null) return "Not reported";
-  return new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode }).format(value);
+/**
+ * Receipt-ledger figures are reconciled against the agency's own adopted
+ * forecast, so they are written to the cent and in the currency the measure
+ * profile declares — never the browser's locale.
+ */
+function formatLedgerMoney(value: number | null, currencyCode: string): string {
+  return formatMoney(value, { precision: "cents", currency: currencyCode, absent: "Not reported" });
 }
 
 export function MeasureFundPanel({
@@ -154,7 +159,7 @@ export function MeasureFundPanel({
           <h2 className="text-base font-semibold">What the fund has received</h2>
           {/* THE TOTAL AND ITS COVERAGE, in one block on purpose. */}
           <p className="mt-1 text-2xl font-semibold tabular-nums">
-            {formatMoney(ledger.receivedTotal, currencyCode)}
+            {formatLedgerMoney(ledger.receivedTotal, currencyCode)}
             {ledger.coverage.isFloor ? <span className="text-base font-normal text-muted-foreground"> or more</span> : null}
           </p>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
@@ -172,7 +177,7 @@ export function MeasureFundPanel({
           </p>
           {ledger.varianceTotal !== null ? (
             <p className="mt-1 text-sm text-muted-foreground">
-              Against the agency&rsquo;s own adopted forecast: {formatMoney(ledger.varianceTotal, currencyCode)} across{" "}
+              Against the agency&rsquo;s own adopted forecast: {formatLedgerMoney(ledger.varianceTotal, currencyCode)} across{" "}
               {ledger.comparablePeriodCount} of {ledger.coverage.openedPeriodCount} periods where both figures are
               recorded. OpenPlan does not forecast receipts.
             </p>
@@ -257,14 +262,14 @@ export function MeasureFundPanel({
                     {period.forecastAmount === null ? (
                       <span className="text-muted-foreground">None adopted</span>
                     ) : (
-                      formatMoney(period.forecastAmount, currencyCode)
+                      formatLedgerMoney(period.forecastAmount, currencyCode)
                     )}
                   </td>
                   <td className="py-3 pr-3 text-right tabular-nums">
                     {period.receivedAmount === null ? (
                       <StatusBadge tone="warning">Not reported</StatusBadge>
                     ) : (
-                      formatMoney(period.receivedAmount, currencyCode)
+                      formatLedgerMoney(period.receivedAmount, currencyCode)
                     )}
                   </td>
                   <td className="py-3 pr-3">

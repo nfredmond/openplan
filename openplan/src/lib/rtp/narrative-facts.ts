@@ -27,6 +27,7 @@ import {
   rtpFiscalVerdictLabel,
   type RtpFiscalConstraintSummary,
 } from "@/lib/rtp/fiscal-constraint";
+import { formatMoney } from "@/lib/money/format";
 
 export type RtpChapterFactsInput = {
   chapter: {
@@ -89,11 +90,7 @@ export type RtpChapterFactsInput = {
 };
 
 function formatAmount(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(value) ? value : 0);
+  return formatMoney(Number.isFinite(value) ? value : 0, { precision: "whole" });
 }
 
 function portfolioRoleBreakdown(linkedProjects: RtpChapterFactsInput["linkedProjects"]): string {

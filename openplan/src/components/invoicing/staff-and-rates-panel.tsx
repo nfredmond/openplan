@@ -6,10 +6,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
-}
+import { formatMoney } from "@/lib/money/format";
 
 type StaffRow = {
   id: string;
@@ -236,7 +233,7 @@ export function StaffAndRatesPanel({
                 ) : (
                   <p className="mt-1 text-xs text-muted-foreground">
                     {table.entries
-                      .map((entry) => `${entry.laborCategory} ${formatCurrency(entry.hourlyRate)}/hr`)
+                      .map((entry) => `${entry.laborCategory} ${formatMoney(entry.hourlyRate, { precision: "cents" })}/hr`)
                       .join(" · ")}
                   </p>
                 )}

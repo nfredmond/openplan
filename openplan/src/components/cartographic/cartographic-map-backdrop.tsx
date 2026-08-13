@@ -31,15 +31,17 @@ import {
   useCartographicLayers,
   useCartographicLayerStatus,
   useCartographicMapControls,
+  useCartographicMapReading,
   useCartographicSelection,
-  useWorkspaceMapLayers,
   type LayerKey,
 } from "./cartographic-context";
-import { fetchWorkspaceGisFeatures, fetchWorkspaceGisLayers } from "@/lib/workspace-gis/client";
-import type {
-  WorkspaceGisFeatureCollection,
-  WorkspaceGisLayerListing,
-} from "@/lib/workspace-gis/types";
+import type { WorkspaceGisLayerListing } from "@/lib/workspace-gis/types";
+import {
+  workspaceGisClickableLayerIds,
+  workspaceGisSourceId,
+  type WorkspaceGisMapTarget,
+} from "@/lib/cartographic/workspace-gis-map-layers";
+import { useWorkspaceGisMapBinding } from "./use-workspace-gis-map-binding";
 import {
   describeMapLayerCoverage,
   describeMapLayerFailure,
@@ -122,43 +124,12 @@ const TRANSIT_STOPS_CIRCLE_LAYER_ID = "cartographic-transit-stops-circle";
 
 // ── The workspace's own uploaded GIS layers ─────────────────────────────────
 //
-// Unlike every layer above, these are not a fixed set: their ids are rows in
-// `workspace_gis_layers`, so their Mapbox source and layer ids are DERIVED from
-// the layer id rather than declared. One source per layer, and up to four
-// drawing layers over it — fill, outline, circle, label — because one uploaded
-// shapefile can legitimately hold polygons, lines and points at once and Mapbox
-// needs a layer per geometry class.
-const workspaceGisSourceId = (layerId: string) => `cartographic-workspace-gis-${layerId}`;
-const workspaceGisFillLayerId = (layerId: string) => `${workspaceGisSourceId(layerId)}-fill`;
-const workspaceGisLineLayerId = (layerId: string) => `${workspaceGisSourceId(layerId)}-line`;
-const workspaceGisCircleLayerId = (layerId: string) => `${workspaceGisSourceId(layerId)}-circle`;
-const workspaceGisLabelLayerId = (layerId: string) => `${workspaceGisSourceId(layerId)}-label`;
-
-/**
- * Every drawing layer one uploaded layer owns, BOTTOM TO TOP.
- *
- * The order is the z-order within a layer and it is not arbitrary: a polygon
- * fill under its own outline under any points, so a layer holding all three
- * reads as one thing rather than as points buried under their own fill. The
- * label rides on top of its own geometry.
- */
-function workspaceGisDrawingLayerIds(layerId: string): string[] {
-  return [
-    workspaceGisFillLayerId(layerId),
-    workspaceGisLineLayerId(layerId),
-    workspaceGisCircleLayerId(layerId),
-    workspaceGisLabelLayerId(layerId),
-  ];
-}
-
-/** The clickable ones. A label is not a click target; the shape under it is. */
-function workspaceGisClickableLayerIds(layerId: string): string[] {
-  return [
-    workspaceGisFillLayerId(layerId),
-    workspaceGisLineLayerId(layerId),
-    workspaceGisCircleLayerId(layerId),
-  ];
-}
+// The ids, the paint and the stacking now live in
+// `@/lib/cartographic/workspace-gis-map-layers`, and the fetching in
+// `use-workspace-gis-map-binding`. They moved there when Corridor Analysis —
+// which owns its own Mapbox instance and suppresses this backdrop — became the
+// second map that has to draw them. What stays here is the one thing that is
+// genuinely this map's: WHICH layer they sit beneath, below.
 
 const KNOWN_SOURCES = [
   AOI_SOURCE_ID,
@@ -204,14 +175,9 @@ const FEATURE_LAYERS = [
  * — correct, because with no feature layers present there is nothing to be
  * buried under.
  */
-function workspaceGisAnchorLayerId(map: mapboxgl.Map): string | undefined {
+function workspaceGisAnchorLayerId(map: WorkspaceGisMapTarget): string | undefined {
   if (map.getLayer(CENSUS_TRACTS_FILL_LAYER_ID)) return CENSUS_TRACTS_FILL_LAYER_ID;
   return FEATURE_LAYERS.find((id) => map.getLayer(id));
-}
-
-/** Round a viewport to four decimals (~11 m) so a one-pixel pan is not a refetch. */
-function viewportKeyFor(bbox: [number, number, number, number]): string {
-  return bbox.map((value) => value.toFixed(4)).join(",");
 }
 
 /**
@@ -431,6 +397,10 @@ export function CartographicMapBackdrop({
   workspaceId?: string | null;
 } = {}) {
   const pathname = usePathname();
+  // Read here rather than mid-component so the workspace-layer binding below can
+  // be told whether this map is live at all. On a route that owns its own map
+  // this backdrop draws nothing, and its binding must not race that route's.
+  const suppressed = routeOwnsMap(pathname);
   const { resolvedTheme } = useTheme();
   const { registerLayerStatus } = useCartographicLayerStatus();
 
@@ -484,27 +454,11 @@ export function CartographicMapBackdrop({
   const [engagementItems, setEngagementItems] =
     useState<EngagementFeatureCollection | null>(null);
   const [transitStops, setTransitStops] = useState<TransitStopFeatureCollection | null>(null);
-  /** One viewport read per visible workspace layer, keyed by layer id. */
-  const [workspaceCollections, setWorkspaceCollections] = useState<
-    Record<string, WorkspaceGisFeatureCollection>
-  >({});
-  /**
-   * The current map window, rounded, as the trigger for workspace-layer reads.
-   *
-   * THE ONLY VIEWPORT-DRIVEN FETCH ON THIS BACKDROP. Every other layer is a
-   * whole-workspace read capped at a few hundred rows; a parcel fabric is a
-   * quarter of a million polygons and there is no "whole layer" to ask for. So
-   * this one asks for what is on screen and asks again when the screen moves.
-   */
-  const [viewportBbox, setViewportBbox] = useState<[number, number, number, number] | null>(null);
-  const {
-    workspaceLayers,
-    registerWorkspaceLayers,
-    registerWorkspaceCatalogError,
-    workspaceLayerVisibility,
-    registerWorkspaceLayerStatus,
-  } = useWorkspaceMapLayers();
   const { layers } = useCartographicLayers();
+  // READ ONLY, and set by the map dock's toggle. This is the seam between the
+  // page chrome stepping aside and the basemap dropping its house styling — two
+  // halves of one moment, owned by two different files.
+  const { mapReading } = useCartographicMapReading();
   const { registerMapControls } = useCartographicMapControls();
   const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
@@ -527,16 +481,26 @@ export function CartographicMapBackdrop({
    */
   const transitFetchedForRef = useRef<string | null | undefined>(undefined);
   /**
-   * The viewport each workspace layer was last successfully read for.
+   * The workspace's uploaded layers: fetched for the current window, drawn, and
+   * kept in step with their toggles.
    *
-   * Keyed by layer id, valued by the rounded viewport key, so panning back to a
-   * window already drawn costs nothing and a failed read is simply absent —
-   * which makes the next attempt a retry rather than a permanent blank layer
-   * behind a ticked checkbox.
+   * ONE CALL, and everything about them that is not this map's own business is
+   * inside it. What stays here is the anchor — this backdrop's answer to "what
+   * do the agency's own layers sit beneath" — and the click handler below, which
+   * feeds the shell's inspector dock. Corridor Analysis calls the same hook with
+   * its own anchor and its own hover idiom.
    */
-  const workspaceLayerViewportRef = useRef<Map<string, string>>(new Map());
-  /** The workspace whose layer catalog has been requested. */
-  const workspaceCatalogFetchedForRef = useRef<string | null | undefined>(undefined);
+  const { workspaceLayers, workspaceLayerVisibility } = useWorkspaceGisMapBinding({
+    mapRef,
+    ready,
+    enabled: !suppressed,
+    workspaceId,
+    // The BASEMAP's theme. `backdropTheme` is resolved from the app theme above
+    // and is what decides which Mapbox style this map was built with, so the
+    // casing ink and the tiles underneath it can never disagree.
+    theme: backdropTheme,
+    resolveAnchorLayerId: workspaceGisAnchorLayerId,
+  });
   /**
    * The live catalog and visibility, readable from a Mapbox event handler.
    *
@@ -566,8 +530,6 @@ export function CartographicMapBackdrop({
   useEffect(() => {
     navigateRef.current = (path: string) => router.push(path);
   }, [router]);
-
-  const suppressed = routeOwnsMap(pathname);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -908,181 +870,6 @@ export function CartographicMapBackdrop({
   useEffect(() => {
     workspaceVisibilityRef.current = workspaceLayerVisibility;
   }, [workspaceLayerVisibility]);
-
-  /**
-   * The workspace's layer CATALOG — names, styles, versions, caveats.
-   *
-   * FETCHED WHETHER OR NOT ANY LAYER IS SWITCHED ON, unlike the geometry below,
-   * and for the crash layer's reason: the catalog is what the panel lists, and a
-   * planner has to be able to SEE that their agency has four uploaded layers
-   * before they can decide to tick one. Gating the list on the toggles would
-   * make the layers discoverable only by someone who already knew they existed.
-   *
-   * It is small — a few rows of metadata — so pulling it on every navigation
-   * costs nothing like the geometry does.
-   */
-  useEffect(() => {
-    if (suppressed) return;
-    if (workspaceCatalogFetchedForRef.current === workspaceId) return;
-    workspaceCatalogFetchedForRef.current = workspaceId;
-
-    let cancelled = false;
-    let settled = false;
-    (async () => {
-      try {
-        const listings = await fetchWorkspaceGisLayers();
-        if (cancelled) return;
-        settled = true;
-        registerWorkspaceLayers(listings, workspaceId);
-      } catch (error) {
-        if (cancelled) return;
-        // A workspace with no layers and a workspace whose catalog failed to
-        // load both produce an empty list, and only one of them is a fact about
-        // the workspace. Registering `[]` here said the second in the words of
-        // the first: a planner whose agency has forty layers was shown a panel
-        // stating they had none, with the failure going only to a console the
-        // build strips in production. The failure is REGISTERED instead, so the
-        // panel can say what happened — and the catalog is deliberately left
-        // alone rather than emptied, because wiping it would also discard the
-        // remembered on/off choices for layers that still exist.
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("[cartographic-backdrop] workspace GIS catalog fetch failed", error);
-        }
-        registerWorkspaceCatalogError(
-          "OpenPlan could not load this workspace's map layers, so this list is not a statement that there " +
-            "are none. Reload the page to try again."
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      // Only a completed read may be remembered — otherwise a navigation during
-      // the request leaves the catalog permanently unfetched for this workspace.
-      if (!settled) workspaceCatalogFetchedForRef.current = undefined;
-    };
-  }, [suppressed, workspaceId, registerWorkspaceLayers, registerWorkspaceCatalogError]);
-
-  /**
-   * Track the map window, so the workspace layers can be read for it.
-   *
-   * `moveend` rather than `move`: a read per animation frame during a pan would
-   * be hundreds of requests for one gesture. The rounded key in
-   * `viewportKeyFor` then absorbs the sub-metre jitter that a settled map still
-   * produces.
-   */
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !ready) return;
-
-    const record = () => {
-      const bounds = map.getBounds();
-      if (!bounds) return;
-      setViewportBbox([
-        bounds.getWest(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getNorth(),
-      ]);
-    };
-
-    record();
-    map.on("moveend", record);
-    return () => {
-      map.off("moveend", record);
-    };
-  }, [ready]);
-
-  /**
-   * Read each VISIBLE workspace layer for the current window.
-   *
-   * GATED ON THE TOGGLE, like transit and for a stronger version of its reason:
-   * this payload is unbounded in a way no other layer's is, and a workspace with
-   * six uploaded layers switched on would otherwise fire six requests on every
-   * pan. Off means not asked for.
-   *
-   * A LAYER THAT IS TOO DENSE IS STILL STORED, with no features and its true
-   * count. That is the whole design: the response says "214,391 shapes in this
-   * view", the map draws none of them, and the panel says so. Dropping the
-   * response on the floor would leave the planner looking at an empty layer with
-   * a ticked box and no explanation, which is the exact reading — "there is
-   * nothing here" — that this layer refuses to allow.
-   */
-  useEffect(() => {
-    if (suppressed) return;
-    if (!viewportBbox) return;
-    const key = viewportKeyFor(viewportBbox);
-
-    const visible = workspaceLayers.filter(
-      (listing) => workspaceLayerVisibility[listing.layer.id] === true
-    );
-    if (visible.length === 0) return;
-
-    const controller = new AbortController();
-    for (const listing of visible) {
-      const layerId = listing.layer.id;
-      if (workspaceLayerViewportRef.current.get(layerId) === key) continue;
-
-      (async () => {
-        try {
-          const collection = await fetchWorkspaceGisFeatures(layerId, viewportBbox);
-          if (controller.signal.aborted) return;
-          workspaceLayerViewportRef.current.set(layerId, key);
-          setWorkspaceCollections((prev) => ({ ...prev, [layerId]: collection }));
-          registerWorkspaceLayerStatus(layerId, {
-            workspaceId,
-            failed: false,
-            // The route's own sentences, verbatim. Only it knows whether an
-            // empty layer is too dense to draw, has no finished upload, or is
-            // genuinely empty in this window — three states that look identical
-            // on a map and read very differently to a planner.
-            notes: collection.coverageNotes ?? [],
-          });
-        } catch (error) {
-          if (controller.signal.aborted) return;
-          if ((error as { name?: string }).name === "AbortError") return;
-          if (process.env.NODE_ENV !== "production") {
-            console.warn(`[cartographic-backdrop] workspace layer ${layerId} read failed`, error);
-          }
-          registerWorkspaceLayerStatus(layerId, {
-            workspaceId,
-            failed: true,
-            notes: [
-              `${listing.layer.name}: this layer could not be loaded for the current map view, so nothing is ` +
-                `drawn for it. That is not a finding that the area is empty.`,
-            ],
-          });
-        }
-      })();
-    }
-
-    return () => controller.abort();
-  }, [
-    suppressed,
-    viewportBbox,
-    workspaceLayers,
-    workspaceLayerVisibility,
-    workspaceId,
-    registerWorkspaceLayerStatus,
-  ]);
-
-  /**
-   * A workspace switch invalidates every cached viewport read.
-   *
-   * Layer ids are per-workspace rows, so a stale entry cannot collide — but the
-   * drawn geometry would survive the switch until the new workspace's layers
-   * happened to be read, leaving one agency's parcels under another's map.
-   */
-  useEffect(() => {
-    workspaceLayerViewportRef.current = new Map();
-    // Clearing on a workspace CHANGE is the point, and it has to be a state
-    // write: the drawn geometry lives in state, and leaving it would put one
-    // agency's parcels under another agency's map until the new workspace's
-    // layers happened to be read. A cascading render on a workspace switch is a
-    // fair price for that not happening.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setWorkspaceCollections({});
-  }, [workspaceId]);
 
   // Same pattern for project corridors — separate source + line layer.
   useEffect(() => {
@@ -1877,224 +1664,6 @@ export function CartographicMapBackdrop({
     }
   }, [ready, transitStops, resolvedTheme]);
 
-  /**
-   * Draw the workspace's own layers: one source each, up to four layers over it.
-   *
-   * ── WHY THE LABEL VALUE IS COPIED TO A TOP-LEVEL PROPERTY ──
-   *
-   * A feature's attributes arrive nested, as `properties.attributes`. Mapbox GL
-   * feeds a GeoJSON source through its own vector-tile encoder, and that encoder
-   * carries only SCALAR property values — a nested object survives as its JSON
-   * text. So `["get", field, ["get", "attributes"]]` in a text-field expression
-   * reads a string and yields nothing, silently: the layer draws, the labels
-   * simply never appear, and no error is raised anywhere. The label value is
-   * therefore lifted to a flat property here, where the failure would be a
-   * visible wrong label rather than an invisible missing one. The nested object
-   * is left in place for the inspector, which parses it back.
-   */
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !ready) return;
-
-    const paint = () => {
-      const anchor = workspaceGisAnchorLayerId(map);
-
-      /**
-       * Bottom to top: polygons, then lines, then points — across ALL layers,
-       * not within each — so a bike network drawn over a zoning fill stays
-       * visible whatever order the layers were uploaded in. `sortOrder` then
-       * settles ties within a geometry class, which is the only place a
-       * planner's own ordering can change anything.
-       */
-      const ordered = [...workspaceLayers].sort(
-        (left, right) => left.layer.sortOrder - right.layer.sortOrder
-      );
-
-      for (const listing of ordered) {
-        const layer = listing.layer;
-        const collection = workspaceCollections[layer.id];
-        if (!collection) continue;
-
-        const sourceId = workspaceGisSourceId(layer.id);
-        const labelField = layer.style.labelField;
-        const data: GeoJSON.FeatureCollection = {
-          type: "FeatureCollection",
-          features: collection.features.map((feature) => {
-            const attributes = feature.properties.attributes ?? {};
-            const labelValue = labelField ? attributes[labelField] : undefined;
-            return {
-              type: "Feature",
-              // The feature index is the stable id within a version, and it is
-              // what a selection's `featureRef` carries.
-              id: feature.properties.featureIndex,
-              geometry: feature.geometry as GeoJSON.Geometry,
-              properties: {
-                ...feature.properties,
-                label:
-                  labelValue === null || labelValue === undefined ? "" : String(labelValue),
-              },
-            };
-          }),
-        };
-
-        if (!map.getSource(sourceId)) {
-          map.addSource(sourceId, { type: "geojson", data });
-        } else {
-          (map.getSource(sourceId) as mapboxgl.GeoJSONSource).setData(data);
-        }
-
-        const color = layer.style.color;
-        const opacity = layer.style.opacity;
-        const lineWidth = layer.style.lineWidth;
-
-        if (!map.getLayer(workspaceGisFillLayerId(layer.id))) {
-          map.addLayer(
-            {
-              id: workspaceGisFillLayerId(layer.id),
-              type: "fill",
-              source: sourceId,
-              filter: ["==", ["geometry-type"], "Polygon"],
-              // The fill is deliberately WEAKER than the planner's chosen
-              // opacity, which governs the outline. A zoning layer at full
-              // opacity is an opaque sheet over the basemap, and the streets
-              // underneath are how a planner knows where they are.
-              paint: { "fill-color": color, "fill-opacity": opacity * 0.35 },
-            },
-            anchor
-          );
-        } else {
-          map.setPaintProperty(workspaceGisFillLayerId(layer.id), "fill-color", color);
-          map.setPaintProperty(workspaceGisFillLayerId(layer.id), "fill-opacity", opacity * 0.35);
-        }
-
-        if (!map.getLayer(workspaceGisLineLayerId(layer.id))) {
-          map.addLayer(
-            {
-              id: workspaceGisLineLayerId(layer.id),
-              type: "line",
-              source: sourceId,
-              // Lines AND polygon outlines: a polygon's edge is what makes a
-              // parcel readable, and a `fill` alone at 35% opacity has none.
-              filter: ["match", ["geometry-type"], ["LineString", "Polygon"], true, false],
-              paint: { "line-color": color, "line-opacity": opacity, "line-width": lineWidth },
-            },
-            anchor
-          );
-        } else {
-          map.setPaintProperty(workspaceGisLineLayerId(layer.id), "line-color", color);
-          map.setPaintProperty(workspaceGisLineLayerId(layer.id), "line-opacity", opacity);
-          map.setPaintProperty(workspaceGisLineLayerId(layer.id), "line-width", lineWidth);
-        }
-
-        if (!map.getLayer(workspaceGisCircleLayerId(layer.id))) {
-          map.addLayer(
-            {
-              id: workspaceGisCircleLayerId(layer.id),
-              type: "circle",
-              source: sourceId,
-              filter: ["==", ["geometry-type"], "Point"],
-              paint: {
-                "circle-color": color,
-                "circle-opacity": opacity,
-                // Derived from the line width so one control moves both: a
-                // planner who thickened a bike network expects its nodes to
-                // follow, and a second hidden constant would drift from it.
-                "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, lineWidth, 16, lineWidth * 3],
-                "circle-stroke-color": "#ffffff",
-                "circle-stroke-width": 1,
-              },
-            },
-            anchor
-          );
-        } else {
-          map.setPaintProperty(workspaceGisCircleLayerId(layer.id), "circle-color", color);
-          map.setPaintProperty(workspaceGisCircleLayerId(layer.id), "circle-opacity", opacity);
-        }
-
-        if (labelField) {
-          if (!map.getLayer(workspaceGisLabelLayerId(layer.id))) {
-            map.addLayer(
-              {
-                id: workspaceGisLabelLayerId(layer.id),
-                type: "symbol",
-                source: sourceId,
-                layout: {
-                  "text-field": ["get", "label"],
-                  "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-                  "text-size": 11,
-                  // Never `text-allow-overlap`: a parcels layer labelled by APN
-                  // would render a solid block of overlapping text. Mapbox drops
-                  // the ones that collide, which reads as a labelled map rather
-                  // than as ink.
-                  "text-optional": true,
-                },
-                paint: {
-                  "text-color": color,
-                  "text-halo-color": "#ffffff",
-                  "text-halo-width": 1.2,
-                },
-              },
-              anchor
-            );
-          } else {
-            map.setPaintProperty(workspaceGisLabelLayerId(layer.id), "text-color", color);
-          }
-        } else if (map.getLayer(workspaceGisLabelLayerId(layer.id))) {
-          // The planner cleared the label field. The layer goes, rather than
-          // being left drawing the last field they chose.
-          map.removeLayer(workspaceGisLabelLayerId(layer.id));
-        }
-      }
-
-      // ENFORCE the stacking every pass rather than only at insertion. A layer
-      // added while the tract choropleth was absent sits above it forever
-      // otherwise, and re-ordering by `sortOrder` would never take effect on a
-      // layer that already existed.
-      const currentAnchor = workspaceGisAnchorLayerId(map);
-      if (currentAnchor) {
-        for (const listing of ordered) {
-          for (const drawingLayerId of workspaceGisDrawingLayerIds(listing.layer.id)) {
-            if (map.getLayer(drawingLayerId)) {
-              try {
-                map.moveLayer(drawingLayerId, currentAnchor);
-              } catch {
-                // Best-effort ordering; a failure here is a cosmetic z-order,
-                // never a wrong position on the ground.
-              }
-            }
-          }
-        }
-      }
-    };
-
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
-  }, [ready, workspaceLayers, workspaceCollections, resolvedTheme]);
-
-  /**
-   * Honour each workspace layer's toggle. All of its drawing layers move
-   * together, so a layer never renders as labels floating over nothing.
-   */
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !ready) return;
-    for (const listing of workspaceLayers) {
-      const visibility = workspaceLayerVisibility[listing.layer.id] ? "visible" : "none";
-      for (const drawingLayerId of workspaceGisDrawingLayerIds(listing.layer.id)) {
-        if (map.getLayer(drawingLayerId)) {
-          try {
-            map.setLayoutProperty(drawingLayerId, "visibility", visibility);
-          } catch {
-            // no-op: the workspace layer toggle is best-effort
-          }
-        }
-      }
-    }
-  }, [ready, workspaceLayers, workspaceLayerVisibility, workspaceCollections]);
-
   // Frame the workspace's own features once, on the first payload that carries
   // any. This outranks the home-geography camera on purpose: real data already
   // in scope is a better answer than a stated boundary, and a stated boundary
@@ -2769,7 +2338,26 @@ export function CartographicMapBackdrop({
 
   return (
     <div
-      aria-hidden
+      /*
+        NOT `aria-hidden`, though it was until 2026-08-12, and the reason it
+        cannot be is mechanical rather than a matter of taste.
+
+        Mapbox builds an INTERACTIVE canvas in here (`interactive: true`) and
+        gives it `tabindex="0"` so the map can be panned and zoomed from the
+        keyboard. A focusable element inside an `aria-hidden` subtree is a WCAG
+        4.1.2 failure — a screen-reader user tabs into a control their reader has
+        been told does not exist, and lands somewhere with no name and no role.
+        That was true on every authenticated page in the product.
+
+        `aria-hidden` was reaching for something real: this map is decorative on
+        most routes, and a chatty region announced on the RTP registry would be
+        noise. But the fix for noise is a NAME, not erasure — a labelled region
+        is one line in the landmark list a reader can skip past, and the same
+        line is what makes the map findable on Safety, on Aerial, and while the
+        page has stepped aside to be read.
+      */
+      role="region"
+      aria-label="Workspace map"
       className="op-map-backdrop"
       style={{
         position: "fixed",
@@ -2795,15 +2383,36 @@ export function CartographicMapBackdrop({
             inset: 0,
             opacity: ready ? 1 : 0,
             transition: "opacity 300ms ease",
-            filter:
-              backdropTheme === "dark"
+            /*
+              THE HOUSE STYLING COMES OFF WHILE THE MAP IS BEING READ.
+
+              Desaturating and dimming the basemap is right when it is a backdrop
+              behind a page: it keeps the map from competing with the text on top
+              of it. It is wrong the moment the map is the thing being looked at,
+              and specifically wrong for the agency's own layers — the swatch in
+              the panel is the planner's chosen colour raw, while the line on the
+              map was that colour pushed through `saturate(0.7)`. A planner
+              comparing the two could not tell which one was true, and the honest
+              answer was "neither, quite".
+
+              So while `mapReading` is on the filter is dropped entirely and the
+              ink on the map is the colour the panel says it is.
+            */
+            filter: mapReading
+              ? "none"
+              : backdropTheme === "dark"
                 ? "saturate(0.8) brightness(0.95)"
                 : "saturate(0.7) contrast(0.95)",
           }}
         />
       ) : null}
-      {/* Parchment warm-tint overlay so Mapbox light style feels cartographic. */}
-      {usingMapbox ? (
+      {/*
+        Parchment warm-tint overlay so Mapbox light style feels cartographic —
+        and, like the canvas filter above, gone while the map is being read. A
+        30% wash over the whole map is a second thing standing between the
+        planner's colour and their eye.
+      */}
+      {usingMapbox && !mapReading ? (
         <div
           style={{
             position: "absolute",

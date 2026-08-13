@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, Layers, Loader2, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Form, FormActions, FormError, FormField, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,6 +82,7 @@ export function EngagementContextLayersPanel({
   canWrite: boolean;
 }) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -159,7 +161,12 @@ export function EngagementContextLayersPanel({
   }
 
   async function removeLayer(layer: ContextLayerSummary) {
-    if (!window.confirm(`Remove “${layer.name}” from this campaign's maps? This cannot be undone.`)) return;
+    const confirmed = await confirm({
+      headline: `Remove “${layer.name}” from this campaign's maps?`,
+      consequence: "This cannot be undone.",
+      confirmLabel: "Remove this layer",
+    });
+    if (!confirmed) return;
     setError(null);
     setBusyLayerId(layer.id);
     try {
@@ -220,9 +227,19 @@ export function EngagementContextLayersPanel({
     }
   }
 
-  function toggleVisibility(layer: ContextLayerSummary) {
+  async function toggleVisibility(layer: ContextLayerSummary) {
     if (!layer.visible_to_participants) {
-      if (!window.confirm(contextLayerPublicationWarning(layer.name))) return;
+      // The warning text is the shared one, word for word. Publishing a layer
+      // deletes nothing, so it is a caution rather than a destruction — but it
+      // is still asked, because it is the step that puts geometry in public.
+      const confirmed = await confirm({
+        headline: `Show “${layer.name}” to participants?`,
+        consequence: contextLayerPublicationWarning(layer.name),
+        confirmLabel: "Show it to participants",
+        cancelLabel: "Keep it hidden",
+        tone: "caution",
+      });
+      if (!confirmed) return;
     }
     void patchLayer(layer, { visibleToParticipants: !layer.visible_to_participants });
   }
@@ -420,7 +437,7 @@ export function EngagementContextLayersPanel({
                           variant="secondary"
                           size="sm"
                           disabled={busyLayerId === layer.id}
-                          onClick={() => toggleVisibility(layer)}
+                          onClick={() => void toggleVisibility(layer)}
                         >
                           {layer.visible_to_participants ? "Hide from participants" : "Show to participants"}
                         </Button>
@@ -449,6 +466,7 @@ export function EngagementContextLayersPanel({
           })}
         </ul>
       )}
+      {confirmDialog}
     </article>
   );
 }

@@ -3,6 +3,7 @@ import {
   type ReceivableAgingBucket,
   type ReceivableAgingSummary,
 } from "@/lib/invoicing/receivables";
+import { formatMoney } from "@/lib/money/format";
 
 const BUCKET_LABELS: Record<ReceivableAgingBucket, string> = {
   current: "Current",
@@ -11,10 +12,6 @@ const BUCKET_LABELS: Record<ReceivableAgingBucket, string> = {
   days_61_90: "61-90 days",
   days_over_90: "Over 90 days",
 };
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
-}
 
 /**
  * Aging strip for outstanding (sent) client invoices. Purely presentational —
@@ -48,7 +45,7 @@ export function ReceivableAgingStrip({ aging }: { aging: ReceivableAgingSummary 
                 {BUCKET_LABELS[bucket]}
               </p>
               <p className={`mt-1 text-sm font-semibold ${empty ? "text-muted-foreground" : "text-foreground"}`}>
-                {formatCurrency(cell.amount)}
+                {formatMoney(cell.amount, { precision: "cents" })}
               </p>
               <p className="text-xs text-muted-foreground">
                 {cell.count} invoice{cell.count === 1 ? "" : "s"}
@@ -60,7 +57,7 @@ export function ReceivableAgingStrip({ aging }: { aging: ReceivableAgingSummary 
 
       {aging.undatedCount > 0 ? (
         <p className="border-l-2 border-amber-300/80 bg-amber-50/80 px-3 py-2 text-xs text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-          {aging.undatedCount} outstanding without a due date ({formatCurrency(aging.undatedAmount)}) — these
+          {aging.undatedCount} outstanding without a due date ({formatMoney(aging.undatedAmount, { precision: "cents" })}) — these
           cannot be aged without guessing, so they sit outside the buckets until a due date is set.
         </p>
       ) : null}

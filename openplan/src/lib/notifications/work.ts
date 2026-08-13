@@ -125,6 +125,7 @@ import {
 } from "@/lib/workspaces/roster";
 
 import { enqueueEmail } from "./engagement";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * The `kind` vocabulary, matching the CHECK constraint as the migration corpus
@@ -755,23 +756,13 @@ async function loadAwardCurrencyCodes(
  * whole lane is written against.
  */
 function reminderMoney(value: number, currencyCode: string | null | undefined): string {
-  const code = currencyCode?.trim().toUpperCase() || "USD";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: code,
-      // The CODE, not the symbol. This sentence is one line in an inbox with no
-      // room for a currency footnote, and "$119,999.67" is the same string for
-      // US, Canadian, Australian and a dozen other dollars. The figure is the
-      // whole reason the reminder exists; naming its unit costs four characters.
-      currencyDisplay: "code",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
-  } catch {
-    // An unrecognized code must not cost a planner their lapse warning.
-    return `${value.toFixed(2)} ${code}`;
-  }
+  // The CODE, not the symbol. This sentence is one line in an inbox with no
+  // room for a currency footnote, and "$119,999.67" is the same string for US,
+  // Canadian, Australian and a dozen other dollars. The figure is the whole
+  // reason the reminder exists; naming its unit costs four characters. An
+  // unrecognized code falls back inside `formatMoney` to the code beside the
+  // number — it must not cost a planner their lapse warning.
+  return formatMoney(value, { precision: "cents", currency: currencyCode, currencyDisplay: "code" });
 }
 
 /**

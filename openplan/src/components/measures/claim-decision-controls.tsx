@@ -13,6 +13,7 @@ import {
   type MeasureClaimStatus,
 } from "@/lib/measures/claims";
 import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure-form-shell";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * Deciding one claim — the control that moves public money.
@@ -86,8 +87,9 @@ export function ClaimDecisionControls({
   const [documentRole, setDocumentRole] = useState("other");
 
   const allowed = MEASURE_CLAIM_TRANSITIONS[claim.status as MeasureClaimStatus] ?? [];
-  const money = (value: number) =>
-    new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode }).format(value);
+  // A claim's gross, retention, and net are what the recipient is paid against.
+  // Cents, in the measure's declared currency — never the browser's locale.
+  const money = (value: number) => formatMoney(value, { precision: "cents", currency: currencyCode });
 
   async function applyTransition(next: MeasureClaimStatus) {
     const saved = await submit({

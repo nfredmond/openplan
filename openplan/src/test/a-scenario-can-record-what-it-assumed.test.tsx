@@ -151,7 +151,7 @@ describe("a scenario can record what it assumed", () => {
 
     // Zero rows because the tables do not exist is not the same fact as zero
     // rows because nobody recorded any, and only one is about this agency.
-    expect(screen.getByText(/pending migration, not an empty scenario set/i)).toBeInTheDocument();
+    expect(screen.getByText(/has not been set up on this deployment yet/i)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^add$/i })).toBeNull();
   });
 

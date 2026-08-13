@@ -40,6 +40,7 @@ import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 // into something stronger on its way to the Command Center.
 import { SAFETY_SCREENING_NARRATIVE_CAVEAT } from "@/lib/safety/caveats";
 import type { StatusTone } from "@/lib/ui/status";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * `count` rides alongside `data` because PostgREST reports how many rows the
@@ -461,11 +462,7 @@ export type WorkspaceOperationsSummary = {
 
 function formatCurrency(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) return "$0";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 function getFundingDecisionOpportunityStatusPriority(opportunityStatus: string | null | undefined) {

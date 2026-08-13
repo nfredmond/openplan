@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 type ClientInvoiceStatusControlProps = {
   workspaceId: string;
@@ -26,6 +27,7 @@ export function ClientInvoiceStatusControl({
   canWrite,
 }: ClientInvoiceStatusControlProps) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [error, setError] = useState<string | null>(null);
   const [savingStatus, setSavingStatus] = useState<string | null>(null);
 
@@ -51,10 +53,14 @@ export function ClientInvoiceStatusControl({
     }
   }
 
-  function handleVoid() {
-    const confirmed = window.confirm(
-      `Void invoice ${invoiceNumber}? It stops counting as a receivable, its number stays claimed, and every time entry billed on its lines returns to the unbilled pool.`
-    );
+  async function handleVoid() {
+    const confirmed = await confirm({
+      headline: `Void invoice ${invoiceNumber}?`,
+      consequence:
+        "It stops counting as a receivable, its number stays claimed, and every time entry billed on its lines returns to the unbilled pool.",
+      confirmLabel: "Void this invoice",
+      cancelLabel: "Leave it as it is",
+    });
     if (!confirmed) {
       return;
     }
@@ -98,13 +104,14 @@ export function ClientInvoiceStatusControl({
           type="button"
           className="openplan-inline-label openplan-inline-label-muted"
           disabled={savingStatus !== null}
-          onClick={handleVoid}
+          onClick={() => void handleVoid()}
         >
           {savingStatus === "void" ? "Voiding…" : "Void…"}
         </button>
       ) : null}
 
       {error ? <span className="text-xs text-red-700 dark:text-red-300">{error}</span> : null}
+      {confirmDialog}
     </div>
   );
 }

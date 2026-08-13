@@ -2,6 +2,11 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace-integration-keys-panel";
+import {
+  confirmDestructiveAction,
+  confirmDialogText,
+  declineConfirmation,
+} from "./helpers/confirm-dialog";
 
 /**
  * The guided-setup panel for per-workspace integration keys. Everything it
@@ -309,8 +314,6 @@ describe("WorkspaceIntegrationKeysPanel", () => {
   });
 
   it("removes a stored key after a confirm that names the env fallback", async () => {
-    const confirmMock = vi.fn((_message?: string) => true);
-    vi.stubGlobal("confirm", confirmMock);
     const { calls } = mockFetch({
       GET: {
         body: payload({
@@ -330,9 +333,9 @@ describe("WorkspaceIntegrationKeysPanel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^remove$/i }));
 
-    // The confirm text says what removal falls back to.
-    expect(confirmMock).toHaveBeenCalledTimes(1);
-    expect(String(confirmMock.mock.calls[0]![0])).toMatch(/fall back to this deployment's ANTHROPIC_API_KEY/);
+    // The dialog says what removal falls back to — on the page, in the theme.
+    expect(await confirmDialogText()).toMatch(/fall back to this deployment's ANTHROPIC_API_KEY/);
+    await confirmDestructiveAction("Remove this key");
 
     await waitFor(() => expect(calls.some((call) => call.method === "DELETE")).toBe(true));
     const del = calls.find((call) => call.method === "DELETE")!;
@@ -402,5 +405,36 @@ describe("WorkspaceIntegrationKeysPanel", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Integration keys are unavailable right now",
     );
+  });
+
+  /**
+   * FOUND BY MUTATION: making the panel ignore the planner's answer broke no
+   * test here, because the removal path had only ever been driven with "yes".
+   * A workspace key removed by accident silently changes which credential the
+   * whole workspace's AI features run on.
+   */
+  it("removes nothing when the manager declines", async () => {
+    const { calls } = mockFetch({
+      GET: {
+        body: payload({
+          providers: [
+            provider({
+              ...AI_PROVIDER,
+              storedKey: { keyLast4: "9xyz", updatedAt: "2026-07-24T00:00:00.000Z" },
+            }),
+          ],
+        }),
+      },
+      DELETE: { body: {} },
+    });
+
+    render(<WorkspaceIntegrationKeysPanel workspaceId={WORKSPACE_ID} canManage />);
+    await screen.findByText(/Workspace key ••••9xyz/);
+
+    fireEvent.click(screen.getByRole("button", { name: /^remove$/i }));
+    await declineConfirmation();
+
+    expect(calls.some((call) => call.method === "DELETE")).toBe(false);
+    expect(screen.getByText(/Workspace key ••••9xyz/)).toBeInTheDocument();
   });
 });

@@ -5,6 +5,7 @@ import {
   type FundingAwardSubstantiationReadiness,
   type FundingAwardSubstantiationSummary,
 } from "@/lib/invoicing/invoice-records";
+import { formatMoney } from "@/lib/money/format";
 
 export function titleCase(input: string | null | undefined): string {
   if (!input) {
@@ -121,8 +122,14 @@ export function formatWorkspaceIdSnippet(workspaceId: string): string {
   return workspaceId.slice(0, 8);
 }
 
+/**
+ * The invoicing register is the ledger of record — every figure here is one a
+ * funder or a client reconciles against, so it is written to the cent. The RTP
+ * cycle page summarises the SAME `billing_invoice_records` rounded to the
+ * dollar and discloses that it rounds; see `src/lib/money/format.ts`.
+ */
 export function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  return formatMoney(value, { precision: "cents" });
 }
 
 export function formatDateTime(value: string | null | undefined): string {

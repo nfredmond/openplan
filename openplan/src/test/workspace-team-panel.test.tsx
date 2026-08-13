@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
+import { confirmDestructiveAction, confirmDialogText, declineConfirmation } from "./helpers/confirm-dialog";
 
 const refreshMock = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: refreshMock }) }));
@@ -103,23 +104,21 @@ describe("WorkspaceTeamPanel members management", () => {
   });
 
   it("confirms before removing, naming the loss of access", async () => {
-    const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(false);
     render(<WorkspaceTeamPanel workspaceId={WORKSPACE_ID} canManage />);
     const removeButton = await screen.findByRole("button", { name: "Remove" });
     fireEvent.click(removeButton);
 
-    expect(confirmMock).toHaveBeenCalledWith(
-      expect.stringContaining("lose access")
-    );
-    // Declined confirm: no DELETE issued.
+    expect(await confirmDialogText()).toContain("lose access");
+    await declineConfirmation();
+    // Declined: no DELETE issued.
     expect(fetchCalls.some((call) => call.init?.method === "DELETE")).toBe(false);
   });
 
   it("labels self-removal as leaving and DELETEs on confirm", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<WorkspaceTeamPanel workspaceId={WORKSPACE_ID} canManage />);
     const leaveButton = await screen.findByRole("button", { name: "Leave" });
     fireEvent.click(leaveButton);
+    await confirmDestructiveAction("Leave this workspace");
 
     await waitFor(() => {
       const del = fetchCalls.find((call) => call.init?.method === "DELETE");
@@ -132,7 +131,6 @@ describe("WorkspaceTeamPanel members management", () => {
   });
 
   it("renders API error copy verbatim", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     mutationResponse = jsonResponse(
       { error: "This workspace's last owner cannot be demoted or removed. Promote another owner first." },
       409
@@ -140,6 +138,7 @@ describe("WorkspaceTeamPanel members management", () => {
     render(<WorkspaceTeamPanel workspaceId={WORKSPACE_ID} canManage />);
     const leaveButton = await screen.findByRole("button", { name: "Leave" });
     fireEvent.click(leaveButton);
+    await confirmDestructiveAction("Leave this workspace");
 
     expect(
       await screen.findByText(
@@ -160,12 +159,12 @@ describe("WorkspaceTeamPanel members management", () => {
     }
 
     it("refreshes the page after leaving, and does not re-list a workspace it just left", async () => {
-      vi.spyOn(window, "confirm").mockReturnValue(true);
       render(<WorkspaceTeamPanel workspaceId={WORKSPACE_ID} canManage />);
       const leaveButton = await screen.findByRole("button", { name: "Leave" });
       const listsBefore = memberListCalls();
 
       fireEvent.click(leaveButton);
+      await confirmDestructiveAction("Leave this workspace");
 
       await waitFor(() => expect(refreshMock).toHaveBeenCalled());
       expect(await screen.findByText(/You left this workspace\./)).toBeInTheDocument();

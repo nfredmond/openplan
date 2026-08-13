@@ -72,6 +72,8 @@ import {
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { formatMoney } from "@/lib/money/format";
 
 export const metadata = moduleMetadata("Reports");
 
@@ -783,17 +785,10 @@ export default async function ReportsPage({
 
   return (
     <section className="module-page">
-      {reads.any ? (
-        <div
-          role="status"
-          className="mb-4 rounded-lg border border-amber-300/60 bg-amber-50/60 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
-        >
-          <p>{reads.describe()}</p>
-          {/* Internal, membership-gated: the database's own words are what an
-              operator can act on. The public surfaces deliberately omit them. */}
-          <p className="mt-1 text-xs opacity-80">{reads.messages().join(" · ")}</p>
-        </div>
-      ) : null}
+      {/* Internal, membership-gated: the database's own words stay on the page,
+          inside the notice's operator disclosure. The public surfaces omit them
+          entirely. */}
+      <ReadFailureNotice className="mb-4" reads={reads} />
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -1141,7 +1136,7 @@ export default async function ReportsPage({
                         </span>
                         {report.fundingSnapshot.unfundedAfterLikelyAmount > 0 ? (
                           <span className="module-record-chip">
-                            Uncovered {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(report.fundingSnapshot.unfundedAfterLikelyAmount)}
+                            Uncovered {formatMoney(report.fundingSnapshot.unfundedAfterLikelyAmount, { precision: "whole" })}
                           </span>
                         ) : null}
                       </>

@@ -13,10 +13,9 @@ import {
   projectSummarySchema,
 } from "@/lib/projects/project-record-fields";
 import {
-  assessProjectDelete,
-  PROJECT_DELETE_RELATIONS,
-} from "@/lib/projects/project-delete-preconditions";
-import { countConstrainedCostedPlacements, countReferences } from "@/lib/api/reference-counts";
+  projectDeleteRefusalBody,
+  readProjectDeleteOutcome,
+} from "@/lib/projects/project-delete-outcome";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
@@ -277,24 +276,29 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     const { access, userId, supabase } = resolved;
     const project = access.project!;
 
-    // Count every reference before touching anything. RLS scopes these to the
-    // caller's workspace, which is the same scope the delete would act in. The
-    // projection lives in `countReferences` — see its header for why naming a
-    // column over a dynamic table made every delete answer 503.
-    const { counts, unreadable } = await countReferences({
+    // Count every reference before touching anything, through the same reader
+    // the pre-flight check uses — so what the dialog told the planner and what
+    // this route enforces cannot drift apart. RLS scopes these counts to the
+    // caller's workspace, which is the same scope the delete would act in.
+    const outcome = await readProjectDeleteOutcome({
       supabase,
-      targets: PROJECT_DELETE_RELATIONS,
-      value: project.id,
+      projectId: project.id,
+      onDegradedCount: (message) => {
+        audit.warn("project_delete_constrained_costed_count_failed", {
+          projectId: project.id,
+          message,
+        });
+      },
     });
 
-    if (unreadable.length > 0) {
+    if (outcome.kind === "unreadable") {
       // A relation we cannot read is not a relation that is empty. Refusing is
       // the only safe reading — the alternative is deleting rows we failed to
       // notice.
       audit.warn("project_delete_precondition_unreadable", {
         projectId: project.id,
-        tables: unreadable.map((entry) => entry.table),
-        errors: unreadable.map((entry) => `${entry.table}: ${entry.message}`),
+        tables: outcome.tables,
+        errors: outcome.messages,
       });
       return NextResponse.json(
         {
@@ -302,64 +306,22 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
           message:
             "Some related records could not be read, so deleting could destroy work this check did not see. " +
             "Retry once the workspace schema is fully available.",
-          unreadable: unreadable.map((entry) => entry.table),
+          unreadable: outcome.tables,
         },
         { status: 503 }
       );
     }
 
-    // The filtered count the severity rule needs: placements that are
-    // CONSTRAINED AND COSTED read as `blocking` (a priced line item in a
-    // fiscally constrained programme has standing beyond the project, like a
-    // funding award). This count is an ENHANCEMENT to the refusal's copy, not
-    // its gate — the unconditional count above already refuses — so a failed
-    // read here degrades to the evidence copy, audited rather than silent.
-    // The query lives in the shared helper: this route may own no count of
-    // its own (reference-count-projection-guard).
-    let constrainedCostedPlacementCount: number | null = null;
-    if ((counts["project_rtp_cycle_links"] ?? 0) > 0) {
-      const constrainedCosted = await countConstrainedCostedPlacements({
-        supabase,
-        projectId: project.id,
-      });
-      if (constrainedCosted.error) {
-        audit.warn("project_delete_constrained_costed_count_failed", {
-          projectId: project.id,
-          message: constrainedCosted.error.message,
-        });
-      } else {
-        constrainedCostedPlacementCount = constrainedCosted.count;
-      }
-    }
-
-    const assessment = assessProjectDelete(counts, {
-      projectId: project.id,
-      constrainedCostedPlacementCount,
-    });
-
-    if (!assessment.deletable) {
+    if (outcome.kind === "refused") {
       audit.info("project_delete_refused", {
         projectId: project.id,
         workspaceId: project.workspace_id,
         userId,
-        blockerCount: assessment.blockers.length,
-        hasCommitments: assessment.hasCommitments,
+        blockerCount: outcome.assessment.blockers.length,
+        hasCommitments: outcome.assessment.hasCommitments,
       });
       return NextResponse.json(
-        {
-          error: "Project is not empty",
-          headline: assessment.headline,
-          alternative: assessment.alternative,
-          blockers: assessment.blockers.map((blocker) => ({
-            table: blocker.table,
-            label: blocker.label,
-            count: blocker.count,
-            severity: blocker.severity,
-            behavior: blocker.behavior,
-            reason: blocker.reason,
-            href: blocker.href,
-          })),
-        },
+        { error: "Project is not empty", ...projectDeleteRefusalBody(outcome.assessment) },
         { status: 409 }
       );
     }

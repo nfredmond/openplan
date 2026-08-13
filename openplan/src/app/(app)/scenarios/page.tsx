@@ -5,13 +5,14 @@ import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ScenarioSetCreator } from "@/components/scenarios/scenario-set-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState, StateBlock } from "@/components/ui/state-block";
+import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { createClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 export const metadata = moduleMetadata("Scenarios");
 
@@ -200,16 +201,14 @@ export default async function ScenariosPage({
 
   return (
     <section className="module-page">
-      {/* Internal page, so the database's own message is shown — an operator
-          here can act on it. */}
-      {reads.any ? (
-        <StateBlock
-          className="mb-4"
-          tone="danger"
-          title="Part of this catalog could not be read"
-          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
-        />
-      ) : null}
+      {/* Internal page, so the database's own message stays on it — inside the
+          notice's operator disclosure, where the person who can act on it will
+          look and a planner is not made to read it. */}
+      <ReadFailureNotice
+        className="mb-4"
+        reads={reads}
+        title="Part of this catalog could not be read"
+      />
 
       <header className="module-header-grid">
         <article className="module-intro-card">

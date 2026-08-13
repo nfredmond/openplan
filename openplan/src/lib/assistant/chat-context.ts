@@ -6,6 +6,7 @@ import type {
 } from "@/lib/assistant/context";
 import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
 import { FUNDING_CLOSING_SOON_WINDOW_DAYS } from "@/lib/operations/funding-decision-status";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * Pure serialization of an RLS-scoped AssistantContext into a compact,
@@ -32,11 +33,7 @@ const ASSISTANT_CHAT_INSTRUCTIONS = [
 
 function fmtCurrency(value: number | null | undefined): string | null {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 function fmtDate(value: string | null | undefined): string | null {

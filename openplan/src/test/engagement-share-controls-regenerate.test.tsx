@@ -1,6 +1,11 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
+import {
+  confirmDestructiveAction,
+  confirmDialogText,
+  declineConfirmation,
+} from "./helpers/confirm-dialog";
 
 const refreshMock = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: refreshMock }) }));
@@ -21,13 +26,11 @@ function campaign(overrides: Record<string, unknown> = {}) {
 }
 
 const fetchMock = vi.fn();
-const confirmMock = vi.fn();
 
 describe("EngagementShareControls server-minted link flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal("fetch", fetchMock);
-    vi.stubGlobal("confirm", confirmMock);
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({ success: true, shareToken: "x".repeat(28) }),
@@ -46,23 +49,23 @@ describe("EngagementShareControls server-minted link flow", () => {
   });
 
   it("regenerates only after a confirm that names the consequence, via the server endpoint", async () => {
-    confirmMock.mockReturnValue(true);
     render(<EngagementShareControls campaign={campaign()} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Regenerate link/ }));
 
-    expect(confirmMock).toHaveBeenCalledWith(expect.stringMatching(/current link stops working immediately/));
+    expect(await confirmDialogText()).toMatch(/current link stops working immediately/);
+    await confirmDestructiveAction("Mint a replacement link");
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith("/api/engagement/campaigns/c1/share-token", { method: "POST" });
     });
     await waitFor(() => expect(refreshMock).toHaveBeenCalled());
   });
 
-  it("does nothing when the regenerate confirm is declined", () => {
-    confirmMock.mockReturnValue(false);
+  it("does nothing when the regenerate confirm is declined", async () => {
     render(<EngagementShareControls campaign={campaign()} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Regenerate link/ }));
+    await declineConfirmation();
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -73,19 +76,19 @@ describe("EngagementShareControls server-minted link flow", () => {
     expect(screen.queryByRole("button", { name: /Regenerate link/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /Generate link/ }));
 
-    expect(confirmMock).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith("/api/engagement/campaigns/c1/share-token", { method: "POST" });
     });
   });
 
   it("disables the link through PATCH with a null token after confirmation", async () => {
-    confirmMock.mockReturnValue(true);
     render(<EngagementShareControls campaign={campaign()} />);
 
     fireEvent.click(screen.getByRole("button", { name: /Disable link/ }));
 
-    expect(confirmMock).toHaveBeenCalledWith(expect.stringMatching(/stops resolving immediately/));
+    expect(await confirmDialogText()).toMatch(/stops resolving immediately/);
+    await confirmDestructiveAction("Take it offline");
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         "/api/engagement/campaigns/c1",
@@ -95,6 +98,21 @@ describe("EngagementShareControls server-minted link flow", () => {
         })
       );
     });
+  });
+
+  /**
+   * FOUND BY MUTATION: making the control ignore the answer broke nothing,
+   * because taking the link offline had only ever been driven with "yes". The
+   * link a campaign has already printed on a flyer stops resolving the moment
+   * this runs.
+   */
+  it("leaves the public link alone when the operator declines", async () => {
+    render(<EngagementShareControls campaign={campaign()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Disable link/ }));
+    await declineConfirmation();
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("saving share settings never sends a token", async () => {

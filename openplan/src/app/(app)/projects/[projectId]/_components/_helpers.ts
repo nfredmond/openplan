@@ -2,6 +2,7 @@ import type { StageGateRunOptions } from "@/components/projects/stage-gate-decis
 import type { RtpEvidenceRunRow } from "@/lib/rtp/modeling-evidence";
 
 import type { RecentRun } from "./_types";
+import { formatMoney } from "@/lib/money/format";
 
 export type Tone = "info" | "success" | "warning" | "danger" | "neutral";
 
@@ -21,10 +22,15 @@ export function fmtDateTime(value: string | null | undefined): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
+/**
+ * The project delivery board restates invoice records the invoicing register
+ * also shows, so it writes them to the cent — the two screens must agree
+ * digit for digit. An unreadable amount reads $0 here, as it always has.
+ */
 export function fmtCurrency(value: number | string | null | undefined): string {
   const parsed = typeof value === "number" ? value : Number.parseFloat(value ?? "0");
   const safeValue = Number.isFinite(parsed) ? parsed : 0;
-  return safeValue.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  return formatMoney(safeValue, { precision: "cents" });
 }
 
 export function buildProjectControlHref(targetId: string, targetRowId?: string | null): string {

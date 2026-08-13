@@ -21,6 +21,12 @@ import {
   resolveKbDocumentMaxBytes,
   type WorkspaceMembershipResult,
 } from "@/lib/knowledge-base/documents";
+import {
+  buildKbDocumentNameFilter,
+  KB_DOCUMENT_LIST_LIMIT,
+  resolveKbDocumentListFilters,
+  resolveKbDocumentOrder,
+} from "@/lib/knowledge-base/document-list-filters";
 import { KB_DOC_KINDS, type KbDocKind } from "@/lib/knowledge-base/types";
 import { chunkExtractedDocument } from "@/lib/knowledge-base/chunk";
 import {
@@ -49,6 +55,16 @@ const uploadQuerySchema = z.object({
 const listQuerySchema = z.object({
   workspaceId: z.string().uuid(),
   projectId: z.string().uuid().optional(),
+  // Narrowing the list happens HERE, not in the browser: the read is capped, so
+  // a name filter applied to the rows already loaded would leave the documents
+  // past the cap exactly as unfindable as before. Every value is normalized by
+  // `resolveKbDocumentListFilters`, which is why they are permissive strings
+  // rather than a strict enum or date — a value it cannot use is disclosed as
+  // unapplied, never a 400 a planner has to decode.
+  q: z.string().max(200).optional(),
+  sort: z.string().max(20).optional(),
+  addedFrom: z.string().max(10).optional(),
+  addedTo: z.string().max(10).optional(),
 });
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {
@@ -423,14 +439,31 @@ export async function GET(request: NextRequest) {
       return membershipErrorResponse(membership);
     }
 
+    const filters = resolveKbDocumentListFilters({
+      q: query.data.q,
+      sort: query.data.sort,
+      addedFrom: query.data.addedFrom,
+      addedTo: query.data.addedTo,
+    });
+    const order = resolveKbDocumentOrder(filters.sort);
+
     let builder = supabase
       .from("kb_documents")
       .select(KB_DOCUMENT_COLUMNS)
       .eq("workspace_id", query.data.workspaceId)
-      .order("created_at", { ascending: false })
-      .limit(200);
+      .order(order.column, { ascending: order.ascending })
+      .limit(KB_DOCUMENT_LIST_LIMIT);
     if (query.data.projectId) {
       builder = builder.eq("project_id", query.data.projectId);
+    }
+    if (filters.nameTerm) {
+      builder = builder.or(buildKbDocumentNameFilter(filters.nameTerm));
+    }
+    if (filters.addedFrom) {
+      builder = builder.gte("created_at", filters.addedFrom);
+    }
+    if (filters.addedTo) {
+      builder = builder.lte("created_at", filters.addedTo);
     }
 
     const { data: documents, error } = await builder;
@@ -442,7 +475,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to list documents" }, { status: 500 });
     }
 
-    return NextResponse.json({ documents: documents ?? [] }, { status: 200 });
+    // `appliedFilters` is what the read DID, not what was asked for. A date the
+    // route could not parse comes back absent, so the screen can say the filter
+    // was not applied instead of showing an unnarrowed list under a narrowed
+    // caption.
+    return NextResponse.json(
+      {
+        documents: documents ?? [],
+        appliedFilters: filters,
+        limit: KB_DOCUMENT_LIST_LIMIT,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     audit.error("kb_documents_list_unhandled_error", { error });
     return NextResponse.json({ error: "Unexpected error while listing documents" }, { status: 500 });

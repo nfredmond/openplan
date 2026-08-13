@@ -911,7 +911,7 @@ export function ScenarioEntryRegistry({
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {unreadable.entries
-                ? "This set's entries could not be read, so the baseline's posture is unknown."
+                ? "This set's entries could not be read, so this screen cannot say whether it has a baseline."
                 : !comparisonSummary.baselineEntryPresent
                   ? "Register a baseline entry before alternatives can compare."
                   : comparisonSummary.baselineRunPresent

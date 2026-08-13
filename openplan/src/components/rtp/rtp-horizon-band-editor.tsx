@@ -38,6 +38,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarRange, Loader2, PencilLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import type { RtpHorizonBandInput } from "@/lib/rtp/fiscal-constraint";
 
@@ -470,6 +471,7 @@ function HorizonBandForm({
 
 export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizonBandEditorProps) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [isAdding, setIsAdding] = useState(false);
   const [editingBandId, setEditingBandId] = useState<string | null>(null);
   const [pendingBandId, setPendingBandId] = useState<string | null>(null);
@@ -564,11 +566,13 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
     // and its cost lands somewhere the planner is not looking: every project
     // programmed into this period silently loses its period assignment, because
     // that foreign key is ON DELETE SET NULL.
-    const confirmed = window.confirm(
-      `Remove the period “${band.label}” (${band.startYear}–${band.endYear}) from this plan? ` +
+    const confirmed = await confirm({
+      headline: `Remove the period “${band.label}” (${band.startYear}–${band.endYear}) from this plan?`,
+      consequence:
         "This cannot be undone. Any projects programmed into it will be left without a period, and the " +
-        "fiscal-constraint check will be recomputed without it."
-    );
+        "fiscal-constraint check will be recomputed without it.",
+      confirmLabel: "Remove this period",
+    });
     if (!confirmed) return;
 
     const bandId = band.id;
@@ -802,6 +806,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
           }}
         />
       ) : null}
+      {confirmDialog}
     </section>
   );
 }

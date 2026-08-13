@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { WORKSPACE_ROLE_DESCRIPTIONS } from "@/lib/auth/role-matrix";
 
@@ -70,6 +71,7 @@ function isManagerRole(role: string): boolean {
 
 export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPanelProps) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [callerUserId, setCallerUserId] = useState<string | null>(null);
@@ -216,10 +218,23 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
   async function removeMember(member: Member) {
     const isSelf = callerUserId !== null && member.userId === callerUserId;
     const who = member.email ?? "this member";
-    const message = isSelf
-      ? "Leave this workspace? You will immediately lose access to all of its projects and data."
-      : `Remove ${who} from the workspace? They will immediately lose access to all of its projects and data.`;
-    if (!window.confirm(message)) return;
+    const confirmed = await confirm(
+      isSelf
+        ? {
+            headline: "Leave this workspace?",
+            consequence:
+              "You will immediately lose access to all of its projects and data.",
+            confirmLabel: "Leave this workspace",
+            cancelLabel: "Stay",
+          }
+        : {
+            headline: `Remove ${who} from the workspace?`,
+            consequence:
+              "They will immediately lose access to all of its projects and data.",
+            confirmLabel: "Remove this member",
+          }
+    );
+    if (!confirmed) return;
 
     setWorking(true);
     setError(null);
@@ -427,6 +442,7 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
           </>
         )}
       </div>
+      {confirmDialog}
     </section>
   );
 }

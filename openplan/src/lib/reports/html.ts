@@ -24,6 +24,7 @@ import {
 // Type-only import: keeps the narrative-drafts <-> html module edge one-way at
 // runtime (narrative-drafts imports compactModelRunKpiLine from here).
 import type { AcceptedSectionNarrative } from "@/lib/reports/narrative-drafts";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * The disclosure label rendered over every included AI narrative block.
@@ -199,11 +200,7 @@ function esc(value: string): string {
 
 function formatCurrency(value: number | null | undefined): string {
   const numeric = typeof value === "number" ? value : 0;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(numeric) ? numeric : 0);
+  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
 }
 
 function listMarkup(items: ProjectItem[], emptyMessage: string): string {

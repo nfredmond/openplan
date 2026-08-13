@@ -184,9 +184,9 @@ async function main() {
     notes.push('Generated a real report artifact so the project card is a supported packet path, not a no-packet placeholder.');
 
     await page.goto(`${productionBaseUrl}/projects/${ids.projectId}#project-reporting`, { waitUntil: 'networkidle' });
-    await page.getByRole('heading', { name: /Packet freshness and regeneration cues/i }).waitFor({ timeout: 30000 });
+    await page.getByRole('heading', { name: /Are this project’s reports up to date\?/i }).waitFor({ timeout: 30000 });
     await page.getByText(reportTitle, { exact: false }).first().waitFor({ timeout: 30000 });
-    await page.getByText(/Project packet queue/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/What to do next on this project’s reports/i).first().waitFor({ timeout: 30000 });
     await page.getByText(/Recent report records/i).first().waitFor({ timeout: 30000 });
 
     const supportedReportHrefPattern = new RegExp(`^/reports/${ids.reportId}#(packet-release-review|drift-since-generation|report-controls)$`);

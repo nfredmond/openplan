@@ -7,6 +7,7 @@ import {
   resolveKbDocumentMaxBytes,
   type KbDocumentRow,
 } from "@/lib/knowledge-base/documents";
+import { KB_DOCUMENT_LIST_LIMIT } from "@/lib/knowledge-base/document-list-filters";
 import { isKbOcrWorkerConfigured } from "@/lib/knowledge-base/ocr-availability";
 import { loadDocumentLibrary } from "@/lib/document-library/query";
 import { DOCUMENT_LIBRARY_SOURCES } from "@/lib/document-library/sources";
@@ -87,12 +88,14 @@ export default async function KnowledgeBasePage({
       ? requestedProjectId
       : null;
 
+  // Same cap as the list route, from the same constant: the screen tells the
+  // planner when the cap binds, and two numbers would eventually disagree.
   let documentsQuery = supabase
     .from("kb_documents")
     .select(KB_DOCUMENT_COLUMNS)
     .eq("workspace_id", workspaceId)
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(KB_DOCUMENT_LIST_LIMIT);
   if (initialProjectId) {
     documentsQuery = documentsQuery.eq("project_id", initialProjectId);
   }

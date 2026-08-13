@@ -164,6 +164,21 @@ describe("map controls appear only on map surfaces", () => {
       "CartographicLayersPanel",
       "CartographicMapLegend",
       "CartographicZoomControls",
+      /*
+        THE MAP-READING TOGGLE IS THE ONE THIS RULE MATTERS MOST FOR (added
+        2026-08-12). It takes the route-content panel off the screen, and the
+        ONLY thing that ends that mode is the control unmounting — which happens
+        because it lives inside `MapSurfaceOnly` and nowhere else. Rendered
+        outside the wrapper it would appear on the RTP registry, the Projects
+        table and every form in the product, offering to hide the page a planner
+        came to read; and having hidden it, nothing would restore it on
+        navigation. Two of the three controls above shipped outside this wrapper
+        at some point; this one must never.
+      */
+      "CartographicMapReadingToggle",
+      // Renders nothing, but reads `?layer=` and switches a layer on. Off a map
+      // surface there is no panel to show the result in.
+      "CartographicLayerDeepLink",
     ];
 
     const unwrapped = MAP_CONTROLS.filter((control) => {

@@ -521,7 +521,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       {/*
         Shown only once a manifest exists, because that is the precondition the
         readiness check itself requires — offering it earlier would produce a
-        refusal ("no stored onramp manifest yet") that the page already knows.
+        refusal ("this run has not brought in its worker output file yet") that the
+        page already knows.
       */}
       {data.manifest ? <CountyRunValidationPrep countyRunId={countyRunId} /> : null}
 

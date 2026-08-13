@@ -107,7 +107,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const parsedManifest = countyOnrampManifestSchema.safeParse(existingRow.manifest_json ?? null);
     if (!parsedManifest.success) {
       audit.warn("county_run_manifest_missing", { countyRunId: existingRow.id });
-      return NextResponse.json({ error: "County run does not have a stored onramp manifest yet" }, { status: 400 });
+      return NextResponse.json({ error: "This county run has not brought in its worker output file yet, so there is nothing to work from." }, { status: 400 });
     }
 
     const manifest = parsedManifest.data;

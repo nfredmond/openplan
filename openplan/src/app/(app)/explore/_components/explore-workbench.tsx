@@ -36,6 +36,10 @@ import {
 } from "./_helpers";
 import { ExploreHoverInspector } from "./explore-hover-inspector";
 import { ExploreLayerVisibilityControls } from "./explore-layer-visibility-controls";
+import { ExploreWorkspaceLayersPanel } from "./explore-workspace-layers-panel";
+import { exploreWorkspaceGisAnchorLayerId } from "./explore-workspace-gis-anchor";
+import { useExploreWorkspaceGisHover } from "./explore-workspace-gis-hover";
+import { useWorkspaceGisMapBinding } from "@/components/cartographic/use-workspace-gis-map-binding";
 import { ExploreResultsBoard } from "./explore-results-board";
 import { ExploreRunHistoryPanel } from "./explore-run-history-panel";
 import {
@@ -122,6 +126,52 @@ export function ExploreWorkbench({
   const [crashUserFilter, setCrashUserFilter] = useState<CrashUserFilter>("all");
   const [hoveredTract, setHoveredTract] = useState<HoveredTract | null>(null);
   const [hoveredCrash, setHoveredCrash] = useState<HoveredCrash | null>(null);
+  /**
+   * The workspace layer the planner is pointing at in the rail, or null.
+   *
+   * Transient and never persisted — pointer in, pointer out, focus in, focus
+   * out. It exists because a workspace with six uploaded layers is six sets of
+   * lines a planner has to tell apart, and "which of these is the bike network"
+   * is a question the map can answer for a second without becoming a mode
+   * anybody has to switch off afterwards.
+   */
+  const [emphasisLayerId, setEmphasisLayerId] = useState<string | null>(null);
+
+  /**
+   * The agency's own uploaded layers, on Corridor Analysis's map.
+   *
+   * THE SAME HOOK THE SHELL BACKDROP CALLS. Explore builds its own
+   * `mapboxgl.Map` and the shell backdrop suppresses itself here, which is why
+   * this page drew none of a workspace's layers until now — the one page a
+   * planner opens in order to READ a map was the one page their own data never
+   * reached. The repair is the second caller of one capability, not a second
+   * implementation of it: what differs between the two maps is the anchor (what
+   * these layers sit beneath) and the basemap theme, and both are arguments.
+   *
+   * `enabled` waits for the workspace, because a catalog read before the
+   * bootstrap knows which workspace this is can only fail — and a failed read
+   * registers a catalog error the panel would then show a planner who did
+   * nothing wrong.
+   */
+  const { workspaceLayers, workspaceLayerVisibility } = useWorkspaceGisMapBinding({
+    mapRef,
+    ready: mapReady,
+    enabled: mapReady && workspaceId !== "",
+    workspaceId: workspaceId || null,
+    // Explore's basemap is dark-v11 whatever the app chrome is set to, so the
+    // casing under every workspace line is the dark ink. Passing the app theme
+    // here would put a white halo on a dark map.
+    theme: "dark",
+    resolveAnchorLayerId: exploreWorkspaceGisAnchorLayerId,
+    emphasisLayerId,
+  });
+
+  const hoveredWorkspaceFeature = useExploreWorkspaceGisHover({
+    mapRef,
+    mapReady,
+    layers: workspaceLayers,
+    visibility: workspaceLayerVisibility,
+  });
 
   useEffect(() => {
     let isCancelled = false;
@@ -648,6 +698,44 @@ export function ExploreWorkbench({
           </div>
         ) : null}
 
+        {/*
+          WHAT THE POINTER IS OVER, in the corner of the map rather than in the
+          rail. Explore already answers a hover over a tract and over a crash;
+          this is the same gesture for the agency's own shapes, and it sits on
+          the map because that is where the planner is looking when they ask.
+
+          `aria-live="polite"` rather than silence: a readout that only exists
+          for sighted pointer users is a readout half the product cannot use.
+          Polite rather than assertive because a pointer sweeping across a
+          parcel fabric would otherwise interrupt continuously.
+        */}
+        {hoveredWorkspaceFeature ? (
+          <div
+            className="analysis-explore-workspace-hover"
+            data-testid="explore-workspace-layer-hover"
+            aria-live="polite"
+          >
+            <p className="analysis-explore-workspace-hover__layer">
+              {hoveredWorkspaceFeature.layerName}
+            </p>
+            {hoveredWorkspaceFeature.label ? (
+              <p className="analysis-explore-workspace-hover__label">
+                {hoveredWorkspaceFeature.label}
+              </p>
+            ) : null}
+            {hoveredWorkspaceFeature.attributes.length > 0 ? (
+              <dl className="analysis-explore-workspace-hover__attrs">
+                {hoveredWorkspaceFeature.attributes.map((attribute) => (
+                  <div key={attribute.field}>
+                    <dt>{attribute.field}</dt>
+                    <dd>{attribute.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+          </div>
+        ) : null}
+
         {!analysisResult && !mapUnavailableReason ? (
           <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">
             <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-cyan-300/70">
@@ -945,6 +1033,14 @@ export function ExploreWorkbench({
               tractMetric={tractMetric}
               onChangeTractMetric={(value) => setTractMetric(value)}
             />
+
+            {/*
+              Directly under the built-in toggles, because to a planner these
+              are the same question — "what is drawn on this map" — and the fact
+              that one set is OpenPlan's records and the other is their own
+              uploads is an implementation detail of where the rows live.
+            */}
+            <ExploreWorkspaceLayersPanel onEmphasize={setEmphasisLayerId} />
 
             <ExploreHoverInspector
               showTracts={showTracts}

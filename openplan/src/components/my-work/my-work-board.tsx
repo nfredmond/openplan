@@ -14,6 +14,7 @@ import {
   type MyWorkSourceId,
 } from "@/lib/my-work/types";
 import { formatWorkDeadlineDate } from "@/lib/work/deadlines";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 
 /**
  * The personal work queue, rendered.
@@ -162,12 +163,20 @@ export function MyWorkBoard({
             {readFailureSummary}
           </p>
         ) : null}
+        {/* The planner learns that assignment is unavailable and who can make it
+            available. The migration number is the operator's business and waits
+            underneath — kept, not dropped. */}
         {assigneeColumnPending ? (
-          <p className="module-alert" role="status">
-            Assigned work cannot be listed on this deployment yet: the database is missing the
-            assignee column these lists read. Apply the pending migrations
-            (20260811000006 adds it) and reload.
-          </p>
+          <div className="module-alert" role="status">
+            <p>
+              Assigned work cannot be listed on this deployment yet: the database is missing the
+              column these lists read to tell whose work is whose. Whoever runs this OpenPlan can
+              apply the pending migrations, and then assignment will work here.
+            </p>
+            <OperatorDetail>
+              <p>Migration 20260811000006 adds the assignee column. Apply the pending migrations and reload.</p>
+            </OperatorDetail>
+          </div>
         ) : null}
         {scope === "unassigned" && !departedIncludedInUnassigned ? (
           <p className="module-note">

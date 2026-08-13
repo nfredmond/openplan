@@ -98,6 +98,7 @@ import {
   resolveProjectExactBillingTriageTarget,
 } from "@/lib/grants/page-helpers";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 export const metadata = moduleMetadata("Grants");
 
@@ -790,17 +791,10 @@ export default async function GrantsPage({
 
   return (
     <section className="module-page">
-      {reads.any ? (
-        <div
-          role="status"
-          className="mb-4 rounded-lg border border-amber-300/60 bg-amber-50/60 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
-        >
-          <p>{reads.describe()}</p>
-          {/* This is an internal, membership-gated page, so the database's own
-              words belong here — an operator is the person who can act on them. */}
-          <p className="mt-1 text-xs opacity-80">{reads.messages().join(" · ")}</p>
-        </div>
-      ) : null}
+      {/* This is an internal, membership-gated page, so the database's own words
+          belong on it — behind the notice's operator disclosure, not inside the
+          sentence a planner reads. */}
+      <ReadFailureNotice className="mb-4" reads={reads} />
       <GrantsPageIntroHeader
         scenarioComparisonIndicatorCount={scenarioComparisonIndicatorCount}
         scenarioComparisonReadyCount={scenarioComparisonReadyCount}

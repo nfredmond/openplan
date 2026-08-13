@@ -4,6 +4,7 @@ import {
   PACKET_FRESHNESS_LABELS,
 } from "@/lib/reports/packet-labels";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
+import { formatMoney } from "@/lib/money/format";
 
 export const REPORT_TYPE_OPTIONS = [
   { value: "project_status", label: "Project Status Packet" },
@@ -728,11 +729,7 @@ function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
 
 function formatCurrency(value: number | null | undefined): string {
   const numeric = typeof value === "number" ? value : 0;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(numeric) ? numeric : 0);
+  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
 }
 
 function normalizeFundingStatus(

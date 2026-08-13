@@ -16,6 +16,7 @@ import type {
   RunAuditEntry,
   StageGateSnapshotControlHealth,
 } from "./_types";
+import { formatMoney } from "@/lib/money/format";
 
 export function driftTone(
   status: DriftStatus
@@ -257,13 +258,14 @@ export function formatCompactDateTime(value: string | null | undefined): string 
   return value ? formatDateTime(value) : "Unavailable";
 }
 
+/**
+ * Report packets round to the dollar. An absent figure reads as $0 here on
+ * purpose — every caller is a snapshot total the packet builder has already
+ * defaulted — and the surfaces that use it carry `ROUNDED_MONEY_NOTE`.
+ */
 export function formatCurrency(value: number | null | undefined): string {
-  const numeric = typeof value === "number" ? value : 0;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(numeric) ? numeric : 0);
+  const numeric = typeof value === "number" && Number.isFinite(value) ? value : 0;
+  return formatMoney(numeric, { precision: "whole" });
 }
 
 export function asEngagementCampaignSnapshot(

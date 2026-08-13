@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ActionFeedback, type ActionFeedbackState } from "@/components/ui/action-feedback";
 
 /**
  * The submit-and-refresh plumbing every form in this lane shares.
@@ -18,12 +19,7 @@ import { useRouter } from "next/navigation";
  * lane answers a refusal with both a short reason and a sentence saying what to
  * do about it, and dropping the second is how a 409 becomes a dead end.
  */
-export type MeasureSubmitState = {
-  busy: boolean;
-  error: string | null;
-  details: string | null;
-  message: string | null;
-};
+export type MeasureSubmitState = ActionFeedbackState;
 
 export function useMeasureSubmit() {
   const router = useRouter();
@@ -75,21 +71,14 @@ export function useMeasureSubmit() {
   return { state, submit };
 }
 
-/** The one place a form's outcome is rendered, so no form invents its own. */
-export function MeasureSubmitFeedback({ state }: { state: MeasureSubmitState }) {
-  if (state.error) {
-    return (
-      <div className="space-y-1 text-sm">
-        <p className="font-medium text-destructive">{state.error}</p>
-        {state.details ? <p className="text-muted-foreground">{state.details}</p> : null}
-      </div>
-    );
-  }
-  if (state.message) {
-    return <p className="text-sm text-emerald-700 dark:text-emerald-300">{state.message}</p>;
-  }
-  return null;
-}
+/**
+ * The one place a form's outcome is rendered, so no form invents its own.
+ *
+ * The renderer itself moved to `components/ui/action-feedback.tsx` once the rest
+ * of the app needed it — this lane's eight call sites keep their local name and
+ * gain nothing to maintain. Do not reimplement it here.
+ */
+export const MeasureSubmitFeedback = ActionFeedback;
 
 export function MeasureField({
   label,

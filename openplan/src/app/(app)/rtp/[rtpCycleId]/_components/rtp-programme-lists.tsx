@@ -32,14 +32,9 @@ import {
 } from "@/lib/rtp/catalog";
 import { priorityTierLabel, priorityTierTone } from "@/lib/rtp/priority-scoring";
 import { projectFundingStackTone } from "@/lib/projects/funding";
+import { formatMoney } from "@/lib/money/format";
 
 type FundingPipelineStatus = Parameters<typeof projectFundingStackTone>[0];
-
-const MONEY = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 export type RtpProgrammeListBand = {
   id: string;
@@ -132,7 +127,7 @@ function buildGroups(
 function subtotalLine(group: Group): string {
   if (group.entries.length === 0) return "No projects";
   if (group.unpricedCount === 0) {
-    return `${MONEY.format(group.pricedTotal)} across ${group.entries.length} project${group.entries.length === 1 ? "" : "s"}`;
+    return `${formatMoney(group.pricedTotal, { precision: "whole" })} across ${group.entries.length} project${group.entries.length === 1 ? "" : "s"}`;
   }
   if (group.unpricedCount === group.entries.length) {
     // Never "$0" — that is the misreading this whole lane guards against.
@@ -140,7 +135,7 @@ function subtotalLine(group: Group): string {
   }
   // The plural belongs to the TOTAL and the verb agrees with the count:
   // "1 of 2 projects has", "2 of 3 projects have".
-  return `${MONEY.format(group.pricedTotal)} so far — ${group.unpricedCount} of ${group.entries.length} projects ${group.unpricedCount === 1 ? "has" : "have"} no cost recorded`;
+  return `${formatMoney(group.pricedTotal, { precision: "whole" })} so far — ${group.unpricedCount} of ${group.entries.length} projects ${group.unpricedCount === 1 ? "has" : "have"} no cost recorded`;
 }
 
 export function RtpProgrammeLists({
@@ -220,7 +215,7 @@ export function RtpProgrammeLists({
                             <span className="text-muted-foreground">No cost recorded</span>
                           ) : (
                             <>
-                              {MONEY.format(cost)}
+                              {formatMoney(cost, { precision: "whole" })}
                               {entry.costBasisYear ? (
                                 <span className="ml-1 text-xs text-muted-foreground">
                                   ({entry.costBasisYear} dollars)
@@ -255,8 +250,8 @@ export function RtpProgrammeLists({
                           reader who merges them will think the plan is funded.
                         */}
                         <span className="text-[0.7rem] text-muted-foreground">
-                          Project funding: {MONEY.format(entry.funding.committedFundingAmount)} committed ·{" "}
-                          {MONEY.format(entry.funding.unfundedAfterLikelyAmount)} still to raise
+                          Project funding: {formatMoney(entry.funding.committedFundingAmount, { precision: "whole" })} committed ·{" "}
+                          {formatMoney(entry.funding.unfundedAfterLikelyAmount, { precision: "whole" })} still to raise
                         </span>
                       </div>
                     </li>

@@ -442,6 +442,14 @@ export function ModelRunEvidencePanel({
   const [isRelaunching, setIsRelaunching] = useState(false);
   const [isComparisonLoading, setIsComparisonLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /**
+   * WHETHER THE EVIDENCE READ ITSELF FAILED — which is not the same question as
+   * "is `error` set". `error` also carries a failed RELAUNCH, and the empty
+   * evidence area may not say "there is no record" on the strength of it. This
+   * flag is set only by `loadEvidence`, so the two causes of an empty panel —
+   * the read failed, and the read returned nothing — get different sentences.
+   */
+  const [evidenceReadFailed, setEvidenceReadFailed] = useState(false);
   const [comparisonError, setComparisonError] = useState<string | null>(null);
   const [selectedBaselineRunId, setSelectedBaselineRunId] = useState("");
   const [evidence, setEvidence] = useState<NormalizedEvidencePacket | null>(null);
@@ -527,12 +535,13 @@ export function ModelRunEvidencePanel({
     }
 
     setError(null);
+    setEvidenceReadFailed(false);
     setIsLoading(true);
     try {
       const response = await fetch(packetHref, { cache: "no-store" });
       const payload = (await response.json()) as Record<string, unknown> & { error?: string };
       if (!response.ok) {
-        throw new Error(payload.error || "Failed to load evidence packet");
+        throw new Error(payload.error || "Could not read this run's evidence record");
       }
 
       setEvidence(
@@ -552,7 +561,10 @@ export function ModelRunEvidencePanel({
         })
       );
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Failed to load evidence packet");
+      setEvidenceReadFailed(true);
+      setError(
+        loadError instanceof Error ? loadError.message : "Could not read this run's evidence record"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -689,10 +701,10 @@ export function ModelRunEvidencePanel({
     <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Evidence packet</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Evidence record</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {canInspect
-              ? "Inspect the normalized planner-safe packet and refresh it after worker reruns."
+              ? "What went into this run and what came out — inputs, sources, results, and caveats. Refresh it after the worker runs again."
               : canRelaunch
                 ? "This worker run can be reset and queued again without leaving the model page."
                 : "Evidence becomes available after the run completes successfully."}
@@ -797,7 +809,7 @@ export function ModelRunEvidencePanel({
             <>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone="info">{labelForEngineKey(evidence.engine || engineKey)}</StatusBadge>
-                <StatusBadge tone="neutral">Packet {evidence.packet_version}</StatusBadge>
+                <StatusBadge tone="neutral">Format {evidence.packet_version}</StatusBadge>
                 <StatusBadge tone="neutral">{evidence.provenance.source_packet_format}</StatusBadge>
                 {evidence.provenance.fallback_reason ? <StatusBadge tone="warning">Synthesized fallback</StatusBadge> : null}
                 {runMode.availability !== "launchable" ? <StatusBadge tone="warning">Prototype / preflight</StatusBadge> : null}
@@ -1124,7 +1136,7 @@ export function ModelRunEvidencePanel({
                 <Button asChild type="button" variant="outline" size="sm">
                   <a href={packetHref} target="_blank" rel="noopener noreferrer">
                     <FileJson2 className="h-4 w-4" />
-                    Open packet JSON
+                    Open the raw file (JSON)
                   </a>
                 </Button>
               </div>
@@ -1144,7 +1156,7 @@ export function ModelRunEvidencePanel({
               <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
                 <div className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-foreground">Packet posture</p>
+                    <p className="text-sm font-semibold text-foreground">Where this record came from</p>
                     <StatusBadge tone="neutral">{labelForEngineKey(evidence.engine || engineKey)}</StatusBadge>
                   </div>
                   <dl className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -1593,7 +1605,7 @@ export function ModelRunEvidencePanel({
                   <div className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4">
                     <p className="text-sm font-semibold text-foreground">Execution timing</p>
                     {evidence.outputs.stages.length === 0 ? (
-                      <p className="mt-2 text-sm text-muted-foreground">No stage timing was recorded for this packet.</p>
+                      <p className="mt-2 text-sm text-muted-foreground">No stage timing was recorded for this run.</p>
                     ) : (
                       <div className="mt-3 space-y-2">
                         {evidence.outputs.stages.map((stage) => (
@@ -1616,10 +1628,23 @@ export function ModelRunEvidencePanel({
           ) : isLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Loading evidence packet…
+              Reading this run’s evidence record…
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Evidence packet unavailable.</p>
+            /*
+              TWO CAUSES, TWO SENTENCES. This area is empty when the record does
+              not exist AND when the read for it failed, and "this run has no
+              evidence record" asserts the first on the evidence of the second —
+              a failed permission or a dropped column would present as a
+              statement about the run. The old copy ("Evidence packet
+              unavailable") was honest under both because it claimed neither;
+              the panel can in fact tell them apart, so it says which.
+            */
+            <p className="text-sm text-muted-foreground" data-testid="evidence-empty-reason">
+              {evidenceReadFailed
+                ? "This run’s evidence record could not be read, so none of it is shown here — that is not a finding that the run produced none. The message above says what failed."
+                : "No evidence record came back for this run."}
+            </p>
           )}
         </div>
       ) : null}

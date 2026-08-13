@@ -151,8 +151,13 @@ describe("the engagement catalog discloses a failed read", () => {
     // (b) the failure is disclosed, by name, with the operator detail an
     //     internal page is allowed to show.
     expect(screen.getByText(/Part of this page could not be read/i)).toBeInTheDocument();
-    expect(screen.getByText(/this workspace's engagement campaigns/i)).toBeInTheDocument();
-    expect(screen.getByText(/permission denied for table engagement_campaigns/)).toBeInTheDocument();
+    // The label appears twice on purpose: in the planner's sentence, and again
+    // in the operator disclosure beside the database's own words. Matched on
+    // the planner's phrasing so this cannot be satisfied by the folded copy.
+    expect(screen.getByText(/could not read this workspace's engagement campaigns/i)).toBeInTheDocument();
+    const message = screen.getByText(/permission denied for table engagement_campaigns/);
+    expect(message).toBeInTheDocument();
+    expect(message.closest("details")).not.toBeNull();
     expect(screen.getByText(/This workspace's campaigns could not be listed/i)).toBeInTheDocument();
     // …and no count is offered in place of one that was never established.
     expect(screen.getAllByText("Unavailable").length).toBeGreaterThan(0);
@@ -181,8 +186,10 @@ describe("the engagement catalog discloses a failed read", () => {
     expect(screen.getByText("Downtown listening")).toBeInTheDocument();
     expect(screen.getByText("All (1)")).toBeInTheDocument();
     // …and say which part to disbelieve.
-    expect(screen.getByText(/comments on these campaigns/i)).toBeInTheDocument();
-    expect(screen.getByText(/statement timeout/)).toBeInTheDocument();
+    expect(screen.getByText(/could not read comments on these campaigns/i)).toBeInTheDocument();
+    const message = screen.getByText(/statement timeout/);
+    expect(message).toBeInTheDocument();
+    expect(message.closest("details")).not.toBeNull();
     expect(screen.getByText(/Comment and category totals could not be read/i)).toBeInTheDocument();
   });
 
@@ -194,8 +201,10 @@ describe("the engagement catalog discloses a failed read", () => {
 
     await renderPage();
 
-    expect(screen.getByText(/this workspace's projects/i)).toBeInTheDocument();
-    expect(screen.getByText(/connection reset/)).toBeInTheDocument();
+    expect(screen.getByText(/could not read this workspace's projects/i)).toBeInTheDocument();
+    const message = screen.getByText(/connection reset/);
+    expect(message).toBeInTheDocument();
+    expect(message.closest("details")).not.toBeNull();
     // The campaigns read succeeded, so the ordinary empty state is still the
     // honest thing to say about campaigns.
     expect(screen.getByText(/No campaigns yet/i)).toBeInTheDocument();

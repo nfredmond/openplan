@@ -294,6 +294,16 @@ describe("a layer too dense to draw says so on screen", () => {
       expect(screen.getByText(/214,391 shapes in this view/)).toBeInTheDocument();
     });
 
+    // THE PANEL NOTE AND THE MAP SOURCE ARE WRITTEN BY DIFFERENT EFFECTS, so the
+    // source is waited for on its own rather than assumed to have landed with
+    // the note. Reading it synchronously after the note passed in isolation and
+    // failed roughly one full-suite run in two once the backdrop began routing
+    // its painting through `use-workspace-gis-map-binding` — a race in the test,
+    // not in the product. The sibling test below already waits this way.
+    await waitFor(() => {
+      expect(sourceData.get(`cartographic-workspace-gis-${LAYER_ID}`)).toBeDefined();
+    });
+
     const source = sourceData.get(`cartographic-workspace-gis-${LAYER_ID}`);
     // The whole point: a partial parcel fabric is worse than none, because the
     // gaps look like findings.

@@ -34,6 +34,7 @@ import {
 } from "@/lib/tdm";
 import { formatSavedDate } from "@/lib/grants/bca-evidence";
 import type { BcaCrashInputSuggestion } from "@/lib/safety/bca-evidence";
+import { formatMoneyRange } from "@/lib/money/format";
 
 /**
  * True when a saved analysis uses only fields this form can round-trip.
@@ -921,8 +922,12 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
                 {formatNumber(monteCarlo.probabilityBcrAtLeastOne * 100, 0)}%
               </span>
               ; NPV 10th–90th percentile{" "}
-              <span className="tabular-nums">{formatUsd(monteCarlo.npv.percentiles.p10)}</span> to{" "}
-              <span className="tabular-nums">{formatUsd(monteCarlo.npv.percentiles.p90)}</span> (seed{" "}
+              <span className="tabular-nums">
+                {formatMoneyRange(monteCarlo.npv.percentiles.p10, monteCarlo.npv.percentiles.p90, {
+                  precision: "whole",
+                })}
+              </span>{" "}
+              (seed{" "}
               <span className="tabular-nums">{monteCarlo.seed}</span>, reproducible).
             </p>
           ) : null}

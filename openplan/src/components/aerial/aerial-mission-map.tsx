@@ -34,6 +34,7 @@ import { Map as MapIcon } from "lucide-react";
 
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { extractArtifactGeoref } from "@/lib/aerial/artifact-custody";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -72,6 +73,13 @@ export type AerialMissionMapProps = {
    * read failure). Null exactly when `preview` is set.
    */
   previewNotice: string | null;
+  /**
+   * The operator's half of `previewNotice` — a database message or a missing
+   * deployment key. Rendered behind a disclosure under its own notice so the
+   * planner's line stays a planner's line and the fact still reaches the person
+   * who can act on it.
+   */
+  previewNoticeDetail?: string | null;
 };
 
 type PhotoPoint = {
@@ -155,7 +163,12 @@ export function validatedPreviewBounds(
   return [boundsWest, boundsSouth, boundsEast, boundsNorth];
 }
 
-export function AerialMissionMap({ missionId, preview, previewNotice }: AerialMissionMapProps) {
+export function AerialMissionMap({
+  missionId,
+  preview,
+  previewNotice,
+  previewNoticeDetail = null,
+}: AerialMissionMapProps) {
   const [photoState, setPhotoState] = useState<PhotoState>({ status: "loading" });
   const [mapStartupFailed, setMapStartupFailed] = useState(false);
   const [showOrtho, setShowOrtho] = useState(true);
@@ -333,22 +346,22 @@ export function AerialMissionMap({ missionId, preview, previewNotice }: AerialMi
     }
   }, [showPhotos]);
 
-  const notices: string[] = [];
-  if (previewNotice) notices.push(previewNotice);
+  const notices: Array<{ text: string; operatorDetail?: string }> = [];
+  if (previewNotice) notices.push({ text: previewNotice, operatorDetail: previewNoticeDetail ?? undefined });
   if (previewRejectedHere) {
-    notices.push(
-      "The held preview's reported georeference failed validation (its rectangle is not one a single flight could produce), so the map refuses to place it rather than draw it somewhere wrong. It remains available as a download.",
-    );
+    notices.push({
+      text: "The held preview's reported georeference failed validation (its rectangle is not one a single flight could produce), so the map refuses to place it rather than draw it somewhere wrong. It remains available as a download.",
+    });
   }
   if (photoState.status === "failed") {
-    notices.push(
-      "The mission's photo locations could not be read, so no photo dots are drawn. That is a read failure, not a finding that this mission has no photos.",
-    );
+    notices.push({
+      text: "The mission's photo locations could not be read, so no photo dots are drawn. That is a read failure, not a finding that this mission has no photos.",
+    });
   }
   if (photoState.status === "ready" && photoState.withoutLocation > 0) {
-    notices.push(
-      `${photoState.withoutLocation} uploaded ${photoState.withoutLocation === 1 ? "photo has" : "photos have"} no location recorded in the file, so ${photoState.withoutLocation === 1 ? "it is" : "they are"} not drawn. ${photoState.withoutLocation === 1 ? "It is" : "They are"} still held and listed in the imagery panel.`,
-    );
+    notices.push({
+      text: `${photoState.withoutLocation} uploaded ${photoState.withoutLocation === 1 ? "photo has" : "photos have"} no location recorded in the file, so ${photoState.withoutLocation === 1 ? "it is" : "they are"} not drawn. ${photoState.withoutLocation === 1 ? "It is" : "They are"} still held and listed in the imagery panel.`,
+    });
   }
 
   return (
@@ -356,7 +369,14 @@ export function AerialMissionMap({ missionId, preview, previewNotice }: AerialMi
       {notices.length > 0 ? (
         <ul className="space-y-1.5 rounded-[0.5rem] border border-amber-400/45 bg-amber-400/10 px-4 py-3 text-xs text-amber-900 dark:text-amber-100">
           {notices.map((note) => (
-            <li key={note}>{note}</li>
+            <li key={note.text}>
+              {note.text}
+              {note.operatorDetail ? (
+                <OperatorDetail>
+                  <p className="break-words font-mono">{note.operatorDetail}</p>
+                </OperatorDetail>
+              ) : null}
+            </li>
           ))}
         </ul>
       ) : null}

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Download, ExternalLink, Globe, Link2, Loader2, Lock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getPublicPortalState, normalizeShareToken } from "@/lib/engagement/public-portal";
@@ -50,6 +51,7 @@ export function EngagementShareControls({
   campaign: ShareControlsCampaign;
 }) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   // The share token is server truth: it is minted and rotated by
   // POST /share-token and cleared by PATCH { shareToken: null } — never typed.
   const shareToken = normalizeShareToken(campaign.share_token) ?? "";
@@ -175,18 +177,29 @@ export function EngagementShareControls({
     void requestServerMintedToken();
   }
 
-  function handleRegenerateLink() {
-    const confirmed = window.confirm(
-      "Mint a replacement public link? The current link stops working immediately — everywhere it has already been shared — and cannot be restored."
-    );
+  async function handleRegenerateLink() {
+    const confirmed = await confirm({
+      headline: "Mint a replacement public link?",
+      consequence:
+        "The current link stops working immediately — everywhere it has already been shared — and cannot be restored.",
+      confirmLabel: "Mint a replacement link",
+      cancelLabel: "Keep the current link",
+      // Nothing is deleted here, but a link already printed on a flyer stops
+      // resolving. Caution rather than destruction, and named as such.
+      tone: "caution",
+    });
     if (!confirmed) return;
     void requestServerMintedToken();
   }
 
   async function handleDisableLink() {
-    const confirmed = window.confirm(
-      "Take the public link offline? The public page stops resolving immediately."
-    );
+    const confirmed = await confirm({
+      headline: "Take the public link offline?",
+      consequence: "The public page stops resolving immediately.",
+      confirmLabel: "Take it offline",
+      cancelLabel: "Leave it online",
+      tone: "caution",
+    });
     if (!confirmed) return;
 
     setError(null);
@@ -242,7 +255,7 @@ export function EngagementShareControls({
               </Button>
             ) : (
               <>
-                <Button type="button" variant="outline" onClick={handleRegenerateLink} disabled={isRotating}>
+                <Button type="button" variant="outline" onClick={() => void handleRegenerateLink()} disabled={isRotating}>
                   {isRotating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                   Regenerate link
                 </Button>
@@ -473,6 +486,7 @@ export function EngagementShareControls({
           </div>
         </div>
       </div>
+      {confirmDialog}
     </article>
   );
 }

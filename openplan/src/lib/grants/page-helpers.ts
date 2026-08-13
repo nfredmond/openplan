@@ -9,6 +9,7 @@ import {
 } from "@/lib/grants/modeling-evidence";
 import type { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
+import { formatMoney } from "@/lib/money/format";
 
 export type GrantsPageSearchParams = Promise<{
   status?: string;
@@ -315,11 +316,7 @@ export function buildFocusedOpportunityCardHref(opportunityId: string | null | u
 
 export function formatCurrency(value: number | string | null | undefined) {
   const numeric = typeof value === "number" ? value : typeof value === "string" ? Number(value) : 0;
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(Number.isFinite(numeric) ? numeric : 0);
+  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
 }
 
 export function titleize(value: string | null | undefined): string {

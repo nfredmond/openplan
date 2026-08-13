@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { ChevronDown, ChevronRight, Loader2, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 import { CeqaVmtScreenBody } from "@/components/ceqa/ceqa-vmt-screen-body";
 import type { CeqaVmtKpiRowLike } from "@/lib/models/ceqa-vmt-screen";
 import {
@@ -270,9 +271,9 @@ export function ModelRunCeqaVmtScreen({
             <h2 className="module-section-title">§15064.3 transportation-impact screening</h2>
             <p className="module-section-description">
               Screens this run&apos;s stored VMT KPIs — derived from assignment link volumes
-              (Σ volume × length), screening-grade, not measured — against an operator-supplied
-              reference baseline using the OPR percent-below threshold. Arithmetic only; nothing is
-              estimated when the KPI set lacks VMT.
+              (Σ volume × length), <ScreeningGradeLink />, not measured — against an
+              operator-supplied reference baseline using the OPR percent-below threshold. Arithmetic
+              only; nothing is estimated when the KPI set lacks VMT.
             </p>
           </div>
         </div>

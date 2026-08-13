@@ -34,6 +34,7 @@
  * list is for.
  */
 import { parseOptionalAmount } from "@/lib/money/optional-amount";
+import { formatMoney } from "@/lib/money/format";
 
 export type RtpFiscalEntryKind = "revenue" | "operations_maintenance" | "other_cost";
 
@@ -525,11 +526,7 @@ export function describeRtpFiscalConstraint(summary: RtpFiscalConstraintSummary)
   }
 
   const money = (value: number) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(value);
+    formatMoney(value, { precision: "whole" });
 
   if (summary.verdict === "constrained") {
     return `The constrained programme totals ${money(summary.totalCost)} against ${money(summary.revenue)} of reasonably available revenue ${basisPhrase}, leaving ${money(summary.balance)} unprogrammed.`;

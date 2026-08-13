@@ -33,6 +33,7 @@ import {
   scenarioStatusTone,
   titleizeScenarioValue,
 } from "@/lib/scenarios/catalog";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 type ScenarioSetRow = {
   id: string;
@@ -580,17 +581,14 @@ export default async function ScenarioSetDetailPage({
         <span className="text-foreground">{scenarioSet.title}</span>
       </div>
 
-      {/* Internal page, so the database's own message is shown — an operator
-          here can act on it. A public surface would disclose only THAT a read
-          failed. */}
-      {reads.any ? (
-        <StateBlock
-          className="mb-4"
-          tone="danger"
-          title="Part of this scenario set could not be read"
-          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
-        />
-      ) : null}
+      {/* Internal page, so the database's own message stays on it — inside the
+          notice's operator disclosure. A public surface would disclose only THAT
+          a read failed. */}
+      <ReadFailureNotice
+        className="mb-4"
+        reads={reads}
+        title="Part of this scenario set could not be read"
+      />
 
       {modelRunsSchemaPending ? (
         <StateBlock

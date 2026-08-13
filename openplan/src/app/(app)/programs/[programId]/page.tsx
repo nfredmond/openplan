@@ -57,15 +57,10 @@ import {
   reportStatusTone,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { formatMoney } from "@/lib/money/format";
 
 function formatCurrency(value: number | string | null | undefined) {
-  return currencyFormatter.format(Number(value ?? 0));
+  return formatMoney(Number(value ?? 0), { precision: "whole" });
 }
 
 function mergeRecords<T extends { id: string }>(

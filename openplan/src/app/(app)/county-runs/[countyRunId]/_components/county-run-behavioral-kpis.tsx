@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Gauge } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { BehavioralOnrampKpiSnapshot } from "@/lib/models/behavioral-onramp-kpis";
+import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 import { describeScreeningGradeRefusal } from "@/lib/models/caveat-gate";
 
 type CountyRunBehavioralKpisProps = {
@@ -42,35 +43,46 @@ export function CountyRunBehavioralKpisSection({
             <Gauge className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Behavioral onramp KPIs</p>
-            <h2 className="module-section-title">County-run KPIs, gated by screening-grade consent</h2>
+            <p className="module-section-label">County run results</p>
+            <h2 className="module-section-title">Travel measures for this county</h2>
             <p className="module-section-description">
-              KPIs below are loaded via <code>loadBehavioralOnrampKpisForWorkspace</code>. Screening-grade county runs are
-              held back by default — pass screening-grade consent to include them. The banner reflects the same caveat
-              gate used by the write path, so what you see here matches what downstream readers see.
+              Trips, vehicle-miles, and mode shares for this county run. Results from a run that is
+              still <ScreeningGradeLink /> are hidden until you ask for them, because the same rule
+              governs what reports, grant narratives, and the assistant may use — so what you see
+              here is what anyone downstream will see.
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge tone={acceptingScreeningGrade ? "warning" : "info"}>
-            {acceptingScreeningGrade ? "Including screening grade" : "Production grade only"}
+            {acceptingScreeningGrade ? "Screening-grade included" : "Screening-grade hidden"}
           </StatusBadge>
         </div>
       </div>
 
       {error ? (
         <div className="mt-5 rounded-[0.75rem] border border-destructive/40 bg-destructive/10 px-5 py-4 text-sm text-destructive-foreground">
-          KPI load failed: {error}
+          These results could not be read, so this panel is not showing them — this is not a
+          statement that the run produced none. {error}
         </div>
       ) : null}
 
       {!error && isThisRunRejected && !acceptingScreeningGrade ? (
         <div className="mt-5 rounded-[0.75rem] border border-amber-300/50 bg-gradient-to-br from-amber-50/90 to-amber-100/40 px-5 py-4 dark:border-amber-900/70 dark:from-amber-950/30 dark:to-amber-950/10">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-900/80 dark:text-amber-100/80">
-            Screening-grade refusal
+            Held back
           </p>
+          {/*
+            THE TIER IS THE CLAIM, not the absence of one. "Screening-grade" is a
+            grade OpenPlan awards and defines — it says what these numbers may be
+            used for. "Has not been validated yet" says only what has not
+            happened, which is a weaker and different statement: it invites a
+            planner to read the results as provisionally fine rather than as
+            bounded. Say the tier, and link to the one place that explains it.
+          */}
           <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
-            This county run is at a screening-grade stage. Its KPIs are held back until you explicitly accept the caveat.
+            This county run is at a <ScreeningGradeLink /> stage. Its results stay hidden until you
+            say you have read what that stage lets you conclude.
           </p>
           {refusalCopy ? <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{refusalCopy}</p> : null}
           <div className="mt-3">
@@ -79,7 +91,7 @@ export function CountyRunBehavioralKpisSection({
               prefetch={false}
               className="inline-flex items-center rounded-[0.4rem] border border-amber-400/60 bg-amber-50/70 px-3 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-100/80 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-100"
             >
-              Include screening-grade KPIs
+              Show them anyway
             </Link>
           </div>
         </div>
@@ -87,7 +99,8 @@ export function CountyRunBehavioralKpisSection({
 
       {!error && !isThisRunRejected && forThisRun.length === 0 ? (
         <div className="mt-5 rounded-[0.75rem] border border-dashed border-border/60 bg-background/60 px-5 py-4 text-sm text-muted-foreground">
-          No behavioral-onramp KPIs cached for this county run yet. KPIs are written on manifest ingest.
+          No results for this county run yet. They are written when the run&apos;s output file is brought
+          into the workspace.
         </div>
       ) : null}
 
@@ -124,9 +137,9 @@ export function CountyRunBehavioralKpisSection({
 
       {acceptingScreeningGrade ? (
         <div className="mt-4 text-xs text-muted-foreground">
-          Including screening-grade KPIs.{" "}
+          Showing screening-grade results.{" "}
           <Link href={defaultHref} prefetch={false} className="underline underline-offset-2">
-            Revert to production grade only
+            Hide them again
           </Link>
           .
         </div>

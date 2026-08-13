@@ -1,11 +1,14 @@
 import type { PacketAttentionFilter, QueueActionFilter, QueueTraceStateFilter } from "./_types";
+import { formatMoney } from "@/lib/money/format";
 
+/**
+ * RTP registry and packet-state figures round to the dollar. Any surface that
+ * uses this must carry `ROUNDED_MONEY_NOTE` (or, where the same records also
+ * appear in the invoicing register to the cent,
+ * `ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER`) beside the figures.
+ */
 export function formatUsdWholeAmount(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 export function buildRtpRegistryHref(filters: {

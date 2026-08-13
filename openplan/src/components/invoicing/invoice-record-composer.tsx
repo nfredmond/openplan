@@ -6,12 +6,10 @@ import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ActionFeedback } from "@/components/ui/action-feedback";
 import { computeNetInvoiceAmount, computeRetentionAmount } from "@/lib/invoicing/invoice-records";
 import type { ReimbursementProfileBinding } from "@/lib/invoicing/reimbursement-profile-binding";
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
-}
+import { formatMoney } from "@/lib/money/format";
 
 type ProjectOption = {
   id: string;
@@ -397,17 +395,10 @@ export function InvoiceRecordComposer({
               />
             </div>
 
-            {message ? (
-              <p className="border-l-2 border-emerald-400 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200">
-                {message}
-              </p>
-            ) : null}
-
-            {error ? (
-              <p className="border-l-2 border-red-400 bg-red-50/80 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200">
-                {error}
-              </p>
-            ) : null}
+            {/* One save, one way of hearing about it — and, because
+                `ActionFeedback` carries role="status"/role="alert", the first
+                time this form's outcome was announced to a screen reader. */}
+            <ActionFeedback state={{ busy: isSaving, error, details: null, message }} />
 
             <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Write the record, then refresh the workspace ledger.</p>
@@ -433,15 +424,15 @@ export function InvoiceRecordComposer({
           <dl className="mt-4 space-y-3 text-sm text-muted-foreground">
             <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
               <dt>Gross amount</dt>
-              <dd className="font-semibold text-foreground">{formatCurrency(amountValue)}</dd>
+              <dd className="font-semibold text-foreground">{formatMoney(amountValue, { precision: "cents" })}</dd>
             </div>
             <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
               <dt>Retention ({retentionPercentValue.toFixed(2)}%)</dt>
-              <dd className="font-semibold text-foreground">{formatCurrency(retentionAmountPreview)}</dd>
+              <dd className="font-semibold text-foreground">{formatMoney(retentionAmountPreview, { precision: "cents" })}</dd>
             </div>
             <div className="space-y-1 pt-1">
               <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Net request</dt>
-              <dd className="text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(netAmountPreview)}</dd>
+              <dd className="text-2xl font-semibold tracking-tight text-foreground">{formatMoney(netAmountPreview, { precision: "cents" })}</dd>
             </div>
           </dl>
           <p className="mt-5 border-l-2 border-[color:var(--pine)] bg-[color:var(--pine)]/6 px-3 py-3 text-sm text-foreground">

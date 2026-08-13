@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Camera, MapPin, Trash2, Upload } from "lucide-react";
 
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatFileSize } from "@/lib/models/evidence-packet";
 import type { AerialImageryRow } from "@/lib/aerial/imagery";
 
@@ -42,6 +43,7 @@ export function AerialImageryPanel({
   missionId: string;
   canWrite: boolean;
 }) {
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [rows, setRows] = useState<AerialImageryRow[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,11 +118,12 @@ export function AerialImageryPanel({
   }
 
   async function deletePhoto(row: AerialImageryRow) {
-    if (
-      !window.confirm(
-        `Delete ${row.original_filename}? The stored photo is removed from this mission; this cannot be undone.`
-      )
-    ) {
+    const confirmed = await confirm({
+      headline: `Delete ${row.original_filename}?`,
+      consequence: "The stored photo is removed from this mission; this cannot be undone.",
+      confirmLabel: "Delete this photo",
+    });
+    if (!confirmed) {
       return;
     }
     setDeleteError(null);
@@ -287,6 +290,7 @@ export function AerialImageryPanel({
           </ul>
         ) : null}
       </div>
+      {confirmDialog}
     </section>
   );
 }

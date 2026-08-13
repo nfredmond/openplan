@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   PROJECT_DELIVERY_PHASES,
   PROJECT_DELIVERY_PHASE_LABELS,
@@ -30,12 +31,22 @@ import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
  * write-once: set at creation and unchangeable forever, because `projects` had
  * no detail route. A typo in a project name outlived the project.
  *
- * The delete control deliberately does not open a confirmation dialog that asks
- * "are you sure". The server answers that question properly — it counts every
- * table that references the project and refuses with the list — so this renders
- * the refusal instead of guessing ahead of it. The only "yes" a planner can give
- * is for a project that has nothing attached, which is the case the control is
- * for.
+ * HOW THE DELETE CONTROL ASKS (revised — the earlier note here said it asked
+ * nothing at all). The original reasoning was half right: a browser `confirm()`
+ * that says "are you sure?" is worse than useless, because the server already
+ * counts every table that references the project and refuses with the list. The
+ * half that was wrong is what it concluded. Pressing Delete on an EMPTY project
+ * deleted it outright, with no question anywhere — the irreversible case was the
+ * one case that got no confirmation — and a planner could only discover that a
+ * project was NOT deletable by attempting the delete and reading the refusal.
+ *
+ * So the order is now: ask the server what deleting would cost
+ * (`GET /api/projects/[id]/delete-preflight`, sharing its counting code with the
+ * DELETE route so the two cannot disagree), then either render the refusal with
+ * its named, linked blockers — unchanged, verbatim from the server — or open the
+ * shared confirm dialog, which names the project, states what goes with it, and
+ * offers the reversible alternative the refusal has always pointed at: mark it
+ * complete instead.
  */
 
 type ProjectRecord = {
@@ -73,6 +84,13 @@ type DeleteRefusal = {
   blockers: DeleteBlocker[];
 };
 
+/**
+ * What `GET /api/projects/[id]/delete-preflight` answers. Same shape as the
+ * refusal plus the verdict, because the two are produced by one function on the
+ * server and drifting them apart here would be how they drift apart at all.
+ */
+type DeletePreflight = DeleteRefusal & { deletable: boolean };
+
 const PLAN_TYPE_SUGGESTIONS = [
   "corridor_plan",
   "active_transportation_plan",
@@ -91,6 +109,7 @@ export function ProjectIdentityEditor({
   workspaceHomeLabel?: string | null;
 }) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   // "Drawn" is decided by the shared constant rather than re-derived here.
   const placeIsDrawn = project.place.source === DRAWN_PLACE_SOURCE;
   const [editing, setEditing] = useState(false);
@@ -197,15 +216,83 @@ export function ProjectIdentityEditor({
     await savePlace(null);
   }
 
+  /** The reversible alternative the refusal copy has always named. Offered inside the dialog. */
+  async function retireProject() {
+    setError(null);
+    setDeleting(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status: "complete" }),
+      });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+        setError(body.message ?? body.error ?? "Could not retire this project.");
+        return;
+      }
+      setStatus("complete");
+      router.refresh();
+    } catch {
+      setError("Could not reach the server to retire this project.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function handleDelete() {
     setError(null);
     setRefusal(null);
     setDeleting(true);
 
+    let preflight: DeletePreflight;
+    try {
+      const response = await fetch(`/api/projects/${project.id}/delete-preflight`);
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+        setError(body.message ?? body.error ?? "Could not check what is attached to this project.");
+        return;
+      }
+      preflight = (await response.json()) as DeletePreflight;
+    } catch {
+      setError("Could not reach the server to check what is attached to this project.");
+      return;
+    } finally {
+      setDeleting(false);
+    }
+
+    // Not deletable: show the server's own refusal, named blockers and all.
+    // Nothing was destroyed to find this out.
+    if (!preflight.deletable) {
+      setRefusal({
+        headline: preflight.headline,
+        alternative: preflight.alternative,
+        blockers: preflight.blockers,
+      });
+      return;
+    }
+
+    const confirmed = await confirm({
+      headline: `Delete “${project.name}”?`,
+      consequence: `${preflight.headline} This cannot be undone.`,
+      confirmLabel: "Delete this project",
+      alternative: {
+        label: "Mark it complete instead",
+        description:
+          "Retiring a project keeps its record and everything that ever hangs off it, and can be undone by changing the status back.",
+        onSelect: retireProject,
+      },
+    });
+    if (!confirmed) return;
+
+    setDeleting(true);
     try {
       const response = await fetch(`/api/projects/${project.id}`, { method: "DELETE" });
 
       if (response.status === 409) {
+        // The pre-flight is advisory: something can be attached between the
+        // check and the delete. The route is what refuses, and its refusal is
+        // what the planner reads.
         setRefusal((await response.json()) as DeleteRefusal);
         return;
       }
@@ -219,7 +306,7 @@ export function ProjectIdentityEditor({
       router.push("/projects");
       router.refresh();
     } catch {
-      setError("Could not reach the server to delete this project.");
+      setError("Could not delete this project.");
     } finally {
       setDeleting(false);
     }
@@ -483,9 +570,14 @@ export function ProjectIdentityEditor({
                 funding, or invoices, retire it by setting its status to Complete instead.
               </p>
             </div>
-            <Button variant="outline" onClick={() => void handleDelete()} disabled={deleting}>
+            {/*
+              Destructive, and trailing an ellipsis: this button no longer
+              deletes anything by itself. It asks the server what a delete would
+              cost and then either refuses or opens the question.
+            */}
+            <Button variant="destructive" onClick={() => void handleDelete()} disabled={deleting}>
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-              Delete project
+              Delete project…
             </Button>
           </div>
 
@@ -517,6 +609,7 @@ export function ProjectIdentityEditor({
           ) : null}
         </div>
       ) : null}
+      {confirmDialog}
     </article>
   );
 }

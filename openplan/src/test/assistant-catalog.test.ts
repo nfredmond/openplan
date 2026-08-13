@@ -1,5 +1,34 @@
 import { describe, expect, it } from "vitest";
-import { resolveAssistantTarget, resolveAssistantWorkflowId } from "@/lib/assistant/catalog";
+import {
+  getAssistantActions,
+  resolveAssistantTarget,
+  resolveAssistantWorkflowId,
+} from "@/lib/assistant/catalog";
+
+/**
+ * "OVERDUE" IS A WORD THIS CODEBASE HAS ALREADY SPENT.
+ *
+ * `lib/work/deadlines.ts` is the one deadline convention, and it is explicit
+ * that overdue means past a RECORDED date — an undated record is never overdue.
+ * Funding decisions and work notifications are overdue in exactly that sense,
+ * and a planner learns the word there. An RTP board packet has no deadline
+ * column at all: what the registry brief actually counts is packets that need
+ * regenerating and cycles that never had one. Borrowing the word for that
+ * teaches a planner that a deadline exists and was missed.
+ */
+describe("RTP packet copy does not borrow the deadline vocabulary", () => {
+  it("says what it measures instead of calling a packet overdue", () => {
+    const rtpCopy = [...getAssistantActions("rtp_registry"), ...getAssistantActions("rtp_cycle")]
+      .flatMap((action) => [action.label, action.description, action.prompt])
+      .join(" ");
+
+    expect(rtpCopy).not.toMatch(/overdue/i);
+    // Negative control: the copy this scans is really there, and really is
+    // about packets, so an empty catalog cannot pass the assertion above.
+    expect(rtpCopy).toMatch(/board packet/i);
+    expect(rtpCopy).toMatch(/need regenerating or have never been made/i);
+  });
+});
 
 describe("assistant catalog helpers", () => {
   it("resolves a project detail path into project grounding", () => {

@@ -34,6 +34,7 @@ import { describeRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { formatMoney } from "@/lib/money/format";
 
 function asNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -52,11 +53,7 @@ function formatCurrency(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     return "$0";
   }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 function formatDateTime(value: string | null | undefined): string {

@@ -16,6 +16,7 @@ import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-
 import { ModelRunZoneResolutionPanel } from "@/components/models/model-run-zone-resolution-panel";
 import { ModelRunEquityPanel } from "@/components/models/model-run-equity-panel";
 import { ModelRunEngagementPanel } from "@/components/models/model-run-engagement-panel";
+import { ModelRunScreeningGradeNote } from "@/components/models/model-run-screening-grade-note";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
@@ -1317,6 +1318,18 @@ export function ModelRunManager({
                           </p>
                         )}
                         <p className="text-sm text-muted-foreground">{runMode.caveatSummary}</p>
+                        {/*
+                          The caveat above states a grade; this is where a
+                          planner finds out what that grade permits — and this
+                          run's own zone-resolution and benchmark figures, which
+                          the general explanation cannot know.
+                        */}
+                        <ModelRunScreeningGradeNote
+                          modelId={modelId}
+                          modelRunId={run.id}
+                          engineKey={run.engine_key}
+                          runStatus={run.status}
+                        />
                       </div>
                       {runLink ? (
                         <div className="mt-3 flex flex-wrap gap-2">

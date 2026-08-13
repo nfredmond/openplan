@@ -47,6 +47,7 @@ import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 type PackageRow = {
   id: string;
@@ -273,7 +274,9 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     orthoPreview = {
       status: "unreadable",
       detail:
-        "This deployment could not mint a display link for held imagery (its Supabase service-role key is not configured), so the map cannot draw the preview. The custody records below are unaffected.",
+        "This deployment could not mint a display link for held imagery, so the map cannot draw the preview. The custody records below are unaffected, and whoever runs this OpenPlan can fix the deployment setting behind it.",
+      operatorDetail:
+        "The Supabase service-role key is not configured on this deployment, so signed display links cannot be minted.",
     };
   }
   const processingJobSummaries = processingJobs.map((job) =>
@@ -611,6 +614,9 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
                   : null
               }
               previewNotice={orthoPreview.status === "ready" ? null : orthoPreview.detail}
+              previewNoticeDetail={
+                orthoPreview.status === "unreadable" ? (orthoPreview.operatorDetail ?? null) : null
+              }
             />
           </WorksurfaceSection>
           <WorksurfaceSection
@@ -687,10 +693,14 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             }
           >
             {packagesUnreadable ? (
-              <StateBlock
-                tone="danger"
+              // The planner sentence here is narrower than `reads.describe()` on
+              // purpose: this notice stands in for one panel, so it says what an
+              // empty package list would not mean rather than speaking for the
+              // whole page.
+              <ReadFailureNotice
+                reads={reads}
                 title="Evidence packages could not be read"
-                description={`${reads.messages().join(" ")} An empty list here would not mean this mission has no packages — the query failed, so OpenPlan cannot say either way.`}
+                description="An empty list here would not mean this mission has no packages — the query failed, so OpenPlan cannot say either way."
               />
             ) : (
               <DataTable<PackageRow>

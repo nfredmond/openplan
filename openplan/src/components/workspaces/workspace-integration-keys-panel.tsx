@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 
 /**
@@ -69,6 +70,7 @@ export function WorkspaceIntegrationKeysPanel({
   canManage,
   providerIds,
 }: WorkspaceIntegrationKeysPanelProps) {
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [storageAvailable, setStorageAvailable] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -146,7 +148,12 @@ export function WorkspaceIntegrationKeysPanel({
     const fallback = provider.envKeyPresent
       ? `OpenPlan will fall back to this deployment's ${provider.envVar}.`
       : `This deployment has no ${provider.envVar} either, so these features become unavailable or degraded.`;
-    if (!window.confirm(`Remove the workspace ${provider.label} key? ${fallback}`)) return;
+    const confirmed = await confirm({
+      headline: `Remove the workspace ${provider.label} key?`,
+      consequence: fallback,
+      confirmLabel: "Remove this key",
+    });
+    if (!confirmed) return;
     setWorking(provider.id);
     setMessage(provider.id, null);
     try {
@@ -456,6 +463,7 @@ export function WorkspaceIntegrationKeysPanel({
           })}
         </ul>
       )}
+      {confirmDialog}
     </section>
   );
 }

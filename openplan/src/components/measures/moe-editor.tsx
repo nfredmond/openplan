@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { MeasureMoeSummary } from "@/lib/measures/claims";
+import { formatMoney } from "@/lib/money/format";
 import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure-form-shell";
 
 /**
@@ -53,10 +54,11 @@ export function MoeEditor({
   const [basisNote, setBasisNote] = useState("");
 
   const nameById = new Map(recipients.map((recipient) => [recipient.id, recipient.name]));
+  // Maintenance-of-effort figures are compared against a required amount a
+  // recipient is held to, so they are written to the cent, in the measure's
+  // declared currency — never the browser's locale.
   const money = (value: number | null) =>
-    value === null
-      ? "Not recorded"
-      : new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode }).format(value);
+    formatMoney(value, { precision: "cents", currency: currencyCode });
 
   async function record() {
     const saved = await submit({

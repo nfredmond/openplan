@@ -12,6 +12,7 @@ import { RecipientComposer } from "@/components/measures/recipient-composer";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { formatMoney } from "@/lib/money/format";
 import {
   isNarrativeRule,
   measureCategoriesNeedingBasisVintage,
@@ -299,8 +300,10 @@ export default async function MeasureFundPage({ params }: PageProps) {
     allocationRowCountByPeriod.set(allocation.period_id, (allocationRowCountByPeriod.get(allocation.period_id) ?? 0) + 1);
   }
 
-  const money = (value: number) =>
-    new Intl.NumberFormat(undefined, { style: "currency", currency: currencyCode }).format(value);
+  // The claim ledger is what a recipient is paid against and what an auditor
+  // reconciles, so it is written to the cent, in the measure's declared
+  // currency — never the browser's locale.
+  const money = (value: number) => formatMoney(value, { precision: "cents", currency: currencyCode });
 
   return (
     <div className="space-y-6 p-6">

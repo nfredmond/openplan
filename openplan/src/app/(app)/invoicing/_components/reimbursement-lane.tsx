@@ -4,7 +4,6 @@ import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-lin
 import { InvoiceFundingAwardLinker } from "@/components/invoicing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-composer";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
-import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildBillingInvoicePriorityQueue,
@@ -57,6 +56,7 @@ import {
   type FundingAwardListRow,
   type InvoiceRegisterRow,
 } from "./invoicing-page-helpers";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 /**
  * The reimbursement direction of the invoicing module: this agency invoicing
@@ -365,13 +365,11 @@ export async function ReimbursementLane({
 
   return (
     <section className="space-y-4">
-      {reads.any ? (
-        <StateBlock
-          tone="danger"
-          title="Part of this reimbursement view could not be read"
-          description={`${reads.describe()} Treat no figure here as a statement of what this workspace is owed or has claimed until the read succeeds. ${reads.messages().join(" · ")}`}
-        />
-      ) : null}
+      <ReadFailureNotice
+        reads={reads}
+        title="Part of this reimbursement view could not be read"
+        description={`${reads.describe()} Treat no figure here as a statement of what this workspace is owed or has claimed until the read succeeds.`}
+      />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
         <div className="space-y-2">

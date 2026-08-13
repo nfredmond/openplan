@@ -21,6 +21,7 @@ import {
 } from "@/lib/reports/catalog";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
+import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
 
 /**
  * `current === null` means the LIVE side is UNKNOWN — the read that would have
@@ -81,12 +82,9 @@ function driftStatusLabel(status: "unchanged" | "updated" | "count_changed") {
   return "Unchanged";
 }
 
+/** Report detail rounds to the dollar; the surface discloses that once. */
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 export function RtpReportDetail({
@@ -728,6 +726,12 @@ export function RtpReportDetail({
                 <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.outstandingReimbursementAmount ?? 0)}</p>
               </div>
             </div>
+            {/*
+              "Outstanding reimbursement" is the same `billing_invoice_records`
+              total the invoicing register renders to the cent. Rounded here;
+              said so here. See `src/lib/money/format.ts`.
+            */}
+            <p className="mt-2 text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
             <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Section composition at generation time</p>
               <p className="mt-2 text-sm text-muted-foreground">

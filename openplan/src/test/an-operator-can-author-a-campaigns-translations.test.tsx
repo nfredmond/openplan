@@ -23,6 +23,7 @@ import {
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
+import { confirmDestructiveAction, confirmDialogText, declineConfirmation } from "./helpers/confirm-dialog";
 import { loadSchemaInventory } from "./migrations/schema-inventory";
 
 /**
@@ -626,7 +627,6 @@ describe("the operator panel", () => {
   });
 
   it("asks again before promoting a machine translation, and sends the promotion the route expects", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ accepted: 1, published: "done" }), { status: 200 })
     );
@@ -643,8 +643,13 @@ describe("the operator panel", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^accept as our wording$/i }));
 
+    // Same consequence constant, now rendered where the operator can read it
+    // twice: on the panel and in the dialog. Two wordings would mean being
+    // warned about one thing and agreeing to another.
+    expect(await confirmDialogText()).toContain("Accepting makes these words your agency's own");
+    await confirmDestructiveAction("Accept this wording");
+
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
-    expect(confirmSpy.mock.calls[0][0]).toContain("Accepting makes these words your agency's own");
 
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(JSON.parse(String(init.body))).toEqual({
@@ -655,7 +660,6 @@ describe("the operator panel", () => {
   });
 
   it("does not promote anything when the operator declines the consequence", async () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
     const fetchSpy = vi.spyOn(globalThis, "fetch");
 
     render(
@@ -669,6 +673,7 @@ describe("the operator panel", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /^accept as our wording$/i }));
+    await declineConfirmation();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
@@ -823,7 +828,6 @@ describe("the operator panel", () => {
     }));
     expect(machineEntries.length).toBeGreaterThan(2);
 
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     const fetchMock = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValue(new Response(JSON.stringify({ accepted: 2 }), { status: 200 }));
@@ -832,6 +836,7 @@ describe("the operator panel", () => {
 
     // The button counts what will actually be sent, not what is on screen.
     fireEvent.click(screen.getByRole("button", { name: /Accept 2 machine translations as our wording/ }));
+    await confirmDestructiveAction("Accept this wording");
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
@@ -871,5 +876,36 @@ describe("the operator panel", () => {
     );
 
     expect(screen.getByText(/The original changed after this was translated/)).toBeInTheDocument();
+  });
+
+  /**
+   * FOUND BY MUTATION: making the panel ignore the operator's answer broke no
+   * test in this file, because withdrawal had only ever been driven with "yes".
+   * A withdrawal a resident's language loses cannot be undone from here — the
+   * wording has to be written again.
+   */
+  it("withdraws nothing when the operator declines", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+
+    render(
+      <CampaignTranslationsPanel
+        {...panelProps({
+          entries: [
+            { fieldKey: fields[0].key, locale: "es", text: "Campaña", source: "operator", model: null, stale: false },
+          ],
+        })}
+      />
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: /^withdraw$/i })[0]);
+
+    // The question names the language and what participants will see instead,
+    // which is the part an operator cannot work out from "are you sure?".
+    const copy = await confirmDialogText();
+    expect(copy).toMatch(/Spanish/i);
+    expect(copy).toMatch(/disclosure that it is not translated/i);
+
+    await declineConfirmation();
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

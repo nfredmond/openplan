@@ -20,6 +20,23 @@
  * Prefix-matched, so `/aerial/<missionId>` and `/explore?runId=…` count as the
  * same surface as their index. Add a route here when a new page makes the
  * shared map its working canvas.
+ *
+ * ═══ THIS LIST GAINED A SECOND JOB (2026-08-12) ═══
+ *
+ * It now also decides where the map can be READ rather than merely looked at.
+ * `CartographicMapReadingToggle` mounts inside `MapSurfaceOnly`, and the mode it
+ * controls — which takes the route-content panel off the screen — exists only
+ * while that control is mounted. So a route added here does not just gain
+ * checkboxes; it gains the ability for a planner to hide its own content.
+ *
+ * That raises the bar for membership rather than lowering it, and the existing
+ * test still applies: not "does the map show anything" but "would a planner open
+ * this page in order to READ the map". A page whose content a planner would
+ * never want out of the way is not a map surface.
+ *
+ * The FIRST entry is load-bearing in one more place: the layer library's "Show
+ * on the map" link sends planners to `MAP_SURFACE_ROUTES[0]`. Reordering this
+ * array changes where that link lands.
  */
 export const MAP_SURFACE_ROUTES = [
   /** Crash points, filters and coverage disclosure are read on the map. */

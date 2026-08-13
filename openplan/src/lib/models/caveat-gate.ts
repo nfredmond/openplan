@@ -60,7 +60,16 @@ export function partitionScreeningGradeRows<T>({
   };
 }
 
+/**
+ * The held-back count, said to the planner who is looking at the gap.
+ *
+ * This string RENDERS — it is the line under the county-run "Held back" banner.
+ * It used to end "(pass acceptScreeningGrade:true to include)", which names a
+ * function parameter no planner can pass and no screen exposes. The meaning is
+ * unchanged: N sources are held back, and including them is the reader's choice
+ * (the banner's own link is how that choice is made).
+ */
 export function describeScreeningGradeRefusal(count: number): string {
   if (count <= 0) return "";
-  return `${count} screening-grade source${count === 1 ? "" : "s"} held back (pass acceptScreeningGrade:true to include).`;
+  return `${count} screening-grade source${count === 1 ? "" : "s"} held back until you choose to include them.`;
 }

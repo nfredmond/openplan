@@ -4,6 +4,11 @@ import {
   RtpPerformanceMeasureEditor,
   type RtpPerformanceMeasureRow,
 } from "@/components/rtp/rtp-performance-measure-editor";
+import {
+  confirmDestructiveAction,
+  confirmDialogText,
+  declineConfirmation,
+} from "./helpers/confirm-dialog";
 
 /**
  * THE SCREEN SIDE OF "A MEASURED ZERO IS NOT A BLANK BOX".
@@ -310,5 +315,32 @@ describe("what the row says about its own evidence", () => {
 
     expect(screen.queryByRole("button", { name: /Add performance measure/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Remove/i })).not.toBeInTheDocument();
+  });
+
+  /**
+   * FOUND BY MUTATION. Making the editor ignore the planner's answer entirely
+   * changed no test in this file: the removal path had only ever been driven
+   * with "yes". A measure removed by accident takes its baseline, its target and
+   * its data source with it, and there is no undo.
+   */
+  it("names the measure in the question, and removes nothing when declined", async () => {
+    render(
+      <RtpPerformanceMeasureEditor rtpCycleId={CYCLE_ID} measures={[measure()]} canWrite />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Remove/i }));
+
+    const copy = await confirmDialogText();
+    expect(copy).toContain("Traffic fatalities");
+    expect(copy).toMatch(/baseline, target, and data source are deleted with it/i);
+
+    await declineConfirmation();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    // And the same button, answered yes, does send the DELETE — so the test
+    // above is measuring the answer rather than a broken button.
+    fireEvent.click(screen.getByRole("button", { name: /Remove/i }));
+    await confirmDestructiveAction("Remove this measure");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(String(fetchMock.mock.calls[0][1].method)).toBe("DELETE");
   });
 });

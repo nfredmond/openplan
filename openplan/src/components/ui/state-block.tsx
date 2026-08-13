@@ -13,17 +13,28 @@ type BaseStateProps = {
   className?: string;
 };
 
+/**
+ * `detail` is the secondary register: everything true but not addressed to the
+ * reader of `title`/`description`. It renders below the description, inside the
+ * same text column, so a collapsed disclosure there reads as a footnote to the
+ * sentence rather than as a second notice. `ReadFailureNotice` is what puts the
+ * database's own words there.
+ */
 export function StateBlock({
   icon,
   title,
   description,
+  detail,
   action,
   compact = false,
   className,
   tone = "neutral",
+  testId,
 }: BaseStateProps & {
   icon?: React.ReactNode;
   tone?: StateTone;
+  detail?: React.ReactNode;
+  testId?: string;
 }) {
   const toneClasses = {
     neutral: {
@@ -72,6 +83,7 @@ export function StateBlock({
         className
       )}
       role={styles.role}
+      data-testid={testId}
     >
       <div className="flex items-start gap-3">
         <span
@@ -83,9 +95,10 @@ export function StateBlock({
           {resolvedIcon}
         </span>
 
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <p className={cn("font-semibold tracking-tight", compact ? "text-sm" : "text-base")}>{title}</p>
           {description ? <p className={cn(compact ? "text-xs" : "text-sm", styles.description)}>{description}</p> : null}
+          {detail ? <div className={cn("pt-0.5", styles.description)}>{detail}</div> : null}
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { StateBlock } from "@/components/ui/state-block";
 import type { ReadFailureLog } from "@/lib/ui/read-failures";
 
@@ -18,21 +19,17 @@ import type { ReadFailureLog } from "@/lib/ui/read-failures";
  * paths (RTP and standard) plus an early failure return, and a disclosure that
  * exists on only some of them is the seam defect this repo keeps shipping.
  *
- * INTERNAL PAGE, so the database's own message is shown: the reader is the
- * person who can act on it. On a PUBLIC surface the same disclosure must state
- * THAT a read failed and never the database's message.
+ * INTERNAL PAGE, so the database's own message stays on it — inside the shared
+ * notice's operator disclosure, not in the sentence a planner reads. On a PUBLIC
+ * surface the same disclosure must state THAT a read failed and never the
+ * database's message.
  */
 export function ReportReadFailureDisclosure({ reads }: { reads: ReadFailureLog }) {
-  if (!reads.any) {
-    return null;
-  }
-
   return (
-    <StateBlock
+    <ReadFailureNotice
       className="mb-4"
-      tone="danger"
+      reads={reads}
       title="Part of this report could not be read"
-      description={`${reads.describe()} ${reads.messages().join(" · ")}`}
     />
   );
 }

@@ -17,16 +17,11 @@ import {
   BCA_SCREENING_CAVEAT,
 } from "./parameters";
 import type { BcaLineItemResult, BcaResult } from "./types";
-
-const usdFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { formatMoney } from "@/lib/money/format";
 
 /** Whole-dollar USD, e.g. 1234567.89 -> "$1,234,568". Shared by render and UI. */
 export function formatUsd(value: number): string {
-  return usdFormatter.format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 export type RenderBcaMemoOptions = {

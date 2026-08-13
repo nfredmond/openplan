@@ -51,6 +51,39 @@ const AEQUILIBRAE_PACKET = {
   caveats: ["Uncalibrated", "Screening-grade"],
 };
 
+/**
+ * AN EMPTY PANEL HAS TWO CAUSES AND THEY ARE NOT THE SAME STATEMENT.
+ *
+ * "This run has no evidence record to show" asserts that the record does not
+ * exist. The panel is also empty when the READ for it failed — a permission, a
+ * dropped column, a 500 — and saying the first on the evidence of the second
+ * turns a broken deployment into a finding about the planner's run. This is the
+ * defect `read-failures.ts` exists for, in a client component.
+ */
+describe("ModelRunEvidencePanel — an empty evidence area says which kind of empty", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("does not call a failed read an absent record", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        json: async () => ({ error: "permission denied for table model_run_artifacts" }),
+      }))
+    );
+    renderPanel("aequilibrae");
+    fireEvent.click(screen.getByRole("button", { name: /inspect evidence/i }));
+
+    const reason = await waitFor(() => screen.getByTestId("evidence-empty-reason"));
+    expect(reason).toHaveTextContent("could not be read");
+    // The exact overclaim this replaces.
+    expect(reason).toHaveTextContent(/not a finding that the run produced none/i);
+    expect(reason.textContent ?? "").not.toMatch(/has no evidence record/i);
+  });
+});
+
 describe("ModelRunEvidencePanel run-honesty header", () => {
   afterEach(() => {
     vi.unstubAllGlobals();

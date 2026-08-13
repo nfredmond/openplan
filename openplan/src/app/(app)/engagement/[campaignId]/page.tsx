@@ -72,6 +72,7 @@ import {
 } from "@/lib/engagement/hotspots";
 import { buildDailyIntake } from "@/lib/engagement/participation-dashboard";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 type CampaignRow = {
   id: string;
@@ -601,15 +602,11 @@ export default async function EngagementCampaignDetailPage({
         <span className="text-foreground">{campaign.title}</span>
       </div>
 
-      {reads.any ? (
-        <div className="mb-4">
-          <StateBlock
-            tone="danger"
-            title="Part of this campaign could not be read"
-            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
-          />
-        </div>
-      ) : null}
+      <ReadFailureNotice
+        className="mb-4"
+        reads={reads}
+        title="Part of this campaign could not be read"
+      />
 
       {showModerationHonestyBanner ? (
         <div className="mb-4" data-testid="moderation-honesty-banner">
@@ -694,11 +691,12 @@ export default async function EngagementCampaignDetailPage({
             </span>
             <div>
               <p className="module-operator-eyebrow">Moderation Summary</p>
-              <h2 className="module-operator-title">Audit posture and review status</h2>
+              <h2 className="module-operator-title">What still needs a moderator&apos;s decision</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Current moderation workload and workload signals. Operators should triage flagged and pending items before generating reports.
+            Comments waiting on review, and comments someone flagged. Work through these before
+            generating a report — anything still pending is left out of it.
           </p>
           <div className="module-operator-list">
             {itemsUnreadable ? (

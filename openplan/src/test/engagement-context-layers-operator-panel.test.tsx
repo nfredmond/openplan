@@ -4,6 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
 import { WORKSPACE_ROLES, canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { contextLayerPublicationWarning, type ContextLayerSummary } from "@/lib/engagement/context-layers";
+import {
+  confirmDestructiveAction,
+  confirmDialogText,
+  declineConfirmation,
+} from "./helpers/confirm-dialog";
 
 /**
  * The operator's side of the seam: the control has to render for exactly the
@@ -52,7 +57,6 @@ function layer(overrides: Partial<ContextLayerSummary> = {}): ContextLayerSummar
 }
 
 const originalFetch = globalThis.fetch;
-const originalConfirm = globalThis.confirm;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -60,7 +64,6 @@ beforeEach(() => {
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
-  globalThis.confirm = originalConfirm;
 });
 
 describe("who gets the upload control", () => {
@@ -185,8 +188,6 @@ describe("controlling the draw order", () => {
 
 describe("publishing a layer", () => {
   it("asks first, in words that name the audience", async () => {
-    const confirmSpy = vi.fn(() => true);
-    globalThis.confirm = confirmSpy as unknown as typeof globalThis.confirm;
     const fetchSpy = vi.fn(async () => new Response(JSON.stringify({ layer: {} }), { status: 200 }));
     globalThis.fetch = fetchSpy as unknown as typeof globalThis.fetch;
 
@@ -194,8 +195,11 @@ describe("publishing a layer", () => {
     fireEvent.click(screen.getByRole("button", { name: /show to participants/i }));
 
     // The exact sentence, from the same function the route echoes back, so the
-    // warning the operator reads and the one the API states cannot drift.
-    expect(confirmSpy).toHaveBeenCalledWith(contextLayerPublicationWarning("Proposed alignment"));
+    // warning the operator reads and the one the API states cannot drift. It is
+    // now IN the page rather than in a browser dialog, so the assertion reads
+    // the text an operator actually sees.
+    expect(await confirmDialogText()).toContain(contextLayerPublicationWarning("Proposed alignment"));
+    await confirmDestructiveAction("Show it to participants");
 
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
     const [url, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
@@ -204,20 +208,18 @@ describe("publishing a layer", () => {
     expect(JSON.parse(String(init.body))).toEqual({ visibleToParticipants: true });
   });
 
-  it("does nothing when the operator declines", () => {
-    globalThis.confirm = vi.fn(() => false) as unknown as typeof globalThis.confirm;
+  it("does nothing when the operator declines", async () => {
     const fetchSpy = vi.fn();
     globalThis.fetch = fetchSpy as unknown as typeof globalThis.fetch;
 
     render(<EngagementContextLayersPanel campaignId={CAMPAIGN_ID} layers={[layer()]} canWrite />);
     fireEvent.click(screen.getByRole("button", { name: /show to participants/i }));
+    await declineConfirmation();
 
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("does not re-ask when a layer is being taken back down", async () => {
-    const confirmSpy = vi.fn(() => true);
-    globalThis.confirm = confirmSpy as unknown as typeof globalThis.confirm;
     globalThis.fetch = vi.fn(
       async () => new Response(JSON.stringify({ layer: {} }), { status: 200 })
     ) as unknown as typeof globalThis.fetch;
@@ -232,11 +234,10 @@ describe("publishing a layer", () => {
     fireEvent.click(screen.getByRole("button", { name: /hide from participants/i }));
 
     // Un-publishing needs no warning; it is the safe direction.
-    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alertdialog")).toBeNull();
   });
 
   it("shows the route's own refusal rather than a generic failure", async () => {
-    globalThis.confirm = vi.fn(() => true) as unknown as typeof globalThis.confirm;
     globalThis.fetch = vi.fn(
       async () =>
         new Response(JSON.stringify({ error: "No such map layer" }), { status: 404 })
@@ -244,9 +245,44 @@ describe("publishing a layer", () => {
 
     render(<EngagementContextLayersPanel campaignId={CAMPAIGN_ID} layers={[layer()]} canWrite />);
     fireEvent.click(screen.getByRole("button", { name: /show to participants/i }));
+    await confirmDestructiveAction("Show it to participants");
 
     // The API's message already names the real cause; replacing it here with
     // "something went wrong" throws away the only useful thing on screen.
     expect(await screen.findByText("No such map layer")).toBeInTheDocument();
+  });
+});
+
+describe("removing a layer", () => {
+  /**
+   * FOUND BY MUTATION: making the panel ignore the answer broke nothing, because
+   * removal had only ever been driven with "yes". A layer removed by accident
+   * takes its uploaded geometry with it and cannot be undone from here.
+   */
+  it("names the layer and removes nothing when the operator declines", async () => {
+    const fetchSpy = vi.fn();
+    globalThis.fetch = fetchSpy as unknown as typeof globalThis.fetch;
+
+    render(<EngagementContextLayersPanel campaignId={CAMPAIGN_ID} layers={[layer()]} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /remove proposed alignment/i }));
+
+    expect(await confirmDialogText()).toContain("Proposed alignment");
+    await declineConfirmation();
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("deletes through the layer's own route once the operator agrees", async () => {
+    const fetchSpy = vi.fn(async () => new Response(JSON.stringify({}), { status: 200 }));
+    globalThis.fetch = fetchSpy as unknown as typeof globalThis.fetch;
+
+    render(<EngagementContextLayersPanel campaignId={CAMPAIGN_ID} layers={[layer()]} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /remove proposed alignment/i }));
+    await confirmDestructiveAction("Remove this layer");
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+    const [url, init] = fetchSpy.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe(`/api/engagement/campaigns/${CAMPAIGN_ID}/context-layers/layer-1`);
+    expect(init.method).toBe("DELETE");
   });
 });

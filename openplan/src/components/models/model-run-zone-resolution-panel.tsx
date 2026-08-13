@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, Ruler } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 import {
   LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
   bandIntrazonalShare,
@@ -187,7 +188,7 @@ export function ModelRunZoneResolutionPanel({
               To model this area at a finer resolution, set{" "}
               <span className="font-semibold">Zone geography (TAZ resolution)</span> to{" "}
               <span className="font-semibold">Block groups (~3x finer zones)</span> when you launch
-              the next run. It lowers this share; both resolutions stay screening-grade.
+              the next run. It lowers this share; both resolutions stay <ScreeningGradeLink />.
             </p>
           ) : null}
         </>

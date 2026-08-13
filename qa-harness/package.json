@@ -6,6 +6,8 @@
   "scripts": {
     "check:local-guards": "node harness-env.local-guard.test.js",
     "check:workspace-isolation-fixture": "node workspace-url-isolation-fixture.test.js",
+    "check:map-reading-geometry": "node map-reading-geometry.test.js",
+    "local-map-reading-audit": "node openplan-local-map-reading-audit.js",
     "local-rtp-release-review-smoke": "node openplan-local-rtp-release-review-smoke.js",
     "local-grants-flow-smoke": "node openplan-local-grants-flow-smoke.js",
     "local-engagement-report-handoff-smoke": "node openplan-local-engagement-report-handoff-smoke.js",

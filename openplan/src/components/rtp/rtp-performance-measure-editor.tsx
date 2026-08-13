@@ -31,6 +31,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Gauge, Loader2, PencilLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ExtractionProvenanceChip } from "@/components/rtp/extraction-provenance-chip";
 import {
   transcriptionDocumentHref,
@@ -563,6 +564,7 @@ export function RtpPerformanceMeasureEditor({
   transcriptions,
 }: RtpPerformanceMeasureEditorProps) {
   const router = useRouter();
+  const { confirm, confirmDialog } = useConfirmDialog();
   // `"create"` for the new-measure form, a measure id while editing that row, `null` when closed.
   const [openForm, setOpenForm] = useState<string | null>(null);
   const [draft, setDraft] = useState<MeasureDraft>(() => emptyDraft(0));
@@ -636,9 +638,11 @@ export function RtpPerformanceMeasureEditor({
   }
 
   async function handleRemove(measure: RtpPerformanceMeasureRow) {
-    const confirmed = window.confirm(
-      `Remove the performance measure “${measure.label}” from this plan? Its baseline, target, and data source are deleted with it.`
-    );
+    const confirmed = await confirm({
+      headline: `Remove the performance measure “${measure.label}” from this plan?`,
+      consequence: "Its baseline, target, and data source are deleted with it.",
+      confirmLabel: "Remove this measure",
+    });
     if (!confirmed) return;
 
     setError(null);
@@ -868,6 +872,7 @@ export function RtpPerformanceMeasureEditor({
           )
         ) : null}
       </div>
+      {confirmDialog}
     </article>
   );
 }

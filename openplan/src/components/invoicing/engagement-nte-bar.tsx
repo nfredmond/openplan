@@ -1,8 +1,5 @@
 import type { EngagementBilledSummary } from "@/lib/invoicing/receivables";
-
-function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
-}
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * Billed-to-date position of one engagement against its not-to-exceed
@@ -16,8 +13,8 @@ export function EngagementNteBar({ summary }: { summary: EngagementBilledSummary
   if (summary.notToExceed === null) {
     return (
       <p className="text-xs text-muted-foreground">
-        {formatCurrency(summary.billedToDate)} billed to date · no not-to-exceed ceiling recorded.
-        {summary.draftedUnbilled > 0 ? ` ${formatCurrency(summary.draftedUnbilled)} more sits in draft.` : ""}
+        {formatMoney(summary.billedToDate, { precision: "cents" })} billed to date · no not-to-exceed ceiling recorded.
+        {summary.draftedUnbilled > 0 ? ` ${formatMoney(summary.draftedUnbilled, { precision: "cents" })} more sits in draft.` : ""}
       </p>
     );
   }
@@ -29,12 +26,12 @@ export function EngagementNteBar({ summary }: { summary: EngagementBilledSummary
     <div className="space-y-1">
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
         <span className={summary.isOverNte ? "font-semibold text-amber-700 dark:text-amber-300" : "text-muted-foreground"}>
-          {formatCurrency(summary.billedToDate)} billed of {formatCurrency(summary.notToExceed)} not-to-exceed
+          {formatMoney(summary.billedToDate, { precision: "cents" })} billed of {formatMoney(summary.notToExceed, { precision: "cents" })} not-to-exceed
         </span>
         <span className="text-muted-foreground">
           {summary.isOverNte
-            ? `Over by ${formatCurrency(summary.billedToDate - summary.notToExceed)}`
-            : `${formatCurrency(summary.remaining ?? 0)} remaining`}
+            ? `Over by ${formatMoney(summary.billedToDate - summary.notToExceed, { precision: "cents" })}`
+            : `${formatMoney(summary.remaining ?? 0, { precision: "cents" })} remaining`}
         </span>
       </div>
       <div className="h-1.5 w-full border border-border/60 bg-background/70" role="presentation">
@@ -51,7 +48,7 @@ export function EngagementNteBar({ summary }: { summary: EngagementBilledSummary
       ) : null}
       {summary.draftedUnbilled > 0 ? (
         <p className="text-xs text-muted-foreground">
-          {formatCurrency(summary.draftedUnbilled)} more is composed in draft invoices and not yet billed.
+          {formatMoney(summary.draftedUnbilled, { precision: "cents" })} more is composed in draft invoices and not yet billed.
         </p>
       ) : null}
     </div>

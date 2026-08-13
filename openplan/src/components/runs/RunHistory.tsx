@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { normalizeMapViewState, summarizeMapViewState } from "@/lib/analysis/map-view-state";
@@ -119,6 +120,7 @@ export function RunHistory({
   comparisonRunTitle,
   comparisonRunCreatedAt,
 }: RunHistoryProps) {
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [runs, setRuns] = useState<Run[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -165,7 +167,16 @@ export function RunHistory({
       return;
     }
 
-    const confirmed = window.confirm("Delete this analysis run? This action cannot be undone.");
+    // Named, because a run history is a list of near-identical rows and
+    // "this analysis run" identifies none of them once the dialog covers the
+    // list. Falls back to the unnamed wording only if the row has gone.
+    const run = runs.find((candidate) => candidate.id === id);
+    const confirmed = await confirm({
+      headline: run ? `Delete “${run.title}”?` : "Delete this analysis run?",
+      consequence:
+        "This action cannot be undone. The run's results, its map, and its written interpretation go with it.",
+      confirmLabel: "Delete this run",
+    });
 
     if (!confirmed) {
       return;
@@ -466,6 +477,7 @@ export function RunHistory({
           );
         })}
       </div>
+      {confirmDialog}
     </article>
   );
 }

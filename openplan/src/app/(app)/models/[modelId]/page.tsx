@@ -45,6 +45,7 @@ import {
   formatModelStatusLabel,
   modelStatusTone,
 } from "@/lib/models/catalog";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 type RouteParams = Promise<{ modelId: string }>;
 
@@ -761,13 +762,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
           Back to Models
         </Link>
 
-        {reads.any ? (
-          <StateBlock
-            tone="danger"
-            title="Part of this page could not be read"
-            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
-          />
-        ) : null}
+        <ReadFailureNotice reads={reads} />
 
         {/* The screening gate, and the difference between not having one and not
             being able to tell. Both hold modeling output to prototype-only —

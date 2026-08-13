@@ -278,7 +278,7 @@ export function ProjectFundingAwardCreator({
 
         <div className="space-y-1.5">
           <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Notes</label>
-          <Textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Award terms, obligation risks, reimbursement posture, or scope notes." />
+          <Textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Award terms, obligation risks, how and when you get reimbursed, or scope notes." />
         </div>
 
         <div className="rounded-[0.5rem] border border-border/60 bg-muted/15 px-3 py-3">

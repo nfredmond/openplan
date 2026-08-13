@@ -46,6 +46,7 @@ import { esc } from "@/lib/invoicing/html-escape";
 import { parseCurrencyAmount, roundCurrencyAmount } from "@/lib/invoicing/invoice-records";
 import type { AwardDrawdownLedger, LedgerInvoiceLine } from "@/lib/invoicing/drawdown-ledger";
 import type { ReimbursementProfileBinding } from "@/lib/invoicing/reimbursement-profile-binding";
+import { formatMoney, isSupportedCurrency } from "@/lib/money/format";
 
 /**
  * The sentence that keeps this document from being mistaken for the funder's
@@ -309,13 +310,12 @@ export function worksheetCurrencyNote(currency: { code: string; declared: boolea
 
 function formatAmount(value: number, currencyCode: string | null | undefined): string {
   const code = currencyCode?.trim().toUpperCase() || "USD";
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: code }).format(value);
-  } catch {
-    // An unrecognized code must not sink the document. `code` is escaped
-    // because it is an input like any other.
-    return `${value.toFixed(2)} ${esc(code)}`;
-  }
+  // An unrecognized code must not sink the document. `code` is escaped because
+  // it is an input like any other — which is why this fallback stays here
+  // rather than inside the shared formatter.
+  if (!isSupportedCurrency(code)) return `${value.toFixed(2)} ${esc(code)}`;
+  // A reimbursement worksheet is what the funder reconciles: cents, always.
+  return formatMoney(value, { precision: "cents", currency: code });
 }
 
 /** A nullable money figure. Null is "Not recorded" — never a zero. */

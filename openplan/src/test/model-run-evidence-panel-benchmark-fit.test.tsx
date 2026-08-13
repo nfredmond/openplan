@@ -48,7 +48,7 @@ function renderPanel() {
 
 async function openEvidence() {
   fireEvent.click(screen.getByRole("button", { name: /inspect evidence/i }));
-  await waitFor(() => expect(screen.getByText(/packet posture/i)).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText(/where this record came from/i)).toBeInTheDocument());
 }
 
 describe("ModelRunEvidencePanel benchmark fit block", () => {

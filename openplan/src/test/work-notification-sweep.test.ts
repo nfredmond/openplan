@@ -971,8 +971,16 @@ describe("what the lapse reminder says is at risk", () => {
 
   it("survives a currency code Intl does not know", () => {
     // A bad code in a registry entry must cost the label, never the warning.
+    //
+    // The fallback moved into `src/lib/money/format.ts` on 2026-08-12 when the
+    // twenty-odd local currency formatters were consolidated, and the wording
+    // changed with it: CODE first, then a grouped number — the same shape ICU
+    // itself produces for a well-formed but unassigned code
+    // ("USF 1,234.50"). One shape for both, rather than "1000.00 NOTACODE"
+    // here and "USF 1,234.50" two screens away. The fact stated is unchanged:
+    // the amount, and the unit it is in.
     const sentence = expenditureAtRiskSentence(ledgerWithRemaining(1000), false, "NOTACODE");
-    expect(sentence).toContain("1000.00 NOTACODE");
+    expect(sentence.replace(/\s/g, " ")).toContain("NOTACODE 1,000.00");
     expect(sentence).toContain("authorized and not yet claimed");
   });
 

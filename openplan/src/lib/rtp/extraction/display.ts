@@ -43,16 +43,11 @@ import type {
   ReconciliationRollup,
   ReconciliationVerdict,
 } from "./reconcile";
+import { formatMoney } from "@/lib/money/format";
 
 // ---------------------------------------------------------------------------
 // Values, written out.
 // ---------------------------------------------------------------------------
-
-const MONEY = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 const PLAIN_NUMBER = new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 });
 
@@ -66,7 +61,7 @@ export const VALUE_NOT_STATED = "Not stated";
 export function formatComparedValue(kind: ComparedValueKind, value: string | number | null): string {
   if (value === null || value === undefined || value === "") return VALUE_NOT_STATED;
   if (kind === "money") {
-    return typeof value === "number" ? MONEY.format(value) : String(value);
+    return typeof value === "number" ? formatMoney(value, { precision: "whole" }) : String(value);
   }
   if (kind === "year") {
     return String(value);

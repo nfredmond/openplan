@@ -37,17 +37,13 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { formatMoney, ROUNDED_MONEY_NOTE } from "@/lib/money/format";
 
 export const metadata = moduleMetadata("Programming Cycles");
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
+/** Programming-cycle totals round to the dollar; the page discloses that once. */
 function formatCurrency(value: number | string | null | undefined) {
-  return currencyFormatter.format(Number(value ?? 0));
+  return formatMoney(value, { precision: "whole", absent: formatMoney(0, { precision: "whole" }) });
 }
 
 type ProgramsPageSearchParams = Promise<{
@@ -927,7 +923,9 @@ export default async function ProgramsPage({
             <div className="module-summary-card">
               <p className="module-summary-label">Likely dollars</p>
               <p className="module-summary-value text-base leading-tight">{formatCurrency(likelyOpportunityAmount)}</p>
-              <p className="module-summary-detail">Expected dollars attached to pursue decisions in the shared catalog.</p>
+              <p className="module-summary-detail">
+                Expected dollars attached to pursue decisions in the shared catalog. {ROUNDED_MONEY_NOTE}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Packet-risky opportunities</p>

@@ -344,7 +344,7 @@ export function FundingOpportunityCreator({
           <Textarea
             id="funding-opportunity-summary"
             rows={4}
-            placeholder="What this opportunity funds, why it matters now, and any immediate package posture notes."
+            placeholder="What this opportunity funds, why it matters now, and where the application stands."
             value={summary}
             onChange={(event) => setSummary(event.target.value)}
           />

@@ -36,6 +36,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { RtpHorizonBandEditor } from "@/components/rtp/rtp-horizon-band-editor";
+import { confirmDestructiveAction, confirmDialogText, declineConfirmation } from "./helpers/confirm-dialog";
 import { buildRtpFiscalConstraint, type RtpHorizonBandInput } from "@/lib/rtp/fiscal-constraint";
 
 const RTP_CYCLE_ID = "44444444-4444-4444-8444-444444444444";
@@ -254,7 +255,6 @@ describe("RtpHorizonBandEditor", () => {
   });
 
   it("shows a blocked delete's headline AND the sentence naming what has to move", async () => {
-    vi.stubGlobal("confirm", vi.fn(() => true));
     mockFetchOnce({
       status: 409,
       body: {
@@ -267,6 +267,7 @@ describe("RtpHorizonBandEditor", () => {
 
     render(<RtpHorizonBandEditor rtpCycleId={RTP_CYCLE_ID} bands={[band()]} canWrite />);
     fireEvent.click(screen.getByRole("button", { name: /remove/i }));
+    await confirmDestructiveAction("Remove this period");
 
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("This period still has money assigned to it");
@@ -274,13 +275,37 @@ describe("RtpHorizonBandEditor", () => {
   });
 
   it("reports an uncountable project-link count as unknown, never as none", async () => {
-    vi.stubGlobal("confirm", vi.fn(() => true));
     mockFetchOnce({ status: 200, body: { ok: true, bandId: band().id, projectLinksUnassigned: null } });
 
     render(<RtpHorizonBandEditor rtpCycleId={RTP_CYCLE_ID} bands={[band()]} canWrite />);
     fireEvent.click(screen.getByRole("button", { name: /remove/i }));
+    await confirmDestructiveAction("Remove this period");
 
     const status = await screen.findByRole("status");
     expect(status).toHaveTextContent(/could not be counted/i);
+  });
+
+  /**
+   * FOUND BY MUTATION, not by reading. Every removal test here drove the
+   * confirmation and then asserted on the result, so making the editor IGNORE
+   * the planner's answer changed nothing and the whole suite stayed green. The
+   * period the planner declined to remove would have been removed anyway, and
+   * with it — ON DELETE SET NULL — the period assignment of every project
+   * programmed into it. Nothing asserted the "no" path until now.
+   */
+  it("removes nothing when the planner declines", async () => {
+    const fetchMock = mockFetchOnce({ status: 200, body: { ok: true } });
+
+    render(<RtpHorizonBandEditor rtpCycleId={RTP_CYCLE_ID} bands={[band()]} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /remove/i }));
+
+    // The question names the period and the cost of removing it, so a planner
+    // can answer it without leaving the page to check what is programmed there.
+    const copy = await confirmDialogText();
+    expect(copy).toContain("First ten years");
+    expect(copy).toMatch(/left without a period/i);
+
+    await declineConfirmation();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

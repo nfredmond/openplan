@@ -6,6 +6,7 @@ import {
 } from "@/lib/analysis/map-view-state";
 import type { StatusTone } from "@/lib/ui/status";
 import type { AnalysisContextResponse, CorridorGeometry, Position } from "./_types";
+import { formatMoney } from "@/lib/money/format";
 
 export function collectPositions(geometry: CorridorGeometry): Position[] {
   if (geometry.type === "Polygon") {
@@ -149,16 +150,9 @@ export function getComparisonNarrativeLead(
   };
 }
 
+/** Explore rounds to the dollar; an absent amount stays absent, never $0. */
 export function formatCurrency(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) {
-    return "N/A";
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole", absent: "N/A" });
 }
 
 export function coerceNumber(value: unknown): number | null {

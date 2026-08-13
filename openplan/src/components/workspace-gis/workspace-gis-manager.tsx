@@ -26,8 +26,11 @@
  * RESTRICT, so a planner who gets past this dialog still cannot break a record.
  */
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { navLabel } from "@/components/nav/nav-registry";
+import { MAP_SURFACE_ROUTES } from "@/lib/navigation/map-surfaces";
 import {
   deleteWorkspaceGisLayer,
   fetchWorkspaceGisLayer,
@@ -89,6 +92,13 @@ export function WorkspaceGisManager({
         <WorkspaceGisUploadWizard
           homeGeography={homeGeography}
           homeGeographyUnreadable={homeGeographyUnreadable}
+          // The catalog is already here, so the wizard can give the next layer a
+          // colour none of the existing ones use instead of every layer landing
+          // on the same slate grey. Null while the first read is in flight is
+          // simply an empty list — the first colour in the cycle is right for a
+          // workspace with no layers and harmless for one whose list has not
+          // arrived, because the planner still has to pick a file first.
+          existingColors={(listings ?? []).map((listing) => listing.layer.style.color)}
           onUploaded={() => void reload()}
         />
       ) : (
@@ -108,7 +118,9 @@ export function WorkspaceGisManager({
       {listings !== null && listings.length === 0 && !error ? (
         <p className="op-gis-manager__empty">
           No map layers yet. Upload your agency&rsquo;s own GIS files — a bike network, city limits,
-          zoning, parcels — and they become toggles on the Layers panel on Safety and Aerial.
+          zoning, parcels. Each one is drawn straight away, with a{" "}
+          <strong>Show on the map</strong> link that opens{" "}
+          {navLabel(MAP_SURFACE_ROUTES[0])} with the layer switched on.
         </p>
       ) : null}
 
@@ -166,10 +178,39 @@ function LayerRow({
               : "No finished upload — nothing is drawn for this layer"}
           </span>
         </div>
+        {/*
+          "WHERE DO I LOOK AT IT?" — ANSWERED FROM THE PAGE THEY UPLOADED IT ON.
+
+          Until this link existed, the library told a planner their layer had
+          become a toggle on another module's map and then left them to find
+          that module, that panel and that row on their own. This carries the
+          layer: it opens the shared map, switches this one on, and puts the
+          page aside so the map is actually visible — the three steps that were
+          previously manual, in the order they were previously done.
+
+          The destination and its NAME both come from the registries rather than
+          being written here, so a page added to (or removed from) the map-surface
+          list cannot leave this link pointing somewhere the shared map's
+          controls do not exist. A layer with no finished upload gets no link,
+          because there is nothing to go and see.
+        */}
+        {version ? (
+          <Link
+            className="op-cart-btn"
+            href={`${MAP_SURFACE_ROUTES[0]}?layer=${encodeURIComponent(layer.id)}`}
+          >
+            Show on the map
+          </Link>
+        ) : null}
         <button type="button" className="op-cart-btn" onClick={onToggleExpanded}>
           {expanded ? "Close" : "Manage"}
         </button>
       </div>
+      {version ? (
+        <p className="op-gis-layer__where">
+          Opens {navLabel(MAP_SURFACE_ROUTES[0])} with this layer switched on.
+        </p>
+      ) : null}
 
       {/*
         THE CAVEATS RIDE WITH THE LAYER EVERYWHERE, including here — an asserted

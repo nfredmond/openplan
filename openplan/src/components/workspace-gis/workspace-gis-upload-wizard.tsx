@@ -45,6 +45,10 @@ import {
   type SpatialFileImport,
 } from "@/lib/geo/spatial-file-import";
 import {
+  nextWorkspaceGisColor,
+  WORKSPACE_GIS_DEFAULT_STYLE,
+} from "@/lib/cartographic/workspace-gis-default-style";
+import {
   createWorkspaceGisLayer,
   runWorkspaceGisIngest,
   WorkspaceGisRequestError,
@@ -108,11 +112,21 @@ export function WorkspaceGisUploadWizard({
    */
   homeGeography = null,
   homeGeographyUnreadable = false,
+  /**
+   * The colours this workspace's existing layers already draw in.
+   *
+   * Passed down rather than fetched here: the manager holds the catalog and
+   * this screen holds the upload, and a second catalog read would be a second
+   * answer to the same question. An empty list simply starts at the top of the
+   * cycle, which is correct for the first upload a workspace ever makes.
+   */
+  existingColors = [],
   onUploaded,
 }: {
   homeGeography?: [number, number, number, number] | null;
   /** The geography could not be read. NOT the same as none being stated. */
   homeGeographyUnreadable?: boolean;
+  existingColors?: string[];
   onUploaded?: () => void;
 }) {
   const [stage, setStage] = useState<WizardStage>({ kind: "idle" });
@@ -354,7 +368,28 @@ export function WorkspaceGisUploadWizard({
       setStage({ kind: "uploading", filename: stageAt.filename, sent: 0, total: features.length });
 
       try {
-        const layer = await createWorkspaceGisLayer({ name });
+        /*
+          A LAYER SOMEBODY JUST UPLOADED IS ON, AND IS DRAWN IN A COLOUR THEY
+          CAN FIND.
+
+          `createWorkspaceGisLayer({ name })` sent nothing else, so every layer
+          took the column defaults: `default_visible = FALSE` and `#94a3b8` at
+          1.5px. A planner's first upload therefore arrived switched off, and
+          switching it on drew a slate-grey hairline over a grey basemap. Both
+          defaults are right for the COLUMN — a row nobody chose for should not
+          switch itself on — and wrong here, where a person has just answered
+          "does this look right?" with yes. Stating the intent explicitly is
+          what makes the schema's caution and this screen's meaning coexist.
+
+          See `lib/cartographic/workspace-gis-default-style` for the palette and
+          why the width moved.
+        */
+        const layer = await createWorkspaceGisLayer({
+          name,
+          color: nextWorkspaceGisColor(existingColors),
+          lineWidth: WORKSPACE_GIS_DEFAULT_STYLE.lineWidth,
+          defaultVisible: WORKSPACE_GIS_DEFAULT_STYLE.defaultVisible,
+        });
 
         await runWorkspaceGisIngest({
           open: {
@@ -414,7 +449,7 @@ export function WorkspaceGisUploadWizard({
         setStage({ kind: "refused", title: "This file was not stored", message, exportPath });
       }
     },
-    [layerName, datumAcknowledged, onUploaded]
+    [layerName, datumAcknowledged, existingColors, onUploaded]
   );
 
   const reset = useCallback(() => {
@@ -563,9 +598,17 @@ export function WorkspaceGisUploadWizard({
 
       {stage.kind === "done" ? (
         <div className="op-gis-wizard__done" role="status">
+          {/*
+            "Switch it on from the Layers panel on any map" was the old sentence
+            and it stopped being true the moment a new layer started visible. A
+            planner told to go and switch on something already on will look for
+            a control that is not there and conclude the upload failed. The
+            layer's own row below carries the "Show on the map" link.
+          */}
           <p>
-            <strong>{stage.layerName}</strong> is stored — {stage.featureCount.toLocaleString()}{" "}
-            shapes. Switch it on from the Layers panel on any map.
+            <strong>{stage.layerName}</strong> is stored and switched on —{" "}
+            {stage.featureCount.toLocaleString()} shapes. Use{" "}
+            <strong>Show on the map</strong> on its row below to go and look at it.
           </p>
           <button type="button" className="op-cart-btn" onClick={reset}>
             Add another layer

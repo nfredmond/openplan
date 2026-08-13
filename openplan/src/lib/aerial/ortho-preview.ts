@@ -65,7 +65,15 @@ export type AerialOrthoPreviewRefusal = {
 
 export type AerialOrthoPreviewUnreadable = {
   status: "unreadable";
+  /** The sentence the map renders. Planner-voice: what is off, and what to do. */
   detail: string;
+  /**
+   * The same failure in the operator's terms — a database message, a missing
+   * key. Kept off the planner's line and rendered behind a disclosure, because
+   * a planner can neither read nor act on it, and it is the only copy of the
+   * fact an operator needs.
+   */
+  operatorDetail?: string;
 };
 
 export type AerialOrthoPreviewResult =
@@ -154,7 +162,9 @@ export async function loadAerialOrthoPreview(input: {
     // go re-process a flight whose preview may be sitting right there.
     return {
       status: "unreadable",
-      detail: `Whether this mission has a map-displayable preview could not be established: the custody read failed (${result.error.message ?? "unknown database error"}). This is not a finding that no preview exists.`,
+      detail:
+        "Whether this mission has a map-displayable preview could not be established, because the custody read failed. This is not a finding that no preview exists.",
+      operatorDetail: `The custody read failed: ${result.error.message ?? "unknown database error"}`,
     };
   }
 
@@ -210,7 +220,9 @@ export async function loadAerialOrthoPreview(input: {
   if (signError || !signed?.signedUrl) {
     return {
       status: "unreadable",
-      detail: `The preview is held and placeable, but a display link could not be minted (${signError?.message ?? "no signed URL was returned"}). Reload to try again — the bytes themselves are safe in custody.`,
+      detail:
+        "The preview is held and placeable, but a display link could not be minted. Reload to try again — the bytes themselves are safe in custody.",
+      operatorDetail: `Signing the storage object failed: ${signError?.message ?? "no signed URL was returned"}`,
     };
   }
 

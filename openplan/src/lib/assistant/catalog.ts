@@ -458,19 +458,25 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
     {
       id: "rtp-registry-brief",
       label: "RTP registry brief",
-      description: "Summarize the RTP cycle registry, packet pressure, and the next operator move.",
+      // NOT "overdue". In this codebase `overdue` means past a RECORDED
+      // deadline (`lib/work/deadlines.ts`, funding decisions, work
+      // notifications) — a board packet has no such date. What the brief
+      // actually counts is packets that need regenerating and cycles that never
+      // had one, which is what this now says.
+      description:
+        "Summarize the RTP cycle registry, which board packets need regenerating or have never been made, and the next operator move.",
       prompt: "Give me the RTP registry brief and the next operator move.",
     },
     {
       id: "rtp-registry-generate",
-      label: "First packet queue",
+      label: "Cycles with no board packet yet",
       description: "Explain which RTP cycles still need their first board packet and where to start.",
       prompt: "Which RTP cycles still need a first board packet, and where should I start?",
     },
     {
       id: "rtp-registry-refresh",
       label: "Refresh queue",
-      description: "Explain where RTP packet refresh pressure is highest across the registry.",
+      description: "Explain which RTP board packets are furthest out of date across the registry.",
       prompt: "Which RTP packets are stale across the registry, and what should I refresh first?",
     },
     {
@@ -484,12 +490,12 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
     {
       id: "rtp-brief",
       label: "RTP brief",
-      description: "Summarize cycle readiness, packet posture, and the next operator move.",
+      description: "Summarize cycle readiness, the state of its board packet, and the next operator move.",
       prompt: "Give me the RTP cycle brief and the next operator move.",
     },
     {
       id: "rtp-packet-generate",
-      label: "First packet plan",
+      label: "What the first board packet needs",
       description: "Explain what the cycle still needs before creating its first RTP board packet.",
       prompt: "What does this RTP cycle need before creating its first board packet?",
     },

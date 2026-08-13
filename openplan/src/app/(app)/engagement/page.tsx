@@ -26,6 +26,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
 export const metadata = moduleMetadata("Engagement");
 
@@ -299,19 +300,11 @@ export default async function EngagementPage({
     <section className="module-page">
       {/*
         Named before anything else on the page, because every count and every
-        empty state below is only as true as the reads that fed it. This is an
-        operator surface, so the database's own message is shown — an operator
-        can act on it, and it is not visible to the public.
+        empty state below is only as true as the reads that fed it. Membership-
+        gated, so the database's own message stays on the page — folded into the
+        notice's operator disclosure rather than into the planner's sentence.
       */}
-      {reads.any ? (
-        <div className="mb-4">
-          <StateBlock
-            tone="danger"
-            title="Part of this page could not be read"
-            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
-          />
-        </div>
-      ) : null}
+      <ReadFailureNotice className="mb-4" reads={reads} />
 
       <header className="module-header-grid">
         <article className="module-intro-card">

@@ -3,6 +3,7 @@ import {
   placeHasResolvableIdentity,
   type PlaceOfRecord,
 } from "@/lib/geographies/place-of-record";
+import { formatMoney } from "@/lib/money/format";
 
 export type ProjectSpineCrosslinkReadiness = "ready" | "attention" | "missing";
 export type ProjectSpineCrosslinkSourceState = "linked" | "empty" | "schema_pending" | "unreadable";
@@ -206,13 +207,10 @@ function pluralize(value: number, singular: string, plural = `${singular}s`) {
   return `${value} ${value === 1 ? singular : plural}`;
 }
 
-function formatMoney(value: number) {
+/** Crosslink board copy rounds to the dollar; a non-positive figure reads "$0". */
+function formatBoardMoney(value: number) {
   if (!Number.isFinite(value) || value <= 0) return "$0";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
+  return formatMoney(value, { precision: "whole" });
 }
 
 function byPriority(row: ProjectSpineCrosslinkRow): number {
@@ -593,7 +591,7 @@ export function buildProjectSpineCrosslinkSummary(
       detail: `${pluralize(input.funding.awardCount, "award")} · ${pluralize(input.funding.opportunityCount, "opportunity", "opportunities")} · ${pluralize(input.funding.reimbursementPacketCount, "reimbursement packet")}`,
       evidence:
         fundingReadiness === "attention"
-          ? `${formatMoney(input.funding.unfundedAfterLikelyAmount)} remains after likely funding, with ${pluralize(input.funding.awardRiskCount, "award risk")}.`
+          ? `${formatBoardMoney(input.funding.unfundedAfterLikelyAmount)} remains after likely funding, with ${pluralize(input.funding.awardRiskCount, "award risk")}.`
           : "Funding posture remains an operator-reviewed scan, not proof of award likelihood.",
       nextAction:
         !input.funding.hasTargetNeed

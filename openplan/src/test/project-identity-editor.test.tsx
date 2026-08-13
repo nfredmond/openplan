@@ -1,4 +1,9 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  confirmDestructiveAction,
+  confirmDialogText,
+  declineConfirmation,
+} from "./helpers/confirm-dialog";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
 import { DRAWN_PLACE_SOURCE, EMPTY_PLACE_OF_RECORD } from "@/lib/geographies/place-of-record";
@@ -112,31 +117,30 @@ describe("ProjectIdentityEditor", () => {
     expect(screen.getByText(/cannot derive a county filter/i)).toBeTruthy();
   });
 
-  it("renders the server's delete refusal rather than guessing ahead of it", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(
-            JSON.stringify({
-              headline: "This project has attached records.",
-              alternative: "Set the project's status to complete to retire it.",
-              blockers: [
-                {
-                  table: "reports",
-                  label: "reports",
-                  count: 2,
-                  severity: "evidence",
-                  behavior: "cascade",
-                  reason: "2 reports would be deleted along with the project.",
-                  href: "/reports",
-                },
-              ],
-            }),
-            { status: 409 }
-          )
-      )
+  it("asks the server what is attached BEFORE deleting, and renders its refusal", async () => {
+    const fetchMock = vi.fn(
+      async (_url: string, _init?: RequestInit) =>
+        new Response(
+          JSON.stringify({
+            deletable: false,
+            headline: "This project has attached records.",
+            alternative: "Set the project's status to complete to retire it.",
+            blockers: [
+              {
+                table: "reports",
+                label: "reports",
+                count: 2,
+                severity: "evidence",
+                behavior: "cascade",
+                reason: "2 reports would be deleted along with the project.",
+                href: "/reports",
+              },
+            ],
+          }),
+          { status: 200 }
+        )
     );
+    vi.stubGlobal("fetch", fetchMock);
 
     render(<ProjectIdentityEditor project={PROJECT} canWrite />);
     fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
@@ -150,8 +154,101 @@ describe("ProjectIdentityEditor", () => {
       // Rendered twice by design: once as the count badge, once inside the reason.
       expect(screen.getAllByText(/2 reports/).length).toBeGreaterThanOrEqual(1);
     });
+    // NAMED, AND LINKED. A blocker a planner cannot navigate to is a refusal
+    // they have to go and hunt for; the server sends the href for this reason.
+    expect(screen.getByRole("link", { name: "Open" })).toHaveAttribute("href", "/reports");
+
+    // THE POINT OF THE PRE-FLIGHT: nothing was attempted. The old control found
+    // this out by issuing the DELETE and reading the 409, which meant the
+    // planner had to reach for the irreversible action to learn it was refused.
+    const methods = fetchMock.mock.calls.map((call) => call[1]?.method ?? "GET");
+    expect(methods).toEqual(["GET"]);
+    expect(String(fetchMock.mock.calls[0][0])).toContain("/delete-preflight");
+    // No question is asked either: there is nothing to agree to.
+    expect(screen.queryByRole("alertdialog")).toBeNull();
     // A refusal must not navigate away as though it had worked.
     expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("asks before deleting an empty project, and deletes only after the planner agrees", async () => {
+    const fetchMock = vi.fn(async (url: string, _init?: RequestInit) =>
+      String(url).includes("/delete-preflight")
+        ? new Response(
+            JSON.stringify({
+              deletable: true,
+              headline: "Nothing is attached to this project, so deleting it removes only the project record.",
+              alternative: "",
+              blockers: [],
+            }),
+            { status: 200 }
+          )
+        : new Response(JSON.stringify({ deleted: { id: PROJECT.id } }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
+
+    // The empty case was the one that used to delete on a single click, with no
+    // question anywhere — the irreversible path was the unguarded one.
+    const copy = await confirmDialogText();
+    expect(copy).toContain("Main Street Corridor");
+    expect(copy).toContain("removes only the project record");
+    expect(copy).toContain("This cannot be undone.");
+
+    await confirmDestructiveAction("Delete this project");
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/projects"));
+    expect(
+      fetchMock.mock.calls.some((call) => call[1]?.method === "DELETE")
+    ).toBe(true);
+  });
+
+  it("deletes nothing when the planner backs out of the question", async () => {
+    const fetchMock = vi.fn(
+      async (_url: string, _init?: RequestInit) =>
+        new Response(
+          JSON.stringify({ deletable: true, headline: "Nothing is attached.", alternative: "", blockers: [] }),
+          { status: 200 }
+        )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
+    await declineConfirmation();
+
+    expect(
+      fetchMock.mock.calls.some((call) => call[1]?.method === "DELETE")
+    ).toBe(false);
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("offers the reversible alternative inside the question, and takes it without deleting", async () => {
+    const fetchMock = vi.fn(
+      async (_url: string, _init?: RequestInit) =>
+        new Response(
+          JSON.stringify({ deletable: true, headline: "Nothing is attached.", alternative: "", blockers: [] }),
+          { status: 200 }
+        )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /delete project/i }));
+
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Mark it complete instead" }));
+
+    await waitFor(() => {
+      const patch = fetchMock.mock.calls.find(
+        (call) => call[1]?.method === "PATCH"
+      );
+      expect(patch).toBeDefined();
+      expect(JSON.parse(String(patch![1]!.body))).toEqual({ status: "complete" });
+    });
+    expect(
+      fetchMock.mock.calls.some((call) => call[1]?.method === "DELETE")
+    ).toBe(false);
   });
 
   it("offers no write controls to a viewer", () => {

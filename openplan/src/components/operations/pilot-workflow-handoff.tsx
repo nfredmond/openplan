@@ -82,7 +82,7 @@ function buildPilotWorkflowSteps(input: {
       key: "engagement",
       label: "3",
       title: "Engagement signal",
-      detail: "Review campaign input and handoff-ready public comments before packet assembly.",
+      detail: "Review campaign input and the public comments that are ready to carry forward, before you build the report.",
       href: engagementHref,
       cta: input.engagementCampaignId ? "Review campaign" : "Open engagement",
       icon: Megaphone,
@@ -90,10 +90,10 @@ function buildPilotWorkflowSteps(input: {
     {
       key: "packet",
       label: "4",
-      title: "Packet assembly",
-      detail: "Generate or refresh the report packet so provenance and readiness signals are current.",
+      title: "Build the report packet",
+      detail: "Generate or refresh the report packet a board or funder receives, so its sources and readiness checks are current.",
       href: packetHref,
-      cta: input.reportId ? "Review this packet" : "Open reports",
+      cta: input.reportId ? "Review this report packet" : "Open reports",
       icon: FileText,
       action: input.reportId
         ? {
@@ -101,9 +101,9 @@ function buildPilotWorkflowSteps(input: {
               kind: "generate_report_artifact",
               reportId: input.reportId,
             },
-            label: "Generate packet",
-            pendingLabel: "Generating packet",
-            successLabel: "Packet refreshed",
+            label: "Generate the report packet",
+            pendingLabel: "Generating the report packet",
+            successLabel: "Report packet refreshed",
           }
         : undefined,
     },
@@ -117,7 +117,7 @@ export function PilotWorkflowHandoff({
   engagementCampaignId,
   publicEngagementHref,
   title = "Pilot story handoff",
-  description = "Use this path to keep one planning story moving from local context through evidence, engagement, and packet assembly.",
+  description = "Use this path to keep one piece of work moving from local context through evidence and engagement to the report packet at the end.",
 }: PilotWorkflowHandoffProps) {
   const steps = buildPilotWorkflowSteps({
     projectId,

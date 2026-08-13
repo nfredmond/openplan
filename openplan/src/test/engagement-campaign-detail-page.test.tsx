@@ -1140,7 +1140,9 @@ describe("EngagementCampaignDetailPage", () => {
 
       expect(screen.queryByText("No categories yet")).not.toBeInTheDocument();
       expect(screen.getByText(/This campaign's categories could not be read/i)).toBeInTheDocument();
-      expect(screen.getByText(/this campaign's comment categories/i)).toBeInTheDocument();
+      // Matched on the planner's phrasing: the same label also appears in the
+      // operator disclosure, beside the database's own message.
+      expect(screen.getByText(/could not read this campaign's comment categories/i)).toBeInTheDocument();
     });
 
     it("still shows the ordinary empty category state when the read succeeds", async () => {
@@ -1176,7 +1178,7 @@ describe("EngagementCampaignDetailPage", () => {
 
       expect(screen.queryByText(/No reports linked through this project yet/i)).not.toBeInTheDocument();
       expect(screen.getByText(/Reports on this project could not be listed/i)).toBeInTheDocument();
-      expect(screen.getByText(/reports on the linked project/i)).toBeInTheDocument();
+      expect(screen.getByText(/could not read reports on the linked project/i)).toBeInTheDocument();
     });
 
     it("does not label every report project-linked-only out of a failed section read", async () => {

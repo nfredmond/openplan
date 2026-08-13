@@ -47,6 +47,7 @@ import {
   type RtpPortfolioRole,
 } from "@/lib/rtp/catalog";
 import type { RtpCycleProjectFeatureCollection } from "@/lib/cartographic/rtp-cycle-project-layer";
+import { formatMoney } from "@/lib/money/format";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -114,12 +115,6 @@ const ROLE_COLOR_EXPRESSION = [
 const SINGLE_POINT_ZOOM = 11;
 /** The whole continent — used only when there is nothing to frame on. */
 const NEUTRAL_ZOOM = 3.4;
-
-const MONEY = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 type LoadState =
   | { status: "loading" }
@@ -214,7 +209,7 @@ function buildPopupContent(properties: Record<string, unknown>): HTMLElement {
   cost.textContent =
     amount === null
       ? "No cost recorded in this plan"
-      : `${MONEY.format(amount)}${basisYear ? ` (${basisYear} dollars)` : ""}`;
+      : `${formatMoney(amount, { precision: "whole" })}${basisYear ? ` (${basisYear} dollars)` : ""}`;
   content.appendChild(cost);
 
   return content;

@@ -82,6 +82,15 @@ html.dark .op-gis-layer__swatch {
   font-size: 11.5px;
   color: var(--muted);
 }
+/* Says where "Show on the map" goes, before it is clicked. `--ink-2` rather
+   than `--muted` because it is the only sentence naming the destination, and
+   `--muted` is under the 4.5:1 body floor on the light palette's own panel. */
+.op-gis-layer__where {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
 /*
   The caveat list. Rendered whenever a layer has one, never collapsed here: on
   this screen the planner is deciding what to do with the layer, and "this
