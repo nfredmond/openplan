@@ -63,15 +63,38 @@ import { CartographicMapReadingToggle } from "@/components/cartographic/cartogra
 import { CartographicOverviewSurface } from "@/components/cartographic/cartographic-overview-surface";
 import {
   CartographicProvider,
+  useCartographicMapFocus,
   useWorkspaceMapLayers,
 } from "@/components/cartographic/cartographic-context";
-import type { WorkspaceGisLayerListing } from "@/lib/workspace-gis/types";
+import type { FitInstruction } from "@/lib/cartographic/geometry-bbox";
+import type {
+  WorkspaceGisLayerListing,
+  WorkspaceGisVersion,
+} from "@/lib/workspace-gis/types";
 import { stripSourceComments } from "./helpers/source-text";
 
 const ORIGINAL_FETCH = global.fetch;
 
-function listing(id: string, name: string): WorkspaceGisLayerListing {
-  return {
+/**
+ * `bbox` is what the ingest recorded as this version's extent, and the deep
+ * link's camera is read from it. It is a PARAMETER rather than a constant
+ * because one fixture cannot tell "frames the layer it was given" apart from
+ * "frames a rectangle somebody typed into the component".
+ *
+ * `noVersion` is the layer whose upload never finished: there is no current
+ * version, so there is no extent, and the map must stay where it is.
+ */
+type ListingOptions = {
+  bbox?: WorkspaceGisVersion["bbox"];
+  noVersion?: boolean;
+};
+
+function listing(
+  id: string,
+  name: string,
+  options: ListingOptions = {}
+): WorkspaceGisLayerListing {
+  const base: WorkspaceGisLayerListing = {
     layer: {
       id,
       workspaceId: "ws-1",
@@ -111,7 +134,7 @@ function listing(id: string, name: string): WorkspaceGisLayerListing {
             },
         droppedFeatureCount: 0,
         truncated: false,
-        bbox: [-121.1, 39.1, -120.9, 39.3],
+        bbox: options.bbox === undefined ? [-121.1, 39.1, -120.9, 39.3] : options.bbox,
         ingestStatus: "ready",
         ingestFailureReason: null,
         createdAt: "2026-08-12T00:00:00.000Z",
@@ -120,15 +143,43 @@ function listing(id: string, name: string): WorkspaceGisLayerListing {
     },
     notes: [],
   };
+  if (options.noVersion) base.layer.currentVersion = null;
+  return base;
 }
 
-/** Registers a catalog the way the map backdrop does. */
+/**
+ * Stands where the map backdrop stands in the real tree: it takes every focus
+ * request off the context and records it.
+ *
+ * It also CLEARS each request, exactly as the backdrop does after pointing the
+ * camera — otherwise a standing request would make "asked once" and "asked
+ * three times" indistinguishable, and the re-fly assertions below would prove
+ * nothing.
+ */
+function FocusProbe({ onFocus }: { onFocus: (instruction: FitInstruction) => void }) {
+  const { mapFocus, clearMapFocus } = useCartographicMapFocus();
+  useEffect(() => {
+    if (!mapFocus) return;
+    onFocus(mapFocus);
+    clearMapFocus();
+  }, [mapFocus, clearMapFocus, onFocus]);
+  return null;
+}
+
+/**
+ * Registers a catalog the way the map backdrop does — including AGAIN, when a
+ * fresh array arrives.
+ *
+ * The dependency on `listings` is not incidental. The real binding re-registers
+ * on every catalog read, and it is those re-registrations that re-run the deep
+ * link's effect; a Seed that registered only on mount made the "does not re-fly"
+ * test below pass with the guard it exists to hold deleted.
+ */
 function Seed({ listings }: { listings: WorkspaceGisLayerListing[] }) {
   const { registerWorkspaceLayers } = useWorkspaceMapLayers();
   useEffect(() => {
     registerWorkspaceLayers(listings, "ws-1");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerWorkspaceLayers]);
+  }, [registerWorkspaceLayers, listings]);
   return null;
 }
 
@@ -321,11 +372,18 @@ describe("arriving from a Show on the map link", () => {
     delete document.body.dataset.mapReading;
   });
 
-  function renderArrival(listings: WorkspaceGisLayerListing[]) {
-    return render(
+  /** Every camera request the shell made, in order, as the backdrop would see them. */
+  let focusRequests: FitInstruction[] = [];
+  let record = (instruction: FitInstruction) => {
+    focusRequests.push(instruction);
+  };
+
+  function arrivalTree(listings: WorkspaceGisLayerListing[]) {
+    return (
       <CartographicProvider>
         <Seed listings={listings} />
         <CartographicLayerDeepLink />
+        <FocusProbe onFocus={record} />
         <CartographicMapReadingToggle />
         <CartographicLayersPanel workspaceId="ws-1" />
         <CartographicOverviewSurface>
@@ -333,6 +391,14 @@ describe("arriving from a Show on the map link", () => {
         </CartographicOverviewSurface>
       </CartographicProvider>
     );
+  }
+
+  function renderArrival(listings: WorkspaceGisLayerListing[]) {
+    focusRequests = [];
+    record = (instruction: FitInstruction) => {
+      focusRequests.push(instruction);
+    };
+    return render(arrivalTree(listings));
   }
 
   it("switches the named layer on and gets the page out of the way", async () => {
@@ -380,12 +446,201 @@ describe("arriving from a Show on the map link", () => {
     expect(only).toBeChecked(); // its own defaultVisible, not the link's doing
     expect(document.body.dataset.mapReading).toBeUndefined();
     expect(surface()).not.toHaveAttribute("inert");
+    // And it does not fly to the one layer that IS here. A stale link naming a
+    // deleted layer must not quietly frame its neighbour.
+    expect(focusRequests).toEqual([]);
   });
 
   it("does nothing at all when there is no layer parameter", async () => {
     renderArrival([listing("layer-1", "Bike network")]);
 
     await screen.findByRole("checkbox", { name: /Bike network/ });
+    expect(document.body.dataset.mapReading).toBeUndefined();
+    expect(focusRequests).toEqual([]);
+  });
+
+  /**
+   * ═══ AND IT POINTS THE CAMERA — THE DEFECT THAT MADE THE LINK A LIE ═══
+   *
+   * v0.20.0 switched the layer on and took the page out of the way, and stopped
+   * there. Found by opening `/safety?layer=<id>` against a local instance with
+   * a real three-line bike network seeded near Grass Valley: the layer WAS on,
+   * the page WAS out of the way, and the map was still at the continental
+   * default — a thirteen-kilometre layer inside a view spanning North America.
+   * Drawn, and invisible. The extent needed to frame it was already recorded on
+   * the version row; nothing read it.
+   *
+   * These tests hold the fix at the level this file can actually see: the
+   * REQUEST the deep link makes. That a camera then moves is the backdrop's
+   * half, held by `show-on-the-map-moves-the-camera.test.tsx`, and neither is
+   * pixel evidence — jsdom has no box model and Mapbox does not run in it.
+   */
+  it("asks the map to frame the extent recorded on the layer's current version", async () => {
+    searchParams = new URLSearchParams("layer=layer-2");
+
+    renderArrival([
+      listing("layer-1", "Parcels", { bbox: [-84.6, 39.05, -84.4, 39.2] }),
+      listing("layer-2", "Bike network", { bbox: [-121.1, 39.18, -120.98, 39.26] }),
+    ]);
+
+    await waitFor(() => expect(focusRequests).toHaveLength(1));
+    expect(focusRequests[0]).toEqual({
+      kind: "bbox",
+      bbox: [
+        [-121.1, 39.18],
+        [-120.98, 39.26],
+      ],
+    });
+  });
+
+  /**
+   * VARIED BINDING. The same catalog, linked twice, must produce two different
+   * cameras. With one fixture a component that hardcoded a rectangle — or that
+   * framed the FIRST layer in the catalog rather than the named one — passes
+   * the test above.
+   */
+  it("frames the layer that was named, not a remembered rectangle", async () => {
+    const catalog = () => [
+      listing("layer-1", "Parcels", { bbox: [-84.6, 39.05, -84.4, 39.2] }),
+      listing("layer-2", "Bike network", { bbox: [-121.1, 39.18, -120.98, 39.26] }),
+    ];
+
+    searchParams = new URLSearchParams("layer=layer-1");
+    const first = renderArrival(catalog());
+    await waitFor(() => expect(focusRequests).toHaveLength(1));
+    const framedParcels = focusRequests[0];
+    first.unmount();
+
+    searchParams = new URLSearchParams("layer=layer-2");
+    renderArrival(catalog());
+    await waitFor(() => expect(focusRequests).toHaveLength(1));
+    const framedBikeNetwork = focusRequests[0];
+
+    expect(framedParcels).toEqual({
+      kind: "bbox",
+      bbox: [
+        [-84.6, 39.05],
+        [-84.4, 39.2],
+      ],
+    });
+    expect(framedBikeNetwork).toEqual({
+      kind: "bbox",
+      bbox: [
+        [-121.1, 39.18],
+        [-120.98, 39.26],
+      ],
+    });
+    expect(framedParcels).not.toEqual(framedBikeNetwork);
+  });
+
+  /**
+   * A LAYER WITH NO RECORDED EXTENT STILL COMES ON — IN SILENCE.
+   *
+   * `bbox` is nullable: versions written before the column existed have none,
+   * and an upload that failed part-way may never have got one. The layer is
+   * still switched on and the page still steps aside; the camera is simply left
+   * where the planner had it. A guessed camera would be worse than no camera,
+   * because a planner has no way to tell a guess from a fact.
+   */
+  it("switches a layer with no recorded extent on without moving the camera", async () => {
+    searchParams = new URLSearchParams("layer=layer-1");
+
+    renderArrival([listing("layer-1", "Bike network", { bbox: null })]);
+
+    const named = await screen.findByRole("checkbox", { name: /Bike network/ });
+    await waitFor(() => expect(named).toBeChecked());
+    expect(document.body.dataset.mapReading).toBe("true");
+    expect(focusRequests).toEqual([]);
+  });
+
+  it("survives a layer whose upload never finished, and stays put", async () => {
+    searchParams = new URLSearchParams("layer=layer-1");
+
+    renderArrival([listing("layer-1", "Bike network", { noVersion: true })]);
+
+    const named = await screen.findByRole("checkbox", { name: /Bike network/ });
+    await waitFor(() => expect(named).toBeChecked());
+    expect(document.body.dataset.mapReading).toBe("true");
+    expect(focusRequests).toEqual([]);
+  });
+
+  /**
+   * A ONE-POINT LAYER TAKES THE CENTER BRANCH. Its extent is a rectangle of no
+   * size, and `fitBounds` on one of those asks Mapbox for infinite zoom.
+   */
+  it("centers on a layer whose whole extent is a single point", async () => {
+    searchParams = new URLSearchParams("layer=layer-1");
+
+    renderArrival([listing("layer-1", "Trailhead", { bbox: [-121.05, 39.22, -121.05, 39.22] })]);
+
+    await waitFor(() => expect(focusRequests).toHaveLength(1));
+    expect(focusRequests[0]).toEqual({ kind: "center", center: [-121.05, 39.22] });
+  });
+
+  /**
+   * AN EXTENT THAT CANNOT BE A PLACE IS REFUSED, NOT FLOWN TO. Coordinates that
+   * were never reprojected out of survey feet, a latitude past the pole, an
+   * inverted rectangle, a NaN from a truncated parse — each of these would send
+   * the camera somewhere confidently wrong, which is the one outcome worse than
+   * not moving.
+   */
+  it.each([
+    ["a NaN corner", [Number.NaN, 39.18, -120.98, 39.26] as WorkspaceGisVersion["bbox"]],
+    ["a latitude past the pole", [-121.1, 39.18, -120.98, 95] as WorkspaceGisVersion["bbox"]],
+    ["an inverted rectangle", [-120.98, 39.18, -121.1, 39.26] as WorkspaceGisVersion["bbox"]],
+    [
+      "unprojected State Plane feet",
+      [2043211.5, 6712894.2, 2051880.9, 6720113.4] as WorkspaceGisVersion["bbox"],
+    ],
+  ])("refuses to move for %s", async (_label, bbox) => {
+    searchParams = new URLSearchParams("layer=layer-1");
+
+    renderArrival([listing("layer-1", "Bike network", { bbox })]);
+
+    const named = await screen.findByRole("checkbox", { name: /Bike network/ });
+    await waitFor(() => expect(named).toBeChecked());
+    // The layer still comes on: a bad extent is a reason to leave the camera
+    // alone, not a reason to ignore the link.
+    expect(document.body.dataset.mapReading).toBe("true");
+    expect(focusRequests).toEqual([]);
+  });
+
+  /**
+   * IT DOES NOT RE-FLY. Same property as "it does not take the wheel", and the
+   * one where getting it wrong is most infuriating: a planner who follows the
+   * link, then pans two miles east to look at the corridor next door, must not
+   * be yanked back to the layer's extent the next time anything re-renders.
+   *
+   * THE CATALOG RE-REGISTRATION IS THE LOAD-BEARING PART OF THIS TEST, and it
+   * is here because the first version of it was vacuous: clicking toggles
+   * changes nothing the deep link's effect depends on, so the effect never re-
+   * ran and the test passed with the `appliedRef` guard deleted. A catalog re-
+   * read — which the map binding really does on a refetch, and which hands the
+   * provider a NEW array — is what actually re-runs it. Only the guard stops a
+   * second camera then.
+   */
+  it("frames the layer once, even when the layer catalog is read again", async () => {
+    searchParams = new URLSearchParams("layer=layer-1");
+
+    const view = renderArrival([listing("layer-1", "Bike network")]);
+    await waitFor(() => expect(focusRequests).toHaveLength(1));
+
+    // The planner goes somewhere else on the map, then everything the shell can
+    // do to itself short of a navigation: a toggle, the page coming back, and
+    // the catalog arriving again from a fresh fetch.
+    const named = await screen.findByRole("checkbox", { name: /Bike network/ });
+    fireEvent.click(named);
+    fireEvent.click(named);
+    fireEvent.click(screen.getByRole("button", { name: "Read the map" }));
+    await waitFor(() => expect(document.body.dataset.mapReading).toBeUndefined());
+    view.rerender(arrivalTree([listing("layer-1", "Bike network")]));
+    await waitFor(() =>
+      expect(screen.getByRole("checkbox", { name: /Bike network/ })).toBeInTheDocument()
+    );
+
+    expect(focusRequests).toHaveLength(1);
+    // And the page stayed where the planner put it — the link does not reassert
+    // map-reading mode either.
     expect(document.body.dataset.mapReading).toBeUndefined();
   });
 });

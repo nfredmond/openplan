@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { readWgs84Viewport, type Wgs84Bbox } from "@/lib/geo/wgs84-bounds";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -43,15 +44,18 @@ type BboxRow = {
   matched_count: number | string | null;
 };
 
-/** "w,s,e,n" — refused rather than defaulted: a wrong window is a wrong map. */
-function parseBbox(raw: string | null): [number, number, number, number] | null {
+/**
+ * "w,s,e,n" — refused rather than defaulted: a wrong window is a wrong map.
+ *
+ * The range and ordering rules are `readWgs84Viewport`'s rather than this
+ * file's, so the rectangle this query will accept and the rectangle the camera
+ * will accept are decided by the same code. Only the comma-splitting is local,
+ * because only this caller receives its bbox as a query string.
+ */
+function parseBbox(raw: string | null): Wgs84Bbox | null {
   if (!raw) return null;
   const parts = raw.split(",").map((part) => Number.parseFloat(part.trim()));
-  if (parts.length !== 4 || !parts.every((value) => Number.isFinite(value))) return null;
-  const [west, south, east, north] = parts;
-  if (west < -180 || east > 180 || south < -90 || north > 90) return null;
-  if (west >= east || south >= north) return null;
-  return [west, south, east, north];
+  return readWgs84Viewport(parts);
 }
 
 function emptyCollection(

@@ -196,11 +196,25 @@ export function useWorkspaceGisMapBinding({
     const record = () => {
       const bounds = map.getBounds();
       if (!bounds) return;
+      // A zoomed-out map reports a viewport WIDER THAN THE WORLD: at a
+      // continental view Mapbox returns west = -185.4, because the visible
+      // rectangle runs past the antimeridian. Those are screen coordinates,
+      // not longitudes, and the feature route rightly refuses them — which
+      // meant every workspace layer silently failed to load at low zoom with
+      // nothing but a console line to say so. Found by opening the app, not
+      // by a test: jsdom has no box model, so no unit test can produce a
+      // viewport at all.
+      //
+      // Clamping is the honest reduction rather than a fudge: the data cannot
+      // exist outside these bounds, so the clamped rectangle asks for exactly
+      // the part of the view that could contain something. A layer spanning
+      // the antimeridian would be over-fetched east-to-west by this, which is
+      // a correctness-preserving trade (more rows considered, none missed).
       setViewportBbox([
-        bounds.getWest(),
-        bounds.getSouth(),
-        bounds.getEast(),
-        bounds.getNorth(),
+        Math.max(bounds.getWest(), -180),
+        Math.max(bounds.getSouth(), -90),
+        Math.min(bounds.getEast(), 180),
+        Math.min(bounds.getNorth(), 90),
       ]);
     };
 

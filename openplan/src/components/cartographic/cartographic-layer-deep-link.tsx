@@ -28,12 +28,28 @@
  * overwritten a moment later. It does nothing until the id it was given is
  * actually a layer in this workspace — which also means a stale or hand-edited
  * link quietly does nothing rather than turning on some other layer.
+ *
+ * IT WILL NOT GUESS A CAMERA. Switching a layer on and leaving the map at the
+ * continental default is how this shipped in v0.20.0, and it made the link a
+ * lie: a bike network covering thirteen kilometres, drawn correctly, inside a
+ * view spanning a continent, is a layer nobody can see. So the link now also
+ * asks the map to frame the extent the ingest recorded on the layer's current
+ * version — the extent, never an approximation of one. A version with no bbox,
+ * or with a bbox that cannot be a place on Earth, gets the layer switched on
+ * and the camera left exactly where the planner had it. Silence is the honest
+ * answer there; a plausible-looking flight to the wrong place is not.
  */
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-import { useCartographicMapReading, useWorkspaceMapLayers } from "./cartographic-context";
+import { fitInstructionFromExtent } from "@/lib/cartographic/geometry-bbox";
+
+import {
+  useCartographicMapFocus,
+  useCartographicMapReading,
+  useWorkspaceMapLayers,
+} from "./cartographic-context";
 
 /** The query parameter a "Show on the map" link carries. */
 export const MAP_LAYER_DEEP_LINK_PARAM = "layer";
@@ -43,18 +59,26 @@ export function CartographicLayerDeepLink() {
   const requestedLayerId = searchParams?.get(MAP_LAYER_DEEP_LINK_PARAM) ?? null;
   const { workspaceLayers, setWorkspaceLayer } = useWorkspaceMapLayers();
   const { setMapReading } = useCartographicMapReading();
+  const { requestMapFocus } = useCartographicMapFocus();
   const appliedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!requestedLayerId) return;
     if (appliedRef.current === requestedLayerId) return;
-    const known = workspaceLayers.some((listing) => listing.layer.id === requestedLayerId);
-    if (!known) return;
+    const named = workspaceLayers.find((listing) => listing.layer.id === requestedLayerId);
+    if (!named) return;
 
     appliedRef.current = requestedLayerId;
     setWorkspaceLayer(requestedLayerId, true);
     setMapReading(true);
-  }, [requestedLayerId, workspaceLayers, setWorkspaceLayer, setMapReading]);
+
+    // The extent of the version the map actually draws — not the layer's
+    // newest upload, which may still be receiving, and not a bbox computed
+    // from whatever features happen to be in the viewport, which would frame
+    // the map to itself.
+    const instruction = fitInstructionFromExtent(named.layer.currentVersion?.bbox ?? null);
+    if (instruction) requestMapFocus(instruction);
+  }, [requestedLayerId, workspaceLayers, setWorkspaceLayer, setMapReading, requestMapFocus]);
 
   return null;
 }

@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import type { FitInstruction } from "@/lib/cartographic/geometry-bbox";
 import type { WorkspaceGisLayerListing } from "@/lib/workspace-gis/types";
 
 import type { CartographicInspectorSelection } from "./cartographic-inspector-dock";
@@ -222,6 +223,37 @@ type CartographicContextValue = {
   mapReading: boolean;
   setMapReading: (on: boolean) => void;
   toggleMapReading: () => void;
+  /**
+   * SOMEWHERE THE MAP SHOULD BE LOOKING — a one-shot request, not a viewport.
+   *
+   * ═══ WHY THIS IS IN THE CONTEXT AND NOT IN THE URL ═══
+   *
+   * The backdrop owns the map. The things that know WHERE the planner meant to
+   * look — a deep link naming a layer, a list row, a panel — do not, and cannot
+   * be given it without every one of them holding a Mapbox instance. The
+   * obvious shortcut is for the backdrop to read `?layer=` itself and frame
+   * whatever it finds; the reason it does not is that there would then be two
+   * readers of one query parameter, each with its own idea of which layers
+   * count and when the catalog has arrived, and the day they disagree is the
+   * day the map switches on one layer and flies to another.
+   *
+   * So the request travels the way everything else in this shell travels. One
+   * component decides, one component acts, and the vocabulary between them is
+   * `FitInstruction` — the same shape a click on a feature produces, so a
+   * layer arrived at by link and the same layer arrived at by click are framed
+   * by identical code.
+   *
+   * ═══ WHY IT IS CONSUMED AND CLEARED ═══
+   *
+   * Because it is an instruction, not a state. Left standing, it would re-fly
+   * the planner every time the backdrop re-ran an effect — after a theme swap,
+   * after a payload arrived — which is a map that will not let go of the wheel.
+   * The backdrop clears it the moment it acts, and a request nobody consumes
+   * (no map on this route) simply expires with the tree.
+   */
+  mapFocus: FitInstruction | null;
+  requestMapFocus: (instruction: FitInstruction) => void;
+  clearMapFocus: () => void;
 };
 
 const CartographicContext = createContext<CartographicContextValue | null>(null);
@@ -240,6 +272,7 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
   const [visibilityWorkspaceId, setVisibilityWorkspaceId] = useState<string | null>(null);
   const [workspaceCatalogError, setWorkspaceCatalogError] = useState<string | null>(null);
   const [mapReading, setMapReadingState] = useState(false);
+  const [mapFocus, setMapFocus] = useState<FitInstruction | null>(null);
 
   /*
     THE BODY ATTRIBUTE IS THE PUBLIC HALF OF THIS STATE.
@@ -274,6 +307,14 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
 
   const toggleMapReading = useCallback(() => {
     setMapReadingState((prev) => !prev);
+  }, []);
+
+  const requestMapFocus = useCallback((instruction: FitInstruction) => {
+    setMapFocus(instruction);
+  }, []);
+
+  const clearMapFocus = useCallback(() => {
+    setMapFocus(null);
   }, []);
 
   const registerWorkspaceCatalogError = useCallback((message: string | null) => {
@@ -396,6 +437,9 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
       mapReading,
       setMapReading,
       toggleMapReading,
+      mapFocus,
+      requestMapFocus,
+      clearMapFocus,
     }),
     [
       selection,
@@ -420,6 +464,9 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
       mapReading,
       setMapReading,
       toggleMapReading,
+      mapFocus,
+      requestMapFocus,
+      clearMapFocus,
     ],
   );
 
@@ -532,6 +579,34 @@ export function useCartographicMapReading() {
     setMapReading: ctx.setMapReading,
     toggleMapReading: ctx.toggleMapReading,
     hasSelection: ctx.selection !== null,
+  };
+}
+
+/**
+ * Ask the map to look somewhere, and — for whoever owns the map — take that
+ * request and put it down.
+ *
+ * Outside a provider this reports no request and does nothing, for the reason
+ * every hook in this file returns an inert value rather than throwing: the
+ * shell renders on routes that own their own map, and a component whose whole
+ * job is an optional nicety must not be the thing that crashes the page. A
+ * focus request nobody can act on is silently dropped, which is the same
+ * outcome as a layer with no recorded extent and is correct for the same
+ * reason — no camera is better than a wrong one.
+ */
+export function useCartographicMapFocus() {
+  const ctx = useContext(CartographicContext);
+  if (!ctx) {
+    return {
+      mapFocus: null,
+      requestMapFocus: NOOP as (instruction: FitInstruction) => void,
+      clearMapFocus: NOOP,
+    };
+  }
+  return {
+    mapFocus: ctx.mapFocus,
+    requestMapFocus: ctx.requestMapFocus,
+    clearMapFocus: ctx.clearMapFocus,
   };
 }
 

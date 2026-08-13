@@ -156,7 +156,13 @@ async function measure(page) {
 
 async function main() {
   const baseUrl = getOpenplanBaseUrl();
-  const browser = await chromium.launch();
+  // Playwright ships no chromium build for every Linux it runs on (Ubuntu 26.04
+  // is one), and this machine has Google Chrome installed. `channel` drives that
+  // system browser instead of a downloaded one. Default to it when
+  // OPENPLAN_BROWSER_CHANNEL is set; otherwise use whatever Playwright bundles,
+  // so CI and a developer's laptop both keep working unchanged.
+  const channel = process.env.OPENPLAN_BROWSER_CHANNEL || undefined;
+  const browser = await chromium.launch(channel ? { channel } : {});
   const context = await browser.newContext(buildBrowserContextOptions({ viewport: VIEWPORT }));
   const page = await context.newPage();
   const failures = [];

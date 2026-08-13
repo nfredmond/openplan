@@ -21,7 +21,12 @@ import { rtpCycleFeatureToSelection } from "@/lib/cartographic/rtp-cycle-feature
 import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-selection";
 import { engagementItemFeatureToSelection } from "@/lib/cartographic/engagement-item-feature-to-selection";
 import { workspaceGisFeatureToSelection } from "@/lib/cartographic/workspace-gis-feature-to-selection";
-import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
+import {
+  applyFitInstruction,
+  fitInstructionFromGeometry,
+  FIT_DURATION_MS,
+  FIT_PADDING,
+} from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import type { HomeMapView } from "@/lib/workspaces/home-geography";
@@ -31,6 +36,7 @@ import {
   useCartographicLayers,
   useCartographicLayerStatus,
   useCartographicMapControls,
+  useCartographicMapFocus,
   useCartographicMapReading,
   useCartographicSelection,
   type LayerKey,
@@ -308,14 +314,12 @@ const CORRIDOR_LOS_COLOR: Record<string, string> = {
 };
 const CORRIDOR_BASE_COLOR = "#4a7a9e";
 
-// Fit-to-selection viewport targets. maxZoom keeps a tiny feature (single
-// small polygon, short corridor) from punching past neighborhood scale on
-// fitBounds; padding leaves room for UI chrome on the sides. POINT_ZOOM
-// lands projects at neighborhood scale so the marker has spatial context.
-const FIT_PADDING = 64;
-const FIT_MAX_ZOOM = 15;
-const FIT_DURATION_MS = 400;
-const POINT_FIT_ZOOM = 14;
+// FIT_PADDING, FIT_MAX_ZOOM, FIT_DURATION_MS and POINT_FIT_ZOOM moved to
+// `@/lib/cartographic/geometry-bbox` (2026-08-12) alongside the instruction
+// shape they belong to, because the backdrop stopped being the only thing that
+// points the camera: a "Show on the map" link now frames a layer's recorded
+// extent, and a second set of padding and zoom values would have meant the same
+// layer framed two ways depending on how the planner arrived at it.
 
 // The one-shot framing of the whole workspace stops at regional scale — a
 // workspace holding a single point should read as "here is your region", not
@@ -459,6 +463,11 @@ export function CartographicMapBackdrop({
   // page chrome stepping aside and the basemap dropping its house styling — two
   // halves of one moment, owned by two different files.
   const { mapReading } = useCartographicMapReading();
+  // The other half of the focus contract. Something elsewhere in the shell —
+  // today the "Show on the map" deep link — decided where the planner meant to
+  // look; this file is the only one holding a map, so it is the only one that
+  // can act on it.
+  const { mapFocus, clearMapFocus } = useCartographicMapFocus();
   const { registerMapControls } = useCartographicMapControls();
   const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
@@ -1711,6 +1720,34 @@ export function CartographicMapBackdrop({
     });
   }, [ready, aois, projectMarkers, projectAreas, corridors, rtpCycles, engagementItems]);
 
+  /**
+   * TAKE A FOCUS REQUEST AND POINT THE CAMERA — the acting half of the contract
+   * described on `mapFocus` in the cartographic context.
+   *
+   * IT MARKS THE INITIAL FRAMING DONE. Without that line the effect above would
+   * still be armed, and the next layer payload to arrive — projects, corridors,
+   * anything — would fit the map to the whole workspace a beat after the
+   * planner was taken to their layer. The request is a deliberate destination
+   * and outranks the automatic one, exactly as a planner's own pan does.
+   *
+   * IT CLEARS THE REQUEST WHETHER OR NOT IT COULD ACT. On a route that owns its
+   * own map this backdrop draws nothing, and a request left standing there
+   * would be waiting to fire on some later navigation, long after it meant
+   * anything. An instruction that cannot be carried out expires; it does not
+   * queue.
+   */
+  useEffect(() => {
+    if (!mapFocus) return;
+    const map = mapRef.current;
+    if (suppressed || !map || !ready) {
+      if (suppressed) clearMapFocus();
+      return;
+    }
+    didInitialFitRef.current = true;
+    applyFitInstruction(map, mapFocus);
+    clearMapFocus();
+  }, [mapFocus, ready, suppressed, clearMapFocus]);
+
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {
     const map = mapRef.current;
@@ -1878,19 +1915,7 @@ export function CartographicMapBackdrop({
     const fitToFeatureGeometry = (geometry: unknown) => {
       const instruction = fitInstructionFromGeometry(geometry);
       if (!instruction) return;
-      if (instruction.kind === "center") {
-        map.easeTo({
-          center: instruction.center,
-          zoom: POINT_FIT_ZOOM,
-          duration: FIT_DURATION_MS,
-        });
-        return;
-      }
-      map.fitBounds(instruction.bbox, {
-        padding: FIT_PADDING,
-        maxZoom: FIT_MAX_ZOOM,
-        duration: FIT_DURATION_MS,
-      });
+      applyFitInstruction(map, instruction);
     };
 
     const onClick = (e: mapboxgl.MapLayerMouseEvent) => {
