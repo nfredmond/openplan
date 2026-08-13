@@ -90,14 +90,17 @@ import {
   describeUncoveredProjectRecords,
   PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE,
   registerReportDetailReads,
+  buildReportUnreadableByTab,
 } from "./_components/_read-failures";
 import { ReportStandardDetail } from "./_components/report-standard-detail";
 
 type RouteParams = {
   params: Promise<{ reportId: string }>;
+  /** Optional so a caller that renders the page with no query string still type-checks. */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function ReportDetailPage({ params }: RouteParams) {
+export default async function ReportDetailPage({ params, searchParams }: RouteParams) {
   const { reportId } = await params;
   const supabase = await createClient();
 
@@ -1301,6 +1304,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     <>
     <ReportReadFailureDisclosure reads={reads} />
     <ReportStandardDetail
+      searchParams={searchParams ? await searchParams : {}}
+      unreadableByTab={buildReportUnreadableByTab({ artifactsUnreadable, sectionsUnreadable, projectRecordsUnreadable: projectRecordReadFailures.size > 0 })}
       report={report}
       project={project}
       workspace={workspace}

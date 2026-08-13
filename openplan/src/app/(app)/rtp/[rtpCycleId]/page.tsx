@@ -86,9 +86,15 @@ import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/mone
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
+import { buildRtpCycleTabs } from "./_tabs";
 
 type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
+  /** Optional so a caller that renders the page with no query string still type-checks. */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 /**
@@ -119,8 +125,9 @@ function toOptionalNumber(value: number | string | null | undefined): number | n
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export default async function RtpCycleDetailPage({ params }: RouteContext) {
+export default async function RtpCycleDetailPage({ params, searchParams }: RouteContext) {
   const { rtpCycleId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -605,6 +612,17 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     packetRecordCount: packetReportsWithComparison.length,
     generatedPacketCount,
   });
+
+  const cycleTabs = buildRtpCycleTabs({
+    overview: { packetReports: packetReportsState === "failed", packetArtifacts: packetArtifactsState === "failed" },
+    projects: { links: projectLinksState === "failed" },
+    financial: { horizonBands: horizonBandsState === "failed", assumptions: financialAssumptionsState === "failed", measures: performanceMeasuresState === "failed" },
+    document: { chapters: chaptersState === "failed" },
+    comments: { campaigns: campaignsState === "failed", items: engagementItemsState === "failed" },
+  });
+
+  const activeTab = resolvePageTab(cycleTabs, resolvedSearchParams[PAGE_TAB_QUERY_KEY], "overview");
+
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
@@ -764,601 +782,608 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         </article>
       </header>
 
-      <div className="module-grid-layout mt-6 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(24rem,0.9fr)]">
-        <section className="space-y-4">
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Chapter shell</p>
-                <h2 className="module-section-title">Editable RTP sections</h2>
-                <p className="module-section-description">
-                  The shell is no longer just seeded structure. Each chapter can now carry explicit workflow status, working summary, and guidance.
+      <PageTabNav tabs={cycleTabs} activeKey={activeTab} basePath={`/rtp/${cycle.id}`} searchParams={resolvedSearchParams} ariaLabel="RTP cycle sections" />
+
+      <PageTabPanel tabKey="overview" active={activeTab === "overview"} className="mt-6 space-y-4">
+        <RtpCycleDetailsEditor
+          rtpCycleId={cycle.id}
+          initialTitle={cycle.title}
+          initialGeographyLabel={cycle.geography_label}
+          initialHorizonStartYear={cycle.horizon_start_year}
+          initialHorizonEndYear={cycle.horizon_end_year}
+          initialAdoptionTargetDate={cycle.adoption_target_date}
+          initialPublicReviewOpenAt={cycle.public_review_open_at}
+          initialPublicReviewCloseAt={cycle.public_review_close_at}
+          initialSummary={cycle.summary}
+          initialAnchorLatitude={toOptionalNumber(cycle.anchor_latitude)}
+          initialAnchorLongitude={toOptionalNumber(cycle.anchor_longitude)}
+        />
+
+        <RtpCyclePhaseControls
+          cycle={{ id: cycle.id, status: cycle.status }}
+          linkedPacketReports={packetReports.map((report) => ({ id: report.id, title: report.title }))}
+        />
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Export</p>
+              <h2 className="module-section-title">RTP cycle output snapshot</h2>
+              <p className="module-section-description">
+                Export the current cycle, chapter, portfolio, and engagement posture without waiting for deeper report-model integration.
+              </p>
+            </div>
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
+              <FileStack className="h-5 w-5" />
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <RtpReportCreator
+              rtpCycleId={cycle.id}
+              defaultTitle={`${cycle.title} Board / Binder`}
+              cycleStatus={cycle.status}
+              modelingCountyRunId={defaultModelingCountyRunId}
+            />
+            <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
+              Open digital RTP document
+            </Link>
+            <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action">
+              Open HTML export
+            </Link>
+            <Link href={`/api/rtp-cycles/${cycle.id}/export?format=pdf`} target="_blank" className="module-inline-action">
+              Open PDF export
+            </Link>
+          </div>
+
+          {packetReportsWithComparison.length > 0 ? (
+            <div className="mt-4 space-y-3 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
+              <div>
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Existing packet records
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Review which RTP packet records already carry saved comparison context before opening them.
                 </p>
               </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
-                <FileStack className="h-5 w-5" />
-              </span>
-            </div>
-
-            {chaptersState === "failed" ? (
-              <StateBlock
-                tone="danger"
-                title="Chapter sections could not be read"
-                description="The chapters of this cycle could not be loaded, so none are shown. This is not the same as the cycle having no chapters — nothing here should be read as evidence that the shell is missing or that work was lost."
-              />
-            ) : chapters.length === 0 ? (
-              <EmptyState
-                title="No chapter shell yet"
-                description="This cycle does not have seeded chapter scaffolding yet. Apply the latest migration and reopen the cycle."
-              />
-            ) : (
-              <div className="space-y-4">
-                {chapters.map((chapter) => {
-                  const chapterCampaigns = campaignsByChapterId.get(chapter.id) ?? [];
-                  return (
-                    <article key={chapter.id} className="module-row-card gap-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="text-base font-semibold tracking-tight">{chapter.title}</h3>
-                            <StatusBadge tone={rtpChapterStatusTone(chapter.status)}>
-                              {formatRtpChapterStatusLabel(chapter.status)}
-                            </StatusBadge>
-                            <span className="module-record-chip"><span>Section</span><strong>{titleizeRtpValue(chapter.section_type)}</strong></span>
-                          </div>
-                          <p className="mt-1 text-[0.73rem] text-muted-foreground">{chapter.required ? "Required" : "Optional"} · {chapterCampaigns.length} campaign{chapterCampaigns.length === 1 ? "" : "s"}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">{chapter.guidance?.trim() || "No guidance yet."}</p>
-                        </div>
-                        <div className="text-right text-xs text-muted-foreground">
-                          <div>Updated {formatRtpDateTime(chapter.updated_at)}</div>
-                          <div>Key {chapter.chapter_key}</div>
-                        </div>
-                      </div>
-
-                      <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current shell posture</p>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          {chapter.summary?.trim() || "No chapter summary yet. This shell is ready for chapter-level narrative, evidence, and comment threading."}
+              <div className="space-y-2">
+                {packetReportsWithComparison.map((report) => (
+                  <Link
+                    key={report.id}
+                    href={`/reports/${report.id}`}
+                    className="block rounded-xl border border-border/70 bg-background px-3 py-3 transition hover:border-primary/35"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{report.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {report.generatedAt
+                            ? `Latest packet generated ${formatRtpDateTime(report.generatedAt)}`
+                            : `Report updated ${formatRtpDateTime(report.updated_at)}`}
                         </p>
                       </div>
-
-                      <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft content</p>
-                        {chapter.content_markdown?.trim() ? (
-                          <div
-                            className="chapter-markdown mt-2 text-sm text-muted-foreground"
-                            dangerouslySetInnerHTML={{
-                              __html: renderChapterMarkdownToHtml(chapter.content_markdown),
-                            }}
-                          />
+                      <div className="flex flex-wrap gap-2">
+                        {report.comparisonDigest ? (
+                          <StatusBadge tone="info">Comparison-backed</StatusBadge>
                         ) : (
-                          <p className="mt-2 text-sm text-muted-foreground">
-                            No draft chapter content yet. Start writing the actual RTP section text here.
-                          </p>
+                          <StatusBadge tone="neutral">No saved comparisons</StatusBadge>
                         )}
                       </div>
-
-                      {chapterCampaigns.length > 0 ? (
-                        <div className="space-y-2 rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
-                          {chapterCampaigns.map((campaign) => (
-                            <div key={campaign.id} className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Link href={`/engagement/${campaign.id}`} className="text-sm font-semibold tracking-tight hover:text-foreground/80">
-                                  {campaign.title}
-                                </Link>
-                                <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
-                                <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-                              </div>
-                              <p className="mt-1 text-sm text-muted-foreground">
-                                {campaign.summary?.trim() || "No campaign summary yet."}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-
-                      {String(chapter.id).startsWith("template-") ? null : (
-                        <RtpChapterControls
-                          rtpCycleId={cycle.id}
-                          chapter={{
-                            id: chapter.id,
-                            title: chapter.title,
-                            status: chapter.status,
-                          guidance: chapter.guidance,
-                          summary: chapter.summary,
-                          contentMarkdown: chapter.content_markdown,
-                        }}
-                      />
-                      )}
-                    </article>
-                  );
-                })}
+                    </div>
+                    {report.comparisonDigest ? (
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        {report.comparisonDigest.headline} · {report.comparisonDigest.detail}
+                      </p>
+                    ) : null}
+                  </Link>
+                ))}
               </div>
-            )}
-          </article>
-          <RtpFinancialElementSection
-            rtpCycleId={cycle.id}
-            cycleHorizonStartYear={cycle.horizon_start_year}
-            cycleHorizonEndYear={cycle.horizon_end_year}
-            cycleFinancialBasisYear={cycle.financial_basis_year}
-            annualInflationRate={cycle.annual_inflation_rate}
-            projects={projectLinks.map((link) => ({
-              linkId: link.id,
-              projectId: link.project_id,
-              projectName: link.project?.name ?? null,
-              portfolioRole: link.portfolio_role,
-              horizonBandId: link.horizon_band_id,
-              estimatedCost: link.estimated_cost,
-              costBasisYear: link.cost_basis_year,
-            }))}
-            readFailed={fiscalReadFailed}
-            bands={financialElement.bands}
-            lines={financialElement.lines}
-            measures={financialElement.measures}
-            measuresReadFailed={performanceMeasuresState === "failed"}
-            canWrite={canWritePlans}
-            lineTranscriptions={transcriptionsByRowId}
-            measureTranscriptions={transcriptionsByRowId}
-          />
-
-          <RtpCommentResponseSection summary={commentResponseSummary} />
-
-          <RtpCycleProjectMap rtpCycleId={cycle.id} />
-
-
-
-          <RtpProgrammeLists
-            entries={projectLinksWithFunding.map((link) => ({
-              id: link.id,
-              portfolioRole: link.portfolio_role,
-              horizonBandId: link.horizon_band_id,
-              estimatedCost: link.estimated_cost,
-              costBasisYear: link.cost_basis_year,
-              priorityRationale: link.priority_rationale,
-              project: link.project
-                ? {
-                    id: link.project.id,
-                    name: link.project.name,
-                    status: link.project.status,
-                    summary: link.project.summary,
-                  }
-                : null,
-              priority: link.priority,
-              funding: {
-                pipelineLabel: link.fundingStack.pipelineLabel,
-                pipelineStatus: link.fundingStack.pipelineStatus,
-                committedFundingAmount: link.fundingStack.committedFundingAmount,
-                unfundedAfterLikelyAmount: link.fundingStack.unfundedAfterLikelyAmount,
-              },
-            }))}
-            bands={financialElement.bands}
-            readFailed={projectLinksState === "failed"}
-          />
-        </section>
-
-        <aside className="space-y-4">
-          <RtpCycleDetailsEditor
-            rtpCycleId={cycle.id}
-            initialTitle={cycle.title}
-            initialGeographyLabel={cycle.geography_label}
-            initialHorizonStartYear={cycle.horizon_start_year}
-            initialHorizonEndYear={cycle.horizon_end_year}
-            initialAdoptionTargetDate={cycle.adoption_target_date}
-            initialPublicReviewOpenAt={cycle.public_review_open_at}
-            initialPublicReviewCloseAt={cycle.public_review_close_at}
-            initialSummary={cycle.summary}
-            initialAnchorLatitude={toOptionalNumber(cycle.anchor_latitude)}
-            initialAnchorLongitude={toOptionalNumber(cycle.anchor_longitude)}
-          />
-          <RtpCyclePhaseControls
-            cycle={{ id: cycle.id, status: cycle.status }}
-            linkedPacketReports={packetReports.map((report) => ({ id: report.id, title: report.title }))}
-          />
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Export</p>
-                <h2 className="module-section-title">RTP cycle output snapshot</h2>
-                <p className="module-section-description">
-                  Export the current cycle, chapter, portfolio, and engagement posture without waiting for deeper report-model integration.
-                </p>
-              </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
-                <FileStack className="h-5 w-5" />
-              </span>
             </div>
+          ) : null}
+        </article>
+      </PageTabPanel>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <RtpReportCreator
-                rtpCycleId={cycle.id}
-                defaultTitle={`${cycle.title} Board / Binder`}
-                cycleStatus={cycle.status}
-                modelingCountyRunId={defaultModelingCountyRunId}
-              />
-              <Link href={`/rtp/${cycle.id}/document`} className="module-inline-action">
-                Open digital RTP document
-              </Link>
-              <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action">
-                Open HTML export
-              </Link>
-              <Link href={`/api/rtp-cycles/${cycle.id}/export?format=pdf`} target="_blank" className="module-inline-action">
-                Open PDF export
-              </Link>
-            </div>
+      <PageTabPanel tabKey="projects" active={activeTab === "projects"} className="mt-6 space-y-4">
+        <RtpCycleProjectMap rtpCycleId={cycle.id} />
 
-            {packetReportsWithComparison.length > 0 ? (
-              <div className="mt-4 space-y-3 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-                <div>
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Existing packet records
-                  </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Review which RTP packet records already carry saved comparison context before opening them.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  {packetReportsWithComparison.map((report) => (
-                    <Link
-                      key={report.id}
-                      href={`/reports/${report.id}`}
-                      className="block rounded-xl border border-border/70 bg-background px-3 py-3 transition hover:border-primary/35"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{report.title}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {report.generatedAt
-                              ? `Latest packet generated ${formatRtpDateTime(report.generatedAt)}`
-                              : `Report updated ${formatRtpDateTime(report.updated_at)}`}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {report.comparisonDigest ? (
-                            <StatusBadge tone="info">Comparison-backed</StatusBadge>
-                          ) : (
-                            <StatusBadge tone="neutral">No saved comparisons</StatusBadge>
-                          )}
-                        </div>
-                      </div>
-                      {report.comparisonDigest ? (
-                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                          {report.comparisonDigest.headline} · {report.comparisonDigest.detail}
-                        </p>
-                      ) : null}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </article>
+        <RtpProgrammeLists
+          entries={projectLinksWithFunding.map((link) => ({
+            id: link.id,
+            portfolioRole: link.portfolio_role,
+            horizonBandId: link.horizon_band_id,
+            estimatedCost: link.estimated_cost,
+            costBasisYear: link.cost_basis_year,
+            priorityRationale: link.priority_rationale,
+            project: link.project
+              ? {
+                  id: link.project.id,
+                  name: link.project.name,
+                  status: link.project.status,
+                  summary: link.project.summary,
+                }
+              : null,
+            priority: link.priority,
+            funding: {
+              pipelineLabel: link.fundingStack.pipelineLabel,
+              pipelineStatus: link.fundingStack.pipelineStatus,
+              committedFundingAmount: link.fundingStack.committedFundingAmount,
+              unfundedAfterLikelyAmount: link.fundingStack.unfundedAfterLikelyAmount,
+            },
+          }))}
+          bands={financialElement.bands}
+          readFailed={projectLinksState === "failed"}
+        />
 
-          <RtpEngagementCampaignCreator
-            rtpCycleId={cycle.id}
-            chapterOptions={chapters
-              .filter((chapter) => !String(chapter.id).startsWith("template-"))
-              .map((chapter) => ({ id: chapter.id, title: chapter.title }))}
-          />
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Portfolio posture</p>
-                <h2 className="module-section-title">Cycle-linked projects</h2>
-                <p className="module-section-description">
-                  The RTP chapter workflow and project portfolio now sit under the same cycle record, with real funding posture pulled from project funding profiles and awards.
-                </p>
-              </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
-                <FolderKanban className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="space-y-3">
-            {projectLinksState === "failed" ? (
-              <StateBlock
-                tone="danger"
-                title="Linked projects could not be read"
-                description="The projects attached to this cycle could not be loaded, so none are listed and the funding posture above is unavailable. This is not a finding that the cycle has no portfolio — do not re-attach projects on the strength of this page."
-              />
-            ) : projectLinks.length === 0 ? (
-              <EmptyState
-                title="No linked projects yet"
-                description="Attach projects to this cycle from each project's detail page. Once projects are linked, this list shows which ones fit within expected revenues (constrained) and which are illustrative."
-              />
-            ) : (
-              <div className="space-y-3">
-                {portfolioPriority.scoredCount > 0 ? (
-                  <div className="rounded-[0.5rem] border border-emerald-300/50 bg-emerald-50/50 px-4 py-3 text-sm dark:border-emerald-900/40 dark:bg-emerald-950/20">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
-                      Why this portfolio
-                    </p>
-                    <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
-                  </div>
-                ) : null}
-                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Funded</p>
-                    <p className="module-metric-value text-sm">{fundedProjectCount}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Likely covered</p>
-                    <p className="module-metric-value text-sm">{likelyCoveredProjectCount}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Pursued opportunities appear able to close the remaining gap.</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Still unfunded</p>
-                    <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Paid reimbursements</p>
-                    <p className="module-metric-value text-sm">{formatMoney(paidReimbursementTotal, { precision: "whole" })}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Outstanding requests</p>
-                    <p className="module-metric-value text-sm">{formatMoney(outstandingReimbursementTotal, { precision: "whole" })}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Uninvoiced awards</p>
-                    <p className="module-metric-value text-sm">{formatMoney(uninvoicedAwardTotal, { precision: "whole" })}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
-                  </div>
-                </div>
-
-                {/*
-                  THE RECONCILIATION DISCLOSURE. The three reimbursement cards
-                  above restate the SAME `billing_invoice_records` the invoicing
-                  register renders to the cent. Rounding them to the dollar is
-                  the right call for a plan summary — but a planner reconciling a
-                  draw against the plan and finding two different numbers for one
-                  fact has no way to tell which is the rounding. So the surface
-                  says that it rounds, once, beside the figures, and names where
-                  the exact figure lives. Do not delete this line while those
-                  cards round.
-                */}
-                <p className="text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
-
-                <p className="text-xs text-muted-foreground">
-                  {/*
-                    The per-project cards that used to live here moved to the
-                    "Project lists" section in the wide column, where they are
-                    grouped by period and carry their programmed cost. Two lists
-                    of the same projects, one of them without costs, is how a
-                    planner ends up reading the wrong one.
-                  */}
-                  {projectLinksWithFunding.length} project{projectLinksWithFunding.length === 1 ? "" : "s"} in
-                  this plan. The full lists, grouped by period with their costs, are in “What this plan
-                  commits to, and when”.
-                </p>
-              </div>
-            )}
-            {/*
-              The publish control and the policy-basis disclosure describe the
-              CYCLE, not its project list, so they sit OUTSIDE the ternary
-              above. They used to live inside its third branch, which meant a
-              cycle with drafted chapters and no projects linked yet — exactly
-              the cycle a public draft review needs — had no way to be
-              published at all, and a failed links read hid the control too.
-            */}
-            <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 px-4 py-3 text-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {priorityFrameworkDisclosure.headline}
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Portfolio posture</p>
+              <h2 className="module-section-title">Cycle-linked projects</h2>
+              <p className="module-section-description">
+                The RTP chapter workflow and project portfolio now sit under the same cycle record, with real funding posture pulled from project funding profiles and awards.
               </p>
-              <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.detail}</p>
-              {priorityFrameworkDisclosure.action ? (
-                <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.action}</p>
-              ) : null}
             </div>
-            <RtpPublicShareControls
-              rtpCycleId={cycle.id}
-              initialEnabled={cycle.public_share_enabled ?? false}
-              initialToken={cycle.public_share_token ?? null}
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+              <FolderKanban className="h-5 w-5" />
+            </span>
+          </div>
+
+          <div className="space-y-3">
+          {projectLinksState === "failed" ? (
+            <StateBlock
+              tone="danger"
+              title="Linked projects could not be read"
+              description="The projects attached to this cycle could not be loaded, so none are listed and the funding posture above is unavailable. This is not a finding that the cycle has no portfolio — do not re-attach projects on the strength of this page."
             />
-            </div>
-          </article>
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Public review control</p>
-                <h2 className="module-section-title">Comment-response foundation</h2>
-                <p className="module-section-description">
-                  Keep the RTP packet, planwide review target, and moderated public input tied to the same cycle before board closeout.
-                </p>
-              </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
-                <MessageSquare className="h-5 w-5" />
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                <StatusBadge tone={publicReviewSummary.tone}>{publicReviewSummary.label}</StatusBadge>
-                <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
-              </div>
-
-              <p className="text-sm text-muted-foreground">{publicReviewSummary.detail}</p>
-
-              {publicReviewInputsUnavailable ? (
-                <p className="rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                  This public-review posture, and the recommendations below it, are computed from records that could
-                  not be read. Do not act on a recommendation to create a campaign or a packet from this page — it may
-                  already exist and this page cannot currently see it.
-                </p>
+          ) : projectLinks.length === 0 ? (
+            <EmptyState
+              title="No linked projects yet"
+              description="Attach projects to this cycle from each project's detail page. Once projects are linked, this list shows which ones fit within expected revenues (constrained) and which are illustrative."
+            />
+          ) : (
+            <div className="space-y-3">
+              {portfolioPriority.scoredCount > 0 ? (
+                <div className="rounded-[0.5rem] border border-emerald-300/50 bg-emerald-50/50 px-4 py-3 text-sm dark:border-emerald-900/40 dark:bg-emerald-950/20">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+                    Why this portfolio
+                  </p>
+                  <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
+                </div>
               ) : null}
+              <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Funded</p>
+                  <p className="module-metric-value text-sm">{fundedProjectCount}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Likely covered</p>
+                  <p className="module-metric-value text-sm">{likelyCoveredProjectCount}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Pursued opportunities appear able to close the remaining gap.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Still unfunded</p>
+                  <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Paid reimbursements</p>
+                  <p className="module-metric-value text-sm">{formatMoney(paidReimbursementTotal, { precision: "whole" })}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Outstanding requests</p>
+                  <p className="module-metric-value text-sm">{formatMoney(outstandingReimbursementTotal, { precision: "whole" })}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
+                </div>
+                <div className="module-metric-card">
+                  <p className="module-metric-label">Uninvoiced awards</p>
+                  <p className="module-metric-value text-sm">{formatMoney(uninvoicedAwardTotal, { precision: "whole" })}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
+                </div>
+              </div>
 
               {/*
-                The SECOND count grid on this page. The six cards in the header
-                were gated against a failed read; these four were not, and they
-                are the ones a planner reads during public-review closeout —
-                "Pending comments 0" from a broken query is the page telling
-                someone the comment record is clear.
-
-                The comment counts depend on the CAMPAIGN read as well as their
-                own: campaign ids are what the item query is filtered by, so a
-                failed campaign read leaves the item query with nothing to ask
-                for and it succeeds with an empty answer. A zero here would then
-                be honest about the query and false about the world.
+                THE RECONCILIATION DISCLOSURE. The three reimbursement cards
+                above restate the SAME `billing_invoice_records` the invoicing
+                register renders to the cent. Rounding them to the dollar is
+                the right call for a plan summary — but a planner reconciling a
+                draw against the plan and finding two different numbers for one
+                fact has no way to tell which is the rounding. So the surface
+                says that it rounds, once, beside the figures, and names where
+                the exact figure lives. Do not delete this line while those
+                cards round.
               */}
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Generated packets</p>
-                  <p className="module-metric-value text-sm">
-                    {packetRecordsUnavailable ? "—" : `${generatedPacketCount}/${packetReportsWithComparison.length}`}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {packetRecordsUnavailable
-                      ? "The packet records could not be read, so this is not a count of zero — a packet may already be generated."
-                      : "Current rendered packet artifacts available for review and export."}
-                  </p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Review targets</p>
-                  <p className="module-metric-value text-sm">
-                    {campaignsState === "failed" ? "—" : cycleLevelCampaigns.length}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {campaignsState === "failed"
-                      ? "The engagement campaigns could not be read, so this is not a count of zero."
-                      : `Whole-cycle campaigns, plus ${engagementCampaigns.length - cycleLevelCampaigns.length} chapter-targeted campaigns.`}
-                  </p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Approved comments</p>
-                  <p className="module-metric-value text-sm">
-                    {commentCountsUnavailable ? "—" : engagementSummary.moderationQueue.readyForHandoffCount}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {commentCountsUnavailable
-                      ? "Public comments could not be read, so this is not a count of zero."
-                      : "Categorized items ready for packet handoff and response summary work."}
-                  </p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Pending comments</p>
-                  <p className="module-metric-value text-sm">
-                    {commentCountsUnavailable ? "—" : engagementSummary.moderationQueue.pendingCount}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {commentCountsUnavailable
-                      ? "Public comments could not be read, so an empty moderation queue here is not a finding that nothing is waiting."
-                      : "Items still waiting for operator review before packet closeout."}
-                  </p>
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
 
-              <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                      Adoption record proof
-                    </p>
-                    <p className="mt-2 text-sm font-medium">{adoptionRecordProof.label}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{adoptionRecordProof.detail}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-2 text-right">
-                    <StatusBadge tone={adoptionRecordProof.tone}>{adoptionRecordProof.label}</StatusBadge>
-                    <p className="text-xs text-muted-foreground">
-                      {adoptionRecordProof.readyCheckCount}/{adoptionRecordProof.totalCheckCount} proof checks ready
-                    </p>
-                  </div>
-                </div>
-
+              <p className="text-xs text-muted-foreground">
                 {/*
-                  These checks are computed from the chapter, packet and comment
-                  reads above. When one of those failed, a check reading "Needs
-                  operator" may only mean OpenPlan could not look — and this
-                  block is what a planner shows a board, so the difference has to
-                  be on the same screen as the verdict.
+                  The per-project cards that used to live here moved to the
+                  "Project lists" section in the wide column, where they are
+                  grouped by period and carry their programmed cost. Two lists
+                  of the same projects, one of them without costs, is how a
+                  planner ends up reading the wrong one.
                 */}
-                {chaptersState === "failed" ||
-                packetReportsState === "failed" ||
-                packetArtifactsState === "failed" ||
-                engagementItemsState === "failed" ? (
-                  <p className="mt-3 rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-                    Some records these checks depend on could not be read, so a check shown as “Needs operator” may
-                    only mean OpenPlan could not look. Do not treat this block as an adoption record until the notice
-                    at the top of this page clears.
-                  </p>
-                ) : null}
+                {projectLinksWithFunding.length} project{projectLinksWithFunding.length === 1 ? "" : "s"} in
+                this plan. The full lists, grouped by period with their costs, are in “What this plan
+                commits to, and when”.
+              </p>
+            </div>
+          )}
+          {/*
+            The publish control and the policy-basis disclosure describe the
+            CYCLE, not its project list, so they sit OUTSIDE the ternary
+            above. They used to live inside its third branch, which meant a
+            cycle with drafted chapters and no projects linked yet — exactly
+            the cycle a public draft review needs — had no way to be
+            published at all, and a failed links read hid the control too.
+          */}
+          <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 px-4 py-3 text-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              {priorityFrameworkDisclosure.headline}
+            </p>
+            <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.detail}</p>
+            {priorityFrameworkDisclosure.action ? (
+              <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.action}</p>
+            ) : null}
+          </div>
+          <RtpPublicShareControls
+            rtpCycleId={cycle.id}
+            initialEnabled={cycle.public_share_enabled ?? false}
+            initialToken={cycle.public_share_token ?? null}
+          />
+          </div>
+        </article>
+      </PageTabPanel>
 
-                <div className="mt-3 grid gap-2 md:grid-cols-2">
-                  {adoptionRecordProof.checks.map((check) => (
-                    <div key={check.key} className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{check.label}</p>
-                        <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Needs operator"}</StatusBadge>
+      <PageTabPanel tabKey="financial" active={activeTab === "financial"} className="mt-6 space-y-4">
+        <RtpFinancialElementSection
+          rtpCycleId={cycle.id}
+          cycleHorizonStartYear={cycle.horizon_start_year}
+          cycleHorizonEndYear={cycle.horizon_end_year}
+          cycleFinancialBasisYear={cycle.financial_basis_year}
+          annualInflationRate={cycle.annual_inflation_rate}
+          projects={projectLinks.map((link) => ({
+            linkId: link.id,
+            projectId: link.project_id,
+            projectName: link.project?.name ?? null,
+            portfolioRole: link.portfolio_role,
+            horizonBandId: link.horizon_band_id,
+            estimatedCost: link.estimated_cost,
+            costBasisYear: link.cost_basis_year,
+          }))}
+          readFailed={fiscalReadFailed}
+          bands={financialElement.bands}
+          lines={financialElement.lines}
+          measures={financialElement.measures}
+          measuresReadFailed={performanceMeasuresState === "failed"}
+          canWrite={canWritePlans}
+          lineTranscriptions={transcriptionsByRowId}
+          measureTranscriptions={transcriptionsByRowId}
+        />
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="document" active={activeTab === "document"} className="mt-6 space-y-4">
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Chapter shell</p>
+              <h2 className="module-section-title">Editable RTP sections</h2>
+              <p className="module-section-description">
+                The shell is no longer just seeded structure. Each chapter can now carry explicit workflow status, working summary, and guidance.
+              </p>
+            </div>
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
+              <FileStack className="h-5 w-5" />
+            </span>
+          </div>
+
+          {chaptersState === "failed" ? (
+            <StateBlock
+              tone="danger"
+              title="Chapter sections could not be read"
+              description="The chapters of this cycle could not be loaded, so none are shown. This is not the same as the cycle having no chapters — nothing here should be read as evidence that the shell is missing or that work was lost."
+            />
+          ) : chapters.length === 0 ? (
+            <EmptyState
+              title="No chapter shell yet"
+              description="This cycle does not have seeded chapter scaffolding yet. Apply the latest migration and reopen the cycle."
+            />
+          ) : (
+            <div className="space-y-4">
+              {chapters.map((chapter) => {
+                const chapterCampaigns = campaignsByChapterId.get(chapter.id) ?? [];
+                return (
+                  <article key={chapter.id} className="module-row-card gap-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-base font-semibold tracking-tight">{chapter.title}</h3>
+                          <StatusBadge tone={rtpChapterStatusTone(chapter.status)}>
+                            {formatRtpChapterStatusLabel(chapter.status)}
+                          </StatusBadge>
+                          <span className="module-record-chip"><span>Section</span><strong>{titleizeRtpValue(chapter.section_type)}</strong></span>
+                        </div>
+                        <p className="mt-1 text-[0.73rem] text-muted-foreground">{chapter.required ? "Required" : "Optional"} · {chapterCampaigns.length} campaign{chapterCampaigns.length === 1 ? "" : "s"}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">{chapter.guidance?.trim() || "No guidance yet."}</p>
                       </div>
-                      <p className="mt-2 text-xs text-muted-foreground">{check.detail}</p>
+                      <div className="text-right text-xs text-muted-foreground">
+                        <div>Updated {formatRtpDateTime(chapter.updated_at)}</div>
+                        <div>Key {chapter.chapter_key}</div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="module-operator-list">
-                {publicReviewSummary.actionItems.map((item) => (
-                  <div key={item} className="module-operator-item">{item}</div>
-                ))}
-              </div>
-            </div>
-          </article>
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Cycle-wide engagement</p>
-                <h2 className="module-section-title">Whole-plan campaign targets</h2>
-                <p className="module-section-description">
-                  Use whole-cycle campaigns for planwide public review, then point deeper campaigns at specific chapters as needed.
-                </p>
-              </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/12 text-violet-700 dark:text-violet-300">
-                <MessageSquare className="h-5 w-5" />
-              </span>
-            </div>
-
-            {campaignsState === "failed" ? (
-              <StateBlock
-                tone="danger"
-                title="Engagement campaigns could not be read"
-                description="The campaigns attached to this cycle could not be loaded, so none are listed here or against the chapters above. This is not a finding that no public review target exists — creating a second one from this page would duplicate it."
-              />
-            ) : cycleLevelCampaigns.length === 0 ? (
-              <EmptyState
-                title="No whole-cycle campaigns yet"
-                description="Create one above if you want a planwide comment or review target for this RTP update."
-              />
-            ) : (
-              <div className="space-y-3">
-                {cycleLevelCampaigns.map((campaign) => (
-                  <article key={campaign.id} className="module-row-card gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
-                      <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-                    </div>
-                    <div>
-                      <Link href={`/engagement/${campaign.id}`} className="text-sm font-semibold tracking-tight hover:text-foreground/80">
-                        {campaign.title}
-                      </Link>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {campaign.summary?.trim() || "No campaign summary yet."}
+                    <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
+                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current shell posture</p>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {chapter.summary?.trim() || "No chapter summary yet. This shell is ready for chapter-level narrative, evidence, and comment threading."}
                       </p>
                     </div>
-                    {campaign.project ? (
-                      <p className="text-xs text-muted-foreground">Linked project: {campaign.project.name}</p>
+
+                    <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
+                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft content</p>
+                      {chapter.content_markdown?.trim() ? (
+                        <div
+                          className="chapter-markdown mt-2 text-sm text-muted-foreground"
+                          dangerouslySetInnerHTML={{
+                            __html: renderChapterMarkdownToHtml(chapter.content_markdown),
+                          }}
+                        />
+                      ) : (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          No draft chapter content yet. Start writing the actual RTP section text here.
+                        </p>
+                      )}
+                    </div>
+
+                    {chapterCampaigns.length > 0 ? (
+                      <div className="space-y-2 rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
+                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
+                        {chapterCampaigns.map((campaign) => (
+                          <div key={campaign.id} className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Link href={`/engagement/${campaign.id}`} className="text-sm font-semibold tracking-tight hover:text-foreground/80">
+                                {campaign.title}
+                              </Link>
+                              <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
+                              <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
+                            </div>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                              {campaign.summary?.trim() || "No campaign summary yet."}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     ) : null}
+
+                    {String(chapter.id).startsWith("template-") ? null : (
+                      <RtpChapterControls
+                        rtpCycleId={cycle.id}
+                        chapter={{
+                          id: chapter.id,
+                          title: chapter.title,
+                          status: chapter.status,
+                        guidance: chapter.guidance,
+                        summary: chapter.summary,
+                        contentMarkdown: chapter.content_markdown,
+                      }}
+                    />
+                    )}
                   </article>
+                );
+              })}
+            </div>
+          )}
+        </article>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="comments" active={activeTab === "comments"} className="mt-6 space-y-4">
+        <RtpCommentResponseSection summary={commentResponseSummary} />
+
+        <RtpEngagementCampaignCreator
+          rtpCycleId={cycle.id}
+          chapterOptions={chapters
+            .filter((chapter) => !String(chapter.id).startsWith("template-"))
+            .map((chapter) => ({ id: chapter.id, title: chapter.title }))}
+        />
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Public review control</p>
+              <h2 className="module-section-title">Comment-response foundation</h2>
+              <p className="module-section-description">
+                Keep the RTP packet, planwide review target, and moderated public input tied to the same cycle before board closeout.
+              </p>
+            </div>
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
+              <MessageSquare className="h-5 w-5" />
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <StatusBadge tone={publicReviewSummary.tone}>{publicReviewSummary.label}</StatusBadge>
+              <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
+            </div>
+
+            <p className="text-sm text-muted-foreground">{publicReviewSummary.detail}</p>
+
+            {publicReviewInputsUnavailable ? (
+              <p className="rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                This public-review posture, and the recommendations below it, are computed from records that could
+                not be read. Do not act on a recommendation to create a campaign or a packet from this page — it may
+                already exist and this page cannot currently see it.
+              </p>
+            ) : null}
+
+            {/*
+              The SECOND count grid on this page. The six cards in the header
+              were gated against a failed read; these four were not, and they
+              are the ones a planner reads during public-review closeout —
+              "Pending comments 0" from a broken query is the page telling
+              someone the comment record is clear.
+
+              The comment counts depend on the CAMPAIGN read as well as their
+              own: campaign ids are what the item query is filtered by, so a
+              failed campaign read leaves the item query with nothing to ask
+              for and it succeeds with an empty answer. A zero here would then
+              be honest about the query and false about the world.
+            */}
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="module-metric-card">
+                <p className="module-metric-label">Generated packets</p>
+                <p className="module-metric-value text-sm">
+                  {packetRecordsUnavailable ? "—" : `${generatedPacketCount}/${packetReportsWithComparison.length}`}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {packetRecordsUnavailable
+                    ? "The packet records could not be read, so this is not a count of zero — a packet may already be generated."
+                    : "Current rendered packet artifacts available for review and export."}
+                </p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Review targets</p>
+                <p className="module-metric-value text-sm">
+                  {campaignsState === "failed" ? "—" : cycleLevelCampaigns.length}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {campaignsState === "failed"
+                    ? "The engagement campaigns could not be read, so this is not a count of zero."
+                    : `Whole-cycle campaigns, plus ${engagementCampaigns.length - cycleLevelCampaigns.length} chapter-targeted campaigns.`}
+                </p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Approved comments</p>
+                <p className="module-metric-value text-sm">
+                  {commentCountsUnavailable ? "—" : engagementSummary.moderationQueue.readyForHandoffCount}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {commentCountsUnavailable
+                    ? "Public comments could not be read, so this is not a count of zero."
+                    : "Categorized items ready for packet handoff and response summary work."}
+                </p>
+              </div>
+              <div className="module-metric-card">
+                <p className="module-metric-label">Pending comments</p>
+                <p className="module-metric-value text-sm">
+                  {commentCountsUnavailable ? "—" : engagementSummary.moderationQueue.pendingCount}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {commentCountsUnavailable
+                    ? "Public comments could not be read, so an empty moderation queue here is not a finding that nothing is waiting."
+                    : "Items still waiting for operator review before packet closeout."}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Adoption record proof
+                  </p>
+                  <p className="mt-2 text-sm font-medium">{adoptionRecordProof.label}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{adoptionRecordProof.detail}</p>
+                </div>
+                <div className="flex flex-col items-end gap-2 text-right">
+                  <StatusBadge tone={adoptionRecordProof.tone}>{adoptionRecordProof.label}</StatusBadge>
+                  <p className="text-xs text-muted-foreground">
+                    {adoptionRecordProof.readyCheckCount}/{adoptionRecordProof.totalCheckCount} proof checks ready
+                  </p>
+                </div>
+              </div>
+
+              {/*
+                These checks are computed from the chapter, packet and comment
+                reads above. When one of those failed, a check reading "Needs
+                operator" may only mean OpenPlan could not look — and this
+                block is what a planner shows a board, so the difference has to
+                be on the same screen as the verdict.
+              */}
+              {chaptersState === "failed" ||
+              packetReportsState === "failed" ||
+              packetArtifactsState === "failed" ||
+              engagementItemsState === "failed" ? (
+                <p className="mt-3 rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  Some records these checks depend on could not be read, so a check shown as “Needs operator” may
+                  only mean OpenPlan could not look. Do not treat this block as an adoption record until the notice
+                  at the top of this page clears.
+                </p>
+              ) : null}
+
+              <div className="mt-3 grid gap-2 md:grid-cols-2">
+                {adoptionRecordProof.checks.map((check) => (
+                  <div key={check.key} className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{check.label}</p>
+                      <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Needs operator"}</StatusBadge>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">{check.detail}</p>
+                  </div>
                 ))}
               </div>
-            )}
-          </article>
-        </aside>
-      </div>
+            </div>
+
+            <div className="module-operator-list">
+              {publicReviewSummary.actionItems.map((item) => (
+                <div key={item} className="module-operator-item">{item}</div>
+              ))}
+            </div>
+          </div>
+        </article>
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Cycle-wide engagement</p>
+              <h2 className="module-section-title">Whole-plan campaign targets</h2>
+              <p className="module-section-description">
+                Use whole-cycle campaigns for planwide public review, then point deeper campaigns at specific chapters as needed.
+              </p>
+            </div>
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/12 text-violet-700 dark:text-violet-300">
+              <MessageSquare className="h-5 w-5" />
+            </span>
+          </div>
+
+          {campaignsState === "failed" ? (
+            <StateBlock
+              tone="danger"
+              title="Engagement campaigns could not be read"
+              description="The campaigns attached to this cycle could not be loaded, so none are listed here or against the chapters above. This is not a finding that no public review target exists — creating a second one from this page would duplicate it."
+            />
+          ) : cycleLevelCampaigns.length === 0 ? (
+            <EmptyState
+              title="No whole-cycle campaigns yet"
+              description="Create one above if you want a planwide comment or review target for this RTP update."
+            />
+          ) : (
+            <div className="space-y-3">
+              {cycleLevelCampaigns.map((campaign) => (
+                <article key={campaign.id} className="module-row-card gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
+                    <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
+                  </div>
+                  <div>
+                    <Link href={`/engagement/${campaign.id}`} className="text-sm font-semibold tracking-tight hover:text-foreground/80">
+                      {campaign.title}
+                    </Link>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {campaign.summary?.trim() || "No campaign summary yet."}
+                    </p>
+                  </div>
+                  {campaign.project ? (
+                    <p className="text-xs text-muted-foreground">Linked project: {campaign.project.name}</p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          )}
+        </article>
+      </PageTabPanel>
+
     </section>
   );
 }

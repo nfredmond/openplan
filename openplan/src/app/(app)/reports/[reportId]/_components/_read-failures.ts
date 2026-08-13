@@ -1,5 +1,7 @@
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import type { ReadFailureLog, ReadResultLike } from "@/lib/ui/read-failures";
+import { unreadableLanes } from "@/lib/ui/page-tabs";
+import type { ReportDetailTabKey } from "./report-standard-detail";
 import type { ProjectRecordSnapshotKey } from "./_types";
 
 /**
@@ -196,3 +198,26 @@ export const PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE = {
   detail:
     "This report's generated packets could not be read, so neither the latest packet nor its freshness could be established. That is an unchecked source, not a finding that no packet exists and not a finding that this one is current.",
 };
+
+/**
+ * Which of this report's failed reads belongs to which tab.
+ *
+ * The tab strip names these above itself, because on this page a failed read is
+ * not merely a blank panel — the packet's freshness verdict, its composition
+ * audit and its drift table are all COMPARISONS, and a read that returned
+ * nothing produces a fully-formed verdict about a report that changed. Behind a
+ * closed tab that verdict would be invisible and its cause invisible with it.
+ */
+export function buildReportUnreadableByTab(flags: {
+  artifactsUnreadable: boolean;
+  sectionsUnreadable: boolean;
+  projectRecordsUnreadable: boolean;
+}): Partial<Record<ReportDetailTabKey, string[]>> {
+  return {
+    packet: unreadableLanes([["this report's generated packets", flags.artifactsUnreadable]]),
+    evidence: unreadableLanes([["this report's sections", flags.sectionsUnreadable]]),
+    history: unreadableLanes([
+      ["the live project records this packet is compared against", flags.projectRecordsUnreadable],
+    ]),
+  };
+}

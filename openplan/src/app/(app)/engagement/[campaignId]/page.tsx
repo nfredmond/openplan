@@ -28,6 +28,10 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
+import { buildCampaignTabs } from "./_tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
@@ -133,10 +137,11 @@ export default async function EngagementCampaignDetailPage({
   searchParams,
 }: {
   params: Promise<{ campaignId: string }>;
-  searchParams?: Promise<{ created?: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { campaignId } = await params;
   const query = searchParams ? await searchParams : {};
+  const requestedTab = query[PAGE_TAB_QUERY_KEY];
   const supabase = await createClient();
   const {
     data: { user },
@@ -591,6 +596,25 @@ export default async function EngagementCampaignDetailPage({
   // against is known to be incomplete; and a source language that could not be
   // READ must never be reported as a language nobody recorded — that is a
   // finding about the agency, and a failed query does not establish it.
+
+  const campaignTabs = buildCampaignTabs({
+    categoriesUnreadable,
+    itemsUnreadable,
+    projectUnreadable,
+    reportsUnreadable,
+    reportSectionLinksUnreadable,
+    rtpCycleUnreadable,
+    rtpChapterUnreadable,
+  });
+
+  // "Live" is the campaign's own status, not a guess from whether a share slug
+  // exists: a campaign can carry a token it has not been switched on with.
+  const activeTab = resolvePageTab(
+    campaignTabs,
+    requestedTab,
+    campaign.status === "draft" ? "setup" : "responses",
+  );
+
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
@@ -720,7 +744,16 @@ export default async function EngagementCampaignDetailPage({
         </article>
       </header>
 
-      <div className="mt-6 space-y-6">
+      <PageTabNav
+        tabs={campaignTabs}
+        activeKey={activeTab}
+        basePath={`/engagement/${campaign.id}`}
+        searchParams={query}
+        ariaLabel="Campaign console sections"
+      />
+
+      <PageTabPanel tabKey="setup" active={activeTab === "setup"}>
+        <div className="mt-6 space-y-6">
         {/*
           CONSOLE ORDER IS THE WORKFLOW ORDER. Setting a campaign up — taking
           it public, writing the survey, closing the loop — comes before the
@@ -747,37 +780,6 @@ export default async function EngagementCampaignDetailPage({
           campaignId={campaign.id}
           categories={builderCategories}
           initialEntries={closeLoopEntries}
-        />
-
-        <CampaignHandoffReadinessSection
-          handoffReadiness={handoffReadiness}
-          publicReviewCopyGuard={publicReviewCopyGuard}
-          counts={counts}
-          appendixReadiness={appendixReadiness}
-          commentMatrixPreview={commentMatrixPreview}
-          campaign={campaign}
-          project={project}
-          projectUnreadable={projectUnreadable}
-          readsIncomplete={projectUnreadable || categoriesUnreadable || itemsUnreadable}
-          itemsUnreadable={itemsUnreadable}
-          primarySource={primarySource}
-          reportCount={reportRecords.length}
-          linkedReportCount={campaignLinkedReports.length}
-          packetAttentionCount={packetAttentionCount}
-          recommendedReport={recommendedCampaignReport}
-        />
-
-        <CampaignLinkedReportsSection
-          projectUnreadable={projectUnreadable}
-          reportsUnreadable={reportsUnreadable}
-          reportSectionLinksUnreadable={reportSectionLinksUnreadable}
-          projectLinked={Boolean(project)}
-          reports={campaignLinkedReports}
-          explicitlyLinkedReportCount={explicitlyLinkedReportCount}
-          projectOnlyReportCount={projectOnlyReportCount}
-          packetAttentionCount={packetAttentionCount}
-          recommendedReport={recommendedCampaignReport}
-          latestArtifactGeneratedAtByReportId={latestArtifactGeneratedAtByReportId}
         />
 
         {/*
@@ -853,510 +855,550 @@ export default async function EngagementCampaignDetailPage({
             )}
           </div>
         </article>
-      </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
-        <div className="space-y-6">
-          <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Category Registry</p>
-                <h2 className="module-section-title">Current categories</h2>
-                <p className="module-section-description">
-                  Category structure stays intentionally light, and each category shows its item volume and moderation load.
-                </p>
-              </div>
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Category Registry</p>
+              <h2 className="module-section-title">Current categories</h2>
+              <p className="module-section-description">
+                Category structure stays intentionally light, and each category shows its item volume and moderation load.
+              </p>
             </div>
+          </div>
 
+          <div className="mt-5">
+            <EngagementCategoryCreator campaignId={campaign.id} />
+          </div>
+
+          {categoriesUnreadable ? (
             <div className="mt-5">
-              <EngagementCategoryCreator campaignId={campaign.id} />
-            </div>
-
-            {categoriesUnreadable ? (
-              <div className="mt-5">
-                <StateBlock
-                  tone="danger"
-                  title="This campaign's categories could not be read"
-                  description="OpenPlan cannot say whether this campaign has categories. Do not add duplicates on the strength of this screen — the list is missing, not empty."
-                  compact
-                />
-              </div>
-            ) : !(categories?.length) ? (
-              <div className="mt-5">
-                <EmptyState
-                  title="No categories yet"
-                  description="Add a few categories so intake can be classified before downstream reports rely on it."
-                  compact
-                />
-              </div>
-            ) : (
-              <div className="mt-5 space-y-3">
-                {categorySummaries.map((category) => (
-                  <div key={category.categoryId} className="module-record-row">
-                    <div className="module-record-head">
-                      <div className="module-record-main">
-                        <div className="module-record-kicker">
-                          <StatusBadge tone="info">{category.label}</StatusBadge>
-                          <StatusBadge tone={category.flaggedCount > 0 ? "warning" : "neutral"}>
-                            {category.count} items
-                          </StatusBadge>
-                          {category.flaggedCount > 0 ? (
-                            <StatusBadge tone="warning">{category.flaggedCount} flagged</StatusBadge>
-                          ) : null}
-                        </div>
-                        <p className="module-record-summary">
-                          {category.description || "No description yet. This category is available for classification."}
-                        </p>
-                      </div>
-                    </div>
-                    <MetaList>
-                      <MetaItem>{Math.round(category.shareOfItems * 100)}% of campaign items</MetaItem>
-                      <MetaItem>{category.pendingCount} pending</MetaItem>
-                      <MetaItem>{category.approvedCount} approved</MetaItem>
-                      <MetaItem>Last activity {fmtDateTime(category.lastActivityAt)}</MetaItem>
-                    </MetaList>
-                  </div>
-                ))}
-
-                {uncategorizedSummary && uncategorizedSummary.count > 0 ? (
-                  <div className="module-record-row">
-                    <div className="module-record-head">
-                      <div className="module-record-main">
-                        <div className="module-record-kicker">
-                          <StatusBadge tone="warning">{uncategorizedSummary.label}</StatusBadge>
-                          <StatusBadge tone="warning">{uncategorizedSummary.count} items</StatusBadge>
-                        </div>
-                        <p className="module-record-summary">{uncategorizedSummary.description}</p>
-                      </div>
-                    </div>
-                    <MetaList>
-                      <MetaItem>{uncategorizedSummary.pendingCount} pending</MetaItem>
-                      <MetaItem>{uncategorizedSummary.flaggedCount} flagged</MetaItem>
-                      <MetaItem>Last activity {fmtDateTime(uncategorizedSummary.lastActivityAt)}</MetaItem>
-                    </MetaList>
-                  </div>
-                ) : null}
-              </div>
-            )}
-          </article>
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Analytics</p>
-                <h2 className="module-section-title">Source and geography breakdown</h2>
-                <p className="module-section-description">
-                  Keep the summary lightweight but decision-useful: where intake came from, how much has map signal, and what still needs triage.
-                </p>
-              </div>
-            </div>
-
-            {itemsUnreadable ? (
-              <div className="mt-5">
-                <StateBlock
-                  tone="danger"
-                  title="The source and geography breakdown could not be computed"
-                  description="Every number in this panel comes from the campaign's comments, and that read failed. No mix is shown rather than a mix of zero."
-                  compact
-                />
-              </div>
-            ) : sourceSummaries.every((source) => source.count === 0) ? (
-              <div className="mt-5">
-                <EmptyState title="No source mix yet" description="Add comments to see where input comes from and how coverage looks on the map." compact />
-              </div>
-            ) : (
-              <div className="mt-5 space-y-3">
-                {sourceSummaries
-                  .filter((source) => source.count > 0)
-                  .map((source) => (
-                    <div key={source.sourceType} className="module-record-row">
-                      <div className="module-record-head">
-                        <div className="module-record-main">
-                          <div className="module-record-kicker">
-                            <StatusBadge tone="info">{titleizeEngagementValue(source.sourceType)}</StatusBadge>
-                            <StatusBadge tone={source.flaggedCount > 0 ? "warning" : "neutral"}>{source.count} items</StatusBadge>
-                            <StatusBadge tone={source.geolocatedCount > 0 ? "success" : "neutral"}>
-                              <MapPinned className="h-3 w-3" />
-                              {source.geolocatedCount} mapped
-                            </StatusBadge>
-                          </div>
-                          <p className="module-record-summary">
-                            {fmtPercent(source.shareOfItems)} of campaign intake. {source.pendingCount} pending, {source.approvedCount} approved, {source.rejectedCount} rejected.
-                          </p>
-                        </div>
-                      </div>
-                      <MetaList>
-                        <MetaItem>{source.categorizedCount} categorized</MetaItem>
-                        <MetaItem>{source.nonGeolocatedCount} non-geolocated</MetaItem>
-                        <MetaItem>{source.flaggedCount} flagged</MetaItem>
-                        <MetaItem>Last activity {fmtDateTime(source.lastActivityAt)}</MetaItem>
-                      </MetaList>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </article>
-        </div>
-
-        <div className="space-y-6">
-          <EngagementContextLayersPanel
-            campaignId={campaign.id}
-            layers={contextLayers.layers}
-            readFailure={contextLayers.readFailure}
-            canWrite={canManageContextLayers}
-          />
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Offline input</p>
-                <h2 className="module-section-title">Comments that did not come through the portal</h2>
-                <p className="module-section-description">
-                  The open house, the comment cards, the project inbox, the council transcript. Everything
-                  this page says about the campaign is computed over the comments it holds, so input that
-                  never got entered is missing from the synthesis, the representativeness reading and the
-                  appendix — and it is missing in a predictable direction, because portal submissions skew
-                  toward people with a device and a data plan.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5">
-              <CommentImportPanel campaignId={campaign.id} />
-            </div>
-          </article>
-
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Taking part another way</p>
-                <h2 className="module-section-title">If a resident cannot use the portal</h2>
-                <p className="module-section-description">
-                  A map, a form and a comment feed each have people they do not work for. This is the
-                  contact a resident reaches when the page is not usable for them — your agency&apos;s
-                  words, not OpenPlan&apos;s, shown on the public portal in the resident&apos;s language.
-                  OpenPlan makes no claim that the portal meets any accessibility standard, and this is
-                  not one.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5">
-              <CampaignAccessibilityEditor
-                campaignId={campaign.id}
-                portalIsLive={Boolean(campaign.share_token) && campaign.allow_public_submissions && !campaign.submissions_closed_at}
-                initial={{
-                  contactLabel: campaign.accessibility_contact_label,
-                  contactEmail: campaign.accessibility_contact_email,
-                  contactPhone: campaign.accessibility_contact_phone,
-                  alternateFormats: campaign.accessibility_alternate_formats,
-                }}
+              <StateBlock
+                tone="danger"
+                title="This campaign's categories could not be read"
+                description="OpenPlan cannot say whether this campaign has categories. Do not add duplicates on the strength of this screen — the list is missing, not empty."
+                compact
               />
             </div>
-          </article>
-
-          <CampaignTranslationsPanel
-            campaignId={campaign.id}
-            fields={translationState.fields}
-            entries={translationState.entries}
-            coverage={translationState.coverage}
-            sourceLocale={translationState.sourceLocale}
-            sourceLocaleStated={translationState.sourceLocaleStated}
-            readFailures={translationState.readFailures}
-            translationsReadable={translationState.translationsReadable}
-            inventoryComplete={translationState.inventoryComplete}
-            sourceLocaleReadable={translationState.sourceLocaleReadable}
-            machineTranslationAvailable={machineTranslationAvailable}
-            machineBatchMax={MACHINE_TRANSLATION_BATCH_MAX}
-            acceptBatchMax={TRANSLATION_ACCEPT_BATCH_MAX}
-            canWrite={canManageContextLayers}
-          />
-
-          {locatedItems.length > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Geometry Review</p>
-                  <h2 className="module-section-title">Located comments on the map</h2>
-                  <p className="module-section-description">
-                    Every item with a point, line, or area renders here — including pending and flagged items — so moderators can review geometry before approval.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <LocationDisplayMap
-                  contextLayers={publishedContextLayers}
-                  items={locatedItems.map((item) => ({
-                    id: item.id,
-                    latitude: item.latitude,
-                    longitude: item.longitude,
-                    title: item.title,
-                    body: item.body,
-                    geometry: item.geometry,
-                    votesCount: item.votes_count ?? 0,
-                    color: item.category_id ? categoryColorById.get(item.category_id) ?? null : null,
-                  }))}
-                />
-              </div>
-            </article>
-          ) : null}
-
-
-          {nearDuplicates && nearDuplicates.groupCount > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Moderation</p>
-                  <h2 className="module-section-title">Near-duplicate comments</h2>
-                  <p className="module-section-description">
-                    Fuzzy trigram look-alikes the exact-duplicate check misses (paraphrases, typos, re-posts) — a
-                    screening aid to help collapse duplicates. Nothing is merged automatically.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <NearDuplicatesPanel analysis={nearDuplicates} snippetById={nearDuplicateSnippetById} />
-              </div>
-            </article>
-          ) : null}
-
-          {moderationQueue.queueItemCount > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Moderation</p>
-                  <h2 className="module-section-title">AI moderation assist</h2>
-                  <p className="module-section-description">
-                    A Claude pass over the review queue that flags possible toxicity, personal info, off-topic, or
-                    spam with a rationale — a triage aid. It never changes a comment&rsquo;s status; a moderator
-                    decides. Falls back to a deterministic PII/spam check when AI is offline.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <AiModerationPanel campaignId={campaign.id} queue={moderationQueue} />
-              </div>
-            </article>
-          ) : null}
-
-          {(items?.length ?? 0) > 0 && (
-            <EngagementBulkModeration
-              campaignId={campaign.id}
-              items={(items ?? []) as Array<{
-                id: string;
-                campaign_id: string;
-                category_id: string | null;
-                title: string | null;
-                status: string;
-                source_type: string;
-              }>}
-              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
-                id: c.id,
-                label: c.label,
-              }))}
-            />
-          )}
-
-          {items?.length ? (
-            <EngagementItemRegistry
-              items={(recentItems as Array<{
-                id: string;
-                campaign_id: string;
-                category_id: string | null;
-                title: string | null;
-                body: string;
-                submitted_by: string | null;
-                status: string;
-                source_type: string;
-                moderation_notes: string | null;
-                latitude: number | null;
-                longitude: number | null;
-                geometry: unknown;
-                votes_count: number | null;
-                parent_item_id: string | null;
-                updated_at: string;
-              }>).map((item) => ({
-                ...item,
-                photo_url: photoUrlByItemId.get(item.id) ?? null,
-              }))}
-              categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
-                id: category.id,
-                label: category.label,
-              }))}
-              counts={counts}
-            />
+          ) : !(categories?.length) ? (
+            <div className="mt-5">
+              <EmptyState
+                title="No categories yet"
+                description="Add a few categories so intake can be classified before downstream reports rely on it."
+                compact
+              />
+            </div>
           ) : (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Moderation</p>
-                  <h2 className="module-section-title">Recent intake registry</h2>
-                  <p className="module-section-description">
-                    {itemsUnreadable
-                      ? "The comments on this campaign could not be read, so none can be listed here."
-                      : "Create the first item to open moderation state inside this campaign."}
-                  </p>
+            <div className="mt-5 space-y-3">
+              {categorySummaries.map((category) => (
+                <div key={category.categoryId} className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone="info">{category.label}</StatusBadge>
+                        <StatusBadge tone={category.flaggedCount > 0 ? "warning" : "neutral"}>
+                          {category.count} items
+                        </StatusBadge>
+                        {category.flaggedCount > 0 ? (
+                          <StatusBadge tone="warning">{category.flaggedCount} flagged</StatusBadge>
+                        ) : null}
+                      </div>
+                      <p className="module-record-summary">
+                        {category.description || "No description yet. This category is available for classification."}
+                      </p>
+                    </div>
+                  </div>
+                  <MetaList>
+                    <MetaItem>{Math.round(category.shareOfItems * 100)}% of campaign items</MetaItem>
+                    <MetaItem>{category.pendingCount} pending</MetaItem>
+                    <MetaItem>{category.approvedCount} approved</MetaItem>
+                    <MetaItem>Last activity {fmtDateTime(category.lastActivityAt)}</MetaItem>
+                  </MetaList>
                 </div>
-              </div>
-              <div className="mt-5">
-                {itemsUnreadable ? (
-                  // NOT "No intake items yet". On a live campaign that sentence
-                  // says nobody in the community responded — the loudest false
-                  // claim this console can make, and a broken query cannot make
-                  // it.
-                  <StateBlock
-                    tone="danger"
-                    title="This campaign's comments could not be read"
-                    description="OpenPlan cannot say how much input this campaign has received. Nothing here means the campaign is empty — reload, and if it keeps failing the error is reported at the top of this page."
-                  />
-                ) : (
-                  <EmptyState
-                    title="No intake items yet"
-                    description="Add internal notes, meeting observations, or moderated public input to start the campaign record."
-                  />
-                )}
-              </div>
-            </article>
+              ))}
+
+              {uncategorizedSummary && uncategorizedSummary.count > 0 ? (
+                <div className="module-record-row">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <StatusBadge tone="warning">{uncategorizedSummary.label}</StatusBadge>
+                        <StatusBadge tone="warning">{uncategorizedSummary.count} items</StatusBadge>
+                      </div>
+                      <p className="module-record-summary">{uncategorizedSummary.description}</p>
+                    </div>
+                  </div>
+                  <MetaList>
+                    <MetaItem>{uncategorizedSummary.pendingCount} pending</MetaItem>
+                    <MetaItem>{uncategorizedSummary.flaggedCount} flagged</MetaItem>
+                    <MetaItem>Last activity {fmtDateTime(uncategorizedSummary.lastActivityAt)}</MetaItem>
+                  </MetaList>
+                </div>
+              ) : null}
+            </div>
           )}
-          {/*
-            ANALYSIS PANELS LAST IN THIS COLUMN, deliberately. Every one of
-            them is computed over responses, so before responses exist they are
-            blank space between a planner and the moderation queue. Setup and
-            moderation surfaces sit above them.
-          */}
-          {counts.statusCounts.approved > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">AI Synthesis</p>
-                  <h2 className="module-section-title">Themes and cited narrative</h2>
-                  <p className="module-section-description">
-                    Cluster the approved comments into themes with sentiment and a narrative where every
-                    sentence cites the source comments — screening-grade, not a representativeness finding.
-                    Falls back to a deterministic summary when AI is offline.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <EngagementSynthesisPanel
-                  campaignId={campaign.id}
-                  approvedItemCount={counts.statusCounts.approved}
-                  initialSynthesis={campaign.ai_synthesis_json}
-                  initialSynthesizedAt={campaign.ai_synthesized_at}
-                />
-              </div>
-            </article>
-          ) : null}
+        </article>
 
-          {(items?.length ?? 0) > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Participation Insights</p>
-                  <h2 className="module-section-title">Heatmap and spatial hotspots</h2>
-                  <p className="module-section-description">
-                    Where residents engaged, the mix of what they said, and a screening-grade test for
-                    statistically elevated clusters of negative sentiment — the spatial signal no pure
-                    comment tool surfaces. Not an inferential or representativeness finding.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                {/*
-                  The clustering radius is adjustable rather than fixed at 250 m.
-                  A single default is a claim about geographic scale, and this
-                  page serves a downtown block and a rural county equally — see
-                  `SpatialHotspotTuner`. The first render is still the server's,
-                  so this surface is complete before any JavaScript runs.
-                */}
-                <SpatialHotspotTuner
-                  campaignId={campaign.id}
-                  points={heatmapPoints}
-                  initialHotspots={hotspots}
-                  counts={counts}
-                  categories={
-                    (categories ?? []) as Array<{ id: string; label: string | null; color?: string | null }>
-                  }
-                  intake={intakeTrend}
-                />
-              </div>
-            </article>
-          ) : null}
+        <EngagementContextLayersPanel
+          campaignId={campaign.id}
+          layers={contextLayers.layers}
+          readFailure={contextLayers.readFailure}
+          canWrite={canManageContextLayers}
+        />
 
-          {surveyResults.approvedResponseCount > 0 ? (
-            <EngagementSurveyResults
-              approvedResponseCount={surveyResults.approvedResponseCount}
-              questions={surveyResults.questions}
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Offline input</p>
+              <h2 className="module-section-title">Comments that did not come through the portal</h2>
+              <p className="module-section-description">
+                The open house, the comment cards, the project inbox, the council transcript. Everything
+                this page says about the campaign is computed over the comments it holds, so input that
+                never got entered is missing from the synthesis, the representativeness reading and the
+                appendix — and it is missing in a predictable direction, because portal submissions skew
+                toward people with a device and a data plan.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5">
+            <CommentImportPanel campaignId={campaign.id} />
+          </div>
+        </article>
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Taking part another way</p>
+              <h2 className="module-section-title">If a resident cannot use the portal</h2>
+              <p className="module-section-description">
+                A map, a form and a comment feed each have people they do not work for. This is the
+                contact a resident reaches when the page is not usable for them — your agency&apos;s
+                words, not OpenPlan&apos;s, shown on the public portal in the resident&apos;s language.
+                OpenPlan makes no claim that the portal meets any accessibility standard, and this is
+                not one.
+              </p>
+            </div>
+          </div>
+          <div className="mt-5">
+            <CampaignAccessibilityEditor
+              campaignId={campaign.id}
+              portalIsLive={Boolean(campaign.share_token) && campaign.allow_public_submissions && !campaign.submissions_closed_at}
+              initial={{
+                contactLabel: campaign.accessibility_contact_label,
+                contactEmail: campaign.accessibility_contact_email,
+                contactPhone: campaign.accessibility_contact_phone,
+                alternateFormats: campaign.accessibility_alternate_formats,
+              }}
             />
-          ) : null}
+          </div>
+        </article>
 
-          {jointReadingIsPresentable(jointRepresentativeness) ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Representativeness</p>
-                  <h2 className="module-section-title">Both screenings read together (screening)</h2>
-                  <p className="module-section-description">
-                    The area-based screening infers who was reached from the tracts comments came from; the
-                    self-reported screening asks respondents directly. They can disagree, and when they do the
-                    area-based inference is the one that can be wrong about individuals. Only race / ethnicity is
-                    comparable across the two — the rest of each vocabulary has no counterpart.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <JointRepresentativenessPanel
-                  joint={jointRepresentativeness}
-                  spatialScreeningAvailable={heatmapPoints.length > 0}
-                />
-              </div>
-            </article>
-          ) : null}
-
-          {demographicsSource.state !== "not_collected" && demographicsSource.state !== "not_loaded" ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Representativeness</p>
-                  <h2 className="module-section-title">Respondent demographics (screening)</h2>
-                  <p className="module-section-description">
-                    Optional, self-reported demographics of respondents, shown only as k-anonymized aggregates. A
-                    screening cue to check whether outreach reached the whole community — not a statistical sample or a
-                    civil-rights finding.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <DemographicsPanel source={demographicsSource} />
-              </div>
-            </article>
-          ) : null}
-
-          {heatmapPoints.length > 0 ? (
-            <article className="module-section-surface">
-              <div className="module-section-header">
-                <div className="module-section-heading">
-                  <p className="module-section-label">Representativeness</p>
-                  <h2 className="module-section-title">Where engagement came from (screening)</h2>
-                  <p className="module-section-description">
-                    An ecological, area-based check: did comments come disproportionately from higher- or lower-need
-                    tracts than the study area as a whole? Inferred from geography over a self-selected sample — a cue
-                    to check outreach reach, not a statistical sample or a civil-rights finding.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5">
-                <RepresentativenessPanel campaignId={campaign.id} initialResult={campaign.representativeness_json} />
-              </div>
-            </article>
-          ) : null}
-        </div>
-      </div>
+        <CampaignTranslationsPanel
+          campaignId={campaign.id}
+          fields={translationState.fields}
+          entries={translationState.entries}
+          coverage={translationState.coverage}
+          sourceLocale={translationState.sourceLocale}
+          sourceLocaleStated={translationState.sourceLocaleStated}
+          readFailures={translationState.readFailures}
+          translationsReadable={translationState.translationsReadable}
+          inventoryComplete={translationState.inventoryComplete}
+          sourceLocaleReadable={translationState.sourceLocaleReadable}
+          machineTranslationAvailable={machineTranslationAvailable}
+          machineBatchMax={MACHINE_TRANSLATION_BATCH_MAX}
+          acceptBatchMax={TRANSLATION_ACCEPT_BATCH_MAX}
+          canWrite={canManageContextLayers}
+        />
 
       <EngagementOperatorActions
         campaign={{ ...campaign, public_slug: publicSlug }}
         projects={(projects ?? []) as Array<{ id: string; name: string }>}
         categories={builderCategories}
       />
+        </div>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="responses" active={activeTab === "responses"}>
+        <div className="mt-6 space-y-6">
+        <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />
+
+        {locatedItems.length > 0 ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Geometry Review</p>
+                <h2 className="module-section-title">Located comments on the map</h2>
+                <p className="module-section-description">
+                  Every item with a point, line, or area renders here — including pending and flagged items — so moderators can review geometry before approval.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <LocationDisplayMap
+                contextLayers={publishedContextLayers}
+                items={locatedItems.map((item) => ({
+                  id: item.id,
+                  latitude: item.latitude,
+                  longitude: item.longitude,
+                  title: item.title,
+                  body: item.body,
+                  geometry: item.geometry,
+                  votesCount: item.votes_count ?? 0,
+                  color: item.category_id ? categoryColorById.get(item.category_id) ?? null : null,
+                }))}
+              />
+            </div>
+          </article>
+        ) : null}
+
+        {nearDuplicates && nearDuplicates.groupCount > 0 ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Moderation</p>
+                <h2 className="module-section-title">Near-duplicate comments</h2>
+                <p className="module-section-description">
+                  Fuzzy trigram look-alikes the exact-duplicate check misses (paraphrases, typos, re-posts) — a
+                  screening aid to help collapse duplicates. Nothing is merged automatically.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <NearDuplicatesPanel analysis={nearDuplicates} snippetById={nearDuplicateSnippetById} />
+            </div>
+          </article>
+        ) : null}
+
+        {moderationQueue.queueItemCount > 0 ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Moderation</p>
+                <h2 className="module-section-title">AI moderation assist</h2>
+                <p className="module-section-description">
+                  A Claude pass over the review queue that flags possible toxicity, personal info, off-topic, or
+                  spam with a rationale — a triage aid. It never changes a comment&rsquo;s status; a moderator
+                  decides. Falls back to a deterministic PII/spam check when AI is offline.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <AiModerationPanel campaignId={campaign.id} queue={moderationQueue} />
+            </div>
+          </article>
+        ) : null}
+
+        {(items?.length ?? 0) > 0 && (
+          <EngagementBulkModeration
+            campaignId={campaign.id}
+            items={(items ?? []) as Array<{
+              id: string;
+              campaign_id: string;
+              category_id: string | null;
+              title: string | null;
+              status: string;
+              source_type: string;
+            }>}
+            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
+              id: c.id,
+              label: c.label,
+            }))}
+          />
+        )}
+
+        {items?.length ? (
+          <EngagementItemRegistry
+            items={(recentItems as Array<{
+              id: string;
+              campaign_id: string;
+              category_id: string | null;
+              title: string | null;
+              body: string;
+              submitted_by: string | null;
+              status: string;
+              source_type: string;
+              moderation_notes: string | null;
+              latitude: number | null;
+              longitude: number | null;
+              geometry: unknown;
+              votes_count: number | null;
+              parent_item_id: string | null;
+              updated_at: string;
+            }>).map((item) => ({
+              ...item,
+              photo_url: photoUrlByItemId.get(item.id) ?? null,
+            }))}
+            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
+              id: category.id,
+              label: category.label,
+            }))}
+            counts={counts}
+          />
+        ) : (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Moderation</p>
+                <h2 className="module-section-title">Recent intake registry</h2>
+                <p className="module-section-description">
+                  {itemsUnreadable
+                    ? "The comments on this campaign could not be read, so none can be listed here."
+                    : "Create the first item to open moderation state inside this campaign."}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              {itemsUnreadable ? (
+                // NOT "No intake items yet". On a live campaign that sentence
+                // says nobody in the community responded — the loudest false
+                // claim this console can make, and a broken query cannot make
+                // it.
+                <StateBlock
+                  tone="danger"
+                  title="This campaign's comments could not be read"
+                  description="OpenPlan cannot say how much input this campaign has received. Nothing here means the campaign is empty — reload, and if it keeps failing the error is reported at the top of this page."
+                />
+              ) : (
+                <EmptyState
+                  title="No intake items yet"
+                  description="Add internal notes, meeting observations, or moderated public input to start the campaign record."
+                />
+              )}
+            </div>
+          </article>
+        )}
+
+        {surveyResults.approvedResponseCount > 0 ? (
+          <EngagementSurveyResults
+            approvedResponseCount={surveyResults.approvedResponseCount}
+            questions={surveyResults.questions}
+          />
+        ) : null}
+        </div>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="analysis" active={activeTab === "analysis"}>
+        <div className="mt-6 space-y-6">
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <p className="module-section-label">Analytics</p>
+              <h2 className="module-section-title">Source and geography breakdown</h2>
+              <p className="module-section-description">
+                Keep the summary lightweight but decision-useful: where intake came from, how much has map signal, and what still needs triage.
+              </p>
+            </div>
+          </div>
+
+          {itemsUnreadable ? (
+            <div className="mt-5">
+              <StateBlock
+                tone="danger"
+                title="The source and geography breakdown could not be computed"
+                description="Every number in this panel comes from the campaign's comments, and that read failed. No mix is shown rather than a mix of zero."
+                compact
+              />
+            </div>
+          ) : sourceSummaries.every((source) => source.count === 0) ? (
+            <div className="mt-5">
+              <EmptyState title="No source mix yet" description="Add comments to see where input comes from and how coverage looks on the map." compact />
+            </div>
+          ) : (
+            <div className="mt-5 space-y-3">
+              {sourceSummaries
+                .filter((source) => source.count > 0)
+                .map((source) => (
+                  <div key={source.sourceType} className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone="info">{titleizeEngagementValue(source.sourceType)}</StatusBadge>
+                          <StatusBadge tone={source.flaggedCount > 0 ? "warning" : "neutral"}>{source.count} items</StatusBadge>
+                          <StatusBadge tone={source.geolocatedCount > 0 ? "success" : "neutral"}>
+                            <MapPinned className="h-3 w-3" />
+                            {source.geolocatedCount} mapped
+                          </StatusBadge>
+                        </div>
+                        <p className="module-record-summary">
+                          {fmtPercent(source.shareOfItems)} of campaign intake. {source.pendingCount} pending, {source.approvedCount} approved, {source.rejectedCount} rejected.
+                        </p>
+                      </div>
+                    </div>
+                    <MetaList>
+                      <MetaItem>{source.categorizedCount} categorized</MetaItem>
+                      <MetaItem>{source.nonGeolocatedCount} non-geolocated</MetaItem>
+                      <MetaItem>{source.flaggedCount} flagged</MetaItem>
+                      <MetaItem>Last activity {fmtDateTime(source.lastActivityAt)}</MetaItem>
+                    </MetaList>
+                  </div>
+                ))}
+            </div>
+          )}
+        </article>
+
+        {/*
+          ANALYSIS PANELS LAST IN THIS COLUMN, deliberately. Every one of
+          them is computed over responses, so before responses exist they are
+          blank space between a planner and the moderation queue. Setup and
+          moderation surfaces sit above them.
+        */}
+        {counts.statusCounts.approved > 0 ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">AI Synthesis</p>
+                <h2 className="module-section-title">Themes and cited narrative</h2>
+                <p className="module-section-description">
+                  Cluster the approved comments into themes with sentiment and a narrative where every
+                  sentence cites the source comments — screening-grade, not a representativeness finding.
+                  Falls back to a deterministic summary when AI is offline.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <EngagementSynthesisPanel
+                campaignId={campaign.id}
+                approvedItemCount={counts.statusCounts.approved}
+                initialSynthesis={campaign.ai_synthesis_json}
+                initialSynthesizedAt={campaign.ai_synthesized_at}
+              />
+            </div>
+          </article>
+        ) : null}
+
+        {(items?.length ?? 0) > 0 ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Participation Insights</p>
+                <h2 className="module-section-title">Heatmap and spatial hotspots</h2>
+                <p className="module-section-description">
+                  Where residents engaged, the mix of what they said, and a screening-grade test for
+                  statistically elevated clusters of negative sentiment — the spatial signal no pure
+                  comment tool surfaces. Not an inferential or representativeness finding.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              {/*
+                The clustering radius is adjustable rather than fixed at 250 m.
+                A single default is a claim about geographic scale, and this
+                page serves a downtown block and a rural county equally — see
+                `SpatialHotspotTuner`. The first render is still the server's,
+                so this surface is complete before any JavaScript runs.
+              */}
+              <SpatialHotspotTuner
+                campaignId={campaign.id}
+                points={heatmapPoints}
+                initialHotspots={hotspots}
+                counts={counts}
+                categories={
+                  (categories ?? []) as Array<{ id: string; label: string | null; color?: string | null }>
+                }
+                intake={intakeTrend}
+              />
+            </div>
+          </article>
+        ) : null}
+
+        {jointReadingIsPresentable(jointRepresentativeness) ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Representativeness</p>
+                <h2 className="module-section-title">Both screenings read together (screening)</h2>
+                <p className="module-section-description">
+                  The area-based screening infers who was reached from the tracts comments came from; the
+                  self-reported screening asks respondents directly. They can disagree, and when they do the
+                  area-based inference is the one that can be wrong about individuals. Only race / ethnicity is
+                  comparable across the two — the rest of each vocabulary has no counterpart.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <JointRepresentativenessPanel
+                joint={jointRepresentativeness}
+                spatialScreeningAvailable={heatmapPoints.length > 0}
+              />
+            </div>
+          </article>
+        ) : null}
+
+        {demographicsSource.state !== "not_collected" && demographicsSource.state !== "not_loaded" ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Representativeness</p>
+                <h2 className="module-section-title">Respondent demographics (screening)</h2>
+                <p className="module-section-description">
+                  Optional, self-reported demographics of respondents, shown only as k-anonymized aggregates. A
+                  screening cue to check whether outreach reached the whole community — not a statistical sample or a
+                  civil-rights finding.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <DemographicsPanel source={demographicsSource} />
+            </div>
+          </article>
+        ) : null}
+
+        {heatmapPoints.length > 0 ? (
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Representativeness</p>
+                <h2 className="module-section-title">Where engagement came from (screening)</h2>
+                <p className="module-section-description">
+                  An ecological, area-based check: did comments come disproportionately from higher- or lower-need
+                  tracts than the study area as a whole? Inferred from geography over a self-selected sample — a cue
+                  to check outreach reach, not a statistical sample or a civil-rights finding.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <RepresentativenessPanel campaignId={campaign.id} initialResult={campaign.representativeness_json} />
+            </div>
+          </article>
+        ) : null}
+        </div>
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="record" active={activeTab === "record"}>
+        <div className="mt-6 space-y-6">
+        <CampaignHandoffReadinessSection
+          handoffReadiness={handoffReadiness}
+          publicReviewCopyGuard={publicReviewCopyGuard}
+          counts={counts}
+          appendixReadiness={appendixReadiness}
+          commentMatrixPreview={commentMatrixPreview}
+          campaign={campaign}
+          project={project}
+          projectUnreadable={projectUnreadable}
+          readsIncomplete={projectUnreadable || categoriesUnreadable || itemsUnreadable}
+          itemsUnreadable={itemsUnreadable}
+          primarySource={primarySource}
+          reportCount={reportRecords.length}
+          linkedReportCount={campaignLinkedReports.length}
+          packetAttentionCount={packetAttentionCount}
+          recommendedReport={recommendedCampaignReport}
+        />
+
+        <CampaignLinkedReportsSection
+          projectUnreadable={projectUnreadable}
+          reportsUnreadable={reportsUnreadable}
+          reportSectionLinksUnreadable={reportSectionLinksUnreadable}
+          projectLinked={Boolean(project)}
+          reports={campaignLinkedReports}
+          explicitlyLinkedReportCount={explicitlyLinkedReportCount}
+          projectOnlyReportCount={projectOnlyReportCount}
+          packetAttentionCount={packetAttentionCount}
+          recommendedReport={recommendedCampaignReport}
+          latestArtifactGeneratedAtByReportId={latestArtifactGeneratedAtByReportId}
+        />
+        </div>
+      </PageTabPanel>
+
     </section>
   );
 }

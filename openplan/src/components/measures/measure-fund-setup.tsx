@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,8 @@ import {
   MEASURE_SUNSET_POSTURES,
 } from "@/lib/measures/fund";
 import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure-form-shell";
+import { AllocationRuleBuilder, draftCategorySummary } from "./allocation-rule-builder";
+import { composeMeasureRuleDraft, emptyRuleDraft, type MeasureRuleDraft } from "./allocation-rule-draft";
 
 /**
  * Setting up the fund behind a `local_measure` program, and recording what the
@@ -21,9 +23,25 @@ import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure
  *
  * NOTHING IS PREFILLED. No default currency (a `USD` default is a country
  * assumption), no default cadence, no example percentages. Every ordinance
- * slices differently and the split is DATA; the rule box takes the descriptor
- * JSON, and an ordinance the descriptor cannot express is recorded as narrative
- * text whose allocations are then entered by hand and labelled staff-entered.
+ * slices differently and the split is DATA.
+ *
+ * ============================================================================
+ * THREE WAYS TO RECORD THE SPLIT, AND WHY ALL THREE STAY
+ * ============================================================================
+ *
+ * 1. THE BUILDER, which is what a planner uses. Before it existed the only way
+ *    in was hand-written rule text, and the two clauses real measures use most —
+ *    a weighted "half by population, half by road miles" split and a minimum per
+ *    jurisdiction — were expressible by the allocator and reachable by nobody.
+ * 2. THE RULE TEXT, unchanged. The builder covers the ordinary ordinance; an
+ *    unusual one that the descriptor can still express must not be blocked
+ *    because a form has no box for it.
+ * 3. THE ORDINANCE'S OWN WORDS, for a split the descriptor cannot express at
+ *    all. Its allocations are entered by hand and labelled staff-entered
+ *    wherever they appear.
+ *
+ * Losing either escape hatch would narrow the product to the ordinances someone
+ * thought of.
  */
 
 const RULE_PLACEHOLDER = `{
@@ -49,7 +67,8 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
   const [sunsetOn, setSunsetOn] = useState("");
   const [fiscalYearNote, setFiscalYearNote] = useState("");
 
-  const [ruleMode, setRuleMode] = useState<"descriptor" | "narrative">("descriptor");
+  const [ruleMode, setRuleMode] = useState<"builder" | "descriptor" | "narrative">("builder");
+  const [ruleDraft, setRuleDraft] = useState<MeasureRuleDraft>(emptyRuleDraft);
   const [ruleText, setRuleText] = useState("");
   const [narrativeText, setNarrativeText] = useState("");
   const [effectiveFromRule, setEffectiveFromRule] = useState("");
@@ -76,6 +95,16 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
     });
   }
 
+  /*
+   * THE DRAFT, JUDGED BY THE PARSER ON EVERY KEYSTROKE.
+   *
+   * `composeMeasureRuleDraft` hands the composed rule to
+   * `parseMeasureAllocationRule`, so what the form shows and what the route will
+   * accept are the same judgement, made once. The save button is offered only
+   * when a rule came back.
+   */
+  const builderResult = useMemo(() => composeMeasureRuleDraft(ruleDraft), [ruleDraft]);
+
   async function recordRule() {
     if (!measureId) return;
     setRuleError(null);
@@ -83,6 +112,9 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
     let rule: unknown;
     if (ruleMode === "narrative") {
       rule = { version: 1, kind: "narrative", text: narrativeText };
+    } else if (ruleMode === "builder") {
+      if (!builderResult.rule) return;
+      rule = builderResult.rule;
     } else {
       try {
         rule = JSON.parse(ruleText);
@@ -109,6 +141,7 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
     if (saved) {
       setRuleText("");
       setNarrativeText("");
+      setRuleDraft(emptyRuleDraft());
     }
   }
 
@@ -257,10 +290,18 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
         <Button
           type="button"
           size="sm"
+          variant={ruleMode === "builder" ? "default" : "outline"}
+          onClick={() => setRuleMode("builder")}
+        >
+          Set out the split
+        </Button>
+        <Button
+          type="button"
+          size="sm"
           variant={ruleMode === "descriptor" ? "default" : "outline"}
           onClick={() => setRuleMode("descriptor")}
         >
-          The ordinance fits a rule
+          Write the rule out in full
         </Button>
         <Button
           type="button"
@@ -268,16 +309,22 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
           variant={ruleMode === "narrative" ? "default" : "outline"}
           onClick={() => setRuleMode("narrative")}
         >
-          It does not — record it as text
+          It does not fit a rule — record it as text
         </Button>
       </div>
 
       <div className="mt-3 grid gap-3">
-        {ruleMode === "descriptor" ? (
+        {ruleMode === "builder" ? (
+          <AllocationRuleBuilder
+            draft={ruleDraft}
+            problems={builderResult.problems}
+            onChange={setRuleDraft}
+          />
+        ) : ruleMode === "descriptor" ? (
           <MeasureField
-            label="Allocation rule"
+            label="The rule, written out in full"
             htmlFor="measure-rule"
-            hint="Category shares must add to exactly 100. Nothing is filled in for you: every ordinance slices differently."
+            hint="For an ordinance the form above cannot set out. Category shares must add to exactly 100."
           >
             <Textarea
               id="measure-rule"
@@ -326,11 +373,25 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
         </div>
       </div>
 
+      {ruleMode === "builder" && builderResult.rule ? (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Ready to record: {draftCategorySummary(ruleDraft)}.
+        </p>
+      ) : null}
+
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button
           type="button"
           onClick={recordRule}
-          disabled={state.busy || !effectiveFromRule || !adoptedNote.trim()}
+          disabled={
+            state.busy ||
+            !effectiveFromRule ||
+            !adoptedNote.trim() ||
+            // The builder offers the button only for a split the parser has
+            // already accepted, so nobody presses Record and is answered by the
+            // server with a sentence about a form they can no longer see.
+            (ruleMode === "builder" && !builderResult.rule)
+          }
         >
           {state.busy ? "Recording…" : "Record this version"}
         </Button>

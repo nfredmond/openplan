@@ -23,6 +23,9 @@ import {
   type ReportEvidenceChainDigest,
   type ReportFundingDigest,
 } from "@/lib/reports/catalog";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { PAGE_TAB_QUERY_KEY, resolvePageTab, type PageTabDefinition } from "@/lib/ui/page-tabs";
 import { formatCurrency } from "./_helpers";
 import { ReportCompositionAudit } from "./report-composition-audit";
 import { ReportNavigationPreview } from "./report-navigation-preview";
@@ -46,7 +49,23 @@ type StandardReportProvenanceProps = Omit<
   "driftActionByKey" | "comparisonDigest"
 >;
 
+/** The three tabs of a report record: the packet, what backs it, what it was. */
+export type ReportDetailTabKey = "packet" | "evidence" | "history";
+
 type ReportStandardDetailProps = {
+  /**
+   * The page's query string. The active tab is read out of it here rather than
+   * passed separately, so there is exactly one place that decides which tab a
+   * URL means and the strip's links cannot disagree with the panels.
+   */
+  searchParams?: Record<string, string | string[] | undefined>;
+  /**
+   * Reads that failed, per tab, in the planner's words. Supplied by the page,
+   * which is the only place that knows which lane fed which panel — a failure
+   * behind a closed tab is named above the tab strip so it is not mistaken for
+   * a tab nobody opened.
+   */
+  unreadableByTab?: Partial<Record<ReportDetailTabKey, readonly string[]>>;
   report: ReportRow;
   project: ReportProjectRow | null;
   workspace: { name: string | null } | null;
@@ -77,6 +96,8 @@ type ReportStandardDetailProps = {
 };
 
 export function ReportStandardDetail({
+  searchParams,
+  unreadableByTab,
   report,
   project,
   workspace,
@@ -149,6 +170,29 @@ export function ReportStandardDetail({
         }
       : null,
   };
+
+  const tabs: PageTabDefinition<ReportDetailTabKey>[] = [
+    {
+      key: "packet",
+      label: "Packet",
+      anchors: ["packet-release-review", "release-review", "report-controls", "narrative-grounding-line", "report-narrative-draft-panel"],
+      anchorPrefixes: ["detail-", "report-"],
+      unreadable: unreadableByTab?.packet ?? [],
+    },
+    {
+      key: "evidence",
+      label: "Evidence",
+      anchorPrefixes: ["artifact-"],
+      unreadable: unreadableByTab?.evidence ?? [],
+    },
+    {
+      key: "history",
+      label: "History",
+      anchors: ["drift-since-generation", "evidence-chain-summary"],
+      unreadable: unreadableByTab?.history ?? [],
+    },
+  ];
+  const activeTab = resolvePageTab(tabs, searchParams?.[PAGE_TAB_QUERY_KEY], "packet");
 
   return (
     <section className="module-page space-y-6">
@@ -279,6 +323,15 @@ export function ReportStandardDetail({
         </div>
       </header>
 
+      <PageTabNav
+        tabs={tabs}
+        activeKey={activeTab}
+        basePath={`/reports/${report.id}`}
+        searchParams={searchParams}
+        ariaLabel="Report sections"
+      />
+
+      <PageTabPanel tabKey="packet" active={activeTab === "packet"}>
       <WorkspaceCommandBoard
         summary={operationsSummary}
         label="Across your workspace"
@@ -309,18 +362,20 @@ export function ReportStandardDetail({
 
       {narrativeDraftPanelProps ? <ReportNarrativeDraftPanel {...narrativeDraftPanelProps} /> : null}
 
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <ReportCompositionAudit {...compositionAuditProps} />
+      <ReportNavigationPreview {...navigationPreviewProps} />
+      </PageTabPanel>
 
-        <div className="space-y-6">
-          <ReportProvenanceAudit
-            {...provenanceAuditProps}
-            driftActionByKey={driftActionByKey}
-            comparisonDigest={currentReportComparisonDigest}
-          />
-          <ReportNavigationPreview {...navigationPreviewProps} />
-        </div>
-      </div>
+      <PageTabPanel tabKey="evidence" active={activeTab === "evidence"}>
+      <ReportCompositionAudit {...compositionAuditProps} />
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="history" active={activeTab === "history"}>
+      <ReportProvenanceAudit
+        {...provenanceAuditProps}
+        driftActionByKey={driftActionByKey}
+        comparisonDigest={currentReportComparisonDigest}
+      />
+      </PageTabPanel>
     </section>
   );
 }

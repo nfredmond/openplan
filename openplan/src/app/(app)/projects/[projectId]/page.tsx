@@ -2,12 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
-import { ProjectStageGateBoard } from "@/components/projects/project-stage-gate-board";
 import { buildStageGateRunOptions, type StageGateEvidenceRunRow } from "./_components/_helpers";
 import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
 import {
@@ -44,6 +40,10 @@ import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION, type SafetyCrashEvidenceSupaba
 import { loadProjectRtpSafetyEvidence } from "@/lib/rtp/safety-evidence";
 import { POSTGREST_NO_ROWS_MATCHED } from "@/lib/http/write-outcome";
 import { StateBlock } from "@/components/ui/state-block";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
+import { buildProjectTabs } from "./_components/_tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
 import { loadEngagementCampaignsCoveringProject } from "@/lib/engagement/campaign-projects";
@@ -68,17 +68,15 @@ import {
   type ProjectRecordLaneSupabaseLike,
 } from "./_components/_record-lanes";
 import { ProjectUnreadableNotice } from "./_components/project-unreadable-notice";
-import { ProjectPostureHeader } from "./_components/project-posture-header";
-import { ProjectPostureUnified } from "./_components/project-posture-unified";
-import { ProjectSpineReadinessRollup } from "./_components/project-spine-readiness-rollup";
 import { ProjectBudgetPanel } from "./_components/project-budget-panel";
 import { ProjectFundingPanel } from "./_components/project-funding-panel";
 import { ProjectDeliveryBoard } from "./_components/project-delivery-board";
 import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-log";
 import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activity";
-import { ProjectSpineCrosslinkBoard } from "./_components/project-spine-crosslink-board";
+import { ProjectOverviewTab } from "./_components/project-overview-tab";
+import { ProjectInvoiceRegister } from "./_components/project-invoice-register";
+import { ProjectActivityTimeline } from "./_components/project-activity-timeline";
 import { ProjectMapPresencePanel } from "./_components/project-map-presence-panel";
-import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
 import { placeIdentityOnly } from "@/lib/geographies/place-of-record";
 import {
   CORRIDOR_COLUMNS,
@@ -117,10 +115,19 @@ import type {
 
 export default async function ProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string }>;
+  /**
+   * Optional so a caller that renders the page without a query string — Next's
+   * own prefetch, and the page's tests — still type-checks. Absent resolves to
+   * the default tab, which is the same thing an unrecognised tab does.
+   */
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { projectId } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const requestedTab = resolvedSearchParams[PAGE_TAB_QUERY_KEY];
   const supabase = await createClient();
 
   const {
@@ -1235,6 +1242,16 @@ export default async function ProjectDetailPage({
     ? null
     : issues.filter((issue) => issue.status !== "resolved").length;
 
+  const projectTabs = buildProjectTabs({
+    overview: { reports: projectReportLane.failed, stageGates: stageGateSummary.decisionsRead.readable === false },
+    delivery: { milestones: projectMilestonesReadFailed, submittals: projectSubmittalsReadFailed },
+    funding: { profile: projectFundingProfileReadFailed, awards: fundingAwardsReadFailed, opportunities: fundingOpportunitiesReadFailed, invoices: projectInvoicesReadFailed },
+    evidence: { datasets: datasetLinkLane.failed, runs: recentRunLane.failed, aerial: Boolean(aerialUnreadableReason) },
+    record: { risks: risksReadFailed, issues: issuesReadFailed, decisions: decisionsReadFailed, meetings: meetingsReadFailed },
+  });
+
+  const activeTab = resolvePageTab(projectTabs, requestedTab, "overview");
+
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
@@ -1254,209 +1271,198 @@ export default async function ProjectDetailPage({
         />
       ) : null}
 
-      <ProjectPostureHeader
-        project={project}
-        workspaceData={workspaceData}
-        stageGateBinding={stageGateBinding}
-        projectControlsSummary={projectControlsSummary}
-        linkedRtpCycleCount={linkedRtpCycleCount}
-        constrainedRtpLinkCount={constrainedRtpLinkCount}
-        illustrativeRtpLinkCount={illustrativeRtpLinkCount}
-        candidateRtpLinkCount={candidateRtpLinkCount}
-        projectRtpLinksPending={projectRtpLinksPending}
-        workspaceRtpCycles={workspaceRtpCycles}
-        existingRtpLinks={existingRtpLinks}
-        availableModelRuns={availableModelRuns}
-        rtpSafetyEvidence={rtpSafetyEvidence}
-        rtpPriorityCriteria={resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria}
-        canWriteProjects={canAccessWorkspaceAction("plans.write", membership.role)}
-        deliverableCount={budgetInputs.deliverables.length}
-        openRiskCount={openRiskCount}
-        openIssueCount={openIssueCount}
-        kbDocumentCount={documentsLane.kbCount}
-        reportRecordCount={reportRecordCount}
-        reportAttentionCount={reportAttentionCount}
-        evidenceBackedReportCount={evidenceBackedReportCount}
-        refreshRecommendedReportCount={refreshRecommendedReportCount}
-        governanceHoldReportCount={governanceHoldReportCount}
-        comparisonBackedReportCount={comparisonBackedReportCount}
-        projectReports={projectReports}
-        projectReportQueueItems={projectReportQueueItems}
-        recommendedReport={recommendedReport}
-        projectGrantModelingEvidence={projectGrantModelingEvidence}
-        projectGrantModelingReadiness={projectGrantModelingReadiness}
-        projectGrantModelingSupport={projectGrantModelingSupport}
-      />
+      <PageTabNav tabs={projectTabs} activeKey={activeTab} basePath={`/projects/${project.id}`} searchParams={resolvedSearchParams} ariaLabel="Project sections" />
 
-      <ProjectPostureUnified
-        rtpPosture={project.rtp_posture}
-        rtpPostureUpdatedAt={project.rtp_posture_updated_at}
-        aerialPosture={aerialCachedPosture}
-        aerialPostureUpdatedAt={aerialCachedPostureUpdatedAt}
-      />
-
-      <ProjectSpineCrosslinkBoard summary={projectSpineCrosslinkSummary} />
-      <ProjectSpineReadinessRollup rollup={projectSpineReadiness} />
-
-      <PilotWorkflowHandoff
-        currentStep="context"
-        projectId={project.id}
-        title="Continue this pilot story"
-        description={`${project.name} is the context anchor. Move next into analysis evidence, engagement signal, packet assembly, and readiness proof without losing the project thread.`}
-      />
-
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="space-y-6">
-          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} />
-          <WorkspaceRuntimeCue summary={operationsSummary} />
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description={`Workspace priorities — packet, funding-window, and setup pressure — stay visible while you work on ${project.name}. Use this board to keep the project aligned with the rest of the workspace.`}
-          />
-        </div>
-
-        <ProjectStageGateBoard
+      <PageTabPanel tabKey="overview" active={activeTab === "overview"}>
+        <ProjectOverviewTab
+          postureHeader={{
+            project,
+            workspaceData,
+            stageGateBinding,
+            projectControlsSummary,
+            linkedRtpCycleCount,
+            constrainedRtpLinkCount,
+            illustrativeRtpLinkCount,
+            candidateRtpLinkCount,
+            projectRtpLinksPending,
+            workspaceRtpCycles,
+            existingRtpLinks,
+            availableModelRuns,
+            rtpSafetyEvidence,
+            rtpPriorityCriteria: resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria,
+            canWriteProjects: canAccessWorkspaceAction("plans.write", membership.role),
+            deliverableCount: budgetInputs.deliverables.length,
+            openRiskCount,
+            openIssueCount,
+            kbDocumentCount: documentsLane.kbCount,
+            reportRecordCount,
+            reportAttentionCount,
+            evidenceBackedReportCount,
+            refreshRecommendedReportCount,
+            governanceHoldReportCount,
+            comparisonBackedReportCount,
+            projectReports,
+            projectReportQueueItems,
+            recommendedReport,
+            projectGrantModelingEvidence,
+            projectGrantModelingReadiness,
+            projectGrantModelingSupport,
+          }}
+          aerialCachedPosture={aerialCachedPosture}
+          aerialCachedPostureUpdatedAt={aerialCachedPostureUpdatedAt}
+          spineSummary={projectSpineCrosslinkSummary}
+          spineRollup={projectSpineReadiness}
+          operationsSummary={operationsSummary}
           stageGateSummary={stageGateSummary}
-          workspaceId={project.workspace_id}
-          projectId={project.id}
+          stageGateRunOptions={buildStageGateRunOptions(availableRunRows, recentRuns)}
           canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", membership.role)}
-          runOptions={buildStageGateRunOptions(availableRunRows, recentRuns)}
+          identity={{
+            id: project.id,
+            name: project.name,
+            summary: project.summary ?? null,
+            status: project.status,
+            planType: project.plan_type,
+            deliveryPhase: project.delivery_phase,
+            place: placeIdentityOnly(projectPlaceOfRecord),
+          }}
+          canWriteIdentity={!isReadOnlyWorkspaceRole(membership.role)}
+          workspaceHomeGeographyLabel={workspaceHomeGeographyLabel ?? ""}
         />
-      </div>
+      </PageTabPanel>
 
-      <ProjectIdentityEditor
-        project={{
-          id: project.id,
-          name: project.name,
-          summary: project.summary ?? null,
-          status: project.status,
-          planType: project.plan_type,
-          deliveryPhase: project.delivery_phase,
-          place: placeIdentityOnly(projectPlaceOfRecord),
-        }}
-        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
-        workspaceHomeLabel={workspaceHomeGeographyLabel}
-      />
+      <PageTabPanel tabKey="delivery" active={activeTab === "delivery"}>
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} />
 
-      <ProjectMapPresencePanel
-        projectId={project.id}
-        latitude={project.latitude}
-        longitude={project.longitude}
-        corridors={projectCorridors}
-        corridorsPending={projectCorridorsPending}
-        {...(projectMapHomeView ? { homeCenter: projectMapHomeView.center, homeZoom: projectMapHomeView.zoom } : {})}
-        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
-      />
+          <ProjectDeliveryBoard
+            project={project}
+            projectControlsSummary={projectControlsSummary}
+            invoiceSummary={invoiceSummary}
+            recommendedReport={recommendedReport}
+            firstBlockedMilestone={firstBlockedMilestone}
+            firstOverdueMilestone={firstOverdueMilestone}
+            firstOverdueSubmittal={firstOverdueSubmittal}
+            firstOverdueInvoice={firstOverdueInvoice}
+            projectMilestonesPending={projectMilestonesPending}
+            milestones={milestones}
+            milestonesReadFailed={projectMilestonesReadFailed}
+            prioritizedMilestones={prioritizedMilestones}
+            projectSubmittalsPending={projectSubmittalsPending}
+            submittals={submittals}
+            submittalsReadFailed={projectSubmittalsReadFailed}
+            prioritizedSubmittals={prioritizedSubmittals}
+            invoicesReadFailed={projectInvoicesReadFailed}
+            deliverables={deliverables}
+            budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
+            assigneeRoster={assigneeRoster}
+            deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
+            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+          />
+      </PageTabPanel>
 
-      <ProjectFundingPanel
-        projectId={project.id}
-        workspaceId={project.workspace_id}
-        canWriteAwards={canAccessWorkspaceAction("programs.write", membership.role)}
-        projectFundingProfile={projectFundingProfile}
-        projectFundingProfilePending={projectFundingProfilePending}
-        fundingAwardsPending={fundingAwardsPending}
-        fundingAwardsReadFailed={fundingAwardsReadFailed}
-        fundingOpportunitiesPending={fundingOpportunitiesPending}
-        fundingAwards={fundingAwards}
-        fundingOpportunities={fundingOpportunities}
-        fundingOpportunitiesReadFailed={fundingOpportunitiesReadFailed}
-        fundingStackSummary={fundingStackSummary}
-        fundingNeedAmount={fundingNeedAmount}
-        committedFundingAmount={committedFundingAmount}
-        committedMatchAmount={committedMatchAmount}
-        likelyFundingAmount={likelyFundingAmount}
-        remainingFundingGap={remainingFundingGap}
-        awardWatchCount={awardWatchCount}
-        nextObligationAward={nextObligationAward}
-        pursueFundingCount={pursueFundingCount}
-        monitorFundingCount={monitorFundingCount}
-        skipFundingCount={skipFundingCount}
-        pursuedFundingAmount={pursuedFundingAmount}
-        openFundingCount={openFundingCount}
-        invoiceSummaryByFundingAwardId={invoiceSummaryByFundingAwardId}
-        invoiceRecordsByFundingAwardId={invoiceRecordsByFundingAwardId}
-        unlinkedProjectInvoices={unlinkedProjectInvoices}
-        unlinkedProjectInvoiceSummary={unlinkedProjectInvoiceSummary}
-        comparisonBackedFundingReport={comparisonBackedFundingReport}
-      />
+      <PageTabPanel tabKey="funding" active={activeTab === "funding"}>
+          <ProjectFundingPanel
+            projectId={project.id}
+            workspaceId={project.workspace_id}
+            canWriteAwards={canAccessWorkspaceAction("programs.write", membership.role)}
+            projectFundingProfile={projectFundingProfile}
+            projectFundingProfilePending={projectFundingProfilePending}
+            fundingAwardsPending={fundingAwardsPending}
+            fundingAwardsReadFailed={fundingAwardsReadFailed}
+            fundingOpportunitiesPending={fundingOpportunitiesPending}
+            fundingAwards={fundingAwards}
+            fundingOpportunities={fundingOpportunities}
+            fundingOpportunitiesReadFailed={fundingOpportunitiesReadFailed}
+            fundingStackSummary={fundingStackSummary}
+            fundingNeedAmount={fundingNeedAmount}
+            committedFundingAmount={committedFundingAmount}
+            committedMatchAmount={committedMatchAmount}
+            likelyFundingAmount={likelyFundingAmount}
+            remainingFundingGap={remainingFundingGap}
+            awardWatchCount={awardWatchCount}
+            nextObligationAward={nextObligationAward}
+            pursueFundingCount={pursueFundingCount}
+            monitorFundingCount={monitorFundingCount}
+            skipFundingCount={skipFundingCount}
+            pursuedFundingAmount={pursuedFundingAmount}
+            openFundingCount={openFundingCount}
+            invoiceSummaryByFundingAwardId={invoiceSummaryByFundingAwardId}
+            invoiceRecordsByFundingAwardId={invoiceRecordsByFundingAwardId}
+            unlinkedProjectInvoices={unlinkedProjectInvoices}
+            unlinkedProjectInvoiceSummary={unlinkedProjectInvoiceSummary}
+            comparisonBackedFundingReport={comparisonBackedFundingReport}
+          />
 
-      <ProjectDeliveryBoard
-        project={project}
-        projectControlsSummary={projectControlsSummary}
-        invoiceSummary={invoiceSummary}
-        recommendedReport={recommendedReport}
-        firstBlockedMilestone={firstBlockedMilestone}
-        firstOverdueMilestone={firstOverdueMilestone}
-        firstOverdueSubmittal={firstOverdueSubmittal}
-        firstOverdueInvoice={firstOverdueInvoice}
-        projectMilestonesPending={projectMilestonesPending}
-        milestones={milestones}
-        milestonesReadFailed={projectMilestonesReadFailed}
-        prioritizedMilestones={prioritizedMilestones}
-        projectSubmittalsPending={projectSubmittalsPending}
-        submittals={submittals}
-        submittalsReadFailed={projectSubmittalsReadFailed}
-        prioritizedSubmittals={prioritizedSubmittals}
-        projectInvoicesPending={projectInvoicesPending}
-        projectInvoices={projectInvoices}
-        invoicesReadFailed={projectInvoicesReadFailed}
-        prioritizedProjectInvoices={prioritizedProjectInvoices}
-        deliverables={deliverables}
-        budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
-        assigneeRoster={assigneeRoster}
-        deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
-        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
-      />
+          <ProjectInvoiceRegister
+            invoiceSummary={invoiceSummary}
+            projectInvoicesPending={projectInvoicesPending}
+            projectInvoices={projectInvoices}
+            invoicesReadFailed={projectInvoicesReadFailed}
+            prioritizedProjectInvoices={prioritizedProjectInvoices}
+          />
 
-      <ProjectBudgetPanel
-        projectId={project.id}
-        snapshot={projectBudgetSnapshot}
-        pendingSchema={{
-          deliverableBudgetColumns: budgetInputs.pending.deliverableBudgetColumns,
-          spendEntries: budgetInputs.pending.spendEntries,
-          clientInvoices: budgetInputs.pending.clientInvoices,
-        }}
-        deliverableOptions={budgetInputs.deliverables.map((deliverable) => ({
-          id: deliverable.id,
-          title: deliverable.title,
-        }))}
-      />
+          <ProjectBudgetPanel
+            projectId={project.id}
+            snapshot={projectBudgetSnapshot}
+            pendingSchema={{
+              deliverableBudgetColumns: budgetInputs.pending.deliverableBudgetColumns,
+              spendEntries: budgetInputs.pending.spendEntries,
+              clientInvoices: budgetInputs.pending.clientInvoices,
+            }}
+            deliverableOptions={budgetInputs.deliverables.map((deliverable) => ({
+              id: deliverable.id,
+              title: deliverable.title,
+            }))}
+          />
+      </PageTabPanel>
 
-      <ProjectRiskAndDecisionLog
-        projectId={project.id}
-        workspaceId={project.workspace_id}
-        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
-        risks={risks}
-        issues={issues}
-        decisions={decisions}
-        meetings={meetings}
-        risksReadFailed={risksReadFailed}
-        issuesReadFailed={issuesReadFailed}
-        decisionsReadFailed={decisionsReadFailed}
-        meetingsReadFailed={meetingsReadFailed}
-        assigneeRoster={assigneeRoster}
-      />
+      <PageTabPanel tabKey="evidence" active={activeTab === "evidence"}>
+          <ProjectMapPresencePanel
+            projectId={project.id}
+            latitude={project.latitude}
+            longitude={project.longitude}
+            corridors={projectCorridors}
+            corridorsPending={projectCorridorsPending}
+            {...(projectMapHomeView ? { homeCenter: projectMapHomeView.center, homeZoom: projectMapHomeView.zoom } : {})}
+            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+          />
 
-      <ProjectEvidenceAndActivity
-        dataHubMigrationPending={dataHubMigrationPending}
-        linkedDatasets={linkedDatasets}
-        linkedDatasetsReadFailed={datasetLinkLane.failed}
-        recentRuns={recentRuns}
-        recentRunsReadFailed={recentRunLane.failed}
-        aerialProjectPosture={aerialProjectPosture}
-        aerialProjectPostureDetail={aerialProjectPostureDetail}
-        aerialMissions={aerialMissions}
-        aerialPackages={aerialPackages}
-        aerialReadFailed={Boolean(aerialUnreadableReason)}
-        aerialSchemaPending={aerialEvidencePending}
-        projectId={project.id}
-        projectPlaceLabel={project.place_label ?? null}
-        timelineItems={timelineItems}
-      />
+          <ProjectEvidenceAndActivity
+            dataHubMigrationPending={dataHubMigrationPending}
+            linkedDatasets={linkedDatasets}
+            linkedDatasetsReadFailed={datasetLinkLane.failed}
+            recentRuns={recentRuns}
+            recentRunsReadFailed={recentRunLane.failed}
+            aerialProjectPosture={aerialProjectPosture}
+            aerialProjectPostureDetail={aerialProjectPostureDetail}
+            aerialMissions={aerialMissions}
+            aerialPackages={aerialPackages}
+            aerialReadFailed={Boolean(aerialUnreadableReason)}
+            aerialSchemaPending={aerialEvidencePending}
+            projectId={project.id}
+            projectPlaceLabel={project.place_label ?? null}
+          />
 
-      <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} />
+          <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} />
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="record" active={activeTab === "record"}>
+          <ProjectRiskAndDecisionLog
+            projectId={project.id}
+            workspaceId={project.workspace_id}
+            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            risks={risks}
+            issues={issues}
+            decisions={decisions}
+            meetings={meetings}
+            risksReadFailed={risksReadFailed}
+            issuesReadFailed={issuesReadFailed}
+            decisionsReadFailed={decisionsReadFailed}
+            meetingsReadFailed={meetingsReadFailed}
+            assigneeRoster={assigneeRoster}
+          />
+
+          <ProjectActivityTimeline timelineItems={timelineItems} />
+      </PageTabPanel>
     </section>
   );
 }
