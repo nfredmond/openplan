@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
-import { ENGAGEMENT_GEOMETRY_MAX_VERTICES, type EngagementGeometry } from "@/lib/engagement/geometry";
+import type { EngagementGeometry } from "@/lib/engagement/geometry";
 /*
   THE GEOMETRY RULES ARE SHARED, NOT COPIED. `draw-state.ts` holds the pure
   vertex/preview/derive logic this picker and the full-screen participant map
@@ -37,35 +37,119 @@ const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
 );
 
-const MODE_OPTIONS: Array<{ id: EngagementDrawMode; label: string }> = [
-  { id: "point", label: "Point" },
-  { id: "line", label: "Line" },
-  { id: "area", label: "Area" },
-];
-
 const CLOSE_RING_PIXEL_TOLERANCE = 12;
 const KEYBOARD_PAN_STEP_PX = 64;
 
-function statusCaption(state: DrawState): string {
+/**
+ * EVERY WORD THIS MAP SAYS, so that none of them is a literal inside it.
+ *
+ * ═══ THE DEFECT THIS CLOSES ═══
+ *
+ * This picker is the drawing map on `/engage/<token>/about` and inside `/embed`
+ * — both PUBLIC surfaces, both of which declare the resident's language on their
+ * own wrapper — and every sentence it produced was an English literal written in
+ * a surveyor's vocabulary: "Click the map or press Enter to drop a pin at the
+ * crosshair", "2 vertices · line ready", "Vertex limit reached". Three separate
+ * problems in one string: English inside a Spanish page, a mouse verb on a
+ * surface most people reach by phone, and "vertex" — a word for the corner of a
+ * shape that nobody outside a GIS office uses.
+ *
+ * ═══ WHY ENGLISH DEFAULTS STILL LIVE HERE ═══
+ *
+ * The operator console mounts this same component (the study-area picker, the
+ * project map) with no portal locale anywhere in scope, and importing the
+ * message catalog into this client component would ship EVERY locale's strings
+ * to a resident's phone in order to render one — the exact thing `translator.ts`
+ * exists to prevent. So the English lives here, the participant surfaces pass
+ * the catalog's words in through `words`, and
+ * `src/test/public-engagement-drawing-map-words.test.tsx` fails if the two ever
+ * come to say different things.
+ *
+ * A `{count}` arrives already formatted for the reader's locale.
+ */
+export type GeometryPickerWords = {
+  modeGroupLabel: string;
+  /** What kind of widget this is, for a screen reader. Not a question. */
+  roleDescription: string;
+  modePoint: string;
+  modeLine: string;
+  modeArea: string;
+  finishArea: string;
+  undoLast: string;
+  startOver: string;
+  hintPoint: string;
+  hintPointPlaced: string;
+  hintLine: string;
+  hintLineStarted: string;
+  hintLineMany: (count: string) => string;
+  hintArea: string;
+  hintAreaFew: (count: string) => string;
+  hintAreaReady: (count: string) => string;
+  hintAreaClosed: (count: string) => string;
+  needThreePoints: string;
+  vertexLimit: string;
+  pointPlaced: string;
+  vertexAdded: string;
+  areaAlreadyClosed: string;
+  startedOver: string;
+  undone: string;
+  mapLabel: string;
+  pointerHelp: string;
+  keyboardHelp: string;
+  mapUnavailable: string;
+};
+
+export const EN_GEOMETRY_PICKER_WORDS: GeometryPickerWords = {
+  modeGroupLabel: "What are you marking?",
+  roleDescription: "Map you can draw on",
+  modePoint: "A spot",
+  modeLine: "A street or path",
+  modeArea: "An area",
+  finishArea: "Finish the area",
+  undoLast: "Undo the last point",
+  startOver: "Start over",
+  hintPoint: "Tap the map to mark the place you mean.",
+  hintPointPlaced: "Marked. Tap somewhere else to move it.",
+  hintLine: "Tap the map to draw along a street or path.",
+  hintLineStarted: "One point so far. Tap again to keep going.",
+  hintLineMany: (count) => `${count} points so far. Keep tapping to make the line longer.`,
+  hintArea: "Tap the map to start outlining an area.",
+  hintAreaFew: (count) => `${count} so far. An area needs at least three points.`,
+  hintAreaReady: (count) => `${count} points. Tap the first one again to finish the area.`,
+  hintAreaClosed: (count) => `Area finished, with ${count} points.`,
+  needThreePoints: "Add at least three points before you finish the area.",
+  vertexLimit: "That is as many points as one shape can have.",
+  pointPlaced: "Marked. Press Enter again to move it somewhere else.",
+  vertexAdded: "Point added to your shape.",
+  areaAlreadyClosed: "This area is finished. Start over to draw a different one.",
+  startedOver: "Starting over. What you drew has been removed.",
+  undone: "Last point removed.",
+  mapLabel: "Map of this project. Mark the place you mean.",
+  pointerHelp: "Tap or click the map to add a point. Right-click removes the last one.",
+  keyboardHelp:
+    "Use the arrow keys to move the map and the plus and minus keys to zoom. Press Enter to mark the spot in the middle of the map. Press Backspace to undo the last mark. Press C to finish an area. Press Escape to start over.",
+  mapUnavailable:
+    "You can still tell us what you think. Answer the questions below, and describe the place in your own words.",
+};
+
+function statusCaption(state: DrawState, words: GeometryPickerWords): string {
+  const count = String(state.vertices.length);
+
   if (state.mode === "point") {
-    return state.vertices.length === 0
-      ? "Click the map or press Enter to drop a pin at the crosshair."
-      : "Pin placed. Click or press Enter again to move it.";
+    return state.vertices.length === 0 ? words.hintPoint : words.hintPointPlaced;
   }
 
   if (state.mode === "line") {
-    if (state.vertices.length === 0) return "Click the map or press Enter to start a line along a street or route.";
-    if (state.vertices.length === 1) return "1 vertex · click or press Enter to extend the line";
-    return `${state.vertices.length} vertices · line ready (keep adding to extend)`;
+    if (state.vertices.length === 0) return words.hintLine;
+    if (state.vertices.length === 1) return words.hintLineStarted;
+    return words.hintLineMany(count);
   }
 
-  if (state.areaClosed) return `Area closed (${state.vertices.length} vertices).`;
-  if (state.vertices.length === 0) return "Click the map or press Enter to outline an area.";
-  if (state.vertices.length < 3) return `${state.vertices.length} vertex${state.vertices.length === 1 ? "" : "es"} · add at least 3, then close the area`;
-  return `${state.vertices.length} vertices · click the first vertex or press C to close the area`;
+  if (state.areaClosed) return words.hintAreaClosed(count);
+  if (state.vertices.length === 0) return words.hintArea;
+  if (state.vertices.length < 3) return words.hintAreaFew(count);
+  return words.hintAreaReady(count);
 }
-
-const LIMIT_MESSAGE = `Vertex limit reached (${ENGAGEMENT_GEOMETRY_MAX_VERTICES}). Close or clear the shape.`;
 
 /**
  * Geometry picker for the public engagement submission form. House pattern from
@@ -92,6 +176,8 @@ export function GeometryPickerMap({
   initialCenter = CONTINENTAL_US_CENTER,
   initialZoom = 3.5,
   contextLayers = null,
+  words = EN_GEOMETRY_PICKER_WORDS,
+  lang,
 }: {
   onGeometryChange: (geometry: EngagementGeometry | null) => void;
   /** Starting draw mode (default "point" for the engagement submission form). */
@@ -108,11 +194,30 @@ export function GeometryPickerMap({
    * exactly as it did before: a basemap and nothing else.
    */
   contextLayers?: ParticipantContextLayerSet | null;
+  /**
+   * What this map says, in the reader's language. Omitted by the operator
+   * console, which has no portal locale; passed by the participant surfaces from
+   * the message catalog. See `GeometryPickerWords`.
+   */
+  words?: GeometryPickerWords;
+  /**
+   * BCP-47 tag of the words above, stamped on every element that renders one.
+   * Omitted with the English defaults, because an element declaring a language
+   * it is not written in is the failure the participant i18n seam exists to
+   * prevent — and an unstamped element correctly inherits whatever the page
+   * already declares.
+   */
+  lang?: string;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [draw, setDraw] = useState<DrawState>({ mode: initialMode, vertices: [], areaClosed: false });
-  const visibleModes = MODE_OPTIONS.filter((option) => allowedModes.includes(option.id));
+  const modeOptions: Array<{ id: EngagementDrawMode; label: string }> = [
+    { id: "point", label: words.modePoint },
+    { id: "line", label: words.modeLine },
+    { id: "area", label: words.modeArea },
+  ];
+  const visibleModes = modeOptions.filter((option) => allowedModes.includes(option.id));
   const [hint, setHint] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -149,22 +254,17 @@ export function GeometryPickerMap({
     setHint(null);
     const { outcome } = appendVertex(drawRef.current, coord);
     if (outcome === "closed-locked") {
-      setHint("Area is closed. Clear it to draw a different shape.");
-      announce("Area is already closed. Clear it to draw a different shape.");
+      setHint(words.areaAlreadyClosed);
+      announce(words.areaAlreadyClosed);
       return;
     }
     if (outcome === "limit") {
-      setHint(LIMIT_MESSAGE);
-      announce(LIMIT_MESSAGE);
+      setHint(words.vertexLimit);
+      announce(words.vertexLimit);
       return;
     }
-    const before = drawRef.current.vertices.length;
     applyDraw((previous) => appendVertex(previous, coord).next);
-    announce(
-      outcome === "placed"
-        ? "Point placed at the map center."
-        : `Vertex ${before + 1} added${drawRef.current.mode === "point" ? "" : " at the map center"}.`
-    );
+    announce(outcome === "placed" ? words.pointPlaced : words.vertexAdded);
   };
 
   useEffect(() => {
@@ -244,7 +344,7 @@ export function GeometryPickerMap({
         if (distance <= CLOSE_RING_PIXEL_TOLERANCE) {
           setHint(null);
           applyDraw((previous) => ({ ...previous, areaClosed: true }));
-          announce(`Area closed with ${current.vertices.length} vertices.`);
+          announce(words.hintAreaClosed(String(current.vertices.length)));
           return;
         }
       }
@@ -257,11 +357,11 @@ export function GeometryPickerMap({
       const current = drawRef.current;
       if (current.mode === "area") {
         if (current.vertices.length < 3) {
-          setHint("Add at least 3 vertices before closing the area.");
+          setHint(words.needThreePoints);
           return;
         }
         applyDraw((previous) => ({ ...previous, areaClosed: true }));
-        announce(`Area closed with ${current.vertices.length} vertices.`);
+        announce(words.hintAreaClosed(String(current.vertices.length)));
       }
     });
 
@@ -323,14 +423,14 @@ export function GeometryPickerMap({
     if (mode === draw.mode) return;
     setHint(null);
     applyDraw(() => ({ mode, vertices: [], areaClosed: false }));
-    announce(`${mode.charAt(0).toUpperCase()}${mode.slice(1)} mode. Existing shape cleared.`);
+    announce(words.startedOver);
   };
 
   const clear = () => {
     setHint(null);
     if (drawRef.current.vertices.length === 0) return;
     applyDraw((previous) => ({ ...previous, vertices: [], areaClosed: false }));
-    announce("Shape cleared.");
+    announce(words.startedOver);
   };
 
   const undo = () => {
@@ -341,18 +441,18 @@ export function GeometryPickerMap({
       vertices: previous.vertices.slice(0, -1),
       areaClosed: false,
     }));
-    announce("Last vertex removed.");
+    announce(words.undone);
   };
 
   const closeArea = () => {
     if (drawRef.current.mode !== "area") return;
     if (drawRef.current.vertices.length < 3) {
-      setHint("Add at least 3 vertices before closing the area.");
-      announce("Add at least 3 vertices before closing the area.");
+      setHint(words.needThreePoints);
+      announce(words.needThreePoints);
       return;
     }
     applyDraw((previous) => ({ ...previous, areaClosed: true }));
-    announce(`Area closed with ${drawRef.current.vertices.length} vertices.`);
+    announce(words.hintAreaClosed(String(drawRef.current.vertices.length)));
   };
 
   const handleMapKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -421,20 +521,32 @@ export function GeometryPickerMap({
   };
 
   if (!MAPBOX_ACCESS_TOKEN) {
+    /*
+      NO MAP. What a member of the public needs here is what they can still do;
+      WHY it cannot be drawn is an unset access token, which is an operator's
+      problem and belongs nowhere near a resident's screen. The old sentence
+      ("Map is unavailable because Mapbox access token is missing.") named a
+      product a resident has never heard of and an environment variable they
+      cannot set.
+    */
     return (
-      <div className="flex h-[200px] w-full flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 text-sm text-muted-foreground p-4 text-center">
-        Map is unavailable because Mapbox access token is missing.
+      <div
+        data-testid="geometry-picker-map-unavailable"
+        lang={lang}
+        className="flex h-[200px] w-full flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 text-sm text-muted-foreground p-4 text-center"
+      >
+        {words.mapUnavailable}
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" lang={lang}>
       <div className="flex flex-wrap items-center gap-2">
         <div
           className="inline-flex overflow-hidden rounded-lg border border-border"
           role="group"
-          aria-label="Drawing mode"
+          aria-label={words.modeGroupLabel}
           hidden={visibleModes.length <= 1}
         >
           {visibleModes.map((option) => (
@@ -456,17 +568,17 @@ export function GeometryPickerMap({
         </div>
 
         {draw.mode === "area" && !draw.areaClosed && draw.vertices.length >= 3 ? (
-          <button type="button" onClick={closeArea} className="text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            Close area
+          <button type="button" onClick={closeArea} className="min-h-11 text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {words.finishArea}
           </button>
         ) : null}
         {draw.vertices.length > 0 ? (
           <>
-            <button type="button" onClick={undo} className="text-xs font-medium text-muted-foreground hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              Undo vertex
+            <button type="button" onClick={undo} className="min-h-11 text-xs font-medium text-muted-foreground hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {words.undoLast}
             </button>
-            <button type="button" onClick={clear} className="text-xs font-medium text-destructive hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              Clear
+            <button type="button" onClick={clear} className="min-h-11 text-xs font-medium text-destructive hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {words.startOver}
             </button>
           </>
         ) : null}
@@ -477,8 +589,8 @@ export function GeometryPickerMap({
           ref={mapContainerRef}
           role="application"
           tabIndex={0}
-          aria-roledescription="Interactive drawing map"
-          aria-label={`Drawing map, ${draw.mode} mode`}
+          aria-roledescription={words.roleDescription}
+          aria-label={words.mapLabel}
           aria-describedby={instructionsId}
           onKeyDown={handleMapKeyDown}
           onFocus={() => setIsFocused(true)}
@@ -493,15 +605,13 @@ export function GeometryPickerMap({
           </div>
         ) : null}
         <div className="absolute bottom-3 left-3 max-w-[55%] rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
-          <span className="text-muted-foreground">{hint ?? statusCaption(draw)}</span>
+          <span className="text-muted-foreground">{hint ?? statusCaption(draw, words)}</span>
         </div>
         <ParticipantMapLegend contextLayers={contextLayers} />
       </div>
 
       <p id={instructionsId} className="text-xs text-muted-foreground">
-        Mouse: click to add points; right-click removes the last vertex. Keyboard: focus the map, use arrow
-        keys to pan and +/− to zoom, Enter to place a vertex at the center crosshair, Backspace to remove the
-        last, {ENGAGEMENT_GEOMETRY_MAX_VERTICES}-vertex max. In area mode, press C to close the shape. Escape clears.
+        {words.pointerHelp} {words.keyboardHelp}
       </p>
 
       <div aria-live="polite" role="status" className="sr-only">

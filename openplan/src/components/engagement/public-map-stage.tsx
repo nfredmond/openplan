@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ import {
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import type { PortalTranslator } from "@/lib/engagement/portal-i18n/translator";
+import { translatePublicBasemapChoices } from "@/lib/engagement/portal-i18n/basemap-words";
 import type { PublicBasemapChoice, PublicBasemapId } from "@/lib/cartographic/basemaps";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { PublicMapPickers } from "./public-map-pickers";
@@ -286,6 +287,12 @@ export function PublicMapStage({
   */
   const selectedStyleUrl =
     (basemapChoices.find((choice) => choice.id === selectedBasemapId) ?? basemapChoices[0])?.styleUrl ?? null;
+
+  /** The same backgrounds with the picker's words in the participant's language. */
+  const translatedBasemapChoices = useMemo(
+    () => translatePublicBasemapChoices(basemapChoices, translator),
+    [basemapChoices, translator]
+  );
 
   // Handlers registered once on the map instance read the live values through
   // refs; re-registering them on every render would double-handle every click.
@@ -899,7 +906,17 @@ export function PublicMapStage({
           contextLayers={contextLayers}
           visibleLayerIds={visibleLayerIds}
           onVisibleLayerIdsChange={onVisibleLayerIdsChange}
-          basemapChoices={basemapChoices}
+          /*
+            THE BACKGROUNDS, NAMED IN THE RESIDENT'S LANGUAGE. The registry's own
+            `label`/`description` are English literals — it is server
+            configuration and cannot reach the participant catalog — so the
+            picker used to render its heading translated and every option inside
+            it in English. `translatePublicBasemapChoices` copies the words
+            across and leaves `id`, `styleUrl` and `dark` exactly as they were,
+            which is why the style lookup above still reads the untranslated
+            `basemapChoices`.
+          */
+          basemapChoices={translatedBasemapChoices}
           selectedBasemapId={selectedBasemapId}
           onBasemapSelect={onBasemapSelect}
           failedBasemapId={failedBasemapId}

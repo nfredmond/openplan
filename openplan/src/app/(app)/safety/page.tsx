@@ -9,6 +9,8 @@ import {
 } from "@/lib/workspaces/home-geography";
 import { placeOfRecordFromProject } from "@/lib/projects/project-place";
 import { resolveStudyArea } from "@/lib/models/study-area";
+import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { StateBlock } from "@/components/ui/state-block";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
@@ -239,8 +241,38 @@ export default async function SafetyPage({
 
   const projects = (projectRows ?? []) as SafetyProjectOption[];
 
+  /**
+   * The map backgrounds a planner may switch the crash map to.
+   *
+   * RESOLVED HERE, ON THE SERVER, and the component below never sees a style
+   * URL — the same arrangement the public portal uses, and for the same reason:
+   * twelve map call sites in this product each spell their own
+   * `mapbox://styles/…`, none can see the others, and they have drifted. The
+   * registry is the one place that knows them.
+   *
+   * It reads the operator's `OPENPLAN_PUBLIC_BASEMAPS` setting. The env var is
+   * named "public" because the portal was where it landed first; what it
+   * actually configures is which Mapbox-published backgrounds THIS DEPLOYMENT
+   * offers, which is not a public-versus-internal question. Reusing it means an
+   * operator sets the list once rather than discovering a second variable.
+   */
+  const basemaps = resolvePublicBasemapConfig({
+    mapboxToken: resolvePublicMapboxToken(
+      process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+      process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+    ),
+  });
+
   return (
-    <section className="module-page">
+    /*
+      `flex h-full` OVERRIDES `.module-page`'s grid, and it is what makes the map
+      fill the surface. `.op-cart-surface__body` is a flex item of a fixed-height
+      panel, so its height is definite and `h-full` here resolves against it;
+      the workspace below then takes `flex-1 min-h-0` and scrolls its sidebar
+      internally instead of growing the page. A page that scrolls as a whole
+      cannot have a map that fills it.
+    */
+    <section className="module-page flex h-full min-h-0 flex-col gap-4">
       {reads.any ? (
         <StateBlock
           tone="danger"
@@ -281,6 +313,8 @@ export default async function SafetyPage({
         openedForProject={projectRow ? { id: projectRow.id, name: projectRow.name } : null}
         projects={projects}
         ingestHistory={ingestHistory}
+        basemapChoices={basemaps.choices}
+        defaultBasemapId={basemaps.defaultId}
       />
     </section>
   );

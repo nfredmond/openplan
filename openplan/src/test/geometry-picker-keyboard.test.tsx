@@ -62,8 +62,12 @@ describe("GeometryPickerMap keyboard accessibility (WCAG 2.1.1)", () => {
     const { getByRole } = await renderPicker(() => {});
     const app = getByRole("application");
     expect(app).toHaveAttribute("tabindex", "0");
-    expect(app).toHaveAttribute("aria-roledescription", "Interactive drawing map");
-    expect(app.getAttribute("aria-label")).toMatch(/point mode/i);
+    // Reworded 2026-08-13 with the rest of this map's copy: "Interactive
+    // drawing map" and "Drawing map, point mode" were English literals in a
+    // component two PUBLIC pages mount, and the second named the mode in words
+    // ("point mode") that only mean something to whoever wrote them.
+    expect(app).toHaveAttribute("aria-roledescription", "Map you can draw on");
+    expect(app.getAttribute("aria-label")).toMatch(/mark the place you mean/i);
     expect(app).toHaveAttribute("aria-describedby");
     // Mapbox's own keyboard handler is disabled so the widget owns key handling.
     expect(mapboxMocks.instances[0].keyboard.disable).toHaveBeenCalled();
@@ -92,7 +96,7 @@ describe("GeometryPickerMap keyboard accessibility (WCAG 2.1.1)", () => {
   it("builds a line over successive Enters and removes the last vertex on Backspace", async () => {
     const onChange = vi.fn();
     const { getByRole } = await renderPicker(onChange);
-    fireEvent.click(getByRole("button", { name: "Line" }));
+    fireEvent.click(getByRole("button", { name: "A street or path" }));
     const app = getByRole("application");
     fireEvent.keyDown(app, { key: "Enter" });
     fireEvent.keyDown(app, { key: "Enter" });
@@ -113,7 +117,7 @@ describe("GeometryPickerMap keyboard accessibility (WCAG 2.1.1)", () => {
     fireEvent.keyDown(getByRole("application"), { key: "Enter" });
     const status = getByRole("status");
     expect(status).toHaveAttribute("aria-live", "polite");
-    expect(status.textContent).toMatch(/placed/i);
+    expect(status.textContent).toMatch(/marked/i);
   });
 
   it("re-announces repeat actions with identical wording (live region still mutates)", async () => {
@@ -124,8 +128,8 @@ describe("GeometryPickerMap keyboard accessibility (WCAG 2.1.1)", () => {
     const first = status.textContent;
     fireEvent.keyDown(app, { key: "Enter" }); // same "Point placed" wording
     const second = status.textContent;
-    expect(first).toMatch(/placed/i);
-    expect(second).toMatch(/placed/i);
+    expect(first).toMatch(/marked/i);
+    expect(second).toMatch(/marked/i);
     expect(second).not.toBe(first); // zero-width nonce toggles → DOM changes → SR re-reads
   });
 

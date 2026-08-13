@@ -3,6 +3,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
+// The BACKGROUND PICKER IS THE PORTAL LANE'S, IMPORTED, NOT COPIED. It holds no
+// style ids, takes resolved choices, and renders nothing when a deployment
+// offers fewer than two — all of which is exactly what this surface needs. Its
+// name says "public" because the portal is where it was first mounted; nothing
+// in it is portal-specific, and a second copy under a safety-shaped name would
+// be the thirteenth hardcoded style list this product is trying to stop having.
+// The LAYER picker beside it is not reused: it takes a campaign's published
+// context layers, and this surface has none — the workspace layer catalog is
+// drawn on the shell backdrop and controlled by the shell's own layers panel.
+import { PublicBasemapPicker } from "@/components/engagement/public-map-picker-basemap";
+import type { PublicBasemapChoice, PublicBasemapId } from "@/lib/cartographic/basemaps";
+import {
+  CRASH_SEVERITY_COLOR,
+  CRASH_SEVERITY_LEGEND_ORDER,
+} from "@/lib/cartographic/crash-severity-palette";
 import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
@@ -140,6 +155,41 @@ function describeCasualty(value: number | null): string {
   return value === null ? "not reported" : value.toLocaleString();
 }
 
+/**
+ * WHAT THE COLOURS ON THE MAP MEAN.
+ *
+ * The dots are painted from `CRASH_SEVERITY_COLOR` and this reads the same
+ * constant, so a band added to the vocabulary cannot be painted on the map and
+ * missing from the key. `unknown` is in the list on purpose: those points ARE
+ * drawn, and a painted dot with no key entry leaves a reader guessing which rung
+ * it belongs to — which for that band is the exact wrong guess, since it is not
+ * a rung at all.
+ *
+ * It renders in two places and only ever one at a time: docked over the map from
+ * `lg` up, and as a plain row at the top of the column below that. Measured at
+ * 390×844, the docked version wrapped to three lines and covered a third of a
+ * 256px-tall map — and the label it wraps on is the one that must not be
+ * shortened ("Not classified — no casualty count reported" is a disclosure, not
+ * a caption). Moving it rather than truncating it keeps both the map and the
+ * sentence intact.
+ */
+function CrashSeverityKey({ className }: { className: string }) {
+  return (
+    <div className={className} data-testid="safety-severity-key">
+      {CRASH_SEVERITY_LEGEND_ORDER.map((severity) => (
+        <span key={severity} className="flex items-center gap-1.5">
+          <span
+            aria-hidden="true"
+            className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: CRASH_SEVERITY_COLOR[severity] }}
+          />
+          {SEVERITY_LABELS[severity]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** One labelled fact on the collision card. Muted styling marks an absence. */
 function CrashDetailLine({
   label,
@@ -216,6 +266,15 @@ type SafetyWorkspaceProps = {
   projects?: SafetyProjectOption[];
   /** Recent acquisitions, newest first, with their project links. */
   ingestHistory?: SafetyIngestHistoryEntry[];
+  /**
+   * The map backgrounds this deployment offers, resolved on the server by
+   * `resolvePublicBasemapConfig` — the same registry and the same operator
+   * setting the public portal reads. Empty means no usable map key, in which
+   * case the map component draws its own "no map key" notice and no picker is
+   * offered for a map that is not there.
+   */
+  basemapChoices?: readonly PublicBasemapChoice[];
+  defaultBasemapId?: PublicBasemapId | null;
 };
 
 export function SafetyWorkspace({
@@ -226,6 +285,8 @@ export function SafetyWorkspace({
   openedForProject = null,
   projects = [],
   ingestHistory = [],
+  basemapChoices = [],
+  defaultBasemapId = null,
 }: SafetyWorkspaceProps) {
   // The study area is still the user's to choose. Inheriting one only changes
   // where the picker STARTS — no place is ever invented here, and clearing the
@@ -270,6 +331,14 @@ export function SafetyWorkspace({
   const [loading, setLoading] = useState(false);
   const [ingesting, setIngesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Which background the map is drawn on. The picker renders nothing when the
+  // deployment offers fewer than two, and this still resolves to something the
+  // map can load — a map with no background is a grey rectangle.
+  const [basemapId, setBasemapId] = useState<PublicBasemapId | null>(defaultBasemapId);
+  const selectedBasemap =
+    basemapChoices.find((choice) => choice.id === (basemapId ?? defaultBasemapId)) ??
+    basemapChoices[0] ??
+    null;
 
   // Whether the box still holds the area this page opened with. Everything that
   // explains where that area came from is gated on it: once the planner picks
@@ -534,52 +603,243 @@ export function SafetyWorkspace({
     ? (severityCounts.fatal ?? 0) + (severityCounts.severe_injury ?? 0)
     : null;
 
-  return (
-    <div className="flex flex-col gap-4">
-      <header className="module-intro-card">
-        <div className="module-intro-body">
-          <h1 className="module-intro-title">Safety</h1>
-          <p className="module-intro-description">
-            Reported crashes for the study area, retrieved from the source agency.
+  /**
+   * ═══ THE MAP IS THE PAGE NOW, AND THE READING GOES IN A SIDEBAR ═══
+   *
+   * WHAT THIS REPLACED. Safety was a stack of cards in a scrolling column with
+   * a 520px-tall map two thirds of the way down it. On the 1366×768 laptops
+   * planners actually use, the map was a letterbox below the fold on a page
+   * whose entire subject is where the collisions are; every filter press meant
+   * scrolling up, and every result meant scrolling back down. This is the same
+   * shape the public portal was rebuilt into: a map that fills the surface, and
+   * one column beside it carrying everything you do to the map.
+   *
+   * NOTHING WAS DROPPED, AND THAT IS THE PART THAT MATTERED MOST. Safety's
+   * caveats are load-bearing for the RTP and grant lanes — the live-read
+   * warning, the fatality-census warning, the severity-completeness warning, the
+   * geocoding shortfall, the property-damage comparability sentence, the
+   * unclassified-severity sentence, the silent-years disclosure, the undrawable
+   * count, the "not evidence that no crashes occurred" sentences. Every one of
+   * them is still rendered, still attached to the figure it qualifies, and
+   * moving a panel must never be allowed to separate the two.
+   *
+   * WHAT NO TEST OF THIS FILE CAN PROVE. jsdom applies no stylesheet, has no box
+   * model and does not run Mapbox GL, so "the map fills the surface" and "the
+   * sidebar scrolls on its own" are browser facts. They were looked at in a real
+   * browser at desktop width and at 390×844; the tests here can only prove that
+   * every panel and every caveat is present and reachable.
+   */
+  const selectedCollisionCard = (
+    <>
+      {/* THE PER-COLLISION RECORD, FIRST IN THE COLUMN — because it is the
+          answer to the click a planner just made on the map beside it. Every
+          dimension appears, including the ones the source said nothing about: a
+          row reading "not reported for this collision" and a row reading "this
+          source does not record it" are different facts, and a blank slot would
+          be read as neither. */}
+      {selectedCrash && (
+        <section className="rounded-lg border p-4 text-sm" aria-label="Selected collision">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-medium">
+              {SEVERITY_LABELS[selectedCrash.properties.severity]} collision
+            </h2>
+            <button
+              type="button"
+              onClick={() => setSelectedCrashId(null)}
+              className="rounded-md border px-2 py-1 text-xs"
+            >
+              Close
+            </button>
+          </div>
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-1">
+            <CrashDetailLine
+              label="Date"
+              value={
+                selectedCrash.properties.collisionDate ??
+                (selectedCrash.properties.collisionYear !== null
+                  ? String(selectedCrash.properties.collisionYear)
+                  : "not reported")
+              }
+              muted={selectedCrash.properties.collisionDate === null}
+            />
+            {/* Never a zero for a count the source did not supply. */}
+            <CrashDetailLine
+              label="People killed"
+              value={describeCasualty(selectedCrash.properties.killedCount)}
+              muted={selectedCrash.properties.killedCount === null}
+            />
+            <CrashDetailLine
+              label="People injured"
+              value={describeCasualty(selectedCrash.properties.injuredCount)}
+              muted={selectedCrash.properties.injuredCount === null}
+            />
+            {describeCrashDimensions(
+              selectedCrash.properties as unknown as Record<string, unknown>,
+              activeDimensionCoverage
+            ).map((row) => (
+              <CrashDetailLine
+                key={row.label}
+                label={row.label}
+                value={row.value}
+                muted={row.state !== "reported"}
+              />
+            ))}
+          </dl>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Source record {selectedCrash.properties.externalId} from{" "}
+            {selectedCrash.properties.sourceId}. Fields shown as not reported are absent from the
+            source record, not zero.
           </p>
+        </section>
+      )}
+    </>
+  );
+
+  return (
+    /*
+      `flex-1 min-h-0`, NOT `h-full`. This component is one child of a page that
+      may also be carrying read-failure and study-area notices above it, and
+      `h-full` would claim the whole surface for itself and push those notices
+      off the bottom. `min-h-0` is the half that is easy to forget: without it a
+      flex child refuses to shrink below its content, the sidebar stops
+      scrolling, and the map goes back to being a letterbox.
+    */
+    <div className="flex min-h-0 flex-1 flex-col" data-testid="safety-map-first">
+      {/*
+        THE SHELL, AND IT IS TWO DIFFERENT LAYOUTS ON PURPOSE.
+
+        FROM `lg` UP: one row that never scrolls — the map takes all the height
+        the surface has, and the sidebar scrolls inside itself beside it. That is
+        the shape a planner works in, and the map stops being a letterbox.
+
+        BELOW `lg`: one column that DOES scroll, with the map a fixed 16rem at
+        the top. This was measured rather than guessed. At 390×844 the shell gets
+        about 386px in total — the app's own chrome takes the rest — and splitting
+        that between a map and a scrolling sidebar gave the map 240px and the
+        sidebar 146px against 2,697px of content: a 24px-tall scroll window, which
+        is not a usable control panel by any reading. A phone gets the map first
+        and the controls under it, one scroll, everything reachable.
+      */}
+      <div
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-lg border lg:flex-row lg:overflow-hidden"
+        data-testid="safety-map-first-shell"
+      >
+        <div
+          className="relative h-[16rem] shrink-0 lg:h-auto lg:min-h-0 lg:flex-1"
+          data-testid="safety-map-stage"
+        >
+          <SafetyCrashMap
+            collection={collection}
+            bbox={mapBbox}
+            // Empty only when this deployment has no usable map key, in which
+            // case the map component draws its own notice and never reads this.
+            styleUrl={selectedBasemap?.styleUrl ?? ""}
+            onSelect={setSelectedCrashId}
+          />
+
+          {/* The background picker, docked over the map. Top-LEFT, because
+              Mapbox's own zoom and compass buttons are top-right; two controls
+              in one corner is how a map ends up with no map left. It renders
+              nothing at all when the deployment offers fewer than two
+              backgrounds. */}
+          <div className="pointer-events-none absolute left-3 top-3 z-10 flex w-[min(15rem,calc(100%-1.5rem))] flex-col gap-2">
+            <PublicBasemapPicker
+              className="pointer-events-auto"
+              choices={basemapChoices}
+              selectedId={selectedBasemap?.id ?? "streets"}
+              onSelect={(choice) => setBasemapId(choice.id)}
+            />
+          </div>
+
+          {/* Docked over the map on a screen with room for it; the column below
+              carries the same key on anything smaller. */}
+          <CrashSeverityKey className="pointer-events-none absolute bottom-8 left-3 z-10 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border/60 bg-background/90 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur-sm lg:flex" />
         </div>
-        {/* Safety's primary action was already near the top of its page, but in
-            one-off markup of its own — the only module whose header action was
-            not the shared slot. Two patterns means two things to keep working,
-            so this is the same `.module-intro-actions` every other module now
-            uses. The project selector rides in the slot beside the button
-            because the attachment is part of the same press: choosing a project
-            after the retrieval attaches nothing. */}
-        <div className="module-intro-actions">
-          {projects.length > 0 && (
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="text-muted-foreground">Attach to project (optional)</span>
-              <select
-                value={projectId}
-                onChange={(event) => setProjectId(event.target.value)}
-                disabled={ingesting}
-                className="rounded-md border px-2 py-2 text-sm"
-                aria-label="Project for this crash import"
+
+        {/* THE SIDEBAR. Everything a planner does to the map, in the order they
+            do it: what they just clicked, where they are looking, what the
+            source does and does not cover, the filters, and what is on screen
+            right now. It scrolls on its own so the map never moves. */}
+        <aside
+          // `shrink-0` in BOTH directions. Below `lg` this is a row of a
+          // scrolling column and a flex child that may shrink collapses to a
+          // fraction of its content (measured: a 203px header inside a 69px
+          // box); from `lg` it is the fixed-width column beside the map.
+          className="flex shrink-0 flex-col border-t lg:h-full lg:min-h-0 lg:w-[27rem] lg:border-l lg:border-t-0"
+          aria-label="Crash data controls"
+          data-testid="safety-sidebar"
+        >
+          {/*
+            THE MODULE HEADER LIVES AT THE TOP OF THE SIDEBAR, NOT ABOVE THE MAP.
+
+            Measured in a real browser at 1600×900: as a full-width card above
+            the shell it was 247px tall — a 44px display title, a description and
+            the action row — and it left the map 210px, which is the letterbox
+            this rebuild was supposed to end. Pinned here it costs the map
+            nothing, and the primary action is still the first thing in the top
+            corner of the panel rather than something found by scrolling.
+
+            It keeps `.module-intro-card` / `.module-intro-actions` /
+            `.module-intro-action`, because those classes are the product's one
+            header-action pattern and `every-module-has-one-primary-header-action`
+            walks up from the button to find them. The utilities beside them
+            re-tune it for a 27rem column: Tailwind's utility layer wins over the
+            component layer, so `p-4` and `text-xl` override the card's 1.8rem
+            padding and its clamp(2rem,3vw,2.8rem) title without touching a
+            shared stylesheet that twenty other modules render.
+          */}
+          <header className="module-intro-card shrink-0 rounded-none border-0 border-b p-4">
+            <div className="module-intro-body mt-0">
+              <h1 className="module-intro-title text-xl">Safety</h1>
+              <p className="module-intro-description text-xs">
+                Reported crashes for the study area, retrieved from the source agency.
+              </p>
+            </div>
+            {/* Safety's primary action was already near the top of its page, but in
+                one-off markup of its own — the only module whose header action was
+                not the shared slot. Two patterns means two things to keep working,
+                so this is the same `.module-intro-actions` every other module now
+                uses. The project selector rides in the slot beside the button
+                because the attachment is part of the same press: choosing a project
+                after the retrieval attaches nothing. */}
+            <div className="module-intro-actions mt-3">
+              {projects.length > 0 && (
+                <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs">
+                  <span className="text-muted-foreground">Attach to project (optional)</span>
+                  <select
+                    value={projectId}
+                    onChange={(event) => setProjectId(event.target.value)}
+                    disabled={ingesting}
+                    className="rounded-md border px-2 py-2 text-sm"
+                    aria-label="Project for this crash import"
+                  >
+                    <option value="">No project</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <button
+                type="button"
+                onClick={() => void runIngest()}
+                disabled={ingesting || !bbox}
+                className="module-intro-action"
               >
-                <option value="">No project</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <button
-            type="button"
-            onClick={() => void runIngest()}
-            disabled={ingesting || !bbox}
-            className="module-intro-action"
-          >
-            {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
-          </button>
-        </div>
-      </header>
+                {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
+              </button>
+            </div>
+          </header>
+
+          {/* `overflow-y-auto` only from `lg`: on a phone this column is part of
+              the one page scroll, and a nested scroll region inside it is how a
+              panel ends up with a 24px window. */}
+          <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:overflow-y-auto">
+            <CrashSeverityKey className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground lg:hidden" />
+
+            {selectedCollisionCard}
 
       {/* Study area — the app's single geography front door, reused, not reinvented. */}
       <section className="rounded-lg border p-4" aria-label="Study area">
@@ -787,70 +1047,6 @@ export function SafetyWorkspace({
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="h-[520px] w-full overflow-hidden rounded-lg border">
-        <SafetyCrashMap collection={collection} bbox={mapBbox} onSelect={setSelectedCrashId} />
-      </div>
-
-      {/* THE PER-COLLISION RECORD. Every dimension appears, including the ones
-          the source said nothing about: a row reading "not reported for this
-          collision" and a row reading "this source does not record it" are
-          different facts, and a blank slot would be read as neither. */}
-      {selectedCrash && (
-        <section className="rounded-lg border p-4 text-sm" aria-label="Selected collision">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-medium">
-              {SEVERITY_LABELS[selectedCrash.properties.severity]} collision
-            </h2>
-            <button
-              type="button"
-              onClick={() => setSelectedCrashId(null)}
-              className="rounded-md border px-2 py-1 text-xs"
-            >
-              Close
-            </button>
-          </div>
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
-            <CrashDetailLine
-              label="Date"
-              value={
-                selectedCrash.properties.collisionDate ??
-                (selectedCrash.properties.collisionYear !== null
-                  ? String(selectedCrash.properties.collisionYear)
-                  : "not reported")
-              }
-              muted={selectedCrash.properties.collisionDate === null}
-            />
-            {/* Never a zero for a count the source did not supply. */}
-            <CrashDetailLine
-              label="People killed"
-              value={describeCasualty(selectedCrash.properties.killedCount)}
-              muted={selectedCrash.properties.killedCount === null}
-            />
-            <CrashDetailLine
-              label="People injured"
-              value={describeCasualty(selectedCrash.properties.injuredCount)}
-              muted={selectedCrash.properties.injuredCount === null}
-            />
-            {describeCrashDimensions(
-              selectedCrash.properties as unknown as Record<string, unknown>,
-              activeDimensionCoverage
-            ).map((row) => (
-              <CrashDetailLine
-                key={row.label}
-                label={row.label}
-                value={row.value}
-                muted={row.state !== "reported"}
-              />
-            ))}
-          </dl>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Source record {selectedCrash.properties.externalId} from{" "}
-            {selectedCrash.properties.sourceId}. Fields shown as not reported are absent from the
-            source record, not zero.
-          </p>
-        </section>
-      )}
-
       {history.length > 0 && (
         <section className="rounded-lg border p-4" aria-label="Import history">
           <h2 className="mb-2 text-sm font-medium">What you have imported</h2>
@@ -908,27 +1104,38 @@ export function SafetyWorkspace({
           : ""}
         {SAFETY_CRASH_DATA_CAVEAT}
       </p>
+          </div>
 
-      {/* The collisions on screen, in a file. Not a re-query written here: the
-          same filter selection is serialized through `crashFilterSearchParams`,
-          and the file itself is built by the one pure builder both the stored
-          route and this browser use, so an export can never describe a
-          different query from the one that produced it. */}
-      <CrashExportButton
-        workspaceId={workspaceId}
-        projectId={projectId || null}
-        bbox={bbox}
-        filters={filters}
-        studyAreaLabel={place?.label ?? (corridorText.trim() || null)}
-        liveFeatures={liveRead ? visibleFeatures : null}
-        liveSourceLabel={liveRead?.sourceLabel ?? null}
-        liveAttribution={liveRead?.attribution ?? null}
-        disabledReason={
-          !liveRead && (response?.matchedCount ?? 0) === 0
-            ? "Nothing matches these filters in this extent yet, so there is nothing to export."
-            : null
-        }
-      />
+          {/* THE EXPORT IS PINNED TO THE BOTTOM OF THE SIDEBAR, not left at the
+              end of a scroll. It is the last thing a planner does with this page
+              and it was previously below the map, the record card and the import
+              history — a control found by scrolling past everything else.
+
+              The collisions on screen, in a file. Not a re-query written here:
+              the same filter selection is serialized through
+              `crashFilterSearchParams`, and the file itself is built by the one
+              pure builder both the stored route and this browser use, so an
+              export can never describe a different query from the one that
+              produced it. */}
+          <div className="shrink-0 border-t p-3">
+            <CrashExportButton
+              workspaceId={workspaceId}
+              projectId={projectId || null}
+              bbox={bbox}
+              filters={filters}
+              studyAreaLabel={place?.label ?? (corridorText.trim() || null)}
+              liveFeatures={liveRead ? visibleFeatures : null}
+              liveSourceLabel={liveRead?.sourceLabel ?? null}
+              liveAttribution={liveRead?.attribution ?? null}
+              disabledReason={
+                !liveRead && (response?.matchedCount ?? 0) === 0
+                  ? "Nothing matches these filters in this extent yet, so there is nothing to export."
+                  : null
+              }
+            />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

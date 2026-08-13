@@ -53,6 +53,7 @@ import {
 } from "@/lib/engagement/portal-i18n/provenance";
 import { formatPortalDate, formatPortalMegabytes, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 import { GeometryPickerMap, type EngagementDrawMode } from "./geometry-picker-map";
+import { buildGeometryPickerWords } from "@/lib/engagement/portal-i18n/drawing-map-words";
 
 // ── Serializable participant-facing question shape (options folded in) ────────
 
@@ -1017,6 +1018,11 @@ function MapPointWidget({ question, translator, initialAnswer, onChange }: Widge
           allowedModes={allowedModes}
           initialCenter={cfg.center}
           initialZoom={cfg.zoom}
+          // The picker's own English literals are not this question's copy to
+          // choose; they come from the same catalog as every other string on
+          // this form. See `buildGeometryPickerWords`.
+          words={buildGeometryPickerWords(translator)}
+          lang={translator.bcp47}
         />
       </div>
       {keptFromDraft ? (

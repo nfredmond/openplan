@@ -537,7 +537,10 @@ describe("the maps that cannot draw", () => {
 
   it("tells a planner the crash map cannot draw without naming the variable", async () => {
     const { SafetyCrashMap } = await import("@/components/safety/safety-crash-map");
-    render(<SafetyCrashMap collection={null} bbox={null} />);
+    // `styleUrl` is empty on purpose: with no map key the basemap registry
+    // resolves to no choices at all, and this notice is what a planner sees
+    // instead of a map. It is the state the prop was made required for.
+    render(<SafetyCrashMap collection={null} bbox={null} styleUrl="" />);
 
     const notice = screen.getByTestId("safety-crash-map-unavailable");
     const planner = plannerText(notice);

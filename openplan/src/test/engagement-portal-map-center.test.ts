@@ -165,8 +165,12 @@ describe("which area frames a campaign's public map", () => {
 
   it("says so when nothing frames the map, instead of showing a continent silently", () => {
     const nothing = resolvePortalMapFraming({});
-    expect(nothing.summary).toMatch(/no study area has been set/i);
-    expect(nothing.summary).toMatch(/whole country/i);
+    // Reworded 2026-08-13: this sentence is rendered to the PUBLIC on the
+    // context page, so "no study area has been set for this campaign" — two
+    // objects that exist in this software and nowhere in a resident's life —
+    // became words both audiences can read. What it asserts is unchanged.
+    expect(nothing.summary).toMatch(/no area has been set for this page/i);
+    expect(nothing.summary).toMatch(/nobody has marked a place on the map yet/i);
     // A neutral camera is the caller's fallback, never a place this function
     // invented.
     expect(nothing.view).toBeNull();
@@ -240,8 +244,8 @@ describe("which area frames a campaign's public map", () => {
 
   it("does not claim no area was set when it could not check for one", () => {
     // Every candidate unreadable and no pins: the map really does open on the
-    // continent, but "no study area has been set for this campaign" is a fact
-    // nobody established here.
+    // continent, but "no area has been set for this page" is a fact nobody
+    // established here.
     const blind = resolvePortalMapFraming({
       campaignPlace: READ_FAILED,
       projectPlace: READ_FAILED,
@@ -250,10 +254,8 @@ describe("which area frames a campaign's public map", () => {
 
     expect(blind.origin).toBe("none");
     expect(blind.view).toBeNull();
-    expect(blind.summary).toBe(
-      "This map could not be framed on a study area, so it opens on the whole country."
-    );
-    expect(blind.summary).not.toMatch(/no study area has been set/i);
+    expect(blind.summary).toBe("This map could not be set to one area, so it starts wide.");
+    expect(blind.summary).not.toMatch(/no area has been set/i);
     expect(blind.unreadableNote).toBe(
       "This campaign, the linked project and this workspace could not be checked for a recorded area, so none of them framed this map."
     );
@@ -263,7 +265,7 @@ describe("which area frames a campaign's public map", () => {
 
     // When everything WAS checked, the stronger sentence is still the one told —
     // this must not degrade into a permanent hedge.
-    expect(resolvePortalMapFraming({}).summary).toMatch(/no study area has been set/i);
+    expect(resolvePortalMapFraming({}).summary).toMatch(/no area has been set for this page/i);
   });
 
   it("names the area without letting the name stand in for the explanation", () => {
@@ -413,7 +415,9 @@ describe("the portal's place reader asks for the columns that exist", () => {
     const plain = { geometry_types: ["Point"] };
     const unframed = resolveMapPointQuestionView(plain, resolvePortalMapFraming({}));
     expect(unframed.config).toBe(plain);
-    expect(unframed.framingNote).toMatch(/whole country/i);
+    // "starts wide" since 2026-08-13, not "the whole country": the same claim in
+    // words a resident reads, and one that stays true outside the US.
+    expect(unframed.framingNote).toMatch(/starts wide/i);
 
     // And the wiring: the portal bundle must actually apply it. A helper nobody
     // calls is how the per-question camera became unreachable in the first place.
@@ -442,7 +446,7 @@ describe("the portal's place reader asks for the columns that exist", () => {
     const unframed = resolveMapPointQuestionView({ geometry_types: ["Point"] }, nothingToInherit);
     expect(unframed.config).toEqual({ geometry_types: ["Point"] });
     expect(unframed.framingNote).toBe(nothingToInherit.summary);
-    expect(unframed.framingNote).toMatch(/whole country/i);
+    expect(unframed.framingNote).toMatch(/starts wide/i);
 
     // A HALF-stated camera keeps its own zoom — a centre from the campaign
     // paired with a zoom from the question is a view nobody chose — but that
@@ -517,7 +521,7 @@ describe("the portal's place reader asks for the columns that exist", () => {
     ]);
     // This is the deploy-window shape: what residents see must not assert that
     // an area exists, nor that none does.
-    expect(framing.summary).not.toMatch(/no study area has been set/i);
+    expect(framing.summary).not.toMatch(/no area has been set/i);
     expect(framing.unreadableNote).not.toMatch(/the area set for this campaign/i);
     expect(framing.unreadableNote).toMatch(/could not be checked for a recorded area/i);
   });

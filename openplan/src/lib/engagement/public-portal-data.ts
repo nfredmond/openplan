@@ -386,9 +386,24 @@ function describeFraming(
     // "No study area has been set" is a claim about the world, and it is only
     // ours to make when every candidate was actually checked. If any lookup
     // failed we know less than that, and the note built below names which.
+    /*
+      PLAIN WORDS, because this sentence reached the public. It was written for
+      an operator — "No study area has been set for this campaign" — and printed
+      verbatim on a resident's screen, in English, on pages declaring Spanish.
+      "Study area" and "campaign" are two objects that exist in this software and
+      nowhere in a resident's life.
+
+      The map-first participant surface no longer renders this string at all: it
+      rebuilds the sentence from catalog keys (`portal.mapFramingNoArea` /
+      `portal.mapFramingUnknownArea`) so it is in the reader's own language. This
+      English survives for the surfaces that are not translated — the classic
+      form, a survey question's framing note, the operator preview — and it is
+      written in the same register as its translated twin so the two do not read
+      as different claims.
+    */
     return gaps.length > 0
-      ? "This map could not be framed on a study area, so it opens on the whole country."
-      : "No study area has been set for this campaign and no locations have been marked yet, so this map opens on the whole country.";
+      ? "This map could not be set to one area, so it starts wide."
+      : "No area has been set for this page and nobody has marked a place on the map yet, so it starts wide.";
   }
 
   const role = PORTAL_FRAMING_ORIGIN_ROLE[origin];

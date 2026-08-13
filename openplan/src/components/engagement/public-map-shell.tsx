@@ -276,9 +276,60 @@ export function PublicMapShell({
           : "portal.openDetails"
   );
 
-  const rail = (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto">
+  /*
+    WHERE THE MAP OPENS, IN THE RESIDENT'S LANGUAGE.
+
+    `mapFraming.summary` is English prose composed server-side, and printing it
+    was two defects in one line: it was English on a page that declares Spanish,
+    Farsi or Arabic, and it was written in an administrator's vocabulary — "No
+    study area has been set for this campaign" names two things that exist in
+    this software and nowhere in a resident's life. The resolver already carries
+    the STRUCTURE of that sentence (`origin`, `originLabel`, and whether any
+    candidate failed), so it is rebuilt here from catalog keys instead of
+    translated as a blob.
+
+    A named place is never translated — `{place}` is the agency's own name for
+    the area, and rendering it through the catalog would be inventing a name.
+
+    The English prose is not deleted: it is still what the operator preview's
+    other readers and a survey question's framing note use, and it is still the
+    only thing that can describe a partially-failed lookup in detail. What it no
+    longer does is speak to a resident.
+  */
+  const framingSourceKey =
+    mapFraming.origin === "campaign_place"
+      ? "portal.mapFramingSourceCampaign"
+      : mapFraming.origin === "project_place"
+        ? "portal.mapFramingSourceProject"
+        : mapFraming.origin === "workspace_home"
+          ? "portal.mapFramingSourceWorkspace"
+          : mapFraming.origin === "approved_pins"
+            ? "portal.mapFramingSourcePins"
+            : null;
+
+  const framingSentence = framingSourceKey
+    ? mapFraming.originLabel
+      ? t("portal.mapFramingOn", {
+          place: mapFraming.originLabel,
+          source: t(framingSourceKey),
+        })
+      : t("portal.mapFramingOnUnnamed", { source: t(framingSourceKey) })
+    : // Nothing framed it. The two states are genuinely different and must not
+      // share a sentence: "nobody set an area" is a claim about the world that
+      // is only ours to make when every candidate was actually checked, and a
+      // lookup that FAILED leaves us knowing less than that.
+      t(mapFraming.unreadable.length > 0 ? "portal.mapFramingUnknownArea" : "portal.mapFramingNoArea");
+
+  /**
+   * The scrolling body of the rail.
+   *
+   * A function of its own classes because the bottom sheet needs to switch it
+   * off entirely while collapsed — see the sheet below — and it is a DESCENDANT
+   * of the sheet's toggle checkbox's sibling, so `peer-checked:` can only reach
+   * it if it is rendered as a direct child of the section the checkbox is in.
+   */
+  const railBody = (className: string) => (
+    <div className={className}>
         {/*
           LANGUAGE FIRST, before a resident reads a paragraph of unexpected
           English. Position is load-bearing: a coverage notice below the form is
@@ -356,12 +407,16 @@ export function PublicMapShell({
           "this map", and printing them above an absent one is the defect this
           rebuild inherited rather than a new one.
 
-          `lang` is English because `resolvePortalMapFraming` builds them as
-          English prose server-side — a real gap, marked rather than hidden.
+          The first sentence is now the catalog's, built above from the
+          resolver's structured answer. The remaining two are still English prose
+          composed server-side, and are still marked as the English they are —
+          a real gap, narrowed rather than closed, and `unreadableNote` in
+          particular is an operator's diagnostic that a resident should never
+          have needed to read.
         */}
         {canShowMap ? (
           <div className="space-y-1 px-5 pt-3 text-xs text-muted-foreground" data-testid="portal-map-framing">
-            <p lang="en">{mapFraming.summary}</p>
+            <p>{framingSentence}</p>
             {mapFraming.unreadableNote ? <p lang="en">{mapFraming.unreadableNote}</p> : null}
             {mapFraming.submissionRule ? <p lang="en">{mapFraming.submissionRule}</p> : null}
           </div>
@@ -403,13 +458,15 @@ export function PublicMapShell({
             {accessibilityNotice}
           </div>
         ) : null}
-      </div>
+    </div>
+  );
 
-      {/*
-        THE ONE BUTTON, pinned so it survives the rail scrolling. A real anchor:
-        it must work before React hydrates, which on a phone over a bad
-        connection is most of the time a resident spends on this page.
-      */}
+  /*
+    THE ONE BUTTON, pinned so it survives the rail scrolling. A real anchor:
+    it must work before React hydrates, which on a phone over a bad
+    connection is most of the time a resident spends on this page.
+  */
+  const railDoor = (
       <a
         href={detailsHref}
         data-testid="portal-details-link"
@@ -424,7 +481,6 @@ export function PublicMapShell({
         </span>
         <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
       </a>
-    </div>
   );
 
   if (!canShowMap) {
@@ -435,7 +491,10 @@ export function PublicMapShell({
     */
     return (
       <div className="mx-auto flex min-h-dvh w-full max-w-[46rem] flex-col bg-background" data-testid="portal-shell-no-map">
-        {rail}
+        <div className="flex h-full min-h-0 flex-col">
+          {railBody("min-h-0 flex-1 overflow-y-auto")}
+          {railDoor}
+        </div>
       </div>
     );
   }
@@ -481,47 +540,59 @@ export function PublicMapShell({
         matters. On `lg` the classes are overridden and it is simply the rail —
         the checkbox has no effect there and the handle is hidden.
 
-        WHAT ACTUALLY PEEKS WHEN IT IS COLLAPSED, corrected 2026-08-13: the
-        handle, and then the top of the rail — which is the LANGUAGE PICKER, not
-        the campaign title. The comment here used to claim the title, the status
-        chip and the first step, and it was simply wrong: the rail is ordered
-        language-first on purpose (see the rail), so the first thing inside the
-        9.5rem window is the picker.
+        WHAT PEEKS WHEN IT IS COLLAPSED — rewritten 2026-08-13 after measuring it
+        in a browser at 390×844, which is the only place this question has an
+        answer.
 
-        The comment was fixed rather than the order. A resident who cannot read
-        the page needs the way out before they need the title, and moving the
-        picker down to make an old comment true would trade a real fix for a
-        cosmetic one. The title and the chip are one short scroll — or one tap on
-        the handle — away.
+        It used to be a ~50px window onto the top of the rail, complete with its
+        own scrollbar, wedged between the handle and the door link. The top of
+        the rail is the language picker, so what a resident actually met was
+        eleven of twenty-two language chips, cut off mid-row, above a scroll
+        track. Measured: the collapsed section was 152px tall and its scrolling
+        child reported `scrollHeight` 1016 inside a 51px box.
+
+        The intent behind putting the picker first — a resident who cannot read
+        this page needs the way out before they need the title — is right, and a
+        50px clipped window served it no better than nothing did. So the
+        collapsed sheet is now the handle and the door, and the picker is one tap
+        on the handle away. Closing this properly means a picker that can be
+        SHORT (a disclosure, not twenty-two chips), which lives in
+        `portal-language-picker.tsx` and belongs to whoever owns that file.
+
+        HOW THE COLLAPSED STATE REACHES THE BODY WITHOUT JAVASCRIPT. The toggle
+        checkbox moved INSIDE the section, so the handle, the body and the door
+        are all following siblings of it and `peer-checked:` reaches them. The
+        section's own height then keys off `has-[:checked]` instead, because a
+        parent cannot be its child's peer. No JS anywhere in the path: the sheet
+        still opens on a phone that never runs the bundle.
       */}
-      <input
-        type="checkbox"
-        id="portal-sheet-toggle"
-        aria-label={t("portal.addYourInput")}
-        className="peer sr-only lg:hidden"
-        defaultChecked={false}
-      />
       <section
         aria-label={t("portal.stepsHeading")}
         data-testid="portal-input-sheet"
         className={cn(
           "z-20 flex max-h-[9.5rem] min-h-0 flex-col overflow-hidden rounded-t-2xl border-t border-border/70 bg-background shadow-[0_-8px_30px_-12px_rgba(0,0,0,0.35)] transition-[max-height] duration-200",
-          "peer-checked:max-h-[75dvh]",
+          "has-[#portal-sheet-toggle:checked]:max-h-[75dvh]",
           "lg:max-h-none lg:rounded-none lg:border-l lg:border-t-0 lg:shadow-none"
         )}
       >
+        <input
+          type="checkbox"
+          id="portal-sheet-toggle"
+          aria-label={t("portal.addYourInput")}
+          className="peer sr-only lg:hidden"
+          defaultChecked={false}
+        />
         {/*
           The handle. Deliberately a `<label>` for the checkbox above and NOT a
           button: a button needs JavaScript to do anything.
 
           The wording does not change between states, and that is a limitation
-          rather than a choice — Tailwind's `peer-*` variants reach following
-          SIBLINGS of the checkbox, and this label is a descendant of one, so CSS
-          here cannot see the checked state. The checkbox itself is `sr-only`
-          rather than hidden, so a screen reader announces the real state
-          ("Add your input, checkbox, checked") even though the visible label is
-          fixed. A JS-driven caption would read better and would be shut when it
-          matters most.
+          rather than a choice — the label is the checkbox's sibling now, but
+          Tailwind's `peer-*` variants cannot restyle it based on a state whose
+          own element it labels without also making the collapsed and expanded
+          captions two different strings in the catalog. The checkbox is
+          `sr-only` rather than hidden, so a screen reader announces the real
+          state ("Add your input, checkbox, checked") regardless.
         */}
         <label
           htmlFor="portal-sheet-toggle"
@@ -533,7 +604,14 @@ export function PublicMapShell({
             {t("portal.addYourInput")}
           </span>
         </label>
-        {rail}
+        {/*
+          `hidden` until the sheet is open, so nothing is half-shown and no
+          scrollbar appears in a 50px slot. `lg:block` because on a wide screen
+          this is not a sheet at all — it is the rail, always open, and the
+          checkbox there has no effect.
+        */}
+        {railBody("hidden min-h-0 flex-1 overflow-y-auto peer-checked:block lg:block")}
+        {railDoor}
       </section>
     </div>
   );

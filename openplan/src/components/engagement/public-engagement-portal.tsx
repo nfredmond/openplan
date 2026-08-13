@@ -59,6 +59,7 @@ import type { PortalMessageKey } from "@/lib/engagement/portal-i18n/messages";
 import type { PortalMapFraming } from "@/lib/engagement/public-portal-data";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { GeometryPickerMap } from "./geometry-picker-map";
+import { buildGeometryPickerWords } from "@/lib/engagement/portal-i18n/drawing-map-words";
 import { LocationDisplayMap } from "./location-display-map";
 import { PortalLanguageNotice, PortalLanguagePicker } from "./portal-language-picker";
 import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";
@@ -69,65 +70,38 @@ const PUBLIC_SELECT_CLASS =
   "flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20";
 
 /**
- * PARTICIPANT-FACING STRINGS THIS PORTAL STILL SHOWS IN ENGLISH TO EVERY READER,
- * each named for the catalog key it is waiting for.
+ * WHAT IS STILL ENGLISH ON THIS SURFACE — the honest, and now short, list.
  *
- * WHY THIS EXISTS AND WHY IT IS NOT A SECOND CATALOG. Every other string on this
- * surface now comes from `messages.ts` through the translator, which is the one
- * place participant copy may live. These are the strings the catalog does not
- * carry yet, and both alternatives were worse: left as bare literals they would
- * be invisible to anyone auditing coverage, and deleted they would take real
- * guidance away from a member of the public to make a coverage number look
- * better.
+ * `PENDING_PORTAL_TEXT` used to sit here: ten participant-facing strings this
+ * component rendered in English to every reader, each waiting for a catalog key.
+ * All ten landed in `EN_PORTAL_MESSAGES` on 2026-08-13 (with Spanish), the
+ * object is gone, and every call site is an ordinary `t(...)`. The five
+ * demographic labels among them were the odd case: the catalog had ALREADY
+ * carried better wording for months ("Your age range", not "Age range"), so
+ * this object was shadowing translations that existed.
  *
- * THE CONTRACT EVERY ENTRY CARRIES. The key IS the key being requested — adding
- * it to `EN_PORTAL_MESSAGES` and deleting the line here is the whole migration,
- * with no call-site change beyond `pending(...)` becoming `t(...)`. Until then
- * every call site sets `lang={PORTAL_DEFAULT_LOCALE}` on the element carrying
- * the string, so assistive technology pronounces it as the English it is rather
- * than reading it with the page's phonology.
- *
- * TWO MORE SOURCES OF ENGLISH ARE NOT IN HERE because they are not this file's
- * strings, and both are reported alongside this change rather than papered over:
+ * TWO SOURCES OF ENGLISH REMAIN, both outside this file, both disclosed rather
+ * than papered over:
  *
  *   `demographicLabel` (`src/lib/engagement/demographics.ts`) — the age bands,
  *     languages, tenure and race/ethnicity OPTION text. Shared with the operator
- *     console's aggregate views, so it cannot simply become catalog keys.
+ *     console's aggregate views, which must name a band identically, so it
+ *     cannot simply become catalog keys.
  *   `resolvePortalMapFraming` (`src/lib/engagement/public-portal-data.ts`) —
- *     builds its summary and unreadable-note sentences as English prose,
- *     server-side, for every reader.
+ *     the map's summary and unreadable-note sentences, composed as English prose
+ *     server-side. The MAP-FIRST surface no longer prints that prose (see
+ *     `public-map-shell.tsx`, which rebuilds the sentence from catalog keys);
+ *     this classic form still does, and every one of them carries
+ *     `lang={PORTAL_DEFAULT_LOCALE}` so a screen reader pronounces it as the
+ *     English it is.
  *
- * `PortalPendingCopyNotice` sits at the TOP of the portal so a resident is told
- * before they read any of it. It has to be page-level rather than attached to
- * one region, because this English is not in one region: `framing.summary` is on
- * the submit tab that the portal opens on, `portal.sortBy` is on the feedback
- * tab, and the demographics block is opt-in. Unlabelled English inside an
- * otherwise-Spanish page tells a resident the agency wrote it that way, and
- * under Title VI that is a claim about what the agency published.
+ * `PortalPendingCopyNotice` therefore still has work to do, and still sits at
+ * the TOP of the portal rather than beside one region: the framing sentence is
+ * on the submit tab that this portal opens on, and the demographics options are
+ * opt-in. Unlabelled English inside an otherwise-Spanish page tells a resident
+ * the agency wrote it that way, and under Title VI that is a claim about what
+ * the agency published.
  */
-const PENDING_PORTAL_TEXT = {
-  "portal.cancelReply": "Cancel reply",
-  "portal.removePhoto": "Remove photo",
-  "portal.shareAnother": "Share another response",
-  "portal.sortBy": "Sort by",
-  "portal.mapZoomHint": "Zoom to your neighbourhood before dropping a pin.",
-  "portal.demographicsAge": "Age range",
-  "portal.demographicsZip": "ZIP code",
-  "portal.demographicsPrimaryLanguage": "Primary language",
-  "portal.demographicsTenure": "Do you rent or own your home?",
-  "portal.demographicsRace": "Race / ethnicity",
-} as const;
-
-type PendingPortalKey = keyof typeof PENDING_PORTAL_TEXT;
-
-/**
- * An English string the catalog cannot answer for yet. Read the block above
- * before adding one: the element rendering it MUST carry
- * `lang={PORTAL_DEFAULT_LOCALE}`.
- */
-function pending(key: PendingPortalKey): string {
-  return PENDING_PORTAL_TEXT[key];
-}
 
 /**
  * AN API'S OWN REFUSAL, MARKED AS THE ENGLISH IT IS.
@@ -619,8 +593,6 @@ function SubmissionForm({
           type="button"
           variant="outline"
           className="mt-5"
-          // English until `portal.shareAnother` exists; see PENDING_PORTAL_TEXT.
-          lang={PORTAL_DEFAULT_LOCALE}
           onClick={() => {
             setSubmitted(false);
             setCategoryId("");
@@ -639,7 +611,7 @@ function SubmissionForm({
             onCancelReply?.();
           }}
         >
-          {pending("portal.shareAnother")}
+          {t("portal.shareAnother")}
         </Button>
       </div>
     );
@@ -657,10 +629,9 @@ function SubmissionForm({
             <button
               type="button"
               onClick={onCancelReply}
-              lang={PORTAL_DEFAULT_LOCALE}
               className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
             >
-              {pending("portal.cancelReply")}
+              {t("portal.cancelReply")}
             </button>
           ) : null}
         </div>
@@ -783,8 +754,17 @@ function SubmissionForm({
                 */}
                 <p className="text-xs text-muted-foreground" lang={PORTAL_DEFAULT_LOCALE}>
                   {framing.summary}
-                  {framing.origin === "none" ? ` ${pending("portal.mapZoomHint")}` : null}
                 </p>
+                {/*
+                  A SEPARATE PARAGRAPH, not an appended clause, because the two
+                  sentences are now in two different languages: `framing.summary`
+                  is English prose composed server-side, and this one is the
+                  catalog's. Concatenating them would have put the resident's
+                  language inside an element declaring English.
+                */}
+                {framing.origin === "none" ? (
+                  <p className="text-xs text-muted-foreground">{t("portal.mapZoomHint")}</p>
+                ) : null}
                 {framing.unreadableNote ? (
                   <p className="text-xs text-muted-foreground" lang={PORTAL_DEFAULT_LOCALE}>
                     {framing.unreadableNote}
@@ -808,6 +788,15 @@ function SubmissionForm({
                   <GeometryPickerMap
                     onGeometryChange={setGeometry}
                     contextLayers={contextLayers}
+                    /*
+                      THE MAP SPEAKS THE RESIDENT'S LANGUAGE. Every sentence this
+                      picker produces used to be an English literal inside it —
+                      on a page that declares Spanish, Farsi or Arabic on its own
+                      wrapper. `words` is the catalog's answer and `lang` stamps
+                      what those words are actually written in.
+                    */
+                    words={buildGeometryPickerWords(translator)}
+                    lang={bcp47}
                     {...(framing.view
                       ? { initialCenter: framing.view.center, initialZoom: framing.view.zoom }
                       : {})}
@@ -849,11 +838,10 @@ function SubmissionForm({
                     />
                     <button
                       type="button"
-                      lang={PORTAL_DEFAULT_LOCALE}
                       className="text-xs font-medium text-destructive hover:underline"
                       onClick={clearPhoto}
                     >
-                      {pending("portal.removePhoto")}
+                      {t("portal.removePhoto")}
                     </button>
                   </div>
                 ) : null}
@@ -902,11 +890,9 @@ function SubmissionForm({
 
               <div className="mt-4 grid gap-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="demo-age" className="text-sm font-medium" lang={PORTAL_DEFAULT_LOCALE}>
-                    {pending("portal.demographicsAge")}{" "}
-                    <span className="text-xs text-muted-foreground" lang={bcp47}>
-                      ({optionalHint})
-                    </span>
+                  <label htmlFor="demo-age" className="text-sm font-medium">
+                    {t("portal.demographicsAge")}{" "}
+                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
                   </label>
                   <select id="demo-age" className={PUBLIC_SELECT_CLASS} value={ageBand} onChange={(event) => setAgeBand(event.target.value)}>
                     <option value="" lang={bcp47}>
@@ -921,11 +907,9 @@ function SubmissionForm({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="demo-zip" className="text-sm font-medium" lang={PORTAL_DEFAULT_LOCALE}>
-                    {pending("portal.demographicsZip")}{" "}
-                    <span className="text-xs text-muted-foreground" lang={bcp47}>
-                      ({optionalHint})
-                    </span>
+                  <label htmlFor="demo-zip" className="text-sm font-medium">
+                    {t("portal.demographicsZip")}{" "}
+                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
                   </label>
                   <Input
                     id="demo-zip"
@@ -938,11 +922,9 @@ function SubmissionForm({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="demo-language" className="text-sm font-medium" lang={PORTAL_DEFAULT_LOCALE}>
-                    {pending("portal.demographicsPrimaryLanguage")}{" "}
-                    <span className="text-xs text-muted-foreground" lang={bcp47}>
-                      ({optionalHint})
-                    </span>
+                  <label htmlFor="demo-language" className="text-sm font-medium">
+                    {t("portal.demographicsPrimaryLanguage")}{" "}
+                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
                   </label>
                   <select id="demo-language" className={PUBLIC_SELECT_CLASS} value={primaryLanguage} onChange={(event) => setPrimaryLanguage(event.target.value)}>
                     <option value="" lang={bcp47}>
@@ -957,11 +939,9 @@ function SubmissionForm({
                 </div>
 
                 <div className="space-y-1.5">
-                  <label htmlFor="demo-tenure" className="text-sm font-medium" lang={PORTAL_DEFAULT_LOCALE}>
-                    {pending("portal.demographicsTenure")}{" "}
-                    <span className="text-xs text-muted-foreground" lang={bcp47}>
-                      ({optionalHint})
-                    </span>
+                  <label htmlFor="demo-tenure" className="text-sm font-medium">
+                    {t("portal.demographicsTenure")}{" "}
+                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
                   </label>
                   <select id="demo-tenure" className={PUBLIC_SELECT_CLASS} value={householdTenure} onChange={(event) => setHouseholdTenure(event.target.value)}>
                     <option value="" lang={bcp47}>
@@ -976,11 +956,9 @@ function SubmissionForm({
                 </div>
 
                 <fieldset className="space-y-1.5">
-                  <legend className="text-sm font-medium" lang={PORTAL_DEFAULT_LOCALE}>
-                    {pending("portal.demographicsRace")}{" "}
-                    <span className="text-xs text-muted-foreground" lang={bcp47}>
-                      ({optionalHint})
-                    </span>
+                  <legend className="text-sm font-medium">
+                    {t("portal.demographicsRace")}{" "}
+                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
                   </legend>
                   <div className="grid gap-1.5 sm:grid-cols-2">
                     {RACE_ETHNICITY.filter((race) => race !== "prefer_not_to_say").map((race) => (
@@ -1801,7 +1779,7 @@ export function PublicEngagementPortal({
                         {t("portal.itemCount", { count: formatPortalNumber(topLevel.length, bcp47) })}
                       </p>
                       <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                        <span lang={PORTAL_DEFAULT_LOCALE}>{pending("portal.sortBy")}</span>
+                        <span>{t("portal.sortBy")}</span>
                         <select
                           className="h-9 rounded-lg border border-input bg-background px-2.5 text-xs shadow-xs outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20"
                           value={sortOrder}
@@ -1826,7 +1804,11 @@ export function PublicEngagementPortal({
         <div className="space-y-5">
           {emailUpdatesAvailable ? (
             <article className="public-surface">
-              <PublicSubscribeForm shareToken={shareToken} previewMode={previewMode} />
+              <PublicSubscribeForm
+                shareToken={shareToken}
+                translator={translator}
+                previewMode={previewMode}
+              />
             </article>
           ) : null}
           {categories.length > 0 ? (

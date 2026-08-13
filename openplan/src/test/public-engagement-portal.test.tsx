@@ -215,8 +215,11 @@ describe("PublicEngagementPortal", () => {
   it("tells a resident where the map opens, and admits when nothing framed it", () => {
     const { unmount } = renderPortal();
 
-    expect(screen.getByText(/no study area has been set for this campaign/i)).toBeInTheDocument();
-    expect(screen.getByText(/zoom to your neighbourhood before dropping a pin/i)).toBeInTheDocument();
+    // Both sentences reworded 2026-08-13, and the second one moved into the
+    // catalog: "study area"/"campaign" and "your neighbourhood"/"dropping a
+    // pin" were terms of art rendered to the public, in English, on every page.
+    expect(screen.getByText(/no area has been set for this page/i)).toBeInTheDocument();
+    expect(screen.getByText(/zoom in to your own street before you mark a spot/i)).toBeInTheDocument();
     unmount();
 
     const framed = resolvePortalMapFraming({
@@ -233,7 +236,7 @@ describe("PublicEngagementPortal", () => {
       screen.getByText(/This map opens on Franklin County, Ohio — the linked project's study area\./i)
     ).toBeInTheDocument();
     // The continental instruction belongs only to the unframed case.
-    expect(screen.queryByText(/zoom to your neighbourhood before dropping a pin/i)).toBeNull();
+    expect(screen.queryByText(/zoom in to your own street before you mark a spot/i)).toBeNull();
   });
 
   it("renders submission guidance and optionality cues from the message catalog", () => {
@@ -444,7 +447,7 @@ describe("the portal in the participant's language", () => {
     const notice = screen.getByText(/solo está disponible parcialmente en Español/i);
     // The English a resident actually meets first: the map-framing sentence on
     // the default tab, built as English prose server-side.
-    const englishFraming = screen.getByText(/No study area has been set for this campaign/i);
+    const englishFraming = screen.getByText(/No area has been set for this page/i);
 
     expect(notice.compareDocumentPosition(englishFraming) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(englishFraming.getAttribute("lang")).toBe("en");
@@ -462,7 +465,21 @@ describe("the portal in the participant's language", () => {
     renderPortal({ demographicsEnabled: true, ...localeFor("es") });
 
     const notice = screen.getByText(/solo está disponible parcialmente en Español/i);
-    const firstEnglishLabel = screen.getByText("Age range");
+    /*
+      NOT the field LABEL any more. The five demographic labels moved into the
+      catalog on 2026-08-13 (where better Spanish for them had in fact existed
+      for months, shadowed by an English literal), so the English that remains in
+      this block is `demographicLabel` — the age bands, languages, tenure and
+      race/ethnicity OPTION text, which is shared with the operator console's
+      aggregate views and must name a band identically there.
+
+      Found by the attribute that MARKS it as English rather than by its words,
+      so this case keeps testing the disclosure rather than one option's spelling.
+    */
+    const firstEnglishLabel = document.querySelector(
+      '[data-testid="portal-demographics"] [lang="en"], select option[lang="en"]'
+    ) as HTMLElement;
+    expect(firstEnglishLabel, "no English left in the demographics block to disclose").toBeTruthy();
 
     // Position, not mere presence: a disclosure a resident meets AFTER the
     // English has already misled them.

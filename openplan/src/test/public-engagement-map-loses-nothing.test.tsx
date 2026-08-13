@@ -236,15 +236,18 @@ describe("what is behind the door is still there", () => {
     /*
       And the way to hear what happens next, which is not behind a tab at all.
 
-      Found by its button and its input TYPE, not by a label, because it has no
-      label: `PublicSubscribeForm` renders a bare `<Input type="email">` with a
-      placeholder and nothing else, so a screen reader announces "edit text"
-      with no name. That is a real accessibility defect on a resident-facing
-      surface, recorded here rather than papered over — this file's job is only
-      to prove the form did not disappear in the move.
+      Found by its LABEL since 2026-08-13. It used to be found by its input type,
+      because the field had no label at all: a bare `<Input type="email">` with a
+      placeholder, which a screen reader announces as "edit text" with no name.
+      That defect is fixed and `public-engagement-subscribe-form.test.tsx` is
+      what holds it fixed; this file's job is only to prove the form did not
+      disappear in the move, so it now asks for the field the way a resident
+      using a screen reader would find it.
     */
-    expect(screen.getByRole("button", { name: /notify me/i })).toBeInTheDocument();
-    expect(document.querySelector('input[type="email"]')).not.toBeNull();
+    expect(
+      screen.getByRole("button", { name: EN_MESSAGES.messages["portal.subscribeSubmit"] })
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText(EN_MESSAGES.messages["portal.subscribeEmailLabel"])).toBeInTheDocument();
   });
 
   /**

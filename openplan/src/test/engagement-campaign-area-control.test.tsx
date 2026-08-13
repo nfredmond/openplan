@@ -82,7 +82,7 @@ describe("the operator can see and set what frames the public map", () => {
 
     render(<EngagementCampaignControls campaign={campaign} projects={[]} />);
 
-    expect(await screen.findByText(/no study area has been set for this campaign/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no area has been set for this page/i)).toBeInTheDocument();
     expect(
       screen.getByText(/the first resident to open this campaign sees the whole country/i)
     ).toBeInTheDocument();
@@ -103,7 +103,7 @@ describe("the operator can see and set what frames the public map", () => {
 
     expect(await screen.findByText(/Could not read where the public map opens/i)).toBeInTheDocument();
     // The honest failure must not be dressed up as the ordinary empty state.
-    expect(screen.queryByText(/no study area has been set for this campaign/i)).toBeNull();
+    expect(screen.queryByText(/no area has been set for this page/i)).toBeNull();
   });
 
   it("opens the shared any-place picker to set the campaign's own area", async () => {

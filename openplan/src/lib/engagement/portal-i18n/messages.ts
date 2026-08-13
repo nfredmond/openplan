@@ -316,6 +316,34 @@ export const EN_PORTAL_MESSAGES = {
   "portal.backgroundHint": "Change what the map looks like underneath.",
   "portal.backgroundUnavailable": "not available on this site",
 
+  /*
+    THE NAME OF EVERY BACKGROUND ON OFFER, one key per id in
+    `PUBLIC_BASEMAP_IDS`. These were literals in `basemaps.ts`, which meant the
+    picker's HEADING was translated into all 22 languages while every option
+    inside it stayed English — a control whose own label a resident could read
+    and whose choices they could not.
+
+    They stay in this catalog rather than becoming a `label` field per locale in
+    the registry, because the registry is cartographic configuration read by the
+    server and this is participant copy; and because a language added here must
+    not require an edit to a file that names Mapbox style ids.
+
+    `portal-basemap-labels.ts` binds a registry id to these two keys, and
+    `portal-basemap-words.test.ts` fails if an id ever exists without them — an
+    id added to the registry with no catalog entry would otherwise render as the
+    raw key to the public.
+  */
+  "portal.background.streets.label": "Streets",
+  "portal.background.streets.description": "Roads, place names and landmarks.",
+  "portal.background.satellite.label": "Satellite",
+  "portal.background.satellite.description": "Photographs from above, with street names on top.",
+  "portal.background.terrain.label": "Terrain",
+  "portal.background.terrain.description": "Hills, trails, parks and waterways.",
+  "portal.background.light.label": "Plain and pale",
+  "portal.background.light.description": "A quiet background, so the marked shapes stand out.",
+  "portal.background.dark.label": "Plain and dark",
+  "portal.background.dark.description": "A quiet dark background, easier at night.",
+
   // --------------------------------------------- portal: nothing framed this
   /*
     NOBODY SAID WHERE. The campaign, the project it belongs to and the agency
@@ -328,6 +356,95 @@ export const EN_PORTAL_MESSAGES = {
   "portal.mapNoAreaBody":
     "Nobody has said which area this page is about, so the map starts wide. Move and zoom it to the place you mean, or write where you mean in your own words in the form.",
   "portal.mapNoAreaDismiss": "OK",
+
+  // ------------------------------------ portal: where this map opens, and why
+  /*
+    WHY THE MAP IS LOOKING WHERE IT IS LOOKING, in the resident's language.
+
+    `resolvePortalMapFraming` composes this sentence server-side as English
+    prose, and the shell used to print that prose verbatim under `lang="en"` on
+    every page in every language. Two defects in one sentence: it was English on
+    a Spanish page, and it was written in an administrator's vocabulary — "no
+    study area has been set for this campaign" names two objects that exist in
+    the software and nowhere in a resident's life.
+
+    So the sentence is REBUILT here from the structured fields the resolver
+    already carries (`origin`, `originLabel`, whether any candidate failed),
+    rather than translated as a blob. The English prose survives for the surfaces
+    that are not participant-facing — the operator preview's own reading of it,
+    and a survey question's framing note — and is marked as English there.
+
+    A named place is never translated: `{place}` is the agency's own name for it.
+  */
+  "portal.mapFramingOn": "This map opens on {place} — {source}.",
+  "portal.mapFramingOnUnnamed": "This map opens on {source}.",
+  "portal.mapFramingSourceCampaign": "the area this page is about",
+  "portal.mapFramingSourceProject": "the area of the project this page is about",
+  "portal.mapFramingSourceWorkspace": "the area this team normally works in",
+  "portal.mapFramingSourcePins": "the places people have already marked here",
+  "portal.mapFramingNoArea":
+    "Nobody has said which area this page is about, so the map starts wide. Move it and zoom in to the place you mean.",
+  "portal.mapFramingUnknownArea":
+    "This map could not be set to one place, so it starts wide. Move it and zoom in to the place you mean.",
+
+  // ----------------------------------------------- portal: the drawing map
+  /*
+    THE OTHER DRAWING MAP. `GeometryPickerMap` is the map on the context page
+    and in the embed, and it spoke English to everyone: "Click the map or press
+    Enter to drop a pin at the crosshair", "2 vertices · line ready", "Vertex
+    limit reached". Terms of art ("vertex", "crosshair"), a mouse verb on a
+    surface most people reach by phone, and none of it reaching the catalog.
+
+    The picker keeps English defaults because the operator console mounts it too
+    (the study-area picker, the project map); the participant surfaces pass
+    these. `{count}` is a number of taps, so it is spelled as a count and not as
+    a technical noun.
+  */
+  "portal.drawPointerHelp":
+    "Tap or click the map to add a point. Right-click removes the last one.",
+  "portal.drawHintPoint": "Tap the map to mark the place you mean.",
+  "portal.drawHintPointPlaced": "Marked. Tap somewhere else to move it.",
+  "portal.drawHintLine": "Tap the map to draw along a street or path.",
+  "portal.drawHintLineStarted": "One point so far. Tap again to keep going.",
+  "portal.drawHintLineMany": "{count} points so far. Keep tapping to make the line longer.",
+  "portal.drawHintArea": "Tap the map to start outlining an area.",
+  "portal.drawHintAreaFew": "{count} so far. An area needs at least three points.",
+  "portal.drawHintAreaReady": "{count} points. Tap the first one again to finish the area.",
+  "portal.drawHintAreaClosed": "Area finished, with {count} points.",
+  "portal.drawNeedThreePoints": "Add at least three points before you finish the area.",
+  "portal.drawFinishArea": "Finish the area",
+  "portal.drawUndoLast": "Undo the last point",
+  "portal.drawStartOver": "Start over",
+  "portal.drawStartedOver": "Starting over. What you drew has been removed.",
+  "portal.mapZoomHint": "Zoom in to your own street before you mark a spot.",
+
+  // ------------------------------------------------- portal: email updates
+  /*
+    THE EMAIL SIGN-UP. Every string here was an English literal inside
+    `public-subscribe-form.tsx`, including the only label the email box has —
+    it had none at all, so a screen reader announced it as "edit text".
+
+    "You can stop the emails at any time" rather than "unsubscribe anytime": the
+    verb is the thing a person does, not the name of the mechanism.
+  */
+  "portal.subscribeHeading": "Get email updates",
+  "portal.subscribeHint":
+    "We will email you when the project team posts an update. You can stop the emails at any time.",
+  "portal.subscribeEmailLabel": "Your email address",
+  "portal.subscribeSubmit": "Email me updates",
+  "portal.subscribeThanks": "Thank you. Check your email and confirm, and we will keep you posted.",
+  "portal.subscribeFailed": "We could not sign you up just now. Please try again.",
+
+  // --------------------------------------- portal: the classic comment form
+  /*
+    The last of the strings `public-engagement-portal.tsx` held in its own
+    `PENDING_PORTAL_TEXT` object — English for every reader, on the page a
+    resident reaches from the map. The object is gone; these are its keys.
+  */
+  "portal.cancelReply": "Cancel reply",
+  "portal.removePhoto": "Remove photo",
+  "portal.shareAnother": "Share another response",
+  "portal.sortBy": "Sort by",
 
   // ------------------------------------------------------------------ survey
   "survey.title": "Survey",
@@ -576,6 +693,63 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.backgroundHeading": "Fondo del mapa",
   "portal.backgroundHint": "Cambie el aspecto del mapa por debajo.",
   "portal.backgroundUnavailable": "no está disponible en este sitio",
+
+  "portal.background.streets.label": "Calles",
+  "portal.background.streets.description": "Calles, nombres de lugares y puntos de referencia.",
+  "portal.background.satellite.label": "Satélite",
+  "portal.background.satellite.description":
+    "Fotografías desde el aire, con los nombres de las calles encima.",
+  "portal.background.terrain.label": "Terreno",
+  "portal.background.terrain.description": "Cerros, senderos, parques y ríos.",
+  "portal.background.light.label": "Sencillo y claro",
+  "portal.background.light.description":
+    "Un fondo tranquilo, para que resalte lo que está marcado.",
+  "portal.background.dark.label": "Sencillo y oscuro",
+  "portal.background.dark.description": "Un fondo oscuro y tranquilo, más cómodo de noche.",
+
+  "portal.mapFramingOn": "Este mapa se abre en {place}: {source}.",
+  "portal.mapFramingOnUnnamed": "Este mapa se abre en {source}.",
+  "portal.mapFramingSourceCampaign": "la zona de la que trata esta página",
+  "portal.mapFramingSourceProject": "la zona del proyecto del que trata esta página",
+  "portal.mapFramingSourceWorkspace": "la zona en la que normalmente trabaja este equipo",
+  "portal.mapFramingSourcePins": "los lugares que ya ha marcado la gente aquí",
+  "portal.mapFramingNoArea":
+    "Nadie ha dicho de qué zona trata esta página, así que el mapa empieza muy abierto. Muévalo y acérquelo al lugar del que habla.",
+  "portal.mapFramingUnknownArea":
+    "No se pudo situar este mapa en un lugar concreto, así que empieza muy abierto. Muévalo y acérquelo al lugar del que habla.",
+
+  "portal.drawPointerHelp":
+    "Toque o haga clic en el mapa para añadir un punto. Con el botón derecho se quita el último.",
+  "portal.drawHintPoint": "Toque el mapa para marcar el lugar del que habla.",
+  "portal.drawHintPointPlaced": "Marcado. Toque en otro sitio para moverlo.",
+  "portal.drawHintLine": "Toque el mapa para dibujar a lo largo de una calle o un camino.",
+  "portal.drawHintLineStarted": "Un punto por ahora. Toque otra vez para seguir.",
+  "portal.drawHintLineMany": "{count} puntos por ahora. Siga tocando para alargar la línea.",
+  "portal.drawHintArea": "Toque el mapa para empezar a delinear un área.",
+  "portal.drawHintAreaFew": "{count} por ahora. Un área necesita al menos tres puntos.",
+  "portal.drawHintAreaReady": "{count} puntos. Toque otra vez el primero para terminar el área.",
+  "portal.drawHintAreaClosed": "Área terminada, con {count} puntos.",
+  "portal.drawNeedThreePoints": "Añada al menos tres puntos antes de terminar el área.",
+  "portal.drawFinishArea": "Terminar el área",
+  "portal.drawUndoLast": "Deshacer el último punto",
+  "portal.drawStartOver": "Empezar de nuevo",
+  "portal.drawStartedOver": "Empezando de nuevo. Se quitó lo que había dibujado.",
+  "portal.mapZoomHint": "Acérquese a su propia calle antes de marcar un punto.",
+
+  "portal.subscribeHeading": "Reciba novedades por correo electrónico",
+  "portal.subscribeHint":
+    "Le escribiremos cuando el equipo del proyecto publique una novedad. Puede dejar de recibir estos correos cuando quiera.",
+  "portal.subscribeEmailLabel": "Su correo electrónico",
+  "portal.subscribeSubmit": "Envíenme novedades",
+  "portal.subscribeThanks":
+    "Gracias. Revise su correo y confirme, y le mantendremos al tanto.",
+  "portal.subscribeFailed": "No pudimos inscribirle en este momento. Inténtelo otra vez, por favor.",
+
+  "portal.cancelReply": "Cancelar la respuesta",
+  "portal.removePhoto": "Quitar la foto",
+  "portal.shareAnother": "Enviar otro comentario",
+  "portal.sortBy": "Ordenar por",
+
   "portal.mapNoAreaTitle": "Este mapa no está centrado en un lugar concreto",
   "portal.mapNoAreaBody":
     "Nadie ha dicho de qué zona trata esta página, así que el mapa empieza muy abierto. Muévalo y acérquelo al lugar del que habla, o escriba en el formulario con sus propias palabras a qué lugar se refiere.",
