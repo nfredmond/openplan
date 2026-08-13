@@ -149,6 +149,15 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260812000018_workspace_gis_layer_references.sql",
     migrationsAtRelease: 201,
   },
+  // 0.20.0 — the UX coherence pass: read-the-map mode, accessible muted text
+  // in all ten palettes, one money format, one failure notice, one
+  // confirmation. No schema change, so the migration head is unmoved — which
+  // this table is happy to record: a release need not carry a migration.
+  {
+    tag: "0.20.0",
+    lastMigration: "20260812000018_workspace_gis_layer_references.sql",
+    migrationsAtRelease: 201,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

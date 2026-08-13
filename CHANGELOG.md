@@ -19,6 +19,68 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.20.0 — 2026-08-12
+
+**No migrations.** Pull and deploy.
+
+### You can see your map layers now
+
+The page panel used to cover the map almost completely — it is 94% opaque with
+a blur behind it, so an uploaded layer was never really visible underneath.
+On Safety, Aerial and Corridor Analysis there is now a **Read the map**
+button: the page slides away, the map fills the window, and the layer
+switches, legend and zoom stay where they are. Press it again or hit Escape to
+bring the page back. A layer you upload now turns itself on, draws thicker,
+and gets a colour nothing else in your workspace is using — and each layer in
+Data Hub has a **Show on the map** link that takes you straight there.
+
+### Small text is readable
+
+Every colour theme now meets the accessibility standard for small text. This
+is the colour OpenPlan uses for field hints, empty pages, and — the reason it
+matters most — every caveat explaining what a number can and cannot tell you.
+Those sentences were the hardest text in the product to read.
+
+### The same number reads the same everywhere
+
+Money was being formatted 44 different ways. Most visibly: the RTP financial
+element rounded reimbursement figures that the invoicing register showed to
+the cent — **the same records** — so reconciling one against the other gave
+two answers. Summary screens may still round, but they now say so and point at
+where the exact figure lives. Four screens were formatting money in the
+browser's language rather than the fund's currency.
+
+### Errors you can act on
+
+Eleven screens were showing you the database's own error text. You now get a
+sentence naming what to do, with the technical detail folded underneath for
+whoever runs your deployment. The same for messages that used to name
+environment variables and migration numbers at planners who cannot change
+them.
+
+### Deleting something asks properly
+
+Every destructive action now uses one in-app confirmation instead of the
+browser's grey box — and where OpenPlan knows what depends on the thing you
+are deleting, it names those things and offers to archive instead.
+
+### Finding things
+
+Search your documents **by filename** — the old search only read inside
+documents, so a file you remembered by name but not by contents was
+unfindable. Sort by newest, oldest or name. And every "screening-grade" label
+is now a link explaining what that means, what it is safe to conclude, and
+what the current error range actually is for the run you are looking at.
+
+### Fixed
+
+- A search term containing a quotation mark could break out of the search and
+  change the query. Terms with brackets silently matched nothing.
+- Three messages said the wrong thing after a wording pass: a county run's
+  quality tier read as though it simply had not been checked yet, a failed
+  evidence read claimed no evidence existed, and packets needing regeneration
+  were described as overdue, which in OpenPlan means past a real deadline.
+
 ## 0.19.0 — 2026-08-12
 
 **Three migrations are required before the app deploys: `20260812000015`,
