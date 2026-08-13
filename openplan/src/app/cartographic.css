@@ -9,6 +9,16 @@
   color: var(--ink);
   font-family: var(--font-body);
   position: relative;
+
+  /* THE RAIL'S GEOMETRY, ONCE.
+     `--op-cart-rail-edge` is where a collapsed rail stops. Anything that must
+     not be covered by a rail FLOATING over a map — Safety's background picker
+     and layer panel, for one — measures from here rather than from a literal
+     that would drift the moment the rail changed width. Derived, not repeated:
+     change either input and everything downstream follows. */
+  --op-cart-rail-inset: 16px;
+  --op-cart-rail-width: 60px;
+  --op-cart-rail-edge: calc(var(--op-cart-rail-inset) + var(--op-cart-rail-width));
 }
 
 /* ---------- Reusable pill, button, kbd primitives ---------- */
@@ -73,9 +83,9 @@
   position: fixed;
   top: 16px;
   bottom: 16px;
-  left: 16px;
+  left: var(--op-cart-rail-inset);
   z-index: 40;
-  width: 60px;
+  width: var(--op-cart-rail-width);
   background: var(--panel);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -964,6 +974,120 @@ body[data-map-fills-surface="true"] .op-cart-surface__body {
      longer scrolls — the map-first layout scrolls its own sidebar instead. Left
      in, it re-introduced ~10px of the inset this rule exists to remove. */
   scrollbar-gutter: auto;
+}
+
+/* ═══ EDGE TO EDGE (2026-08-13) ═══
+
+   The rules above emptied the surface panel. These take away the INSETS around
+   it, which is where the rest of the window was going. Measured in Chrome at
+   1600×900 against this tree, signed in, on /safety:
+
+     rail column   272px  (`@media (min-width: 1200px)` rests the rail expanded
+                           at 240px and pushes header, surface and account card
+                           to left: 272px)
+     right inset    16px
+     bottom inset   16px
+     → crash map    876×796 at (274, 86) = 48.4% of the window.
+
+   THE RAIL IS NOT DELETED — IT STOPS RESERVING A COLUMN.
+
+   `display: none` on the rail would have bought the same 272px and left a
+   planner on a full-screen map with no visible way to any other module. A
+   resident on the public portal can be given one door because they have one
+   errand; a planner came from somewhere and is going somewhere else.
+
+   So the rail reverts, on this route only, to the collapsed 60px icon strip
+   with hover/focus expansion that this file ALREADY ships below 1200px — and
+   floats over the map instead of pushing it. Its own comment gives the reason:
+   "Below 1200px the map is the scarce resource, so the collapsed-with-hover-
+   expand behavior is unchanged." On a route whose content IS a map, the map is
+   the scarce resource at every width. Nothing new is invented here; an existing
+   behavior is applied where its own stated condition holds.
+
+   Every module therefore stays one click from the full-screen map, permanently
+   on screen, in the same place as on every other page — plus the header's
+   "Jump to a module" palette (⌘K), which also stays.
+
+   The hover/focus offsets are neutralised too: without that, hovering the rail
+   would slide the whole map 272px sideways and force Mapbox to re-render. */
+/* NOT ON A PHONE. Below 720px the rail is still a floating 60px strip down the
+   left edge, and on a 390px screen that is 15% of the WIDTH — pulling the
+   surface out to left: 0 there would put the map under it and win nothing. The
+   phone layout keeps its 16px inset and gains its map height inside the module
+   instead (`safety-workspace.tsx`). */
+@media (min-width: 721px) {
+  body[data-map-fills-surface="true"] .op-cart-surface,
+  body[data-map-fills-surface="true"] .op-cart-rail:hover ~ .op-cart-surface,
+  body[data-map-fills-surface="true"] .op-cart-rail:focus-within ~ .op-cart-surface {
+    left: 0;
+    /* `--cp-reserved` and not a literal 0: when the Planner Agent panel docks
+       it widens that variable, and the surface has to give way or the agent
+       opens on top of the filters sidebar. */
+    right: var(--cp-reserved, 0px);
+    bottom: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-radius: 0;
+  }
+}
+
+/* THE PHONE'S 104px OF NOTHING. The `max-width: 720px` block starts the surface
+   at `top: 160px` to clear a header that may wrap; measured at 390×844 that
+   header is a single 40px row ending at y=56, so 104px of the screen was blank.
+   Scoped to this route because it is the only one measured, and because it is
+   the only one where the reclaimed height is the content. */
+@media (max-width: 720px) {
+  body[data-map-fills-surface="true"] .op-cart-surface {
+    top: 72px;
+    bottom: 16px;
+  }
+}
+
+body[data-map-fills-surface="true"] .op-cart-rail {
+  width: var(--op-cart-rail-width);
+}
+body[data-map-fills-surface="true"] .op-cart-rail:hover,
+body[data-map-fills-surface="true"] .op-cart-rail:focus-within {
+  width: 240px;
+}
+/* Labels and group titles ride the collapsed presentation back: the
+   `min-width: 1200px` block pins them to opacity 1 for a rail that is 240px
+   wide at rest, and on a 60px one they would print over the icons. */
+body[data-map-fills-surface="true"] .op-cart-rail__group-title,
+body[data-map-fills-surface="true"] .op-cart-rail__tip {
+  opacity: 0;
+}
+body[data-map-fills-surface="true"] .op-cart-rail:hover .op-cart-rail__group-title,
+body[data-map-fills-surface="true"] .op-cart-rail:focus-within .op-cart-rail__group-title,
+body[data-map-fills-surface="true"] .op-cart-rail:hover .op-cart-rail__tip,
+body[data-map-fills-surface="true"] .op-cart-rail:focus-within .op-cart-rail__tip {
+  opacity: 1;
+}
+/* Same reason: the badge's expanded position is the right edge of a 240px row,
+   which is off the end of a 60px one. */
+body[data-map-fills-surface="true"] .op-cart-rail__badge {
+  top: 5px;
+  left: 28px;
+  right: auto;
+}
+body[data-map-fills-surface="true"] .op-cart-rail:hover .op-cart-rail__badge,
+body[data-map-fills-surface="true"] .op-cart-rail:focus-within .op-cart-rail__badge {
+  top: 10px;
+  left: auto;
+  right: 14px;
+}
+
+/* The header and the account card keep their 16px of air beside the collapsed
+   rail, at rest and on hover — they float over the map now, so they must not
+   travel with it. */
+body[data-map-fills-surface="true"] .op-cart-hdr,
+body[data-map-fills-surface="true"] .op-cart-account,
+body[data-map-fills-surface="true"] .op-cart-rail:hover ~ .op-cart-hdr,
+body[data-map-fills-surface="true"] .op-cart-rail:focus-within ~ .op-cart-hdr,
+body[data-map-fills-surface="true"] .op-cart-rail:hover ~ .op-cart-account,
+body[data-map-fills-surface="true"] .op-cart-rail:focus-within ~ .op-cart-account {
+  left: calc(var(--op-cart-rail-edge) + 16px);
 }
 
 /* ---------- Wide-content override ---------- */

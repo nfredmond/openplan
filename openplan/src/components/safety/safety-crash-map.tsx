@@ -365,7 +365,41 @@ export function SafetyCrashMap({
       popup.remove();
     });
 
+    /**
+     * THE CANVAS HAS TO FOLLOW THE CONTAINER, AND MAPBOX'S OWN `trackResize`
+     * DID NOT.
+     *
+     * Measured in Chrome at 1600×900 on 2026-08-13, on /safety, after the route
+     * was given the full width of the window: the map ELEMENT was 1150×813 and
+     * the `<canvas>` inside it was 878×813 — 272px of the map was empty panel,
+     * and it stayed empty until the window itself was resized by a pixel, at
+     * which point the canvas snapped to 1151 and painted. So the defect is
+     * invisible to any check that reads the container's rectangle (this lane's
+     * first measurement reported 64.9% of the window and was wrong about a
+     * quarter of it) and invisible to every test in this repo, because jsdom
+     * runs no Mapbox and has no box model.
+     *
+     * The cause is the order of two effects that both run after mount:
+     * `SafetyMapFillsSurface` sets the body attribute that widens the route
+     * surface, and this effect builds the map. Mapbox's `trackResize` did not
+     * pick the change up. Rather than depend on which of the two wins, or on
+     * Mapbox's internal observer, the container is watched here and the map is
+     * told directly. That also covers every later cause — the Planner Agent
+     * panel docking, the sidebar wrapping, a devtools split — none of which
+     * change the window size either.
+     */
+    const resizeObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(() => {
+            // `resize()` is a no-op when the dimensions already agree, so this
+            // costs nothing on the observer's initial synchronous callback.
+            map.resize();
+          });
+    resizeObserver?.observe(map.getContainer());
+
     return () => {
+      resizeObserver?.disconnect();
       map.remove();
       mapRef.current = null;
       // The binding hook must stop painting into a map that no longer exists.

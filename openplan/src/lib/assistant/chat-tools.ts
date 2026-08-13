@@ -21,7 +21,7 @@ import {
   assistantApprovalActionSchema,
   type AssistantApprovalAction,
 } from "@/lib/assistant/action-approval-server";
-import type { AssistantTargetKind } from "@/lib/assistant/catalog";
+import { ASSISTANT_TARGET_KINDS, type AssistantTargetKind } from "@/lib/assistant/catalog";
 import { normalizeModelRunKpiComparisonItems } from "@/lib/models/kpi-comparison";
 import {
   LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
@@ -145,28 +145,10 @@ export type BuildAssistantChatToolsParams = {
   budget: ChatToolBudget;
 };
 
-const ASSISTANT_TARGET_KIND_VALUES = [
-  "workspace",
-  "analysis_studio",
-  "project",
-  "rtp_registry",
-  "rtp_cycle",
-  "plan",
-  "program",
-  "scenario_set",
-  "model",
-  "report",
-  "rtp_packet_report",
-  "run",
-  // Module lanes (workspace-scoped; id optional) added by the contexts lane.
-  "grants",
-  "invoicing",
-  "engagement",
-  "safety",
-  "aerial",
-  "knowledge_base",
-  "data_hub",
-] as const satisfies readonly AssistantTargetKind[];
+/* The catalog's own list, not a copy of it. This file kept the second copy; the
+   API route kept a third, and the third one was seven kinds short. See
+   ASSISTANT_TARGET_KINDS in catalog.ts. */
+const ASSISTANT_TARGET_KIND_VALUES = ASSISTANT_TARGET_KINDS;
 
 type ChatToolRefusal = { status: "refused"; reason: string };
 type ChatToolError = { status: "error"; message: string };

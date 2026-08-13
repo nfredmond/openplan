@@ -1,25 +1,52 @@
 import { resolveQuickLinkApproval } from "@/lib/runtime/action-metadata";
 
-export type AssistantTargetKind =
-  | "workspace"
-  | "analysis_studio"
-  | "project"
-  | "rtp_registry"
-  | "rtp_cycle"
-  | "plan"
-  | "program"
-  | "scenario_set"
-  | "model"
-  | "report"
-  | "rtp_packet_report"
-  | "run"
-  | "grants"
-  | "invoicing"
-  | "engagement"
-  | "safety"
-  | "aerial"
-  | "knowledge_base"
-  | "data_hub";
+/**
+ * EVERY SURFACE THE ASSISTANT CAN BE ASKED ABOUT — the one list, at runtime.
+ *
+ * ═══ WHY THIS IS A VALUE AND NOT JUST A TYPE ═══
+ *
+ * It used to be a bare union here, and the two places that need the names at
+ * RUNTIME each wrote them out again: `chat-tools.ts` (the `load_surface_context`
+ * tool's enum) and `app/api/assistant/context/route.ts` (the query schema). The
+ * route's copy stopped at "run" and never gained the seven module lanes added by
+ * the contexts lane, so the API rejected `grants`, `invoicing`, `engagement`,
+ * `safety`, `aerial`, `knowledge_base` and `data_hub` — 7 of 19 — with
+ * `400 Invalid assistant context query`.
+ *
+ * `loadAssistantContext` handled all seven perfectly well. The only thing wrong
+ * was a hand-written list that could not see the type it was copying. Measured
+ * in Chrome on 2026-08-13: one load of /safety fired eleven identical failing
+ * requests and printed eleven console errors, and the Planner Agent got no
+ * context for the page it was sitting on.
+ *
+ * The type is now DERIVED from this array, so a kind that exists is a kind both
+ * runtime schemas accept: adding one here is the whole change, and there is no
+ * second list left to forget.
+ */
+export const ASSISTANT_TARGET_KINDS = [
+  "workspace",
+  "analysis_studio",
+  "project",
+  "rtp_registry",
+  "rtp_cycle",
+  "plan",
+  "program",
+  "scenario_set",
+  "model",
+  "report",
+  "rtp_packet_report",
+  "run",
+  // Module lanes (workspace-scoped; id optional) added by the contexts lane.
+  "grants",
+  "invoicing",
+  "engagement",
+  "safety",
+  "aerial",
+  "knowledge_base",
+  "data_hub",
+] as const;
+
+export type AssistantTargetKind = (typeof ASSISTANT_TARGET_KINDS)[number];
 
 export type AssistantTarget = {
   kind: AssistantTargetKind;

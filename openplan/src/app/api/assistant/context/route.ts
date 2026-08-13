@@ -3,24 +3,16 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { buildAssistantPreview } from "@/lib/assistant/respond";
-import type { AssistantTargetKind } from "@/lib/assistant/catalog";
+import { ASSISTANT_TARGET_KINDS, type AssistantTargetKind } from "@/lib/assistant/catalog";
 import { loadAssistantContext } from "@/lib/assistant/context";
 
 const querySchema = z.object({
-  kind: z.enum([
-    "workspace",
-    "analysis_studio",
-    "project",
-    "rtp_registry",
-    "rtp_cycle",
-    "plan",
-    "program",
-    "scenario_set",
-    "model",
-    "report",
-    "rtp_packet_report",
-    "run",
-  ]),
+  /* THE CANONICAL LIST, NOT A COPY OF IT.
+     This enum was written out by hand and stopped at "run", so the seven module
+     lanes — grants, invoicing, engagement, safety, aerial, knowledge_base,
+     data_hub — were rejected here with 400 while `loadAssistantContext` below
+     handled every one of them. See ASSISTANT_TARGET_KINDS in assistant/catalog. */
+  kind: z.enum(ASSISTANT_TARGET_KINDS),
   id: z.string().uuid().nullable().optional(),
   workspaceId: z.string().uuid().nullable().optional(),
   runId: z.string().uuid().nullable().optional(),

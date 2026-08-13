@@ -856,7 +856,19 @@ export function SafetyWorkspace({
         data-testid="safety-map-first-shell"
       >
         <div
-          className="relative h-[16rem] shrink-0 lg:h-auto lg:min-h-0 lg:flex-1"
+          /*
+            PHONE HEIGHT IS A SHARE OF THE SCREEN, NOT A FIXED 16rem.
+
+            16rem is 256px, which on a 390×844 phone measured 27.5% of the
+            window — a map-first page whose map was a quarter of it. The column
+            below scrolls (measured: 1181px of sidebar in a scrolling parent),
+            so height taken here costs the controls nothing but a scroll. `svh`,
+            not `vh`: mobile browser chrome is inside `vh`, and 45vh overflows on
+            exactly the device this branch exists for. The 16rem floor keeps the
+            old behaviour on a short window (a landscape phone, a split screen)
+            where 45% of the height is less than the map needs to be a map.
+          */
+          className="relative h-[max(16rem,45svh)] shrink-0 lg:h-auto lg:min-h-0 lg:flex-1"
           data-testid="safety-map-stage"
         >
           <SafetyCrashMap
@@ -878,8 +890,28 @@ export function SafetyWorkspace({
               Mapbox's own zoom and compass buttons are top-right; two controls
               in one corner is how a map ends up with no map left. It renders
               nothing at all when the deployment offers fewer than two
-              backgrounds. */}
-          <div className="pointer-events-none absolute left-3 top-3 z-10 flex w-[min(15rem,calc(100%-1.5rem))] flex-col gap-2">
+              backgrounds.
+
+              THE LEFT OFFSET CLEARS THE NAV RAIL. Since the surface runs to the
+              left edge of the window on this route, the rail no longer sits in a
+              column of its own — it floats over the map's left margin. A control
+              at `left-3` would be underneath it (the rail is z-40 in the shell,
+              this is z-10 inside a z-20 surface, so the rail wins and the picker
+              is simply gone). `--op-cart-rail-edge` is the shell's own derived
+              answer for where the collapsed rail stops; the `0px` fallback is
+              what a render outside the cartographic shell — a test, a future
+              embed — gets, and it restores the plain `left-3` position. */}
+          <div
+            className="pointer-events-none absolute top-3 z-10 flex flex-col gap-2"
+            style={{
+              left: "calc(var(--op-cart-rail-edge, 0px) + 0.75rem)",
+              // The width has to pay for the offset AND for Mapbox's own zoom
+              // and compass stack on the right — measured 40px plus its margin.
+              // Without the second term, a 390px phone put a 15rem pill straight
+              // through the ＋/− buttons.
+              width: "min(15rem, calc(100% - var(--op-cart-rail-edge, 0px) - 4.25rem))",
+            }}
+          >
             <PublicBasemapPicker
               className="pointer-events-auto"
               choices={basemapChoices}
@@ -889,8 +921,14 @@ export function SafetyWorkspace({
           </div>
 
           {/* Docked over the map on a screen with room for it; the column below
-              carries the same key on anything smaller. */}
-          <CrashSeverityKey className="pointer-events-none absolute bottom-8 left-3 z-10 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border/60 bg-background/90 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur-sm lg:flex" />
+              carries the same key on anything smaller.
+
+              BOTTOM-RIGHT, NOT BOTTOM-LEFT. The bottom-left corner of a
+              full-bleed map is where the shell's account card floats (fixed,
+              z-30), and the key would have been half underneath it. The right
+              side of the map is the sidebar's edge and is otherwise empty;
+              `bottom-8` keeps it clear of Mapbox's attribution strip. */}
+          <CrashSeverityKey className="pointer-events-none absolute bottom-8 right-3 z-10 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border/60 bg-background/90 px-2.5 py-1.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur-sm lg:flex" />
         </div>
 
         {/* THE SIDEBAR. Everything a planner does to the map, in the order they

@@ -316,7 +316,37 @@ export function useWorkspaceGisMapBinding({
     setCollections({});
   }, [workspaceId]);
 
-  /** Draw. Deferred to `style.load` when the style is still arriving. */
+  /**
+   * Draw. Retried until the style can accept layers.
+   *
+   * ═══ THE ONE-THIRD-OF-LOADS BUG THIS REPLACED (2026-08-13) ═══
+   *
+   * It used to say `map.once("style.load", paint)` when the style was not ready.
+   * `style.load` fires ONCE per style, early — and `isStyleLoaded()` keeps
+   * returning false for a while AFTER it, while sources and sprites settle. So
+   * whenever the agency's geometry arrived inside that window, the paint was
+   * deferred to an event that had already fired and would not fire again. The
+   * layer never drew, for the whole life of that page, behind a ticked checkbox
+   * that said it was on — which is precisely the "your layer is on, and nothing
+   * is on the map" failure the panel beside it was built to stop.
+   *
+   * Measured on /safety in Chrome, five consecutive loads of the same URL with
+   * one uploaded GeoJSON switched on: 2 of 5 never added the source at all. The
+   * effect ran with map, ready, enabled and the collection all present in every
+   * one of the five; the only difference was `isStyleLoaded()` at that instant.
+   * A pixel comparison of the same 40×40 patch with the layer on and off was
+   * identical on the failing loads.
+   *
+   * `styledata` fires repeatedly as a style settles, so re-checking on each one
+   * turns a single missed edge into a poll that converges; `idle` is the
+   * backstop for a style that stops emitting `styledata` before it reports
+   * loaded. Both are removed as soon as one of them wins, and on unmount — the
+   * `once` this replaced had no cleanup at all, so a map that was torn down
+   * mid-load kept a handler holding the whole binding closure alive.
+   *
+   * Shared by three maps (shell backdrop, Corridor Analysis, Safety), so this
+   * was one bug in three places.
+   */
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || !enabled) return;
@@ -332,9 +362,22 @@ export function useWorkspaceGisMapBinding({
 
     if (map.isStyleLoaded()) {
       paint();
-    } else {
-      map.once("style.load", paint);
+      return;
     }
+
+    const paintWhenStyleAccepts = () => {
+      if (!map.isStyleLoaded()) return;
+      map.off("styledata", paintWhenStyleAccepts);
+      map.off("idle", paintWhenStyleAccepts);
+      paint();
+    };
+
+    map.on("styledata", paintWhenStyleAccepts);
+    map.on("idle", paintWhenStyleAccepts);
+    return () => {
+      map.off("styledata", paintWhenStyleAccepts);
+      map.off("idle", paintWhenStyleAccepts);
+    };
   }, [mapRef, ready, enabled, workspaceLayers, collections, theme]);
 
   useEffect(() => {
