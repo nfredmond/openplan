@@ -19,6 +19,26 @@
   --op-cart-rail-inset: 16px;
   --op-cart-rail-width: 60px;
   --op-cart-rail-edge: calc(var(--op-cart-rail-inset) + var(--op-cart-rail-width));
+
+  /* THE BOTTOM SAFE AREA — the strip the floating chrome OWNS.
+     ------------------------------------------------------------------
+     The Planner Agent launcher and the account card float in the bottom
+     corners of the window at a z-index above the page. Page content that
+     scrolls under them is not merely ugly: `document.elementFromPoint` at the
+     centre of a control down there returns the launcher, so a real pointer
+     press lands on the launcher and the control cannot be operated at all.
+     That shipped — the dashboard's chart picker footer and Safety's filter
+     chips both ended up under it — and `el.click()` in a test reports success
+     on every one of them, because a dispatched event skips hit-testing.
+
+     A z-index race is unwinnable: the NEXT control somebody puts in a bottom
+     corner collides again. So the chrome gets a reserved strip instead, and
+     the content surface simply stops above it. Everything down here is
+     derived from the height of the tallest floating control, so growing the
+     launcher moves the content edge with it. */
+  --op-cart-chrome-gap: 16px;
+  --op-cart-chrome-height: 44px;
+  --op-cart-safe-bottom: calc(var(--op-cart-chrome-height) + var(--op-cart-chrome-gap) * 2);
 }
 
 /* ---------- Reusable pill, button, kbd primitives ---------- */
@@ -364,12 +384,20 @@ html.dark .op-cart-rail__btn:hover {
 .op-cart-surface {
   position: fixed;
   top: 84px;
-  /* Matches the left/right inset. The old 80px reserved a strip for the account
-     card and the Planner Agent button, which float ABOVE the surface anyway —
-     so it bought nothing and left the page short of the window. The content
-     area pads itself by the same amount instead, so neither control ever sits
-     on top of something you are reading. */
-  bottom: 16px;
+  /* STOPS ABOVE THE FLOATING CHROME, and this is not a taste call.
+
+     It used to be 16px, with `padding-bottom` on the scroll body standing in
+     for the reserved strip. That reasoning ("the content area pads itself, so
+     neither control sits on top of something you are reading") holds only for
+     a page scrolled to its end. Padding is the LAST thing in the scroll box;
+     everything above it passes under the launcher on the way there, and the
+     browser's own hit test then hands presses in that strip to the launcher.
+     Measured: /safety's crash-filter chips and the dashboard chart picker's
+     "Show all" both land in it while scrolling and become unpressable.
+
+     The surface ends where the chrome's strip begins, so no scroll position
+     can put page content underneath it. */
+  bottom: var(--op-cart-safe-bottom);
   left: 92px;
   right: calc(272px + var(--cp-reserved, 0px));
   z-index: 20;
@@ -449,10 +477,6 @@ html.dark .op-cart-rail__btn:hover {
      card enough room that its corner radius does not fight the panel's. */
   padding: 20px 26px 20px;
   scrollbar-gutter: stable both-edges;
-  /* AFTER the shorthand, which would otherwise reset it. Clears the floating
-     account card (bottom-left) and Planner Agent button (bottom-right) now that
-     the surface runs the full height of the window. */
-  padding-bottom: 76px;
 }
 .op-cart-surface__body::-webkit-scrollbar {
   width: 6px;
@@ -478,7 +502,10 @@ html.dark .op-cart-rail__btn:hover {
 .op-cart-mapdock {
   position: fixed;
   top: 16px;
-  bottom: 16px;
+  /* The dock's own panels are page controls (layer switches, the map-reading
+     toggle) and it runs down the right edge, straight through the launcher's
+     corner. Same strip, same rule. */
+  bottom: var(--op-cart-safe-bottom);
   right: calc(16px + var(--cp-reserved, 0px));
   z-index: 25;
   width: 240px;
@@ -786,7 +813,9 @@ html.dark .op-cart-layer-item__swatch {
 
 .op-cart-zoom {
   position: fixed;
-  bottom: 80px;
+  /* Was a literal 80px — hand-tuned once to clear the launcher, with no link to
+     the thing it was clearing. Derived now: it stacks on top of the safe area. */
+  bottom: calc(var(--op-cart-safe-bottom) + 4px);
   right: calc(16px + var(--cp-reserved, 0px));
   z-index: 25;
   background: var(--panel);
@@ -833,11 +862,40 @@ html.dark .op-cart-zoom button:hover {
   pointer-events: auto;
 }
 
+/* THE LAUNCHER LIVES IN THE SAFE AREA, and says so in CSS rather than in
+   Tailwind literals on the button.
+
+   It was `fixed bottom-5 right-5` in the component, which is a number nothing
+   else in the shell could read. The strip the surface reserves and the place
+   the button actually sits have to be the same fact or they drift apart —
+   which is how a 44px button ended up over a 16px gap of live page content.
+   The height here is the token the safe area is computed from, so a taller
+   launcher moves the content edge instead of covering it. */
+.op-cart-shell .op-cart-copilot-launch {
+  position: fixed;
+  right: var(--op-cart-chrome-gap);
+  bottom: var(--op-cart-chrome-gap);
+  height: var(--op-cart-chrome-height);
+  z-index: 95;
+}
+
+/* THE BACKDROP MAP'S WORDMARK IS COVERED, AND THIS FILE DELIBERATELY DOES NOT
+   MOVE IT. The hit test finds it on every page: the element at the centre of
+   the backdrop's "Mapbox homepage" link is the nav rail. Every candidate home
+   for it is under a different piece of chrome — the account card, the Planner
+   Agent launcher, or the content panel itself, which covers most of the window
+   by design. Nudging it from behind one panel to behind another would close the
+   finding without fixing anything. Whether a decorative Mapbox backdrop that is
+   ~95% covered can carry its attribution at all is a licence question about the
+   product, not a CSS question; it is reported rather than papered over. */
+
 /* ---------- ACCOUNT BADGE ---------- */
 
 .op-cart-account {
   position: fixed;
-  bottom: 16px;
+  /* The other half of the floating chrome, in the opposite corner and the same
+     strip. `--op-cart-chrome-height` is sized for the taller of the two. */
+  bottom: var(--op-cart-chrome-gap);
   left: 92px;
   z-index: 30;
   display: flex;
@@ -1010,11 +1068,13 @@ body[data-map-fills-surface="true"] .op-cart-surface__body {
 
    The hover/focus offsets are neutralised too: without that, hovering the rail
    would slide the whole map 272px sideways and force Mapbox to re-render. */
-/* NOT ON A PHONE. Below 720px the rail is still a floating 60px strip down the
-   left edge, and on a 390px screen that is 15% of the WIDTH — pulling the
-   surface out to left: 0 there would put the map under it and win nothing. The
-   phone layout keeps its 16px inset and gains its map height inside the module
-   instead (`safety-workspace.tsx`). */
+/* NOT ON A PHONE — and the reason has changed. This used to read "below 720px
+   the rail is still a floating 60px strip down the left edge, so pulling the
+   surface out to left: 0 would put the map under it". That strip is gone: the
+   phone rail is a bottom bar now (see the `max-width: 720px` block below), and
+   nothing floats over the left edge at all. The full-bleed treatment stays
+   desktop-only anyway, because on a phone the surface's inset is what separates
+   the module's own map from the shell's backdrop. */
 @media (min-width: 721px) {
   body[data-map-fills-surface="true"] .op-cart-surface,
   body[data-map-fills-surface="true"] .op-cart-rail:hover ~ .op-cart-surface,
@@ -1040,7 +1100,10 @@ body[data-map-fills-surface="true"] .op-cart-surface__body {
 @media (max-width: 720px) {
   body[data-map-fills-surface="true"] .op-cart-surface {
     top: 72px;
-    bottom: 16px;
+    /* The reserved strip, not 16px: the nav bar and the Planner Agent launcher
+       are down there, and a map surface has controls (the background picker,
+       the layer switches) that would land under both. */
+    bottom: var(--op-cart-safe-bottom);
   }
 }
 
@@ -1157,11 +1220,129 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   }
 }
 
+/* ---------- PHONE: THE RAIL BECOMES A BOTTOM BAR ----------
+
+   A 60px rail pinned to the left edge is a desktop idea. At 390px it was still
+   `position: fixed; left: 16px`, 76px of the window, floating at z-40 over a
+   surface that started at `left: 16px` — so on EVERY route the first ~15% of
+   every line of content was behind it. Measured on /safety at 390x844: the
+   page title, the sentence under it and the project select were all sliced,
+   and the hit test found the crash-map controls underneath rail buttons.
+
+   The two obvious repairs are both bad. Pushing the surface to `left: 92px`
+   leaves a 282px column on a 390px phone. Hiding the rail removes navigation
+   on the only viewport where a planner cannot see the whole app at once.
+
+   So the rail lies down: a horizontal, horizontally-scrolling bar across the
+   bottom, which is where phone navigation belongs and which no content has to
+   flow around. Nothing here is route-specific — it is the shell, so it fixes
+   every page at once. */
 @media (max-width: 720px) {
-  .op-cart-rail {
-    bottom: auto;
-    height: auto;
+  .op-cart-shell {
+    --op-cart-rail-bar-height: 56px;
+    --op-cart-chrome-gap: 8px;
+    /* The bar, then the launcher above it, then the page. Both are real boxes
+       a finger can land on, so both are inside the reserved strip. */
+    --op-cart-safe-bottom: calc(
+      var(--op-cart-rail-bar-height) + var(--op-cart-chrome-height) + var(--op-cart-chrome-gap) * 2
+    );
   }
+
+  .op-cart-rail {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: var(--op-cart-rail-bar-height);
+    border-radius: 14px 14px 0 0;
+    border-bottom: 0;
+  }
+  /* Hover-to-expand is a pointer idiom and there is no pointer here; without
+     this the bar jumped to 240px wide on the first tap. */
+  .op-cart-rail:hover,
+  .op-cart-rail:focus-within {
+    width: auto;
+  }
+  .op-cart-rail__inner {
+    flex-direction: row;
+    align-items: center;
+    padding: 0 6px;
+  }
+  .op-cart-rail__nav {
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* The column version sets `min-height: 0` so it can shrink along its own
+       axis; laid on its side the axis is the other one, and without this the
+       nav refuses to shrink and pushes the theme control off the bar. */
+    min-width: 0;
+  }
+  .op-cart-rail__nav::-webkit-scrollbar {
+    height: 0;
+  }
+  .op-cart-rail__group,
+  .op-cart-rail__foot {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+  }
+  /* Group titles and the vertical separators only mean anything in a column;
+     the tooltip flies out to the RIGHT of a left rail and would land off-screen
+     here. Every destination still carries its icon and its accessible name.
+
+     COLLAPSED, NOT `display: none` — and that is enforced. The gate's rail
+     guard (`src/test/safety-map-runs-to-the-edge.test.ts`) refuses
+     `display: none` on anything whose selector ends in `.op-cart-rail…`,
+     because deleting the rail is the cheap way to make a map bigger and it
+     strands the planner. The rule is blunter than its subject, and the right
+     answer is to collapse the way the short-viewport rules above already do
+     rather than to loosen the guard. */
+  .op-cart-rail__group-title,
+  .op-cart-rail__sep,
+  .op-cart-rail__tip {
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    opacity: 0;
+  }
+  .op-cart-rail__btn {
+    flex: 0 0 auto;
+    margin: 0 2px;
+  }
+
+  /* THE MAP ROUTE'S RAIL OBEYS THE BAR TOO, and these live HERE rather than
+     beside the surface rule they belong with. `safety-map-runs-to-the-edge`
+     reads the rail rules in source order and asserts the FIRST one that is not
+     a hover state rests at `--op-cart-rail-width`; a phone override placed
+     earlier in the file becomes that first rule and the guard reports the rail
+     is never collapsed on desktop. Ordering, not specificity, is what is
+     load-bearing about this position. */
+  body[data-map-fills-surface="true"] .op-cart-shell .op-cart-rail,
+  body[data-map-fills-surface="true"] .op-cart-shell .op-cart-rail:hover,
+  body[data-map-fills-surface="true"] .op-cart-shell .op-cart-rail:focus-within {
+    width: auto;
+  }
+  body[data-map-fills-surface="true"] .op-cart-rail__group-title,
+  body[data-map-fills-surface="true"] .op-cart-rail__tip {
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  .op-cart-shell .op-cart-copilot-launch {
+    /* Above the bar, not on it. */
+    bottom: calc(var(--op-cart-rail-bar-height) + var(--op-cart-chrome-gap));
+  }
+
   .op-cart-surface {
     left: 16px;
     top: 160px;
@@ -1172,11 +1353,13 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   }
   .op-cart-hdr {
     flex-wrap: wrap;
-    left: 92px;
+    /* Nothing floats at the top-left any more, so the header starts at the
+       window inset like the surface under it. */
+    left: 16px;
   }
   .op-cart-rail:hover ~ .op-cart-hdr,
   .op-cart-rail:focus-within ~ .op-cart-hdr {
-    left: 92px;
+    left: 16px;
   }
   .op-cart-account {
     display: none;

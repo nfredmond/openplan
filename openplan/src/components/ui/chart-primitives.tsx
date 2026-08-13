@@ -81,6 +81,11 @@ function blockedLead(kind: InsightBlockedKind | null): { lead: string; warn: boo
       return { lead: "Could not be read", warn: true };
     case "truncated":
       return { lead: "Too much to count here", warn: true };
+    // A number arrived that cannot exist. It is a warning rather than an
+    // information note because the reader has to know the figure is FAULTY, not
+    // merely unavailable — the sentence names the lane and the impossible value.
+    case "impossible":
+      return { lead: "Something is counted wrong", warn: true };
     case "pending":
       return { lead: "Not switched on yet", warn: false };
     case "insufficient":
@@ -476,7 +481,16 @@ export function ChartMeterRows({ series }: { series: InsightSeries }) {
         const percent = whole > 0 ? Math.round((point.value / whole) * 100) : 0;
         const over = percent > 100;
         return (
-          <li key={`${point.label}-${index}`}>
+          /*
+            `data-over-award` is not decoration. Until 2026-08-13 the whole
+            over-award warning — the colour, the icon and the words — hung on
+            `percent > 100` with NOTHING asserting it: mutating that to
+            `percent > 1000` left all 84 dashboard tests green while a meter
+            showing money drawn beyond what the funder authorised lost every
+            marking that said so. The attribute gives the guard a stable hook
+            that does not depend on a stylesheet jsdom has never had.
+          */
+          <li key={`${point.label}-${index}`} data-over-award={over ? "true" : "false"}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
               <span className="min-w-0 truncate text-xs font-medium text-foreground" title={point.label}>
                 {point.label}

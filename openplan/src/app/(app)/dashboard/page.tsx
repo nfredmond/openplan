@@ -23,18 +23,18 @@ import {
 } from "@/lib/stage-gates/rebind";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
+import {
+  runInsightTiles,
+  runKpiCards,
+  runsAreKnownEmpty,
+} from "@/lib/dashboard/run-figures";
 import { DashboardInsights } from "@/components/dashboard/dashboard-insights";
 import { DashboardViewSwitch } from "@/components/dashboard/dashboard-view-switch";
-import {
-  lanePressure,
-  medianOverallScore,
-  recentOverallScores,
-  reportsGenerated,
-  runsPerMonth,
-} from "@/lib/dashboard/insights";
+import { lanePressure, recentOverallScores, runsPerMonth } from "@/lib/dashboard/insights";
 import { awardDrawdown, commentsReceivedOverTime, COMMENT_WINDOW_WEEKS } from "@/lib/dashboard/chart-series";
 import {
   loadDashboardChartRows,
+  noDashboardChartRows,
   type DashboardChartSupabaseLike,
 } from "@/lib/dashboard/chart-reads";
 import {
@@ -66,22 +66,9 @@ import { moduleMetadata } from "@/lib/ui/page-title";
 
 export const metadata = moduleMetadata("Overview");
 
-function fmtPct(value: number | null): string {
-  return value === null ? "N/A" : `${value}%`;
-}
-
-function fmtDate(value: string | null): string {
-  if (!value) {
-    return "Not available";
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  return parsed.toLocaleString();
-}
+// The percentage and date formatters that used to live here moved into
+// `lib/dashboard/run-figures.ts` with the tiles they format, so the honest and
+// the unreadable spellings of a tile sit in one tested file.
 
 export default async function DashboardPage({
   searchParams,
@@ -136,14 +123,8 @@ export default async function DashboardPage({
   const commentWindowStart = new Date(now);
   commentWindowStart.setUTCDate(commentWindowStart.getUTCDate() - COMMENT_WINDOW_WEEKS * 7);
 
-  const [runsResult, operationsSummary, homeGeographyResult, actionActivity, chartRows] = workspaceId
+  const [operationsSummary, homeGeographyResult, actionActivity, chartRows] = workspaceId
     ? await Promise.all([
-        supabase
-          .from("runs")
-          .select("created_at, metrics, summary_text, report_generated_count")
-          .eq("workspace_id", workspaceId)
-          .order("created_at", { ascending: true })
-          .limit(500),
         loadWorkspaceOperationsSummaryForWorkspace(
           supabase as unknown as WorkspaceOperationsSupabaseLike,
           workspaceId
@@ -175,11 +156,12 @@ export default async function DashboardPage({
           supabase as unknown as RecentActionActivitySupabaseLike,
           workspaceId
         ),
-        // The three lanes the Insights figures need that the overview does not
-        // already have: public comments, funding awards, invoice records. Read
-        // in the SAME batch rather than after it — a chart the person may have
-        // switched off must not cost a serial round trip, and every one of these
-        // hands back a read OUTCOME so a failed query cannot render as a zero.
+        // Every figure's rows, in ONE batch: public comments, funding awards,
+        // invoice records — and, since 2026-08-13, this workspace's analysis
+        // RUNS, which used to be read inline above with only `.data` taken. A
+        // chart the person may have switched off must not cost a serial round
+        // trip, and every one of these hands back a read OUTCOME, so a failed
+        // query cannot render as a zero on a tile or as a flat line on a chart.
         loadDashboardChartRows(
           supabase as unknown as DashboardChartSupabaseLike,
           workspaceId,
@@ -187,7 +169,6 @@ export default async function DashboardPage({
         ),
       ])
     : [
-        { data: [] },
         buildWorkspaceOperationsSummaryFromSourceRows({
           projects: [],
           plans: [],
@@ -199,11 +180,7 @@ export default async function DashboardPage({
         { executions: [], error: null },
         // No workspace id means no read happened at all. Empty-and-successful is
         // the honest description of that: there is nothing to disbelieve.
-        {
-          comments: { rows: [], failed: false, pending: false, truncated: false },
-          awards: { rows: [], failed: false, pending: false, truncated: false },
-          invoices: { rows: [], failed: false, pending: false, truncated: false },
-        },
+        noDashboardChartRows(),
       ];
 
   // Whether this workspace's AI assistant can run at all: an Anthropic key the
@@ -215,7 +192,11 @@ export default async function DashboardPage({
     hasAnthropicAccess()
   );
 
-  const runsData = runsResult.data ?? [];
+  // The runs read's OUTCOME, not its rows. Everything runs-derived on this page
+  // goes through it, and `run-figures.ts` is what decides whether a number may
+  // be stated at all.
+  const runsRead = chartRows.runs;
+  const runsData = runsRead.rows;
   const homeGeography = parseWorkspaceHomeGeography(homeGeographyResult.data);
   const homeGeographyIsSet = homeGeography !== null;
 
@@ -250,6 +231,9 @@ export default async function DashboardPage({
       })
     : null;
 
+  // Computed unconditionally and rendered CONDITIONALLY: on an unreadable read
+  // these are all zeros, and `runKpiCards`/`runInsightTiles` refuse to state
+  // them. Nothing below reads `kpis` without going through one of those.
   const kpis = buildWorkspaceKpis({
     workspaceCreatedAt,
     runs: runsData as Array<{
@@ -344,28 +328,7 @@ export default async function DashboardPage({
     },
   ];
 
-  const kpiCards = [
-    {
-      label: "Total runs",
-      value: `${kpis.totalRuns || 0}`,
-      detail: `${kpis.completedRuns} completed runs in this workspace`,
-    },
-    {
-      label: "Run completion rate",
-      value: fmtPct(kpis.runCompletionRate),
-      detail: `${kpis.completedRuns}/${kpis.totalRuns || 0} runs completed`,
-    },
-    {
-      label: "Report generation rate",
-      value: fmtPct(kpis.reportGenerationRate),
-      detail: `${kpis.runsWithReports}/${kpis.totalRuns || 0} runs exported`,
-    },
-    {
-      label: "Time to first result",
-      value: formatTimeToFirstResult(kpis.timeToFirstResultHours),
-      detail: `First run at ${fmtDate(kpis.firstRunAt)}`,
-    },
-  ];
+  const kpiCards = runKpiCards(runsRead, kpis);
 
   /*
     THE INSIGHTS VIEW reads the SAME rows this page already loaded — `runsData`
@@ -373,37 +336,7 @@ export default async function DashboardPage({
     cannot show a different workspace from the one the overview describes, and
     costs nothing.
   */
-  const insightsTiles = [
-    {
-      label: "Analysis runs",
-      value: `${kpis.totalRuns || 0}`,
-      detail: `${kpis.completedRuns} completed`,
-      tone: (kpis.totalRuns > 0 ? "good" : "neutral") as "good" | "neutral" | "attention",
-    },
-    {
-      label: "Reports generated",
-      value: `${reportsGenerated(runsData)}`,
-      detail: `${kpis.runsWithReports}/${kpis.totalRuns || 0} runs exported`,
-      tone: "neutral" as const,
-    },
-    {
-      label: "Median composite",
-      value: medianOverallScore(runsData) === null ? "Not scored" : `${medianOverallScore(runsData)}`,
-      // Screening-grade framing travels with the number, exactly as it does on
-      // the run itself. A median composite on a dashboard is still not a forecast.
-      detail: "Screening-grade. Not comparable across study areas.",
-      tone: "neutral" as const,
-    },
-    {
-      label: "Waiting on you",
-      value: `${operationsSummary.counts.queueDepth}`,
-      detail: "Things waiting on you across the workspace",
-      tone: (operationsSummary.counts.queueDepth > 0 ? "attention" : "good") as
-        | "good"
-        | "neutral"
-        | "attention",
-    },
-  ];
+  const insightsTiles = runInsightTiles(runsRead, kpis, operationsSummary.counts.queueDepth);
 
   const insightLanes = [
     {
@@ -440,9 +373,9 @@ export default async function DashboardPage({
         workspaceId={workspaceId}
         tiles={insightsTiles}
         series={{
-          "runs-per-month": runsPerMonth(runsData),
+          "runs-per-month": runsPerMonth(runsRead),
           "comments-received": commentsReceivedOverTime(chartRows.comments, now),
-          "composite-scores": recentOverallScores(runsData),
+          "composite-scores": recentOverallScores(runsRead),
           "award-drawdown": awardDrawdown(chartRows.awards, chartRows.invoices),
           "open-work": lanePressure(insightLanes),
         }}
@@ -468,8 +401,13 @@ export default async function DashboardPage({
   // stays until the home geography is set AND the user dismisses it
   // (GettingStartedCard holds that rule), with a permanent low-key re-entry
   // link in its place once dismissed.
+  //
+  // AN UNREADABLE RUNS READ IS NOT AN EMPTY WORKSPACE. `runsAreKnownEmpty` is
+  // false when the read failed, so a broken query can no longer print "Your
+  // workspace is ready and empty" or hide the quick actions of a workspace that
+  // is full of work.
   const workspaceIsEmpty =
-    kpis.totalRuns === 0 &&
+    runsAreKnownEmpty(runsRead) &&
     operationsSummary.counts.projects === 0 &&
     operationsSummary.counts.plans === 0 &&
     operationsSummary.counts.programs === 0 &&
@@ -526,6 +464,7 @@ export default async function DashboardPage({
             homeGeographyIsSet={homeGeographyIsSet}
             homeGeographyLabel={homeGeographyLabel(homeGeography)}
             hasRuns={kpis.totalRuns > 0}
+            runsUnreadable={runsRead.failed}
             canManageWorkspace={canManageWorkspace}
             intent={intent}
             engagementCampaignCount={

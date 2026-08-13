@@ -35,9 +35,47 @@
  * The rail's collapsed geometry is also the offset Safety's own map controls
  * use, so the third assertion is that the module measures from the shell's
  * derived variable rather than from a copy of the number.
+ *
+ * ═══ WHAT THIS FILE NO LONGER CLAIMS TO GUARD (2026-08-13) ═══
+ *
+ * Decision 2 above — the door — used to be asserted here by forbidding two
+ * spellings in the rail's rules: `display: none` and `visibility: hidden`.
+ * That was not a guard, it was a list. Adding `opacity: 0; pointer-events: none`
+ * to the same rule left all 26 tests in this file green and left /safety, in
+ * Chrome, a full-screen map with no visible clickable way off it. A guard that
+ * enumerates spellings loses to the next spelling, and there is always a next
+ * spelling: a transform that parks the rail off-window, a `clip-path`, a
+ * z-index that puts the map canvas over it, an ancestor's opacity.
+ *
+ * The door is now guarded by its PROPERTY, in a real browser, where the
+ * property exists:
+ *
+ *   qa-harness/openplan-local-escape-hatch-audit.js   (the live measurement)
+ *   qa-harness/pointer-reachability.js                (the shared hit-test)
+ *   qa-harness/pointer-reachability.test.js           (its verdict, pure)
+ *
+ * From the rendered page it asks whether at least one control is painted, big
+ * enough, inside the window, not covered — `getBoundingClientRect` plus
+ * accumulated computed opacity plus `document.elementFromPoint` at the
+ * control's own centre — and then performs a REAL Playwright click that has to
+ * change the URL. All four hiding spellings above were applied to this
+ * stylesheet on 2026-08-13 and it failed on all four; the two this file used to
+ * name were among them.
+ *
+ * NONE OF THAT IS POSSIBLE HERE. jsdom loads no stylesheet, has no box model,
+ * and implements no `elementFromPoint`: an overlay, a click interception and a
+ * layout are all invisible to it, and `el.click()` in jsdom bypasses hit-testing
+ * entirely, so a test written this side of the line would report success on a
+ * button no human could press.
+ *
+ * What survives here is what this side of the line can honestly do: keep the
+ * two spellings out of the gate cheaply (labelled as the list it is, not as the
+ * guard), and assert the browser check still EXISTS and is still runnable — a
+ * mechanical cross-reference, which is the one kind of document-shaped
+ * assertion this repository allows, because there the packaging is the artifact.
  */
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const read = (relative: string) => readFileSync(path.join(process.cwd(), relative), "utf8");
@@ -100,12 +138,17 @@ describe("safety's map reaches the edge of the window", () => {
   });
 
   /**
-   * THE DOOR. This is the assertion that is really worth having: it is cheap to
-   * "improve" the measurement by deleting the rail, the map would grow by
-   * nothing at all (it already runs underneath), and the planner would lose
-   * every route out of the page except a search box they have to know about.
+   * THE TWO SPELLINGS WE HAVE ACTUALLY SEEN — not the door guard.
+   *
+   * Read the file header before trusting this. It is cheap to "improve" the
+   * measurement above by deleting the rail: the map would grow by nothing at all
+   * (it already runs underneath) and the planner would lose every route out of
+   * the page. This catches the two crudest ways of doing that, inside the gate,
+   * for nothing. It cannot catch the third, and one of the third's spellings has
+   * already been shipped past it in a mutation. The check that can is
+   * `qa-harness/openplan-local-escape-hatch-audit.js`.
    */
-  it("never hides the navigation rail to buy that space", () => {
+  it("keeps the two crudest ways of deleting the nav rail out of the gate", () => {
     /*
       Rules that STYLE THE RAIL, not rules that merely name it. Several of the
       full-bleed rules read `… .op-cart-rail:hover ~ .op-cart-surface` — they
@@ -125,7 +168,9 @@ describe("safety's map reaches the edge of the window", () => {
         rule.body,
         `${rule.selector} takes the nav rail off /safety. The rail is the only always-visible way ` +
           `from a full-screen map to any other module; the surface already runs underneath it, so ` +
-          `hiding it buys the map no pixels and strands the planner. Collapse it, do not remove it.`
+          `hiding it buys the map no pixels and strands the planner. Collapse it, do not remove it. ` +
+          `(And if you are here because you found another way to hide it that this did not catch: ` +
+          `that is expected — run qa-harness/openplan-local-escape-hatch-audit.js, which will.)`
       ).not.toMatch(/display:\s*none/);
       expect(rule.body).not.toMatch(/visibility:\s*hidden/);
     }
@@ -177,5 +222,58 @@ describe("safety's map reaches the edge of the window", () => {
     // full-bleed map is where the account card floats.
     expect(workspace).toMatch(/absolute bottom-8 right-3[^"]*safety|bottom-8 right-3/);
     expect(workspace.length).toBeGreaterThan(1000);
+  });
+
+  /**
+   * THE DOOR GUARD IS SOMEWHERE ELSE, AND IT HAS TO STILL BE THERE.
+   *
+   * This is the only kind of claim about the browser check that this side of the
+   * line can make honestly: not that /safety has a door — that is a measurement
+   * and it happens in Chrome — but that the thing which measures it still exists,
+   * still shares its hit-test with the overlap audit rather than growing a second
+   * copy, and is still reachable by a documented command. A browser check nobody
+   * can run is not evidence, and one that was quietly deleted is worse than one
+   * that was never written, because this file's header would go on describing it.
+   *
+   * The paths are asserted, not the prose: if the audit is renamed, this fails
+   * and whoever renamed it updates the header in the same change.
+   */
+  const harness = (relative: string) => path.join(process.cwd(), "..", "qa-harness", relative);
+
+  it("still has the browser check that this file's header points at", () => {
+    const audit = harness("openplan-local-escape-hatch-audit.js");
+    const helper = harness("pointer-reachability.js");
+    const helperTest = harness("pointer-reachability.test.js");
+
+    for (const file of [audit, helper, helperTest]) {
+      expect(existsSync(file), `${path.basename(file)} is gone — the door on /safety is now unguarded`).toBe(
+        true
+      );
+    }
+
+    // The audit must USE the shared hit-test, not carry its own copy. Two
+    // copies of a hit test drift, and the one that drifts is always the one
+    // nobody is currently looking at.
+    const auditSource = readFileSync(audit, "utf8");
+    expect(auditSource, "the escape-hatch audit no longer uses the shared hit-test").toMatch(
+      /require\(['"]\.\/pointer-reachability['"]\)/
+    );
+    expect(auditSource, "the escape-hatch audit no longer performs a real click").toMatch(
+      /\.click\(/
+    );
+
+    // And it must be runnable by name. `node some-file.js` that nobody has
+    // written down is a file, not a check.
+    const scripts = JSON.parse(readFileSync(harness("package.json"), "utf8")).scripts as Record<
+      string,
+      string
+    >;
+    const commands = Object.values(scripts).join("\n");
+    expect(commands, "no npm script runs the escape-hatch audit").toContain(
+      "openplan-local-escape-hatch-audit.js"
+    );
+    expect(commands, "no npm script runs the hit-test's own verification").toContain(
+      "pointer-reachability.test.js"
+    );
   });
 });

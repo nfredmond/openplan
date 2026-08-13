@@ -181,6 +181,15 @@ export type FirstRunChecklistProps = {
   homeGeographyLabel: string | null;
   /** True once this workspace has at least one saved analysis run. */
   hasRuns: boolean;
+  /**
+   * True when the runs query FAILED, as distinct from a workspace that has no
+   * runs. Without it this step said "No analysis runs yet." directly above four
+   * tiles reading "Could not load" — one page making two contradictory claims
+   * about the same failed read. `hasRuns` is derived from the returned rows,
+   * which are an empty array on failure, so it cannot tell the two apart on its
+   * own.
+   */
+  runsUnreadable?: boolean;
   /** Owner/admin — the only roles the geography and invitation APIs accept. */
   canManageWorkspace: boolean;
   /**
@@ -219,6 +228,7 @@ export function FirstRunChecklist({
   homeGeographyIsSet,
   homeGeographyLabel,
   hasRuns,
+  runsUnreadable = false,
   canManageWorkspace,
   intent = null,
   engagementCampaignCount = null,
@@ -337,11 +347,13 @@ export function FirstRunChecklist({
         index={screeningIndex}
         icon={Radar}
         title="Run your first screening"
-        status={hasRuns ? "done" : "todo"}
+        status={runsUnreadable ? "todo" : hasRuns ? "done" : "todo"}
         state={
-          hasRuns
-            ? "This workspace has saved analysis runs."
-            : "No analysis runs yet."
+          runsUnreadable
+            ? "Could not check whether this workspace has any runs — that read failed. It is not the same as having none."
+            : hasRuns
+              ? "This workspace has saved analysis runs."
+              : "No analysis runs yet."
         }
         unlocks="Corridor Analysis scores a corridor or study area against the open data available for it and saves the run to this workspace, where reports, comparisons, and grant narratives can draw on it. Results are screening-grade — they support prioritization and narrative, not final engineering."
         action={hasRuns ? undefined : { href: "/explore", label: "Open Corridor Analysis" }}

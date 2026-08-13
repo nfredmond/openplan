@@ -2094,11 +2094,22 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
   return (
     <>
+      {/*
+        POSITIONED BY THE SHELL, NOT BY THIS BUTTON.
+
+        It used to carry `fixed bottom-5 right-5 … sm:bottom-6 sm:right-6`.
+        Nothing else could read those numbers, so the page surface reserved a
+        different amount of room than the button actually occupied, and the
+        difference was live page content the browser handed to this button
+        instead: a real click on the dashboard's "Show all" was swallowed here,
+        and so were Safety's filter chips. `.op-cart-copilot-launch`
+        (cartographic.css) is the same fact the surface measures from.
+      */}
       <Button
         type="button"
         variant="outline"
         size="sm"
-        className="fixed bottom-5 right-5 z-[95] h-11 rounded-full border-emerald-300/30 bg-[rgba(7,14,20,0.92)] px-4 text-slate-100 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl hover:border-emerald-300/50 hover:bg-emerald-400/12 hover:text-white sm:bottom-6 sm:right-6"
+        className="op-cart-copilot-launch rounded-full border-emerald-300/30 bg-[rgba(7,14,20,0.92)] px-4 text-slate-100 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl hover:border-emerald-300/50 hover:bg-emerald-400/12 hover:text-white"
         onClick={() => setOpen(true)}
       >
         <Sparkles className="h-4 w-4 text-emerald-300" />

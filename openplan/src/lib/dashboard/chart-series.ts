@@ -24,24 +24,22 @@
 
 import {
   blocked,
+  blockedRead,
   series,
+  type ChartReadOutcome,
   type InsightPoint,
   type InsightSeries,
 } from "@/lib/dashboard/insights";
 import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
 
 /**
- * What one capped read came back with. `pending` distinguishes "this deployment
- * is behind a migration" from "the read failed" — the first has a named
- * operator move and the second does not.
+ * The read-outcome shape and the wording of a blocked read both moved to
+ * `insights.ts` on 2026-08-13, when the RUNS figures — which had been drawing a
+ * failed read as a flat line at zero — were put on the same footing. They are
+ * re-exported here because that is where every existing caller imports them
+ * from, and because the two files are one idea split for testability, not two.
  */
-export type ChartReadOutcome<Row> = {
-  rows: readonly Row[];
-  failed: boolean;
-  pending: boolean;
-  /** True when the read returned exactly its cap, so more rows exist behind it. */
-  truncated: boolean;
-};
+export type { ChartReadOutcome } from "@/lib/dashboard/insights";
 
 export type EngagementCommentRow = {
   created_at?: string | null;
@@ -95,35 +93,6 @@ function toAmount(value: number | string | null | undefined): number | null {
   if (typeof value === "string" && value.trim()) {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
-  }
-  return null;
-}
-
-/**
- * A blocking reason for a read that did not answer. Kept in one place so the
- * two builders cannot drift into wording a failed read differently.
- */
-function blockedRead<Row>(
-  outcome: ChartReadOutcome<Row>,
-  subject: string
-): InsightSeries | null {
-  if (outcome.pending) {
-    return blocked(
-      `This deployment has not applied the migration that creates the ${subject} table, so there is nothing to read yet. Applying the pending migrations turns this figure on.`,
-      "pending"
-    );
-  }
-  if (outcome.failed) {
-    return blocked(
-      `The ${subject} could not be read, so nothing is drawn here. This is a failed query, not an empty workspace — do not read it as zero. Reload, and tell whoever runs this deployment if it keeps happening.`,
-      "unreadable"
-    );
-  }
-  if (outcome.truncated) {
-    return blocked(
-      `There are more ${subject} in this workspace than this figure reads in one go, so any total drawn here would be short. It is left blank rather than shown low.`,
-      "truncated"
-    );
   }
   return null;
 }

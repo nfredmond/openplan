@@ -46,8 +46,18 @@ export type InsightPoint = {
  *                     migration. A named operator move fixes it.
  *  - `truncated`    — more rows exist than were read, so any total drawn from
  *                     them would be an undercount presented as a count.
+ *  - `impossible`   — the read succeeded and handed back a value that cannot
+ *                     exist (a negative count of queued work). Something
+ *                     upstream is counting wrong, and clamping it to zero would
+ *                     render that bug as "nothing is queued".
  */
-export type InsightBlockedKind = "empty" | "insufficient" | "unreadable" | "pending" | "truncated";
+export type InsightBlockedKind =
+  | "empty"
+  | "insufficient"
+  | "unreadable"
+  | "pending"
+  | "truncated"
+  | "impossible";
 
 export type InsightSeries = {
   points: InsightPoint[];
@@ -65,9 +75,63 @@ export type InsightSeries = {
   footnote?: string;
 };
 
+/**
+ * WHAT ONE CAPPED READ CAME BACK WITH — the shape every figure in this module
+ * is built from, and the reason none of them can draw a failure as a zero.
+ *
+ * IT LIVES HERE, NOT IN `chart-reads.ts`, because the rule belongs to the
+ * FIGURES. `chart-reads.ts` only knows how to ask a database; this file is
+ * where "rows plus why there might be none" is turned into either a drawing or
+ * a sentence. Every builder below takes one of these rather than a bare array —
+ * an array cannot say whether it is empty because nothing happened or because
+ * the query fell over, and that distinction is the whole honesty argument.
+ *
+ * `pending` distinguishes "this deployment is behind a migration" from "the
+ * read failed": the first has a named operator move and the second does not.
+ */
+export type ChartReadOutcome<Row> = {
+  rows: readonly Row[];
+  failed: boolean;
+  pending: boolean;
+  /** True when the read returned exactly its cap, so more rows exist behind it. */
+  truncated: boolean;
+};
+
+/**
+ * A blocking reason for a read that did not answer. Kept in ONE place so no two
+ * figures can drift into wording a failed read differently — a planner who
+ * learns what "could not be read" looks like on one figure must recognise it on
+ * every other.
+ */
+export function blockedRead<Row>(
+  outcome: ChartReadOutcome<Row>,
+  subject: string
+): InsightSeries | null {
+  if (outcome.pending) {
+    return blocked(
+      `This deployment has not applied the migration that creates the ${subject} table, so there is nothing to read yet. Applying the pending migrations turns this figure on.`,
+      "pending"
+    );
+  }
+  if (outcome.failed) {
+    return blocked(
+      `The ${subject} could not be read, so nothing is drawn here. This is a failed query, not an empty workspace — do not read it as zero. Reload, and tell whoever runs this deployment if it keeps happening.`,
+      "unreadable"
+    );
+  }
+  if (outcome.truncated) {
+    return blocked(
+      `There are more ${subject} in this workspace than this figure reads in one go, so any total drawn here would be short. It is left blank rather than shown low.`,
+      "truncated"
+    );
+  }
+  return null;
+}
+
 export type DashboardRunRow = {
   created_at?: string | null;
   metrics?: unknown;
+  summary_text?: string | null;
   report_generated_count?: number | null;
 };
 
@@ -124,8 +188,18 @@ function monthLabel(key: string): string {
  * Months with no runs are filled with zero rather than skipped: a gap drawn as a
  * straight line between two distant months invents activity that did not happen,
  * which is the charting version of the caveat this product keeps elsewhere.
+ *
+ * IT TAKES THE READ'S OUTCOME, NOT ITS ROWS, and that is not a refactor. This
+ * figure used to be handed `runsResult.data ?? []` — so a workspace whose runs
+ * query FAILED was drawn a flat line at zero, identical in every pixel to a
+ * workspace that had genuinely never run anything. A shape is more persuasive
+ * than a number, and that is the most damaging thing a chart can do.
  */
-export function runsPerMonth(runs: readonly DashboardRunRow[]): InsightSeries {
+export function runsPerMonth(read: ChartReadOutcome<DashboardRunRow>): InsightSeries {
+  const readBlock = blockedRead(read, "analysis runs");
+  if (readBlock) return readBlock;
+
+  const runs = read.rows;
   const dated = runs
     .map((run) => (typeof run.created_at === "string" ? monthKey(run.created_at) : null))
     .filter((key): key is string => key !== null);
@@ -175,8 +249,18 @@ export function runsPerMonth(runs: readonly DashboardRunRow[]): InsightSeries {
  * Runs whose composite is absent are DROPPED rather than plotted as zero — a
  * zero bar reads as "this corridor scored nothing", which is a finding, and the
  * absence of a score is not one.
+ *
+ * Same rule as `runsPerMonth` for the read itself: a failed query blocks the
+ * figure rather than emptying it.
  */
-export function recentOverallScores(runs: readonly DashboardRunRow[], limit = 12): InsightSeries {
+export function recentOverallScores(
+  read: ChartReadOutcome<DashboardRunRow>,
+  limit = 12
+): InsightSeries {
+  const readBlock = blockedRead(read, "analysis runs");
+  if (readBlock) return readBlock;
+
+  const runs = read.rows;
   const scored = runs
     .map((run, index): InsightPoint | null => {
       const score = readOverallScore(run.metrics);
@@ -206,15 +290,35 @@ export function recentOverallScores(runs: readonly DashboardRunRow[], limit = 12
  * the measurement — "nothing queued in Grants" is a real, useful reading — and
  * dropping empty lanes would make the chart's shape depend on which lanes
  * happened to be busy.
+ *
+ * THE CLAMP IS GONE, AND DELETING IT IS THE POINT (2026-08-13). This function
+ * used to write `Math.max(0, lane.value)`. A lane count is the size of a queue,
+ * so a negative one is not a small error to tidy up — it cannot happen, and its
+ * appearance means something upstream is counting wrong. Clamping it produced
+ * all-zero lanes, which fell straight into the branch below and told the planner
+ * "Every lane is clear — nothing is queued", turning a counting bug into a
+ * reassuring sentence. That is precisely the failure this module exists to
+ * refuse, so an impossible value now blocks the figure and says what it saw.
+ * Non-finite values (a NaN from a subtraction of two missing counts) go the same
+ * way, for the same reason.
  */
 export function lanePressure(lanes: readonly DashboardLaneCount[]): InsightSeries {
   if (lanes.length === 0) {
     return blocked("No workspace lanes reported a queue, so there is nothing to compare.", "empty");
   }
 
+  const impossible = lanes.filter((lane) => !Number.isFinite(lane.value) || lane.value < 0);
+  if (impossible.length > 0) {
+    const named = impossible.map((lane) => `${lane.label} (${lane.value})`).join(", ");
+    return blocked(
+      `${named} reported a count that cannot exist — a queue cannot hold fewer than nothing. Something upstream is counting wrong, so nothing is drawn here. This is a fault, not an empty queue: do not read it as "no open work".`,
+      "impossible"
+    );
+  }
+
   const points = lanes.map((lane) => ({
     label: lane.label,
-    value: Math.max(0, lane.value),
+    value: lane.value,
     detail: lane.detail,
   }));
 

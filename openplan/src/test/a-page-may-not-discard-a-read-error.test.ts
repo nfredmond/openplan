@@ -259,7 +259,6 @@ describe("a page may not discard a read error", () => {
  * The named results are recorded beside each count so the fix is findable
  * without re-running a detector:
  *
- *   dashboard              runsResult — the workspace's own recent-activity list
  *   data-hub               projectsResult
  *   grants                 legacyRead, legacyAwardsRead
  *   projects/[projectId]   workspaceFallbackRead
@@ -277,7 +276,15 @@ describe("a page may not discard a read error", () => {
  * one.
  */
 const KNOWN_UNCHECKED_RESULT: ReadonlyArray<readonly [string, number]> = [
-  ["src/app/(app)/dashboard/page.tsx", 1],
+  // THE DASHBOARD ENTRY WAS PAID OFF 2026-08-13, and it is worth recording what
+  // the debt actually cost while it sat here. `runsResult` fed FOUR KPI tiles
+  // and TWO charts, so a failed runs query rendered "0 runs · 0 completed ·
+  // N/A · Not available" above an area chart flat on the baseline — a workspace
+  // full of analysis, drawn as one that had never run anything. The read now
+  // lives in `lib/dashboard/chart-reads.ts` and hands back an OUTCOME; the
+  // figures and the tiles refuse to state a number from a read that failed.
+  // Recorded and then BUILT UPON is the pattern to watch for: two of those
+  // charts were added long after this line was written.
   ["src/app/(app)/data-hub/page.tsx", 1],
   ["src/app/(app)/grants/page.tsx", 2],
   ["src/app/(app)/projects/[projectId]/page.tsx", 1],

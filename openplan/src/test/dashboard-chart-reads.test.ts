@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   COMMENT_READ_CAP,
   loadDashboardChartRows,
+  RUN_READ_CAP,
+  RUN_READ_COLUMNS,
   type DashboardChartSupabaseLike,
 } from "@/lib/dashboard/chart-reads";
 
@@ -149,6 +151,52 @@ describe("the dashboard's chart reads", () => {
     const rows = await loadDashboardChartRows(client, "workspace-1", SINCE);
 
     expect(rows.comments.truncated).toBe(true);
+  });
+
+  /**
+   * THE RUNS READ MOVED HERE 2026-08-13, from an inline `runsResult` on the
+   * dashboard page whose error nobody read. It is the read behind four KPI
+   * tiles and two charts, so a failure that renders as `[]` becomes six zeros a
+   * planner believes.
+   */
+  it("scopes runs by workspace and selects every column the KPIs read", async () => {
+    const { client, calls } = fakeClient({});
+    await loadDashboardChartRows(client, "workspace-1", SINCE);
+
+    const runs = calls.find((call) => call.table === "runs");
+    expect(runs?.eq).toContainEqual(["workspace_id", "workspace-1"]);
+    expect(runs?.limit).toBe(RUN_READ_CAP);
+    // `summary_text` is the decoy. `buildWorkspaceKpis` reads it to decide a run
+    // COMPLETED, and the client is untyped — dropping it from the projection is
+    // not a type error, it silently reports every run as unfinished and the
+    // completion rate as 0%.
+    expect(runs?.select).toBe(RUN_READ_COLUMNS);
+    for (const column of ["created_at", "metrics", "summary_text", "report_generated_count"]) {
+      expect(runs?.select).toContain(column);
+    }
+  });
+
+  it("hands a failed runs read back as failed, so no tile can state a zero", async () => {
+    const { client } = fakeClient({
+      runs: { data: null, error: { message: "permission denied for table runs" } },
+    });
+    const rows = await loadDashboardChartRows(client, "workspace-1", SINCE);
+
+    expect(rows.runs.failed).toBe(true);
+    expect(rows.runs.rows).toEqual([]);
+    expect(rows.comments.failed).toBe(false);
+  });
+
+  it("reports a runs read that came back at its cap as truncated", async () => {
+    const { client } = fakeClient({
+      runs: {
+        data: Array.from({ length: RUN_READ_CAP }, () => ({ created_at: SINCE.toISOString() })),
+        error: null,
+      },
+    });
+    const rows = await loadDashboardChartRows(client, "workspace-1", SINCE);
+
+    expect(rows.runs.truncated).toBe(true);
   });
 
   it("issues no query at all without a workspace", async () => {
