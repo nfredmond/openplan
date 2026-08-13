@@ -7,10 +7,27 @@ import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { ENGAGEMENT_GEOMETRY_MAX_VERTICES, type EngagementGeometry } from "@/lib/engagement/geometry";
+/*
+  THE GEOMETRY RULES ARE SHARED, NOT COPIED. `draw-state.ts` holds the pure
+  vertex/preview/derive logic this picker and the full-screen participant map
+  (`public-map-stage.tsx`) both obey. They were private to this file until a
+  second drawing map existed; a shared capability living inside one of its two
+  callers gets reimplemented — slightly differently — by the other, and the
+  difference here would be invisible until an operator opened a polygon nobody
+  could close.
+*/
 import {
-  ENGAGEMENT_GEOMETRY_MAX_VERTICES,
-  type EngagementGeometry,
-} from "@/lib/engagement/geometry";
+  appendVertex,
+  buildPreviewFeatureCollection,
+  deriveGeometry,
+  type DrawState,
+  type EngagementDrawMode,
+} from "@/lib/engagement/draw-state";
+// Re-exported because `public-survey-form.tsx` imports the mode type from this
+// component, which is where it lived before the extraction. Kept so the seam
+// moved without every call site moving with it.
+export type { EngagementDrawMode } from "@/lib/engagement/draw-state";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import { ParticipantMapLegend } from "./participant-map-legend";
@@ -20,14 +37,6 @@ const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
 );
 
-export type EngagementDrawMode = "point" | "line" | "area";
-
-type DrawState = {
-  mode: EngagementDrawMode;
-  vertices: [number, number][];
-  areaClosed: boolean;
-};
-
 const MODE_OPTIONS: Array<{ id: EngagementDrawMode; label: string }> = [
   { id: "point", label: "Point" },
   { id: "line", label: "Line" },
@@ -36,67 +45,6 @@ const MODE_OPTIONS: Array<{ id: EngagementDrawMode; label: string }> = [
 
 const CLOSE_RING_PIXEL_TOLERANCE = 12;
 const KEYBOARD_PAN_STEP_PX = 64;
-
-function deriveGeometry(state: DrawState): EngagementGeometry | null {
-  if (state.mode === "point") {
-    return state.vertices.length === 1 ? { type: "Point", coordinates: state.vertices[0] } : null;
-  }
-
-  if (state.mode === "line") {
-    return state.vertices.length >= 2 ? { type: "LineString", coordinates: [...state.vertices] } : null;
-  }
-
-  if (state.areaClosed && state.vertices.length >= 3) {
-    return { type: "Polygon", coordinates: [[...state.vertices, state.vertices[0]]] };
-  }
-
-  return null;
-}
-
-/**
- * Append a vertex, honoring point-mode replace semantics, the closed-area lock,
- * and the vertex cap. Pure so both the pointer and keyboard paths share it and
- * it is unit-testable without a live map. `outcome` drives screen-reader text.
- */
-function appendVertex(
-  state: DrawState,
-  coord: [number, number]
-): { next: DrawState; outcome: "placed" | "added" | "closed-locked" | "limit" } {
-  if (state.mode === "point") {
-    return { next: { ...state, vertices: [coord], areaClosed: false }, outcome: "placed" };
-  }
-  if (state.mode === "area" && state.areaClosed) {
-    return { next: state, outcome: "closed-locked" };
-  }
-  if (state.vertices.length >= ENGAGEMENT_GEOMETRY_MAX_VERTICES) {
-    return { next: state, outcome: "limit" };
-  }
-  return { next: { ...state, vertices: [...state.vertices, coord] }, outcome: "added" };
-}
-
-function buildPreviewFeatureCollection(state: DrawState): GeoJSON.FeatureCollection {
-  const features: GeoJSON.Feature[] = state.vertices.map((position, index) => ({
-    type: "Feature",
-    geometry: { type: "Point", coordinates: position },
-    properties: { index },
-  }));
-
-  if (state.mode === "area" && state.areaClosed && state.vertices.length >= 3) {
-    features.push({
-      type: "Feature",
-      geometry: { type: "Polygon", coordinates: [[...state.vertices, state.vertices[0]]] },
-      properties: {},
-    });
-  } else if (state.vertices.length >= 2 && state.mode !== "point") {
-    features.push({
-      type: "Feature",
-      geometry: { type: "LineString", coordinates: state.vertices },
-      properties: {},
-    });
-  }
-
-  return { type: "FeatureCollection", features };
-}
 
 function statusCaption(state: DrawState): string {
   if (state.mode === "point") {

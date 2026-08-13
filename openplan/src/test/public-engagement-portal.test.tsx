@@ -250,14 +250,14 @@ describe("PublicEngagementPortal", () => {
     });
 
     expect(screen.getByRole("heading", { name: "Share your input" })).toBeInTheDocument();
-    expect(screen.getAllByText("Your input (required)").length).toBeGreaterThan(0);
-    expect(screen.getByText("Optional fields")).toBeInTheDocument();
-    expect(screen.getByText("Follow-up (optional)")).toBeInTheDocument();
+    expect(screen.getAllByText("What you want to tell us (we need this part)").length).toBeGreaterThan(0);
+    expect(screen.getByText("Only if you want to")).toBeInTheDocument();
+    expect(screen.getByText("Hearing back (only if you want to)")).toBeInTheDocument();
     // The only required field carries a programmatic label, which a resident on
     // a screen reader needs and a visible heading alone does not provide.
-    expect(screen.getByLabelText("Your input (required)")).toBeInTheDocument();
+    expect(screen.getByLabelText("What you want to tell us (we need this part)")).toBeInTheDocument();
     expect(
-      screen.getAllByText(/The project team reviews submissions before using them in summaries or reporting\./i).length
+      screen.getAllByText(/Someone on the project team reads what you send before it is shown on this page or used in a report\./i).length
     ).toBeGreaterThan(0);
   });
 
@@ -272,22 +272,22 @@ describe("PublicEngagementPortal", () => {
 
     renderPortal();
 
-    fireEvent.change(screen.getByLabelText("Your input (required)"), {
+    fireEvent.change(screen.getByLabelText("What you want to tell us (we need this part)"), {
       target: { value: "The crosswalk near Main Street needs a shorter crossing distance." },
     });
-    fireEvent.click(screen.getByRole("button", { name: /send my input/i }));
+    fireEvent.click(screen.getByRole("button", { name: /send what I wrote/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Your input has been received")).toBeInTheDocument();
+      expect(screen.getByText("Thank you. We have what you sent.")).toBeInTheDocument();
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/engage/share-token-123/submit",
       expect.objectContaining({ method: "POST" })
     );
-    expect(screen.getByText("Your submission has been received by the project team.")).toBeInTheDocument();
+    expect(screen.getByText("What you wrote has gone to the project team.")).toBeInTheDocument();
     expect(
-      screen.getByText(/Direct follow-up is not guaranteed unless the team chooses to reach back out\./i)
+      screen.getByText(/The team may not be able to write back to you personally\./i)
     ).toBeInTheDocument();
   });
 
@@ -381,9 +381,9 @@ describe("the portal in the participant's language", () => {
     const { unmount } = renderPortal({ ...localeFor("es") });
 
     expect(screen.getByRole("heading", { name: "Comparta su opinión" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /enviar mi comentario/i })).toBeInTheDocument();
-    expect(screen.getByText("Campos opcionales")).toBeInTheDocument();
-    expect(screen.getByText("Seguimiento (opcional)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /enviar lo que escribí/i })).toBeInTheDocument();
+    expect(screen.getByText("Solo si usted quiere")).toBeInTheDocument();
+    expect(screen.getByText("Recibir respuesta (solo si usted quiere)")).toBeInTheDocument();
     // The English wording of the same strings is GONE, not merely accompanied.
     expect(screen.queryByRole("heading", { name: "Share your input" })).toBeNull();
     unmount();
@@ -392,7 +392,7 @@ describe("the portal in the participant's language", () => {
     // and not about a string that happens to appear either way.
     renderPortal();
     expect(screen.getByRole("heading", { name: "Share your input" })).toBeInTheDocument();
-    expect(screen.queryByText("Campos opcionales")).toBeNull();
+    expect(screen.queryByText("Solo si usted quiere")).toBeNull();
   });
 
   it("turns the page around for a right-to-left language instead of only listing it", () => {
@@ -576,10 +576,10 @@ describe("the portal in the participant's language", () => {
 
     renderPortal({ ...localeFor("es") });
 
-    fireEvent.change(screen.getByLabelText("Su comentario (obligatorio)"), {
+    fireEvent.change(screen.getByLabelText("Lo que nos quiere contar (esta parte sí hace falta)"), {
       target: { value: "Hace falta un paso de peatones en la calle Main." },
     });
-    fireEvent.click(screen.getByRole("button", { name: /enviar mi comentario/i }));
+    fireEvent.click(screen.getByRole("button", { name: /enviar lo que escribí/i }));
 
     const refusal = await screen.findByText("Too many recent submissions from this connection.");
     expect(refusal.getAttribute("lang")).toBe("en");
@@ -599,12 +599,12 @@ describe("the portal in the participant's language", () => {
 
     renderPortal({ ...localeFor("es") });
 
-    fireEvent.change(screen.getByLabelText("Su comentario (obligatorio)"), {
+    fireEvent.change(screen.getByLabelText("Lo que nos quiere contar (esta parte sí hace falta)"), {
       target: { value: "Hace falta un paso de peatones en la calle Main." },
     });
-    fireEvent.click(screen.getByRole("button", { name: /enviar mi comentario/i }));
+    fireEvent.click(screen.getByRole("button", { name: /enviar lo que escribí/i }));
 
-    const refusal = await screen.findByText("No se pudo enviar el comentario");
+    const refusal = await screen.findByText("No pudimos enviar lo que escribió. No se ha perdido nada: inténtelo otra vez, por favor.");
     expect(refusal.getAttribute("lang")).toBe("es");
     expect(refusal.getAttribute("dir")).toBe("ltr");
   });

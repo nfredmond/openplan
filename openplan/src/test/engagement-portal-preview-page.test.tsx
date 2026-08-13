@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -248,12 +248,45 @@ describe("the operator portal preview — what a member sees", () => {
     expect(screen.queryByText(/residents cannot see this yet/)).not.toBeInTheDocument();
   });
 
-  it("renders the real portal with submissions disabled: the comment form is present and its send button is inert", async () => {
+  it("renders the surface RESIDENTS get, not a second page only operators see", async () => {
     await renderPreview();
 
-    // The REAL portal component rendered the submit tab (the campaign accepts
-    // submissions), and preview mode disabled the send button.
-    const sendButton = screen.getByRole("button", { name: /Send my input/ });
+    /*
+      `portal-shell-map-first` and `portal-shell-no-map` are the two branches of
+      `PublicMapShell` — the component the public route renders. Either one
+      proves the preview mounted the resident surface itself. Which branch
+      appears depends only on whether this environment has a map key, and that
+      is not what this test is about; asserting one of them specifically would
+      make this test fail on a machine with a token rather than on a regression.
+
+      The no-map branch is what a test run with no NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+      gets, and it is a real resident state, not a preview-only fallback.
+    */
+    const surface = screen.getByTestId("portal-preview-surface");
+    const shell =
+      surface.querySelector('[data-testid="portal-shell-map-first"]') ??
+      surface.querySelector('[data-testid="portal-shell-no-map"]');
+    expect(shell).not.toBeNull();
+  });
+
+  it("keeps every submission control inert: the send button never leaves preview mode", async () => {
+    await renderPreview();
+
+    /*
+      The rail asks one thing at a time and REFUSES to move past the comment
+      step while nothing is written, so the walk has to write something — a
+      loop that only clicks Next never arrives, which is a guard doing its job
+      rather than a bug.
+    */
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.change(document.querySelector("#portal-body") as HTMLTextAreaElement, {
+      target: { value: "An operator reading their own consultation." },
+    });
+    while (!screen.queryByTestId("portal-step-send")) {
+      fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    }
+
+    const sendButton = screen.getByRole("button", { name: /Send what I wrote/ });
     expect(sendButton).toBeDisabled();
   });
 });

@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import {
+  groupApprovedItems,
+  type ApprovedItem,
+  type ApprovedItemGrouping,
+} from "@/lib/engagement/approved-item-grouping";
 import { CheckCircle2, ClipboardCheck, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,50 +177,6 @@ type CategoryOption = {
   descriptionText: PortalText | null;
 };
 
-type ApprovedItem = {
-  id: string;
-  categoryId: string | null;
-  title: string | null;
-  body: string;
-  submittedBy: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  geometry?: unknown;
-  votesCount?: number;
-  parentItemId?: string | null;
-  photoUrl?: string | null;
-  createdAt: string;
-};
-
-export type ApprovedItemGrouping = {
-  topLevel: ApprovedItem[];
-  repliesByParent: Map<string, ApprovedItem[]>;
-};
-
-/**
- * E6 — split approved items into top-level comments and the replies nested under
- * them. A reply whose parent is not itself an approved top-level item (e.g. the
- * parent was un-approved after the reply cleared moderation) is dropped from the
- * public view rather than shown stripped of its context. Replies read oldest-
- * first so a thread flows chronologically. Preserves the caller's ordering of
- * top-level items (the loader sorts newest-first).
- */
-export function groupApprovedItems(items: ApprovedItem[]): ApprovedItemGrouping {
-  const topLevel = items.filter((item) => !item.parentItemId);
-  const topLevelIds = new Set(topLevel.map((item) => item.id));
-  const repliesByParent = new Map<string, ApprovedItem[]>();
-  for (const item of items) {
-    const parentId = item.parentItemId;
-    if (!parentId || !topLevelIds.has(parentId)) continue; // top-level or orphaned
-    const bucket = repliesByParent.get(parentId);
-    if (bucket) bucket.push(item);
-    else repliesByParent.set(parentId, [item]);
-  }
-  for (const bucket of repliesByParent.values()) {
-    bucket.sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime());
-  }
-  return { topLevel, repliesByParent };
-}
 
 /**
  * The preview of the comment being replied to. A resident's OWN words, so it is
@@ -1944,3 +1905,9 @@ export function PublicEngagementPortal({
     </div>
   );
 }
+
+// Re-exported for callers that already import these from the portal. The
+// definitions live in @/lib/engagement/approved-item-grouping so a SERVER
+// component can call them — see that file for what happens when it cannot.
+export { groupApprovedItems };
+export type { ApprovedItem, ApprovedItemGrouping };

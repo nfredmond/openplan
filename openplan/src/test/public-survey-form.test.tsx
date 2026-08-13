@@ -564,9 +564,11 @@ describe("PublicSurveyForm", () => {
     );
     expect(screen.getByRole("button", { name: /enviar encuesta/i })).toBeTruthy();
     // Field labels and the review notice are OpenPlan's own copy.
-    expect(screen.getByText("Nombre o seudónimo")).toBeTruthy();
+    expect(screen.getByText("Su nombre, o el nombre que quiera usar")).toBeTruthy();
     expect(
-      screen.getAllByText("El equipo del proyecto revisa los comentarios antes de usarlos en resúmenes o informes.")
+      screen.getAllByText(
+        "Alguien del equipo del proyecto lee lo que usted envía antes de mostrarlo en esta página o usarlo en un informe."
+      )
         .length
     ).toBeGreaterThan(0);
     // The required marker's accessible word, not an asterisk read aloud.
@@ -892,7 +894,7 @@ describe("PublicSurveyForm", () => {
     expect(form?.getAttribute("dir")).toBe("rtl");
 
     // …and every English run inside it says so, and lays itself out left to right.
-    for (const english of ["Submit survey", "Choose one", "Name or alias", "Required"]) {
+    for (const english of ["Submit survey", "Choose one", "Your name, or any name you want to use", "Required"]) {
       const node = screen.getByText(english);
       expect(node.getAttribute("lang")).toBe("en");
       expect(node.getAttribute("dir")).toBe("ltr");

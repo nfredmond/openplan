@@ -74,7 +74,29 @@ import { stripSourceComments } from "./helpers/source-text";
  * a dated record to match today's posture would falsify it.
  */
 
-const PUBLIC_ROUTE_DIR = "src/app/(public)";
+/**
+ * EVERY ROUTE GROUP THAT SERVES A PAGE TO SOMEBODY WHO IS NOT SIGNED IN.
+ *
+ * A LIST, NOT A STRING, AND THE REASON IS THE SAME MISSING-FILE CLASS THIS FILE
+ * WAS WRITTEN ABOUT. It was the single string "src/app/(public)", which meant
+ * membership in the corpus depended on which DIRECTORY a public page happened to
+ * live in — a fact nobody reviewing a page's copy would ever think to check.
+ *
+ * Two things fell out of that on 2026-08-13:
+ *
+ *   - `(embed)` was never in it. The embeddable engagement widget is a
+ *     participant surface an agency iframes onto its own website, rendering the
+ *     same campaign text and the same submission form as the portal, and no
+ *     claim guard had ever read it.
+ *   - `(portal)` was created that day to give the public engagement map a shell
+ *     without the marketing nav and footer. The move would have DELETED the
+ *     engagement portal from this corpus silently — a page loses its guard by
+ *     being moved, with a green suite either side of the commit.
+ *
+ * The rule to keep: a new route group holding a page a member of the public can
+ * open goes in this list in the commit that creates it.
+ */
+const PUBLIC_ROUTE_DIRS = ["src/app/(public)", "src/app/(portal)", "src/app/(embed)"];
 const API_ROUTE_DIR = "src/app/api";
 
 /** Every `page.tsx` and `layout.tsx` under the public route group. */
@@ -147,16 +169,62 @@ function firstPartyImportsOf(relativeFile: string): string[] {
   return resolved;
 }
 
-const PUBLIC_PAGE_FILES = derivePublicRouteFiles(PUBLIC_ROUTE_DIR);
+const PUBLIC_PAGE_FILES = PUBLIC_ROUTE_DIRS.flatMap(derivePublicRouteFiles).sort();
 const PUBLIC_DOCUMENT_ROUTES = deriveHtmlDocumentRoutes(API_ROUTE_DIR);
 
 /** Every surface a person reads directly: the public pages and the HTML documents. */
 const PUBLIC_SURFACE_FILES = [...PUBLIC_PAGE_FILES, ...PUBLIC_DOCUMENT_ROUTES];
 
-/** Those, plus one level deep, the modules they get their words from. */
-const PUBLIC_COPY_SOURCES = [
-  ...new Set([...PUBLIC_SURFACE_FILES, ...PUBLIC_SURFACE_FILES.flatMap(firstPartyImportsOf)]),
-].sort();
+/**
+ * Those, plus every first-party module reachable from them, however deep.
+ *
+ * IT USED TO BE ONE LEVEL, and one level is a depth, not a boundary. When the
+ * engagement context page was extracted out of its route into a shared
+ * component (2026-08-13, so the operator preview could render the same page
+ * residents get), the portal's entire message catalog moved from "imported by a
+ * public page" to "imported by a component imported by a public page" — and
+ * fell out of this guard silently. Every word on the most-read public surface
+ * in the product stopped being scanned because of a refactor that touched no
+ * copy at all. A transitive walk cannot be defeated by moving a file.
+ *
+ * The cost is scanning modules whose words a resident never reads, which costs
+ * a few milliseconds and, at worst, an over-strict flag on a string that is not
+ * public copy. That is the safe direction: the failure this replaces was a
+ * public claim nothing read.
+ */
+function reachableFirstPartySources(entryPoints: string[]): string[] {
+  const entries = new Set(entryPoints);
+  const seen = new Set<string>();
+  const queue = [...entryPoints];
+  while (queue.length > 0) {
+    const current = queue.pop() as string;
+    if (seen.has(current)) continue;
+    seen.add(current);
+    /*
+      WHAT THE WALK FOLLOWS THROUGH, AND WHAT IT STOPS AT. It expands a public
+      surface and any RENDERING component reached from one, because that is the
+      chain a sentence travels along on its way to a resident's screen: a route
+      renders a component, which renders another, which reads a catalog.
+      Everything else is a leaf — its own words are scanned, its imports are
+      not.
+
+      A full closure was tried first and is wrong: from a portal page it reaches
+      the modeling libraries, whose internal identifiers ("calibrated",
+      "validated") are not claims made to the public, and it failed four
+      unrelated guards on vocabulary no member of the public will ever read.
+      The boundary is "words on a rendered surface", not "everything the surface
+      can transitively touch".
+    */
+    const isComponent = current.startsWith("src/components/");
+    if (!entries.has(current) && !isComponent) continue;
+    for (const next of firstPartyImportsOf(current)) {
+      if (!seen.has(next)) queue.push(next);
+    }
+  }
+  return [...seen].sort();
+}
+
+const PUBLIC_COPY_SOURCES = reachableFirstPartySources(PUBLIC_SURFACE_FILES);
 
 /** The front door: hero + header CTAs must lead with self-serve sign-up. */
 const LANDING_PAGE = "src/app/(public)/page.tsx";
@@ -308,7 +376,11 @@ describe("public page claims guardrails", () => {
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/page.tsx");
     // The four that a hand-kept list had missed for months.
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/measure/[shareToken]/page.tsx");
-    expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/engage/[shareToken]/page.tsx");
+    // The engagement portal, after its 2026-08-13 move to the (portal) group —
+    // and the embeddable widget, which no claim guard had ever read.
+    expect(PUBLIC_PAGE_FILES).toContain("src/app/(portal)/engage/[shareToken]/page.tsx");
+    expect(PUBLIC_PAGE_FILES).toContain("src/app/(portal)/engage/[shareToken]/about/page.tsx");
+    expect(PUBLIC_PAGE_FILES).toContain("src/app/(embed)/embed/[shareToken]/page.tsx");
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/plan/[shareToken]/page.tsx");
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/plan/[shareToken]/document/page.tsx");
     expect(PUBLIC_PAGE_FILES.length).toBeGreaterThanOrEqual(10);

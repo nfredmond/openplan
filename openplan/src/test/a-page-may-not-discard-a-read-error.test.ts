@@ -230,7 +230,7 @@ describe("a page may not discard a read error", () => {
     const actual = discardedCounts();
     // The engagement portal page and its loader disclose read failures now; the
     // portal page must not reacquire one.
-    expect(actual.get("src/app/(public)/engage/[shareToken]/page.tsx") ?? 0).toBe(0);
+    expect(actual.get("src/app/(portal)/engage/[shareToken]/page.tsx") ?? 0).toBe(0);
     expect(actual.get("src/app/(embed)/embed/[shareToken]/page.tsx") ?? 0).toBe(0);
     // The public plan page was the last entry on the ratchet. Named explicitly
     // so that emptying KNOWN_DISCARDED can never quietly un-guard it.

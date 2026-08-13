@@ -9,7 +9,7 @@ vi.mock("@/lib/engagement/public-portal-data", () => ({
   loadPublicPortalBundleForShareValue: (...args: unknown[]) => loadPublicPortalBundleMock(...args),
 }));
 
-import { generateMetadata } from "@/app/(public)/engage/[shareToken]/page";
+import { generateMetadata } from "@/app/(portal)/engage/[shareToken]/page";
 
 /**
  * THE LINK PREVIEW IS A PUBLIC SURFACE, AND IT WAS SHOWING OPERATOR TEXT.

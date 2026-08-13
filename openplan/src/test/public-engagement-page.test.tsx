@@ -190,7 +190,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
-import PublicEngagementPage from "@/app/(public)/engage/[shareToken]/page";
+import PublicEngagementPage from "@/app/(portal)/engage/[shareToken]/about/page";
 import {
   loadPublicPortalResult,
   PortalReadUnavailableError,
@@ -618,7 +618,12 @@ describe("PublicEngagementPage", () => {
     await renderPage({ lang: "es" });
 
     const korean = screen.getByRole("link", { name: /한국어/ });
-    expect(korean).toHaveAttribute("href", "/engage/share-token-12345?lang=ko");
+    // The language link keeps the reader on the page they are ON. This suite
+    // covers the context page (`/engage/<token>/about`) since the map-first
+    // shell took over `/engage/<token>` on 2026-08-13; a picker that dropped the
+    // `/about` segment would answer a language choice by throwing the resident
+    // back to the map.
+    expect(korean).toHaveAttribute("href", "/engage/share-token-12345/about?lang=ko");
     expect(screen.getByRole("link", { name: /العربية/ })).toHaveAttribute("hreflang", "ar");
   });
 

@@ -130,31 +130,31 @@ export const EN_PORTAL_MESSAGES = {
   "portal.aboutProcess": "How the project team organizes input",
   "portal.topics": "Feedback topics",
   "portal.selectTopic": "Select a topic",
-  "portal.yourInput": "Your input (required)",
+  "portal.yourInput": "What you want to tell us (we need this part)",
   "portal.yourInputHint": "Tell us what you noticed, where you are seeing it, and why it matters.",
-  "portal.onlyRequiredField": "This is the only required field in this form.",
-  "portal.titleLabel": "Brief summary of your input",
-  "portal.optionalFields": "Optional fields",
-  "portal.aboutYou": "About you (optional)",
-  "portal.nameLabel": "Name or alias",
-  "portal.nameHint": "Add your name if you want the project team to know who sent this input.",
-  "portal.followUp": "Follow-up (optional)",
-  "portal.followUpHint": "Direct follow-up is not guaranteed unless the team chooses to reach back out.",
+  "portal.onlyRequiredField": "This is the only part of this form we need.",
+  "portal.titleLabel": "A short title for what you wrote",
+  "portal.optionalFields": "Only if you want to",
+  "portal.aboutYou": "About you (only if you want to)",
+  "portal.nameLabel": "Your name, or any name you want to use",
+  "portal.nameHint": "Add a name if you want the team to know who sent this. You can leave it blank.",
+  "portal.followUp": "Hearing back (only if you want to)",
+  "portal.followUpHint": "The team may not be able to write back to you personally.",
   "portal.photoHint": "Attach one JPEG, PNG, or WebP photo up to {limit}.",
   "portal.photoTooLarge": "Photo is too large. The limit is {limit}.",
   "portal.photoWrongType": "Please choose a JPEG, PNG, or WebP image.",
-  "portal.photoFailed": "Photo upload failed",
+  "portal.photoFailed": "We could not add your photo. You can try again, or send what you wrote without it.",
   "portal.photoPreviewAlt": "Preview of the attached photo",
   "portal.photoItemAlt": "Photo attached to this community comment",
-  "portal.submit": "Send my input",
+  "portal.submit": "Send what I wrote",
   "portal.submitting": "Sending…",
-  "portal.submitFailed": "Submission failed",
-  "portal.received": "Your input has been received",
-  "portal.receivedDetail": "Your submission has been received by the project team.",
+  "portal.submitFailed": "We could not send what you wrote. Nothing has been lost — please try again.",
+  "portal.received": "Thank you. We have what you sent.",
+  "portal.receivedDetail": "What you wrote has gone to the project team.",
   "portal.whatHappensNext": "What happens next",
   "portal.reviewNotice":
-    "The project team reviews submissions before using them in summaries or reporting.",
-  "portal.submissionsClosedNotice": "Submissions closed",
+    "Someone on the project team reads what you send before it is shown on this page or used in a report.",
+  "portal.submissionsClosedNotice": "This project is not taking comments right now",
   "portal.sortNewest": "Newest",
   "portal.sortMostSupported": "Most supported",
   "portal.support": "Support",
@@ -178,12 +178,156 @@ export const EN_PORTAL_MESSAGES = {
   "portal.translating": "Translating…",
   "portal.translationUnavailable":
     "This comment could not be translated right now. The original is shown.",
-  "portal.demographics": "About you (optional)",
+  "portal.demographics": "About you (only if you want to)",
   "portal.demographicsHint":
     "These answers help the project team check whether it is hearing from the whole community. They are never shown publicly.",
+  /*
+    THE FIVE DEMOGRAPHIC QUESTION LABELS. They were typed as English literals in
+    two components — the classic form's `PENDING_PORTAL_TEXT` and, a second time,
+    the map-first rail. A label is prose and belongs in the catalog; only the
+    ANSWER options stay English, because `demographicLabel` is shared with the
+    operator console's aggregate views and the two must name a band identically.
+    Wording is kept faithful to the question the data means: "your main language"
+    is the same question as "primary language", where "the language you speak at
+    home" would be a different one.
+  */
+  "portal.demographicsAge": "Your age range",
+  "portal.demographicsZip": "Your ZIP code",
+  "portal.demographicsPrimaryLanguage": "Your main language",
+  "portal.demographicsTenure": "Do you rent or own your home?",
+  "portal.demographicsRace": "Your race or ethnicity",
   "portal.preferNotToSay": "Prefer not to say",
   "portal.zipHint": "Only the first 3 digits are ever stored.",
   "portal.emailUpdates": "Email me updates about this project",
+
+  // ------------------------------------------------- portal: the map surface
+  /*
+    THE MAP-FIRST PARTICIPANT SURFACE. Every string below is read by somebody who
+    arrived from a mailed postcard or a flyer, on a phone, with no idea what a
+    "campaign", a "geometry" or an "engagement mode" is. So: no terms of art, no
+    term-plus-definition, no sentence that needs a second sentence. "Show us
+    where", not "Add a spatial reference".
+
+    The keyboard-help and announcement strings are read ALOUD by a screen reader
+    rather than seen, which is why they are whole sentences and name the key by
+    the word on it.
+  */
+  "portal.mapRoleDescription": "Map you can draw on",
+  "portal.mapLabelDrawing": "Map of this project. Mark the place you mean.",
+  "portal.mapLabelReading": "Map of this project and what other people have said.",
+  "portal.mapKeyboardHelp":
+    "Use the arrow keys to move the map and the plus and minus keys to zoom. Press Enter to mark the spot in the middle of the map. Press Backspace to undo the last mark. Press C to finish an area. Press Escape to start over.",
+  "portal.mapKeyboardHelpReadOnly":
+    "Use the arrow keys to move the map and the plus and minus keys to zoom.",
+  "portal.drawPointPlaced": "Marked. Press Enter again to move it somewhere else.",
+  "portal.drawVertexAdded": "Point added to your shape.",
+  "portal.drawAreaClosed": "Area finished.",
+  "portal.drawAreaAlreadyClosed": "This area is finished. Start over to draw a different one.",
+  "portal.drawVertexLimit": "That is as many points as one shape can have.",
+  "portal.drawCleared": "Your mark was removed.",
+  "portal.drawUndone": "Last point removed.",
+  "portal.drawModeLabel": "What are you marking?",
+  "portal.drawModePoint": "A spot",
+  "portal.drawModeLine": "A street or path",
+  "portal.drawModeArea": "An area",
+
+  // --------------------------------------------- portal: the step-by-step rail
+  "portal.stepsHeading": "What you want to tell us",
+  "portal.stepCounter": "Step {step} of {total}",
+  "portal.next": "Next",
+  "portal.back": "Back",
+  "portal.stepWhereTitle": "Show us where",
+  "portal.stepWhereHelp": "Tap the map where you mean. You can skip this if it is not about one place.",
+  "portal.stepWhereHelpNoMap": "Type the street, corner, or landmark you mean. You can skip this.",
+  "portal.stepWhatTitle": "Say what you think",
+  "portal.stepWhatHelp": "In your own words. Anything you write here is read by the project team.",
+  /*
+    THE ONE THING WE NEED, said as a request rather than as a verdict on the
+    resident. It is shown when somebody tries to move past this step, or to send,
+    with nothing written — a state the browser's own "please fill in this field"
+    can never cover here, because the box is not on screen on the send step and
+    an off-screen required field simply blocks the form in silence.
+  */
+  "portal.commentNeeded": "Please write something first. It is the one thing we need.",
+  "portal.stepExtrasTitle": "Add a photo or a topic",
+  "portal.stepExtrasHelp": "Only if you want to. Nothing here is needed.",
+  "portal.stepYouTitle": "About you",
+  "portal.stepYouHelp": "All of this is optional. You can send your input without any of it.",
+  "portal.stepSendTitle": "Send it",
+  "portal.stepSendHelp": "Check it over, then send.",
+  "portal.locationSet": "You marked a place on the map.",
+  "portal.locationNone": "No place marked yet.",
+  "portal.clearLocation": "Remove the place I marked",
+  "portal.whereInWords": "Where is this? A street, corner, or landmark.",
+  // The label the typed place is stored under. It goes INTO the comment text —
+  // there is no column for it — so it must be a word the reader of the comment
+  // understands, in the language the resident wrote in.
+  "portal.whereRecorded": "Where: {place}",
+  "portal.reviewHeading": "What you are sending",
+  "portal.reviewNoLocation": "No place marked",
+
+  // ----------------------------------------------- portal: the one way onward
+  /*
+    THE LABEL ON THE ONLY DOOR, and it names what is actually behind it.
+    "About this project" reads as background, so a resident who came to answer a
+    survey walks past the only link that leads to one — and to the comments, to
+    the per-comment translation, to the record of what the team did, and to the
+    email sign-up. Which sentence is used is decided per campaign from what that
+    campaign really has, because a door promising a survey that does not exist
+    costs the same trust as the door that promised nothing.
+  */
+  "portal.openDetailsSurveyAndComments": "See the survey and what other people said",
+  "portal.openDetailsSurvey": "See the survey for this project",
+  "portal.openDetailsComments": "See what other people said",
+  "portal.openDetails": "See more about this project",
+  "portal.openDetailsHint": "And what the team has done about it so far",
+  "portal.backToMap": "Back to the map",
+  "portal.addYourInput": "Tell us what you think",
+  "portal.hideForm": "Hide",
+
+  // ------------------------------------------------------ portal: no map here
+  /*
+    THE MAP CANNOT DRAW. Said to a member of the public, so it says what they can
+    still do and stops. The reason — an unset access token — is an operator's
+    problem and is disclosed separately through `OperatorDetail`, which is hidden
+    from resident-facing copy by its own guard.
+  */
+  "portal.mapMissingTitle": "The map cannot be shown here",
+  "portal.mapMissingBody":
+    "You can still tell us what you think. Answer the questions below, and describe the place in your own words.",
+
+  // ------------------------------------------- portal: the two map controls
+  /*
+    THE MAP CONTROLS SPEAK THE RESIDENT'S LANGUAGE. These were English literals
+    inside the picker components, rendered inside a page that may declare Farsi
+    or Arabic. The pickers still carry English defaults for any other caller;
+    the participant map passes these.
+
+    "What's on the map" and "Map background", never "layers" and never
+    "basemap": nobody outside a GIS office has ever used either word.
+  */
+  "portal.layersHeading": "What's on the map",
+  "portal.layersHint": "Turn things on and off. This only changes what you see.",
+  "portal.layersReadFailure":
+    "The project's map information could not be loaded, so none of it is drawn. That does not mean there is none.",
+  "portal.layersShowAll": "Show all",
+  "portal.layersHideAll": "Hide all",
+  "portal.backgroundHeading": "Map background",
+  "portal.backgroundHint": "Change what the map looks like underneath.",
+  "portal.backgroundUnavailable": "not available on this site",
+
+  // --------------------------------------------- portal: nothing framed this
+  /*
+    NOBODY SAID WHERE. The campaign, the project it belongs to and the agency
+    itself all have no area on record, and nothing has been submitted yet, so
+    the map opens wide — and a wide map presented as if it were the study area
+    is a claim nobody made. Said plainly, and it goes away as soon as the
+    resident moves the map, because by then they have taken over.
+  */
+  "portal.mapNoAreaTitle": "This map is not set to one place",
+  "portal.mapNoAreaBody":
+    "Nobody has said which area this page is about, so the map starts wide. Move and zoom it to the place you mean, or write where you mean in your own words in the form.",
+  "portal.mapNoAreaDismiss": "OK",
 
   // ------------------------------------------------------------------ survey
   "survey.title": "Survey",
@@ -337,32 +481,33 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.aboutProcess": "Cómo organiza el equipo del proyecto los aportes",
   "portal.topics": "Temas de comentarios",
   "portal.selectTopic": "Seleccione un tema",
-  "portal.yourInput": "Su comentario (obligatorio)",
+  "portal.yourInput": "Lo que nos quiere contar (esta parte sí hace falta)",
   "portal.yourInputHint": "Cuéntenos qué observó, dónde lo observa y por qué es importante.",
-  "portal.onlyRequiredField": "Este es el único campo obligatorio del formulario.",
-  "portal.titleLabel": "Resumen breve de su comentario",
-  "portal.optionalFields": "Campos opcionales",
-  "portal.aboutYou": "Sobre usted (opcional)",
-  "portal.nameLabel": "Nombre o seudónimo",
-  "portal.nameHint": "Añada su nombre si desea que el equipo del proyecto sepa quién envió el comentario.",
-  "portal.followUp": "Seguimiento (opcional)",
-  "portal.followUpHint":
-    "No se garantiza una respuesta directa, salvo que el equipo decida ponerse en contacto.",
+  "portal.onlyRequiredField": "Es la única parte de este formulario que hace falta.",
+  "portal.titleLabel": "Un título corto para lo que escribió",
+  "portal.optionalFields": "Solo si usted quiere",
+  "portal.aboutYou": "Sobre usted (solo si usted quiere)",
+  "portal.nameLabel": "Su nombre, o el nombre que quiera usar",
+  "portal.nameHint": "Añada un nombre si quiere que el equipo sepa quién envió esto. Puede dejarlo en blanco.",
+  "portal.followUp": "Recibir respuesta (solo si usted quiere)",
+  "portal.followUpHint": "Puede que el equipo no le pueda responder a usted en persona.",
   "portal.photoHint": "Adjunte una foto JPEG, PNG o WebP de hasta {limit}.",
   "portal.photoTooLarge": "La foto es demasiado grande. El límite es {limit}.",
   "portal.photoWrongType": "Elija una imagen JPEG, PNG o WebP.",
-  "portal.photoFailed": "No se pudo subir la foto",
+  "portal.photoFailed":
+    "No pudimos añadir su foto. Puede intentarlo otra vez, o enviar lo que escribió sin la foto.",
   "portal.photoPreviewAlt": "Vista previa de la foto adjunta",
   "portal.photoItemAlt": "Foto adjunta a este comentario de la comunidad",
-  "portal.submit": "Enviar mi comentario",
+  "portal.submit": "Enviar lo que escribí",
   "portal.submitting": "Enviando…",
-  "portal.submitFailed": "No se pudo enviar el comentario",
-  "portal.received": "Hemos recibido su comentario",
-  "portal.receivedDetail": "El equipo del proyecto ha recibido su envío.",
+  "portal.submitFailed":
+    "No pudimos enviar lo que escribió. No se ha perdido nada: inténtelo otra vez, por favor.",
+  "portal.received": "Gracias. Ya tenemos lo que nos envió.",
+  "portal.receivedDetail": "Lo que escribió ha llegado al equipo del proyecto.",
   "portal.whatHappensNext": "Qué ocurre después",
   "portal.reviewNotice":
-    "El equipo del proyecto revisa los comentarios antes de usarlos en resúmenes o informes.",
-  "portal.submissionsClosedNotice": "Comentarios cerrados",
+    "Alguien del equipo del proyecto lee lo que usted envía antes de mostrarlo en esta página o usarlo en un informe.",
+  "portal.submissionsClosedNotice": "Este proyecto no está recibiendo comentarios en este momento",
   "portal.sortNewest": "Más recientes",
   "portal.sortMostSupported": "Con más apoyos",
   "portal.support": "Apoyar",
@@ -383,12 +528,97 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.translating": "Traduciendo…",
   "portal.translationUnavailable":
     "No se pudo traducir este comentario en este momento. Se muestra el original.",
-  "portal.demographics": "Sobre usted (opcional)",
+  "portal.demographics": "Sobre usted (solo si usted quiere)",
   "portal.demographicsHint":
     "Estas respuestas ayudan al equipo del proyecto a comprobar si está escuchando a toda la comunidad. Nunca se muestran públicamente.",
+  "portal.demographicsAge": "Su rango de edad",
+  "portal.demographicsZip": "Su código postal",
+  "portal.demographicsPrimaryLanguage": "Su idioma principal",
+  "portal.demographicsTenure": "¿Alquila o es dueño de su vivienda?",
+  "portal.demographicsRace": "Su raza u origen étnico",
   "portal.preferNotToSay": "Prefiero no responder",
   "portal.zipHint": "Solo se guardan los tres primeros dígitos.",
   "portal.emailUpdates": "Quiero recibir novedades de este proyecto por correo electrónico",
+
+  "portal.mapRoleDescription": "Mapa en el que puede dibujar",
+  "portal.mapLabelDrawing": "Mapa de este proyecto. Marque el lugar del que habla.",
+  "portal.mapLabelReading": "Mapa de este proyecto y de lo que ha dicho otra gente.",
+  "portal.mapKeyboardHelp":
+    "Use las teclas de flecha para mover el mapa y las teclas más y menos para acercar o alejar. Pulse Intro para marcar el punto que está en el centro del mapa. Pulse Retroceso para deshacer la última marca. Pulse C para cerrar un área. Pulse Escape para empezar de nuevo.",
+  "portal.mapKeyboardHelpReadOnly":
+    "Use las teclas de flecha para mover el mapa y las teclas más y menos para acercar o alejar.",
+  "portal.drawPointPlaced": "Marcado. Pulse Intro otra vez para moverlo a otro sitio.",
+  "portal.drawVertexAdded": "Se añadió un punto a su figura.",
+  "portal.drawAreaClosed": "Área terminada.",
+  "portal.drawAreaAlreadyClosed": "Esta área ya está terminada. Empiece de nuevo para dibujar otra.",
+  "portal.drawVertexLimit": "Esa es la cantidad máxima de puntos que puede tener una figura.",
+  "portal.drawCleared": "Se quitó su marca.",
+  "portal.drawUndone": "Se quitó el último punto.",
+  "portal.drawModeLabel": "¿Qué está marcando?",
+  "portal.drawModePoint": "Un punto",
+  "portal.drawModeLine": "Una calle o un camino",
+  "portal.drawModeArea": "Un área",
+
+  /*
+    The map-control and no-area strings, translated 2026-08-13. They arrived in
+    English only, which quietly made the whole Spanish catalog partial — every
+    Spanish page then carried "only partly available in Spanish" over copy that
+    was in fact fully translated, and the portal's own pending-copy notice went
+    silent because it defers to that one. A missing translation is never local to
+    the key that is missing.
+  */
+  "portal.layersHeading": "Qué hay en el mapa",
+  "portal.layersHint": "Active y desactive cosas. Esto solo cambia lo que usted ve.",
+  "portal.layersReadFailure":
+    "No se pudo cargar la información del mapa de este proyecto, así que no se dibuja nada de ella. Eso no significa que no haya ninguna.",
+  "portal.layersShowAll": "Mostrar todo",
+  "portal.layersHideAll": "Ocultar todo",
+  "portal.backgroundHeading": "Fondo del mapa",
+  "portal.backgroundHint": "Cambie el aspecto del mapa por debajo.",
+  "portal.backgroundUnavailable": "no está disponible en este sitio",
+  "portal.mapNoAreaTitle": "Este mapa no está centrado en un lugar concreto",
+  "portal.mapNoAreaBody":
+    "Nadie ha dicho de qué zona trata esta página, así que el mapa empieza muy abierto. Muévalo y acérquelo al lugar del que habla, o escriba en el formulario con sus propias palabras a qué lugar se refiere.",
+  "portal.mapNoAreaDismiss": "Aceptar",
+
+  "portal.stepsHeading": "Lo que nos quiere contar",
+  "portal.stepCounter": "Paso {step} de {total}",
+  "portal.next": "Siguiente",
+  "portal.back": "Atrás",
+  "portal.stepWhereTitle": "Muéstrenos dónde",
+  "portal.stepWhereHelp":
+    "Toque el mapa en el lugar del que habla. Puede omitir esto si no se trata de un lugar concreto.",
+  "portal.stepWhereHelpNoMap":
+    "Escriba la calle, la esquina o el punto de referencia del que habla. Puede omitir esto.",
+  "portal.stepWhatTitle": "Diga qué opina",
+  "portal.stepWhatHelp": "Con sus propias palabras. El equipo del proyecto lee todo lo que escriba aquí.",
+  "portal.commentNeeded": "Escriba algo primero, por favor. Es lo único que hace falta.",
+  "portal.stepExtrasTitle": "Añada una foto o un tema",
+  "portal.stepExtrasHelp": "Solo si quiere. Nada de esto hace falta.",
+  "portal.stepYouTitle": "Sobre usted",
+  "portal.stepYouHelp": "Todo esto es opcional. Puede enviar su comentario sin nada de esto.",
+  "portal.stepSendTitle": "Envíelo",
+  "portal.stepSendHelp": "Revíselo y envíelo.",
+  "portal.locationSet": "Marcó un lugar en el mapa.",
+  "portal.locationNone": "Todavía no ha marcado ningún lugar.",
+  "portal.clearLocation": "Quitar el lugar que marqué",
+  "portal.whereInWords": "¿Dónde es esto? Una calle, una esquina o un punto de referencia.",
+  "portal.whereRecorded": "Dónde: {place}",
+  "portal.reviewHeading": "Lo que va a enviar",
+  "portal.reviewNoLocation": "Ningún lugar marcado",
+
+  "portal.openDetailsSurveyAndComments": "Vea la encuesta y lo que dijo otra gente",
+  "portal.openDetailsSurvey": "Vea la encuesta de este proyecto",
+  "portal.openDetailsComments": "Vea lo que dijo otra gente",
+  "portal.openDetails": "Vea más sobre este proyecto",
+  "portal.openDetailsHint": "Y lo que el equipo ha hecho al respecto hasta ahora",
+  "portal.backToMap": "Volver al mapa",
+  "portal.addYourInput": "Cuéntenos qué opina",
+  "portal.hideForm": "Ocultar",
+
+  "portal.mapMissingTitle": "Aquí no se puede mostrar el mapa",
+  "portal.mapMissingBody":
+    "Aun así puede contarnos qué opina. Responda las preguntas de abajo y describa el lugar con sus propias palabras.",
 
   "survey.title": "Encuesta",
   "survey.intro": "Toma unos {minutes} minutos. Se requiere una respuesta principal.",

@@ -1,6 +1,4 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
 import {
   PortalLanguageNotice,
@@ -8,53 +6,12 @@ import {
 } from "@/components/engagement/portal-language-picker";
 import { PortalOperatorText } from "@/components/engagement/portal-operator-text";
 import { PortalAccessibilityNotice } from "@/components/engagement/portal-accessibility-notice";
-import { loadPublicPortalBundleForShareValue } from "@/lib/engagement/public-portal-data";
-import { PORTAL_LOCALE_QUERY_PARAM } from "@/lib/engagement/portal-i18n/locales";
+import type { PublicPortalBundle } from "@/lib/engagement/public-portal-data";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
 import { formatPortalDateTime, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 import type { PortalMessageKey } from "@/lib/engagement/portal-i18n/messages";
 import type { EngagementType } from "@/lib/engagement/catalog";
 
-type PageSearchParams = Record<string, string | string[] | undefined>;
-
-/**
- * The explicit language choice, out of the URL.
- *
- * A repeated `?lang=` (which a hand-edited or double-appended URL produces)
- * yields an array; the first entry wins rather than the request being refused.
- * A public link that somebody mangled must still open the consultation.
- */
-function requestedLocaleFrom(searchParams: PageSearchParams | undefined): string | null {
-  const raw = searchParams?.[PORTAL_LOCALE_QUERY_PARAM];
-  if (Array.isArray(raw)) return raw[0] ?? null;
-  return typeof raw === "string" ? raw : null;
-}
-
-/**
- * The query string as the participant sees it, so the language picker's links
- * preserve everything else that was on the URL.
- */
-function searchStringFrom(searchParams: PageSearchParams | undefined): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(searchParams ?? {})) {
-    if (Array.isArray(value)) {
-      for (const entry of value) params.append(key, entry);
-    } else if (typeof value === "string") {
-      params.set(key, value);
-    }
-  }
-  return params.toString();
-}
-
-/**
- * A campaign's engagement mode in the participant's language.
- *
- * The stored value is an internal enum, and the old `replaceAll("_", " ")`
- * rendered it as English words to every reader in every language. Keys exist
- * for the three modes `ENGAGEMENT_TYPES` declares; a value outside that set
- * (which only a hand-written database row can produce) falls back to the
- * de-underscored form rather than to a blank.
- */
 type EngagementModeKey = Extract<PortalMessageKey, `engagementType.${string}`>;
 
 /**
@@ -64,8 +21,7 @@ type EngagementModeKey = Extract<PortalMessageKey, `engagementType.${string}`>;
  * fourth one added later whose catalog key nobody wrote — and `t()` on a key the
  * bundle does not carry returns undefined, which arrives on a public page as the
  * literal word "undefined" inside "Mode: …". A `Record` over `EngagementType`
- * makes both halves of that a build error instead: a new mode with no key, and a
- * key that no longer exists.
+ * makes both halves of that a build error instead.
  */
 const ENGAGEMENT_MODE_KEYS: Record<EngagementType, EngagementModeKey> = {
   map_feedback: "engagementType.map_feedback",
@@ -77,103 +33,48 @@ function engagementModeKey(value: string): EngagementModeKey | null {
   return (ENGAGEMENT_MODE_KEYS as Record<string, EngagementModeKey | undefined>)[value] ?? null;
 }
 
-export async function generateMetadata({
-  params,
-  searchParams,
+/**
+ * EVERYTHING THE MAP IS NOT — one real link away from it.
+ *
+ * The hero, the three facts, the moderation posture, the four tabs (the classic
+ * submission form, the survey, the community feed with its per-comment
+ * translation and support votes, the close-the-loop record), the topic
+ * descriptions, the email subscription and the accessibility contact. This is
+ * the page that used to live at `/engage/<token>`, unchanged apart from the way
+ * back to the map at the top.
+ *
+ * IT IS ALSO THE NO-JAVASCRIPT FALLBACK. The map needs JavaScript; the `<form>`
+ * inside `PublicEngagementPortal` does not, and the link that reaches it is a
+ * plain anchor. A resident whose phone never runs the bundle still meets a
+ * complete way to take part.
+ *
+ * ================ WHY IT IS A COMPONENT AND NOT THE BODY OF THE ROUTE
+ *
+ * Two doors lead here: the public `/engage/<token>/about` and the operator
+ * preview's own context page. The whole value of a preview is that it is the
+ * same page; a second copy of this markup would be a second page that drifts,
+ * which is exactly what happened to the map surface before
+ * `buildPortalMapShellProps` existed. The two routes differ only in where the
+ * "back" link and the language links point, so those are props.
+ */
+export function PortalContextPage({
+  bundle,
+  backHref,
+  languagePickerPathname,
+  languagePickerSearch,
+  previewMode = false,
 }: {
-  params: Promise<{ shareToken: string }>;
-  searchParams?: Promise<PageSearchParams>;
-}): Promise<Metadata> {
-  const { shareToken } = await params;
-  const resolvedSearch = searchParams ? await searchParams : undefined;
-  // Token OR printable slug — the resolver tries the token column first, and a
-  // slug only ever reaches the same active-campaign data the token path serves.
-  const bundle = await loadPublicPortalBundleForShareValue(shareToken, {
-    requestedLocale: requestedLocaleFrom(resolvedSearch),
-  });
-
-  if (!bundle) {
-    return { title: "Engagement portal", robots: { index: false, follow: false } };
-  }
-
-  const translator = createPortalTranslator(bundle.messages);
-
-  // The title and description a link preview shows are participant-facing text
-  // like any other. They come from the resolved campaign text rather than the
-  // raw row, so a Spanish link posted to a community group previews in Spanish
-  // when the agency has published a Spanish title.
-  const title = bundle.campaignText.title.text || "Community engagement";
-  /*
-    THE PREVIEW MUST SAY WHAT THE PAGE SAYS.
-
-    This read `summary` alone and never looked at `publicDescription`, so the
-    meta description and og:description — the snippet a search engine indexes,
-    and the text that renders when a resident shares the link into a community
-    group — carried the OPERATOR's summary while the page itself showed the
-    public description.
-
-    Those two fields are deliberately different things. The campaign form labels
-    one "Public-facing description — shown on portal page" and asks for the
-    other with "What kind of input is this campaign collecting, and how will
-    operators use it?" An operator answering that question honestly writes
-    internal framing — which agency needs the comments, what the funding ask is,
-    how the input will be used — and has no reason to expect it published as the
-    page's public summary. Verified in the browser: a campaign whose public
-    description was resident-facing outreach copy still previewed with the
-    operator note naming the grant programme behind it.
-
-    The precedence now mirrors the body exactly (see the headline block below),
-    so the preview and the page cannot disagree. The `summary` fallback is kept
-    only because the body keeps it; a campaign that has passed its own share
-    readiness checks has a public description and never reaches it.
-  */
-  const description =
-    bundle.campaignText.publicDescription?.text.trim() ||
-    bundle.campaignText.summary?.text.trim() ||
-    translator.t("page.defaultDescription");
-
-  // The canonical URL KEEPS the language. Dropping it would tell a crawler —
-  // and any tool that follows canonicals — that the Spanish portal and the
-  // English one are the same page, which is exactly the claim this feature
-  // exists to stop making.
-  const canonical =
-    bundle.locale.source === "url"
-      ? `/engage/${shareToken}?${PORTAL_LOCALE_QUERY_PARAM}=${bundle.locale.locale}`
-      : `/engage/${shareToken}`;
-
-  return {
-    title,
-    description,
-    alternates: { canonical },
-    openGraph: {
-      title,
-      description,
-      url: canonical,
-      type: "website",
-      locale: bundle.locale.bcp47,
-    },
-    robots: { index: false, follow: false },
-  };
-}
-
-export default async function PublicEngagementPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ shareToken: string }>;
-  searchParams?: Promise<PageSearchParams>;
+  bundle: PublicPortalBundle;
+  /** Back to the map — the public route, or the preview's own map surface. */
+  backHref: string;
+  /** Where the `?lang=` links point. Route-relative, so it cannot be derived here. */
+  languagePickerPathname: string;
+  languagePickerSearch: string;
+  /** Preview only: every submission control is inert and writes nothing. */
+  previewMode?: boolean;
 }) {
-  const { shareToken } = await params;
-  const resolvedSearch = searchParams ? await searchParams : undefined;
-
-  const bundle = await loadPublicPortalBundleForShareValue(shareToken, {
-    requestedLocale: requestedLocaleFrom(resolvedSearch),
-  });
-  if (!bundle) {
-    notFound();
-  }
-
-  const { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps } = bundle;
+  const { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps } =
+    bundle;
   const translator = createPortalTranslator(messages);
   const modeKey = engagementModeKey(campaign.engagement_type);
   const modeLabel = modeKey ? translator.t(modeKey) : campaign.engagement_type.replaceAll("_", " ");
@@ -181,19 +82,32 @@ export default async function PublicEngagementPage({
   return (
     // `dir` is the whole reason the right-to-left languages are usable here
     // rather than merely present in a list. It sits on the participant
-    // surface's own wrapper, not on the app shell: this is a public route and
-    // the shell is shared with the operator console, which is not translated and
-    // must not flip. `lang` travels with it so assistive technology reads the
-    // page as what it is.
-    <section className="public-page" dir={locale.direction} lang={locale.bcp47}>
+    // surface's own wrapper, not on the app shell.
+    <section
+      className="public-page mx-auto w-full max-w-[72rem] px-4 py-8 sm:px-6"
+      dir={locale.direction}
+      lang={locale.bcp47}
+      data-testid="portal-context-page"
+    >
       <div className="public-page-backdrop" />
 
-      <div className="flex flex-col gap-2">
+      {/* A real anchor, first in the document: the way back must work before
+          hydration and must be the first thing a screen reader reaches. */}
+      <a
+        href={backHref}
+        data-testid="portal-back-to-map"
+        className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        {translator.t("portal.backToMap")}
+      </a>
+
+      <div className="mt-4 flex flex-col gap-2">
         <PortalLanguagePicker
           locale={locale}
           messages={messages}
-          pathname={`/engage/${shareToken}`}
-          search={searchStringFrom(resolvedSearch)}
+          pathname={languagePickerPathname}
+          search={languagePickerSearch}
         />
         <PortalLanguageNotice locale={locale} messages={messages} />
       </div>
@@ -252,23 +166,16 @@ export default async function PublicEngagementPage({
             </div>
             <div className="public-fact">
               <p className="public-fact-label">{translator.t("page.publishedFeedback")}</p>
-              {/* Formatted, not concatenated: the languages in this list do not
-                  agree on thousands separators, and a count is a number a
-                  resident reads. */}
               {/*
                 A COUNT IS A CLAIM, and this is the one this portal can least
                 afford to get wrong: "0 published feedback" tells a resident
                 nobody spoke. When the comment read failed, `approvedItems` is
                 empty for a reason that has nothing to do with what residents
-                submitted, so no number is printed at all.
-
-                An em dash rather than a translated phrase, deliberately: it
-                reads as "not available" in every locale this portal serves, and
-                a new English-only key would flip the bundle's fallback flag and
-                put a "not fully translated" notice on every non-English portal
-                — degrading all of them for a string that only appears on
-                failure. The amber disclosure inside the portal carries the
-                explanation.
+                submitted, so no number is printed at all. An em dash rather than
+                a translated phrase: it reads as "not available" in every locale
+                this portal serves, and a new English-only key would flip the
+                bundle's fallback flag and put a "not fully translated" notice on
+                every non-English portal.
               */}
               <p className="public-fact-value">
                 {portalProps.readFailures?.comments
@@ -305,10 +212,6 @@ export default async function PublicEngagementPage({
             <Clock3 className="h-4 w-4" />
             <span>
               {translator.t("page.lastUpdated", {
-                // `Intl` in the participant's locale, not the server's. The old
-                // bare `toLocaleString()` rendered every date in en-US for
-                // every reader, which for most of this language list names a
-                // different day than the one intended.
                 timestamp: formatPortalDateTime(campaign.updated_at, locale.bcp47),
               })}
             </span>
@@ -316,7 +219,7 @@ export default async function PublicEngagementPage({
         </article>
       </div>
 
-      <PublicEngagementPortal {...portalProps} />
+      <PublicEngagementPortal {...portalProps} previewMode={previewMode} />
 
       {/*
         AFTER the portal, not before it: a resident who can use the page should
