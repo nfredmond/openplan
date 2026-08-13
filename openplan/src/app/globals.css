@@ -693,6 +693,24 @@
     }
   }
 
+  /**
+   * The plain two-column page body, below the header grid.
+   *
+   * Both RTP index pages write `module-grid-layout … gap-6
+   * xl:grid-cols-[minmax(0,1.35fr)_minmax(24rem,0.9fr)]` and this class was the
+   * only thing supplying `display: grid`. Without it `grid-template-columns`
+   * applies to a block box and does nothing, so the sidebar column dropped
+   * below the main column at every width — on the two busiest planning pages in
+   * the product. Gap and columns stay with the caller (Tailwind's utilities
+   * outrank this layer); the class contributes the display mode and a sane
+   * default gap for a caller that sets none.
+   */
+  .module-grid-layout {
+    display: grid;
+    gap: 1rem;
+    align-items: start;
+  }
+
   .module-breadcrumb {
     display: flex;
     flex-wrap: wrap;
@@ -888,6 +906,7 @@
   }
 
   .module-summary-card,
+  .module-metric-card,
   .module-subpanel,
   .module-note,
   .module-empty-state {
@@ -931,6 +950,86 @@
     font-size: 0.8rem;
     line-height: 1.45;
     color: var(--muted-foreground);
+  }
+
+  /**
+   * THE METRIC CARD — the dense member of the summary family.
+   *
+   * `.module-summary-card` is the wide one: three or four across a section, a
+   * 1.7rem figure you read from across the room. The metric card is the same
+   * object at reading distance — six across the RTP fiscal band, two across a
+   * project's evidence panel — so it keeps the family's frame (same radius,
+   * same `--border`, same `--card`, same one-pixel shadow) and tightens
+   * everything inside it.
+   *
+   * These three classes were referenced by seven files and 64 call sites and
+   * DEFINED BY NOTHING (found 2026-08-12). Every fiscal-constraint figure on
+   * the RTP cycle page, every packet count, and the project evidence tiles
+   * rendered as unstyled paragraphs in an unframed div: no border, no
+   * background, label and value the same size and weight, so a planner could
+   * not tell the number from its name. Nothing in the toolchain can see this —
+   * a `className` is a string to TypeScript, to ESLint and to the bundler, and
+   * jsdom loads no stylesheet — which is why `a-class-name-is-not-a-style`
+   * exists.
+   *
+   * The value's `font-size` is deliberately modest because most call sites
+   * override it with Tailwind's `text-sm` for text-shaped values ("2026–2050",
+   * "Not set"). Tailwind utilities sit in a later layer than this one, so the
+   * override wins; the base size is what a bare numeric card gets.
+   */
+  .module-metric-card {
+    padding: 0.8rem 0.85rem;
+  }
+
+  @media (min-width: 1024px) {
+    .module-metric-card {
+      padding: 0.9rem 0.95rem;
+    }
+  }
+
+  .module-metric-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    /* Looser than the 0.22em the section labels use: a six-across column is
+       narrow, and 0.22em wraps "Outstanding requests" onto three lines. */
+    letter-spacing: 0.14em;
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  .module-metric-value {
+    margin-top: 0.3rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  /**
+   * THE OPERATOR CARD IS DARK IN EVERY MODE, so a metric card inside one cannot
+   * use `--card` and `--foreground` — in light mode that paints a white tile on
+   * a near-black panel and the label goes black-on-black. Three RTP surfaces put
+   * their orientation metrics (Geography / Horizon / Adoption target / Public
+   * review) inside the operator card, so this is not an edge case.
+   *
+   * The values here are `.module-operator-item`'s, deliberately: a metric card
+   * on the operator card should read as a member of that card's own family, not
+   * as a page card that wandered onto it.
+   */
+  .module-operator-card .module-metric-card {
+    border-color: rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: none;
+  }
+
+  .module-operator-card .module-metric-label {
+    color: rgba(148, 163, 184, 0.9);
+  }
+
+  .module-operator-card .module-metric-value {
+    color: #f1f5f9;
   }
 
   .module-operator-card {
@@ -990,10 +1089,50 @@
     color: var(--muted-foreground);
   }
 
+  /**
+   * The line under a section title when the title sits in a tight header (an
+   * icon beside a heading, as on the Title VI service-equity panel) rather than
+   * over a full-width intro. Smaller and tighter than
+   * `.module-section-description`, which is sized for a section's opening
+   * paragraph. Undefined until 2026-08-12, so that panel's explanation of what
+   * the comparison actually measures rendered at browser-default 16px black —
+   * indistinguishable in weight from the heading above it.
+   */
+  .module-section-subtitle {
+    margin-top: 0.2rem;
+    max-width: 46rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--muted-foreground);
+  }
+
   .module-operator-list {
     margin-top: 1rem;
     display: grid;
     gap: 0.75rem;
+  }
+
+  /**
+   * An inline action ON the dark operator card, which is a fixed dark surface in
+   * every palette and mode — so it cannot borrow `.openplan-inline-label`, whose
+   * `--ink` is near-black in light mode and would vanish here. Same shape,
+   * light ink: it is the operator card's member of the inline-action family.
+   */
+  .module-operator-inline-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.92);
+    text-decoration: underline;
+    text-decoration-color: rgba(226, 232, 240, 0.34);
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color 150ms ease;
+  }
+
+  .module-operator-inline-link:hover {
+    text-decoration-color: rgba(226, 232, 240, 0.9);
   }
 
   .module-operator-item {
@@ -1033,7 +1172,15 @@
     gap: 0.75rem;
   }
 
-  .module-record-row {
+  /**
+   * `.module-row-card` is `.module-record-row` under a second name — five files
+   * in the RTP and report lanes reached for it (drift rows, packet artifacts,
+   * section controls) and no stylesheet defined it, so those rows had no frame
+   * at all and ran together as loose paragraphs. Aliased, not redrawn: a row in
+   * a list should look the same whichever spelling the file used.
+   */
+  .module-record-row,
+  .module-row-card {
     position: relative;
     display: grid;
     gap: 0.7rem;
@@ -1685,8 +1832,24 @@
    * Colour comes from --ink and --muted-foreground rather than the accent, so
    * these sit quietly beside the primary action instead of competing with it,
    * and both tokens are palette-defined in all ten themes.
+   *
+   * THREE NAMES, ONE CONTROL. `module-inline-action` (13 files, 53 call sites)
+   * and `openplan-text-action` / `-muted` (project-rtp-linker) were the same
+   * idea spelled twice more, and both were likewise defined nowhere — the
+   * "Open control lane", "Open milestone", "Open submittal", "Open invoice
+   * lane" and "Open deadline lane" links across the project delivery board and
+   * the whole RTP lane rendered as unstyled text.
+   *
+   * They are ALIASED here rather than given a second look. Two visual
+   * definitions of "a text-weight control in a row" is how a design system
+   * stops being one; a planner should not be able to tell which spelling a
+   * given screen used. New code should write `openplan-inline-label` — the
+   * aliases exist so the 55 existing call sites are correct today rather than
+   * after a rename nobody has time for.
    */
-  .openplan-inline-label {
+  .openplan-inline-label,
+  .module-inline-action,
+  .openplan-text-action {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -1703,23 +1866,29 @@
     cursor: pointer;
   }
 
-  .openplan-inline-label:hover {
+  .openplan-inline-label:hover,
+  .module-inline-action:hover,
+  .openplan-text-action:hover {
     text-decoration-color: var(--ink);
   }
 
-  .openplan-inline-label:disabled {
+  .openplan-inline-label:disabled,
+  .module-inline-action:disabled,
+  .openplan-text-action:disabled {
     cursor: not-allowed;
     opacity: 0.55;
     text-decoration: none;
   }
 
-  .openplan-inline-label-muted {
+  .openplan-inline-label-muted,
+  .openplan-text-action-muted {
     color: var(--muted-foreground);
     font-weight: 500;
     text-decoration-color: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
   }
 
-  .openplan-inline-label-muted:hover {
+  .openplan-inline-label-muted:hover,
+  .openplan-text-action-muted:hover {
     color: var(--ink);
     text-decoration-color: var(--ink);
   }

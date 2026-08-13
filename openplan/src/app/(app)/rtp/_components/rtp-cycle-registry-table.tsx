@@ -241,7 +241,18 @@ export function RtpCycleRegistryTable({
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-8">
+        {/*
+          FOUR ACROSS, NOT EIGHT. This board sits in the left column of
+          `.module-grid-layout`, which is roughly 700px at xl — eight columns put
+          each metric card at ~75px, narrow enough that "Trace outpaced" broke
+          across three lines and the figure sat under a label it could not be
+          told apart from. It read as full width for as long as
+          `.module-grid-layout` had no `display: grid` (it was undefined until
+          2026-08-12), so the sidebar stacked underneath and this band got the
+          whole page. Two rows of four is the same eight readings at a size a
+          planner can scan.
+        */}
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <div className="module-metric-card">
             <p className="module-metric-label">Needs reset</p>
             <p className="module-metric-value text-sm">{packetAttentionCounts.reset}</p>
@@ -425,7 +436,7 @@ export function RtpCycleRegistryTable({
                   </div>
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
                   <div className="module-metric-card">
                     <p className="module-metric-label">Linked projects</p>
                     <p className="module-metric-value text-sm">{cycle.linkedProjectCount}</p>
@@ -498,7 +509,7 @@ export function RtpCycleRegistryTable({
                   </div>
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                   <div className="module-metric-card">
                     <p className="module-metric-label">Linked packet</p>
                     <p className="module-metric-value text-sm">{cycle.packetReport?.title ?? "Not created"}</p>

@@ -1379,6 +1379,131 @@ body[data-map-reading="true"] .op-cart-surface {
   color: var(--ink-2);
 }
 
+/* ---------- Map popups ----------------------------------------------------
+
+   THE ONLY PIECE OF OPENPLAN'S UI THAT REACT DOES NOT RENDER.
+
+   `cartographic-map-backdrop.tsx` builds the transit-stop popup with
+   `document.createElement` and hands the node to `mapboxgl.Popup`, because that
+   is the API Mapbox offers. Six class names go on that DOM — `op-map-popup`,
+   `op-map-popup--transit`, `__title`, `__kicker`, `__line`, `__note` — and until
+   2026-08-12 not one of them was defined anywhere. The popup therefore rendered
+   in Mapbox's own default chrome: a white 3px-radius box in 12px Helvetica, with
+   the stop name, the trip count and the "service level, not a timetable" caveat
+   all the same size, weight and colour. On the dark palettes it was a white
+   card on a dark map. It was the one surface in the product still wearing the
+   library's clothes.
+
+   Everything below is scoped by `:has(.op-map-popup)` so it reaches OpenPlan's
+   popups only. Five other components construct `mapboxgl.Popup`s with their own
+   markup (safety crashes, traffic volumes, engagement heatmap, location display,
+   the RTP cycle project map); those keep the default look until they opt in by
+   using this family, rather than being restyled from underneath. */
+
+.mapboxgl-popup-content:has(.op-map-popup) {
+  /* `--panel-solid`, not `--panel`: the tip is a CSS triangle and cannot carry a
+     backdrop filter, so a translucent body would sit above an opaque arrow. */
+  background: var(--panel-solid);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  padding: 12px 14px 13px;
+  font-family: var(--font-body);
+}
+
+/* Mapbox paints the tip `#fff` per anchor direction, and only the one border
+   facing the content is coloured — so each direction has to be named. */
+.mapboxgl-popup-anchor-top:has(.op-map-popup) .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-left:has(.op-map-popup) .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-right:has(.op-map-popup) .mapboxgl-popup-tip {
+  border-bottom-color: var(--panel-solid);
+}
+
+.mapboxgl-popup-anchor-bottom:has(.op-map-popup) .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-left:has(.op-map-popup) .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-right:has(.op-map-popup) .mapboxgl-popup-tip {
+  border-top-color: var(--panel-solid);
+}
+
+.mapboxgl-popup-anchor-left:has(.op-map-popup) .mapboxgl-popup-tip {
+  border-right-color: var(--panel-solid);
+}
+
+.mapboxgl-popup-anchor-right:has(.op-map-popup) .mapboxgl-popup-tip {
+  border-left-color: var(--panel-solid);
+}
+
+.mapboxgl-popup-content:has(.op-map-popup) .mapboxgl-popup-close-button {
+  top: 4px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.mapboxgl-popup-content:has(.op-map-popup) .mapboxgl-popup-close-button:hover {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--ink);
+}
+
+.op-map-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink);
+  /* The close button lives in the corner; without this the title runs under it. */
+  padding-right: 14px;
+}
+
+/* A transit stop's readings are numeric and want a stable measure, so the card
+   does not resize itself between one stop and the next. The 280px `maxWidth`
+   passed to the Popup constructor is the ceiling this sits under. */
+.op-map-popup--transit {
+  min-width: 180px;
+}
+
+.op-map-popup__title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+/* Reads as the agency label above the readings, in the same mono micro-caps the
+   panel kickers use — so a popup and a panel are recognisably the same product.
+   Ordered after the title in the DOM but pulled above it, because the agency is
+   context for the stop, not a footnote to it. */
+.op-map-popup__kicker {
+  order: -1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.op-map-popup__line {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+/* The caveat that keeps a service level from being read as a timetable. It is
+   set apart by a rule and quieter type, but NOT hidden or shrunk below legible
+   size — a disclosure a planner cannot read is not a disclosure. */
+.op-map-popup__note {
+  margin-top: 4px;
+  padding-top: 7px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
 /* ---------- Reduced motion ---------- */
 
 /* `prefers-reduced-motion` had no block in this file at all, so the surface's

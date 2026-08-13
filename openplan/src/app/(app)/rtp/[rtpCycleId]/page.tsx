@@ -1077,7 +1077,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                     <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
                   </div>
                 ) : null}
-                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
                   <div className="module-metric-card">
                     <p className="module-metric-label">Funded</p>
                     <p className="module-metric-value text-sm">{fundedProjectCount}</p>

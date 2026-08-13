@@ -170,6 +170,18 @@ html.dark .op-gis-layer__swatch {
 
 /* ── Deleting ─────────────────────────────────────────────────────────────── */
 
+/* The block itself had no rule — only its `__error` and `__dialog` elements did
+   — so the delete control, its error line and its confirmation dialog were laid
+   out by whatever the surrounding flow happened to be, and the button stretched
+   to the panel's full width in any flex parent. A BEM block that owns nothing is
+   how a wrapper ends up meaning nothing. */
+.op-gis-delete {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+
 .op-gis-delete__dialog {
   margin-top: 8px;
   padding: 10px 12px;
