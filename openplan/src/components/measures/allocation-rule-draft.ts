@@ -1,6 +1,8 @@
 import {
+  isNarrativeRule,
   measurePercentTotal,
   parseMeasureAllocationRule,
+  type MeasureAllocationDescriptor,
   type MeasureAllocationRule,
   type MeasureCapBasis,
 } from "@/lib/measures/allocation";
@@ -184,6 +186,12 @@ export function emptyRuleDraft(): MeasureRuleDraft {
  * typed: the reference is how a category is recognised across ordinance
  * versions, and renaming a category in an amendment must not silently re-key
  * every record that points at the old one.
+ *
+ * Stricter than `normaliseReference`, and deliberately unchanged: a hyphen in a
+ * label becomes an underscore here, as it always has. Every reference derived
+ * from a label so far is spelled that way and is stored on allocations and
+ * claims, so a "nicer" derivation would re-key an amendment's categories away
+ * from the records filed under them.
  */
 export function referenceFromLabel(label: string): string {
   return label
@@ -194,18 +202,91 @@ export function referenceFromLabel(label: string): string {
     .slice(0, 64);
 }
 
-/** The reference a row will actually be saved under: what was typed, or the label's. */
-export function effectiveReference(row: { reference: string; label: string }): string {
-  const typed = row.reference.trim();
-  return typed || referenceFromLabel(row.label);
+/**
+ * WHAT A PLANNER TYPES IN A SHORT REFERENCE BOX, AS THE RECORD WILL HOLD IT.
+ *
+ * Call this on every keystroke in a reference box, so the box shows exactly the
+ * string the record will carry. Before it existed the likeliest mistake in the
+ * whole form — typing `Transit` in a box labelled "Short reference" — reached
+ * the descriptor's id rule and came back as "an id must be lower-case letters,
+ * digits, hyphen or underscore", attached to no box, on a form with a dozen of
+ * them. Normalising instead of refusing removes that error rather than wording
+ * it better.
+ *
+ * A TRAILING UNDERSCORE SURVIVES, unlike in `referenceFromLabel`: someone
+ * halfway through typing `transit_operations` has `transit_` in the box for one
+ * keystroke, and eating it would make the rest of the word unreachable.
+ * Anything this returns is either empty or a valid descriptor id — the leading
+ * character is forced to a letter or digit and the length is capped — so no
+ * reference box can produce that class of refusal again.
+ */
+export function normaliseReference(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^[^a-z0-9]+/, "")
+    .slice(0, 64);
 }
 
-/** A number box's contents, or null when it is empty or not a number. */
-function numberFrom(text: string): number | null {
+/** The reference a row will actually be saved under: what was typed, or the label's. */
+export function effectiveReference(row: { reference: string; label: string }): string {
+  return normaliseReference(row.reference) || referenceFromLabel(row.label);
+}
+
+/**
+ * WHAT A NUMBER BOX HOLDS — and the difference between empty and unreadable.
+ *
+ * A box nobody has reached and a box holding `thirty-three` are two different
+ * situations and used to produce one sentence: "State this category's share",
+ * printed under a box a planner had just filled in, while the live meter
+ * counted the box as 0. They are kept apart here so each can be said plainly.
+ *
+ * ONLY DECIMAL SPELLINGS ARE ACCEPTED. `Number()` reads `0x64` and `1e2` as
+ * 100, and a share silently recorded as 100 because someone's paste carried a
+ * stray `x` is the worst available behaviour for a fund an oversight committee
+ * audits. A trailing `%` and thousands separators ARE tolerated and normalised
+ * away, because a planner types `33.5%` in a box labelled "Share (%)" and
+ * `1,000,000` in a box labelled "Amount" every time.
+ */
+type NumberBoxReading =
+  | { kind: "empty" }
+  | { kind: "unreadable"; text: string }
+  | { kind: "number"; value: number };
+
+/** Digits, with optional 3-digit grouping and an optional fractional part. */
+const DECIMAL_SPELLING = /^[+-]?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$|^[+-]?\.\d+$/;
+
+function readNumberBox(text: string): NumberBoxReading {
   const trimmed = text.trim();
-  if (!trimmed) return null;
-  const value = Number(trimmed);
-  return Number.isFinite(value) ? value : null;
+  if (!trimmed) return { kind: "empty" };
+  const withoutPercent = (trimmed.endsWith("%") ? trimmed.slice(0, -1) : trimmed).trim();
+  if (!DECIMAL_SPELLING.test(withoutPercent)) return { kind: "unreadable", text: trimmed };
+  const value = Number(withoutPercent.replace(/,/g, ""));
+  if (!Number.isFinite(value)) return { kind: "unreadable", text: trimmed };
+  return { kind: "number", value };
+}
+
+function unreadableNumberMessage(text: string): string {
+  return `"${text}" is not a number this form can read. Write it in digits — 33.5, 33.5% and 1,000 are all fine.`;
+}
+
+/**
+ * Read one number box, pushing whichever sentence fits, and hand back the value.
+ *
+ * `emptyMessage` says what the box is FOR, and is only ever shown for a box
+ * that is actually empty.
+ */
+function numberBoxValue(
+  text: string,
+  options: { field: string; emptyMessage: string; problems: MeasureRuleProblem[] }
+): number | null {
+  const reading = readNumberBox(text);
+  if (reading.kind === "number") return reading.value;
+  options.problems.push({
+    field: options.field,
+    message: reading.kind === "empty" ? options.emptyMessage : unreadableNumberMessage(reading.text),
+  });
+  return null;
 }
 
 /**
@@ -213,9 +294,16 @@ function numberFrom(text: string): number | null {
  *
  * An empty or unreadable box contributes nothing, so the meter shows what has
  * been stated so far rather than jumping to 100 because a blank counted as one.
+ * An unreadable box is named by its own problem sentence, so a meter short by
+ * that box's value is never the only thing a planner has to go on.
  */
 export function draftPercentTotal(values: readonly string[]): { total: number; isExactly100: boolean } {
-  return measurePercentTotal(values.map((value) => numberFrom(value) ?? 0));
+  return measurePercentTotal(
+    values.map((value) => {
+      const reading = readNumberBox(value);
+      return reading.kind === "number" ? reading.value : 0;
+    })
+  );
 }
 
 /**
@@ -236,16 +324,63 @@ function attributeProblem(
 }
 
 /**
+ * THE HANDFUL OF SCHEMA SENTENCES A PLANNER CAN ACTUALLY PROVOKE, in plain
+ * words.
+ *
+ * These are the zod refusals — `Too big: expected number to be <=100`, the id
+ * rule — which are written for whoever is holding the schema and are the only
+ * thing a clerk sees when they land. Each entry replaces the WHOLE sentence,
+ * because half of a zod message is not a sentence.
+ *
+ * NOTHING THE PARSER ITSELF WROTE IS IN HERE. "…weights its apportionment
+ * factors to 99, not to exactly 100" is already the ordinance's own arithmetic
+ * in plain words, and paraphrasing an arithmetic refusal is how a form ends up
+ * disagreeing with the thing that actually refuses the save.
+ */
+const PLAIN_SCHEMA_SENTENCES: ReadonlyArray<{ match: RegExp; plain: string }> = [
+  {
+    match: /an id must be lower-case letters, digits, hyphen or underscore/i,
+    plain:
+      "A short reference may use only lower-case letters, digits, hyphens and underscores, and has to start " +
+      "with a letter or a digit.",
+  },
+  {
+    match: /a percentage may carry at most four decimal places/i,
+    plain: "A percentage can be stated to at most four decimal places — 33.3333 is fine, 33.33335 is not.",
+  },
+  { match: /^Too big: expected number to be <=100$/i, plain: "A percentage cannot be more than 100." },
+  { match: /^Too small: expected number to be >=0$/i, plain: "This cannot be a negative number." },
+  {
+    match: /^Too small: expected string to have >=1 characters$/i,
+    plain: "Something the ordinance rule needs in words has been left empty.",
+  },
+  {
+    match: /^Too big: expected string to have <=(\d+) characters$/i,
+    plain: "One of the boxes above holds more text than this ordinance rule can store. Shorten it.",
+  },
+  {
+    match: /^Invalid input: expected number, received/i,
+    plain: "One of the number boxes above does not hold a number.",
+  },
+];
+
+function inPlainWords(message: string): string {
+  for (const entry of PLAIN_SCHEMA_SENTENCES) {
+    if (entry.match.test(message)) return entry.plain;
+  }
+  return message;
+}
+
+/**
  * A parser sentence as a planner should read it.
  *
- * Only the internal prefix is rewritten. The sentence itself is the parser's and
- * is not paraphrased — a softened rendering of "these sum to 99.9" is how a form
- * ends up disagreeing with the thing that actually refuses the save.
+ * The internal prefix goes, and a schema refusal is swapped for its plain
+ * rendering; a sentence the parser wrote about the ordinance is left alone.
  */
 function withoutInternalPrefix(message: string): string {
   const malformed = /^Measure allocation rule is not a valid descriptor: /;
   if (malformed.test(message)) {
-    return `This ordinance rule cannot be recorded as written: ${message.replace(malformed, "")}`;
+    return `This ordinance rule cannot be recorded as written: ${inPlainWords(message.replace(malformed, ""))}`;
   }
   return message.replace(/^Measure allocation rule (category )?/, (_match, category: string | undefined) =>
     category ? "Category " : ""
@@ -302,18 +437,36 @@ export function composeMeasureRuleDraft(draft: MeasureRuleDraft): MeasureRuleDra
         message: "Give this deduction a short reference using letters or numbers.",
       });
     }
-    const percent = numberFrom(item.percent);
-    const amount = numberFrom(item.amount);
-    if (item.mode === "percent" && percent === null) {
-      problems.push({ field: `offthetop:${item.key}`, message: "State the percentage this deduction takes." });
-    }
-    if (item.mode === "amount" && amount === null) {
-      problems.push({ field: `offthetop:${item.key}`, message: "State the amount this deduction takes." });
-    }
-    const capAmount = numberFrom(item.capAmount);
-    if (item.capEnabled && capAmount === null) {
-      problems.push({ field: `offthetop:${item.key}`, message: "State the most this deduction may take." });
-    }
+    /*
+     * ONLY THE BOX THE CHOSEN MODE USES IS READ. A planner who typed an amount,
+     * then switched the deduction to a percentage, is not told their hidden
+     * amount box is unreadable — but the composed deduction below carries the
+     * mode's figure only, so the rule and the form still say the same thing.
+     */
+    const field = `offthetop:${item.key}`;
+    const percent =
+      item.mode === "percent"
+        ? numberBoxValue(item.percent, {
+            field,
+            emptyMessage: "State the percentage this deduction takes.",
+            problems,
+          })
+        : null;
+    const amount =
+      item.mode === "amount"
+        ? numberBoxValue(item.amount, {
+            field,
+            emptyMessage: "State the amount this deduction takes.",
+            problems,
+          })
+        : null;
+    const capAmount = item.capEnabled
+      ? numberBoxValue(item.capAmount, {
+          field,
+          emptyMessage: "State the most this deduction may take.",
+          problems,
+        })
+      : null;
     return {
       id: reference,
       label: item.label.trim(),
@@ -335,10 +488,11 @@ export function composeMeasureRuleDraft(draft: MeasureRuleDraft): MeasureRuleDra
         message: "Give this reserve a short reference using letters or numbers.",
       });
     }
-    const percent = numberFrom(item.percent);
-    if (percent === null) {
-      problems.push({ field: `reserve:${item.key}`, message: "State the percentage held in reserve." });
-    }
+    const percent = numberBoxValue(item.percent, {
+      field: `reserve:${item.key}`,
+      emptyMessage: "State the percentage held in reserve.",
+      problems,
+    });
     const categoryReference =
       item.target === "gross" || item.target === "after_off_the_top"
         ? null
@@ -359,12 +513,30 @@ export function composeMeasureRuleDraft(draft: MeasureRuleDraft): MeasureRuleDra
     } else if (!reference) {
       problems.push({ field, message: "Give this category a short reference using letters or numbers." });
     }
-    const share = numberFrom(category.share);
-    if (share === null) {
-      problems.push({ field, message: "State this category's share of what is left to divide." });
-    }
+    const share = numberBoxValue(category.share, {
+      field,
+      emptyMessage: "State this category's share of what is left to divide.",
+      problems,
+    });
 
     if (category.distributionKind === "pooled") {
+      /*
+       * A FLOOR TICKED AND THEN POOLED IS NOT SILENTLY DROPPED. The boxes stay
+       * filled — switching back restores them — but a minimum per recipient is
+       * meaningless where the agency programs the money itself, and composing a
+       * pooled category while quietly discarding a guarantee a planner ticked
+       * and quoted the ordinance for would put a rule on the record that the
+       * form on screen does not say.
+       */
+      if (category.floorEnabled) {
+        problems.push({
+          field,
+          message:
+            "A minimum for each recipient does not apply to a category the agency programs itself — there are " +
+            "no recipients to guarantee it to. Untick the minimum, or say this share goes back to the cities " +
+            "and districts.",
+        });
+      }
       return {
         id: reference,
         label: category.label.trim(),
@@ -381,23 +553,30 @@ export function composeMeasureRuleDraft(draft: MeasureRuleDraft): MeasureRuleDra
           message: "Choose which recorded figure this part of the share is divided by.",
         });
       }
-      const weight = numberFrom(factor.weight);
-      if (category.factors.length > 1 && weight === null) {
-        problems.push({
-          field: `${field}:factor:${factor.key}`,
-          message: "State how much of this category is divided by that figure.",
-        });
-      }
+      // One figure divides the whole share, so its weight box is not on screen
+      // and whatever it holds is not read.
+      const weight =
+        category.factors.length > 1
+          ? numberBoxValue(factor.weight, {
+              field: `${field}:factor:${factor.key}`,
+              emptyMessage: "State how much of this category is divided by that figure.",
+              problems,
+            })
+          : null;
       return { basisId: basisReference, weight: weight ?? 0 };
     });
 
     const floor = category.floorEnabled
       ? (() => {
-          const amount = numberFrom(category.floorAmount);
-          if (amount === null || !(amount > 0)) {
+          const amount = numberBoxValue(category.floorAmount, {
+            field: `${field}:floor`,
+            emptyMessage: "State the least a recipient may receive for one period.",
+            problems,
+          });
+          if (amount !== null && !(amount > 0)) {
             problems.push({
               field: `${field}:floor`,
-              message: "State the least a recipient may receive for one period.",
+              message: "A minimum of zero is not a guarantee. State an amount above zero, or untick the minimum.",
             });
           }
           if (!category.floorNote.trim()) {
@@ -473,4 +652,165 @@ export function composeMeasureRuleDraft(draft: MeasureRuleDraft): MeasureRuleDra
   }
 
   return { rule: problems.length === 0 ? rule : null, problems };
+}
+
+/* ------------------------------------------------------------------ *
+ * Amending an ordinance that is already in force
+ * ------------------------------------------------------------------ */
+
+/**
+ * THE RULE IN FORCE, BACK IN THE FORM'S BOXES — the inverse of
+ * `composeMeasureRuleDraft`.
+ *
+ * An amendment is an edit to a split that already exists, and until this
+ * existed the builder opened blank underneath a heading that said "Amending the
+ * ordinance records a new version". Retyping a split from a blank form is how a
+ * category comes back spelled differently — `local_streets_and_roads` where the
+ * allocations and claims on the record say `local_streets_&_roads` — and
+ * `resolveMeasureClaimCategories` answers with the NEW rule's ids, so the old
+ * ones stop being claimable with nothing said.
+ *
+ * Returns null for a narrative rule: there are no boxes to fill from a
+ * paragraph, and inventing categories out of one would be authoring the
+ * ordinance.
+ */
+export function ruleDraftFromRule(rule: MeasureAllocationRule): MeasureRuleDraft | null {
+  if (isNarrativeRule(rule)) return null;
+  const descriptor: MeasureAllocationDescriptor = rule;
+
+  const basisKeyById = new Map<string, string>();
+  const basisDefinitions: MeasureBasisDraft[] = descriptor.basisDefinitions.map((basis) => {
+    const key = newDraftKey("basis");
+    basisKeyById.set(basis.id, key);
+    return {
+      key,
+      reference: basis.id,
+      label: basis.label,
+      sourceNote: basis.statedSourceNote,
+      vintageInForce: basis.vintageInForce ?? "",
+      vintageRuleNote: basis.vintageRuleNote ?? "",
+    };
+  });
+
+  const categoryKeyById = new Map<string, string>();
+  const categories: MeasureCategoryDraft[] = descriptor.categories.map((category) => {
+    const key = newDraftKey("category");
+    categoryKeyById.set(category.id, key);
+
+    const distribution = category.distribution;
+    const pooled = distribution.kind === "pooled";
+
+    /*
+     * THE TWO SPELLINGS COME BACK AS THEMSELVES. A single-basis category
+     * becomes one factor row with no weight — the form hides the weight box for
+     * a lone figure and `composeMeasureRuleDraft` writes it back as `basisId` —
+     * so an amendment that changes nothing about a category re-composes the
+     * identical sentence rather than a weighted list of one.
+     */
+    const factors: MeasureFactorDraft[] = pooled
+      ? [emptyFactorDraft()]
+      : distribution.factors
+        ? distribution.factors.map((factor) => ({
+            key: newDraftKey("factor"),
+            basisKey: basisKeyById.get(factor.basisId) ?? "",
+            weight: String(factor.weight),
+          }))
+        : [
+            {
+              key: newDraftKey("factor"),
+              basisKey: distribution.basisId ? basisKeyById.get(distribution.basisId) ?? "" : "",
+              weight: "",
+            },
+          ];
+
+    const floor = pooled ? undefined : distribution.minimumPerRecipient;
+
+    return {
+      key,
+      reference: category.id,
+      label: category.label,
+      share: String(category.percentOfAllocable),
+      distributionKind: pooled ? "pooled" : "return_to_source",
+      factors,
+      floorEnabled: floor !== undefined,
+      floorAmount: floor ? String(floor.amountPerPeriod) : "",
+      floorNote: floor ? floor.statedRuleNote : "",
+    };
+  });
+
+  const offTheTop: MeasureOffTheTopDraft[] = descriptor.offTheTop.map((item) => ({
+    key: newDraftKey("offthetop"),
+    reference: item.id,
+    label: item.label,
+    mode: item.amount !== undefined ? "amount" : "percent",
+    percent: item.percent !== undefined ? String(item.percent) : "",
+    amount: item.amount !== undefined ? String(item.amount) : "",
+    capEnabled: item.capAmount !== undefined,
+    capAmount: item.capAmount !== undefined ? String(item.capAmount) : "",
+    capBasis: item.capBasis ?? "fiscal_year",
+  }));
+
+  const reserves: MeasureReserveDraft[] = descriptor.reserves.map((item) => ({
+    key: newDraftKey("reserve"),
+    reference: item.id,
+    label: item.label,
+    percent: String(item.percent),
+    // A reserve on a category is held against that category's DRAFT KEY, so it
+    // follows the category through a rename in the amendment being written.
+    target: item.basis.startsWith("category:")
+      ? categoryKeyById.get(item.basis.slice("category:".length)) ?? "gross"
+      : item.basis,
+  }));
+
+  return {
+    offTheTop,
+    reserves,
+    categories,
+    basisDefinitions,
+    residualCategoryKey: descriptor.residualCategoryId
+      ? categoryKeyById.get(descriptor.residualCategoryId) ?? ""
+      : "",
+  };
+}
+
+/** A category reference that money or a claim has already been filed against. */
+export type MeasureFiledCategoryReference = {
+  reference: string;
+  allocations: number;
+  claims: number;
+};
+
+/**
+ * WHAT THIS AMENDMENT WOULD ORPHAN.
+ *
+ * A category reference is what `measure_allocations.category_id` and
+ * `measure_claims.category_id` hold, and it is the ONLY link between a recorded
+ * figure and the ordinance clause it came from. Drop the reference from the
+ * rule and those rows do not move, do not error, and stop being offered:
+ * `resolveMeasureClaimCategories` returns the new rule's ids for a descriptor
+ * rule, so the old reference is simply no longer a thing a city may claim for.
+ *
+ * Retiring a category IS a legitimate amendment, so this reports rather than
+ * refuses — the form makes a planner say out loud that they mean it.
+ */
+export function orphanedFiledReferences(
+  draft: MeasureRuleDraft,
+  filed: readonly MeasureFiledCategoryReference[]
+): MeasureFiledCategoryReference[] {
+  const declared = new Set(
+    draft.categories.map((category) => effectiveReference(category)).filter((reference) => reference.length > 0)
+  );
+  return filed.filter((row) => row.reference.trim().length > 0 && !declared.has(row.reference));
+}
+
+/** `"transit" — 12 recorded allocations and 3 claims are filed against it.` */
+export function describeFiledReference(row: MeasureFiledCategoryReference): string {
+  const parts: string[] = [];
+  if (row.allocations > 0) {
+    parts.push(`${row.allocations} recorded ${row.allocations === 1 ? "allocation" : "allocations"}`);
+  }
+  if (row.claims > 0) parts.push(`${row.claims} ${row.claims === 1 ? "claim" : "claims"}`);
+  const total = row.allocations + row.claims;
+  const what = parts.length > 0 ? parts.join(" and ") : "recorded history";
+  return `"${row.reference}" — ${what} ${total === 1 ? "is" : "are"} filed against it.`;
 }

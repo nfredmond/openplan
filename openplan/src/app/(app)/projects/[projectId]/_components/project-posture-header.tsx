@@ -174,8 +174,14 @@ export function ProjectPostureHeader({
           <p className="text-[0.73rem] text-muted-foreground">
             {titleize(project.delivery_phase)} · Delivery {titleize(projectControlsSummary.controlHealth)}{linkedRtpCycleCount > 0 ? ` · RTP ${linkedRtpCycleCount} linked` : ""} · {workspaceData?.name ?? "Unknown workspace"} · Updated {fmtDateTime(project.updated_at)}
           </p>
+          {/*
+            No heading here. The project's name is the PAGE's `h1`, rendered
+            above the tab strip by `projects/[projectId]/page.tsx` — this card
+            only appears on the Overview tab, so a name that lived here left
+            Delivery, Funding, Evidence and Record with no accessible name and
+            a document that started at `h2`.
+          */}
           <div className="module-intro-body">
-            <h1 className="module-intro-title">{project.name}</h1>
             <p className="module-intro-description">
               {project.summary ||
                 "Everything for this project in one place: analysis runs, milestones, submittals, invoices, deliverables, risks, issues, decisions, meetings, and the datasets it draws on."}

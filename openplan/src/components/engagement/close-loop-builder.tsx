@@ -272,6 +272,7 @@ function CloseLoopCard({
           {broadcastNotice ? (
             <div
               className={broadcastNotice.tone === "warning" ? NOTICE_WARNING_CLASS : NOTICE_CLASS}
+              id="closeloop-broadcast-notice"
               data-testid="closeloop-broadcast-notice"
             >
               <p className="font-semibold">Subscriber update emails</p>

@@ -79,9 +79,18 @@ export function resolvePageTab<Key extends string>(
 export function pageTabForAnchor<Key extends string>(
   tabs: readonly PageTabDefinition<Key>[],
   anchorId: string,
+  pageAnchors: readonly string[] = [],
 ): Key | null {
   const id = anchorId.replace(/^#/, "").trim();
   if (!id) return null;
+
+  // Page-level chrome first, and it answers "no tab" rather than a tab. An
+  // element rendered ABOVE the strip is on screen whatever tab is open, so
+  // claiming it for one tab means arriving at `?tab=history#report-controls`
+  // silently throws away the tab the reader asked for and lands them on the
+  // claimant. Checked before the prefixes because a broad prefix (`report-`)
+  // will otherwise sweep the header's ids back into a tab.
+  if (pageAnchors.includes(id)) return null;
 
   const exact = tabs.find((tab) => tab.anchors?.includes(id));
   if (exact) return exact.key;

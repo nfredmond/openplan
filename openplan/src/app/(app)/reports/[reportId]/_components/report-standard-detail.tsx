@@ -52,6 +52,25 @@ type StandardReportProvenanceProps = Omit<
 /** The three tabs of a report record: the packet, what backs it, what it was. */
 export type ReportDetailTabKey = "packet" | "evidence" | "history";
 
+/**
+ * Anchors on this page's header, which sits ABOVE the tab strip and is on
+ * screen whichever tab is open.
+ *
+ * They belong to no tab, and saying so is load-bearing rather than tidy. The
+ * Packet tab used to declare `report-controls` (and swept `detail-title`,
+ * `detail-summary` and `detail-status` in with a `detail-` prefix), so
+ * arriving at `?tab=history#report-controls` — a link this product mints in
+ * `getReportNavigationHref` — did a `location.replace` onto the Packet tab and
+ * threw away the tab the reader had asked for, to reach a control that was
+ * already in front of them.
+ */
+const REPORT_HEADER_ANCHORS = [
+  "report-controls",
+  "detail-title",
+  "detail-summary",
+  "detail-status",
+] as const;
+
 type ReportStandardDetailProps = {
   /**
    * The page's query string. The active tab is read out of it here rather than
@@ -175,8 +194,10 @@ export function ReportStandardDetail({
     {
       key: "packet",
       label: "Packet",
-      anchors: ["packet-release-review", "release-review", "report-controls", "narrative-grounding-line", "report-narrative-draft-panel"],
-      anchorPrefixes: ["detail-", "report-"],
+      anchors: ["packet-release-review", "report-narrative-draft-panel"],
+      // One grounding line per drafted section, so the id carries the section
+      // key and the claim is a prefix.
+      anchorPrefixes: ["narrative-grounding-line-"],
       unreadable: unreadableByTab?.packet ?? [],
     },
     {
@@ -329,6 +350,7 @@ export function ReportStandardDetail({
         basePath={`/reports/${report.id}`}
         searchParams={searchParams}
         ariaLabel="Report sections"
+        pageAnchors={REPORT_HEADER_ANCHORS}
       />
 
       <PageTabPanel tabKey="packet" active={activeTab === "packet"}>

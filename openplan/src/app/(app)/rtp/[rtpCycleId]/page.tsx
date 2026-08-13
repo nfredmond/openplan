@@ -1011,12 +1011,12 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             </div>
           )}
           {/*
-            The publish control and the policy-basis disclosure describe the
-            CYCLE, not its project list, so they sit OUTSIDE the ternary
-            above. They used to live inside its third branch, which meant a
-            cycle with drafted chapters and no projects linked yet — exactly
-            the cycle a public draft review needs — had no way to be
-            published at all, and a failed links read hid the control too.
+            The policy-basis disclosure describes the CYCLE, not its project
+            list, so it sits OUTSIDE the ternary above rather than inside its
+            third branch — a failed links read must not take the disclosure
+            down with it. The publish control was hoisted out of that same
+            branch for the same reason and has since moved further, to the
+            Document tab; the reasoning is recorded at its new site.
           */}
           <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 px-4 py-3 text-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -1027,11 +1027,6 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
               <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.action}</p>
             ) : null}
           </div>
-          <RtpPublicShareControls
-            rtpCycleId={cycle.id}
-            initialEnabled={cycle.public_share_enabled ?? false}
-            initialToken={cycle.public_share_token ?? null}
-          />
           </div>
         </article>
       </PageTabPanel>
@@ -1064,6 +1059,26 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
       </PageTabPanel>
 
       <PageTabPanel tabKey="document" active={activeTab === "document"} className="mt-6 space-y-4">
+        {/*
+          PUBLISHING THE DRAFT LIVES WITH THE DOCUMENT.
+
+          This control was deliberately hoisted out of the project-list ternary
+          it started in, because a cycle with drafted chapters and no projects
+          linked yet — exactly the cycle a public draft review needs — had no
+          way to be published at all, and a failed links read hid the control
+          too. Tabbing the page reintroduced the same fault in a new shape: the
+          control was still inside the Projects panel, so it was reachable only
+          from the tab whose content it has nothing to do with. That reasoning
+          now argues for the Document tab, which is where a planner goes to put
+          a draft plan in front of the public, and where nothing about the
+          projects read can hide it.
+        */}
+        <RtpPublicShareControls
+          rtpCycleId={cycle.id}
+          initialEnabled={cycle.public_share_enabled ?? false}
+          initialToken={cycle.public_share_token ?? null}
+        />
+
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">

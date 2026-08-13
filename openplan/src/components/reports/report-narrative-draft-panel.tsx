@@ -76,7 +76,7 @@ export function ReportNarrativeDraftPanel({
   }
 
   return (
-    <article className="module-section-surface" data-testid="report-narrative-draft-panel">
+    <article id="report-narrative-draft-panel" className="module-section-surface" data-testid="report-narrative-draft-panel">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">AI narrative assist</p>
@@ -290,7 +290,7 @@ function SectionDraftCard({
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
             AI draft{draft.model ? ` · ${draft.model}` : ""} · {formatCreatedAt(draft.created_at)}
           </p>
-          <DraftGroundingLine draft={draft} />
+          <DraftGroundingLine draft={draft} anchorId={`narrative-grounding-line-${section.sectionKey}`} />
           {draft.status === "draft" ? (
             <>
               <Textarea
@@ -331,11 +331,19 @@ function SectionDraftCard({
  */
 export function DraftGroundingLine({
   draft,
+  anchorId,
 }: {
   draft: Pick<
     ReportNarrativeDraftRow,
     "grounding_json" | "grounded_sentence_count" | "total_sentence_count"
   >;
+  /**
+   * The element id to render, when the caller has a deep link to honour. One
+   * of these exists per drafted section, so the id must carry the section's
+   * key — the report page's Packet tab claims them by the
+   * `narrative-grounding-line-` prefix rather than by a bare name.
+   */
+  anchorId?: string;
 }) {
   const grounding = useMemo(() => parseStoredNarrativeGrounding(draft.grounding_json), [draft]);
 
@@ -344,7 +352,7 @@ export function DraftGroundingLine({
 
   if (groundedCount === null || totalCount === null) {
     return (
-      <p className="text-xs text-muted-foreground" data-testid="narrative-grounding-line">
+      <p id={anchorId} className="text-xs text-muted-foreground" data-testid="narrative-grounding-line">
         Grounding check not recorded for this draft.
       </p>
     );
@@ -355,6 +363,7 @@ export function DraftGroundingLine({
 
   return (
     <div
+      id={anchorId}
       className="rounded-xl border border-border/70 bg-background/60 px-3 py-2 text-xs"
       data-testid="narrative-grounding-line"
     >

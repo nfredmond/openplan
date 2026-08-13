@@ -64,7 +64,18 @@ export function buildProjectTabs(flags: ProjectTabReadFlags): PageTabDefinition<
       key: "delivery",
       label: "Delivery",
       anchors: ["project-milestones", "project-submittals", "project-deliverables"],
-      anchorPrefixes: ["project-milestone-", "project-submittal-", "deliverable-", "milestone-"],
+      // `deliverable-`, `milestone-` and `submittal-` are the composer's own
+      // form-field ids, which live in THIS tab; the `project-`-prefixed pairs
+      // are the per-row anchors the delivery board generates. `submittal-` was
+      // the one missing sibling — a link to `#submittal-due-date` resolved to
+      // no tab at all while its two neighbours resolved here.
+      anchorPrefixes: [
+        "project-milestone-",
+        "project-submittal-",
+        "deliverable-",
+        "milestone-",
+        "submittal-",
+      ],
       unreadable: unreadableLanes([
         ["milestones", flags.delivery.milestones],
         ["submittals", flags.delivery.submittals],

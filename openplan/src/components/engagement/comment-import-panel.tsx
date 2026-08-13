@@ -161,7 +161,7 @@ export function CommentImportPanel({ campaignId }: { campaignId: string }) {
       </div>
 
       {preview ? (
-        <div data-testid="comment-import-preview" className="space-y-3 rounded-md border border-border/60 p-3 text-sm">
+        <div id="comment-import-preview" data-testid="comment-import-preview" className="space-y-3 rounded-md border border-border/60 p-3 text-sm">
           <p>
             <strong>{preview.rowCount}</strong> comment{preview.rowCount === 1 ? "" : "s"} readable
             {preview.geolocatedCount > 0 ? `, ${preview.geolocatedCount} with a location` : ", none with a location"}.

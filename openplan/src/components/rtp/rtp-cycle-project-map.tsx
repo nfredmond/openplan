@@ -39,6 +39,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Map as MapIcon } from "lucide-react";
 
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import {
@@ -344,6 +345,10 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
     }
 
     mapRef.current = map;
+    // This panel lives in the cycle page's Projects tab, which is not the
+    // landing tab — so the container was `display: none` at construction and
+    // the map measured 0x0. Without this the tab opens on a blank rectangle.
+    const stopSizing = keepMapSizedToContainer(map, container);
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
 
@@ -387,6 +392,7 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
     });
 
     return () => {
+      stopSizing();
       map.remove();
       mapRef.current = null;
       styleLoadedRef.current = false;
@@ -515,6 +521,11 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
           ) : (
             <div
               ref={attachContainer}
+              // The id, not only the testid: the cycle page's Projects tab
+              // declares `rtp-cycle-project-map-canvas` as one of its anchors,
+              // and an anchor with no element of that id is a deep link that
+              // opens the right tab and then scrolls nowhere.
+              id="rtp-cycle-project-map-canvas"
               data-testid="rtp-cycle-project-map-canvas"
               className="h-[360px] w-full overflow-hidden rounded-[0.5rem] border border-border/70 bg-muted/10"
             />

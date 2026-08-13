@@ -169,9 +169,16 @@ export function RtpChapterDraftAssist({
     }
   }
 
+  // The ids below carry the chapter id, and are what the RTP cycle page's
+  // Document tab claims through its `rtp-chapter-draft-` and
+  // `chapter-draft-fiscal-alert-` prefixes. Per-chapter rather than bare
+  // because the page renders one of these for every chapter in the plan; a
+  // bare `id="rtp-chapter-draft-assist"` would repeat down the page, and a
+  // duplicated id sends every deep link to whichever copy comes first.
   return (
     <div
       className="rounded-xl border border-border/70 bg-background/60 p-4"
+      id={`rtp-chapter-draft-assist-${chapterId}`}
       data-testid="rtp-chapter-draft-assist"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -212,6 +219,7 @@ export function RtpChapterDraftAssist({
             size="sm"
             disabled={isGenerating || isReviewing}
             onClick={handleInsert}
+            id={`rtp-chapter-draft-insert-${chapterId}`}
             data-testid="rtp-chapter-draft-insert"
           >
             {isReviewing ? (
@@ -229,6 +237,7 @@ export function RtpChapterDraftAssist({
             size="sm"
             disabled={isGenerating || isReviewing}
             onClick={handleDismiss}
+            id={`rtp-chapter-draft-dismiss-${chapterId}`}
             data-testid="rtp-chapter-draft-dismiss"
           >
             <X className="h-4 w-4" />
@@ -249,7 +258,11 @@ export function RtpChapterDraftAssist({
 
       {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
       {inserted ? (
-        <p className="mt-3 text-xs text-muted-foreground" data-testid="rtp-chapter-draft-inserted">
+        <p
+          id={`rtp-chapter-draft-inserted-${chapterId}`}
+          className="mt-3 text-xs text-muted-foreground"
+          data-testid="rtp-chapter-draft-inserted"
+        >
           Draft inserted into the editor below. Edit it as your own text, then save the chapter.
         </p>
       ) : null}
@@ -274,6 +287,7 @@ export function RtpChapterDraftAssist({
           {fiscalConstraint && fiscalConstraint.verdict === "not_determined" ? (
             <div
               role="note"
+              id={`chapter-draft-fiscal-alert-${chapterId}`}
               data-testid="chapter-draft-fiscal-alert"
               className="rounded-xl border-l-2 border-[color:var(--copper)] bg-[color:var(--copper)]/8 px-4 py-3 text-sm"
             >

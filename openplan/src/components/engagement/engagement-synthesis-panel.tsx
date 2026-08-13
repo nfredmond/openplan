@@ -147,7 +147,7 @@ export function EngagementSynthesisPanel({
           ) : null}
 
           {flaggedSentences.length > 0 ? (
-            <details data-testid="synthesis-flagged-sentences">
+            <details id="synthesis-flagged-sentences" data-testid="synthesis-flagged-sentences">
               <summary className="cursor-pointer text-xs text-muted-foreground underline-offset-2 hover:underline">
                 <ShieldAlert className="mr-1 inline h-3.5 w-3.5 text-amber-700 dark:text-amber-300" />
                 {flaggedSentences.length} sentence{flaggedSentences.length === 1 ? "" : "s"} flagged for review

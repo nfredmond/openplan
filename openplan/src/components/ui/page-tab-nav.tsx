@@ -37,6 +37,7 @@ export function PageTabNav<Key extends string>({
   basePath,
   searchParams,
   ariaLabel,
+  pageAnchors,
   className,
 }: {
   tabs: readonly PageTabDefinition<Key>[];
@@ -50,6 +51,13 @@ export function PageTabNav<Key extends string>({
   searchParams?: Record<string, string | string[] | undefined>;
   /** Names what is being tabbed, for screen readers: "Project sections". */
   ariaLabel: string;
+  /**
+   * Anchor ids the page renders ABOVE this strip, on chrome that is visible
+   * whichever tab is open. Declaring them here is how a deep link to one stops
+   * being a tab switch: `pageTabForAnchor` answers "no tab" for them, so the
+   * router scrolls and leaves the requested tab alone.
+   */
+  pageAnchors?: readonly string[];
   className?: string;
 }) {
   const carried = new URLSearchParams();
@@ -103,7 +111,7 @@ export function PageTabNav<Key extends string>({
         })}
       </nav>
 
-      <PageTabAnchorRouter tabs={tabs} activeKey={activeKey} />
+      <PageTabAnchorRouter tabs={tabs} activeKey={activeKey} pageAnchors={pageAnchors} />
     </div>
   );
 }

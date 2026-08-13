@@ -25,16 +25,23 @@ import { PAGE_TAB_QUERY_KEY, pageTabForAnchor, type PageTabDefinition } from "@/
 export function PageTabAnchorRouter<Key extends string>({
   tabs,
   activeKey,
+  pageAnchors,
 }: {
   tabs: readonly PageTabDefinition<Key>[];
   activeKey: Key;
+  /**
+   * Anchors on the page's always-visible chrome — anything rendered above the
+   * tab strip. They belong to no tab, so a link to one scrolls and leaves the
+   * reader on the tab they asked for.
+   */
+  pageAnchors?: readonly string[];
 }) {
   React.useEffect(() => {
     function settleHash() {
       const hash = window.location.hash.slice(1);
       if (!hash) return;
 
-      const target = pageTabForAnchor(tabs, hash);
+      const target = pageTabForAnchor(tabs, hash, pageAnchors);
       if (target && target !== activeKey) {
         const url = new URL(window.location.href);
         url.searchParams.set(PAGE_TAB_QUERY_KEY, target);
@@ -49,7 +56,7 @@ export function PageTabAnchorRouter<Key extends string>({
     settleHash();
     window.addEventListener("hashchange", settleHash);
     return () => window.removeEventListener("hashchange", settleHash);
-  }, [tabs, activeKey]);
+  }, [tabs, activeKey, pageAnchors]);
 
   return null;
 }

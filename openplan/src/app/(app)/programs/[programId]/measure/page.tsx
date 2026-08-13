@@ -271,6 +271,43 @@ export default async function MeasureFundPage({ params }: PageProps) {
     recordedAllocationCategoryIds: allocationRows.map((row) => row.category_id),
   });
 
+  /*
+   * WHAT THE AMENDMENT FORM NEEDS, AND WHY IT IS COUNTED HERE.
+   *
+   * `latestRuleRow` is the agency's most recent reading of its own ordinance —
+   * the LATEST version, not the one in force at the last period, because an
+   * amendment is written on top of the newest reading even when it takes effect
+   * later.
+   *
+   * `filedCategoryReferences` is every category reference the fund's recorded
+   * allocations and claims already point at. A category reference is the only
+   * link between a recorded figure and the ordinance clause it came from, so a
+   * reference that disappears from a new version silently stops being
+   * claimable; the setup form warns before that can be saved. The count is made
+   * here because it is a count of rows, and a browser cannot count rows it was
+   * never sent.
+   */
+  const latestRuleRow = ruleRows.reduce<{ rule: unknown; effective_from: string } | null>(
+    (latest, row) => (!latest || row.effective_from > latest.effective_from ? row : latest),
+    null
+  );
+
+  const filedByReference = new Map<string, { reference: string; allocations: number; claims: number }>();
+  const countFiled = (categoryId: string | null | undefined, kind: "allocations" | "claims") => {
+    const reference = (categoryId ?? "").trim();
+    if (!reference) return;
+    const row = filedByReference.get(reference) ?? { reference, allocations: 0, claims: 0 };
+    row[kind] += 1;
+    filedByReference.set(reference, row);
+  };
+  for (const allocation of allocationRows) countFiled(allocation.category_id, "allocations");
+  for (const claim of ((claimsResult.data as Array<{ category_id: string | null }> | null) ?? [])) {
+    countFiled(claim.category_id, "claims");
+  }
+  const filedCategoryReferences = [...filedByReference.values()].sort((left, right) =>
+    left.reference.localeCompare(right.reference)
+  );
+
   const recipientNameById = new Map(recipients.map((recipient) => [recipient.id, recipient.name]));
   const documentsByClaim = new Map<string, Array<{ id: string; kbDocumentId: string; title: string; documentRole: string }>>();
   const documentTitleById = new Map(
@@ -611,7 +648,14 @@ export default async function MeasureFundPage({ params }: PageProps) {
         fiscalYearLabels={[...new Set(periods.map((period) => period.fiscal_year_label))].sort().reverse()}
       />
 
-      {canWrite ? <MeasureFundSetup programId={program.id} measureId={fund.id} /> : null}
+      {canWrite ? (
+        <MeasureFundSetup
+          programId={program.id}
+          measureId={fund.id}
+          ruleInForce={latestRuleRow?.rule ?? null}
+          filedCategoryReferences={filedCategoryReferences}
+        />
+      ) : null}
     </div>
   );
 }

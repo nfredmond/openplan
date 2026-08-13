@@ -5,6 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
@@ -150,7 +151,8 @@ export function LocationDisplayMap({
   }, [onSupport, hasVoted, contextLayers]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
+    const container = mapContainerRef.current;
+    if (!container || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
@@ -197,12 +199,17 @@ export function LocationDisplayMap({
             : null;
 
     const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
+      container,
       style: "mapbox://styles/mapbox/dark-v11",
       center: seed ?? CONTINENTAL_US_CENTER,
       zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
       attributionControl: false,
     });
+
+    // The engagement console shows this inside its Responses tab, which is not
+    // always the landing tab; a closed tab is `display: none`, so the map is
+    // built against a 0x0 box and stays that size until something re-measures.
+    const stopSizing = keepMapSizedToContainer(map, container);
 
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
@@ -315,6 +322,7 @@ export function LocationDisplayMap({
     mapRef.current = map;
 
     return () => {
+      stopSizing();
       map.remove();
       mapRef.current = null;
     };
@@ -381,6 +389,7 @@ export function LocationDisplayMap({
     return (
       <div
         className="mb-4 rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground"
+        id="engagement-map-unavailable"
         data-testid="engagement-map-unavailable"
       >
         <p className="font-medium text-foreground">This campaign&apos;s map can&apos;t be shown</p>

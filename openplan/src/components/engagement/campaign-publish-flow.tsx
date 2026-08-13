@@ -134,17 +134,17 @@ export function CampaignPublishFlow({
 
   const areaAdvisory =
     campaignArea.state === "set" ? (
-      <p className="text-xs text-muted-foreground" data-testid="publish-area-advisory">
+      <p id="publish-area-advisory" className="text-xs text-muted-foreground" data-testid="publish-area-advisory">
         Campaign area on record{campaignArea.label ? `: ${campaignArea.label}` : ""}. The resident map
         opens on it, and the location check can be turned on against it.
       </p>
     ) : campaignArea.state === "unreadable" ? (
-      <p className="text-xs text-amber-700 dark:text-amber-300" data-testid="publish-area-advisory">
+      <p id="publish-area-advisory" className="text-xs text-amber-700 dark:text-amber-300" data-testid="publish-area-advisory">
         This campaign&apos;s area could not be read just now — it may or may not be set. That is a
         failed read, not a missing area; reload before acting on it.
       </p>
     ) : (
-      <p className="text-xs text-amber-700 dark:text-amber-300" data-testid="publish-area-advisory">
+      <p id="publish-area-advisory" className="text-xs text-amber-700 dark:text-amber-300" data-testid="publish-area-advisory">
         No campaign area is set. Publishing works without one, but the resident map opens without a
         boundary you chose, and the location check that refuses pins outside your area cannot be
         turned on. Set one under Campaign management at the bottom of this page — strongly
@@ -195,7 +195,7 @@ export function CampaignPublishFlow({
     // Live: collapse to the URL and a status summary. Nothing here needs a
     // step list — the work now is outreach and moderation, not setup.
     return (
-      <article className="module-section-surface" data-testid="campaign-publish-flow">
+      <article id="campaign-publish-flow" className="module-section-surface" data-testid="campaign-publish-flow">
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Publish</p>
@@ -235,7 +235,7 @@ export function CampaignPublishFlow({
   ];
 
   return (
-    <article className="module-section-surface" data-testid="campaign-publish-flow">
+    <article id="campaign-publish-flow" className="module-section-surface" data-testid="campaign-publish-flow">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Publish</p>

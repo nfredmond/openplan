@@ -18,6 +18,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { AssigneePicker } from "@/components/workspaces/assignee-picker";
 
+/**
+ * The record types this composer can create, in the order it presents them.
+ * Exported so a caller naming a subset cannot name one that does not exist,
+ * and so a guard can check that the subsets a page renders add up to all seven.
+ */
+export const PROJECT_RECORD_COMPOSER_TYPES = [
+  "milestone",
+  "submittal",
+  "deliverable",
+  "risk",
+  "issue",
+  "decision",
+  "meeting",
+] as const;
+
+export type ProjectRecordComposerType = (typeof PROJECT_RECORD_COMPOSER_TYPES)[number];
+
+/**
+ * The trigger for each type: its icon, and its name as it appears in the
+ * heading. Plural in the heading because the heading describes a capability
+ * ("add milestones"), singular on the tab because a tab opens one form.
+ */
+const RECORD_TYPE_META: Record<
+  ProjectRecordComposerType,
+  { label: string; plural: string; Icon: typeof Flag }
+> = {
+  milestone: { label: "Milestone", plural: "milestones", Icon: Flag },
+  submittal: { label: "Submittal", plural: "submittals", Icon: FileText },
+  deliverable: { label: "Deliverable", plural: "deliverables", Icon: ClipboardCheck },
+  risk: { label: "Risk", plural: "risks", Icon: AlertTriangle },
+  issue: { label: "Issue", plural: "issues", Icon: Siren },
+  decision: { label: "Decision", plural: "decisions", Icon: Scale },
+  meeting: { label: "Meeting", plural: "meetings", Icon: MessagesSquare },
+};
+
+/** "milestones, submittals, and deliverables" — the heading's own object. */
+function listRecordTypes(types: readonly ProjectRecordComposerType[]): string {
+  const names = types.map((type) => RECORD_TYPE_META[type].plural);
+  if (names.length <= 1) return names[0] ?? "records";
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+}
+
 type ProjectRecordComposerProps = {
   projectId: string;
   /**
@@ -28,6 +71,15 @@ type ProjectRecordComposerProps = {
    * a member of two workspaces can be looking at either.
    */
   workspaceId: string;
+  /**
+   * Which record types this instance offers. The project page splits its record
+   * lanes across two tabs — what is owed in Delivery, what was decided in
+   * Record — and each tab renders the composer for its own types, because a
+   * planner reading a risk log must not have to leave the tab to add a risk.
+   * Omitted means all seven, which is the right default for any single-tab
+   * surface but is deliberately not what either project tab passes.
+   */
+  recordTypes?: readonly ProjectRecordComposerType[];
 };
 
 function FormError({ error }: { error: string | null }) {
@@ -39,8 +91,18 @@ function FormError({ error }: { error: string | null }) {
   );
 }
 
-export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordComposerProps) {
+export function ProjectRecordComposer({
+  projectId,
+  workspaceId,
+  recordTypes = PROJECT_RECORD_COMPOSER_TYPES,
+}: ProjectRecordComposerProps) {
   const router = useRouter();
+
+  // Presentation order is this component's, not the caller's: two tabs whose
+  // lists were written in different orders would otherwise offer the same
+  // record types in different places.
+  const offered = PROJECT_RECORD_COMPOSER_TYPES.filter((type) => recordTypes.includes(type));
+  const shows = (type: ProjectRecordComposerType) => offered.includes(type);
 
   const [milestoneTitle, setMilestoneTitle] = useState("");
   const [milestoneSummary, setMilestoneSummary] = useState("");
@@ -335,44 +397,34 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
     <article className="module-section-surface">
       <div className="module-section-heading">
         <p className="module-section-label">Create records</p>
-        <h2 className="module-section-title">Add milestones, submittals, deliverables, risks, issues, decisions, and meetings</h2>
+        <h2 className="module-section-title">Add {listRecordTypes(offered)}</h2>
         <p className="module-section-description">
           This control layer turns each project into an active operating workspace instead of a passive record.
         </p>
       </div>
 
-      <Tabs defaultValue="milestone" className="mt-5">
-        <TabsList variant="line" className="module-tabs-list flex-wrap">
-          <TabsTrigger value="milestone" className="module-tab-trigger">
-            <Flag className="h-4 w-4" />
-            Milestone
-          </TabsTrigger>
-          <TabsTrigger value="submittal" className="module-tab-trigger">
-            <FileText className="h-4 w-4" />
-            Submittal
-          </TabsTrigger>
-          <TabsTrigger value="deliverable" className="module-tab-trigger">
-            <ClipboardCheck className="h-4 w-4" />
-            Deliverable
-          </TabsTrigger>
-          <TabsTrigger value="risk" className="module-tab-trigger">
-            <AlertTriangle className="h-4 w-4" />
-            Risk
-          </TabsTrigger>
-          <TabsTrigger value="issue" className="module-tab-trigger">
-            <Siren className="h-4 w-4" />
-            Issue
-          </TabsTrigger>
-          <TabsTrigger value="decision" className="module-tab-trigger">
-            <Scale className="h-4 w-4" />
-            Decision
-          </TabsTrigger>
-          <TabsTrigger value="meeting" className="module-tab-trigger">
-            <MessagesSquare className="h-4 w-4" />
-            Meeting
-          </TabsTrigger>
+      <Tabs defaultValue={offered[0]} className="mt-5">
+        {/*
+          The FILLED variant, not the underlined `module-tabs-list` the rest of
+          this page uses. The project page's own tab strip is directly above
+          this one, and when both wore the same visual language the page showed
+          two identical strips stacked — a reader could not tell which one they
+          were about to move. Form-picker and page-section are different kinds
+          of control and now look like it.
+        */}
+        <TabsList variant="default" className="flex-wrap" data-testid="project-record-composer-types">
+          {offered.map((type) => {
+            const { label, Icon } = RECORD_TYPE_META[type];
+            return (
+              <TabsTrigger key={type} value={type}>
+                <Icon className="h-4 w-4" />
+                {label}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
+        {shows("milestone") ? (
         <TabsContent value="milestone" className="pt-4">
           <form className="space-y-4" onSubmit={handleMilestoneSubmit}>
             <div className="space-y-2">
@@ -506,7 +558,9 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
             </Button>
           </form>
         </TabsContent>
+        ) : null}
 
+        {shows("submittal") ? (
         <TabsContent value="submittal" className="pt-4">
           <form className="space-y-4" onSubmit={handleSubmittalSubmit}>
             <div className="space-y-2">
@@ -622,7 +676,9 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
             </Button>
           </form>
         </TabsContent>
+        ) : null}
 
+        {shows("deliverable") ? (
         <TabsContent value="deliverable" className="pt-4">
           <form className="space-y-4" onSubmit={handleDeliverableSubmit}>
             <div className="space-y-2">
@@ -736,7 +792,9 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
             </Button>
           </form>
         </TabsContent>
+        ) : null}
 
+        {shows("risk") ? (
         <TabsContent value="risk" className="pt-4">
           <form className="space-y-4" onSubmit={handleRiskSubmit}>
             <div className="space-y-2">
@@ -793,7 +851,9 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
             </Button>
           </form>
         </TabsContent>
+        ) : null}
 
+        {shows("issue") ? (
         <TabsContent value="issue" className="pt-4">
           <form className="space-y-4" onSubmit={handleIssueSubmit}>
             <div className="space-y-2">
@@ -864,7 +924,9 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
             </Button>
           </form>
         </TabsContent>
+        ) : null}
 
+        {shows("decision") ? (
         <TabsContent value="decision" className="pt-4">
           <form className="space-y-4" onSubmit={handleDecisionSubmit}>
             <div className="space-y-2">
@@ -915,7 +977,9 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
             </Button>
           </form>
         </TabsContent>
+        ) : null}
 
+        {shows("meeting") ? (
         <TabsContent value="meeting" className="pt-4">
           <form className="space-y-4" onSubmit={handleMeetingSubmit}>
             <div className="space-y-2">
@@ -956,6 +1020,7 @@ export function ProjectRecordComposer({ projectId, workspaceId }: ProjectRecordC
             </Button>
           </form>
         </TabsContent>
+        ) : null}
       </Tabs>
     </article>
   );

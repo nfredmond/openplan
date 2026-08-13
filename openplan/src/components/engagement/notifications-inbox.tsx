@@ -241,7 +241,7 @@ export function EngagementNotificationsInbox({
         ) : null}
       </div>
 
-      <div className="mt-5 rounded-xl border border-border/60 p-3" data-testid="email-delivery-panel">
+      <div id="email-delivery-panel" className="mt-5 rounded-xl border border-border/60 p-3" data-testid="email-delivery-panel">
         <p className="flex items-center gap-2 text-[0.82rem] font-semibold text-foreground">
           <Mail className="h-4 w-4" /> Email delivery
         </p>

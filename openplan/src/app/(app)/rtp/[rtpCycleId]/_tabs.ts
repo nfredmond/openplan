@@ -54,14 +54,17 @@ export function buildRtpCycleTabs(flags: RtpCycleTabReadFlags): PageTabDefinitio
     {
       key: "document",
       label: "Document",
-      anchors: [
-        "chapter-draft-fiscal-alert",
-        "rtp-chapter-draft-assist",
-        "rtp-chapter-draft-insert",
-        "rtp-chapter-draft-inserted",
-        "rtp-chapter-draft-dismiss",
-      ],
-      anchorPrefixes: ["transcribed-chapter-"],
+      // The draft-assist anchors are PREFIXES, not exact ids: the page renders
+      // one assist panel per chapter, so every id it emits carries the
+      // chapter's own id (`rtp-chapter-draft-insert-<uuid>`). They were
+      // declared here as bare names for a while, which promised a link to an
+      // element that could never exist without duplicating an id per chapter.
+      // `transcribed-chapter-` used to be declared here and is gone: nothing in
+      // the repo renders an id with that prefix, and the transcribed-chapter
+      // cards that share the NAME live on `/rtp/<id>/extraction/chapters`, a
+      // different route with no tabs. A prefix claiming ids that cannot appear
+      // on this page is a promise nothing can keep.
+      anchorPrefixes: ["chapter-draft-fiscal-alert-", "rtp-chapter-draft-"],
       unreadable: unreadableLanes([
         ["the chapter sections of this cycle", flags.document.chapters],
       ]),

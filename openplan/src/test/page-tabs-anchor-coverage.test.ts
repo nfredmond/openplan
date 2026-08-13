@@ -67,29 +67,37 @@ const REPORT_TABS: PageTabDefinition<"packet" | "evidence" | "history">[] = [
   {
     key: "packet",
     label: "Packet",
-    anchors: [
-      "packet-release-review",
-      "release-review",
-      "report-controls",
-      "narrative-grounding-line",
-      "report-narrative-draft-panel",
-    ],
-    anchorPrefixes: ["detail-", "report-"],
+    anchors: ["packet-release-review", "report-narrative-draft-panel"],
+    anchorPrefixes: ["narrative-grounding-line-"],
   },
   { key: "evidence", label: "Evidence", anchorPrefixes: ["artifact-"] },
   { key: "history", label: "History", anchors: ["drift-since-generation", "evidence-chain-summary"] },
 ];
+
+/**
+ * Anchors on the report page's header, which is ABOVE its tab strip and so is
+ * on screen whichever tab is open. They belong to no tab, and a link to one
+ * must not switch tabs — see `REPORT_HEADER_ANCHORS` in the detail component.
+ */
+const REPORT_PAGE_ANCHORS = [
+  "report-controls",
+  "detail-title",
+  "detail-summary",
+  "detail-status",
+] as const;
 
 const TABBED_PAGES: Array<{
   /** The route segment a link has to start with to belong to this page. */
   prefix: string;
   label: string;
   tabs: readonly PageTabDefinition<string>[];
+  /** Anchors on chrome above the strip: claimed by the page, by no tab. */
+  pageAnchors?: readonly string[];
 }> = [
   { prefix: "projects", label: "project detail", tabs: buildProjectTabs(NO_PROJECT_FAILURES) },
   { prefix: "engagement", label: "engagement console", tabs: buildCampaignTabs(NO_CAMPAIGN_FAILURES) },
   { prefix: "rtp", label: "RTP cycle", tabs: buildRtpCycleTabs(NO_CYCLE_FAILURES) },
-  { prefix: "reports", label: "report detail", tabs: REPORT_TABS },
+  { prefix: "reports", label: "report detail", tabs: REPORT_TABS, pageAnchors: REPORT_PAGE_ANCHORS },
 ];
 
 function sourceFiles(dir: string, out: string[] = []): string[] {
@@ -146,7 +154,14 @@ describe("every deep link into a tabbed page resolves to one of its tabs", () =>
   for (const page of TABBED_PAGES) {
     it(`covers the ${page.label} anchors linked from elsewhere in the product`, () => {
       const links = collectAnchorLinks(page.prefix);
-      const unclaimed = links.filter((link) => pageTabForAnchor(page.tabs, link.anchor) === null);
+      const unclaimed = links.filter(
+        (link) =>
+          pageTabForAnchor(page.tabs, link.anchor) === null &&
+          // A page-level anchor resolves to no tab BY DESIGN: its element is
+          // above the strip and always on screen, so the link scrolls without
+          // touching the tab the reader asked for.
+          !(page.pageAnchors ?? []).includes(link.anchor),
+      );
 
       expect(
         unclaimed.map((link) => `${link.file}: ${link.href}`),
@@ -182,5 +197,39 @@ describe("the report tab list restated here still matches the one that ships", (
         expect(source, `report-standard-detail no longer claims "${anchor}"`).toContain(`"${anchor}"`);
       }
     }
+
+    for (const anchor of REPORT_PAGE_ANCHORS) {
+      expect(source, `report-standard-detail no longer lists "${anchor}" as page chrome`).toContain(
+        `"${anchor}"`,
+      );
+    }
+  });
+
+  it("keeps the header anchors above the tab strip, where every tab can see them", () => {
+    // The whole reason those four belong to no tab. If one of them were moved
+    // INTO a panel it would need a tab claim again, and a reader arriving from
+    // another tab would find nothing at the fragment.
+    const source = stripSourceComments(
+      readFileSync(
+        path.join(SRC, "app/(app)/reports/[reportId]/_components/report-standard-detail.tsx"),
+        "utf8",
+      ),
+    );
+
+    const stripAt = source.indexOf("<PageTabNav");
+    expect(stripAt, "report-standard-detail no longer renders a tab strip").toBeGreaterThan(-1);
+
+    const controlsAt = source.indexOf('id="report-controls"');
+    expect(controlsAt, "report-standard-detail no longer renders #report-controls").toBeGreaterThan(-1);
+    expect(
+      controlsAt,
+      "#report-controls moved below the tab strip — it is now inside a tab and needs a tab claim",
+    ).toBeLessThan(stripAt);
+
+    // And the page has to TELL the strip about them, or `pageTabForAnchor`
+    // never sees the exemption and a future prefix sweeps them back in.
+    expect(source, "the report page does not declare its header anchors to PageTabNav").toMatch(
+      /pageAnchors=\{REPORT_HEADER_ANCHORS\}/,
+    );
   });
 });

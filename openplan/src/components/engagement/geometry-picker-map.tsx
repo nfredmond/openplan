@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { cn } from "@/lib/utils";
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import {
@@ -219,17 +220,23 @@ export function GeometryPickerMap({
   };
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
+    const container = mapContainerRef.current;
+    if (!container || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
     const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
+      container,
       style: "mapbox://styles/mapbox/dark-v11",
       center: initialCenter,
       zoom: initialZoom,
       attributionControl: false,
     });
+
+    // This picker is mounted inside the project page's Evidence tab, which is
+    // not the landing tab: the container is `display: none` while that tab is
+    // shut, so the map measures 0x0 and would stay blank once it is opened.
+    const stopSizing = keepMapSizedToContainer(map, container);
 
     // The wrapping <div> is the single keyboard widget; drive pan/zoom from our
     // own handler so there is no duplicate tab stop or double-handled key.
@@ -319,6 +326,7 @@ export function GeometryPickerMap({
     mapRef.current = map;
 
     return () => {
+      stopSizing();
       map.remove();
       mapRef.current = null;
     };

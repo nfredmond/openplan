@@ -111,7 +111,10 @@ describe("each tabbed page takes its active tab from the URL", () => {
       // that resolved a hardcoded key would still have a working-looking strip
       // whose links changed nothing.
       expect(source, `${surface.label} resolves a tab without consulting searchParams`).toMatch(
-        /resolvePageTab\([^)]*(searchParams|requestedTab)/is,
+        // No `s` flag: the pattern contains no `.`, and this repo's tsconfig
+        // targets below es2018, where `s` is a compile error rather than a
+        // no-op. It was one, until this line was fixed.
+        /resolvePageTab\([^)]*(searchParams|requestedTab)/i,
       );
     });
   }

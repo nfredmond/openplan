@@ -85,7 +85,7 @@ describe("an anchor in a closed tab opens that tab", () => {
   });
 
   it("works the same on another page's tabs", () => {
-    const { replaced } = withLocation("https://openplan.test/rtp/c-1#chapter-draft-fiscal-alert");
+    const { replaced } = withLocation("https://openplan.test/rtp/c-1#chapter-draft-fiscal-alert-8f2c1d0e");
 
     render(<PageTabAnchorRouter tabs={buildRtpCycleTabs(NO_CYCLE_FAILURES)} activeKey="overview" />);
 

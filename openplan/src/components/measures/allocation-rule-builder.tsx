@@ -13,6 +13,7 @@ import {
   emptyFactorDraft,
   emptyOffTheTopDraft,
   emptyReserveDraft,
+  normaliseReference,
   referenceFromLabel,
   type MeasureBasisDraft,
   type MeasureCategoryDraft,
@@ -205,7 +206,7 @@ export function AllocationRuleBuilder({
                     id={`figure-reference-${basis.key}`}
                     value={basis.reference}
                     placeholder={referenceFromLabel(basis.label)}
-                    onChange={(event) => patchBasis(basis.key, { reference: event.target.value })}
+                    onChange={(event) => patchBasis(basis.key, { reference: normaliseReference(event.target.value) })}
                   />
                 </MeasureField>
                 <div className="md:col-span-2">
@@ -306,7 +307,7 @@ export function AllocationRuleBuilder({
                     id={`deduction-reference-${item.key}`}
                     value={item.reference}
                     placeholder={referenceFromLabel(item.label)}
-                    onChange={(event) => patchOffTheTop(item.key, { reference: event.target.value })}
+                    onChange={(event) => patchOffTheTop(item.key, { reference: normaliseReference(event.target.value) })}
                   />
                 </MeasureField>
                 <MeasureField label="How it is worked out" htmlFor={`deduction-mode-${item.key}`}>
@@ -449,7 +450,7 @@ export function AllocationRuleBuilder({
                     id={`reserve-reference-${item.key}`}
                     value={item.reference}
                     placeholder={referenceFromLabel(item.label)}
-                    onChange={(event) => patchReserve(item.key, { reference: event.target.value })}
+                    onChange={(event) => patchReserve(item.key, { reference: normaliseReference(event.target.value) })}
                   />
                 </MeasureField>
                 <MeasureField label="Percentage held" htmlFor={`reserve-percent-${item.key}`}>
@@ -551,13 +552,13 @@ export function AllocationRuleBuilder({
                   <MeasureField
                     label="Short reference"
                     htmlFor={`category-reference-${category.key}`}
-                    hint="Claims and allocations are filed against this. Keep it the same when the ordinance is amended."
+                    hint="Claims and allocations are filed against this. It is stored in lower case with spaces as underscores, so that is how it types. Keep it the same when the ordinance is amended."
                   >
                     <Input
                       id={`category-reference-${category.key}`}
                       value={category.reference}
                       placeholder={referenceFromLabel(category.label)}
-                      onChange={(event) => patchCategory(category.key, { reference: event.target.value })}
+                      onChange={(event) => patchCategory(category.key, { reference: normaliseReference(event.target.value) })}
                     />
                   </MeasureField>
                   <MeasureField label="Share of what is left (%)" htmlFor={`category-share-${category.key}`}>

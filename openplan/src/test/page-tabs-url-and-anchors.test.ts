@@ -113,7 +113,13 @@ describe("an existing anchor link opens the tab that contains it", () => {
     expect(pageTabForAnchor(campaignTabs, "campaign-publish-flow")).toBe("setup");
     expect(pageTabForAnchor(campaignTabs, "engagement-item-title")).toBe("responses");
     expect(pageTabForAnchor(cycleTabs, "rtp-cycle-project-map-canvas")).toBe("projects");
-    expect(pageTabForAnchor(cycleTabs, "chapter-draft-fiscal-alert")).toBe("document");
+    // Per-chapter, because the Document tab renders one draft-assist panel per
+    // chapter and a bare id would repeat down the page. The bare name must NOT
+    // resolve: nothing renders it, and a tab switch to a target that does not
+    // exist is the failure this whole table exists to prevent.
+    expect(pageTabForAnchor(cycleTabs, "chapter-draft-fiscal-alert-8f2c1d0e")).toBe("document");
+    expect(pageTabForAnchor(cycleTabs, "rtp-chapter-draft-insert-8f2c1d0e")).toBe("document");
+    expect(pageTabForAnchor(cycleTabs, "chapter-draft-fiscal-alert")).toBeNull();
   });
 
   it("says so rather than guessing when no tab claims an anchor", () => {

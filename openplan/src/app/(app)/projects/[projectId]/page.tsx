@@ -1252,6 +1252,20 @@ export default async function ProjectDetailPage({
 
   const activeTab = resolvePageTab(projectTabs, requestedTab, "overview");
 
+  // TWO THINGS IN THE JSX BELOW THAT LOOK ARBITRARY AND ARE NOT.
+  //
+  // The `<h1>` sits ABOVE `<PageTabNav>`, not inside a panel. It used to live
+  // in `ProjectPostureHeader`, which only the Overview tab renders, so the
+  // other four tabs had no accessible name and started their outline at `h2`.
+  //
+  // `ProjectRecordComposer` appears TWICE, split by record type: what is owed
+  // in Delivery, what was decided in Record. One composer serving all seven
+  // types sat in Delivery only, so the Record tab listed risks, issues,
+  // decisions and meetings with no way to add one — and its declared
+  // `risk-`/`issue-`/`decision-`/`meeting-` anchors, which are that composer's
+  // own form-field ids, pointed at elements rendered on another tab. The two
+  // lists must partition all seven; `page-tabs-page-header-and-record-
+  // creation.test.ts` fails if they ever stop doing so.
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
@@ -1262,6 +1276,8 @@ export default async function ProjectDetailPage({
         <ArrowRight className="h-4 w-4" />
         <span className="text-foreground">{project.name}</span>
       </div>
+
+      <h1 className="module-intro-title">{project.name}</h1>
 
       {reads.any ? (
         <StateBlock
@@ -1331,7 +1347,7 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="delivery" active={activeTab === "delivery"}>
-          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} />
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={["milestone", "submittal", "deliverable"]} />
 
           <ProjectDeliveryBoard
             project={project}
@@ -1446,6 +1462,8 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={["risk", "issue", "decision", "meeting"]} />
+
           <ProjectRiskAndDecisionLog
             projectId={project.id}
             workspaceId={project.workspace_id}

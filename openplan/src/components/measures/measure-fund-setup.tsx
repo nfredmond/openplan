@@ -9,8 +9,17 @@ import {
   MEASURE_SUNSET_POSTURES,
 } from "@/lib/measures/fund";
 import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure-form-shell";
+import { isNarrativeRule, parseMeasureAllocationRule } from "@/lib/measures/allocation";
 import { AllocationRuleBuilder, draftCategorySummary } from "./allocation-rule-builder";
-import { composeMeasureRuleDraft, emptyRuleDraft, type MeasureRuleDraft } from "./allocation-rule-draft";
+import {
+  composeMeasureRuleDraft,
+  describeFiledReference,
+  emptyRuleDraft,
+  orphanedFiledReferences,
+  ruleDraftFromRule,
+  type MeasureFiledCategoryReference,
+  type MeasureRuleDraft,
+} from "./allocation-rule-draft";
 
 /**
  * Setting up the fund behind a `local_measure` program, and recording what the
@@ -21,9 +30,14 @@ import { composeMeasureRuleDraft, emptyRuleDraft, type MeasureRuleDraft } from "
  * page shows the rule form the moment the fund exists rather than making a
  * planner go looking for it.
  *
- * NOTHING IS PREFILLED. No default currency (a `USD` default is a country
- * assumption), no default cadence, no example percentages. Every ordinance
- * slices differently and the split is DATA.
+ * NOTHING IS INVENTED FOR A PLANNER. No default currency (a `USD` default is a
+ * country assumption), no default cadence, no example percentages. Every
+ * ordinance slices differently and the split is DATA.
+ *
+ * The one thing that IS filled in is the agency's own last reading of its own
+ * ordinance, when the fund has one: the rule form is where an amendment is
+ * written, and it opened blank under a heading that said so until 2026-08-12.
+ * That is not a default — it is the record, handed back for editing.
  *
  * ============================================================================
  * THREE WAYS TO RECORD THE SPLIT, AND WHY ALL THREE STAY
@@ -54,7 +68,78 @@ const RULE_PLACEHOLDER = `{
   "basisDefinitions": []
 }`;
 
-export function MeasureFundSetup({ programId, measureId }: { programId: string; measureId: string | null }) {
+/**
+ * The latest recorded reading of the ordinance, read back into the form's boxes.
+ *
+ * A rule this build cannot parse is NOT silently discarded into a blank form —
+ * the caller is told, in `startingPointNote`, and the planner reads it before
+ * typing a split that would replace one nobody could see.
+ */
+function startingPoint(ruleInForce: unknown): {
+  draft: MeasureRuleDraft;
+  mode: "builder" | "narrative";
+  narrativeText: string;
+  startingPointNote: string | null;
+} {
+  const blank = { draft: emptyRuleDraft(), mode: "builder" as const, narrativeText: "", startingPointNote: null };
+  if (ruleInForce === null || ruleInForce === undefined) return blank;
+
+  let parsed;
+  try {
+    parsed = parseMeasureAllocationRule(ruleInForce);
+  } catch (error) {
+    return {
+      ...blank,
+      startingPointNote:
+        "The version currently in force could not be read back into this form, so it starts empty. Check it " +
+        `before recording a replacement: ${error instanceof Error ? error.message : "the recorded rule could not be read."}`,
+    };
+  }
+
+  if (isNarrativeRule(parsed)) {
+    return {
+      draft: emptyRuleDraft(),
+      mode: "narrative",
+      narrativeText: parsed.text,
+      startingPointNote: "This starts from the version currently in force. Edit it, and recording keeps both.",
+    };
+  }
+
+  const draft = ruleDraftFromRule(parsed);
+  if (!draft) return blank;
+  return {
+    draft,
+    mode: "builder",
+    narrativeText: "",
+    startingPointNote: "This starts from the version currently in force. Edit it, and recording keeps both.",
+  };
+}
+
+/** Hoisted so the default does not hand `useMemo` a new array on every render. */
+const NOTHING_FILED: readonly MeasureFiledCategoryReference[] = [];
+
+export function MeasureFundSetup({
+  programId,
+  measureId,
+  ruleInForce = null,
+  filedCategoryReferences = NOTHING_FILED,
+}: {
+  programId: string;
+  measureId: string | null;
+  /**
+   * The rule row currently in force, exactly as it is stored. Absent on a fund
+   * that has never recorded one; present on every amendment, which is what the
+   * heading below has always claimed this form is for.
+   */
+  ruleInForce?: unknown;
+  /**
+   * Every category reference `measure_allocations` or `measure_claims` already
+   * points at, with how many of each. Computed where the rows are — a browser
+   * cannot count rows it was never sent, and guessing would be worse than not
+   * warning at all.
+   */
+  filedCategoryReferences?: readonly MeasureFiledCategoryReference[];
+}) {
   const { state, submit } = useMeasureSubmit();
 
   const [receiptCadence, setReceiptCadence] = useState("");
@@ -67,13 +152,22 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
   const [sunsetOn, setSunsetOn] = useState("");
   const [fiscalYearNote, setFiscalYearNote] = useState("");
 
-  const [ruleMode, setRuleMode] = useState<"builder" | "descriptor" | "narrative">("builder");
-  const [ruleDraft, setRuleDraft] = useState<MeasureRuleDraft>(emptyRuleDraft);
+  /*
+   * THE FORM OPENS ON THE ORDINANCE THAT IS IN FORCE, not on a blank page.
+   * Computed once, on mount: an amendment is an edit, and a planner retyping a
+   * split from memory is how `local_streets_and_roads` becomes
+   * `local_streets_&_roads` and orphans everything filed under it.
+   */
+  const [opening] = useState(() => startingPoint(ruleInForce));
+
+  const [ruleMode, setRuleMode] = useState<"builder" | "descriptor" | "narrative">(opening.mode);
+  const [ruleDraft, setRuleDraft] = useState<MeasureRuleDraft>(opening.draft);
   const [ruleText, setRuleText] = useState("");
-  const [narrativeText, setNarrativeText] = useState("");
+  const [narrativeText, setNarrativeText] = useState(opening.narrativeText);
   const [effectiveFromRule, setEffectiveFromRule] = useState("");
   const [adoptedNote, setAdoptedNote] = useState("");
   const [ruleError, setRuleError] = useState<string | null>(null);
+  const [retirementAcknowledged, setRetirementAcknowledged] = useState(false);
 
   async function createFund() {
     await submit({
@@ -105,8 +199,22 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
    */
   const builderResult = useMemo(() => composeMeasureRuleDraft(ruleDraft), [ruleDraft]);
 
+  /*
+   * WHAT THIS AMENDMENT WOULD ORPHAN. Only the builder can do this: the
+   * written-out rule and the narrative words are the escape hatches, and this
+   * form does not read a hand-typed descriptor's categories back out to second-
+   * guess them. Retiring a category is a real amendment, so the planner is told
+   * what is filed against it and has to say they mean it.
+   */
+  const retiredReferences = useMemo(
+    () => (ruleMode === "builder" ? orphanedFiledReferences(ruleDraft, filedCategoryReferences) : []),
+    [ruleMode, ruleDraft, filedCategoryReferences]
+  );
+  const retirementBlocks = retiredReferences.length > 0 && !retirementAcknowledged;
+
   async function recordRule() {
     if (!measureId) return;
+    if (retirementBlocks) return;
     setRuleError(null);
 
     let rule: unknown;
@@ -140,8 +248,10 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
     });
     if (saved) {
       setRuleText("");
-      setNarrativeText("");
-      setRuleDraft(emptyRuleDraft());
+      // The draft is NOT cleared. What was just recorded is now the version in
+      // force, and emptying the form would put a planner back in front of the
+      // blank page this whole seam exists to remove.
+      setRetirementAcknowledged(false);
     }
   }
 
@@ -285,6 +395,9 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
         Each reading of the ordinance is dated and kept. Amending the ordinance records a new version — the old
         one stays, because the money already split under it points at it.
       </p>
+      {opening.startingPointNote ? (
+        <p className="mt-2 text-sm text-muted-foreground">{opening.startingPointNote}</p>
+      ) : null}
 
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
@@ -373,6 +486,40 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
         </div>
       </div>
 
+      {retiredReferences.length > 0 ? (
+        <div
+          role="group"
+          aria-label="Categories this amendment retires"
+          className="mt-3 rounded-[0.5rem] border border-destructive/60 bg-destructive/5 p-3"
+        >
+          <h3 className="text-sm font-semibold">
+            {retiredReferences.length === 1
+              ? "This amendment drops a category that has money filed against it"
+              : "This amendment drops categories that have money filed against them"}
+          </h3>
+          <ul className="mt-1 space-y-0.5 text-xs">
+            {retiredReferences.map((row) => (
+              <li key={row.reference}>{describeFiledReference(row)}</li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Those records stay exactly as they are, filed against the version that created them. What changes is
+            that nothing new can be allocated or claimed under the reference. If this is a rename rather than a
+            retirement, put the old short reference back on the category instead — a reference is how a claim
+            finds its clause, and a renamed one starts a different history.
+          </p>
+          <label className="mt-2 flex items-start gap-2 text-xs">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={retirementAcknowledged}
+              onChange={(event) => setRetirementAcknowledged(event.target.checked)}
+            />
+            <span>The ordinance retires {retiredReferences.length === 1 ? "this category" : "these categories"}. Record it.</span>
+          </label>
+        </div>
+      ) : null}
+
       {ruleMode === "builder" && builderResult.rule ? (
         <p className="mt-3 text-xs text-muted-foreground">
           Ready to record: {draftCategorySummary(ruleDraft)}.
@@ -390,7 +537,10 @@ export function MeasureFundSetup({ programId, measureId }: { programId: string; 
             // The builder offers the button only for a split the parser has
             // already accepted, so nobody presses Record and is answered by the
             // server with a sentence about a form they can no longer see.
-            (ruleMode === "builder" && !builderResult.rule)
+            (ruleMode === "builder" && !builderResult.rule) ||
+            // A category with allocations or claims filed against it may be
+            // retired, but not by accident.
+            retirementBlocks
           }
         >
           {state.busy ? "Recording…" : "Record this version"}
