@@ -84,13 +84,38 @@ case "$URL" in
   *localhost*|*127.0.0.1*) [ -n "$PORT" ] && SERVING_DIR="$(serving_dir_for_local_port "$PORT" || true)" ;;
 esac
 
+# A DIFFERENT CHECKOUT IS NOT BY ITSELF A PROBLEM.
+#
+# The walkthrough instance is SUPPOSED to be a separate tree — that is the whole
+# reason it exists (see refresh-walkthrough-instance.sh). What matters is which
+# COMMIT it is serving. Until 2026-08-12 this branch shouted "DIFFERENT
+# CHECKOUT" in red and exited before the commit was ever compared, so the
+# healthiest possible state — a freshly refreshed demo sitting on exactly your
+# HEAD — reported as an alarming failure. Read from the control panel by someone
+# who does not read code, that is worse than saying nothing: it teaches them to
+# ignore the one line that would tell them the demo had gone stale.
+#
+# So: compare the commit first, and only call it a mismatch when it IS one.
 if [ -n "$SERVING_DIR" ]; then
   echo "Serving from: $SERVING_DIR"
   SERVING_REPO="$(git -C "$SERVING_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
   if [ -n "$SERVING_REPO" ] && [ -n "$REPO_ROOT" ] && [ "$SERVING_REPO" != "$REPO_ROOT" ]; then
     echo
-    red "DIFFERENT CHECKOUT — that port is served out of $SERVING_REPO"
-    echo "You are working in $REPO_ROOT. These are two different trees."
+    if [ -n "$REPORTED_COMMIT" ] && [ "$REPORTED_COMMIT" != "unknown" ] \
+       && [ "$REPORTED_COMMIT" = "$LOCAL_SHORT" ]; then
+      green "UP TO DATE — a separate copy, serving the same commit as your checkout."
+      echo "That copy is $SERVING_REPO, which is expected: the always-on instance"
+      echo "is deliberately its own clone. It is on the code you are working on."
+      exit 0
+    fi
+    red "DIFFERENT CHECKOUT AND A DIFFERENT BUILD — served out of $SERVING_REPO"
+    echo "You are working in $REPO_ROOT. These are two different trees, and that"
+    echo "one is NOT on your commit, so nothing you see there reflects your work."
+    if [ -n "$REPORTED_COMMIT" ] && [ "$REPORTED_COMMIT" != "unknown" ] \
+       && git -C "$REPO_ROOT" cat-file -e "${REPORTED_COMMIT}^{commit}" 2>/dev/null; then
+      echo "It is $(git -C "$REPO_ROOT" rev-list --count "${REPORTED_COMMIT}..HEAD" 2>/dev/null || echo '?') commit(s) behind your HEAD."
+    fi
+    echo "To bring it up to date: scripts/ops/refresh-walkthrough-instance.sh"
     exit 1
   fi
 fi
