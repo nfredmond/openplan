@@ -78,31 +78,25 @@ describe("every panel is gated on the tab resolved from the URL", () => {
 });
 
 /**
- * THREE CLAIMS THAT WERE ALREADY WRONG when this guard was first run, left
- * recorded rather than quietly excused. Fixing them means editing
- * `engagement/[campaignId]/_tabs.ts` and the page, which the lane that wrote
- * this guard did not own; the equality assertion below means the list can only
- * ever be edited DOWN — repairing one without deleting its line here fails just
- * as loudly as adding a fourth.
+ * NO EXEMPTIONS. There were three when this guard was first run, and all three
+ * are now fixed in `engagement/[campaignId]/_tabs.ts` (2026-08-12):
  *
- *   - `setup: survey-` and `analysis: demo-`: the only elements with those ids
- *     are in `public-survey-form.tsx` and `public-engagement-portal.tsx`, which
- *     render on `/engage/<token>`, `/embed/<token>` and the preview route — not
- *     on this console at all. Both claims are dead: they can switch a tab, and
- *     there is nothing on the far side to scroll to. `page-tabs-anchors-have-
- *     elements` passes them because it scans all of `src`, which is precisely
- *     the cross-page blind spot its own header admits to.
- *   - `responses: comment-import-preview`: the element is real, but
- *     `<CommentImportPanel>` is rendered inside the SETUP panel. A link to it
- *     opens Responses, where it is not.
+ *   - `setup: survey-` and `analysis: demo-` were dead claims — the only
+ *     elements with those ids live in `public-survey-form.tsx` and
+ *     `public-engagement-portal.tsx`, which render on `/engage/<token>`,
+ *     `/embed/<token>` and the preview route, never on this console. Both
+ *     prefixes were deleted. (`page-tabs-anchors-have-elements` passed them
+ *     because it scans all of `src` — the cross-page blind spot its own header
+ *     admits to.)
+ *   - `responses: comment-import-preview` named the wrong tab:
+ *     `<CommentImportPanel>` is rendered inside the SETUP panel, so following
+ *     the link opened Responses and found nothing. The claim moved to Setup.
+ *
+ * The assertion below is an equality against the empty list on purpose. An
+ * allow-list here would be a ratchet that only ever grows, and every entry in
+ * it is a deep link that lands a planner on the wrong tab — which is the whole
+ * defect this file exists to catch. Fix the claim; do not record it.
  */
-const KNOWN_MISPLACED_CLAIMS: Record<string, string[]> = {
-  "engagement console": [
-    "setup claims #survey-*",
-    "responses claims #comment-import-preview",
-    "analysis claims #demo-*",
-  ],
-};
 
 describe("a tab's anchors are rendered by that tab's own panel", () => {
   for (const page of tabbedPages()) {
@@ -131,9 +125,9 @@ describe("a tab's anchors are rendered by that tab's own panel", () => {
         misplaced.sort(),
         `nothing the ${page.label}'s own panel renders carries these anchors, so a deep link to one opens ` +
           "that tab and finds nothing there — either the panel moved to another tab and its claim did not, " +
-          "or the element never got the id. If you have FIXED one of the recorded three, delete its line " +
-          "from KNOWN_MISPLACED_CLAIMS in this file",
-      ).toEqual([...(KNOWN_MISPLACED_CLAIMS[page.label] ?? [])].sort());
+          "or the element never got the id. Move the claim to the tab whose panel renders the element, or " +
+          "delete it if nothing on this page renders it at all. Do not add an exemption list",
+      ).toEqual([]);
     });
   }
 });

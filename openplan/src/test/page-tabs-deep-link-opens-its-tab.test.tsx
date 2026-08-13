@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 
 import { PageTabAnchorRouter } from "@/components/ui/page-tab-anchor-router";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import type { PageTabDefinition } from "@/lib/ui/page-tabs";
 import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_tabs";
 import { buildRtpCycleTabs } from "@/app/(app)/rtp/[rtpCycleId]/_tabs";
 
@@ -126,5 +128,81 @@ describe("it navigates only when it has to", () => {
     render(<PageTabAnchorRouter tabs={buildProjectTabs(NO_PROJECT_FAILURES)} activeKey="overview" />);
 
     expect(replaced).toEqual([]);
+  });
+});
+
+/**
+ * AN ANCHOR ABOVE THE STRIP MUST NOT COST THE READER THEIR TAB.
+ *
+ * `#report-controls` is on the report page's header, which renders above the
+ * tab strip and is therefore on screen whichever tab is open. Before the page
+ * declared its chrome anchors, the Packet tab claimed `report-controls` and a
+ * `detail-` prefix swept in the title, summary and status with it — so
+ * `?tab=history#report-controls`, a URL `getReportNavigationHref` mints, did a
+ * `location.replace` onto Packet and silently discarded the tab the reader had
+ * asked for.
+ *
+ * The tab table below deliberately still has those claims. Nothing must be
+ * navigated anyway, and that is only true if `pageAnchors` is threaded from the
+ * page through `PageTabNav` into the router and honoured by `pageTabForAnchor`
+ * ahead of both the exact claims and the prefixes. Any one of those three links
+ * broken and this navigates.
+ *
+ * WHAT IT DOES NOT PROVE: that the header element renders above the strip. That
+ * is a source ordering assertion in `page-tabs-anchor-coverage`, and jsdom
+ * applies no stylesheet and has no box model, so no test here can see a layout.
+ */
+describe("a link to the page's own chrome scrolls without changing tab", () => {
+  const claimingTabs: PageTabDefinition<"packet" | "history">[] = [
+    { key: "packet", label: "Packet", anchors: ["report-controls"], anchorPrefixes: ["detail-"] },
+    { key: "history", label: "History", anchors: ["drift-since-generation"] },
+  ];
+  const headerAnchors = ["report-controls", "detail-title", "detail-summary", "detail-status"];
+
+  for (const anchor of ["report-controls", "detail-summary"]) {
+    it(`keeps the reader on the tab they asked for when arriving at #${anchor}`, () => {
+      const { replaced } = withLocation(`https://openplan.test/reports/r-1?tab=history#${anchor}`);
+
+      render(
+        <PageTabNav
+          tabs={claimingTabs}
+          activeKey="history"
+          basePath="/reports/r-1"
+          ariaLabel="Report sections"
+          pageAnchors={headerAnchors}
+        />,
+      );
+
+      expect(replaced).toEqual([]);
+    });
+  }
+
+  it("navigates for the same tab table when the page declares no chrome at all", () => {
+    // The negative control. Without this the two cases above would pass for a
+    // tab table that claims nothing, which is not what they are asserting.
+    const { replaced } = withLocation("https://openplan.test/reports/r-1?tab=history#report-controls");
+
+    render(
+      <PageTabNav tabs={claimingTabs} activeKey="history" basePath="/reports/r-1" ariaLabel="Report sections" />,
+    );
+
+    expect(replaced).toHaveLength(1);
+    expect(new URL(replaced[0]).searchParams.get("tab")).toBe("packet");
+  });
+
+  it("still opens a tab for an anchor that really is inside one", () => {
+    const { replaced } = withLocation("https://openplan.test/reports/r-1?tab=packet#drift-since-generation");
+
+    render(
+      <PageTabNav
+        tabs={claimingTabs}
+        activeKey="packet"
+        basePath="/reports/r-1"
+        ariaLabel="Report sections"
+        pageAnchors={headerAnchors}
+      />,
+    );
+
+    expect(new URL(replaced[0]).searchParams.get("tab")).toBe("history");
   });
 });

@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import path from "node:path";
 
 import type { PageTabDefinition } from "@/lib/ui/page-tabs";
@@ -177,6 +177,66 @@ export function tabbedPages(): TabbedPage[] {
       pageAnchors: reportHeaderAnchorsFromSource(),
     },
   ];
+}
+
+/** Every `.ts`/`.tsx` under `src`, tests excluded — a fixture URL is not a link
+ * a planner can follow, and several tests use deliberately made-up ids. */
+export function shippedSourceFiles(dir: string = SRC, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir)) {
+    const full = path.join(dir, entry);
+    if (statSync(full).isDirectory()) {
+      if (entry === "test") continue;
+      shippedSourceFiles(full, out);
+    } else if (/\.tsx?$/.test(entry)) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+export type AnchorLink = {
+  /** The file that emits it, relative to `src`. */
+  file: string;
+  /** The whole matched href, for a failure message someone can act on. */
+  href: string;
+  /** The route segment the link opens: `projects`, `reports`, … */
+  linkPrefix: string;
+  /** The literal part of the fragment, up to any interpolation. */
+  head: string;
+  /** True when the fragment runs on into `${…}` — a per-row id. */
+  interpolated: boolean;
+};
+
+/**
+ * Every `/<linkPrefix>/…#anchor` link the product emits.
+ *
+ * Template literals matter as much as plain strings — `/projects/${id}#project-invoices`
+ * is the common spelling here, and a pattern that stopped at `{` would walk
+ * past nearly all of them. A fragment whose tail is itself interpolated
+ * (`#artifact-${artifact.id}`) is returned with `interpolated: true` and its
+ * literal head, because the two are claimed differently: a head by a tab's
+ * `anchorPrefixes`, a whole id by its `anchors`.
+ */
+export function anchorLinks(linkPrefix: string): AnchorLink[] {
+  const pattern = new RegExp("/" + linkPrefix + "/[^\\s\"'`]*?#([a-z][a-z0-9-]*)(\\$\\{)?", "g");
+  const found: AnchorLink[] = [];
+
+  for (const file of shippedSourceFiles()) {
+    // Comments first, always. A route file DOCUMENTS the shape
+    // `/reports/{id}#artifact-{id}` in its header, and prose reaching a matcher
+    // is a defect this repo has shipped in both directions.
+    const text = stripSourceComments(readFileSync(file, "utf8"));
+    for (const match of text.matchAll(pattern)) {
+      found.push({
+        file: path.relative(SRC, file),
+        href: match[0],
+        linkPrefix,
+        head: match[1],
+        interpolated: Boolean(match[2]),
+      });
+    }
+  }
+  return found;
 }
 
 export type PanelSource = { tabKey: string; openTag: string; body: string };

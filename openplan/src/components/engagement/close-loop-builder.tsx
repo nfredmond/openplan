@@ -269,10 +269,21 @@ function CloseLoopCard({
             </p>
           ) : null}
           {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+          {/*
+            The anchor carries the entry id, and is what the campaign console's
+            Setup tab claims through its `closeloop-broadcast-notice-` prefix.
+            Per-entry rather than bare because this card is rendered once for
+            every close-the-loop entry; a bare, unsuffixed
+            closeloop-broadcast-notice would repeat down the page as soon
+            as a second entry was published, and a duplicated id sends every
+            deep link to whichever copy comes first. `data-testid` stays bare on
+            purpose — it is not an anchor, and nothing resolves a fragment
+            through it.
+          */}
           {broadcastNotice ? (
             <div
               className={broadcastNotice.tone === "warning" ? NOTICE_WARNING_CLASS : NOTICE_CLASS}
-              id="closeloop-broadcast-notice"
+              id={`closeloop-broadcast-notice-${entry.id}`}
               data-testid="closeloop-broadcast-notice"
             >
               <p className="font-semibold">Subscriber update emails</p>

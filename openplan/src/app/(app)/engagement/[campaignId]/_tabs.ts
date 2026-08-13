@@ -41,7 +41,7 @@ export function buildCampaignTabs(flags: CampaignTabReadFlags): PageTabDefinitio
         "public-slug",
         "allow-submissions",
         "demographics-enabled",
-        "closeloop-broadcast-notice",
+        "comment-import-preview",
         "translation-language-choice",
         "campaign-control-title",
         "campaign-control-summary",
@@ -51,7 +51,14 @@ export function buildCampaignTabs(flags: CampaignTabReadFlags): PageTabDefinitio
         "campaign-control-rtp-cycle",
         "campaign-control-rtp-chapter",
       ],
-      anchorPrefixes: ["engagement-category-", "context-layer-", "survey-"],
+      // `closeloop-broadcast-notice-` is a prefix, not an exact anchor: the
+      // close-the-loop builder renders one notice per entry and suffixes each
+      // with the entry id. There is deliberately no `survey-` prefix here — the
+      // only `survey-*` ids in the repo belong to the PUBLIC form
+      // (`public-survey-form.tsx`, served at /engage/<token>), which this
+      // console never renders, so claiming them switched a tab and scrolled to
+      // nothing.
+      anchorPrefixes: ["engagement-category-", "context-layer-", "closeloop-broadcast-notice-"],
       unreadable: unreadableLanes([
         ["this campaign's comment categories", flags.categoriesUnreadable],
         ["the RTP cycle this campaign is attached to", flags.rtpCycleUnreadable],
@@ -61,15 +68,22 @@ export function buildCampaignTabs(flags: CampaignTabReadFlags): PageTabDefinitio
     {
       key: "responses",
       label: "Responses",
-      anchors: ["comment-import-preview", "email-delivery-panel", "engagement-map-unavailable"],
+      // `comment-import-preview` is NOT here: `<CommentImportPanel>` is
+      // rendered inside the Setup panel, so this tab claiming it opened
+      // Responses on an element that is not in it.
+      anchors: ["email-delivery-panel", "engagement-map-unavailable"],
       anchorPrefixes: ["engagement-item-"],
       unreadable: unreadableLanes([["the comments on this campaign", flags.itemsUnreadable]]),
     },
     {
       key: "analysis",
       label: "Analysis",
+      // No `demo-` prefix: the only `demo-*` ids are the self-reported
+      // demographic questions on the PUBLIC portal
+      // (`public-engagement-portal.tsx`). The console's `DemographicsPanel`
+      // reports those answers back and carries no such id, so the claim
+      // pointed at an element this page never renders.
       anchors: ["synthesis-flagged-sentences"],
-      anchorPrefixes: ["demo-"],
       unreadable: unreadableLanes([["the comments on this campaign", flags.itemsUnreadable]]),
     },
     {

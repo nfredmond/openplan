@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import type { PageTabDefinition } from "@/lib/ui/page-tabs";
 import { stripSourceComments } from "./helpers/source-text";
+import { anchorLinks } from "./page-tabs-guard-source";
 import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_tabs";
 import { buildCampaignTabs } from "@/app/(app)/engagement/[campaignId]/_tabs";
 import { buildRtpCycleTabs } from "@/app/(app)/rtp/[rtpCycleId]/_tabs";
@@ -121,7 +122,24 @@ function collectRenderedIds(): { exact: Set<string>; templatePrefixes: string[] 
 
 const RENDERED = collectRenderedIds();
 
-/** True when at least one id the product renders would match this prefix. */
+/**
+ * True when at least one id the product renders would match this prefix.
+ *
+ * ANY ONE SIBLING SATISFIES IT, and that is as much as a prefix claim can ask
+ * for. `rtp-chapter-draft-` is matched by four separate id families — `-assist-`,
+ * `-insert-`, `-dismiss-`, `-inserted-` — and each of the four can be deleted
+ * on its own without this noticing, which was read as a hole in this guard. It
+ * is not one that can be closed here: a prefix claim says "ids under this head
+ * belong to this tab", an open-ended statement about ids that do not exist yet,
+ * and there is no list of the ids it ought to cover to check against. Turning
+ * the four into exact `anchors` would be worse — the page renders one panel per
+ * chapter, so a bare id would repeat down the page and every deep link would
+ * land on whichever copy came first.
+ *
+ * What CAN be closed is the half that matters to a reader: the specific
+ * fragments the product actually links to. Those are checked one at a time
+ * against the id that would receive them, in the sibling describe below.
+ */
 function prefixHasAnElement(prefix: string): boolean {
   if (RENDERED.templatePrefixes.some((head) => head.startsWith(prefix))) return true;
   return [...RENDERED.exact].some((id) => id.startsWith(prefix) && id.length > prefix.length);
@@ -167,4 +185,62 @@ describe("every anchor a tab claims has an element to scroll to", () => {
       ).toEqual([]);
     });
   }
+});
+
+/**
+ * EVERY FRAGMENT THIS PRODUCT LINKS TO, CHECKED ONE AT A TIME.
+ *
+ * The describe above walks the tab TABLE, so a prefix is satisfied by any one
+ * sibling under it. This walks the LINKS instead — the actual hrefs in source —
+ * and each one is answered by itself:
+ *
+ *   - `/reports/${id}#drift-since-generation` needs an element written
+ *     `id="drift-since-generation"`. Nothing else counts.
+ *   - `/reports/${id}#artifact-${artifact.id}` needs an element written
+ *     ``id={`artifact-${…}`}`` — the head matched EXACTLY. A sibling family
+ *     under a longer head (`artifact-custody-`) does not answer it, because the
+ *     link builds an id that family never produces.
+ *
+ * That is the sibling hole closed where it is closable. The remaining gap is
+ * stated rather than papered over: an id family nothing links to yet can still
+ * be deleted silently, and this cannot see a link assembled from a variable, or
+ * one living in a database row or a document rather than in source.
+ *
+ * It also proves EXISTENCE, not placement — the id is looked for anywhere in
+ * `src`, so an element on a different page would satisfy it, and jsdom is not
+ * involved at all here, so nothing about visibility or scrolling is proven.
+ */
+describe("every deep link in the product has an element with that exact id", () => {
+  const ROUTE_SEGMENTS = ["projects", "engagement", "rtp", "reports"] as const;
+  const links = ROUTE_SEGMENTS.flatMap((segment) => anchorLinks(segment));
+
+  it("is reading the links it is meant to be checking", () => {
+    // A walk that found nothing would pass the two cases below in silence.
+    expect(links.length, "no deep links found at all — the link walk broke").toBeGreaterThan(20);
+    expect(links.some((link) => link.interpolated), "no per-row deep links found").toBe(true);
+  });
+
+  it("has an element for every whole-id fragment linked to", () => {
+    const orphaned = links
+      .filter((link) => !link.interpolated && !RENDERED.exact.has(link.head))
+      .map((link) => `${link.file}: ${link.href} — nothing renders id="${link.head}"`);
+
+    expect(
+      orphaned,
+      "these links name a fragment no element carries, so following one scrolls nowhere",
+    ).toEqual([]);
+  });
+
+  it("has an element for every per-row fragment linked to, matched head for head", () => {
+    const heads = new Set(RENDERED.templatePrefixes);
+    const orphaned = links
+      .filter((link) => link.interpolated && !heads.has(link.head))
+      .map((link) => `${link.file}: ${link.href} — no element is given an id built as \`${link.head}\${…}\``);
+
+    expect(
+      orphaned,
+      "these links build a per-row fragment no element's id is built the same way — a sibling family " +
+        "under a longer head does not answer them",
+    ).toEqual([]);
+  });
 });

@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { stripSourceComments } from "./helpers/source-text";
+import { shippedSourceFiles } from "./page-tabs-guard-source";
 import { BasisValueEditor } from "@/components/measures/basis-value-editor";
 import { MeasureFundPanel } from "@/components/measures/measure-fund-panel";
 import { ClaimComposer } from "@/components/measures/claim-composer";
@@ -78,6 +80,136 @@ describe("the way in", () => {
     // The page refuses a program that is not a local measure, so a hand-typed
     // URL cannot reach a fund set-up form on an RTIP row.
     expect(page).toMatch(/program\.program_type !== "local_measure"/);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * 1b. The two things the browser cannot work out for itself
+ * ------------------------------------------------------------------ */
+
+/**
+ * A PROP WITH A DEFAULT IS A CAPABILITY THAT CAN BE SWITCHED OFF BY DELETION.
+ *
+ * `MeasureFundSetup` takes `ruleInForce` and `filedCategoryReferences`, and
+ * both have defaults — `= null` and `= NOTHING_FILED`. Deleting both from the
+ * page's call site left every measure test green. Nothing crashes and nothing
+ * says anything: the amendment form simply opens blank instead of on the
+ * ordinance in force, and the warning that an amendment is about to orphan
+ * references already filed against it simply never appears. That is the
+ * shipped-invisible shape exactly — a complete, tested capability with no way
+ * in — and it is worse than most because the form still looks right.
+ *
+ * Neither value can be computed in the browser. `filedCategoryReferences` is a
+ * count of `measure_allocations` and `measure_claims` rows, and a browser
+ * cannot count rows it was never sent; `ruleInForce` is the newest recorded
+ * reading of the ordinance. So the server has to hand both over, and the only
+ * place that can be checked is the call site.
+ *
+ * WHY THE CALL SITES ARE FOUND RATHER THAN LISTED. A second page mounting this
+ * form — the program record, a workspace set-up flow — would arrive with the
+ * same two defaults quietly applied, and a test naming one file could not see
+ * it. Every `<MeasureFundSetup` in shipped source is walked instead.
+ *
+ * WHY THE PROP'S VALUE IS INSPECTED AND NOT JUST ITS NAME. `ruleInForce={null}`
+ * and `filedCategoryReferences={[]}` pass a "is the prop present" check and
+ * leave the planner exactly where deleting the props did, so each expression
+ * has to name something the page COMPUTES.
+ *
+ * WHAT THIS DOES NOT PROVE: that the values are right. That the form does
+ * something with them once they arrive is proven by rendering it, in
+ * `measure-allocation-builder-composition-and-amendments.test.tsx` — the
+ * prefill, the orphan warning, and the refusal to record an amendment that
+ * drops a filed reference.
+ */
+describe("the amendment prefill and the orphan warning are actually handed to the form", () => {
+  const RELATIVE = "src/app/(app)/programs/[programId]/measure/page.tsx";
+
+  /** Every `<MeasureFundSetup …>` in shipped source, with its attributes. */
+  function setupCallSites(): Array<{ file: string; attributes: string }> {
+    const found: Array<{ file: string; attributes: string }> = [];
+    for (const file of shippedSourceFiles()) {
+      // Comments stripped first: this component's own header quotes the tag,
+      // and prose reaching a matcher is a defect this repo has shipped in
+      // both directions.
+      const source = stripSourceComments(readFileSync(file, "utf8"));
+      for (const match of source.matchAll(/<MeasureFundSetup(\s[^>]*?)\/?>/g)) {
+        found.push({ file: path.relative(process.cwd(), file), attributes: match[1] });
+      }
+    }
+    return found;
+  }
+
+  /** The names bound by a `const` in this file — what "the page computed it" means. */
+  function computedNames(source: string): Set<string> {
+    const names = new Set<string>();
+    for (const match of source.matchAll(/\bconst\s+([A-Za-z_$][\w$]*)\s*[=:]/g)) names.add(match[1]);
+    return names;
+  }
+
+  it("finds the call sites it is meant to be checking", () => {
+    const sites = setupCallSites();
+    // A walk that found nothing would pass the case below in silence, and the
+    // page mounts this form twice — once with a fund and once without.
+    expect(sites.length, "no <MeasureFundSetup> call site found at all — the walk broke").toBeGreaterThan(1);
+    expect(sites.some((site) => site.file.endsWith("measure/page.tsx"))).toBe(true);
+  });
+
+  it("passes both server-computed props everywhere the form is mounted on an existing fund", () => {
+    const sources = new Map<string, string>();
+    const failures: string[] = [];
+
+    for (const site of setupCallSites()) {
+      // A fund that does not exist yet has no rule in force and nothing filed
+      // against it, so the blank form is correct there and says so by passing
+      // `measureId={null}` — a literal, not a value read from a row.
+      if (/measureId=\{null\}/.test(site.attributes)) continue;
+
+      const source =
+        sources.get(site.file) ??
+        (() => {
+          const text = stripSourceComments(readFileSync(path.join(process.cwd(), site.file), "utf8"));
+          sources.set(site.file, text);
+          return text;
+        })();
+      const computed = computedNames(source);
+
+      for (const prop of ["ruleInForce", "filedCategoryReferences"]) {
+        const passed = site.attributes.match(new RegExp(`\\b${prop}=\\{([^}]*(?:\\}[^}]*)*?)\\}`));
+        if (!passed) {
+          failures.push(`${site.file}: <MeasureFundSetup> does not pass ${prop}`);
+          continue;
+        }
+        const namesSomethingComputed = [...(passed[1].matchAll(/[A-Za-z_$][\w$]*/g))].some((identifier) =>
+          computed.has(identifier[0])
+        );
+        if (!namesSomethingComputed) {
+          failures.push(
+            `${site.file}: ${prop}={${passed[1].trim()}} is a literal — the page has to hand over what it read`
+          );
+        }
+      }
+    }
+
+    expect(
+      failures,
+      "the browser cannot work either of these out for itself: without them the amendment form opens " +
+        "blank instead of on the ordinance in force, and an amendment that orphans filed allocations " +
+        "and claims saves with nothing said",
+    ).toEqual([]);
+  });
+
+  it("computes both of them from rows it read, rather than from nothing", () => {
+    const page = stripSourceComments(readFileSync(path.join(process.cwd(), RELATIVE), "utf8"));
+
+    // The prefill is the NEWEST recorded reading of the ordinance — an
+    // amendment is written on top of the latest version even when an earlier
+    // one is still in force — so it comes out of the rule rows, not out of a
+    // single-row read that could be any of them.
+    expect(page).toMatch(/ruleRows\.reduce/);
+    // And the filed references are counted from both tables. Counting only
+    // allocations would let an amendment orphan every claim in silence.
+    expect(page).toMatch(/for \(const allocation of allocationRows\) countFiled\(/);
+    expect(page).toMatch(/countFiled\(claim\.category_id, "claims"\)/);
   });
 });
 

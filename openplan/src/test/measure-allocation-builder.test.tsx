@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MeasureFundSetup } from "@/components/measures/measure-fund-setup";
+import { PLAIN_SCHEMA_SENTENCES, normaliseReference } from "@/components/measures/allocation-rule-draft";
 import { parseMeasureAllocationRule, isNarrativeRule } from "@/lib/measures/allocation";
 
 /**
@@ -274,6 +275,203 @@ describe("the ordinance split a planner can set out", () => {
 
     const parsed = parseMeasureAllocationRule(submittedRule());
     expect(isNarrativeRule(parsed)).toBe(true);
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * A schema refusal, in the words a clerk can act on
+ * ------------------------------------------------------------------ */
+
+/**
+ * WHAT A PLANNER TYPES, AND THE SENTENCE THAT COMES BACK.
+ *
+ * `inPlainWords` in `allocation-rule-draft.ts` swaps zod's refusals for
+ * sentences a clerk can act on. Until this block existed its entire body could
+ * be replaced by `return message` — every raw zod sentence going back to the
+ * planner verbatim, `Too big: expected number to be <=100` under a box labelled
+ * "Share of what is left (%)" — and all 22 measure-builder tests stayed green,
+ * because nothing anywhere read a refusal off the screen. The tests assert on
+ * the rule that gets SUBMITTED, and a refused draft submits nothing.
+ *
+ * So each case here types into the real form the measure page mounts, the way a
+ * planner types, and reads the rendered text. Both halves matter: the plain
+ * sentence has to be on screen, and zod's own wording must not be — a
+ * translation that appends instead of replacing still leaves the clerk reading
+ * the schema's words.
+ *
+ * WHY THE TABLE IS WALKED. A hand-written list of five cases cannot see a sixth
+ * sentence added to `PLAIN_SCHEMA_SENTENCES`, so the coverage case below walks
+ * the exported table itself: every entry is either provoked here or recorded in
+ * `UNREACHABLE_BY_CONSTRUCTION` with the construction that keeps a planner from
+ * reaching it. A new entry with neither fails.
+ */
+type PlainWordsProvocation = {
+  /** What the planner did, in their words — this becomes the test name. */
+  what: string;
+  /** A fragment of the plain sentence that has to be on screen. */
+  plainFragment: RegExp;
+  /** Zod's own wording for the same refusal, which must NOT be on screen. */
+  zodWording: RegExp;
+  /** Drives the real form to the point of that refusal. */
+  provoke: () => void;
+};
+
+/** One category, named, so the only thing wrong is the share box. */
+function categoryWithShare(share: string) {
+  render(<MeasureFundSetup programId="p-1" measureId={MEASURE_ID} />);
+  const category = screen.getByRole("group", { name: "Category 1" });
+  setInput(/What this share is for/, "Local streets and roads", category);
+  setInput(/Share of what is left/, share, category);
+  fillVersionFields();
+}
+
+const PLAIN_WORDS_PROVOCATIONS: readonly PlainWordsProvocation[] = [
+  {
+    what: "types a share above 100",
+    plainFragment: /A percentage cannot be more than 100\./,
+    zodWording: /expected number to be <=100/,
+    provoke: () => categoryWithShare("150"),
+  },
+  {
+    what: "types a negative share",
+    plainFragment: /This cannot be a negative number\./,
+    zodWording: /expected number to be >=0/,
+    provoke: () => categoryWithShare("-5"),
+  },
+  {
+    // A third of a fund really is typed this way, and the fifth decimal is
+    // refused rather than rounded — a rounded percentage is a different
+    // ordinance — so this is a sentence a real planner lands on.
+    what: "states a share to five decimal places",
+    plainFragment: /at most four decimal places — 33\.3333 is fine/,
+    zodWording: /may carry at most four decimal places/,
+    provoke: () => categoryWithShare("33.33335"),
+  },
+  {
+    what: "leaves a category unnamed",
+    plainFragment: /Something the ordinance rule needs in words has been left empty\./,
+    zodWording: /expected string to have >=1 characters/,
+    provoke: () => {
+      render(<MeasureFundSetup programId="p-1" measureId={MEASURE_ID} />);
+      const category = screen.getByRole("group", { name: "Category 1" });
+      setInput(/Share of what is left/, "100", category);
+      fillVersionFields();
+    },
+  },
+  {
+    // Pasting a clause out of the ordinance into the name box is the ordinary
+    // way past a 200-character label.
+    what: "pastes a whole clause into the category's name",
+    plainFragment: /holds more text than this ordinance rule can store\. Shorten it\./,
+    zodWording: /expected string to have <=\d+ characters/,
+    provoke: () => {
+      render(<MeasureFundSetup programId="p-1" measureId={MEASURE_ID} />);
+      const category = screen.getByRole("group", { name: "Category 1" });
+      setInput(/What this share is for/, "Streets, roads, and appurtenant facilities ".repeat(12), category);
+      setInput(/Share of what is left/, "100", category);
+      fillVersionFields();
+    },
+  },
+];
+
+/**
+ * The entries a planner cannot reach through this form, and what stops them.
+ *
+ * Keyed on the entry's own `match.source`, so rewording a sentence in
+ * `PLAIN_SCHEMA_SENTENCES` breaks the exemption rather than carrying it
+ * silently onto a different refusal. These stay in the table because the parser
+ * is used from places that are not this form.
+ */
+const UNREACHABLE_BY_CONSTRUCTION: ReadonlyArray<{ matchSource: string; why: string }> = [
+  {
+    matchSource: "an id must be lower-case letters, digits, hyphen or underscore",
+    why:
+      "every reference box runs normaliseReference on each keystroke, so the box already holds a string the " +
+      "id rule accepts — asserted below rather than taken on trust",
+  },
+  {
+    matchSource: "^Invalid input: expected number, received",
+    why:
+      "numberBoxValue never hands the parser a non-number: an unreadable box gets its own sentence and the " +
+      "composed figure falls back to 0",
+  },
+];
+
+describe("a schema refusal a planner provoked comes back in plain words", () => {
+  for (const provocation of PLAIN_WORDS_PROVOCATIONS) {
+    it(`says it plainly when a planner ${provocation.what}`, () => {
+      provocation.provoke();
+      const onScreen = document.body.textContent ?? "";
+
+      expect(onScreen).toMatch(provocation.plainFragment);
+      // The schema's own wording is what a clerk must never be handed.
+      expect(onScreen).not.toMatch(provocation.zodWording);
+      // And it is a refusal, not a stray paragraph: the save is shut.
+      expect(recordButton()).toBeDisabled();
+    });
+  }
+
+  /**
+   * NO REFERENCE BOX CAN REACH THE ID RULE — the exemption above, proven.
+   *
+   * `normaliseReference` runs on every keystroke, so whatever a planner types
+   * is either empty or already an id the descriptor accepts. Empty is a
+   * different sentence ("Give this category a short reference…"), written by
+   * the draft rather than by zod.
+   */
+  it("cannot reach the id rule from a reference box, whatever is typed into it", () => {
+    const descriptorIdRule = /^[a-z0-9][a-z0-9_-]*$/;
+    const typedByPeople = [
+      "Transit Ops!",
+      "  Local Streets & Roads  ",
+      "_leading underscore",
+      "99 bottles",
+      "ÜBER-transit",
+      "a".repeat(200),
+      "transit_",
+    ];
+    for (const typed of typedByPeople) {
+      const normalised = normaliseReference(typed);
+      expect(normalised, `normaliseReference(${JSON.stringify(typed)})`).toMatch(descriptorIdRule);
+      expect(normalised.length).toBeLessThanOrEqual(64);
+    }
+  });
+
+  /**
+   * EVERY ENTRY IN THE TABLE IS ACCOUNTED FOR. This case re-drives the
+   * provocations itself rather than reading what the cases above happened to
+   * leave behind, so it says the same thing when run alone with `-t`.
+   */
+  it("provokes or explains away every sentence the translation table carries", () => {
+    const reached = new Set<string>();
+    for (const provocation of PLAIN_WORDS_PROVOCATIONS) {
+      cleanup();
+      provocation.provoke();
+      const onScreen = document.body.textContent ?? "";
+      for (const entry of PLAIN_SCHEMA_SENTENCES) {
+        if (onScreen.includes(entry.plain)) reached.add(entry.match.source);
+      }
+    }
+    cleanup();
+
+    // The table is real and the walk is not looking at an empty list.
+    expect(PLAIN_SCHEMA_SENTENCES.length).toBeGreaterThan(0);
+    expect(reached.size).toBeGreaterThan(0);
+
+    const exempt = new Set(UNREACHABLE_BY_CONSTRUCTION.map((entry) => entry.matchSource));
+    const tableSources = new Set(PLAIN_SCHEMA_SENTENCES.map((entry) => entry.match.source));
+    // An exemption for a sentence that is no longer in the table is a stale
+    // note that would go on excusing whatever replaced it.
+    expect([...exempt].filter((source) => !tableSources.has(source))).toEqual([]);
+
+    const unaccounted = PLAIN_SCHEMA_SENTENCES.filter(
+      (entry) => !reached.has(entry.match.source) && !exempt.has(entry.match.source)
+    ).map((entry) => entry.plain);
+    expect(
+      unaccounted,
+      "every plain sentence must be typed into the real form here, or recorded in " +
+        "UNREACHABLE_BY_CONSTRUCTION with what stops a planner reaching it"
+    ).toEqual([]);
   });
 });
 

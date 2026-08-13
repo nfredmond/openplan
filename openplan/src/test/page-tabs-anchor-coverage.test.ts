@@ -1,9 +1,10 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { pageTabForAnchor, type PageTabDefinition } from "@/lib/ui/page-tabs";
 import { stripSourceComments } from "./helpers/source-text";
+import { anchorLinks } from "./page-tabs-guard-source";
 import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_tabs";
 import { buildCampaignTabs } from "@/app/(app)/engagement/[campaignId]/_tabs";
 import { buildRtpCycleTabs } from "@/app/(app)/rtp/[rtpCycleId]/_tabs";
@@ -100,54 +101,24 @@ const TABBED_PAGES: Array<{
   { prefix: "reports", label: "report detail", tabs: REPORT_TABS, pageAnchors: REPORT_PAGE_ANCHORS },
 ];
 
-function sourceFiles(dir: string, out: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
-    const full = path.join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      // The tests are excluded on purpose: a fixture URL in a test is not a
-      // link a planner can follow, and several deliberately use made-up ids.
-      if (entry === "test") continue;
-      sourceFiles(full, out);
-    } else if (/\.tsx?$/.test(entry)) {
-      out.push(full);
-    }
-  }
-  return out;
-}
-
 type Found = { file: string; href: string; anchor: string };
 
 /**
- * Every `/<prefix>/…#anchor` link in the source, from plain strings and from
- * template literals alike — `/projects/${id}#project-invoices` is the common
- * form here, so a pattern that stopped at `{` would have walked past nearly all
- * of them.
+ * Every `/<prefix>/…#anchor` link in the source, resolved the way a tab table
+ * claims it: an interpolated tail becomes a placeholder id, because that is
+ * exactly the case a tab's `anchorPrefixes` exists to cover and resolving the
+ * bare head would wrongly report it as unclaimed.
  *
- * A fragment whose tail is itself interpolated (`#artifact-${artifact.id}`) is
- * recorded with a placeholder standing in for the computed part, because that
- * is exactly the case a tab's `anchorPrefixes` exists to cover and resolving the
- * bare prefix would wrongly report it as unclaimed.
+ * The walk itself lives in `page-tabs-guard-source`, shared with the guard that
+ * proves each of these links has an ELEMENT to land on — two copies of it would
+ * drift, and the pair only means something if both read the same links.
  */
 function collectAnchorLinks(prefix: string): Found[] {
-  const pattern = new RegExp("/" + prefix + "/[^\\s\"'`]*?#([a-z][a-z0-9-]*)(\\$\\{)?", "g");
-  const found: Found[] = [];
-
-  for (const file of sourceFiles(SRC)) {
-    // Comments first, always. A route file DOCUMENTS the shape
-    // `/reports/{id}#artifact-{id}` in its header, and prose reaching a matcher
-    // is a defect this repo has shipped in both directions; the shared stripper
-    // is the one place that decision lives.
-    const text = stripSourceComments(readFileSync(file, "utf8"));
-    for (const match of text.matchAll(pattern)) {
-      const interpolatedTail = Boolean(match[2]);
-      found.push({
-        file: path.relative(SRC, file),
-        href: match[0],
-        anchor: interpolatedTail ? `${match[1]}interpolated-id` : match[1],
-      });
-    }
-  }
-  return found;
+  return anchorLinks(prefix).map((link) => ({
+    file: link.file,
+    href: link.href,
+    anchor: link.interpolated ? `${link.head}interpolated-id` : link.head,
+  }));
 }
 
 describe("every deep link into a tabbed page resolves to one of its tabs", () => {
@@ -184,9 +155,14 @@ describe("every deep link into a tabbed page resolves to one of its tabs", () =>
 
 describe("the report tab list restated here still matches the one that ships", () => {
   it("names the same tabs and anchors as report-standard-detail", () => {
-    const source = readFileSync(
-      path.join(SRC, "app/(app)/reports/[reportId]/_components/report-standard-detail.tsx"),
-      "utf8",
+    // Comments are stripped first, or commenting a tab out satisfies every
+    // `toContain` below while deleting it fails — the same prose-reaches-the-
+    // matcher class this repo has been bitten by five times in one day.
+    const source = stripSourceComments(
+      readFileSync(
+        path.join(SRC, "app/(app)/reports/[reportId]/_components/report-standard-detail.tsx"),
+        "utf8",
+      ),
     );
 
     for (const tab of REPORT_TABS) {

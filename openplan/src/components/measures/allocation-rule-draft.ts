@@ -336,8 +336,17 @@ function attributeProblem(
  * factors to 99, not to exactly 100" is already the ordinance's own arithmetic
  * in plain words, and paraphrasing an arithmetic refusal is how a form ends up
  * disagreeing with the thing that actually refuses the save.
+ *
+ * EXPORTED FOR ITS GUARD, and only for that.
+ * `measure-allocation-builder.test.tsx` walks this table and requires every
+ * entry to be either provoked through the real form — typed in, and the plain
+ * sentence read back off the screen — or recorded there as unreachable with the
+ * construction that makes it unreachable. Adding an entry here and nowhere else
+ * fails that guard, which is the only thing keeping the translation honest: the
+ * whole table can be replaced by `return message` without any assertion on the
+ * composed rule noticing.
  */
-const PLAIN_SCHEMA_SENTENCES: ReadonlyArray<{ match: RegExp; plain: string }> = [
+export const PLAIN_SCHEMA_SENTENCES: ReadonlyArray<{ match: RegExp; plain: string }> = [
   {
     match: /an id must be lower-case letters, digits, hyphen or underscore/i,
     plain:

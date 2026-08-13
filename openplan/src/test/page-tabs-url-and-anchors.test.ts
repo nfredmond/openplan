@@ -12,6 +12,7 @@ import {
 import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_tabs";
 import { buildCampaignTabs } from "@/app/(app)/engagement/[campaignId]/_tabs";
 import { buildRtpCycleTabs } from "@/app/(app)/rtp/[rtpCycleId]/_tabs";
+import { tabbedPages } from "./page-tabs-guard-source";
 
 /**
  * THE THREE PROMISES A TABBED DETAIL PAGE MAKES, tested on the real tab
@@ -137,6 +138,90 @@ describe("an existing anchor link opens the tab that contains it", () => {
         }
       }
     }
+  });
+});
+
+/**
+ * AN ANCHOR ON THE PAGE'S OWN CHROME BELONGS TO NO TAB.
+ *
+ * The report page's header sits ABOVE the tab strip, so `#report-controls`,
+ * `#detail-title`, `#detail-summary` and `#detail-status` are on screen
+ * whichever tab is open. Resolving one of them to a tab is not a harmless
+ * over-claim: arriving at `?tab=history#report-controls` — a URL this product
+ * mints in `getReportNavigationHref` — would `location.replace` onto the
+ * claiming tab and throw away the tab the reader asked for, to scroll to a
+ * control already in front of them.
+ *
+ * `pageTabForAnchor` takes the page's chrome anchors as its third argument and
+ * answers "no tab" for them BEFORE consulting either the exact claims or the
+ * prefixes. That one line was the whole behavioural change, and deleting it
+ * left 11 files and 94 tests green: the same commit also narrowed the report
+ * tab table, so with today's data nothing claims those ids by either route and
+ * both mechanisms answer null.
+ *
+ * So the first case here is deliberately NOT read off the shipped tab table. It
+ * puts a tab in direct conflict with a page anchor — an exact claim and a
+ * prefix that both match — which is the only arrangement in which the line is
+ * observable, and it is the arrangement the report page was in until it was
+ * fixed. The cases after it are the product-level statement, and they are
+ * honest about being over-determined today.
+ */
+describe("an anchor on always-visible chrome resolves to no tab", () => {
+  const conflicting: PageTabDefinition<"packet" | "history">[] = [
+    { key: "packet", label: "Packet", anchors: ["report-controls"], anchorPrefixes: ["detail-"] },
+    { key: "history", label: "History", anchors: ["drift-since-generation"] },
+  ];
+
+  it("beats a tab that claims the same id exactly, and a prefix that sweeps it", () => {
+    const chrome = ["report-controls", "detail-title"];
+
+    expect(pageTabForAnchor(conflicting, "report-controls", chrome)).toBeNull();
+    expect(pageTabForAnchor(conflicting, "detail-title", chrome)).toBeNull();
+
+    // Without the declaration the same table DOES claim both, which is what
+    // makes the two assertions above a test of the exemption rather than of an
+    // empty tab table.
+    expect(pageTabForAnchor(conflicting, "report-controls")).toBe("packet");
+    expect(pageTabForAnchor(conflicting, "detail-title")).toBe("packet");
+
+    // And the exemption is narrow: an anchor that really is inside a tab still
+    // resolves, with the chrome list present.
+    expect(pageTabForAnchor(conflicting, "drift-since-generation", chrome)).toBe("history");
+  });
+
+  it("leaves a leading `#` and stray whitespace no way round the exemption", () => {
+    const chrome = ["report-controls"];
+    expect(pageTabForAnchor(conflicting, "#report-controls", chrome)).toBeNull();
+    expect(pageTabForAnchor(conflicting, "  report-controls  ", chrome)).toBeNull();
+  });
+
+  /**
+   * The shipped statement, over every tabbed page rather than the report page
+   * alone, with both the tab table and the chrome list read out of the source
+   * that ships them.
+   *
+   * WHAT THIS DOES NOT PROVE: with today's tables it passes even if
+   * `pageTabForAnchor` stops honouring `pageAnchors`, because the report tabs
+   * no longer claim those ids by any route. It is here to catch the OTHER
+   * direction — a tab that starts claiming a page anchor again — which is how
+   * the defect arrived the first time.
+   */
+  it("holds for every chrome anchor the four tabbed pages declare", () => {
+    const pages = tabbedPages();
+    const declared = pages.flatMap((page) => page.pageAnchors.map((anchor) => `${page.label}: ${anchor}`));
+    // A page whose chrome list came back empty would make every assertion
+    // below vacuous, and the report page's list is parsed out of source.
+    expect(declared.length, "no tabbed page declares any chrome anchor — the derivation broke").toBeGreaterThan(0);
+
+    const swallowed = pages.flatMap((page) =>
+      page.pageAnchors
+        .filter((anchor) => pageTabForAnchor(page.tabs, anchor, page.pageAnchors) !== null)
+        .map((anchor) => `${page.label}: #${anchor} resolves to ${pageTabForAnchor(page.tabs, anchor, page.pageAnchors)}`),
+    );
+    expect(
+      swallowed,
+      "these anchors are on chrome above the tab strip, so a link to one must scroll without changing tab",
+    ).toEqual([]);
   });
 });
 

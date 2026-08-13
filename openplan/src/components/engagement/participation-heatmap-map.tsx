@@ -5,6 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { HotspotFeatureCollection } from "@/lib/engagement/hotspots";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
@@ -121,7 +122,8 @@ export function ParticipationHeatmapMap({
   }, [mode]);
 
   useEffect(() => {
-    if (!mapContainerRef.current || !MAPBOX_ACCESS_TOKEN) return;
+    const container = mapContainerRef.current;
+    if (!container || !MAPBOX_ACCESS_TOKEN) return;
     if (points.length === 0 && hotspots.features.length === 0) return;
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
@@ -133,12 +135,18 @@ export function ParticipationHeatmapMap({
       points.length > 0 ? [points[0].lng, points[0].lat] : firstHotspotPosition(hotspots);
 
     const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
+      container,
       style: "mapbox://styles/mapbox/dark-v11",
       center: seed ?? CONTINENTAL_US_CENTER,
       zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
       attributionControl: false,
     });
+
+    // The campaign console renders this two levels inside its Analysis tab
+    // (page → SpatialHotspotTuner → here), and Analysis is never the landing
+    // tab, so the map is always built against a `display: none`, 0x0 box.
+    const stopSizing = keepMapSizedToContainer(map, container);
+
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
     map.on("load", () => {
@@ -200,6 +208,7 @@ export function ParticipationHeatmapMap({
 
     mapRef.current = map;
     return () => {
+      stopSizing();
       map.remove();
       mapRef.current = null;
     };
