@@ -29,6 +29,7 @@ import {
 } from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { routeOwnsMap } from "@/lib/navigation/map-surfaces";
 import type { HomeMapView } from "@/lib/workspaces/home-geography";
 import { useTheme } from "@/components/theme-provider";
 
@@ -67,8 +68,13 @@ const HAS_INVALID_PUBLIC_MAPBOX_TOKEN = hasInvalidPublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
 ) && !MAPBOX_ACCESS_TOKEN;
 
-// Routes that own their own map and should suppress the shell backdrop.
-const MAP_OWNING_ROUTES = ["/explore"];
+// Which routes own their own map — and therefore suppress this backdrop — is
+// declared in `lib/navigation/map-surfaces`, beside the list of routes that get
+// the shell's map CONTROLS. The two were in different files and drifted:
+// `/safety` drew its own Mapbox instance for months while still counting as a
+// shell map surface, so the layers panel and legend drove a 1600×900 backdrop
+// hidden behind the page panel while the planner read a 558×457 crash map in
+// front of it. One list, one decision.
 
 // Opening framing, in strict order of how much the map actually knows:
 //
@@ -344,10 +350,6 @@ type RtpCycleFeatureCollection = MissionAoiFeatureCollection;
 type CensusTractFeatureCollection = MissionAoiFeatureCollection;
 type EngagementFeatureCollection = MissionAoiFeatureCollection;
 type TransitStopFeatureCollection = MissionAoiFeatureCollection;
-
-function routeOwnsMap(pathname: string): boolean {
-  return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
-}
 
 /**
  * The only thing the bounds walker needs from a bounds object. Typing against

@@ -63,7 +63,22 @@ import {
   type FitInstruction,
 } from "@/lib/cartographic/geometry-bbox";
 
-let pathname = "/safety";
+/*
+  ═══ SUPERSEDED 2026-08-13: THIS FILE DRIVES THE BACKDROP FROM /aerial NOW ═══
+
+  The account above is the record of the v0.20.0 defect and stands as written.
+  What changed since is WHERE the backdrop is live. `/safety` builds its own
+  Mapbox instance and, as of 2026-08-13, is listed in `MAP_OWNING_ROUTES` — so
+  this backdrop suppresses itself there and draws no map at all. Left pointed at
+  `/safety`, every camera assertion below became "expected [] to have length 1":
+  the failure was honest and immediate, which is the good case.
+
+  `/aerial` is the remaining route where the SHELL's map is the working surface,
+  so it is what exercises this component now. Safety's half of the same contract
+  moved with the map: `SafetyLayerDeepLink` reads `?layer=`, and the crash map's
+  `focus` prop applies it — see `safety-owns-the-only-map.test.tsx`.
+*/
+let pathname = "/aerial";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => pathname,
@@ -194,7 +209,7 @@ describe("a focus request reaches the map", () => {
 
   beforeEach(() => {
     cameraCalls = [];
-    pathname = "/safety";
+    pathname = "/aerial";
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ type: "FeatureCollection", features: [] }),

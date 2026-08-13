@@ -369,7 +369,11 @@ describe("a map that cannot draw says so", () => {
     expect(map).toBeUndefined();
     expect(mapboxMocks.Map).not.toHaveBeenCalled();
     expect(screen.getByTestId("portal-map-stage-unavailable")).toBeInTheDocument();
-    expect(screen.getByTestId("portal-map-basemap")).toHaveTextContent("");
+    // An attribute rather than text: this hook stopped being an `sr-only` span
+    // on 2026-08-13, because `sr-only` is hidden from eyes and not from
+    // assistive technology, and a resident on the public portal was having a
+    // Mapbox style URL read aloud to them.
+    expect(screen.getByTestId("portal-map-basemap")).toHaveAttribute("data-basemap-style", "");
   });
 });
 

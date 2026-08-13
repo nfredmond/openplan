@@ -1005,11 +1005,30 @@ export function PublicMapStage({
         </div>
       ) : null}
 
-      {/* The style the map is currently on, so a test can see that the picker's
-          choice reached the map. Not visible copy. */}
-      <span className="sr-only" data-testid="portal-map-basemap">
-        {selectedStyleUrl ?? ""}
-      </span>
+      {/*
+        THE STYLE THE MAP IS CURRENTLY ON, AS AN ATTRIBUTE — SO A TEST CAN READ
+        IT AND A SCREEN READER CANNOT.
+
+        This was `<span className="sr-only">{selectedStyleUrl}</span>`, and the
+        comment above it said "Not visible copy", which was true and was the
+        whole problem. `sr-only` is visually hidden and NOT hidden from
+        assistive technology — that is its entire purpose — so on a PUBLIC
+        engagement portal, a blind resident arriving to leave a comment about
+        their neighbourhood had "mapbox://styles/mapbox/streets-v12" read aloud
+        to them, in the accessible-content slot, as though it were something
+        they needed.
+
+        A `data-` attribute is exactly as readable to a test and completely
+        silent to assistive technology, so nothing is traded: the observation
+        survives, the resident stops hearing a URL. `hidden` would not have
+        done: it removes the node from the a11y tree but Playwright's text
+        queries skip it too, and `aria-hidden` on a text node is the pattern
+        that gets copied to places where it becomes a WCAG failure.
+
+        The keyboard-help paragraph below is `sr-only` and STAYS `sr-only` — it
+        is real prose written for a person, which is what that class is for.
+      */}
+      <span data-testid="portal-map-basemap" data-basemap-style={selectedStyleUrl ?? ""} />
 
       <p id={instructionsId} className="sr-only">
         {drawEnabled ? t("portal.mapKeyboardHelp") : t("portal.mapKeyboardHelpReadOnly")}

@@ -23,6 +23,27 @@
  * whether the toggle is still positioned where CSS can reach the body from it,
  * and whether the door survives the collapse.
  *
+ * ── AND THE PART THAT IS A SPELLING CHECK, SAID PLAINLY ──
+ *
+ * "switches the rail body off while collapsed" ends by asserting that the
+ * sheet's `className` CONTAINS the string
+ * `has-[#portal-sheet-toggle:checked]:max-h-[75dvh]`. Read honestly, that is a
+ * check that somebody typed a particular utility class — nothing more. It does
+ * NOT prove the sheet grows to 75dvh, that `has-` is supported, that the class
+ * survived Tailwind's build, or that any rule with that name exists in any
+ * stylesheet. jsdom loads no CSS, so no assertion in this file could prove any
+ * of that.
+ *
+ * It is kept because it is not vacuous — deleting the class from the component
+ * fails it, so a silent removal of the open state is caught — and because the
+ * three assertions above it (`hidden`, `peer-checked:block`, `lg:block`) are
+ * the same kind of check on the same mechanism: they describe the shape of the
+ * collapse contract, in the vocabulary the component writes it in. What the
+ * sheet actually MEASURES, open and shut, is a browser fact, and the only
+ * evidence for it is the pair of measurements above, taken at 390×844 by hand.
+ * If those numbers need to be held rather than recorded, that belongs in the
+ * browser check, not here.
+ *
  * ============================================================================
  * AND THE SENTENCE, WHICH IS NOT A LAYOUT QUESTION AT ALL
  * ============================================================================

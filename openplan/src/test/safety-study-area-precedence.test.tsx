@@ -26,6 +26,11 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 
 vi.mock("next/navigation", () => ({
   redirect: (...args: unknown[]) => redirectMock(...args),
+  // Safety mounts its own `?layer=` handler (`SafetyLayerDeepLink`) now that
+  // the route owns its map and the shell's deep link no longer reaches it. No
+  // parameter is set in these cases, so an empty bag is the right stand-in —
+  // the handler's own behaviour is covered in `safety-owns-the-only-map.test.tsx`.
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 vi.mock("next/link", () => ({
@@ -46,6 +51,11 @@ vi.mock("@/lib/workspaces/current", () => ({
 
 // Mapbox-backed; this suite is about which boundary was chosen, not how it draws.
 vi.mock("@/components/safety/safety-crash-map", () => ({
+  // The real module also exports the z-order anchor the workspace hands to
+  // `useWorkspaceGisMapBinding`. A factory mock replaces the WHOLE module, so
+  // omitting it makes the import `undefined` and the render throws — which is
+  // how a stub silently becomes the thing under test.
+  safetyWorkspaceGisAnchorLayerId: () => undefined,
   SafetyCrashMap: () => <div data-testid="safety-crash-map" />,
 }));
 

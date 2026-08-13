@@ -16,6 +16,8 @@ import { describeCrashCasualtyLine } from "@/lib/cartographic/crash-feature-to-s
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
+import type { WorkspaceGisMapTarget } from "@/lib/cartographic/workspace-gis-map-layers";
+import { applyFitInstruction, type FitInstruction } from "@/lib/cartographic/geometry-bbox";
 
 // Both accepted env names, resolved through the shared helper so this map has
 // the same token story as every other one. Reading only the newer name meant an
@@ -38,6 +40,31 @@ const INITIAL_ZOOM = 3.4;
 const CRASH_SOURCE_ID = "safety-crashes";
 const CRASH_HALO_LAYER_ID = "safety-crash-halo";
 const CRASH_CORE_LAYER_ID = "safety-crash-core";
+
+/**
+ * Where the workspace's own uploaded layers sit in this map's z-order.
+ *
+ * BENEATH THE HALO, which is the lowest crash layer, so an agency's parcel
+ * fabric or bike network can never bury the collisions. That is not a taste
+ * call: the whole page exists to show where people were hurt, and a polygon
+ * layer drawn over the points would hide the subject behind its own context.
+ *
+ * `undefined` when no crash layer is on the map yet — Mapbox reads that as
+ * "on top", which is right, because with nothing to be buried under there is
+ * nothing to sit below. The shell backdrop resolves the same question against
+ * its own layer names; the answer is per-map, which is why the binding hook
+ * takes it as a parameter rather than knowing it.
+ *
+ * TYPED TO THE ONE METHOD IT CALLS, following the painter module's precedent
+ * next door: a z-order rule is pure, and narrowing the parameter means a plain
+ * object is a real test subject rather than a cast pretending to be a Mapbox
+ * map. A cast would have made the test prove only that the cast compiles.
+ */
+export function safetyWorkspaceGisAnchorLayerId(
+  map: Pick<WorkspaceGisMapTarget, "getLayer">
+): string | undefined {
+  return [CRASH_HALO_LAYER_ID, CRASH_CORE_LAYER_ID].find((id) => map.getLayer(id));
+}
 
 const EMPTY_COLLECTION: SafetyCrashCollection = { type: "FeatureCollection", features: [] };
 
@@ -78,6 +105,46 @@ type SafetyCrashMapProps = {
    * surface to open.
    */
   onSelect?: (crashId: string | null) => void;
+  /**
+   * THE MAP ITSELF, HANDED UPWARD — the seam that makes this the only Mapbox
+   * instance on the page.
+   *
+   * Safety used to sit on top of the shell backdrop, and the shell's layers
+   * panel drew the agency's uploaded layers onto THAT map: a 1600×900 canvas
+   * entirely behind the page panel. The layers were real, the toggles worked,
+   * and nothing appeared on the 558×457 map the planner was reading. Rather
+   * than duplicate the workspace-layer machinery here, this map is handed to
+   * `useWorkspaceGisMapBinding` — the same hook the backdrop and Corridor
+   * Analysis call — so the third caller inherits the catalog read, the viewport
+   * windowing and, most importantly, the coverage notes rather than
+   * reimplementing them slightly differently.
+   *
+   * A CALLBACK RATHER THAN A SHARED REF OBJECT. Taking the parent's ref and
+   * writing into it works, and `react-hooks/immutability` rightly refuses it:
+   * a ref this component did not create is one it cannot reason about, and the
+   * rule cannot tell a legitimate hand-off from a component mutating state it
+   * does not own. This map stays the owner of its own ref and PUBLISHES the
+   * instance instead.
+   *
+   * Called with the map once its first style has loaded and the crash layers
+   * exist, and with `null` when it is torn down. Never before the style lands:
+   * `addLayer` against a style that has not arrived throws, and an anchor
+   * resolved against an empty style would put the agency's layers on top of the
+   * collisions rather than beneath them.
+   */
+  onMapReady?: (map: mapboxgl.Map | null) => void;
+  /**
+   * Where a "Show on the map" link asked the camera to go, or null.
+   *
+   * Consumed here rather than by the shell's backdrop because on this route
+   * there IS no backdrop. Applied once per instruction object; the study-area
+   * `bbox` below still governs the ordinary framing, and a focus request
+   * arriving later deliberately wins over it — the planner just clicked a link
+   * asking to be taken somewhere.
+   */
+  focus?: FitInstruction | null;
+  /** Called after `focus` has been applied, so the requester can clear it. */
+  onFocusApplied?: () => void;
 };
 
 /**
@@ -108,9 +175,19 @@ function popupLine(className: string, text: string): HTMLElement {
   return node;
 }
 
-export function SafetyCrashMap({ collection, bbox, styleUrl, onSelect }: SafetyCrashMapProps) {
+export function SafetyCrashMap({
+  collection,
+  bbox,
+  styleUrl,
+  onSelect,
+  onMapReady,
+  focus = null,
+  onFocusApplied,
+}: SafetyCrashMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const onMapReadyRef = useRef(onMapReady);
+  const onFocusAppliedRef = useRef(onFocusApplied);
   // The map is built once, so the click handlers close over a ref rather than
   // over the prop — otherwise selecting a collision would call whichever
   // callback existed at mount forever.
@@ -133,7 +210,9 @@ export function SafetyCrashMap({ collection, bbox, styleUrl, onSelect }: SafetyC
   useEffect(() => {
     onSelectRef.current = onSelect;
     collectionRef.current = collection;
-  }, [onSelect, collection]);
+    onMapReadyRef.current = onMapReady;
+    onFocusAppliedRef.current = onFocusApplied;
+  }, [onSelect, collection, onMapReady, onFocusApplied]);
 
   // Create the map once; data updates are handled by the effect below so a
   // filter change never tears down and rebuilds the map.
@@ -212,6 +291,14 @@ export function SafetyCrashMap({ collection, bbox, styleUrl, onSelect }: SafetyC
 
       const source = map.getSource(CRASH_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
       source?.setData(collectionRef.current ?? EMPTY_COLLECTION);
+
+      // ANNOUNCED AFTER THE CRASH LAYERS EXIST, not before. Whoever is binding
+      // workspace layers to this map resolves its anchor by looking for a crash
+      // layer, and an anchor resolved against an empty style returns
+      // `undefined` — which Mapbox reads as "on top". Saying "ready" one line
+      // earlier is the difference between the agency's parcel fabric sitting
+      // under the collisions and sitting over them.
+      onMapReadyRef.current?.(map);
     };
 
     map.on("style.load", paint);
@@ -281,6 +368,8 @@ export function SafetyCrashMap({ collection, bbox, styleUrl, onSelect }: SafetyC
     return () => {
       map.remove();
       mapRef.current = null;
+      // The binding hook must stop painting into a map that no longer exists.
+      onMapReadyRef.current?.(null);
     };
     // Intentionally mount-only: data, framing and the background are applied by
     // the effects below, so re-renders never recreate the map. This used to
@@ -316,6 +405,27 @@ export function SafetyCrashMap({ collection, bbox, styleUrl, onSelect }: SafetyC
     if (!map || !bbox) return;
     map.fitBounds([bbox[0], bbox[1], bbox[2], bbox[3]], { padding: 40, duration: 0 });
   }, [bbox]);
+
+  /**
+   * A "Show on the map" link asked for a camera. Give it one, then say so.
+   *
+   * This is the half of the deep link that the shell used to own and cannot own
+   * here: `/safety` now suppresses the shell backdrop, so the only map that can
+   * act on a focus request is this one. Without it, switching a layer on from
+   * the Data Hub would draw a thirteen-kilometre bike network correctly inside
+   * a continental view — the exact "the link is a lie" failure the shell's own
+   * deep link was fixed for in v0.20.0.
+   *
+   * `onFocusApplied` fires so the requester can drop the instruction; a focus
+   * that stayed set would re-frame the map every time this component
+   * re-rendered, which on a page with a filter panel is constantly.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !focus) return;
+    applyFitInstruction(map, focus);
+    onFocusAppliedRef.current?.();
+  }, [focus]);
 
   if (!MAPBOX_TOKEN) {
     return (

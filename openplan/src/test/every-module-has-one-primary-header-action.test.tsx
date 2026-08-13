@@ -165,6 +165,11 @@ vi.mock("@/app/(app)/models/_components/network-packages-panel", () => ({
 
 // Mapbox-backed. This suite is about the header slot, not how the map draws.
 vi.mock("@/components/safety/safety-crash-map", () => ({
+  // The real module also exports the z-order anchor the workspace hands to
+  // `useWorkspaceGisMapBinding`. A factory mock replaces the WHOLE module, so
+  // omitting it makes the import `undefined` and the render throws — which is
+  // how a stub silently becomes the thing under test.
+  safetyWorkspaceGisAnchorLayerId: () => undefined,
   SafetyCrashMap: () => <div data-testid="safety-crash-map" />,
 }));
 vi.mock("@/components/models/study-area-picker", () => ({

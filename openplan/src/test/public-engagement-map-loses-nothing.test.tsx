@@ -388,7 +388,13 @@ describe("the map controls a resident actually gets", () => {
     // would still highlight the right option.
     const openingStyle = config.choices.find((choice) => choice.id === config.defaultId)?.styleUrl;
     const firstStyle = config.choices[0].styleUrl;
-    expect(screen.getByTestId("portal-map-basemap")).toHaveTextContent(String(openingStyle));
-    expect(screen.getByTestId("portal-map-basemap")).not.toHaveTextContent(String(firstStyle));
+    // READ OFF AN ATTRIBUTE, NOT OFF TEXT. This hook used to be an `sr-only`
+    // span, which is visually hidden but deliberately NOT hidden from assistive
+    // technology — so the raw `mapbox://styles/…` URL was read aloud to blind
+    // residents on the public portal. The observation is identical from a
+    // `data-` attribute and silent to a screen reader.
+    const stage = screen.getByTestId("portal-map-basemap");
+    expect(stage).toHaveAttribute("data-basemap-style", String(openingStyle));
+    expect(stage).not.toHaveAttribute("data-basemap-style", String(firstStyle));
   });
 });

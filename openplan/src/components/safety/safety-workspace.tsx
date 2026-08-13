@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import type mapboxgl from "mapbox-gl";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 // The BACKGROUND PICKER IS THE PORTAL LANE'S, IMPORTED, NOT COPIED. It holds no
 // style ids, takes resolved choices, and renders nothing when a deployment
@@ -10,8 +11,10 @@ import { StudyAreaPicker } from "@/components/models/study-area-picker";
 // in it is portal-specific, and a second copy under a safety-shaped name would
 // be the thirteenth hardcoded style list this product is trying to stop having.
 // The LAYER picker beside it is not reused: it takes a campaign's published
-// context layers, and this surface has none — the workspace layer catalog is
-// drawn on the shell backdrop and controlled by the shell's own layers panel.
+// context layers, which this surface has none of. The WORKSPACE layer catalog
+// is a different thing and it now has a panel here — see
+// `SafetyWorkspaceLayersPanel`, and the note on `useWorkspaceGisMapBinding`
+// below for why it stopped being the shell's job.
 import { PublicBasemapPicker } from "@/components/engagement/public-map-picker-basemap";
 import type { PublicBasemapChoice, PublicBasemapId } from "@/lib/cartographic/basemaps";
 import {
@@ -22,7 +25,13 @@ import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
-import { SafetyCrashMap } from "./safety-crash-map";
+import { SafetyCrashMap, safetyWorkspaceGisAnchorLayerId } from "./safety-crash-map";
+import { SafetyWorkspaceLayersPanel } from "./safety-workspace-layers-panel";
+import { SafetyLayerDeepLink } from "./safety-layer-deep-link";
+import { SafetyMapFillsSurface } from "./safety-map-fills-surface";
+import { useWorkspaceGisMapBinding } from "@/components/cartographic/use-workspace-gis-map-binding";
+import type { FitInstruction } from "@/lib/cartographic/geometry-bbox";
+import { useTheme } from "@/components/theme-provider";
 import { CrashExportButton } from "./crash-export-button";
 import {
   COVERAGE_STATE_COPY,
@@ -37,6 +46,7 @@ import {
 } from "@/lib/safety/client-types";
 import {
   describeGeocodingShortfall,
+  describeUngeocodedCountyOption,
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_FATAL_ONLY_CAVEAT,
   SAFETY_LIVE_READ_CAVEAT,
@@ -340,6 +350,79 @@ export function SafetyWorkspace({
     basemapChoices[0] ??
     null;
 
+  /**
+   * ═══ THE AGENCY'S OWN LAYERS, ON THE MAP THE PLANNER IS READING ═══
+   *
+   * Until 2026-08-13 this page carried TWO Mapbox instances. Safety drew the
+   * crash map below, and the shell drew its cartographic backdrop behind the
+   * whole page; the shell's layers panel and legend docked at the right edge and
+   * drove the backdrop. Measured at 1600×900: a 1600×900 backdrop at (0,0)
+   * behind an opaque panel, a 558×457 crash map at (305,350) in front of it, and
+   * a 240×458 layers panel at x=1344 that governed the first and not the second.
+   * Ticking a layer fetched it, painted it, and showed the planner nothing.
+   *
+   * `/safety` is now in `MAP_OWNING_ROUTES`, so the backdrop suppresses itself
+   * and the shell's dock does not mount. This is what replaces it: the SAME hook
+   * the backdrop and Corridor Analysis use, pointed at the crash map. The
+   * catalog read, the viewport windowing, the retry bookkeeping and — the part
+   * that matters most — the coverage notes come with it, rather than being
+   * reimplemented here slightly differently. This repository's recorded rule is
+   * that the second caller of a capability living inside the first will get it
+   * wrong; this is the third caller, and it is why the capability was extracted.
+   *
+   * `theme` is the BASEMAP's, not the chrome's, and the registry answers it
+   * directly: `PublicBasemapChoice.dark` exists precisely because "shapes drawn
+   * on top are coloured against this background" is a question the caller has to
+   * ask. A satellite background is dark whatever the app palette is doing, so
+   * reading the app theme here would put dark casing on dark imagery for any
+   * planner working in light mode over aerials. The app theme is the fallback
+   * only for a deployment that offers no basemaps at all, where the map draws
+   * its own "no map key" notice and nothing is painted anyway.
+   */
+  const crashMapRef = useRef<mapboxgl.Map | null>(null);
+  const [crashMapReady, setCrashMapReady] = useState(false);
+  /**
+   * The crash map has finished building (or has been torn down).
+   *
+   * The ref is what the binding hook reads from inside its effects; the state is
+   * what re-runs them. Both are needed and they are not redundant: a ref alone
+   * would never wake the hook, and state alone would make every effect that
+   * touches the map re-subscribe on each render.
+   */
+  const handleMapReady = useCallback((map: mapboxgl.Map | null) => {
+    crashMapRef.current = map;
+    setCrashMapReady(Boolean(map));
+  }, []);
+  const { resolvedTheme } = useTheme();
+  const basemapInk: "light" | "dark" = selectedBasemap
+    ? selectedBasemap.dark
+      ? "dark"
+      : "light"
+    : resolvedTheme === "dark"
+      ? "dark"
+      : "light";
+
+  useWorkspaceGisMapBinding({
+    mapRef: crashMapRef,
+    ready: crashMapReady,
+    // Not before the map has a workspace to ask about: a catalog read for a
+    // missing id is a request that can only fail.
+    enabled: crashMapReady && Boolean(workspaceId),
+    workspaceId,
+    theme: basemapInk,
+    resolveAnchorLayerId: safetyWorkspaceGisAnchorLayerId,
+  });
+
+  /**
+   * Where a "Show on the map" link asked the camera to go, pending application.
+   *
+   * Held as state rather than pushed at the map directly because the map is a
+   * child: this is the request, the child acts on it, and `onFocusApplied`
+   * clears it. Nulling it is what stops the frame being re-applied on every
+   * re-render — and this component re-renders on every filter press.
+   */
+  const [mapFocus, setMapFocus] = useState<FitInstruction | null>(null);
+
   // Whether the box still holds the area this page opened with. Everything that
   // explains where that area came from is gated on it: once the planner picks
   // somewhere else, the explanation describes a boundary that is gone.
@@ -355,9 +438,33 @@ export function SafetyWorkspace({
     return summary.bbox;
   }, [corridorText]);
 
-  const mapBbox: [number, number, number, number] | null = bbox
-    ? [bbox.minLon, bbox.minLat, bbox.maxLon, bbox.maxLat]
-    : null;
+  /**
+   * The framing bbox as a tuple — MEMOIZED, and that is not a micro-optimisation.
+   *
+   * This was rebuilt on every render. The map frames on `[bbox]`, so a fresh
+   * array identity meant `fitBounds` ran after EVERY render of this component —
+   * which on a page with a filter panel, a study-area picker and a loading flag
+   * is constantly. Two consequences, one of which was invisible until
+   * 2026-08-13:
+   *
+   *   1. The camera was snapped back to the study area whenever anything on this
+   *      page changed, so a planner who zoomed into an intersection lost it on
+   *      the next filter press.
+   *   2. Once anything subscribed to the map's `moveend` — which is exactly what
+   *      `useWorkspaceGisMapBinding` does, to know which window to read the
+   *      agency's layers for — it became an infinite loop: render → fitBounds →
+   *      moveend → setState → render. React caught it as "Maximum update depth
+   *      exceeded", 176 times in one page load.
+   *
+   * The second is the reason this is written down. The bug was already here and
+   * cost nothing observable; the fix that made the page correct in every other
+   * way is what turned it into a hang. A latent identity bug is a trap laid for
+   * whoever touches the file next.
+   */
+  const mapBbox = useMemo<[number, number, number, number] | null>(
+    () => (bbox ? [bbox.minLon, bbox.minLat, bbox.maxLon, bbox.maxLat] : null),
+    [bbox]
+  );
 
   // Only a California COUNTY selection yields a lossless county filter. A city,
   // metro, drawn area, or out-of-state pick falls back to bbox-only, where
@@ -564,6 +671,23 @@ export function SafetyWorkspace({
     ? liveRead.dimensionCoverage
     : (ingest?.dimensionCoverage ?? undefined);
 
+  /**
+   * The source behind the points ON SCREEN, by name, or null when none has
+   * answered yet.
+   *
+   * Live read first, for the same reason `activeCompleteness` and
+   * `activeDimensionCoverage` read that way: a stale acquisition's label
+   * describing a live fatality census's points would attribute one source's
+   * data to another. `checkedSourceLabels` is deliberately NOT used as a
+   * fallback — those are the sources that were consulted, which on a
+   * `no_coverage` result is precisely the list of sources that did NOT answer,
+   * and naming one of them as though it had would be the strongest version of
+   * the falsehood this whole module is built to avoid.
+   */
+  const activeSourceLabel: string | null =
+    liveRead?.sourceLabel ??
+    (ingest && ingest.status !== "no_coverage" ? (ingest.sourceLabel ?? null) : null);
+
   // Is there anything to filter? A planner in a state with no adapter must be
   // told that, not shown a panel of controls that can only return nothing.
   const sourceConfigured = Boolean(liveRead) || Boolean(ingest && ingest.status !== "no_coverage");
@@ -705,6 +829,13 @@ export function SafetyWorkspace({
       scrolling, and the map goes back to being a letterbox.
     */
     <div className="flex min-h-0 flex-1 flex-col" data-testid="safety-map-first">
+      {/* Both render nothing. The first lets the map fill the route surface
+          (see the component for the 340px it reclaims); the second answers the
+          Data Hub's "Show on the map" link, which the shell used to answer and
+          cannot any more now that this route owns its map. */}
+      <SafetyMapFillsSurface />
+      <SafetyLayerDeepLink onFocus={setMapFocus} />
+
       {/*
         THE SHELL, AND IT IS TWO DIFFERENT LAYOUTS ON PURPOSE.
 
@@ -735,6 +866,12 @@ export function SafetyWorkspace({
             // case the map component draws its own notice and never reads this.
             styleUrl={selectedBasemap?.styleUrl ?? ""}
             onSelect={setSelectedCrashId}
+            // The seam that makes this the only map on the page: the instance
+            // goes up to `useWorkspaceGisMapBinding` above, and the camera
+            // request from the Data Hub link comes back down.
+            onMapReady={handleMapReady}
+            focus={mapFocus}
+            onFocusApplied={() => setMapFocus(null)}
           />
 
           {/* The background picker, docked over the map. Top-LEFT, because
@@ -841,6 +978,12 @@ export function SafetyWorkspace({
 
             {selectedCollisionCard}
 
+            {/* The agency's own uploaded layers, driving the map beside this
+                column. It used to be the shell's panel, docked at the right
+                edge of the window, driving the backdrop behind the page — see
+                the component's header for what that measured. */}
+            <SafetyWorkspaceLayersPanel />
+
       {/* Study area — the app's single geography front door, reused, not reinvented. */}
       <section className="rounded-lg border p-4" aria-label="Study area">
         <h2 className="mb-2 text-sm font-medium">Study area</h2>
@@ -889,10 +1032,16 @@ export function SafetyWorkspace({
           </p>
         )}
         {bbox && countyCode === null && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Counts for this selection come from the mapped area only. Pick a California{" "}
-            <strong>county</strong> to also include reported crashes the source agency never
-            geolocated.
+          /* NO JURISDICTION IS NAMED HERE. This said "Pick a California county"
+             to every workspace in the product — a Columbus, Ohio planner was
+             told to pick a county in a state they do not work in. The limit is
+             real (only a source publishing a county field can return the
+             crashes it never geolocated) and it belongs to the SOURCE, so the
+             sentence is composed from whichever source has actually answered
+             for this study area. Before one has, it says only the half it can
+             stand behind. */
+          <p className="mt-2 text-xs text-muted-foreground" data-testid="safety-county-option-note">
+            {describeUngeocodedCountyOption(activeSourceLabel)}
           </p>
         )}
       </section>

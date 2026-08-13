@@ -940,6 +940,32 @@ body[data-map-owner="true"] .op-cart-inspector {
   display: none;
 }
 
+/* ---------- Map-fills-surface override ---------- */
+
+/* A route whose MAP is its content — set by `SafetyMapFillsSurface`, which
+   carries the measurement that produced these two rules.
+
+   The surface panel keeps its frame, its border and its rounded corners; what
+   it gives up is the chrome stacked INSIDE it, because on this one kind of page
+   that chrome is the difference between a map and a letterbox. Measured at
+   1600×900: the section nav cost 244px and the body padding 96px, of a 800px
+   surface — so the map got 457px and the page it fills was 17.7% of the window.
+
+   Scoped to its own attribute rather than to `data-map-owner`, which `/explore`
+   also sets: Corridor Analysis has its own studio layout and its own padding
+   expectations, and quietly restyling it from here would be a change nobody
+   measured. */
+body[data-map-fills-surface="true"] .op-cart-surface > .shell-ledger-panel {
+  display: none;
+}
+body[data-map-fills-surface="true"] .op-cart-surface__body {
+  padding: 0;
+  /* The gutter reserved a scrollbar track on both edges for a body that no
+     longer scrolls — the map-first layout scrolls its own sidebar instead. Left
+     in, it re-introduced ~10px of the inset this rule exists to remove. */
+  scrollbar-gutter: auto;
+}
+
 /* ---------- Wide-content override ---------- */
 
 /* Content-heavy routes (reports detail, RTP document, admin tables) can

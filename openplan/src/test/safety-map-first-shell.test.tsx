@@ -45,6 +45,11 @@ import type { SafetyIngestSummary } from "@/lib/safety/client-types";
 // The map is Mapbox-backed and jsdom runs no WebGL; the crash map's own
 // behaviour is under test in `safety-map-first-crash-map.test.tsx`.
 vi.mock("@/components/safety/safety-crash-map", () => ({
+  // The real module also exports the z-order anchor the workspace hands to
+  // `useWorkspaceGisMapBinding`. A factory mock replaces the WHOLE module, so
+  // omitting it makes the import `undefined` and the render throws — which is
+  // how a stub silently becomes the thing under test.
+  safetyWorkspaceGisAnchorLayerId: () => undefined,
   SafetyCrashMap: ({
     styleUrl,
     onSelect,
@@ -215,9 +220,16 @@ describe("every caveat survived the move", () => {
     fireEvent.click(screen.getByText("pick-a-county"));
 
     // The source, and what it covers.
+    //
+    // `findAllBy`, not `findBy`: as of 2026-08-13 the source's name appears
+    // TWICE on purpose. The coverage banner names it, and so does the
+    // mapped-area note under the study-area picker — which used to say "Pick a
+    // California county" to every workspace on earth and now attributes the
+    // ungeocoded crashes to whichever source actually reported them. Two
+    // mentions of the real source is the correct state; one was the bug.
     expect(
-      await screen.findByText(/NHTSA Fatality Analysis Reporting System/)
-    ).toBeInTheDocument();
+      (await screen.findAllByText(/NHTSA Fatality Analysis Reporting System/)).length
+    ).toBeGreaterThan(0);
     expect(screen.getByText(/120 reported · 96 mappable/)).toBeInTheDocument();
     // A fatality census records nothing else.
     expect(screen.getByText(SAFETY_FATAL_ONLY_CAVEAT)).toBeInTheDocument();

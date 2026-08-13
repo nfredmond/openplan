@@ -37,6 +37,13 @@
  * The FIRST entry is load-bearing in one more place: the layer library's "Show
  * on the map" link sends planners to `MAP_SURFACE_ROUTES[0]`. Reordering this
  * array changes where that link lands.
+ *
+ * That link keeps working on a route that also appears in `MAP_OWNING_ROUTES`
+ * below, but only because such a route mounts its OWN `?layer=` handler — the
+ * shell's `CartographicLayerDeepLink` rides inside `MapSurfaceOnly` and no
+ * longer mounts there. `/safety` mounts `SafetyLayerDeepLink`. A route added to
+ * both lists without one would leave "Show on the map" landing on a page that
+ * silently ignores the parameter.
  */
 export const MAP_SURFACE_ROUTES = [
   /** Crash points, filters and coverage disclosure are read on the map. */
@@ -44,6 +51,69 @@ export const MAP_SURFACE_ROUTES = [
   /** Missions and AOIs are geographic by definition. */
   "/aerial",
 ] as const;
+
+/**
+ * Routes that BUILD THEIR OWN `mapboxgl.Map` and therefore suppress the shell
+ * backdrop.
+ *
+ * ═══ WHY THIS MOVED HERE (2026-08-13) ═══
+ *
+ * It lived as a private `const` inside `cartographic-map-backdrop.tsx`, which
+ * meant the two halves of one rule sat in two files that could not see each
+ * other — and they drifted, exactly as split rules do. `/safety` was listed as
+ * a map SURFACE and was not listed as a map OWNER, while
+ * `safety-crash-map.tsx` had been building its own Mapbox instance all along.
+ * The result, measured in a real browser at 1600×900:
+ *
+ *   - TWO Mapbox instances on one screen — a 1600×900 backdrop behind the page
+ *     panel, and a 558×457 crash map inside it;
+ *   - the shell's layers panel (240×458) and legend (240×258) docked at x=1344,
+ *     both driving the BACKDROP, which is the map the planner is not reading;
+ *   - so every layer a planner switched on drew underneath an opaque panel, and
+ *     the legend explained symbols the crash map never painted.
+ *
+ * Controls that point at the wrong map are worse than absent controls: they
+ * report success and change nothing visible. Keeping ownership beside
+ * surface-hood makes "owns its map" and "shows the shell's map controls" one
+ * decision, taken in one place, and `MapSurfaceOnly` now reads both.
+ *
+ * A route here does NOT lose its map controls — it takes responsibility for
+ * mounting its own, against the map it actually draws. `/safety` does that in
+ * `safety-workspace.tsx` (background picker, workspace-layer panel, severity
+ * key); `/explore` does it in `explore-workspace-layers-panel.tsx`.
+ */
+export const MAP_OWNING_ROUTES = [
+  /** Corridor Analysis builds its map in `explore/_components/use-explore-map-instance`. */
+  "/explore",
+  /** Safety builds its map in `components/safety/safety-crash-map.tsx`. */
+  "/safety",
+] as const;
+
+/**
+ * True when this route draws its own map and the shell backdrop must stand down.
+ *
+ * Prefix-matched on the same rule as `isMapSurfaceRoute`, so a detail route
+ * under a map-owning index owns its map too — and so `/explorer` cannot match
+ * `/explore`.
+ */
+export function routeOwnsMap(pathname: string | null | undefined): boolean {
+  if (!pathname) return false;
+  return MAP_OWNING_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+}
+
+/**
+ * True when the SHELL's map controls belong on this route.
+ *
+ * Both halves, and the conjunction is the point: the shell's dock may only
+ * appear where the shell's map is both drawn and worked on. `/safety` satisfies
+ * the first test and fails the second, which is precisely the case that shipped
+ * a layers panel driving an invisible map.
+ */
+export function showsSharedMapControls(pathname: string | null | undefined): boolean {
+  return isMapSurfaceRoute(pathname) && !routeOwnsMap(pathname);
+}
 
 /*
   `/explore` WAS LISTED HERE AND HAD TO COME OFF (2026-08-12).

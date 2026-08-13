@@ -10,7 +10,12 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { MapSurfaceOnly } from "@/components/cartographic/map-surface-only";
-import { isMapSurfaceRoute, MAP_SURFACE_ROUTES } from "@/lib/navigation/map-surfaces";
+import {
+  isMapSurfaceRoute,
+  MAP_SURFACE_ROUTES,
+  routeOwnsMap,
+  showsSharedMapControls,
+} from "@/lib/navigation/map-surfaces";
 import { stripSourceComments } from "./helpers/source-text";
 
 /**
@@ -41,8 +46,8 @@ describe("map controls appear only on map surfaces", () => {
     expect(screen.queryByText("layers panel")).not.toBeInTheDocument();
   });
 
-  it("renders on a map surface", () => {
-    pathnameMock.mockReturnValue("/safety");
+  it("renders on a map surface that reads the SHELL's map", () => {
+    pathnameMock.mockReturnValue("/aerial");
 
     render(
       <MapSurfaceOnly>
@@ -51,6 +56,63 @@ describe("map controls appear only on map surfaces", () => {
     );
 
     expect(screen.getByText("layers panel")).toBeInTheDocument();
+  });
+
+  /**
+   * ═══ /safety USED TO BE THE EXAMPLE IN THE TEST ABOVE (until 2026-08-13) ═══
+   *
+   * It is still a map surface — a planner opens it to read where the collisions
+   * are — and it also builds its OWN `mapboxgl.Map` in
+   * `components/safety/safety-crash-map.tsx`. Being a map surface was the whole
+   * test, so the shell's dock mounted, and measured in a real browser at
+   * 1600×900 that produced:
+   *
+   *   - two Mapbox instances on one screen: a 1600×900 backdrop at (0,0) behind
+   *     the opaque page panel, and the 558×457 crash map at (305,350) in front;
+   *   - a layers panel 240×458 and a legend 240×258 docked at x=1344, both
+   *     driving the BACKDROP — the map the planner cannot see;
+   *   - at 390×844 it was worse: the panel sat at x=134, over the phone screen,
+   *     still controlling the hidden map.
+   *
+   * A control that reports success and changes nothing visible is worse than a
+   * missing control. Safety mounts its own background picker, workspace-layer
+   * panel and severity key against the map it actually draws.
+   *
+   * Do not re-add `/safety` to make a layers panel appear here: that panel
+   * cannot reach Safety's map, and the one that can is already in its sidebar.
+   */
+  it("renders nothing on a map surface that owns its own map", () => {
+    for (const route of ["/safety", "/explore"]) {
+      pathnameMock.mockReturnValue(route);
+      const { unmount } = render(
+        <MapSurfaceOnly>
+          <div>layers panel</div>
+        </MapSurfaceOnly>
+      );
+      expect(
+        screen.queryByText("layers panel"),
+        `The shell's map dock mounted on ${route}, which draws its own Mapbox instance — so every ` +
+          `control in it would drive a map the planner cannot see.`
+      ).not.toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it("keeps ownership and surface-hood as one decision", () => {
+    // `/safety` is BOTH: the map is read there, and the route draws it itself.
+    // The pair is what `showsSharedMapControls` exists to resolve, and asserting
+    // both halves is what stops a future edit "fixing" this by quietly dropping
+    // `/safety` from MAP_SURFACE_ROUTES — which would send the Data Hub's "Show
+    // on the map" link (MAP_SURFACE_ROUTES[0]) somewhere else.
+    expect(isMapSurfaceRoute("/safety")).toBe(true);
+    expect(routeOwnsMap("/safety")).toBe(true);
+    expect(showsSharedMapControls("/safety")).toBe(false);
+    expect(MAP_SURFACE_ROUTES[0]).toBe("/safety");
+
+    // Prefix leakage, on the ownership list too.
+    expect(routeOwnsMap("/safety-plans")).toBe(false);
+    expect(routeOwnsMap("/safety/corridors")).toBe(true);
+    expect(routeOwnsMap(null)).toBe(false);
   });
 
   /**

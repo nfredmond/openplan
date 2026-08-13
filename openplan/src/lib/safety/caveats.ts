@@ -131,3 +131,59 @@ export const SAFETY_SCREENING_NARRATIVE_CAVEAT =
 
 export const SAFETY_METHOD_CITATION =
   "California Highway Patrol, California Crash Reporting System (CCRS), data.ca.gov (public domain).";
+
+/**
+ * Why a selection that is not a whole county counts only the mapped crashes.
+ *
+ * ═══ WHAT THIS REPLACED, AND WHY IT WAS A REAL DEFECT ═══
+ *
+ * The sidebar said, to every workspace in the product regardless of where it
+ * was:
+ *
+ *   "Pick a California county to also include reported crashes the source
+ *    agency never geolocated."
+ *
+ * A planner in Columbus, Ohio was instructed to pick a California county. That
+ * is a hardcoded jurisdiction in UI copy and it breaks the first product
+ * non-negotiable in the way that matters most — not by limiting what OpenPlan
+ * can do, but by asserting to a reader that they are somewhere they are not.
+ *
+ * The CAPABILITY behind it genuinely is source-bound: only a source that
+ * publishes a county identifier can return the crashes it never geolocated,
+ * because an ungeocoded crash has no coordinates and can never satisfy a
+ * bounding-box predicate. The repo's rule for that case is settled — a
+ * geographic limit is disclosed, never silently applied, and never stated as
+ * though it were universal.
+ *
+ * ═══ THE MISTAKE THE FIRST DRAFT OF THIS FUNCTION MADE ═══
+ *
+ * It swapped the hardcoded jurisdiction for a hardcoded CAPABILITY: it named
+ * whichever source had answered and told the planner that source "can include
+ * those crashes ... for a study area that is one whole county it publishes".
+ * `safety-map-first-shell.test.tsx` rendered it against a FARS retrieval and
+ * the sentence came out asserting a county-filter capability FARS does not
+ * have. Replacing a false statement about WHERE the planner is with a false
+ * statement about what the SOURCE can do is not an improvement — it is the same
+ * defect wearing the other hat, and it would have shipped if the existing
+ * caveat suite had not rendered this branch.
+ *
+ * So the sentence now asserts only two things, both of which are true wherever
+ * it renders: these counts cover the mapped area, and OpenPlan needs a source
+ * that publishes a county identifier before it can do better. It promises no
+ * particular source anything, and it names no jurisdiction at any point — the
+ * source's own label supplies whatever geography belongs in the sentence, and
+ * that label comes from the adapter descriptor.
+ *
+ * `sourceLabel` is null before any source has answered, in which case the
+ * crashes are attributed to "the source agency" rather than to a name that
+ * would have to be invented.
+ */
+export function describeUngeocodedCountyOption(sourceLabel: string | null): string {
+  const reporter = sourceLabel ?? "the source agency";
+  return (
+    `Counts for this selection come from the mapped area only, so crashes ${reporter} reported but ` +
+    "never geolocated are not among them. OpenPlan can add those unmapped crashes back only where " +
+    "the covering source publishes a county identifier it can filter on, and this selection is not " +
+    "one of those."
+  );
+}
