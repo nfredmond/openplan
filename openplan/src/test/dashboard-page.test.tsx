@@ -35,6 +35,18 @@ const workspacesSelectMock = vi.fn((columns: string) => {
   return { eq: () => ({ maybeSingle: async () => homeGeographyRowMock() }) };
 });
 
+// A chainable stand-in for the capped chart reads: every filter returns itself
+// and the chain resolves to no rows and no error.
+const chartReadChainMock = () => {
+  const chain: Record<string, unknown> = {};
+  for (const method of ["eq", "gte", "order", "limit"]) {
+    chain[method] = () => chain;
+  }
+  chain.then = <T,>(resolve: (value: { data: unknown[]; error: null }) => T) =>
+    Promise.resolve({ data: [], error: null }).then(resolve);
+  return chain;
+};
+
 const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return { select: runsSelectMock };
@@ -54,6 +66,18 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "assistant_action_executions") {
     return { select: actionSelectMock };
+  }
+
+  // The three lanes the Insights figures read (loadDashboardChartRows). They
+  // answer empty-and-successful here, which is what a fresh workspace looks
+  // like; the figures' own refusals are proven in dashboard-chart-*.test.ts
+  // against a fake that records every filter.
+  if (
+    table === "engagement_items" ||
+    table === "funding_awards" ||
+    table === "billing_invoice_records"
+  ) {
+    return { select: () => chartReadChainMock() };
   }
 
   throw new Error(`Unexpected table: ${table}`);

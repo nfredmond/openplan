@@ -32,6 +32,11 @@ import {
   reportsGenerated,
   runsPerMonth,
 } from "@/lib/dashboard/insights";
+import { awardDrawdown, commentsReceivedOverTime, COMMENT_WINDOW_WEEKS } from "@/lib/dashboard/chart-series";
+import {
+  loadDashboardChartRows,
+  type DashboardChartSupabaseLike,
+} from "@/lib/dashboard/chart-reads";
 import {
   buildWorkspaceOperationsSummaryFromSourceRows,
   loadWorkspaceOperationsSummaryForWorkspace,
@@ -124,7 +129,14 @@ export default async function DashboardPage({
   // calls enforces the same rule server-side.
   const canManageWorkspace = workspaceRole === "owner" || workspaceRole === "admin";
 
-  const [runsResult, operationsSummary, homeGeographyResult, actionActivity] = workspaceId
+  // One clock for the whole render. The comment figure's read window and the
+  // series that buckets it must not disagree about where "twelve weeks ago"
+  // starts, or the first bucket lands half-empty and reads as a quiet week.
+  const now = new Date();
+  const commentWindowStart = new Date(now);
+  commentWindowStart.setUTCDate(commentWindowStart.getUTCDate() - COMMENT_WINDOW_WEEKS * 7);
+
+  const [runsResult, operationsSummary, homeGeographyResult, actionActivity, chartRows] = workspaceId
     ? await Promise.all([
         supabase
           .from("runs")
@@ -163,6 +175,16 @@ export default async function DashboardPage({
           supabase as unknown as RecentActionActivitySupabaseLike,
           workspaceId
         ),
+        // The three lanes the Insights figures need that the overview does not
+        // already have: public comments, funding awards, invoice records. Read
+        // in the SAME batch rather than after it — a chart the person may have
+        // switched off must not cost a serial round trip, and every one of these
+        // hands back a read OUTCOME so a failed query cannot render as a zero.
+        loadDashboardChartRows(
+          supabase as unknown as DashboardChartSupabaseLike,
+          workspaceId,
+          commentWindowStart
+        ),
       ])
     : [
         { data: [] },
@@ -175,6 +197,13 @@ export default async function DashboardPage({
         }),
         { data: null },
         { executions: [], error: null },
+        // No workspace id means no read happened at all. Empty-and-successful is
+        // the honest description of that: there is nothing to disbelieve.
+        {
+          comments: { rows: [], failed: false, pending: false, truncated: false },
+          awards: { rows: [], failed: false, pending: false, truncated: false },
+          invoices: { rows: [], failed: false, pending: false, truncated: false },
+        },
       ];
 
   // Whether this workspace's AI assistant can run at all: an Anthropic key the
@@ -407,10 +436,16 @@ export default async function DashboardPage({
   const insightsView = (
     <>
       <DashboardInsights
+        userId={user.id}
+        workspaceId={workspaceId}
         tiles={insightsTiles}
-        runsPerMonth={runsPerMonth(runsData)}
-        recentScores={recentOverallScores(runsData)}
-        lanePressure={lanePressure(insightLanes)}
+        series={{
+          "runs-per-month": runsPerMonth(runsData),
+          "comments-received": commentsReceivedOverTime(chartRows.comments, now),
+          "composite-scores": recentOverallScores(runsData),
+          "award-drawdown": awardDrawdown(chartRows.awards, chartRows.invoices),
+          "open-work": lanePressure(insightLanes),
+        }}
       />
       {/* The recent-actions audit feed, absorbed from the retired Command
           Center page. It reads the same workspace audit record the Planner

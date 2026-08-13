@@ -20,14 +20,49 @@ export type InsightPoint = {
   value: number;
   /** Long-form label for the tooltip and the table view. */
   detail?: string;
+  /**
+   * The whole this point is a part of — only the meter form reads it (money
+   * authorised, against which money drawn is the fill). Absent everywhere else.
+   */
+  reference?: number;
+  /** Rendered instead of the raw number in the table, when the unit needs one (money). */
+  formattedValue?: string;
 };
+
+/**
+ * WHY A KIND AND NOT JUST A SENTENCE.
+ *
+ * "There is nothing to plot yet" and "we asked the database and it would not
+ * answer" are opposite facts, and a reader who cannot tell them apart will
+ * treat the second as the first — which is exactly how a broken read becomes a
+ * confident zero. The sentence differs, and so does the way the figure is
+ * drawn: `unreadable` is a warning, everything else is information.
+ *
+ *  - `empty`        — the read succeeded and there are no rows yet.
+ *  - `insufficient` — there are rows, but not enough to make this shape honest
+ *                     (two points is not a trend).
+ *  - `unreadable`   — the read failed. Nothing here is a measurement.
+ *  - `pending`      — the read failed because this deployment is behind a
+ *                     migration. A named operator move fixes it.
+ *  - `truncated`    — more rows exist than were read, so any total drawn from
+ *                     them would be an undercount presented as a count.
+ */
+export type InsightBlockedKind = "empty" | "insufficient" | "unreadable" | "pending" | "truncated";
 
 export type InsightSeries = {
   points: InsightPoint[];
   /** Null when the series can be drawn. Otherwise the sentence to show instead. */
   blockedReason: string | null;
+  /** Null exactly when `blockedReason` is null. */
+  blockedKind: InsightBlockedKind | null;
   /** Largest value, for axis scaling. Zero when blocked. */
   max: number;
+  /**
+   * A caveat that travels WITH a drawable series — rows the figure could not
+   * include and why. It is not a blocking reason: the figure is honest, but
+   * incomplete in a way the reader has to know about.
+   */
+  footnote?: string;
 };
 
 export type DashboardRunRow = {
@@ -46,15 +81,20 @@ export type DashboardLaneCount = {
 /** A trend needs at least two observations. One point is a reading, not a trend. */
 const MIN_TREND_POINTS = 2;
 
-function blocked(reason: string): InsightSeries {
-  return { points: [], blockedReason: reason, max: 0 };
+export function blocked(reason: string, kind: InsightBlockedKind): InsightSeries {
+  return { points: [], blockedReason: reason, blockedKind: kind, max: 0 };
 }
 
-function series(points: InsightPoint[]): InsightSeries {
+export function series(points: InsightPoint[], footnote?: string): InsightSeries {
   return {
     points,
     blockedReason: null,
-    max: points.reduce((highest, point) => Math.max(highest, point.value), 0),
+    blockedKind: null,
+    max: points.reduce(
+      (highest, point) => Math.max(highest, point.value, point.reference ?? 0),
+      0
+    ),
+    ...(footnote ? { footnote } : {}),
   };
 }
 
@@ -91,7 +131,7 @@ export function runsPerMonth(runs: readonly DashboardRunRow[]): InsightSeries {
     .filter((key): key is string => key !== null);
 
   if (dated.length === 0) {
-    return blocked("No analysis runs are recorded yet, so there is no history to plot.");
+    return blocked("No analysis runs are recorded yet, so there is no history to plot.", "empty");
   }
 
   const counts = new Map<string, number>();
@@ -121,7 +161,8 @@ export function runsPerMonth(runs: readonly DashboardRunRow[]): InsightSeries {
     const only = filled[0];
     return blocked(
       `All ${only.value} run${only.value === 1 ? "" : "s"} so far fall in ${only.label}. ` +
-        "A trend needs runs in at least two months."
+        "A trend needs runs in at least two months.",
+      "insufficient"
     );
   }
 
@@ -150,7 +191,8 @@ export function recentOverallScores(runs: readonly DashboardRunRow[], limit = 12
 
   if (scored.length === 0) {
     return blocked(
-      "No run has recorded a composite score yet. Scores appear once an analysis run completes."
+      "No run has recorded a composite score yet. Scores appear once an analysis run completes.",
+      "empty"
     );
   }
 
@@ -167,7 +209,7 @@ export function recentOverallScores(runs: readonly DashboardRunRow[], limit = 12
  */
 export function lanePressure(lanes: readonly DashboardLaneCount[]): InsightSeries {
   if (lanes.length === 0) {
-    return blocked("No workspace lanes reported a queue, so there is nothing to compare.");
+    return blocked("No workspace lanes reported a queue, so there is nothing to compare.", "empty");
   }
 
   const points = lanes.map((lane) => ({
@@ -178,7 +220,8 @@ export function lanePressure(lanes: readonly DashboardLaneCount[]): InsightSerie
 
   if (points.every((point) => point.value === 0)) {
     return blocked(
-      "Every lane is clear — nothing is queued in RTP, grants, engagement, modeling or aerial right now."
+      "Every lane is clear — nothing is queued in RTP, grants, engagement, modeling or aerial right now.",
+      "empty"
     );
   }
 

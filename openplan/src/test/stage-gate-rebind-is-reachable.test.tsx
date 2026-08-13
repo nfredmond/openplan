@@ -94,6 +94,19 @@ const fromMock = vi.fn((table: string) => {
       }),
     };
   }
+  if (
+    table === "engagement_items" ||
+    table === "funding_awards" ||
+    table === "billing_invoice_records"
+  ) {
+    // The Insights figures' three lanes (loadDashboardChartRows). Empty is fine
+    // — this suite is about the binding; the figures have their own tests.
+    const chain: Record<string, unknown> = {};
+    for (const method of ["eq", "gte", "order", "limit"]) chain[method] = () => chain;
+    chain.then = <T,>(resolve: (value: { data: unknown[]; error: null }) => T) =>
+      Promise.resolve({ data: [], error: null }).then(resolve);
+    return { select: () => chain };
+  }
   throw new Error(`Unexpected table: ${table}`);
 });
 
