@@ -627,6 +627,15 @@ export default async function ProgramsPage({
             </p>
           </div>
 
+          {/* The module's primary action, in the header rather than wherever the
+              section order puts the form. The full creator stays where it is —
+              this jumps to it. */}
+          <div className="module-intro-actions">
+            <a className="module-intro-action" href="#create-program">
+              New program
+            </a>
+          </div>
+
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Programs</p>
@@ -694,7 +703,7 @@ export default async function ProgramsPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <div className="space-y-6">
+        <div id="create-program" className="space-y-6">
           <ProgramCreator projects={projectsData ?? []} />
           <WorkspaceCommandBoard
             summary={operationsSummary}

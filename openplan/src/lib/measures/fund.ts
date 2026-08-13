@@ -238,6 +238,24 @@ export const MEASURE_OFF_THE_TOP_COLUMNS =
   "id, measure_fund_id, period_id, off_the_top_id, label, amount, uncapped_amount, " +
   "cap_amount, cap_basis, cap_status, allocation_rule_id, stated_by, stated_on";
 
+/**
+ * What a period kept back rather than dividing (20260812000019).
+ *
+ * `basis_kind`, `basis_category_label`, `basis_amount` and `percent` are in the
+ * projection for the reason the columns beside them are: without them a surface
+ * can print an amount but not what it was held out of or at what rate, and the
+ * whole point of the line is that a committee member can check it. `amount`
+ * alone is the figure; the rest is what makes it checkable.
+ *
+ * `basis_category_id` is selected too even though no surface prints it — it is
+ * what lets a reader match a reserve to the purpose row it came out of, and a
+ * column that is not selected cannot be used later without a second projection.
+ */
+export const MEASURE_RESERVE_COLUMNS =
+  "id, measure_fund_id, period_id, reserve_id, label, basis_kind, basis_category_id, " +
+  "basis_category_label, basis_amount, percent, amount, computed_amount, " +
+  "allocation_rule_id, stated_by, stated_on";
+
 /* ------------------------------------------------------------------ *
  * Small shared predicates
  * ------------------------------------------------------------------ */

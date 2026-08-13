@@ -72,13 +72,16 @@ import {
  * year's. That difference is stated in a sentence rather than expressed as a
  * second implementation.
  *
- * KNOWN AND DELIBERATE — RESERVES ARE NOT STORED PER PERIOD. An ordinance that
- * holds an amount back in reserve therefore cannot close this subtraction, and
- * the shared builder's settlement sentence names a held-back reserve as a
- * possible cause of the difference. That sentence is inherited here unchanged.
- * A statement that printed the shortfall without it would tell a committee that
- * money is unaccounted for when the product simply does not yet record where it
- * went, and that is the more damaging of the two errors on a filed document.
+ * AND THE SUBTRACTION CLOSED, later the same day. The paragraph that stood here
+ * said reserves were not stored per period, so an ordinance holding an amount
+ * back could not close this document's arithmetic and the shared builder's
+ * settlement sentence had to name a held-back reserve as a possible cause of a
+ * difference it could not show. `measure_period_reserve` (20260812000019)
+ * records it. The chain is four figures rather than three, the reserves get a
+ * table of their own beside the clause table, and a fund that keeps money back
+ * now reconciles on a filed document. The sentence is still inherited unchanged
+ * from the shared builder rather than rewritten here — one wording of the
+ * arithmetic, in one place.
  *
  * ============================================================================
  * WHAT IT IS NOT
@@ -286,16 +289,20 @@ function figureBlock(heading: string, figure: OversightFigure): string {
 }
 
 /**
- * WHAT THE ORDINANCE TOOK OUT BEFORE THE REST WAS DIVIDED.
+ * WHAT THE ORDINANCE TOOK OUT AND KEPT BACK BEFORE THE REST WAS DIVIDED.
  *
  * The page's section, in the page's words, in the page's order: the scope
- * sentence, the explainer, the three figures in the order the arithmetic runs,
- * the clause table, and the sentence that says whether the ordinance's headings
- * add back up to what was left.
+ * sentence, the explainer, the four figures in the order the arithmetic runs,
+ * the clause table, the reserve table, and the sentence that says whether the
+ * ordinance's headings add back up to what was left for them.
  *
- * The chain is three figures rather than a total and a footnote for the reason
- * the page gives: the middle one is the amount that was missing from this
- * document, and a reader has to be able to see it as a number of its own.
+ * The chain is four figures rather than a total and footnotes for the reason
+ * the page gives: the two in the middle are the amounts that were missing from
+ * this document, and a reader has to be able to see each as a number of its
+ * own. TWO TABLES rather than one with a kind column, for the reason the page
+ * gives as well: money taken out of the fund and money kept inside it are
+ * different facts, and the reserve table carries a column the clause table has
+ * no use for — which purpose the money was kept out of.
  */
 function divisionSection(data: MeasureAnnualStatementData): string {
   const head = `
@@ -313,6 +320,7 @@ function divisionSection(data: MeasureAnnualStatementData): string {
   const chain = [
     [MEASURE_OVERSIGHT_COPY.divisionReceivedHeading, data.division.received],
     [MEASURE_OVERSIGHT_COPY.divisionTakenOutHeading, data.division.takenOut],
+    [MEASURE_OVERSIGHT_COPY.divisionHeldBackHeading, data.division.heldBack],
     [MEASURE_OVERSIGHT_COPY.divisionLeftHeading, data.division.leftToDivide],
   ] as const;
 
@@ -337,11 +345,36 @@ function divisionSection(data: MeasureAnnualStatementData): string {
           </tbody>
         </table>`;
 
+  const reserves = data.division.noReservesSentence
+    ? `<p class="empty">${esc(data.division.noReservesSentence)}</p>`
+    : `<table>
+          <thead>
+            <tr><th>${esc(MEASURE_OVERSIGHT_COPY.divisionReserveClauseColumn)}</th><th class="num">${esc(
+              MEASURE_OVERSIGHT_COPY.divisionReserveAmountColumn
+            )}</th><th>${esc(MEASURE_OVERSIGHT_COPY.divisionReserveSourceColumn)}</th><th>${esc(
+              MEASURE_OVERSIGHT_COPY.divisionNoteColumn
+            )}</th></tr>
+          </thead>
+          <tbody>${data.division.reserves
+            .map(
+              (reserve) => `
+            <tr>
+              <td>${esc(reserve.label)}</td>
+              <td class="num">${esc(reserve.amountText)}</td>
+              <td>${esc(reserve.heldOutOfText)}</td>
+              <td>${reserve.noteSentence ? esc(reserve.noteSentence) : "—"}</td>
+            </tr>`
+            )
+            .join("")}
+          </tbody>
+        </table>`;
+
   return `
       <section>${head}
         ${chain.map(([heading, figure]) => `<div class="chain-figure">${figureBody(heading, figure)}
         </div>`).join("")}
         ${clauses}
+        ${reserves}
         <p class="note">${esc(data.division.settlementSentence)}</p>
       </section>`;
 }

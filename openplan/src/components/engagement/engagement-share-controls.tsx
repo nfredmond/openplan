@@ -94,6 +94,20 @@ export function EngagementShareControls({
   const embedSnippet = embedUrl
     ? `<iframe src="${escapeHtmlAttribute(embedUrl)}" width="100%" height="720" style="border:0" loading="lazy" title="${escapeHtmlAttribute(campaign.title)}"></iframe>`
     : null;
+  /**
+   * THE SAME CONSULTATION AS DATA, for an agency that wants to render it on its
+   * own site rather than embed the portal. `GET /api/engage/<token>` answers the
+   * campaign, its categories and its approved comments as JSON to anyone holding
+   * the share token — no sign-in, no key. It is what the route was written for
+   * and nothing in the product had ever told a planner it exists, so the only
+   * people who could use it were the ones who read the source.
+   *
+   * Shown only when the portal is actually reachable, on the same condition as
+   * the embed snippet: a token that answers nothing yet is a link that teaches
+   * the wrong lesson.
+   */
+  const publicFeedUrl =
+    portalState.isPubliclyReachable && shareToken ? `${browserOrigin}/api/engage/${shareToken}` : null;
 
   const handleCopy = useCallback(async () => {
     if (shareUrl) {
@@ -346,6 +360,21 @@ export function EngagementShareControls({
             <pre className="mt-2 overflow-x-auto rounded-lg border border-border/60 bg-background/80 px-3 py-2 font-mono text-xs text-foreground">
               {embedSnippet}
             </pre>
+            {publicFeedUrl ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Building your own page instead? The same consultation is readable as JSON — campaign,
+                topics, and approved comments — at{" "}
+                <a
+                  href={publicFeedUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-foreground underline underline-offset-2"
+                >
+                  {publicFeedUrl}
+                </a>
+                . Anyone with the link can read it, so treat it as public.
+              </p>
+            ) : null}
           </div>
         ) : null}
 

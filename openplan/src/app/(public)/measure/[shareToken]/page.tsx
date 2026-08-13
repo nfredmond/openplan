@@ -8,6 +8,7 @@ import {
   MEASURE_OFF_THE_TOP_COLUMNS,
   MEASURE_RECIPIENT_COLUMNS,
   MEASURE_RECIPIENT_KINDS,
+  MEASURE_RESERVE_COLUMNS,
   resolveAllocationRuleInForce,
 } from "@/lib/measures/fund";
 import {
@@ -21,6 +22,7 @@ import {
   buildMeasureReceiptLedger,
   toMeasureFundPeriodRead,
   toMeasureOffTheTopTakeRead,
+  toMeasureReserveRead,
 } from "@/lib/measures/receipts";
 import { parseMeasureAllocationRule, type MeasureAllocationRule } from "@/lib/measures/allocation";
 import {
@@ -53,11 +55,16 @@ import {
  *    set aside from what came in and expects the difference to be explained.
  *    Until 2026-08-12 the amount the ordinance takes before the categories are
  *    cut appeared NOWHERE on this page, so the subtraction found money that had
- *    vanished with nothing to say where it went. "What was taken out before the
- *    rest was divided" is that amount, clause by clause, and the section ends
- *    with the difference between what was left to divide and what the headings
- *    below add up to — stated as a figure whenever it is not zero, never as a
- *    verdict that the page balances.
+ *    vanished with nothing to say where it went. Later the same day the other
+ *    half closed: an ordinance can also KEEP an amount back — out of the whole
+ *    payment or out of one purpose — and that was computed by the allocator and
+ *    stored nowhere, so for any fund holding a reserve the subtraction still
+ *    did not come out and the page had to name a cause it could not show.
+ *    "What was taken out and kept back before the rest was divided" is now both
+ *    amounts, clause by clause, and the section ends with the difference
+ *    between what was left for the purposes and what the headings below add up
+ *    to — stated as a figure whenever it is not zero, never as a verdict that
+ *    the page balances.
  *
  * 1. PRINT A TOTAL WITHOUT SAYING WHAT IT COUNTED. Structural rather than
  *    remembered: every headline number arrives as an `OversightFigure`, whose
@@ -259,6 +266,7 @@ export default async function PublicMeasureOversightPage({
     rulesResult,
     allocationsResult,
     takesResult,
+    reservesResult,
     claimsResult,
     moeResult,
   ] = await Promise.all([
@@ -276,6 +284,11 @@ export default async function PublicMeasureOversightPage({
       // nothing about the amount in between, so the obvious subtraction did not
       // come out — see `MEASURE_OVERSIGHT_COPY.divisionExplainer`.
       supabase.from("measure_period_off_the_top").select(MEASURE_OFF_THE_TOP_COLUMNS).eq("measure_fund_id", fund.id),
+      // WHAT THE ORDINANCE KEPT BACK RATHER THAN DIVIDING. The other half of
+      // the same gap: with only the takes on the page, every fund that holds a
+      // reserve showed a difference between what was left and what the purposes
+      // were given, and the page had to say it could not account for it.
+      supabase.from("measure_period_reserve").select(MEASURE_RESERVE_COLUMNS).eq("measure_fund_id", fund.id),
       supabase.from("measure_claims").select(MEASURE_CLAIM_COLUMNS).eq("measure_fund_id", fund.id),
       supabase.from("measure_moe_records").select(MEASURE_MOE_COLUMNS).eq("measure_fund_id", fund.id),
     ]);
@@ -289,6 +302,7 @@ export default async function PublicMeasureOversightPage({
   reads.check("what the ordinance says", rulesResult);
   reads.check("what has been set aside", allocationsResult);
   reads.check("what the ordinance took out first", takesResult);
+  reads.check("what the ordinance kept back in reserve", reservesResult);
   reads.check("the claims made against it", claimsResult);
   reads.check("the local-spending commitments", moeResult);
 
@@ -383,6 +397,9 @@ export default async function PublicMeasureOversightPage({
      */
     offTheTopRead: toMeasureOffTheTopTakeRead(
       takesResult as unknown as Parameters<typeof toMeasureOffTheTopTakeRead>[0]
+    ),
+    reserveRead: toMeasureReserveRead(
+      reservesResult as unknown as Parameters<typeof toMeasureReserveRead>[0]
     ),
     allocations: (allocationsResult.data as never) ?? [],
     // Null: this page spans the fund's whole history. The annual statement,
@@ -502,11 +519,11 @@ export default async function PublicMeasureOversightPage({
             <p className="mt-3 text-sm text-muted-foreground">{model.division.value.sentence}</p>
           ) : (
             <>
-              {/* THE CHAIN, in the order the arithmetic runs. Three figures
-                  rather than a total and a footnote: the middle one is the
-                  amount that was missing from this page, and a reader has to be
-                  able to see it as a number of its own. */}
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {/* THE CHAIN, in the order the arithmetic runs. Four figures
+                  rather than a total and a footnote: the two in the middle are
+                  the amounts that were missing from this page, and a reader has
+                  to be able to see each as a number of its own. */}
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Figure
                   heading={MEASURE_OVERSIGHT_COPY.divisionReceivedHeading}
                   figure={model.division.value.received}
@@ -514,6 +531,10 @@ export default async function PublicMeasureOversightPage({
                 <Figure
                   heading={MEASURE_OVERSIGHT_COPY.divisionTakenOutHeading}
                   figure={model.division.value.takenOut}
+                />
+                <Figure
+                  heading={MEASURE_OVERSIGHT_COPY.divisionHeldBackHeading}
+                  figure={model.division.value.heldBack}
                 />
                 <Figure
                   heading={MEASURE_OVERSIGHT_COPY.divisionLeftHeading}
@@ -541,6 +562,45 @@ export default async function PublicMeasureOversightPage({
                           <td className="py-2 pr-3">{clause.label}</td>
                           <td className="py-2 pr-3 text-right tabular-nums">{clause.amountText}</td>
                           <td className="py-2 text-muted-foreground">{clause.noteSentence ?? "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* WHAT WAS KEPT BACK, its own table rather than more rows in the
+                  one above. Money taken out of the fund and money kept inside
+                  it are different facts, and a shared table with a "kind"
+                  column would make the difference something a reader has to
+                  notice. The third column is what a purpose-level reserve needs
+                  and a take never has: which purpose it came out of. */}
+              {model.division.value.noReservesSentence ? (
+                <p className="mt-4 text-sm text-muted-foreground">{model.division.value.noReservesSentence}</p>
+              ) : (
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full min-w-[34rem] text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                        <th className="py-2 pr-3 font-medium">
+                          {MEASURE_OVERSIGHT_COPY.divisionReserveClauseColumn}
+                        </th>
+                        <th className="py-2 pr-3 text-right font-medium">
+                          {MEASURE_OVERSIGHT_COPY.divisionReserveAmountColumn}
+                        </th>
+                        <th className="py-2 pr-3 font-medium">
+                          {MEASURE_OVERSIGHT_COPY.divisionReserveSourceColumn}
+                        </th>
+                        <th className="py-2 font-medium">{MEASURE_OVERSIGHT_COPY.divisionNoteColumn}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {model.division.value.reserves.map((reserve) => (
+                        <tr key={reserve.reserveId} className="border-b border-border/60">
+                          <td className="py-2 pr-3">{reserve.label}</td>
+                          <td className="py-2 pr-3 text-right tabular-nums">{reserve.amountText}</td>
+                          <td className="py-2 pr-3 text-muted-foreground">{reserve.heldOutOfText}</td>
+                          <td className="py-2 text-muted-foreground">{reserve.noteSentence ?? "—"}</td>
                         </tr>
                       ))}
                     </tbody>

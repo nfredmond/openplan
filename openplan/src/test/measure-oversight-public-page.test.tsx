@@ -212,8 +212,25 @@ function seed() {
         stated_on: "2025-07-05",
         rule: {
           version: 1,
-          offTheTop: [{ id: "admin", label: "Administration", percent: 1 }],
-          reserves: [],
+          // The cap is DECLARED here as well as recorded on the take rows. It
+          // was only on the rows until 2026-08-12, so the ordinance this page
+          // renders and the figures it renders disagreed about whether a limit
+          // existed at all.
+          offTheTop: [
+            { id: "admin", label: "Administration", percent: 1, capAmount: 40000, capBasis: "per_period" },
+          ],
+          /*
+           * ONE RESERVE OF EACH KIND, and both are load-bearing. A 'gross'
+           * reserve reduces what every purpose gets; a 'category:' reserve
+           * reduces exactly one. A fixture with only the first cannot tell a
+           * page that attributes a purpose-level reserve correctly from one
+           * that lumps it in with the pool, and the difference is which
+           * heading below a resident is told lost the money.
+           */
+          reserves: [
+            { id: "rainy_day", label: "Rainy-day fund", basis: "gross", percent: 2 },
+            { id: "active_hold", label: "Trail maintenance fund", basis: "category:active", percent: 10 },
+          ],
           categories: [
             { id: "local_streets", label: "Local streets and roads", percentOfAllocable: 40, distribution: { kind: "pooled" } },
             { id: "transit", label: "Transit service", percentOfAllocable: 35, distribution: { kind: "pooled" } },
@@ -287,41 +304,86 @@ function figureAmount(heading: string): number {
 /**
  * ONE ORDINANCE APPLIED TO TWO QUARTERS, hand-derived to the cent.
  *
- * 1% off the top for administration, capped at 40,000 in any one period, then
- * 40/35/20/5 over what is left. Everything below was worked out on paper:
+ * 1% off the top for administration, capped at 40,000 in any one period; 2% of
+ * everything that came in kept as a rainy-day fund; 40/35/20/5 over what is
+ * left; then 10% of the walking-and-biking share kept for trail maintenance.
+ * EVERY FIGURE BELOW WAS WORKED OUT ON PAPER BEFORE THIS FIXTURE EXISTED —
+ * half-up at the cent throughout.
  *
- *   FY25 Q4  received 2,000,000.00   1% = 20,000.00, under the 40,000 limit
- *            left to divide 1,980,000.00
- *            -> 792,000.00 / 693,000.00 / 396,000.00 / 99,000.00
+ *   FY25 Q4  received                     2,000,000.00
+ *            1% off the top                  20,000.00   under the 40,000 limit
+ *            rainy-day, 2% of gross          40,000.00
+ *            pool to divide               1,940,000.00
+ *            40/35/20/5                     776,000.00 / 679,000.00
+ *                                           388,000.00 /  97,000.00
+ *            trail fund, 10% of active        9,700.00
+ *            active after that               87,300.00
  *
- *   FY26 Q1  received 4,812,340.17   1% = 48,123.40, LIMITED to 40,000.00
- *            left to divide 4,772,340.17
- *            -> 1,908,936.07 / 1,670,319.06 / 954,468.03 / 238,617.01
+ *   FY26 Q1  received                     4,812,340.17
+ *            1% = 48,123.40, LIMITED to      40,000.00
+ *            rainy-day, 2% of gross          96,246.80   (96,246.8034 half-up)
+ *            pool to divide               4,676,093.37
+ *            40/35/20/5                   1,870,437.35   (…348 half-up)
+ *                                         1,636,632.68   (…6795 half-up)
+ *                                           935,218.67   (…674 half-up)
+ *                                           233,804.67   (…6685 half-up)
+ *                                       Σ 4,676,093.37   exact — no residual
+ *            trail fund, 10% of active       23,380.47   (23,380.467 half-up)
+ *            active after that              210,424.20
  *
- *   received in these two   6,812,340.17
- *   taken out first            60,000.00
- *   left to divide          6,752,340.17
- *   the four headings       6,752,340.17   <- the page must close on this
+ *   received in these two    6,812,340.17
+ *   taken out first             60,000.00   (20,000.00 + 40,000.00)
+ *   kept back in reserve       169,327.27   (136,246.80 + 33,080.47)
+ *   left for the purposes    6,583,012.90
+ *   the four headings        6,583,012.90   <- the page must close on this
+ *                                           (2,646,437.35 + 2,315,632.68
+ *                                            + 1,323,218.67 + 297,724.20)
  *
- * The cap biting in one period and not the other is not decoration: it is the
- * only way the clause row's "the ordinance called for more than was taken"
- * sentence is exercised, and the aggregate (68,123.40 called for, 60,000.00
- * taken) cannot be produced by a fixture where both periods behave the same.
+ * THREE THINGS HERE ARE NOT DECORATION.
+ *
+ * The cap biting in one period and not the other is the only way the clause
+ * row's "the ordinance called for more than was taken" sentence is exercised,
+ * and the aggregate (68,123.40 called for, 60,000.00 taken) cannot be produced
+ * by a fixture where both periods behave the same.
+ *
+ * The RESERVES are what make the chain's third subtraction real: leave them out
+ * and `received − taken out` is 6,752,340.17 while the headings add to
+ * 6,583,012.90, which is exactly the shortfall this lane closed.
+ *
+ * And having ONE of each KIND is what distinguishes a page that attributes a
+ * purpose-level reserve to its purpose from one that treats every reserve as
+ * coming out of the whole payment. Only the second is wrong, and only the
+ * "kept back out of" column can tell them apart.
  */
 function seedTwoDividedQuarters() {
   tableData.measure_allocations = [
-    { id: "d1", measure_fund_id: FUND_ID, period_id: "p0", category_id: "local_streets", recipient_id: null, allocation_rule_id: "rule-1", amount: "792000.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
-    { id: "d2", measure_fund_id: FUND_ID, period_id: "p0", category_id: "transit", recipient_id: null, allocation_rule_id: "rule-1", amount: "693000.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
-    { id: "d3", measure_fund_id: FUND_ID, period_id: "p0", category_id: "regional", recipient_id: null, allocation_rule_id: "rule-1", amount: "396000.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
-    { id: "d4", measure_fund_id: FUND_ID, period_id: "p0", category_id: "active", recipient_id: null, allocation_rule_id: "rule-1", amount: "99000.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
-    { id: "d5", measure_fund_id: FUND_ID, period_id: "p1", category_id: "local_streets", recipient_id: null, allocation_rule_id: "rule-1", amount: "1908936.07", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
-    { id: "d6", measure_fund_id: FUND_ID, period_id: "p1", category_id: "transit", recipient_id: null, allocation_rule_id: "rule-1", amount: "1670319.06", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
-    { id: "d7", measure_fund_id: FUND_ID, period_id: "p1", category_id: "regional", recipient_id: null, allocation_rule_id: "rule-1", amount: "954468.03", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
-    { id: "d8", measure_fund_id: FUND_ID, period_id: "p1", category_id: "active", recipient_id: null, allocation_rule_id: "rule-1", amount: "238617.01", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d1", measure_fund_id: FUND_ID, period_id: "p0", category_id: "local_streets", recipient_id: null, allocation_rule_id: "rule-1", amount: "776000.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d2", measure_fund_id: FUND_ID, period_id: "p0", category_id: "transit", recipient_id: null, allocation_rule_id: "rule-1", amount: "679000.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d3", measure_fund_id: FUND_ID, period_id: "p0", category_id: "regional", recipient_id: null, allocation_rule_id: "rule-1", amount: "388000.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d4", measure_fund_id: FUND_ID, period_id: "p0", category_id: "active", recipient_id: null, allocation_rule_id: "rule-1", amount: "87300.00", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d5", measure_fund_id: FUND_ID, period_id: "p1", category_id: "local_streets", recipient_id: null, allocation_rule_id: "rule-1", amount: "1870437.35", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d6", measure_fund_id: FUND_ID, period_id: "p1", category_id: "transit", recipient_id: null, allocation_rule_id: "rule-1", amount: "1636632.68", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d7", measure_fund_id: FUND_ID, period_id: "p1", category_id: "regional", recipient_id: null, allocation_rule_id: "rule-1", amount: "935218.67", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
+    { id: "d8", measure_fund_id: FUND_ID, period_id: "p1", category_id: "active", recipient_id: null, allocation_rule_id: "rule-1", amount: "210424.20", computation_basis: "descriptor", rationale: null, stated_by: null, stated_on: null },
   ];
   tableData.measure_period_off_the_top = [
     { id: "t0", measure_fund_id: FUND_ID, period_id: "p0", off_the_top_id: "admin", label: "Administration", amount: "20000.00", uncapped_amount: "20000.00", cap_amount: "40000.00", cap_basis: "per_period", cap_status: "within_cap", allocation_rule_id: "rule-1", stated_by: "user-1", stated_on: "2025-07-20" },
     { id: "t1", measure_fund_id: FUND_ID, period_id: "p1", off_the_top_id: "admin", label: "Administration", amount: "40000.00", uncapped_amount: "48123.40", cap_amount: "40000.00", cap_basis: "per_period", cap_status: "capped", allocation_rule_id: "rule-1", stated_by: "user-1", stated_on: "2025-10-22" },
+  ];
+  tableData.measure_period_reserve = [
+    { id: "v0r", measure_fund_id: FUND_ID, period_id: "p0", reserve_id: "rainy_day", label: "Rainy-day fund", basis_kind: "gross", basis_category_id: null, basis_category_label: null, basis_amount: "2000000.00", percent: "2.0000", amount: "40000.00", computed_amount: "40000.00", allocation_rule_id: "rule-1", stated_by: "user-1", stated_on: "2025-07-20" },
+    { id: "v0a", measure_fund_id: FUND_ID, period_id: "p0", reserve_id: "active_hold", label: "Trail maintenance fund", basis_kind: "category", basis_category_id: "active", basis_category_label: "Walking and biking", basis_amount: "97000.00", percent: "10.0000", amount: "9700.00", computed_amount: "9700.00", allocation_rule_id: "rule-1", stated_by: "user-1", stated_on: "2025-07-20" },
+    { id: "v1r", measure_fund_id: FUND_ID, period_id: "p1", reserve_id: "rainy_day", label: "Rainy-day fund", basis_kind: "gross", basis_category_id: null, basis_category_label: null, basis_amount: "4812340.17", percent: "2.0000", amount: "96246.80", computed_amount: "96246.80", allocation_rule_id: "rule-1", stated_by: "user-1", stated_on: "2025-10-22" },
+    { id: "v1a", measure_fund_id: FUND_ID, period_id: "p1", reserve_id: "active_hold", label: "Trail maintenance fund", basis_kind: "category", basis_category_id: "active", basis_category_label: "Walking and biking", basis_amount: "233804.67", percent: "10.0000", amount: "23380.47", computed_amount: "23380.47", allocation_rule_id: "rule-1", stated_by: "user-1", stated_on: "2025-10-22" },
+    /*
+     * A RESERVE AGAINST A PERIOD NOBODY HAS DIVIDED UP. FY26 Q2 has money
+     * recorded and no allocations, so it is outside the scope these three
+     * figures span — and 250,000.00 folded into a 169,327.27 total would be
+     * subtracted from receipts it was never taken out of. The chain would then
+     * fail to close by that amount and the page would report a shortfall that
+     * exists only because a clerk has not pressed a button yet.
+     */
+    { id: "v2r", measure_fund_id: FUND_ID, period_id: "p2", reserve_id: "rainy_day", label: "Rainy-day fund", basis_kind: "gross", basis_category_id: null, basis_category_label: null, basis_amount: "5000000.00", percent: "2.0000", amount: "250000.00", computed_amount: "250000.00", allocation_rule_id: "rule-1", stated_by: "user-1", stated_on: "2026-01-25" },
   ];
 }
 
@@ -479,36 +541,70 @@ describe("the public measure oversight page", () => {
     expect(plain(clauseRow.textContent)).toContain("because the ordinance sets a limit on it");
   });
 
-  it("closes the arithmetic on the rendered page: received − taken out = left to divide = the headings", async () => {
+  it("shows what the ordinance kept back, out of what, and at what rate", async () => {
+    seedTwoDividedQuarters();
+    await renderPage();
+
+    // 40,000.00 + 96,246.80 across the two quarters, out of everything that
+    // came in — and the rate and base, so the line can be checked rather than
+    // merely believed.
+    const poolRow = screen.getByText("Rainy-day fund").closest("tr") as HTMLElement;
+    expect(plain(poolRow.textContent)).toContain("USD 136,246.80");
+    expect(plain(poolRow.textContent)).toContain("Everything that came in");
+    expect(plain(poolRow.textContent)).toContain("The ordinance sets this at 2% of USD 6,812,340.17.");
+    // NOT 386,246.80: FY26 Q2 has a recorded reserve and nobody has divided it
+    // up, so it is outside the scope these figures span. Counting it would
+    // subtract money from receipts that are not in the total above it.
+    expect(plain(poolRow.textContent)).not.toContain("386,246.80");
+
+    // 9,700.00 + 23,380.47, out of ONE purpose — named. Without the name a
+    // resident cannot tell which heading below lost the money, and the two
+    // reserves would look like the same kind of thing.
+    const categoryRow = screen.getByText("Trail maintenance fund").closest("tr") as HTMLElement;
+    expect(plain(categoryRow.textContent)).toContain("USD 33,080.47");
+    expect(plain(categoryRow.textContent)).toContain("Walking and biking");
+    expect(plain(categoryRow.textContent)).toContain("The ordinance sets this at 10% of USD 330,804.67.");
+    expect(plain(categoryRow.textContent)).not.toContain("Everything that came in");
+  });
+
+  it("closes the arithmetic on the rendered page: received − taken out − kept back = the headings", async () => {
     seedTwoDividedQuarters();
     await renderPage();
 
     /* ---- the chain, read back off the page ---- */
     const received = figureAmount("Received in these periods");
     const takenOut = figureAmount("Taken out first");
-    const leftToDivide = figureAmount("Left to divide");
+    const heldBack = figureAmount("Kept back in reserve");
+    const leftForPurposes = figureAmount("Left for the purposes below");
 
     expect(received).toBe(6812340.17);
     expect(takenOut).toBe(60000);
-    // THE SUBTRACTION A COMMITTEE MEMBER DOES, asserted against the three
+    expect(heldBack).toBe(169327.27);
+    // THE SUBTRACTION A COMMITTEE MEMBER DOES, asserted against the four
     // numbers the page actually printed rather than against the model.
-    expect(Number((received - takenOut).toFixed(2))).toBe(leftToDivide);
-    expect(leftToDivide).toBe(6752340.17);
+    expect(Number((received - takenOut - heldBack).toFixed(2))).toBe(leftForPurposes);
+    expect(leftForPurposes).toBe(6583012.9);
+    // And NOT the figure the page printed before reserves were recorded. That
+    // number is still a correct intermediate — it is what was left after the
+    // amounts taken out — and printing it as what the purposes were given
+    // overstated them by the whole reserve.
+    expect(leftForPurposes).not.toBe(6752340.17);
 
     /* ---- and the headings add back up to it ---- */
     const ordinanceTable = screen.getByText("Set aside").closest("table") as HTMLElement;
     const setAsideCells = [...ordinanceTable.querySelectorAll("tbody tr")].map((row) =>
       money(row.children[2].textContent)
     );
-    // 2,700,936.07 + 2,363,319.06 + 1,350,468.03 + 337,617.01, each the sum of
-    // the two quarters' shares under that heading.
-    expect(setAsideCells).toEqual([2700936.07, 2363319.06, 1350468.03, 337617.01]);
-    expect(Number(setAsideCells.reduce((sum, value) => sum + value, 0).toFixed(2))).toBe(leftToDivide);
+    // 2,646,437.35 + 2,315,632.68 + 1,323,218.67 + 297,724.20, each the sum of
+    // the two quarters' shares under that heading, net of the trail fund on the
+    // last one.
+    expect(setAsideCells).toEqual([2646437.35, 2315632.68, 1323218.67, 297724.2]);
+    expect(Number(setAsideCells.reduce((sum, value) => sum + value, 0).toFixed(2))).toBe(leftForPurposes);
 
     // The page says so in words too, because a reader who does not add the
     // column up is still owed the answer.
     expect(
-      screen.getByText(/The purposes below add up to USD.6,752,340\.17 — the same as the amount left to divide/)
+      screen.getByText(/The purposes below add up to USD.6,583,012\.90 — the same as the amount left for them/)
     ).toBeTruthy();
   });
 
@@ -536,12 +632,59 @@ describe("the public measure oversight page", () => {
 
     await renderPage();
 
-    // 6,752,340.17 − 954,468.03 = 5,797,872.14 shown, so 954,468.03 is
+    // 6,583,012.90 − 935,218.67 = 5,647,794.23 shown, so 935,218.67 is
     // unaccounted for and the page says so rather than looking balanced.
-    expect(
-      screen.getByText(/USD.954,468\.03 less than the amount left to divide/)
-    ).toBeTruthy();
-    expect(screen.queryByText(/the same as the amount left to divide/)).toBeNull();
+    expect(screen.getByText(/USD.935,218\.67 less than the amount left for them/)).toBeTruthy();
+    expect(screen.queryByText(/the same as the amount left for them/)).toBeNull();
+    // Every period here HAS its reserves recorded, so the settlement may not
+    // offer an unrecorded reserve as a cause. Before 2026-08-12 it offered one
+    // unconditionally, which on this fixture would be a false explanation for a
+    // difference whose real cause is a missing allocation row.
+    expect(screen.queryByText(/nothing recorded as kept back in reserve/)).toBeNull();
+    expect(screen.queryByText(/Some ordinances hold an amount back in reserve/)).toBeNull();
+  });
+
+  /**
+   * THE OTHER DIRECTION, and the reason the cause is named conditionally.
+   *
+   * A fund divided up before 20260812000019 has allocations and no reserve
+   * rows. The page cannot tell that apart from an ordinance that keeps nothing
+   * back — so it says nothing while the arithmetic closes, and names the
+   * periods only once the headings fall short, which is the only circumstance
+   * in which an unrecorded reserve would explain anything.
+   */
+  it("names the periods with no recorded reserve only when the headings fall short", async () => {
+    seedTwoDividedQuarters();
+    tableData.measure_period_reserve = [];
+
+    await renderPage();
+
+    // With the reserves gone the chain says 6,752,340.17 was left and the
+    // headings still add to 6,583,012.90 — 169,327.27 short, which is exactly
+    // the reserve nobody recorded.
+    expect(figureAmount("Kept back in reserve")).toBe(0);
+    expect(screen.getByText("The ordinance kept nothing back in reserve out of these periods.")).toBeTruthy();
+    expect(screen.getByText(/USD.169,327\.27 less than the amount left for them/)).toBeTruthy();
+    const cause = screen.getByText(/nothing recorded as kept back in reserve/);
+    expect(plain(cause.textContent)).toContain("FY25 Q4 and FY26 Q1");
+    expect(plain(cause.textContent)).toContain(
+      "divided up before this page began recording reserves as their own line"
+    );
+  });
+
+  it("does not print a failed reserves read as an ordinance that kept nothing back", async () => {
+    seedTwoDividedQuarters();
+    tableErrors.measure_period_reserve = { message: "permission denied for table measure_period_reserve" };
+
+    await renderPage();
+
+    // A zero here says the ordinance keeps nothing back, which is the agency's
+    // word and not a failed query's — and the whole chain goes with it, because
+    // the four figures only mean anything together.
+    expect(screen.queryByText("Kept back in reserve")).toBeNull();
+    expect(screen.queryByText("Taken out first")).toBeNull();
+    expect(screen.getByText(/it does not mean nothing was kept back/)).toBeTruthy();
+    expect(screen.getByText(/some sections are shown as unavailable rather than as zero/)).toBeTruthy();
   });
 
   it("does not print a failed takes read as an ordinance that took nothing", async () => {
@@ -753,8 +896,11 @@ describe("the public measure oversight page", () => {
     const body = plain(document.body.textContent);
     // The section is really on the page — otherwise both loops below would pass
     // over copy that was never rendered.
-    expect(body).toContain("What was taken out before the rest was divided");
-    expect(body).toContain("the same as the amount left to divide");
+    expect(body).toContain("What was taken out and kept back before the rest was divided");
+    expect(body).toContain("the same as the amount left for them");
+    // The reserve rows are runtime-assembled sentences of their own and exist
+    // in no source file for the derived guard to scan.
+    expect(body).toContain("The ordinance sets this at 2% of USD 6,812,340.17.");
 
     for (const { label, pattern } of PROHIBITED_PUBLIC_CLAIMS) {
       expect(

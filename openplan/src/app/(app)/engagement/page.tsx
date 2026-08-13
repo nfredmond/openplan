@@ -342,6 +342,15 @@ export default async function EngagementPage({
             ) : null}
           </div>
 
+          {/* The module's primary action, in the header rather than wherever the
+              section order puts the form. The full creator stays where it is —
+              this jumps to it. */}
+          <div className="module-intro-actions">
+            <a className="module-intro-action" href="#create-campaign">
+              New campaign
+            </a>
+          </div>
+
           {/*
             A tile is a number offered as a fact. When the read behind one
             failed, the honest value is "Unavailable" — a zero here is a claim

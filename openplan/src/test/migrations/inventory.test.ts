@@ -391,16 +391,36 @@ const EXPECTED = {
   // (3+3+2+2), +4 tablesWithPolicies, +4 relations, +4 tables, +4
   // rlsEnabledTables. `views` holds at 7 and `expanded` at 264 — every policy
   // here is written literally inside a DO block, none through EXECUTE format().
-  policies: 643,
-  permissive: 397,
+  //
+  // 20260812000019 (what the measure kept back in reserve) adds ONE table,
+  // `measure_period_reserve`. THREE permissive policies and no restrictive
+  // ones — the role-aware shape 20260812000011, 12 and 14 all take.
+  //
+  // Three rather than four, and the missing one is UPDATE for exactly the
+  // reason it is missing next door: a period's reserve is replaced wholesale
+  // together with its categories and its off-the-top takes, never edited in
+  // place. Its GRANT names exactly SELECT, INSERT, DELETE to match.
+  //
+  // The migration also DROPs the four-argument
+  // `replace_measure_period_allocation` and creates a five-argument one that
+  // clears and rewrites the reserve rows in the same statement batch. Neither
+  // moves a count here: this inventory is about tables, views and policies, and
+  // the function's EXECUTE grants are audited by
+  // `measure-reserve-migration.test.ts`.
+  //
+  // So: +3 policies, +3 permissive, +0 restrictive, +2 permissiveWrites
+  // (INSERT + DELETE), +1 tablesWithPolicies, +1 relations, +1 tables, +1
+  // rlsEnabledTables. `views` holds at 7 and `expanded` at 264.
+  policies: 646,
+  permissive: 400,
   restrictive: 246,
-  permissiveWrites: 259,
+  permissiveWrites: 261,
   expanded: 264,
-  tablesWithPolicies: 138,
-  relations: 159,
-  tables: 152,
+  tablesWithPolicies: 139,
+  relations: 160,
+  tables: 153,
   views: 7,
-  rlsEnabledTables: 152,
+  rlsEnabledTables: 153,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

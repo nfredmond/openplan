@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { stripSourceComments } from "./helpers/source-text";
 
 /**
  * THE REPO'S MOST EXPENSIVE RECURRING DEFECT, MADE INTO A BUILD FAILURE.
@@ -16,24 +17,49 @@ import { describe, expect, it } from "vitest";
  * audited email-matched route with nothing in the product calling it, so the
  * only way out of a workspace invitation was to let it expire.
  *
- * WHAT IT CHECKS. Every `route.ts` under `src/app/api` must be mentioned by
- * something that is not another API route and not a test: a component, a page,
- * a hook, or a client helper. Matching is by the route's longest STATIC path
- * prefix plus its remaining static segments, so a call site that builds its URL
- * from a template literal — `` `/api/models/${id}/runs` `` or
- * `` `/api/workspaces/invitations/${decision}` `` — still counts. That is
- * deliberately generous: this guard is here to catch a route with NO caller at
- * all, which is the failure that keeps happening, not to prove a specific call
- * site is correct.
+ * WHAT IT CHECKS. Every `route.ts` under `src/app/api` must be called by
+ * something that is not another API route and not a test: a component, a page, a
+ * hook, or a client helper. "Called" means THE WHOLE PATH APPEARS IN ONE
+ * EXPRESSION — every static segment written literally, in order, with each
+ * dynamic segment supplied by a `${…}` interpolation or a literal value:
  *
- * WHAT IT DOES NOT CHECK. That the caller is reachable in the UI, that the
- * right role sees it, or that the request is well-formed. A guard that tried to
- * would be a type-checker. Reachability past this point is still the job of a
- * test that renders the surface and asserts what a person would see.
+ *     fetch(`/api/models/${modelId}/runs/${runId}/kpis`)   ← counts
+ *     `${origin}/api/engage/${shareToken}/subscribe`       ← counts
  *
- * WHEN THIS FAILS, THE FIX IS ALMOST NEVER THE ALLOWLIST. A new orphan means a
- * capability shipped that nobody can use. Wire it up. Add to the allowlist only
- * when the caller genuinely is not in this codebase — and say who does call it.
+ * Comments are blanked before the scan (`stripSourceComments`), because a
+ * paragraph ABOUT a route is not a call to it — this guard's first version was
+ * defeated exactly that way.
+ *
+ * WHAT IT DOES NOT CHECK. That the caller is reachable in the UI, that the right
+ * role sees it, or that the request is well-formed. A guard that tried to would
+ * be a type-checker. Reachability past this point is still the job of a test
+ * that renders the surface and asserts what a person would see.
+ *
+ * ═══ WHY THE MATCHER LOOKS FOR A WHOLE PATH (2026-08-12) ═══
+ *
+ * It used to take the route's longest STATIC PREFIX and then check each
+ * remaining word with a bare `String.includes` against the whole file. The two
+ * halves need not come from the same line, the same expression, or even the same
+ * kind of token — so a SIBLING route's call site could supply the prefix while
+ * an unrelated word anywhere in the file supplied the tail.
+ *
+ * Measured, not guessed. Of 232 routes, 121 have a static segment after their
+ * first dynamic one. Deleting every whole-path call site for each in turn and
+ * re-running the OLD matcher left 98 OF THOSE 121 STILL GREEN — the guard could
+ * not see the deletion of the only caller. Worked examples:
+ *
+ *   - `api/workspace-gis/layers/[layerId]/references` — prefix from the
+ *     DELETE-layer fetch a few lines above, tail from a docblock reading
+ *     "export path, references, counts".
+ *   - `api/measures/[measureId]/statement` — prefix from the `/public-share`
+ *     fetch, tail from a docblock containing the word "statement".
+ *   - `api/models/[modelId]/runs/[modelRunId]/kpis` — prefix from the
+ *     `/vmt-significance` fetch, tail from `const [kpis, setKpis] = useState`.
+ *
+ * Requiring the whole path in one expression removes that entirely: there is no
+ * "tail" left to satisfy from elsewhere. The cost is that a caller which
+ * ASSEMBLES a path in pieces is no longer visible either, and those are real —
+ * so they are named, one by one, in `PARTIAL_PATH_CALLERS` below.
  */
 
 /**
@@ -54,13 +80,87 @@ const EXTERNAL_CALLERS: Record<string, string> = {
   "api/cron/reap-gtfs-ingests":
     "Vercel Cron, scheduled in vercel.json. Closes transit-feed ingests that stopped responding, so a version row written `pending` before any network work cannot sit on a Data Hub card forever. Authenticated by CRON_SECRET, never from a session.",
   "api/cron/reap-model-runs":
-    "Vercel Cron, scheduled in vercel.json. Recorded here EXPLICITLY: it was passing only because `src/lib/models/worker-backed-launch.ts` happens to mention the path inside backticks in a docblock, which this guard's own call-site pattern accepts. Rewording that comment would have broken the build for a reason nobody could have guessed.",
+    "Vercel Cron, scheduled in vercel.json. Recorded here EXPLICITLY: under the old word-bag matcher it was passing only because `src/lib/models/worker-backed-launch.ts` mentions the path inside backticks in a docblock, so rewording that comment would have broken the build for a reason nobody could have guessed. Comments are now blanked before the scan, which is what makes THIS entry the thing holding it up.",
   "api/cron/sweep-deadlines":
     "Vercel Cron, scheduled in vercel.json at 0 13 * * *. The daily deadline digest: it writes one work_notifications row per person per due record and sends the email when a transport is configured. Authenticated by CRON_SECRET compared with timingSafeSecretEquals, never from a session — nothing in the product calls it, and nothing should, because a user-triggered sweep would let one person mail the whole team.",
   "api/knowledge-base/ocr-callback":
     "OCR worker callback — a self-hosted recogniser (workers/ocr_worker, or anything speaking schemas/ocr_extraction_contract.schema.json) posts per-page text here as a job advances. Bearer-authenticated with OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN, never from a session: this is the route that turns recognised text into citable chunks and flips a scanned document to `ready`, so a caller inside the product would be a way to make a document claim text nobody read. The REQUEST side of the lane (api/knowledge-base/documents/[documentId]/ocr) is wired to the document library's 'Read with OCR' button and needs no entry here.",
+  "api/engage/[shareToken]/subscribe/confirm":
+    "The double-opt-in confirmation link, clicked from a participant's email client. Its URL is minted inside api/engage/[shareToken]/subscribe/route.ts — an API route, which this scan excludes on purpose so one route cannot vouch for another — and it answers HTML, not JSON, because the browser opening it came from an inbox and not from OpenPlan. A caller inside the product would be a way to confirm a subscription the person never confirmed.",
   "api/aerial/missions/[missionId]/export":
-    "410 Gone tombstone for the superseded perimeter export (see src/lib/aerial/dji-export.ts) — its only callers are pre-supersession bookmarks and scripts OUTSIDE this codebase, which the 410 body redirects to the flight-plan export lane. NOTE (2026-08-11, measured): this entry is NOT what lets the route pass the orphan scan — the generous tail matcher accepts the bare word `export`, which appears in every TS module, so five aerial components match it spuriously. Deliberateness is therefore carried by the named tombstone assertion below, which fails if this entry is ever deleted.",
+    "410 Gone tombstone for the superseded perimeter export (see src/lib/aerial/dji-export.ts) — its only callers are pre-supersession bookmarks and scripts OUTSIDE this codebase, which the 410 body redirects to the flight-plan export lane. Under the old word-bag matcher this entry excused nothing: the bare word `export` appears in every TS module, so five aerial components matched it spuriously. The whole-path matcher no longer accepts that, so the entry is now load-bearing on its own — and the named tombstone assertion below keeps it deliberate.",
+};
+
+/**
+ * Callers that ASSEMBLE the path instead of writing it whole, named one by one.
+ *
+ * The whole-path matcher cannot see `` `${versionBase}/zones` `` or
+ * `` `/api/workspaces/invitations/${decision}` ``, and both are real call sites
+ * a planner reaches every day. Rather than loosen the matcher back toward
+ * substrings, each is recorded here with the file and the exact expression that
+ * builds it, so the claim is checkable by reading one line.
+ *
+ * THIS LIST MAY ONLY SHRINK, and it cleans itself in both directions: the
+ * assertions below fail if a named file stops containing its expression, and
+ * fail if the route gains an ordinary whole-path caller (delete the entry then).
+ * Adding one means a reviewer can ask why the path is not written out.
+ */
+const PARTIAL_PATH_CALLERS: Record<string, { file: string; expression: string; reason: string }> = {
+  "api/workspaces/invitations/accept": {
+    file: "src/components/workspaces/invitation-decision.tsx",
+    expression: "`/api/workspaces/invitations/${decision}`",
+    reason:
+      "Accept and decline are the same form with one variable: `decision` is the union 'accept' | 'decline', so the last SEGMENT is the choice. Writing the two paths out would mean two fetches that must be kept identical.",
+  },
+  "api/workspaces/invitations/decline": {
+    file: "src/components/workspaces/invitation-decision.tsx",
+    expression: "`/api/workspaces/invitations/${decision}`",
+    reason:
+      "The other half of the same one-variable form. This is the route whose absence of a caller caused this guard to exist, so its evidence is named rather than inferred.",
+  },
+  "api/engagement/campaigns/[campaignId]/survey/questions/[questionId]/options/[optionId]": {
+    file: "src/components/engagement/survey-builder.tsx",
+    expression: "const base = `/api/engagement/campaigns/${campaignId}/survey/questions/${question.id}/options`",
+    reason:
+      "The option manager holds the collection path in `base` and deletes one option with `${base}/${optionId}` — a five-segment path that would otherwise be written twice in eight lines.",
+  },
+  "api/network-packages/[packageId]/versions/[versionId]/ingest": {
+    file: "src/app/(app)/models/_components/network-package-upload-form.tsx",
+    expression: "const versionBase = `/api/network-packages/${packageId}/versions/${versionId}`",
+    reason:
+      "The upload form runs one ordered sequence against a version it just created — ingest, then zones, corridors, connectors — off a single `versionBase` binding. Splitting the base out is what keeps the four steps provably against the SAME version.",
+  },
+  "api/network-packages/[packageId]/versions/[versionId]/zones": {
+    file: "src/app/(app)/models/_components/network-package-upload-form.tsx",
+    expression: "const versionBase = `/api/network-packages/${packageId}/versions/${versionId}`",
+    reason: "Step 4 of the same sequence, posted as `${versionBase}/zones`.",
+  },
+  "api/network-packages/[packageId]/versions/[versionId]/corridors": {
+    file: "src/app/(app)/models/_components/network-package-upload-form.tsx",
+    expression: "const versionBase = `/api/network-packages/${packageId}/versions/${versionId}`",
+    reason: "Step 5 of the same sequence, posted as `${versionBase}/corridors`.",
+  },
+  "api/network-packages/[packageId]/versions/[versionId]/connectors": {
+    file: "src/app/(app)/models/_components/network-package-upload-form.tsx",
+    expression: "const versionBase = `/api/network-packages/${packageId}/versions/${versionId}`",
+    reason: "Step 6 of the same sequence, posted as `${versionBase}/connectors`.",
+  },
+  "api/scenarios/[scenarioSetId]/spine/assumption-sets": {
+    file: "src/components/scenarios/scenario-spine-panel.tsx",
+    expression: "await fetch(`/api/scenarios/${scenarioSetId}/spine/${path}`",
+    reason:
+      "One `create(kind, payload)` function serves all three spine records; `path` is a ternary over the three literal segment names, which are right above the fetch.",
+  },
+  "api/scenarios/[scenarioSetId]/spine/data-packages": {
+    file: "src/components/scenarios/scenario-spine-panel.tsx",
+    expression: "await fetch(`/api/scenarios/${scenarioSetId}/spine/${path}`",
+    reason: "Second branch of the same three-way ternary.",
+  },
+  "api/scenarios/[scenarioSetId]/spine/indicator-snapshots": {
+    file: "src/components/scenarios/scenario-spine-panel.tsx",
+    expression: "await fetch(`/api/scenarios/${scenarioSetId}/spine/${path}`",
+    reason: "Third branch of the same three-way ternary.",
+  },
 };
 
 /**
@@ -72,103 +172,56 @@ const EXTERNAL_CALLERS: Record<string, string> = {
  * is the point. Adding one requires a reason a reviewer will ask about.
  */
 const KNOWN_UNWIRED: readonly string[] = [
-  // The six network-package routes that stood here are WIRED as of 2026-08-03:
-  // `models/_components/network-package-upload-form.tsx` creates the package,
-  // adds the version, posts nodes/links for QA, and creates the zones,
-  // corridors and connectors — and the panel that used to say "Ingest is
-  // API-only for now" now renders that form. Removing them is what this
-  // ratchet is for; see `a-planner-can-upload-a-network-package.test.tsx`,
-  // which drives the real panel rather than the form alone.
-  //
   // A GET that duplicates work the page already does. `/assistant-activity`
   // imports `buildAssistantActivitySummary` from inside this route's own folder
   // and runs its own query, so the HTTP endpoint beside it answers to nobody.
   // Wire it or delete it; do not leave it as a second way to compute the same
   // answer that can drift from the first.
   "api/assistant-activity",
-  // (2026-08-11) api/aerial/missions/[missionId]/flight-plan stood here while
-  // its editor was in a concurrent lane; the flight-plan editor on the mission
-  // page now calls it, so the line is gone — the ratchet working as designed.
-  // EMPTY, and that is the goal state rather than a missing list. Every API
-  // route in this repo now has a caller in the product, or an EXTERNAL_CALLERS
-  // entry naming what calls it from outside. Adding a line here means shipping
-  // a capability nobody can reach, so it needs a reason a reviewer will ask
-  // about — and the test below fails if a line stays after the route is wired.
+  // (2026-08-12, found by the whole-path matcher) GET returns the priority-count
+  // scaffold CSV for a county run — its path on disk and its full contents —
+  // and POST replaces that CSV with observed counts. That is the "source
+  // observed counts" step, the one thing standing between `validation-scaffolded`
+  // and a validated screening run, and no surface in the product opens it. The
+  // county run page offers the readiness check beside it (CountyRunValidationPrep)
+  // but nothing to read or fill the scaffold, so the counts have to be edited on
+  // the operator's own filesystem and the route is dead weight.
+  //
+  // NOT wired in the audit that found it because the shape is a product call,
+  // not a missing button: pasting a CSV into a textarea, uploading a file, and
+  // editing a table are three different answers with different failure modes for
+  // a file that decides whether a model run counts as validated.
+  "api/county-runs/[countyRunId]/scaffold",
 ];
 
 /**
  * A ROUTE PATH IN PROSE IS NOT A CALL SITE.
  *
- * The first version of this guard asked whether the path appeared ANYWHERE in a
- * source file. It therefore counted `POST /api/aerial/processing-callback/custody`
- * written inside an operator-facing sentence ("retry through …") and inside a
- * docblock, and passed a route that nothing in the product called — the exact
- * defect it exists to catch, excused by its own documentation.
+ * Two things enforce that. Comments are blanked before the scan, so a docblock
+ * cannot vouch for anything. And the path must begin at the START of a string —
+ * `"/api/x"`, `` `/api/x` ``, or `` `${base}/api/x` `` — because prose writes it
+ * mid-sentence, after a space. Requiring a quote, backtick or template-close
+ * immediately before the path is enough to tell those apart.
  *
- * A real call site writes the path at the START of a string: `"/api/x"`,
- * `` `/api/x` ``, or `` `${base}/api/x` ``. Prose writes it mid-sentence, after
- * a space. Requiring a quote, backtick or template-close immediately before the
- * path is enough to tell those apart, and it costs nothing to keep true.
+ * A dynamic segment is `${…}` (any interpolation, including a call such as
+ * `${encodeURIComponent(id)}`) or a literal id. A STATIC segment is never
+ * allowed to be an interpolation: that is the hole the old matcher had, and the
+ * few genuine cases are named in PARTIAL_PATH_CALLERS instead.
+ *
+ * The trailing lookahead stops `/api/x/foo` from vouching for `/api/x`: a longer
+ * path is a different route, and a child's call site must not excuse its parent.
+ * A query string, a closing quote, or a backtick all end the path cleanly.
  */
-function callSitePattern(prefix: string): RegExp {
-  return new RegExp(`["'\`}]${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
-}
+const DYNAMIC_SEGMENT = "(?:\\$\\{[^{}]*(?:\\{[^{}]*\\}[^{}]*)*\\}|[A-Za-z0-9._%-]+)";
 
-/**
- * `api/models/[modelId]/runs` -> `/api/models`, plus `["runs"]`.
- *
- * ═══ MEASURED BLIND SPOT — RECORDED 2026-08-12, NOT YET FIXED ═══
- *
- * The prefix stops at the FIRST dynamic segment and everything after it becomes
- * an unordered bag of words, each checked with a bare case-sensitive
- * `String.includes` against the whole file. The two halves need not come from
- * the same line, the same expression, or even the same kind of token — so a
- * SIBLING route's call site can supply the prefix while an unrelated word
- * anywhere in the file supplies the tail.
- *
- * Found by mutation while auditing the workspace-GIS lane: breaking the ONLY
- * caller of `/api/workspace-gis/layers/[layerId]/references` did not turn this
- * guard red. Its evidence was the DELETE-layer fetch a few lines above (prefix
- * `/api/workspace-gis/layers`) plus the word "references" appearing in a
- * docblock — `/** … export path, references, counts. *\/`. Deleting the whole
- * `fetchWorkspaceGisLayerReferences` function still passed; only deleting the
- * comment as well turned it red.
- *
- * The scale was then measured across the repository rather than guessed. Of 231
- * routes, 120 have a static segment after their first dynamic one. Deleting
- * every plausible call site for each in turn leaves 85 OF THOSE 120 STILL
- * GREEN. Concrete examples beyond the one above:
- *
- *   - `api/measures/[measureId]/statement` — prefix from the `/public-share`
- *     fetch, tail from a docblock containing the word "statement".
- *   - `api/models/[modelId]/runs/[modelRunId]/kpis` — prefix from the
- *     `/vmt-significance` fetch, tail from `const [kpis, setKpis] = useState`.
- *   - `api/scenarios/[scenarioSetId]/spine/indicator-snapshots` — tail from a
- *     ternary's string literal used as a tab key.
- *
- * This guard still does what its name says for the case it was built for — a
- * route with NO caller anywhere — and the `aerial/.../export` tombstone below
- * exists because that limit was already known for one route. What is now known
- * is that it is 85 routes, not one.
- *
- * THE FIX, when someone takes it: require the full path shape inside a single
- * expression, and admit today's loosely-evidenced routes to a shrink-only
- * ratchet beside `KNOWN_UNWIRED` so no NEW route can join them. That is a real
- * piece of work — each of the 85 needs its caller confirmed by hand before it
- * can be called evidence — and it was deliberately not bundled into the
- * workspace-GIS session that found it.
- */
-function staticParts(routeDir: string): { prefix: string; tail: string[] } {
-  const segments = routeDir.split("/");
-  const leading: string[] = [];
-  for (const segment of segments) {
-    if (segment.startsWith("[")) break;
-    leading.push(segment);
-  }
-  return {
-    prefix: `/${leading.join("/")}`,
-    tail: segments.slice(leading.length).filter((segment) => !segment.startsWith("[")),
-  };
+export function callSitePattern(routeDir: string): RegExp {
+  const body = routeDir
+    .split("/")
+    .map((segment) =>
+      segment.startsWith("[") ? DYNAMIC_SEGMENT : segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    )
+    .join("/");
+  return new RegExp(`["'\`}]/${body}(?![A-Za-z0-9._/-])`);
 }
 
 /** Every `.ts`/`.tsx` beneath `dir`, matching the walk in `supabase-call-sites`. */
@@ -191,17 +244,17 @@ function routeDirectories(): string[] {
 }
 
 /**
- * Everything that could hold a call site. `src/app/api` is excluded so one
- * route referencing another does not vouch for it, and `src/test` so a guard's
- * own assertion text — including the allowlists in THIS file — cannot satisfy
- * the scan it performs.
+ * Everything that could hold a call site, with comments blanked. `src/app/api`
+ * is excluded so one route referencing another does not vouch for it, and
+ * `src/test` so a guard's own assertion text — including the allowlists in THIS
+ * file — cannot satisfy the scan it performs.
  */
 function callerSources(): string[] {
   const root = path.join(process.cwd(), "src");
   const excluded = [path.join(root, "app", "api"), path.join(root, "test")];
   return walkFiles(root)
     .filter((file) => !excluded.some((dir) => file.startsWith(dir + path.sep)))
-    .map((file) => readFileSync(file, "utf8"));
+    .map((file) => stripSourceComments(readFileSync(file, "utf8")));
 }
 
 describe("every API route has a caller", () => {
@@ -209,11 +262,8 @@ describe("every API route has a caller", () => {
   const sources = callerSources();
 
   const unreferenced = routes.filter((routeDir) => {
-    const { prefix, tail } = staticParts(routeDir);
-    const callSite = callSitePattern(prefix);
-    return !sources.some(
-      (source) => callSite.test(source) && tail.every((segment) => source.includes(segment))
-    );
+    const callSite = callSitePattern(routeDir);
+    return !sources.some((source) => callSite.test(source));
   });
 
   it("is scanning a realistic number of routes and callers", () => {
@@ -223,8 +273,45 @@ describe("every API route has a caller", () => {
     expect(sources.length).toBeGreaterThan(100);
   });
 
+  it("recognises a whole path and refuses a bag of words", () => {
+    /**
+     * THE MATCHER'S OWN REGRESSION TEST, and the reason this rewrite happened.
+     * Every line here is a shape that was measured in the repository: the first
+     * two are how callers really write a path, the rest are the evidence the old
+     * matcher accepted from files that did not call the route at all. If someone
+     * loosens the matcher back toward substrings, this fails before any route
+     * does — a guard's weakness should not need a repo-wide sweep to notice.
+     */
+    const route = "api/models/[modelId]/runs/[modelRunId]/kpis";
+    const pattern = () => callSitePattern(route);
+
+    expect(pattern().test("await fetch(`/api/models/${modelId}/runs/${runId}/kpis`)")).toBe(true);
+    expect(pattern().test('fetch("/api/models/abc/runs/def/kpis?window=7")')).toBe(true);
+    expect(pattern().test("fetch(`${origin}/api/models/${a}/runs/${b}/kpis`)")).toBe(true);
+
+    // A sibling route's call site plus the tail word somewhere else in the file.
+    expect(
+      pattern().test(
+        "await fetch(`/api/models/${modelId}/runs/${runId}/vmt-significance`);\nconst [kpis, setKpis] = useState([]);"
+      )
+    ).toBe(false);
+    // The path written mid-sentence rather than at the start of a string.
+    expect(pattern().test('const help = "call /api/models/1/runs/2/kpis to read them";')).toBe(false);
+    // A child path must not vouch for its parent.
+    expect(callSitePattern("api/models/[modelId]/runs").test("fetch(`/api/models/${id}/runs/${r}/kpis`)")).toBe(
+      false
+    );
+    // A static segment supplied by an interpolation is not a whole path — those
+    // are named in PARTIAL_PATH_CALLERS, never matched by accident.
+    expect(pattern().test("fetch(`/api/models/${modelId}/runs/${runId}/${section}`)")).toBe(false);
+  });
+
   it("finds no API route that nothing in the product calls", () => {
-    const accounted = new Set<string>([...Object.keys(EXTERNAL_CALLERS), ...KNOWN_UNWIRED]);
+    const accounted = new Set<string>([
+      ...Object.keys(EXTERNAL_CALLERS),
+      ...Object.keys(PARTIAL_PATH_CALLERS),
+      ...KNOWN_UNWIRED,
+    ]);
     const surprises = unreferenced.filter((routeDir) => !accounted.has(routeDir));
 
     expect(
@@ -236,7 +323,9 @@ describe("every API route has a caller", () => {
         "",
         "Wire it to a surface. If the caller genuinely lives outside this codebase",
         "(a worker callback, an uptime probe, an operator data load), add it to",
-        "EXTERNAL_CALLERS with the name of what calls it.",
+        "EXTERNAL_CALLERS with the name of what calls it. If a caller in src/ builds",
+        "the path in pieces, add it to PARTIAL_PATH_CALLERS with the file and the",
+        "expression — and consider writing the path out instead.",
       ].join("\n")
     ).toEqual([]);
   });
@@ -253,16 +342,57 @@ describe("every API route has a caller", () => {
     ).toEqual([]);
   });
 
+  it("proves every assembled-path caller still assembles that path", () => {
+    /**
+     * The claim in each PARTIAL_PATH_CALLERS entry is "this file builds this
+     * path". Nothing else in this suite can see that, so it is checked here by
+     * reading the named file — with comments blanked, because an entry excused
+     * by a docblock about the fetch would be the original defect wearing a new
+     * hat. A rename, a refactor, or a deleted component fails by name.
+     */
+    const broken = Object.entries(PARTIAL_PATH_CALLERS)
+      .map(([routeDir, entry]) => {
+        const file = path.join(process.cwd(), entry.file);
+        if (!statSync(file, { throwIfNoEntry: false })?.isFile()) {
+          return `${routeDir}: ${entry.file} does not exist`;
+        }
+        const source = stripSourceComments(readFileSync(file, "utf8"));
+        if (!source.includes(entry.expression)) {
+          return `${routeDir}: ${entry.file} no longer contains ${entry.expression}`;
+        }
+        return null;
+      })
+      .filter((problem): problem is string => problem !== null);
+
+    expect(
+      broken,
+      "An assembled-path caller changed. Point the entry at the expression that builds the path now, or wire the route to a whole-path call and delete the entry."
+    ).toEqual([]);
+  });
+
+  it("keeps the assembled-path list shrink-only", () => {
+    // The moment a route gains an ordinary whole-path caller, its entry stops
+    // being evidence of anything and becomes a permanent excuse. Same ratchet as
+    // KNOWN_UNWIRED, opposite direction: delete the line.
+    const redundant = Object.keys(PARTIAL_PATH_CALLERS).filter(
+      (routeDir) => !unreferenced.includes(routeDir)
+    );
+
+    expect(
+      redundant,
+      "These routes are now called with the whole path written out. Delete them from PARTIAL_PATH_CALLERS — the list may only shrink."
+    ).toEqual([]);
+  });
+
   it("excuses the superseded aerial export tombstone by NAME, never by accident", () => {
     /**
-     * The static-prefix + tail matcher above cannot tell
-     * `missions/[id]/export` apart from `missions/[id]/flight-plan/export`:
-     * its tail check is a bare substring, and `export` is a word every TS
-     * module contains, so the tombstone would pass the orphan scan with no
-     * allowlist entry at all — a pass by accident, which is how a deliberate
-     * 410 quietly becomes an unexamined one. This assertion is what makes the
-     * pass deliberate: the entry must exist, must say 410, and the route must
-     * still BE the tombstone it was excused as. Deleting either fails by name.
+     * Kept from the word-bag era, when `missions/[id]/export` passed the orphan
+     * scan with no allowlist entry at all because `export` is a word every TS
+     * module contains — a pass by accident, which is how a deliberate 410
+     * quietly becomes an unexamined one. The whole-path matcher no longer does
+     * that, so the EXTERNAL_CALLERS entry now carries the route on its own; this
+     * assertion is what keeps the entry honest about WHAT it is excusing. The
+     * entry must exist, must say 410, and the route must still BE the tombstone.
      */
     const tombstone = "api/aerial/missions/[missionId]/export";
     const reason = EXTERNAL_CALLERS[tombstone];
@@ -283,10 +413,25 @@ describe("every API route has a caller", () => {
     // A typo or a renamed route would otherwise sit in the allowlist forever,
     // silently excusing nothing while the real route goes unchecked.
     const known = new Set(routes);
-    const phantom = [...Object.keys(EXTERNAL_CALLERS), ...KNOWN_UNWIRED].filter(
-      (routeDir) => !known.has(routeDir)
-    );
+    const phantom = [
+      ...Object.keys(EXTERNAL_CALLERS),
+      ...Object.keys(PARTIAL_PATH_CALLERS),
+      ...KNOWN_UNWIRED,
+    ].filter((routeDir) => !known.has(routeDir));
 
     expect(phantom, "Allowlisted paths that are not routes in this repo.").toEqual([]);
+  });
+
+  it("excuses each route exactly once", () => {
+    // Three lists is two chances for a route to be excused twice and for the
+    // stale-entry ratchets above to cancel each other out.
+    const all = [
+      ...Object.keys(EXTERNAL_CALLERS),
+      ...Object.keys(PARTIAL_PATH_CALLERS),
+      ...KNOWN_UNWIRED,
+    ];
+    const duplicated = all.filter((routeDir, index) => all.indexOf(routeDir) !== index);
+
+    expect(duplicated, "A route is excused by more than one list. Pick the one that is true.").toEqual([]);
   });
 });

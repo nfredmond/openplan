@@ -536,14 +536,21 @@ export function SafetyWorkspace({
 
   return (
     <div className="flex flex-col gap-4">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Safety</h1>
-          <p className="text-sm text-muted-foreground">
+      <header className="module-intro-card">
+        <div className="module-intro-body">
+          <h1 className="module-intro-title">Safety</h1>
+          <p className="module-intro-description">
             Reported crashes for the study area, retrieved from the source agency.
           </p>
         </div>
-        <div className="flex flex-wrap items-end gap-3">
+        {/* Safety's primary action was already near the top of its page, but in
+            one-off markup of its own — the only module whose header action was
+            not the shared slot. Two patterns means two things to keep working,
+            so this is the same `.module-intro-actions` every other module now
+            uses. The project selector rides in the slot beside the button
+            because the attachment is part of the same press: choosing a project
+            after the retrieval attaches nothing. */}
+        <div className="module-intro-actions">
           {projects.length > 0 && (
             <label className="flex flex-col gap-1 text-xs">
               <span className="text-muted-foreground">Attach to project (optional)</span>
@@ -567,7 +574,7 @@ export function SafetyWorkspace({
             type="button"
             onClick={() => void runIngest()}
             disabled={ingesting || !bbox}
-            className="rounded-md border px-3 py-2 text-sm font-medium disabled:opacity-60"
+            className="module-intro-action"
           >
             {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
           </button>

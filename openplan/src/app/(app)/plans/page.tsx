@@ -285,6 +285,15 @@ export default async function PlansPage({
             </p>
           </div>
 
+          {/* The module's primary action, in the header rather than wherever the
+              section order puts the form. The full creator stays where it is —
+              this jumps to it. */}
+          <div className="module-intro-actions">
+            <a className="module-intro-action" href="#create-plan">
+              New plan
+            </a>
+          </div>
+
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Plans</p>

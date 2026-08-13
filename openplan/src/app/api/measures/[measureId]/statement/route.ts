@@ -12,6 +12,7 @@ import {
   MEASURE_RECEIPT_CADENCES,
   MEASURE_RECIPIENT_COLUMNS,
   MEASURE_RECIPIENT_KINDS,
+  MEASURE_RESERVE_COLUMNS,
   resolveAllocationRuleInForce,
 } from "@/lib/measures/fund";
 import {
@@ -25,6 +26,7 @@ import {
   buildMeasureReceiptLedger,
   toMeasureFundPeriodRead,
   toMeasureOffTheTopTakeRead,
+  toMeasureReserveRead,
 } from "@/lib/measures/receipts";
 import { isNarrativeRule, parseMeasureAllocationRule, type MeasureAllocationRule } from "@/lib/measures/allocation";
 import { buildMeasureOversightModel, formatOversightSpan } from "@/lib/measures/oversight";
@@ -182,7 +184,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ mea
     const periodRows = ((periodsResult.data as Array<{ id: string; fiscal_year_label: string }> | null) ?? []);
     const periodIds = periodRows.map((period) => period.id);
 
-    const [claimsResult, allocationsResult, takesResult, moeResult] = await Promise.all([
+    const [claimsResult, allocationsResult, takesResult, reservesResult, moeResult] = await Promise.all([
       supabase
         .from("measure_claims")
         .select(MEASURE_CLAIM_COLUMNS)
@@ -210,6 +212,23 @@ export async function GET(request: NextRequest, context: { params: Promise<{ mea
         ? supabase
             .from("measure_period_off_the_top")
             .select(MEASURE_OFF_THE_TOP_COLUMNS)
+            .eq("measure_fund_id", fund.id)
+            .in("period_id", periodIds)
+        : Promise.resolve({ data: [], error: null }),
+      /*
+       * WHAT THE ORDINANCE KEPT BACK, over the SAME year, joined the SAME way.
+       *
+       * `measure_period_reserve` has no year column either — a reserve belongs
+       * to a period and the period carries the year — so it is scoped by
+       * `period_id IN (this year's periods)` exactly like the takes and the
+       * allocations above. Three row sets scoped three different ways would
+       * produce a subtraction across three different spans, which is worse than
+       * the missing line it replaced.
+       */
+      periodIds.length
+        ? supabase
+            .from("measure_period_reserve")
+            .select(MEASURE_RESERVE_COLUMNS)
             .eq("measure_fund_id", fund.id)
             .in("period_id", periodIds)
         : Promise.resolve({ data: [], error: null }),
@@ -245,6 +264,16 @@ export async function GET(request: NextRequest, context: { params: Promise<{ mea
        * 20260812000014 gets the 503 that names the missing migration.
        */
       ["what the ordinance took out first", "off_the_top_read_failed", takesResult],
+      /*
+       * AND WHAT IT KEPT BACK, refused just as hard and for the same reason.
+       * Without it the document prints a chain whose middle is complete and
+       * whose end is not: `received − taken out` over a fund that keeps money
+       * back is more than the purposes were given, and a filed statement whose
+       * arithmetic silently does not close is the artefact this section exists
+       * to prevent. A deployment that has not applied 20260812000019 gets the
+       * 503 that names the missing migration.
+       */
+      ["what the ordinance kept back in reserve", "reserve_read_failed", reservesResult],
       ["the local-spending commitments", "moe_read_failed", moeResult],
       ["the cities and districts this fund pays", "recipients_read_failed", recipientsResult],
       ["the measure's name", "program_read_failed", programResult],
@@ -362,6 +391,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ mea
        */
       offTheTopRead: toMeasureOffTheTopTakeRead(
         takesResult as unknown as Parameters<typeof toMeasureOffTheTopTakeRead>[0]
+      ),
+      reserveRead: toMeasureReserveRead(
+        reservesResult as unknown as Parameters<typeof toMeasureReserveRead>[0]
       ),
       allocations: (allocationsResult.data as never) ?? [],
     });

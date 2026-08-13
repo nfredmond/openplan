@@ -12,6 +12,7 @@ import type {
   MeasureOffTheTopTakeRead,
   MeasureReceiptLedger,
   MeasureReceiptLedgerResult,
+  MeasureReserveRead,
 } from "@/lib/measures/receipts";
 import { formatMoney } from "@/lib/money/format";
 
@@ -90,7 +91,7 @@ import { formatMoney } from "@/lib/money/format";
 export const MEASURE_OVERSIGHT_COPY = {
   pageEyebrow: "Voter-approved local measure · Public view",
   receiptsHeading: "Where the money came from",
-  divisionHeading: "What was taken out before the rest was divided",
+  divisionHeading: "What was taken out and kept back before the rest was divided",
   ordinanceHeading: "What the ordinance says it must pay for",
   recipientsHeading: "Who asked for it and what they got",
   moeHeading: "What each area promised to keep spending on its own",
@@ -129,11 +130,22 @@ export const MEASURE_OVERSIGHT_COPY = {
    * page, with nothing on it to say where. That gap is the shape of dishonesty
    * this product refuses everywhere else, and it was on the surface with the
    * least equipped reader.
+   *
+   * THE SECOND HALF OF THE SAME GAP, closed later the same day. Many of those
+   * ordinances also KEEP an amount back — a rainy-day fund out of the whole
+   * payment, a vehicle-replacement hold out of one purpose. That amount was
+   * computed by the allocator and stored nowhere, so the subtraction still did
+   * not come out for any fund that holds one, and the settlement sentence had
+   * to offer a held-back reserve as a cause it could neither show nor rule out.
+   * `measure_period_reserve` (20260812000019) records it, and the chain below
+   * now has three subtractions rather than two.
    */
   divisionExplainer:
     "Most measures take an amount out of every payment before the rest is divided up — to collect the " +
-    "tax, to run the programme, or to check how the money is spent. What the ordinance took out, and " +
-    "what was left, is shown here so the figures on this page can be added up and checked.",
+    "tax, to run the programme, or to check how the money is spent. Many also keep an amount back in " +
+    "reserve, either out of the whole payment or out of one of the purposes below. What the ordinance " +
+    "took out, what it kept back, and what was left is shown here so the figures on this page can be " +
+    "added up and checked.",
 
   /*
    * THE CHAIN'S OWN LABELS, shared by the public page and the annual statement.
@@ -146,10 +158,22 @@ export const MEASURE_OVERSIGHT_COPY = {
    */
   divisionReceivedHeading: "Received in these periods",
   divisionTakenOutHeading: "Taken out first",
-  divisionLeftHeading: "Left to divide",
+  divisionHeldBackHeading: "Kept back in reserve",
+  /*
+   * RENAMED FROM "Left to divide" on 2026-08-12, because the figure under it
+   * changed meaning. It used to be `received − taken out`, which for a fund
+   * that keeps money back was more than the purposes below ever saw. It is now
+   * `received − taken out − kept back`, which is exactly what they were given,
+   * and a heading saying "left to divide" over that number would invite the
+   * reader to look for a division that had already happened.
+   */
+  divisionLeftHeading: "Left for the purposes below",
   divisionClauseColumn: "What it is for",
   divisionAmountColumn: "Amount taken",
   divisionNoteColumn: "What the ordinance says about it",
+  divisionReserveClauseColumn: "What is being kept back",
+  divisionReserveAmountColumn: "Amount kept back",
+  divisionReserveSourceColumn: "Kept back out of",
 
   moeExplainer:
     "Some measures require each area to keep spending its own money on the same purposes, so that the " +
@@ -492,6 +516,25 @@ export type OversightTakeRow = {
   noteSentence: string | null;
 };
 
+/** One reserve clause of the ordinance: money kept in the measure rather than divided. */
+export type OversightReserveRow = {
+  reserveId: string;
+  label: string;
+  amountText: string;
+  /**
+   * What it was kept back out of, in a resident's words: everything that came
+   * in, what was left after the amounts taken out first, or one of the purposes
+   * below by its own name.
+   */
+  heldOutOfText: string;
+  /**
+   * The rate the ordinance sets and the figure it was applied to, and — when
+   * they differ — why less was kept back than the rate called for. Null when
+   * neither can be stated from the record.
+   */
+  noteSentence: string | null;
+};
+
 export type OversightDivision =
   | { kind: "none"; sentence: string }
   | {
@@ -499,11 +542,23 @@ export type OversightDivision =
       /** What the fund received in the periods it has divided up. */
       received: OversightFigure;
       takenOut: OversightFigure;
-      /** `received − takenOut`. The amount the headings below are cut out of. */
+      /** What the ordinance kept in the measure rather than dividing. */
+      heldBack: OversightFigure;
+      /**
+       * `received − takenOut − heldBack`: what the headings below were actually
+       * given. Not "the pool the ordinance cut its percentages out of" — that
+       * figure excludes only the pool reserves, and a purpose-level reserve
+       * comes out after the cut. The three subtractions are chosen to match
+       * what the page PRINTS under the headings, because closing the reader's
+       * own arithmetic is the whole purpose of the section.
+       */
       leftToDivide: OversightFigure;
       clauses: OversightTakeRow[];
+      reserves: OversightReserveRow[];
       /** Non-null when nothing was taken out of these periods at all. */
       noClausesSentence: string | null;
+      /** Non-null when nothing was kept back out of these periods at all. */
+      noReservesSentence: string | null;
       /**
        * Whether the ordinance's headings add up to `leftToDivide`, and by how
        * much they do not. Never a verdict — the difference is stated as a
@@ -541,12 +596,28 @@ export type OversightDivision =
  * It does not assert that the page balances. `setAsideShownTotal` is Σ of the
  * amounts the page actually PRINTS under the ordinance's headings, and the
  * difference between that and `leftToDivide` is stated as a figure whenever it
- * is not zero. Two ordinary things can produce one — an ordinance that holds a
- * reserve back (this product records reserves in the rule but does not yet
- * store what each period held back, so they cannot be shown as their own line)
- * and an allocation recorded under a heading the ordinance in force does not
- * list. Both are named. What is refused is the alternative: printing a
- * difference of nothing by comparing a figure against itself.
+ * is not zero.
+ *
+ * ============================================================================
+ * WHY THE CHAIN GAINED A THIRD SUBTRACTION (2026-08-12)
+ * ============================================================================
+ *
+ * It used to be `received − takenOut`, and for any ordinance that keeps money
+ * back that number was larger than anything the purposes below ever saw. The
+ * settlement sentence had to offer a held-back reserve as a possible cause of a
+ * difference it could neither show nor rule out, because reserves were computed
+ * by the allocator and stored nowhere. `measure_period_reserve` records them,
+ * so the cause is now a LINE, and the sentence stops naming an unrecoverable
+ * one.
+ *
+ * What can still produce a difference, and is named when it does:
+ *   * a period divided up before reserves were recorded separately — named by
+ *     period, and ONLY when the arithmetic actually fails to close (see the
+ *     settlement block, which explains why this is not a standing caveat);
+ *   * an allocation recorded under a heading the ordinance in force does not
+ *     list, which the page cannot print in its table.
+ * What is refused is the alternative: printing a difference of nothing by
+ * comparing a figure against itself.
  *
  * Every amount is rounded with the invoice register's `roundCurrencyAmount`, so
  * this section agrees to the cent with the same money elsewhere in the product.
@@ -557,6 +628,7 @@ export function buildMeasureDivisionSummary(input: {
   /** The fund's allocation rows. Which periods have been divided up comes from these. */
   allocations: readonly MeasureAllocationLike[];
   takeRead: MeasureOffTheTopTakeRead;
+  reserveRead: MeasureReserveRead;
   /** Σ the set-aside amounts the page SHOWS under the ordinance's headings. Null when it shows none. */
   setAsideShownTotal: number | null;
   /** Σ every recorded allocation the claim ledger could place, whatever heading it names. */
@@ -570,6 +642,21 @@ export function buildMeasureDivisionSummary(input: {
       sentence:
         "What the ordinance took out before the rest was divided could not be loaded, so this part of the " +
         "page is not shown. That is a problem loading the page — it does not mean nothing was taken out.",
+    };
+  }
+
+  // A SEPARATE SENTENCE, not the one above. The two reads fail independently and
+  // a reader told "what was taken out could not be loaded" when in fact the
+  // reserves were the problem has been handed a wrong explanation for a missing
+  // section — which on this surface is its own small dishonesty. The section is
+  // withheld whole either way, because the three figures only mean anything
+  // together.
+  if (!input.reserveRead.ok) {
+    return {
+      ok: false,
+      sentence:
+        "What the ordinance kept back in reserve could not be loaded, so this part of the page is not " +
+        "shown. That is a problem loading the page — it does not mean nothing was kept back.",
     };
   }
 
@@ -590,7 +677,8 @@ export function buildMeasureDivisionSummary(input: {
         kind: "none",
         sentence:
           "No reporting period has been divided up under the ordinance yet, so nothing has been taken out " +
-          "of this measure and nothing has been set aside for the purposes below.",
+          "of this measure, nothing has been kept back in reserve, and nothing has been set aside for the " +
+          "purposes below.",
       },
     };
   }
@@ -689,6 +777,122 @@ export function buildMeasureDivisionSummary(input: {
     };
   });
 
+  /* ---- What was kept back out of them ---- */
+  //
+  // The same aggregation as the takes, one clause at a time, with one extra
+  // question: what the percentage was applied to. A committee member checking a
+  // reserve needs the rate AND the figure it was taken of, and stating a rate
+  // over periods that used different ones would be worse than stating none —
+  // so `percents` is a SET and the sentence appears only when it holds one
+  // value. The same for `basisTotal`, which goes null the moment one period's
+  // basis figure cannot be read.
+  const reserveOrder: string[] = [];
+  const byReserve = new Map<
+    string,
+    {
+      label: string;
+      amount: number;
+      computed: number;
+      heldOutOfText: string;
+      percents: Set<number>;
+      basisTotal: number | null;
+    }
+  >();
+  const periodsWithAReserve = new Set<string>();
+  let heldBack = 0;
+  let unreadableReserveCount = 0;
+
+  for (const reserve of input.reserveRead.reserves) {
+    const periodId = typeof reserve.period_id === "string" ? reserve.period_id : null;
+    const reserveId = typeof reserve.reserve_id === "string" ? reserve.reserve_id.trim() : "";
+    if (!periodId || !reserveId) continue;
+    // Out of a period nobody has divided up, exactly as a take is: it cannot be
+    // set against anything on this page.
+    if (!dividedPeriodIds.has(periodId)) continue;
+
+    const amount = parseOptionalAmount(reserve.amount ?? null);
+    if (amount === null) {
+      // An unreadable amount is not zero. It cannot be added, and a reader is
+      // told rather than shown a total that quietly dropped it.
+      unreadableReserveCount += 1;
+      continue;
+    }
+    periodsWithAReserve.add(periodId);
+
+    const label = typeof reserve.label === "string" && reserve.label.trim() ? reserve.label.trim() : reserveId;
+    const computed = parseOptionalAmount(reserve.computed_amount ?? null) ?? amount;
+    const percent = parseOptionalAmount(reserve.percent ?? null);
+    const basisAmount = parseOptionalAmount(reserve.basis_amount ?? null);
+    const categoryLabel =
+      typeof reserve.basis_category_label === "string" && reserve.basis_category_label.trim()
+        ? reserve.basis_category_label.trim()
+        : null;
+    // The purpose's own name where there is one. Never the raw category id: a
+    // resident cannot use it and it is the agency's internal spelling.
+    const heldOutOfText =
+      reserve.basis_kind === "category"
+        ? categoryLabel ?? "One of the purposes below"
+        : reserve.basis_kind === "gross"
+          ? "Everything that came in"
+          : reserve.basis_kind === "after_off_the_top"
+            ? "What was left after the amounts taken out first"
+            : "Not recorded";
+
+    const existing = byReserve.get(reserveId);
+    if (existing) {
+      existing.amount = roundCurrencyAmount(existing.amount + amount);
+      existing.computed = roundCurrencyAmount(existing.computed + computed);
+      if (percent !== null) existing.percents.add(percent);
+      existing.basisTotal =
+        existing.basisTotal === null || basisAmount === null
+          ? null
+          : roundCurrencyAmount(existing.basisTotal + basisAmount);
+    } else {
+      reserveOrder.push(reserveId);
+      byReserve.set(reserveId, {
+        label,
+        amount,
+        computed,
+        heldOutOfText,
+        percents: percent === null ? new Set() : new Set([percent]),
+        basisTotal: basisAmount,
+      });
+    }
+    heldBack = roundCurrencyAmount(heldBack + amount);
+  }
+
+  const reserves: OversightReserveRow[] = reserveOrder.map((reserveId) => {
+    const reserve = byReserve.get(reserveId) as NonNullable<ReturnType<typeof byReserve.get>>;
+    const notes: string[] = [];
+    const agreedPercent = reserve.percents.size === 1 ? [...reserve.percents][0] : null;
+    if (agreedPercent !== null && reserve.basisTotal !== null) {
+      notes.push(
+        `The ordinance sets this at ${agreedPercent}% of ` +
+          `${formatOversightMoney(reserve.basisTotal, currencyCode)}.`
+      );
+    }
+    if (reserve.computed > reserve.amount) {
+      notes.push(
+        `The ordinance's own working came to ${formatOversightMoney(reserve.computed, currencyCode)}; ` +
+          `${formatOversightMoney(reserve.amount, currencyCode)} was kept back, because no more was left ` +
+          "to keep back."
+      );
+    }
+    return {
+      reserveId,
+      label: reserve.label,
+      amountText: formatOversightMoney(reserve.amount, currencyCode),
+      heldOutOfText: reserve.heldOutOfText,
+      noteSentence: notes.length > 0 ? notes.join(" ") : null,
+    };
+  });
+
+  // Named rather than counted, and used ONLY by the settlement sentence below.
+  // See the block there for why it is not a standing caveat on the figure.
+  const dividedWithNoReserve = dividedLines
+    .filter((line) => line.periodId && !periodsWithAReserve.has(line.periodId))
+    .map((line) => line.periodLabel);
+
   /* ---- The sentences ---- */
   const periodWord = (count: number) => plural(count, "period", "periods");
   const scope =
@@ -757,23 +961,73 @@ export function buildMeasureDivisionSummary(input: {
     isFloor: dividedWithNoTake.length > 0 || unreadableTakeCount > 0,
   });
 
-  const leftToDivide = roundCurrencyAmount(received - takenOut);
+  /*
+   * WHY THIS FIGURE IS NOT A FLOOR WHENEVER A PERIOD HAS NO RESERVE ROW.
+   *
+   * The take figure above is, and copying that here was the first draft. It is
+   * wrong for reserves, and the difference is not cosmetic. MOST ordinances
+   * keep nothing back at all — a fund with no reserve clause has no reserve row
+   * for any period it has ever divided up — so a floor flag driven by "no row"
+   * would sit permanently on a correct 0.00 and, worse, would propagate to the
+   * figure below it and put "this could be lower" under the one number the
+   * whole section exists to close. A flag that is always on is a flag nobody
+   * reads, and this one would be attached to the arithmetic a committee member
+   * is being invited to check.
+   *
+   * The only thing that genuinely makes this figure a lower bound is a recorded
+   * amount that could not be READ. A period divided up before reserves were
+   * recorded is a real possibility and it is named — in the settlement
+   * sentence, which fires exactly when the arithmetic does not close, i.e.
+   * exactly when that possibility is doing any harm.
+   */
+  const heldBackFigure = oversightFigure({
+    amount: heldBack,
+    currencyCode,
+    coverageSentence: [
+      `Adds up what the ordinance kept back in reserve out of ${scope} rather than dividing it. An ` +
+        "ordinance that keeps nothing back has nothing to record here.",
+      ...(unreadableReserveCount > 0
+        ? [
+            `${unreadableReserveCount} recorded ${plural(
+              unreadableReserveCount,
+              "amount",
+              "amounts"
+            )} could not be read and could not be added, so this is lower than what was actually kept back.`,
+          ]
+        : []),
+    ].join(" "),
+    isFloor: unreadableReserveCount > 0,
+  });
+
+  const leftToDivide = roundCurrencyAmount(received - takenOut - heldBack);
   const leftSentences = [
-    "What those periods received, less what the ordinance took out of them. This is the amount the " +
-      "purposes below are divided out of.",
+    "What those periods received, less what the ordinance took out of them and less what it kept back in " +
+      "reserve. This is the amount the purposes below were given.",
   ];
-  if (takenOutFigure.isFloor) {
-    leftSentences.push("Because not everything taken out is on the record, this could be lower.");
+  if (takenOutFigure.isFloor || heldBackFigure.isFloor) {
+    leftSentences.push(
+      "Because not everything taken out or kept back is on the record, this could be lower."
+    );
   }
   const leftToDivideFigure = oversightFigure({
     amount: leftToDivide,
     currencyCode,
     coverageSentence: leftSentences.join(" "),
-    isFloor: receivedFigure.isFloor && !takenOutFigure.isFloor,
+    isFloor: receivedFigure.isFloor && !takenOutFigure.isFloor && !heldBackFigure.isFloor,
   });
 
   /* ---- Does it close? ---- */
   const settlement: string[] = [];
+  /**
+   * The closing instruction, held back until every cause has been given.
+   *
+   * It used to be welded onto the shortfall sentence, and once the causes
+   * became sentences of their own the reader was told to treat the difference
+   * as unexplained and THEN handed part of the explanation. Ordering copy is
+   * not decoration on a surface whose whole job is that a person can follow the
+   * arithmetic in one pass.
+   */
+  let closeAsUnexplained = false;
   if (input.setAsideShownTotal === null) {
     settlement.push(
       "What each of the ordinance's purposes has been given is not shown on this page, so it cannot be " +
@@ -786,22 +1040,44 @@ export function buildMeasureDivisionSummary(input: {
     const difference = roundCurrencyAmount(leftToDivide - input.setAsideShownTotal);
     if (Math.abs(difference) < 0.005) {
       settlement.push(
-        `The purposes below add up to ${shownText} — the same as the amount left to divide, so nothing ` +
+        `The purposes below add up to ${shownText} — the same as the amount left for them, so nothing ` +
           "these periods received is left unexplained on this page."
       );
     } else if (difference > 0) {
       settlement.push(
         `The purposes below add up to ${shownText}, which is ` +
-          `${formatOversightMoney(difference, currencyCode)} less than the amount left to divide. Some ` +
-          "ordinances hold an amount back in reserve, and this page does not yet show what was held back " +
-          "as its own line — so treat the difference as unexplained here rather than as money that has " +
-          "gone astray."
+          `${formatOversightMoney(difference, currencyCode)} less than the amount left for them.`
       );
+      /*
+       * THE CAUSE THAT USED TO BE UNRECOVERABLE, now named only when it can
+       * apply. Before reserves were recorded this sentence had to offer "some
+       * ordinances hold an amount back" on every shortfall, whether or not the
+       * fund held anything back, because the product could not tell. It can
+       * now: a period with recorded reserves has them in the figure above, so
+       * the only periods that can still hide one are those with no reserve row
+       * at all — and they are named, not counted.
+       */
+      if (dividedWithNoReserve.length > 0) {
+        settlement.push(
+          `${dividedWithNoReserve.length} of the ${periodWord(dividedWithNoReserve.length)} counted here ` +
+            `(${joinList(dividedWithNoReserve)}) ${plural(
+              dividedWithNoReserve.length,
+              "has",
+              "have"
+            )} nothing recorded as kept back in reserve — either the ordinance keeps nothing back out of ` +
+            `${plural(dividedWithNoReserve.length, "it", "them")}, or ${plural(
+              dividedWithNoReserve.length,
+              "it was",
+              "they were"
+            )} divided up before this page began recording reserves as their own line.`
+        );
+      }
+      closeAsUnexplained = true;
     } else {
       settlement.push(
         `The purposes below add up to ${shownText}, which is ` +
-          `${formatOversightMoney(Math.abs(difference), currencyCode)} MORE than the amount left to ` +
-          "divide. The purposes cannot be given more than came in, so something behind these figures is " +
+          `${formatOversightMoney(Math.abs(difference), currencyCode)} MORE than the amount left for ` +
+          "them. The purposes cannot be given more than came in, so something behind these figures is " +
           "wrong; the agency that published this page is the body to ask."
       );
     }
@@ -819,6 +1095,14 @@ export function buildMeasureDivisionSummary(input: {
         );
       }
     }
+
+    // LAST, after every cause. See `closeAsUnexplained` above.
+    if (closeAsUnexplained) {
+      settlement.push(
+        "Treat what is still unaccounted for as unexplained on this page rather than as money that has " +
+          "gone astray."
+      );
+    }
   }
 
   return {
@@ -827,11 +1111,17 @@ export function buildMeasureDivisionSummary(input: {
       kind: "divided",
       received: receivedFigure,
       takenOut: takenOutFigure,
+      heldBack: heldBackFigure,
       leftToDivide: leftToDivideFigure,
       clauses,
+      reserves,
       noClausesSentence:
         clauses.length === 0
           ? "The ordinance took nothing out of these periods before the rest was divided."
+          : null,
+      noReservesSentence:
+        reserves.length === 0
+          ? "The ordinance kept nothing back in reserve out of these periods."
           : null,
       settlementSentence: settlement.join(" "),
     },
@@ -931,11 +1221,12 @@ export type MeasureOversightModel = {
   askedFor: OversightSection<OversightFigure>;
   paidOut: OversightSection<OversightFigure>;
   /**
-   * NULL when the caller did not supply the recorded takes — which is a
-   * different thing from a read that failed, and the two must not share a
-   * sentence. The public page always supplies them; the annual statement does
-   * not yet, and a document that silently printed "could not be loaded" for a
-   * section its author never wired up would be lying about a database.
+   * NULL when the caller did not supply the recorded takes AND reserves — which
+   * is a different thing from a read that failed, and the two must not share a
+   * sentence. A surface that silently printed "could not be loaded" for a
+   * section its author never wired up would be lying about a database. Both
+   * surfaces supply both reads today; the null branch is what keeps the next
+   * one honest while it is being written.
    */
   division: OversightSection<OversightDivision> | null;
   ordinance: OversightOrdinance;
@@ -1000,13 +1291,21 @@ export type MeasureOversightInput = {
    * WHAT THE ORDINANCE TOOK OUT BEFORE THE REST WAS DIVIDED
    * ==========================================================================
    *
-   * Both optional, and BOTH ARE NEEDED for the section to be built: the takes
-   * say what was taken, and the allocation rows say which periods have been
-   * divided up at all, which is the scope the three figures span. Supplying
-   * neither leaves `division` null and the section off the surface entirely —
-   * the annual statement's position today.
+   * All optional, and ALL ARE NEEDED for the section to be built: the takes say
+   * what was taken, the reserves say what was kept back, and the allocation
+   * rows say which periods have been divided up at all, which is the scope the
+   * four figures span. Supplying none leaves `division` null and the section off
+   * the surface entirely.
+   *
+   * WHY THE RESERVES ARE REQUIRED RATHER THAN DEFAULTED TO NONE. A caller that
+   * supplied takes and forgot reserves would get a chain that looks complete
+   * and understates what was kept back by the whole amount — the defect this
+   * lane exists to close, reintroduced by omission. `division` is therefore
+   * null unless both reads are handed over, and a surface that wires up one of
+   * them gets no section rather than a wrong one.
    */
   offTheTopRead?: MeasureOffTheTopTakeRead;
+  reserveRead?: MeasureReserveRead;
   allocations?: readonly MeasureAllocationLike[];
 
   /**
@@ -1220,7 +1519,7 @@ export function buildMeasureOversightModel(input: MeasureOversightInput): Measur
   // unreadable there is no scope to span, so the subtraction cannot be
   // performed at all — and a zero here would say the ordinance takes nothing.
   let division: OversightSection<OversightDivision> | null = null;
-  if (input.offTheTopRead) {
+  if (input.offTheTopRead && input.reserveRead) {
     if (!input.receiptResult.ok) {
       division = {
         ok: false,
@@ -1242,6 +1541,7 @@ export function buildMeasureOversightModel(input: MeasureOversightInput): Measur
         receiptLedger: input.receiptResult.ledger,
         allocations: input.allocations ?? [],
         takeRead: input.offTheTopRead,
+        reserveRead: input.reserveRead,
         setAsideShownTotal: ordinance.kind === "categories" ? setAsideShownTotal : null,
         allocatedTotal: input.claimResult.ok ? input.claimResult.ledger.allocatedTotal : null,
       });

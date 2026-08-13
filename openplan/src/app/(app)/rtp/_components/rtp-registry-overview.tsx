@@ -45,6 +45,16 @@ export function RtpRegistryOverview({
           </p>
         </div>
 
+        {/* The module's primary action, in the header rather than wherever the
+            section order puts the form. The full creator stays where it is — in
+            `rtp-queue-operations-board.tsx`, below the registry table's queue
+            controls — and this jumps to it. */}
+        <div className="module-intro-actions">
+          <a className="module-intro-action" href="#create-rtp-cycle">
+            New RTP cycle
+          </a>
+        </div>
+
         <div className="module-summary-grid cols-6">
           <div className="module-summary-card">
             <p className="module-summary-label">Cycles</p>

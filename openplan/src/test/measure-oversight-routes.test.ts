@@ -49,6 +49,17 @@ const USER_ID = "00000000-0000-4000-8000-000000000001";
 const ORDINANCE_RULE = {
   version: 1,
   offTheTop: [{ id: "admin", label: "Administration", percent: 1 }],
+  /*
+   * ONE RESERVE OF EACH KIND, because they behave differently and a fixture
+   * with only one cannot tell them apart. A 'gross' reserve reduces the pool
+   * before the categories are cut; a 'category:' reserve comes out of ONE
+   * purpose after the cut, and only the second needs the "kept back out of"
+   * column to say anything.
+   */
+  reserves: [
+    { id: "rainy_day", label: "Rainy-day fund", basis: "gross", percent: 2 },
+    { id: "transit_hold", label: "Bus replacement fund", basis: "category:transit", percent: 10 },
+  ],
   categories: [
     { id: "streets", label: "Local streets", percentOfAllocable: 70, distribution: { kind: "pooled" } },
     { id: "transit", label: "Transit service", percentOfAllocable: 30, distribution: { kind: "pooled" } },
@@ -65,6 +76,8 @@ type Scenario = {
   allocations: Array<Record<string, unknown>>;
   /** What the ordinance took out of each period, across every year the fund has. */
   takes: Array<Record<string, unknown>>;
+  /** What the ordinance kept back out of each period, across every year the fund has. */
+  reserves: Array<Record<string, unknown>>;
   updateReturns: Array<Record<string, unknown>>;
   errors: Record<string, { message: string }>;
 };
@@ -92,6 +105,8 @@ function rowsFor(table: string): unknown {
       return scenario.allocations;
     case "measure_period_off_the_top":
       return scenario.takes;
+    case "measure_period_reserve":
+      return scenario.reserves;
     case "measure_claims":
       return scenario.claims;
     case "measure_moe_records":
@@ -286,6 +301,13 @@ function defaultScenario(): Scenario {
      * that takes nothing — see the test that names this case.
      */
     takes: [],
+    /*
+     * AND NO RESERVE RECORDED, for exactly the same reason: a fund divided up
+     * before 20260812000019 began persisting what was kept back has none of
+     * these rows either. The statement must print a real 0.00 for it without
+     * inventing an ordinance that keeps nothing back.
+     */
+    reserves: [],
     updateReturns: [{ id: MEASURE_ID, public_share_enabled: true }],
     errors: {},
   };
@@ -294,32 +316,53 @@ function defaultScenario(): Scenario {
 /**
  * ONE FISCAL YEAR WHOSE ARITHMETIC CLOSES, hand-derived to the cent.
  *
- * The ordinance takes 1% off the top and divides the rest 70/30. FY 2026 has
- * one period with money in it:
+ * The ordinance takes 1% off the top, keeps 2% of everything that came in as a
+ * rainy-day fund, divides the rest 70/30, and then keeps 10% of the transit
+ * share back for bus replacement. FY 2026 has one period with money in it, and
+ * every figure below was worked out on paper before this fixture existed:
  *
- *   FY26 Q1   received     4,812,340.17
- *             1% taken        48,123.40   (4,812,340.1700 × 0.01, at the cent)
- *             left to divide 4,764,216.77
- *             streets 70%    3,334,951.74
- *             transit 30%    1,429,265.03
- *             the two headings 4,764,216.77   <- the document must close on this
+ *   FY26 Q1   received                    4,812,340.17
+ *             1% taken off the top           48,123.40   (× 0.01, at the cent)
+ *             after that                  4,764,216.77
+ *             rainy-day 2% of GROSS          96,246.80   (96,246.8034 half-up)
+ *             pool to divide              4,667,969.97
+ *             streets 70%                 3,267,578.98   (3,267,578.979 half-up)
+ *             transit 30%                 1,400,390.99   (1,400,390.991 half-up)
+ *                                    Σ    4,667,969.97   (exact — no residual)
+ *             bus replacement, 10% of transit  140,039.10 (140,039.099 half-up)
+ *             transit after that          1,260,351.89
  *
- * FY25 Q4 keeps a take of its own (20,000.00) that must NOT reach an FY 2026
- * statement. A take is addressed by period and `measure_period_off_the_top`
- * has no year column, so the only thing keeping the years apart is the
- * `period_id IN (…)` join — the same join the allocations read makes. A route
- * that scoped one and not the other would subtract one year's takes from
- * another year's receipts, which is worse than the section it replaced.
+ *             kept back in reserve, both  236,285.90     (96,246.80 + 140,039.10)
+ *             left for the purposes       4,527,930.87
+ *             the two headings            4,527,930.87   <- must close on this
+ *                                                        (3,267,578.98 + 1,260,351.89)
+ *
+ * THE RESERVE IS WHAT MAKES THE CHAIN REAL. Without it `received − taken out`
+ * happened to equal what the purposes were given, so a document that never
+ * subtracted a reserve at all would still have closed. It cannot now: leave the
+ * held-back figure out and the two headings are 236,285.90 short.
+ *
+ * FY25 Q4 keeps a take (20,000.00) and a reserve (12,000.00) of its own that
+ * must NOT reach an FY 2026 statement. Neither table has a year column — both
+ * are addressed by period — so the only thing keeping the years apart is the
+ * `period_id IN (…)` join, the same join the allocations read makes. A route
+ * that scoped two of the three would subtract one year's figures from another
+ * year's receipts, which is worse than the section it replaced.
  */
 function seedDividedYear() {
   scenario.allocations = [
     { id: "a-2025", measure_fund_id: MEASURE_ID, period_id: "p-2025", category_id: "streets", recipient_id: null, amount: "700000.00", computation_basis: "descriptor" },
-    { id: "a-2026s", measure_fund_id: MEASURE_ID, period_id: "p-2026a", category_id: "streets", recipient_id: null, amount: "3334951.74", computation_basis: "descriptor" },
-    { id: "a-2026t", measure_fund_id: MEASURE_ID, period_id: "p-2026a", category_id: "transit", recipient_id: null, amount: "1429265.03", computation_basis: "descriptor" },
+    { id: "a-2026s", measure_fund_id: MEASURE_ID, period_id: "p-2026a", category_id: "streets", recipient_id: null, amount: "3267578.98", computation_basis: "descriptor" },
+    { id: "a-2026t", measure_fund_id: MEASURE_ID, period_id: "p-2026a", category_id: "transit", recipient_id: null, amount: "1260351.89", computation_basis: "descriptor" },
   ];
   scenario.takes = [
     { id: "t-2025", measure_fund_id: MEASURE_ID, period_id: "p-2025", off_the_top_id: "admin", label: "Running the programme", amount: "20000.00", uncapped_amount: "20000.00", cap_amount: null, cap_basis: null, cap_status: "within_cap", allocation_rule_id: "rule-1", stated_by: USER_ID, stated_on: "2025-07-20" },
     { id: "t-2026", measure_fund_id: MEASURE_ID, period_id: "p-2026a", off_the_top_id: "admin", label: "Running the programme", amount: "48123.40", uncapped_amount: "48123.40", cap_amount: null, cap_basis: null, cap_status: "within_cap", allocation_rule_id: "rule-1", stated_by: USER_ID, stated_on: "2025-10-22" },
+  ];
+  scenario.reserves = [
+    { id: "v-2025", measure_fund_id: MEASURE_ID, period_id: "p-2025", reserve_id: "rainy_day", label: "Rainy-day fund", basis_kind: "gross", basis_category_id: null, basis_category_label: null, basis_amount: "600000.00", percent: "2.0000", amount: "12000.00", computed_amount: "12000.00", allocation_rule_id: "rule-1", stated_by: USER_ID, stated_on: "2025-07-20" },
+    { id: "v-2026r", measure_fund_id: MEASURE_ID, period_id: "p-2026a", reserve_id: "rainy_day", label: "Rainy-day fund", basis_kind: "gross", basis_category_id: null, basis_category_label: null, basis_amount: "4812340.17", percent: "2.0000", amount: "96246.80", computed_amount: "96246.80", allocation_rule_id: "rule-1", stated_by: USER_ID, stated_on: "2025-10-22" },
+    { id: "v-2026t", measure_fund_id: MEASURE_ID, period_id: "p-2026a", reserve_id: "transit_hold", label: "Bus replacement fund", basis_kind: "category", basis_category_id: "transit", basis_category_label: "Transit service", basis_amount: "1400390.99", percent: "10.0000", amount: "140039.10", computed_amount: "140039.10", allocation_rule_id: "rule-1", stated_by: USER_ID, stated_on: "2025-10-22" },
   ];
 }
 
@@ -526,10 +569,13 @@ describe("the annual statement route", () => {
    * Until 2026-08-12 this statement printed received, asked for, paid out and
    * the category table with no line for the amount the ordinance takes first,
    * so the obvious subtraction found money that had vanished with nothing on
-   * the page to say where. Asserted against the numbers the STATEMENT actually
+   * the page to say where. Later the same day the second half landed: what the
+   * ordinance KEPT BACK was equally absent, so for any fund holding a reserve
+   * the chain still did not close and the document had to name a cause it could
+   * not show. Both halves are asserted here against the numbers the STATEMENT
    * printed, not against the model that produced them.
    */
-  it("closes the arithmetic on the rendered statement: received − taken out = left to divide = the headings", async () => {
+  it("closes the arithmetic on the rendered statement: received − taken out − kept back = the headings", async () => {
     seedDividedYear();
 
     const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
@@ -538,26 +584,41 @@ describe("the annual statement route", () => {
 
     const received = figureAmount(html, MEASURE_OVERSIGHT_COPY.divisionReceivedHeading);
     const takenOut = figureAmount(html, MEASURE_OVERSIGHT_COPY.divisionTakenOutHeading);
-    const leftToDivide = figureAmount(html, MEASURE_OVERSIGHT_COPY.divisionLeftHeading);
+    const heldBack = figureAmount(html, MEASURE_OVERSIGHT_COPY.divisionHeldBackHeading);
+    const leftForPurposes = figureAmount(html, MEASURE_OVERSIGHT_COPY.divisionLeftHeading);
 
     expect(received).toBe(4812340.17);
     expect(takenOut).toBe(48123.4);
-    expect(Number((received - takenOut).toFixed(2))).toBe(leftToDivide);
-    expect(leftToDivide).toBe(4764216.77);
+    // 96,246.80 rainy-day + 140,039.10 bus replacement.
+    expect(heldBack).toBe(236285.9);
+    expect(Number((received - takenOut - heldBack).toFixed(2))).toBe(leftForPurposes);
+    expect(leftForPurposes).toBe(4527930.87);
 
     // And the ordinance's own headings add back up to it.
-    expect(setAsideColumn(html)).toEqual([3334951.74, 1429265.03]);
-    expect(Number(setAsideColumn(html).reduce((sum, value) => sum + value, 0).toFixed(2))).toBe(leftToDivide);
+    expect(setAsideColumn(html)).toEqual([3267578.98, 1260351.89]);
+    expect(Number(setAsideColumn(html).reduce((sum, value) => sum + value, 0).toFixed(2))).toBe(
+      leftForPurposes
+    );
 
     // In words too, for the reader who does not add the column up.
-    expect(html).toContain("the same as the amount left to divide");
-    // The clause is named, so a reader can see WHAT was taken and not only how
-    // much. "Running the programme" is the label the agency recorded.
+    expect(html).toContain("the same as the amount left for them");
+    // Both clauses are named, so a reader can see WHAT was taken and kept and
+    // not only how much. These are the labels the agency recorded.
     expect(html).toContain("Running the programme");
     expect(html).toContain("USD 48,123.40");
+    expect(html).toContain("Rainy-day fund");
+    expect(html).toContain("Bus replacement fund");
+    // A purpose-level reserve says which purpose. Without that column a reader
+    // cannot tell 140,039.10 held out of transit from the same amount held out
+    // of the whole payment, and only one of those changes what transit got.
+    expect(html).toContain("Everything that came in");
+    // The rate and the figure it was applied to, so the line is checkable
+    // rather than merely disclosed.
+    expect(html).toContain("The ordinance sets this at 2% of USD 4,812,340.17.");
+    expect(html).toContain("The ordinance sets this at 10% of USD 1,400,390.99.");
   });
 
-  it("takes the same year off the top that it takes the receipts from", async () => {
+  it("takes the same year off the top, and keeps back the same year, as it takes the receipts from", async () => {
     seedDividedYear();
 
     const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
@@ -570,11 +631,22 @@ describe("the annual statement route", () => {
       { table: "measure_period_off_the_top", column: "measure_fund_id", value: MEASURE_ID },
       { table: "measure_period_off_the_top", column: "period_id", value: ["p-2026a", "p-2026b"] },
     ]);
+    // AND THE RESERVES, THE SAME WAY. A third row set scoped a fourth way would
+    // subtract one span from another — the failure this section exists to
+    // prevent, arriving through the newest door.
+    const reserveScope = capturedFilters.filter((filter) => filter.table === "measure_period_reserve");
+    expect(reserveScope).toEqual([
+      { table: "measure_period_reserve", column: "measure_fund_id", value: MEASURE_ID },
+      { table: "measure_period_reserve", column: "period_id", value: ["p-2026a", "p-2026b"] },
+    ]);
 
-    // FY 2025 took 20,000.00 of its own. Neither it nor the 68,123.40 that
-    // summing both years gives may appear under an FY 2026 heading.
+    // FY 2025 took 20,000.00 and kept 12,000.00 of its own. Neither, nor the
+    // 68,123.40 and 108,246.80 that summing both years gives, may appear under
+    // an FY 2026 heading.
     expect(html).not.toContain("20,000.00");
     expect(html).not.toContain("68,123.40");
+    expect(html).not.toContain("12,000.00");
+    expect(html).not.toContain("108,246.80");
   });
 
   it("says the section covers one fiscal year, not the measure's whole history", async () => {
@@ -608,23 +680,52 @@ describe("the annual statement route", () => {
     expect(html).toContain("so this is at least what was taken");
     expect(html).toContain("At least this much");
     // And the difference is disclosed rather than the document looking balanced.
-    expect(html).toContain("less than the amount left to divide");
+    expect(html).toContain("less than the amount left for them");
   });
 
   /**
-   * RESERVES ARE NOT PERSISTED PER PERIOD (recorded, not fixed).
+   * A YEAR WITH NO RECORDED RESERVE IS NOT AUTOMATICALLY A DOUBTFUL YEAR.
    *
-   * A fund whose ordinance holds an amount back cannot close this subtraction,
-   * because nothing stores what each period held back. The settlement sentence
-   * therefore names a reserve as a possible cause instead of implying the gap
-   * is unexplained — and the statement must inherit that sentence rather than
-   * printing a bare shortfall.
+   * The default fixture has no reserve rows, which is what BOTH an ordinance
+   * that keeps nothing back and a period divided up before 20260812000019 look
+   * like. The figure is a real 0.00 and it does NOT carry a floor flag of its
+   * own — a flag that fires for every fund without a reserve clause is a flag
+   * nobody reads, and it would attach itself to the one number the whole
+   * section exists to close.
+   *
+   * The honest half is that the possibility is still named — in the settlement
+   * sentence, which fires exactly when the headings do not add up, i.e. exactly
+   * when an unrecorded reserve would be doing harm.
    */
-  it("inherits the page's sentence about a reserve when the headings do not add up", async () => {
+  it("prints a year with no recorded reserve as a real zero, and names the periods only when it matters", async () => {
+    const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
+    const html = (await response.text()).replaceAll(String.fromCharCode(160), " ");
+
+    expect(figureAmount(html, MEASURE_OVERSIGHT_COPY.divisionHeldBackHeading)).toBe(0);
+    expect(html).toContain("The ordinance kept nothing back in reserve out of these periods.");
+    // The headings do not add up in this fixture, so the cause IS named — by
+    // period, not as a standing "some ordinances hold an amount back".
+    expect(html).toContain("nothing recorded as kept back in reserve");
+    expect(html).toContain("FY26 Q1");
+  });
+
+  /**
+   * THE SENTENCE THAT WAS REPLACED, and must not come back.
+   *
+   * Before reserves were persisted the settlement had to offer "some ordinances
+   * hold an amount back in reserve, and this page does not yet show what was
+   * held back as its own line" on EVERY shortfall — a cause the product could
+   * neither show nor rule out. It can now, so that sentence is a claim about a
+   * missing capability that is no longer missing.
+   */
+  it("no longer offers a reserve as an unrecoverable cause", async () => {
     const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
     const html = (await response.text()).replaceAll(" ", " ");
 
-    expect(html).toContain("Some ordinances hold an amount back in reserve");
+    expect(html).not.toContain("Some ordinances hold an amount back in reserve");
+    expect(html).not.toContain("does not yet show what was held back");
+    // The difference is still disclosed, and still not called money gone
+    // astray — dropping the whole sentence would have been the other failure.
     expect(html).toContain("rather than as money that has gone astray");
   });
 
@@ -664,6 +765,42 @@ describe("the annual statement route", () => {
   });
 
   /**
+   * THE SAME REFUSAL FOR THE RESERVES, and it is not redundant with the one
+   * above: they are two reads of two tables that fail independently, and a
+   * route that guarded one and defaulted the other to `[]` would print a
+   * document whose chain is complete in the middle and wrong at the end.
+   */
+  it("produces no statement at all when what was kept back could not be read", async () => {
+    seedDividedYear();
+    scenario.errors.measure_period_reserve = {
+      message: "permission denied for table measure_period_reserve",
+    };
+
+    const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    const body = (await response.json()) as { error: string; hint?: string };
+    expect(body.error).toContain("what the ordinance kept back in reserve");
+    expect(body.hint).toContain("not an empty result");
+    expect(mockAudit.error).toHaveBeenCalledWith("reserve_read_failed", expect.anything());
+  });
+
+  it("tells an operator to migrate when the reserve table is not there yet", async () => {
+    // The table arrived in 20260812000019. Mid-upgrade the read fails with a
+    // missing-relation message, which is transient and fixable — 503 with the
+    // fix named, never a document that prints a reserve of zero.
+    scenario.errors.measure_period_reserve = {
+      message: 'relation "public.measure_period_reserve" does not exist',
+    };
+
+    const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
+
+    expect(response.status).toBe(503);
+    expect((await response.json()).hint).toContain("Apply the latest Supabase migrations");
+  });
+
+  /**
    * THE PUBLIC CLAIM BOUNDARY ON THE RENDERED DOCUMENT.
    *
    * `public-page-claims-guardrails.test.ts` derives its corpus from
@@ -681,7 +818,7 @@ describe("the annual statement route", () => {
     // The runtime-assembled section is really in it, or both loops below pass
     // over copy that was never rendered.
     expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionHeading);
-    expect(html).toContain("the same as the amount left to divide");
+    expect(html).toContain("the same as the amount left for them");
 
     for (const { label, pattern } of PROHIBITED_PUBLIC_CLAIMS) {
       expect(

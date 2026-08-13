@@ -199,7 +199,16 @@ const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // — which upload of them. A layer in the wrong place looks exactly like a layer
 // in the right place, so "read everything, change nothing" has to hold at the
 // database for this lane in particular.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 259;
+//
+// 259 -> 261 (20260812000019): `measure_period_reserve` — an INSERT and a
+// DELETE, both role-aware through `workspace_member_can_write`, so the table
+// never enters `tablesNeedingGate()` either. Two rather than three: no UPDATE
+// policy, matching `measure_period_off_the_top`. What a viewer could otherwise
+// write here is how much of a voter-approved fund the agency kept back instead
+// of dividing — a figure the public oversight page subtracts from what came in,
+// so a fabricated row moves the amount the ordinance's own purposes appear to
+// have been given.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 261;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

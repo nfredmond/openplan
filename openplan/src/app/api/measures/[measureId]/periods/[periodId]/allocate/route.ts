@@ -46,6 +46,21 @@
  * reserved `category_id` would put a made-up heading into the ordinance's own
  * list on the public page.
  *
+ * AND WHAT THE PERIOD'S RESERVES ARE DOING HERE, added 20260812000019. Same
+ * transaction, into `measure_period_reserve`, for a different reason: nothing
+ * recorded what a period kept back, so `received − taken out first` did not
+ * equal what the ordinance's purposes were given, and the public surfaces had
+ * to name a held-back reserve as a POSSIBLE cause of a difference they could
+ * not account for. They are not off-the-top rows — a reserve is not taken out
+ * of the fund, it stays in the measure — and they are not category rows either,
+ * because a category row records what a purpose was GIVEN and a reserve is the
+ * part of it that was not.
+ *
+ * All three sets are replaced in ONE statement batch. Two of the three would be
+ * worse than none: a period whose categories came from today's recompute and
+ * whose reserves came from last month's is a division under two ordinances with
+ * nothing on any page to say so.
+ *
  * ============================================================================
  * WHAT IT REFUSES, AND WHY EACH REFUSAL IS THE DESIGN
  * ============================================================================
@@ -186,6 +201,17 @@ export async function POST(
      * period recomputed by hand does not keep a stale computed one.
      */
     let offTheTopRows: Array<Record<string, unknown>> = [];
+    /**
+     * What the period kept back rather than dividing.
+     *
+     * EMPTY IN MANUAL MODE for the same reason the takes are: a person stating
+     * what each category received under an ordinance the descriptor cannot
+     * express has declared no reserve clauses, and inventing one would put a
+     * figure nobody entered under a heading nobody wrote. The replacement still
+     * CLEARS whatever the period held, so a period recomputed by hand does not
+     * keep a stale computed reserve beside hand-entered categories.
+     */
+    let reserveRows: Array<Record<string, unknown>> = [];
     let allocationSummary: unknown = null;
 
     if (payload.data.mode === "manual") {
@@ -391,6 +417,52 @@ export async function POST(
         stated_on: statedOn,
       }));
 
+      /*
+       * WHAT THE PERIOD KEPT BACK, one row per reserve clause.
+       *
+       * The descriptor spells a purpose-level reserve's basis as the single
+       * string `category:<id>`; the row splits it into a closed `basis_kind`
+       * and the purpose's id and LABEL. The label is denormalized deliberately
+       * (see the migration header): a later rule version may rename or drop the
+       * purpose, and a public page that resolved the id against whatever rule
+       * is in force TODAY would print a heading the money was never held under.
+       * `outcome.allocation.categories` is the labelling in force for THIS
+       * period, because it is the one the allocator just applied.
+       */
+      const categoryLabels = new Map(
+        outcome.allocation.categories.map((category) => [category.id, category.label])
+      );
+      const reserveRow = (line: (typeof outcome.allocation.poolReserves)[number]) => {
+        const categoryId = line.basis.startsWith("category:") ? line.basis.slice("category:".length) : null;
+        return {
+          workspace_id: authorization.workspaceId,
+          measure_fund_id: authorization.fund.id,
+          period_id: period.id,
+          reserve_id: line.id,
+          label: line.label,
+          basis_kind: categoryId ? "category" : line.basis,
+          basis_category_id: categoryId,
+          // Never the bare id as a fallback: the CHECK requires the pair, and a
+          // row whose label IS its id would print `transit` where a purpose's
+          // name belongs. A category the allocator itself produced always has
+          // one, so `?? null` here would be an unreachable branch pretending to
+          // be a safeguard — the constraint is what catches a rule that changed
+          // under us.
+          basis_category_label: categoryId ? categoryLabels.get(categoryId) ?? line.label : null,
+          basis_amount: line.basisAmount,
+          percent: line.percent,
+          amount: line.amount,
+          computed_amount: line.computedAmount,
+          allocation_rule_id: inForce.id,
+          stated_by: authorization.userId,
+          stated_on: statedOn,
+        };
+      };
+      reserveRows = [
+        ...outcome.allocation.poolReserves.map(reserveRow),
+        ...outcome.allocation.categoryReserves.map(reserveRow),
+      ];
+
       rows = [];
       for (const category of outcome.allocation.categories) {
         if (category.distribution.kind === "return_to_source") {
@@ -459,6 +531,13 @@ export async function POST(
       p_period_id: period.id,
       p_allocations: rows,
       p_off_the_top: offTheTopRows,
+      // ALWAYS PASSED, never omitted on the strength of the function's default.
+      // The default exists for the migrate-before-deploy window, when an older
+      // build is still calling with four arguments; a current build that left
+      // it off would clear the period's reserves and write none, and the public
+      // page's arithmetic would silently stop closing for every fund that holds
+      // one back.
+      p_reserves: reserveRows,
     });
 
     if (error && isWriteFailure(error)) {
@@ -477,6 +556,7 @@ export async function POST(
     const result = (replacement ?? {}) as {
       replaced_allocation_count?: number | null;
       replaced_off_the_top_count?: number | null;
+      replaced_reserve_count?: number | null;
       allocations?: unknown[] | null;
     };
     const replacedRowCount = typeof result.replaced_allocation_count === "number" ? result.replaced_allocation_count : null;
@@ -487,9 +567,12 @@ export async function POST(
       mode: payload.data.mode,
       rowCount: rows.length,
       offTheTopRowCount: offTheTopRows.length,
+      reserveRowCount: reserveRows.length,
       replacedRowCount,
       replacedOffTheTopRowCount:
         typeof result.replaced_off_the_top_count === "number" ? result.replaced_off_the_top_count : null,
+      replacedReserveRowCount:
+        typeof result.replaced_reserve_count === "number" ? result.replaced_reserve_count : null,
       durationMs: Date.now() - startedAt,
     });
     return NextResponse.json(

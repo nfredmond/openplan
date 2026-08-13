@@ -334,6 +334,51 @@ export function toMeasureOffTheTopTakeRead(result: {
 }
 
 /**
+ * One recorded reserve, as `measure_period_reserve` stores it (20260812000019).
+ *
+ * Every field optional for the reason `MeasureOffTheTopTakeRecord`'s are: a
+ * caller reading a narrower projection must not be forced to fabricate a
+ * `basis_kind` it did not select. Every real read uses
+ * `MEASURE_RESERVE_COLUMNS`, which has them all.
+ *
+ * WHY THERE IS NO CAP WINDOW EQUIVALENT. An off-the-top can be capped over the
+ * fiscal year, so the allocator has to be told what has already been taken. A
+ * reserve is a percentage of a figure that period computed for itself and is
+ * limited only by what remained in that period, so nothing about an earlier
+ * period changes it. These rows are read for the SURFACES, never for the
+ * arithmetic — which is why this module gains a read classifier and no window
+ * builder.
+ */
+export type MeasureReserveRecord = {
+  period_id?: string | null;
+  reserve_id?: string | null;
+  label?: string | null;
+  basis_kind?: string | null;
+  basis_category_id?: string | null;
+  basis_category_label?: string | null;
+  basis_amount?: number | string | null;
+  percent?: number | string | null;
+  amount?: number | string | null;
+  computed_amount?: number | string | null;
+};
+
+export type MeasureReserveRead =
+  | { ok: true; reserves: MeasureReserveRecord[] }
+  | { ok: false; pending: boolean; message: string };
+
+/** The `toMeasureFundPeriodRead` classifier, for the reserves query. */
+export function toMeasureReserveRead(result: {
+  data?: MeasureReserveRecord[] | null;
+  error?: { message?: string | null } | null;
+}): MeasureReserveRead {
+  if (result.error) {
+    const message = result.error.message ?? "Measure reserve read failed.";
+    return { ok: false, pending: looksLikePendingSchema(message), message };
+  }
+  return { ok: true, reserves: result.data ?? [] };
+}
+
+/**
  * The fiscal-year window an off-the-top cap is evaluated over: what each clause
  * has ALREADY TAKEN in this year, summed from the recorded takes.
  *

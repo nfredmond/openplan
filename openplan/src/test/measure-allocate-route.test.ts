@@ -128,6 +128,31 @@ const RETURN_TO_SOURCE_RULE = {
   ],
 };
 
+/**
+ * THE SAME 1% TAKE, PLUS ONE RESERVE OF EACH KIND.
+ *
+ * A pool reserve comes out before the ordinance's categories are cut and a
+ * purpose-level one comes out of a single category afterwards, so the two are
+ * written from different figures and only the second carries a category. A
+ * fixture with one of them cannot tell a route that keeps them apart from one
+ * that treats every reserve as coming out of the whole receipt.
+ */
+const RESERVE_RULE = {
+  version: 1,
+  offTheTop: [
+    { id: "administration", label: "Measure administration", percent: 1, capAmount: 200000, capBasis: "fiscal_year" },
+  ],
+  reserves: [
+    { id: "rainy_day", label: "Rainy-day fund", basis: "gross", percent: 2 },
+    { id: "transit_hold", label: "Bus replacement fund", basis: "category:transit", percent: 10 },
+  ],
+  categories: [
+    { id: "streets", label: "Local streets", percentOfAllocable: 60, distribution: { kind: "pooled" } },
+    { id: "transit", label: "Transit service", percentOfAllocable: 40, distribution: { kind: "pooled" } },
+  ],
+  basisDefinitions: [],
+};
+
 const RECIPIENT_ID = "bbbbbbbb-0001-4bbb-8bbb-bbbbbbbbbbbb";
 
 type Scenario = {
@@ -246,6 +271,16 @@ function offTheTopRowsSent(): Array<Record<string, unknown>> {
   return (capturedRpc[0]?.args.p_off_the_top ?? []) as Array<Record<string, unknown>>;
 }
 
+/**
+ * NOT `?? []`. The whole failure this argument exists to prevent is a route
+ * that omits it and lets the function's default clear a period's reserves and
+ * write none, so the tests below have to be able to see the difference between
+ * "sent an empty array" and "sent nothing at all".
+ */
+function reserveRowsSent(): unknown {
+  return capturedRpc[0]?.args.p_reserves;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   capturedFilters = [];
@@ -344,8 +379,88 @@ describe("allocate route — the replacement is one transaction", () => {
 
     expect(response.status).toBe(201);
     expect(offTheTopRowsSent()).toEqual([]);
+    // AN EMPTY ARRAY, NOT AN ABSENT ARGUMENT. Both clear the period's reserves,
+    // so the distinction is invisible in the database — but omitting the
+    // argument here would also be indistinguishable from a descriptor path that
+    // forgot it, and that one silently loses every reserve a fund keeps.
+    expect(reserveRowsSent()).toEqual([]);
     expect(allocationRowsSent()).toHaveLength(1);
     expect(allocationRowsSent()[0]).toMatchObject({ computation_basis: "manual", category_id: "streets" });
+  });
+
+  /**
+   * WHAT THE PERIOD KEPT BACK, WRITTEN IN THE SAME CALL — hand-derived.
+   *
+   * 25,000,000.00 received under `RESERVE_RULE`:
+   *
+   *   1% administration            250,000.00, annual cap 200,000 bites -> 200,000.00
+   *   after that                24,800,000.00
+   *   rainy-day, 2% of GROSS       500,000.00   (2% of 25,000,000.00)
+   *   pool to divide            24,300,000.00
+   *   streets 60%               14,580,000.00
+   *   transit 40%                9,720,000.00
+   *   bus replacement, 10% of transit  972,000.00
+   *   transit after that         8,748,000.00
+   *
+   * Note that the rainy-day reserve is 2% of the RECEIPT and not 2% of what was
+   * left after the take: `basis: 'gross'`. 2% of 24,800,000.00 would be
+   * 496,000.00, so a route or allocator that used the wrong base is four
+   * thousand dollars out and this fixture says which.
+   */
+  it("writes what the period kept back in reserve, in the same call as the categories", async () => {
+    scenario.rule = RESERVE_RULE;
+
+    const response = await allocate(post({ mode: "descriptor" }), context(QUARTER_IDS[0]));
+    expect(response.status).toBe(201);
+
+    const reserves = reserveRowsSent() as Array<Record<string, unknown>>;
+    expect(reserves).toHaveLength(2);
+
+    // THE POOL RESERVE: out of everything that came in, no category.
+    expect(reserves[0]).toMatchObject({
+      reserve_id: "rainy_day",
+      label: "Rainy-day fund",
+      basis_kind: "gross",
+      basis_category_id: null,
+      basis_category_label: null,
+      basis_amount: 25000000,
+      percent: 2,
+      amount: 500000,
+      computed_amount: 500000,
+      period_id: QUARTER_IDS[0],
+      measure_fund_id: MEASURE_ID,
+      workspace_id: WORKSPACE_ID,
+      allocation_rule_id: RULE_ID,
+    });
+
+    // THE PURPOSE-LEVEL RESERVE: out of the transit share only, and carrying
+    // the purpose's LABEL as well as its id. The label is denormalized so a
+    // later rule version renaming the purpose cannot leave this row unable to
+    // say what it came out of.
+    expect(reserves[1]).toMatchObject({
+      reserve_id: "transit_hold",
+      label: "Bus replacement fund",
+      basis_kind: "category",
+      basis_category_id: "transit",
+      basis_category_label: "Transit service",
+      basis_amount: 9720000,
+      percent: 10,
+      amount: 972000,
+      computed_amount: 972000,
+    });
+    // The prefix belongs to the descriptor's own spelling and must not survive
+    // into a column a surface reads.
+    expect(reserves[1].basis_kind).not.toBe("category:transit");
+
+    // AND THE CATEGORY ROWS ARE NET OF IT. This is the invariant the public
+    // page's arithmetic rests on: Σ allocations = receipt − takes − reserves.
+    const rows = allocationRowsSent();
+    const byCategory = new Map(rows.map((row) => [row.category_id, Number(row.amount)]));
+    expect(byCategory.get("streets")).toBe(14580000);
+    expect(byCategory.get("transit")).toBe(8748000);
+    const allocated = rows.reduce((sum, row) => sum + Number(row.amount), 0);
+    expect(allocated).toBe(25000000 - 200000 - 500000 - 972000);
+    expect(allocated).toBe(23328000);
   });
 });
 

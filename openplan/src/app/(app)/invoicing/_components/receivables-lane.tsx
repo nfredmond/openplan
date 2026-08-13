@@ -6,6 +6,7 @@ import { EngagementNteBar } from "@/components/invoicing/engagement-nte-bar";
 import { ReceivableAgingStrip } from "@/components/invoicing/receivable-aging-strip";
 import { StaffAndRatesPanel } from "@/components/invoicing/staff-and-rates-panel";
 import { TimeEntryComposer } from "@/components/invoicing/time-entry-composer";
+import { TimeEntryRowControls } from "@/components/invoicing/time-entry-row-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildEngagementBilledSummary,
@@ -549,6 +550,7 @@ export async function ReceivablesLane({
                       <th className="px-3 py-2">Deliverable</th>
                       <th className="px-3 py-2">Billable</th>
                       <th className="px-3 py-2">Billing state</th>
+                      <th className="px-3 py-2">Correction</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -573,6 +575,17 @@ export async function ReceivablesLane({
                           <StatusBadge tone={entry.billed_line_item_id ? "success" : "warning"}>
                             {entry.billed_line_item_id ? "Billed" : "Unbilled"}
                           </StatusBadge>
+                        </td>
+                        <td className="px-3 py-2">
+                          <TimeEntryRowControls
+                            workspaceId={workspaceId}
+                            timeEntryId={entry.id}
+                            entryDate={entry.entry_date ?? null}
+                            hours={Number(entry.hours ?? 0)}
+                            billable={entry.billable !== false}
+                            billed={Boolean(entry.billed_line_item_id)}
+                            canWrite={canWriteInvoices}
+                          />
                         </td>
                       </tr>
                     ))}

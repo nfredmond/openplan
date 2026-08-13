@@ -1213,6 +1213,24 @@ const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
     can show Postgres enforcing it.
   */
   "measure_period_off_the_top",
+  /*
+    (2026-08-12) WHAT THE FUND KEPT BACK IN RESERVE — excused with the same
+    honest reason, and with a probe target of its own.
+
+    These rows are the only record of money a voter-approved fund kept rather
+    than dividing, and both public surfaces SUBTRACT them from what came in. A
+    tenant that could write another fund's reserve rows could therefore change
+    what a neighbouring agency's oversight page says its own purposes were
+    given, without touching a single allocation — and the page would close its
+    arithmetic on the forged figure, because closing it is exactly what the
+    reserve line is for.
+
+    A probe here should attempt the cross-tenant INSERT specifically. The
+    composite `(period_id, workspace_id)` foreign key is what stops a row being
+    parented across tenants, and nothing but a live attempt shows Postgres
+    enforcing it.
+  */
+  "measure_period_reserve",
 ];
 
 liveDescribe("the probe list covers the schema", () => {

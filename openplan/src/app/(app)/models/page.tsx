@@ -408,6 +408,15 @@ export default async function ModelsPage({
             <ReadFailureNotice reads={reads} testId="models-read-failures" title="Part of this catalog could not be read" />
           </div>
 
+          {/* The module's primary action, in the header rather than wherever the
+              section order puts the form. The full creator stays where it is —
+              this jumps to it. */}
+          <div className="module-intro-actions">
+            <a className="module-intro-action" href="#create-model">
+              New model
+            </a>
+          </div>
+
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Models</p>

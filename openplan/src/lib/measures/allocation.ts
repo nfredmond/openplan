@@ -576,9 +576,21 @@ export type MeasureReserveLine = {
   id: string;
   label: string;
   basis: string;
+  /** The ordinance's own rate, carried so a surface can state it without the rule. */
+  percent: number;
   /** The figure the percentage was taken of, so a reader can check it. */
   basisAmount: number;
+  /** What was actually held back, after clamping to what was left. */
   amount: number;
+  /**
+   * What the percentage alone came to, before the clamp.
+   *
+   * The `uncappedAmount`/`amount` pairing an off-the-top line makes, for the one
+   * limit a reserve has: it cannot hold back more than remains. They differ
+   * exactly when `reserve_exceeds_remaining` fired, and both are needed for a
+   * surface to say so without recomputing an old rule against an old receipt.
+   */
+  computedAmount: number;
 };
 
 export type MeasureRecipientShare = {
@@ -844,7 +856,8 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
     if (reserve.basis !== "gross" && reserve.basis !== "after_off_the_top") continue;
 
     const basisCents = reserve.basis === "gross" ? receiptCents : afterOffTheTop;
-    let amount = percentOfCents(basisCents, scaledFromValue(reserve.percent, PERCENT_SCALE) ?? BIG_ZERO);
+    const computed = percentOfCents(basisCents, scaledFromValue(reserve.percent, PERCENT_SCALE) ?? BIG_ZERO);
+    let amount = computed;
 
     const remaining = afterOffTheTop - poolReserveTotal;
     if (amount > remaining) {
@@ -863,8 +876,10 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
       id: reserve.id,
       label: reserve.label,
       basis: reserve.basis,
+      percent: reserve.percent,
       basisAmount: centsToAmount(basisCents),
       amount: centsToAmount(amount),
+      computedAmount: centsToAmount(computed),
     });
   }
 
@@ -944,7 +959,8 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
     if (!reserve.basis.startsWith("category:")) continue;
     const categoryId = reserve.basis.slice("category:".length);
     const categoryCents = naiveShares.get(categoryId) ?? BIG_ZERO;
-    let amount = percentOfCents(categoryCents, scaledFromValue(reserve.percent, PERCENT_SCALE) ?? BIG_ZERO);
+    const computed = percentOfCents(categoryCents, scaledFromValue(reserve.percent, PERCENT_SCALE) ?? BIG_ZERO);
+    let amount = computed;
 
     const remaining = categoryCents - (reserveByCategory.get(categoryId) ?? BIG_ZERO);
     if (amount > remaining) {
@@ -961,8 +977,10 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
       id: reserve.id,
       label: reserve.label,
       basis: reserve.basis,
+      percent: reserve.percent,
       basisAmount: centsToAmount(categoryCents),
       amount: centsToAmount(amount),
+      computedAmount: centsToAmount(computed),
     });
   }
 

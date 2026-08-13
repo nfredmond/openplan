@@ -780,6 +780,79 @@
     color: var(--muted-foreground);
   }
 
+  /* THE PRIMARY ACTION SLOT — the one control a planner came to this module to
+     press, in the place they look for it.
+
+     There was no such slot before, so every list page's create control landed
+     wherever its section order happened to put it: Reports opened with a
+     1,265-line page whose "generate a report packet" form — the module's entire
+     purpose — began at line 887. Nothing was hidden; it was just never first.
+
+     Why that is worse here than in a normal scrolling app: pages render into
+     `.op-cart-surface`, which is `position: fixed; top: 84px; bottom: 16px`
+     (see cartographic.css). On a 1366x768 laptop — the realistic agency machine
+     — that leaves roughly 620px of page, and `.module-intro-card` plus its
+     summary cards is most of it. Whatever is not in this card is below the fold
+     on the first screen a planner ever sees of a module.
+
+     The row sits BELOW the title and description rather than beside them, and
+     that is deliberate rather than lazy. From 1024px up the card is the left
+     column of `.module-header-grid` — about 700px on a 1366px screen — and
+     `.module-intro-title` is a `clamp(2rem, 3vw, 2.8rem)` display face. An
+     action floated to the title's right collides with a two-line title at
+     exactly that width, which is the width we are trying to serve. A row of its
+     own cannot collide at any viewport and wraps by itself on a tablet.
+
+     Keyboard reach and focus come from the global `:focus-visible` rule; the
+     card's padding is far wider than that outline's 3px offset, so
+     `.module-intro-card`'s `overflow: hidden` cannot clip it. */
+  .module-intro-actions {
+    margin-top: 1.15rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .module-intro-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* A touch target on a tablet, not only a cursor target. */
+    min-height: 2.75rem;
+    border-radius: 0.6rem;
+    border: 1px solid transparent;
+    /* Mixed toward `--foreground` rather than used neat. `--primary` is #e45635
+       in the default light palette, which is 3.7:1 against the white
+       `--primary-foreground` — under the 4.5:1 that 0.95rem text needs. Because
+       `--primary-foreground` tracks the background tone and `--foreground`
+       tracks the text tone in every palette, mixing toward `--foreground`
+       always moves the fill AWAY from its own label: it darkens the fill in
+       light themes and lightens it in dark ones. One expression, no per-palette
+       table to keep in sync as palettes are added. */
+    background: color-mix(in srgb, var(--primary) 84%, var(--foreground) 16%);
+    padding: 0.6rem 1.15rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--primary-foreground);
+    text-decoration: none;
+    transition:
+      background-color 140ms ease,
+      box-shadow 140ms ease;
+  }
+
+  .module-intro-action:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--primary) 68%, var(--foreground) 32%);
+    box-shadow: 0 2px 10px rgba(4, 12, 20, 0.16);
+  }
+
+  .module-intro-action:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
   .module-summary-grid {
     margin-top: 1.25rem;
     display: grid;
@@ -1596,6 +1669,59 @@
 
   .module-note {
     color: var(--muted-foreground);
+  }
+
+  /**
+   * A small inline control that reads as an action without becoming a button:
+   * "Edit", "Cancel", "Reprice", "Correct", and the tab-like switches on the
+   * invoicing register.
+   *
+   * These classes were REFERENCED BY NINE FILES AND DEFINED BY NONE (found
+   * 2026-08-13 while auditing route callers), so every one of those controls
+   * was rendering as browser-default unstyled text on the invoicing surfaces
+   * and the RTP cycle registry. A class name is not a style; nothing in the
+   * build complains about a selector that never existed.
+   *
+   * Colour comes from --ink and --muted-foreground rather than the accent, so
+   * these sit quietly beside the primary action instead of competing with it,
+   * and both tokens are palette-defined in all ten themes.
+   */
+  .openplan-inline-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 0;
+    background: none;
+    padding: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--ink) 32%, transparent);
+    text-underline-offset: 0.22em;
+    cursor: pointer;
+  }
+
+  .openplan-inline-label:hover {
+    text-decoration-color: var(--ink);
+  }
+
+  .openplan-inline-label:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    text-decoration: none;
+  }
+
+  .openplan-inline-label-muted {
+    color: var(--muted-foreground);
+    font-weight: 500;
+    text-decoration-color: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
+  }
+
+  .openplan-inline-label-muted:hover {
+    color: var(--ink);
+    text-decoration-color: var(--ink);
   }
 
   .module-alert {

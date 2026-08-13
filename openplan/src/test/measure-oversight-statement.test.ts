@@ -78,12 +78,21 @@ function divisionValue(overrides: Partial<Extract<OversightDivision, { kind: "di
         "(FY26 Q1 and FY26 Q2) before the rest was divided.",
       isFloor: false,
     }),
-    leftToDivide: oversightFigure({
-      amount: 9714216.77,
+    heldBack: oversightFigure({
+      amount: 196246.8,
       currencyCode: "USD",
       coverageSentence:
-        "What those periods received, less what the ordinance took out of them. This is the amount the " +
-        "purposes below are divided out of.",
+        "Adds up what the ordinance kept back in reserve out of the 2 reporting periods this measure has " +
+        "divided up (FY26 Q1 and FY26 Q2) rather than dividing it. An ordinance that keeps nothing back " +
+        "has nothing to record here.",
+      isFloor: false,
+    }),
+    leftToDivide: oversightFigure({
+      amount: 9517969.97,
+      currencyCode: "USD",
+      coverageSentence:
+        "What those periods received, less what the ordinance took out of them and less what it kept back " +
+        "in reserve. This is the amount the purposes below were given.",
       isFloor: false,
     }),
     clauses: [
@@ -102,7 +111,31 @@ function divisionValue(overrides: Partial<Extract<OversightDivision, { kind: "di
         noteSentence: null,
       },
     ],
+    /*
+     * ONE RESERVE OF EACH KIND. They render identically except in the third
+     * column, and that column is the whole reason the reserve table is not more
+     * rows in the clause table: a purpose-level reserve changes what one
+     * heading below was given, and a pool reserve changes what all of them were
+     * given together.
+     */
+    reserves: [
+      {
+        reserveId: "rainy_day",
+        label: "Rainy-day fund",
+        amountText: `USD${NB}96,246.80`,
+        heldOutOfText: "Everything that came in",
+        noteSentence: `The ordinance sets this at 2% of USD${NB}4,812,340.17.`,
+      },
+      {
+        reserveId: "bus_replacement",
+        label: "Bus replacement fund",
+        amountText: `USD${NB}100,000.00`,
+        heldOutOfText: "Transit service",
+        noteSentence: null,
+      },
+    ],
     noClausesSentence: null,
+    noReservesSentence: null,
     /*
      * DELIBERATELY NOT the sum of this fixture's own category rows.
      *
@@ -114,10 +147,8 @@ function divisionValue(overrides: Partial<Extract<OversightDivision, { kind: "di
      * settlement sentence is printed as given rather than recomputed.
      */
     settlementSentence:
-      "The purposes below add up to USD 3,101,777.44, which is USD 6,612,439.33 less than the amount left " +
-      "to divide. Some ordinances hold an amount back in reserve, and this page does not yet show what was " +
-      "held back as its own line — so treat the difference as unexplained here rather than as money that " +
-      "has gone astray.",
+      "The purposes below add up to USD 3,101,777.44, which is USD 6,416,192.53 less than the amount left " +
+      "for them. Treat the difference as unexplained here rather than as money that has gone astray.",
     ...overrides,
   };
 }
@@ -323,21 +354,24 @@ describe("the measure annual statement", () => {
    * obvious subtraction on a document in their own packet found money with
    * nothing on the page to say where it had gone.
    */
-  it("prints the whole chain — received, what was taken out, and what was left", () => {
+  it("prints the whole chain — received, what was taken out, what was kept back, and what was left", () => {
     const html = plain(buildMeasureAnnualStatementHtml(statementData()));
 
     expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionHeading);
     for (const heading of [
       MEASURE_OVERSIGHT_COPY.divisionReceivedHeading,
       MEASURE_OVERSIGHT_COPY.divisionTakenOutHeading,
+      MEASURE_OVERSIGHT_COPY.divisionHeldBackHeading,
       MEASURE_OVERSIGHT_COPY.divisionLeftHeading,
     ]) {
       expect(html, `the chain is missing "${heading}"`).toContain(heading);
     }
 
-    // The three amounts, exactly as given: 9,812,340.17 − 98,123.40 = 9,714,216.77.
+    // The four amounts, exactly as given:
+    // 9,812,340.17 − 98,123.40 − 196,246.80 = 9,517,969.97.
     expect(html).toContain("USD 98,123.40");
-    expect(html).toContain("USD 9,714,216.77");
+    expect(html).toContain("USD 196,246.80");
+    expect(html).toContain("USD 9,517,969.97");
 
     // The middle figure is the one that was missing, so it must sit BEFORE the
     // ordinance's own table — a reader who reaches the purposes first has
@@ -354,7 +388,8 @@ describe("the measure annual statement", () => {
       "Adds up what the fund received in the 2 reporting periods this measure has divided up"
     );
     expect(html).toContain("Adds up what the ordinance took out of the 2 reporting periods");
-    expect(html).toContain("This is the amount the purposes below are divided out of.");
+    expect(html).toContain("Adds up what the ordinance kept back in reserve out of the 2 reporting periods");
+    expect(html).toContain("This is the amount the purposes below were given.");
   });
 
   it("names each clause of the ordinance and what the ordinance says about it", () => {
@@ -370,17 +405,47 @@ describe("the measure annual statement", () => {
     expect(html).toContain("because the ordinance sets a limit on it");
   });
 
+  /**
+   * THE RESERVE TABLE, and the column that is its whole reason for existing.
+   *
+   * A reserve held out of ONE purpose and a reserve held out of the whole
+   * payment print the same amount and mean different things: the first changes
+   * what a single heading below was given, the second changes what all of them
+   * were given together. A document that dropped "kept back out of" would leave
+   * a committee unable to tell them apart.
+   */
+  it("names each reserve, what it was kept out of, and the rate the ordinance sets", () => {
+    const html = plain(buildMeasureAnnualStatementHtml(statementData()));
+
+    expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionReserveClauseColumn);
+    expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionReserveAmountColumn);
+    expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionReserveSourceColumn);
+
+    expect(html).toContain("Rainy-day fund");
+    expect(html).toContain("USD 96,246.80");
+    expect(html).toContain("Everything that came in");
+    expect(html).toContain("The ordinance sets this at 2% of USD 4,812,340.17.");
+
+    expect(html).toContain("Bus replacement fund");
+    expect(html).toContain("USD 100,000.00");
+    expect(html).toContain("Transit service");
+  });
+
   it("ends the section with the settlement sentence, printed as given", () => {
     const html = plain(buildMeasureAnnualStatementHtml(statementData()));
 
     expect(html).toContain(
-      "The purposes below add up to USD 3,101,777.44, which is USD 6,612,439.33 less than the amount left to divide."
+      "The purposes below add up to USD 3,101,777.44, which is USD 6,416,192.53 less than the amount left for them."
     );
-    // The honest cause this product can name and cannot yet show as a line.
-    // Reserves are not persisted per period, so the difference for a fund that
-    // holds one back cannot close — and the statement inherits the page's
-    // sentence rather than implying the gap is unexplained.
-    expect(html).toContain("Some ordinances hold an amount back in reserve");
+    // THE SENTENCE THAT MUST NOT COME BACK. Before reserves were persisted the
+    // shared builder had to offer a held-back reserve as a cause of every
+    // shortfall — a cause it could neither show nor rule out. It shows them
+    // now, so a document still saying "this page does not yet show what was
+    // held back" would be describing a gap that has been closed.
+    expect(html).not.toContain("Some ordinances hold an amount back in reserve");
+    expect(html).not.toContain("does not yet show what was held back");
+    // The refusal to call a difference money gone astray survives.
+    expect(html).toContain("rather than as money that has gone astray");
   });
 
   /**
@@ -444,6 +509,29 @@ describe("the measure annual statement", () => {
     // The chain is still printed — "nothing was taken" is a figure of zero with
     // a sentence, not a section that disappears.
     expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionTakenOutHeading);
+    // And the reserve table is untouched by the clause table's emptiness: the
+    // two are separate facts and an ordinance can have one and not the other.
+    expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionReserveClauseColumn);
+  });
+
+  it("prints the kept-nothing-back sentence instead of an empty reserve table", () => {
+    const html = plain(
+      buildMeasureAnnualStatementHtml(
+        statementData({
+          division: divisionValue({
+            reserves: [],
+            noReservesSentence: "The ordinance kept nothing back in reserve out of these periods.",
+          }),
+        })
+      )
+    );
+
+    expect(html).toContain("The ordinance kept nothing back in reserve out of these periods.");
+    expect(html).not.toContain(MEASURE_OVERSIGHT_COPY.divisionReserveClauseColumn);
+    // The chain still carries the figure — a reserve of zero is a fact with a
+    // sentence, not a heading that vanishes — and the clause table is untouched.
+    expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionHeldBackHeading);
+    expect(html).toContain(MEASURE_OVERSIGHT_COPY.divisionClauseColumn);
   });
 
   it("prints not-determined where one side of a commitment is absent, never a zero", () => {
