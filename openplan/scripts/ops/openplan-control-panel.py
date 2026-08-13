@@ -304,6 +304,10 @@ class ControlPanel:
         self.spinner = tk.Label(bar, text="", fg=IDLE)
         self.spinner.pack(side="left")
         ttk.Button(bar, text="Clear", command=self.clear_output).pack(side="right")
+        self.copy_btn = ttk.Button(bar, text="Copy all text", command=self.copy_output)
+        self.copy_btn.pack(side="right", padx=(0, 8))
+        self.copy_note = tk.Label(bar, text="", fg=OK)
+        self.copy_note.pack(side="right", padx=(0, 10))
 
     def _button(self, parent, label, cmd, hint) -> ttk.Button:
         b = ttk.Button(parent, text=label, command=cmd)
@@ -351,6 +355,43 @@ class ControlPanel:
         self.out.configure(state="normal")
         self.out.delete("1.0", "end")
         self.out.configure(state="disabled")
+
+    def copy_output(self) -> None:
+        """
+        Put everything in the output pane on the clipboard, for pasting into a
+        message when something has gone wrong.
+
+        wl-copy is preferred over Tk's own clipboard because this is a Wayland
+        session: Tk hands the selection back the moment the window closes, so a
+        copy made just before quitting the panel — exactly when someone is
+        copying an error to send on — would paste nothing. wl-copy forks a small
+        process that keeps holding it. Tk is the fallback for anywhere wl-copy
+        is absent.
+        """
+        text = self.out.get("1.0", "end-1c")
+        if not text.strip():
+            self._flash_copy("Nothing to copy yet.", BAD)
+            return
+
+        if shutil.which("wl-copy"):
+            try:
+                subprocess.run(["wl-copy"], input=text, text=True, timeout=10, check=True)
+                self._flash_copy(f"Copied {len(text.splitlines())} lines.", OK)
+                return
+            except (subprocess.SubprocessError, OSError):
+                pass  # fall through to Tk rather than telling them it worked
+
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(text)
+            self.root.update_idletasks()
+            self._flash_copy("Copied — paste it before closing this window.", WARN)
+        except tk.TclError as exc:
+            self._flash_copy(f"Could not copy: {exc}", BAD)
+
+    def _flash_copy(self, message: str, colour: str) -> None:
+        self.copy_note.configure(text=message, fg=colour)
+        self.root.after(6000, lambda: self.copy_note.configure(text=""))
 
     # -- busy state --------------------------------------------------------
 
