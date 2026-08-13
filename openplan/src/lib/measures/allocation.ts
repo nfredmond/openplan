@@ -78,8 +78,12 @@ import { z } from "zod";
  *   5. CATEGORY RESERVES — a reserve on 'category:<id>' comes out of that
  *      category only, leaving its `programmableAmount`.
  *   6. RETURN TO SOURCE distributes a category's programmable amount over the
- *      recipients' stated basis values; its residual goes to the recipient last
- *      by id ascending and is REPORTED.
+ *      recipients' stated basis values — ONE basis, or a weighted list of them
+ *      whose weights total 100. Its residual goes to the recipient last by id
+ *      ascending and is REPORTED.
+ *   7. A MINIMUM PER RECIPIENT, if the ordinance states one, then redistributes
+ *      within that category: recipients below the floor come up to it and the
+ *      recipients above it pay, pro rata to how far above they are.
  *
  * INVARIANTS, asserted for every fixture: Σ category amounts === allocable
  * exactly, and Σ recipient shares === the distributed pool exactly.
@@ -111,6 +115,42 @@ import { z } from "zod";
  * categories that got nothing are a fact the note reports rather than a
  * rounding artefact nobody can see. What the rule REFUSES to do is invent a
  * negative allocation, which is not a quantity of money.
+ *
+ * ============================================================================
+ * WHEN THE FLOORS CANNOT ALL BE MET — WHY THIS REFUSES INSTEAD OF CHOOSING
+ * ============================================================================
+ *
+ * `recipients × floor > pool` is an ordinance whose own text cannot be honoured
+ * this period. The category is reported `undistributed` with the reason
+ * `recipient_floors_exceed_pool`, the money is held, and the note states the
+ * three figures (floor, total required, available) and the shortfall.
+ *
+ * THE ALTERNATIVE THAT WAS PROPOSED and rejected on 2026-08-12: pay each floor
+ * in full, in order of shortfall, until the pool is exhausted. It is a coherent
+ * rule and it is not the ordinance's rule. Run it on four recipients with a
+ * $100,000 floor and a $250,000 pool and the LARGEST jurisdiction — the one the
+ * formula gives the most to — receives $0.00 while two small ones are paid in
+ * full. It also has a cliff: at a pool of $400,001 every recipient clears the
+ * floor and the large one keeps most of its share; at $399,999 it drops to
+ * nothing. A rule with a discontinuity that size at an arbitrary threshold is
+ * not what "no jurisdiction shall receive less than $100,000" means — it is one
+ * of several defensible readings of a clause that has run out of money, and
+ * "pay them pro rata anyway", "haircut every floor equally" and "carry the
+ * shortfall to next period" are the others. The ordinance does not choose
+ * between them, so this product does not either.
+ *
+ * That is the same rule as everything else in this module: a plausible wrong
+ * apportionment is worse than a refusal, because a refusal sends the question
+ * to the board and an apportionment gets published. The existing hand-entry
+ * path (`computation_basis = 'manual'`, which requires a rationale) is where
+ * the board's answer is recorded, and it labels itself staff-entered wherever
+ * it appears.
+ *
+ * IT ALSO REMOVES THE LOOP. The naive floor algorithm — raise everyone short,
+ * reduce everyone else pro rata, notice that reducing them made someone new
+ * short, repeat — does not terminate when the floors do not fit. Refusing that
+ * case at the door means the redistribution below is a single pass with no
+ * fixpoint to reach.
  *
  * ============================================================================
  * A MISSING DENOMINATOR TERM IS NOT ZERO
@@ -235,6 +275,10 @@ function percentOfCents(cents: bigint, percentE4: bigint): bigint {
   return divideHalfUp(cents * percentE4, PERCENT_DIVISOR);
 }
 
+function absBigInt(value: bigint): bigint {
+  return value < BIG_ZERO ? -value : value;
+}
+
 /* ------------------------------------------------------------------ *
  * The descriptor
  * ------------------------------------------------------------------ */
@@ -305,9 +349,70 @@ const reserveSchema = z
   })
   .strict();
 
+/**
+ * ONE TERM OF A WEIGHTED RETURN-TO-SOURCE FORMULA.
+ *
+ * "50% by population, 50% by maintained road miles" is the ordinary shape of a
+ * California self-help measure's local-streets category, not an exotic one, and
+ * until 2026-08-12 the descriptor could hold only ONE basis. An agency whose
+ * ordinance names two had to record the whole measure as narrative text and
+ * hand-enter every jurisdiction's share forever.
+ *
+ * The weights are percentages and must total exactly 100 across the factors —
+ * the same integer comparison the category split gets, for the same reason.
+ */
+const returnToSourceFactorSchema = z
+  .object({
+    basisId: idSchema,
+    weight: percentSchema,
+  })
+  .strict();
+
+/**
+ * "NO JURISDICTION SHALL RECEIVE LESS THAN $100,000."
+ *
+ * A floor per recipient, so a small town's share is a sum it can actually pave
+ * with. It redistributes rather than adding money: recipients below the floor
+ * come up to it, and the shortfall comes off the recipients above it, pro rata
+ * to how far above they are.
+ *
+ * WHY THE FIELD IS NAMED `amountPerPeriod` AND CARRIES A REQUIRED NOTE. Almost
+ * every ordinance states this floor ANNUALLY, and a fund that closes quarterly
+ * allocates four times a year. Whether an annual floor becomes a quarter of
+ * itself in each quarter, or is trued up in the last period, or is applied to
+ * an annual allocation only, is a reading of the ordinance and of the agency's
+ * own accounting — the same class of question as `vintageRuleNote` and the
+ * fund's `fiscalYearNote`, both of which this product records rather than
+ * derives. So the figure stored here is the one that applies to ONE accounting
+ * period, a person states it, and `statedRuleNote` is where the ordinance's own
+ * words go. A field called `amount` with no note would have let a quarterly
+ * measure apply an annual floor four times over and call it the ordinance.
+ */
+const recipientFloorSchema = z
+  .object({
+    amountPerPeriod: moneySchema,
+    statedRuleNote: z.string().trim().min(1).max(2000),
+  })
+  .strict();
+
 const distributionSchema = z.union([
   z.object({ kind: z.literal("pooled") }).strict(),
-  z.object({ kind: z.literal("return_to_source"), basisId: idSchema }).strict(),
+  z
+    .object({
+      kind: z.literal("return_to_source"),
+      /**
+       * THE SINGLE-BASIS FORM, KEPT. Every rule recorded before 2026-08-12 is
+       * written this way and is stored as JSON in `measure_allocation_rules`;
+       * migrating the shape in the database would restate what an agency
+       * recorded. `basisId` and `factors` are the same sentence written two
+       * ways — exactly one of them, and `measureReturnToSourceFactors` is the
+       * one place that turns the first into the second.
+       */
+      basisId: idSchema.optional(),
+      factors: z.array(returnToSourceFactorSchema).min(1).optional(),
+      minimumPerRecipient: recipientFloorSchema.optional(),
+    })
+    .strict(),
 ]);
 
 const categorySchema = z
@@ -381,12 +486,55 @@ const narrativeSchema = z
   })
   .strict();
 
+export type MeasureReturnToSourceDistribution = Extract<
+  z.infer<typeof distributionSchema>,
+  { kind: "return_to_source" }
+>;
+
 export type MeasureAllocationDescriptor = z.infer<typeof descriptorSchema>;
 export type MeasureNarrativeRule = z.infer<typeof narrativeSchema>;
 export type MeasureAllocationRule = MeasureAllocationDescriptor | MeasureNarrativeRule;
 
 export function isNarrativeRule(rule: MeasureAllocationRule): rule is MeasureNarrativeRule {
   return "kind" in rule && rule.kind === "narrative";
+}
+
+/**
+ * The ordered factor list a return-to-source category divides by — ONE reading
+ * of the two shapes, used by the parser, the allocator and the builder.
+ *
+ * `{ basisId }` is `[{ basisId, weight: 100 }]`. A second answer to "what does
+ * this category divide by?" is precisely the seam this repository keeps finding
+ * reimplemented wrongly by whichever caller did not own it.
+ */
+export function measureReturnToSourceFactors(
+  distribution: MeasureReturnToSourceDistribution
+): Array<{ basisId: string; weight: number }> {
+  if (distribution.factors && distribution.factors.length > 0) {
+    return distribution.factors.map((factor) => ({ basisId: factor.basisId, weight: factor.weight }));
+  }
+  return distribution.basisId ? [{ basisId: distribution.basisId, weight: 100 }] : [];
+}
+
+/**
+ * A list of percentages summed the way the PARSER sums them — exact integer
+ * ten-thousandths, never a float.
+ *
+ * Exported so the setup form's live meter and `parseMeasureAllocationRule`
+ * cannot disagree. A meter that added doubles would show a green "100%" for a
+ * split of 33.33 / 33.33 / 33.34 rendered through floating point and then the
+ * save would fail with the parser's own sentence, which is the post-submit
+ * string this whole builder exists to remove.
+ */
+export function measurePercentTotal(values: readonly number[]): { total: number; isExactly100: boolean } {
+  const scaled = values.reduce(
+    (sum, value) => sum + (scaledFromValue(value, PERCENT_SCALE) ?? BIG_ZERO),
+    BIG_ZERO
+  );
+  return {
+    total: Number(scaled) / 10 ** PERCENT_SCALE,
+    isExactly100: scaled === BIG_HUNDRED * BIG_TEN ** BigInt(PERCENT_SCALE),
+  };
 }
 
 /**
@@ -460,10 +608,51 @@ export function parseMeasureAllocationRule(input: unknown): MeasureAllocationRul
 
   for (const category of rule.categories) {
     if (category.distribution.kind !== "return_to_source") continue;
-    if (!basisIds.has(category.distribution.basisId)) {
+    const distribution = category.distribution;
+
+    // EXACTLY ONE SHAPE. Both would be two statements of how the category
+    // divides, and nothing in the descriptor says which one governs.
+    const hasBasisId = distribution.basisId !== undefined;
+    const hasFactors = distribution.factors !== undefined;
+    if (hasBasisId === hasFactors) {
       throw new Error(
-        `Measure allocation rule category "${category.id}" returns to source on unknown basis ` +
-          `"${category.distribution.basisId}"`
+        `Measure allocation rule category "${category.id}" must declare exactly one of basisId or factors — ` +
+          "a single apportionment figure, or a weighted list of them"
+      );
+    }
+
+    const factors = measureReturnToSourceFactors(distribution);
+    requireUnique(
+      factors.map((factor) => factor.basisId),
+      `factor basis in category "${category.id}"`
+    );
+    for (const factor of factors) {
+      if (!basisIds.has(factor.basisId)) {
+        throw new Error(
+          `Measure allocation rule category "${category.id}" returns to source on unknown basis ` +
+            `"${factor.basisId}"`
+        );
+      }
+    }
+
+    // The same exactly-100 rule the category split gets, for the same reason:
+    // "approximately the ordinance" leaks the difference in every period.
+    // Applied to the declared `factors` only — the single-basis form has one
+    // implicit weight of 100 and cannot be wrong.
+    if (hasFactors) {
+      const weights = measurePercentTotal(factors.map((factor) => factor.weight));
+      if (!weights.isExactly100) {
+        throw new Error(
+          `Measure allocation rule category "${category.id}" weights its apportionment factors to ` +
+            `${weights.total}, not to exactly 100`
+        );
+      }
+    }
+
+    if (distribution.minimumPerRecipient && !(distribution.minimumPerRecipient.amountPerPeriod > 0)) {
+      throw new Error(
+        `Measure allocation rule category "${category.id}" declares a minimum per recipient of ` +
+          "zero or less, which is not a floor. Remove it instead."
       );
     }
   }
@@ -593,36 +782,87 @@ export type MeasureReserveLine = {
   computedAmount: number;
 };
 
+/** What one recipient contributed to one weighted term of the formula. */
+export type MeasureShareFactorValue = {
+  basisId: string;
+  weight: number;
+  basisValue: number;
+};
+
+/**
+ * WHAT THE FLOOR DID TO ONE RECIPIENT'S SHARE.
+ *
+ * Reported per recipient rather than only as a total, because "your city was
+ * brought up to the floor" and "your city paid for someone else's floor" are
+ * two different sentences an oversight committee is owed, and neither can be
+ * recovered from the final figure alone.
+ */
+export type MeasureShareFloorEffect = "none" | "raised_to_floor" | "contributed_to_floors";
+
 export type MeasureRecipientShare = {
   recipientId: string;
-  basisValue: number;
+  /**
+   * The apportionment figure, when the category divides by exactly one. NULL
+   * for a weighted multi-factor split, where no single figure is the divisor —
+   * `factorValues` carries the terms. Never the first factor standing in for
+   * the formula.
+   */
+  basisValue: number | null;
+  factorValues: MeasureShareFactorValue[];
+  /** What the ordinance's formula alone gave, before any floor moved money. */
+  formulaAmount: number;
   amount: number;
   /** True for the one recipient that absorbed the rounding residual. */
   carriesResidual: boolean;
+  floorEffect: MeasureShareFloorEffect;
+};
+
+export type MeasureDistributionFactor = {
+  basisId: string;
+  weight: number;
+  /** Σ of the active recipients' figures for this factor — the divisor. */
+  basisTotal: number;
 };
 
 export type MeasureCategoryDistribution =
   | { kind: "pooled" }
   | {
       kind: "return_to_source";
-      basisId: string;
+      /** The single divisor, or null when the split is weighted across several. */
+      basisId: string | null;
+      factors: MeasureDistributionFactor[];
       vintageLabel: string;
-      basisTotal: number;
+      /** The single factor's divisor, or null when the split is weighted. */
+      basisTotal: number | null;
       shares: MeasureRecipientShare[];
       roundingResidual: number;
+      /** The ordinance's floor per recipient for one period, or null. */
+      minimumPerRecipient: number | null;
+      floorOutcome: MeasureFloorOutcome;
     }
   | {
       kind: "undistributed";
-      basisId: string;
+      basisId: string | null;
+      factors: MeasureDistributionFactor[];
       vintageLabel: string;
       reason: MeasureUndistributedReason;
       missingRecipientIds: string[];
     };
 
+export type MeasureFloorOutcome =
+  /** The ordinance states no floor for this category. */
+  | "not_declared"
+  /** It states one and every share already cleared it. */
+  | "not_needed"
+  /** It states one, and money moved to meet it. */
+  | "applied";
+
 export type MeasureUndistributedReason =
   | "no_active_recipients"
   | "missing_basis_values"
-  | "basis_total_is_zero";
+  | "basis_total_is_zero"
+  /** The floors together are worth more than the pool being divided. */
+  | "recipient_floors_exceed_pool";
 
 export type MeasureCategoryLine = {
   id: string;
@@ -643,7 +883,9 @@ export type MeasureAllocationNoteCode =
   | "reserve_exceeds_remaining"
   /** The pool was too small to give every category a share; see the module header. */
   | "residual_exceeds_residual_category"
-  | "category_undistributed";
+  | "category_undistributed"
+  /** A floor moved money between recipients; who gained and who paid. */
+  | "recipient_floor_applied";
 
 export type MeasureAllocationNote = {
   code: MeasureAllocationNoteCode;
@@ -690,11 +932,20 @@ export type MeasureAllocationOutcome =
  */
 export function measureCategoriesNeedingBasisVintage(
   rule: MeasureAllocationRule
-): Array<{ id: string; label: string; basisId: string }> {
+): Array<{ id: string; label: string; basisIds: string[] }> {
   if (isNarrativeRule(rule)) return [];
   return rule.categories.flatMap((category) =>
     category.distribution.kind === "return_to_source"
-      ? [{ id: category.id, label: category.label, basisId: category.distribution.basisId }]
+      ? [
+          {
+            id: category.id,
+            label: category.label,
+            // Plural since 2026-08-12: a weighted category needs a recorded
+            // figure for EVERY factor, and naming only the first would send a
+            // planner to fill in half of what the allocation will ask for.
+            basisIds: measureReturnToSourceFactors(category.distribution).map((factor) => factor.basisId),
+          },
+        ]
       : []
   );
 }
@@ -759,7 +1010,9 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
   const vintageDependent = measureCategoriesNeedingBasisVintage(rule);
   const hasActiveRecipient = (input.recipients ?? []).some((recipient) => recipient.is_active !== false);
   if (!statedVintage && vintageDependent.length > 0 && hasActiveRecipient) {
-    const named = vintageDependent.map((category) => `${category.label} (by ${category.basisId})`).join(", ");
+    const named = vintageDependent
+      .map((category) => `${category.label} (by ${category.basisIds.join(" and ")})`)
+      .join(", ");
     return {
       ok: false,
       reason: "basis_vintage_not_stated",
@@ -1004,50 +1257,136 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
     let distribution: MeasureCategoryDistribution = { kind: "pooled" };
 
     if (category.distribution.kind === "return_to_source") {
-      const basisId = category.distribution.basisId;
-      const valueByRecipient = new Map<string, bigint>();
-      for (const value of input.basisValues ?? []) {
-        if (value.basis_id !== basisId || value.vintage_label !== vintageLabel) continue;
-        const scaled = scaledFromValue(value.basis_value, BASIS_SCALE);
-        if (scaled === null || scaled < BIG_ZERO) continue;
-        valueByRecipient.set(value.recipient_id, scaled);
-      }
+      const factorList = measureReturnToSourceFactors(category.distribution);
+      const floorRule = category.distribution.minimumPerRecipient ?? null;
 
-      const missing = activeRecipients.filter((id) => !valueByRecipient.has(id));
-      const basisTotal = activeRecipients.reduce((sum, id) => sum + (valueByRecipient.get(id) ?? BIG_ZERO), BIG_ZERO);
+      /*
+       * ONE DIVISOR PER FACTOR. The recorded figures are read once per factor
+       * and the active recipients' figures are summed into that factor's
+       * denominator — which is why a factor a recipient has no figure for makes
+       * the WHOLE category undistributed rather than that one term zero.
+       */
+      const factorReadings = factorList.map((factor) => {
+        const byRecipient = new Map<string, bigint>();
+        for (const value of input.basisValues ?? []) {
+          if (value.basis_id !== factor.basisId || value.vintage_label !== vintageLabel) continue;
+          const scaled = scaledFromValue(value.basis_value, BASIS_SCALE);
+          if (scaled === null || scaled < BIG_ZERO) continue;
+          byRecipient.set(value.recipient_id, scaled);
+        }
+        return {
+          basisId: factor.basisId,
+          weightE4: scaledFromValue(factor.weight, PERCENT_SCALE) ?? BIG_ZERO,
+          weight: factor.weight,
+          byRecipient,
+          total: activeRecipients.reduce((sum, id) => sum + (byRecipient.get(id) ?? BIG_ZERO), BIG_ZERO),
+        };
+      });
+
+      const missing = activeRecipients.filter((id) =>
+        factorReadings.some((factor) => !factor.byRecipient.has(id))
+      );
+      const reportedFactors: MeasureDistributionFactor[] = factorReadings.map((factor) => ({
+        basisId: factor.basisId,
+        weight: factor.weight,
+        basisTotal: Number(factor.total) / 10 ** BASIS_SCALE,
+      }));
+      // The single-divisor convenience fields, and NULL rather than the first
+      // factor when there is more than one: no single figure is the divisor of
+      // a weighted split, and printing one as if it were would misstate the
+      // ordinance on every surface that reads it.
+      const singleBasisId = factorReadings.length === 1 ? factorReadings[0]!.basisId : null;
+      const singleBasisTotal = factorReadings.length === 1 ? reportedFactors[0]!.basisTotal : null;
+
+      const floorCents = floorRule ? amountToCents(floorRule.amountPerPeriod) : null;
+      const floorsRequired = floorCents === null ? BIG_ZERO : floorCents * BigInt(activeRecipients.length);
 
       const reason: MeasureUndistributedReason | null =
         activeRecipients.length === 0
           ? "no_active_recipients"
           : missing.length > 0
             ? "missing_basis_values"
-            : basisTotal === BIG_ZERO
+            : factorReadings.some((factor) => factor.total === BIG_ZERO)
               ? "basis_total_is_zero"
-              : null;
+              : floorCents !== null && floorsRequired > programmableCents
+                ? "recipient_floors_exceed_pool"
+                : null;
 
       if (reason) {
         // NOT split among the recipients that DO have a figure. Dropping a term
         // from the denominator inflates every remaining share, in the direction
         // that overpays, and nothing on the page would say so.
         undistributedCents += programmableCents;
-        distribution = { kind: "undistributed", basisId, vintageLabel, reason, missingRecipientIds: missing };
+        distribution = {
+          kind: "undistributed",
+          basisId: singleBasisId,
+          factors: reportedFactors,
+          vintageLabel,
+          reason,
+          missingRecipientIds: missing,
+        };
+        const namedBases = factorReadings.map((factor) => factor.basisId).join(" and ");
         notes.push({
           code: "category_undistributed",
           subjectId: category.id,
           detail:
             reason === "missing_basis_values"
               ? `${category.label} could not be distributed: ${missing.length} active recipient(s) have no ` +
-                `${basisId} figure recorded for vintage "${vintageLabel}". The money is allocated to the ` +
+                `${namedBases} figure recorded for vintage "${vintageLabel}". The money is allocated to the ` +
                 "category and held undistributed rather than being split among the rest."
               : reason === "no_active_recipients"
                 ? `${category.label} returns to source but the measure has no active recipients.`
-                : `${category.label} could not be distributed: every recorded ${basisId} figure is zero.`,
+                : reason === "basis_total_is_zero"
+                  ? `${category.label} could not be distributed: every recorded ${namedBases} figure is zero.`
+                  : /*
+                     * THE FLOORS DO NOT FIT, AND THIS PRODUCT WILL NOT PICK WHO GOES SHORT.
+                     *
+                     * See "when the floors cannot all be met" in the module
+                     * header. The ordinance's own text is unsatisfiable for this
+                     * period, and every way of resolving it is a policy choice
+                     * the ordinance did not make.
+                     */
+                    `${category.label} could not be distributed: the ordinance guarantees each recipient at ` +
+                    `least ${centsToAmount(floorCents ?? BIG_ZERO).toFixed(2)} for a period, which comes to ` +
+                    `${centsToAmount(floorsRequired).toFixed(2)} for ${activeRecipients.length} active ` +
+                    `recipients, and only ${centsToAmount(programmableCents).toFixed(2)} is available to ` +
+                    `divide — short by ${centsToAmount(floorsRequired - programmableCents).toFixed(2)}. ` +
+                    "Which recipients go without is a decision for the board, not an arithmetic rule, so " +
+                    "the money is held and the shares for this period are entered by hand with a rationale.",
         });
       } else {
+        /*
+         * THE WEIGHTED FORMULA, OVER ONE COMMON DENOMINATOR.
+         *
+         *   share_r = pool × Σ_f ( weight_f / 100 ) × ( value_rf / total_f )
+         *
+         * evaluated as ONE exact rational per recipient and rounded half-up
+         * ONCE, rather than as a per-factor sum of already-rounded amounts.
+         * Rounding each term and adding them would round f times per recipient
+         * and put the error in a place nothing reports.
+         *
+         *   D          = 100·10⁴ × Π_f total_f
+         *   numerator_r = Σ_f weight-e4_f × value_rf × Π_{g≠f} total_g
+         *
+         * `productOfTotals / factor.total` is exact because `factor.total` is
+         * one of the factors of that product. With exactly one factor the whole
+         * expression reduces algebraically to `pool × value_r / total` — the
+         * single-basis arithmetic that shipped before 2026-08-12, unchanged to
+         * the cent, which `measure-allocation-arithmetic.test.ts` pins by
+         * running the same ordinance through both spellings.
+         */
+        const productOfTotals = factorReadings.reduce((product, factor) => product * factor.total, BIG_ONE);
+        const denominator = PERCENT_DIVISOR * productOfTotals;
+
         const shareCents = new Map<string, bigint>();
         let naiveShareTotal = BIG_ZERO;
         for (const recipientId of activeRecipients) {
-          const share = divideHalfUp(programmableCents * (valueByRecipient.get(recipientId) ?? BIG_ZERO), basisTotal);
+          let numerator = BIG_ZERO;
+          for (const factor of factorReadings) {
+            const otherTotals = productOfTotals / factor.total;
+            numerator += factor.weightE4 * (factor.byRecipient.get(recipientId) ?? BIG_ZERO) * otherTotals;
+          }
+          const share = divideHalfUp(programmableCents * numerator, denominator);
           shareCents.set(recipientId, share);
           naiveShareTotal += share;
         }
@@ -1060,17 +1399,147 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
           shareCents.set(residualRecipientId, (shareCents.get(residualRecipientId) ?? BIG_ZERO) + poolResidual);
         }
 
+        // What the formula alone gave, kept before the floor moves anything.
+        const formulaCents = new Map(shareCents);
+        const floorEffects = new Map<string, MeasureShareFloorEffect>();
+        let floorOutcome: MeasureFloorOutcome = floorCents === null ? "not_declared" : "not_needed";
+
+        if (floorCents !== null) {
+          const deficient = activeRecipients.filter((id) => (shareCents.get(id) ?? BIG_ZERO) < floorCents);
+          if (deficient.length > 0) {
+            floorOutcome = "applied";
+            /*
+             * WHO PAYS FOR THE FLOOR, AND IN WHAT PROPORTION.
+             *
+             * Everyone above the floor pays, pro rata to HEADROOM (how far
+             * above the floor they are) rather than to their whole share. Pro
+             * rata to the share would take from a recipient sitting a dollar
+             * above the floor at the same rate as one sitting far above it, and
+             * push the first one below the floor the clause exists to hold.
+             *
+             * NO ITERATION, AND NONE IS NEEDED. `totalShortfall −
+             * totalHeadroom` is identically `recipients × floor − pool`, which
+             * the `recipient_floors_exceed_pool` refusal above has already
+             * proved is not positive; so the headroom always covers the
+             * shortfall, no donor is asked for more than it has, and the naive
+             * "raise everyone short, then reduce everyone else, then notice
+             * someone new is short" fixpoint loop cannot arise.
+             */
+            const donors = activeRecipients.filter((id) => (shareCents.get(id) ?? BIG_ZERO) > floorCents);
+            const headroom = new Map(
+              donors.map((id) => [id, (shareCents.get(id) ?? BIG_ZERO) - floorCents] as const)
+            );
+            const totalShortfall = deficient.reduce(
+              (sum, id) => sum + (floorCents - (shareCents.get(id) ?? BIG_ZERO)),
+              BIG_ZERO
+            );
+            const totalHeadroom = donors.reduce((sum, id) => sum + (headroom.get(id) ?? BIG_ZERO), BIG_ZERO);
+
+            const contribution = new Map<string, bigint>();
+            let contributed = BIG_ZERO;
+            for (const id of donors) {
+              const share = divideHalfUp(totalShortfall * (headroom.get(id) ?? BIG_ZERO), totalHeadroom);
+              contribution.set(id, share);
+              contributed += share;
+            }
+            /*
+             * Half-up per donor can miss the shortfall by a cent or two in
+             * either direction. The remainder is placed on the donors in id
+             * ascending order — deterministic — and bounded by each donor's
+             * remaining headroom so no contribution can push a donor below the
+             * floor it is paying for.
+             *
+             * THE BOUND IS NOT PROVEN COVERAGE, AND SAYING SO IS THE POINT.
+             * Replacing `room` with the whole remainder survives the mutation
+             * battery: in every fixture, and in a 32-million-configuration
+             * search over donor headrooms, the FIRST donor by id always had
+             * room for the whole leftover, so the walk never reached a second
+             * donor and the clamp never bit. The algebra points the same way —
+             * a saturated first donor forces the rounding error to zero. It is
+             * kept anyway, because the failure it would prevent is a recipient
+             * finishing a cent below the guarantee the clause exists to make,
+             * and one `min` is a cheap price for a bound nobody has to trust.
+             */
+            let toPlace = totalShortfall - contributed;
+            for (const id of donors) {
+              if (toPlace === BIG_ZERO) break;
+              const current = contribution.get(id) ?? BIG_ZERO;
+              const room = toPlace > BIG_ZERO ? (headroom.get(id) ?? BIG_ZERO) - current : current;
+              const magnitude = absBigInt(toPlace) < room ? absBigInt(toPlace) : room;
+              const step = toPlace > BIG_ZERO ? magnitude : -magnitude;
+              contribution.set(id, current + step);
+              toPlace -= step;
+            }
+
+            for (const id of deficient) {
+              shareCents.set(id, floorCents);
+              floorEffects.set(id, "raised_to_floor");
+            }
+            for (const id of donors) {
+              const given = contribution.get(id) ?? BIG_ZERO;
+              if (given === BIG_ZERO) continue;
+              shareCents.set(id, (shareCents.get(id) ?? BIG_ZERO) - given);
+              floorEffects.set(id, "contributed_to_floors");
+            }
+
+            notes.push({
+              code: "recipient_floor_applied",
+              subjectId: category.id,
+              detail:
+                `${category.label} guarantees each recipient at least ` +
+                `${centsToAmount(floorCents).toFixed(2)} for a period. ` +
+                `${deficient.length} recipient(s) came in under that and were brought up to it; the ` +
+                `${centsToAmount(totalShortfall).toFixed(2)} that took was met by the ` +
+                `${donors.length} recipient(s) above the floor, in proportion to how far above it they ` +
+                `were. Nothing was added to the fund. The ordinance's own words: "${floorRule?.statedRuleNote ?? ""}"`,
+            });
+          }
+        }
+
+        /*
+         * THE INVARIANT, CHECKED RATHER THAN ASSUMED. Every branch above is
+         * supposed to move money between recipients and never create or destroy
+         * it. A throw here is a crash on a fund page, which is the correct
+         * outcome: the alternative is writing a set of shares that does not add
+         * up to the money the category holds, and nothing downstream would say
+         * so. `divideHalfUp` takes the same posture one level down.
+         */
+        const distributedTotal = activeRecipients.reduce(
+          (sum, id) => sum + (shareCents.get(id) ?? BIG_ZERO),
+          BIG_ZERO
+        );
+        if (distributedTotal !== programmableCents) {
+          throw new Error(
+            `measure allocation: category "${category.id}" distributed ` +
+              `${centsToAmount(distributedTotal).toFixed(2)} of ` +
+              `${centsToAmount(programmableCents).toFixed(2)}`
+          );
+        }
+
         distribution = {
           kind: "return_to_source",
-          basisId,
+          basisId: singleBasisId,
+          factors: reportedFactors,
           vintageLabel,
-          basisTotal: Number(basisTotal) / 10 ** BASIS_SCALE,
+          basisTotal: singleBasisTotal,
           roundingResidual: centsToAmount(poolResidual),
+          minimumPerRecipient: floorCents === null ? null : centsToAmount(floorCents),
+          floorOutcome,
           shares: activeRecipients.map((recipientId) => ({
             recipientId,
-            basisValue: Number(valueByRecipient.get(recipientId) ?? BIG_ZERO) / 10 ** BASIS_SCALE,
+            basisValue:
+              factorReadings.length === 1
+                ? Number(factorReadings[0]!.byRecipient.get(recipientId) ?? BIG_ZERO) / 10 ** BASIS_SCALE
+                : null,
+            factorValues: factorReadings.map((factor) => ({
+              basisId: factor.basisId,
+              weight: factor.weight,
+              basisValue: Number(factor.byRecipient.get(recipientId) ?? BIG_ZERO) / 10 ** BASIS_SCALE,
+            })),
+            formulaAmount: centsToAmount(formulaCents.get(recipientId) ?? BIG_ZERO),
             amount: centsToAmount(shareCents.get(recipientId) ?? BIG_ZERO),
             carriesResidual: poolResidual !== BIG_ZERO && recipientId === residualRecipientId,
+            floorEffect: floorEffects.get(recipientId) ?? "none",
           })),
         };
       }
