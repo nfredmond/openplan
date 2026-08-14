@@ -660,7 +660,7 @@ describe("the compiled RTP document page separates a failed read from an absence
     expect(screen.queryByText("Nobody has been asked yet")).not.toBeInTheDocument();
     expect(screen.getByText("The list of projects could not be read")).toBeInTheDocument();
     expect(
-      screen.getByText("What people said about this plan could not be read")
+      screen.getByText("The public engagement on this plan could not be read")
     ).toBeInTheDocument();
   });
 

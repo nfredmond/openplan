@@ -442,7 +442,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
               <div className="mt-5">
                 <StateBlock
                   tone="danger"
-                  title="What people said about this plan could not be read"
+                  title="The public engagement on this plan could not be read"
                   description="It could not be read, so this section is blank and no chapter below lists where people were asked. It is not a finding that no public engagement was carried out."
                 />
               </div>

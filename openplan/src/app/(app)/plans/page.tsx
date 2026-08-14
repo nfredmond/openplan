@@ -156,7 +156,7 @@ export default async function PlansPage({
   // later failures out of the disclosure.
   const planLinksUnreadable = reads.check("what each plan is connected to", planLinksResult);
   const scenarioCountsUnreadable = reads.check("scenario sets on the linked projects", scenarioResult);
-  const campaignCountsUnreadable = reads.check("what people said on the linked projects", campaignResult);
+  const campaignCountsUnreadable = reads.check("public engagement on the linked projects", campaignResult);
   const reportCountsUnreadable = reads.check("reports on the linked projects", reportResult);
 
   // Readiness, artifact coverage and the workflow verdict for every row are all

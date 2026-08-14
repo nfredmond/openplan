@@ -149,9 +149,13 @@ export const BANNED_TERMS: readonly BannedTerm[] = [
   },
   {
     term: "campaign",
-    say: "To staff: “public input project”. To a resident: “this project”.",
+    say: "To staff: “public engagement”. To a resident: “this project”.",
     because:
-      "1,786 occurrences in code, and it reaches residents in 22 languages. A resident is not in a campaign.",
+      "1,786 occurrences in code, and it reaches residents in 22 languages. A resident is not in a campaign. " +
+      "This entry said “public input project” until 2026-08-14, which was wrong twice: it fixed a banned word " +
+      "with another banned word (see “input” above), and Nathaniel — asked directly — said it is not a phrase a " +
+      "planner would use. “Public engagement” is the profession's own word for this, which is why “engagement” " +
+      "is in KEPT_TERMS rather than here.",
     seen: "“Approved community items currently visible on this campaign page.”",
   },
   {
@@ -336,6 +340,13 @@ export const KEPT_TERMS: readonly string[] = [
   "VMT",
   "level of service",
   "transit feed",
+  // Nathaniel, 2026-08-14, asked what a planner actually calls a campaign:
+  // "public engagement". It is the profession's word, so simplifying it would
+  // make the product both wrong and patronising — the exact thing this list
+  // exists to prevent.
+  "engagement",
+  "public engagement",
+  "outreach",
 ];
 
 /**

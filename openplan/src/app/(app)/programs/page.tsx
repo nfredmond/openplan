@@ -692,7 +692,7 @@ export default async function ProgramsPage({
             Keep cycle timing, the sponsoring agency, linked plans, and what you send in together in one place.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Linking a project brings across its plans, reports, and what people said.</div>
+            <div className="module-operator-item">Linking a project brings across its plans, reports, and public engagement.</div>
             <div className="module-operator-item">Extra links hold the context that spans more than one project.</div>
             <div className="module-operator-item">A missing schedule or report shows up as a stated gap, never a quietly lowered score.</div>
           </div>
