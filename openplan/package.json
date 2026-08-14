@@ -26,6 +26,8 @@
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
     "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs",
     "test:guardrail-suite": "vitest run src/test/no-paid-tier-guard.test.ts src/test/qa-harness-route-contract-guard.test.ts src/test/public-page-claims-guardrails.test.ts src/test/public-open-source-posture-guardrail.test.ts src/test/public-page-metadata-canonical-url.test.ts src/test/workspaces-bootstrap-route.test.ts src/test/workspace-membership-current.test.ts src/test/workspace-membership-required.test.tsx",
+    "qa:first-week": "npm --prefix ../qa-harness run first-week-discovery",
+    "qa:first-week-regression": "npm --prefix ../qa-harness run first-week-regression",
     "doctor": "node scripts/doctor.mjs",
     "deadcode": "knip --no-progress"
   },

@@ -2,3 +2,7 @@ node_modules/
 playwright-report/
 *.log
 fixtures/*.local.json
+# Discovery runs hold screenshots and page trees from a live local workspace.
+# They are evidence for one afternoon, not source. Keep the summary if it
+# matters; do not commit the run.
+first-week-runs/

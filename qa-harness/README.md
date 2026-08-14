@@ -2,6 +2,28 @@
 
 Purpose: keep one-off but reusable production QA scripts outside the app runtime while preserving the exact evidence-generation path used for ship-critical checks.
 
+## The first-week harness — read `FIRST-WEEK-HARNESS.md`
+
+Everything else in this directory checks something somebody already thought of.
+The first-week harness is the one that does not: it hands a **fresh agent with
+no repository context** a planner's job written as an outcome, and a real
+browser, and records where it got stuck. It exists because twenty minutes of
+Nathaniel using OpenPlan produced a better defect list than eleven thousand
+tests had, and he is not a repeatable instrument.
+
+- `first-week-discovery.js` — the discovery layer. Runs the jobs in
+  `first-week-jobs/*.job.md`, one child agent each, and verifies every reported
+  finding against its own screenshot and page snapshot before a person reads it.
+  Local-only, no override. Not a gate — it produces a work-list.
+- `first-week-evidence.js` / `first-week-evidence.test.js` — the evidence rule
+  and its unit test. No browser, no server. A finding with no evidence, or one
+  contradicted by the page tree it attached (the did-not-scroll failure), is
+  discarded and counted rather than investigated.
+- `first-week-regression.js` — the regression layer. One deterministic script
+  per confirmed dead end in `first-week-regressions/*.regression.js`, each
+  required to name the run it came from. Cheap, and the only thing that keeps a
+  fixed problem fixed.
+
 ## Current scripts
 - `openplan-local-workspace-url-isolation-smoke.js` — read-only browser smoke for local synthetic workspace A vs workspace B URL isolation. It signs in synthetic users from a fixture, verifies each user can load its own workspace-scoped URL, verifies the other user is denied, verifies the denied session still loads its own workspace URL afterward, and rejects leaked page text. It refuses non-local base URLs by default and does not seed or mutate Supabase data.
 - `openplan-local-ui-ux-settle-capture.js` — read-only local Playwright capture harness for the UI/UX settle route manifest. It requires an already-authenticated local Playwright storage state, refuses production/Vercel URLs, captures desktop/mobile screenshots for populated local routes, and ledgers fixture-required routes instead of accepting empty-state proof.
@@ -49,6 +71,11 @@ npm run local-analysis-report-linkage-smoke
 npm run local-spine-smoke
 npm run local-aerial-evidence-smoke
 npm run check:map-reading-geometry
+npm run check:first-week-evidence
+OPENPLAN_BASE_URL=http://localhost:3200 OPENPLAN_FIRST_WEEK_EMAIL=you@example.test \
+  OPENPLAN_FIRST_WEEK_PASSWORD=… npm run first-week-discovery
+OPENPLAN_BASE_URL=http://localhost:3200 OPENPLAN_FIRST_WEEK_EMAIL=you@example.test \
+  OPENPLAN_FIRST_WEEK_PASSWORD=… npm run first-week-regression
 OPENPLAN_BASE_URL=http://localhost:3000 OPENPLAN_MAP_READING_EMAIL=you@example.test \
   OPENPLAN_MAP_READING_PASSWORD=… npm run local-map-reading-audit
 npm run prod-auth-smoke
