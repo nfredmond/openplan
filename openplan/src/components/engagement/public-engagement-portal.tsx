@@ -66,14 +66,15 @@ import { PortalPendingCopyNotice } from "./portal-pending-copy-notice";
  *     languages, tenure and race/ethnicity OPTION text. Shared with the operator
  *     console's aggregate views, which must name a band identically, so it
  *     cannot simply become catalog keys.
- *   `PENDING_PORTAL_COPY` (`public-survey-form.tsx`) — twenty-three widget-level
- *     strings in the SURVEY: "Other", "Not rated", the selection-count hints,
- *     the file limits, the two client-side validation sentences. Eight of them
- *     take an English plural (`file` / `files`) that the catalog has no
- *     mechanism to express, so closing this needs a plural rule per locale
- *     before it needs translations. The survey renders only on this component's
- *     survey tab and so is reachable on `/engage/<token>/about` and
- *     `/embed/<token>` and nowhere else.
+ *   `PENDING_PORTAL_COPY` (`public-survey-form.tsx`) — 24 widget-level strings in
+ *     the SURVEY: "Other", "Not rated", the selection-count hints, the file
+ *     limits, the two client-side validation sentences. 12 of them interpolate a
+ *     value, and 3 of those (`rankUpTo`, `fileHint`, `fileTooMany`) choose an
+ *     English plural from a boolean — `file` / `files` — which the catalog has no
+ *     mechanism to express at all. Closing this needs a plural rule per locale
+ *     BEFORE it needs translations, which is why it is still open. The survey
+ *     renders only on this component's survey tab, so it is reachable on
+ *     `/engage/<token>/about` and `/embed/<token>` and nowhere else.
  *   `resolvePortalMapFraming` (`src/lib/engagement/public-portal-data.ts`) —
  *     `unreadableNote` and `submissionRule`, still composed as English prose
  *     server-side and still rendered with `lang="en"` beside the map they
