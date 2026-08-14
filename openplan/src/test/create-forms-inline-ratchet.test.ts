@@ -108,8 +108,14 @@ const GUIDED_FLOW_IMPORT = "@/components/ui/guided-flow";
  * which is the whole difference between this and a convention.
  */
 const NOT_A_GUIDED_FLOW: Record<string, string> = {
-  "src/components/engagement/public-engagement-portal.tsx":
-    "R4 — this IS the public portal. A resident's comment form must be the page, not a popup over one.",
+  /*
+    MOVED 2026-08-14, not deleted. The `<form>` used to live inside
+    `public-engagement-portal.tsx` as `SubmissionForm`, which made it the SECOND
+    implementation of the form `/engage/<token>` already rendered. All three
+    public doors now render this one file, so this is where the rule applies.
+  */
+  "src/components/engagement/portal-submission-form.tsx":
+    "R4 — this IS the public comment form, on all three of its routes. A resident's comment form must be the page, not a popup over one.",
   "src/components/engagement/public-subscribe-form.tsx":
     "R4 — public. Asking a resident for their email address inside a modal they did not open is the shape of a newsletter dark pattern.",
   "src/components/engagement/public-survey-form.tsx":
@@ -216,7 +222,24 @@ function scan(): Scanned[] {
     const code = stripSourceComments(readFileSync(absolute, "utf8"));
     const isClient = /["']use client["']/.test(code);
     const rendersForm = /<form[\s>]/.test(code);
-    const posts = /["']POST["']/.test(code);
+    /*
+      A FORM THAT WRITES, WHETHER OR NOT THE WORD "POST" IS IN THIS FILE.
+
+      The detector used to be `/["']POST["']/` alone, which meant a form lost its
+      coverage the moment its request moved into a shared module — and moving a
+      request into a shared module is something this repository actively asks for
+      (a capability living inside one of its callers gets reimplemented, wrongly,
+      by the other). The public comment form did exactly that on 2026-08-14: it
+      became one implementation behind `submitPortalInput`, and it stopped being
+      a form this guard could see.
+
+      Shared write helpers are therefore named. A NAMED LIST rather than
+      something wide like `/fetch\(/`: a wide detector sweeps in every read and
+      makes the accounting list unusable, and the list is the whole point.
+    */
+    const SHARED_WRITE_HELPERS = ["submitPortalInput"];
+    const posts =
+      /["']POST["']/.test(code) || SHARED_WRITE_HELPERS.some((helper) => code.includes(helper));
     return {
       file,
       isInlineWriteForm: isClient && rendersForm && posts,

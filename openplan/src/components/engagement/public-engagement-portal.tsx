@@ -1,28 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   groupApprovedItems,
   type ApprovedItem,
   type ApprovedItemGrouping,
 } from "@/lib/engagement/approved-item-grouping";
-import { CheckCircle2, ClipboardCheck, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { ClipboardCheck, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  readStoredEngagementGeometry,
-  type EngagementGeometry,
-} from "@/lib/engagement/geometry";
-import { ENGAGEMENT_PHOTO_MAX_BYTES } from "@/lib/engagement/photo";
-import {
-  AGE_BANDS,
-  HOUSEHOLD_TENURE,
-  LANGUAGES,
-  RACE_ETHNICITY,
-  demographicLabel,
-} from "@/lib/engagement/demographics";
+import { readStoredEngagementGeometry } from "@/lib/engagement/geometry";
 import { ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
 import {
   TRANSLATION_LANGUAGES,
@@ -39,11 +25,7 @@ import {
   type PortalMessageBundle,
   type PortalTranslator,
 } from "@/lib/engagement/portal-i18n/translator";
-import {
-  formatPortalDate,
-  formatPortalMegabytes,
-  formatPortalNumber,
-} from "@/lib/engagement/portal-i18n/format";
+import { formatPortalDate, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 import {
   portalMessageView,
   portalTextBadge,
@@ -58,16 +40,13 @@ import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
 import type { PortalMessageKey } from "@/lib/engagement/portal-i18n/messages";
 import type { PortalMapFraming } from "@/lib/engagement/public-portal-data";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
-import { GeometryPickerMap } from "./geometry-picker-map";
-import { buildGeometryPickerWords } from "@/lib/engagement/portal-i18n/drawing-map-words";
 import { LocationDisplayMap } from "./location-display-map";
 import { PortalLanguageNotice, PortalLanguagePicker } from "./portal-language-picker";
 import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";
 import { PublicCloseLoop, type PublicCloseLoopEntry } from "./public-close-loop";
 import { PublicSubscribeForm } from "./public-subscribe-form";
-
-const PUBLIC_SELECT_CLASS =
-  "flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20";
+import { PortalSubmissionForm } from "./portal-submission-form";
+import { PortalPendingCopyNotice } from "./portal-pending-copy-notice";
 
 /**
  * WHAT IS STILL ENGLISH ON THIS SURFACE — the honest, and now short, list.
@@ -80,57 +59,36 @@ const PUBLIC_SELECT_CLASS =
  * carried better wording for months ("Your age range", not "Age range"), so
  * this object was shadowing translations that existed.
  *
- * TWO SOURCES OF ENGLISH REMAIN, both outside this file, both disclosed rather
+ * THREE SOURCES OF ENGLISH REMAIN, all outside this file, all disclosed rather
  * than papered over:
  *
  *   `demographicLabel` (`src/lib/engagement/demographics.ts`) — the age bands,
  *     languages, tenure and race/ethnicity OPTION text. Shared with the operator
  *     console's aggregate views, which must name a band identically, so it
  *     cannot simply become catalog keys.
+ *   `PENDING_PORTAL_COPY` (`public-survey-form.tsx`) — twenty-three widget-level
+ *     strings in the SURVEY: "Other", "Not rated", the selection-count hints,
+ *     the file limits, the two client-side validation sentences. Eight of them
+ *     take an English plural (`file` / `files`) that the catalog has no
+ *     mechanism to express, so closing this needs a plural rule per locale
+ *     before it needs translations. The survey renders only on this component's
+ *     survey tab and so is reachable on `/engage/<token>/about` and
+ *     `/embed/<token>` and nowhere else.
  *   `resolvePortalMapFraming` (`src/lib/engagement/public-portal-data.ts`) —
- *     the map's summary and unreadable-note sentences, composed as English prose
- *     server-side. The MAP-FIRST surface no longer prints that prose (see
- *     `public-map-shell.tsx`, which rebuilds the sentence from catalog keys);
- *     this classic form still does, and every one of them carries
- *     `lang={PORTAL_DEFAULT_LOCALE}` so a screen reader pronounces it as the
- *     English it is.
+ *     `unreadableNote` and `submissionRule`, still composed as English prose
+ *     server-side and still rendered with `lang="en"` beside the map they
+ *     describe. Its `summary` field is NO LONGER printed to a resident by any
+ *     surface: `portalMapFramingSentence` rebuilds that sentence from catalog
+ *     keys for the map-first shell and for the submission form alike.
  *
  * `PortalPendingCopyNotice` therefore still has work to do, and still sits at
- * the TOP of the portal rather than beside one region: the framing sentence is
- * on the submit tab that this portal opens on, and the demographics options are
- * opt-in. Unlabelled English inside an otherwise-Spanish page tells a resident
- * the agency wrote it that way, and under Title VI that is a claim about what
- * the agency published.
+ * the TOP of the portal rather than beside one region: the survey is a tab away
+ * and the demographics options are opt-in, so a notice attached to either would
+ * be a disclosure a resident meets only after the English has already misled
+ * them. Unlabelled English inside an otherwise-Spanish page tells a resident the
+ * agency wrote it that way, and under Title VI that is a claim about what the
+ * agency published.
  */
-
-/**
- * AN API'S OWN REFUSAL, MARKED AS THE ENGLISH IT IS.
- *
- * Every route under `/api/engage/` answers with an English literal — "Photo
- * upload not found or expired. Please re-attach the photo.", "Too many recent
- * submissions from this connection." Those sentences are far more useful to a
- * resident than a generic "submission failed", so the portal prefers them; but
- * they land inside a wrapper that declares the participant's language, and a
- * `lang` that lies is not cosmetic. A screen reader told the page is Farsi
- * pronounces English words with Farsi phonology, and an English sentence with no
- * direction of its own inside a `dir="rtl"` page is laid out from the wrong
- * edge. So the message travels with the two attributes its element must carry.
- *
- * The fallback is a `PortalDisclosureView` from `portalMessageView`, which is
- * OpenPlan's own copy and already knows whether THAT key fell back to English.
- * One shape for both, so the render site never has to ask where a sentence came
- * from.
- */
-function serverSentence(raw: unknown, fallback: PortalDisclosureView): PortalDisclosureView {
-  const sentence = typeof raw === "string" ? raw.trim() : "";
-  return sentence
-    ? { sentence, lang: PORTAL_DEFAULT_LOCALE, dir: PORTAL_LOCALE_DIRECTION[PORTAL_DEFAULT_LOCALE] }
-    : fallback;
-}
-
-function isPortalSentence(value: unknown): value is PortalDisclosureView {
-  return typeof value === "object" && value !== null && typeof (value as PortalDisclosureView).sentence === "string";
-}
 
 /**
  * A category as this component reads it — the operator's own words in the
@@ -161,8 +119,6 @@ function replyPreviewLabel(item: ApprovedItem): string {
   const source = item.title?.trim() || item.body.trim();
   return source.length > 60 ? `${source.slice(0, 60)}…` : source;
 }
-
-const PHOTO_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /**
  * A campaign's engagement mode, in the participant's language.
@@ -274,92 +230,6 @@ function OperatorText({
   );
 }
 
-/**
- * The distinct provenance sentences for a set of operator strings, deduplicated,
- * each with the language it is written in.
- *
- * A `<select>` cannot carry a badge on each `<option>`, so the caveat for the
- * topic names has to be said once beneath the control. Deduplicated because ten
- * machine-translated categories are one fact about this campaign, not ten — by
- * SENTENCE, since two categories in the same state produce the same sentence in
- * the same language, and two in different states produce different sentences.
- */
-function distinctDisclosures(
-  values: Array<PortalText | null>,
-  translator: PortalTranslator
-): PortalDisclosureView[] {
-  const seen = new Map<string, PortalDisclosureView>();
-  for (const value of values) {
-    if (!value) continue;
-    const view = portalTextDisclosureView(value, translator);
-    if (view && !seen.has(view.sentence)) seen.set(view.sentence, view);
-  }
-  return [...seen.values()];
-}
-
-/**
- * WHAT THIS PORTAL IS NOT SAYING IN THE PARTICIPANT'S LANGUAGE, said above the
- * English rather than after it.
- *
- * IT COVERS THE WHOLE PORTAL, and the earlier version — scoped to the
- * demographics block — is the defect this note exists to stop coming back. The
- * catalog-shaped gap is reported by `translator.hasFallbacks` and disclosed by
- * `PortalLanguageNotice`. This one covers the gap the catalog knows nothing
- * about: participant copy on this surface that has no catalog key yet, which is
- * every `PENDING_PORTAL_TEXT` entry plus the English prose
- * `resolvePortalMapFraming` builds server-side.
- *
- * That English is NOT confined to one region. `framing.summary` sits on the
- * submit tab — the tab a portal opens on — for every reader of every campaign,
- * `portal.sortBy` sits on the feedback tab, and the demographics block is
- * OPT-IN. Attaching the notice to the demographics section therefore left the
- * ordinary Spanish portal (demographics off, which is the default) rendering
- * undisclosed English on first paint with nothing anywhere on the page saying
- * so. Under Title VI that reads as English the agency chose to publish.
- *
- * SO IT STAYS SILENT WHENEVER THE PAGE-WIDE ONE SPEAKS, which is exactly when
- * `translator.hasFallbacks` is true. `PortalLanguageNotice` renders the SAME
- * sentence from the SAME key on that condition, and a Korean portal used to
- * print it twice — once above the campaign title and once inside the portal —
- * which reads as a bug and teaches a resident to skip both. The remaining case
- * is the one this notice was built for: a COMPLETE catalog like Spanish, where
- * nothing is falling back, the page-wide notice is correctly silent, and parts
- * of this surface are English anyway.
- *
- * A consequence worth naming, because it makes the `lang` below correct rather
- * than lucky: the only locales that reach the return statement are ones whose
- * catalog carries this key, so the sentence really is in `translator.locale`.
- *
- * IT MAY SAY SO SLIGHTLY MORE OFTEN THAN IT MUST — a closed Spanish campaign
- * with no published items and no demographics has no English on screen and
- * still gets the sentence. That direction is deliberate: the sentence is true of
- * the surface either way ("anything not yet translated is shown in English"),
- * and the cost of the other direction is a resident told nothing about English
- * they are actually reading.
- *
- * THE INVARIANT THIS DEPENDS ON: every surface rendering the portal shows the
- * page-wide notice when there are fallbacks. The full public page renders it
- * above the campaign title; a surface with no language chrome of its own gets it
- * from this component (see `renderLanguagePicker`). A third surface that renders
- * the portal and neither is a surface where untranslated copy goes undisclosed.
- */
-function PortalPendingCopyNotice({ translator }: { translator: PortalTranslator }) {
-  // Nothing to disclose on an English portal: this copy is not missing, it is
-  // the source.
-  if (translator.locale === PORTAL_DEFAULT_LOCALE) return null;
-  if (translator.hasFallbacks) return null;
-
-  return (
-    <p
-      className="rounded-lg border border-amber-300/70 bg-amber-50/70 px-3 py-2 text-xs text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100"
-      lang={translator.bcp47}
-      dir={translator.direction}
-    >
-      {translator.t("language.partialNotice", { language: translator.nativeName })}
-    </p>
-  );
-}
-
 function PortalTabButton({
   active,
   icon,
@@ -393,662 +263,6 @@ function PortalTabButton({
         <span className="text-xs font-semibold text-muted-foreground">({formatPortalNumber(count, bcp47)})</span>
       ) : null}
     </button>
-  );
-}
-
-function SubmissionForm({
-  shareToken,
-  categories,
-  demographicsEnabled,
-  translator,
-  parentItemId = null,
-  replyingToLabel = null,
-  onCancelReply,
-  framing,
-  contextLayers = null,
-  previewMode = false,
-}: {
-  shareToken: string;
-  categories: CategoryOption[];
-  demographicsEnabled: boolean;
-  /** Operator preview: render the real form, send nothing. See the portal's own prop. */
-  previewMode?: boolean;
-  /** The participant's language. Every string below comes through it. */
-  translator: PortalTranslator;
-  parentItemId?: string | null;
-  replyingToLabel?: string | null;
-  onCancelReply?: () => void;
-  /**
-   * Where the map opens AND why — see `resolvePortalMapFraming`. The reason
-   * travels with the camera because the form has to say something different
-   * when nothing framed the map: a continent shown without comment reads as a
-   * study area.
-   */
-  framing: PortalMapFraming;
-  /** The campaign's published GIS context, drawn under the resident's sketch. */
-  contextLayers?: ParticipantContextLayerSet | null;
-}) {
-  const [categoryId, setCategoryId] = useState("");
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [submittedBy, setSubmittedBy] = useState("");
-  const [geometry, setGeometry] = useState<EngagementGeometry | null>(null);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
-  const [photoError, setPhotoError] = useState<PortalDisclosureView | null>(null);
-  const [website, setWebsite] = useState("");
-  // E5a — optional self-reported demographics (only when the campaign opts in).
-  const [ageBand, setAgeBand] = useState("");
-  const [zip5, setZip5] = useState("");
-  const [primaryLanguage, setPrimaryLanguage] = useState("");
-  const [raceEthnicity, setRaceEthnicity] = useState<string[]>([]);
-  const [householdTenure, setHouseholdTenure] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<PortalDisclosureView | null>(null);
-  const photoInputRef = useRef<HTMLInputElement>(null);
-
-  const { t, bcp47 } = translator;
-  // Stated as a size in the participant's locale, and read from the same
-  // constant the server enforces — a "5 MB" written into a sentence is both an
-  // untranslated unit and a number that silently disagrees the day the limit
-  // changes.
-  const photoLimit = formatPortalMegabytes(ENGAGEMENT_PHOTO_MAX_BYTES, bcp47);
-  const optionalHint = t("survey.optional");
-  const topicDisclosures = useMemo(
-    () => distinctDisclosures(categories.map((category) => category.labelText), translator),
-    [categories, translator]
-  );
-
-  useEffect(() => {
-    return () => {
-      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
-    };
-  }, [photoPreviewUrl]);
-
-  function clearPhoto() {
-    setPhotoFile(null);
-    setPhotoError(null);
-    setPhotoPreviewUrl((previous) => {
-      if (previous) URL.revokeObjectURL(previous);
-      return null;
-    });
-    if (photoInputRef.current) photoInputRef.current.value = "";
-  }
-
-  function handlePhotoChange(file: File | null) {
-    setPhotoError(null);
-
-    if (!file) {
-      clearPhoto();
-      return;
-    }
-
-    if (!PHOTO_CONTENT_TYPES.includes(file.type)) {
-      clearPhoto();
-      setPhotoError(portalMessageView(translator, "portal.photoWrongType"));
-      return;
-    }
-
-    if (file.size > ENGAGEMENT_PHOTO_MAX_BYTES) {
-      clearPhoto();
-      setPhotoError(
-        portalMessageView(translator, "portal.photoTooLarge", { limit: photoLimit })
-      );
-      return;
-    }
-
-    setPhotoFile(file);
-    setPhotoPreviewUrl((previous) => {
-      if (previous) URL.revokeObjectURL(previous);
-      return URL.createObjectURL(file);
-    });
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    // Belt behind the disabled button: a preview must never write to the
-    // public record, however the submit was triggered.
-    if (previewMode) return;
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      // Two-step photo flow: upload the raw image first, then reference the
-      // returned storage path in the submission payload.
-      let photoPath: string | undefined;
-      if (photoFile) {
-        const uploadResponse = await fetch(`/api/engage/${shareToken}/photo-upload`, {
-          method: "POST",
-          headers: { "content-type": photoFile.type },
-          body: photoFile,
-        });
-        const uploadPayload = (await uploadResponse.json()) as { error?: string; photoPath?: string };
-        if (!uploadResponse.ok || !uploadPayload.photoPath) {
-          // The API's own message is preferred when it has one: it is specific.
-          // It is also English, so it is thrown as a view that says
-          // so rather than as a bare string the render site would have to guess
-          // about.
-          throw serverSentence(uploadPayload.error, portalMessageView(translator, "portal.photoFailed"));
-        }
-        photoPath = uploadPayload.photoPath;
-      }
-
-      const response = await fetch(`/api/engage/${shareToken}/submit`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          categoryId: categoryId || undefined,
-          parentItemId: parentItemId || undefined,
-          title: title || undefined,
-          body,
-          submittedBy: submittedBy || undefined,
-          geometry: geometry ?? undefined,
-          photoPath,
-          website,
-          demographics: demographicsEnabled
-            ? {
-                ageBand: ageBand || undefined,
-                zip5: /^\d{5}$/.test(zip5) ? zip5 : undefined,
-                primaryLanguage: primaryLanguage || undefined,
-                raceEthnicity: raceEthnicity.length ? raceEthnicity : undefined,
-                householdTenure: householdTenure || undefined,
-                consented: true,
-              }
-            : undefined,
-        }),
-      });
-
-      const payload = (await response.json()) as { error?: string; message?: string };
-      if (!response.ok) {
-        throw serverSentence(payload.error, portalMessageView(translator, "portal.submitFailed"));
-      }
-
-      setSubmitted(true);
-    } catch (failure) {
-      // A thrown view already knows its language. Anything else here
-      // is a network or parsing fault with no participant-facing wording of its
-      // own, so it becomes the translated generic rather than a stack message.
-      setError(
-        isPortalSentence(failure)
-          ? failure
-          : portalMessageView(translator, "portal.submitFailed")
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  if (submitted) {
-    return (
-      <div className="public-success-state">
-        <CheckCircle2 className="mx-auto h-9 w-9 text-[color:var(--pine)]" />
-        <h3 className="mt-4 text-xl font-semibold text-foreground">{t("portal.received")}</h3>
-        <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-          <p>{t("portal.receivedDetail")}</p>
-          <p>{t("portal.reviewNotice")}</p>
-          <p>{t("portal.followUpHint")}</p>
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          className="mt-5"
-          onClick={() => {
-            setSubmitted(false);
-            setCategoryId("");
-            setTitle("");
-            setBody("");
-            setSubmittedBy("");
-            setGeometry(null);
-            clearPhoto();
-            setWebsite("");
-            setAgeBand("");
-            setZip5("");
-            setPrimaryLanguage("");
-            setRaceEthnicity([]);
-            setHouseholdTenure("");
-            setError(null);
-            onCancelReply?.();
-          }}
-        >
-          {t("portal.shareAnother")}
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <form className="public-form-shell" onSubmit={handleSubmit}>
-      {replyingToLabel ? (
-        <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-[color:var(--pine)]/40 bg-[color:var(--pine)]/5 px-3.5 py-2.5">
-          <p className="text-sm text-foreground">
-            <span className="font-semibold">{t("portal.replyingTo")}</span>{" "}
-            <span className="text-muted-foreground">{replyingToLabel}</span>
-          </p>
-          {onCancelReply ? (
-            <button
-              type="button"
-              onClick={onCancelReply}
-              className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-            >
-              {t("portal.cancelReply")}
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-      <div className="public-form-grid">
-        <div className="divide-y divide-border/60">
-          <section className="public-form-section">
-            <div className="public-form-heading">
-              <h3 className="public-section-label">{t("portal.yourInput")}</h3>
-              <p className="text-sm text-muted-foreground">{t("portal.onlyRequiredField")}</p>
-            </div>
-
-            <div className="mt-4 space-y-1.5">
-              {/*
-                The visible heading above already names this field, so the
-                <label> repeats it for assistive technology instead of adding a
-                second visible sentence. A textarea with no programmatic label is
-                unusable with a screen reader, and this is the one required field
-                on the page.
-              */}
-              <label htmlFor="public-body" className="sr-only">
-                {t("portal.yourInput")}
-              </label>
-              <Textarea
-                id="public-body"
-                rows={6}
-                placeholder={t("portal.yourInputHint")}
-                value={body}
-                onChange={(event) => setBody(event.target.value)}
-                required
-                maxLength={4000}
-              />
-              <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">
-                {/*
-                  Numerals only. A counter needs no word to be understood, and
-                  the digits themselves are grouped the way the participant's
-                  language groups them.
-                */}
-                <span>
-                  {formatPortalNumber(body.length, bcp47)}/{formatPortalNumber(4000, bcp47)}
-                </span>
-              </div>
-            </div>
-          </section>
-
-          <section className="public-form-section">
-            <div className="public-form-heading">
-              <h3 className="public-section-label">{t("portal.optionalFields")}</h3>
-            </div>
-
-            <div className="mt-4 grid gap-4">
-              {categories.length > 0 ? (
-                <div className="space-y-1.5">
-                  <label htmlFor="public-category" className="text-sm font-medium">
-                    {t("portal.topics")} <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                  </label>
-                  <select
-                    id="public-category"
-                    className={PUBLIC_SELECT_CLASS}
-                    value={categoryId}
-                    onChange={(event) => setCategoryId(event.target.value)}
-                  >
-                    <option value="">{t("portal.selectTopic")}</option>
-                    {categories.map((category) => (
-                      // An <option> cannot carry a badge, so each one carries
-                      // the language it is actually in — and its direction,
-                      // because an Arabic topic name in a list of English ones
-                      // renders its punctuation on the wrong side without it.
-                      // The caveat is said once below the control.
-                      <option
-                        key={category.id}
-                        value={category.id}
-                        lang={portalTextLang(category.labelText)}
-                        dir={PORTAL_LOCALE_DIRECTION[category.labelText.textLocale]}
-                      >
-                        {category.labelText.text}
-                      </option>
-                    ))}
-                  </select>
-                  {topicDisclosures.map((disclosure) => (
-                    <p
-                      key={disclosure.sentence}
-                      className="text-xs leading-snug text-muted-foreground"
-                      lang={disclosure.lang}
-                      dir={disclosure.dir}
-                    >
-                      {disclosure.sentence}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-
-              <div className="space-y-1.5">
-                <label htmlFor="public-title" className="text-sm font-medium">
-                  {t("portal.titleLabel")} <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                </label>
-                <Input
-                  id="public-title"
-                  placeholder={t("portal.titleLabel")}
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  maxLength={160}
-                />
-              </div>
-
-              <div className="space-y-2 pt-1">
-                <label className="text-sm font-medium">
-                  {t("survey.mapHint")} <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                </label>
-                {/*
-                  Say where the map is, always. When something framed it this
-                  names the area so a resident can tell at a glance whether they
-                  are looking at their own neighbourhood; when nothing did, the
-                  continent is stated as a continent instead of being allowed to
-                  pass for the study area.
-
-                  `lang` is English because these sentences are built as English
-                  prose by `resolvePortalMapFraming` — a real gap, marked rather
-                  than hidden, and disclosed by the notice above the portal.
-                */}
-                <p className="text-xs text-muted-foreground" lang={PORTAL_DEFAULT_LOCALE}>
-                  {framing.summary}
-                </p>
-                {/*
-                  A SEPARATE PARAGRAPH, not an appended clause, because the two
-                  sentences are now in two different languages: `framing.summary`
-                  is English prose composed server-side, and this one is the
-                  catalog's. Concatenating them would have put the resident's
-                  language inside an element declaring English.
-                */}
-                {framing.origin === "none" ? (
-                  <p className="text-xs text-muted-foreground">{t("portal.mapZoomHint")}</p>
-                ) : null}
-                {framing.unreadableNote ? (
-                  <p className="text-xs text-muted-foreground" lang={PORTAL_DEFAULT_LOCALE}>
-                    {framing.unreadableNote}
-                  </p>
-                ) : null}
-                {/*
-                  The submission rule, when this campaign has one
-                  (20260730000002). Rendered HERE and nowhere else, because this
-                  is the one map whose submissions the rule actually governs — a
-                  survey `map_point` question is written by a different route
-                  that does not check it, and announcing the rule there would
-                  claim something nobody enforces. English for the same reason as
-                  the two sentences above, and disclosed by the same notice.
-                */}
-                {framing.submissionRule ? (
-                  <p className="text-xs text-muted-foreground" lang={PORTAL_DEFAULT_LOCALE}>
-                    {framing.submissionRule}
-                  </p>
-                ) : null}
-                <div className="public-map-frame public-map-frame--editor">
-                  <GeometryPickerMap
-                    onGeometryChange={setGeometry}
-                    contextLayers={contextLayers}
-                    /*
-                      THE MAP SPEAKS THE RESIDENT'S LANGUAGE. Every sentence this
-                      picker produces used to be an English literal inside it —
-                      on a page that declares Spanish, Farsi or Arabic on its own
-                      wrapper. `words` is the catalog's answer and `lang` stamps
-                      what those words are actually written in.
-                    */
-                    words={buildGeometryPickerWords(translator)}
-                    lang={bcp47}
-                    {...(framing.view
-                      ? { initialCenter: framing.view.center, initialZoom: framing.view.zoom }
-                      : {})}
-                  />
-                </div>
-                {geometry ? (
-                  <p className="text-xs text-muted-foreground">
-                    <MapPinned className="me-1 inline h-3 w-3" aria-hidden="true" />
-                    {t("portal.located")}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="space-y-1.5 pt-1">
-                <label htmlFor="public-photo" className="text-sm font-medium">
-                  {t("portal.photoHint", { limit: photoLimit })}{" "}
-                  <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                </label>
-                <input
-                  id="public-photo"
-                  ref={photoInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="block w-full text-sm text-muted-foreground file:me-3 file:rounded-lg file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-foreground hover:file:border-primary/50"
-                  onChange={(event) => handlePhotoChange(event.target.files?.[0] ?? null)}
-                />
-                {photoError ? (
-                  <p className="text-xs text-destructive" lang={photoError.lang} dir={photoError.dir}>
-                    {photoError.sentence}
-                  </p>
-                ) : null}
-                {photoPreviewUrl ? (
-                  <div className="flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- local object URL preview */}
-                    <img
-                      src={photoPreviewUrl}
-                      alt={t("portal.photoPreviewAlt")}
-                      className="h-24 w-24 rounded-lg border border-border object-cover"
-                    />
-                    <button
-                      type="button"
-                      className="text-xs font-medium text-destructive hover:underline"
-                      onClick={clearPhoto}
-                    >
-                      {t("portal.removePhoto")}
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </section>
-
-          <section className="public-form-section">
-            <div className="public-form-heading">
-              <h3 className="public-section-label">{t("portal.followUp")}</h3>
-              <p className="text-sm text-muted-foreground">{t("portal.nameHint")}</p>
-            </div>
-
-            <div className="mt-4 space-y-1.5">
-              <label htmlFor="public-name" className="text-sm font-medium">
-                {t("portal.nameLabel")} <span className="text-xs text-muted-foreground">({optionalHint})</span>
-              </label>
-              <Input
-                id="public-name"
-                placeholder={t("portal.nameLabel")}
-                value={submittedBy}
-                onChange={(event) => setSubmittedBy(event.target.value)}
-                maxLength={200}
-              />
-            </div>
-          </section>
-
-          {demographicsEnabled ? (
-            /*
-              THE ONE BLOCK THAT IS STILL LARGELY ENGLISH, and it is not hidden
-              for non-English readers under any circumstances: this is how a
-              resident tells the agency they exist, and denying it to the people
-              least likely to be counted would invert the entire point of
-              collecting it. So it renders, marked `lang="en"` throughout, with
-              the coverage notice above the portal saying so.
-
-              `demographicLabel` is shared with the operator console's aggregate
-              views, so its option text cannot simply become catalog keys — the
-              fix is reported alongside this change.
-            */
-            <section className="public-form-section">
-              <div className="public-form-heading">
-                <h3 className="public-section-label">{t("portal.demographics")}</h3>
-                <p className="text-sm text-muted-foreground">{t("portal.demographicsHint")}</p>
-              </div>
-
-              <div className="mt-4 grid gap-4">
-                <div className="space-y-1.5">
-                  <label htmlFor="demo-age" className="text-sm font-medium">
-                    {t("portal.demographicsAge")}{" "}
-                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                  </label>
-                  <select id="demo-age" className={PUBLIC_SELECT_CLASS} value={ageBand} onChange={(event) => setAgeBand(event.target.value)}>
-                    <option value="" lang={bcp47}>
-                      {t("portal.preferNotToSay")}
-                    </option>
-                    {AGE_BANDS.filter((band) => band !== "prefer_not_to_say").map((band) => (
-                      <option key={band} value={band} lang={PORTAL_DEFAULT_LOCALE}>
-                        {demographicLabel(band)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="demo-zip" className="text-sm font-medium">
-                    {t("portal.demographicsZip")}{" "}
-                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                  </label>
-                  <Input
-                    id="demo-zip"
-                    inputMode="numeric"
-                    value={zip5}
-                    onChange={(event) => setZip5(event.target.value.replace(/\D/g, "").slice(0, 5))}
-                    maxLength={5}
-                  />
-                  <p className="text-xs text-muted-foreground">{t("portal.zipHint")}</p>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="demo-language" className="text-sm font-medium">
-                    {t("portal.demographicsPrimaryLanguage")}{" "}
-                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                  </label>
-                  <select id="demo-language" className={PUBLIC_SELECT_CLASS} value={primaryLanguage} onChange={(event) => setPrimaryLanguage(event.target.value)}>
-                    <option value="" lang={bcp47}>
-                      {t("portal.preferNotToSay")}
-                    </option>
-                    {LANGUAGES.filter((language) => language !== "prefer_not_to_say").map((language) => (
-                      <option key={language} value={language} lang={PORTAL_DEFAULT_LOCALE}>
-                        {demographicLabel(language)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="demo-tenure" className="text-sm font-medium">
-                    {t("portal.demographicsTenure")}{" "}
-                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                  </label>
-                  <select id="demo-tenure" className={PUBLIC_SELECT_CLASS} value={householdTenure} onChange={(event) => setHouseholdTenure(event.target.value)}>
-                    <option value="" lang={bcp47}>
-                      {t("portal.preferNotToSay")}
-                    </option>
-                    {HOUSEHOLD_TENURE.filter((tenure) => tenure !== "prefer_not_to_say").map((tenure) => (
-                      <option key={tenure} value={tenure} lang={PORTAL_DEFAULT_LOCALE}>
-                        {demographicLabel(tenure)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <fieldset className="space-y-1.5">
-                  <legend className="text-sm font-medium">
-                    {t("portal.demographicsRace")}{" "}
-                    <span className="text-xs text-muted-foreground">({optionalHint})</span>
-                  </legend>
-                  <div className="grid gap-1.5 sm:grid-cols-2">
-                    {RACE_ETHNICITY.filter((race) => race !== "prefer_not_to_say").map((race) => (
-                      <label key={race} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-input"
-                          checked={raceEthnicity.includes(race)}
-                          onChange={(event) =>
-                            setRaceEthnicity((previous) =>
-                              event.target.checked ? [...previous, race] : previous.filter((value) => value !== race)
-                            )
-                          }
-                        />
-                        <span lang={PORTAL_DEFAULT_LOCALE}>{demographicLabel(race)}</span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              </div>
-            </section>
-          ) : null}
-        </div>
-
-        <aside className="public-form-rail">
-          <div>
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Info className="h-4 w-4 text-[color:var(--accent)]" aria-hidden="true" />
-              {t("portal.whatHappensNext")}
-            </h3>
-            <ul className="public-bullet-list public-bullet-list--compact mt-3 text-sm text-muted-foreground">
-              <li>{t("portal.onlyRequiredField")}</li>
-              <li>{t("portal.reviewNotice")}</li>
-              <li>{t("portal.followUpHint")}</li>
-            </ul>
-          </div>
-        </aside>
-      </div>
-
-      <div className="public-form-footer">
-        {error ? (
-          /*
-            THE MOMENT A RESIDENT IS MOST LIKELY TO GIVE UP, so the sentence they
-            meet is marked with the language it is in. An API refusal is English
-            on every route under `/api/engage/`; declaring it as the page's
-            language would have a screen reader read it with the wrong phonology
-            and, on an Arabic or Farsi portal, lay it out from the wrong edge.
-          */
-          <p
-            className="mb-4 rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300"
-            lang={error.lang}
-            dir={error.dir}
-          >
-            {error.sentence}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">{t("page.submissionStatusDetail")}</p>
-          <Button
-            type="submit"
-            disabled={isSubmitting || previewMode}
-            className="min-w-[13rem] justify-center"
-          >
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {isSubmitting ? t("portal.submitting") : t("portal.submit")}
-          </Button>
-        </div>
-      </div>
-
-      {/*
-        Honeypot. Deliberately NOT translated and deliberately not in the
-        catalog: it is aria-hidden and off-screen, no participant or screen
-        reader ever meets it, and a bot is the only reader. `-start-` rather than
-        `-left-` so it hides off the correct edge in a right-to-left page — with
-        `-left-` on an RTL portal it lands in the middle of the layout.
-      */}
-      <div className="absolute -start-[9999px] opacity-0" aria-hidden="true">
-        <label htmlFor="public-website">Website</label>
-        <input
-          id="public-website"
-          name="website"
-          type="text"
-          tabIndex={-1}
-          autoComplete="off"
-          value={website}
-          onChange={(event) => setWebsite(event.target.value)}
-        />
-      </div>
-    </form>
   );
 }
 
@@ -1694,13 +908,27 @@ export function PublicEngagementPortal({
                   </div>
                 </div>
 
-                <SubmissionForm
-                  framing={framing}
-                  contextLayers={contextLayers}
+                {/*
+                  THE SAME FORM `/engage/<token>` RENDERS. Until 2026-08-14 this
+                  was `SubmissionForm`, a second implementation that lived in
+                  this file — and being the second implementation is what let it
+                  fall behind on an API refusal shown in English to a Spanish
+                  reader, an empty comment reaching the server, and a payload
+                  that trimmed nothing.
+
+                  `place.source` is "inline" because on THIS route there is no
+                  full-screen stage: the map is a field inside the form rather
+                  than the page around it. That is the only thing the three
+                  doors disagree about, and it is now data rather than a second
+                  component.
+                */}
+                <PortalSubmissionForm
                   shareToken={shareToken}
+                  acceptingSubmissions={acceptingSubmissions}
                   categories={categories}
-                  translator={translator}
                   demographicsEnabled={demographicsEnabled}
+                  translator={translator}
+                  place={{ source: "inline", mapFraming: framing, contextLayers }}
                   parentItemId={replyTarget?.id ?? null}
                   replyingToLabel={replyTarget?.label ?? null}
                   onCancelReply={replyTarget ? () => setReplyTarget(null) : undefined}

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { PublicEngagementPortal, groupApprovedItems } from "@/components/engagement/public-engagement-portal";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { groupApprovedItems } from "@/components/engagement/public-engagement-portal";
 import { resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
 import { resolvePortalLocale, type PortalLocale } from "@/lib/engagement/portal-i18n/locales";
 import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
@@ -12,12 +12,100 @@ import {
   type PortalTranslationIndex,
 } from "@/lib/engagement/portal-i18n/operator-text";
 
+vi.mock("mapbox-gl", async () => {
+  const { createMapboxGlModuleFake } = await import("@/test/helpers/mapbox-gl-fake");
+  return createMapboxGlModuleFake();
+});
+vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
+
+/**
+ * ============================================================================
+ * WHY THIS FILE IMPORTS THE PORTAL LATE, AND WHY EVERY TEST HERE HAS A MAP
+ * ============================================================================
+ *
+ * `GeometryPickerMap` reads its Mapbox token at MODULE scope, and the submission
+ * form asks it — through `GEOMETRY_PICKER_CAN_DRAW` — whether a map can be drawn
+ * at all. With no token the form takes its no-map path: it asks "where" in words
+ * and suppresses the two sentences that describe where the map opens, because
+ * both name a map that is not there.
+ *
+ * Until 2026-08-14 this file ran with NO token, so every assertion in it was
+ * about a degraded portal, and the map-framing assertions below were passing on
+ * English prose printed above a map nobody could see. Stubbing the token before
+ * the import is what makes them assertions about the portal an agency actually
+ * deploys.
+ *
+ * WHAT THIS FILE STILL CANNOT PROVE: jsdom applies no stylesheet, has no box
+ * model, and the Mapbox module is a fake. Nothing here is evidence that anything
+ * is visible, sized, or draws.
+ */
+let PublicEngagementPortal: typeof import("@/components/engagement/public-engagement-portal").PublicEngagementPortal;
+
+beforeAll(async () => {
+  vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "pk.test-token-for-the-participant-map");
+  vi.resetModules();
+  PublicEngagementPortal = (await import("@/components/engagement/public-engagement-portal"))
+    .PublicEngagementPortal;
+});
+
+/*
+  AND PUT IT BACK. A stubbed env that is never unstubbed outlives this file:
+  vitest reuses a worker process across test files, so the next file in the same
+  worker inherits a Mapbox token it never asked for, in whatever order the
+  scheduler picked. A suite whose result depends on file ordering looks green on
+  a rerun, which is worse than one that fails.
+*/
+afterAll(() => {
+  vi.unstubAllEnvs();
+});
+
 /**
  * A campaign nothing could frame. Built through the real resolver rather than
  * hand-written, so a fixture cannot describe a portal state the resolver would
  * never produce.
  */
 const UNFRAMED_MAP = resolvePortalMapFraming({});
+
+/**
+ * WALKING THE FORM THE WAY A RESIDENT DOES.
+ *
+ * Since 2026-08-14 all three public doors — `/engage/<token>`,
+ * `/engage/<token>/about` and `/embed/<token>` — render ONE submission form, and
+ * it is a five-step guided form rather than a wall of fields. Every field still
+ * exists and every payload key is still sent; they are just not all on screen at
+ * once, so a test that wants the photo input has to open the step that holds it.
+ *
+ * THE STEP IS FOUND BY POSITION, NOT BY ITS WORDS. The chips are the form's own
+ * `portal-step-list`, in the order the form declares, so this helper cannot go
+ * stale when the copy improves and cannot assert a step title the catalog does
+ * not carry.
+ */
+const STEP_ORDER = ["where", "what", "extras", "you", "send"] as const;
+
+function openStep(id: (typeof STEP_ORDER)[number]) {
+  const chips = within(screen.getByTestId("portal-step-list")).getAllByRole("button");
+  fireEvent.click(chips[STEP_ORDER.indexOf(id)]);
+}
+
+/**
+ * Write the one required answer.
+ *
+ * Called before any jump PAST the comment step, because the form refuses to walk
+ * a resident forward with nothing written — that refusal is the subject of
+ * `portal-rail-refuses-an-empty-comment.test.tsx` and is deliberately not
+ * defeated here.
+ */
+function writeComment(text: string) {
+  openStep("what");
+  fireEvent.change(document.querySelector("#portal-body") as HTMLTextAreaElement, {
+    target: { value: text },
+  });
+}
+
+/** One of the portal's four tabs, named from the catalog rather than typed. */
+function openTab(key: "portal.tab.submit" | "portal.tab.survey" | "portal.tab.closeLoop" | "portal.tab.feedback") {
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(EN.messages.messages[key], "i") }));
+}
 
 /**
  * The participant's language, resolved the way a request resolves it.
@@ -215,11 +303,20 @@ describe("PublicEngagementPortal", () => {
   it("tells a resident where the map opens, and admits when nothing framed it", () => {
     const { unmount } = renderPortal();
 
-    // Both sentences reworded 2026-08-13, and the second one moved into the
-    // catalog: "study area"/"campaign" and "your neighbourhood"/"dropping a
-    // pin" were terms of art rendered to the public, in English, on every page.
-    expect(screen.getByText(/no area has been set for this page/i)).toBeInTheDocument();
-    expect(screen.getByText(/zoom in to your own street before you mark a spot/i)).toBeInTheDocument();
+    /*
+      THE SENTENCE IS THE CATALOG'S, NOT THE RESOLVER'S ENGLISH PROSE — changed
+      2026-08-14 and the reason this assertion moved. `mapFraming.summary` is
+      composed server-side in an administrator's vocabulary and in English only;
+      the map-first surface stopped printing it in August, and this form went on
+      printing it to Spanish readers for as long as it was the second
+      implementation of this form. Both now call
+      `portalMapFramingSentence`.
+
+      Read out of the catalog rather than typed, so this cannot assert copy the
+      product does not carry.
+    */
+    expect(screen.getByText(EN.messages.messages["portal.mapFramingNoArea"])).toBeInTheDocument();
+    expect(screen.getByText(EN.messages.messages["portal.mapZoomHint"])).toBeInTheDocument();
     unmount();
 
     const framed = resolvePortalMapFraming({
@@ -232,11 +329,16 @@ describe("PublicEngagementPortal", () => {
 
     renderPortal({ mapFraming: framed });
 
+    // The agency's own name for the area is NEVER translated; the frame around
+    // it always is.
+    expect(screen.getByText(/Franklin County, Ohio/)).toBeInTheDocument();
     expect(
-      screen.getByText(/This map opens on Franklin County, Ohio — the linked project's study area\./i)
+      screen.getByText(new RegExp(EN.messages.messages["portal.mapFramingSourceProject"]))
     ).toBeInTheDocument();
     // The continental instruction belongs only to the unframed case.
-    expect(screen.queryByText(/zoom in to your own street before you mark a spot/i)).toBeNull();
+    expect(screen.queryByText(EN.messages.messages["portal.mapZoomHint"])).toBeNull();
+    // And the resolver's English prose is not printed to a resident at all.
+    expect(screen.queryByText(framed.summary)).toBeNull();
   });
 
   it("renders submission guidance and optionality cues from the message catalog", () => {
@@ -254,14 +356,34 @@ describe("PublicEngagementPortal", () => {
 
     expect(screen.getByRole("heading", { name: "Share your input" })).toBeInTheDocument();
     expect(screen.getAllByText("What you want to tell us (we need this part)").length).toBeGreaterThan(0);
-    expect(screen.getByText("Only if you want to")).toBeInTheDocument();
-    expect(screen.getByText("Hearing back (only if you want to)")).toBeInTheDocument();
-    // The only required field carries a programmatic label, which a resident on
-    // a screen reader needs and a visible heading alone does not provide.
-    expect(screen.getByLabelText("What you want to tell us (we need this part)")).toBeInTheDocument();
     expect(
       screen.getAllByText(/Someone on the project team reads what you send before it is shown on this page or used in a report\./i).length
     ).toBeGreaterThan(0);
+
+    /*
+      THE OPTIONALITY CUES MOVED WITH THE FIELDS THEY QUALIFY. They used to be
+      two section headings above a wall of inputs; the form now says the same
+      thing on the step that holds those inputs, which is where a resident is
+      when the question of whether they have to answer arises.
+
+      `portal.optionalFields` ("Only if you want to") lost its call site in that
+      move and its exact words survive inside `portal.stepExtrasHelp` — reported
+      rather than quietly dropped. `portal.followUp` did NOT: it is the heading
+      above the name field, on the step that field lives on.
+    */
+    // The only required field carries a programmatic label, which a resident on
+    // a screen reader needs and a visible heading alone does not provide.
+    writeComment("The crossing at Main and First is too short.");
+    expect(screen.getByLabelText("What you want to tell us (we need this part)")).toBeInTheDocument();
+
+    openStep("extras");
+    expect(screen.getByText(EN.messages.messages["portal.stepExtrasHelp"])).toBeInTheDocument();
+    expect(EN.messages.messages["portal.stepExtrasHelp"]).toContain(
+      EN.messages.messages["portal.optionalFields"]
+    );
+
+    openStep("you");
+    expect(screen.getByText("Hearing back (only if you want to)")).toBeInTheDocument();
   });
 
   it("shows the confirmation state after a successful submission", async () => {
@@ -275,9 +397,8 @@ describe("PublicEngagementPortal", () => {
 
     renderPortal();
 
-    fireEvent.change(screen.getByLabelText("What you want to tell us (we need this part)"), {
-      target: { value: "The crosswalk near Main Street needs a shorter crossing distance." },
-    });
+    writeComment("The crosswalk near Main Street needs a shorter crossing distance.");
+    openStep("send");
     fireEvent.click(screen.getByRole("button", { name: /send what I wrote/i }));
 
     await waitFor(() => {
@@ -297,12 +418,23 @@ describe("PublicEngagementPortal", () => {
   it("offers point, line, and area drawing plus a photo input on the submit form", () => {
     renderPortal();
 
-    // Without a Mapbox token the picker renders its fallback, but the photo
-    // input and the map guidance are part of the form itself. The photo limit is
-    // formatted from the byte constant the server enforces, not written into a
-    // sentence.
-    expect(screen.getByLabelText(/Attach one JPEG, PNG, or WebP photo up to 5 MB\./)).toBeInTheDocument();
+    /*
+      THE DRAWING MAP IS THE FIRST STEP — it is what this surface is for, and the
+      three shapes are the picker's own toggles rather than the rail's, because
+      on this route the map is a field inside the form rather than the page
+      around it. Asserted through the catalog's own words so this cannot go stale
+      or assert copy the product does not carry.
+    */
     expect(screen.getByText(/Tap the map to place your answer\./i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: EN.messages.messages["portal.drawModePoint"] })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: EN.messages.messages["portal.drawModeLine"] })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: EN.messages.messages["portal.drawModeArea"] })).toBeInTheDocument();
+
+    // And the photo input, one step on. The limit is formatted from the byte
+    // constant the server enforces, not written into a sentence.
+    writeComment("The crossing at Main and First is too short.");
+    openStep("extras");
+    expect(screen.getByLabelText(/Attach one JPEG, PNG, or WebP photo up to 5 MB\./)).toBeInTheDocument();
   });
 
   it("shows support controls with counts, location labels, and attached photos on the feedback list", () => {
@@ -369,6 +501,60 @@ describe("PublicEngagementPortal", () => {
     expect(supportedButton).toBeDisabled();
     expect(within(supportedButton).getByText(/Supported/)).toBeInTheDocument();
   });
+
+  /**
+   * REPLYING TO A NEIGHBOUR — the capability with the quietest failure mode, and
+   * the one nothing was watching.
+   *
+   * `parentItemId` is what turns a comment into part of a conversation. Lose it
+   * and NOTHING looks broken: the reply is accepted, stored, moderated and
+   * published — as a new top-level comment, detached from the thing it answers,
+   * on a page where the person it was addressed to will never see it. No error,
+   * no empty state, no failing request.
+   *
+   * It had no test at all until 2026-08-14, which is why it is written here: this
+   * capability lived only in the form that was deleted that day, and it survived
+   * the move only because somebody carried it across by hand. The next person
+   * gets an assertion instead of a habit.
+   *
+   * Asserted on the REQUEST BODY, not on the banner. A banner naming the comment
+   * being answered can be perfectly correct above a payload that dropped the id.
+   */
+  it("carries the comment being answered into the submitted payload, not just onto the screen", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ success: true }), {
+        status: 201,
+        headers: { "content-type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderPortal({ approvedItems: APPROVED_ITEMS });
+
+    // Start the reply from the feed, the way a resident does.
+    openTab("portal.tab.feedback");
+    const [firstReplyButton] = screen.getAllByRole("button", {
+      name: new RegExp(`^${EN.messages.messages["portal.reply"]}$`),
+    });
+    fireEvent.click(firstReplyButton);
+
+    // The form says whose comment this answers…
+    const banner = screen.getByTestId("portal-replying-to");
+    expect(banner).toHaveTextContent(EN.messages.messages["portal.replyingTo"]);
+    expect(banner).toHaveTextContent("Crosswalk request");
+
+    writeComment("Agreed — the signal is far too short for anyone with a walker.");
+    openStep("send");
+    fireEvent.click(screen.getByRole("button", { name: /send what I wrote/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    const [url, init] = fetchMock.mock.calls.at(-1) as [string, RequestInit];
+    expect(url).toBe("/api/engage/share-token-123/submit");
+    const payload = JSON.parse(String(init.body)) as { parentItemId?: string; body: string };
+    expect(payload.parentItemId).toBe(APPROVED_ITEMS[0].id);
+    expect(payload.body).toContain("the signal is far too short");
+  });
 });
 
 /**
@@ -384,18 +570,25 @@ describe("the portal in the participant's language", () => {
     const { unmount } = renderPortal({ ...localeFor("es") });
 
     expect(screen.getByRole("heading", { name: "Comparta su opinión" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /enviar lo que escribí/i })).toBeInTheDocument();
-    expect(screen.getByText("Solo si usted quiere")).toBeInTheDocument();
+    // The five steps a resident is walked through, in Spanish.
+    expect(screen.getAllByText("Muéstrenos dónde").length).toBeGreaterThan(0);
+
+    writeComment("Hace falta un paso de peatones en la calle Main.");
+    openStep("you");
     expect(screen.getByText("Recibir respuesta (solo si usted quiere)")).toBeInTheDocument();
+    openStep("send");
+    expect(screen.getByRole("button", { name: /enviar lo que escribí/i })).toBeInTheDocument();
+
     // The English wording of the same strings is GONE, not merely accompanied.
     expect(screen.queryByRole("heading", { name: "Share your input" })).toBeNull();
+    expect(screen.queryByText("Send what I wrote")).toBeNull();
     unmount();
 
     // The same render in English proves the assertion above is about the bundle
     // and not about a string that happens to appear either way.
     renderPortal();
     expect(screen.getByRole("heading", { name: "Share your input" })).toBeInTheDocument();
-    expect(screen.queryByText("Solo si usted quiere")).toBeNull();
+    expect(screen.queryAllByText("Muéstrenos dónde")).toHaveLength(0);
   });
 
   it("turns the page around for a right-to-left language instead of only listing it", () => {
@@ -442,15 +635,33 @@ describe("the portal in the participant's language", () => {
    * publish.
    */
   it("discloses its English on a Spanish portal that has no demographics block", () => {
-    renderPortal({ ...localeFor("es") });
+    /*
+      THE ENGLISH THIS TEST POINTS AT CHANGED ON 2026-08-14, and the change is
+      the good direction. It used to be `mapFraming.summary` — English prose
+      printed to every Spanish reader of every campaign — which is now rebuilt
+      from the catalog by `portalMapFramingSentence` and is Spanish here.
+
+      What is still English on this surface is `unreadableNote`: the resolver's
+      diagnostic for a study area that was SET and could not be read. It is a
+      narrower gap than the one it replaces (it appears only on a broken
+      campaign) and it is the honest anchor for this assertion, because the
+      assertion is about the disclosure, not about which sentence needs it.
+
+      Built through the real resolver rather than hand-written, so this fixture
+      cannot describe a note the resolver would never produce.
+    */
+    const broken = resolvePortalMapFraming({
+      campaignPlace: { state: "unreadable", label: null, bbox: null },
+    });
+    expect(broken.unreadableNote, "the fixture has no English left to disclose").toBeTruthy();
+
+    renderPortal({ mapFraming: broken, ...localeFor("es") });
 
     const notice = screen.getByText(/solo está disponible parcialmente en Español/i);
-    // The English a resident actually meets first: the map-framing sentence on
-    // the default tab, built as English prose server-side.
-    const englishFraming = screen.getByText(/No area has been set for this page/i);
+    const englishNote = screen.getByText(broken.unreadableNote as string);
 
-    expect(notice.compareDocumentPosition(englishFraming) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(englishFraming.getAttribute("lang")).toBe("en");
+    expect(notice.compareDocumentPosition(englishNote) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(englishNote.getAttribute("lang")).toBe("en");
     // The notice itself is the Spanish it claims to be — this key is one the
     // complete catalog carries, which is why this branch is reachable at all.
     expect(notice.getAttribute("lang")).toBe("es");
@@ -465,6 +676,9 @@ describe("the portal in the participant's language", () => {
     renderPortal({ demographicsEnabled: true, ...localeFor("es") });
 
     const notice = screen.getByText(/solo está disponible parcialmente en Español/i);
+    // The block is on the step about the resident, which is where they meet it.
+    writeComment("Hace falta un paso de peatones en la calle Main.");
+    openStep("you");
     /*
       NOT the field LABEL any more. The five demographic labels moved into the
       catalog on 2026-08-13 (where better Spanish for them had in fact existed
@@ -593,9 +807,8 @@ describe("the portal in the participant's language", () => {
 
     renderPortal({ ...localeFor("es") });
 
-    fireEvent.change(screen.getByLabelText("Lo que nos quiere contar (esta parte sí hace falta)"), {
-      target: { value: "Hace falta un paso de peatones en la calle Main." },
-    });
+    writeComment("Hace falta un paso de peatones en la calle Main.");
+    openStep("send");
     fireEvent.click(screen.getByRole("button", { name: /enviar lo que escribí/i }));
 
     const refusal = await screen.findByText("Too many recent submissions from this connection.");
@@ -616,9 +829,8 @@ describe("the portal in the participant's language", () => {
 
     renderPortal({ ...localeFor("es") });
 
-    fireEvent.change(screen.getByLabelText("Lo que nos quiere contar (esta parte sí hace falta)"), {
-      target: { value: "Hace falta un paso de peatones en la calle Main." },
-    });
+    writeComment("Hace falta un paso de peatones en la calle Main.");
+    openStep("send");
     fireEvent.click(screen.getByRole("button", { name: /enviar lo que escribí/i }));
 
     const refusal = await screen.findByText("No pudimos enviar lo que escribió. No se ha perdido nada: inténtelo otra vez, por favor.");
@@ -813,6 +1025,8 @@ describe("operator-authored content on the portal", () => {
       ...localeFor("es"),
     });
 
+    writeComment("Hace falta un paso de peatones en la calle Main.");
+    openStep("extras");
     const select = screen.getByLabelText(/Temas de comentarios/);
     expect(within(select).getByRole("option", { name: "Seguridad" }).getAttribute("lang")).toBe("es");
     // Two machine-translated topics are ONE fact about this campaign, said once.

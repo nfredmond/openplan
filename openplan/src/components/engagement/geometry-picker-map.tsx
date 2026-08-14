@@ -37,6 +37,24 @@ const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
 );
 
+/**
+ * WHETHER THIS DEPLOYMENT CAN DRAW A MAP AT ALL, readable by the form that
+ * mounts this picker.
+ *
+ * The picker already answers the question for itself below (`if
+ * (!MAPBOX_ACCESS_TOKEN)`), but a surrounding form has to answer it too, and for
+ * different reasons: the sentences describing where "this map" opens must not be
+ * printed above a map that is not there, and the "where" question has to be
+ * asked in words instead. Exporting the one reading is what stops the form and
+ * the picker disagreeing — the alternative is the form re-reading
+ * `process.env` and the two drifting the first time the token resolution
+ * changes.
+ *
+ * `NEXT_PUBLIC_*` is inlined at build time, so this is a constant in the bundle
+ * rather than a runtime lookup.
+ */
+export const GEOMETRY_PICKER_CAN_DRAW = Boolean(MAPBOX_ACCESS_TOKEN);
+
 const CLOSE_RING_PIXEL_TOLERANCE = 12;
 const KEYBOARD_PAN_STEP_PX = 64;
 

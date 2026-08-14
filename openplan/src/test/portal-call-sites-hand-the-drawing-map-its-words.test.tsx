@@ -157,16 +157,23 @@ describe("the classic portal hands the drawing map the resident's own words", ()
 
       Walking UP from the control to the nearest element that declares a
       language, and requiring that element to be the map's rather than the
-      page's, is what distinguishes the two. `#public-title` is the submission
-      form's own field, outside the map block: if the nearest declaration
-      contains it, the attribute is the page's and the map declared nothing.
+      page's, is what distinguishes the two.
+
+      THE ANCHOR FOR "OUTSIDE THE MAP" is the form's own step list. It used to be
+      `#public-title`, a text field the stacked form rendered beside the map;
+      that form was deleted on 2026-08-14 when all three public doors converged
+      on one guided form, and the step list is the equivalent — the form's own
+      chrome, always rendered, never inside the map block. If the nearest
+      language declaration contains it, the attribute is the page's and the map
+      declared nothing.
     */
     const group = screen.getByRole("group", { name: es.modeGroupLabel });
     const declaring = group.closest("[lang]");
     expect(declaring).not.toBeNull();
     expect(declaring?.getAttribute("lang")).toBe("es");
     expect(declaring?.textContent ?? "").toContain(es.modePoint);
-    expect(container.querySelector("#public-title")).not.toBeNull();
-    expect(declaring?.contains(container.querySelector("#public-title"))).toBe(false);
+    const outsideTheMap = container.querySelector('[data-testid="portal-step-list"]');
+    expect(outsideTheMap).not.toBeNull();
+    expect(declaring?.contains(outsideTheMap)).toBe(false);
   });
 });

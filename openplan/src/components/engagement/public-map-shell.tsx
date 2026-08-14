@@ -13,8 +13,10 @@ import {
   createPortalTranslator,
   type PortalMessageBundle,
 } from "@/lib/engagement/portal-i18n/translator";
+import { portalMapFramingSentence } from "@/lib/engagement/portal-i18n/map-framing-words";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { PortalOperatorText } from "./portal-operator-text";
+import { PortalPendingCopyNotice } from "./portal-pending-copy-notice";
 import { PARTICIPANT_MAP_CAN_DRAW, PublicMapStage, type ParticipantMapItem } from "./public-map-stage";
 import { PublicMapSidebar, type SidebarCategory } from "./public-map-sidebar";
 
@@ -295,30 +297,15 @@ export function PublicMapShell({
     other readers and a survey question's framing note use, and it is still the
     only thing that can describe a partially-failed lookup in detail. What it no
     longer does is speak to a resident.
-  */
-  const framingSourceKey =
-    mapFraming.origin === "campaign_place"
-      ? "portal.mapFramingSourceCampaign"
-      : mapFraming.origin === "project_place"
-        ? "portal.mapFramingSourceProject"
-        : mapFraming.origin === "workspace_home"
-          ? "portal.mapFramingSourceWorkspace"
-          : mapFraming.origin === "approved_pins"
-            ? "portal.mapFramingSourcePins"
-            : null;
 
-  const framingSentence = framingSourceKey
-    ? mapFraming.originLabel
-      ? t("portal.mapFramingOn", {
-          place: mapFraming.originLabel,
-          source: t(framingSourceKey),
-        })
-      : t("portal.mapFramingOnUnnamed", { source: t(framingSourceKey) })
-    : // Nothing framed it. The two states are genuinely different and must not
-      // share a sentence: "nobody set an area" is a claim about the world that
-      // is only ours to make when every candidate was actually checked, and a
-      // lookup that FAILED leaves us knowing less than that.
-      t(mapFraming.unreadable.length > 0 ? "portal.mapFramingUnknownArea" : "portal.mapFramingNoArea");
+    IT IS NO LONGER BUILT HERE. This block used to hold the whole switch over
+    `origin`, which made it a shared capability living inside one of its two
+    callers — and the other caller, the classic submission form, went on printing
+    the English prose to Spanish readers for exactly as long as that was true.
+    `portalMapFramingSentence` is the one implementation; see
+    `portal-i18n/map-framing-words.ts`.
+  */
+  const framingSentence = portalMapFramingSentence(mapFraming, translator);
 
   /**
    * The scrolling body of the rail.
@@ -338,6 +325,29 @@ export function PublicMapShell({
           through a language they cannot read.
         */}
         {languageChrome ? <div className="border-b border-border/60 px-5 py-3">{languageChrome}</div> : null}
+
+        {/*
+          AND WHAT THIS SURFACE IS STILL SAYING IN ENGLISH, which the language
+          chrome above cannot see.
+
+          `PortalLanguageNotice` discloses keys the catalog is MISSING. It is
+          silent on a complete catalog like Spanish — and this surface renders
+          English anyway when the campaign asks for demographics, because
+          `demographicLabel`'s option text is shared with the operator console's
+          aggregate views and cannot simply become catalog keys.
+
+          This notice lived inside `public-engagement-portal.tsx` until
+          2026-08-14, and this route does not render that component. So the
+          busiest public page in the product — the one a resident reaches from a
+          mailed postcard — published English option labels on a Spanish
+          consultation with nothing anywhere saying the English was a fallback
+          rather than the agency's choice. Under Title VI that is a claim about
+          what the agency published, which is why it is fixed here rather than
+          noted.
+        */}
+        <div className="px-5 pt-4 empty:hidden">
+          <PortalPendingCopyNotice translator={translator} />
+        </div>
 
         {anyReadFailed ? (
           <div

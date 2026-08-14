@@ -1,5 +1,51 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
+import { resolvePortalLocale } from "@/lib/engagement/portal-i18n/locales";
+
+/**
+ * THIS PAGE IS TESTED WITH A MAP, and the token has to be set before the module
+ * graph loads.
+ *
+ * `GeometryPickerMap` reads the Mapbox token at MODULE scope, and the submission
+ * form asks it whether a map can be drawn at all. With no token the form takes
+ * its no-map path — it asks "where" in words and suppresses the two sentences
+ * that describe where "this map" opens, because both name a map that is not
+ * there. Every framing assertion below would then be asserting the absence of a
+ * sentence for the wrong reason, or worse, would have been green because the
+ * page printed a sentence about a map nobody could see.
+ *
+ * `vi.hoisted` is what runs before the hoisted `import`s; a `stubEnv` in a
+ * `beforeEach` is far too late for a constant read at module scope.
+ */
+const PREVIOUS_MAPBOX_TOKEN = vi.hoisted(() => {
+  const previous = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = "pk.test-token-for-the-participant-map";
+  return previous;
+});
+
+/*
+  AND PUT IT BACK. `process.env` is per-PROCESS, and vitest reuses a worker
+  process across test files — so a token set here and never cleared is a token
+  every later file in the same worker inherits, silently, in whatever order the
+  scheduler happened to pick. That is a suite whose result depends on file
+  ordering, which is worse than a failing one because it looks green on a rerun.
+*/
+afterAll(() => {
+  if (PREVIOUS_MAPBOX_TOKEN === undefined) delete process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  else process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = PREVIOUS_MAPBOX_TOKEN;
+});
+
+vi.mock("mapbox-gl", async () => {
+  const { createMapboxGlModuleFake } = await import("@/test/helpers/mapbox-gl-fake");
+  return createMapboxGlModuleFake();
+});
+vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
+
+/** The catalog itself, so no assertion below can name copy the product lacks. */
+const EN_MESSAGES = buildPortalMessageBundle(
+  resolvePortalLocale({ requested: "en", acceptLanguage: null })
+).messages;
 
 const createServiceRoleClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
@@ -307,11 +353,24 @@ describe("PublicEngagementPage", () => {
 
     render(page);
 
+    /*
+      THE SENTENCE IS THE CATALOG'S. Until 2026-08-14 this route printed
+      `mapFraming.summary` — English prose composed server-side, in an
+      administrator's vocabulary ("the linked project's study area"), to every
+      reader of every language — because it rendered the second implementation of
+      the submission form. Both implementations converged on one, and that one
+      builds this sentence from catalog keys through
+      `portalMapFramingSentence`.
+
+      The agency's own name for the area is never translated; the frame around it
+      always is.
+    */
+    expect(screen.getByText(/Franklin County, Ohio/)).toBeInTheDocument();
     expect(
-      screen.getByText(/This map opens on Franklin County, Ohio — the linked project's study area\./i)
+      screen.getByText(new RegExp(EN_MESSAGES["portal.mapFramingSourceProject"]))
     ).toBeInTheDocument();
     // The continental instruction belongs only to a campaign nothing framed.
-    expect(screen.queryByText(/zoom to your neighbourhood before dropping a pin/i)).toBeNull();
+    expect(screen.queryByText(EN_MESSAGES["portal.mapZoomHint"])).toBeNull();
   });
 
   /**
