@@ -1,0 +1,25 @@
+{
+  "why": "Today's measured card nesting, per route, as an EQUALITY. Higher fails as a regression; lower fails until the number is lowered here in the same commit. Seeded 2026-08-13 against a near-empty workspace on localhost:3200 — real data can only make these numbers worse, so treat them as a floor. KNOWN RED as seeded: /help renders a 200-character line and the reading rule wants 45-90, so this audit exits 1 until the reading surface work lands. That is a real finding with an owner, not a broken check. depth counts nested boxes with the page shell as 1: shell(1) > section(2) > item card(3) is the limit, so depth 3 is the target and 'deep' (boxes at depth 4+) must reach 0.",
+  "measuredAt": "2026-08-13",
+  "target": { "depth": 3, "deep": 0, "readingCharsPerLine": [45, 90] },
+  "routes": {
+    "/dashboard": { "depth": 4, "deep": 1, "reading": false },
+    "/my-work": { "depth": 3, "deep": 0, "reading": false },
+    "/projects": { "depth": 3, "deep": 0, "reading": false },
+    "/programs": { "depth": 3, "deep": 0, "reading": false },
+    "/grants": { "depth": 3, "deep": 0, "reading": false },
+    "/reports": { "depth": 4, "deep": 4, "reading": false },
+    "/models": { "depth": 3, "deep": 0, "reading": false },
+    "/scenarios": { "depth": 3, "deep": 0, "reading": false },
+    "/data-hub": { "depth": 3, "deep": 0, "reading": false },
+    "/rtp": { "depth": 6, "deep": 26, "reading": false },
+    "/plans": { "depth": 3, "deep": 0, "reading": false },
+    "/engagement": { "depth": 3, "deep": 0, "reading": false },
+    "/invoicing": { "depth": 1, "deep": 0, "reading": false },
+    "/county-runs": { "depth": 2, "deep": 0, "reading": false },
+    "/knowledge-base": { "depth": 3, "deep": 0, "reading": false },
+    "/aerial": { "depth": 3, "deep": 0, "reading": false },
+    "/assistant-activity": { "depth": 3, "deep": 0, "reading": false },
+    "/help": { "depth": 3, "deep": 0, "reading": true }
+  }
+}

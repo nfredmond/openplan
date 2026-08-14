@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { CountyRunsPageClient } from "@/components/county-runs/county-runs-page-client";
+import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
+import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
 import { isCountyOnrampWorkerConfigured } from "@/lib/config/deployment-health-facts";
 import {
   HOME_GEOGRAPHY_COLUMNS,
@@ -165,17 +167,24 @@ export default async function CountyRunsPage({
   const projectAreaNotice = !requestedProjectId
     ? null
     : projectSchemaPending
-      ? "This deployment does not record project study areas yet, so nothing could be inherited from the project this page was opened for. Apply the latest migrations and it will."
+      ? "This copy of OpenPlan does not store an area for each project yet, so nothing could be carried over from the project this page was opened for. Whoever installed OpenPlan for your agency needs to finish the setup, and then it will."
       : projectUnreadable
-        ? "This page was opened for a project whose record could not be read, so its study area could not be used. The area below is whatever this workspace had already stated, not that project's."
+        ? "This page was opened for a project that could not be read, so the area you plan for could not be taken from it. The area below is the one already saved here, not that project’s."
         : !projectRow
-          ? "This page was opened for a project that is not in this workspace, so its study area could not be used. The area below is whatever this workspace had already stated."
+          ? "This page was opened for a project that is not in this workspace, so the area you plan for could not be taken from it. The area below is the one already saved here."
           : studyArea.origin !== "project"
-            ? `${projectRow.name ?? "That project"} has no study area of its own yet, so nothing could be inherited from it. Set one on the project record and onboarding will open on it.`
+            ? `${projectRow.name ?? "That project"} has no area of its own yet, so nothing could be carried over from it. Set one on the project and this page will open on it.`
             : null;
+
+  // The order of the analysis work, said the same way on every page in the
+  // group. This page is step six of seven — the one that checks a run against
+  // counts collected in the field.
+  const sequenceFacts = await loadAnalysisSequenceFacts(supabase, workspaceId);
 
   return (
     <>
+      <AnalysisSequenceStrip facts={sequenceFacts} currentStepId="check" />
+
       {reads.any || projectAreaNotice ? (
         <div className="mb-4 grid gap-4">
           {reads.any ? (
@@ -189,7 +198,7 @@ export default async function CountyRunsPage({
           {projectAreaNotice ? (
             <StateBlock
               tone="warning"
-              title="This page did not open on the project's study area"
+              title="This page did not open on the project’s area"
               description={projectAreaNotice}
               action={
                 projectRow ? (
@@ -197,7 +206,7 @@ export default async function CountyRunsPage({
                     href={`/projects/${projectRow.id}`}
                     className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
                   >
-                    Open project record
+                    Open the project
                   </Link>
                 ) : undefined
               }

@@ -656,17 +656,19 @@ describe("the compiled RTP document page separates a failed read from an absence
 
     await renderDocument();
 
-    expect(screen.queryByText("No linked projects yet")).not.toBeInTheDocument();
-    expect(screen.queryByText("No engagement targets yet")).not.toBeInTheDocument();
-    expect(screen.getByText("The portfolio section could not be assembled")).toBeInTheDocument();
-    expect(screen.getByText("The engagement section could not be assembled")).toBeInTheDocument();
+    expect(screen.queryByText("No projects on this plan yet")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nobody has been asked yet")).not.toBeInTheDocument();
+    expect(screen.getByText("The list of projects could not be read")).toBeInTheDocument();
+    expect(
+      screen.getByText("What people said about this plan could not be read")
+    ).toBeInTheDocument();
   });
 
   it("(c) still shows the ordinary empty states when every read SUCCEEDS and there is nothing", async () => {
     await renderDocument();
 
-    expect(screen.getByText("No linked projects yet")).toBeInTheDocument();
-    expect(screen.getByText("No engagement targets yet")).toBeInTheDocument();
+    expect(screen.getByText("No projects on this plan yet")).toBeInTheDocument();
+    expect(screen.getByText("Nobody has been asked yet")).toBeInTheDocument();
     expect(screen.getByText("0 chapters")).toBeInTheDocument();
     expect(screen.queryByText("Part of this document could not be assembled")).not.toBeInTheDocument();
   });

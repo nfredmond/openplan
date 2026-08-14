@@ -112,7 +112,7 @@ function getProjectPacketCommandPriority(project: {
 
 /** What a card says when the reports read failed, in place of a count of zero. */
 const REPORTS_UNREADABLE_DETAIL =
-  "Linked report records could not be read for this project, so the packet trail is unavailable rather than empty — this is not a finding that no reports exist.";
+  "The reports linked to this project could not be read, so this is unavailable rather than empty — it is not a finding that the project has no reports.";
 
 function describeProjectPacketCommand(
   project: {
@@ -137,7 +137,7 @@ function describeProjectPacketCommand(
   // reports the database refused to hand over is a false instruction.
   if (reportsReadFailed && !report) {
     return {
-      label: "First action: unavailable — the report records could not be read",
+      label: "First action: unavailable — the linked reports could not be read",
       detail: REPORTS_UNREADABLE_DETAIL,
     };
   }
@@ -159,13 +159,13 @@ function describeProjectPacketCommand(
   if (project.reportSummary.governanceHoldCount > 0 && report) {
     return {
       label: `First action: review governance hold in ${report.title}`,
-      detail: "Evidence-backed packet exists, but at least one report still surfaces a governance blocker.",
+      detail: "A report backed by evidence exists, but at least one report is still waiting for sign-off.",
     };
   }
 
   if (project.reportSummary.comparisonBackedCount > 0 && report) {
     return {
-      label: `First action: review comparison-backed packet ${report.title}`,
+      label: `First action: review ${report.title}, which is backed by a comparison`,
       detail: `${project.reportSummary.comparisonBackedCount} report${project.reportSummary.comparisonBackedCount === 1 ? " carries" : "s carry"} saved comparison context that can support grant planning language or prioritization framing for this project. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.`,
     };
   }
@@ -178,8 +178,8 @@ function describeProjectPacketCommand(
   }
 
   return {
-    label: "First action: create the first report packet",
-    detail: "No report records linked yet. Open the project to start the packet trail.",
+    label: "First action: create the first report",
+    detail: "No reports linked yet. Open the project to write the first one.",
   };
 }
 
@@ -226,7 +226,7 @@ export default async function ProjectsPage({
     )
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
-  const projectsReadFailed = reads.check("project records", projectsResult);
+  const projectsReadFailed = reads.check("your projects", projectsResult);
   const projectsData = projectsReadFailed ? [] : projectsResult.data;
 
   const projectIds = ((projectsData ?? []) as ProjectRow[]).map((project) => project.id);
@@ -239,7 +239,7 @@ export default async function ProjectsPage({
         .in("project_id", projectIds)
         .order("updated_at", { ascending: false })
     : { data: [], error: null };
-  const reportsReadFailed = reads.check("linked report records", projectReportsResult);
+  const reportsReadFailed = reads.check("the reports linked to them", projectReportsResult);
   const projectReportsData = reportsReadFailed ? [] : projectReportsResult.data;
 
   const projectRtpLinksResult = projectIds.length
@@ -264,7 +264,7 @@ export default async function ProjectsPage({
   // An unreadable artifact list makes every packet look ungenerated, which the
   // freshness rules turn into "First action: generate <report>" — an instruction
   // to redo work that may already exist.
-  reads.check("report packet artifacts", reportArtifactsResult);
+  reads.check("the report files already generated", reportArtifactsResult);
   const reportArtifactsData = reportArtifactsResult.error ? [] : reportArtifactsResult.data;
 
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
@@ -531,8 +531,8 @@ export default async function ProjectsPage({
           <div className="module-intro-body">
             <h1 className="module-intro-title">Projects</h1>
             <p className="module-intro-description">
-              Keep project context, recent activity, and delivery records together in one place so teams can quickly see
-              what is active and what needs attention.
+              Everything about a project in one place — what it is, what has happened lately, and where it stands —
+              so your team can see at a glance what is moving and what needs attention.
             </p>
           </div>
 
@@ -551,8 +551,8 @@ export default async function ProjectsPage({
               <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, projects.length)}</p>
               <p className="module-summary-detail">
                 {portfolioCountsUnknown
-                  ? "Unavailable — the project registry could not be read, so this is not a count of zero."
-                  : "Project records connected to the rest of the workspace."}
+                  ? "Unavailable — your projects could not be read, so this is unknown, not zero."
+                  : "Projects connected to the rest of your work here."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -560,8 +560,8 @@ export default async function ProjectsPage({
               <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, activeCount)}</p>
               <p className="module-summary-detail">
                 {portfolioCountsUnknown
-                  ? "Unavailable — nothing here was counted, because the project registry could not be read."
-                  : "Currently in motion across the workspace portfolio."}
+                  ? "Unavailable — nothing here was counted, because your projects could not be read. That is unknown, not zero."
+                  : "Currently in motion across your portfolio."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -652,7 +652,7 @@ export default async function ProjectsPage({
           <div className="module-section-header">
             <div className="module-section-heading">
               <p className="module-section-label">Portfolio</p>
-              <h2 className="module-section-title">Project records</h2>
+              <h2 className="module-section-title">Your projects</h2>
             </div>
             <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
@@ -693,14 +693,14 @@ export default async function ProjectsPage({
                tells an agency it has no portfolio, and invites a planner to
                create a duplicate of a project that already exists. */
             <div className="module-empty-state mt-5 text-sm">
-              The project registry could not be read, so this list is unavailable rather than empty.
-              This is not a finding that the workspace has no projects. Reload; the banner above
-              carries the database&apos;s own message for an operator.
+              Your projects could not be read, so this list is unavailable rather than empty.
+              This is not a finding that you have no projects. Reload the page; the banner above
+              carries the database&apos;s own message for whoever installed OpenPlan for your agency.
             </div>
           ) : projects.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
               Projects gives each piece of work your agency delivers — a corridor study, an intersection
-              fix, a trail segment — one record that plans, funding, models, and reports all connect to.
+              fix, a trail segment — one place that plans, funding, models, and reports all connect to.
               Create your first project to start tracking its milestones and money in one place.
               <div className="mt-3">
                 <a href="#create-project" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
@@ -712,8 +712,8 @@ export default async function ProjectsPage({
             <>
               <div className="mt-5">
                 <ReportPacketCommandQueue
-                  title="Portfolio packet queue"
-                  description="The report packets that need something first, before the full project list below."
+                  title="Reports that need something first"
+                  description="The report work to do before anything else, ahead of the full project list below."
                   items={packetQueueProjects.slice(0, 5).map((project) => {
                     const report = project.reportSummary.recommendedReport;
                     const badges: Array<{ label: string; value?: string | number | null }> = [];
@@ -739,8 +739,8 @@ export default async function ProjectsPage({
                   })}
                   emptyLabel={
                     reportsReadFailed
-                      ? "The packet queue is unavailable — linked report records could not be read, so this is not a finding that nothing is queued."
-                      : "No queued packet work across the portfolio."
+                      ? "This is unavailable — the linked reports could not be read, so it is not a finding that nothing needs doing."
+                      : "No report work is waiting anywhere in your portfolio."
                   }
                 />
               </div>
@@ -873,7 +873,16 @@ export default async function ProjectsPage({
                             </p>
                           ) : null}
                           {project.grantModelingEvidence ? (
-                            <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
+                            /* A HAIRLINE, NOT A BOX. This used to be a bordered,
+                               tinted panel inside the project card, inside the
+                               section, inside the page shell — four frames, one more
+                               than the interface has hierarchy to spend. It only
+                               renders for a project that HAS grant modeling evidence,
+                               so an empty workspace never showed it and the browser
+                               audit could not see it. A 1px top rule separates it
+                               without boxing it, and no background tint stands in for
+                               the border. */
+                            <div className="mt-3 border-t border-border/60 pt-2.5">
                               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                                 Grant release review
                               </p>
@@ -898,7 +907,7 @@ export default async function ProjectsPage({
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                           {reportsReadFailed
                             ? REPORTS_UNREADABLE_DETAIL
-                            : "No report records linked yet. Open the project to create the first packet trail."}
+                            : "No reports linked yet. Open the project to write the first one."}
                         </p>
                       )}
                     </div>

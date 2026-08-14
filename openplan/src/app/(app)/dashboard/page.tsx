@@ -262,10 +262,10 @@ export default async function DashboardPage({
             title: grantsRoutedRtpFundingReview ? "Open RTP grants follow-through" : "Open RTP funding release review",
             description:
               grantsRoutedRtpFundingReview
-                ? `Jump straight into Grants for the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} that still need linked-project funding follow-through.`
+                ? `Go straight to Grants for the ${rtpFundingReviewCount} RTP report${rtpFundingReviewCount === 1 ? "" : "s"} whose linked projects still need their funding sorted out.`
                 : rtpFundingReviewCount > 0
-                ? `Jump straight into the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} still carrying funding-backed release-review follow-up.`
-                : "Jump straight into the current RTP packets awaiting release review.",
+                ? `Go straight to the ${rtpFundingReviewCount} RTP report${rtpFundingReviewCount === 1 ? "" : "s"} still waiting on funding sign-off before release.`
+                : "Go straight to the RTP reports waiting to be signed off for release.",
             icon: FileText,
           },
         ]
@@ -280,12 +280,12 @@ export default async function DashboardPage({
               : operationsSummary.nextCommand.href,
             title:
               operationsSummary.nextCommand.key === "start-project-reimbursement-packets"
-                ? "Start reimbursement packet"
+                ? "Start a reimbursement claim"
                 : "Advance reimbursement invoicing",
             description:
               operationsSummary.nextCommand.key === "start-project-reimbursement-packets"
-                ? "Jump straight into reimbursement in Grants and start the first reimbursement packet."
-                : "Jump straight into reimbursement in Grants and advance follow-through already in motion.",
+                ? "Go straight to reimbursement in Grants and start the first claim."
+                : "Go straight to reimbursement in Grants and move along the claims already under way.",
             icon: ShieldCheck,
           },
         ]
@@ -294,7 +294,7 @@ export default async function DashboardPage({
       key: "analysis-studio",
       href: "/explore",
       title: "Open Corridor Analysis",
-      description: "Run corridor analysis with map context, metrics, and report-ready outputs intact.",
+      description: "Score a corridor against the open data available for it, on a map, and save the result.",
       icon: Radar,
     },
     {
@@ -340,9 +340,9 @@ export default async function DashboardPage({
 
   const insightLanes = [
     {
-      label: "RTP packets",
+      label: "RTP reports",
       value: operationsSummary.counts.rtpFundingReviewPackets,
-      detail: "RTP packets awaiting funding review",
+      detail: "RTP reports waiting on a funding review",
     },
     {
       label: "Grants",
@@ -357,7 +357,7 @@ export default async function DashboardPage({
     {
       label: "Reports",
       value: operationsSummary.counts.reportRefreshRecommended + operationsSummary.counts.reportNoPacket,
-      detail: "Report packets to generate or refresh",
+      detail: "Reports to generate or refresh",
     },
     {
       label: "Aerial",
@@ -387,8 +387,8 @@ export default async function DashboardPage({
         className="mt-6"
         executions={actionActivity.executions}
         error={actionActivity.error}
-        description="What has happened recently in this workspace — reports generated, funding decisions made, project records changed."
-        emptyDescription="Nothing has been recorded in this workspace yet. Report generation, funding decisions, and changes to project records show up here once they run."
+        description="What has happened here recently — reports generated, funding decisions made, projects changed."
+        emptyDescription="Nothing has happened here yet. Reports you generate, funding decisions you make, and changes to projects all show up here."
       />
     </>
   );
@@ -420,9 +420,20 @@ export default async function DashboardPage({
   // mount would mean a second request and a second answer. The checklist
   // renders whenever the geography is unset, so the hoist no longer depends on
   // the workspace being empty.
+  //
+  // WHEN IT IS HOISTED IT LOSES ITS OWN FRAME. Inside the checklist the panel
+  // is already inside two boxes (the get-started card, then the step), and a
+  // third border around it put /dashboard at four levels of nesting — measured
+  // in Chrome at 1600x900 on 2026-08-13, the only route in this lane over the
+  // limit of three. `embedded` removes the frame; it does not replace it with a
+  // tint, which would read as a box to a person and vanish from the audit.
   const hoistGeographyPanel = !homeGeographyIsSet;
   const geographyPanel = (
-    <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+    <WorkspaceGeographyPanel
+      workspaceId={workspaceId}
+      canManage={canManageWorkspace}
+      embedded={hoistGeographyPanel}
+    />
   );
 
   // Same hoisting rule for the AI key: while no Anthropic key resolves, the
@@ -476,6 +487,7 @@ export default async function DashboardPage({
                   workspaceId={workspaceId}
                   canManage={canManageWorkspace}
                   providerIds={["anthropic"]}
+                  embedded
                 />
               ) : null
             }

@@ -58,16 +58,16 @@ export function ReportPacketReview({
       {report.rtp_basis_stale ? (
         <div className="mb-4 rounded-[18px] border border-amber-400/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]">
-            Basis stale
+            What this report was built from has changed
           </p>
           <p className="mt-1 font-semibold">
             {report.rtp_basis_stale_reason ??
-              "An upstream model run succeeded after this packet was last generated."}
+              "A model run finished after this report was last generated."}
           </p>
           <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-200/90">
             {report.rtp_basis_stale_marked_at
-              ? `Marked stale on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString()}. Regenerate the packet to re-ground it on the new run.`
-              : "Regenerate the packet to re-ground it on the new run."}
+              ? `Flagged on ${new Date(report.rtp_basis_stale_marked_at).toLocaleString()}. Generate the report again so its figures come from the new run.`
+              : "Generate the report again so its figures come from the new run."}
           </p>
         </div>
       ) : null}
@@ -77,13 +77,15 @@ export function ReportPacketReview({
             Release review
           </p>
           <h2 className="text-xl font-semibold tracking-tight">Packet release review</h2>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Use this operator checkpoint to decide whether the current packet is safe to cite in grant triage language. Recommendations remain advisory until someone explicitly saves a decision in the grants lane.
+          <p className="mt-3 max-w-[36rem] text-[0.95rem] leading-[1.6] text-muted-foreground">
+            Check this before you quote the generated report in a grant application. Nothing here
+            decides anything on its own: a recommendation stays a suggestion until a person saves a
+            decision against the grant.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {report.rtp_basis_stale ? (
-            <StatusBadge tone="warning">Basis stale</StatusBadge>
+            <StatusBadge tone="warning">Built from older figures</StatusBadge>
           ) : null}
           <StatusBadge tone={packetFreshness.tone}>
             {packetFreshness.label}
@@ -105,12 +107,12 @@ export function ReportPacketReview({
       <div className="mt-5 grid gap-3 lg:grid-cols-3">
         <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Packet freshness
+            How current the generated file is
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">
             {packetFreshness.label}
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-[0.95rem] leading-[1.6] text-muted-foreground">
             {packetFreshness.detail}
           </p>
         </div>
@@ -121,18 +123,18 @@ export function ReportPacketReview({
           <p className="mt-1 text-sm font-semibold text-foreground">
             {grantModelingReadiness?.label ?? "No visible support"}
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-[0.95rem] leading-[1.6] text-muted-foreground">
             {grantModelingReadiness?.detail ?? grantModelingSupport.summary}
           </p>
         </div>
         <div className="rounded-[18px] border border-border/80 bg-background/80 px-4 py-3">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Modeling digest
+            What the modeling says
           </p>
           <p className="mt-1 text-sm font-semibold text-foreground">
             {comparisonDigest?.headline ?? "No saved comparisons in this packet"}
           </p>
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-[0.95rem] leading-[1.6] text-muted-foreground">
             {comparisonDigest?.detail ??
               "Saved comparison snapshots have not been captured here yet, so this packet should not drive pursue language on its own."}
           </p>
@@ -153,15 +155,12 @@ export function ReportPacketReview({
             {generationReadiness.status === "not_started" ? "First packet" : titleize(generationReadiness.status)}
           </StatusBadge>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 max-w-[36rem] text-[0.95rem] leading-[1.6] text-muted-foreground">
           {generationReadiness.detail} {generationReadiness.nextAction}
         </p>
-        <div className="mt-4 grid gap-2 md:grid-cols-2">
+        <div className="mt-4 border-t border-border/70">
           {generationReadiness.checks.map((check) => (
-            <div
-              key={check.id}
-              className="rounded-[0.5rem] border border-border/75 bg-card/70 px-3 py-3"
-            >
+            <div key={check.id} className="border-b border-border/70 py-4">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -175,16 +174,16 @@ export function ReportPacketReview({
                   {check.status === "not_started" ? "Not started" : titleize(check.status)}
                 </StatusBadge>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-2 max-w-[36rem] text-[0.95rem] leading-[1.6] text-muted-foreground">
                 {check.detail}
               </p>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-2 max-w-[36rem] text-[0.95rem] leading-[1.6] text-muted-foreground">
                 Next: {check.nextAction}
               </p>
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-3 max-w-[36rem] text-[0.95rem] leading-[1.6] text-muted-foreground">
           Data lineage scan: {generationReadiness.dataLineageSummary.outputReadyCount}/{generationReadiness.dataLineageSummary.datasetCount} project-linked datasets output-ready · {generationReadiness.dataLineageSummary.dependentOutputCount} dependent output checks passed.
         </p>
       </div>
@@ -196,7 +195,7 @@ export function ReportPacketReview({
         <p className="mt-1 text-sm font-semibold text-foreground">
           {grantModelingSupport.recommendedNextActionTitle}
         </p>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2 max-w-[36rem] text-[0.95rem] leading-[1.6] text-muted-foreground">
           {grantModelingSupport.recommendedNextActionSummary}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">

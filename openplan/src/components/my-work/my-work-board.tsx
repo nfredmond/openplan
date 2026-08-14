@@ -57,16 +57,16 @@ const BLOCK_HEADINGS: Record<MyWorkBlockId, string> = {
   deadlines: "Dated work",
   undated: "Issues (no due date)",
   blocked_projects: "Blocked projects",
-  workspace_deadlines: "Workspace deadlines",
+  workspace_deadlines: "Shared deadlines",
 };
 
 const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
   deadlines: "Overdue first, then soonest.",
   undated: "Project issues carry no due date, so they are listed separately rather than sorted in as if they were due today.",
   blocked_projects:
-    "Stage gates whose latest recorded decision is a hold. A hold is a fact about the project, not an item on one person's list — so this block is the same for everyone in the workspace.",
+    "Stage gates whose latest decision was a hold. A hold is a fact about the project, not an item on one person's list — so this block reads the same for everyone here.",
   workspace_deadlines:
-    "Grant decisions, award obligations and invoice windows. These records have no assignee, so nothing here is shown as belonging to anyone.",
+    "Grant decisions, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.",
 };
 
 /** Which sources feed which block — used to answer "empty, or unreadable?". */
@@ -169,9 +169,9 @@ export function MyWorkBoard({
         {assigneeColumnPending ? (
           <div className="module-alert" role="status">
             <p>
-              Assigned work cannot be listed on this deployment yet: the database is missing the
-              column these lists read to tell whose work is whose. Whoever runs this OpenPlan can
-              apply the pending migrations, and then assignment will work here.
+              This copy of OpenPlan cannot yet tell whose work is whose — that part of the
+              database is not set up. Whoever installed OpenPlan for your agency can finish the
+              setup, and then assignment will work here.
             </p>
             <OperatorDetail>
               <p>Migration 20260811000006 adds the assignee column. Apply the pending migrations and reload.</p>
@@ -180,8 +180,8 @@ export function MyWorkBoard({
         ) : null}
         {scope === "unassigned" && !departedIncludedInUnassigned ? (
           <p className="module-note">
-            This list shows records with no assignee. Work left behind by someone who has since
-            left the workspace could not be included — the team roster was unavailable, or the
+            This list shows work with nobody assigned to it. Work left behind by someone who has
+            since left the team could not be included — the team roster was unavailable, or the
             team is larger than this filter can carry. Switch to{" "}
             {MY_WORK_SCOPE_LABELS.all_projects} to see it.
           </p>
@@ -209,15 +209,15 @@ export function MyWorkBoard({
             <p>
               {scope === "assigned"
                 ? isViewer
-                  ? "Nothing is assigned to you. Viewers read the workspace and are not given project work — the workspace deadlines below are what this page can show you."
+                  ? "Nothing is assigned to you. Viewers can read everything here but are not given project work — the shared deadlines below are what this page can show you."
                   : "Nothing dated is assigned to you right now."
                 : scope === "unassigned"
-                  ? "Every dated project record in this workspace has someone on it."
-                  : "No project in this workspace has a dated record open."}
+                  ? "Every piece of dated project work here has someone on it."
+                  : "No project here has any dated work open."}
             </p>
             <p className="module-note">
               Try another view — unassigned work and other people&apos;s deadlines are one click
-              away, and a project record is assigned from its own project page.
+              away, and work is assigned from its own project page.
             </p>
             <MyWorkScopeToggles scope={scope} />
           </div>

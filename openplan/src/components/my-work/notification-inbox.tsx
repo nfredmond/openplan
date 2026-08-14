@@ -111,9 +111,9 @@ export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: Notificat
           {inbox.pending ? (
             <>
               <p>
-                Reminders cannot be listed on this deployment yet: the database is missing the table
-                they live in. Whoever runs this OpenPlan can apply the pending migrations, and then
-                this panel will fill in.
+                Reminders cannot be listed on this copy of OpenPlan yet — that part of the database
+                is not set up. Whoever installed OpenPlan for your agency can finish the setup, and
+                then this panel will fill in.
               </p>
               <OperatorDetail>
                 <p>

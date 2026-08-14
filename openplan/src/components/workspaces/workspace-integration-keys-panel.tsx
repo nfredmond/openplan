@@ -63,12 +63,25 @@ type WorkspaceIntegrationKeysPanelProps = {
    * provider row is still mounted exactly once. Omit for all providers.
    */
   providerIds?: string[];
+  /**
+   * True when this panel is mounted INSIDE another card — today, the first-run
+   * checklist's AI step, filtered to the Anthropic row. It then drops its own
+   * border, radius, padding and heading and renders as the step's content.
+   *
+   * Same reason as `WorkspaceGeographyPanel`: shell › checklist card › step
+   * card › this panel is four frames deep, and the step already supplies the
+   * heading and the state sentence. The frame is REMOVED, never swapped for a
+   * background tint — a tint still reads as a box to a person while vanishing
+   * from the browser nesting audit.
+   */
+  embedded?: boolean;
 };
 
 export function WorkspaceIntegrationKeysPanel({
   workspaceId,
   canManage,
   providerIds,
+  embedded = false,
 }: WorkspaceIntegrationKeysPanelProps) {
   const { confirm, confirmDialog } = useConfirmDialog();
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
@@ -308,23 +321,30 @@ export function WorkspaceIntegrationKeysPanel({
   }
 
   return (
-    <section className="rounded-xl border border-border/70 p-5" aria-label="Integration keys">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold text-foreground">Integration keys</h2>
-        <p className="text-xs text-muted-foreground">
-          {loading || visibleProviders.length === 0
-            ? ""
-            : `${configuredCount} of ${visibleProviders.length} configured`}
-        </p>
-      </div>
+    <section
+      className={embedded ? undefined : "rounded-xl border border-border/70 p-5"}
+      aria-label="Integration keys"
+    >
+      {embedded ? null : (
+        <>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-sm font-semibold text-foreground">Integration keys</h2>
+            <p className="text-xs text-muted-foreground">
+              {loading || visibleProviders.length === 0
+                ? ""
+                : `${configuredCount} of ${visibleProviders.length} configured`}
+            </p>
+          </div>
 
-      <p className="mt-1 text-xs text-muted-foreground">
-        The external services OpenPlan calls. Each runs on this deployment&apos;s environment key
-        or, where supported, on a key this workspace brings itself.
-      </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            The outside services OpenPlan calls. Each one runs on a key this deployment already
+            holds or, where the service allows it, on a key your agency adds here.
+          </p>
+        </>
+      )}
 
       {loading ? (
-        <p className="mt-3 text-sm text-muted-foreground">Loading integration keys…</p>
+        <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
       ) : error ? (
         <p className="mt-3 text-sm text-destructive" role="alert">
           {error}

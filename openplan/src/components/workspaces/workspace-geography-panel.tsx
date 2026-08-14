@@ -47,9 +47,30 @@ type WorkspaceGeographyPanelProps = {
   workspaceId: string;
   /** Only owners and admins may write it; the API enforces this too. */
   canManage: boolean;
+  /**
+   * True when this panel is mounted INSIDE another card — today, the first-run
+   * checklist step that asks for the setting. It then drops its own border,
+   * radius, padding and heading and renders as the step's own content.
+   *
+   * WHY IT IS A PROP AND NOT A WRAPPER. A box is a border plus a radius, and a
+   * reader counts them: shell › checklist card › step card › this panel is four
+   * frames deep, which is one more level of nesting than the interface has
+   * hierarchy to spend (measured at 4 on /dashboard, 2026-08-13). The step
+   * already carries the heading and the state sentence, so the frame here was
+   * drawing a second box around content that already had one.
+   *
+   * It is NOT a tint: nothing is swapped for a background colour, because a
+   * tinted panel still reads as a box to a person while disappearing from the
+   * browser audit. The frame is removed, not disguised.
+   */
+  embedded?: boolean;
 };
 
-export function WorkspaceGeographyPanel({ workspaceId, canManage }: WorkspaceGeographyPanelProps) {
+export function WorkspaceGeographyPanel({
+  workspaceId,
+  canManage,
+  embedded = false,
+}: WorkspaceGeographyPanelProps) {
   const router = useRouter();
   const [geography, setGeography] = useState<WorkspaceHomeGeography | null>(null);
   const [loading, setLoading] = useState(true);
@@ -175,24 +196,39 @@ export function WorkspaceGeographyPanel({ workspaceId, canManage }: WorkspaceGeo
   const label = homeGeographyLabel(geography);
 
   return (
-    <section className="rounded-xl border border-border/70 p-5" aria-label="Workspace geography">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold text-foreground">Workspace geography</h2>
-        {label ? (
-          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5" />
-            {label}
-          </p>
-        ) : null}
-      </div>
+    <section
+      className={embedded ? undefined : "rounded-xl border border-border/70 p-5"}
+      aria-label="Workspace geography"
+    >
+      {/* The heading still reads "Workspace geography" on purpose, and it is
+          the one place in this lane where the jargon ledger loses. Eight
+          remedy sentences in `lib/geographies`, `lib/cartographic`,
+          `lib/title-vi` and `lib/grants` tell a planner to "set it in the
+          Workspace geography panel on the dashboard", and one of them is
+          asserted by `a-poverty-rate-uses-the-poverty-universe.test.ts`.
+          Renaming the heading alone would leave every one of those pointing at
+          a panel that no longer exists by that name — a worse defect than the
+          jargon. Rename the panel and its eight pointers together, or not at
+          all. */}
+      {embedded ? null : (
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-foreground">Workspace geography</h2>
+          {label ? (
+            <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5" />
+              {label}
+            </p>
+          ) : null}
+        </div>
+      )}
 
       {loading ? (
-        <p className="mt-3 text-sm text-muted-foreground">Loading workspace geography…</p>
+        <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
       ) : label ? (
         <p className="mt-2 text-sm text-muted-foreground">
-          Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan use{" "}
-          <span className="font-medium text-foreground">{label}</span>{" "}
-          as this workspace&apos;s place of record.
+          Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all use{" "}
+          <span className="font-medium text-foreground">{label}</span> as the place this account
+          plans for.
         </p>
       ) : (
         <div className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">

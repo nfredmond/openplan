@@ -139,7 +139,7 @@ describe("the scenario catalog discloses a failed read instead of claiming an ab
     await renderPage();
 
     expect(screen.getByText(/Part of this catalog could not be read/i)).toBeInTheDocument();
-    expect(screen.getByText(/could not read this workspace's scenario sets/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not read your scenario sets/i)).toBeInTheDocument();
     // Internal page: the operator detail is shown, because whoever reads it can act on it.
     expect(screen.getByText(/permission denied for table scenario_sets/i)).toBeInTheDocument();
 
@@ -148,8 +148,8 @@ describe("the scenario catalog discloses a failed read instead of claiming an ab
     expect(
       screen.queryByText(/Create your first scenario set for a project you are studying/i)
     ).not.toBeInTheDocument();
-    expect(screen.getByText(/^This catalog could not be read$/)).toBeInTheDocument();
-    expect(screen.getByText(/That is a failed read, not an empty workspace/i)).toBeInTheDocument();
+    expect(screen.getByText(/^Your scenario sets could not be read$/)).toBeInTheDocument();
+    expect(screen.getByText(/That is a failed read, not an empty list/i)).toBeInTheDocument();
   });
 
   it("does not brand every set 'Baseline missing' when the entries read failed", async () => {
@@ -161,7 +161,7 @@ describe("the scenario catalog discloses a failed read instead of claiming an ab
 
     await renderPage();
 
-    expect(screen.getByText(/could not read scenario entries/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not read the scenarios inside them/i)).toBeInTheDocument();
     expect(screen.getByText(/Downtown alternatives/i)).toBeInTheDocument();
     // The row still renders — what loaded is shown — but the badge stops making
     // a claim the entries read never supported.
@@ -181,7 +181,7 @@ describe("the scenario catalog discloses a failed read instead of claiming an ab
     await renderPage();
 
     expect(screen.queryByText(/Part of this catalog could not be read/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/^This catalog could not be read$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Your scenario sets could not be read$/)).not.toBeInTheDocument();
     expect(screen.getByText(/No scenario sets yet/i)).toBeInTheDocument();
     expect(
       screen.getByText(/Create your first scenario set for a project you are studying/i)

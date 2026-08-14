@@ -41,6 +41,24 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+/**
+ * THE READING-SURFACE RULE, on the page a resident and a board member read.
+ *
+ * This page is printed and taken to meetings, so it is typeset: one prose
+ * column at 36rem, body at 17px/1.65, which lands lines between 62 and 78
+ * characters. Measured in Chrome at 1600×900 on 2026-08-13 it ran 127
+ * characters per line at 14.7px — a wall of text with the agency's funding
+ * decisions inside it.
+ *
+ * Four heading steps, none smaller than body. Every caveat on this page keeps
+ * its own words; only the column and the type changed around them.
+ */
+const PAGE_COLUMN = "mx-auto w-full max-w-[36rem] px-5 py-10 sm:py-14";
+const PROSE = "text-[1.0625rem] leading-[1.65]";
+const SECTION_HEADING = "text-[1.5rem] font-semibold leading-snug tracking-tight text-foreground";
+const ITEM_HEADING = "text-[1.25rem] font-semibold leading-snug tracking-tight text-foreground";
+const NOTICE_HEADING = "text-[1.0625rem] font-semibold leading-snug";
+
 type ProjectRef = { id: string; name: string; status: string | null; summary: string | null };
 
 type LinkRow = {
@@ -88,12 +106,12 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   // defect as telling them the agency funded nothing.
   if (reads.check("this plan", cycleResult)) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-14">
+      <main className={PAGE_COLUMN}>
         <header className="border-b border-border pb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Regional Transportation Plan · Public view
           </p>
-          <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
+          <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground">
             This plan could not be loaded
           </h1>
         </header>
@@ -107,11 +125,11 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
           role="status"
           className="mt-6 rounded-lg border border-amber-300/60 bg-amber-50/60 p-4 dark:border-amber-900/50 dark:bg-amber-950/30"
         >
-          <p className="text-sm text-amber-900/90 dark:text-amber-200/90">
+          <p className={`${PROSE} text-amber-900/90 dark:text-amber-200/90`}>
             Something went wrong reading this plan, so none of it is shown. This is a problem loading
             the page — it does not mean the plan is missing, unpublished, or withdrawn.
           </p>
-          <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">
+          <p className={`mt-2 ${PROSE} text-amber-900/90 dark:text-amber-200/90`}>
             Please try again shortly, or contact the agency that published this plan.
           </p>
         </section>
@@ -246,18 +264,20 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
       : null;
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-14">
+    <main className={PAGE_COLUMN}>
       <header className="border-b border-border pb-6">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Regional Transportation Plan · Public view
         </p>
-        <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">{cycle.title}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground sm:text-[2.35rem]">
+          {cycle.title}
+        </h1>
+        <p className="mt-2 text-[0.95rem] text-muted-foreground">
           What we&apos;re funding and why
           {cycle.geography_label ? ` · ${cycle.geography_label}` : ""}
           {horizon ? ` · Horizon ${horizon}` : ""}
         </p>
-        {cycle.summary ? <p className="mt-3 text-sm text-muted-foreground">{cycle.summary}</p> : null}
+        {cycle.summary ? <p className={`mt-4 ${PROSE} text-foreground/90`}>{cycle.summary}</p> : null}
       </header>
 
       {/*
@@ -271,21 +291,27 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
           role="status"
           className="mt-6 rounded-lg border border-amber-300/60 bg-amber-50/60 p-4 dark:border-amber-900/50 dark:bg-amber-950/30"
         >
-          <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+          <h2 className={`${NOTICE_HEADING} text-amber-900 dark:text-amber-200`}>
             Part of this plan could not be loaded
           </h2>
-          <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">{reads.describe()}</p>
-          <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">
+          <p className={`mt-2 ${PROSE} text-amber-900/90 dark:text-amber-200/90`}>{reads.describe()}</p>
+          <p className={`mt-2 ${PROSE} text-amber-900/90 dark:text-amber-200/90`}>
             Please check back, or contact the agency that published this plan.
           </p>
         </section>
       ) : null}
 
+      {/*
+        This was a tinted box. It is the first thing the page says about the
+        whole plan, so it now reads as the opening paragraph it always was —
+        the policy basis stays with it, in the same breath as the claim it
+        qualifies.
+      */}
       {portfolio.scoredCount > 0 ? (
-        <section className="mt-6 rounded-lg border border-emerald-300/50 bg-emerald-50/50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-          <h2 className="text-sm font-semibold text-foreground">Why this plan prioritizes what it does</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{portfolio.narrative}</p>
-          <p className="mt-2 text-xs text-muted-foreground">
+        <section className="mt-10">
+          <h2 className={SECTION_HEADING}>Why this plan prioritizes what it does</h2>
+          <p className={`mt-3 ${PROSE} text-foreground/90`}>{portfolio.narrative}</p>
+          <p className={`mt-3 ${PROSE} text-muted-foreground`}>
             {priorityFrameworkDisclosure.isUncited
               ? priorityFrameworkDisclosure.detail
               : `${priorityFrameworkDisclosure.headline}. ${priorityFrameworkDisclosure.detail}`}
@@ -299,17 +325,17 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
         route to the plan text itself, and the two pages answer different
         questions about the same plan.
       */}
-      <section className="mt-6 rounded-lg border border-border bg-muted/20 p-4">
+      <p className={`mt-10 ${PROSE}`}>
         <a
           href={`/plan/${shareToken}/document`}
-          className="text-sm font-medium text-foreground underline-offset-2 hover:underline"
+          className="font-semibold text-foreground underline underline-offset-4"
         >
           Read the full draft plan
         </a>
-        <p className="mt-1 text-xs text-muted-foreground">
-          The plan&apos;s chapters, its financial element, and the full project lists.
-        </p>
-      </section>
+        <span className="text-muted-foreground">
+          {" — "}the plan&apos;s chapters, its financial element, and the full project lists.
+        </span>
+      </p>
 
       {/*
         Rendered only when its read succeeded: the page's amber banner already
@@ -325,81 +351,85 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
         </section>
       ) : null}
 
-      <section className="mt-8 space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">Projects, ranked by priority</h2>
+      <section className="mt-14">
+        <h2 className={SECTION_HEADING}>Projects, ranked by priority</h2>
         {rankedProjects.length === 0 ? (
           linksFailed ? (
             // "No projects have been published" is a claim about the plan. A
             // failed read cannot make it — and on a public page that sentence
             // would tell a resident the agency has funded nothing.
-            <p className="text-sm text-muted-foreground">
+            <p className={`mt-3 ${PROSE} text-muted-foreground`}>
               The project list could not be loaded, so it is not shown. This does not mean the plan
               has no projects.
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">No projects have been published for this plan yet.</p>
+            <p className={`mt-3 ${PROSE} text-muted-foreground`}>No projects have been published for this plan yet.</p>
           )
         ) : (
-          rankedProjects.map((entry) => (
-            <article key={entry.id} className="rounded-lg border border-border bg-background/60 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded border border-border bg-muted/40 px-2 py-0.5 text-xs font-medium text-foreground">
+          // ONE PROJECT PER ENTRY, NOT ONE CARD PER PROJECT. Each project was a
+          // bordered card holding a bordered warning; a plan read as a stack of
+          // forms. The rule between entries does the same separating work, and
+          // the modeling caveats keep their own words — a run's engine, status
+          // and claim tier still travel with every cited figure, and a warning
+          // about a cited run is still marked as a warning.
+          <ol className="mt-6 border-t border-border/70">
+            {rankedProjects.map((entry) => (
+              <li key={entry.id} className="border-b border-border/70 pb-6 pt-7">
+                <h3 className={ITEM_HEADING}>{entry.project?.name ?? "Project"}</h3>
+                <p className="mt-2 text-[0.95rem] text-muted-foreground">
                   {formatRtpPortfolioRoleLabel(entry.portfolioRole)}
-                </span>
-                {entry.priority.summary.scoredCriteria > 0 ? (
-                  <span className="rounded border border-emerald-300/60 bg-emerald-50/60 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
-                    Priority {entry.priority.summary.composite}/100 · {priorityTierLabel(entry.priority.summary.tier)}
-                  </span>
-                ) : null}
-              </div>
-              <h3 className="mt-2 text-base font-semibold text-foreground">{entry.project?.name ?? "Project"}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {entry.priority.summary.scoredCriteria > 0
-                  ? entry.priority.narrative
-                  : entry.priorityRationale?.trim() || entry.project?.summary?.trim() || "Prioritization rationale to be published."}
-              </p>
-              {entry.evidence ? (
-                <div className="mt-2 text-xs text-muted-foreground">
-                  <p>
-                    <span className="font-medium text-foreground">Modeling evidence</span>
-                    {entry.evidence.runTitle ? ` (${entry.evidence.runTitle})` : ""}: {formatRtpModelingEvidenceLine(entry.evidence)}
-                  </p>
-                  {entry.disclosure ? (
-                    <p className="mt-0.5">
-                      <span className="font-medium text-foreground">Cited run</span>: {formatRtpEvidenceRunDisclosureLine(entry.disclosure)}
-                    </p>
-                  ) : null}
-                  {entry.disclosure
-                    ? rtpEvidenceRunWarnings(entry.disclosure).map((warning) => (
-                        <p
-                          key={warning}
-                          className="mt-1 rounded border border-amber-300/60 bg-amber-50/60 px-2 py-1 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
-                        >
-                          {warning}
-                        </p>
-                      ))
-                    : null}
-                </div>
-              ) : null}
-              {entry.awards.length > 0 ? (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">Committed funding</span>:{" "}
-                  {formatMoney(entry.awards.reduce((sum, award) => sum + award.amount, 0), { precision: "whole" })} across{" "}
-                  {entry.awards.length === 1 ? "1 award" : `${entry.awards.length} awards`} ·{" "}
-                  {entry.awards.map((award) => award.title).join(" · ")}
+                  {entry.priority.summary.scoredCriteria > 0
+                    ? ` · ${priorityTierLabel(entry.priority.summary.tier)}`
+                    : ""}
                 </p>
-              ) : null}
-            </article>
-          ))
+                <p className={`mt-3 ${PROSE} text-foreground/90`}>
+                  {entry.priority.summary.scoredCriteria > 0
+                    ? entry.priority.narrative
+                    : entry.priorityRationale?.trim() || entry.project?.summary?.trim() || "Prioritization rationale to be published."}
+                </p>
+                {entry.evidence ? (
+                  <div className="mt-3 text-[0.95rem] leading-[1.6] text-muted-foreground">
+                    <p>
+                      <span className="font-semibold text-foreground">Modeling evidence</span>
+                      {entry.evidence.runTitle ? ` (${entry.evidence.runTitle})` : ""}: {formatRtpModelingEvidenceLine(entry.evidence)}
+                    </p>
+                    {entry.disclosure ? (
+                      <p className="mt-1">
+                        <span className="font-semibold text-foreground">Cited run</span>: {formatRtpEvidenceRunDisclosureLine(entry.disclosure)}
+                      </p>
+                    ) : null}
+                    {entry.disclosure
+                      ? rtpEvidenceRunWarnings(entry.disclosure).map((warning) => (
+                          <p
+                            key={warning}
+                            className="mt-2 border-l-2 border-amber-400/70 pl-3 text-amber-800 dark:text-amber-200"
+                          >
+                            {warning}
+                          </p>
+                        ))
+                      : null}
+                  </div>
+                ) : null}
+                {entry.awards.length > 0 ? (
+                  <p className="mt-3 text-[0.95rem] leading-[1.6] text-muted-foreground">
+                    <span className="font-semibold text-foreground">Committed funding</span>:{" "}
+                    {formatMoney(entry.awards.reduce((sum, award) => sum + award.amount, 0), { precision: "whole" })} across{" "}
+                    {entry.awards.length === 1 ? "1 award" : `${entry.awards.length} awards`} ·{" "}
+                    {entry.awards.map((award) => award.title).join(" · ")}
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ol>
         )}
       </section>
 
-      <footer className="mt-10 border-t border-border pt-4 text-xs text-muted-foreground">
+      <footer className="mt-14 border-t border-border pt-5 text-[0.95rem] leading-[1.6] text-muted-foreground">
         <p>
           This is a read-only public view published by the agency. Modeling figures are screening-grade and cited to a
-          specific model run; committed funding reflects award records the agency has entered, and full documentation is
-          in the adopted board packet. Priorities reflect local, county, state, and federal goals (VMT/GHG reduction,
-          safety, equity, and multimodal access).
+          specific model run; committed funding reflects the awards the agency has entered, and the full documentation
+          is in the adopted plan document. Priorities reflect local, county, state, and federal goals (VMT/GHG
+          reduction, safety, equity, and multimodal access).
         </p>
       </footer>
     </main>

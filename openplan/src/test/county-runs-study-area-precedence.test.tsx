@@ -118,6 +118,12 @@ function projectPlaceRow(overrides: Record<string, unknown> = {}) {
 
 type Result = { data: unknown; error: { message: string } | null };
 
+/**
+ * What `loadAnalysisSequenceFacts` reads besides `workspaces`, which this file
+ * already answers with the row under test.
+ */
+const SEQUENCE_STRIP_TABLES = new Set(["network_packages", "scenario_sets", "models", "county_runs"]);
+
 /** A supabase-js query builder that answers with `result` however it is chained. */
 function respondWith(result: Result) {
   const builder: Record<string, unknown> = {};
@@ -139,6 +145,12 @@ function mountSupabase({
     from: (table: string) => {
       if (table === "workspaces") return respondWith(workspace);
       if (table === "projects") return respondWith(projectPlace);
+      // The analysis-sequence strip reads the rest of the procedure's state to
+      // draw which step a planner is on. None of it bears on which county this
+      // page opens, so it answers empty — but it is listed table by table, and
+      // the throw below still stands, so a page that starts reading something
+      // genuinely new fails here instead of being silently answered.
+      if (SEQUENCE_STRIP_TABLES.has(table)) return respondWith({ data: [], error: null });
       throw new Error(`Unexpected table: ${table}`);
     },
   });
@@ -218,7 +230,7 @@ describe("County onboarding opens on the right county", () => {
 
     await renderCountyRuns({ projectId: PROJECT_ID });
 
-    expect(screen.getByText(/does not record project study areas yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/does not store an area for each project yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/Part of this page could not be read/i)).not.toBeInTheDocument();
   });
 
@@ -230,7 +242,7 @@ describe("County onboarding opens on the right county", () => {
     await renderCountyRuns({ projectId: PROJECT_ID });
 
     expect(
-      screen.getByText(/US-33 interchange study has no study area of its own yet/i)
+      screen.getByText(/US-33 interchange study has no area of its own yet/i)
     ).toBeInTheDocument();
   });
 

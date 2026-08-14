@@ -115,7 +115,7 @@ describe("my work — the board", () => {
 
   it("shows workspace deadlines with no owner attached to them", async () => {
     await renderBoard();
-    const workspace = blockNamed("Workspace deadlines");
+    const workspace = blockNamed("Shared deadlines");
 
     expect(workspace.getByText("Active transportation program call")).toBeInTheDocument();
     expect(workspace.getByText("Decision overdue")).toBeInTheDocument();
@@ -154,12 +154,12 @@ describe("my work — the board", () => {
 
     expect(
       screen.getByText(
-        /Viewers read the workspace and are not given project work/
+        /Viewers can read everything here but are not given project work/
       )
     ).toBeInTheDocument();
     // A viewer still gets the workspace's deadlines block — it is the part of
     // this page a read-only role can act on.
-    expect(screen.getByText("Workspace deadlines")).toBeInTheDocument();
+    expect(screen.getByText("Shared deadlines")).toBeInTheDocument();
   });
 
   it("says a block is unavailable rather than empty when its read failed", async () => {

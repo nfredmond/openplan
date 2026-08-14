@@ -754,9 +754,28 @@ export function ExploreWorkbench({
 
       <aside className="analysis-explore-rail flex min-h-0 flex-col overflow-y-auto">
         <div className="analysis-explore-rail-header">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Corridor Analysis</p>
-          <h2 className="mt-2 text-lg font-semibold tracking-tight text-white">Corridor Analysis</h2>
+          {/* One heading, not two. The eyebrow said "Corridor Analysis" and the
+              heading under it said "Corridor Analysis" again, and this page had
+              no h1 at all — so the first heading a screen reader met was a
+              duplicate of the label above it. */}
+          <h1 className="text-lg font-semibold tracking-tight text-white">Corridor Analysis</h1>
           <p className="mt-2 text-sm leading-6 text-slate-300/78">Use the map on the left and the controls here to set the study area, compare conditions, and review outputs.</p>
+          {/* WHERE THIS PAGE SITS, said on the page itself.
+              Nathaniel, 2026-08-13: "the analysis section with modelling and
+              corridor analysis and whatnot is super confusing." Four of the five
+              entries in this nav group are one procedure with an order; this one
+              is not in it, and it writes a different history table from the
+              modeling runs. Nothing on screen said so, so a planner looking for
+              step one of the modeling work could reasonably start here. */}
+          <p className="mt-2 text-sm leading-6 text-slate-300/78">
+            This is a separate tool from Models, Scenarios and Model Validation. Those three are one
+            job in a set order; this page is a map for looking at one corridor, and it keeps its own
+            history.{" "}
+            <Link href="/models" className="underline underline-offset-2 hover:text-white">
+              See how the modeling work fits together
+            </Link>
+            .
+          </p>
         </div>
         <div className="space-y-5 px-5 py-4">
           <div className="space-y-3.5">

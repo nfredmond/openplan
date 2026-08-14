@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BookOpenText, FolderKanban, MessageSquare, Route as RouteIcon } from "lucide-react";
+import { ArrowLeft, BookOpenText } from "lucide-react";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -23,6 +23,33 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+
+/**
+ * THE READING-SURFACE RULE, applied in one place instead of forty.
+ *
+ * A planner prints this page and carries it into a board meeting, so it is
+ * typeset rather than laid out: one prose column about 36rem wide, which at
+ * 17px lands each line between 62 and 78 characters — the range typographers
+ * have measured people read fastest at. Before this, the same paragraphs ran
+ * 126 characters per line (measured in Chrome at 1600×900, 2026-08-13), which
+ * is a wall, not a page.
+ *
+ * The heading scale has four steps and NO heading is smaller than body text.
+ * The old page set section titles in 14px against 14.7px prose, so the labels
+ * above a paragraph were smaller than the paragraph and the hierarchy read
+ * upside down.
+ *
+ * `jsdom` cannot check any of this — it applies no stylesheet and has no box
+ * model. It is measured in a real browser by
+ * `qa-harness/openplan-local-card-nesting-audit.js`.
+ */
+const READING_COLUMN = "max-w-[36rem]";
+const READING_PROSE = "text-[1.0625rem] leading-[1.65]";
+const SECTION_HEADING = "text-[1.5rem] font-semibold leading-snug tracking-tight";
+const ITEM_HEADING = "text-[1.25rem] font-semibold leading-snug tracking-tight";
+const SIDE_HEADING = "text-[1.0625rem] font-semibold leading-snug text-foreground";
+/** Space above a section ÷ space below its heading ≥ 3, so a heading belongs to what follows it. */
+const SECTION_SPACING = "mt-14";
 
 type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
@@ -163,7 +190,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
           <div className="mt-4">
             <Link href="/rtp" className="module-inline-action w-fit">
               <ArrowLeft className="h-4 w-4" />
-              Back to RTP registry
+              Back to your RTP cycles
             </Link>
           </div>
         </div>
@@ -247,218 +274,207 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
         />
       ) : null}
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="flex flex-wrap gap-3">
-            <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
-              <ArrowLeft className="h-4 w-4" />
-              Back to RTP cycle
-            </Link>
-            <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action w-fit">
-              Open HTML export
-            </Link>
-            <Link href={`/api/rtp-cycles/${cycle.id}/export?format=pdf`} target="_blank" className="module-inline-action w-fit">
-              Open PDF export
-            </Link>
-          </div>
+      {/*
+        A MASTHEAD, NOT TWO CARDS. This page is read — often printed, often
+        carried into a board meeting — so it opens the way a document opens:
+        title, one sentence saying what it is, then the plan. The card that used
+        to sit beside the title explained the page to itself ("the compiled
+        reading view", "one compiled narrative surface"); a reader who can see
+        the plan does not need to be told the page exists.
+      */}
+      <header className={READING_COLUMN}>
+        <div className="flex flex-wrap gap-3">
+          <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
+            <ArrowLeft className="h-4 w-4" />
+            Back to this plan&apos;s working page
+          </Link>
+          <Link href={`/api/rtp-cycles/${cycle.id}/export?format=html`} target="_blank" className="module-inline-action w-fit">
+            Open as a web page
+          </Link>
+          <Link href={`/api/rtp-cycles/${cycle.id}/export?format=pdf`} target="_blank" className="module-inline-action w-fit">
+            Open as a PDF
+          </Link>
+        </div>
 
-          <div className="module-intro-kicker mt-4">
-            <BookOpenText className="h-3.5 w-3.5" />
-            Compiled digital RTP
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">{cycle.title}</h1>
-            <p className="module-intro-description">
-              A readable assembled RTP view pulling together cycle metadata, chapter drafts, portfolio posture, and engagement targets.
-            </p>
-          </div>
+        <p className="mt-8 flex items-center gap-2 text-[0.78rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <BookOpenText className="h-3.5 w-3.5" />
+          Regional Transportation Plan
+        </p>
+        <h1 className="mt-3 text-[2rem] font-semibold leading-tight tracking-tight sm:text-[2.35rem]">{cycle.title}</h1>
+        <p className={`mt-4 ${READING_PROSE} text-muted-foreground`}>
+          The whole plan on one page: what it covers, the projects it pays for, where the public
+          was asked, and every chapter written so far. To change any of it, go back to the plan&apos;s
+          working page.
+        </p>
 
-          <div className="flex flex-wrap gap-2">
-            <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
-            <StatusBadge tone={readiness.tone}>{readiness.label}</StatusBadge>
-            {/* A count is an assertion; "0 chapters" from a failed read is a lie. */}
-            <StatusBadge tone={chaptersState === "failed" ? "danger" : "neutral"}>
-              {chaptersState === "failed" ? "Chapters unavailable" : `${chapters.length} chapters`}
-            </StatusBadge>
-            <StatusBadge tone={linksState === "failed" ? "danger" : "neutral"}>
-              {linksState === "failed" ? "Linked projects unavailable" : `${linkedProjects.length} linked projects`}
-            </StatusBadge>
-            <StatusBadge tone={campaignsState === "failed" ? "danger" : "neutral"}>
-              {campaignsState === "failed" ? "Engagement targets unavailable" : `${campaigns.length} engagement targets`}
-            </StatusBadge>
-          </div>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
+          <StatusBadge tone={readiness.tone}>{readiness.label}</StatusBadge>
+          {/* A count is an assertion; "0 chapters" from a failed read is a lie. */}
+          <StatusBadge tone={chaptersState === "failed" ? "danger" : "neutral"}>
+            {chaptersState === "failed" ? "Chapters unavailable" : `${chapters.length} chapters`}
+          </StatusBadge>
+          <StatusBadge tone={linksState === "failed" ? "danger" : "neutral"}>
+            {linksState === "failed" ? "Linked projects unavailable" : `${linkedProjects.length} linked projects`}
+          </StatusBadge>
+          <StatusBadge tone={campaignsState === "failed" ? "danger" : "neutral"}>
+            {campaignsState === "failed"
+              ? "Public input unavailable"
+              : `${campaigns.length} ${campaigns.length === 1 ? "place people were asked" : "places people were asked"}`}
+          </StatusBadge>
+        </div>
 
-          <p className="text-sm text-muted-foreground">
-            {cycle.summary?.trim() || "No cycle summary yet. Use the control room to add the board posture, planning scope, and why this RTP cycle matters."}
-          </p>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <RouteIcon className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Document assembly view</p>
-              <h2 className="module-operator-title">This is the nearest thing to the actual RTP, not just its metadata</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Treat this as the compiled reading view. The control room remains the editing surface, but this page shows how the RTP is starting to read as a whole document.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Chapter draft content appears in reading order.</div>
-            <div className="module-operator-item">Portfolio and engagement sit inside the same assembled document context.</div>
-            <div className="module-operator-item">Exports and future board-packet generation can now converge on one compiled narrative surface.</div>
-          </div>
-        </article>
+        <p className={`mt-6 ${READING_PROSE} whitespace-pre-wrap`}>
+          {cycle.summary?.trim() ||
+            "No summary yet. On the plan's working page, write a few lines about what this update covers and why it matters — it is the first thing a board member reads."}
+        </p>
+        <p className="mt-3 text-sm text-muted-foreground">Last changed {formatRtpDateTime(cycle.updated_at)}</p>
       </header>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="space-y-4">
-          <article className="module-section-surface sticky top-6">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Contents</p>
-                <h2 className="module-section-title">Document map</h2>
-                <p className="module-section-description">Quick navigation through the assembled RTP.</p>
-              </div>
-            </div>
-            <nav className="space-y-2 text-sm text-muted-foreground">
-              <a href="#cycle-overview" className="block hover:text-foreground">Cycle overview</a>
-              <a href="#portfolio-posture" className="block hover:text-foreground">Portfolio posture</a>
-              <a href="#engagement-posture" className="block hover:text-foreground">Engagement posture</a>
+      <div className="mt-12 grid gap-10 xl:grid-cols-[15rem_minmax(0,1fr)]">
+        {/*
+          Contents, unboxed. A table of contents in a bordered card reads as a
+          widget beside the document; the same links under a heading read as
+          part of it.
+        */}
+        <aside className="xl:order-none">
+          <nav aria-label="On this page" className="sticky top-6">
+            <h2 className={SIDE_HEADING}>On this page</h2>
+            <ol className="mt-3 space-y-2 text-[0.95rem] text-muted-foreground">
+              <li><a href="#about-this-plan" className="block hover:text-foreground">What this plan covers</a></li>
+              <li><a href="#projects" className="block hover:text-foreground">Projects in this plan</a></li>
+              <li><a href="#public-input" className="block hover:text-foreground">Where the public was asked</a></li>
               {chapters.map((chapter) => (
-                <a key={chapter.id} href={`#${slugify(chapter.chapter_key || chapter.title)}`} className="block hover:text-foreground">
-                  {chapter.title}
-                </a>
+                <li key={chapter.id}>
+                  <a href={`#${slugify(chapter.chapter_key || chapter.title)}`} className="block hover:text-foreground">
+                    {chapter.title}
+                  </a>
+                </li>
               ))}
-            </nav>
-          </article>
+            </ol>
+          </nav>
         </aside>
 
-        <div className="space-y-6">
-          <article id="cycle-overview" className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Overview</p>
-                <h2 className="module-section-title">Cycle overview</h2>
-                <p className="module-section-description">Core posture for the current RTP update cycle.</p>
+        <div className={READING_COLUMN}>
+          {/*
+            Four facts, as a plain list. They were four bordered metric cards,
+            which made the shortest section on the page the busiest.
+          */}
+          <section id="about-this-plan">
+            <h2 className={SECTION_HEADING}>What this plan covers</h2>
+            <dl className={`mt-4 grid gap-x-8 gap-y-4 sm:grid-cols-2 ${READING_PROSE}`}>
+              <div>
+                <dt className="text-sm text-muted-foreground">Area covered</dt>
+                <dd>{cycle.geography_label?.trim() || "Not set yet"}</dd>
               </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="module-metric-card">
-                <p className="module-metric-label">Geography</p>
-                <p className="module-metric-value text-sm">{cycle.geography_label?.trim() || "Not set"}</p>
-              </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Horizon</p>
-                <p className="module-metric-value text-sm">
+              <div>
+                <dt className="text-sm text-muted-foreground">Years covered</dt>
+                <dd>
                   {typeof cycle.horizon_start_year === "number" && typeof cycle.horizon_end_year === "number"
                     ? `${cycle.horizon_start_year}–${cycle.horizon_end_year}`
-                    : "Not set"}
-                </p>
+                    : "Not set yet"}
+                </dd>
               </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Adoption target</p>
-                <p className="module-metric-value text-sm">{formatRtpDate(cycle.adoption_target_date)}</p>
+              <div>
+                <dt className="text-sm text-muted-foreground">Planned adoption</dt>
+                <dd>{formatRtpDate(cycle.adoption_target_date)}</dd>
               </div>
-              <div className="module-metric-card">
-                <p className="module-metric-label">Public review</p>
-                <p className="module-metric-value text-sm">
+              <div>
+                <dt className="text-sm text-muted-foreground">Public review</dt>
+                <dd>
                   {cycle.public_review_open_at && cycle.public_review_close_at
                     ? `${formatRtpDate(cycle.public_review_open_at)} → ${formatRtpDate(cycle.public_review_close_at)}`
-                    : "Not set"}
-                </p>
+                    : "Not set yet"}
+                </dd>
               </div>
-            </div>
+            </dl>
+          </section>
 
-            <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current cycle summary</p>
-              <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
-                {cycle.summary?.trim() || "No cycle summary recorded yet."}
-              </p>
-              <p className="mt-3 text-xs text-muted-foreground">Updated {formatRtpDateTime(cycle.updated_at)}</p>
-            </div>
-          </article>
-
-          <article id="portfolio-posture" className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Portfolio</p>
-                <h2 className="module-section-title">Portfolio posture</h2>
-                <p className="module-section-description">The projects currently tied to this RTP cycle and how they are framed.</p>
-              </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
-                <FolderKanban className="h-5 w-5" />
-              </span>
-            </div>
+          <section id="projects" className={SECTION_SPACING}>
+            <h2 className={SECTION_HEADING}>Projects in this plan</h2>
+            <p className={`mt-3 ${READING_PROSE} text-muted-foreground`}>
+              The projects this plan pays for, and the reason each one is on the list.
+            </p>
 
             {linksState === "failed" ? (
-              <StateBlock
-                tone="danger"
-                title="The portfolio section could not be assembled"
-                description="The projects linked to this plan could not be read, so this section is blank. It is not a finding that the plan has no portfolio, and this document must not be exported or circulated in this state."
-              />
+              <div className="mt-5">
+                <StateBlock
+                  tone="danger"
+                  title="The list of projects could not be read"
+                  description="The projects linked to this plan could not be read, so this section is blank. It is not a finding that the plan has no projects, and this document must not be exported or circulated in this state."
+                />
+              </div>
             ) : linkedProjects.length === 0 ? (
-              <EmptyState title="No linked projects yet" description="Attach projects in the cycle workspace to populate the portfolio section of this RTP document." />
+              <div className="mt-5">
+                <EmptyState
+                  title="No projects on this plan yet"
+                  description="Add projects to this plan from its working page, and each one will appear here with the reason it made the list."
+                />
+              </div>
             ) : (
-              <div className="space-y-3">
+              <ol className="mt-6 border-t border-border/60">
                 {linkedProjects.map((link) => (
-                  <article key={link.id} className="module-row-card gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
+                  <li key={link.id} className="border-b border-border/60 pb-5 pt-6">
+                    <h3 className={ITEM_HEADING}>{link.project?.name ?? "Linked project"}</h3>
+                    <p className="mt-2 flex flex-wrap items-center gap-2">
                       <StatusBadge tone={rtpPortfolioRoleTone(link.portfolio_role)}>{formatRtpPortfolioRoleLabel(link.portfolio_role)}</StatusBadge>
                       {link.project?.status ? <StatusBadge tone="neutral">{titleizeRtpValue(link.project.status)}</StatusBadge> : null}
-                    </div>
-                    <h3 className="text-sm font-semibold tracking-tight">{link.project?.name ?? "Linked project"}</h3>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {link.priority_rationale?.trim() || link.project?.summary?.trim() || "No prioritization rationale recorded yet."}
                     </p>
-                  </article>
+                    <p className={`mt-3 ${READING_PROSE} whitespace-pre-wrap text-muted-foreground`}>
+                      {link.priority_rationale?.trim() ||
+                        link.project?.summary?.trim() ||
+                        "Nobody has written down yet why this project is on the list."}
+                    </p>
+                  </li>
                 ))}
-              </div>
+              </ol>
             )}
-          </article>
+          </section>
 
-          <article id="engagement-posture" className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">Engagement</p>
-                <h2 className="module-section-title">Engagement posture</h2>
-                <p className="module-section-description">Cycle-wide and chapter-specific engagement targets attached to this RTP update.</p>
-              </div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-violet-500/12 text-violet-700 dark:text-violet-300">
-                <MessageSquare className="h-5 w-5" />
-              </span>
-            </div>
+          <section id="public-input" className={SECTION_SPACING}>
+            <h2 className={SECTION_HEADING}>Where the public was asked</h2>
+            <p className={`mt-3 ${READING_PROSE} text-muted-foreground`}>
+              The places people could comment on this plan — some about the plan as a whole, some
+              about a single chapter.
+            </p>
 
             {campaignsState === "failed" ? (
-              <StateBlock
-                tone="danger"
-                title="The engagement section could not be assembled"
-                description="The engagement targets attached to this plan could not be read, so this section is blank and no chapter below lists its campaigns. It is not a finding that no public engagement was carried out."
-              />
+              <div className="mt-5">
+                <StateBlock
+                  tone="danger"
+                  title="What people said about this plan could not be read"
+                  description="It could not be read, so this section is blank and no chapter below lists where people were asked. It is not a finding that no public engagement was carried out."
+                />
+              </div>
             ) : campaigns.length === 0 ? (
-              <EmptyState title="No engagement targets yet" description="Create RTP-linked engagement campaigns from the cycle workspace to make this section meaningful." />
+              <div className="mt-5">
+                <EmptyState
+                  title="Nobody has been asked yet"
+                  description="Ask the public from this plan's working page, and what they say will show up here alongside the question they were asked."
+                />
+              </div>
             ) : (
-              <div className="space-y-3">
+              <ol className="mt-6 border-t border-border/60">
                 {campaigns.map((campaign) => (
-                  <article key={campaign.id} className="module-row-card gap-3">
-                    <div className="flex flex-wrap items-center gap-2">
+                  <li key={campaign.id} className="border-b border-border/60 pb-5 pt-6">
+                    <h3 className={ITEM_HEADING}>{campaign.title}</h3>
+                    <p className="mt-2 flex flex-wrap items-center gap-2">
                       <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
                       <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-                      {campaign.rtp_cycle_chapter_id ? <StatusBadge tone="info">Chapter target</StatusBadge> : <StatusBadge tone="neutral">Cycle target</StatusBadge>}
-                    </div>
-                    <h3 className="text-sm font-semibold tracking-tight">{campaign.title}</h3>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                      {campaign.summary?.trim() || "No engagement summary recorded yet."}
+                      {campaign.rtp_cycle_chapter_id ? (
+                        <StatusBadge tone="info">About one chapter</StatusBadge>
+                      ) : (
+                        <StatusBadge tone="neutral">About the whole plan</StatusBadge>
+                      )}
                     </p>
-                  </article>
+                    <p className={`mt-3 ${READING_PROSE} whitespace-pre-wrap text-muted-foreground`}>
+                      {campaign.summary?.trim() || "Nobody has written down yet what people were asked about."}
+                    </p>
+                  </li>
                 ))}
-              </div>
+              </ol>
             )}
-          </article>
+          </section>
 
           {/*
             Chapters have no empty state of their own — they simply stop
@@ -467,77 +483,85 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
             page can tell.
           */}
           {chaptersState === "failed" ? (
-            <StateBlock
-              tone="danger"
-              title="The chapters of this plan could not be read"
-              description="No chapter text is shown below because the chapter records could not be loaded, not because the plan has none. This document is incomplete in an unknown way — do not export it, and do not start rewriting sections that may already exist."
-            />
+            <div className={SECTION_SPACING}>
+              <StateBlock
+                tone="danger"
+                title="The chapters of this plan could not be read"
+                description="No chapter text is shown below because the chapters could not be loaded, not because the plan has none. This document is incomplete in an unknown way — do not export it, and do not start rewriting sections that may already exist."
+              />
+            </div>
           ) : null}
 
           {chapters.map((chapter, index) => {
             const chapterCampaigns = campaignsByChapter.get(chapter.id) ?? [];
             return (
-              <article key={chapter.id} id={slugify(chapter.chapter_key || chapter.title)} className="module-section-surface">
-                <div className="module-section-header">
-                  <div className="module-section-heading">
-                    <p className="module-section-label">Chapter {index + 1}</p>
-                    <h2 className="module-section-title">{chapter.title}</h2>
-                    <p className="module-section-description">{titleizeRtpValue(chapter.section_type)} section</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <StatusBadge tone={rtpChapterStatusTone(chapter.status)}>{formatRtpChapterStatusLabel(chapter.status)}</StatusBadge>
-                    {chapter.required ? <StatusBadge tone="success">Required</StatusBadge> : null}
-                    <StatusBadge tone="neutral">{chapterCampaigns.length} campaigns</StatusBadge>
-                  </div>
-                </div>
+              <article
+                key={chapter.id}
+                id={slugify(chapter.chapter_key || chapter.title)}
+                className={SECTION_SPACING}
+              >
+                <p className="text-[0.78rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Chapter {index + 1} · {titleizeRtpValue(chapter.section_type)}
+                </p>
+                <h2 className={`mt-3 ${SECTION_HEADING}`}>{chapter.title}</h2>
+                <p className="mt-3 flex flex-wrap items-center gap-2">
+                  <StatusBadge tone={rtpChapterStatusTone(chapter.status)}>{formatRtpChapterStatusLabel(chapter.status)}</StatusBadge>
+                  {chapter.required ? <StatusBadge tone="success">Required</StatusBadge> : null}
+                  {chapterCampaigns.length > 0 ? (
+                    <StatusBadge tone="neutral">
+                      {chapterCampaigns.length === 1
+                        ? "1 place people were asked"
+                        : `${chapterCampaigns.length} places people were asked`}
+                    </StatusBadge>
+                  ) : null}
+                </p>
 
-                <div className="space-y-4">
-                  <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Working summary</p>
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
-                      {chapter.summary?.trim() || "No working summary recorded yet."}
-                    </p>
-                  </div>
+                {/*
+                  The draft text is the chapter. It used to sit in the second of
+                  three bordered panels, the same size and weight as the note
+                  about it — so the writing looked like an attachment to its own
+                  metadata. It now reads first and widest; the staff note and the
+                  writing guidance follow it as asides.
+                */}
+                {chapter.content_markdown?.trim() ? (
+                  <div
+                    className={`chapter-markdown mt-6 ${READING_PROSE} text-foreground/90`}
+                    dangerouslySetInnerHTML={{
+                      __html: renderChapterMarkdownToHtml(chapter.content_markdown),
+                    }}
+                  />
+                ) : (
+                  <p className={`mt-6 ${READING_PROSE} text-muted-foreground`}>
+                    Nothing has been written for this chapter yet.
+                  </p>
+                )}
 
-                  <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft section text</p>
-                    {chapter.content_markdown?.trim() ? (
-                      <div
-                        className="chapter-markdown mt-3 text-sm leading-7 text-foreground/90"
-                        dangerouslySetInnerHTML={{
-                          __html: renderChapterMarkdownToHtml(chapter.content_markdown),
-                        }}
-                      />
-                    ) : (
-                      <div className="mt-3 text-sm leading-7 text-foreground/90">
-                        No draft section content yet.
-                      </div>
-                    )}
-                  </div>
+                <div className="mt-6 border-l-2 border-border/70 pl-4">
+                  <h3 className={SIDE_HEADING}>Where this chapter stands</h3>
+                  <p className={`mt-2 ${READING_PROSE} whitespace-pre-wrap text-muted-foreground`}>
+                    {chapter.summary?.trim() || "Nobody has written a note about where this chapter stands."}
+                  </p>
 
-                  <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Editorial guidance</p>
-                    <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
-                      {chapter.guidance?.trim() || "No editorial guidance recorded yet."}
-                    </p>
-                  </div>
+                  <h3 className={`mt-6 ${SIDE_HEADING}`}>Notes for whoever writes this chapter</h3>
+                  <p className={`mt-2 ${READING_PROSE} whitespace-pre-wrap text-muted-foreground`}>
+                    {chapter.guidance?.trim() || "No writing notes for this chapter."}
+                  </p>
 
                   {chapterCampaigns.length > 0 ? (
-                    <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
-                      <div className="mt-3 space-y-3">
+                    <>
+                      <h3 className={`mt-6 ${SIDE_HEADING}`}>Where the public was asked about this chapter</h3>
+                      <ul className={`mt-2 space-y-3 ${READING_PROSE} text-muted-foreground`}>
                         {chapterCampaigns.map((campaign) => (
-                          <div key={campaign.id} className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3">
-                            <div className="flex flex-wrap gap-2">
-                              <StatusBadge tone={engagementStatusTone(campaign.status)}>{titleizeEngagementValue(campaign.status)}</StatusBadge>
-                              <StatusBadge tone="neutral">{titleizeEngagementValue(campaign.engagement_type)}</StatusBadge>
-                            </div>
-                            <p className="mt-2 text-sm font-semibold text-foreground">{campaign.title}</p>
-                            <p className="mt-1 text-sm text-muted-foreground">{campaign.summary?.trim() || "No campaign summary recorded yet."}</p>
-                          </div>
+                          <li key={campaign.id}>
+                            <span className="font-semibold text-foreground">{campaign.title}</span>
+                            {" — "}
+                            {titleizeEngagementValue(campaign.engagement_type)},{" "}
+                            {titleizeEngagementValue(campaign.status).toLowerCase()}.{" "}
+                            {campaign.summary?.trim() || "Nobody has written down what people were asked about."}
+                          </li>
                         ))}
-                      </div>
-                    </div>
+                      </ul>
+                    </>
                   ) : null}
                 </div>
               </article>

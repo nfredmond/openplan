@@ -228,9 +228,9 @@ export function ReportStandardDetail({
           <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
             {report.title}
           </h1>
-          <p className="mt-3 max-w-3xl text-[0.9rem] leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mt-4 max-w-[36rem] text-[1.0625rem] leading-[1.65] text-muted-foreground">
             {report.summary ||
-              "No summary provided. Use the controls to describe this report\u2019s purpose and generate an HTML packet."}
+              "No summary yet. Say what this report is for, and OpenPlan can generate it as a web page you can send."}
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">

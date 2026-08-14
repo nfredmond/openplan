@@ -19,6 +19,7 @@
     "local-aerial-evidence-smoke": "node local-aerial-evidence-smoke.js",
     "local-workspace-url-isolation-smoke": "node openplan-local-workspace-url-isolation-smoke.js",
     "local-ui-ux-settle-capture": "node openplan-local-ui-ux-settle-capture.js",
+    "local-card-nesting-audit": "node openplan-local-card-nesting-audit.js",
     "prod-auth-smoke": "node openplan-prod-auth-smoke.js",
     "prod-engagement-smoke": "node openplan-prod-engagement-smoke.js",
     "prod-engagement-report-handoff-smoke": "node openplan-prod-engagement-report-handoff-smoke.js",

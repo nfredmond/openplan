@@ -335,7 +335,7 @@ describe("models catalog opened for one project", () => {
 
     expect(screen.getByText("No models match these filters")).toBeInTheDocument();
     expect(screen.queryByText(/filtered to \./)).toBeNull();
-    expect(screen.getByText(/This catalog is filtered by the query string it was opened with/)).toBeInTheDocument();
+    expect(screen.getByText(/This list is filtered by the link it was opened with/)).toBeInTheDocument();
   });
 
   it("names the project a filtered empty catalog was narrowed to", async () => {

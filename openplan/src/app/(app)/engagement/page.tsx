@@ -167,7 +167,7 @@ export default async function EngagementPage({
     supabase.from("projects").select("id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
   ]);
 
-  const campaignsUnreadable = reads.check("this workspace's engagement campaigns", campaignsResult);
+  const campaignsUnreadable = reads.check("your engagement campaigns", campaignsResult);
   const projectsUnreadable = reads.check("this workspace's projects", projectsResult);
   const campaignsData = campaignsResult.data;
   const projectsData = projectsResult.data;
@@ -336,7 +336,7 @@ export default async function EngagementPage({
               // only one of them is a statement about the project.
               <p className="module-intro-description">
                 {projectsUnreadable
-                  ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no campaigns."
+                  ? "Your projects could not be read, so the filter above shows an id instead of a name. An empty list below would not mean that project has no campaigns."
                   : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
               </p>
             ) : null}
@@ -362,10 +362,10 @@ export default async function EngagementPage({
               <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : campaigns.length}</p>
               <p className="module-summary-detail">
                 {campaignsUnreadable
-                  ? "The campaign list could not be read, so this is not a count of zero."
+                  ? "Your campaigns could not be read, so this is unknown — it is not zero."
                   : hasActiveFilters
                     ? "Matching the current filters."
-                    : "Every campaign in this workspace, with a record of who changed what."}
+                    : "Every campaign here, with a history of who changed what."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -471,8 +471,8 @@ export default async function EngagementPage({
                 // make it — this render does not know whether any exist.
                 <StateBlock
                   tone="danger"
-                  title="This workspace's campaigns could not be listed"
-                  description="The campaign list could not be read, so OpenPlan cannot say whether this workspace has campaigns. This is not an empty workspace — reload, and if it keeps failing the error is reported at the top of this page."
+                  title="Your campaigns could not be listed"
+                  description="This list could not be read, so OpenPlan cannot say whether you have any campaigns. This is not a finding that you have none — reload, and if it keeps failing the error is shown at the top of this page."
                 />
               ) : (
                 <EmptyState
@@ -480,7 +480,7 @@ export default async function EngagementPage({
                   description={
                     hasActiveFilters
                       ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
-                      : "Engagement is where your agency hears from the public: campaigns collect map comments, survey responses, and feedback on draft plans, with moderation built in. Create your first campaign to open a public comment window."
+                      : "Engagement is where your agency hears from the public: campaigns collect map comments, survey answers, and feedback on draft plans, and nothing a resident writes appears publicly until you approve it. Create your first campaign to open a public comment window."
                   }
                   action={
                     hasActiveFilters ? undefined : (

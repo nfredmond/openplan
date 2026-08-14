@@ -170,7 +170,7 @@ describe("a planner reaches the portfolio table on /projects", () => {
     // document order. This is the whole placement decision, so it is asserted
     // rather than assumed.
     const table = screen.getByRole("heading", { name: /what each project needs next/i });
-    const cards = screen.getByRole("heading", { name: /^Project records$/i });
+    const cards = screen.getByRole("heading", { name: /^Your projects$/i });
     expect(table.compareDocumentPosition(cards) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 

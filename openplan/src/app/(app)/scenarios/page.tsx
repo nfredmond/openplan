@@ -4,6 +4,8 @@ import { ArrowRight, FolderKanban, GitCompareArrows, ShieldCheck } from "lucide-
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ScenarioSetCreator } from "@/components/scenarios/scenario-set-creator";
+import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
+import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -131,8 +133,8 @@ export default async function ScenariosPage({
       .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, workspace_id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
   ]);
-  const scenarioSetsUnreadable = reads.check("this workspace's scenario sets", scenarioSetsResult);
-  const projectsUnreadable = reads.check("this workspace's projects", projectsResult);
+  const scenarioSetsUnreadable = reads.check("your scenario sets", scenarioSetsResult);
+  const projectsUnreadable = reads.check("your projects", projectsResult);
   const scenarioSetsData = scenarioSetsResult.data;
   const projectsData = projectsResult.data;
   const projectsError = projectsResult.error;
@@ -144,7 +146,7 @@ export default async function ScenariosPage({
   // The per-set baseline/alternative counts come from here. A failed read makes
   // every row on the page say "Baseline missing" — a finding about the planner's
   // work, invented by a broken query.
-  const entriesUnreadable = reads.check("scenario entries", entriesResult);
+  const entriesUnreadable = reads.check("the scenarios inside them", entriesResult);
   const entriesData = entriesResult.data;
 
   const counts = new Map<string, { baselineCount: number; alternativeCount: number }>();
@@ -199,8 +201,14 @@ export default async function ScenariosPage({
   const withBaselineCount = scenarioSets.filter((scenarioSet) => scenarioSet.counts.baselineCount > 0).length;
   const totalAlternatives = scenarioSets.reduce((sum, scenarioSet) => sum + scenarioSet.counts.alternativeCount, 0);
 
+  // The order of the analysis work, said the same way on every page in the
+  // group. This page is step three of seven.
+  const sequenceFacts = await loadAnalysisSequenceFacts(supabase, membership.workspace_id);
+
   return (
     <section className="module-page">
+      <AnalysisSequenceStrip facts={sequenceFacts} currentStepId="comparison" />
+
       {/* Internal page, so the database's own message stays on it — inside the
           notice's operator disclosure, where the person who can act on it will
           look and a planner is not made to read it. */}
@@ -301,7 +309,7 @@ export default async function ScenariosPage({
             </div>
           </div>
           <p className="module-operator-copy">
-            Each entry records what it is, which analysis run backs it, the assumptions behind it, and whether it is ready to
+            Each scenario keeps what it is, which analysis run backs it, the assumptions behind it, and whether it is ready to
             compare. Scenario sets organise the comparison; the analysis itself still happens in the Analysis Studio.
           </p>
           <div className="module-operator-list">
@@ -323,7 +331,7 @@ export default async function ScenariosPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Catalog</p>
+              <p className="module-section-label">Your scenario sets</p>
               <h2 className="module-section-title">
                 {/* The heading may not claim workspace scope over a project-scoped list. */}
                 {projectFilterId ? "Scenario sets for this project" : "Scenario sets in this workspace"}
@@ -369,8 +377,8 @@ export default async function ScenariosPage({
             // that failed cannot make it.
             <div className="mt-5">
               <EmptyState
-                title="This catalog could not be read"
-                description="The scenario-set list for this workspace could not be loaded, so nothing is shown below. That is a failed read, not an empty workspace — do not read it as a statement that no scenario sets exist."
+title="Your scenario sets could not be read"
+                description="This list could not be loaded, so nothing is shown below. That is a failed read, not an empty list — do not read it as a statement that no scenario sets exist."
               />
             </div>
           ) : scenarioSets.length === 0 ? (
@@ -379,7 +387,7 @@ export default async function ScenariosPage({
                 title={hasActiveFilters ? "No scenario sets match these filters" : "No scenario sets yet"}
                 description={
                   hasActiveFilters
-                    ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set in this workspace — an empty filtered list is not a statement that none exist.`
+                    ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set you have — an empty filtered list is not a statement that none exist.`
                     : "Scenarios lets you compare a baseline against alternatives — with the project, without it, or with a different design — before you recommend one. Create your first scenario set for a project you are studying."
                 }
                 action={

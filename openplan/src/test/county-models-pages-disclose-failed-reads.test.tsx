@@ -190,7 +190,7 @@ describe("/models when a read fails", () => {
     expect(screen.queryByText("No models yet")).toBeNull();
     expect(screen.getByTestId("models-catalog-unreadable")).toBeInTheDocument();
     expect(screen.getByTestId("models-read-failures")).toHaveTextContent(
-      /could not read the model catalog/i
+      /could not read your models/i
     );
     // The operator detail belongs on an internal page.
     expect(screen.getByTestId("models-read-failures")).toHaveTextContent(
@@ -229,7 +229,7 @@ describe("/models when a read fails", () => {
     expect(screen.queryByText(/0 reports · 0 runs/)).toBeNull();
     expect(screen.getByText(/Readiness and links unavailable/)).toBeInTheDocument();
     expect(screen.queryByText(/^Missing:/)).toBeNull();
-    expect(screen.getByTestId("models-read-failures")).toHaveTextContent(/model links/i);
+    expect(screen.getByTestId("models-read-failures")).toHaveTextContent(/what each model is connected to/i);
   });
 
   it("still reports a genuinely unlinked model as unlinked", async () => {

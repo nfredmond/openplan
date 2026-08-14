@@ -282,7 +282,7 @@ describe("ProgramsPage", () => {
       expect(screen.getByText("No programming cycles yet")).toBeInTheDocument();
       expect(screen.getByText("No funding opportunities logged yet")).toBeInTheDocument();
       expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
-      expect(screen.queryByText("The programming-cycle catalog could not be read")).not.toBeInTheDocument();
+      expect(screen.queryByText("Your programming cycles could not be read")).not.toBeInTheDocument();
     });
 
     it("does not tell an agency its programming registry is empty when the catalog read failed", async () => {
@@ -294,7 +294,7 @@ describe("ProgramsPage", () => {
       await renderPage();
 
       expect(screen.queryByText("No programming cycles yet")).not.toBeInTheDocument();
-      expect(screen.getByText("The programming-cycle catalog could not be read")).toBeInTheDocument();
+      expect(screen.getByText("Your programming cycles could not be read")).toBeInTheDocument();
       expect(screen.getByText("Part of this page could not be read")).toBeInTheDocument();
       expect(
         screen.getByText(/the programming-cycle catalog: permission denied for table programs/)
@@ -310,11 +310,11 @@ describe("ProgramsPage", () => {
       await renderPage();
 
       expect(screen.queryByText("No funding opportunities logged yet")).not.toBeInTheDocument();
-      expect(screen.getByText("The funding-opportunity catalog could not be read")).toBeInTheDocument();
+      expect(screen.getByText("Your funding opportunities could not be read")).toBeInTheDocument();
 
       // The program catalog read succeeded, so it still renders its real rows.
       expect(screen.getAllByText(/2027 RTIP/i).length).toBeGreaterThan(0);
-      expect(screen.queryByText("The programming-cycle catalog could not be read")).not.toBeInTheDocument();
+      expect(screen.queryByText("Your programming cycles could not be read")).not.toBeInTheDocument();
     });
   });
 });

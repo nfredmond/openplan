@@ -161,7 +161,7 @@ describe("PlansPage — a failed read may not be rendered as an answer", () => {
 
     expect(screen.getByText("No plans yet")).toBeInTheDocument();
     expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
-    expect(screen.queryByText("The plan catalog could not be read")).not.toBeInTheDocument();
+    expect(screen.queryByText("Your plans could not be read")).not.toBeInTheDocument();
   });
 
   it("does not tell an agency its plan registry is empty when the catalog read failed", async () => {
@@ -173,9 +173,9 @@ describe("PlansPage — a failed read may not be rendered as an answer", () => {
     await renderPage();
 
     expect(screen.queryByText("No plans yet")).not.toBeInTheDocument();
-    expect(screen.getByText("The plan catalog could not be read")).toBeInTheDocument();
+    expect(screen.getByText("Your plans could not be read")).toBeInTheDocument();
     expect(screen.getByText("Part of this page could not be read")).toBeInTheDocument();
-    expect(screen.getByText(/the plan catalog: permission denied for table plans/)).toBeInTheDocument();
+    expect(screen.getByText(/your plans: permission denied for table plans/)).toBeInTheDocument();
   });
 
   it("withholds the per-row readiness verdict when the linkage reads failed, and still renders the plans that loaded", async () => {

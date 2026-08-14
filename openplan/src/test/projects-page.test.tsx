@@ -388,7 +388,7 @@ describe("ProjectsPage", () => {
     expect(
       screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
     ).toBeGreaterThan(0);
-    expect(screen.getAllByText(/No report records linked yet\./i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/No reports linked yet\./i).length).toBeGreaterThan(0);
   });
 
   /**
@@ -414,10 +414,10 @@ describe("ProjectsPage", () => {
 
       expect(screen.queryByText(/Create your first project to start tracking/i)).toBeNull();
       expect(
-        screen.getByText(/The project registry could not be read, so this list is unavailable/i)
+        screen.getByText(/Your projects could not be read, so this list is unavailable/i)
       ).toBeInTheDocument();
       expect(screen.getByText(/Part of this page could not be read/i)).toBeInTheDocument();
-      expect(screen.getByText(/This page could not read project records\./i)).toBeInTheDocument();
+      expect(screen.getByText(/This page could not read your projects\./i)).toBeInTheDocument();
       // Internal page: the operator gets the database's own message.
       expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
     });
@@ -441,11 +441,11 @@ describe("ProjectsPage", () => {
 
       await renderPage();
 
-      expect(screen.queryAllByText(/No report records linked yet\./i)).toEqual([]);
+      expect(screen.queryAllByText(/No reports linked yet\./i)).toEqual([]);
       expect(
-        screen.getAllByText(/Linked report records could not be read for this project/i).length
+        screen.getAllByText(/The reports linked to this project could not be read/i).length
       ).toBeGreaterThan(0);
-      expect(screen.getByText(/could not read linked report records\./i)).toBeInTheDocument();
+      expect(screen.getByText(/could not read the reports linked to them\./i)).toBeInTheDocument();
       // The Reports chip must not assert zero either.
       expect(screen.queryByText("First action: create the first report packet")).toBeNull();
     });
@@ -538,7 +538,7 @@ describe("ProjectsPage", () => {
 
       expect(screen.getByText(/Part of this page could not be read/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/could not read report packet artifacts\./i)
+        screen.getByText(/could not read the report files already generated\./i)
       ).toBeInTheDocument();
     });
   });

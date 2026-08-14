@@ -169,7 +169,7 @@ export default async function ProgramsPage({
       <WorkspaceMembershipRequired
         moduleLabel="Programs"
         title="Programs need a workspace"
-        description="Programming-cycle records belong to a workspace. You are signed in, but this account is not in a workspace yet — showing an empty catalog here would be misleading."
+        description="Programming cycles belong to a workspace. You are signed in, but this account is not in a workspace yet — showing an empty list here would look like you have no cycles, which is not what this means."
       />
     );
   }
@@ -504,7 +504,7 @@ export default async function ProgramsPage({
     ? `The workspace has ${allTypedPrograms.length} programming ${
         allTypedPrograms.length === 1 ? "cycle" : "cycles"
       }, but none match ${activeFilterLabels.join(" + ")}. Clear or change the filters to review the full catalog.`
-    : "Create a program record to track RTIP/STIP package readiness, timing, and supporting records.";
+    : "Create a program to track an RTIP or STIP package — what is still missing, when it is due, and what it links to.";
 
   const packetQueuePrograms = typedPrograms
     .filter(
@@ -577,8 +577,8 @@ export default async function ProgramsPage({
         detail: recommendedReport
           ? recommendedReport.packetFreshness.detail
           : opportunity.program_id
-            ? "Linked program has no packet outputs yet. Open the program record to create or attach the first packet."
-            : "Link this opportunity to a program so packet readiness and delivery context are visible in one place.",
+            ? "The linked program has no reports yet. Open the program to create or attach the first one."
+            : "Link this opportunity to a program so you can see, in one place, which reports are ready and what is still outstanding.",
         badges: [
           { label: formatFundingOpportunityStatusLabel(opportunity.opportunity_status) },
           { label: formatFundingOpportunityDecisionLabel(opportunity.decision_state) },
@@ -586,7 +586,7 @@ export default async function ProgramsPage({
             ? [
                 { label: "Program reports", value: packetSummary.linkedReportCount },
                 ...(packetSummary.attentionCount > 0
-                  ? [{ label: "Packet attention", value: packetSummary.attentionCount }]
+                  ? [{ label: "Reports needing work", value: packetSummary.attentionCount }]
                   : []),
               ]
             : []),
@@ -642,8 +642,8 @@ export default async function ProgramsPage({
               <p className="module-summary-value">{programsUnreadable ? "—" : typedPrograms.length}</p>
               <p className="module-summary-detail">
                 {programsUnreadable
-                  ? "The programming-cycle catalog could not be read, so this count is unknown rather than zero."
-                  : "Cycle and package records in the current workspace catalog."}
+                  ? "The list of programming cycles could not be read, so this number is unknown — it is not zero."
+                  : "Programming cycles and packages in this workspace."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -651,7 +651,7 @@ export default async function ProgramsPage({
               <p className="module-summary-value">{programsUnreadable ? "—" : activeCount}</p>
               <p className="module-summary-detail">
                 {programsUnreadable
-                  ? "Unavailable while the programming-cycle catalog cannot be read."
+                  ? "Unavailable while the list of programming cycles cannot be read."
                   : `${rtipStipCount} tied to RTIP or STIP cycles.`}
               </p>
             </div>
@@ -660,19 +660,19 @@ export default async function ProgramsPage({
               <p className="module-summary-value">{programsUnreadable || rowBasisUnreadable ? "—" : readyCount}</p>
               <p className="module-summary-detail">
                 {programsUnreadable || rowBasisUnreadable
-                  ? "Readiness is computed from linked records this page could not read."
-                  : "Programs with the key information in place for review or submission."}
+                  ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
+                  : "Programs with the key information in place, ready to review or submit."}
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Packet attention</p>
+              <p className="module-summary-label">Reports needing work</p>
               <p className="module-summary-value">
                 {programsUnreadable || rowBasisUnreadable ? "—" : packetAttentionProgramCount}
               </p>
               <p className="module-summary-detail">
                 {programsUnreadable || rowBasisUnreadable
-                  ? "Packet posture is computed from report records this page could not read."
-                  : "Programs whose linked report packets need first generation or refresh."}
+                  ? "This is worked out from reports this page could not read, so it is unknown — it is not zero."
+                  : "Programs whose reports still need to be generated or refreshed."}
               </p>
             </div>
           </div>
@@ -689,11 +689,11 @@ export default async function ProgramsPage({
             </div>
           </div>
           <p className="module-operator-copy">
-            Keep cycle timing, sponsor agency, linked plans, and submission materials together in one place.
+            Keep cycle timing, the sponsoring agency, linked plans, and what you send in together in one place.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Primary project links inherit relevant plans, reports, and engagement records.</div>
-            <div className="module-operator-item">Extra links keep the context that spans several projects or records.</div>
+            <div className="module-operator-item">Linking a project brings across its plans, reports, and what people said.</div>
+            <div className="module-operator-item">Extra links hold the context that spans more than one project.</div>
             <div className="module-operator-item">A missing schedule or report shows up as a stated gap, never a quietly lowered score.</div>
           </div>
           <div className="mt-4">
@@ -716,10 +716,10 @@ export default async function ProgramsPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Catalog</p>
-              <h2 className="module-section-title">Programming cycle records</h2>
+              <p className="module-section-label">Your cycles</p>
+              <h2 className="module-section-title">Your programming cycles</h2>
               <p className="module-section-description">
-                Review package posture by status, lane, or linked project and jump straight into the cycle record.
+                Filter by status, funding type, or linked project, then open a cycle.
               </p>
             </div>
             <span className="module-inline-item">
@@ -732,8 +732,8 @@ export default async function ProgramsPage({
             <div className="mt-5">
               <StateBlock
                 tone="danger"
-                title="The programming-cycle catalog could not be read"
-                description="This page could not read the programs in your workspace, so it cannot show the catalog and cannot say whether any cycles exist. Nothing has been deleted — retry, and tell your operator if it persists."
+                title="Your programming cycles could not be read"
+                description="This page could not read the programs here, so it cannot list them and cannot say whether any exist. This is not a finding that you have none, and nothing has been deleted. Try again, and if it keeps happening tell whoever installed OpenPlan for your agency."
               />
             </div>
           ) : typedPrograms.length === 0 ? (
@@ -746,8 +746,8 @@ export default async function ProgramsPage({
           ) : (
             <div className="mt-5 space-y-4">
               <ReportPacketCommandQueue
-                title="Program packet queue"
-                description="The highest-priority packet actions across programming cycles, ordered before the full registry below."
+                title="Reports that need something first"
+                description="The most pressing report work across your programming cycles, ahead of the full list below."
                 items={packetQueuePrograms.slice(0, 5).map((program) => ({
                   key: program.id,
                   href: program.packetSummary.recommendedReport
@@ -759,14 +759,14 @@ export default async function ProgramsPage({
                   title: program.title,
                   subtitle: program.packetSummary.recommendedReport
                     ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
-                      ? `First action: refresh ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                      ? `First action: refresh ${program.packetSummary.recommendedReport.title ?? "the report"}`
                       : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
-                        ? `First action: generate ${program.packetSummary.recommendedReport.title ?? "report packet"}`
-                        : `First action: review ${program.packetSummary.recommendedReport.title ?? "report packet"}`
-                    : `First action: create the first packet for ${program.title}`,
+                        ? `First action: generate ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                        : `First action: review ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                    : `First action: create the first report for ${program.title}`,
                   detail: program.packetSummary.recommendedReport
                     ? program.packetSummary.recommendedReport.packetFreshness.detail
-                    : "No packet outputs are linked yet. Open the program record to attach or create the first report packet.",
+                    : "No reports are linked yet. Open the program to attach or create the first one.",
                   badges: [
                     { label: "Reports", value: program.packetSummary.linkedReportCount },
                     ...(program.packetSummary.attentionCount > 0
@@ -774,7 +774,7 @@ export default async function ProgramsPage({
                       : []),
                   ],
                 }))}
-                emptyLabel="No program packet work is queued right now."
+                emptyLabel="No report work is waiting on your programs right now."
               />
 
               <div className="module-record-list">
@@ -815,7 +815,7 @@ export default async function ProgramsPage({
                         <p className="module-record-summary line-clamp-2">
                           {program.summary ||
                             (rowBasisUnreadable
-                              ? "No summary on file. A package verdict is withheld here — the linked records it is computed from could not be read."
+                              ? "No summary on file. No verdict is shown here, because the linked projects and reports it is worked out from could not be read — that is missing information, not a bad result."
                               : program.workflow.reason)}
                         </p>
                       </div>
@@ -855,21 +855,21 @@ export default async function ProgramsPage({
 
                   <div className="mt-3 border-t border-border/70 pt-3">
                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Packet command
+                      Next report step
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
                       {program.packetSummary.recommendedReport
                         ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
-                          ? `Refresh ${program.packetSummary.recommendedReport.title ?? "report packet"}`
+                          ? `Refresh ${program.packetSummary.recommendedReport.title ?? "the report"}`
                           : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
-                            ? `Generate ${program.packetSummary.recommendedReport.title ?? "report packet"}`
-                            : `Review ${program.packetSummary.recommendedReport.title ?? "report packet"}`
-                        : "Create the first packet trail"}
+                            ? `Generate ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                            : `Review ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                        : "Create the first report"}
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                       {program.packetSummary.recommendedReport
                         ? program.packetSummary.recommendedReport.packetFreshness.detail
-                        : "No linked report packets yet. Open the program to attach or create the first packet record."}
+                        : "No reports linked yet. Open the program to attach or create the first one."}
                     </p>
                   </div>
                 </CartographicSelectionLink>
@@ -885,13 +885,13 @@ export default async function ProgramsPage({
           programs={typedPrograms.map((program) => ({ id: program.id, title: program.title }))}
           projects={(projectsData ?? []).map((project) => ({ id: project.id, name: project.name }))}
           title="Log a funding opportunity"
-          description="Keep open and upcoming opportunities visible even before a full grant workspace exists."
+          description="Keep open and upcoming calls visible, even before you have set up the grant itself."
         />
 
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Funding catalog</p>
+              <p className="module-section-label">Funding calls</p>
               <h2 className="module-section-title">Active and upcoming opportunities</h2>
               <p className="module-section-description">
                 Track open calls, their timing, who owns them, and the programs and projects they belong to.
@@ -909,8 +909,8 @@ export default async function ProgramsPage({
               <p className="module-summary-value">{fundingOpportunitiesUnreadable ? "\u2014" : openOpportunityCount}</p>
               <p className="module-summary-detail">
                 {fundingOpportunitiesUnreadable
-                  ? "Unavailable while the funding-opportunity catalog cannot be read."
-                  : "Current calls needing active packaging work."}
+                  ? "Unavailable while the list of funding opportunities cannot be read."
+                  : "Calls that are open now and need work."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -918,8 +918,8 @@ export default async function ProgramsPage({
               <p className="module-summary-value">{fundingOpportunitiesUnreadable ? "\u2014" : upcomingOpportunityCount}</p>
               <p className="module-summary-detail">
                 {fundingOpportunitiesUnreadable
-                  ? "Unavailable while the funding-opportunity catalog cannot be read."
-                  : "Expected calls or known windows not yet open."}
+                  ? "Unavailable while the list of funding opportunities cannot be read."
+                  : "Calls you expect, or known windows that have not opened yet."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -927,24 +927,24 @@ export default async function ProgramsPage({
               <p className="module-summary-value">
                 {fundingOpportunitiesUnreadable ? "\u2014" : fundingOpportunities.filter((item) => item.program_id).length}
               </p>
-              <p className="module-summary-detail">Opportunities already tied to a funding cycle record.</p>
+              <p className="module-summary-detail">Opportunities already tied to a funding cycle.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Likely dollars</p>
               <p className="module-summary-value text-base leading-tight">{formatCurrency(likelyOpportunityAmount)}</p>
               <p className="module-summary-detail">
-                Expected dollars attached to pursue decisions in the shared catalog. {ROUNDED_MONEY_NOTE}
+                Expected dollars attached to the calls you have decided to pursue. {ROUNDED_MONEY_NOTE}
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Packet-risky opportunities</p>
+              <p className="module-summary-label">Opportunities missing a report</p>
               <p className="module-summary-value">
                 {fundingOpportunitiesUnreadable || rowBasisUnreadable ? "—" : opportunityPacketRiskCount}
               </p>
               <p className="module-summary-detail">
                 {fundingOpportunitiesUnreadable || rowBasisUnreadable
-                  ? "Packet risk is computed from opportunity and report records this page could not read."
-                  : "Opportunities whose linked program packet basis is missing, stale, or not linked yet."}
+                  ? "This is worked out from opportunities and reports this page could not read, so it is unknown — it is not zero."
+                  : "Opportunities whose program has no report yet, or an out-of-date one."}
               </p>
             </div>
           </div>
@@ -953,24 +953,24 @@ export default async function ProgramsPage({
             <div className="mt-5">
               <StateBlock
                 tone="danger"
-                title="The funding-opportunity catalog could not be read"
-                description="This page could not read the funding opportunities in your workspace, so it cannot show them and cannot say whether any are logged. Nothing has been deleted — retry, and tell your operator if it persists."
+                title="Your funding opportunities could not be read"
+                description="This page could not read the funding opportunities here, so it cannot list them and cannot say whether any are logged. This is not a finding that you have none, and nothing has been deleted. Try again, and if it keeps happening tell whoever installed OpenPlan for your agency."
               />
             </div>
           ) : fundingOpportunities.length === 0 ? (
             <div className="mt-5">
               <EmptyState
                 title="No funding opportunities logged yet"
-                description="Create the first opportunity so active calls and upcoming cycles can live beside program records."
+                description="Log the first one, so open calls and upcoming cycles sit beside your programs."
               />
             </div>
           ) : (
             <div className="mt-5 space-y-4">
               <ReportPacketCommandQueue
-                title="Opportunity packet queue"
-                description="Open or upcoming opportunities whose linked program packet basis still needs attention."
+                title="Opportunities that need a report"
+                description="Open or upcoming calls whose program still needs a report written or refreshed."
                 items={opportunityQueueItems}
-                emptyLabel="No packet-risky opportunities right now."
+                emptyLabel="No opportunity is waiting on a report right now."
               />
 
               <div className="module-record-list">
@@ -1007,7 +1007,7 @@ export default async function ProgramsPage({
                   <div className="module-record-meta">
                     <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
                     <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
-                    <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
+                    <span className="module-record-chip">How often {opportunity.cadence_label ?? "Not set"}</span>
                     <span className="module-record-chip">Likely {formatCurrency(opportunity.expected_award_amount)}</span>
                     <span className="module-record-chip">Opens {formatProgramDateTime(opportunity.opens_at)}</span>
                     <span className="module-record-chip">Closes {formatProgramDateTime(opportunity.closes_at)}</span>

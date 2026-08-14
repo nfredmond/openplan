@@ -154,11 +154,11 @@ describe("the engagement catalog discloses a failed read", () => {
     // The label appears twice on purpose: in the planner's sentence, and again
     // in the operator disclosure beside the database's own words. Matched on
     // the planner's phrasing so this cannot be satisfied by the folded copy.
-    expect(screen.getByText(/could not read this workspace's engagement campaigns/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not read your engagement campaigns/i)).toBeInTheDocument();
     const message = screen.getByText(/permission denied for table engagement_campaigns/);
     expect(message).toBeInTheDocument();
     expect(message.closest("details")).not.toBeNull();
-    expect(screen.getByText(/This workspace's campaigns could not be listed/i)).toBeInTheDocument();
+    expect(screen.getByText(/Your campaigns could not be listed/i)).toBeInTheDocument();
     // …and no count is offered in place of one that was never established.
     expect(screen.getAllByText("Unavailable").length).toBeGreaterThan(0);
     expect(screen.queryByText("All (0)")).toBeNull();

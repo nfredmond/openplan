@@ -156,8 +156,14 @@ function expectClosedAndLabelled(root: HTMLElement = document.body) {
  * A planner-facing sentence that only says something is broken is a dead end.
  * Each of these surfaces has to name a move: reload it, or ask the person who
  * runs the deployment.
+ *
+ * "whoever installed OpenPlan for your agency" was added 2026-08-13 by the ELI5
+ * copy pass. It is the same move said plainly — "deployment" is the machine's
+ * word for it, and the jargon ledger bans it in planner copy. What this pattern
+ * requires is unchanged: a named person to go to, or a reload to try.
  */
-const PLANNER_CAN_ACT = /whoever runs this (?:openplan|deployment)|reload|ask whoever/i;
+const PLANNER_CAN_ACT =
+  /whoever runs this (?:openplan|deployment)|whoever installed openplan|reload|ask whoever/i;
 
 const ALICE = "aaaaaaaa-0000-4000-8000-00000000000a";
 
@@ -451,7 +457,13 @@ describe("the reminder panel", () => {
     renderInbox(await inboxFrom([], { message: 'relation "public.work_notifications" does not exist' }));
 
     const planner = plannerText();
-    expect(planner).toContain("pending migrations");
+    // The planner is told the CAUSE — the install is unfinished — not merely
+    // that something broke. This asserted the literal "pending migrations"
+    // until 2026-08-13; that is the operator's term for it, and saying it to a
+    // planner is the very thing this file exists to stop. The requirement did
+    // not change: name the cause in words a planner can act on, and keep the
+    // migration number below in the disclosure.
+    expect(planner).toMatch(/that part of the database is not set up/i);
     expect(planner).toMatch(PLANNER_CAN_ACT);
     expect(planner).not.toContain("20260811000007");
 
@@ -480,7 +492,11 @@ describe("the my-work board", () => {
     );
 
     const planner = plannerText();
-    expect(planner).toContain("Assigned work cannot be listed on this deployment yet");
+    // Same substitution as the reminder panel above: "this deployment" became
+    // "this copy of OpenPlan" in the 2026-08-13 ELI5 pass. Still the cause, in
+    // words a planner has been given a way to understand.
+    expect(planner).toMatch(/cannot yet tell whose work is whose/i);
+    expect(planner).toMatch(/that part of the database is not set up/i);
     expect(planner).toMatch(PLANNER_CAN_ACT);
     expect(planner).not.toContain("20260811000006");
     expect(planner).not.toContain("assignee_user_id");

@@ -95,7 +95,7 @@ export default async function PlansPage({
       <WorkspaceMembershipRequired
         moduleLabel="Plans"
         title="Plans need a workspace"
-        description="Plan records only appear inside a workspace. You are signed in, but no workspace membership was found for this account — that is why the catalog is empty here, not a missing plan."
+        description="Plans only appear inside a workspace. You are signed in, but this account is not in a workspace yet — that is why nothing is listed here. It does not mean a plan is missing."
       />
     );
   }
@@ -128,8 +128,8 @@ export default async function PlansPage({
       .order("updated_at", { ascending: false }),
   ]);
 
-  const plansUnreadable = reads.check("the plan catalog", plansResult);
-  reads.check("selectable projects", projectsResult);
+  const plansUnreadable = reads.check("your plans", plansResult);
+  reads.check("the list of projects to choose from", projectsResult);
 
   const plansData = plansResult.data;
   const projectsData = projectsResult.data;
@@ -154,9 +154,9 @@ export default async function PlansPage({
 
   // Each `check` runs unconditionally — `||` would short-circuit and leave the
   // later failures out of the disclosure.
-  const planLinksUnreadable = reads.check("plan link sets", planLinksResult);
+  const planLinksUnreadable = reads.check("what each plan is connected to", planLinksResult);
   const scenarioCountsUnreadable = reads.check("scenario sets on the linked projects", scenarioResult);
-  const campaignCountsUnreadable = reads.check("engagement campaigns on the linked projects", campaignResult);
+  const campaignCountsUnreadable = reads.check("what people said on the linked projects", campaignResult);
   const reportCountsUnreadable = reads.check("reports on the linked projects", reportResult);
 
   // Readiness, artifact coverage and the workflow verdict for every row are all
@@ -300,8 +300,8 @@ export default async function PlansPage({
               <p className="module-summary-value">{plansUnreadable ? "—" : typedPlans.length}</p>
               <p className="module-summary-detail">
                 {plansUnreadable
-                  ? "The plan catalog could not be read, so this count is unknown rather than zero."
-                  : "Formal planning objects tracked in the current workspace catalog."}
+                  ? "Your plans could not be read, so this number is unknown — it is not zero."
+                  : "The planning documents this account tracks."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -309,7 +309,7 @@ export default async function PlansPage({
               <p className="module-summary-value">{plansUnreadable ? "—" : activeCount + adoptedCount}</p>
               <p className="module-summary-detail">
                 {plansUnreadable
-                  ? "Unavailable while the plan catalog cannot be read."
+                  ? "Unavailable while your plans cannot be read."
                   : `${adoptedCount} already marked as adopted.`}
               </p>
             </div>
@@ -318,8 +318,8 @@ export default async function PlansPage({
               <p className="module-summary-value">{plansUnreadable || rowBasisUnreadable ? "—" : readyFoundationCount}</p>
               <p className="module-summary-detail">
                 {plansUnreadable || rowBasisUnreadable
-                  ? "Readiness is computed from linked records this page could not read."
-                  : "Plans with the core information in place for review."}
+                  ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
+                  : "Plans with the core information in place, ready to review."}
               </p>
             </div>
           </div>
@@ -363,8 +363,8 @@ export default async function PlansPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Catalog</p>
-              <h2 className="module-section-title">Plan records in this workspace</h2>
+              <p className="module-section-label">Your plans</p>
+              <h2 className="module-section-title">Planning documents</h2>
               <p className="module-section-description">
                 Filter by project, type, or status to isolate the plans that are ready for attention.
               </p>
@@ -420,15 +420,15 @@ export default async function PlansPage({
             <div className="mt-5">
               <StateBlock
                 tone="danger"
-                title="The plan catalog could not be read"
-                description="This page could not read the plans in your workspace, so it cannot show the catalog and cannot say whether any plans exist. Nothing has been deleted — retry, and tell your operator if it persists."
+title="Your plans could not be read"
+                description="This page could not read your plans, so it cannot list them and cannot say whether any exist. This is not a finding that you have none, and nothing has been deleted. Try again, and if it keeps happening tell whoever installed OpenPlan for your agency."
               />
             </div>
           ) : typedPlans.length === 0 ? (
             <div className="mt-5">
               <EmptyState
                 title="No plans yet"
-                description="Plans is the register of your agency's planning documents — general plans, corridor plans, active transportation plans — with their scope and review status in one place. Add your first plan to connect it to the projects that carry it out."
+                description="Plans is the list of your agency's planning documents — general plans, corridor plans, active transportation plans — with what each one covers and where it stands, in one place. Add your first plan to connect it to the projects that carry it out."
                 action={
                   <a href="#create-plan" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
                     Add a plan

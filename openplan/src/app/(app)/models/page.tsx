@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { NetworkPackagesPanel } from "@/app/(app)/models/_components/network-packages-panel";
 import { ModelCreator } from "@/components/models/model-creator";
+import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
+import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -166,9 +168,9 @@ export default async function ModelsPage({
   // "0 reports · 0 runs", "Missing: Scenario basis". Keep the errors, and let the
   // page say which of its answers it cannot stand behind.
   const reads = new ReadFailureLog();
-  const modelsReadFailed = reads.check("the model catalog", modelsResult);
-  const projectsReadFailed = reads.check("project options", projectsResult);
-  const scenarioSetsReadFailed = reads.check("scenario set options", scenarioSetsResult);
+  const modelsReadFailed = reads.check("your models", modelsResult);
+  const projectsReadFailed = reads.check("the list of projects to choose from", projectsResult);
+  const scenarioSetsReadFailed = reads.check("the list of scenario sets to choose from", scenarioSetsResult);
 
   const modelsData = modelsResult.data;
   const projectsData = projectsResult.data;
@@ -235,7 +237,7 @@ export default async function ModelsPage({
   let linksReadFailed = false;
   if (modelIds.length) {
     const linksResult = await supabase.from("model_links").select("model_id, link_type, linked_id").in("model_id", modelIds);
-    linksReadFailed = reads.check("model links", linksResult);
+    linksReadFailed = reads.check("what each model is connected to", linksResult);
     modelLinksData = (linksResult.data ?? []) as ModelLinkRow[];
   }
 
@@ -349,9 +351,9 @@ export default async function ModelsPage({
     activeFilters.modelFamily ? `family ${formatModelFamilyLabel(activeFilters.modelFamily)}` : null,
     activeFilters.status ? `status ${formatModelStatusLabel(activeFilters.status)}` : null,
     activeFilters.readiness === "ready"
-      ? "readiness Ready"
+      ? "checks Passing"
       : activeFilters.readiness === "gaps"
-        ? "readiness Has gaps"
+        ? "checks Has gaps"
         : null,
     activeFilters.q ? `search “${activeFilters.q}”` : null,
   ].filter((label): label is string => Boolean(label));
@@ -363,11 +365,17 @@ export default async function ModelsPage({
   // what it can stand behind: that a filter is in effect.
   const filteredEmptyDescription =
     activeFilterLabels.length > 0
-      ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every model in this workspace — an empty filtered list is not a statement that none exist.`
-      : "This catalog is filtered by the query string it was opened with. Clear the filters to see every model in this workspace — an empty filtered list is not a statement that none exist.";
+      ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every model you have — an empty filtered list is not a statement that none exist.`
+      : "This list is filtered by the link it was opened with. Clear the filters to see every model you have — an empty filtered list is not a statement that none exist.";
+
+  // The order of the analysis work, said the same way on every page in the
+  // group. This page is where a model gets described — step four of seven.
+  const sequenceFacts = await loadAnalysisSequenceFacts(supabase, membership.workspace_id);
 
   return (
     <section className="module-page">
+      <AnalysisSequenceStrip facts={sequenceFacts} currentStepId="model" />
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -398,14 +406,14 @@ export default async function ModelsPage({
               // only one of them is a statement about the project.
               <p className="module-intro-description">
                 {projectsError
-                  ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no models."
-                  : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
+                  ? "Your projects could not be read, so the filter above shows an id instead of a name. An empty list below would not mean that project has no models."
+                  : "No project with that id is in your list of projects, so this filter may match nothing."}
               </p>
             ) : null}
             {/* Internal page, so the database's own message stays on it — in the
                 notice's operator disclosure, where it is not the first thing a
                 planner reads. */}
-            <ReadFailureNotice reads={reads} testId="models-read-failures" title="Part of this catalog could not be read" />
+            <ReadFailureNotice reads={reads} testId="models-read-failures" title="Part of this page could not be read" />
           </div>
 
           {/* The module's primary action, in the header rather than wherever the
@@ -423,10 +431,10 @@ export default async function ModelsPage({
               <p className="module-summary-value">{modelsReadFailed ? "—" : models.length}</p>
               <p className="module-summary-detail">
                 {modelsReadFailed
-                  ? "The model catalog could not be read, so this is unavailable rather than zero."
+                  ? "Your models could not be read, so this is unavailable rather than zero."
                   : hasActiveFilters
                     ? "Matching the current filters."
-                    : "Managed model records in the current workspace."}
+                    : "The travel models this account keeps."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -434,7 +442,7 @@ export default async function ModelsPage({
               <p className="module-summary-value">{modelsReadFailed ? "—" : reviewReadyCount}</p>
               <p className="module-summary-detail">
                 {modelsReadFailed
-                  ? "Unavailable while the catalog cannot be read."
+                  ? "Unavailable while your models cannot be read."
                   : "Runs that reached review or approval."}
               </p>
             </div>
@@ -443,10 +451,10 @@ export default async function ModelsPage({
               <p className="module-summary-value">{modelsReadFailed || linksReadFailed ? "—" : traceableCount}</p>
               <p className="module-summary-detail">
                 {modelsReadFailed
-                  ? "Unavailable while the catalog cannot be read."
+                  ? "Unavailable while your models cannot be read."
                   : linksReadFailed
-                    ? "Model links could not be read, so linkage and readiness cannot be counted."
-                    : `${readinessGreenCount} currently pass every readiness check.`}
+                    ? "What each model connects to could not be read, so this is unknown, not zero."
+                    : `${readinessGreenCount} currently pass every check.`}
               </p>
             </div>
           </div>
@@ -493,10 +501,10 @@ export default async function ModelsPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Catalog</p>
-              <h2 className="module-section-title">Managed model records</h2>
+              <p className="module-section-label">Your models</p>
+              <h2 className="module-section-title">Travel models</h2>
               <p className="module-section-description">
-                Filter by readiness, status, project, or model family to isolate the records that actually need attention.
+                Filter by status, project, or model family to find the ones that need attention.
               </p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -542,10 +550,10 @@ export default async function ModelsPage({
               data-testid="models-catalog-unreadable"
               role="alert"
             >
-              <p className="font-semibold">This workspace&apos;s model catalog could not be read.</p>
+              <p className="font-semibold">Your models could not be read.</p>
               <p className="mt-1.5">
-                Nothing is listed below because the query failed, not because this workspace has no models.
-                Reload the page, and report the message above if it persists.
+                Nothing is listed below because the query failed, not because you have no models.
+                Reload the page, and report the message above if it keeps happening.
               </p>
             </div>
           ) : models.length === 0 ? (
@@ -555,12 +563,12 @@ export default async function ModelsPage({
                 description={
                   hasActiveFilters
                     ? filteredEmptyDescription
-                    : "Models keeps track of the travel models your agency relies on — which version is current, what each one can honestly support, and how it connects to scenarios and reports. Create your first model record to give your runs a home."
+                    : "Models keeps track of the travel models your agency relies on — which version is current, what each one can honestly support, and how it connects to scenarios and reports. Create your first model to give your runs a home."
                 }
                 action={
                   hasActiveFilters ? undefined : (
                     <a href="#create-model" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
-                      Create a model record
+                      Create a model
                     </a>
                   )
                 }
@@ -579,7 +587,7 @@ export default async function ModelsPage({
                     kicker: `${formatModelFamilyLabel(model.model_family)} · ${formatModelStatusLabel(model.status)}`,
                     avatarChar: model.title[0],
                     meta: linksReadFailed
-                      ? [{ label: "readiness", value: "unavailable", tone: "warn" as const }]
+                      ? [{ label: "checks", value: "unavailable", tone: "warn" as const }]
                       : model.readiness.missingCheckLabels.length > 0
                         ? [{ label: "gaps", value: String(model.readiness.missingCheckLabels.length), tone: "warn" as const }]
                         : [{ label: "status", value: "ready", tone: "ok" as const }],
@@ -598,7 +606,7 @@ export default async function ModelsPage({
                           <p className="module-record-stamp">Updated {formatModelDateTime(model.updated_at)}</p>
                         </div>
                         <p className="module-record-summary line-clamp-2">
-                          {model.summary || "No summary yet. Open the record to define assumptions, input basis, and output traceability."}
+                          {model.summary || "No summary yet. Open the model to write down its assumptions, what it was built from, and where its results can be traced."}
                         </p>
                       </div>
                     </div>
