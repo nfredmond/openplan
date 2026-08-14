@@ -37,8 +37,26 @@ export function locateHarnessDir(): string {
   );
 }
 
-/** Directories that are not harness source and would swamp any scan. */
-const SKIPPED_DIRECTORIES = new Set(["node_modules", ".git", "playwright-report", "test-results"]);
+/**
+ * Directories that are not harness source and would swamp any scan.
+ *
+ * `first-week-runs` is EVIDENCE, not source: page snapshots, screenshots and
+ * agent reports captured from a live local workspace by
+ * `qa-harness/first-week-discovery.js`. It is gitignored, it can hold thousands
+ * of files, and — the reason this entry exists rather than being a tidiness
+ * preference — the text in it is whatever the product happened to render. A
+ * page that ever says `api.stripe.com` lands verbatim in a snapshot, and the
+ * paid-tier guard then fails the whole gate over a screenshot. Verified by
+ * probe on 2026-08-14: one line in a discarded run directory turned
+ * `no-paid-tier-guard` red.
+ */
+const SKIPPED_DIRECTORIES = new Set([
+  "node_modules",
+  ".git",
+  "playwright-report",
+  "test-results",
+  "first-week-runs",
+]);
 
 /** Binary-ish artifacts a text scan cannot meaningfully read. */
 const SKIPPED_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".pdf", ".zip", ".ico", ".webp"]);
