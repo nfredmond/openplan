@@ -54,6 +54,12 @@ const SAFETY_SOURCE_ROOTS = [
   "src/lib/cartographic",
   "src/app/api/map-features/crashes",
   "src/components/cartographic",
+  // THE SAFETY MODULE'S OWN API ROUTES, which this scan did not reach until
+  // 2026-08-14 — a gap, not a decision. They write coverage sentences straight
+  // into a response body (the honest-empty-collection branch of the crash query
+  // is one), and those sentences land on the same screens as the module's,
+  // where nothing else was checking them.
+  "src/app/api/safety",
 ];
 
 function collectSourceFiles(relativeRoot: string): string[] {
@@ -147,11 +153,12 @@ describe("safety and shared-map crash claim boundaries", () => {
     expect(SAFETY_FILES.length).toBeGreaterThan(0);
   });
 
-  it("covers the shared map's crash lane, not only the Safety module", () => {
-    // Named individually rather than counted: the crash claims live in these
-    // three trees now, and a root silently dropping to zero files would leave
-    // them unscanned while the count above still passed on `safety/` alone.
-    for (const root of ["src/lib/cartographic", "src/app/api/map-features/crashes", "src/components/cartographic"]) {
+  it("covers every declared root, not only the Safety module", () => {
+    // Derived from the declaration rather than listed again: a root added above
+    // and silently contributing zero files would leave a whole tree unscanned
+    // while the count in the test above still passed on `safety/` alone. That is
+    // how `src/app/api/safety` went unscanned for its entire life.
+    for (const root of SAFETY_SOURCE_ROOTS) {
       expect(
         SAFETY_FILES.filter((file) => file.startsWith(root)).length,
         `${root} contributed no files to the crash-claim scan`

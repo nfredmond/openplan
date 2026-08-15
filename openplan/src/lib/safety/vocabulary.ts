@@ -59,6 +59,25 @@ export const CRASH_SEVERITIES = ["fatal", "severe_injury", "injury", "pdo", "unk
 export type CrashSeverity = (typeof CRASH_SEVERITIES)[number];
 
 /**
+ * The bands that COMPOSE the KSI measure, declared once.
+ *
+ * KSI — killed or seriously injured — is what SS4A and HSIP score a project on,
+ * so it is the number that ends up in a funding application. Its composition was
+ * previously written out at each place that computed it (`fatal + severe_injury`
+ * in the evidence builder, again in the Safety workbench), which is the shape
+ * this file exists to remove: a third band added to the measure would have had
+ * to be found by hand in every one of them.
+ *
+ * It is deliberately NOT "every band except pdo". `unknown` is a collision the
+ * source reported while supplying no casualty count at all — it may or may not
+ * have been a KSI, and folding it in either direction is inventing an outcome
+ * for a real person. So wherever an unclassified collision is in scope, what
+ * these bands add up to is a FLOOR and never a full accounting, and how many
+ * were unclassified has to travel alongside it.
+ */
+export const CRASH_KSI_SEVERITIES: readonly CrashSeverity[] = ["fatal", "severe_injury"];
+
+/**
  * Manner of collision — how the vehicles (or a vehicle and a person) came
  * together. `vehicle_pedestrian` is a manner, not a mode flag: the mode flags
  * live on the involvement booleans and the party rows.

@@ -24,6 +24,11 @@ import {
 import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
+// The KSI composition and the "can this source express it" test, both from
+// their single declarations. Writing `fatal + severe_injury` here again is how a
+// measure ends up defined in three files and changed in one.
+import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
+import { separatesSeriousInjuries } from "@/lib/safety/crash-evidence";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap, safetyWorkspaceGisAnchorLayerId } from "./safety-crash-map";
 import { SafetyWorkspaceLayersPanel } from "./safety-workspace-layers-panel";
@@ -697,10 +702,10 @@ export function SafetyWorkspace({
     [visibleFeatures, selectedCrashId]
   );
 
-  // Collisions on screen the source never classified. Stated beside the severity
-  // figures or the bands quietly fail to add up to the total, and a reader fills
-  // the gap in with "property damage" — which is exactly the wrong answer, since
-  // these are the records that used to BE property damage by mistake.
+  // Collisions ON SCREEN the source never classified. The study-area equivalent
+  // is `unclassifiedTotal` below; which of the two a sentence may use depends on
+  // which lane produced the points, so they are paired with their scope in
+  // `unclassifiedScope` rather than handed to a renderer as a bare number.
   const unclassifiedVisible = severityCounts.unknown ?? 0;
 
   const geocodingNote = ingest
@@ -718,14 +723,79 @@ export function SafetyWorkspace({
   // KSI figure from crashes whose source never recorded an injury.
   const activeCompleteness = liveRead ? liveRead.severityCompleteness : ingest?.severityCompleteness;
 
-  // KSI — killed or seriously injured — is the measure SS4A and HSIP run on, so
-  // it is only shown when the source could actually separate KABCO A. Otherwise
-  // the completeness caveat below explains why there is no KSI figure, rather
-  // than a "0" that would read as "no serious injuries occurred".
-  const ksiAvailable = activeCompleteness === "kabco_full";
-  const ksiCount = ksiAvailable
-    ? (severityCounts.fatal ?? 0) + (severityCounts.severe_injury ?? 0)
-    : null;
+  /**
+   * ═══ THE HEADLINE COUNTS THE STUDY AREA, NOT THE DOTS ═══
+   *
+   * WHAT WAS WRONG. This figure was `severityCounts.fatal + .severe_injury`,
+   * added up from `visibleFeatures` — the crashes the query route RETURNED. That
+   * query is capped (PostgREST `max_rows`), and a real run drew 1,000 crashes
+   * against 11,870 matching the study area, so the headline understated by
+   * roughly an order of magnitude. KSI is the measure SS4A and HSIP score a
+   * project on; a planner glancing at this copies it into a grant application.
+   *
+   * WHAT IT IS NOW. `severityTotals` from the route: one exact count per band
+   * over every crash the current filters match, counted in Postgres through the
+   * same filter closure that built the row query. The map's own count stays on
+   * screen beside it as "showing N of M", so both numbers are visible and each
+   * says what it is. There is deliberately NO TOGGLE between the two readings —
+   * a figure whose meaning depends on invisible state is the same defect in a
+   * new coat, and this is the number that ends up in a funding application.
+   *
+   * `null` NEVER BECOMES A ZERO. Three separate things make it null, and each
+   * one produces a sentence instead of a figure: a source that cannot separate
+   * suspected serious injury (a KSI of `fatal + 0` reads as "no serious injuries
+   * occurred"), a band the database could not count, and a live read — whose
+   * crashes are in this browser and were never counted by anything.
+   */
+  const studyAreaSeverityTotals = liveRead ? null : (response?.severityTotals ?? null);
+
+  const ksiTotal = useMemo(() => {
+    if (!studyAreaSeverityTotals) return null;
+    if (!separatesSeriousInjuries(activeCompleteness ?? "")) return null;
+    let total = 0;
+    for (const band of CRASH_KSI_SEVERITIES) {
+      const count = studyAreaSeverityTotals[band];
+      // A band the response did not carry is not a band with nothing in it.
+      if (typeof count !== "number") return null;
+      total += count;
+    }
+    return total;
+  }, [studyAreaSeverityTotals, activeCompleteness]);
+
+  /**
+   * Collisions in the WHOLE study area the source never classified.
+   *
+   * This travels with the KSI figure and is rendered in the same block, never in
+   * a paragraph further down. It is the qualification that makes the figure
+   * defensible: a collision whose casualty counts the source never supplied may
+   * or may not have been a KSI, so the total is a floor rather than a count. A
+   * number separated from that sentence is a claim nobody can defend, and this
+   * one feeds RTP chapters and grant narratives.
+   */
+  const unclassifiedTotal =
+    studyAreaSeverityTotals && typeof studyAreaSeverityTotals.unknown === "number"
+      ? studyAreaSeverityTotals.unknown
+      : null;
+
+  // True when the route counted the study area and the source simply cannot
+  // express KSI — distinct from "the counts could not be read", which gets its
+  // own sentence rather than silence.
+  const severityTotalsUnavailable =
+    !liveRead && Boolean(response) && studyAreaSeverityTotals === null;
+
+  /**
+   * The unclassified count AND the population it is a count OF, together.
+   *
+   * The study-area total is the honest one wherever the route could count it. A
+   * live read has only the visible count, because its crashes are in this
+   * browser and Postgres never saw them. Pairing the number with its scope is
+   * what stops one denominator being described in the words of the other — the
+   * exact mistake the KSI headline was making before it counted the study area.
+   */
+  const unclassifiedScope: { count: number; whole: boolean } =
+    unclassifiedTotal !== null
+      ? { count: unclassifiedTotal, whole: true }
+      : { count: unclassifiedVisible, whole: false };
 
   /**
    * ═══ THE MAP IS THE PAGE NOW, AND THE READING GOES IN A SIDEBAR ═══
@@ -1160,12 +1230,51 @@ export function SafetyWorkspace({
                 percentage would describe almost no real acquisition correctly.
                 The acquisition row already stores both counts. */}
             {geocodingNote && <p className="text-muted-foreground">{geocodingNote}</p>}
-            {ksiCount !== null && (
-              <p>
-                <span className="font-medium">{ksiCount.toLocaleString()} killed or seriously injured</span>{" "}
-                <span className="text-muted-foreground">
-                  (KSI) among the crashes in view — the measure SS4A and HSIP are scored on.
-                </span>
+            {/* ═══ THE HEADLINE, AND EVERYTHING THAT QUALIFIES IT, IN ONE BLOCK ═══
+
+                The figure, what it counts, how much of it the map is drawing,
+                and how many collisions the source never classified — together,
+                because a number that has to be read alongside a paragraph
+                elsewhere on the page is a number that will be quoted alone. */}
+            {ksiTotal !== null && (
+              <div data-testid="safety-ksi-headline" className="flex flex-col gap-1">
+                <p>
+                  <span className="font-medium">
+                    {ksiTotal.toLocaleString()} killed or seriously injured
+                  </span>{" "}
+                  <span className="text-muted-foreground">
+                    (KSI) across the whole area you picked, with these filters — the measure
+                    SS4A and HSIP are scored on.
+                  </span>
+                </p>
+                {response && (
+                  /* THE MAP'S OWN COUNT, BESIDE THE TOTAL. Two numbers, each
+                     saying what it is. The figure above is counted in the
+                     database; this one is what fits on the map. */
+                  <p className="text-xs text-muted-foreground">
+                    {`The map is drawing ${response.returnedCount.toLocaleString()} of ${
+                      response.matchedCountIsExact === false ? "at least " : ""
+                    }${response.matchedCount.toLocaleString()} matching crashes. The figure above counts all of them, not just the dots.`}
+                  </p>
+                )}
+                {unclassifiedTotal !== null && unclassifiedTotal > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {`${unclassifiedTotal.toLocaleString()} of those crashes are in no severity band at all, so the figure above is a floor rather than a full count. `}
+                    {SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT}
+                  </p>
+                )}
+              </div>
+            )}
+            {/* Counted and failed, which is not the same as a source that cannot
+                express KSI (that gets the completeness caveat below). Said out
+                loud rather than left as a missing figure, because a missing
+                figure on this page reads as a zero. */}
+            {severityTotalsUnavailable && (
+              <p className="text-muted-foreground">
+                The crashes on the map loaded, but OpenPlan could not count how many were fatal
+                or serious across the whole area you picked, so no killed-or-seriously-injured
+                figure is shown. That is a failed count, not a finding — try loading the area
+                again.
               </p>
             )}
             {ingest.severityCompleteness === "fatal_injury_only" && (
@@ -1224,11 +1333,18 @@ export function SafetyWorkspace({
       />
 
       {/* The severity bands never account for these, so the count is stated
-          rather than left as the difference between two numbers. */}
-      {unclassifiedVisible > 0 && (
+          rather than left as the difference between two numbers.
+
+          ONLY WHEN THERE IS NO KSI FIGURE. When there is one, this same
+          disclosure is rendered inside the headline block instead, against the
+          study-area total rather than against the dots — a caveat has to sit
+          with the number it qualifies, and two near-identical sentences on
+          different denominators is worse than either alone. */}
+      {ksiTotal === null && unclassifiedScope.count > 0 && (
         <p className="text-xs text-muted-foreground">
-          {unclassifiedVisible.toLocaleString()} of the collisions shown carry no casualty count from
-          the source. {SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT}
+          {unclassifiedScope.count.toLocaleString()} of the collisions{" "}
+          {unclassifiedScope.whole ? "in the area you picked" : "shown"} carry no casualty count
+          from the source. {SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT}
         </p>
       )}
 
@@ -1275,7 +1391,13 @@ export function SafetyWorkspace({
                  would describe one dataset with another's denominator. */
               `Showing ${visibleFeatures.length.toLocaleString()} of ${liveRead.geocodedCount.toLocaleString()} mappable crashes from this live read, matching these filters.`
             : response
-              ? `Showing ${response.returnedCount.toLocaleString()} of ${response.matchedCount.toLocaleString()} crashes matching these filters in view.`
+              ? /* "AT LEAST" WHEN THE DENOMINATOR IS A FALLBACK. If the count
+                   query failed, the route falls back to the number of rows it
+                   fetched — which is capped — so stating it flat would claim the
+                   study area holds exactly as many crashes as the map drew. */
+                `Showing ${response.returnedCount.toLocaleString()} of ${
+                  response.matchedCountIsExact === false ? "at least " : ""
+                }${response.matchedCount.toLocaleString()} crashes matching these filters in view.`
               : "No crashes loaded."}{" "}
         {/* Rows the query matched and could not render — an unusable coordinate
             pair or a severity outside the vocabulary. Named separately from the

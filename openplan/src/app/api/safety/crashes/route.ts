@@ -10,7 +10,9 @@ import {
   applyCrashFiltersToQuery,
   CRASH_FILTER_FACETS,
   CRASH_QUERY_PROJECTION,
+  CRASH_SEVERITY_BANDS,
   parseFacetParam,
+  restrictCrashQueryToSeverityBand,
   type CrashFilterSelection,
 } from "@/lib/safety/crash-filters";
 import { toStoredCrashProperties } from "@/lib/safety/crash-properties";
@@ -25,6 +27,29 @@ import { toStoredCrashProperties } from "@/lib/safety/crash-properties";
  * meaningless map. This route takes an explicit bbox plus severity/mode/year
  * filters, and returns `returnedCount` alongside `matchedCount` so the UI can
  * say "showing N of M in view" instead of silently truncating.
+ *
+ * ═══ WHY THIS ROUTE ALSO COUNTS SEVERITY BANDS ═══
+ *
+ * The rows are capped and always will be — a map cannot draw 10^5 points. The
+ * page's headline, however, is KSI — killed or seriously injured — which is the
+ * measure SS4A and HSIP score a project on, so it is what a planner copies into
+ * a funding application. Adding it up from the rows this route
+ * returned understated it by roughly an order of magnitude on a real run: 1,000
+ * crashes drawn against 11,870 matching the study area.
+ *
+ * You cannot sum what you did not fetch, so the bands are counted in Postgres,
+ * one exact HEAD count per band, all built through the SAME `applyFilters`
+ * closure the rows and the matched count go through. That is what stops the
+ * headline and the map disagreeing: there is one filter definition
+ * (`crash-filters.ts`), one interpreter over it, and one scope closure here.
+ *
+ * NO NEW MIGRATION, deliberately. `idx_safety_crashes_severity (workspace_id,
+ * severity)` already serves this: measured against the local 32,650-row extract,
+ * one band count is a 0.2 ms bitmap scan. The alternatives were both worse — a
+ * PostgREST grouped aggregate depends on `db-aggregates-enabled`, which is an
+ * operator setting a self-hosting agency controls and can turn off, and a new
+ * SQL function would have to re-spell every filter in Postgres, which is the
+ * second filter definition this module was refactored to eliminate.
  */
 
 const DEFAULT_LIMIT = 2000;
@@ -160,6 +185,12 @@ export async function GET(request: NextRequest) {
             returnedCount: 0,
             matchedCount: 0,
             undrawableCount: 0,
+            // Every band is a TRUE zero here: the project has no acquisitions,
+            // so no crash of any band is in scope. That is a different statement
+            // from `null` below, which means the counts could not be read.
+            severityTotals: Object.fromEntries(
+              CRASH_SEVERITY_BANDS.map((band) => [band, 0])
+            ),
             truncated: false,
             limit,
           },
@@ -197,11 +228,21 @@ export async function GET(request: NextRequest) {
       return applyCrashFiltersToQuery(q, selection) as unknown as T;
     };
 
-    const [countResult, rowsResult] = await Promise.all([
+    // ONE band, counted in Postgres, under the planner's own filters. Built by
+    // handing the same `applyFilters` closure a head-count query and appending
+    // the registry's own severity predicate — never by rebuilding the filters.
+    const countBand = (band: string) =>
+      restrictCrashQueryToSeverityBand(
+        applyFilters(supabase.from("safety_crashes").select("id", { count: "exact", head: true })),
+        band
+      );
+
+    const [countResult, rowsResult, bandResults] = await Promise.all([
       applyFilters(supabase.from("safety_crashes").select("id", { count: "exact", head: true })),
       applyFilters(supabase.from("safety_crashes").select(CRASH_QUERY_PROJECTION))
         .order("collision_date", { ascending: false, nullsFirst: false })
         .limit(limit),
+      Promise.all(CRASH_SEVERITY_BANDS.map((band) => countBand(band))),
     ]);
 
     if (rowsResult.error) {
@@ -213,7 +254,44 @@ export async function GET(request: NextRequest) {
     }
 
     const rows = (rowsResult.data ?? []) as unknown as Array<Record<string, unknown>>;
-    const matchedCount = countResult.error ? rows.length : countResult.count ?? rows.length;
+    const exactMatchedCount =
+      !countResult.error && typeof countResult.count === "number" && Number.isFinite(countResult.count)
+        ? countResult.count
+        : null;
+    const matchedCount = exactMatchedCount ?? rows.length;
+    // WHETHER THAT DENOMINATOR IS THE REAL ONE. When the count query fails the
+    // fallback is the number of rows fetched, which is capped — so "showing
+    // 1,000 of 1,000" would assert that the study area holds exactly a thousand
+    // crashes, the same understatement this route's band counts exist to end.
+    // The flag lets the page say "at least" instead of stating a total it does
+    // not have.
+    const matchedCountIsExact = exactMatchedCount !== null;
+
+    /**
+     * ONE TOTAL PER SEVERITY BAND, over every crash the filters matched.
+     *
+     * ALL OR NOTHING, and never a fabricated zero. If any band's count could not
+     * be read, the whole map is `null` — a partial map would present a band that
+     * failed to count as a band with no crashes in it, and on this page a zero in
+     * the fatal row is the most damaging wrong number the product can publish.
+     * `null` means "not counted"; it never means "none".
+     */
+    const bandCounts = CRASH_SEVERITY_BANDS.map((band, index) => {
+      const result = bandResults[index];
+      const count = result?.error ? null : result?.count;
+      return typeof count === "number" && Number.isFinite(count)
+        ? ([band, count] as const)
+        : null;
+    });
+    const severityTotals = bandCounts.every((entry) => entry !== null)
+      ? Object.fromEntries(bandCounts as ReadonlyArray<readonly [string, number]>)
+      : null;
+    if (severityTotals === null) {
+      audit.warn("safety_crash_severity_totals_unavailable", {
+        workspaceId: query.workspaceId,
+        bands: CRASH_SEVERITY_BANDS.filter((_, index) => bandCounts[index] === null),
+      });
+    }
 
     // Built through the shared reader so this route and the shared backdrop
     // layer cannot disagree about what a row means — in particular about a
@@ -255,7 +333,14 @@ export async function GET(request: NextRequest) {
         // Load-bearing for honest UI copy: "showing N of M crashes in view".
         returnedCount: features.length,
         matchedCount,
+        matchedCountIsExact,
         undrawableCount,
+        /**
+         * THE STUDY-AREA TOTAL, per band — what the page's KSI headline is built
+         * from. It is NOT derived from `features`: those are capped, and adding
+         * them up is exactly the understatement this field exists to end.
+         */
+        severityTotals,
         truncated: features.length + undrawableCount < matchedCount,
         limit,
       },

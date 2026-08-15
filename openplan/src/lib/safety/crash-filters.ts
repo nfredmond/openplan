@@ -378,6 +378,60 @@ export function applyCrashFiltersToQuery<T>(builder: T, selection: CrashFilterSe
   return query as unknown as T;
 }
 
+/**
+ * The facet carrying the severity bands, found by identity against the
+ * vocabulary rather than by name — the same reason `PARTY_ROLE_DIMENSION` is.
+ *
+ * It throws at import if it is missing. A silent `undefined` here would make
+ * `restrictCrashQueryToSeverityBand` a no-op, and a no-op there does not produce
+ * an error or an empty result: it produces a band count equal to the total,
+ * which is a wrong number that looks like a right one on a grant application.
+ */
+const SEVERITY_FACET = CRASH_FILTER_FACETS.find(
+  (facet): facet is CrashInFacet => facet.kind === "in" && facet.values === CRASH_SEVERITIES
+);
+if (!SEVERITY_FACET) {
+  throw new Error("no crash facet carries the severity vocabulary");
+}
+
+/** Every severity band, in vocabulary order. The bands a total is counted for. */
+export const CRASH_SEVERITY_BANDS: readonly string[] = SEVERITY_FACET.values;
+
+/**
+ * Narrow an ALREADY-FILTERED crash query to one severity band.
+ *
+ * ═══ WHY THIS IS ONE MORE PREDICATE AND NOT A SECOND FILTER BUILDER ═══
+ *
+ * The Safety page's headline is a KSI total — killed or seriously injured — and
+ * it used to be added up from the crash rows the query route returned. That
+ * query is capped (PostgREST `max_rows`), so a real run drew 1,000 crashes
+ * against 11,870 matching the study area and the headline understated by roughly
+ * an order of magnitude. A planner copies that number into a funding
+ * application; it has to be the study-area total, counted in the database.
+ *
+ * The hazard in fixing it is that the total and the map start disagreeing. So
+ * this does NOT build a query of its own: the caller applies
+ * `applyCrashFiltersToQuery` exactly as it does for the rows, and this appends
+ * ONE further predicate over the same registry-derived column. Repeated
+ * predicates on a column AND together in PostgREST, so the result is "the
+ * planner's filters, and this band" — never a second, differently-spelled
+ * interpretation of the same selection.
+ *
+ * `src/test/safety-headline-total-is-counted-not-drawn.test.ts` drives the real
+ * route with a recording client and asserts that every band count carries the
+ * row query's exact filter sequence plus this one call.
+ */
+export function restrictCrashQueryToSeverityBand<T>(builder: T, band: string): T {
+  const facet = SEVERITY_FACET;
+  if (!facet) throw new Error("no crash facet carries the severity vocabulary");
+  if (!facet.values.includes(band)) {
+    // A band outside the vocabulary cannot be counted honestly, and passing it
+    // through would let an arbitrary string reach the column.
+    throw new Error(`"${band}" is not a declared severity band`);
+  }
+  return (builder as unknown as CrashQueryBuilderLike).in(facet.column, [band]) as unknown as T;
+}
+
 function readString(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }

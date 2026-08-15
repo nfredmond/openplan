@@ -56,6 +56,28 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   /** How many crashes matched the filters in the database. */
   matchedCount: number;
   /**
+   * Whether `matchedCount` is the database's exact count or a fallback to the
+   * number of rows fetched. The fallback is CAPPED, so a page that states it as
+   * a total claims the study area holds exactly as many crashes as the map
+   * happened to draw. Absent on an older response, which is read as "not known
+   * to be exact" rather than as "exact".
+   */
+  matchedCountIsExact?: boolean;
+  /**
+   * Crashes per severity band across the WHOLE study area under these filters,
+   * counted in Postgres — or `null` when they could not be counted.
+   *
+   * This is what the KSI headline is built from. It exists because the features
+   * above are capped: a real run drew 1,000 crashes against 11,870 matching the
+   * study area, so adding the drawn dots up understated the headline by roughly
+   * an order of magnitude — on a figure that goes into grant applications.
+   *
+   * `null` MEANS NOT COUNTED, NEVER NONE. It is all-or-nothing on purpose: a
+   * partial map would render a band that failed to count as a band with no
+   * crashes in it, and a zero in the fatal row reads as good news.
+   */
+  severityTotals?: Readonly<Record<string, number>> | null;
+  /**
    * Matched rows the response could not render honestly — an unusable
    * coordinate pair or a severity outside the vocabulary.
    *

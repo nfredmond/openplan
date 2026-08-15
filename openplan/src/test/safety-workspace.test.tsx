@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import type { SafetyIngestSummary } from "@/lib/safety/client-types";
+import { CRASH_SEVERITY_BANDS } from "@/lib/safety/crash-filters";
 import type { CrashRecord } from "@/lib/safety/sources/types";
 import { findReadOnlyOnlyStudyArea } from "./helpers/crash-coverage-probe";
 
@@ -114,10 +115,20 @@ function routedFetch(crash = mockCrashResponse(), ingestRes = mockIngestResponse
   );
 }
 
+/**
+ * A crash-query response, WITH the per-band study-area totals the route counts.
+ *
+ * The totals default to the drawn features' own mix, which keeps every test
+ * written before they existed meaning what it meant. They are NOT how the page
+ * derives its KSI headline from the dots — that is the defect
+ * `safety-headline-total-is-counted-not-drawn.test.tsx` exists for, and it
+ * deliberately feeds totals that disagree with the drawn slice.
+ */
 function mockCrashResponse(
   features: unknown[] = [],
   matchedCount = features.length,
-  undrawableCount = 0
+  undrawableCount = 0,
+  severityTotals: Record<string, number> | null = countDrawnSeverities(features)
 ) {
   return {
     ok: true,
@@ -126,11 +137,23 @@ function mockCrashResponse(
       features,
       returnedCount: features.length,
       matchedCount,
+      matchedCountIsExact: true,
       undrawableCount,
+      severityTotals,
       truncated: features.length + undrawableCount < matchedCount,
       limit: 2000,
     }),
   } as Response;
+}
+
+/** Every declared band, counted off a fixture's features. Never a missing band. */
+function countDrawnSeverities(features: unknown[]): Record<string, number> {
+  const counts = Object.fromEntries(CRASH_SEVERITY_BANDS.map((band) => [band, 0]));
+  for (const feature of features) {
+    const severity = (feature as { properties?: { severity?: string } }).properties?.severity;
+    if (severity && severity in counts) counts[severity] += 1;
+  }
+  return counts;
 }
 
 describe("SafetyWorkspace coverage disclosure", () => {
