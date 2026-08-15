@@ -41,6 +41,7 @@ import { exploreWorkspaceGisAnchorLayerId } from "./explore-workspace-gis-anchor
 import { useExploreWorkspaceGisHover } from "./explore-workspace-gis-hover";
 import { useWorkspaceGisMapBinding } from "@/components/cartographic/use-workspace-gis-map-binding";
 import { ExploreResultsBoard } from "./explore-results-board";
+import { describeRequestFailure } from "@/lib/http/request-failure";
 import { ExploreRunHistoryPanel } from "./explore-run-history-panel";
 import {
   buildCurrentMapViewState,
@@ -387,8 +388,7 @@ export function ExploreWorkbench({
         createdAt: new Date().toISOString(),
       });
     } catch (submitError) {
-      const message = submitError instanceof Error ? submitError.message : "Analysis request failed.";
-      setError(message);
+      setError(describeRequestFailure(submitError, "run the analysis"));
     } finally {
       setIsSubmitting(false);
     }
@@ -429,8 +429,7 @@ export function ExploreWorkbench({
       setBootstrapChecklist(payload.onboardingChecklist ?? []);
       setBootstrapWorkspaceName("");
     } catch (bootstrapError) {
-      const message = bootstrapError instanceof Error ? bootstrapError.message : "Workspace bootstrap failed.";
-      setError(message);
+      setError(describeRequestFailure(bootstrapError, "create the workspace"));
     } finally {
       setIsBootstrappingWorkspace(false);
     }
@@ -487,8 +486,7 @@ export function ExploreWorkbench({
       reportWindow.document.write(html);
       reportWindow.document.close();
     } catch (reportError) {
-      const message = reportError instanceof Error ? reportError.message : "Report generation failed.";
-      setError(message);
+      setError(describeRequestFailure(reportError, "generate the report"));
     } finally {
       setIsGeneratingReport(false);
     }
