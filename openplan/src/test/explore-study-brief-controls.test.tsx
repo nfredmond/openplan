@@ -10,6 +10,8 @@ function renderControls(overrides: Partial<Parameters<typeof ExploreStudyBriefCo
     reportTemplate: "atp" as const,
     canSubmit: true,
   blockReason: null,
+  // The sheet judges what it collected; the default fixture lets a run start.
+  evaluateRunBlock: () => null,
     isSubmitting: false,
     analysisRunId: "run-1",
     isGeneratingReport: false,
@@ -61,7 +63,8 @@ describe("ExploreStudyBriefControls", () => {
     const props = renderControls({
       isQueryTooLong: true,
       canSubmit: false,
-  blockReason: "Set the study area first: search a place, draw one on the map, or upload a boundary file."
+  blockReason: "Set the study area first: search a place, draw one on the map, or upload a boundary file.",
+  evaluateRunBlock: () => "Set the study area first: search a place, draw one on the map, or upload a boundary file."
     });
 
     expect(screen.getByText("That question is too long to run. Open the setup and shorten it.")).toBeInTheDocument();

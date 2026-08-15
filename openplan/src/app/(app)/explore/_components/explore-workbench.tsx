@@ -2,7 +2,7 @@
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
@@ -346,6 +346,16 @@ export function ExploreWorkbench({
   const runBlockReason = useMemo(
     () => describeRunAnalysisBlock({ workspaceId, queryText, corridorGeojson }),
     [workspaceId, queryText, corridorGeojson]
+  );
+  /**
+   * The same question, asked about a question the workbench has not seen yet.
+   * The brief sheet collects the text and submits in the same tick, so it cannot
+   * use `runBlockReason` — that describes the render it is still standing in.
+   */
+  const evaluateRunBlock = useCallback(
+    (candidateQueryText: string) =>
+      describeRunAnalysisBlock({ workspaceId, queryText: candidateQueryText, corridorGeojson }),
+    [workspaceId, corridorGeojson]
   );
 
   const runAnalysis = async () => {
@@ -1084,6 +1094,7 @@ export function ExploreWorkbench({
               reportTemplate={reportTemplate}
               canSubmit={canSubmit}
               blockReason={runBlockReason}
+              evaluateRunBlock={evaluateRunBlock}
               isSubmitting={isSubmitting}
               analysisRunId={analysisResult?.runId ?? null}
               isGeneratingReport={isGeneratingReport}

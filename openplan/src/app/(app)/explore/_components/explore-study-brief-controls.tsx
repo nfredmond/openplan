@@ -28,6 +28,12 @@ type ExploreStudyBriefControlsProps = {
    * are the same sentence — they were once two, and they disagreed.
    */
   blockReason: string | null;
+  /**
+   * Ask whether a run could start with THIS question, right now. Takes the
+   * question rather than reading state, so the sheet can judge what it has just
+   * collected instead of what the workbench last rendered.
+   */
+  evaluateRunBlock: (queryText: string) => string | null;
   isSubmitting: boolean;
   analysisRunId: string | null;
   isGeneratingReport: boolean;
@@ -76,6 +82,7 @@ export function ExploreStudyBriefControls({
   reportTemplate,
   canSubmit,
   blockReason,
+  evaluateRunBlock,
   isSubmitting,
   analysisRunId,
   isGeneratingReport,
@@ -200,13 +207,31 @@ export function ExploreStudyBriefControls({
       onQueryTextChange(values.queryText);
       onSelectedProjectIdChange?.(values.projectId);
       onReportTemplateChange(values.reportTemplate);
-      if (!canSubmit) {
+
+      /*
+        JUDGE THE VALUES THIS SHEET COLLECTED, not the props from the last render.
+
+        `canSubmit` and `blockReason` are computed by the workbench from ITS
+        state, and the line above has only just handed the question over —
+        React has not re-rendered, so both props still describe a workbench that
+        has never seen it. Reading them here made the FIRST submit always
+        conclude the question was empty, refuse with "write the question" while
+        the question sat visibly in the sheet, and then succeed on the second
+        click once the state had caught up. Two testers hit it independently and
+        both described the error as contradicting the summary directly above it.
+
+        Yesterday's fix, which made the refusal name the missing input, made this
+        WORSE rather than better: the sentence became specific about something
+        that was not true. An accurate description of stale state is still wrong.
+      */
+      const blockedNow = evaluateRunBlock(values.queryText);
+      if (blockedNow) {
         // Belt to the disabled trigger's braces: the study area can be cleared
         // from the map while the sheet is open. The reason comes from the same
         // function the hint below uses, so the two cannot name different
         // missing things — which is exactly how a planner was once told to draw
         // an area they had already set.
-        return blockReason ?? "This run cannot start yet.";
+        return blockedNow;
       }
       await onRunAnalysis();
     },
