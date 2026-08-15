@@ -65,7 +65,7 @@ export function CampaignPublishFlow({
   // drafts: a step only turns green after the save round-trips and the page
   // re-renders with the new truth.
   const portalState = getPublicPortalState(campaign);
-  const portalReadiness = getPublicPortalReadiness(campaign);
+  const portalReadiness = getPublicPortalReadiness(campaign, campaignArea.state);
   const checkById = new Map<PublicPortalReadinessCheck["id"], PublicPortalReadinessCheck>(
     portalReadiness.checks.map((check) => [check.id, check])
   );
@@ -231,8 +231,21 @@ export function CampaignPublishFlow({
     "share_token",
     "public_description",
     "submission_mode",
+    // Before going live, because it is about what a resident will experience
+    // once the link is out — a pin in the middle of the country cannot be
+    // recalled from a postcard.
+    "map_opens_somewhere",
     "active_status",
   ];
+
+  /*
+    TWO LISTS, AND THEY MUST AGREE. This order is display order, but a check
+    missing from it renders nowhere while still counting toward "N of M steps
+    complete" — which is exactly what happened when the map step was added: the
+    header said five and four appeared. Guarded by
+    `a-campaign-says-where-its-map-will-open`, which asserts every readiness
+    check has a place in this list.
+  */
 
   return (
     <article id="campaign-publish-flow" className="module-section-surface" data-testid="campaign-publish-flow">

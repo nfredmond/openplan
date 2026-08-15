@@ -1355,7 +1355,8 @@ describe("EngagementCampaignDetailPage", () => {
       await renderPage();
 
       const flow = screen.getByTestId("campaign-publish-flow");
-      expect(within(flow).getByText(/0 of 4 steps complete/i)).toBeInTheDocument();
+      // Five steps since 2026-08-15 — "where the resident map opens" joined the list.
+      expect(within(flow).getByText(/0 of 5 steps complete/i)).toBeInTheDocument();
       expect(screen.getByTestId("publish-step-share_token")).toHaveAttribute("data-state", "todo");
       expect(screen.getByTestId("publish-step-active_status")).toHaveAttribute("data-state", "todo");
       expect(within(flow).getByRole("button", { name: /Generate link/i })).toBeInTheDocument();
@@ -1380,7 +1381,7 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.getByTestId("publish-step-submission_mode")).toHaveAttribute("data-state", "done");
       // …and only the status flip is left.
       expect(screen.getByTestId("publish-step-active_status")).toHaveAttribute("data-state", "todo");
-      expect(screen.getByText(/3 of 4 steps complete/i)).toBeInTheDocument();
+      expect(screen.getByText(/3 of 5 steps complete/i)).toBeInTheDocument();
     });
 
     it("reads the campaign-area advisory from the campaign's real place of record", async () => {

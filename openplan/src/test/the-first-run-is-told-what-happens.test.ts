@@ -24,7 +24,11 @@ import { describeWorkerQueueRisk } from "@/lib/models/worker-backed-launch";
  * trade one wrong sentence for another.
  */
 describe("the first run is told what happens", () => {
-  const firstRun = describeWorkerQueueRisk("unknown", null);
+  // "undeclared" is the real value; an earlier draft passed "unknown", which is
+  // not in the union and only worked because an unrecognised declaration falls
+  // through to this same branch. It typechecked nowhere: `tsc` is not part of
+  // qa:gate and test files sit outside `next build`'s scope.
+  const firstRun = describeWorkerQueueRisk("undeclared", null);
 
   it("says nobody has confirmed a worker, rather than asserting there is none", () => {
     expect(firstRun).toMatch(/nobody has told openplan/i);

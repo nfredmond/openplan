@@ -17,7 +17,10 @@ import {
   type CorridorLosGrade,
   type CorridorType,
 } from "@/lib/cartographic/corridor-vocabulary";
-import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record";
+import {
+  corridorLengthKm,
+  type ProjectCorridor,
+} from "@/lib/cartographic/project-corridor-record";
 import { ProjectShapeFileInput } from "@/components/projects/project-shape-file-input";
 
 /**
@@ -83,6 +86,20 @@ function isPoint(geometry: EngagementGeometry | null): geometry is Extract<Engag
 /** Round to ~1 cm so a stored coordinate is not 15 digits of float noise. */
 function round(value: number): number {
   return Number(value.toFixed(6));
+}
+
+/**
+ * The part of a corridor's sub-line that tells one from another with the same
+ * name — its rough length, and when it was added. Both are appended to the
+ * DELETE control's accessible name too: two buttons reading "Delete corridor
+ * Example Corridor" are as ambiguous to a screen reader as two identical rows
+ * are to an eye.
+ */
+function describeCorridorShape(corridor: ProjectCorridor): string {
+  const km = corridorLengthKm(corridor.geometry);
+  const length = km === null ? " · no line recorded" : ` · ≈ ${km < 1 ? km.toFixed(2) : km.toFixed(1)} km`;
+  const added = corridor.createdAt ? ` · added ${corridor.createdAt.slice(0, 10)}` : "";
+  return `${length}${added}`;
 }
 
 export function ProjectMapPresence({
@@ -417,9 +434,22 @@ export function ProjectMapPresence({
               <li key={corridor.id} className="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{corridor.name}</p>
+                  {/*
+                    LENGTH AND DATE, because name and type do not distinguish.
+
+                    Two corridors with the same name and type rendered
+                    identically — same label, same sub-line, same button. A
+                    tester uploaded a corridor file next to an existing
+                    same-named corridor and was left with two entries and no way
+                    to know which held the real geometry. Length is what
+                    actually differs, and it is what a planner would use to
+                    decide; the date settles the case where two shapes happen to
+                    be the same length.
+                  */}
                   <p className="text-xs text-muted-foreground">
                     {CORRIDOR_TYPE_LABELS[corridor.corridorType as CorridorType] ?? corridor.corridorType}
                     {corridor.losGrade ? ` · LOS ${corridor.losGrade}` : " · no LOS grade"}
+                    {describeCorridorShape(corridor)}
                   </p>
                 </div>
                 {canWrite ? (
@@ -427,7 +457,7 @@ export function ProjectMapPresence({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    aria-label={`Delete corridor ${corridor.name}`}
+                    aria-label={`Delete corridor ${corridor.name}${describeCorridorShape(corridor)}`}
                     disabled={deletingId === corridor.id}
                     onClick={() => void handleDeleteCorridor(corridor.id)}
                   >

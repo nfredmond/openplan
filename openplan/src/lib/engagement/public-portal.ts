@@ -7,7 +7,7 @@ export type PublicPortalCampaignLike = {
 };
 
 export type PublicPortalReadinessCheck = {
-  id: "share_token" | "active_status" | "public_description" | "submission_mode";
+  id: "share_token" | "active_status" | "public_description" | "submission_mode" | "map_opens_somewhere";
   label: string;
   passed: boolean;
   detail: string;
@@ -146,7 +146,18 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
   };
 }
 
-export function getPublicPortalReadiness(campaign: PublicPortalCampaignLike): PublicPortalReadiness {
+/**
+ * The campaign's area of record, in the three states the console already
+ * distinguishes. `unreadable` is a FAILED READ and must never be collapsed into
+ * "unset" — that would send a planner to set an area that may already be on
+ * record.
+ */
+export type PublicPortalAreaState = "set" | "unset" | "unreadable";
+
+export function getPublicPortalReadiness(
+  campaign: PublicPortalCampaignLike,
+  areaState: PublicPortalAreaState = "unreadable"
+): PublicPortalReadiness {
   const shareToken = normalizeShareToken(campaign.share_token);
   const publicDescription = campaign.public_description?.trim() ?? "";
   const submissionsClosed = Boolean(campaign.submissions_closed_at);
@@ -190,6 +201,37 @@ export function getPublicPortalReadiness(campaign: PublicPortalCampaignLike): Pu
           : "Enable public submissions or close submissions to make the portal's intake posture explicit.",
     },
   ];
+
+  /*
+    WHERE THE MAP OPENS, and why this does not block publishing.
+
+    A tester published a corridor campaign with no area set, opened the resident
+    link, and dropped a pin without panning — it landed at the geographic centre
+    of the United States, because that is where a map with nothing to frame it
+    opens. The publish checklist had said nothing, while the same page warned
+    elsewhere that an area was needed for the map to open in the right place.
+
+    It is a CHECK and not a BLOCK because absent is legitimate: a county-wide
+    comment collection, or a question that is not about one place, genuinely has
+    no area to set. Refusing to publish those would be the tidier rule and the
+    wrong one. So this states the consequence and lets a planner decide — which
+    is the same posture the resident map itself now takes, telling a visitor the
+    map is not set to one place rather than pretending the wide view is a choice.
+  */
+  checks.push({
+    id: "map_opens_somewhere",
+    label: "Resident map opens on the right place",
+    // An unreadable area is NOT a missing one. It passes rather than sending a
+    // planner to set something that may already be there; the console's own
+    // area panel is where a failed read is reported.
+    passed: areaState !== "unset",
+    detail:
+      areaState === "set"
+        ? "The resident map opens on this campaign's area."
+        : areaState === "unreadable"
+          ? "This campaign's area could not be read just now, so this step cannot be checked. That is a failed read, not a missing area."
+          : "No area is set, so the resident map opens wide — a visitor who drops a pin without moving the map first will place it in the middle of the country. Set an area, or leave it if this campaign is not about one place.",
+  });
 
   const completeCount = checks.filter((check) => check.passed).length;
   const totalChecks = checks.length;

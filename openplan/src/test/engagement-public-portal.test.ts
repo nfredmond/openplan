@@ -51,9 +51,13 @@ describe("engagement public portal helpers", () => {
         submissions_closed_at: null,
       })
     ).toMatchObject({
+      // Five checks since 2026-08-15: "where the resident map opens" joined the
+      // list. This caller passes no area state, so it defaults to `unreadable`
+      // — an honest "cannot be checked from here" that passes rather than
+      // telling somebody to set an area that may already exist.
       label: "Ready to share",
-      completeCount: 4,
-      totalChecks: 4,
+      completeCount: 5,
+      totalChecks: 5,
       nextAction: "Portal is ready for public outreach and copy/share handoff.",
     });
   });
@@ -69,8 +73,10 @@ describe("engagement public portal helpers", () => {
 
     expect(readiness).toMatchObject({
       label: "Needs setup",
-      completeCount: 0,
-      totalChecks: 4,
+      // The map step passes here (area unreadable, not unset), so one of the
+      // five is complete while the other four are the real gaps.
+      completeCount: 1,
+      totalChecks: 5,
       nextAction: "Generate and save a share token before sending public outreach.",
     });
     expect(readiness.checks.map((check) => [check.id, check.passed])).toEqual([
@@ -78,6 +84,7 @@ describe("engagement public portal helpers", () => {
       ["active_status", false],
       ["public_description", false],
       ["submission_mode", false],
+      ["map_opens_somewhere", true],
     ]);
   });
 });

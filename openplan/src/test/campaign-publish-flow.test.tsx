@@ -59,11 +59,22 @@ describe("CampaignPublishFlow", () => {
   });
 
   describe("steps derive from the saved campaign row", () => {
-    it("shows all four steps open for a brand-new draft", () => {
+    // Five steps since 2026-08-15: "where the resident map opens" joined the
+    // list after a tester published a campaign with no area and a pin landed in
+    // the middle of the country. These counts moved with it; the invariant they
+    // guard — that the steps come from the SAVED row, never from local state —
+    // is unchanged.
+    it("shows every step open for a brand-new draft", () => {
       render(<CampaignPublishFlow campaign={campaign()} campaignArea={UNSET_AREA} />);
 
-      expect(screen.getByText(/0 of 4 steps complete/i)).toBeInTheDocument();
-      for (const id of ["share_token", "public_description", "submission_mode", "active_status"]) {
+      expect(screen.getByText(/0 of 5 steps complete/i)).toBeInTheDocument();
+      for (const id of [
+        "share_token",
+        "public_description",
+        "submission_mode",
+        "active_status",
+        "map_opens_somewhere",
+      ]) {
         expect(screen.getByTestId(`publish-step-${id}`)).toHaveAttribute("data-state", "todo");
       }
       expect(screen.getByRole("button", { name: /Generate link/i })).toBeInTheDocument();
@@ -86,7 +97,7 @@ describe("CampaignPublishFlow", () => {
         />
       );
 
-      expect(screen.getByText(/3 of 4 steps complete/i)).toBeInTheDocument();
+      expect(screen.getByText(/3 of 5 steps complete/i)).toBeInTheDocument();
       expect(screen.getByTestId("publish-step-share_token")).toHaveAttribute("data-state", "done");
       expect(screen.getByTestId("publish-step-public_description")).toHaveAttribute("data-state", "done");
       expect(screen.getByTestId("publish-step-submission_mode")).toHaveAttribute("data-state", "done");
