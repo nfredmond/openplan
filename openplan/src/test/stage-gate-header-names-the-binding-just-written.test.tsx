@@ -56,6 +56,58 @@ describe("the stage-gate header names the binding this session wrote", () => {
     expect(firstOption()).not.toBeNull();
   });
 
+  /**
+   * THE STALE DISCLOSURE IS WITHDRAWN, NOT UPDATED.
+   *
+   * A second tester, on 2026-08-15, found the panel still asserting "this
+   * workspace is still bound to <the old template>" AND still instructing
+   * "Rebind this workspace to the template registered for <jurisdiction>" —
+   * telling them to do the thing they had just done, two paragraphs above the
+   * notice confirming they had done it. The header fix from the day before had
+   * been narrower than the problem.
+   *
+   * The panel still does not refresh, on purpose. So the sentences that describe
+   * the OLD binding are removed rather than rewritten, and the two accurate
+   * paragraphs already below — what was written, and that a reload is how to
+   * continue — are what remains.
+   */
+  it("stops asserting the old binding, and stops telling you to rebind", async () => {
+    const option = firstOption();
+    if (!option) throw new Error("no rebind option; the guard above should have caught this");
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ templateId: option.templateId }), { status: 200 })
+    );
+
+    render(<WorkspaceStageGatePanel workspaceId="w1" canManage choices={choices} />);
+
+    /*
+      Take the disclosure's OWN sentence from the choices rather than spelling a
+      wording here: which disclosure appears depends on the workspace, and a
+      hard-coded phrase would test this fixture's variant instead of the rule.
+    */
+    const disclosureHeadline =
+      "disclosure" in choices ? choices.disclosure.headline : null;
+    expect(disclosureHeadline, "this fixture renders no disclosure to withdraw").toBeTruthy();
+    const before = document.body.textContent ?? "";
+    expect(before).toContain(disclosureHeadline as string);
+
+    fireEvent.click(screen.getByRole("radio", { name: new RegExp(option.templateName, "i") }));
+    fireEvent.click(screen.getByRole("button", { name: /review|rebind|change/i }));
+    const confirm = await screen.findByRole("button", { name: /rebind|confirm|change/i });
+    fireEvent.click(confirm);
+
+    await screen.findByText(new RegExp(`Bound to ${option.templateName}`, "i"));
+
+    const after = document.body.textContent ?? "";
+    // The sentence describing the OLD binding is gone, not merely contradicted.
+    expect(after).not.toContain(disclosureHeadline as string);
+    // And no instruction to do the thing that was just done.
+    expect(after).not.toMatch(/Rebind this workspace to/i);
+    // The honest notice about reloading survives — it is the way forward.
+    expect(after).toMatch(/reload/i);
+  });
+
   it("shows the template just bound, not the one the page rendered with", async () => {
     const option = firstOption();
     if (!option) throw new Error("no rebind option; the guard above should have caught this");

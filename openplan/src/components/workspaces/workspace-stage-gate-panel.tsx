@@ -219,16 +219,39 @@ export function WorkspaceStageGatePanel({
       ) : (
         <div
           className={
-            choices.disclosure.isJurisdictionAssumed
+            choices.disclosure.isJurisdictionAssumed && !reboundTo
               ? "mt-2 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3"
               : "mt-2"
           }
         >
-          <p className="text-sm font-medium text-foreground">{choices.disclosure.headline}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{choices.disclosure.detail}</p>
-          {choices.disclosure.action ? (
-            <p className="mt-1 text-sm text-muted-foreground">{choices.disclosure.action}</p>
-          ) : null}
+          {/*
+            THE DISCLOSURE DESCRIBES THE BINDING AT PAGE LOAD, so once this
+            session has written a new one it is describing the past.
+
+            It is server-computed and correct when the page renders. After a
+            rebind it kept asserting "this workspace is still bound to <the old
+            template>" and, worse, kept instructing "Rebind this workspace to the
+            template registered for <jurisdiction>" — telling a planner to do the
+            thing they had just done, two paragraphs above the notice confirming
+            they had done it. A tester reported the page as contradicting itself
+            and needing a reload to be trusted.
+
+            THE PANEL STILL DOES NOT REFRESH, deliberately: the gate lists behind
+            this were computed against the old binding, and re-fetching part of
+            it would offer a second rebind reviewed against stale facts. So the
+            stale sentences are WITHDRAWN rather than updated, and the two
+            accurate paragraphs already below — what was written, and that a
+            reload is how to continue — are left to speak for themselves.
+          */}
+          {reboundTo ? null : (
+            <>
+              <p className="text-sm font-medium text-foreground">{choices.disclosure.headline}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{choices.disclosure.detail}</p>
+              {choices.disclosure.action ? (
+                <p className="mt-1 text-sm text-muted-foreground">{choices.disclosure.action}</p>
+              ) : null}
+            </>
+          )}
           {choices.binding.templateDescription ? (
             <p className="mt-2 text-sm text-muted-foreground">
               {choices.binding.templateDescription}

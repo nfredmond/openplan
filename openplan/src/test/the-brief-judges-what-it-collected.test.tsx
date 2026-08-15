@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ExploreStudyBriefControls } from "@/app/(app)/explore/_components/explore-study-brief-controls";
@@ -28,7 +29,9 @@ import { ExploreStudyBriefControls } from "@/app/(app)/explore/_components/explo
  * evaluator is handed the typed question, and a run that should start does start
  * on the first press.
  */
-function baseProps(overrides: Record<string, unknown> = {}) {
+type BriefProps = ComponentProps<typeof ExploreStudyBriefControls>;
+
+function baseProps(overrides: Partial<BriefProps> = {}): BriefProps {
   return {
     queryText: "",
     isQueryTooLong: false,
@@ -51,7 +54,7 @@ function baseProps(overrides: Record<string, unknown> = {}) {
     onGenerateReport: vi.fn(),
     onDownloadPdfReport: vi.fn(),
     ...overrides,
-  };
+  } as BriefProps;
 }
 
 describe("the brief judges what it collected", () => {
@@ -62,7 +65,7 @@ describe("the brief judges what it collected", () => {
 
     render(
       <ExploreStudyBriefControls
-        {...(baseProps({
+        {...baseProps({
           onRunAnalysis,
           // A run IS possible with this question — the stale props above say
           // otherwise, and the sheet must not believe them.
@@ -70,7 +73,7 @@ describe("the brief judges what it collected", () => {
             seen.push(queryText);
             return queryText.trim().length > 0 ? null : "Write the question this run should answer.";
           },
-        }) as never)}
+        })}
       />
     );
 
@@ -99,12 +102,12 @@ describe("the brief judges what it collected", () => {
 
     render(
       <ExploreStudyBriefControls
-        {...(baseProps({
+        {...baseProps({
           onRunAnalysis,
           canSubmit: true, // stale in the OTHER direction
           blockReason: null,
           evaluateRunBlock: () => "Set the area you are planning for first.",
-        }) as never)}
+        })}
       />
     );
 
