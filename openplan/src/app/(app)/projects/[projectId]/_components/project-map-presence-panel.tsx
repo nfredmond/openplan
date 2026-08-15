@@ -41,8 +41,9 @@ export function ProjectMapPresencePanel({
             <p className="module-section-label">Cartographic backdrop</p>
             <h2 className="module-section-title">Where this project is</h2>
             <p className="module-section-description">
-              Place the project marker and draw its study corridors. Everything set here appears on
-              the workspace map, and in the layer counts beside it.
+              Put the project on the map and add its corridors — draw them here, or upload the map
+              files you already have. Everything set here appears on the workspace map, and in the
+              layer counts beside it.
             </p>
           </div>
         </div>

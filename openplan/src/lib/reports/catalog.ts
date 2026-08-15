@@ -4,6 +4,10 @@ import {
   PACKET_FRESHNESS_LABELS,
 } from "@/lib/reports/packet-labels";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
+import {
+  PROJECT_GEOGRAPHY_SECTION_KEY,
+  PROJECT_GEOGRAPHY_SECTION_TITLE,
+} from "@/lib/reports/geography-figure";
 import { formatMoney } from "@/lib/money/format";
 
 export const REPORT_TYPE_OPTIONS = [
@@ -324,35 +328,44 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
       enabled: true,
       sortOrder: 1,
     },
+    // Where the project is, before what it is doing. A status packet is read by
+    // someone deciding whether a schedule or a risk matters to them, and that
+    // question starts with the place.
+    {
+      sectionKey: PROJECT_GEOGRAPHY_SECTION_KEY,
+      title: PROJECT_GEOGRAPHY_SECTION_TITLE,
+      enabled: true,
+      sortOrder: 2,
+    },
     {
       sectionKey: "deliverables",
       title: "Deliverables",
       enabled: true,
-      sortOrder: 2,
+      sortOrder: 3,
     },
     {
       sectionKey: "risks_issues",
       title: "Risks and issues",
       enabled: true,
-      sortOrder: 3,
+      sortOrder: 4,
     },
     {
       sectionKey: "decisions_meetings",
       title: "Decisions and meetings",
       enabled: true,
-      sortOrder: 4,
+      sortOrder: 5,
     },
     {
       sectionKey: "activity_timeline",
       title: "Recent activity timeline",
       enabled: true,
-      sortOrder: 5,
+      sortOrder: 6,
     },
     {
       sectionKey: "assumptions_provenance",
       title: "Methods and provenance",
       enabled: true,
-      sortOrder: 6,
+      sortOrder: 7,
     },
   ],
   analysis_summary: [
@@ -362,24 +375,33 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
       enabled: true,
       sortOrder: 0,
     },
+    // Ahead of the runs, because it is the extent the runs cover. A VMT figure
+    // or an accessibility score is a statement about an area, and a reader who
+    // meets the number before the area has nothing to hold it against.
+    {
+      sectionKey: PROJECT_GEOGRAPHY_SECTION_KEY,
+      title: PROJECT_GEOGRAPHY_SECTION_TITLE,
+      enabled: true,
+      sortOrder: 1,
+    },
     {
       sectionKey: "run_summaries",
       title: "Selected run summaries",
       enabled: true,
-      sortOrder: 1,
+      sortOrder: 2,
     },
-    { sectionKey: "key_metrics", title: "Key metrics", enabled: true, sortOrder: 2 },
+    { sectionKey: "key_metrics", title: "Key metrics", enabled: true, sortOrder: 3 },
     {
       sectionKey: "artifacts_context",
       title: "Attached map and artifact context",
       enabled: true,
-      sortOrder: 3,
+      sortOrder: 4,
     },
     {
       sectionKey: "methods_assumptions",
       title: "Methods and assumptions",
       enabled: true,
-      sortOrder: 4,
+      sortOrder: 5,
     },
   ],
   board_packet: [
@@ -390,23 +412,33 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
       enabled: true,
       sortOrder: 1,
     },
+    // Straight after the executive summary. A board member who has just read
+    // what is being asked of them needs to know where it is before they read
+    // the records behind it — and this is the packet the whole geography
+    // section was opened for.
+    {
+      sectionKey: PROJECT_GEOGRAPHY_SECTION_KEY,
+      title: PROJECT_GEOGRAPHY_SECTION_TITLE,
+      enabled: true,
+      sortOrder: 2,
+    },
     {
       sectionKey: "project_records_digest",
       title: "Project records digest",
       enabled: true,
-      sortOrder: 2,
+      sortOrder: 3,
     },
     {
       sectionKey: "analysis_summaries",
       title: "Analysis summaries",
       enabled: true,
-      sortOrder: 3,
+      sortOrder: 4,
     },
     {
       sectionKey: "appendix_references",
       title: "Appendix and references",
       enabled: true,
-      sortOrder: 4,
+      sortOrder: 5,
     },
   ],
 };
@@ -651,6 +683,8 @@ export function describeReportSectionKey(sectionKey: string | null | undefined):
       return "What remains before the packet is ready for public review, board action, or adoption.";
     case "appendix_references":
       return "Supporting references, exports, and linked packet materials.";
+    case PROJECT_GEOGRAPHY_SECTION_KEY:
+      return "The project's study area, corridors and map point, drawn from the coordinates on the project record.";
     case "cover_page":
       return "High-level packet cover context.";
     case "executive_summary":

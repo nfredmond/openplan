@@ -14,6 +14,13 @@ import {
   type EvidenceChainSummary,
 } from "@/lib/reports/evidence-chain";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
+import {
+  buildPacketGeographyFigure,
+  PROJECT_GEOGRAPHY_SECTION_KEY,
+  PROJECT_GEOGRAPHY_SECTION_TITLE,
+  type PacketGeographyFigure,
+  type PacketGeographyInput,
+} from "@/lib/reports/geography-figure";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import {
@@ -149,6 +156,15 @@ export type ReportGenerationData = {
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   citedCountyRuns?: ReportCitedCountyRun[];
+  /**
+   * The project's geometry, for the "Where this project is" figure.
+   *
+   * OPTIONAL, AND ABSENCE IS SILENCE. A caller that never read the geometry
+   * gets no figure and no claim about it — the same rule the cited runs'
+   * `claimStatus` follows. `studyArea: null` inside a supplied input is the
+   * different, real fact: the read ran and this project has no area.
+   */
+  geography?: PacketGeographyInput;
   /**
    * Operator-ACCEPTED AI narrative blocks, resolved by the generate route
    * (status='accepted' rows only, staleness recomputed against the live fact
@@ -683,6 +699,161 @@ function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
   </section>`;
 }
 
+/**
+ * The drawing itself.
+ *
+ * Everything here is inline: no `<img>`, no tile request, no token. See
+ * `geography-figure.ts` for why. The picture is the SECOND copy of what this
+ * block says — `figcaption` and the lists beside it carry the same facts as
+ * text, because the built-in PDF typesetter discards `<svg>` wholesale and a
+ * board reading that tier must not lose the content along with the picture.
+ */
+function packetGeographySvg(figure: PacketGeographyFigure): string {
+  const width = figure.widthUnits;
+  const height = figure.heightUnits;
+
+  const areaPaths = figure.shapes
+    .filter((shape) => shape.kind === "area")
+    .map((shape) => `<path class="geo-area" d="${esc(shape.d ?? "")}" fill-rule="evenodd" />`)
+    .join("");
+
+  const extentPaths = figure.shapes
+    .filter((shape) => shape.kind === "extent-box")
+    .map((shape) => `<path class="geo-extent-box" d="${esc(shape.d ?? "")}" />`)
+    .join("");
+
+  const corridorPaths = figure.shapes
+    .filter((shape) => shape.kind === "corridor")
+    .map(
+      (shape) =>
+        `<path class="geo-corridor-halo" d="${esc(shape.d ?? "")}" /><path class="geo-corridor" d="${esc(shape.d ?? "")}" />`
+    )
+    .join("");
+
+  const markerGlyphs = figure.shapes
+    .filter((shape) => shape.kind === "marker" && shape.point)
+    .map(
+      (shape) =>
+        `<circle class="geo-marker-halo" cx="${shape.point!.x.toFixed(1)}" cy="${shape.point!.y.toFixed(1)}" r="9" /><circle class="geo-marker" cx="${shape.point!.x.toFixed(1)}" cy="${shape.point!.y.toFixed(1)}" r="4.5" />`
+    )
+    .join("");
+
+  const badges = figure.shapes
+    .filter((shape) => shape.badge)
+    .map(
+      (shape) =>
+        `<circle class="geo-badge-disc" cx="${shape.badge!.x.toFixed(1)}" cy="${shape.badge!.y.toFixed(1)}" r="9" /><text class="geo-badge-text" x="${shape.badge!.x.toFixed(1)}" y="${(shape.badge!.y + 3.6).toFixed(1)}">${esc(shape.badge!.text)}</text>`
+    )
+    .join("");
+
+  // North is up by construction — the projection negates latitude and does
+  // nothing else — so the arrow states a fact rather than decorating one.
+  const northArrow = `<g class="geo-north">
+      <rect x="${(width - 54).toFixed(1)}" y="14" width="40" height="52" rx="10" class="geo-chrome-plate" />
+      <path class="geo-north-arrow" d="M${(width - 34).toFixed(1)} 22 L${(width - 27).toFixed(1)} 42 L${(width - 34).toFixed(1)} 37 L${(width - 41).toFixed(1)} 42 Z" />
+      <text class="geo-chrome-text" x="${(width - 34).toFixed(1)}" y="60" text-anchor="middle">N</text>
+    </g>`;
+
+  const scaleBar = figure.scaleBar
+    ? `<g class="geo-scale">
+      <rect x="14" y="${(height - 48).toFixed(1)}" width="${(figure.scaleBar.lengthUnits + 28).toFixed(1)}" height="36" rx="10" class="geo-chrome-plate" />
+      <line class="geo-scale-line" x1="28" y1="${(height - 20).toFixed(1)}" x2="${(28 + figure.scaleBar.lengthUnits).toFixed(1)}" y2="${(height - 20).toFixed(1)}" />
+      <line class="geo-scale-line" x1="28" y1="${(height - 26).toFixed(1)}" x2="28" y2="${(height - 14).toFixed(1)}" />
+      <line class="geo-scale-line" x1="${(28 + figure.scaleBar.lengthUnits).toFixed(1)}" y1="${(height - 26).toFixed(1)}" x2="${(28 + figure.scaleBar.lengthUnits).toFixed(1)}" y2="${(height - 14).toFixed(1)}" />
+      <text class="geo-chrome-text" x="28" y="${(height - 31).toFixed(1)}">${esc(figure.scaleBar.label)}</text>
+    </g>`
+    : "";
+
+  const description = [
+    "Shape drawing of this project's geography.",
+    ...figure.contents,
+    figure.extentStatement ?? "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return `<svg class="geo-svg" viewBox="0 0 ${width} ${height.toFixed(0)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(description)}">
+      <rect x="0.5" y="0.5" width="${(width - 1).toFixed(1)}" height="${(height - 1).toFixed(1)}" rx="16" class="geo-plate" />
+      ${areaPaths}${extentPaths}${corridorPaths}${markerGlyphs}${badges}
+      ${northArrow}${scaleBar}
+    </svg>`;
+}
+
+function packetGeographyBodyMarkup(data: ReportGenerationData): string {
+  // Never read: the packet builder was not given the geometry, so it states
+  // nothing about it — the same silence the cited-run claim tier keeps.
+  if (!data.geography) {
+    return `<p class="empty">This packet was assembled without reading the project's geometry, so nothing is drawn here. It does not mean the project has none.</p>`;
+  }
+
+  const figure = buildPacketGeographyFigure(data.geography);
+  const projectHref = `/projects/${esc(data.project.id)}#project-identity`;
+
+  if (!figure.hasDrawing) {
+    return `<div class="warning-box">
+      <strong>Nothing to draw</strong>
+      <p>${esc(figure.emptyStatement ?? "")}</p>
+      <p>${esc(figure.emptyNextStep ?? "")}</p>
+      ${figure.caveats.map((caveat) => `<p>${esc(caveat)}</p>`).join("")}
+      <p><a href="${projectHref}">Open the project record</a></p>
+    </div>`;
+  }
+
+  return `<figure class="geo-figure">
+      ${packetGeographySvg(figure)}
+      <figcaption>
+        <p><strong>What this drawing is.</strong> ${esc(figure.caveats[0] ?? "")}</p>
+        <p>${esc(figure.orientationStatement ?? "")} ${esc(figure.scaleStatement ?? "")}</p>
+        <p>${esc(figure.extentStatement ?? "")}</p>
+      </figcaption>
+    </figure>
+    <div class="two-col" style="margin-top: 16px;">
+      <div>
+        <h3>What is drawn</h3>
+        <ul class="record-list">
+          ${figure.legend
+            .map(
+              (entry) =>
+                `<li><strong>${esc(entry.label)}</strong><br /><span class="meta">${esc(entry.kind === "area" ? "Study area" : entry.kind === "extent-box" ? "Recorded extent" : entry.kind === "corridor" ? "Corridor" : "Project point")}</span> ${esc(entry.detail)}</li>`
+            )
+            .join("")}
+        </ul>
+      </div>
+      <div>
+        <h3>Read it with these in mind</h3>
+        <ul class="record-list">
+          ${figure.caveats.map((caveat) => `<li>${esc(caveat)}</li>`).join("")}
+        </ul>
+        <p><a href="${projectHref}">Open the project record</a></p>
+      </div>
+    </div>`;
+}
+
+/**
+ * The figure in the always-on band, for a packet whose section list predates
+ * the geography section.
+ *
+ * WHY THIS EXISTS AS WELL AS THE SECTION. Sections are rows in
+ * `report_sections`, written once when the report is created. Adding the
+ * section to the templates therefore reaches NEW packets only — every report an
+ * agency already has would regenerate without a map forever, which is the exact
+ * defect this work was opened for. So the figure also rides the unconditional
+ * band beside the evidence chain and the stage-gate snapshot, and stands down
+ * the moment a real section carries it, so no packet prints it twice.
+ */
+function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
+  // `sectionListCarriesIt` counts a DISABLED section too. A report whose
+  // section list names geography has already been asked the question, and an
+  // operator who switched it off must not have it reinstated from underneath.
+  // Only a report that never heard of the section gets it from the band.
+  if (sectionListCarriesIt || !data.geography) return "";
+
+  return `<section id="${esc(PROJECT_GEOGRAPHY_SECTION_KEY)}">
+    <h2 class="section-title">${esc(PROJECT_GEOGRAPHY_SECTION_TITLE)}</h2>
+    ${packetGeographyBodyMarkup(data)}
+  </section>`;
+}
+
 function stageGateProvenanceMarkup(data: ReportGenerationData): string {
   const { stageGateSnapshot } = data;
   const blockedGate = stageGateSnapshot.blockedGate;
@@ -1071,6 +1242,10 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
     ${engagementHandoffMarkup(data)}`;
   }
 
+  if (sectionKey === PROJECT_GEOGRAPHY_SECTION_KEY) {
+    return packetGeographyBodyMarkup(data);
+  }
+
   if (sectionKey === "deliverables") {
     return listMarkup(data.deliverables, "No deliverables are attached yet.");
   }
@@ -1286,6 +1461,23 @@ const REPORT_DOCUMENT_STYLES = `
       .warning-box { border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
       .transparency-grid, .metrics-stack { display: grid; gap: 12px; margin-top: 14px; }
       .empty { color: #6d7479; font-style: italic; }
+      .geo-figure { margin: 0; }
+      .geo-svg { display: block; width: 100%; height: auto; border-radius: 18px; }
+      .geo-plate { fill: #fbf7ee; stroke: rgba(19, 34, 43, 0.16); stroke-width: 1; }
+      .geo-area { fill: rgba(21, 101, 58, 0.14); stroke: #15653a; stroke-width: 2; stroke-linejoin: round; }
+      .geo-extent-box { fill: none; stroke: #15653a; stroke-width: 2; stroke-dasharray: 9 7; stroke-linejoin: round; }
+      .geo-corridor-halo { fill: none; stroke: #fbf7ee; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+      .geo-corridor { fill: none; stroke: #9a3412; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .geo-marker-halo { fill: #fbf7ee; stroke: #13222b; stroke-width: 1.5; }
+      .geo-marker { fill: #13222b; }
+      .geo-badge-disc { fill: #9a3412; stroke: #fbf7ee; stroke-width: 1.5; }
+      .geo-badge-text { fill: #fffdf8; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; text-anchor: middle; }
+      .geo-chrome-plate { fill: rgba(251, 247, 238, 0.88); stroke: rgba(19, 34, 43, 0.14); stroke-width: 1; }
+      .geo-chrome-text { fill: #13222b; font: 600 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.08em; }
+      .geo-north-arrow { fill: #13222b; }
+      .geo-scale-line { stroke: #13222b; stroke-width: 2; }
+      .geo-figure figcaption { margin-top: 12px; font-size: 14px; line-height: 1.55; color: #3b4952; }
+      .geo-figure figcaption p { margin: 6px 0 0; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }`;
 
 export function buildReportHtml(data: ReportGenerationData): string {
@@ -1339,6 +1531,10 @@ export function buildReportHtml(data: ReportGenerationData): string {
           <div><dt>Linked Runs</dt><dd>${data.runs.length}</dd></div>
         </div>
       </header>
+      ${projectGeographyMarkup(
+        data,
+        data.sections.some((section) => section.section_key === PROJECT_GEOGRAPHY_SECTION_KEY)
+      )}
       ${evidenceChainMarkup(evidenceChainSummary)}
       ${modelingEvidenceMarkup(data.modelingEvidence)}
       ${stageGateProvenanceMarkup(data)}
@@ -1365,6 +1561,10 @@ export function buildReportHtml(data: ReportGenerationData): string {
  * metadata so the record can answer "why is this section a notice".
  */
 const CAMPAIGN_PROJECT_SCOPED_SECTION_SUBJECTS: Record<string, string> = {
+  // A campaign has no project row and therefore no study area, no corridors and
+  // no site point. Drawing the campaign's own comment pins here would answer a
+  // different question than the one the section asks.
+  [PROJECT_GEOGRAPHY_SECTION_KEY]: "A project's study area, corridors and map point",
   deliverables: "Deliverables",
   risks_issues: "Project risks and issues",
   decisions_meetings: "Project decisions and meetings",

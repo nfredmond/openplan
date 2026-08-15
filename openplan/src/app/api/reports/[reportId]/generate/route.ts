@@ -83,6 +83,15 @@ import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/ht
 import { withCitedModelRunClaimTiers } from "@/lib/reports/run-citations";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
+import {
+  PROJECT_PLACE_COLUMNS,
+  placeOfRecordFromProject,
+  type ProjectPlaceRow,
+} from "@/lib/projects/project-place";
+import type {
+  PacketGeographyCorridor,
+  PacketGeographyReadState,
+} from "@/lib/reports/geography-figure";
 
 /**
  * A read whose ABSENCE is honest when the schema is genuinely not there: no
@@ -110,6 +119,51 @@ import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
  * this wrapper below and refuse instead, because a total is a number a reader
  * cannot see a gap in.
  */
+/**
+ * The project's site point, when it has one that is usable.
+ *
+ * `latitude`/`longitude` are NUMERIC in Postgres and reach an untyped client as
+ * either a number or a string depending on driver plumbing — the same
+ * normalisation `/api/map-features/projects` does, for the same reason. An
+ * out-of-range or unparseable value yields NO point rather than a point in the
+ * wrong hemisphere.
+ */
+/**
+ * The project row as this route reads it: the packet fields, the place columns,
+ * and the site point. The place half is `Partial` because a pre-20260728000009
+ * database answers the narrow re-query, which carries none of it.
+ */
+type PacketProjectRow = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  summary: string | null;
+  status: string;
+  plan_type: string;
+  delivery_phase: string;
+  created_at: string;
+  updated_at: string;
+  latitude?: unknown;
+  longitude?: unknown;
+} & Partial<ProjectPlaceRow>;
+
+function packetGeographyMarker(
+  row: unknown
+): { latitude: number; longitude: number } | null {
+  const project = row as { latitude?: unknown; longitude?: unknown } | null;
+  const toNumber = (value: unknown): number | null => {
+    const parsed =
+      typeof value === "string" ? Number.parseFloat(value) : typeof value === "number" ? value : NaN;
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const latitude = toNumber(project?.latitude);
+  const longitude = toNumber(project?.longitude);
+  if (latitude === null || longitude === null) return null;
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
+}
+
 async function safeOptionalQuery<T>(
   run: () => PromiseLike<{ data: T; error: { message: string; code?: string | null } | null }>,
   fallbackData: T
@@ -1275,12 +1329,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // this agency's. The projection constant is imported, not retyped.
       supabase
         .from("workspaces")
-        .select(`id, name, ${STAGE_GATE_BINDING_WORKSPACE_COLUMNS}`)
+        // `home_geography_label` is here only to EXPLAIN a project with no study
+        // area of its own ("anything that needs a place falls back to …"). It is
+        // never drawn and never inherited by the figure: the packet must not
+        // show the agency's home county as if it were this project's extent.
+        .select(`id, name, home_geography_label, ${STAGE_GATE_BINDING_WORKSPACE_COLUMNS}`)
         .eq("id", report.workspace_id)
         .maybeSingle(),
       supabase
         .from("projects")
-        .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
+        // The geography columns ride the project read rather than a second one:
+        // `place_geometry_geojson` is the boundary the packet DRAWS, and a
+        // TIGERweb county polygon is exactly what it is for here. A pre-
+        // 20260728000009 database answers this widened projection with a
+        // missing-column error, which the narrow re-query below recovers from —
+        // the same shape the `report_runs` typed-evidence fallback uses.
+        .select(
+          `id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, latitude, longitude, ${PROJECT_PLACE_COLUMNS}`
+        )
         .eq("id", report.project_id)
         .maybeSingle(),
       supabase
@@ -1373,6 +1439,73 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .order("created_at", { ascending: false }),
     ]);
 
+    // Geography fallback. A missing place column is a PENDING SCHEMA, not an
+    // absent study area, and the two must not read the same in the packet — so
+    // the narrow re-query restores generation and the read state carries the
+    // reason into the figure, which prints it.
+    let projectGeographyReadState: PacketGeographyReadState = "ok";
+    let projectResultForPacket = projectResult;
+    if (projectResult.error && looksLikePendingSchema(projectResult.error.message)) {
+      projectGeographyReadState = "schema_pending";
+      audit.warn("report_project_geography_schema_pending", {
+        reportId: report.id,
+        projectId: report.project_id,
+        message: projectResult.error.message,
+      });
+      projectResultForPacket = (await supabase
+        .from("projects")
+        .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
+        .eq("id", report.project_id)
+        .maybeSingle()) as unknown as typeof projectResult;
+    }
+
+    // Corridors. A failure here NEVER blocks the packet — a board deserves the
+    // rest of the document — but it is never laundered into "this project has
+    // no corridors" either. The throw branch matters: this route's own test
+    // harness throws for a table its `from()` double does not know, and a real
+    // deployment throws on a dropped connection; both are failed reads and the
+    // figure says so.
+    const PACKET_CORRIDOR_LIMIT = 60;
+    let projectCorridorReadState: PacketGeographyReadState = "ok";
+    let projectCorridorRows: Array<{
+      id: string;
+      name: string;
+      corridor_type: string | null;
+      geometry_geojson: unknown;
+    }> = [];
+    try {
+      const corridorResult = await supabase
+        .from("project_corridors")
+        .select("id, name, corridor_type, geometry_geojson")
+        .eq("workspace_id", report.workspace_id)
+        .eq("project_id", report.project_id)
+        .order("created_at", { ascending: true })
+        .limit(PACKET_CORRIDOR_LIMIT);
+
+      if (corridorResult.error) {
+        projectCorridorReadState = looksLikePendingSchema(corridorResult.error.message)
+          ? "schema_pending"
+          : "unreadable";
+        audit.warn("report_project_corridors_read_failed", {
+          reportId: report.id,
+          projectId: report.project_id,
+          message: corridorResult.error.message,
+          code: corridorResult.error.code ?? null,
+        });
+      } else {
+        projectCorridorRows = (corridorResult.data ?? []) as typeof projectCorridorRows;
+      }
+    } catch (corridorError) {
+      const message =
+        corridorError instanceof Error ? corridorError.message : String(corridorError);
+      projectCorridorReadState = looksLikePendingSchema(message) ? "schema_pending" : "unreadable";
+      audit.warn("report_project_corridors_read_threw", {
+        reportId: report.id,
+        projectId: report.project_id,
+        message,
+      });
+    }
+
     // Typed-evidence fallback: a database without the report_runs typed-
     // evidence migration answers the widened select with a missing-column
     // error, so re-query with the legacy column set.
@@ -1387,7 +1520,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const loadErrors = [
       workspaceResult.error,
-      projectResult.error,
+      projectResultForPacket.error,
       sectionsResult.error,
       reportRunLinksResult.error,
       stageGateDecisionsResult.error,
@@ -1440,7 +1573,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json(fundingReadFailure.body, { status: fundingReadFailure.status });
     }
 
-    if (loadErrors.length > 0 || !projectResult.data) {
+    if (loadErrors.length > 0 || !projectResultForPacket.data) {
       const firstError = loadErrors[0];
       audit.error("report_generation_load_failed", {
         reportId: report.id,
@@ -1449,6 +1582,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
     }
+
+    // Cast: the projection is a template literal (the place columns interpolated
+    // from PROJECT_PLACE_COLUMNS), which supabase-js's string parser cannot
+    // type — the same reason the workspace read above is cast. Guaranteed
+    // non-null here; a failed or empty project read returned already.
+    const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
 
     // Which stage-gate template the frozen snapshot is built on is a fact about
     // the WORKSPACE row (the binding of record reconciled against the
@@ -1741,7 +1880,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       opportunities: fundingOpportunitiesResult.data ?? [],
       invoices: billingInvoicesResult.data ?? [],
       capturedAt: new Date().toISOString(),
-      projectUpdatedAt: projectResult.data.updated_at,
+      projectUpdatedAt: projectRow.updated_at,
     });
     const projectFundingStackSummary = buildProjectFundingStackSummary(
       fundingProfileResult.data,
@@ -1891,7 +2030,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         summary: report.summary ?? null,
         report_type: report.report_type,
       },
-      project: projectResult.data,
+      project: projectRow,
       runs: linkedRuns as ReportSectionFactsRun[],
       citedModelRuns: citedModelRuns as ReportCitedModelRun[],
       citedCountyRuns: citedCountyRuns as ReportCitedCountyRun[],
@@ -1908,7 +2047,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // interpolated from STAGE_GATE_BINDING_WORKSPACE_COLUMNS), which the
       // client's string-parser cannot type.
       workspace: workspaceResult.data as { id: string; name: string } | null,
-      project: projectResult.data,
+      project: projectRow,
       runs: linkedRuns,
       sections: sectionsResult.data ?? [],
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
@@ -1953,6 +2092,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelingEvidence,
       citedModelRuns,
       citedCountyRuns,
+      // What the packet DRAWS. The place row is narrowed through the shared
+      // owner-agnostic reader rather than re-derived here, so the packet's idea
+      // of "drawn area" and "resolved place" is the project page's idea of it.
+      geography: {
+        studyArea:
+          projectGeographyReadState === "ok"
+            ? placeOfRecordFromProject(projectRow)
+            : null,
+        studyAreaReadState: projectGeographyReadState,
+        corridors: projectCorridorRows.map(
+          (row): PacketGeographyCorridor => ({
+            id: row.id,
+            name: row.name,
+            corridorType: row.corridor_type,
+            geometry: row.geometry_geojson,
+          })
+        ),
+        corridorReadState: projectCorridorReadState,
+        corridorLimitReached: projectCorridorRows.length >= PACKET_CORRIDOR_LIMIT,
+        marker: packetGeographyMarker(projectRow),
+        workspaceFallbackLabel:
+          (workspaceResult.data as { home_geography_label?: string | null } | null)
+            ?.home_geography_label ?? null,
+      },
       acceptedNarratives,
     });
 
@@ -2007,7 +2170,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       sourceContext: {
         reportOrigin: engagementProvenance?.origin ?? "report_builder",
         reportReason: engagementProvenance?.reason ?? null,
-        projectUpdatedAt: projectResult.data.updated_at,
+        projectUpdatedAt: projectRow.updated_at,
         linkedRunCount: linkedRuns.length,
         citedModelRunCount: citedModelRuns.length,
         citedCountyRunCount: citedCountyRuns.length,

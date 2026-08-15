@@ -143,8 +143,12 @@ describe("ProjectIdentityEditor", () => {
    * resolved place.
    */
   it("saves a boundary read from a file, without pretending it is a resolved place", async () => {
+    // Typed arguments, so the call inspection below is checked rather than
+    // cast: `vi.fn(async () => …)` records calls as an empty tuple, and reading
+    // `[1]` off one is a type error `next build` never sees.
     const fetchMock = vi.fn(
-      async () => new Response(JSON.stringify({ project: {} }), { status: 200 })
+      async (_url: string, _init?: RequestInit) =>
+        new Response(JSON.stringify({ project: {} }), { status: 200 })
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -174,11 +178,11 @@ describe("ProjectIdentityEditor", () => {
 
     await waitFor(() => {
       const placeCall = fetchMock.mock.calls.find(([, init]) => {
-        const body = (init as RequestInit | undefined)?.body;
+        const body = init?.body;
         return typeof body === "string" && body.includes('"place"');
       });
       expect(placeCall).toBeTruthy();
-      const body = JSON.parse((placeCall![1] as RequestInit).body as string);
+      const body = JSON.parse(placeCall![1]!.body as string);
       expect(body.place.mode).toBe("drawn");
       expect(body.place.geometry).toBeTruthy();
       // Never a searched place — a file cannot supply a place identity.

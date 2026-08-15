@@ -18,6 +18,7 @@ import {
   type CorridorType,
 } from "@/lib/cartographic/corridor-vocabulary";
 import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record";
+import { ProjectShapeFileInput } from "@/components/projects/project-shape-file-input";
 
 /**
  * Putting a project on the map.
@@ -32,6 +33,15 @@ import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record
  * already share, in single-mode form: "point" for the project marker, "line" for
  * a corridor. That picker is keyboard-operable (WCAG 2.1.1) and caps vertices,
  * so neither behavior had to be reinvented here.
+ *
+ * BOTH CONTROLS ALSO TAKE A FILE (2026-08-14). A tester arrived at a project
+ * with the corridor and the location already sitting in a handover folder and
+ * had to redraw both by hand, because these two were the last draw-only
+ * geography controls on the project. `ProjectShapeFileInput` reads them through
+ * the SAME importer every other upload in OpenPlan uses. Nothing a file gives
+ * is treated as better than something drawn: it is the same request, with the
+ * same fields, and a shape in a file still says nothing about which city or
+ * county this project is in.
  */
 
 const GeometryPickerMap = dynamic(
@@ -105,6 +115,16 @@ export function ProjectMapPresence({
   const [isSavingLocation, setIsSavingLocation] = useState(false);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
+  /**
+   * What a file said, and what OpenPlan had to work out for itself.
+   *
+   * These sit beside the two number boxes rather than replacing them, and
+   * NOTHING is saved by uploading — a spot read from a file lands in the same
+   * boxes a click on the map fills, so the planner reads the numbers they are
+   * about to store before they store them. That matters most for the one case
+   * where OpenPlan did arithmetic: a file holding an area, not a point.
+   */
+  const [locationFileNotes, setLocationFileNotes] = useState<string[]>([]);
 
   const [corridors, setCorridors] = useState<ProjectCorridor[]>(initialCorridors);
   const [draft, setDraft] = useState<CorridorDraft>(EMPTY_DRAFT);
@@ -112,6 +132,8 @@ export function ProjectMapPresence({
   const [isSavingCorridor, setIsSavingCorridor] = useState(false);
   const [corridorError, setCorridorError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  /** What the file gave, said plainly: joins made, shapes left out. */
+  const [corridorFileNotes, setCorridorFileNotes] = useState<string[]>([]);
 
   const hasLocation = initialLatitude !== null && initialLongitude !== null;
 
@@ -134,6 +156,7 @@ export function ProjectMapPresence({
           ? "Location cleared. This project no longer appears on the map."
           : "Location saved. This project now appears on the map backdrop."
       );
+      setLocationFileNotes([]);
       router.refresh();
     } catch (error) {
       setLocationError(error instanceof Error ? error.message : "Failed to save project location");
@@ -173,6 +196,9 @@ export function ProjectMapPresence({
     setLongitude(String(round(pickedLongitude)));
     setLocationError(null);
     setLocationMessage(null);
+    // A click on the map replaces whatever a file put here, so the file's
+    // sentences must stop describing the numbers on screen.
+    setLocationFileNotes([]);
   }
 
   async function handleCreateCorridor() {
@@ -181,7 +207,9 @@ export function ProjectMapPresence({
       return;
     }
     if (!isLineString(draft.geometry)) {
-      setCorridorError("Draw the corridor on the map first — a corridor needs at least two points.");
+      setCorridorError(
+        "Draw the corridor on the map, or upload it from a file — a corridor needs at least two points."
+      );
       return;
     }
 
@@ -206,6 +234,7 @@ export function ProjectMapPresence({
 
       setCorridors((previous) => [...previous, payload.corridor as ProjectCorridor]);
       setDraft(EMPTY_DRAFT);
+      setCorridorFileNotes([]);
       setIsDrawing(false);
       router.refresh();
     } catch (error) {
@@ -268,6 +297,23 @@ export function ProjectMapPresence({
               />
             </div>
 
+            <div className="mt-3">
+              <ProjectShapeFileInput
+                wants="point"
+                label="Use a map file"
+                hint="Already have it in GeoJSON, KML, KMZ, or a zipped shapefile? Up to 10 MB."
+                disabled={isSavingLocation}
+                onShape={(shape) => {
+                  if (shape.kind !== "point") return;
+                  setLatitude(String(shape.latitude));
+                  setLongitude(String(shape.longitude));
+                  setLocationError(null);
+                  setLocationMessage(null);
+                  setLocationFileNotes([`Read from ${shape.fileName}.`, ...shape.notes]);
+                }}
+              />
+            </div>
+
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="project-location-latitude" className={FIELD_LABEL_CLASS}>
@@ -276,7 +322,10 @@ export function ProjectMapPresence({
                 <Input
                   id="project-location-latitude"
                   value={latitude}
-                  onChange={(event) => setLatitude(event.target.value)}
+                  onChange={(event) => {
+                    setLatitude(event.target.value);
+                    setLocationFileNotes([]);
+                  }}
                   inputMode="decimal"
                   placeholder="39.9612"
                 />
@@ -288,12 +337,25 @@ export function ProjectMapPresence({
                 <Input
                   id="project-location-longitude"
                   value={longitude}
-                  onChange={(event) => setLongitude(event.target.value)}
+                  onChange={(event) => {
+                    setLongitude(event.target.value);
+                    setLocationFileNotes([]);
+                  }}
                   inputMode="decimal"
                   placeholder="-82.9988"
                 />
               </div>
             </div>
+
+            {locationFileNotes.length > 0 ? (
+              <div className="mt-2 space-y-1">
+                {locationFileNotes.map((note) => (
+                  <p key={note} className="text-xs text-muted-foreground">
+                    {note}
+                  </p>
+                ))}
+              </div>
+            ) : null}
 
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <Button type="button" onClick={handleSaveLocation} disabled={isSavingLocation}>
@@ -340,7 +402,7 @@ export function ProjectMapPresence({
           {canWrite && !isDrawing ? (
             <Button type="button" variant="outline" onClick={() => setIsDrawing(true)}>
               <Spline className="h-4 w-4" />
-              Draw a corridor
+              Add a corridor
             </Button>
           ) : null}
         </div>
@@ -383,8 +445,29 @@ export function ProjectMapPresence({
 
         {canWrite && isDrawing ? (
           <div className="mt-4 space-y-3 rounded-[0.4rem] border border-dashed border-border/70 p-3">
+            <ProjectShapeFileInput
+              wants="line"
+              label="Use a map file"
+              hint="Already have the line in GeoJSON, KML, KMZ, or a zipped shapefile? Up to 10 MB."
+              disabled={isSavingCorridor}
+              onShape={(shape) => {
+                if (shape.kind !== "line") return;
+                setDraft((previous) => ({
+                  ...previous,
+                  geometry: { type: "LineString", coordinates: shape.coordinates },
+                }));
+                setCorridorError(null);
+                setCorridorFileNotes([`Read from ${shape.fileName}.`, ...shape.notes]);
+              }}
+            />
+
             <GeometryPickerMap
-              onGeometryChange={(geometry) => setDraft((previous) => ({ ...previous, geometry }))}
+              onGeometryChange={(geometry) => {
+                setDraft((previous) => ({ ...previous, geometry }));
+                // Drawing replaces the file's line, so its sentences must stop
+                // describing what is about to be saved.
+                setCorridorFileNotes([]);
+              }}
               initialMode="line"
               allowedModes={["line"]}
               initialCenter={
@@ -397,9 +480,25 @@ export function ProjectMapPresence({
 
             <p className="text-xs text-muted-foreground">
               {draftVertexCount >= 2
-                ? `${draftVertexCount} points drawn.`
-                : "Click along the street or route to draw the corridor. At least two points are needed."}
+                ? corridorFileNotes.length > 0
+                  ? `${draftVertexCount} points on this line.`
+                  : `${draftVertexCount} points drawn.`
+                : "Click along the street or route to draw the corridor, or upload it from a file. At least two points are needed."}
             </p>
+
+            {corridorFileNotes.length > 0 ? (
+              <div className="space-y-1">
+                {corridorFileNotes.map((note) => (
+                  <p key={note} className="text-xs text-muted-foreground">
+                    {note}
+                  </p>
+                ))}
+                <p className="text-xs text-muted-foreground">
+                  A line from a file is saved the same way as one you draw. It does not tell OpenPlan
+                  which city or county the project is in.
+                </p>
+              </div>
+            ) : null}
 
             <div className="grid gap-3 md:grid-cols-3">
               <div className="space-y-1.5">
@@ -469,6 +568,7 @@ export function ProjectMapPresence({
                   setDraft(EMPTY_DRAFT);
                   setIsDrawing(false);
                   setCorridorError(null);
+                  setCorridorFileNotes([]);
                 }}
               >
                 Cancel
