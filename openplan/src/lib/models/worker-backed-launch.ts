@@ -401,7 +401,26 @@ export function describeWorkerQueueRisk(
       : "This OpenPlan installation declares that an AequilibraE worker runs against it, which is a statement of configuration rather than a live check — the worker looks for runs on its own schedule, and OpenPlan cannot check on it.";
   }
 
+  /*
+    THE FIRST-RUN CASE, and the one a new planner actually meets.
+
+    No declaration either way and no run history: OpenPlan genuinely cannot know
+    whether a worker exists here. This branch used to say only "It finishes only
+    while a modeling worker is checking this installation for runs" — true, and
+    useless to somebody about to press the button. It named no consequence, no
+    end state, and did not say that nothing would come and tell them.
+
+    A tester read the deployment-health panel, worked out for themselves that a
+    first run could be queued, wait, and fail unannounced, and filed it as a
+    blocker. They were reading around a sentence that should have said it. The
+    `absent` branch above has always said it plainly; this one now does too,
+    hedged to what is actually known rather than asserting a worker is missing.
+
+    No timing is promised. Reaping depends on a sweep that an operator also has
+    to have configured, so "about fifteen minutes" would be a second claim about
+    a second thing nobody here can check.
+  */
   return observed
-    ? `${observed}Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing.`
-    : "It finishes only while a modeling worker is checking this installation for runs.";
+    ? `${observed}Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look.`
+    : "Nobody has told OpenPlan whether a modeling worker runs on this installation, and it cannot check for itself. If none is running, this run will sit queued and then be marked failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look.";
 }

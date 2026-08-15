@@ -422,12 +422,18 @@ describe("what a run already queued on the worker may be told", () => {
     expect(describeWorkerQueueRisk("deployed", null)).toMatch(/rather than a live check/i);
   });
 
-  it("falls back to exactly what it said before anything was declared", () => {
+  it("tells an undeclared deployment what happens if nothing takes the run", () => {
+    // Retargeted 2026-08-15, exactly rather than loosened. Both sentences grew
+    // the same clause — that nothing will come and tell them — after a tester
+    // reasoned their way to that conclusion from a health panel instead of
+    // being told it at the launch button. The no-evidence branch was rewritten
+    // outright: it used to name only the condition for SUCCESS, which is the
+    // half a planner about to press the button does not need.
     expect(describeWorkerQueueRisk("undeclared", evidence)).toBe(
-      `${evidence} Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing.`
+      `${evidence} Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look.`
     );
     expect(describeWorkerQueueRisk("undeclared", null)).toBe(
-      "It finishes only while a modeling worker is checking this installation for runs."
+      "Nobody has told OpenPlan whether a modeling worker runs on this installation, and it cannot check for itself. If none is running, this run will sit queued and then be marked failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look."
     );
   });
 });
