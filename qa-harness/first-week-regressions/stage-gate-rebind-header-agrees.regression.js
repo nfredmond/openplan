@@ -28,9 +28,16 @@
  * binding this session just wrote, while the picker stays closed and the
  * reload-to-continue notice stays exactly as it is.
  *
- * STATUS: open. Nobody has fixed it yet, so this script is EXPECTED TO FAIL —
- * and if it ever passes, the run fails instead, telling whoever fixed it to
- * record the fix here. See the header of `first-week-regression.js`.
+ * STATUS: fixed in adfbdec6 (2026-08-14) — the header now shows the binding the
+ * session just wrote, while the picker still closes and the reload notice is
+ * unchanged, exactly as the paragraph above argued it should. This script was
+ * left marked `open` in that commit, and the regression runner caught the
+ * omission on its next run: "this now PASSES, so somebody fixed it". That is
+ * the check earning its keep on the person who wrote it.
+ *
+ * The `expectedFailure` pattern below is kept deliberately. It is unused while
+ * this is `fixed`, and it is the evidence of what failing looked like if this
+ * ever comes back.
  *
  * IT LEAVES THE WORKSPACE REBOUND, deliberately and harmlessly: it picks the
  * first template that is not the current one, so consecutive runs swap the
@@ -46,7 +53,7 @@
  */
 module.exports = {
   id: 'stage-gate-rebind-header-agrees',
-  status: 'open',
+  status: 'fixed',
   finding:
     '2026-08-14T21-10-49-712Z / 01-first-day-setup — after rebinding the stage-gate template, the section header still shows the old template name until the page is manually reloaded',
   why: 'A planner who changes which stage gates their agency uses is shown the old answer and the new answer at the same time, and nothing on the screen says which one the workspace is actually on.',

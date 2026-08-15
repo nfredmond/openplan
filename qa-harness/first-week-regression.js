@@ -104,8 +104,33 @@ function loadRegressions(dir = REGRESSIONS_DIR) {
 
 class RegressionFailure extends Error {}
 
+/**
+ * A script could not reach the state it exists to check.
+ *
+ * DISTINCT FROM FAILURE ON PURPOSE. A workspace with no campaign, a deployment
+ * registering one template, an account that cannot manage the thing — in each of
+ * those the dead end cannot be reached at all, so the script proves NOTHING. It
+ * has not passed and it has not caught a regression, and reporting either would
+ * be a lie in one direction or the other.
+ *
+ * Before this existed, an unmet precondition threw a RegressionFailure and a
+ * `fixed` script reported "this was fixed and has come back" — a false alarm
+ * about a defect that was never re-tested. The harness's own rule is that a run
+ * proving nothing must say so; this is that rule applied to the harness.
+ */
+class RegressionInconclusive extends Error {}
+
 function expect(condition, message) {
   if (!condition) throw new RegressionFailure(message);
+}
+
+/**
+ * Assert something the script NEEDS in order to mean anything — the campaign
+ * exists, the picker is reachable, the account can write. Failing this reports
+ * inconclusive, never a regression.
+ */
+function precondition(condition, message) {
+  if (!condition) throw new RegressionInconclusive(message);
 }
 
 /**
@@ -123,9 +148,16 @@ function expect(condition, message) {
  *                      say so, and nothing protects the fix.
  *   'wrong-failure'    an 'open' script failed for some OTHER reason. The
  *                      script is broken and proves nothing.
+ *   'inconclusive'     the script could not reach the state it checks, so it
+ *                      tested nothing. NOT gating — but reported loudly, because
+ *                      a suite quietly proving nothing is the worst outcome
+ *                      here and the easiest one to stop noticing.
  */
 function classifyResult(regression, error) {
   const passed = error === null || error === undefined;
+  // Checked BEFORE status, because an unreachable precondition means the same
+  // thing whether the script is open or fixed: nothing was tested.
+  if (error instanceof RegressionInconclusive) return 'inconclusive';
   if (regression.status === 'fixed') return passed ? 'still-fixed' : 'regressed';
   if (passed) return 'unrecorded-fix';
   return regression.expectedFailure.test(String(error.message)) ? 'still-open' : 'wrong-failure';
@@ -182,12 +214,13 @@ async function main() {
 
   console.log(`first-week regressions against ${baseUrl}\n`);
   const failures = [];
+  const inconclusive = [];
 
   for (const regression of regressions) {
     const scoped = await context.newPage();
     let error = null;
     try {
-      await regression.run({ page: scoped, context, baseUrl, expect, email, password });
+      await regression.run({ page: scoped, context, baseUrl, expect, precondition, email, password });
     } catch (thrown) {
       error = thrown;
       fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
@@ -200,6 +233,7 @@ async function main() {
 
     const outcome = classifyResult(regression, error);
     if (GATING_OUTCOMES.has(outcome)) failures.push({ regression, error, outcome });
+    if (outcome === 'inconclusive') inconclusive.push(regression);
 
     if (outcome === 'still-fixed') {
       console.log(`  ok    ${regression.id} — still fixed`);
@@ -214,6 +248,12 @@ async function main() {
       console.error(`        ${error.message}`);
       console.error(`        came from: ${regression.finding}`);
       console.error(`        screenshot: ${error.screenshot}`);
+    } else if (outcome === 'inconclusive') {
+      // Loud on purpose. A suite that quietly proves nothing is the worst
+      // outcome available and the easiest one to stop noticing.
+      console.error(`  ????  ${regression.id} — PROVED NOTHING: could not reach the state it checks`);
+      console.error(`        ${error.message}`);
+      console.error(`        This is not a pass. Nothing about the reported defect was tested.`);
     } else if (outcome === 'unrecorded-fix') {
       console.error(`  FAIL  ${regression.id} — this now PASSES, so somebody fixed it`);
       console.error(`        Set status: 'fixed' in first-week-regressions/${regression.id}.regression.js`);
@@ -229,6 +269,15 @@ async function main() {
   await browser.close();
 
   const open = regressions.filter((r) => r.status === 'open').length;
+  // Counted separately from failures because it does not gate — but it is
+  // printed either way, so a run that tested less than it looks like cannot pass
+  // silently.
+  if (inconclusive.length) {
+    console.error(
+      `\n${inconclusive.length} script(s) PROVED NOTHING — they could not reach the state they check. ` +
+        `The suite is smaller than it looks: ${inconclusive.map((r) => r.id).join(', ')}`,
+    );
+  }
   if (failures.length) {
     const count = (kind) => failures.filter((f) => f.outcome === kind).length;
     console.error(
