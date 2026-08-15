@@ -243,7 +243,7 @@ describe("Explore study area panel", () => {
 
     fireEvent.click(screen.getByText("search-a-place"));
 
-    expect(screen.getByText("Not the current study area")).toBeInTheDocument();
+    expect(screen.getByText("Not the area in use")).toBeInTheDocument();
     expect(screen.getByText("Last uploaded file")).toBeInTheDocument();
     expect(screen.getByText("corridor.geojson")).toBeInTheDocument();
   });

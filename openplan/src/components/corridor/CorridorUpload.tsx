@@ -178,12 +178,24 @@ export function CorridorUpload({ onUpload, isCurrentBoundary = true }: CorridorU
     <section className="analysis-studio-surface">
       <div className="analysis-studio-header">
         <div className="analysis-studio-heading">
-          <p className="analysis-studio-label">Corridor geometry</p>
+          {/*
+            THE LABEL NAMES WHAT THIS SETS, because it once named what it does not.
+
+            It read "Corridor geometry" while the sentence directly beneath it
+            said the upload "becomes the study area, replacing whatever is
+            currently set" — the heading and its own description contradicting
+            each other. A tester on 2026-08-15 read the heading, uploaded a
+            corridor file expecting to attach a corridor, and silently replaced
+            the study area they had just drawn. Both callers of this card set the
+            study area; neither has ever attached a corridor. A planner reads the
+            heading.
+          */}
+          <p className="analysis-studio-label">The area you are planning for</p>
           <h3 className="analysis-studio-title">Upload a boundary file</h3>
-          <p className="analysis-studio-description">Have the corridor boundary as a GIS file already? Upload it — GeoJSON, KML, KMZ, or a zipped shapefile — and its area becomes the study area, replacing whatever is currently set.</p>
+          <p className="analysis-studio-description">Have the boundary as a GIS file already? Upload it — GeoJSON, KML, KMZ, or a zipped shapefile — and it becomes the area this analysis covers, <strong>replacing whatever is already set</strong>. This does not add a corridor.</p>
         </div>
         <StatusBadge tone={fileName && isCurrentBoundary ? "success" : "neutral"}>
-          {!fileName ? "Optional" : isCurrentBoundary ? "Boundary loaded" : "Not the current study area"}
+          {!fileName ? "Optional" : isCurrentBoundary ? "Boundary loaded" : "Not the area in use"}
         </StatusBadge>
       </div>
 
