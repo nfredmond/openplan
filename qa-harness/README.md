@@ -101,6 +101,20 @@ npm run prod-qa-cleanup:apply
 - If Vercel Authentication is enabled, set `VERCEL_AUTOMATION_BYPASS_SECRET` (or one of the accepted bypass env aliases in `harness-env.js`) so Playwright contexts can reach the protected deployment.
 - OpenPlan also auto-loads `secrets/openplan_vercel_protection_bypass.env` from the workspace root when present, so canonical proof runs can use the secure local bypass path without copying the secret into app env files.
 - Uses Playwright in headless mode.
+- **A closed tab is still in the DOM, so `getByText(...).first()` is a trap on any tabbed page.**
+  `PageTabPanel` hides a closed panel with `display: none` rather than unmounting it — deliberately,
+  so find-in-page and the read-failure sentences survive a shut tab. Playwright's `.first()` takes
+  DOM order, not visibility, so it happily locks onto a hidden copy in an earlier panel and waits out
+  the timeout while the real element is on screen. This is what kept `QA Harness Nightly` red from
+  the day it was created (2026-08-05) through 2026-08-15: 13 runs, never once green, the last several
+  on `/Funded/i` matching the hidden Overview badge instead of the visible Funding one.
+  **Scope to the panel you mean** — `page.locator('[data-page-tab-panel="funding"][data-page-tab-panel-state="open"]')`
+  — which also asserts the deep link landed where it said it would. Naming the panel matters: several
+  tabs carry the same words, so `state="open"` alone would have passed on Overview.
+  **73 call sites in this directory still use the unscoped shape** and are exposed to the same trap
+  the moment they touch a tabbed page. Only `openplan-local-grants-flow-smoke.js` is fixed. Sweeping
+  the rest means running each smoke to confirm the change, which is why it is a work-list rather than
+  a search-and-replace.
 - The UI/UX settle capture harness never logs in, creates users, seeds data, writes Supabase rows, touches billing/email, or persists credentials/tokens. It consumes an existing local storage-state file only for the Playwright browser context.
 - The UI/UX settle capture harness accepts `BASE_URL` values on `localhost` or `127.0.0.1` by default. It always refuses Vercel URLs. Use `--allow-local-network` only for explicit private local URLs such as `192.168.x.x`, and record that choice in the generated ledger.
 - The UI/UX settle capture harness writes only under `docs/ops/2026-04-29-test-output/ui-ux-settle/` unless `OPENPLAN_UI_UX_SETTLE_OUTPUT_DIR` or `--output-dir` points to another directory under `docs/ops/`.

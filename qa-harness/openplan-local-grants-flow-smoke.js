@@ -336,9 +336,33 @@ async function main() {
 
     await page.goto(`${baseUrl}/projects/${ids.projectId}#project-funding-opportunities`, { waitUntil: 'networkidle' });
     await page.getByText(projectName, { exact: false }).first().waitFor({ timeout: 20000 });
-    await page.getByText(/Funded/i).first().waitFor({ timeout: 20000 });
-    await page.getByText(/Awarded dollars reimbursed/i).first().waitFor({ timeout: 20000 });
-    const projectAwardRow = page.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: awardTitle, exact: false }) }).first();
+
+    /*
+      SCOPE EVERY ASSERTION BELOW TO THE OPEN TAB PANEL.
+
+      This is what broke the nightly, and it never once passed after the project
+      record was split into five tabs. A CLOSED panel is not unmounted — it is
+      rendered with `display: none`, deliberately, so find-in-page and the
+      read-failure sentences survive a shut tab (see PageTabPanel). The Overview
+      panel is emitted BEFORE the Funding panel and carries a "Funded" badge of
+      its own, so `getByText(/Funded/i).first()` resolved to the hidden Overview
+      copy and waited 20s for something that will never be visible — while the
+      real badge sat on screen the whole time.
+
+      Naming the panel — funding, open — makes this assert the thing it was
+      always meant to: that the deep link LANDED on the funding tab. A bare
+      visibility filter would pass on any tab that happened to show the word,
+      and `state="open"` alone would pass on Overview for the same reason it
+      failed here, since that is where the other "Funded" lives.
+
+      73 sites across this harness still use the unscoped
+      `getByText(...).first()` shape and are exposed to the same trap on any
+      tabbed page. Not swept here — see the note in README.md.
+    */
+    const openPanel = page.locator('[data-page-tab-panel="funding"][data-page-tab-panel-state="open"]');
+    await openPanel.getByText(/Funded/i).first().waitFor({ timeout: 20000 });
+    await openPanel.getByText(/Awarded dollars reimbursed/i).first().waitFor({ timeout: 20000 });
+    const projectAwardRow = openPanel.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: awardTitle, exact: false }) }).first();
     await projectAwardRow.waitFor({ timeout: 20000 });
     await projectAwardRow.getByText(/Fully spent/i).waitFor({ timeout: 20000 });
     await projectAwardRow.getByText(invoiceNumber, { exact: false }).waitFor({ timeout: 20000 });
