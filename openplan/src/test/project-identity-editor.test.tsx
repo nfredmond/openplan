@@ -128,6 +128,64 @@ describe("ProjectIdentityEditor", () => {
     expect(screen.getByText(/cannot derive a county filter/i)).toBeTruthy();
   });
 
+  /**
+   * THE FILE THE PLANNER ALREADY HAD.
+   *
+   * A tester arrived with study-area.geojson in a handover folder, watched Data
+   * Hub parse it correctly, and then had to REDRAW the same boundary by hand
+   * because this control offered only click-to-draw or typed coordinates. The
+   * reader that understands GeoJSON, KML, KMZ and shapefiles already existed and
+   * was mounted by exactly one caller.
+   *
+   * What is asserted is that a boundary arriving from the file reader reaches
+   * the SAVE, as `drawn` — a shape from a file carries no place identity, so it
+   * earns the same caveat a hand-drawn one does and must not be dressed up as a
+   * resolved place.
+   */
+  it("saves a boundary read from a file, without pretending it is a resolved place", async () => {
+    const fetchMock = vi.fn(
+      async () => new Response(JSON.stringify({ project: {} }), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /set study area/i }));
+
+    // Drive the real reader with a real file rather than calling its callback:
+    // a test that pokes the handler would pass even if nothing were mounted.
+    const geojson = JSON.stringify({
+      type: "Feature",
+      properties: {},
+      geometry: { type: "Polygon", coordinates: [[[-121.1, 39.2], [-121, 39.2], [-121, 39.3], [-121.1, 39.2]]] },
+    });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input).toBeTruthy();
+    const file = new File([geojson], "study-area.geojson", { type: "application/geo+json" });
+    Object.defineProperty(file, "arrayBuffer", {
+      value: async () => new TextEncoder().encode(geojson).buffer,
+    });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    await waitFor(() =>
+      expect(screen.queryByText(/upload a boundary file|study-area\.geojson/i)).toBeTruthy()
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /save study area/i }));
+
+    await waitFor(() => {
+      const placeCall = fetchMock.mock.calls.find(([, init]) => {
+        const body = (init as RequestInit | undefined)?.body;
+        return typeof body === "string" && body.includes('"place"');
+      });
+      expect(placeCall).toBeTruthy();
+      const body = JSON.parse((placeCall![1] as RequestInit).body as string);
+      expect(body.place.mode).toBe("drawn");
+      expect(body.place.geometry).toBeTruthy();
+      // Never a searched place — a file cannot supply a place identity.
+      expect(body.place.geoid).toBeUndefined();
+    });
+  });
+
   it("names the real fallback when no area is set, and never invents one", () => {
     const { rerender } = render(
       <ProjectIdentityEditor project={PROJECT} canWrite workspaceHomeLabel="Franklin County, Ohio" />

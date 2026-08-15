@@ -19,6 +19,7 @@ import {
   type ProjectStatus,
 } from "@/lib/projects/project-record-fields";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
+import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { parseCorridorText } from "@/lib/models/study-area";
 import { CensusTractCoverageControl } from "@/components/geographies/census-tract-coverage-control";
 import { DRAWN_PLACE_SOURCE, type PlaceOfRecord } from "@/lib/geographies/place-of-record";
@@ -125,6 +126,18 @@ export function ProjectIdentityEditor({
   const [editingPlace, setEditingPlace] = useState(false);
   const [placeText, setPlaceText] = useState("");
   const [pickedPlace, setPickedPlace] = useState<PlaceBoundaryResponse | null>(null);
+  /**
+   * A boundary read out of a file the planner already had.
+   *
+   * A tester arrived with study-area.geojson in their handover folder, watched
+   * Data Hub parse it correctly, and then had to REDRAW it by hand here because
+   * this control offered only click-to-draw or typed coordinates. The reader
+   * that understands GeoJSON, KML, KMZ and shapefiles already existed — it was
+   * mounted by one caller (Explore) and unreachable from the other. This is the
+   * shared-capability-inside-one-of-its-callers shape the repo has a rule about,
+   * so this mounts the same component rather than growing a second reader.
+   */
+  const [uploadedBoundary, setUploadedBoundary] = useState<unknown>(null);
   const [savingPlace, setSavingPlace] = useState(false);
 
   function resetToRecord() {
@@ -190,6 +203,7 @@ export function ProjectIdentityEditor({
       setEditingPlace(false);
       setPlaceText("");
       setPickedPlace(null);
+      setUploadedBoundary(null);
       router.refresh();
     } catch {
       setError("Could not reach the server to save this study area.");
@@ -204,12 +218,16 @@ export function ProjectIdentityEditor({
       return;
     }
 
-    const drawn = parseCorridorText(placeText);
-    if (!drawn) {
-      setError("Search for a place or draw an area before saving.");
+    // A boundary from a file is saved as `drawn`, and that is the honest
+    // classification rather than a shortcut: a shape read out of a file carries
+    // no resolvable place identity either, so it earns the same caveat about
+    // county filters and jurisdiction rules that a hand-drawn one does.
+    const geometry = uploadedBoundary ?? parseCorridorText(placeText);
+    if (!geometry) {
+      setError("Search for a place, upload a boundary file, or draw an area before saving.");
       return;
     }
-    await savePlace({ mode: "drawn", geometry: drawn });
+    await savePlace({ mode: "drawn", geometry });
   }
 
   async function handleClearPlace() {
@@ -534,6 +552,11 @@ export function ProjectIdentityEditor({
               Searching gives this project a place identity, which is what lets county onboarding,
               stage-gate templates, and grant eligibility resolve. A drawn area sets the shape only.
             </p>
+            <CorridorUpload
+              onUpload={(geojson) => setUploadedBoundary(geojson)}
+              isCurrentBoundary={uploadedBoundary !== null}
+            />
+
             <div className="flex flex-wrap items-center gap-3">
               <Button onClick={() => void handleSavePlace()} disabled={savingPlace}>
                 {savingPlace ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
@@ -544,6 +567,7 @@ export function ProjectIdentityEditor({
                 onClick={() => {
                   setPlaceText("");
                   setPickedPlace(null);
+                  setUploadedBoundary(null);
                   setEditingPlace(false);
                 }}
                 disabled={savingPlace}
