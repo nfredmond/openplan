@@ -174,7 +174,28 @@ export function WorkspaceStageGatePanel({
     <section className="rounded-xl border border-border/70 p-5" aria-label="Stage-gate template">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-sm font-semibold text-foreground">Stage-gate template</h2>
-        {choices.kind === "bound" ? (
+        {/*
+          THE BINDING THIS SESSION WROTE WINS OVER THE ONE THE PAGE RENDERED WITH.
+
+          `choices` is server state from page load. After a successful rebind the
+          notice below says "Bound to <new template>" while this header still
+          named the OLD one — two contradicting answers to the same question,
+          eight lines apart, with no way for a planner to tell which is true.
+          Two fresh testers walked into it independently in their first hour.
+
+          The fix is deliberately only the header. Do NOT "fix" this with a
+          router.refresh(): every gate diff on this screen was computed by the
+          server against the binding that existed at render, so refreshing part
+          of it would offer a second rebind reviewed against facts that no longer
+          hold. That design is explained where `reboundTo` is declared and it is
+          right. The picker stays closed and the reload notice stays as it is.
+        */}
+        {reboundTo ? (
+          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <ClipboardList className="h-3.5 w-3.5" />
+            {reboundTo.templateName} v{reboundTo.templateVersion}
+          </p>
+        ) : choices.kind === "bound" ? (
           <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <ClipboardList className="h-3.5 w-3.5" />
             {choices.binding.templateName} v{choices.binding.templateVersion}
