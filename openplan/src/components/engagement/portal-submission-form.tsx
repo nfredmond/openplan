@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { CheckCircle2, Loader2, MapPin, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,6 +91,14 @@ export type PortalFormPlace =
     };
 
 /** The steps, in the order a person is walked through them. */
+/**
+ * A store that never changes, used only to tell the server render apart from the
+ * hydrated client. `useSyncExternalStore` is React's own hydration-safe way to
+ * ask that question; setting state in an effect would do the same thing and is
+ * forbidden by lint here, for good reasons that happen not to apply.
+ */
+const subscribeToNothing = () => () => {};
+
 type StepId = "where" | "what" | "extras" | "you" | "send";
 
 /**
@@ -173,6 +181,34 @@ export function PortalSubmissionForm({
     remaining way to say where, from exactly the residents whose page was already
     degraded.
   */
+  /**
+   * WHETHER THIS FORM CAN ACTUALLY ANSWER A CLICK YET.
+   *
+   * The step machine is React state, so before hydration the buttons are
+   * server-rendered markup with no handler attached. A click that lands in that
+   * window does nothing at all, and the button gives no sign of it — which on a
+   * slow phone, or against a struggling server, reads exactly like a broken
+   * product.
+   *
+   * A tester hit precisely this on 2026-08-14 and filed it as a blocker: "Next"
+   * never advanced past step 1, by mouse, by forced click, and by keyboard, on
+   * desktop and on mobile. It did not reproduce afterwards on a healthy server,
+   * and the reason it looked total is that every one of those attempts landed
+   * before the page could respond. The sibling stage-gate regression script
+   * records the same mechanism on a different control and calls it "a real thing
+   * a fast planner can hit, not just a test problem".
+   *
+   * So the button says so instead of lying. It is disabled until this effect
+   * runs, which is the first moment a click can be heard. This form needs
+   * JavaScript regardless — the whole step machine is state — so a disabled
+   * moment is honest rather than a capability lost.
+   */
+  const canRespond = useSyncExternalStore(
+    subscribeToNothing,
+    () => true, // client, once hydrated
+    () => false // server render, and the hydration pass that must match it
+  );
+
   const [step, setStep] = useState<StepId>("where");
   const [body, setBody] = useState("");
   const [whereWords, setWhereWords] = useState("");
@@ -1055,7 +1091,12 @@ export function PortalSubmissionForm({
             {isSubmitting ? t("portal.submitting") : t("portal.submit")}
           </Button>
         ) : (
-          <Button type="button" className="min-h-11 flex-1 justify-center" onClick={goNext}>
+          <Button
+            type="button"
+            className="min-h-11 flex-1 justify-center"
+            onClick={goNext}
+            disabled={!canRespond}
+          >
             {t("portal.next")}
           </Button>
         )}
