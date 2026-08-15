@@ -387,6 +387,28 @@ export function PortalSubmissionForm({
     if (previewMode) return;
 
     /*
+      A SUBMIT FROM ANYWHERE BUT THE REVIEW STEP IS NOT A DECISION TO SEND.
+
+      The review step exists so a resident sees what they are about to hand to a
+      public agency, under their own name, before it goes. Anything that posts
+      without passing through it has taken that away from them — and there is
+      more than one way in. A shared DOM node changing `type` under a "Next"
+      click was the one measured on 2026-08-15 (four runs, four unreviewed
+      comments in the database). Implicit submission is another: pressing Enter
+      in the name field is a submit event from the "you" step, and the browser
+      offers it for free on any single-input form.
+
+      So the guard is here rather than only on the button. Whatever raised the
+      event, an early submit becomes what the resident almost certainly meant —
+      go to the review step — and `goToStep` still refuses to skip an empty
+      comment box on the way.
+    */
+    if (step !== "send") {
+      goToStep("send");
+      return;
+    }
+
+    /*
       NOTHING WRITTEN, NOTHING SENT. The API refuses an empty body with an
       English literal, so a request made from here would come back as a sentence
       in the wrong language for the resident and as a wasted round trip for the
@@ -1081,8 +1103,26 @@ export function PortalSubmissionForm({
             {t("portal.back")}
           </Button>
         ) : null}
+        {/*
+          THE KEYS ARE LOAD-BEARING. Without them React sees one <Button> in one
+          position and REUSES the DOM node, changing `type` from "button" to
+          "submit" in place. A resident's click on "Next" at the "About you"
+          step then runs `goNext`, React flushes the re-render inside that same
+          discrete event, and the browser performs the click's default action
+          against the node's NEW type — posting the comment and skipping the
+          review step entirely. Measured on 2026-08-15: four local runs, four
+          comments in `engagement_items`, none of them ever shown to the person
+          who wrote them. Distinct keys make React unmount one button and mount
+          the other, so there is no shared node to change type underneath a
+          click.
+        */}
         {step === "send" ? (
-          <Button type="submit" disabled={isSubmitting || previewMode} className="min-h-11 flex-1 justify-center">
+          <Button
+            key="portal-send"
+            type="submit"
+            disabled={isSubmitting || previewMode}
+            className="min-h-11 flex-1 justify-center"
+          >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
@@ -1092,6 +1132,7 @@ export function PortalSubmissionForm({
           </Button>
         ) : (
           <Button
+            key="portal-next"
             type="button"
             className="min-h-11 flex-1 justify-center"
             onClick={goNext}

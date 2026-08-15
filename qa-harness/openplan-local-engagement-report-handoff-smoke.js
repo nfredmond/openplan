@@ -222,10 +222,39 @@ async function main() {
 
     await publicPage.goto(`${baseUrl}/engage/${shareToken}`, { waitUntil: 'networkidle' });
     await publicPage.getByRole('heading', { name: campaignTitle, exact: false }).waitFor({ timeout: 20000 });
-    await publicPage.locator('#public-category').selectOption(ids.categoryId);
-    await publicPage.locator('#public-title').fill(itemTitle);
-    await publicPage.locator('#public-body').fill(itemBody);
-    await publicPage.locator('#public-name').fill(submittedBy);
+    /*
+      THE PUBLIC DOOR IS A GUIDED FORM NOW, not one long page of fields.
+
+      This block asserted `#public-category` / `#public-title` / `#public-body` /
+      `#public-name` and a "Submit feedback" button. None of those exist: the
+      resident portal was rebuilt as five steps — where, what, extras, you, send
+      — with `portal-` ids, and the smoke was never updated. It has been the
+      second failure in the nightly chain, hidden behind the grants smoke that
+      failed before it.
+
+      Advancing step by step is the point rather than an inconvenience: it walks
+      the same path a resident walks, so a step that stops accepting input fails
+      here instead of being discovered by a member of the public. Only "what"
+      gates — `goToStep` refuses to leave it with an empty body — but Next is
+      clicked at every step regardless, because a gate added to any other step
+      should break this and be seen.
+    */
+    const nextStep = async () => {
+      await publicPage.getByRole('button', { name: /^next$/i }).click();
+    };
+
+    await nextStep(); // where → what. Location is optional; a campaign may not be about one place.
+    await publicPage.locator('#portal-body').fill(itemBody);
+    await nextStep(); // what → extras
+    await publicPage.locator('#portal-category').selectOption(ids.categoryId);
+    await publicPage.locator('#portal-title').fill(itemTitle);
+    await nextStep(); // extras → you
+    await publicPage.locator('#portal-name').fill(submittedBy);
+    await nextStep(); // you → send
+    // Assert the step rather than trusting four clicks landed: a gate added to
+    // any earlier step would otherwise surface as a confusing missing button.
+    await publicPage.locator('[data-testid="portal-step-send"]').waitFor({ timeout: 20000 });
+
     await Promise.all([
       publicPage.waitForResponse(
         (response) =>
@@ -234,7 +263,7 @@ async function main() {
           response.ok(),
         { timeout: 20000 }
       ),
-      publicPage.getByRole('button', { name: /^submit feedback$/i }).click(),
+      publicPage.getByRole('button', { name: /send what I wrote/i }).click(),
     ]);
     await publicPage.getByText(/Thank you\. We have what you sent\./i).waitFor({ timeout: 20000 });
     notes.push('Submitted public feedback through the share portal and received the public success state.');
@@ -291,16 +320,33 @@ async function main() {
     await page.getByText(/Approved/i).first().waitFor({ timeout: 20000 });
     await screenshot(page, 'local-engagement-report-handoff-02-moderation-approved');
 
-    await publicPage.goto(`${baseUrl}/engage/${shareToken}`, { waitUntil: 'networkidle' });
+    /*
+      THE FEED IS NOT ON THE MAP PAGE. `/engage/<token>` is the full-screen map
+      and its sidebar — one job, one door, by Nathaniel's 2026-08-13 call — and
+      the comment feed, survey and close-the-loop record live one link away on
+      `/engage/<token>/about`. The smoke still clicked a "Community feedback"
+      tab on the map page, which has not existed since the portal was rebuilt.
+    */
+    await publicPage.goto(`${baseUrl}/engage/${shareToken}/about`, { waitUntil: 'networkidle' });
     await publicPage.getByRole('button', { name: /Community feedback/i }).click();
     await publicPage.getByText(itemTitle, { exact: false }).waitFor({ timeout: 20000 });
     await publicPage.getByText(itemBody, { exact: false }).waitFor({ timeout: 20000 });
     notes.push('Verified approved feedback is visible on the public Community feedback tab.');
     await screenshot(publicPage, 'local-engagement-report-handoff-03-public-feedback-published');
 
-    await page.goto(`${baseUrl}/engagement/${ids.campaignId}`, { waitUntil: 'networkidle' });
+    /*
+      ASK FOR THE TAB THAT HOLDS THE BUTTON. The campaign console is tabbed now
+      and handoff lives under "record", so `/engagement/<id>` opens on "setup"
+      with the button rendered but `display: none`. Playwright then waited out
+      the navigation timeout first, which reported "no navigation happened" and
+      said nothing about the click that never landed — the misleading half of
+      this failure.
+    */
+    await page.goto(`${baseUrl}/engagement/${ids.campaignId}?tab=record`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: campaignTitle, exact: false }).waitFor({ timeout: 20000 });
-    const handoffButton = page.getByRole('button', { name: /^create handoff report$/i });
+    const recordPanel = page.locator('[data-page-tab-panel="record"][data-page-tab-panel-state="open"]');
+    await recordPanel.waitFor({ timeout: 20000 });
+    const handoffButton = recordPanel.getByRole('button', { name: /^create handoff report$/i });
     await Promise.all([
       page.waitForURL(/\/reports\/[0-9a-f-]+$/i, { timeout: 20000 }),
       handoffButton.click(),
