@@ -190,6 +190,13 @@ first-week-runs/<stamp>/
 Runs are gitignored. They hold screenshots of a live local workspace and they
 are evidence for one afternoon, not source.
 
+**Do not watch a run with `pgrep -f first-week-discovery`.** The watching shell's
+own command line contains that string, so it matches itself and the loop never
+ends — it reported "still running" for sixteen hours after the run had finished
+and written its summary. The run prints `N confirmed, M discarded` and the path
+to `summary.md` when it is done; wait on that line, or on the summary file
+appearing, and never on a `pgrep` whose pattern is in its own argv.
+
 ---
 
 ## The regression layer
