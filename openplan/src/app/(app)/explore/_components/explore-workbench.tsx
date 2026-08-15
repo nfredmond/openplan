@@ -45,6 +45,7 @@ import { ExploreRunHistoryPanel } from "./explore-run-history-panel";
 import {
   buildCurrentMapViewState,
   canRunAnalysis,
+  describeRunAnalysisBlock,
   getCrashPointFeatures,
   hasCrashPointLayer,
   resolveActiveDatasetOverlay,
@@ -338,6 +339,11 @@ export function ExploreWorkbench({
 
   const canSubmit = useMemo(
     () => canRunAnalysis({ workspaceId, queryText, corridorGeojson }),
+    [workspaceId, queryText, corridorGeojson]
+  );
+  /** The same three inputs, said out loud — see describeRunAnalysisBlock. */
+  const runBlockReason = useMemo(
+    () => describeRunAnalysisBlock({ workspaceId, queryText, corridorGeojson }),
     [workspaceId, queryText, corridorGeojson]
   );
 
@@ -1079,6 +1085,7 @@ export function ExploreWorkbench({
               isQueryTooLong={isQueryTooLong}
               reportTemplate={reportTemplate}
               canSubmit={canSubmit}
+              blockReason={runBlockReason}
               isSubmitting={isSubmitting}
               analysisRunId={analysisResult?.runId ?? null}
               isGeneratingReport={isGeneratingReport}

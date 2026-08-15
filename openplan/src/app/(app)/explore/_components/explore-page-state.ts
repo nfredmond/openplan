@@ -37,6 +37,58 @@ export function canRunAnalysis({
   );
 }
 
+/**
+ * WHY THE RUN GATE IS CLOSED, in the words of the thing that is actually missing.
+ *
+ * WHERE THIS CAME FROM. A tester searched a place, watched the panel say "Study
+ * area set" with its area in km², pressed Run, and was told to DRAW A CORRIDOR —
+ * the one thing they had just done. They had not yet typed the question, and the
+ * refusal said so nowhere. They filed it as a blocker and reported the panel and
+ * the run wizard as disagreeing about what counts as a corridor. They were not
+ * disagreeing: the gate wants three things and the refusal only ever named one.
+ *
+ * Being told to redo work you have already done is worse than being told
+ * nothing, because it sends a planner back to a map that was never the problem.
+ *
+ * ONE DEFINITION, because the disabled trigger's hint and the wizard's own
+ * refusal used to be two hand-written strings that could not both stay true.
+ * Returns null when the gate is OPEN, so a caller cannot render a reason that
+ * does not exist.
+ */
+export function describeRunAnalysisBlock({
+  workspaceId,
+  queryText,
+  corridorGeojson,
+}: {
+  workspaceId: string;
+  queryText: string;
+  corridorGeojson: CorridorGeometry | null;
+}): string | null {
+  if (!workspaceId) {
+    return "This workspace is still loading. Give it a moment, and reload the page if it does not settle.";
+  }
+
+  const trimmed = queryText.trim();
+  const needsArea = !corridorGeojson;
+  const needsQuestion = trimmed.length === 0;
+
+  // Both missing is the opening state, and naming both is what stops a planner
+  // fixing one and being refused again for the other.
+  if (needsArea && needsQuestion) {
+    return "Set the study area — search a place or draw one — and write the question this run should answer.";
+  }
+  if (needsArea) {
+    return "Set the study area first: search a place, draw one on the map, or upload a boundary file.";
+  }
+  if (needsQuestion) {
+    return "Write the question this run should answer. The study area is set.";
+  }
+  if (trimmed.length > ANALYSIS_QUERY_MAX_CHARS) {
+    return `The question is ${trimmed.length.toLocaleString()} characters, and the limit is ${ANALYSIS_QUERY_MAX_CHARS.toLocaleString()}. Shorten it and run again.`;
+  }
+  return null;
+}
+
 export function resolveActiveDatasetOverlay(
   analysisContext: AnalysisContextResponse | null,
   activeDatasetOverlayId: string | null

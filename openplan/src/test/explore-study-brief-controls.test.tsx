@@ -9,6 +9,7 @@ function renderControls(overrides: Partial<Parameters<typeof ExploreStudyBriefCo
     isQueryTooLong: false,
     reportTemplate: "atp" as const,
     canSubmit: true,
+  blockReason: null,
     isSubmitting: false,
     analysisRunId: "run-1",
     isGeneratingReport: false,
@@ -60,6 +61,7 @@ describe("ExploreStudyBriefControls", () => {
     const props = renderControls({
       isQueryTooLong: true,
       canSubmit: false,
+  blockReason: "Set the study area first: search a place, draw one on the map, or upload a boundary file."
     });
 
     expect(screen.getByText("That question is too long to run. Open the setup and shorten it.")).toBeInTheDocument();

@@ -22,6 +22,12 @@ type ExploreStudyBriefControlsProps = {
   isQueryTooLong: boolean;
   reportTemplate: ReportTemplate;
   canSubmit: boolean;
+  /**
+   * Why the run cannot start, or null when it can. Passed in rather than
+   * re-derived here so the hint under the button and the wizard's own refusal
+   * are the same sentence — they were once two, and they disagreed.
+   */
+  blockReason: string | null;
   isSubmitting: boolean;
   analysisRunId: string | null;
   isGeneratingReport: boolean;
@@ -69,6 +75,7 @@ export function ExploreStudyBriefControls({
   isQueryTooLong,
   reportTemplate,
   canSubmit,
+  blockReason,
   isSubmitting,
   analysisRunId,
   isGeneratingReport,
@@ -194,9 +201,12 @@ export function ExploreStudyBriefControls({
       onSelectedProjectIdChange?.(values.projectId);
       onReportTemplateChange(values.reportTemplate);
       if (!canSubmit) {
-        // Belt to the disabled trigger's braces: the corridor can be cleared
-        // from the map while the sheet is open.
-        return "Draw a corridor on the map first — the analysis needs one to work with.";
+        // Belt to the disabled trigger's braces: the study area can be cleared
+        // from the map while the sheet is open. The reason comes from the same
+        // function the hint below uses, so the two cannot name different
+        // missing things — which is exactly how a planner was once told to draw
+        // an area they had already set.
+        return blockReason ?? "This run cannot start yet.";
       }
       await onRunAnalysis();
     },
@@ -262,11 +272,7 @@ export function ExploreStudyBriefControls({
             {isSubmitting ? "Running analysis..." : "Run Analysis"}
           </Button>
           {!canSubmit && !isSubmitting ? (
-            <p className="analysis-studio-note">
-              {hasQuestion
-                ? "Draw a corridor on the map to run this."
-                : "Set up a question, and draw a corridor on the map, to run this."}
-            </p>
+            <p className="analysis-studio-note">{blockReason}</p>
           ) : null}
           {analysisRunId ? (
             <div className="flex gap-2">
