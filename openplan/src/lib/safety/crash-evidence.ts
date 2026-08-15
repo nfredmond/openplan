@@ -385,8 +385,36 @@ export type SafetyCrashEvidenceSupabaseLike = {
   rpc(
     name: string,
     args: Record<string, unknown>
-  ): PromiseLike<{ data: unknown; error: unknown }>;
+  ): PromiseLike<{ data: unknown; error: unknown }> & {
+    /** PostgREST range header. Present on the real builder; see the paging note below. */
+    range?: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>;
+  };
 };
+
+/**
+ * How many rows to ask for per page.
+ *
+ * POSTGREST CAPS A FUNCTION RESULT THE SAME WAY IT CAPS A TABLE READ. Measured
+ * on 2026-08-14 against this deployment with a throwaway function returning
+ * 1,500 rows: psql returned 1,500, the REST endpoint returned exactly 1,000.
+ * This RPC returns one row per (ingest, dimension, value) — about eleven per
+ * populated acquisition — so a workspace somewhere north of ninety acquisitions
+ * would have had bands silently dropped from the RTP safety criterion, the BCA
+ * screening input, the grants board and drafted grant narratives. Nothing would
+ * have looked wrong; the counts would simply have been low, in documents that
+ * go to funders.
+ *
+ * Paging is deliberately cap-AGNOSTIC: it keeps asking until a page comes back
+ * short, so it stays correct if an operator raises or lowers `max-rows` on
+ * their own install. The page size is a request, never an assumption about what
+ * the server will honour.
+ */
+const EVIDENCE_COUNT_PAGE_SIZE = 500;
+
+/** A defensive ceiling: 200 pages is far past any real workspace and stops a
+ *  server that ignores range headers from looping forever. Hitting it is
+ *  treated as a FAILED read, not a complete one. */
+const EVIDENCE_COUNT_MAX_PAGES = 200;
 
 /**
  * Fold the RPC's long result into per-ingest count maps.
@@ -464,14 +492,42 @@ export async function loadSafetyCrashEvidence(
   const ingestIds = Array.from(new Set(ingests.map((ingest) => ingest.id)));
   if (ingestIds.length === 0) return new Map();
 
-  const { data, error } = await supabase.rpc(SAFETY_CRASH_EVIDENCE_COUNTS_RPC, {
-    p_workspace_id: workspaceId,
-    p_ingest_ids: ingestIds,
-  });
+  const rows: EvidenceCountRow[] = [];
+  let failed = false;
 
-  const countsByIngest = error
-    ? null
-    : foldCrashEvidenceCounts(Array.isArray(data) ? (data as EvidenceCountRow[]) : []);
+  for (let page = 0; page < EVIDENCE_COUNT_MAX_PAGES; page += 1) {
+    const query = supabase.rpc(SAFETY_CRASH_EVIDENCE_COUNTS_RPC, {
+      p_workspace_id: workspaceId,
+      p_ingest_ids: ingestIds,
+    });
+    const from = page * EVIDENCE_COUNT_PAGE_SIZE;
+    // A client without `.range` (the older structural fakes, and any caller
+    // passing a minimal stub) gets one unpaged read rather than an exception —
+    // and one unpaged read is exactly the previous behaviour, so nothing that
+    // worked before breaks here.
+    const { data, error } = await (query.range
+      ? query.range(from, from + EVIDENCE_COUNT_PAGE_SIZE - 1)
+      : query);
+
+    if (error) {
+      failed = true;
+      break;
+    }
+
+    const batch = Array.isArray(data) ? (data as EvidenceCountRow[]) : [];
+    rows.push(...batch);
+
+    // Short page means the server had nothing more. A FULL page means there may
+    // be more even if there is not, so it asks again; one extra empty request
+    // is the price of never silently stopping at a cap.
+    if (!query.range || batch.length < EVIDENCE_COUNT_PAGE_SIZE) break;
+
+    // The loop's last iteration ran a full page, so more rows may remain and
+    // this read cannot claim to be complete.
+    if (page === EVIDENCE_COUNT_MAX_PAGES - 1) failed = true;
+  }
+
+  const countsByIngest = failed ? null : foldCrashEvidenceCounts(rows);
 
   return buildSafetyCrashEvidenceMap(ingests, countsByIngest);
 }
