@@ -292,6 +292,31 @@ type SafetyWorkspaceProps = {
   defaultBasemapId?: PublicBasemapId | null;
 };
 
+/**
+ * The rough ground area of a recorded extent, in square kilometres.
+ *
+ * Equirectangular, and that is honest enough for "is this my corridor or my
+ * county" — the question this answers. It is deliberately prefixed with ≈
+ * wherever it is rendered, and it is never presented as a measurement of the
+ * area a planner drew: it is the box the pull used.
+ */
+function describeExtentKm2(scope: {
+  minLon: number;
+  minLat: number;
+  maxLon: number;
+  maxLat: number;
+}): string {
+  const midLat = ((scope.minLat + scope.maxLat) / 2) * (Math.PI / 180);
+  const kmPerDegreeLat = 110.574;
+  const kmPerDegreeLon = 111.32 * Math.cos(midLat);
+  const km2 =
+    Math.abs(scope.maxLat - scope.minLat) *
+    kmPerDegreeLat *
+    Math.abs(scope.maxLon - scope.minLon) *
+    kmPerDegreeLon;
+  return km2 >= 10 ? Math.round(km2).toLocaleString() : km2.toFixed(1);
+}
+
 export function SafetyWorkspace({
   workspaceId,
   latestIngest,
@@ -625,6 +650,21 @@ export function SafetyWorkspace({
           crashCount: summary.crashCount,
           geocodedCount: summary.geocodedCount,
           yearsRequested: years,
+          /*
+            The extent this pull just used. The server records it; this row is
+            built client-side, so without it the acquisition a planner has THIS
+            SECOND created would be the one entry in the list with no area — the
+            worst possible omission, since it is the one they are looking at.
+          */
+          scope: bbox
+            ? {
+                minLon: bbox.minLon,
+                minLat: bbox.minLat,
+                maxLon: bbox.maxLon,
+                maxLat: bbox.maxLat,
+                countyCode: null,
+              }
+            : null,
           createdAt: summary.createdAt,
         },
         ...current.filter((entry) => entry.id !== summary.id),
@@ -1363,6 +1403,27 @@ export function SafetyWorkspace({
                       a real crash that cannot be plotted. */}
                   {entry.crashCount.toLocaleString()} crashes ingested,{" "}
                   {entry.geocodedCount.toLocaleString()} geocoded
+                </span>
+                {/*
+                  WHERE THIS PULL LOOKED. A crash count with no stated area is a
+                  number a planner cannot defend, and this list used to show
+                  source, years, counts and status while saying nothing about
+                  the place — so an acquisition covering one corridor read
+                  identically to one covering a whole county. A tester filed it
+                  as a blocker for exactly that reason.
+
+                  It states the extent, which is what is actually recorded, and
+                  does NOT invent a place name from a county code. Naming the
+                  place means recording it when the pull is made.
+                */}
+                <span className="text-muted-foreground">
+                  {entry.scope
+                    ? `covers ≈ ${describeExtentKm2(entry.scope)} km²${
+                        entry.scope.countyCode === null
+                          ? ""
+                          : ` · county code ${entry.scope.countyCode}`
+                      }`
+                    : "area not recorded for this import"}
                 </span>
                 <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
                   {entry.status}

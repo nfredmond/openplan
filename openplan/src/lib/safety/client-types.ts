@@ -194,7 +194,37 @@ export type SafetyIngestHistoryEntry = {
   /** Of those, how many carry coordinates and can therefore be mapped. */
   geocodedCount: number;
   yearsRequested: number[];
+  /**
+   * The area this pull covered, as recorded when it ran.
+   *
+   * A crash count with no stated area is a number a planner cannot defend. The
+   * history listed source, years, counts and status, and said nothing at all
+   * about WHERE — so an acquisition attached to a project could not be told
+   * apart from one covering a whole county. The database has always stored the
+   * extent; it simply was not selected, was not on this type, and never reached
+   * the screen.
+   *
+   * Null when the row records no extent, which is not the same as covering
+   * nothing and must not be rendered as an area of zero.
+   */
+  scope: SafetyIngestScope | null;
   createdAt: string;
+};
+
+/**
+ * Where an acquisition looked. Deliberately not a place NAME: the pull records
+ * a bounding box and, for some sources, a county code, and no place label is
+ * stored at request time. Naming the place properly means recording it when the
+ * pull is made — the fuller fix, and a migration. Until then this says exactly
+ * what is known rather than guessing a name from a code.
+ */
+export type SafetyIngestScope = {
+  minLon: number;
+  minLat: number;
+  maxLon: number;
+  maxLat: number;
+  /** The source's own county identifier, when the pull was scoped to one. */
+  countyCode: number | null;
 };
 
 export const SEVERITY_LABELS: Record<CrashSeverity, string> = {

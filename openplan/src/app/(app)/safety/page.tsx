@@ -189,7 +189,7 @@ export default async function SafetyPage({
     supabase
       .from("safety_crash_ingests")
       .select(
-        "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,fetch_error,created_at"
+        "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code"
       )
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false })
@@ -225,6 +225,17 @@ export default async function SafetyPage({
       }
     : null;
 
+  /** Read the recorded extent, or null when the row has none. */
+  function readIngestScope(row: Record<string, unknown>) {
+    const numbers = [row.min_lon, row.min_lat, row.max_lon, row.max_lat].map((value) =>
+      typeof value === "number" ? value : Number(value)
+    );
+    if (!numbers.every((value) => Number.isFinite(value))) return null;
+    const [minLon, minLat, maxLon, maxLat] = numbers;
+    const countyCode = typeof row.county_code === "number" ? row.county_code : null;
+    return { minLon, minLat, maxLon, maxLat, countyCode };
+  }
+
   const ingestHistory: SafetyIngestHistoryEntry[] = ((ingestRows ?? []) as Array<
     Record<string, unknown>
   >).map((row) => ({
@@ -236,6 +247,9 @@ export default async function SafetyPage({
     crashCount: Number(row.crash_count ?? 0),
     geocodedCount: Number(row.geocoded_count ?? 0),
     yearsRequested: (row.years_requested as number[] | null) ?? [],
+    // A row with no extent recorded yields null, never a zero-size box: "we did
+    // not record where" and "it covered nothing" are different statements.
+    scope: readIngestScope(row),
     createdAt: row.created_at as string,
   }));
 
