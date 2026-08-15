@@ -1,3 +1,10 @@
+import {
+  loadSafetyCrashEvidence,
+  readSafetyCrashEvidenceIngest,
+  SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION,
+  type SafetyCrashEvidence,
+  type SafetyCrashEvidenceSupabaseLike,
+} from "@/lib/safety/crash-evidence";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -2041,6 +2048,41 @@ export async function POST(request: NextRequest, context: RouteContext) {
       (sectionKey) => factsHash(buildReportSectionFacts(sectionFactsInput, sectionKey))
     );
 
+    /**
+     * The crash evidence attached to this project.
+     *
+     * A tester attached real crash data, named the project "Safety Study",
+     * regenerated the packet, and got zero safety content — because nothing
+     * here ever asked. The read is deliberately allowed to FAIL to null rather
+     * than throw: a packet that cannot be generated is worse than one that says
+     * this section could not be read, and the section distinguishes the two.
+     */
+    let safetyEvidence: SafetyCrashEvidence[] | null = [];
+    try {
+      const { data: safetyIngestRows, error: safetyIngestError } = await supabase
+        .from("safety_crash_ingests")
+        .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
+        .eq("workspace_id", report.workspace_id)
+        .eq("project_id", projectRow.id)
+        .order("created_at", { ascending: false });
+
+      if (safetyIngestError) {
+        safetyEvidence = null;
+      } else {
+        const ingests = (safetyIngestRows ?? [])
+          .map((row) => readSafetyCrashEvidenceIngest(row as unknown as Record<string, unknown>))
+          .filter((ingest): ingest is NonNullable<typeof ingest> => ingest !== null);
+        const evidenceByIngest = await loadSafetyCrashEvidence(
+          supabase as unknown as SafetyCrashEvidenceSupabaseLike,
+          report.workspace_id,
+          ingests
+        );
+        safetyEvidence = [...evidenceByIngest.values()];
+      }
+    } catch {
+      safetyEvidence = null;
+    }
+
     const html = buildReportHtml({
       report,
       // Cast: the projection is a template literal (binding columns
@@ -2050,6 +2092,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       project: projectRow,
       runs: linkedRuns,
       sections: sectionsResult.data ?? [],
+      safetyEvidence,
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
         id: item.id,
         title: item.title,

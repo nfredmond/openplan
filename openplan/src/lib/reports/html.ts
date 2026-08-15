@@ -15,12 +15,17 @@ import {
 } from "@/lib/reports/evidence-chain";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 import {
+  buildPacketSafetyEvidence,
+  PROJECT_SAFETY_SECTION_KEY,
+} from "@/lib/reports/safety-evidence-section";
+import {
   buildPacketGeographyFigure,
   PROJECT_GEOGRAPHY_SECTION_KEY,
   PROJECT_GEOGRAPHY_SECTION_TITLE,
   type PacketGeographyFigure,
   type PacketGeographyInput,
 } from "@/lib/reports/geography-figure";
+import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import {
@@ -153,6 +158,13 @@ export type ReportGenerationData = {
   };
   stageGateSnapshot: ProjectStageGateSnapshot;
   modelingEvidence: ReportModelingEvidence[];
+  /**
+   * The crash evidence attached to this project, or null when the read FAILED.
+   * Optional so existing callers keep working — but `undefined` and `null` mean
+   * different things here and the section says so: nothing attached versus
+   * could not be read.
+   */
+  safetyEvidence?: readonly SafetyCrashEvidence[] | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   citedCountyRuns?: ReportCitedCountyRun[];
@@ -841,6 +853,55 @@ function packetGeographyBodyMarkup(data: ReportGenerationData): string {
  * band beside the evidence chain and the stage-gate snapshot, and stands down
  * the moment a real section carries it, so no packet prints it twice.
  */
+/**
+ * The packet's crash evidence.
+ *
+ * Every figure renders with the sentences that qualify it, and an absent figure
+ * renders its REASON rather than a zero — a board reading "0 killed or
+ * seriously injured" because a source cannot separate serious injuries has been
+ * told the opposite of the truth.
+ */
+function packetSafetyBodyMarkup(data: ReportGenerationData): string {
+  // `??` would collapse null into [] and render a FAILED READ as "no crash
+  // data attached" — the two sentences this section exists to keep apart.
+  // undefined means a caller that predates this field; null means the read failed.
+  const built = buildPacketSafetyEvidence(
+    data.safetyEvidence === undefined ? [] : data.safetyEvidence
+  );
+
+  if (built.kind === "unreadable") {
+    return `<p>The crash evidence attached to this project could not be read while this packet was generated. That is a failed read, not a finding: it does not mean no crash data is attached. Regenerate the packet, and until it succeeds this section must not be read as evidence that there were no collisions.</p>`;
+  }
+
+  if (built.kind === "none") {
+    return `<p>No crash data is attached to this project. That is not a statement that no collisions happened here — it is a statement that none have been retrieved into OpenPlan for this project.</p>`;
+  }
+
+  return built.acquisitions
+    .map(
+      (acquisition) => `<div class="packet-safety-acquisition">
+      <h3>${esc(acquisition.sourceLabel)}</h3>
+      <p>Years requested: ${esc(acquisition.years)}</p>
+      <dl class="detail-grid">
+        ${acquisition.figures
+          .map(
+            (figure) => `<div><dt>${esc(figure.label)}</dt><dd>${
+              figure.value === null
+                ? `Not available — ${esc(figure.absentBecause ?? "no reason recorded")}`
+                : esc(figure.value.toLocaleString())
+            }</dd></div>`
+          )
+          .join("")}
+      </dl>
+      <ul>
+        ${acquisition.caveats.map((caveat) => `<li>${esc(caveat)}</li>`).join("")}
+      </ul>
+      <p>${esc(acquisition.citation)}</p>
+    </div>`
+    )
+    .join("");
+}
+
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
   // `sectionListCarriesIt` counts a DISABLED section too. A report whose
   // section list names geography has already been asked the question, and an
@@ -1246,6 +1307,13 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
     return packetGeographyBodyMarkup(data);
   }
 
+  if (sectionKey === PROJECT_SAFETY_SECTION_KEY) {
+    return packetSafetyBodyMarkup(data);
+  }
+
+
+
+
   if (sectionKey === "deliverables") {
     return listMarkup(data.deliverables, "No deliverables are attached yet.");
   }
@@ -1565,6 +1633,8 @@ const CAMPAIGN_PROJECT_SCOPED_SECTION_SUBJECTS: Record<string, string> = {
   // no site point. Drawing the campaign's own comment pins here would answer a
   // different question than the one the section asks.
   [PROJECT_GEOGRAPHY_SECTION_KEY]: "A project's study area, corridors and map point",
+  [PROJECT_SAFETY_SECTION_KEY]:
+    "Reported collisions attached to this project, with the caveats that qualify them",
   deliverables: "Deliverables",
   risks_issues: "Project risks and issues",
   decisions_meetings: "Project decisions and meetings",

@@ -53,6 +53,7 @@ function renderHistory(history: SafetyIngestHistoryEntry[]) {
   render(
     <SafetyWorkspace
       workspaceId="w1"
+      latestIngest={null}
       ingestHistory={history}
       projects={[]}
       basemapChoices={[]}

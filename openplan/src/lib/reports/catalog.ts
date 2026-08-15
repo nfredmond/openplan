@@ -8,6 +8,10 @@ import {
   PROJECT_GEOGRAPHY_SECTION_KEY,
   PROJECT_GEOGRAPHY_SECTION_TITLE,
 } from "@/lib/reports/geography-figure";
+import {
+  PROJECT_SAFETY_SECTION_KEY,
+  PROJECT_SAFETY_SECTION_TITLE,
+} from "@/lib/reports/safety-evidence-section";
 import { formatMoney } from "@/lib/money/format";
 
 export const REPORT_TYPE_OPTIONS = [
@@ -337,35 +341,44 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
       enabled: true,
       sortOrder: 2,
     },
+    // The crash evidence attached to this project, straight after where it is.
+    // A project named "Safety Study" once produced a packet with no safety
+    // content at all, because nothing here ever asked the safety module.
+    {
+      sectionKey: PROJECT_SAFETY_SECTION_KEY,
+      title: PROJECT_SAFETY_SECTION_TITLE,
+      enabled: true,
+      sortOrder: 3,
+    },
     {
       sectionKey: "deliverables",
       title: "Deliverables",
       enabled: true,
-      sortOrder: 3,
+      sortOrder: 4,
     },
     {
       sectionKey: "risks_issues",
       title: "Risks and issues",
       enabled: true,
-      sortOrder: 4,
+      sortOrder: 5,
     },
     {
       sectionKey: "decisions_meetings",
       title: "Decisions and meetings",
       enabled: true,
-      sortOrder: 5,
+      sortOrder: 6,
     },
     {
       sectionKey: "activity_timeline",
       title: "Recent activity timeline",
       enabled: true,
-      sortOrder: 6,
+      sortOrder: 7,
     },
     {
       sectionKey: "assumptions_provenance",
       title: "Methods and provenance",
       enabled: true,
-      sortOrder: 7,
+      sortOrder: 8,
     },
   ],
   analysis_summary: [
@@ -384,24 +397,33 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
       enabled: true,
       sortOrder: 1,
     },
+    // The crash evidence attached to this project, straight after where it is.
+    // A project named "Safety Study" once produced a packet with no safety
+    // content at all, because nothing here ever asked the safety module.
+    {
+      sectionKey: PROJECT_SAFETY_SECTION_KEY,
+      title: PROJECT_SAFETY_SECTION_TITLE,
+      enabled: true,
+      sortOrder: 2,
+    },
     {
       sectionKey: "run_summaries",
       title: "Selected run summaries",
       enabled: true,
-      sortOrder: 2,
+      sortOrder: 3,
     },
-    { sectionKey: "key_metrics", title: "Key metrics", enabled: true, sortOrder: 3 },
+    { sectionKey: "key_metrics", title: "Key metrics", enabled: true, sortOrder: 4 },
     {
       sectionKey: "artifacts_context",
       title: "Attached map and artifact context",
       enabled: true,
-      sortOrder: 4,
+      sortOrder: 5,
     },
     {
       sectionKey: "methods_assumptions",
       title: "Methods and assumptions",
       enabled: true,
-      sortOrder: 5,
+      sortOrder: 6,
     },
   ],
   board_packet: [
@@ -422,23 +444,32 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
       enabled: true,
       sortOrder: 2,
     },
+    // The crash evidence attached to this project, straight after where it is.
+    // A project named "Safety Study" once produced a packet with no safety
+    // content at all, because nothing here ever asked the safety module.
+    {
+      sectionKey: PROJECT_SAFETY_SECTION_KEY,
+      title: PROJECT_SAFETY_SECTION_TITLE,
+      enabled: true,
+      sortOrder: 3,
+    },
     {
       sectionKey: "project_records_digest",
       title: "Project records digest",
       enabled: true,
-      sortOrder: 3,
+      sortOrder: 4,
     },
     {
       sectionKey: "analysis_summaries",
       title: "Analysis summaries",
       enabled: true,
-      sortOrder: 4,
+      sortOrder: 5,
     },
     {
       sectionKey: "appendix_references",
       title: "Appendix and references",
       enabled: true,
-      sortOrder: 5,
+      sortOrder: 6,
     },
   ],
 };
