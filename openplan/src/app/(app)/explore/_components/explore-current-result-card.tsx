@@ -1,5 +1,10 @@
 "use client";
 
+import Link from "next/link";
+import {
+  CORRIDOR_ANALYSIS_DOES_NOT_ANSWER,
+  CORRIDOR_ANALYSIS_TRAFFIC_HREF,
+} from "@/lib/analysis/what-this-answers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -174,6 +179,24 @@ export function ExploreCurrentResultCard({
               {decisionUse.label}
             </p>
             <p className="mt-2 text-xs leading-5 text-slate-200/85">{decisionUse.detail}</p>
+            {/*
+              WHAT THIS RESULT IS NOT, beside the result rather than in help.
+
+              A tester ran this to answer "how much traffic and how much
+              driving", read scores for accessibility, safety and equity, and had
+              to work out for themselves that the question had not been answered.
+              Saying it here costs one sentence; not saying it cost them the job.
+            */}
+            <p className="mt-2 text-xs leading-5 text-slate-200/85">
+              {CORRIDOR_ANALYSIS_DOES_NOT_ANSWER}{" "}
+              <Link
+                href={CORRIDOR_ANALYSIS_TRAFFIC_HREF}
+                className="underline underline-offset-2"
+              >
+                Run a travel model
+              </Link>
+              .
+            </p>
           </div>
         </div>
 
