@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TRAVEL_MODEL_WHAT_IT_TAKES } from "@/lib/analysis/what-this-answers";
 import { redirect } from "next/navigation";
 import { ArrowRight, Database, FolderKanban, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -387,6 +388,16 @@ export default async function ModelsPage({
             <p className="module-intro-description">
               Keep methods, assumptions, and results connected to the plans and projects they support.
             </p>
+            {/*
+              WHAT THIS ROUTE COSTS, on arrival rather than partway through. A
+              tester followed the trail here from "how much traffic" and found a
+              multi-step engineering workflow they could not finish in a week.
+              The workflow is not the defect — estimating traffic honestly is
+              expert work — but discovering its shape only after committing to it
+              was. Shares one constant with the sentence on Corridor Analysis
+              that sends people here, so the two ends of that link agree.
+            */}
+            <p className="module-intro-description">{TRAVEL_MODEL_WHAT_IT_TAKES}</p>
             {activeFilters.projectId ? (
               // Every tile and every row below belongs to one project, so the
               // scope has to be stated where the reader cannot miss it and be

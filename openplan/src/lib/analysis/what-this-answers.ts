@@ -32,3 +32,25 @@ export const CORRIDOR_ANALYSIS_DOES_NOT_ANSWER =
 
 /** Where a planner goes for the number this tool cannot give them. */
 export const CORRIDOR_ANALYSIS_TRAFFIC_HREF = "/models";
+
+/**
+ * What the travel-model route costs, said on arrival.
+ *
+ * The other half of the link above. A tester followed the trail from "how much
+ * traffic" to this lane and found a multi-step engineering workflow — upload a
+ * road network, build scenarios, run, validate against field counts — and
+ * described it as "not something achievable by a non-modeller in a week". They
+ * were right, and that is not a defect in the workflow: estimating traffic
+ * honestly is expert work and shortening it by hiding steps would produce a
+ * number nobody could defend.
+ *
+ * What WAS a defect is that they discovered the shape of the job only after
+ * committing to it. This says it on arrival.
+ *
+ * IT PROMISES NOTHING ABOUT ACCURACY. The estimate this route produces is
+ * screening-grade and carries its own grade beside its own figures; repeating a
+ * quality claim here would put a second, unqualified version of it in the
+ * product.
+ */
+export const TRAVEL_MODEL_WHAT_IT_TAKES =
+  "This is where a traffic or miles-driven estimate comes from, and it is the longer route: it needs a road network file for your area, scenarios to compare, and a run to validate against real counts. It is expert work rather than a quick screening — worth knowing before you start rather than partway through.";

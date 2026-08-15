@@ -5,6 +5,7 @@ import { ExploreEmptyResultBoard } from "@/app/(app)/explore/_components/explore
 import {
   CORRIDOR_ANALYSIS_DOES_NOT_ANSWER,
   CORRIDOR_ANALYSIS_TRAFFIC_HREF,
+  TRAVEL_MODEL_WHAT_IT_TAKES,
 } from "@/lib/analysis/what-this-answers";
 
 vi.mock("next/link", () => ({
@@ -60,5 +61,28 @@ describe("the tool says what it does not answer", () => {
     // grade beside its own figures, and duplicating that claim here would put a
     // second, unqualified version of it in the product.
     expect(CORRIDOR_ANALYSIS_DOES_NOT_ANSWER).not.toMatch(/accurate|precise|reliable|exact/i);
+  });
+
+  /**
+   * THE OTHER END OF THAT LINK.
+   *
+   * Sending somebody to the travel-model route without saying what it involves
+   * moves the disappointment rather than removing it. The tester who followed
+   * this trail found a multi-step engineering workflow and could not finish it
+   * in a week — which is honest, because estimating traffic properly is expert
+   * work, and shortening it by hiding steps would produce a number nobody could
+   * defend. What they should have known is the SHAPE of the job, on arrival.
+   */
+  it("says what the route it points at actually involves", () => {
+    expect(TRAVEL_MODEL_WHAT_IT_TAKES).toMatch(/road network/i);
+    expect(TRAVEL_MODEL_WHAT_IT_TAKES).toMatch(/longer route|expert work/i);
+    // Before you start, not partway through — the tester's actual complaint.
+    expect(TRAVEL_MODEL_WHAT_IT_TAKES).toMatch(/before you start/i);
+  });
+
+  it("still promises nothing about how good that estimate is", () => {
+    // The run carries its own grade beside its own figures. A second,
+    // unqualified quality claim here would be the one that gets quoted.
+    expect(TRAVEL_MODEL_WHAT_IT_TAKES).not.toMatch(/accurate|precise|reliable|exact|definitive/i);
   });
 });
