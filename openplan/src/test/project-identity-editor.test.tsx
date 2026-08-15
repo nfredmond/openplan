@@ -93,6 +93,41 @@ describe("ProjectIdentityEditor", () => {
     });
   });
 
+  /**
+   * A HAND-DRAWN AREA HAS NO PLACE NAME, AND THIS ONCE READ THAT AS NO AREA.
+   *
+   * A fresh tester drew a study-area polygon, saved it, reloaded, and this
+   * readout said "No study area set" while the board on the same page said the
+   * area "was drawn by hand". Saving had worked; the readout was asking the
+   * wrong question — `label`, which a saved drawn area does not carry, instead
+   * of `source`, which says whether one exists at all. The case above this one
+   * covers a drawn area that DOES have a name; this is the one a planner
+   * actually produces by drawing.
+   */
+  it("shows a saved hand-drawn area with no name as present, not as no study area", () => {
+    render(
+      <ProjectIdentityEditor
+        project={{
+          ...PROJECT,
+          place: {
+            ...EMPTY_PLACE_OF_RECORD,
+            source: DRAWN_PLACE_SOURCE,
+            label: null,
+            geometry: { type: "Polygon", coordinates: [] },
+          },
+        }}
+        canWrite
+      />
+    );
+
+    // The denial is the defect; its absence is the assertion that matters.
+    expect(screen.queryByText(/no study area set/i)).toBeNull();
+    // "Drawn area" appears twice by design — the badge naming the unnamed shape,
+    // and the sentence saying what a drawn area cannot be used for downstream.
+    expect(screen.getAllByText(/drawn area/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/cannot derive a county filter/i)).toBeTruthy();
+  });
+
   it("names the real fallback when no area is set, and never invents one", () => {
     const { rerender } = render(
       <ProjectIdentityEditor project={PROJECT} canWrite workspaceHomeLabel="Franklin County, Ohio" />

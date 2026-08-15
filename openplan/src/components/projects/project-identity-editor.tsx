@@ -486,10 +486,22 @@ export function ProjectIdentityEditor({
 
         {!editingPlace ? (
           <div className="mt-3">
-            {project.place.label ? (
+            {/*
+              A STUDY AREA WITHOUT A NAME IS STILL A STUDY AREA.
+
+              This branched on `label` alone, and a hand-drawn area carries no
+              place name — so immediately after saving a polygon, and after a
+              reload, this readout said "No study area set" while the board on
+              the SAME PAGE said the area "was drawn by hand". A fresh tester hit
+              it on 2026-08-14 and could not tell which was true. The board reads
+              `place.source`, which is the thing that actually says whether an
+              area exists; this now agrees with it, and falls back to naming the
+              shape rather than denying it.
+            */}
+            {project.place.label || placeIsDrawn ? (
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone={placeIsDrawn ? "warning" : "success"}>
-                  {project.place.label}
+                  {project.place.label || "Drawn area"}
                 </StatusBadge>
                 {placeIsDrawn ? (
                   <span className="text-sm text-muted-foreground">
