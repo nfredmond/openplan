@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient, type LocalSupabaseEnv } from "./local-supabase-env";
-import { resolveLocalDbContainer, queryCatalog } from "./helpers/live-catalog";
+import { resolveLocalDbContainer, queryCatalog, executeSql } from "./helpers/live-catalog";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 type ProbeRow = Record<string, unknown>;
@@ -33,6 +33,24 @@ type WorkspaceRlsProbe = {
     /** The tenant-B parent id the fixture row hangs off. */
     value: (context: SeedContext) => string;
   };
+  /**
+   * SEED THIS ROW WITH SQL INSTEAD OF THE CLIENT, for the one table the client
+   * physically cannot write.
+   *
+   * `workspace_gis_features` holds a PostGIS `geometry` column, and PostgREST
+   * has no way to write one from a JSON insert — the migration says so and
+   * routes both directions through SQL functions for exactly that reason. The
+   * table is still workspace-scoped and still READABLE through PostgREST as
+   * long as the projection leaves `geom` out, so its isolation is testable even
+   * though its seeding is not.
+   *
+   * The alternative was to excuse it, and an excuse here would have been wrong:
+   * this table is the one that holds the actual shapes an agency uploaded, and
+   * "we could not conveniently insert a fixture" is not a reason to leave the
+   * biggest table in the lane unproven. `build()` is still required, so the
+   * generic read path knows what to look for.
+   */
+  seedSql?: (context: SeedContext) => string;
 };
 
 type SeedContext = {
@@ -50,6 +68,9 @@ type SeedContext = {
   gtfsFeedVersionBId: string;
   kbDocumentBId: string;
   safetyCrashIngestBId: string;
+  safetyCrashBId: string;
+  gisLayerBId: string;
+  gisLayerVersionBId: string;
   dataConnectorBId: string;
   dataDatasetBId: string;
   modelBId: string;
@@ -441,8 +462,8 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "safety_crashes",
     select: "id,workspace_id",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, safetyCrashIngestBId, suffix }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, safetyCrashIngestBId, safetyCrashBId, suffix }) => ({
+      id: safetyCrashBId,
       workspace_id: workspaceBId,
       ingest_id: safetyCrashIngestBId,
       source_id: "ccrs-ca",
@@ -450,6 +471,36 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       severity: "injury",
       latitude: 39.2,
       longitude: -121.0,
+    }),
+  },
+  {
+    /*
+      THE PEOPLE IN THE CRASHES — the most person-level rows in the schema, and
+      unprobed from the day they shipped (2026-08-12) until this was written.
+
+      A row here is one human being involved in one collision: their role, their
+      age band, and what happened to them. It is not identified by name, but a
+      tenant who could read another agency's parties would learn the age and
+      outcome of every person hurt on that agency's roads. `safety_crashes` has
+      been probed since it existed; its child table was added three days later
+      and nothing followed it here.
+
+      Must be inserted after safety_crashes (FK on crash_id), which is why it
+      sits directly below it — INSERT_ORDER follows this array's order.
+    */
+    table: "safety_crash_parties",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, safetyCrashIngestBId, safetyCrashBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      crash_id: safetyCrashBId,
+      ingest_id: safetyCrashIngestBId,
+      source_id: "ccrs-ca",
+      external_party_id: `rls-party-${suffix}`,
+      party_role: "pedestrian",
+      age_band: "65_plus",
+      person_injury: "suspected_serious",
     }),
   },
   {
@@ -876,6 +927,94 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       body: `RLS reminder body ${suffix}`,
     }),
   },
+  /*
+    ─────────────────────────────────────────────────────────────────────────
+    THE AGENCY'S OWN MAP LAYERS (20260812000015–18), four tables that shipped
+    on 2026-08-12 and went unprobed until this was written.
+
+    These hold whatever a planning department uploaded: parcel fabrics, right
+    of way, sewer mains, draft alignments nobody outside the agency should see
+    yet. The layer row names it, the version row records where the bytes are
+    and what coordinate system was claimed, the features are the shapes, and a
+    reference records what adopted the layer.
+
+    They are LAST in this array on purpose. INSERT_ORDER follows array order,
+    and the chain is layer → version → features/references. The layer's
+    `current_version_id` is nullable, which is what breaks the circular
+    reference between the first two.
+    ─────────────────────────────────────────────────────────────────────────
+  */
+  {
+    table: "workspace_gis_layers",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, gisLayerBId, userBId, suffix }) => ({
+      id: gisLayerBId,
+      workspace_id: workspaceBId,
+      name: `RLS layer ${suffix}`,
+      created_by: userBId,
+    }),
+  },
+  {
+    table: "workspace_gis_layer_versions",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, gisLayerBId, gisLayerVersionBId, userBId, suffix }) => ({
+      id: gisLayerVersionBId,
+      workspace_id: workspaceBId,
+      layer_id: gisLayerBId,
+      version_number: 1,
+      source_format: "geojson",
+      source_filename: `rls-${suffix}.geojson`,
+      source_byte_size: 128,
+      // RFC 7946 says a GeoJSON with no CRS member IS WGS84 — evidence from the
+      // file, not an assertion, so this fixture must NOT carry an author. The
+      // table's claim-tier CHECK enforces that pairing in both directions.
+      srs_name: "WGS 84",
+      srs_basis: "geojson_rfc7946_default",
+      declared_feature_count: 1,
+      feature_count: 1,
+      source_feature_count: 1,
+      ingest_status: "ready",
+      finalized_at: "2099-12-31T00:00:00Z",
+      created_by: userBId,
+    }),
+  },
+  {
+    table: "workspace_gis_features",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    // Seeded with SQL because PostgREST cannot write a PostGIS geometry — see
+    // `seedSql` on the probe type. `build` still describes the row so the read
+    // side of the harness is unchanged.
+    build: ({ workspaceBId, gisLayerBId, gisLayerVersionBId }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      layer_id: gisLayerBId,
+      version_id: gisLayerVersionBId,
+      feature_index: 0,
+      properties: {},
+    }),
+    seedSql: ({ workspaceBId, gisLayerBId, gisLayerVersionBId }) =>
+      `INSERT INTO public.workspace_gis_features
+         (version_id, layer_id, workspace_id, feature_index, geom, properties)
+       VALUES ('${gisLayerVersionBId}', '${gisLayerBId}', '${workspaceBId}', 0,
+               ST_SetSRID(ST_MakePoint(-121.0, 39.2), 4326), '{}'::jsonb)`,
+  },
+  {
+    table: "workspace_gis_layer_references",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, gisLayerBId, projectBId, userBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      layer_id: gisLayerBId,
+      reference_kind: "project",
+      reference_id: projectBId,
+      reference_label: `RLS project ${suffix}`,
+      created_by: userBId,
+    }),
+  },
 ];
 
 const INSERT_ORDER = [
@@ -946,7 +1085,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(59);
+    expect(tables).toHaveLength(64);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -999,6 +1138,7 @@ describe("workspace RLS isolation inventory", () => {
       "rtp_performance_measures",
       "runs",
       "safety_crash_ingests",
+      "safety_crash_parties",
       "safety_crashes",
       "scenario_sets",
       "stage_gate_decisions",
@@ -1006,6 +1146,10 @@ describe("workspace RLS isolation inventory", () => {
       "title_vi_policies",
       "usage_events",
       "work_notifications",
+      "workspace_gis_features",
+      "workspace_gis_layer_references",
+      "workspace_gis_layer_versions",
+      "workspace_gis_layers",
       "workspace_invitations",
       "workspace_members",
     ]);
@@ -1381,6 +1525,9 @@ liveDescribe("workspace RLS live isolation", () => {
       gtfsFeedVersionBId: randomUUID(),
       kbDocumentBId: randomUUID(),
       safetyCrashIngestBId: randomUUID(),
+      safetyCrashBId: randomUUID(),
+      gisLayerBId: randomUUID(),
+      gisLayerVersionBId: randomUUID(),
       dataConnectorBId: randomUUID(),
       dataDatasetBId: randomUUID(),
       modelBId: randomUUID(),
@@ -1411,7 +1558,12 @@ liveDescribe("workspace RLS live isolation", () => {
     await mustInsert(service, "workspace_members", probeByTable("workspace_members").build(context));
 
     for (const table of INSERT_ORDER) {
-      await mustInsert(service, table, probeByTable(table).build(context));
+      const probe = probeByTable(table);
+      if (probe.seedSql) {
+        executeSql(resolveLocalDbContainer(), probe.seedSql(context));
+        continue;
+      }
+      await mustInsert(service, table, probe.build(context));
     }
   }, 60_000);
 

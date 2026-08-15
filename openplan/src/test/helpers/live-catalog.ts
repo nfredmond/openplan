@@ -48,6 +48,29 @@ export function resolveLocalDbContainer(): string {
   return match[0];
 }
 
+/**
+ * Run a statement that is expected to CHANGE something, and fail loudly if it
+ * did not.
+ *
+ * WHY THIS IS SEPARATE FROM `queryCatalog`. A read that returns nothing is a
+ * legitimate answer, so the reader above tolerates it. A seed that inserts
+ * nothing is a vacuous fixture: the probe that follows would then prove
+ * isolation of a row that does not exist, which is the exact shape of test this
+ * repository keeps discovering years later. `ON_ERROR_STOP=1` makes psql exit
+ * non-zero on an SQL error — without it psql prints the error, exits 0, and
+ * `execFileSync` reports success.
+ *
+ * Only for test fixtures against the LOCAL stack. There is no production path
+ * through a docker exec.
+ */
+export function executeSql(container: string, statement: string): void {
+  execFileSync(
+    "docker",
+    ["exec", container, "psql", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-c", statement],
+    { encoding: "utf8" }
+  );
+}
+
 /** One row per line, `-tA` so there is no padding or header to strip. */
 export function queryCatalog(container: string, query: string): string[] {
   const output = execFileSync(
