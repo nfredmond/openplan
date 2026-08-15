@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
+import { ModelRunHeadlineAnswer } from "@/components/models/model-run-headline-answer";
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
 import { ModelRunTripGenScreen } from "@/components/models/model-run-trip-gen-screen";
 import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-panel";
@@ -1462,6 +1463,16 @@ function ModelRunStagingAndArtifacts({
             </div>
           )}
         </div>
+      ) : null}
+
+      {/* THE ANSWER FIRST, ABOVE THE APPARATUS. A tester ran a corridor
+          analysis to completion and the finished run never stated the traffic
+          or the driving they ran it for — those KPIs existed but only rendered
+          inside the ITE screen (one engine) and the CEQA screen (a different
+          question). This panel gives the plain answer a home; it prints nothing
+          the run did not measure. */}
+      {run.status === "succeeded" ? (
+        <ModelRunHeadlineAnswer modelId={modelId} modelRunId={run.id} />
       ) : null}
 
       {(run.status === "succeeded" || run.engine_key === "aequilibrae") ? (

@@ -42,8 +42,9 @@ describe("the stage-gate header names the binding this session wrote", () => {
     vi.restoreAllMocks();
   });
 
+  // `options` exists on the kinds that can offer a rebind at all; the others
+  // (unreadable, no template registered) render no picker by design.
   function firstOption() {
-    if (choices.kind !== "bound" && choices.kind !== "no_binding_recorded") return null;
     const options = "options" in choices ? choices.options : [];
     return options[0] ?? null;
   }
