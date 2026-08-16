@@ -21,6 +21,10 @@ import json
 import os
 import re
 import sqlite3
+from pathlib import Path
+
+from shapely.geometry import Point, shape
+from shapely.ops import unary_union
 
 import count_sources
 
@@ -168,6 +172,28 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
     }
 
 
+def clip_points_to_boundary(points: list, boundary) -> tuple[list, int]:
+    """Keep only the count stations inside the study area; report how many went.
+
+    `covers` rather than `contains`, so a station exactly on the boundary — a
+    "COUNTY LINE" station, which every DOT publishes — is kept rather than
+    silently dropped by a floating-point tie.
+    """
+    inside = [pt for pt in points if boundary.covers(Point(pt["lon"], pt["lat"]))]
+    return inside, len(points) - len(inside)
+
+
+def _load_boundary(path: str):
+    """The study-area polygon, from either a bare geometry or a FeatureCollection."""
+    raw = json.loads(Path(path).read_text())
+    if raw.get("type") == "FeatureCollection":
+        geoms = [shape(feature["geometry"]) for feature in raw["features"]]
+        return unary_union(geoms)
+    if raw.get("type") == "Feature":
+        return shape(raw["geometry"])
+    return shape(raw)
+
+
 def main():
     ap = argparse.ArgumentParser(description="Build a DOT AADT count set for any corridor in a registered region.")
     ap.add_argument("--geojson", help="Pre-fetched AADT GeoJSON (RTE/PM/DESCRIPTION/BACK_AADT/AHEAD_AADT).")
@@ -179,6 +205,16 @@ def main():
                     help="Count-source region key — supplies the publishing agency (see count_sources.COUNT_SOURCES)")
     ap.add_argument("--db", required=True, help="A built AequilibraE project_database.sqlite (for real link names/types)")
     ap.add_argument("--out", required=True, help="Output counts CSV path")
+    ap.add_argument(
+        "--boundary-geojson",
+        help=(
+            "Study-area boundary. Stations whose coordinates fall outside it are DROPPED. "
+            "Strongly recommended whenever --fetch-bbox is used: a bounding box around any real "
+            "study area overlaps its neighbours, and a station on a road the model never built "
+            "scores as 100%% error, which makes the validation gate report a worse number than "
+            "the model deserves and hides real improvement."
+        ),
+    )
     args = ap.parse_args()
 
     # Fails closed on an unregistered region — before any fetch or file write.
@@ -196,6 +232,24 @@ def main():
         ap.error("provide --geojson or --fetch-bbox")
 
     pts = load_points(geojson_path)
+
+    # CLIP TO THE STUDY AREA. Measured 2026-08-16: validating a county run
+    # against a bbox-fetched Caltrans set put 32 of 113 matched stations outside
+    # the county — Tahoe City, Squaw Valley and Truckee-area highways in the
+    # NEXT county, on roads this run's network does not carry traffic for. Every
+    # one scored 100% error and dragged the median there, reporting the model as
+    # twice as wrong as it is. A measuring instrument that counts things it was
+    # never pointed at is the wrong instrument.
+    if args.boundary_geojson:
+        inside, dropped = clip_points_to_boundary(pts, _load_boundary(args.boundary_geojson))
+        print(f"Clipped to study area: kept {len(inside)} stations, dropped {dropped} outside it.")
+        if not inside:
+            raise SystemExit(
+                "error: no count stations fall inside the study-area boundary. Check that the "
+                "boundary and the fetched region describe the same place."
+            )
+        pts = inside
+
     conn = sqlite3.connect(args.db)
     conn.enable_load_extension(True)
     conn.load_extension(SPATIALITE)
