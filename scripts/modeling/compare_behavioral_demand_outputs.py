@@ -50,6 +50,15 @@ def parse_args() -> argparse.Namespace:
         "--volume-column", default="PCE_tot", help="Which link volume column to compare (default: PCE_tot)"
     )
     parser.add_argument(
+        "--first-manifest",
+        help=(
+            "bundle_manifest.json from the first run. Supplies how tightly its assignment "
+            "converged, which decides whether a corridor difference can be attributed to the "
+            "demand model at all."
+        ),
+    )
+    parser.add_argument("--second-manifest", help="bundle_manifest.json from the second run")
+    parser.add_argument(
         "--minimum-volume",
         type=float,
         default=None,
@@ -520,6 +529,21 @@ def read_link_names(path: Path | None) -> dict[int, dict[str, Any]]:
     return names
 
 
+def read_convergence(manifest_path: str | None) -> dict[str, Any] | None:
+    """How tightly a run's assignment converged, out of its own manifest.
+
+    Returns None when there is no manifest, which the verdict treats as
+    'unknown' rather than as 'fine' — an unrecorded gap is not a tight one.
+    """
+    if not manifest_path:
+        return None
+    path = Path(manifest_path).expanduser().resolve()
+    if not path.exists():
+        raise RuntimeError(f"No run manifest at {path}")
+    payload = json.loads(path.read_text())
+    return ((payload.get("assignment") or {}).get("convergence")) or None
+
+
 def compare_link_volume_runs(
     *,
     first_csv: str,
@@ -531,6 +555,8 @@ def compare_link_volume_runs(
     loaded_links_geojson: str | None = None,
     volume_column: str = "PCE_tot",
     minimum_volume: float | None = None,
+    first_manifest: str | None = None,
+    second_manifest: str | None = None,
 ) -> dict[str, Any]:
     """Compare two assignments of the same network from different demand models."""
     from corridor_agreement import DEFAULT_MINIMUM_VOLUME, build_agreement_map
@@ -554,6 +580,8 @@ def compare_link_volume_runs(
         link_names=read_link_names(
             Path(loaded_links_geojson).expanduser().resolve() if loaded_links_geojson else None
         ),
+        first_convergence=read_convergence(first_manifest),
+        second_convergence=read_convergence(second_manifest),
     )
     agreement["sources"] = {"first": str(first_path), "second": str(second_path)}
     agreement["generated_at_utc"] = _utc_now()
@@ -568,6 +596,8 @@ def compare_link_volume_runs(
         "markdown_path": str(markdown_path),
         "summary": agreement["summary"],
         "network_alignment": agreement["network_alignment"],
+        "attribution_is_supportable": agreement["attribution_is_supportable"],
+        "assignment_convergence": agreement["assignment_convergence"],
         "corridors": len(agreement["corridors"]),
     }
 
@@ -584,6 +614,8 @@ def markdown_for_agreement(agreement: dict[str, Any]) -> str:
         summary["note"],
         "",
         agreement["network_alignment"]["note"],
+        "",
+        agreement["assignment_convergence"]["note"],
         "",
         "## What this is not",
         "",
@@ -622,6 +654,8 @@ def main() -> int:
             loaded_links_geojson=args.loaded_links_geojson,
             volume_column=args.volume_column,
             minimum_volume=args.minimum_volume,
+            first_manifest=args.first_manifest,
+            second_manifest=args.second_manifest,
         )
         print(json.dumps(result, indent=2))
         return 0

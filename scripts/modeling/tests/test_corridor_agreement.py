@@ -24,11 +24,13 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from corridor_agreement import (  # noqa: E402
+    COMPARISON_MAX_RELATIVE_GAP,
     CorridorAgreementError,
     agreement_summary,
     build_agreement_map,
     classify_agreement,
     compare_link_volumes,
+    convergence_verdict,
     corridor_rollup,
     geh,
 )
@@ -217,6 +219,71 @@ class RollingUpToCorridors(unittest.TestCase):
         # The best link here is a perfect match at 0.0; only the worst carries
         # the warning a reader needs.
         self.assertGreater(corridor["worst_link_geh"], 10.0)
+
+
+class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
+    """A loosely converged pair cannot support the claim the map is for.
+
+    MEASURED, on the same 28,670-link network with the SAME demand assigned twice:
+
+        relative gap 0.0092   ->  13.0% of busy links diverged, median GEH 2.05
+        relative gap 0.00046  ->   0.0% of busy links diverged, median GEH 0.141
+
+    At the loose gap the assignment is still choosing between near-equal-cost
+    parallel routes and produces corridor divergence by itself — indistinguishable,
+    to a reader, from the demand models disagreeing. Written in a document that
+    would be a convention; this is the field every report carries.
+    """
+
+    def test_a_tightly_converged_pair_supports_attribution(self) -> None:
+        verdict = convergence_verdict({"final_gap": 0.0004}, {"final_gap": 0.0005})
+        self.assertEqual(verdict["status"], "tight_enough")
+        self.assertIn("attributable to the demand model", verdict["note"])
+
+    def test_a_loosely_converged_pair_does_not(self) -> None:
+        verdict = convergence_verdict({"final_gap": 0.00916}, {"final_gap": 0.00951})
+        self.assertEqual(verdict["status"], "too_loose_to_attribute")
+        self.assertIn("cannot attribute", verdict["note"])
+        # Both offending gaps named, and the way out given.
+        self.assertIn("0.00916", verdict["note"])
+        self.assertIn("0.00951", verdict["note"])
+        self.assertIn("OPENPLAN_ASSIGNMENT_RGAP_TARGET", verdict["note"])
+
+    def test_one_loose_side_is_enough_to_disqualify_the_pair(self) -> None:
+        verdict = convergence_verdict({"final_gap": 0.0002}, {"final_gap": 0.009})
+        self.assertEqual(verdict["status"], "too_loose_to_attribute")
+        self.assertIn("second", verdict["note"])
+
+    def test_an_unrecorded_gap_is_unknown_and_not_fine(self) -> None:
+        # The difference that matters. Treating a missing convergence record as
+        # acceptable lets any run at all be compared, which is exactly how the
+        # check gets bypassed without anybody deciding to bypass it.
+        verdict = convergence_verdict(None, None)
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertNotEqual(verdict["status"], "tight_enough")
+        self.assertIn("cannot be established", verdict["note"])
+
+    def test_the_verdict_reaches_the_map_as_a_single_readable_flag(self) -> None:
+        loose = build_agreement_map(
+            [link(1, 10_000)], [link(1, 12_000)],
+            first_label="a", second_label="b",
+            first_convergence={"final_gap": 0.009}, second_convergence={"final_gap": 0.009},
+        )
+        tight = build_agreement_map(
+            [link(1, 10_000)], [link(1, 12_000)],
+            first_label="a", second_label="b",
+            first_convergence={"final_gap": 0.0004}, second_convergence={"final_gap": 0.0004},
+        )
+        self.assertFalse(loose["attribution_is_supportable"])
+        self.assertTrue(tight["attribution_is_supportable"])
+        self.assertIn(loose["assignment_convergence"]["note"], loose["what_this_is_not"])
+
+    def test_the_required_gap_is_the_measured_one(self) -> None:
+        # 0.001 sits between the two measured points: divergence at 0.0092, none
+        # at 0.00046. Loosening it past 0.0092 would readmit the very pair the
+        # measurement disqualified.
+        self.assertLess(COMPARISON_MAX_RELATIVE_GAP, 0.0092)
+        self.assertGreaterEqual(COMPARISON_MAX_RELATIVE_GAP, 0.00046)
 
 
 class TheWholeAgreementMap(unittest.TestCase):

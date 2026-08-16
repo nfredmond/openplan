@@ -57,6 +57,21 @@ GEH_MARGINAL = 10.0
 # never silently applied.
 DEFAULT_MINIMUM_VOLUME = 100.0
 
+# The loosest assignment convergence at which a per-corridor difference can be
+# attributed to the demand model at all. NOT a preference — measured on
+# 2026-08-16 by assigning one model's own demand twice over the same
+# 28,670-link network, so the demand differed only by whole-trip rounding:
+#
+#   relative gap 0.0092  ->  13.0% of busy links diverged, median GEH 2.05
+#   relative gap 0.00046 ->   0.0% of busy links diverged, median GEH 0.141
+#
+# At the loose gap the assignment is still choosing between near-equal-cost
+# parallel routes, and it produces on its own exactly the kind of corridor
+# divergence the comparison exists to attribute to demand. Tightening removes
+# it. A comparison run therefore has to be tightened, and this constant is what
+# makes that a check rather than a note somebody reads.
+COMPARISON_MAX_RELATIVE_GAP = 0.001
+
 
 class CorridorAgreementError(ValueError):
     """The two runs cannot be compared, with the reason to show."""
@@ -317,6 +332,61 @@ def noise_floor_disclosure(noise_floor: Mapping[str, Any] | None) -> str:
     )
 
 
+def convergence_verdict(
+    first: Mapping[str, Any] | None, second: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    """Whether these two runs were converged tightly enough to be compared at all.
+
+    THE CHECK THAT MAKES THE MEASUREMENT BINDING. A comparison run at the default
+    gap produces corridor divergence from the assignment alone, and a reader has
+    no way to tell that from the demand models disagreeing. Stated in a document
+    this would be a convention; here it is a field every report carries.
+
+    Absent convergence records are 'unknown', which is deliberately not 'fine'.
+    """
+    gaps = {
+        "first": None if not first else first.get("final_gap"),
+        "second": None if not second else second.get("final_gap"),
+    }
+    known = {side: gap for side, gap in gaps.items() if isinstance(gap, (int, float))}
+    if not known:
+        return {
+            "status": "unknown",
+            "gaps": gaps,
+            "required_gap": COMPARISON_MAX_RELATIVE_GAP,
+            "note": (
+                "Neither run recorded how tightly its assignment converged, so whether a corridor's "
+                "difference comes from the demand models or from the assignment cannot be "
+                "established. Re-run both with the convergence record present."
+            ),
+        }
+    too_loose = {side: gap for side, gap in known.items() if gap > COMPARISON_MAX_RELATIVE_GAP}
+    if too_loose:
+        detail = ", ".join(f"{side} at {gap:.5f}" for side, gap in sorted(too_loose.items()))
+        return {
+            "status": "too_loose_to_attribute",
+            "gaps": gaps,
+            "required_gap": COMPARISON_MAX_RELATIVE_GAP,
+            "note": (
+                f"This comparison cannot attribute a corridor's difference to the demand model. The "
+                f"assignment converged only to {detail}, against the "
+                f"{COMPARISON_MAX_RELATIVE_GAP} needed. Measured on this network: at a gap of 0.0092 "
+                "the assignment alone made 13% of busy links diverge with IDENTICAL demand, and at "
+                "0.00046 it made none. Set OPENPLAN_ASSIGNMENT_RGAP_TARGET and "
+                "OPENPLAN_ASSIGNMENT_MAX_ITERATIONS and run both sides again."
+            ),
+        }
+    return {
+        "status": "tight_enough",
+        "gaps": gaps,
+        "required_gap": COMPARISON_MAX_RELATIVE_GAP,
+        "note": (
+            "Both runs converged tightly enough that the assignment is not itself generating "
+            "corridor-level divergence, so a difference here is attributable to the demand model."
+        ),
+    }
+
+
 def build_agreement_map(
     first_rows: Sequence[Mapping[str, Any]],
     second_rows: Sequence[Mapping[str, Any]],
@@ -327,6 +397,8 @@ def build_agreement_map(
     minimum_volume: float = DEFAULT_MINIMUM_VOLUME,
     link_names: Mapping[int, Mapping[str, Any]] | None = None,
     noise_floor: Mapping[str, Any] | None = None,
+    first_convergence: Mapping[str, Any] | None = None,
+    second_convergence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The whole comparison: links, corridors, headline, and what it does not mean."""
     comparison = compare_link_volumes(
@@ -337,9 +409,12 @@ def build_agreement_map(
         link_names=link_names,
     )
     corridors = corridor_rollup(comparison)
+    convergence = convergence_verdict(first_convergence, second_convergence)
     return {
         "schema_version": "openplan.corridor_agreement.v0",
         "methods": {"first": first_label, "second": second_label},
+        "attribution_is_supportable": convergence["status"] == "tight_enough",
+        "assignment_convergence": convergence,
         "summary": agreement_summary(comparison),
         "network_alignment": comparison["network_alignment"],
         "settings": comparison["settings"],
@@ -359,5 +434,6 @@ def build_agreement_map(
             "measured. They are used here because they are the yardstick a reviewer recognises, not "
             "because a validation standard has been met.",
             noise_floor_disclosure(noise_floor),
+            convergence["note"],
         ],
     }
