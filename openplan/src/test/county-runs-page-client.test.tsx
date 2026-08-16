@@ -152,19 +152,28 @@ describe("CountyRunsPageClient", () => {
     });
   });
 
-  it("refuses a non-county place and says which county to pick instead", async () => {
+  it("accepts a city, and sends the boundary rather than a code to look up", async () => {
+    // WIDENED 2026-08-16. This asserted a refusal — "County onboarding runs on
+    // a county" — which was the product refusing what its own engine has always
+    // accepted. Most planning work is sub-county, and a smaller area also gets
+    // far finer zones relative to its size, which is this model's measured weak
+    // point.
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
     fireEvent.click(screen.getByRole("button", { name: /resolve city/i }));
 
-    // Disclose the limit, never silently apply it: a city has no county to
-    // derive without guessing which one contains it.
-    expect(screen.getByText(/County onboarding runs on a county/i)).toBeTruthy();
-    expect(screen.getByText(/Columbus, Ohio is a city or town/i)).toBeTruthy();
-    expect(screen.getByRole("button", { name: /launch county/i })).toHaveProperty("disabled", true);
+    expect(screen.getByRole("button", { name: /launch county/i })).toHaveProperty("disabled", false);
 
     fireEvent.click(screen.getByRole("button", { name: /launch county/i }));
-    expect(createCountyRunMock).not.toHaveBeenCalled();
+    await waitFor(() => expect(createCountyRunMock).toHaveBeenCalled());
+
+    const [request] = createCountyRunMock.mock.calls.at(-1) ?? [];
+    // The POLYGON travels, not the name. A worker re-resolving a place by name
+    // could hand the model a different area than the planner saw on screen, and
+    // sending a city's geoid down the county-FIPS path would analyse somewhere
+    // else entirely.
+    expect(request?.geographyType).toBe("place");
+    expect(request?.boundaryGeojson).toBeTruthy();
   });
 
   it("cannot launch before a place is resolved", () => {

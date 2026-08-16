@@ -20,6 +20,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--name", required=True, help="Run name for the screening build")
     parser.add_argument("--county-fips", help="County FIPS code, e.g. 06061")
+    parser.add_argument(
+        "--boundary-geojson",
+        help=(
+            "Analysis boundary for a study area with no FIPS code — a city, a town, a corridor. "
+            "The engine has always accepted one; this lane used to refuse it."
+        ),
+    )
     parser.add_argument("--county-prefix", required=True, help="Validation station prefix, e.g. PLACER")
     parser.add_argument("--existing-run-dir", help="Use an already completed screening run directory instead of building")
     parser.add_argument("--python-bin", help="Explicit Python binary for run_screening_model.py when building a new run")
@@ -272,17 +279,21 @@ def main() -> int:
     if args.existing_run_dir:
         run_dir = Path(args.existing_run_dir).expanduser().resolve()
     else:
-        if not args.county_fips:
-            raise SystemExit("--county-fips is required unless --existing-run-dir is provided")
+        if not args.county_fips and not args.boundary_geojson:
+            raise SystemExit(
+                "Provide --county-fips or --boundary-geojson (or --existing-run-dir)."
+            )
         python_bin = args.python_bin or sys.executable
         run_model_cmd = [
             python_bin,
             "scripts/modeling/run_screening_model.py",
             "--name",
             args.name,
-            "--county-fips",
-            args.county_fips,
         ]
+        if args.boundary_geojson:
+            run_model_cmd.extend(["--boundary-geojson", args.boundary_geojson])
+        else:
+            run_model_cmd.extend(["--county-fips", args.county_fips])
         # ALWAYS compare against published counts. A run whose accuracy nobody
         # measured is the state this lane was in for its whole life, and the
         # comparison costs a keyless fetch. Where no feed is registered for the
@@ -411,6 +422,17 @@ def main() -> int:
                 # None on a run whose producer did not measure it — never 0.0,
                 # which would assert the finest possible zone system.
                 "intrazonal_trip_share": get_nested(run_summary, "vmt", "intrazonal_share"),
+                # How much of residents' driving leaves the study area, and the
+                # caveat when that share is large enough to drive the per-capita
+                # figure. Carried because widening this lane beyond counties
+                # made small study areas ordinary, and a small area's figure
+                # understates badly.
+                "resident_trips_leaving_study_area_share": get_nested(
+                    run_summary, "vmt", "resident_trips_leaving_study_area_share"
+                ),
+                "per_capita_understatement_caveat": get_nested(
+                    run_summary, "vmt", "per_capita_understatement_caveat"
+                ),
                 "network_daily_vmt_unfiltered": get_nested(run_summary, "vmt", "network_daily_vmt_unfiltered"),
                 "engine_versions": get_nested(run_summary, "engine_versions"),
                 # Which road extract these figures rest on. OSM changes

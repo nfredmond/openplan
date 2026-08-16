@@ -127,6 +127,9 @@ def _parse_payload(payload: Any) -> dict[str, Any]:
         "geographyId": _require_string(payload, "geographyId"),
         "geographyLabel": _require_string(payload, "geographyLabel"),
         "countyPrefix": _require_string(payload, "countyPrefix"),
+        # The polygon for a study area with no FIPS code. Optional: a county run
+        # sends none and resolves its own boundary from the code.
+        "boundaryGeojson": payload.get("boundaryGeojson"),
         "runtimeOptions": _require_runtime_options(payload),
         "artifactTargets": _require_artifact_targets(payload),
         "callback": _require_callback(payload),
@@ -174,8 +177,24 @@ def _build_bootstrap_command(job: dict[str, Any]) -> tuple[list[str], Path]:
         str(BOOTSTRAP_SCRIPT),
         "--name",
         job["runName"],
-        "--county-fips",
-        job["geographyId"],
+    ]
+
+    # A county resolves its own boundary from its FIPS code through a cached
+    # path; anything else arrives as the polygon the planner actually chose.
+    # Written beside the run's other artifacts so a reader can see exactly which
+    # area was analysed — a study area described only in a payload that is gone
+    # is not something an appendix can defend.
+    if job.get("geographyType") == "place" and job.get("boundaryGeojson"):
+        boundary_path = _resolve_repo_path(job["artifactTargets"]["manifestPath"]).with_name(
+            f"{job['runName']}.boundary.geojson"
+        )
+        boundary_path.parent.mkdir(parents=True, exist_ok=True)
+        boundary_path.write_text(json.dumps(job["boundaryGeojson"]))
+        command.extend(["--boundary-geojson", str(boundary_path)])
+    else:
+        command.extend(["--county-fips", job["geographyId"]])
+
+    command.extend([
         "--county-prefix",
         job["countyPrefix"],
         "--output-csv",
@@ -184,7 +203,7 @@ def _build_bootstrap_command(job: dict[str, Any]) -> tuple[list[str], Path]:
         str(output_md),
         "--output-manifest",
         str(output_manifest),
-    ]
+    ])
 
     if runtime_options["keepProject"]:
         command.append("--keep-project")

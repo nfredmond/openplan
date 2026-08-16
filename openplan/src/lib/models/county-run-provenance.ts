@@ -366,6 +366,9 @@ export function buildCountyRunProvenanceDocument(input: CountyRunProvenanceInput
     }`,
     `- **Roads carrying traffic:** ${stated(asNumber(run?.loaded_links))}`,
     `- **Daily trips modelled:** ${stated(asNumber(run?.total_trips))}`,
+    ...(asText((run as Record<string, unknown> | null)?.per_capita_understatement_caveat)
+      ? ["", `> ${asText((run as Record<string, unknown> | null)?.per_capita_understatement_caveat)}`]
+      : []),
     `- **Assignment reached equilibrium:** ${yesNoUnknown(
       (run as Record<string, unknown> | null)?.assignment_converged as boolean | null | undefined,
       "yes",

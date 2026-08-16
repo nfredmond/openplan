@@ -177,7 +177,7 @@ describe("County onboarding opens on the right county", () => {
     // The result: the page is armed with the project's FIPS, and the launch
     // button is live without the planner re-picking anything.
     expect(
-      screen.getByText(/Onboarding will run on Licking County, Ohio \(FIPS 39089\)/i)
+      screen.getByText(/Onboarding will run on Licking County, Ohio/i)
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /launch county/i })).toHaveProperty("disabled", false);
     expect(screen.getByTestId("picker-external-label")).toHaveTextContent("Licking County, Ohio");
@@ -189,7 +189,7 @@ describe("County onboarding opens on the right county", () => {
     await renderCountyRuns();
 
     expect(
-      screen.getByText(/Onboarding will run on Franklin County, Ohio \(FIPS 39049\)/i)
+      screen.getByText(/Onboarding will run on Franklin County, Ohio/i)
     ).toBeInTheDocument();
     expect(screen.queryByText(/study area could not be used/i)).not.toBeInTheDocument();
   });
@@ -219,7 +219,7 @@ describe("County onboarding opens on the right county", () => {
     // The workspace county is still offered — but as the workspace's, and only
     // after saying the requested project's area is not what is on screen.
     expect(
-      screen.getByText(/Onboarding will run on Franklin County, Ohio \(FIPS 39049\)/i)
+      screen.getByText(/Onboarding will run on Franklin County, Ohio/i)
     ).toBeInTheDocument();
   });
 
@@ -246,7 +246,7 @@ describe("County onboarding opens on the right county", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps refusing a project whose area is not a county, instead of guessing which county contains it", async () => {
+  it("accepts a project area that is not a county, because the engine always could", async () => {
     mountSupabase({
       projectPlace: {
         data: projectPlaceRow({
@@ -260,9 +260,23 @@ describe("County onboarding opens on the right county", () => {
 
     await renderCountyRuns({ projectId: PROJECT_ID });
 
-    expect(screen.getByText(/County onboarding runs on a county/i)).toBeInTheDocument();
-    expect(screen.getByText(/Columbus, Ohio is a city or town/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /launch county/i })).toHaveProperty("disabled", true);
-    expect(screen.queryByText(/Onboarding will run on/i)).not.toBeInTheDocument();
+    // WIDENED 2026-08-16. This used to assert a refusal — "County onboarding
+    // runs on a county" — which was the product refusing something its own
+    // engine has always accepted. Most planning work is sub-county, and a
+    // smaller area also gets far finer zones relative to its size, which is
+    // this model's measured weak point. The refusal that REMAINS is the honest
+    // one: a place whose boundary could not be read has no area to analyse,
+    // and guessing an area from a name is how a run analyses somewhere else.
+    expect(screen.getByText(/Onboarding will run on/i)).toBeInTheDocument();
+    expect(screen.getByText(/Onboarding will run on Columbus, Ohio/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /launch county/i })).toHaveProperty("disabled", false);
   });
+
+  // NO TEST FOR "a place with no boundary is refused", and that is deliberate.
+  // `PlaceBoundaryResponse.geojson` is non-nullable, so a place the picker has
+  // resolved always carries one and the guard in the component cannot be
+  // reached from here. The guard stays as cheap defence — the alternative to
+  // refusing is sending a city's GEOID down the county-FIPS path and analysing
+  // somewhere else entirely — but claiming a test for an unreachable branch
+  // would be worse than having none.
 });

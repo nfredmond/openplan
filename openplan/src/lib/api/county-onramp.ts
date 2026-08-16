@@ -22,11 +22,23 @@ export const countyRuntimeOptionsSchema = z.object({
 
 export const createCountyRunRequestSchema = z.object({
   workspaceId: z.string().uuid(),
-  geographyType: z.literal("county_fips"),
+  // WIDENED 2026-08-16. The engine has always accepted an arbitrary analysis
+  // boundary; only this lane refused one. Most planning work is sub-county —
+  // a city, a town, a corridor — and a smaller study area also gets far finer
+  // zones relative to its size, which is the model's measured weak point.
+  //
+  // "county_fips" stays a distinct kind rather than folding into "place":
+  // resolving a county from its FIPS uses a cached TIGER path that needs no
+  // polygon on the wire, and that path works today.
+  geographyType: z.enum(["county_fips", "place"]),
   geographyId: z.string().min(1),
   geographyLabel: z.string().min(1).max(160),
   runName: z.string().min(1).max(160),
   countyPrefix: z.string().min(1).max(32).optional(),
+  // The resolved polygon for a study area with no FIPS code. Required for
+  // "place", ignored for "county_fips" — which resolves its own boundary from
+  // the code through a cached path and needs nothing on the wire.
+  boundaryGeojson: z.unknown().nullable().optional(),
   runtimeOptions: countyRuntimeOptionsSchema.default({}),
   // Provenance: attribute the validation run to a project in the workspace.
   projectId: z.string().uuid().nullable().optional(),

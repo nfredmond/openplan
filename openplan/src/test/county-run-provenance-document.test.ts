@@ -63,6 +63,22 @@ describe("what the run did not do is visible", () => {
     expect(document).not.toMatch(/Roads carrying traffic:\*\* 0$/m);
   });
 
+  it("warns when most of a small area's driving leaves it", () => {
+    // Widening the front door beyond counties made small study areas ordinary,
+    // and a small area's per-capita figure understates badly: the same county
+    // measured 40.5 vehicle-miles per person while a sub-county area inside it
+    // measured 10.8. Not less driving — a boundary.
+    const document = buildCountyRunProvenanceDocument(
+      input({
+        manifest: manifestWith({
+          per_capita_understatement_caveat:
+            "33% of residents' trips leave this study area, so the figure understates how much they drive.",
+        }),
+      })
+    );
+    expect(document).toContain("33% of residents' trips leave this study area");
+  });
+
   it("warns in bold when the assignment did not reach equilibrium", () => {
     const document = buildCountyRunProvenanceDocument(
       input({

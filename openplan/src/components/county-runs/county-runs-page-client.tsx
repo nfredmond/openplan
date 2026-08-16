@@ -90,18 +90,33 @@ export function CountyRunsPageClient({
           : null,
       };
     }
-    if (resolvedPlace.kind !== "county") {
+    // WIDENED 2026-08-16: any place the picker can resolve is a valid study
+    // area. The engine has always accepted an arbitrary boundary and only this
+    // page refused one, while most planning work is sub-county — and a smaller
+    // area gets far finer zones relative to its size, which is this model's
+    // measured weak point.
+    //
+    // A place still needs its polygon: without one there is nothing to send,
+    // and guessing an area from a name is how a run analyses somewhere else.
+    if (resolvedPlace.kind !== "county" && !resolvedPlace.geojson) {
       return {
         ready: false as const,
-        reason: `County onboarding runs on a county. ${
-          resolvedPlace.label ?? "That place"
-        } is a ${PLACE_KIND_LABELS[resolvedPlace.kind] ?? resolvedPlace.kind} — pick the county that contains it.`,
+        reason: `OpenPlan could not read a boundary for ${
+          resolvedPlace.label ?? "that place"
+        }, so there is no area to analyse. Try the county that contains it.`,
       };
     }
     return {
       ready: true as const,
       geoid: resolvedPlace.geoid,
       label: resolvedPlace.label ?? resolvedPlace.geoid,
+      kind: resolvedPlace.kind,
+      // A county resolves its own boundary from its code through a cached
+      // path, so it sends none. Everything else sends the polygon the planner
+      // saw resolved on screen — never a name for the worker to look up again,
+      // which is how a run comes to analyse a different place than the one
+      // that was chosen.
+      boundaryGeojson: resolvedPlace.kind === "county" ? null : resolvedPlace.geojson,
       reason: null,
     };
   }, [resolvedPlace, corridorText]);
@@ -156,7 +171,8 @@ export function CountyRunsPageClient({
 
     const created = await create({
       workspaceId,
-      geographyType: "county_fips",
+      geographyType: countySelection.kind === "county" ? "county_fips" : "place",
+      boundaryGeojson: countySelection.boundaryGeojson,
       geographyId: countySelection.geoid,
       geographyLabel: countySelection.label,
       runName: nextRunName,
@@ -216,7 +232,7 @@ export function CountyRunsPageClient({
         <CardContent>
           <form className="grid gap-4" onSubmit={submitCreate}>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">County</label>
+              <label className="text-sm font-medium text-foreground">Area you are planning for</label>
               <StudyAreaPicker
                 corridorText={corridorText}
                 onCorridorChange={setCorridorText}
@@ -231,7 +247,9 @@ export function CountyRunsPageClient({
               ) : null}
               {countySelection.ready ? (
                 <p className="text-sm text-muted-foreground">
-                  Onboarding will run on {countySelection.label} (FIPS {countySelection.geoid}).
+                  Onboarding will run on {countySelection.label} (
+                  {PLACE_KIND_LABELS[countySelection.kind] ?? countySelection.kind}{" "}
+                  {countySelection.geoid}).
                 </p>
               ) : null}
             </div>

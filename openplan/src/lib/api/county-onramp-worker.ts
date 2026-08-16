@@ -3,11 +3,17 @@ import type { CreateCountyRunRequest } from "@/lib/api/county-onramp";
 
 export const storedCountyOnrampRequestSchema = z.object({
   workspaceId: z.string().uuid(),
-  geographyType: z.literal("county_fips"),
+  geographyType: z.enum(["county_fips", "place"]),
   geographyId: z.string().min(1),
   geographyLabel: z.string().min(1),
   runName: z.string().min(1),
   countyPrefix: z.string().min(1),
+  // The polygon the planner actually chose, for a study area that has no FIPS
+  // code to look one up from. Carried rather than re-resolved in the worker on
+  // purpose: the app already resolved it through the one geography front door,
+  // and a second resolution could hand the model a different area than the
+  // person saw on screen.
+  boundaryGeojson: z.unknown().nullable().optional(),
   runtimeOptions: z.object({
     keepProject: z.boolean(),
     force: z.boolean(),
@@ -33,10 +39,16 @@ const countyOnrampWorkerPayloadBaseSchema = z.object({
   countyRunId: z.string().uuid(),
   workspaceId: z.string().uuid(),
   runName: z.string().min(1),
-  geographyType: z.literal("county_fips"),
+  geographyType: z.enum(["county_fips", "place"]),
   geographyId: z.string().min(1),
   geographyLabel: z.string().min(1),
   countyPrefix: z.string().min(1),
+  // The polygon the planner actually chose, for a study area that has no FIPS
+  // code to look one up from. Carried rather than re-resolved in the worker on
+  // purpose: the app already resolved it through the one geography front door,
+  // and a second resolution could hand the model a different area than the
+  // person saw on screen.
+  boundaryGeojson: z.unknown().nullable().optional(),
   runtimeOptions: z.object({
     keepProject: z.boolean(),
     force: z.boolean(),
@@ -98,6 +110,7 @@ export function normalizeCountyOnrampRequest(input: CreateCountyRunRequest): Sto
     geographyId: input.geographyId,
     geographyLabel: input.geographyLabel,
     runName: input.runName,
+    boundaryGeojson: input.boundaryGeojson ?? null,
     countyPrefix: defaultCountyPrefix(input),
     runtimeOptions: {
       keepProject: input.runtimeOptions.keepProject ?? true,
@@ -180,6 +193,7 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
     geographyType: input.geographyType,
     geographyId: input.geographyId,
     geographyLabel: input.geographyLabel,
+    boundaryGeojson: input.boundaryGeojson ?? null,
     countyPrefix,
     runtimeOptions: input.runtimeOptions,
     artifactTargets: {

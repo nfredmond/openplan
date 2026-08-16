@@ -71,6 +71,13 @@ export const countyOnrampRunSnapshotSchema = z.object({
   // appendix defending a funded figure has to be able to say which. Optional
   // and nullable: runs produced before the lane recorded it genuinely do not
   // know, and inventing a date would be the worst possible substitute.
+  // How much of residents' own driving leaves the study area — and is
+  // therefore NOT in the per-capita figure, while those residents remain in
+  // the population it is divided by. The smaller the area, the more the figure
+  // understates: the same county measured 40.5 vehicle-miles per person and a
+  // sub-county area inside it measured 10.8.
+  resident_trips_leaving_study_area_share: z.number().nullable().optional(),
+  per_capita_understatement_caveat: z.string().nullable().optional(),
   network_downloaded_at: z.string().nullable().optional(),
   network_source: z.string().nullable().optional(),
 }).passthrough();

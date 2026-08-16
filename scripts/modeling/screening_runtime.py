@@ -810,6 +810,55 @@ def calibrate_run_to_counts(
     }
 
 
+def resident_travel_leaving_share(demand_meta: dict[str, Any], cordon_zone_ids: list[int]) -> dict[str, Any]:
+    """What share of resident trip ends leave the study area, with a caveat when it is high.
+
+    The per-capita VMT figure counts only travel that begins AND ends inside the
+    boundary — correct, because travel through an area is not its residents'
+    driving. But a resident's own trip out of the area terminates at a cordon
+    and is excluded too, while that resident stays in the population the total
+    is divided by. So the figure understates, and it understates MORE the
+    smaller the area.
+
+    Returning the share rather than adjusting the number is deliberate. The
+    honest per-capita figure for a small area needs travel data this model does
+    not have; what it can say is how much it is missing, and that is enough for
+    a reader to know whether the number is usable.
+    """
+    zone_ids = demand_meta.get("zone_ids") or []
+    external = demand_meta.get("external_matrix")
+    internal = demand_meta.get("internal_matrix")
+    if external is None or internal is None or not zone_ids:
+        return {}
+
+    cordons = {int(z) for z in cordon_zone_ids}
+    cordon_index = [i for i, z in enumerate(zone_ids) if int(z) in cordons]
+    resident_index = [i for i, z in enumerate(zone_ids) if int(z) not in cordons]
+    if not cordon_index or not resident_index:
+        return {}
+
+    leaving = float(external[np.ix_(resident_index, cordon_index)].sum())
+    staying = float(internal[np.ix_(resident_index, resident_index)].sum())
+    total = leaving + staying
+    if total <= 0:
+        return {}
+
+    share = leaving / total
+    block: dict[str, Any] = {"resident_trips_leaving_study_area_share": round(share, 4)}
+    # A third is the point at which the exclusion stops being a rounding
+    # consideration and starts driving the number. Banded, not computed to a
+    # threshold anyone has adopted — OpenPlan's own judgement, said so.
+    if share >= 0.33:
+        block["per_capita_understatement_caveat"] = (
+            f"{share * 100:.0f}% of residents' trips leave this study area, and travel that ends "
+            "outside the boundary is not counted in the vehicle-miles-per-person figure while the "
+            "residents making it are still counted in the population. The figure therefore "
+            "understates how much these residents drive, and understates it more the smaller the "
+            "area. Use it to compare scenarios for the SAME area, not as a per-person driving rate."
+        )
+    return block
+
+
 def apply_class_factors(links_df: pd.DataFrame, class_factors: dict[str, float] | None) -> pd.DataFrame:
     """Make a road class more or less attractive to equilibrium flow.
 
@@ -2123,6 +2172,18 @@ def run_screening_model(
         "avg_trip_miles": round(vmt_inputs["avg_trip_miles"], 2),
         "circuity": vmt_inputs["circuity"],
         "excluded_gateway_zone_ids": vmt_inputs["excluded_gateway_zone_ids"],
+        # HOW MUCH OF RESIDENTS' OWN DRIVING LEAVES THIS AREA — and therefore
+        # is NOT in the per-capita figure above, while those residents remain in
+        # the population it is divided by.
+        #
+        # Measured 2026-08-16, and the reason this is reported rather than left
+        # implicit: the same county gave 40.5 vehicle-miles per person, and a
+        # sub-county area inside it gave 10.8. That is not a quarter of the
+        # driving. It is a boundary — half of that smaller area's travel crosses
+        # it, against a third of the county's. The smaller the study area, the
+        # more the figure understates, and a planner analysing their own town
+        # would read 10.8 as a fact about their residents.
+        **resident_travel_leaving_share(demand_meta, external_zone_ids(zones_df)),
         "network_daily_vmt_unfiltered": assignment_meta.get("network_daily_vehicle_miles"),
         "provenance": (
             "Internal resident VMT (screening-grade, derived — not measured): "
