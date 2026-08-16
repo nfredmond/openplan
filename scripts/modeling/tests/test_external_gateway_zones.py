@@ -29,6 +29,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from shapely.geometry import Point
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
@@ -39,6 +40,7 @@ from screening_runtime import (  # noqa: E402
     build_external_gateway_matrix,
     build_external_zone_rows,
     external_zone_ids,
+    keep_corridor_endpoints,
     write_zone_package_files,
 )
 
@@ -222,6 +224,96 @@ class GatewayLoadingTests(unittest.TestCase):
         # silently misalign every row.
         self.assertEqual(self.matrix.shape, (len(self.zones), len(self.zones)))
         self.assertTrue(np.isfinite(self.matrix).all())
+
+
+def crossing(name: str, lon: float, lat: float, daily: float = 20000.0) -> dict:
+    return {
+        "link_id": abs(hash((name, lon, lat))) % 100000,
+        "link_type": "motorway",
+        "name": name,
+        "point": Point(lon, lat),
+        "daily": daily,
+    }
+
+
+class CorridorEndpointTests(unittest.TestCase):
+    """One highway is one corridor, however many times it crosses the line.
+
+    A study-area boundary is a legal line, not a geographic one. I-80 crosses
+    the measured county's southern boundary four times, 5.9 to 54.7 km apart —
+    far beyond the 2.2 km proximity clustering — and each crossing was injecting
+    a full interstate's worth of daily traffic. Roughly 160,000 vehicles where
+    about 40,000 belongs.
+    """
+
+    def test_a_weaving_highway_keeps_only_its_entry_and_exit(self) -> None:
+        # The real I-80 longitudes from the measured run, same latitude band.
+        crossings = [
+            crossing("Alan S. Hart Freeway", -120.6249, 39.3154),
+            crossing("Alan S. Hart Freeway", -120.4355, 39.3162),
+            crossing("Alan S. Hart Freeway", -120.5566, 39.3156),
+            crossing("Alan S. Hart Freeway", -120.0104, 39.4451),
+        ]
+        kept, notes = keep_corridor_endpoints(crossings)
+
+        self.assertEqual(len(kept), 2)
+        # The two farthest apart: the westernmost and the easternmost.
+        longitudes = sorted(round(k["point"].x, 4) for k in kept)
+        self.assertEqual(longitudes, [-120.6249, -120.0104])
+        # And it must SAY what it dropped rather than quietly trimming.
+        self.assertEqual(len(notes), 1)
+        self.assertIn("4 boundary crossings", notes[0])
+        self.assertIn("dropped 2", notes[0])
+
+    def test_a_route_entering_at_opposite_ends_keeps_both(self) -> None:
+        """The honest two-gateway case, which must survive untouched: a state
+        highway entering the north of a county and leaving the south."""
+        crossings = [
+            crossing("State Route 49", -121.05, 39.60),
+            crossing("State Route 49", -121.02, 39.05),
+        ]
+        kept, notes = keep_corridor_endpoints(crossings)
+        self.assertEqual(len(kept), 2)
+        self.assertEqual(notes, [])
+
+    def test_different_roads_are_never_merged(self) -> None:
+        crossings = [
+            crossing("Alan S. Hart Freeway", -120.62, 39.31),
+            crossing("State Route 20", -121.28, 39.20),
+            crossing("State Route 49", -121.10, 39.01),
+        ]
+        kept, notes = keep_corridor_endpoints(crossings)
+        self.assertEqual(len(kept), 3)
+        self.assertEqual(notes, [])
+
+    def test_unnamed_crossings_are_never_grouped_together(self) -> None:
+        """An empty OSM name is an absence, not an identity. Grouping on it
+        would fold unrelated roads into one imaginary corridor — and unnamed
+        crossings are common: three of the eight in the measured county had no
+        name at all."""
+        crossings = [
+            crossing("", -120.62, 39.31),
+            crossing("", -121.28, 39.20),
+            crossing("", -121.10, 39.01),
+            crossing("   ", -120.20, 39.31),
+        ]
+        kept, notes = keep_corridor_endpoints(crossings)
+        self.assertEqual(len(kept), 4)
+        self.assertEqual(notes, [])
+
+    def test_names_are_matched_regardless_of_case_and_padding(self) -> None:
+        crossings = [
+            crossing("Alan S. Hart Freeway", -120.62, 39.31),
+            crossing("alan s. hart freeway", -120.44, 39.32),
+            crossing("  ALAN S. HART FREEWAY  ", -120.01, 39.45),
+        ]
+        kept, _ = keep_corridor_endpoints(crossings)
+        self.assertEqual(len(kept), 2)
+
+    def test_nothing_is_invented_when_there_is_nothing_to_group(self) -> None:
+        kept, notes = keep_corridor_endpoints([])
+        self.assertEqual(kept, [])
+        self.assertEqual(notes, [])
 
 
 class ZonePackageRepublishTests(unittest.TestCase):

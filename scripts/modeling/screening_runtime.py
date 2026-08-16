@@ -570,7 +570,7 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
     # by the same pass as every other zone). Detecting them later — which is
     # where this used to live, inside demand synthesis — left no way to give a
     # gateway a centroid, which is why it borrowed the nearest tract's.
-    gateways = detect_external_gateways(proj_dir, boundary_geom)
+    gateways, gateway_notes = detect_external_gateways(proj_dir, boundary_geom)
     zones_df = pd.concat(
         [zones_df, build_external_zone_rows(gateways, int(zones_df["zone_id"].max()) + 1)],
         ignore_index=True,
@@ -723,6 +723,11 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
         "centroid_map": centroid_map,
         "connector_diagnostics": connector_diagnostics,
         "gateways": gateways,
+        # What the corridor grouping and the gateway cap left out. Never an
+        # empty list standing in for "nothing was dropped" — a reader has to be
+        # able to tell a study area with three boundary highways from one whose
+        # extra crossings were quietly trimmed.
+        "gateway_notes": gateway_notes,
         "internal_zone_count": int((zones_df["zone_kind"] == "internal").sum()),
         "external_zone_count": int((zones_df["zone_kind"] == "external").sum()),
     }
@@ -899,7 +904,19 @@ def detect_external_gateways(project_dir: Path, boundary_geom, max_gateways: int
             continue
         matched["daily"] = max(float(matched["daily"]), float(candidate["daily"]))
 
-    clusters = sorted(clusters, key=lambda item: item["daily"], reverse=True)[:max_gateways]
+    clusters, corridor_notes = keep_corridor_endpoints(clusters)
+
+    ranked = sorted(clusters, key=lambda item: item["daily"], reverse=True)
+    if len(ranked) > max_gateways:
+        # A second cap, and the same rule applies: say what it dropped. A study
+        # area with more boundary highways than this keeps its busiest, and a
+        # reader has to be able to tell that from a study area that only had
+        # this many.
+        corridor_notes.append(
+            f"{len(ranked)} boundary crossings remained after corridor grouping; kept the "
+            f"{max_gateways} busiest and dropped {len(ranked) - max_gateways}."
+        )
+    clusters = ranked[:max_gateways]
 
     gateways = []
     for idx, gateway in enumerate(clusters, start=1):
@@ -916,7 +933,79 @@ def detect_external_gateways(project_dir: Path, boundary_geom, max_gateways: int
                 "boundary_lat": round(float(gateway["point"].y), 6),
             }
         )
-    return gateways
+    return gateways, corridor_notes
+
+
+def keep_corridor_endpoints(
+    clusters: list[dict[str, Any]], max_per_corridor: int = 2
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """One highway is one corridor, however many times it crosses the boundary.
+
+    WHY (measured 2026-08-15, and invisible until the gateway-placement fix).
+    A study-area boundary is a legal line, not a geographic one, and highways
+    wander across it. Interstate 80 crosses the measured county's southern line
+    FOUR times — 5.9, 10.4, 16.3 and 54.7 km apart, so the 2.2 km proximity
+    clustering above cannot see that they are one road. Each crossing was then
+    treated as an independent gateway injecting a full interstate's worth of
+    daily traffic: about 160,000 vehicles where roughly 40,000 belongs.
+
+    This was masked before gateways had zones of their own — all four collapsed
+    onto the same borrowed tract centroid and were merged there by accident.
+    Fixing where gateways attach is what made the double-counting visible.
+
+    THE RULE: for each named road, keep the two crossings FARTHEST APART and
+    drop the rest. Those two are where the corridor enters and leaves the study
+    area; the ones between are the road stepping outside and coming back, which
+    is not a vehicle entering the area. Two is also right for the honest case of
+    one route crossing at opposite ends — a state highway entering north and
+    leaving south keeps both.
+
+    DELIBERATELY CONSERVATIVE, and stated because it is a modelling choice
+    rather than a fact: a road that genuinely enters a study area at three
+    unconnected places loses one. That direction is the safe one here — the
+    model currently loads far too much external traffic, not too little — but it
+    is a cap, so what it drops is returned for the caller to record rather than
+    discarded silently.
+
+    UNNAMED ROADS ARE NEVER GROUPED. An empty OSM name is an absence, not an
+    identity; grouping on it would merge unrelated lanes into one corridor.
+    """
+    by_corridor: dict[str, list[dict[str, Any]]] = {}
+    kept: list[dict[str, Any]] = []
+    for cluster in clusters:
+        corridor = str(cluster.get("name") or "").strip().lower()
+        if not corridor:
+            kept.append(cluster)
+            continue
+        by_corridor.setdefault(corridor, []).append(cluster)
+
+    notes: list[str] = []
+    for corridor, crossings in by_corridor.items():
+        if len(crossings) <= max_per_corridor:
+            kept.extend(crossings)
+            continue
+
+        # The two farthest apart are the corridor's entry and exit. Volume is a
+        # poor discriminator here — every crossing of one road shares a link
+        # type and lane count, so they all carry the same figure.
+        endpoints = max(
+            (
+                (a, b)
+                for index, a in enumerate(crossings)
+                for b in crossings[index + 1 :]
+            ),
+            key=lambda pair: pair[0]["point"].distance(pair[1]["point"]),
+        )
+        kept.extend(endpoints)
+        notes.append(
+            f"{crossings[0].get('name')}: {len(crossings)} boundary crossings found, kept the "
+            f"{max_per_corridor} farthest apart as the corridor's entry and exit and dropped "
+            f"{len(crossings) - max_per_corridor} — one road crossing a boundary repeatedly is "
+            "one corridor, not several gateways."
+        )
+
+    kept.sort(key=lambda item: item["daily"], reverse=True)
+    return kept, notes
 
 
 def build_external_zone_rows(gateways: list[dict[str, Any]], first_zone_id: int) -> pd.DataFrame:
