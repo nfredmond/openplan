@@ -196,6 +196,31 @@ export function diagnoseZoneResolution(
  * summary explains a zone system, this explains a comparison somebody is
  * looking at right now.
  */
+/**
+ * CHECKED AGAINST REAL COUNTS AND LEFT ALONE, 2026-08-16.
+ *
+ * The guided-traffic handoff asked for this to be revisited once link volumes
+ * were validated. They now have been — 57 published Caltrans stations in one
+ * county — so here is the finding and why the wording does not change.
+ *
+ * This caveat only travels with runs whose intrazonal share puts them in the
+ * `coarse` or `very_coarse` band, above 20%. The validated runs sat at 8.7%
+ * (tract zones) and 2.0% (block groups), which is the `fine` band — where the
+ * text says a link comparison "is a meaningful test of this run". The
+ * measurement CONFIRMED that: the comparison was meaningful, and it found the
+ * model over-assigning traffic by about 1.4x with a 62.8% median absolute
+ * percent error against a 30% threshold.
+ *
+ * So nothing here was falsified. A first attempt rewrote this to say a gap
+ * "does not mean the gap carries no information" and cited that 62.8% — which
+ * was over-reach twice over: it changed the rule for a regime the measurement
+ * never entered, and it promoted one county's result into a standing claim
+ * about every run. The validation verdict belongs in each run's own validation
+ * output, where it is already reported, not in a general caveat.
+ *
+ * The condition for actually revisiting this is unchanged and unmet: the gate
+ * has to PASS.
+ */
 export const LINK_VALIDATION_NOT_SUPPORTED_CAVEAT =
   "At this zone resolution a large share of trips never reaches a link, so a gap between modelled " +
   "volumes and observed counts is expected and is not evidence about the model's demand. This " +
