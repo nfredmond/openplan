@@ -2,15 +2,23 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import shutil
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
 DEFAULT_OUTPUT_SUBDIR = "comparison"
 JSON_NAME = "behavioral_demand_comparison.json"
 MARKDOWN_NAME = "behavioral_demand_comparison.md"
+AGREEMENT_JSON_NAME = "corridor_agreement.json"
+AGREEMENT_MARKDOWN_NAME = "corridor_agreement.md"
 
 
 def _utc_now() -> str:
@@ -21,10 +29,35 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Compare two OpenPlan behavioral KPI summaries or evidence packets honestly."
     )
-    parser.add_argument("--current", required=True, help="Path to the current behavioral KPI summary or evidence packet JSON")
-    parser.add_argument("--baseline", required=True, help="Path to the baseline behavioral KPI summary or evidence packet JSON")
+    parser.add_argument("--current", help="Path to the current behavioral KPI summary or evidence packet JSON")
+    parser.add_argument("--baseline", help="Path to the baseline behavioral KPI summary or evidence packet JSON")
     parser.add_argument("--output-dir", help="Directory to write comparison JSON/markdown (default: <current parent>/comparison)")
     parser.add_argument("--force", action="store_true", help="Replace an existing output directory")
+    # METHOD-VERSUS-METHOD. The arguments above compare two behavioural KPI
+    # summaries — the same model run twice. These compare two ASSIGNMENTS of the
+    # same network from different demand models, which is the comparison the
+    # dual-model work exists to produce. One entry point deliberately: a second
+    # comparator is how two ways of answering the same question drift apart.
+    parser.add_argument("--link-volumes-first", help="link_volumes.csv from the first run")
+    parser.add_argument("--link-volumes-second", help="link_volumes.csv from the second run")
+    parser.add_argument("--first-label", default="first demand model", help="How to name the first method")
+    parser.add_argument("--second-label", default="second demand model", help="How to name the second method")
+    parser.add_argument(
+        "--loaded-links-geojson",
+        help="Optional loaded_links.geojson supplying road names, so links roll up into corridors",
+    )
+    parser.add_argument(
+        "--volume-column", default="PCE_tot", help="Which link volume column to compare (default: PCE_tot)"
+    )
+    parser.add_argument(
+        "--minimum-volume",
+        type=float,
+        default=None,
+        help=(
+            "Links below this carry too little traffic for a difference to mean anything. Reported "
+            "with the result, never silently applied."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -451,8 +484,157 @@ def compare_behavioral_demand_outputs(
     }
 
 
+def read_link_volume_rows(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
+        raise RuntimeError(f"No link volume table at {path}")
+    with path.open(newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    if not rows:
+        raise RuntimeError(f"{path} has no links in it")
+    return rows
+
+
+def read_link_names(path: Path | None) -> dict[int, dict[str, Any]]:
+    """Road names per link id, so links can roll up into corridors.
+
+    Optional on purpose. Without it the comparison still reports every link;
+    it simply cannot name the corridors, and saying that is better than
+    inventing a grouping.
+    """
+    if path is None:
+        return {}
+    if not path.exists():
+        raise RuntimeError(f"No loaded-links file at {path}")
+    payload = json.loads(path.read_text())
+    names: dict[int, dict[str, Any]] = {}
+    for feature in payload.get("features", []):
+        properties = feature.get("properties") or {}
+        try:
+            link_id = int(float(properties.get("link_id")))
+        except (TypeError, ValueError):
+            continue
+        names[link_id] = {
+            "name": properties.get("name") or "",
+            "link_type": properties.get("link_type") or "",
+        }
+    return names
+
+
+def compare_link_volume_runs(
+    *,
+    first_csv: str,
+    second_csv: str,
+    first_label: str,
+    second_label: str,
+    output_dir: str | None = None,
+    force: bool = False,
+    loaded_links_geojson: str | None = None,
+    volume_column: str = "PCE_tot",
+    minimum_volume: float | None = None,
+) -> dict[str, Any]:
+    """Compare two assignments of the same network from different demand models."""
+    from corridor_agreement import DEFAULT_MINIMUM_VOLUME, build_agreement_map
+
+    first_path = Path(first_csv).expanduser().resolve()
+    second_path = Path(second_csv).expanduser().resolve()
+    resolved_output_dir = (
+        Path(output_dir).expanduser().resolve() if output_dir else first_path.parent / DEFAULT_OUTPUT_SUBDIR
+    )
+    if resolved_output_dir.exists() and force:
+        shutil.rmtree(resolved_output_dir)
+    resolved_output_dir.mkdir(parents=True, exist_ok=True)
+
+    agreement = build_agreement_map(
+        read_link_volume_rows(first_path),
+        read_link_volume_rows(second_path),
+        first_label=first_label,
+        second_label=second_label,
+        volume_column=volume_column,
+        minimum_volume=DEFAULT_MINIMUM_VOLUME if minimum_volume is None else minimum_volume,
+        link_names=read_link_names(
+            Path(loaded_links_geojson).expanduser().resolve() if loaded_links_geojson else None
+        ),
+    )
+    agreement["sources"] = {"first": str(first_path), "second": str(second_path)}
+    agreement["generated_at_utc"] = _utc_now()
+
+    json_path = resolved_output_dir / AGREEMENT_JSON_NAME
+    markdown_path = resolved_output_dir / AGREEMENT_MARKDOWN_NAME
+    write_json(json_path, agreement)
+    write_markdown(markdown_path, markdown_for_agreement(agreement))
+    return {
+        "output_dir": str(resolved_output_dir),
+        "json_path": str(json_path),
+        "markdown_path": str(markdown_path),
+        "summary": agreement["summary"],
+        "network_alignment": agreement["network_alignment"],
+        "corridors": len(agreement["corridors"]),
+    }
+
+
+def markdown_for_agreement(agreement: dict[str, Any]) -> str:
+    methods = agreement["methods"]
+    summary = agreement["summary"]
+    lines = [
+        "# Where the two demand models agree",
+        "",
+        f"**{methods['first']}** compared against **{methods['second']}**, assigned on the same "
+        "network with the same assignment settings.",
+        "",
+        summary["note"],
+        "",
+        agreement["network_alignment"]["note"],
+        "",
+        "## What this is not",
+        "",
+    ]
+    lines += [f"- {item}" for item in agreement["what_this_is_not"]]
+    lines += ["", "## Corridors, worst agreement first", ""]
+    if not agreement["corridors"]:
+        lines.append("No named corridor carries enough traffic for a comparison to mean anything.")
+    else:
+        lines += [
+            "| Corridor | Links | " + methods["first"] + " | " + methods["second"] + " | GEH | Agreement |",
+            "|---|---:|---:|---:|---:|---|",
+        ]
+        for corridor in agreement["corridors"][:40]:
+            lines.append(
+                f"| {corridor['corridor']} | {corridor['links']} | {corridor['first_volume']:,.0f} "
+                f"| {corridor['second_volume']:,.0f} | {corridor['geh']:.1f} | {corridor['agreement']} |"
+            )
+    return "\n".join(lines) + "\n"
+
+
 def main() -> int:
     args = parse_args()
+    if args.link_volumes_first or args.link_volumes_second:
+        if not (args.link_volumes_first and args.link_volumes_second):
+            raise RuntimeError(
+                "Comparing link volumes needs both --link-volumes-first and --link-volumes-second."
+            )
+        result = compare_link_volume_runs(
+            first_csv=args.link_volumes_first,
+            second_csv=args.link_volumes_second,
+            first_label=args.first_label,
+            second_label=args.second_label,
+            output_dir=args.output_dir,
+            force=args.force,
+            loaded_links_geojson=args.loaded_links_geojson,
+            volume_column=args.volume_column,
+            minimum_volume=args.minimum_volume,
+        )
+        print(json.dumps(result, indent=2))
+        return 0
+    # `--current` and `--baseline` became optional so the link-volume mode does
+    # not demand KPI summaries it has no use for. They are still required for
+    # THIS mode, and the check has to live here or argparse would accept a call
+    # with neither pair and fail later with a path error naming nothing useful.
+    if not (args.current and args.baseline):
+        raise RuntimeError(
+            "Comparing behavioural KPI summaries needs both --current and --baseline. To compare "
+            "two demand models on the same network instead, pass --link-volumes-first and "
+            "--link-volumes-second."
+        )
     result = compare_behavioral_demand_outputs(
         current=args.current,
         baseline=args.baseline,

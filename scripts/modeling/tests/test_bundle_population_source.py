@@ -224,9 +224,15 @@ class ItSurvivesTheWholeChainToTheCountyManifest(unittest.TestCase):
                 population_source="scaffold",
             )
 
+            constants = (Path(workspace) / "bundle" / "configs" / "constants.yaml").read_text()
+
         self.assertEqual(summary["population"]["status"], "prototype_scaffold")
         self.assertEqual(summary["population"]["method"], "deterministic_zone_attribute_expansion")
         self.assertGreater(summary["households"], 0)
+        # The generated config is stamped with the population the bundle
+        # actually has. It used to say 'prototype_scaffold' unconditionally,
+        # which becomes a false statement in a file that outlives the run log.
+        self.assertIn("openplan_population_status: prototype_scaffold", constants)
 
     def test_the_county_manifest_surfaces_it(self) -> None:
         import bootstrap_county_validation_onramp as onramp

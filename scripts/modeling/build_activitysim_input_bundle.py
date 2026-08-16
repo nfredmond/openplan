@@ -447,12 +447,20 @@ def build_config_settings() -> str:
     )
 
 
-def build_config_constants() -> str:
+def build_config_constants(population_status: str = "prototype_scaffold") -> str:
+    """The starter constants, stamped with the population the bundle ACTUALLY has.
+
+    This used to say `prototype_scaffold` unconditionally. Once a bundle can
+    contain households fitted from real survey records, a constant that always
+    says otherwise is a false statement inside a generated artifact — and it is
+    the kind that survives, because a config file is read long after the run log
+    is gone.
+    """
     return (
         "# OpenPlan ActivitySim starter constants\n"
         "openplan_bundle_profile: screening_to_activitysim_handoff\n"
         "openplan_config_starter_version: v0\n"
-        "openplan_population_status: prototype_scaffold\n"
+        f"openplan_population_status: {population_status}\n"
     )
 
 
@@ -691,7 +699,9 @@ def build_activitysim_input_bundle(
     (output_path / "README.md").write_text(build_bundle_readme(source_manifest, skim_mode))
     (output_path / "configs" / "README.md").write_text(build_configs_readme())
     (output_path / "configs" / "settings.yaml").write_text(build_config_settings())
-    (output_path / "configs" / "constants.yaml").write_text(build_config_constants())
+    (output_path / "configs" / "constants.yaml").write_text(
+        build_config_constants(population_block["status"])
+    )
     (output_path / "configs" / "network_los.yaml").write_text(build_network_los_settings())
     write_json(output_path / "configs" / CONFIG_PACKAGE_DESCRIPTOR_NAME, build_config_package_descriptor())
 
