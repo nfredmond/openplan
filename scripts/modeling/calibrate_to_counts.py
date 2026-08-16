@@ -30,6 +30,25 @@ accepted on trust.
 the screening threshold, the run still fails it, and says so. Calibration
 changes the model, not the standard.
 
+========================================== NOT REACHABLE FROM THE APP YET (2026-08-16)
+
+Stated here rather than discovered later. This runs from the command line only:
+`run_screening_model.py --calibrate-to-counts <csv>`. The county on-ramp does not
+pass it, the worker payload has no field for it, and `/county-runs` offers no way
+to ask for it. A planner cannot get a calibrated run today.
+
+That is this repository's most-repeated defect — complete, tested capability
+nobody can reach — so it is declared instead of left to be found.
+
+Closing it needs a product decision, not just plumbing, because calibration
+needs a COUNT SET and the app has no way to produce or hold one. The natural
+shape: a county run already knows its boundary, and
+`build_expanded_aadt_counts.py --fetch-bbox --boundary-geojson` can fetch and
+clip a DOT count set for any registered state (CA, CO, OR, WA today) without a
+key. That would make calibration a single opt-in choice at launch for planners
+in those states, and an honest "no published counts for your state yet"
+everywhere else.
+
 ============================================================ WHY THE LOOP IS HERE
 
 The decisions — which per-class factor, how to split the holdout, whether to
