@@ -403,6 +403,35 @@ def _rows_to_dicts(payload: Sequence[Sequence[Any]]) -> list[dict[str, Any]]:
     return [dict(zip(header, row)) for row in payload[1:]]
 
 
+def group_persons_by_serial(person_rows: Sequence[Mapping[str, Any]]) -> dict[str, list[Mapping[str, Any]]]:
+    """The microdata's person records, grouped by the household they belong to.
+
+    Kept alongside the seed rather than folded into it: expanding a household
+    means copying the REAL people in it — their actual ages, sexes and
+    employment — and a synthesiser that invents plausible people to fill a
+    household of the right size has thrown away the only thing that made the
+    seed worth fetching.
+    """
+    grouped: dict[str, list[Mapping[str, Any]]] = {}
+    for row in person_rows:
+        serial = str(row.get("SERIALNO") or "").strip()
+        if serial:
+            grouped.setdefault(serial, []).append(row)
+    for people in grouped.values():
+        people.sort(key=lambda person: int(float(person.get("SPORDER") or 0)))
+    return grouped
+
+
+def is_student(raw_grade: Any) -> bool:
+    """SCHG is the grade a person is attending; blank means not in school."""
+    if raw_grade in (None, "", "null"):
+        return False
+    try:
+        return int(float(raw_grade)) >= 1
+    except (TypeError, ValueError):
+        return False
+
+
 def seed_households_from_pums(person_rows: Sequence[Mapping[str, Any]]) -> tuple[list[SeedHousehold], dict[str, Any]]:
     """Group PUMS person records into seed households, and say what was dropped.
 

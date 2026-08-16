@@ -8,9 +8,18 @@ import json
 import math
 import os
 import shutil
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+# The population modules are siblings, and this script is run both directly and
+# imported by the prototype orchestrator. Without this the direct invocation
+# finds them and the imported one does not — a difference that would only show
+# up on the path a planner actually uses.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
 
 MANIFEST_NAME = "manifest.json"
 DEFAULT_SKIM_RELATIVE_PATH = Path("run_output") / "travel_time_skims.omx"
@@ -19,11 +28,42 @@ SOURCE_MANIFEST_RELATIVE_PATH = Path("bundle_manifest.json")
 CONFIG_STARTER_VERSION = "v0"
 CONFIG_PACKAGE_DESCRIPTOR_NAME = "openplan_config_package.json"
 
-POPULATION_CAVEATS = [
+SCAFFOLD_POPULATION_CAVEATS = [
     "Prototype synthetic population only; this bundle does not contain a calibrated IPF or PopulationSim population.",
     "Households and persons are deterministically scaffolded from screening zone attributes and should not be represented as production-ready ActivitySim agents.",
     "Household/person columns are an OpenPlan handoff scaffold and will need final ActivitySim config and schema alignment in a later worker slice.",
+    "The scaffold is derived from the SAME zone attributes the trip-based demand model uses, so a comparison between the two models is not a comparison of independent methods.",
 ]
+
+# Kept as a distinct name from SCAFFOLD_POPULATION_CAVEATS on purpose. The two
+# populations carry completely different authority, and a bundle that ships one
+# under the other's caveats is the exact failure this whole lane exists to fix.
+POPULATION_CAVEATS = SCAFFOLD_POPULATION_CAVEATS
+
+
+def census_population_caveats(result: dict[str, Any]) -> list[str]:
+    """What a reader must be told about a population fitted from real records.
+
+    Built from the fit that actually ran, not written down in advance: a caveat
+    list that says the same thing whatever happened is decoration, and the two
+    things worth knowing here — how well each zone reproduced its published
+    totals, and which controls could not be fitted at all — are different on
+    every run.
+    """
+    provenance = result.get("provenance", {})
+    quality = result.get("fit_quality", {})
+    caveats = [provenance.get("note", "")]
+    caveats.append(result.get("fit_grading_note", ""))
+    if quality.get("note"):
+        caveats.append(quality["note"])
+    for control, reason in (result.get("dropped_controls") or {}).items():
+        caveats.append(reason)
+    caveats.append(
+        "ActivitySim's behavioural coefficients are estimated for the regions its example "
+        "configurations came from, not for this study area. A population drawn from local survey "
+        "records does not make the travel behaviour local."
+    )
+    return [caveat for caveat in caveats if caveat]
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,6 +81,17 @@ def parse_args() -> argparse.Namespace:
         help="Whether to copy or symlink the screening skim OMX into the bundle (default: copy)",
     )
     parser.add_argument("--force", action="store_true", help="Replace an existing output bundle directory")
+    parser.add_argument(
+        "--population",
+        choices=["auto", "census", "scaffold"],
+        default="auto",
+        help=(
+            "Where households come from. 'census' fits real Census microdata records to each zone's "
+            "published totals and fails if they cannot be reached; 'scaffold' expands the screening "
+            "zone attributes, which are the same inputs the trip-based model uses; 'auto' (default) "
+            "uses census when a CENSUS_API_KEY is configured and records why when it falls back."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -451,6 +502,8 @@ def build_manifest_payload(
     household_rows: list[dict[str, Any]],
     person_rows: list[dict[str, Any]],
     adjustments: dict[str, int],
+    population_block: dict[str, Any],
+    caveats: list[str],
 ) -> dict[str, Any]:
     return {
         "schema_version": "openplan.activitysim_input_bundle.v0",
@@ -489,14 +542,7 @@ def build_manifest_payload(
             "total_employment": sum(int(row["employment"]) for row in land_use_rows),
             "source_csv": str(source_run_dir / DEFAULT_ZONE_ATTRIBUTES_RELATIVE_PATH),
         },
-        "synthetic_population": {
-            "status": "prototype_scaffold",
-            "method": "deterministic_zone_attribute_expansion",
-            "calibration_status": "not_calibrated",
-            "households": len(household_rows),
-            "persons": len(person_rows),
-            "adjustments": adjustments,
-        },
+        "synthetic_population": {**population_block, "adjustments": adjustments},
         "skims": {
             "artifact": skim_manifest,
             "source_contract": {
@@ -504,7 +550,7 @@ def build_manifest_payload(
                 "origin": "AequilibraE screening run",
             },
         },
-        "caveats": POPULATION_CAVEATS,
+        "caveats": caveats,
         "source_bundle_excerpt": {
             "artifacts": source_manifest.get("artifacts", {}),
             "skims": source_manifest.get("skims", {}),
@@ -515,6 +561,88 @@ def build_manifest_payload(
     }
 
 
+def build_population(
+    zone_rows: list[dict[str, Any]], population_source: str
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any], dict[str, Any], list[str]]:
+    """Produce the households and persons, and say plainly which kind they are.
+
+    The manifest block and the caveats are returned WITH the rows rather than
+    assembled later, because the failure that matters is a real population
+    shipping under the scaffold's caveats or — far worse — a scaffold shipping
+    under the real one's. Building all four together makes that mismatch
+    impossible to introduce by editing one call site.
+    """
+    if population_source not in ("auto", "census", "scaffold"):
+        raise RuntimeError(f"Unknown population source '{population_source}'.")
+
+    census_api_key = (os.getenv("CENSUS_API_KEY") or "").strip()
+    fallback_reason: str | None = None
+
+    if population_source == "auto" and not census_api_key:
+        fallback_reason = (
+            "No CENSUS_API_KEY was configured, so households could not be fitted from Census "
+            "microdata and were expanded from the screening zone attributes instead."
+        )
+    elif population_source == "census" and not census_api_key:
+        raise RuntimeError(
+            "A population fitted from Census microdata was requested but no CENSUS_API_KEY is "
+            "configured. Get a free key at https://api.census.gov/data/key_signup.html."
+        )
+
+    if population_source != "scaffold" and not fallback_reason:
+        from synthetic_population import SyntheticPopulationError, synthesize_study_area
+
+        try:
+            result = synthesize_study_area(zone_rows, census_api_key=census_api_key)
+        except SyntheticPopulationError as exc:
+            if population_source == "census":
+                raise
+            # 'auto' degrades, but never silently: the reason travels into the
+            # manifest and the caveats, so a bundle built from zone averages is
+            # never mistaken for one built from survey records.
+            fallback_reason = f"Census microdata could not be used for this study area: {exc}"
+        else:
+            block = {
+                "status": "fitted_to_published_totals",
+                "method": result["method"],
+                "calibration_status": "fitted_to_acs_marginals",
+                "households": result["summary"]["households"],
+                "persons": result["summary"]["persons"],
+                "workers": result["summary"]["workers"],
+                "zone_geography": result["summary"]["zone_geography"],
+                "seed_provenance": result["provenance"],
+                "fit_quality": result["fit_quality"],
+                "fit_grading": result["fit_grading_note"],
+                "controls_not_fitted": result["dropped_controls"],
+            }
+            return (
+                result["households"],
+                result["persons"],
+                result["summary"],
+                block,
+                census_population_caveats(result),
+            )
+
+    household_rows, person_rows, summary = build_population_rows(zone_rows_for_scaffold(zone_rows))
+    block = {
+        "status": "prototype_scaffold",
+        "method": "deterministic_zone_attribute_expansion",
+        "calibration_status": "not_calibrated",
+        "households": len(household_rows),
+        "persons": len(person_rows),
+    }
+    caveats = list(SCAFFOLD_POPULATION_CAVEATS)
+    if fallback_reason:
+        block["fallback_reason"] = fallback_reason
+        caveats.insert(0, fallback_reason)
+    return household_rows, person_rows, summary, block, caveats
+
+
+def zone_rows_for_scaffold(zone_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    coerced, _ = coerce_zone_totals(list(zone_rows))
+    return coerced
+
+
 def build_activitysim_input_bundle(
     *,
     screening_run_dir: str | None = None,
@@ -522,6 +650,7 @@ def build_activitysim_input_bundle(
     output_dir: str,
     skim_mode: str = "copy",
     force: bool = False,
+    population_source: str = "auto",
 ) -> dict[str, Any]:
     source_run_dir = resolve_screening_run_dir(screening_run_dir, screening_manifest)
     source_manifest_path = require_source_file(source_run_dir / SOURCE_MANIFEST_RELATIVE_PATH, "screening manifest")
@@ -543,9 +672,12 @@ def build_activitysim_input_bundle(
     ensure_dir(output_path / "skims")
 
     zones = load_zone_attributes(source_zone_attributes)
+    raw_zones = list(zones)
     zones, adjustments = coerce_zone_totals(zones)
     land_use_rows = build_land_use_rows(zones)
-    household_rows, person_rows, population_summary = build_population_rows(zones)
+    household_rows, person_rows, population_summary, population_block, caveats = build_population(
+        raw_zones, population_source
+    )
 
     land_use_path = output_path / "land_use.csv"
     households_path = output_path / "households.csv"
@@ -572,6 +704,8 @@ def build_activitysim_input_bundle(
         household_rows=household_rows,
         person_rows=person_rows,
         adjustments=adjustments,
+        population_block=population_block,
+        caveats=caveats,
     )
     write_json(output_path / MANIFEST_NAME, manifest)
 
@@ -595,6 +729,7 @@ def main() -> int:
         output_dir=args.output_dir,
         skim_mode=args.skim_mode,
         force=args.force,
+        population_source=args.population,
     )
     print(json.dumps(summary, indent=2))
     return 0
