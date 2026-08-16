@@ -217,6 +217,57 @@ describe("what a validated, calibrated run reports", () => {
   });
 });
 
+describe("the assumptions behind the figures", () => {
+  it("states plainly that the defaults are OpenPlan's own", () => {
+    const document = buildCountyRunProvenanceDocument(
+      input({
+        manifest: manifestWith(
+          {},
+          {
+            assumptions: {
+              provenance:
+                "These are OpenPlan's own screening defaults. They are not drawn from a published trip-rate manual.",
+              trip_generation: { home_based_other_trips_per_person_per_day: 2.2 },
+              trip_distribution_deterrence: { home_based_work_gamma: 1.8 },
+            },
+          }
+        ),
+      })
+    );
+    // A reviewer asking "where does 2.2 trips per person come from?" gets an
+    // answer, and the answer does not borrow authority it does not have.
+    expect(document).toContain("OpenPlan's own screening defaults");
+    expect(document).toContain("not drawn from a published trip-rate manual");
+    expect(document).toContain("2.2");
+    expect(document).toContain("1.8");
+  });
+
+  it("says when a run did not record its assumptions", () => {
+    const document = buildCountyRunProvenanceDocument(input({ manifest: manifestWith({}) }));
+    expect(document).toContain("did not record the assumptions it used");
+    expect(document).toContain("cannot be traced");
+  });
+
+  it("names which road extract the figures rest on, and when", () => {
+    const document = buildCountyRunProvenanceDocument(
+      input({
+        manifest: manifestWith({
+          network_source: "OpenStreetMap",
+          network_downloaded_at: "2026-08-16T20:16:44.714564+00:00",
+        }),
+      })
+    );
+    expect(document).toContain("OpenStreetMap, downloaded 2026-08-16T20:16:44");
+  });
+
+  it("does not invent a download date the run never captured", () => {
+    // An appendix defending a funded figure must not carry a date nobody
+    // measured — a plausible timestamp is indistinguishable from a real one.
+    const document = buildCountyRunProvenanceDocument(input({ manifest: manifestWith({}) }));
+    expect(document).toContain("**Road network:** _not recorded_, downloaded _not recorded_");
+  });
+});
+
 describe("the document is a record, not a derivation", () => {
   it("is byte-identical for the same run", () => {
     const once = buildCountyRunProvenanceDocument(input());

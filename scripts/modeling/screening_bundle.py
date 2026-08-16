@@ -83,6 +83,10 @@ def build_bundle_manifest(
             "bbox": network_meta["network_bbox"],
             "largest_component_pct": network_meta["largest_component_pct"],
             "zones_connected": network_meta["zones_connected"],
+            # Which extract these figures rest on. OSM changes continuously, so
+            # a run from last year and one from today describe different roads.
+            "source": network_meta.get("network_source"),
+            "downloaded_at": network_meta.get("network_downloaded_at"),
         },
         "skims": {
             "reachable_pairs": skim_meta["reachable_pairs"],
@@ -144,6 +148,7 @@ def write_bundle_outputs(
     vmt: dict[str, Any] | None = None,
     engine_versions: dict[str, str] | None = None,
     calibration: dict[str, Any] | None = None,
+    assumptions: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     manifest = build_bundle_manifest(
         run_name=run_name,
@@ -162,6 +167,11 @@ def write_bundle_outputs(
     # than carrying a "calibrated: false" that invites being read as a failure.
     if calibration is not None:
         manifest["calibration"] = calibration
+    # The model's own defaults and where they came from. Always written, because
+    # "which assumptions produced this number" is a question with an answer for
+    # every run, unlike calibration which most runs never request.
+    if assumptions is not None:
+        manifest["assumptions"] = assumptions
     write_json(run_dir / "bundle_manifest.json", manifest)
     evidence = build_evidence_packet(
         run_name=run_name,

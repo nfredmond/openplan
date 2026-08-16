@@ -254,6 +254,45 @@ function runCaveats(manifest: CountyOnrampManifest | null): string[] {
 
 
 /**
+ * The model's own defaults, and where they came from.
+ *
+ * A reviewer is entitled to ask where "2.2 trips per person per day" came from.
+ * Until a run carried this, the answer was nowhere: the constants sat in a
+ * Python file with no source and no way for a planner to see them. The paper
+ * trail could say where the DATA came from and not where the ASSUMPTIONS came
+ * from — and the assumptions are doing most of the work.
+ */
+function assumptionsSection(manifest: CountyOnrampManifest | null): string[] {
+  const assumptions = asRecord((manifest as unknown as Record<string, unknown>)?.assumptions);
+  if (!assumptions) {
+    return [
+      "_This run did not record the assumptions it used._ The figures above cannot be traced to",
+      "the trip rates and road capacities that produced them.",
+    ];
+  }
+
+  const generation = asRecord(assumptions.trip_generation);
+  const deterrence = asRecord(assumptions.trip_distribution_deterrence);
+  const lines = [asText(assumptions.provenance) ?? "_No statement of origin was recorded._", ""];
+
+  if (generation) {
+    lines.push("Trip generation:");
+    for (const [key, value] of Object.entries(generation)) {
+      lines.push(`- ${key.replace(/_/g, " ")}: ${stated(asNumber(value))}`);
+    }
+    lines.push("");
+  }
+  if (deterrence) {
+    lines.push("Trip distribution (higher means shorter trips):");
+    for (const [key, value] of Object.entries(deterrence)) {
+      lines.push(`- ${key.replace(/_/g, " ")}: ${stated(asNumber(value))}`);
+    }
+  }
+  return lines;
+}
+
+
+/**
  * Build the appendix document. Pure: same run in, same bytes out.
  *
  * Markdown rather than PDF on purpose — it pastes into a Word document, a
@@ -302,7 +341,15 @@ export function buildCountyRunProvenanceDocument(input: CountyRunProvenanceInput
     "",
     "## Where the data came from",
     "",
+    `- **Road network:** ${stated(asText((run as Record<string, unknown> | null)?.network_source))}, downloaded ${stated(
+      asText((run as Record<string, unknown> | null)?.network_downloaded_at)
+    )}`,
+    "",
     ...sourcesSection(input.modelingEvidence),
+    "",
+    "## What the model assumed",
+    "",
+    ...assumptionsSection(input.manifest),
     "",
     "## Checked against real traffic counts?",
     "",

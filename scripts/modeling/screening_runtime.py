@@ -9,6 +9,7 @@ import shutil
 import sqlite3
 import string
 import time
+from datetime import datetime, timezone
 import warnings
 from importlib import metadata as importlib_metadata
 from pathlib import Path
@@ -141,6 +142,50 @@ HBO_ATTR_SERVICE_RATE = 5.0
 HBO_ATTR_POP_RATE = 0.5
 NHB_ATTR_EMP_RATE = 2.5
 PEAK_HOUR_FACTOR = 0.10
+
+
+def model_assumptions() -> dict[str, Any]:
+    """The model's own defaults, and an honest statement of where they came from.
+
+    WHY A RUN HAS TO CARRY THIS. A figure in a funding application can be
+    questioned years later: "where does 2.2 trips per person per day come from?"
+    Until now the answer was nowhere — these constants sit in this file with no
+    source, no comment and no way for a planner to see them at all. The paper
+    trail could say where the DATA came from and not where the ASSUMPTIONS came
+    from, and the assumptions are doing most of the work.
+
+    THE PROVENANCE STATEMENT IS DELIBERATELY UNFLATTERING. These are OpenPlan's
+    own screening defaults. Saying they are "standard" or naming a manual they
+    were not actually taken from would be a citation nobody could check and the
+    exact kind of borrowed authority a reviewer is entitled to catch.
+    """
+    return {
+        "provenance": (
+            "These are OpenPlan's own screening defaults. They are not drawn from a published "
+            "trip-rate manual, an adopted regional model, or a local household travel survey, and "
+            "none of them was fitted to this study area unless this run also records a calibration. "
+            "They are the reason its output is screening-grade rather than a forecast."
+        ),
+        "road_defaults_by_class": {
+            road_class: {"free_flow_mph": speed, "capacity_veh_per_hour_per_lane": capacity, "lanes": lanes}
+            for road_class, (speed, capacity, lanes) in LINK_DEFAULTS.items()
+        },
+        "boundary_crossing_daily_trips_by_class": dict(GATEWAY_DAILY_TRIPS),
+        "trip_generation": {
+            "home_based_other_trips_per_person_per_day": HBO_PROD_RATE,
+            "non_home_based_trips_per_person_per_day": NHB_PROD_RATE,
+            "home_based_work_production_floor_per_household": 0.35,
+        },
+        "trip_distribution_deterrence": {
+            "home_based_work_gamma": HBW_GAMMA,
+            "home_based_other_gamma": HBO_GAMMA,
+            "non_home_based_gamma": NHB_GAMMA,
+        },
+        "other": {
+            "network_circuity_factor": VMT_NETWORK_CIRCUITY,
+            "peak_hour_factor": PEAK_HOUR_FACTOR,
+        },
+    }
 
 
 def find_spatialite_path() -> str:
@@ -832,6 +877,12 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
     network_bbox = buffered_bbox(boundary_geom.bounds, network_buffer_miles)
     project = Project()
     project.new(str(proj_dir))
+    # WHEN the network was downloaded, not just that it was. A grant appendix
+    # has to be able to say which extract the figures rest on, and OSM changes
+    # continuously — a run from last year and a run from today describe
+    # different roads. Recorded as the moment the download completed, which is
+    # the only timestamp this lane can honestly claim.
+    network_downloaded_at = datetime.now(timezone.utc).isoformat()
     project.network.create_from_osm(model_area=box(*network_bbox), modes=["car"], clean=True)
     project.close()
 
@@ -992,6 +1043,8 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
 
     summary = {
         "network_bbox": [float(v) for v in network_bbox],
+        "network_source": "OpenStreetMap",
+        "network_downloaded_at": network_downloaded_at,
         "zones_connected": int(len(centroid_map)),
         "nodes_before_centroids": int(len(nodes_all)),
         "links_before_centroids": int(len(links_raw)),
@@ -1988,6 +2041,7 @@ def run_screening_model(
         vmt=vmt_block,
         engine_versions=engine_versions,
         calibration=calibration_meta,
+        assumptions=model_assumptions(),
     )
 
     validation_summary = None

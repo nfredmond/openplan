@@ -129,7 +129,11 @@ export const COUNTY_ONRAMP_CALLBACK_ORIGIN_ENV = "OPENPLAN_COUNTY_ONRAMP_CALLBAC
  */
 export function resolveCountyOnrampCallbackOrigin(
   requestOrigin: string,
-  env: NodeJS.ProcessEnv = process.env
+  // A plain lookup rather than NodeJS.ProcessEnv: this reads ONE key, and
+  // demanding the full environment shape means a caller — including a test —
+  // has to fabricate variables it does not care about to ask a question about
+  // one it does.
+  env: Record<string, string | undefined> = process.env
 ): string {
   const configured = env[COUNTY_ONRAMP_CALLBACK_ORIGIN_ENV]?.trim();
   return (configured || requestOrigin).replace(/\/+$/, "");

@@ -359,6 +359,12 @@ def main() -> int:
             "behavioral_kpi_summary_json": behavioral_prototype.get("kpi_summary_path"),
             "behavioral_kpi_packet_md": behavioral_prototype.get("kpi_packet_path"),
         },
+        # The model's own defaults and an honest statement of where they came
+        # from. Carried to the app because "which assumptions produced this
+        # number" is a question a funding reviewer is entitled to ask, and the
+        # answer used to live only in a Python file nobody outside this repo
+        # reads.
+        "assumptions": (bundle_manifest or {}).get("assumptions"),
         "runtime": runtime_options,
         "summary": {
             "run": {
@@ -390,6 +396,12 @@ def main() -> int:
                 "intrazonal_trip_share": get_nested(run_summary, "vmt", "intrazonal_share"),
                 "network_daily_vmt_unfiltered": get_nested(run_summary, "vmt", "network_daily_vmt_unfiltered"),
                 "engine_versions": get_nested(run_summary, "engine_versions"),
+                # Which road extract these figures rest on. OSM changes
+                # continuously, so a run from last year and one from today
+                # describe different roads, and a grant appendix has to say
+                # which.
+                "network_downloaded_at": get_nested(bundle_manifest, "network", "downloaded_at"),
+                "network_source": get_nested(bundle_manifest, "network", "source"),
                 "stage_wall_clock_seconds": get_nested(run_summary, "stage_wall_clock_seconds"),
             },
             "validation": validation_summary,

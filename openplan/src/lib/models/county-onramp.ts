@@ -66,6 +66,13 @@ export const countyOnrampRunSnapshotSchema = z.object({
   // Optional and nullable because runs produced before the county lane recorded
   // it have no value, and 0 would be the most flattering possible substitute.
   intrazonal_trip_share: z.number().nullable().optional(),
+  // WHICH ROAD EXTRACT the figures rest on. OpenStreetMap changes continuously,
+  // so a run from last year and one from today describe different roads, and an
+  // appendix defending a funded figure has to be able to say which. Optional
+  // and nullable: runs produced before the lane recorded it genuinely do not
+  // know, and inventing a date would be the worst possible substitute.
+  network_downloaded_at: z.string().nullable().optional(),
+  network_source: z.string().nullable().optional(),
 }).passthrough();
 
 export const countyOnrampScaffoldSummarySchema = z
