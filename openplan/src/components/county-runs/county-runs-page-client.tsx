@@ -63,6 +63,11 @@ export function CountyRunsPageClient({
     initialStudyArea?.place ?? null
   );
   const [runName, setRunName] = useState("");
+  // OFF by default, and that is the product's position rather than a UI
+  // preference: the uncalibrated screening model is what OpenPlan ships, and a
+  // model fitted to counts is a different, disclosed claim that someone chooses
+  // to make. Comparing against those counts happens either way.
+  const [calibrateToCounts, setCalibrateToCounts] = useState(false);
 
   const currentViewHref = useMemo(() => {
     const query = searchParams.toString();
@@ -158,7 +163,7 @@ export function CountyRunsPageClient({
       // countyPrefix is deliberately NOT sent. It is optional on the request
       // schema and `defaultCountyPrefix` already derives it from the label, so
       // the old input required a field the API never needed.
-      runtimeOptions: { keepProject: true },
+      runtimeOptions: { keepProject: true, calibrateToCounts },
     });
 
     if (created?.countyRunId) {
@@ -238,6 +243,32 @@ export function CountyRunsPageClient({
                 placeholder={suggestedRunName || "Named after the county if left blank"}
               />
             </div>
+            <div className="space-y-2 md:max-w-2xl">
+              <label className="flex items-start gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 shrink-0 accent-primary"
+                  checked={calibrateToCounts}
+                  onChange={(event) => setCalibrateToCounts(event.target.checked)}
+                  data-testid="county-run-calibrate-toggle"
+                />
+                <span>
+                  <span className="font-medium text-foreground">
+                    Adjust the model to fit local traffic counts
+                  </span>
+                  <span className="mt-1 block text-muted-foreground">
+                    Your state transport department publishes traffic counts, and OpenPlan compares
+                    every run against them wherever they exist — you do not need to tick anything for
+                    that. Ticking this also lets the model adjust itself toward those counts. Some
+                    counts are kept back from the adjustment and used to check the result, so the
+                    accuracy you are shown is measured on traffic the model was not fitted to.
+                    Adjusting does not on its own make a run accurate enough to publish road-by-road
+                    traffic figures.
+                  </span>
+                </span>
+              </label>
+            </div>
+
             {disclosePreparedOnly ? (
               <div
                 data-testid="county-worker-absent-disclosure"

@@ -149,6 +149,7 @@ def write_bundle_outputs(
     engine_versions: dict[str, str] | None = None,
     calibration: dict[str, Any] | None = None,
     assumptions: dict[str, Any] | None = None,
+    published_counts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     manifest = build_bundle_manifest(
         run_name=run_name,
@@ -172,6 +173,12 @@ def write_bundle_outputs(
     # every run, unlike calibration which most runs never request.
     if assumptions is not None:
         manifest["assumptions"] = assumptions
+    # Whether published counts were found for this study area, and when they
+    # were not, WHY. "No feed is registered for your state yet" and "checked and
+    # did badly" are different facts and a reader must be able to tell them
+    # apart; a missing key would let both read as silence.
+    if published_counts is not None:
+        manifest["published_counts"] = published_counts
     write_json(run_dir / "bundle_manifest.json", manifest)
     evidence = build_evidence_packet(
         run_name=run_name,

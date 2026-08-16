@@ -622,6 +622,87 @@ ASSIGNMENT_MAX_ITERATIONS = 500
 ASSIGNMENT_RGAP_TARGET = 0.01
 
 
+def study_area_state_fips(county_fips: str | None, zone_meta: dict[str, Any]) -> set[str]:
+    """Which state's DOT publishes counts for this study area.
+
+    THE COUNTY FIPS WINS WHEN THERE IS ONE, and this is not a preference — it is
+    a correctness fix found by running it. `tract_states` records every state
+    the boundary INTERSECTS, and a county whose edge is a state line touches its
+    neighbour: Nevada County, California came back as {CA, NV} and was refused
+    as multi-state. Its first two FIPS digits say California, exactly, with no
+    geometry involved.
+
+    The tract set is still the answer for a run driven by an arbitrary boundary,
+    where there is no county code and a genuinely multi-state area must be
+    refused rather than guessed.
+    """
+    if county_fips and len(str(county_fips).strip()) >= 2:
+        return {str(county_fips).strip()[:2]}
+    return {str(code) for code in (zone_meta.get("tract_states") or [])}
+
+
+def fetch_study_area_counts(
+    *,
+    county_fips: str | None,
+    zone_meta: dict[str, Any],
+    boundary_path: Path,
+    project_dir: Path,
+    run_dir: Path,
+    boundary_geom,
+    calibrate: bool,
+) -> dict[str, Any]:
+    """Get published counts for this study area, and say plainly when there are none.
+
+    NEVER RAISES. A study area with no registered count feed is most of the
+    country, and it is not a failed run — it is a run without an accuracy
+    figure, which has to be recorded as such. The three outcomes a reader must
+    be able to tell apart are: checked and did well, checked and did badly, and
+    never checked. Returning a reason rather than throwing is what keeps the
+    third one visible instead of turning it into a crash or a silence.
+    """
+    from auto_counts import CountsUnavailable, fetch_counts_for_study_area, split_counts_for_calibration
+
+    counts_dir = ensure_dir(run_dir / "counts")
+    try:
+        fetched = fetch_counts_for_study_area(
+            state_fips_codes=study_area_state_fips(county_fips, zone_meta),
+            boundary_geojson_path=boundary_path,
+            project_db=project_dir / "project_database.sqlite",
+            output_csv=counts_dir / "published_counts.csv",
+            bbox=tuple(float(v) for v in boundary_geom.bounds),
+        )
+    except CountsUnavailable as exc:
+        return {"available": False, "reason": str(exc), "calibration_requested": calibrate}
+
+    result: dict[str, Any] = {
+        "available": True,
+        "calibration_requested": calibrate,
+        **fetched,
+        "validation_counts_csv": fetched["counts_csv"],
+    }
+
+    if not calibrate:
+        return result
+
+    # Calibrating and grading on the same stations reports the accuracy of the
+    # data the model was fitted to. Split first, so the gate is decided by
+    # stations the model never saw.
+    try:
+        split = split_counts_for_calibration(
+            Path(fetched["counts_csv"]),
+            counts_dir / "counts_fit.csv",
+            counts_dir / "counts_holdout.csv",
+        )
+    except CountsUnavailable as exc:
+        result["calibration_skipped_reason"] = str(exc)
+        return result
+
+    result.update(split)
+    result["calibration_counts_csv"] = split["fit_csv"]
+    result["validation_counts_csv"] = split["holdout_csv"]
+    return result
+
+
 def calibrate_run_to_counts(
     *,
     counts_csv: Path,
@@ -1826,6 +1907,8 @@ def run_screening_model(
     demand_package_dir: str | None = None,
     zone_package_dir: str | None = None,
     calibrate_counts_csv: str | None = None,
+    counts_mode: str | None = None,
+    calibrate_to_counts: bool = False,
 ) -> dict[str, Any]:
     # THE ONE COMBINATION THAT IS REFUSED. Calibrating and then validating
     # against the SAME count file grades the model on most of the data it was
@@ -1941,6 +2024,32 @@ def run_screening_model(
         "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
     )
 
+    # AUTOMATIC COMPARISON AGAINST PUBLISHED COUNTS. Runs here, after the
+    # baseline assignment, because that is the first moment both things exist:
+    # the road network the counts must be matched against, and a completed set
+    # of link volumes to compare. Fetching earlier would have nothing to match
+    # to; running it as a second pass would download the network twice.
+    #
+    # Nothing is asked of the planner. The study area's own boundary says which
+    # state it is in, and state DOTs publish this without a key.
+    auto_counts_meta: dict[str, Any] | None = None
+    if counts_mode == "auto":
+        auto_counts_meta = _timed(
+            "counts",
+            fetch_study_area_counts,
+            county_fips=county_fips,
+            zone_meta=zone_meta,
+            boundary_path=boundary_path,
+            project_dir=project_dir,
+            run_dir=run_dir,
+            boundary_geom=boundary_meta["geometry"],
+            calibrate=bool(calibrate_to_counts),
+        )
+        if auto_counts_meta.get("counts_csv"):
+            counts_csv = auto_counts_meta.get("validation_counts_csv") or auto_counts_meta["counts_csv"]
+        if auto_counts_meta.get("calibration_counts_csv"):
+            calibrate_counts_csv = auto_counts_meta["calibration_counts_csv"]
+
     # OPT-IN CALIBRATION. Off unless a count set is named, and it never runs
     # itself: the uncalibrated screening model is what this product ships, and
     # a calibrated run is a different, disclosed claim.
@@ -2042,6 +2151,7 @@ def run_screening_model(
         engine_versions=engine_versions,
         calibration=calibration_meta,
         assumptions=model_assumptions(),
+        published_counts=auto_counts_meta,
     )
 
     validation_summary = None

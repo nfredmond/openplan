@@ -31,6 +31,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--source-agency", default="TBD", help="Default source agency placeholder")
     parser.add_argument("--keep-project", action="store_true", help="Retain AequilibraE project for diagnostics")
     parser.add_argument("--force", action="store_true", help="Replace existing run directory")
+    parser.add_argument(
+        "--calibrate",
+        action="store_true",
+        help=(
+            "Fit the model to this study area's published counts. The count set is split first, so "
+            "the run is graded on stations the model never saw. Opt-in: it produces a disclosed "
+            "calibrated claim rather than the screening default."
+        ),
+    )
     parser.add_argument("--overall-demand-scalar", type=float, help="Optional overall demand scalar")
     parser.add_argument("--external-demand-scalar", type=float, help="Optional external demand scalar")
     parser.add_argument("--hbw-scalar", type=float, help="Optional HBW scalar")
@@ -274,6 +283,14 @@ def main() -> int:
             "--county-fips",
             args.county_fips,
         ]
+        # ALWAYS compare against published counts. A run whose accuracy nobody
+        # measured is the state this lane was in for its whole life, and the
+        # comparison costs a keyless fetch. Where no feed is registered for the
+        # state, the run records that it has no accuracy figure rather than
+        # leaving it unsaid.
+        run_model_cmd.extend(["--counts", "auto"])
+        if args.calibrate:
+            run_model_cmd.append("--calibrate")
         if args.keep_project:
             run_model_cmd.append("--keep-project")
         if args.force:

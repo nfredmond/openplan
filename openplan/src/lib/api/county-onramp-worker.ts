@@ -11,6 +11,11 @@ export const storedCountyOnrampRequestSchema = z.object({
   runtimeOptions: z.object({
     keepProject: z.boolean(),
     force: z.boolean(),
+    // Opt-in: fit the model to this study area's published traffic counts.
+    // Comparing against them happens either way — this decides whether the
+    // model is also ADJUSTED toward them, which is a different, disclosed
+    // claim and never a default.
+    calibrateToCounts: z.boolean().default(false),
     overallDemandScalar: z.number().nullable(),
     externalDemandScalar: z.number().nullable(),
     hbwScalar: z.number().nullable(),
@@ -35,6 +40,11 @@ const countyOnrampWorkerPayloadBaseSchema = z.object({
   runtimeOptions: z.object({
     keepProject: z.boolean(),
     force: z.boolean(),
+    // Opt-in: fit the model to this study area's published traffic counts.
+    // Comparing against them happens either way — this decides whether the
+    // model is also ADJUSTED toward them, which is a different, disclosed
+    // claim and never a default.
+    calibrateToCounts: z.boolean().default(false),
     overallDemandScalar: z.number().nullable(),
     externalDemandScalar: z.number().nullable(),
     hbwScalar: z.number().nullable(),
@@ -92,6 +102,10 @@ export function normalizeCountyOnrampRequest(input: CreateCountyRunRequest): Sto
     runtimeOptions: {
       keepProject: input.runtimeOptions.keepProject ?? true,
       force: input.runtimeOptions.force ?? true,
+      // Defaults to FALSE, and that is the product decision, not an oversight:
+      // the uncalibrated screening model is what OpenPlan ships, and a
+      // calibrated run is a claim someone chooses to make.
+      calibrateToCounts: input.runtimeOptions.calibrateToCounts ?? false,
       overallDemandScalar: input.runtimeOptions.overallDemandScalar ?? null,
       externalDemandScalar: input.runtimeOptions.externalDemandScalar ?? null,
       hbwScalar: input.runtimeOptions.hbwScalar ?? null,

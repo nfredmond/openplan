@@ -5,6 +5,10 @@ import { sanitizedCountyOnrampWorkerPayloadSchema } from "@/lib/api/county-onram
 export const countyRuntimeOptionsSchema = z.object({
   keepProject: z.boolean().optional(),
   force: z.boolean().optional(),
+  // Opt-in: also FIT the model to published traffic counts. Comparing against
+  // them is automatic; this is the separate, disclosed choice to adjust the
+  // model toward them.
+  calibrateToCounts: z.boolean().optional(),
   overallDemandScalar: z.number().nullable().optional(),
   externalDemandScalar: z.number().nullable().optional(),
   hbwScalar: z.number().nullable().optional(),

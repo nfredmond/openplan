@@ -62,6 +62,21 @@ it.
   processes and writes files. Loopback keeps it off your wifi. If you move the
   app to another machine, change this *and* set a worker token.
 
+### Changing `main.py` needs a restart; changing the model does not
+
+The bind mount makes your checkout live inside the container, but only for code
+that is STARTED FRESH each time. The model scripts are subprocesses, so an edit
+to them takes effect on the next job. `main.py` is the long-running server: it
+was imported when the container started and keeps the old copy in memory.
+
+This bites quietly — the job runs, succeeds, and silently ignores a new option,
+which reads as "the feature does not work" rather than "the server is stale". If
+a payload field seems to have no effect:
+
+```bash
+npm run modeling:up
+```
+
 Runs land in `data/screening-runs/<run name>/` in your checkout, with
 downloads cached in `data/_screening_cache/`. Both are gitignored. They are
 large — a county is a few hundred megabytes.

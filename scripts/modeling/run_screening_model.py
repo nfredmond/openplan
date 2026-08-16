@@ -108,6 +108,25 @@ def parse_args() -> argparse.Namespace:
             "a run pass the screening gate."
         ),
     )
+    parser.add_argument(
+        "--counts",
+        choices=["auto", "none"],
+        default="none",
+        help=(
+            "'auto' fetches this study area's published DOT traffic counts (no key, no path to "
+            "supply) and compares the run against them. Where no feed is registered for the state, "
+            "the run records that it has no accuracy figure rather than leaving it unsaid."
+        ),
+    )
+    parser.add_argument(
+        "--calibrate",
+        action="store_true",
+        help=(
+            "With --counts auto, also FIT the model to those counts. The count set is split first: "
+            "the model is fitted on one portion and graded on stations it never saw. Produces a "
+            "disclosed 'calibrated_to_counts' claim and does not by itself make a run pass the gate."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -155,6 +174,8 @@ def _run(run_screening_model, args):
         demand_package_dir=args.demand_package_dir,
         zone_package_dir=args.zone_package_dir,
         calibrate_counts_csv=args.calibrate_to_counts,
+        counts_mode=args.counts,
+        calibrate_to_counts=args.calibrate,
     )
 
 

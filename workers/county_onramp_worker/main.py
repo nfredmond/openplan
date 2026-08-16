@@ -59,6 +59,10 @@ def _require_runtime_options(container: dict[str, Any]) -> dict[str, Any]:
     parsed = {
         "keepProject": bool(runtime.get("keepProject")),
         "force": bool(runtime.get("force")),
+        # Opt-in: fit the model to published traffic counts. Comparing against
+        # them happens either way; this decides whether the model is also
+        # adjusted toward them, which is a different, disclosed claim.
+        "calibrateToCounts": bool(runtime.get("calibrateToCounts")),
     }
     for key in ("overallDemandScalar", "externalDemandScalar", "hbwScalar", "hboScalar", "nhbScalar"):
         value = runtime.get(key)
@@ -184,6 +188,8 @@ def _build_bootstrap_command(job: dict[str, Any]) -> tuple[list[str], Path]:
 
     if runtime_options["keepProject"]:
         command.append("--keep-project")
+    if runtime_options.get("calibrateToCounts"):
+        command.append("--calibrate")
     if runtime_options["force"]:
         command.append("--force")
 
