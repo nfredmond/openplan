@@ -571,6 +571,50 @@ CONNECTOR_SEPARATION_RADIUS_FRACTION = 0.5
 SQ_METRES_PER_SQ_MILE = 2_589_988.0
 
 
+#: Equilibrium assignment settings. The gap target is the standard one; the
+#: iteration ceiling exists so a pathological network cannot spin forever.
+ASSIGNMENT_MAX_ITERATIONS = 500
+ASSIGNMENT_RGAP_TARGET = 0.01
+
+
+def assignment_convergence(rgap: float, iterations: int, max_iterations: int) -> dict[str, Any]:
+    """Did the equilibrium assignment actually reach equilibrium — stated, not implied.
+
+    A traffic assignment redistributes trips until no driver can find a faster
+    route; the relative gap measures how far from that it still is. Stopping at
+    the iteration ceiling with the gap above target means traffic had not
+    finished moving off over-capacity links, and every link volume is therefore
+    a figure from part-way through a calculation rather than a result.
+
+    Measured 2026-08-16: a county run stopped at 50 iterations with a gap of
+    0.0243 against the 0.01 target. Both numbers had always been recorded, and
+    the record was true — but reading it required noticing that one exceeded the
+    other, and a run that stopped short looked identical at a glance to one that
+    converged. `converged` and a caveat are what make the difference legible.
+    """
+    # bool() wraps the WHOLE expression: `rgap` arrives as a numpy float, so
+    # `rgap <= target` is a numpy bool_ and `A and B` returns B — which json
+    # cannot serialise, failing the run at the very end after four minutes.
+    converged = bool(math.isfinite(rgap) and rgap <= ASSIGNMENT_RGAP_TARGET)
+    record: dict[str, Any] = {
+        "final_gap": float(rgap) if math.isfinite(rgap) else None,
+        "iterations": int(iterations),
+        "target_gap": ASSIGNMENT_RGAP_TARGET,
+        "max_iterations": int(max_iterations),
+        "converged": converged,
+    }
+    if not converged:
+        record["caveat"] = (
+            f"The traffic assignment did NOT converge: it stopped after {iterations} iterations "
+            f"with a relative gap of "
+            f"{'unmeasured' if not math.isfinite(rgap) else format(rgap, '.4f')}, against a target "
+            f"of {ASSIGNMENT_RGAP_TARGET}. Link volumes from an unconverged assignment are not "
+            "equilibrium volumes — traffic has not finished redistributing away from over-capacity "
+            "roads — and must not be compared to observed counts or used to rank corridors."
+        )
+    return record
+
+
 def connector_separation_m(area_sq_mi: float) -> float:
     """How far apart a zone's connectors should be, from the zone's own size.
 
@@ -1436,8 +1480,19 @@ def run_assignment(
     assignment.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
     assignment.set_capacity_field(capacity_field)
     assignment.set_time_field(time_field)
-    assignment.max_iter = 50
-    assignment.rgap_target = 0.01
+    # 50 iterations was not enough and nothing said so. Measured 2026-08-16 on a
+    # county run: the assignment stopped at the ceiling with a relative gap of
+    # 0.0243 against the 0.01 target — traffic had not finished redistributing
+    # away from over-capacity links, which is exactly the shape of the observed
+    # validation failure (links far over capacity, weak rank agreement with real
+    # counts).
+    #
+    # Raising it is nearly free: assignment is 1–3 seconds of a four-minute run,
+    # almost all of which is downloading the road network. An unconverged
+    # assignment is not an equilibrium, and every link volume it produces is a
+    # number in the middle of a calculation.
+    assignment.max_iter = ASSIGNMENT_MAX_ITERATIONS
+    assignment.rgap_target = ASSIGNMENT_RGAP_TARGET
     assignment.set_algorithm("bfw")
     assignment.execute()
 
@@ -1478,11 +1533,14 @@ def run_assignment(
             "Σ link daily volume × link length over all loaded links, external/through "
             "travel included; not the resident-VMT figure used for CEQA screening."
         ),
-        "convergence": {
-            "final_gap": float(rgap) if np.isfinite(rgap) else None,
-            "iterations": iterations,
-            "target_gap": 0.01,
-        },
+        # SAYS WHETHER IT CONVERGED, rather than leaving a reader to compare two
+        # numbers. The gap and the target were both recorded before and a run
+        # that stopped at 0.0243 against a 0.01 target looked, at a glance,
+        # exactly like one that reached 0.008 — the reader had to notice the
+        # inequality themselves, and nobody did for as long as this has existed.
+        # An unconverged assignment's link volumes are a number taken from the
+        # middle of a calculation, so the run has to say so out loud.
+        "convergence": assignment_convergence(rgap, iterations, ASSIGNMENT_MAX_ITERATIONS),
         "network": {
             "links": int(graph.num_links),
             "nodes": int(graph.num_nodes),
