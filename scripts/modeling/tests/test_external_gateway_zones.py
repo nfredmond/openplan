@@ -39,8 +39,10 @@ from screening_runtime import (  # noqa: E402
     ZONE_ATTRIBUTE_COLUMNS,
     build_external_gateway_matrix,
     build_external_zone_rows,
+    connector_separation_m,
     external_zone_ids,
     keep_corridor_endpoints,
+    select_spread_connectors,
     write_zone_package_files,
 )
 
@@ -314,6 +316,74 @@ class CorridorEndpointTests(unittest.TestCase):
         kept, notes = keep_corridor_endpoints([])
         self.assertEqual(kept, [])
         self.assertEqual(notes, [])
+
+
+class ConnectorSpreadTests(unittest.TestCase):
+    """A zone's connectors must be in different parts of the zone.
+
+    Measured 2026-08-16: every zone already got three connectors and it looked
+    like enough. The three sat a median of 138–166 m apart, sometimes 3 m —
+    three adjacent nodes on one street, loading exactly like a single connector.
+    A whole block group's demand entered the network on one residential road,
+    which is why finer zones pushed local streets into the busiest-links list
+    even while cutting unassigned travel four-fold.
+    """
+
+    def test_a_cordon_zone_is_never_spread(self) -> None:
+        """THE ONE THAT MUST NOT CHANGE. An external cordon has no area, and its
+        whole purpose is to attach at ONE place — where its highway crosses the
+        boundary. Spreading it would undo the gateway fix."""
+        self.assertEqual(connector_separation_m(0.0), 0.0)
+        clustered = [(1, -121.0, 39.0), (2, -121.0001, 39.0), (3, -121.0002, 39.0)]
+        self.assertEqual(select_spread_connectors(clustered, connector_separation_m(0.0)), clustered)
+
+    def test_separation_scales_with_the_zone(self) -> None:
+        # Zones differ by three orders of magnitude in area; a separation
+        # sensible for a city block group is meaningless for a rural tract.
+        small = connector_separation_m(1.0)
+        large = connector_separation_m(513.0)
+        self.assertGreater(large, small * 10)
+        self.assertGreater(small, 0.0)
+
+    def test_clustered_candidates_are_passed_over_for_distant_ones(self) -> None:
+        # Three nodes ~10 m apart, then two genuinely elsewhere.
+        candidates = [
+            (1, -121.0000, 39.0000),
+            (2, -121.0001, 39.0000),
+            (3, -121.0002, 39.0000),
+            (4, -121.0200, 39.0000),  # ~1.7 km west
+            (5, -121.0000, 39.0200),  # ~2.2 km north
+        ]
+        chosen = select_spread_connectors(candidates, min_separation_m=1000.0)
+        self.assertEqual([node for node, _, _ in chosen], [1, 4, 5])
+
+    def test_the_best_ranked_candidate_is_always_kept(self) -> None:
+        # Spread is enforced ON TOP of the caller's ranking, never instead of
+        # it: road class and proximity still decide who is best.
+        candidates = [(9, -121.0, 39.0), (1, -121.02, 39.0), (2, -121.0, 39.02)]
+        chosen = select_spread_connectors(candidates, min_separation_m=1000.0)
+        self.assertEqual(chosen[0][0], 9)
+
+    def test_a_zone_that_cannot_be_spread_still_gets_its_connectors(self) -> None:
+        """RELAXES RATHER THAN REFUSES. A small dense zone, or a rural one with
+        a single road through it, cannot meet the separation — and a zone with
+        too few connectors is disconnected from the network entirely, which is a
+        far worse failure than a clustered one."""
+        clustered = [(1, -121.0, 39.0), (2, -121.0001, 39.0), (3, -121.0002, 39.0)]
+        chosen = select_spread_connectors(clustered, min_separation_m=5000.0)
+        self.assertEqual(len(chosen), 3)
+        self.assertEqual([node for node, _, _ in chosen], [1, 2, 3])
+
+    def test_no_connector_is_ever_repeated(self) -> None:
+        # The relaxation path must not hand back the same node twice — two
+        # connectors to one node is one connector with double the capacity.
+        candidates = [(1, -121.0, 39.0), (2, -121.0001, 39.0)]
+        chosen = select_spread_connectors(candidates, min_separation_m=5000.0)
+        self.assertEqual(len({node for node, _, _ in chosen}), len(chosen))
+
+    def test_fewer_candidates_than_connectors_is_not_an_error(self) -> None:
+        chosen = select_spread_connectors([(1, -121.0, 39.0)], min_separation_m=1000.0)
+        self.assertEqual(len(chosen), 1)
 
 
 class ZonePackageRepublishTests(unittest.TestCase):

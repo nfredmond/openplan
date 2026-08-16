@@ -33,6 +33,7 @@ from screening_metrics import (
     VMT_NETWORK_CIRCUITY,
     compute_internal_resident_vmt,
     compute_network_daily_vmt,
+    haversine_miles,
 )
 
 ACS_5_URL = os.getenv("CENSUS_ACS5_URL", "https://api.census.gov/data/2022/acs/acs5")
@@ -555,6 +556,80 @@ def rank_connector_candidate(conn: sqlite3.Connection, node_id: int, d2: float) 
     return (score, float(best_priority), -distance_m, -float(node_id))
 
 
+#: How many nearby network nodes a zone's connectors are chosen from. Widened
+#: from 50 once the connectors were measured and found to be clustered: in a
+#: dense block group the 50 nearest nodes can all lie on one street, so no
+#: amount of care in choosing between them can spread the zone's load.
+CONNECTOR_CANDIDATE_POOL = 200
+
+#: A zone's connectors must be at least this fraction of its own equivalent
+#: radius apart. Scaled to the zone rather than fixed, because zones differ by
+#: three orders of magnitude in area — a separation sensible for a city block
+#: group is meaningless for a 513-square-mile rural tract.
+CONNECTOR_SEPARATION_RADIUS_FRACTION = 0.5
+
+SQ_METRES_PER_SQ_MILE = 2_589_988.0
+
+
+def connector_separation_m(area_sq_mi: float) -> float:
+    """How far apart a zone's connectors should be, from the zone's own size.
+
+    Zero for a zone with no area — which is exactly right for an external
+    cordon, whose whole purpose is to attach at ONE point, the place its highway
+    crosses the boundary. Spreading a cordon's connectors would undo the
+    gateway fix.
+    """
+    if not math.isfinite(area_sq_mi) or area_sq_mi <= 0:
+        return 0.0
+    equivalent_radius_m = math.sqrt(area_sq_mi * SQ_METRES_PER_SQ_MILE / math.pi)
+    return CONNECTOR_SEPARATION_RADIUS_FRACTION * equivalent_radius_m
+
+
+def select_spread_connectors(
+    ranked_candidates: list[tuple[int, float, float]],
+    min_separation_m: float,
+    count: int = 3,
+) -> list[tuple[int, float, float]]:
+    """Pick connectors that are actually in different parts of the zone.
+
+    WHY THIS EXISTS (measured 2026-08-16). Every zone already got three
+    connectors, and it looked like enough. Measuring them showed the three sit a
+    median of 138–166 m apart, sometimes 3 m — three adjacent nodes on one
+    street, which loads exactly like a single connector. A whole block group's
+    demand entered the network on one residential road, which is why finer zones
+    pushed local streets into the busiest-links list even though they cut the
+    share of unassigned travel four-fold.
+
+    Greedy and best-first: take the highest-ranked candidate, then each next one
+    only if it is far enough from everything already taken. `ranked_candidates`
+    must already be in preference order — road class and proximity are decided
+    by the caller's scoring, and this only enforces spread on top of it.
+
+    RELAXES RATHER THAN REFUSES. If the separation cannot be met — a small dense
+    zone, a rural zone with one road through it — the best remaining candidates
+    fill the gap. A zone with too few connectors is disconnected from the
+    network entirely, which is a far worse failure than a clustered one.
+    """
+    chosen: list[tuple[int, float, float]] = []
+    for candidate in ranked_candidates:
+        if len(chosen) >= count:
+            break
+        if min_separation_m <= 0 or all(
+            haversine_miles(candidate[1], candidate[2], taken[1], taken[2]) * 1609.34 >= min_separation_m
+            for taken in chosen
+        ):
+            chosen.append(candidate)
+
+    if len(chosen) < count:
+        taken_ids = {node_id for node_id, _, _ in chosen}
+        for candidate in ranked_candidates:
+            if len(chosen) >= count:
+                break
+            if candidate[0] not in taken_ids:
+                chosen.append(candidate)
+    return chosen
+
+
 def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, network_buffer_miles: float) -> dict[str, Any]:
     from aequilibrae import Project
 
@@ -638,20 +713,26 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
         )
 
         nearest = conn.execute(
-            "SELECT node_id, (X(geometry)-?)*(X(geometry)-?)+(Y(geometry)-?)*(Y(geometry)-?) as d2 "
-            "FROM nodes WHERE is_centroid=0 AND node_id!=? ORDER BY d2 ASC LIMIT 50",
-            (clon, clon, clat, clat, centroid_node),
+            "SELECT node_id, X(geometry), Y(geometry), "
+            "(X(geometry)-?)*(X(geometry)-?)+(Y(geometry)-?)*(Y(geometry)-?) as d2 "
+            "FROM nodes WHERE is_centroid=0 AND node_id!=? ORDER BY d2 ASC LIMIT ?",
+            (clon, clon, clat, clat, centroid_node, CONNECTOR_CANDIDATE_POOL),
         ).fetchall()
-        nearest_in_largest = [(nid, d2) for nid, d2 in nearest if nid in largest_component]
+        nearest_in_largest = [row for row in nearest if row[0] in largest_component]
         candidate_pool = nearest_in_largest or nearest
-        preferred = sorted(
+        ranked = sorted(
             candidate_pool,
-            key=lambda item: rank_connector_candidate(conn, int(item[0]), float(item[1])),
+            key=lambda item: rank_connector_candidate(conn, int(item[0]), float(item[3])),
             reverse=True,
-        )[:3]
+        )
+        distance_by_node = {int(row[0]): float(row[3]) for row in ranked}
+        preferred = select_spread_connectors(
+            [(int(row[0]), float(row[1]), float(row[2])) for row in ranked],
+            connector_separation_m(float(zone["area_sq_mi"])),
+        )
         chosen_connectors = []
-        for near_node, d2 in preferred:
-            nx, ny = conn.execute("SELECT X(geometry), Y(geometry) FROM nodes WHERE node_id=?", (near_node,)).fetchone()
+        for near_node, nx, ny in preferred:
+            d2 = distance_by_node[near_node]
             line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
             length_m = max((d2 ** 0.5) * 111000, 10)
             # speed_ab/speed_ba are left NULL on purpose: until the normalisation pass below they hold
