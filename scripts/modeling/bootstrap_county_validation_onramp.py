@@ -367,6 +367,15 @@ def main() -> int:
                 "jobs_total": get_nested(run_summary, "zones", "jobs_total") or get_nested(run_summary, "jobs_total"),
                 "loaded_links": get_nested(run_summary, "assignment", "loaded_links") or get_nested(run_summary, "loaded_links"),
                 "final_gap": get_nested(run_summary, "assignment", "convergence", "final_gap") or get_nested(run_summary, "final_gap"),
+                # The gap alone needs a reader who knows the target and notices
+                # which is larger. `assignment_converged` is the answer rather
+                # than the evidence, and it travels to the app so a run whose
+                # link volumes are mid-calculation cannot present as one that
+                # settled. None on a run whose producer did not record it —
+                # never False, which would assert a failure that was not
+                # measured.
+                "assignment_converged": get_nested(run_summary, "assignment", "convergence", "converged"),
+                "assignment_convergence_caveat": get_nested(run_summary, "assignment", "convergence", "caveat"),
                 "total_trips": get_nested(run_summary, "demand", "total_trips") or get_nested(run_summary, "total_trips"),
                 "daily_vmt": get_nested(run_summary, "vmt", "daily_vmt"),
                 "vmt_per_capita": get_nested(run_summary, "vmt", "vmt_per_capita"),

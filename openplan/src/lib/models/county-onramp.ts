@@ -42,6 +42,18 @@ export const countyOnrampRunSnapshotSchema = z.object({
   jobs_total: z.number().nullable(),
   loaded_links: z.number().nullable(),
   final_gap: z.number().nullable(),
+  // WHETHER THE ASSIGNMENT REACHED EQUILIBRIUM — the answer, not the evidence.
+  // `final_gap` alone needs a reader who knows the target and notices which
+  // number is larger, and for as long as this lane has existed that gap arrived
+  // as null anyway: the county on-ramp read it from the run summary while the
+  // producer wrote it only to the bundle manifest, so a run that stopped
+  // mid-calculation and a run that settled looked identical here.
+  //
+  // Optional and NULLABLE, never defaulted to false: a run whose producer did
+  // not record convergence has not failed to converge, and asserting that it
+  // did fail would be a claim nobody measured.
+  assignment_converged: z.boolean().nullable().optional(),
+  assignment_convergence_caveat: z.string().nullable().optional(),
   total_trips: z.number().nullable(),
   // Screening-grade VMT (optional): daily internal resident VMT and per-capita
   // VMT, with a provenance string documenting how they were derived. Absent for

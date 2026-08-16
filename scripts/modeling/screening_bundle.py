@@ -187,5 +187,17 @@ def build_run_summary(
         "zones": int(zone_meta["zones"]),
         "total_trips": float(demand_meta["summary"]["total_trips"]),
         "loaded_links": int(assignment_meta["loaded_links"]),
+        # WHETHER THE ASSIGNMENT REACHED EQUILIBRIUM, where the county on-ramp
+        # can actually see it. `bootstrap_county_validation_onramp.py` has always
+        # read `run_summary["assignment"]["convergence"]["final_gap"]` and always
+        # got None, because the convergence record lived only in
+        # bundle_manifest.json — so every county run the app has ever ingested
+        # reported a null gap, and the run that stopped short of equilibrium
+        # looked exactly like the run that reached it.
+        #
+        # Found 2026-08-16 by putting a job through the worker rather than
+        # calling the model directly: the two paths read different files, and
+        # only one of them was being exercised.
+        "assignment": {"convergence": assignment_meta.get("convergence")},
         "manifest": manifest,
     }
