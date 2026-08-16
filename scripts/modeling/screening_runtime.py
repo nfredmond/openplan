@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import requests
 from shapely import wkt
-from shapely.geometry import Point, box
+from shapely.geometry import box
 
 from screening_boundary import (
     download_if_needed,
@@ -91,6 +91,35 @@ LINK_CLASS_PRIORITY = {
     "living_street": 0,
     "pedestrian": 0,
 }
+
+# The zone table's columns, in order, for `package/zone_attributes.csv`.
+#
+# `zone_kind` is the last one and is the load-bearing addition: a zone is either
+# a PLACE ("internal" — a census tract with residents and jobs) or a CORDON
+# POINT ("external" — where a highway crosses the study-area boundary). Several
+# calculations must treat those differently, and every one of them used to infer
+# the difference from a list of zone ids computed elsewhere. Naming the kind on
+# the row is what stops a real tract from ever being mistaken for a gateway.
+ZONE_ATTRIBUTE_COLUMNS = (
+    "GEOID",
+    "NAMELSAD",
+    "zone_id",
+    "centroid_lon",
+    "centroid_lat",
+    "area_sq_mi",
+    "total_jobs",
+    "retail_jobs",
+    "health_jobs",
+    "education_jobs",
+    "accommodation_jobs",
+    "govt_jobs",
+    "est_population",
+    "households",
+    "worker_residents",
+    "area_share",
+    "zone_kind",
+)
+EXTERNAL_ZONE_COLUMNS = ZONE_ATTRIBUTE_COLUMNS
 
 GATEWAY_DAILY_TRIPS = {
     "motorway": 15000,
@@ -337,27 +366,16 @@ def build_zone_package(boundary_geom, package_dir: Path, cache_dir: Path) -> tup
     tract_gdf["zone_id"] = np.arange(1, len(tract_gdf) + 1)
     tract_gdf = estimate_jobs(tract_gdf)
 
-    zone_cols = [
-        "GEOID",
-        "NAMELSAD",
-        "zone_id",
-        "centroid_lon",
-        "centroid_lat",
-        "area_sq_mi",
-        "total_jobs",
-        "retail_jobs",
-        "health_jobs",
-        "education_jobs",
-        "accommodation_jobs",
-        "govt_jobs",
-        "est_population",
-        "households",
-        "worker_residents",
-        "area_share",
-    ]
+    zone_cols = list(ZONE_ATTRIBUTE_COLUMNS)
+    tract_gdf["zone_kind"] = "internal"
     zones_df = tract_gdf[zone_cols].copy()
     zones_df.to_csv(package_dir / "zone_attributes.csv", index=False)
 
+    # zones.geojson is POLYGONS, and only internal zones have an area — an
+    # external zone is a point on the cordon. It is therefore written once,
+    # here, and deliberately not rewritten when external zones are added:
+    # a mapping surface asking "which tract is this?" wants tracts. The row
+    # counts differ on purpose, and `package_manifest.json` records both.
     zones_export = tract_gdf[zone_cols + ["geometry"]].copy()
     zones_export = gpd.GeoDataFrame(zones_export, geometry="geometry", crs="EPSG:4326")
     zones_export.to_file(package_dir / "zones.geojson", driver="GeoJSON")
@@ -385,6 +403,46 @@ def build_zone_package(boundary_geom, package_dir: Path, cache_dir: Path) -> tup
     }
     (package_dir / "package_manifest.json").write_text(json.dumps(manifest, indent=2))
     return zones_df, manifest
+
+
+def write_zone_package_files(zones_df: pd.DataFrame, package_dir: Path, zone_meta: dict[str, Any]) -> dict[str, Any]:
+    """Re-publish the zone table once the network stage has added cordon zones.
+
+    `build_zone_package` writes these files before the network exists, so it can
+    only know about tracts. External zones are created later, and everything
+    downstream — the ActivitySim bundle, the OD matrix's own column headings,
+    anyone reading the run off disk — has to see the SAME zone system the
+    connectors and skims were built for. A zone table that disagrees with the
+    matrix beside it is the kind of mismatch nothing detects and everything
+    misreads.
+
+    `zones.geojson` is not rewritten: see the note where it is created.
+    """
+    zones_df.to_csv(package_dir / "zone_attributes.csv", index=False)
+
+    centroids_export = gpd.GeoDataFrame(
+        zones_df[["GEOID", "NAMELSAD", "zone_id", "zone_kind"]].copy(),
+        geometry=gpd.points_from_xy(zones_df["centroid_lon"], zones_df["centroid_lat"]),
+        crs="EPSG:4326",
+    )
+    centroids_export.to_file(package_dir / "zone_centroids.geojson", driver="GeoJSON")
+
+    zone_meta = dict(zone_meta)
+    # `zones` STAYS THE COUNT OF PLACES, and this is not bookkeeping. It becomes
+    # `zone_count` in the run summary, which the app turns into a sentence a
+    # planner reads: "N% of trips begin and end in the same zone across 26
+    # zones". That sentence is about how finely the study area is divided into
+    # PLACES; counting cordon points in it would inflate the number and quietly
+    # weaken a caveat about the model's resolution. The cordon count is reported
+    # beside it, named for what it is.
+    zone_meta["zones"] = int((zones_df["zone_kind"] == "internal").sum())
+    zone_meta["internal_zones"] = int((zones_df["zone_kind"] == "internal").sum())
+    zone_meta["external_zones"] = int((zones_df["zone_kind"] == "external").sum())
+    zone_meta["zones_including_external_cordons"] = int(len(zones_df))
+    zone_meta["zone_type"] = "census-tract-fragments-plus-external-cordons"
+    zone_meta["zones_geojson_covers"] = "internal zones only (external zones are cordon points, not areas)"
+    (package_dir / "package_manifest.json").write_text(json.dumps(zone_meta, indent=2))
+    return zone_meta
 
 
 def patch_osm_builder() -> None:
@@ -504,6 +562,21 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
     project.new(str(proj_dir))
     project.network.create_from_osm(model_area=box(*network_bbox), modes=["car"], clean=True)
     project.close()
+
+    # Gateways are detected HERE, between the network import and the centroid
+    # pass, because that is the only moment both facts are available: the links
+    # exist (so a boundary crossing can be found) and no centroid has been
+    # attached yet (so the gateway can be given a zone of its own and picked up
+    # by the same pass as every other zone). Detecting them later — which is
+    # where this used to live, inside demand synthesis — left no way to give a
+    # gateway a centroid, which is why it borrowed the nearest tract's.
+    gateways = detect_external_gateways(proj_dir, boundary_geom)
+    zones_df = pd.concat(
+        [zones_df, build_external_zone_rows(gateways, int(zones_df["zone_id"].max()) + 1)],
+        ignore_index=True,
+    )
+    for gateway, zone_id in zip(gateways, external_zone_ids(zones_df)):
+        gateway["zone_id"] = zone_id
 
     conn = connect_spatialite(proj_dir / "project_database.sqlite")
     nodes_all = [row[0] for row in conn.execute("SELECT node_id FROM nodes ORDER BY node_id")]
@@ -649,9 +722,15 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
         "node_id_strategy": "preserve_osm_ids",
         "centroid_map": centroid_map,
         "connector_diagnostics": connector_diagnostics,
+        "gateways": gateways,
+        "internal_zone_count": int((zones_df["zone_kind"] == "internal").sum()),
+        "external_zone_count": int((zones_df["zone_kind"] == "external").sum()),
     }
     (bundle_dir / "work" / "network_setup_summary.json").write_text(json.dumps(summary, indent=2))
-    return summary
+    # The zone table now has more rows than it did on the way in, so it is
+    # returned rather than mutated in place — every downstream stage must see
+    # the same zone system the connectors were built for.
+    return summary, zones_df
 
 
 def compute_freeflow_skims(project_dir: Path, centroid_map: dict[int, int], run_output_dir: Path) -> dict[str, Any]:
@@ -744,7 +823,32 @@ def gravity_distribute(
     return np.nan_to_num(result, nan=0.0, posinf=0.0, neginf=0.0)
 
 
-def detect_external_gateways(project_dir: Path, boundary_geom, zones_df: pd.DataFrame, max_gateways: int = 8) -> list[dict[str, Any]]:
+def detect_external_gateways(project_dir: Path, boundary_geom, max_gateways: int = 8) -> list[dict[str, Any]]:
+    """Find the highways that cross the study-area boundary, and where.
+
+    WHAT CHANGED HERE, AND WHY IT MATTERED (2026-08-15). This function used to
+    finish by attaching each gateway to the NEAREST RESIDENT ZONE CENTROID, and
+    the demand builder then loaded that gateway's traffic at the centroid. The
+    crossing point was computed, stored as `boundary_lon`/`boundary_lat`, and
+    then not used for anything.
+
+    In a rural county that is catastrophic for link volumes. The tract touching
+    the eastern boundary of the measured county is 513 square miles of national
+    forest with 3,765 residents; its centroid sits about 30 km from the
+    interstate, and the nearest link to that point is an unpaved forest road.
+    Every external trip was therefore injected there: 113,410 vehicles a day on
+    Grouse Ridge Road, 84% of everything entering or leaving that zone, at 14x
+    its capacity, ranked above every real arterial in the county.
+
+    It also quietly distorted the county's headline number. Because those tracts
+    were doing double duty as gateway proxies, the resident-VMT estimator had to
+    exclude them to keep pass-through travel out — dropping 17% of the
+    population's travel from the numerator while their population stayed in the
+    denominator.
+
+    So the gateway now keeps only its crossing point, and the caller gives it a
+    zone of its own there. Both problems are the same defect and both end here.
+    """
     conn = connect_spatialite(project_dir / "project_database.sqlite")
     rows = conn.execute(
         "SELECT link_id, link_type, COALESCE(name, ''), COALESCE(lanes_ab, 1), COALESCE(lanes_ba, 1), AsText(geometry) "
@@ -796,20 +900,14 @@ def detect_external_gateways(project_dir: Path, boundary_geom, zones_df: pd.Data
         matched["daily"] = max(float(matched["daily"]), float(candidate["daily"]))
 
     clusters = sorted(clusters, key=lambda item: item["daily"], reverse=True)[:max_gateways]
-    zone_points = {
-        int(row.zone_id): Point(float(row.centroid_lon), float(row.centroid_lat))
-        for row in zones_df.itertuples(index=False)
-    }
 
     gateways = []
     for idx, gateway in enumerate(clusters, start=1):
-        zone_id = min(zone_points, key=lambda zid: gateway["point"].distance(zone_points[zid]))
         label_bits = [gateway["link_type"], gateway["name"] or f"gateway-{idx:02d}"]
         label = slugify("-".join(label_bits))
         gateways.append(
             {
                 "label": label,
-                "zone_id": int(zone_id),
                 "link_type": gateway["link_type"],
                 "link_id": gateway["link_id"],
                 "daily_in": round(float(gateway["daily"]), 2),
@@ -821,7 +919,84 @@ def detect_external_gateways(project_dir: Path, boundary_geom, zones_df: pd.Data
     return gateways
 
 
+def build_external_zone_rows(gateways: list[dict[str, Any]], first_zone_id: int) -> pd.DataFrame:
+    """One zone per gateway, centred on the point its highway crosses the boundary.
+
+    These are ORDINARY ROWS in the zone table, which is the whole trick: the
+    centroid-attachment pass that already runs for every zone then builds a
+    centroid node at the crossing and connects it to the nearest real node — and
+    at a boundary crossing on a highway, the nearest real node is on that
+    highway. No new connector machinery, and no way for a gateway's traffic to
+    appear anywhere except the road it actually arrives on.
+
+    Every land-use figure is zero, and that is load-bearing rather than tidy.
+    Zero population and zero jobs keep these zones out of the internal trip
+    purposes (whose shares are population- and employment-weighted), keep them
+    out of the resident-VMT numerator, and leave the population denominator
+    exactly what it was — the study area's real residents, counted once.
+    """
+    if not gateways:
+        return pd.DataFrame(columns=EXTERNAL_ZONE_COLUMNS)
+
+    rows = []
+    for offset, gateway in enumerate(gateways):
+        rows.append(
+            {
+                "GEOID": f"EXT{first_zone_id + offset:04d}",
+                "NAMELSAD": f"External gateway: {gateway['label']}",
+                "zone_id": int(first_zone_id + offset),
+                "centroid_lon": float(gateway["boundary_lon"]),
+                "centroid_lat": float(gateway["boundary_lat"]),
+                # No land area: an external zone is a point on the cordon, not a
+                # place. It also means `intrazonal_miles` can never invent a trip
+                # length for one.
+                "area_sq_mi": 0.0,
+                "total_jobs": 0.0,
+                "retail_jobs": 0.0,
+                "health_jobs": 0.0,
+                "education_jobs": 0.0,
+                "accommodation_jobs": 0.0,
+                "govt_jobs": 0.0,
+                "est_population": 0.0,
+                "households": 0.0,
+                "worker_residents": 0.0,
+                "area_share": 0.0,
+                "zone_kind": "external",
+            }
+        )
+    return pd.DataFrame(rows, columns=EXTERNAL_ZONE_COLUMNS)
+
+
+def external_zone_ids(zones_df: pd.DataFrame) -> list[int]:
+    """Zone ids that are cordon points rather than places.
+
+    Reads the `zone_kind` column rather than assuming external zones sort last
+    or carry zero population — a real tract with no measured residents would
+    otherwise be mistaken for a gateway and dropped from the VMT numerator,
+    which is the exact class of error this whole change exists to remove.
+    """
+    if "zone_kind" not in zones_df.columns:
+        return []
+    return [int(z) for z in zones_df.loc[zones_df["zone_kind"] == "external", "zone_id"]]
+
+
 def build_external_gateway_matrix(gateways: list[dict[str, Any]], zones_df: pd.DataFrame) -> np.ndarray:
+    """Trips entering and leaving the study area, loaded AT the cordon.
+
+    `gateway["zone_id"]` is now the gateway's own external zone — a point on the
+    boundary whose connector meets the crossing highway — rather than whichever
+    resident tract happened to be nearest. That single index change is what
+    moves a county's through traffic off a forest road and onto the interstate
+    it actually uses.
+
+    The destination shares are population- and employment-weighted, and external
+    zones have neither, so they receive nothing: gateway traffic goes to and
+    from real places, never from one cordon to another. Cordon-to-cordon
+    movement is genuine pass-through travel and is NOT modelled here yet — see
+    `pair_passthrough_cordons` in the worker lane. Adding it changes volumes on
+    exactly the corridors this fix is about, so it is a separate step with its
+    own before-and-after.
+    """
     zone_ids = zones_df["zone_id"].astype(int).tolist()
     index_lookup = {zone_id: idx for idx, zone_id in enumerate(zone_ids)}
     pop = zones_df["est_population"].to_numpy(dtype=float)
@@ -846,8 +1021,7 @@ def write_od_csv(od_matrix: np.ndarray, zone_ids: list[int], output_path: Path) 
 def synthesize_demand(
     zones_df: pd.DataFrame,
     skim_matrix: np.ndarray,
-    project_dir: Path,
-    boundary_geom,
+    gateways: list[dict[str, Any]],
     package_dir: Path,
     overall_demand_scalar: float = 1.0,
     external_demand_scalar: float = 1.0,
@@ -856,6 +1030,13 @@ def synthesize_demand(
     nhb_scalar: float = 1.0,
 ) -> dict[str, Any]:
     zone_ids = zones_df["zone_id"].astype(int).tolist()
+    # External zones are cordon points, not places: nobody lives or works at
+    # one, so no internal trip purpose may produce or attract there. The floors
+    # a few lines below (`np.maximum(..., 1)`) exist to stop a zone with no
+    # measured jobs from becoming unreachable, and would otherwise hand every
+    # gateway a trip end of its own — putting local errands on an interstate
+    # cordon and blurring the exact separation this zone kind exists to draw.
+    internal = (zones_df["zone_kind"] == "internal").to_numpy(dtype=float)
     pop = zones_df["est_population"].to_numpy(dtype=float)
     households = zones_df["households"].to_numpy(dtype=float)
     workers = zones_df["worker_residents"].to_numpy(dtype=float)
@@ -868,19 +1049,18 @@ def synthesize_demand(
         + zones_df["govt_jobs"].to_numpy(dtype=float)
     )
 
-    hbw_prod = np.maximum(workers, households * 0.35)
-    hbw_attr = np.maximum(jobs, 10)
+    hbw_prod = np.maximum(workers, households * 0.35) * internal
+    hbw_attr = np.maximum(jobs, 10) * internal
     hbw = gravity_distribute(hbw_prod, hbw_attr, skim_matrix, HBW_GAMMA) * hbw_scalar
 
-    hbo_prod = np.maximum(pop * HBO_PROD_RATE, 1)
-    hbo_attr = np.maximum(retail * HBO_ATTR_RETAIL_RATE + service * HBO_ATTR_SERVICE_RATE + pop * HBO_ATTR_POP_RATE, 1)
+    hbo_prod = np.maximum(pop * HBO_PROD_RATE, 1) * internal
+    hbo_attr = np.maximum(retail * HBO_ATTR_RETAIL_RATE + service * HBO_ATTR_SERVICE_RATE + pop * HBO_ATTR_POP_RATE, 1) * internal
     hbo = gravity_distribute(hbo_prod, hbo_attr, skim_matrix, HBO_GAMMA) * hbo_scalar
 
-    nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1)
-    nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1)
+    nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1) * internal
+    nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1) * internal
     nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA) * nhb_scalar
 
-    gateways = detect_external_gateways(project_dir, boundary_geom, zones_df)
     if external_demand_scalar != 1.0:
         gateways = [
             {
@@ -1182,7 +1362,16 @@ def run_screening_model(
     boundary_meta["artifact_path"] = str(boundary_path)
 
     zones_df, zone_meta = _timed("zones", build_zone_package, boundary_meta["geometry"], package_dir, cache_path)
-    network_meta = _timed("network", build_network, run_dir, boundary_meta["geometry"], zones_df, network_buffer_miles)
+    # The network stage adds one external zone per boundary-crossing highway, so
+    # it hands the zone table back rather than taking it read-only.
+    network_meta, zones_df = _timed(
+        "network", build_network, run_dir, boundary_meta["geometry"], zones_df, network_buffer_miles
+    )
+    # Reassigned, not just called: the cordon counts and the zone-system label
+    # belong in the run summary too, and a discarded return value would leave
+    # `package_manifest.json` and the summary quietly describing different zone
+    # systems.
+    zone_meta = write_zone_package_files(zones_df, package_dir, zone_meta)
     project_dir = Path(network_meta["project_dir"])
     skim_meta = _timed("skims", compute_freeflow_skims, project_dir, network_meta["centroid_map"], run_output_dir)
     demand_meta = _timed(
@@ -1190,8 +1379,7 @@ def run_screening_model(
         synthesize_demand,
         zones_df,
         skim_meta["matrix"],
-        project_dir,
-        boundary_meta["geometry"],
+        network_meta["gateways"],
         package_dir,
         overall_demand_scalar=overall_demand_scalar,
         external_demand_scalar=external_demand_scalar,
@@ -1203,9 +1391,17 @@ def run_screening_model(
         "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
     )
 
-    # Internal-resident VMT (the CEQA §15064.3 estimator): same derivation the
-    # seeded NCTC bundle proved out — internal OD × centroid distance × circuity,
-    # gateway zones excluded so pass-through travel is not counted.
+    # Internal-resident VMT (the CEQA §15064.3 estimator): internal OD ×
+    # centroid distance × circuity, with the cordon zones excluded so travel
+    # entering and leaving the study area is not counted as residents' driving.
+    #
+    # WHAT THE EXTERNAL ZONES FIXED HERE (2026-08-15). This exclusion used to
+    # name real census tracts — the ones standing in for gateways — so their
+    # residents' own travel was dropped from the numerator while their
+    # population stayed in the denominator. On the measured county that was 17%
+    # of the population, and it understated vehicle-miles per capita by about a
+    # fifth. Now the excluded zones have no residents by construction, so the
+    # numerator counts every tract and the denominator is unchanged.
     vmt_inputs = compute_internal_resident_vmt(
         demand_meta["matrix"],
         demand_meta["zone_ids"],
@@ -1213,7 +1409,11 @@ def run_screening_model(
         zones_df["centroid_lat"].to_numpy(dtype=float),
         zones_df["area_sq_mi"].to_numpy(dtype=float),
         zones_df["est_population"].to_numpy(dtype=float),
-        gateway_zone_ids=[int(gw["zone_id"]) for gw in demand_meta["gateways"]],
+        # Taken from the zone table's own `zone_kind`, not from the gateway
+        # list: the thing being excluded is "zones nobody lives in", and the
+        # table is where that is recorded. Deriving it from the gateway list
+        # instead is how a real tract came to be excluded in the first place.
+        gateway_zone_ids=external_zone_ids(zones_df),
     )
     gateway_id_list = ", ".join(str(z) for z in vmt_inputs["excluded_gateway_zone_ids"])
     vmt_block = {
@@ -1244,8 +1444,10 @@ def run_screening_model(
         "provenance": (
             "Internal resident VMT (screening-grade, derived — not measured): "
             f"Σ internal-to-internal OD trips × centroid great-circle distance × {VMT_NETWORK_CIRCUITY} circuity "
-            "(intrazonal ≈ 0.5·√(area/π)); external gateway zones "
-            f"[{gateway_id_list}] excluded so pass-through travel is not counted; "
+            "(intrazonal ≈ 0.5·√(area/π)); the external cordon zones where highways cross the "
+            f"study-area boundary [{gateway_id_list}] are excluded so travel entering and leaving "
+            "the area is not counted as residents' driving — nobody lives in one, so every "
+            "resident zone is counted and the population below is the whole study area; "
             f"divided by resident population {int(round(vmt_inputs['population'])):,}. "
             f"Source artifacts: package/od_trip_matrix.csv + package/zone_attributes.csv ({name})."
         ),
