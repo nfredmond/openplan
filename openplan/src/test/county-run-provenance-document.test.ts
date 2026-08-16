@@ -268,6 +268,37 @@ describe("the assumptions behind the figures", () => {
   });
 });
 
+describe("counts a person typed are distinguishable from counts a feed supplied", () => {
+  const withScaffold = (scaffold: Record<string, unknown>) =>
+    buildCountyRunProvenanceDocument(
+      input({ manifest: { summary: { run: {}, scaffold } } as unknown as CountyRunProvenanceInput["manifest"] })
+    );
+
+  it("names the stations a person edited, and says what that costs", () => {
+    const document = withScaffold({
+      station_count: 8,
+      hand_edited_station_ids: ["CT_RTE20_PM12_240", "CT_RTE49_PM10_553"],
+      hand_edited_at: "2026-08-16T09:00:00.000Z",
+    });
+    expect(document).toContain("**2 of 8 count stations were edited by hand**");
+    expect(document).toContain("CT_RTE20_PM12_240");
+    // The consequence, not just the fact.
+    expect(document).toContain("carries the authority of whoever entered it");
+  });
+
+  it("says plainly when nothing was hand-edited", () => {
+    const document = withScaffold({ station_count: 8, hand_edited_station_ids: [] });
+    expect(document).toContain("No count values were changed by hand");
+  });
+
+  it("does not claim a clean sheet when no worksheet was recorded", () => {
+    // Absent is not "nobody edited anything" — it is "we cannot say".
+    const document = buildCountyRunProvenanceDocument(input({ manifest: manifestWith({}) }));
+    expect(document).toContain("No count-station worksheet was recorded");
+    expect(document).not.toContain("No count values were changed by hand");
+  });
+});
+
 describe("the document is a record, not a derivation", () => {
   it("is byte-identical for the same run", () => {
     const once = buildCountyRunProvenanceDocument(input());

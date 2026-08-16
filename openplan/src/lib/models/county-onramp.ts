@@ -87,6 +87,13 @@ export const countyOnrampScaffoldSummarySchema = z
     ready_station_count: z.number(),
     next_action_label: z.string().min(1),
     inline_csv_content: z.string().min(1).optional(),
+    // WHICH COUNTS A PERSON TYPED IN. Observed counts reach a run either from a
+    // state DOT's published feed or from a planner's keyboard, and once they
+    // are in the same column they are indistinguishable — while carrying
+    // completely different authority. Accumulated across saves, never reset:
+    // an edit made three saves ago is still a hand-entered figure.
+    hand_edited_station_ids: z.array(z.string()).optional(),
+    hand_edited_at: z.string().nullable().optional(),
   })
   .passthrough();
 

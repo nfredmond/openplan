@@ -254,6 +254,43 @@ function runCaveats(manifest: CountyOnrampManifest | null): string[] {
 
 
 /**
+ * How many observed counts a person typed in rather than a feed supplying.
+ *
+ * They are indistinguishable once they share a column, and they carry
+ * completely different authority: "Caltrans measured 27,000 here in 2023" and
+ * "someone at the agency believed it was about 27,000" are not the same
+ * evidence. A reviewer is entitled to know which a figure rests on.
+ */
+function handEnteredSection(manifest: CountyOnrampManifest | null): string[] {
+  const scaffold = asRecord(asRecord((manifest as unknown as Record<string, unknown>)?.summary)?.scaffold);
+  if (!scaffold) {
+    return ["_No count-station worksheet was recorded for this run._"];
+  }
+
+  const edited = Array.isArray(scaffold.hand_edited_station_ids)
+    ? (scaffold.hand_edited_station_ids as unknown[]).filter((id): id is string => typeof id === "string")
+    : [];
+  const total = asNumber(scaffold.station_count);
+
+  if (edited.length === 0) {
+    return [
+      `No count values were changed by hand. All ${stated(total)} stations hold the values they`,
+      "were created with.",
+    ];
+  }
+  return [
+    `**${edited.length} of ${stated(total)} count stations were edited by hand**, most recently`,
+    `${stated(asText(scaffold.hand_edited_at))}.`,
+    "",
+    "A hand-entered count carries the authority of whoever entered it, not of a published",
+    "measurement. Stations edited:",
+    "",
+    ...edited.map((stationId) => `- ${stationId}`),
+  ];
+}
+
+
+/**
  * The model's own defaults, and where they came from.
  *
  * A reviewer is entitled to ask where "2.2 trips per person per day" came from.
@@ -354,6 +391,10 @@ export function buildCountyRunProvenanceDocument(input: CountyRunProvenanceInput
     "## Checked against real traffic counts?",
     "",
     ...validationSection(input),
+    "",
+    "## Were any counts entered by hand?",
+    "",
+    ...handEnteredSection(input.manifest),
     "",
     "## Fitted to local counts?",
     "",

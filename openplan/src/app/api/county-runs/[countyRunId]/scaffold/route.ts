@@ -13,6 +13,7 @@ import {
 import {
   CountyValidationScaffoldCsvError,
   normalizeCountyValidationScaffoldCsvContent,
+  diffCountyValidationScaffoldEdits,
   summarizeCountyValidationScaffoldCsv,
 } from "@/lib/api/county-onramp-scaffold";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
@@ -216,6 +217,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const scaffoldSummary = summarizeCountyValidationScaffoldCsv(normalizedCsvContent);
     const resolvedScaffoldPath = resolveScaffoldPath(scaffoldPath);
 
+    // WHICH COUNTS A PERSON TYPED, recorded before the file is overwritten and
+    // the previous version is gone. Accumulated across saves rather than
+    // replaced: a count edited three saves ago is still hand-entered, and a
+    // save that changes nothing must not clear the history of one that did.
+    const previousScaffoldCsv =
+      manifest.summary.scaffold?.inline_csv_content ??
+      (await readFile(resolvedScaffoldPath, "utf8").catch(() => null));
+    const edits = diffCountyValidationScaffoldEdits(previousScaffoldCsv, normalizedCsvContent);
+    const previouslyEdited = manifest.summary.scaffold?.hand_edited_station_ids ?? [];
+    const handEditedStationIds = [
+      ...new Set([...previouslyEdited, ...edits.map((edit) => edit.stationId)]),
+    ].sort();
+
     await mkdir(dirname(resolvedScaffoldPath), { recursive: true });
     await writeFile(resolvedScaffoldPath, normalizedCsvContent, "utf8");
 
@@ -232,7 +246,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
           ...manifest.summary,
           validation: invalidatesValidation ? null : manifest.summary.validation,
           bundle_validation: invalidatesValidation ? null : manifest.summary.bundle_validation,
-          scaffold: scaffoldSummary,
+          scaffold: {
+            ...scaffoldSummary,
+            hand_edited_station_ids: handEditedStationIds,
+            hand_edited_at:
+              edits.length > 0
+                ? new Date().toISOString()
+                : manifest.summary.scaffold?.hand_edited_at ?? null,
+          },
         },
       }),
       normalizedCsvContent
