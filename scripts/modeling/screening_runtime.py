@@ -21,6 +21,7 @@ import requests
 from shapely import wkt
 from shapely.geometry import box
 
+from demand_package import expand_matrix_for_cordons, read_demand_package
 from screening_boundary import (
     download_if_needed,
     intersecting_state_fips,
@@ -439,7 +440,14 @@ def write_zone_package_files(zones_df: pd.DataFrame, package_dir: Path, zone_met
     zone_meta["internal_zones"] = int((zones_df["zone_kind"] == "internal").sum())
     zone_meta["external_zones"] = int((zones_df["zone_kind"] == "external").sum())
     zone_meta["zones_including_external_cordons"] = int(len(zones_df))
-    zone_meta["zone_type"] = "census-tract-fragments-plus-external-cordons"
+    # Built FROM whatever the zone system already said it was, never asserted.
+    # A run fed a supplied demand package did not build tract fragments, and a
+    # manifest claiming it did would be a provenance lie in the one field a
+    # reader consults to find out which model produced the numbers.
+    base_zone_type = str(zone_meta.get("zone_type") or "census-tract-fragments")
+    zone_meta["zone_type"] = (
+        f"{base_zone_type}-plus-external-cordons" if zone_meta["external_zones"] else base_zone_type
+    )
     zone_meta["zones_geojson_covers"] = "internal zones only (external zones are cordon points, not areas)"
     (package_dir / "package_manifest.json").write_text(json.dumps(zone_meta, indent=2))
     return zone_meta
@@ -1117,7 +1125,23 @@ def synthesize_demand(
     hbw_scalar: float = 1.0,
     hbo_scalar: float = 1.0,
     nhb_scalar: float = 1.0,
+    supplied_internal_matrix: np.ndarray | None = None,
 ) -> dict[str, Any]:
+    """Assemble the trip matrix this run will assign.
+
+    `supplied_internal_matrix` replaces the built-in gravity model with a matrix
+    some other demand model produced — the worker lane's finer block-group
+    package, or an activity-based model's trip table. Everything AFTER the
+    demand still happens here and happens identically: cordon traffic is added,
+    unreachable pairs are masked, scalars apply, and the same file is written.
+    That is the point. A comparison between two demand models is only readable
+    if every step downstream of the demand is the same step.
+
+    The purpose split (home-based work / other / non-home-based) is a property
+    of THIS model, so a supplied matrix reports its trips under `supplied_trips`
+    and leaves the three purpose layers at zero rather than inventing a
+    breakdown it was never given.
+    """
     zone_ids = zones_df["zone_id"].astype(int).tolist()
     # External zones are cordon points, not places: nobody lives or works at
     # one, so no internal trip purpose may produce or attract there. The floors
@@ -1138,17 +1162,23 @@ def synthesize_demand(
         + zones_df["govt_jobs"].to_numpy(dtype=float)
     )
 
-    hbw_prod = np.maximum(workers, households * 0.35) * internal
-    hbw_attr = np.maximum(jobs, 10) * internal
-    hbw = gravity_distribute(hbw_prod, hbw_attr, skim_matrix, HBW_GAMMA) * hbw_scalar
+    zero = np.zeros((len(zone_ids), len(zone_ids)), dtype=float)
+    if supplied_internal_matrix is not None:
+        supplied = expand_matrix_for_cordons(supplied_internal_matrix, len(zone_ids))
+        hbw = hbo = nhb = zero
+    else:
+        supplied = zero
+        hbw_prod = np.maximum(workers, households * 0.35) * internal
+        hbw_attr = np.maximum(jobs, 10) * internal
+        hbw = gravity_distribute(hbw_prod, hbw_attr, skim_matrix, HBW_GAMMA) * hbw_scalar
 
-    hbo_prod = np.maximum(pop * HBO_PROD_RATE, 1) * internal
-    hbo_attr = np.maximum(retail * HBO_ATTR_RETAIL_RATE + service * HBO_ATTR_SERVICE_RATE + pop * HBO_ATTR_POP_RATE, 1) * internal
-    hbo = gravity_distribute(hbo_prod, hbo_attr, skim_matrix, HBO_GAMMA) * hbo_scalar
+        hbo_prod = np.maximum(pop * HBO_PROD_RATE, 1) * internal
+        hbo_attr = np.maximum(retail * HBO_ATTR_RETAIL_RATE + service * HBO_ATTR_SERVICE_RATE + pop * HBO_ATTR_POP_RATE, 1) * internal
+        hbo = gravity_distribute(hbo_prod, hbo_attr, skim_matrix, HBO_GAMMA) * hbo_scalar
 
-    nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1) * internal
-    nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1) * internal
-    nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA) * nhb_scalar
+        nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1) * internal
+        nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1) * internal
+        nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA) * nhb_scalar
 
     if external_demand_scalar != 1.0:
         gateways = [
@@ -1164,19 +1194,26 @@ def synthesize_demand(
 
     valid_pairs = np.isfinite(skim_matrix) & (skim_matrix > 0)
     np.fill_diagonal(valid_pairs, True)
-    total = (hbw + hbo + nhb + external) * valid_pairs
+    total = (hbw + hbo + nhb + supplied + external) * valid_pairs
     if overall_demand_scalar != 1.0:
         total = total * overall_demand_scalar
         hbw = hbw * overall_demand_scalar
         hbo = hbo * overall_demand_scalar
         nhb = nhb * overall_demand_scalar
+        supplied = supplied * overall_demand_scalar
         external = external * overall_demand_scalar
 
     write_od_csv(total, zone_ids, package_dir / "od_trip_matrix.csv")
     layers = {
+        # Which demand model produced this, named rather than inferred. A run
+        # whose trips came from somewhere else must never read like one this
+        # model generated — that distinction is the entire basis on which two
+        # demand models can be compared.
+        "demand_source": "supplied_package" if supplied_internal_matrix is not None else "gravity_v1",
         "hbw_trips": round(float(hbw.sum()), 2),
         "hbo_trips": round(float(hbo.sum()), 2),
         "nhb_trips": round(float(nhb.sum()), 2),
+        "supplied_trips": round(float(supplied.sum()), 2),
         "external_trips": round(float(external.sum()), 2),
         "total_trips": round(float(total.sum()), 2),
         "trip_rates": {
@@ -1418,6 +1455,7 @@ def run_screening_model(
     hbw_scalar: float = 1.0,
     hbo_scalar: float = 1.0,
     nhb_scalar: float = 1.0,
+    demand_package_dir: str | None = None,
 ) -> dict[str, Any]:
     repo_root = Path(__file__).resolve().parents[2]
     output_root_path = Path(output_root).expanduser().resolve() if output_root else repo_root / "data" / "screening-runs"
@@ -1450,7 +1488,30 @@ def run_screening_model(
     boundary_path = write_boundary_artifact(boundary_meta["geometry"], boundary_dir)
     boundary_meta["artifact_path"] = str(boundary_path)
 
-    zones_df, zone_meta = _timed("zones", build_zone_package, boundary_meta["geometry"], package_dir, cache_path)
+    # ZONES AND DEMAND COME FROM ONE OF TWO PLACES, and everything after this
+    # point is identical either way — that sameness is what lets two demand
+    # models be compared on the same corridors.
+    supplied_package = read_demand_package(Path(demand_package_dir)) if demand_package_dir else None
+    if supplied_package is not None:
+        zones_df = supplied_package["zones"]
+        zone_meta = {
+            "zones": int(len(zones_df)),
+            "zone_type": "supplied-demand-package",
+            "total_population": float(zones_df["est_population"].sum()),
+            "total_households": float(zones_df["households"].sum()),
+            "total_worker_residents": float(zones_df["worker_residents"].sum()),
+            "total_jobs_est": float(zones_df["total_jobs"].sum()),
+            "demand_package": supplied_package["provenance"],
+            "files": {
+                "zone_attributes": "package/zone_attributes.csv",
+                "zone_centroids_geojson": "package/zone_centroids.geojson",
+            },
+        }
+        stage_seconds["zones"] = 0.0
+    else:
+        zones_df, zone_meta = _timed(
+            "zones", build_zone_package, boundary_meta["geometry"], package_dir, cache_path
+        )
     # The network stage adds one external zone per boundary-crossing highway, so
     # it hands the zone table back rather than taking it read-only.
     network_meta, zones_df = _timed(
@@ -1475,6 +1536,7 @@ def run_screening_model(
         hbw_scalar=hbw_scalar,
         hbo_scalar=hbo_scalar,
         nhb_scalar=nhb_scalar,
+        supplied_internal_matrix=supplied_package["matrix"] if supplied_package else None,
     )
     assignment_meta = _timed(
         "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta

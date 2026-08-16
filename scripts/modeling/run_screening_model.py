@@ -79,6 +79,16 @@ def parse_args() -> argparse.Namespace:
         default=1.0,
         help="Multiply non-home-based demand by this scalar for sensitivity testing (default: 1.0)",
     )
+    parser.add_argument(
+        "--demand-package-dir",
+        help=(
+            "Use an existing demand package (zone_attributes.csv + od_trip_matrix.csv) instead of "
+            "building zones and synthesizing trips. Everything downstream — network, cordons, "
+            "assignment, VMT — runs identically, which is what makes two demand models comparable "
+            "on the same corridors. The package describes internal zones only; boundary cordons "
+            "are added here. See scripts/modeling/demand_package.py."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -123,6 +133,7 @@ def _run(run_screening_model, args):
         hbw_scalar=args.hbw_scalar,
         hbo_scalar=args.hbo_scalar,
         nhb_scalar=args.nhb_scalar,
+        demand_package_dir=args.demand_package_dir,
     )
 
 

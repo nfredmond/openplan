@@ -376,6 +376,23 @@ class ZonePackageRepublishTests(unittest.TestCase):
         self.assertIn("internal zones only", manifest["zones_geojson_covers"])
         self.assertEqual(manifest["zone_type"], "census-tract-fragments-plus-external-cordons")
 
+    def test_the_zone_system_label_is_built_from_what_it_already_was(self) -> None:
+        """A run fed a supplied demand package did not build tract fragments.
+        Asserting that it did would be a provenance lie in the one field a
+        reader consults to find out which model produced the numbers."""
+        meta = write_zone_package_files(
+            self.zones, self.package_dir, {"zones": 2, "zone_type": "supplied-demand-package"}
+        )
+        self.assertEqual(meta["zone_type"], "supplied-demand-package-plus-external-cordons")
+
+    def test_a_closed_study_area_is_not_labelled_as_having_cordons(self) -> None:
+        internals = self.zones[self.zones["zone_kind"] == "internal"].copy()
+        meta = write_zone_package_files(
+            internals, self.package_dir, {"zones": 2, "zone_type": "census-tract-fragments"}
+        )
+        self.assertEqual(meta["zone_type"], "census-tract-fragments")
+        self.assertEqual(meta["external_zones"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
