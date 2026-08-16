@@ -171,6 +171,95 @@ def commits_behind(commit: str) -> int | None:
         return None
 
 
+def automated_checks() -> tuple[str, str]:
+    """
+    WHETHER THE ROBOTS ON GITHUB ARE HAPPY, in one line.
+
+    WHY THIS ROW EXISTS. On 2026-08-15 two of these had been red for a long time
+    with nobody looking: the tenant-isolation proof for three and a half days
+    and 48 pushes, and the nightly browser walk-through since the day it was
+    created — thirteen runs, never once green. Both were CORRECT. One of them
+    had been trying to say, for ten days, that residents' comments were being
+    posted before anyone could read them back.
+
+    The isolation proof now runs inside `npm run qa:gate`, so that one cannot go
+    unnoticed again. The nightly cannot: it needs a whole stack and eight
+    minutes, which is too much to put in front of every push. So it reports
+    here, on the window Nathaniel opens to start work.
+
+    IT MUST NEVER SHOW GREEN WHEN IT DOES NOT KNOW. No network, no `gh`, not
+    signed in — all of those say so in words and stay grey. A check that reads
+    as fine when it failed to look is the exact thing this row exists to end.
+    """
+    code, out = run_quiet(
+        [
+            "gh", "run", "list", "--branch", "main", "--limit", "40",
+            "--json", "name,conclusion,status",
+        ],
+        cwd=REPO_DIR,
+        timeout=20,
+    )
+    if code != 0:
+        if code == 127:
+            return IDLE, "cannot check — the GitHub command line is not installed"
+        return IDLE, "cannot check right now (no network, or not signed in to GitHub)"
+
+    try:
+        runs = json.loads(out)
+    except (ValueError, TypeError):
+        return IDLE, "cannot check — GitHub answered something unexpected"
+
+    # Newest first, so per workflow the first COMPLETED run is its current
+    # state and the unbroken run of failures above the first success is how
+    # long it has been broken. "3 runs in a row" is the number that turns
+    # "something is red" into "this has been red since Tuesday".
+    by_workflow: dict[str, list[str]] = {}
+    for run in runs:
+        name, conclusion = run.get("name"), run.get("conclusion")
+        if run.get("status") != "completed" or not name or not conclusion:
+            continue  # still running: not an answer yet
+        by_workflow.setdefault(name, []).append(conclusion)
+
+    latest = {name: results[0] for name, results in by_workflow.items()}
+    streak: dict[str, int] = {}
+    for name, results in by_workflow.items():
+        count = 0
+        for conclusion in results:
+            if conclusion != "failure":
+                break
+            count += 1
+        streak[name] = count
+
+    if not latest:
+        return IDLE, "cannot check — no finished runs reported yet"
+
+    # "skipped" is a real answer for Production Health: there is no hosted
+    # OpenPlan to poll, so it skips itself on purpose.
+    broken = [n for n, c in latest.items() if c == "failure"]
+    if broken:
+        parts = []
+        for name in sorted(broken):
+            failed = streak.get(name, 1)
+            # The sample is the last 40 runs across ALL workflows, so a nightly
+            # gets only a handful of slots in it. When every run we can see has
+            # failed, the true streak is longer than the number — say "at least"
+            # rather than printing a figure that understates how long something
+            # has been broken. This row exists because a red check was ignored
+            # for ten days; a reassuringly small number here would be its own
+            # version of that.
+            seen_all = failed >= len(by_workflow[name])
+            count = f"at least {failed}" if seen_all else str(failed)
+            parts.append(f"{name} ({count} run{'s' if failed != 1 else ''} in a row)")
+        return BAD, "FAILING: " + ", ".join(parts)
+
+    passing = [n for n, c in latest.items() if c == "success"]
+    skipped = [n for n, c in latest.items() if c == "skipped"]
+    if not passing:
+        return IDLE, "nothing has actually run — every check was skipped"
+    tail = f", {len(skipped)} skipped on purpose" if skipped else ""
+    return OK, f"all {len(passing)} checks passing{tail}"
+
+
 # ---------------------------------------------------------------------------
 # The window.
 # ---------------------------------------------------------------------------
@@ -215,6 +304,9 @@ class ControlPanel:
 
         self.status_labels: dict[str, tk.Label] = {}
         self.status_dots: dict[str, tk.Label] = {}
+        # Last answer from GitHub, and when it was taken. See _status_worker.
+        self._checks_cache: tuple[str, str] | None = None
+        self._checks_at: float = 0.0
 
         # The title column carries the "which is which" hint inline. An earlier
         # version put it in a right-aligned label on the same row, and on a
@@ -223,6 +315,7 @@ class ControlPanel:
             ("demo", "Demo site — port 3000", "the one you show people"),
             ("dev", f"Test site — port {DEV_PORT}", "the code being worked on now"),
             ("db", "Database", "everything needs this"),
+            ("checks", "Automated checks", "the robots that test every change"),
         ]
         for key, title, hint in rows:
             row = ttk.Frame(box)
@@ -469,8 +562,18 @@ class ControlPanel:
 
         b = (OK, "running") if database_up() else (BAD, "not running — start Docker")
 
+        # The other three rows are local and cheap; this one is a network call
+        # to GitHub, so it refreshes on its own slower clock instead of every
+        # twelve seconds. The last answer stays on screen in between, which is
+        # honest — it was true when it was taken.
+        now = time.monotonic()
+        if self._checks_cache is None or now - self._checks_at > 300:
+            self._checks_cache = automated_checks()
+            self._checks_at = now
+        c = self._checks_cache
+
         def apply() -> None:
-            for key, (colour, text) in (("demo", d), ("dev", v), ("db", b)):
+            for key, (colour, text) in (("demo", d), ("dev", v), ("db", b), ("checks", c)):
                 self.status_dots[key].configure(fg=colour)
                 self.status_labels[key].configure(text=text)
             running = v[0] in (OK, WARN)
