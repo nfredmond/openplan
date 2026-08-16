@@ -89,6 +89,15 @@ def parse_args() -> argparse.Namespace:
             "are added here. See scripts/modeling/demand_package.py."
         ),
     )
+    parser.add_argument(
+        "--zone-package-dir",
+        help=(
+            "Use an existing package's ZONE SYSTEM only (zone_attributes.csv) and let this model "
+            "generate the trips onto it. The counterpart to --demand-package-dir, and the one that "
+            "isolates a variable: comparing a full demand package against a default run changes the "
+            "zones AND the demand model together, which cannot say which caused a difference."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -134,6 +143,7 @@ def _run(run_screening_model, args):
         hbo_scalar=args.hbo_scalar,
         nhb_scalar=args.nhb_scalar,
         demand_package_dir=args.demand_package_dir,
+        zone_package_dir=args.zone_package_dir,
     )
 
 

@@ -32,6 +32,7 @@ from demand_package import (  # noqa: E402
     DemandPackageError,
     expand_matrix_for_cordons,
     read_demand_package,
+    read_zone_package,
 )
 
 
@@ -197,6 +198,54 @@ class PackageRefusalTests(unittest.TestCase):
         with self.assertRaises(DemandPackageError) as caught:
             read_demand_package(self.dir / "nowhere")
         self.assertIn("does not exist", str(caught.exception))
+
+
+class ZonePackageTests(unittest.TestCase):
+    """Reading zones WITHOUT the demand — the reader that isolates a variable."""
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_zones_load_and_the_demand_source_says_whose_trips_these_are(self) -> None:
+        write_package(self.dir)
+        package = read_zone_package(self.dir)
+
+        self.assertEqual(list(package["zones"]["zone_id"]), [1, 2, 3])
+        self.assertNotIn("matrix", package)
+        # A run whose ZONES came from elsewhere must be distinguishable from one
+        # whose DEMAND did — they answer different questions about a result.
+        self.assertEqual(
+            package["provenance"]["demand_source"], "built_in_gravity_on_supplied_zones"
+        )
+
+    def test_a_matrix_is_ignored_rather_than_refused(self) -> None:
+        """The same directory is a valid input to both readers. Which half of it
+        you want is the caller's decision, made by choosing the function."""
+        write_package(self.dir, matrix=np.full((3, 3), 999.0))
+        package = read_zone_package(self.dir)
+        self.assertEqual(len(package["zones"]), 3)
+
+    def test_a_broken_zone_table_is_still_refused(self) -> None:
+        # Skipping the matrix must not mean skipping the zone checks.
+        write_package(self.dir, drop_columns=("est_population",))
+        with self.assertRaises(DemandPackageError) as caught:
+            read_zone_package(self.dir)
+        self.assertIn("est_population", str(caught.exception))
+
+    def test_cordon_zones_are_refused_here_too(self) -> None:
+        write_package(self.dir, extra_columns={"zone_kind": ["internal", "external", "internal"]})
+        with self.assertRaises(DemandPackageError):
+            read_zone_package(self.dir)
+
+    def test_a_zone_table_with_no_matrix_beside_it_still_loads(self) -> None:
+        # The whole point: a producer may publish a zone system alone.
+        write_package(self.dir)
+        (self.dir / "od_trip_matrix.csv").unlink()
+        self.assertEqual(len(read_zone_package(self.dir)["zones"]), 3)
 
 
 class CordonExpansionTests(unittest.TestCase):

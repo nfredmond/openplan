@@ -21,7 +21,7 @@ import requests
 from shapely import wkt
 from shapely.geometry import box
 
-from demand_package import expand_matrix_for_cordons, read_demand_package
+from demand_package import expand_matrix_for_cordons, read_demand_package, read_zone_package
 from screening_boundary import (
     download_if_needed,
     intersecting_state_fips,
@@ -1456,6 +1456,7 @@ def run_screening_model(
     hbo_scalar: float = 1.0,
     nhb_scalar: float = 1.0,
     demand_package_dir: str | None = None,
+    zone_package_dir: str | None = None,
 ) -> dict[str, Any]:
     repo_root = Path(__file__).resolve().parents[2]
     output_root_path = Path(output_root).expanduser().resolve() if output_root else repo_root / "data" / "screening-runs"
@@ -1491,12 +1492,22 @@ def run_screening_model(
     # ZONES AND DEMAND COME FROM ONE OF TWO PLACES, and everything after this
     # point is identical either way — that sameness is what lets two demand
     # models be compared on the same corridors.
+    if demand_package_dir and zone_package_dir:
+        raise RuntimeError(
+            "Use --demand-package-dir OR --zone-package-dir, not both: the first supplies zones AND "
+            "trips, the second supplies zones and lets this model generate the trips. Passing both "
+            "would leave it ambiguous which demand was assigned."
+        )
     supplied_package = read_demand_package(Path(demand_package_dir)) if demand_package_dir else None
+    if supplied_package is None and zone_package_dir:
+        supplied_package = read_zone_package(Path(zone_package_dir))
     if supplied_package is not None:
         zones_df = supplied_package["zones"]
         zone_meta = {
             "zones": int(len(zones_df)),
-            "zone_type": "supplied-demand-package",
+            "zone_type": (
+                "supplied-demand-package" if demand_package_dir else "supplied-zones-built-in-demand"
+            ),
             "total_population": float(zones_df["est_population"].sum()),
             "total_households": float(zones_df["households"].sum()),
             "total_worker_residents": float(zones_df["worker_residents"].sum()),
@@ -1536,7 +1547,7 @@ def run_screening_model(
         hbw_scalar=hbw_scalar,
         hbo_scalar=hbo_scalar,
         nhb_scalar=nhb_scalar,
-        supplied_internal_matrix=supplied_package["matrix"] if supplied_package else None,
+        supplied_internal_matrix=(supplied_package or {}).get("matrix"),
     )
     assignment_meta = _timed(
         "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta

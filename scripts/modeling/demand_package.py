@@ -165,6 +165,46 @@ def _read_od_matrix(package_dir: Path, zones: pd.DataFrame) -> np.ndarray:
     return matrix
 
 
+def read_zone_package(package_dir: Path) -> dict[str, Any]:
+    """Load a ZONE SYSTEM only, leaving the demand to the built-in model.
+
+    The other half of the seam, and the one that isolates a variable. A full
+    demand package changes the zone system AND the demand model together, so
+    comparing one against a default run cannot say which caused a difference —
+    a mistake made and caught here on 2026-08-16, where finer zones appeared to
+    make corridor volumes worse and had in fact improved them, while a swapped
+    demand model made them worse.
+
+    This reads the zones and nothing else, so the built-in gravity model runs on
+    someone else's zone system. That is what makes "what do finer zones do to
+    OUR model?" an answerable question.
+
+    `od_trip_matrix.csv` is ignored if present rather than refused: the same
+    directory is a perfectly good input to both readers, and which half of it
+    you want is the caller's decision, made by choosing the function.
+    """
+    package_dir = Path(package_dir).expanduser().resolve()
+    if not package_dir.is_dir():
+        raise DemandPackageError(f"Zone package directory does not exist: {package_dir}")
+
+    zones = _read_zone_table(package_dir)
+    manifest_path = package_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else None
+
+    return {
+        "zones": zones,
+        "provenance": {
+            # Named apart from "supplied_package" on purpose: the trips here are
+            # this model's own, and a reader must be able to tell a run whose
+            # DEMAND came from elsewhere from one whose ZONES did.
+            "demand_source": "built_in_gravity_on_supplied_zones",
+            "package_dir": str(package_dir),
+            "zone_count": int(len(zones)),
+            "producer_manifest": manifest,
+        },
+    }
+
+
 def read_demand_package(package_dir: Path) -> dict[str, Any]:
     """Load and CHECK a demand package. Raises rather than repairing.
 
