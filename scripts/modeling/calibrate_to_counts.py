@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+"""Opt-in calibration of a screening run toward observed traffic counts.
+
+======================================================== WHAT THIS IS, AND IS NOT
+
+OpenPlan ships an UNCALIBRATED screening model on purpose. Its numbers rest on
+generic trip rates and OSM defaults, and it says so. This module is the OPT-IN
+path to a different, disclosed claim — `calibrated_to_counts` — for study areas
+where a DOT publishes real traffic counts. It is never a default, never silent,
+and never promotes a run on its own.
+
+Measured 2026-08-16, before any calibration existed: against 57 published
+Caltrans stations in one county the model scored a 62.8% median absolute percent
+error against a 30% screening threshold, over-assigning by about 1.4x. That is
+the gap this exists to close, honestly.
+
+=========================================================== THE HONESTY MACHINERY
+
+**A 30% holdout is split off first and never fitted.** The number this reports
+as the run's accuracy is the HELD-OUT one. A model that matches the counts it
+was fitted to has learned nothing and claims everything, and reporting the fit
+error as accuracy is the single easiest way to lie with a calibration.
+
+**A step must IMPROVE the holdout or it is rejected.** Improving the fit set
+while the holdout worsens is the definition of overfitting. An unknown holdout
+objective rejects too — a step that cannot be validated out-of-sample is not
+accepted on trust.
+
+**Calibrating does not grant a passing gate.** If the held-out error still fails
+the screening threshold, the run still fails it, and says so. Calibration
+changes the model, not the standard.
+
+============================================================ WHY THE LOOP IS HERE
+
+The decisions — which per-class factor, how to split the holdout, whether to
+accept a step, what the objective is — all come from
+`workers/aequilibrae_worker/calibration.py`, which is pure, stdlib-only and
+already unit-tested. That engine is NOT reimplemented here.
+
+What is here is a driver: the part that knows how THIS lane runs an assignment.
+The worker lane has its own driver around the same engine, because the two lanes
+hold their networks differently. One engine, two drivers, and the seam is
+deliberate — if the calibration LOGIC ever needs changing, it changes in one
+place and both lanes follow.
+
+The loop takes its assignment and its matching as injected callables, so the
+decisions can be tested exhaustively without running a four-minute model.
+"""
+from __future__ import annotations
+
+import csv
+import sys
+from pathlib import Path
+from typing import Any, Callable
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+WORKER_DIR = SCRIPT_DIR.parents[1] / "workers" / "aequilibrae_worker"
+for candidate in (SCRIPT_DIR, WORKER_DIR):
+    if str(candidate) not in sys.path:
+        sys.path.insert(0, str(candidate))
+
+import calibration  # noqa: E402  (the shared pure engine)
+
+#: How many accepted class-factor steps to attempt. Each one costs a full
+#: equilibrium assignment, which is seconds — the ceiling exists so a study area
+#: that never converges cannot loop forever.
+DEFAULT_MAX_ITERATIONS = 8
+
+#: A step must beat the held-out objective by at least this much. The objective
+#: is rounded to 1e-4, so requiring strictly more than one unit of that stops an
+#: identical-objective no-op step from promoting a run to the calibrated tier.
+DEFAULT_MIN_IMPROVEMENT = 0.0001
+
+
+class CalibrationUnavailable(RuntimeError):
+    """Calibration cannot run here, with the reason a planner should be told."""
+
+
+def load_count_stations(counts_csv: Path) -> list[dict[str, Any]]:
+    """Observed-count stations, as the count builder writes them."""
+    with Path(counts_csv).expanduser().open(newline="") as handle:
+        return [row for row in csv.DictReader(handle)]
+
+
+def attach_modelled_volumes(
+    matched_stations: list[dict[str, Any]],
+    volumes_by_link: dict[int, float],
+) -> list[dict[str, Any]]:
+    """Refresh each station's modelled volume from a new assignment.
+
+    Stations are matched to links ONCE, before the loop, and only the volume
+    changes between iterations. Re-matching every time would let a station drift
+    onto a different link as volumes move, which would make the objective
+    measure the matching as much as the model.
+    """
+    refreshed = []
+    for station in matched_stations:
+        row = dict(station)
+        row["modeled_daily_pce"] = float(volumes_by_link.get(int(station["link_id"]), 0.0))
+        refreshed.append(row)
+    return refreshed
+
+
+def match_stations_to_links(
+    stations: list[dict[str, Any]],
+    run_output_dir: Path,
+    project_db: Path | None,
+) -> list[dict[str, Any]]:
+    """Tie each count station to the model link it measures — once, up front.
+
+    Reuses the crosswalk `validate_screening_observed_counts` already applies,
+    rather than growing a second matcher: a calibration that matched stations
+    differently from the validator would be fitted to one thing and judged on
+    another, and the discrepancy would look like model error.
+
+    Only the link identity and its road class are kept. Volumes are attached
+    per iteration, because the network does not change during calibration and
+    re-matching would let a station drift onto a different link as volumes move.
+    """
+    import validate_screening_observed_counts as validator
+
+    volume_field, volume_lookup = validator.load_volume_lookup(
+        run_output_dir / "link_volumes.csv", None
+    )
+    features = validator.build_feature_index(
+        validator.choose_geometry_path(run_output_dir), volume_lookup, volume_field
+    )
+
+    matched: list[dict[str, Any]] = []
+    for station in stations:
+        observed = validator.parse_float(station.get("observed_volume"))
+        if not observed or observed <= 0:
+            continue
+        best = validator.find_best_model_link(
+            station, features, project_db, volume_lookup, volume_field
+        )
+        if best is None:
+            continue
+        matched.append(
+            {
+                "station_id": station.get("station_id"),
+                # The stratum the holdout split balances on, so a whole route
+                # cannot land entirely in the fit set or entirely in the holdout.
+                "facility_name": station.get("facility_name"),
+                "observed_volume": float(observed),
+                "link_id": int(best["link_id"]),
+                "matched_link_type": best.get("link_type") or "",
+            }
+        )
+    return matched
+
+
+def calibrate(
+    *,
+    matched_stations: list[dict[str, Any]],
+    reassign: Callable[[dict[str, float]], dict[int, float]],
+    baseline_volumes: dict[int, float],
+    max_iterations: int = DEFAULT_MAX_ITERATIONS,
+    min_improvement: float = DEFAULT_MIN_IMPROVEMENT,
+    holdout_frac: float = calibration.DEFAULT_HOLDOUT_FRAC,
+    seed: int = calibration.DEFAULT_SEED,
+) -> dict[str, Any]:
+    """Run the calibration loop and report what it did, out-of-sample.
+
+    `reassign(class_factors)` re-runs the assignment with per-road-class factors
+    applied and returns the resulting link volumes. It is injected so the whole
+    decision sequence is testable without an assignment engine.
+
+    Returns a disclosure record. It always names the baseline AND the calibrated
+    holdout accuracy, so a reader can see what the calibration actually bought
+    rather than only where it ended up.
+    """
+    if len(matched_stations) < 2:
+        raise CalibrationUnavailable(
+            f"Calibration needs at least 2 matched count stations to split a holdout; "
+            f"this study area matched {len(matched_stations)}."
+        )
+
+    fit_stations, holdout_stations = calibration.split_holdout(
+        matched_stations, holdout_frac=holdout_frac, seed=seed
+    )
+    if not holdout_stations:
+        raise CalibrationUnavailable(
+            "Calibration needs a non-empty holdout: without counts kept back, the reported "
+            "accuracy would be the accuracy on the very counts the model was fitted to."
+        )
+
+    baseline_fit = calibration.evaluate(attach_modelled_volumes(fit_stations, baseline_volumes))
+    baseline_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, baseline_volumes))
+    if baseline_holdout["objective"] is None:
+        raise CalibrationUnavailable(
+            "Calibration cannot be validated: the held-out stations produced no usable "
+            "observed/modelled pairs, so no step could be checked out-of-sample."
+        )
+
+    cumulative: dict[str, float] = {}
+    best_volumes = baseline_volumes
+    best_objective = baseline_holdout["objective"]
+    best_fit, best_holdout = baseline_fit, baseline_holdout
+    accepted = 0
+    steps: list[dict[str, Any]] = []
+
+    for iteration in range(1, max_iterations + 1):
+        fit_matched = attach_modelled_volumes(fit_stations, best_volumes)
+        new_factors = calibration.class_adjustment_factors(fit_matched)
+        if not new_factors:
+            steps.append({"iteration": iteration, "outcome": "no adjustable road class remained"})
+            break
+
+        trial_cumulative = calibration.compose_factors(cumulative, new_factors)
+        if trial_cumulative == cumulative:
+            steps.append({"iteration": iteration, "outcome": "factors stopped moving"})
+            break
+
+        trial_volumes = reassign(trial_cumulative)
+        trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
+        trial_objective = trial_holdout["objective"]
+
+        # STRICT held-out improvement only. An equal-objective step is a no-op
+        # and must never move a run into the calibrated tier.
+        if trial_objective is not None and calibration.accept_step(
+            best_objective, trial_objective, tol=-min_improvement
+        ):
+            cumulative = trial_cumulative
+            best_volumes = trial_volumes
+            best_objective = trial_objective
+            best_holdout = trial_holdout
+            best_fit = calibration.evaluate(attach_modelled_volumes(fit_stations, trial_volumes))
+            accepted += 1
+            steps.append(
+                {
+                    "iteration": iteration,
+                    "outcome": "accepted",
+                    "holdout_median_ape": trial_holdout["median_ape"],
+                    "factors": {cls: round(value, 3) for cls, value in cumulative.items()},
+                }
+            )
+        else:
+            steps.append(
+                {
+                    "iteration": iteration,
+                    "outcome": "rejected — no strict improvement on the held-out counts",
+                    "holdout_median_ape": trial_holdout["median_ape"],
+                }
+            )
+            break
+
+    return {
+        "method": "per-road-class speed/capacity factors, fitted to observed counts",
+        "engine": "workers/aequilibrae_worker/calibration.py",
+        "accepted_iterations": accepted,
+        "class_factors": {cls: round(value, 4) for cls, value in cumulative.items()},
+        "fit_station_count": len(fit_stations),
+        "holdout_station_count": len(holdout_stations),
+        "holdout_fraction": holdout_frac,
+        "holdout_seed": seed,
+        "baseline": {"fit": baseline_fit, "holdout": baseline_holdout},
+        "calibrated": {"fit": best_fit, "holdout": best_holdout},
+        # THE NUMBER THAT COUNTS, named so it cannot be confused with the other
+        # one. The fit-set accuracy is reported beside it for completeness and is
+        # not evidence of anything: it is the accuracy on the data the factors
+        # were derived from.
+        "reported_accuracy_basis": "held-out stations, never used to fit",
+        "holdout_median_ape": best_holdout["median_ape"],
+        "steps": steps,
+        "volumes": best_volumes,
+        "caveat": (
+            "Calibrated to observed counts: per-road-class speed and capacity factors were fitted "
+            f"to {len(fit_stations)} count stations and validated against {len(holdout_stations)} "
+            "held back from the fit. The accuracy reported for this run is the held-out figure. "
+            "This is a disclosed calibrated tier, not the screening default, and calibration does "
+            "not by itself make a run pass the screening gate."
+        ),
+    }

@@ -143,6 +143,7 @@ def write_bundle_outputs(
     keep_project: bool,
     vmt: dict[str, Any] | None = None,
     engine_versions: dict[str, str] | None = None,
+    calibration: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     manifest = build_bundle_manifest(
         run_name=run_name,
@@ -156,6 +157,11 @@ def write_bundle_outputs(
         vmt=vmt,
         engine_versions=engine_versions,
     )
+    # Whether this run was calibrated, and on what evidence. Present only when
+    # calibration was REQUESTED — a run that never asked says nothing, rather
+    # than carrying a "calibrated: false" that invites being read as a failure.
+    if calibration is not None:
+        manifest["calibration"] = calibration
     write_json(run_dir / "bundle_manifest.json", manifest)
     evidence = build_evidence_packet(
         run_name=run_name,

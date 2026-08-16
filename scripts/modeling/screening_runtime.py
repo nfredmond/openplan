@@ -577,6 +577,133 @@ ASSIGNMENT_MAX_ITERATIONS = 500
 ASSIGNMENT_RGAP_TARGET = 0.01
 
 
+def calibrate_run_to_counts(
+    *,
+    counts_csv: Path,
+    project_dir: Path,
+    run_output_dir: Path,
+    centroid_map: dict[int, int],
+    demand_matrix: np.ndarray,
+    skim_meta: dict[str, Any],
+    baseline_assignment: dict[str, Any],
+) -> dict[str, Any]:
+    """Drive the shared calibration engine over THIS lane's assignment.
+
+    The decisions all belong to `workers/aequilibrae_worker/calibration.py` —
+    the holdout split, the per-class factors, the objective, and whether a step
+    is accepted. This supplies only the thing that engine cannot know: how to
+    re-run an assignment here and what volumes came out.
+
+    Trials write nothing. A rejected trial's link volumes on disk would be the
+    numbers a planner reads, so the loop runs against in-memory volumes and the
+    accepted state is re-run ONCE at the end with outputs written.
+    """
+    from calibrate_to_counts import (
+        CalibrationUnavailable,
+        calibrate,
+        load_count_stations,
+        match_stations_to_links,
+    )
+
+    stations = load_count_stations(counts_csv)
+    matched = match_stations_to_links(stations, run_output_dir, project_dir / "project_database.sqlite")
+
+    def reassign(class_factors: dict[str, float]) -> dict[int, float]:
+        trial = run_assignment(
+            project_dir,
+            centroid_map,
+            demand_matrix,
+            run_output_dir,
+            skim_meta,
+            class_factors=class_factors,
+            write_outputs=False,
+        )
+        return trial["volumes_by_link"]
+
+    try:
+        result = calibrate(
+            matched_stations=matched,
+            reassign=reassign,
+            baseline_volumes=baseline_assignment.get("volumes_by_link") or {},
+        )
+    except CalibrationUnavailable as exc:
+        # A study area without enough usable counts is a normal outcome, not a
+        # failure — it is most of the country. The run continues UNCALIBRATED
+        # and says why, rather than silently producing a screening number that
+        # a reader might take for a calibrated one.
+        return {
+            "requested": True,
+            "performed": False,
+            "counts_csv": str(counts_csv),
+            "matched_station_count": len(matched),
+            "reason": str(exc),
+            "claim_tier": "screening_grade",
+        }
+
+    factors = result.get("class_factors") or {}
+    final_assignment = None
+    if factors:
+        final_assignment = run_assignment(
+            project_dir, centroid_map, demand_matrix, run_output_dir, skim_meta,
+            class_factors=factors, write_outputs=True,
+        )
+
+    result.pop("volumes", None)
+    return {
+        "requested": True,
+        # ONLY TRUE WHEN A STEP WAS ACCEPTED. A loop that ran and rejected
+        # everything has not calibrated anything, and must not read as though it
+        # had — the run is still the screening model.
+        "performed": bool(factors),
+        "counts_csv": str(counts_csv),
+        "count_source_agencies": sorted(
+            {str(s.get("source_agency")).strip() for s in stations if s.get("source_agency")}
+        ),
+        "matched_station_count": len(matched),
+        "claim_tier": "calibrated_to_counts" if factors else "screening_grade",
+        **result,
+        **({"assignment": final_assignment} if final_assignment else {}),
+    }
+
+
+def apply_class_factors(links_df: pd.DataFrame, class_factors: dict[str, float] | None) -> pd.DataFrame:
+    """Make a road class more or less attractive to equilibrium flow.
+
+    A factor above 1 means the model UNDER-assigns that class against observed
+    counts, so its links are made faster and given more capacity, and the
+    equilibrium moves flow onto them. Below 1 does the reverse. Same semantics
+    as the worker lane's calibration, deliberately — they share the engine that
+    produces the factors, so they must share what a factor MEANS.
+
+    ALWAYS APPLIED FROM THE BASELINE, never compounded onto an
+    already-adjusted network: the loop composes its factors itself and hands the
+    cumulative value here, so applying to a modified network would square them.
+    That is why this takes the freshly-read links table each time.
+
+    No factors is the identity. The baseline run and a calibrated run with an
+    empty factor set must produce byte-identical networks, or the "what did
+    calibration change?" comparison measures the plumbing.
+    """
+    if not class_factors:
+        return links_df
+
+    adjusted = links_df.copy()
+    # Cast before scaling: a capacity column read back as int64 rejects a float
+    # assignment outright under pandas 3, and rounding a factor into an integer
+    # capacity would quietly discard most of the adjustment on small roads.
+    for column in ("travel_time", "capacity_ab", "capacity_ba"):
+        adjusted[column] = adjusted[column].astype(float)
+    link_class = adjusted["link_type"].astype(str).str.strip().str.lower()
+    for road_class, factor in class_factors.items():
+        matches = link_class == str(road_class).strip().lower()
+        if not matches.any() or factor <= 0:
+            continue
+        adjusted.loc[matches, "travel_time"] = adjusted.loc[matches, "travel_time"] / factor
+        adjusted.loc[matches, "capacity_ab"] = adjusted.loc[matches, "capacity_ab"] * factor
+        adjusted.loc[matches, "capacity_ba"] = adjusted.loc[matches, "capacity_ba"] * factor
+    return adjusted
+
+
 def assignment_convergence(rgap: float, iterations: int, max_iterations: int) -> dict[str, Any]:
     """Did the equilibrium assignment actually reach equilibrium — stated, not implied.
 
@@ -1415,6 +1542,8 @@ def run_assignment(
     demand_matrix: np.ndarray,
     run_output_dir: Path,
     skim_meta: dict[str, Any],
+    class_factors: dict[str, float] | None = None,
+    write_outputs: bool = True,
 ) -> dict[str, Any]:
     from aequilibrae.matrix import AequilibraeMatrix
     from aequilibrae.paths import Graph, TrafficAssignment, TrafficClass
@@ -1441,7 +1570,11 @@ def run_assignment(
         "COALESCE(speed_ba, speed_ab, 25) AS speed_ba, "
         "COALESCE(travel_time_ab, 1.0) AS travel_time, "
         "COALESCE(capacity_ab, 400) AS capacity_ab, "
-        "COALESCE(capacity_ba, capacity_ab, 400) AS capacity_ba "
+        "COALESCE(capacity_ba, capacity_ab, 400) AS capacity_ba, "
+        # Needed to apply per-road-class calibration factors. Selected always,
+        # not only when calibrating, so the baseline and every calibrated trial
+        # are built from exactly the same query.
+        "COALESCE(link_type, '') AS link_type "
         "FROM links",
         conn,
     )
@@ -1453,6 +1586,7 @@ def run_assignment(
     links_df["speed_ba"] = pd.to_numeric(links_df["speed_ba"], errors="coerce").fillna(25).clip(lower=1)
     links_df["distance"] = pd.to_numeric(links_df["distance"], errors="coerce").fillna(0.01).clip(lower=0.01)
     links_df["direction"] = pd.to_numeric(links_df["direction"], errors="coerce").fillna(0).astype(int)
+    links_df = apply_class_factors(links_df, class_factors)
 
     graph = Graph()
     graph.network = links_df.copy()
@@ -1513,9 +1647,14 @@ def run_assignment(
             link_results["PCE_AB"] = link_results["PCE_AB"] / PEAK_HOUR_FACTOR
         if "PCE_BA" in link_results.columns:
             link_results["PCE_BA"] = link_results["PCE_BA"] / PEAK_HOUR_FACTOR
-    link_results.to_csv(run_output_dir / "link_volumes.csv", index=False)
-
-    geojson_paths = export_loaded_links_geojson(project_dir, link_results, run_output_dir)
+    # A calibration TRIAL must not overwrite the run's published outputs: it may
+    # be rejected, and a rejected trial's link volumes on disk would be the
+    # numbers a planner reads. The loop re-runs once more with the accepted
+    # factors and writes then.
+    geojson_paths: dict[str, str] = {}
+    if write_outputs:
+        link_results.to_csv(run_output_dir / "link_volumes.csv", index=False)
+        geojson_paths = export_loaded_links_geojson(project_dir, link_results, run_output_dir)
 
     # Unfiltered network VMT (all loaded links, external/through travel included);
     # links.distance is metres — converted inside compute_network_daily_vmt.
@@ -1554,6 +1693,13 @@ def run_assignment(
         },
         "loaded_links": int((link_results["PCE_tot"] > 0).sum()) if "PCE_tot" in link_results.columns else 0,
         "link_results_path": str(run_output_dir / "link_volumes.csv"),
+        # Daily volume per link, so a calibration trial can be scored without
+        # reading a file it deliberately did not write.
+        "volumes_by_link": (
+            {int(k): float(v) for k, v in link_results.set_index("link_id")["PCE_tot"].items()}
+            if "PCE_tot" in link_results.columns
+            else {}
+        ),
         **geojson_paths,
     }
 
@@ -1596,7 +1742,27 @@ def run_screening_model(
     nhb_scalar: float = 1.0,
     demand_package_dir: str | None = None,
     zone_package_dir: str | None = None,
+    calibrate_counts_csv: str | None = None,
 ) -> dict[str, Any]:
+    # THE ONE COMBINATION THAT IS REFUSED. Calibrating and then validating
+    # against the SAME count file grades the model on most of the data it was
+    # just fitted to, and produces a flattering number that means nothing. It is
+    # the single easiest way to lie with a calibration, it looks like diligence,
+    # and nothing downstream could detect it — so it is refused here rather than
+    # caveated.
+    if (
+        calibrate_counts_csv
+        and counts_csv
+        and Path(calibrate_counts_csv).expanduser().resolve() == Path(counts_csv).expanduser().resolve()
+    ):
+        raise RuntimeError(
+            "Refusing to calibrate and validate against the same count file "
+            f"({counts_csv}). Most of those stations are used to FIT the model, so validating on "
+            "them reports the accuracy of the data it was fitted to. Either read the calibration's "
+            "own held-out figure — it is computed from counts kept back for exactly this purpose "
+            "and reported as `holdout_median_ape` — or pass a separate count set to --counts-csv."
+        )
+
     repo_root = Path(__file__).resolve().parents[2]
     output_root_path = Path(output_root).expanduser().resolve() if output_root else repo_root / "data" / "screening-runs"
     cache_path = Path(cache_dir).expanduser().resolve() if cache_dir else repo_root / "data" / "_screening_cache"
@@ -1692,6 +1858,28 @@ def run_screening_model(
         "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
     )
 
+    # OPT-IN CALIBRATION. Off unless a count set is named, and it never runs
+    # itself: the uncalibrated screening model is what this product ships, and
+    # a calibrated run is a different, disclosed claim.
+    #
+    calibration_meta: dict[str, Any] | None = None
+    if calibrate_counts_csv:
+        calibration_meta = _timed(
+            "calibration",
+            calibrate_run_to_counts,
+            counts_csv=Path(calibrate_counts_csv),
+            project_dir=project_dir,
+            run_output_dir=run_output_dir,
+            centroid_map=network_meta["centroid_map"],
+            demand_matrix=demand_meta["matrix"],
+            skim_meta=skim_meta,
+            baseline_assignment=assignment_meta,
+        )
+        if calibration_meta.get("assignment"):
+            # The final assignment was re-run with the ACCEPTED factors and its
+            # outputs written, so downstream reads the calibrated network.
+            assignment_meta = calibration_meta.pop("assignment")
+
     # Internal-resident VMT (the CEQA §15064.3 estimator): internal OD ×
     # centroid distance × circuity, with the cordon zones excluded so travel
     # entering and leaving the study area is not counted as residents' driving.
@@ -1767,6 +1955,7 @@ def run_screening_model(
         keep_project=keep_project,
         vmt=vmt_block,
         engine_versions=engine_versions,
+        calibration=calibration_meta,
     )
 
     validation_summary = None

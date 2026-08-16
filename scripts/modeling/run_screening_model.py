@@ -98,6 +98,16 @@ def parse_args() -> argparse.Namespace:
             "zones AND the demand model together, which cannot say which caused a difference."
         ),
     )
+    parser.add_argument(
+        "--calibrate-to-counts",
+        help=(
+            "OPT-IN. Path to an observed-count CSV (see build_expanded_aadt_counts.py). Fits "
+            "per-road-class speed and capacity factors toward those counts, validating every step "
+            "against a 30%% holdout that is never fitted. Produces a disclosed "
+            "'calibrated_to_counts' claim, NOT the screening default, and does not by itself make "
+            "a run pass the screening gate."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -144,6 +154,7 @@ def _run(run_screening_model, args):
         nhb_scalar=args.nhb_scalar,
         demand_package_dir=args.demand_package_dir,
         zone_package_dir=args.zone_package_dir,
+        calibrate_counts_csv=args.calibrate_to_counts,
     )
 
 
