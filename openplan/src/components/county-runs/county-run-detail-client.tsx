@@ -307,6 +307,30 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
 
       <Card className="mt-4">
         <CardHeader>
+          <CardTitle>Where these numbers came from</CardTitle>
+          <CardDescription>
+            One file you can attach to a grant application. It says which data the figures came
+            from and when that data was published, how finely the area was divided, whether the
+            traffic calculation settled, whether the results were checked against published traffic
+            counts and what that found, and what the numbers may be used for. Anything the model did
+            not measure is marked as missing, so a reviewer can see what was skipped as easily as
+            what was done.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* A plain link, not a fetch-and-blob: the browser downloads it
+              directly, so it works with the keyboard, with right-click "save
+              as", and on a connection too slow for a spinner to be honest. */}
+          <Button asChild variant="outline">
+            <a href={`/api/county-runs/${countyRunId}/provenance`} download>
+              Download for a grant appendix
+            </a>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-4">
+        <CardHeader>
           <div className="flex flex-wrap items-center gap-2">
             <CardTitle>Manifest proof checklist</CardTitle>
             <StatusBadge tone={manifestProof.proofStatusTone}>{manifestProof.proofStatusLabel}</StatusBadge>

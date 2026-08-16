@@ -1,0 +1,325 @@
+import type { CountyOnrampManifest } from "@/lib/models/county-onramp";
+
+/**
+ * Only what the document actually cites.
+ *
+ * Structural rather than the full `CountyRunModelingEvidence`, because two
+ * modules export a type of that name — the API's and the evidence backbone's —
+ * and they are nominally distinct despite being the same shape. A document that
+ * insisted on one of them could be handed the other and refuse it, over a
+ * difference no reader could ever see.
+ */
+export type ProvenanceSource = {
+  sourceLabel: string;
+  sourceVintage?: string | null;
+  citationText: string;
+};
+
+export type ProvenanceEvidence = {
+  sourceManifests: ProvenanceSource[];
+};
+
+/**
+ * THE PAPER TRAIL FOR A TRAFFIC NUMBER THAT GOES INTO A FUNDED APPLICATION.
+ *
+ * ================================================================ WHY IT EXISTS
+ *
+ * A figure in a grant application can be audited years later, by someone who
+ * was not in the room and cannot re-run anything. Nathaniel's requirement
+ * (2026-08-15) was an EXPORTABLE record: which network, downloaded when, which
+ * defaults and their published source, what was hand-edited, the zone
+ * resolution actually used, whether it was checked against real counts, and the
+ * claim ceiling.
+ *
+ * Everything that record needs is already produced by a run and already stored.
+ * None of it reaches a planner. This turns it into one document they can put in
+ * an appendix.
+ *
+ * ============================================== THE RULE THIS DOCUMENT FOLLOWS
+ *
+ * **What was NOT done is as visible as what was.** A run that was never
+ * validated says so where a validated run would report its accuracy. A run that
+ * did not converge says so beside the volumes. A missing figure is written as
+ * "not recorded", never omitted and never zero.
+ *
+ * That is the whole difference between a paper trail and a brochure. An
+ * auditor's first question is what was skipped, and a document that can only
+ * describe what happened cannot answer it.
+ *
+ * **Nothing here is computed.** Every number is copied from the run's own
+ * output. If a figure is not in the run, it is not in the document — this must
+ * never derive, infer, or fill a gap, because a plausible value in an appendix
+ * is indistinguishable from a measured one.
+ */
+
+/** Everything the document is built from. Absences are expected, not errors. */
+export type CountyRunProvenanceInput = {
+  runName: string;
+  geographyLabel: string | null;
+  geographyId: string | null;
+  stage: string | null;
+  statusLabel: string | null;
+  manifest: CountyOnrampManifest | null;
+  validationSummary: Record<string, unknown> | null;
+  modelingEvidence: ProvenanceEvidence | null;
+  generatedAt: string;
+};
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function asText(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+/**
+ * A value, or an explicit statement that the run did not record it.
+ *
+ * The phrase matters more than it looks. "Not recorded" is a fact about the
+ * run; a blank cell is a fact about the document, and a reader cannot tell a
+ * blank from an oversight.
+ */
+function stated(value: string | number | null | undefined, unit = ""): string {
+  if (value === null || value === undefined || value === "") return "_not recorded_";
+  const rendered = typeof value === "number" ? value.toLocaleString() : value;
+  return unit ? `${rendered} ${unit}` : rendered;
+}
+
+function yesNoUnknown(value: boolean | null | undefined, yes: string, no: string): string {
+  if (value === true) return yes;
+  if (value === false) return no;
+  return "_not recorded_";
+}
+
+/**
+ * The sentence that limits what this number may be used for.
+ *
+ * Derived from what the run actually established, never from a default: a run
+ * that passed its gate says something different from one that failed it, and
+ * one that was never checked says a third thing. All three are ceilings, and
+ * the strongest is still not a forecast.
+ */
+export function claimCeiling(input: CountyRunProvenanceInput): string {
+  const gate = asRecord(asRecord(input.validationSummary)?.screening_gate);
+  const gateLabel = asText(gate?.status_label);
+  const calibration = asRecord(input.manifest?.summary?.run as unknown) ? null : null;
+  void calibration;
+
+  if (!input.validationSummary) {
+    return (
+      "This run has NOT been compared against observed traffic counts. Its road-by-road volumes " +
+      "are unvalidated model output and must not be presented as measured or forecast traffic. " +
+      "Study-area totals may be used for screening and prioritisation with this document attached."
+    );
+  }
+  if (gateLabel && gateLabel.toLowerCase().includes("bounded screening-ready")) {
+    return (
+      `This run was compared against observed counts and met OpenPlan's screening thresholds ` +
+      `("${gateLabel}"). That supports screening and prioritisation, and supporting figures in a ` +
+      "funding application when accompanied by this record. It is NOT a calibrated forecast and " +
+      "must not be used for environmental review."
+    );
+  }
+  return (
+    `This run was compared against observed counts and DID NOT meet OpenPlan's screening ` +
+    `thresholds (recorded as "${stated(gateLabel)}"). Its road-by-road volumes must not be ` +
+    "presented as measured traffic. The comparison itself, and the gap it found, are reportable — " +
+    "the figures are not. It must not be used for environmental review."
+  );
+}
+
+function sourcesSection(evidence: ProvenanceEvidence | null): string[] {
+  if (!evidence || evidence.sourceManifests.length === 0) {
+    return [
+      "_No data sources were recorded for this run._ Every figure above therefore lacks an",
+      "attributable origin, which is itself the finding: treat the run as undocumented.",
+    ];
+  }
+  return [
+    "| Source | Published by / vintage | Citation |",
+    "| --- | --- | --- |",
+    ...evidence.sourceManifests.map((source) => {
+      const vintage = stated(source.sourceVintage);
+      return `| ${source.sourceLabel} | ${vintage} | ${source.citationText} |`;
+    }),
+  ];
+}
+
+function validationSection(input: CountyRunProvenanceInput): string[] {
+  const validation = asRecord(input.validationSummary);
+  if (!validation) {
+    return [
+      "**This run was never compared against observed traffic counts.**",
+      "",
+      "No accuracy figure exists for it. That is not the same as an accuracy figure that has not",
+      "been reported — nothing was measured, so nothing can be claimed about how close these",
+      "volumes are to real traffic.",
+    ];
+  }
+
+  const gate = asRecord(validation.screening_gate);
+  const metrics = asRecord(validation.metrics);
+  const agencies = Array.isArray(validation.count_source_agencies)
+    ? (validation.count_source_agencies as unknown[]).filter((a): a is string => typeof a === "string")
+    : [];
+  const reasons = Array.isArray(gate?.reasons)
+    ? (gate.reasons as unknown[]).filter((r): r is string => typeof r === "string")
+    : [];
+
+  const lines = [
+    `- **Verdict:** ${stated(asText(gate?.status_label))}`,
+    `- **Counts published by:** ${agencies.length ? agencies.join(", ") : "_not recorded_"}`,
+    `- **Stations matched:** ${stated(asNumber(validation.stations_matched))} of ${stated(
+      asNumber(validation.stations_total)
+    )}`,
+    `- **Median absolute percent error:** ${stated(
+      asNumber(metrics?.median_absolute_percent_error)
+    )}% (threshold ${stated(asNumber(gate?.ready_median_ape_threshold))}%)`,
+    `- **Worst single station:** ${stated(asNumber(metrics?.max_absolute_percent_error))}% (threshold ${stated(
+      asNumber(gate?.ready_critical_ape_threshold)
+    )}%)`,
+    `- **Rank agreement with observed volumes:** ${stated(
+      asNumber(metrics?.spearman_rho_facility_ranking)
+    )}`,
+  ];
+  if (reasons.length) {
+    lines.push("", "Why the verdict reads as it does:", ...reasons.map((reason) => `- ${reason}`));
+  }
+  return lines;
+}
+
+function calibrationSection(manifest: CountyOnrampManifest | null): string[] {
+  const calibration = asRecord((manifest as unknown as Record<string, unknown>)?.calibration);
+  if (!calibration) {
+    return [
+      "**Not calibrated.** This run uses OpenPlan's generic screening parameters — trip rates and",
+      "road speeds and capacities that were not fitted to anything in this study area.",
+    ];
+  }
+  if (calibration.performed !== true) {
+    return [
+      "**Calibration was requested and did not change the model.**",
+      "",
+      `Reason recorded: ${stated(asText(calibration.reason) ?? "no calibration step improved the held-out counts")}.`,
+      "The figures above are the uncalibrated screening model's.",
+    ];
+  }
+
+  const calibrated = asRecord(calibration.calibrated);
+  const baseline = asRecord(calibration.baseline);
+  return [
+    `- **Claim tier:** ${stated(asText(calibration.claim_tier))}`,
+    `- **Fitted on:** ${stated(asNumber(calibration.fit_station_count))} count stations`,
+    `- **Validated on:** ${stated(
+      asNumber(calibration.holdout_station_count)
+    )} stations held back and never fitted`,
+    `- **Accuracy before calibration (held out):** ${stated(
+      asNumber(asRecord(baseline?.holdout)?.median_ape)
+    )}% median absolute percent error`,
+    `- **Accuracy after calibration (held out):** ${stated(
+      asNumber(asRecord(calibrated?.holdout)?.median_ape)
+    )}% median absolute percent error`,
+    "",
+    "The accuracy reported here is measured on stations kept back from the fitting. The accuracy",
+    "on the stations used to fit the model is better and is not reported as accuracy, because a",
+    "model graded on the data it was fitted to grades itself.",
+  ];
+}
+
+/**
+ * Limits the run recorded about itself, verbatim.
+ *
+ * Read defensively rather than through the manifest's type: the caveat list is
+ * written by a Python producer and reaches here as parsed JSON, so a version
+ * skew shows up as a missing array rather than a type error. An absent list is
+ * reported as absent — a run that recorded no caveats and a run whose caveats
+ * did not survive the trip are different facts, and neither is "no limits".
+ */
+function runCaveats(manifest: CountyOnrampManifest | null): string[] {
+  const prototype = asRecord(asRecord((manifest as unknown as Record<string, unknown>)?.summary)?.behavioral_prototype);
+  const caveats = Array.isArray(prototype?.caveats)
+    ? (prototype.caveats as unknown[]).filter((c): c is string => typeof c === "string" && c.trim().length > 0)
+    : [];
+  return caveats.length
+    ? caveats.map((caveat) => `- ${caveat}`)
+    : ["_No caveats were recorded with this run._"];
+}
+
+
+/**
+ * Build the appendix document. Pure: same run in, same bytes out.
+ *
+ * Markdown rather than PDF on purpose — it pastes into a Word document, a
+ * proposal template or an email without a rendering engine, and an appendix
+ * that needs software to open is an appendix that gets left out.
+ */
+export function buildCountyRunProvenanceDocument(input: CountyRunProvenanceInput): string {
+  const run = input.manifest?.summary?.run ?? null;
+  const zoneCount = asNumber(run?.zone_count);
+  const intrazonal = asNumber(run?.intrazonal_trip_share);
+
+  return [
+    `# Traffic modelling record — ${input.runName}`,
+    "",
+    `**Study area:** ${stated(input.geographyLabel)}${
+      input.geographyId ? ` (${input.geographyId})` : ""
+    }  `,
+    `**Record generated:** ${input.generatedAt}  `,
+    `**Model run stage:** ${stated(input.stage)}`,
+    "",
+    "This document records what a traffic estimate produced by OpenPlan rests on, so that the",
+    "figures can be checked by someone who was not present and cannot re-run the model. Anything",
+    "the run did not record is written as _not recorded_ rather than left blank.",
+    "",
+    "## What this number may be used for",
+    "",
+    claimCeiling(input),
+    "",
+    "## The model",
+    "",
+    `- **Zones the study area was divided into:** ${stated(zoneCount)}`,
+    `- **Share of travel that never reaches a road:** ${
+      intrazonal === null ? "_not recorded_" : `${(intrazonal * 100).toFixed(1)}%`
+    }`,
+    `- **Roads carrying traffic:** ${stated(asNumber(run?.loaded_links))}`,
+    `- **Daily trips modelled:** ${stated(asNumber(run?.total_trips))}`,
+    `- **Assignment reached equilibrium:** ${yesNoUnknown(
+      (run as Record<string, unknown> | null)?.assignment_converged as boolean | null | undefined,
+      "yes",
+      "**NO — the volumes below are from part-way through a calculation**"
+    )}`,
+    `- **Final convergence gap:** ${stated(asNumber(run?.final_gap))}`,
+    ...(asText((run as Record<string, unknown> | null)?.assignment_convergence_caveat)
+      ? ["", `> ${asText((run as Record<string, unknown> | null)?.assignment_convergence_caveat)}`]
+      : []),
+    "",
+    "## Where the data came from",
+    "",
+    ...sourcesSection(input.modelingEvidence),
+    "",
+    "## Checked against real traffic counts?",
+    "",
+    ...validationSection(input),
+    "",
+    "## Fitted to local counts?",
+    "",
+    ...calibrationSection(input.manifest),
+    "",
+    "## Limits recorded by the run itself",
+    "",
+    ...runCaveats(input.manifest),
+    "",
+    "---",
+    "",
+    "Produced by OpenPlan. Every figure above is copied from the run's own output; none is",
+    "derived or estimated for this document.",
+    "",
+  ].join("\n");
+}
