@@ -608,11 +608,11 @@ def calibrate_run_to_counts(
     stations = load_count_stations(counts_csv)
     matched = match_stations_to_links(stations, run_output_dir, project_dir / "project_database.sqlite")
 
-    def reassign(class_factors: dict[str, float]) -> dict[int, float]:
+    def reassign(class_factors: dict[str, float], demand_scalar: float = 1.0) -> dict[int, float]:
         trial = run_assignment(
             project_dir,
             centroid_map,
-            demand_matrix,
+            demand_matrix * float(demand_scalar),
             run_output_dir,
             skim_meta,
             class_factors=class_factors,
@@ -641,10 +641,12 @@ def calibrate_run_to_counts(
         }
 
     factors = result.get("class_factors") or {}
+    scalar = float(result.get("demand_scalar") or 1.0)
+    changed = bool(factors) or abs(scalar - 1.0) > 1e-9
     final_assignment = None
-    if factors:
+    if changed:
         final_assignment = run_assignment(
-            project_dir, centroid_map, demand_matrix, run_output_dir, skim_meta,
+            project_dir, centroid_map, demand_matrix * scalar, run_output_dir, skim_meta,
             class_factors=factors, write_outputs=True,
         )
 
@@ -654,13 +656,21 @@ def calibrate_run_to_counts(
         # ONLY TRUE WHEN A STEP WAS ACCEPTED. A loop that ran and rejected
         # everything has not calibrated anything, and must not read as though it
         # had — the run is still the screening model.
-        "performed": bool(factors),
+        "performed": changed,
         "counts_csv": str(counts_csv),
         "count_source_agencies": sorted(
             {str(s.get("source_agency")).strip() for s in stations if s.get("source_agency")}
         ),
         "matched_station_count": len(matched),
-        "claim_tier": "calibrated_to_counts" if factors else "screening_grade",
+        "claim_tier": "calibrated_to_counts" if changed else "screening_grade",
+        # THE SCREENING VMT IS NOT RESCALED BY THIS, deliberately. A demand
+        # scalar fitted to traffic counts is a link-level correction, and the
+        # per-capita VMT figure feeds a CEQA-adjacent screen whose claim tier is
+        # a separate decision. Calibrated outputs carry distinct names so they
+        # can never silently become the screening number — the worker lane's
+        # calibration follows the same rule. The scalar is reported here so a
+        # reader can see what the assignment actually ran on.
+        "screening_vmt_rescaled": False,
         **result,
         **({"assignment": final_assignment} if final_assignment else {}),
     }

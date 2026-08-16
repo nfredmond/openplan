@@ -150,10 +150,101 @@ def match_stations_to_links(
     return matched
 
 
+def demand_scalar_step(
+    fit_matched: list[dict[str, Any]],
+    gamma: float = calibration.DEFAULT_GAMMA,
+    lo: float = calibration.DEFAULT_FACTOR_LO,
+    hi: float = calibration.DEFAULT_FACTOR_HI,
+) -> float | None:
+    """One damped correction to the TOTAL amount of travel, from the fit set.
+
+    WHY THIS STAGE EXISTS. Per-road-class factors redistribute traffic between
+    classes; they cannot change how much of it there is. Measured 2026-08-16
+    after stage 1 had converged, the model still over-assigned by a median 1.30x
+    across every class — a level error, not a distribution one, and no amount of
+    class adjustment reaches it.
+
+    ONE parameter fitted to 40 stations, which is why this is a scalar and not a
+    per-zone or per-purpose adjustment: the data supports one number here.
+    Damped and clipped exactly like the class factors, because the same
+    instability applies — a single noisy count must not move the whole model.
+
+    Returns None when there is nothing usable to fit, which the caller treats as
+    "no step", never as 1.0.
+    """
+    ratios = [
+        float(row["observed_volume"]) / float(row["modeled_daily_pce"])
+        for row in fit_matched
+        if float(row.get("observed_volume") or 0) > 0 and float(row.get("modeled_daily_pce") or 0) > 0
+    ]
+    if not ratios:
+        return None
+    from statistics import median
+
+    return max(lo, min(hi, median(ratios) ** gamma))
+
+
+
+def step_improves_the_gate_metric(
+    previous: dict[str, Any], trial: dict[str, Any]
+) -> bool:
+    """A step must not push the run further from the gate it is judged by.
+
+    FOUND BY RUNNING IT, 2026-08-16. The shared engine's objective blends a GEH
+    penalty with a median-APE penalty, and the demand stage improved that blend
+    — held-out GEH 21.20 to 16.81 — while making held-out median APE WORSE,
+    43.29% to 46.25%. The engine accepted it, correctly by its own rule.
+
+    But the screening gate is median absolute percent error. A step that
+    improves a blended objective and moves the run away from the standard it is
+    actually measured against is not an improvement from the product's point of
+    view, and accepting it would mean the calibration optimises something no
+    planner is ever shown.
+
+    So this is an ADDITIONAL condition applied here, not a change to the shared
+    engine — the worker lane is judged the same way and would want the same
+    thing, but that is its decision to make, and silently changing an engine two
+    drivers rely on is how one lane's judgement becomes another's surprise.
+    """
+    previous_ape = previous.get("median_ape")
+    trial_ape = trial.get("median_ape")
+    if trial_ape is None:
+        return False
+    if previous_ape is None:
+        return True
+    return trial_ape <= previous_ape
+
+
+def rejection_reason(
+    previous_objective: float | None,
+    trial_objective: float | None,
+    previous_holdout: dict[str, Any],
+    trial_holdout: dict[str, Any],
+) -> str:
+    """Why a step was thrown away — the specific reason, not a generic one.
+
+    Two different rules can reject a step and they mean different things. "The
+    blend got no better" says the calibration has converged. "The blend improved
+    but the gate metric worsened" says the objective and the standard disagree,
+    which is a fact about the model worth knowing and was invisible while both
+    printed the same sentence.
+    """
+    if trial_objective is None:
+        return "rejected — the held-out counts produced no usable objective"
+    if previous_objective is not None and trial_objective > previous_objective:
+        return "rejected — no strict improvement on the held-out counts"
+    if not step_improves_the_gate_metric(previous_holdout, trial_holdout):
+        return (
+            "rejected — it improved the blended objective but worsened held-out median "
+            "absolute percent error, which is the metric the screening gate is judged on"
+        )
+    return "rejected — no strict improvement on the held-out counts"
+
+
 def calibrate(
     *,
     matched_stations: list[dict[str, Any]],
-    reassign: Callable[[dict[str, float]], dict[int, float]],
+    reassign: Callable[..., dict[int, float]],
     baseline_volumes: dict[int, float],
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
     min_improvement: float = DEFAULT_MIN_IMPROVEMENT,
@@ -194,6 +285,7 @@ def calibrate(
         )
 
     cumulative: dict[str, float] = {}
+    demand_scalar = 1.0
     best_volumes = baseline_volumes
     best_objective = baseline_holdout["objective"]
     best_fit, best_holdout = baseline_fit, baseline_holdout
@@ -204,22 +296,24 @@ def calibrate(
         fit_matched = attach_modelled_volumes(fit_stations, best_volumes)
         new_factors = calibration.class_adjustment_factors(fit_matched)
         if not new_factors:
-            steps.append({"iteration": iteration, "outcome": "no adjustable road class remained"})
+            steps.append({"stage": "class", "iteration": iteration, "outcome": "no adjustable road class remained"})
             break
 
         trial_cumulative = calibration.compose_factors(cumulative, new_factors)
         if trial_cumulative == cumulative:
-            steps.append({"iteration": iteration, "outcome": "factors stopped moving"})
+            steps.append({"stage": "class", "iteration": iteration, "outcome": "factors stopped moving"})
             break
 
-        trial_volumes = reassign(trial_cumulative)
+        trial_volumes = reassign(trial_cumulative, demand_scalar)
         trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
         trial_objective = trial_holdout["objective"]
 
         # STRICT held-out improvement only. An equal-objective step is a no-op
         # and must never move a run into the calibrated tier.
-        if trial_objective is not None and calibration.accept_step(
-            best_objective, trial_objective, tol=-min_improvement
+        if (
+            trial_objective is not None
+            and calibration.accept_step(best_objective, trial_objective, tol=-min_improvement)
+            and step_improves_the_gate_metric(best_holdout, trial_holdout)
         ):
             cumulative = trial_cumulative
             best_volumes = trial_volumes
@@ -229,6 +323,7 @@ def calibrate(
             accepted += 1
             steps.append(
                 {
+                    "stage": "class",
                     "iteration": iteration,
                     "outcome": "accepted",
                     "holdout_median_ape": trial_holdout["median_ape"],
@@ -238,18 +333,68 @@ def calibrate(
         else:
             steps.append(
                 {
+                    "stage": "class",
                     "iteration": iteration,
-                    "outcome": "rejected — no strict improvement on the held-out counts",
+                    "outcome": rejection_reason(
+                        best_objective, trial_objective, best_holdout, trial_holdout
+                    ),
                     "holdout_median_ape": trial_holdout["median_ape"],
                 }
             )
             break
 
+    # ── STAGE 2: how MUCH travel there is ────────────────────────────────────
+    # Stage 1 moves traffic between road classes; it cannot change the total.
+    # This fits one number — a scalar on the whole trip matrix — and is judged
+    # on the same held-out counts by the same rule.
+    for iteration in range(1, max_iterations + 1):
+        step = demand_scalar_step(attach_modelled_volumes(fit_stations, best_volumes))
+        if step is None or abs(step - 1.0) < 1e-6:
+            steps.append({"stage": "demand", "iteration": iteration, "outcome": "no usable demand step"})
+            break
+
+        trial_scalar = max(0.1, min(10.0, demand_scalar * step))
+        trial_volumes = reassign(cumulative, trial_scalar)
+        trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
+        trial_objective = trial_holdout["objective"]
+
+        if (
+            trial_objective is not None
+            and calibration.accept_step(best_objective, trial_objective, tol=-min_improvement)
+            and step_improves_the_gate_metric(best_holdout, trial_holdout)
+        ):
+            demand_scalar = trial_scalar
+            best_volumes = trial_volumes
+            best_objective = trial_objective
+            best_holdout = trial_holdout
+            best_fit = calibration.evaluate(attach_modelled_volumes(fit_stations, trial_volumes))
+            accepted += 1
+            steps.append({
+                "stage": "demand",
+                "iteration": iteration,
+                "outcome": "accepted",
+                "demand_scalar": round(trial_scalar, 4),
+                "holdout_median_ape": trial_holdout["median_ape"],
+            })
+        else:
+            steps.append({
+                "stage": "demand",
+                "iteration": iteration,
+                "outcome": rejection_reason(
+                    best_objective, trial_objective, best_holdout, trial_holdout
+                ),
+                "demand_scalar": round(trial_scalar, 4),
+                "holdout_median_ape": trial_holdout["median_ape"],
+            })
+            break
+
     return {
-        "method": "per-road-class speed/capacity factors, fitted to observed counts",
+        "method": "per-road-class speed/capacity factors then an overall demand scalar, fitted to observed counts",
         "engine": "workers/aequilibrae_worker/calibration.py",
         "accepted_iterations": accepted,
         "class_factors": {cls: round(value, 4) for cls, value in cumulative.items()},
+        # A scalar on the whole trip matrix. 1.0 means stage 2 changed nothing.
+        "demand_scalar": round(demand_scalar, 4),
         "fit_station_count": len(fit_stations),
         "holdout_station_count": len(holdout_stations),
         "holdout_fraction": holdout_frac,

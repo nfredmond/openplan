@@ -60,7 +60,7 @@ class HoldoutRefusalTests(unittest.TestCase):
         with self.assertRaises(CalibrationUnavailable) as caught:
             calibrate(
                 matched_stations=stations(1),
-                reassign=lambda factors: {},
+                reassign=lambda factors, scalar=1.0: {},
                 baseline_volumes={1: 5000.0},
             )
         self.assertIn("holdout", str(caught.exception))
@@ -79,7 +79,7 @@ class HoldoutRefusalTests(unittest.TestCase):
         for requested in (0.0, 0.01, 0.5):
             result = calibrate(
                 matched_stations=matched,
-                reassign=lambda factors: volumes(matched, 10000.0),
+                reassign=lambda factors, scalar=1.0: volumes(matched, 10000.0),
                 baseline_volumes=volumes(matched, 5000.0),
                 holdout_frac=requested,
                 max_iterations=1,
@@ -102,7 +102,7 @@ class OverfitGuardTests(unittest.TestCase):
     def test_a_step_that_improves_the_holdout_is_accepted(self) -> None:
         result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors: volumes(self.matched, 10000.0),
+            reassign=lambda factors, scalar=1.0: volumes(self.matched, 10000.0),
             baseline_volumes=self.baseline,
             max_iterations=1,
         )
@@ -115,7 +115,7 @@ class OverfitGuardTests(unittest.TestCase):
         thrown away and the baseline kept, with nothing promoted."""
         result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors: volumes(self.matched, 500_000.0),
+            reassign=lambda factors, scalar=1.0: volumes(self.matched, 500_000.0),
             baseline_volumes=self.baseline,
             max_iterations=3,
         )
@@ -130,7 +130,7 @@ class OverfitGuardTests(unittest.TestCase):
         done nothing at all."""
         result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors: volumes(self.matched, 5000.0),
+            reassign=lambda factors, scalar=1.0: volumes(self.matched, 5000.0),
             baseline_volumes=self.baseline,
             max_iterations=3,
         )
@@ -139,7 +139,7 @@ class OverfitGuardTests(unittest.TestCase):
     def test_the_loop_stops_rather_than_spinning(self) -> None:
         calls: list[dict] = []
 
-        def reassign(factors):
+        def reassign(factors, scalar=1.0):
             calls.append(factors)
             return volumes(self.matched, 500_000.0)
 
@@ -149,9 +149,151 @@ class OverfitGuardTests(unittest.TestCase):
             baseline_volumes=self.baseline,
             max_iterations=5,
         )
-        # One rejected trial ends it. A loop that kept trying after a rejection
+        # One rejected trial ends EACH stage — class factors, then the demand
+        # scalar — so two in total. A loop that kept trying after a rejection
         # would burn a full assignment per iteration for nothing.
-        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(calls), 2)
+
+
+class DemandScalarStageTests(unittest.TestCase):
+    """Stage 2: how MUCH travel there is.
+
+    Class factors move traffic between road classes and cannot change the total.
+    Measured after stage 1 converged on a real county, the model still
+    over-assigned by a median 1.30x across every class — a level error no class
+    adjustment reaches.
+    """
+
+    def setUp(self) -> None:
+        self.matched = stations(20)
+        self.baseline = volumes(self.matched, 5000.0)
+
+    def test_a_uniform_over_assignment_is_corrected_by_scaling_demand(self) -> None:
+        """The scalar the fit set implies is applied to the whole matrix, and
+        the trial that uses it is judged on the held-out counts like any other."""
+        def reassign(factors, scalar=1.0):
+            # A model whose volumes track the demand scalar exactly.
+            return volumes(self.matched, 5000.0 * scalar)
+
+        result = calibrate(
+            matched_stations=self.matched,
+            reassign=reassign,
+            baseline_volumes=self.baseline,
+            max_iterations=4,
+        )
+        self.assertGreater(result["demand_scalar"], 1.0)
+        self.assertLess(result["calibrated"]["holdout"]["median_ape"],
+                        result["baseline"]["holdout"]["median_ape"])
+        self.assertTrue(any(s.get("stage") == "demand" for s in result["steps"]))
+
+    def test_a_demand_step_that_worsens_the_holdout_is_rejected(self) -> None:
+        def reassign(factors, scalar=1.0):
+            # Scaling makes it worse, not better.
+            return volumes(self.matched, 5000.0 / max(scalar, 0.01))
+
+        result = calibrate(
+            matched_stations=self.matched,
+            reassign=reassign,
+            baseline_volumes=self.baseline,
+            max_iterations=3,
+        )
+        self.assertEqual(result["demand_scalar"], 1.0)
+
+    def test_an_already_correct_model_is_left_alone(self) -> None:
+        # The negative control for the whole stage: nothing to fix, nothing
+        # changed, and the run must NOT claim to have been calibrated.
+        matched = stations(20)
+        exact = volumes(matched, 10000.0)
+        result = calibrate(
+            matched_stations=matched,
+            reassign=lambda factors, scalar=1.0: exact,
+            baseline_volumes=exact,
+            max_iterations=3,
+        )
+        self.assertEqual(result["demand_scalar"], 1.0)
+        self.assertEqual(result["class_factors"], {})
+        self.assertEqual(result["accepted_iterations"], 0)
+
+    def test_the_scalar_is_damped_not_applied_raw(self) -> None:
+        """A single step never jumps the whole way to the implied ratio: the
+        engine's gamma damps it, and the clip bounds it, so one noisy count
+        cannot move the entire model."""
+        from calibrate_to_counts import demand_scalar_step
+
+        # A ratio INSIDE the clip range, or the clip masks the damping and the
+        # test passes whether or not damping happens at all — which is exactly
+        # what a first version of this test did at a ratio of 4.0, where
+        # sqrt(4)=2 and the clip ceiling is also 2.
+        implied_ratio = 1.44
+        rows = [
+            {"observed_volume": 1440.0, "modeled_daily_pce": 1000.0} for _ in range(5)
+        ]
+        step = demand_scalar_step(rows)
+        self.assertIsNotNone(step)
+        self.assertAlmostEqual(step, 1.2, places=6)  # sqrt(1.44), not 1.44
+        self.assertLess(step, implied_ratio)
+
+    def test_no_usable_pairs_yields_no_step_rather_than_one(self) -> None:
+        # None means "nothing to fit"; 1.0 would mean "fitted, and the answer
+        # was no change" — different facts.
+        from calibrate_to_counts import demand_scalar_step
+
+        self.assertIsNone(demand_scalar_step([]))
+        self.assertIsNone(
+            demand_scalar_step([{"observed_volume": 0.0, "modeled_daily_pce": 100.0}])
+        )
+
+
+class GateMetricTests(unittest.TestCase):
+    """A step may not move the run further from the standard it is judged by.
+
+    Found by running it: the demand stage improved the engine's blended
+    objective (held-out GEH 21.20 -> 16.81) while making held-out median APE
+    worse (43.29% -> 46.25%). The engine accepted it, correctly by its own rule.
+    The screening gate is median APE, so accepting that would mean calibrating
+    toward something no planner is ever shown.
+    """
+
+    def test_a_step_that_worsens_median_ape_is_rejected(self) -> None:
+        from calibrate_to_counts import step_improves_the_gate_metric
+
+        self.assertFalse(
+            step_improves_the_gate_metric({"median_ape": 43.29}, {"median_ape": 46.25})
+        )
+
+    def test_an_improving_or_equal_step_passes(self) -> None:
+        from calibrate_to_counts import step_improves_the_gate_metric
+
+        self.assertTrue(step_improves_the_gate_metric({"median_ape": 62.8}, {"median_ape": 43.29}))
+        # Equal passes here; the engine's own strict-improvement rule is what
+        # stops a no-op being accepted, and duplicating that check would make
+        # which rule rejected a step ambiguous.
+        self.assertTrue(step_improves_the_gate_metric({"median_ape": 40.0}, {"median_ape": 40.0}))
+
+    def test_the_two_rejection_reasons_are_distinguishable(self) -> None:
+        """They mean different things. "The blend got no better" says the
+        calibration converged; "the blend improved but the gate metric worsened"
+        says the objective and the standard disagree — a fact about the model
+        that was invisible while both printed the same sentence."""
+        from calibrate_to_counts import rejection_reason
+
+        converged = rejection_reason(0.40, 0.45, {"median_ape": 43.0}, {"median_ape": 50.0})
+        self.assertIn("no strict improvement", converged)
+
+        disagreed = rejection_reason(0.40, 0.35, {"median_ape": 43.29}, {"median_ape": 46.25})
+        self.assertIn("worsened held-out median", disagreed)
+        self.assertIn("screening gate", disagreed)
+        self.assertNotEqual(converged, disagreed)
+
+    def test_an_unmeasurable_trial_is_not_accepted_on_trust(self) -> None:
+        from calibrate_to_counts import step_improves_the_gate_metric
+
+        self.assertFalse(step_improves_the_gate_metric({"median_ape": 40.0}, {"median_ape": None}))
+
+    def test_no_previous_measurement_does_not_block_a_first_step(self) -> None:
+        from calibrate_to_counts import step_improves_the_gate_metric
+
+        self.assertTrue(step_improves_the_gate_metric({"median_ape": None}, {"median_ape": 55.0}))
 
 
 class JudgedOnHeldOutDataTests(unittest.TestCase):
@@ -177,7 +319,7 @@ class JudgedOnHeldOutDataTests(unittest.TestCase):
         self.baseline = volumes(self.matched, 5000.0)
 
     def test_a_trial_that_is_perfect_on_fit_and_wrong_on_holdout_is_rejected(self) -> None:
-        def overfitting_reassign(factors):
+        def overfitting_reassign(factors, scalar=1.0):
             # Exactly right where it was fitted; an order of magnitude out
             # everywhere it was not.
             return {
@@ -200,7 +342,7 @@ class JudgedOnHeldOutDataTests(unittest.TestCase):
 
     def test_a_trial_that_helps_the_holdout_is_still_accepted(self) -> None:
         # The negative control: the guard must not simply reject everything.
-        def honest_reassign(factors):
+        def honest_reassign(factors, scalar=1.0):
             return volumes(self.matched, 10000.0)
 
         result = calibrate(
@@ -219,7 +361,7 @@ class DisclosureTests(unittest.TestCase):
         self.matched = stations(20)
         self.result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors: volumes(self.matched, 10000.0),
+            reassign=lambda factors, scalar=1.0: volumes(self.matched, 10000.0),
             baseline_volumes=volumes(self.matched, 5000.0),
             max_iterations=1,
         )
@@ -256,7 +398,7 @@ class DisclosureTests(unittest.TestCase):
         self.assertIn("holdout_fraction", self.result)
         again = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors: volumes(self.matched, 10000.0),
+            reassign=lambda factors, scalar=1.0: volumes(self.matched, 10000.0),
             baseline_volumes=volumes(self.matched, 5000.0),
             max_iterations=1,
         )
