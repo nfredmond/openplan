@@ -68,6 +68,35 @@ describe("the setup doctor's environment variable names match the app's", () => 
     }
   });
 
+  it("spells the county-run worker variable the way the dispatcher reads it", () => {
+    // A SECOND worker, and the one that decides whether /county-runs produces a
+    // number or a handoff. `isCountyOnrampWorkerConfigured` and
+    // `dispatchCountyOnrampJob` both key on this exact name; a doctor telling
+    // an operator to set a near-miss would report the lane as switched on while
+    // the dispatcher went on preparing jobs nobody runs.
+    const dispatcher = readFileSync(
+      path.join(APP_ROOT, "src", "lib", "api", "county-onramp-dispatch.ts"),
+      "utf8"
+    );
+    const readByDispatcher = /process\.env\.(OPENPLAN_COUNTY_ONRAMP_WORKER_URL)\b/.exec(dispatcher)?.[1];
+    expect(readByDispatcher, "the dispatcher no longer reads a worker URL from the environment").toBeTruthy();
+    expect(doctor, "doctor.mjs never mentions the county-run worker URL").toContain(readByDispatcher);
+
+    const envExample = readFileSync(path.join(APP_ROOT, ".env.example"), "utf8");
+    expect(envExample, `.env.example never mentions ${readByDispatcher}`).toContain(readByDispatcher!);
+  });
+
+  it("probes the county-run worker on the path that worker actually serves", () => {
+    // Same rule as the modeling worker below: probing a path the worker does
+    // not serve reports a healthy container as unreachable.
+    const worker = readFileSync(
+      path.join(REPO_ROOT, "workers", "county_onramp_worker", "main.py"),
+      "utf8"
+    );
+    expect(worker, "the county-run worker no longer serves /healthz").toContain('@app.get("/healthz")');
+    expect(doctor).toContain('const WORKER_HEALTH_PATH = "/healthz"');
+  });
+
   it("probes the health path the worker actually serves", () => {
     // `TRIGGER_HEALTH_PATH` in the worker decides what answers. Probing a
     // different path would report a healthy worker as unreachable, which reads

@@ -263,6 +263,72 @@ if (existsSync(envPath)) {
   }
 }
 
+// ── The modeling worker that runs county runs ────────────────────────────────
+// A DIFFERENT worker from the one above. This is the one /county-runs pushes to
+// — the container `npm run modeling:up` starts — and it is the difference
+// between "OpenPlan estimated 24.9 vehicle-miles per person" and "OpenPlan
+// wrote down a job for someone to run by hand". Both are supported; only one of
+// them produces a number, and which one you have is not visible from any page
+// until you have already clicked.
+//
+// Two failures are specific to this worker and silent in different ways:
+//   - the address is set but nothing answers, so runs are dispatched into
+//     nowhere and simply never come back;
+//   - the worker is fine but CENSUS_API_KEY is missing, so every run stops in
+//     its first second (the Census Bureau stopped answering keyless requests).
+const COUNTY_WORKER_URL_ENV = "OPENPLAN_COUNTY_ONRAMP_WORKER_URL";
+
+if (existsSync(envPath)) {
+  const countyEnv = new Map();
+  for (const line of readFileSync(envPath, "utf8").split("\n")) {
+    const match = /^\s*([A-Z0-9_]+)\s*=\s*(.*)$/.exec(line);
+    if (match) countyEnv.set(match[1], match[2].trim().replace(/^["']|["']$/g, ""));
+  }
+
+  const countyWorkerUrl = countyEnv.get(COUNTY_WORKER_URL_ENV) || "";
+
+  if (!countyWorkerUrl) {
+    warn(
+      "Travel modelling is not switched on",
+      "Everything else works. Launching a county run will PREPARE the job and say so, rather than run a model — nothing executes it. To turn it on: `npm run modeling:up` (first build takes a few minutes), then add OPENPLAN_COUNTY_ONRAMP_WORKER_URL=http://127.0.0.1:8686/jobs to .env.local and restart OpenPlan."
+    );
+  } else {
+    // The variable holds the JOB endpoint; health lives beside it.
+    const probe = await probeWorker(countyWorkerUrl.replace(/\/jobs\/?$/, ""));
+    if (probe.ok) {
+      ok("The modeling worker answered — county runs will actually run");
+    } else if (probe.status) {
+      bad(
+        `The modeling worker answered ${probe.status} instead of reporting healthy`,
+        `Something is listening at ${COUNTY_WORKER_URL_ENV} but it is not this worker, or it is unwell. Check its own log with \`npm run modeling:logs\`.`
+      );
+    } else {
+      bad(
+        "Could not reach the modeling worker",
+        `${probe.error}. Runs will be dispatched to this address and never come back. Start it with \`npm run modeling:up\`, or clear ${COUNTY_WORKER_URL_ENV} to go back to the honest prepare-only behaviour.`
+      );
+    }
+
+    if (!countyEnv.get("CENSUS_API_KEY")) {
+      bad(
+        "CENSUS_API_KEY is not set, and the modeling worker needs it",
+        "Every model starts from Census population and jobs data, and the Census Bureau no longer answers without a key, so every run will stop in its first second. The key is free and arrives by email: api.census.gov/data/key_signup.html — click the activation link, an unactivated key is refused the same way."
+      );
+    }
+
+    // The worker has no browser session, so this token is the ONLY way its
+    // finished-run callback is accepted. Unset, the model runs correctly for
+    // minutes and the result is refused at the door with a 401 that only the
+    // worker's own log records — the run just never appears.
+    if (!countyEnv.get("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN")) {
+      bad(
+        "OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN is not set, so finished runs will be rejected",
+        "The worker will run the model and OpenPlan will refuse the result, because nothing proves the result came from your worker. Set it to any long random string — it is shared only between OpenPlan and the jobs it sends out, and nothing needs to be changed on the worker."
+      );
+    }
+  }
+}
+
 // ── Database migrations ──────────────────────────────────────────────────────
 // "The app deployed but many surfaces say could not be read" is almost always
 // a database that is behind the code. This answers "did the migrations

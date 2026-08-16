@@ -1,0 +1,47 @@
+# What Docker must NOT send when a worker image is built from the repo root.
+#
+# This is not tidiness. An un-ignored checkout here is about 19 GB, almost all
+# of it a Next.js build cache and node_modules that no Python worker imports.
+# Docker copies the entire context to the daemon before the first instruction
+# runs, so without this file `docker build` appears to hang for many minutes
+# and can fill a disk — with no message naming the cause.
+#
+# Only `workers/county_onramp_worker/Dockerfile` builds from the repo root; the
+# other workers build from their own directories and are unaffected.
+
+# Build output and installed dependencies — rebuilt or reinstalled in-image.
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+**/.turbo/
+**/.vercel/
+**/.venv/
+**/.venv*/
+**/__pycache__/
+**/*.pyc
+
+# History and local tooling.
+.git/
+.github/
+.agent-logs/
+openplan-worktrees/
+.playwright-mcp/
+
+# Secrets never belong in an image layer. The compose file bind-mounts the
+# checkout instead, so the worker still reads the real `.env.local` at runtime
+# — it is simply never baked in.
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Model run outputs and download caches: regenerated on demand, and large.
+data/screening-runs/
+data/_screening_cache/
+workers/aequilibrae_worker/.lodes_cache/
+tmp/
+
+# Test and QA scaffolding the workers do not run.
+qa-harness/
+**/test-results/
+**/playwright-report/

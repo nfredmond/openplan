@@ -84,7 +84,9 @@ class CountyOnrampWorkerTests(unittest.TestCase):
     def test_build_bootstrap_command_omits_container_flags_by_default(self) -> None:
         job = self._job()
 
-        with patch.object(county_worker, "BOOTSTRAP_SCRIPT", self.root / "bootstrap.py"):
+        with patch.object(county_worker, "REPO_ROOT", self.root), patch.object(
+            county_worker, "BOOTSTRAP_SCRIPT", self.root / "bootstrap.py"
+        ):
             county_worker.BOOTSTRAP_SCRIPT.write_text("#!/usr/bin/env python3\n")
             command, manifest_path = county_worker._build_bootstrap_command(job)
 
@@ -105,7 +107,9 @@ class CountyOnrampWorkerTests(unittest.TestCase):
             }
         )
 
-        with patch.object(county_worker, "BOOTSTRAP_SCRIPT", self.root / "bootstrap.py"):
+        with patch.object(county_worker, "REPO_ROOT", self.root), patch.object(
+            county_worker, "BOOTSTRAP_SCRIPT", self.root / "bootstrap.py"
+        ):
             county_worker.BOOTSTRAP_SCRIPT.write_text("#!/usr/bin/env python3\n")
             command, _ = county_worker._build_bootstrap_command(job)
 
@@ -117,6 +121,42 @@ class CountyOnrampWorkerTests(unittest.TestCase):
         self.assertIn("python -m pip install activitysim && activitysim run", command)
         self.assertIn("--container-network-mode", command)
         self.assertIn("bridge", command)
+
+    def test_artifact_targets_outside_the_repo_are_refused_at_parse_time(self) -> None:
+        """
+        A job's artifact paths decide where this process creates directories and
+        where the model then writes. Under docker-compose the repo root is a
+        bind mount of the operator's own working tree, so a path that climbs out
+        of it writes to their machine. Refused when the payload is parsed —
+        which is what makes it a 400 rather than a started job.
+        """
+        for escaping_path in ("../../etc/openplan-escape.csv", "/etc/openplan-escape.csv"):
+            job = self._job()
+            job["artifactTargets"]["scaffoldCsvPath"] = escaping_path
+
+            with patch.object(county_worker, "REPO_ROOT", self.root):
+                with self.assertRaises(ValueError) as caught:
+                    county_worker._parse_payload(job)
+
+            self.assertIn("scaffoldCsvPath", str(caught.exception))
+
+    def test_artifact_targets_inside_the_repo_are_accepted(self) -> None:
+        """
+        The negative control for the test above: the relative paths the app
+        actually sends must still pass. Without this, confinement that rejected
+        everything would look identical to confinement that works.
+        """
+        job = self._job()
+        job["artifactTargets"] = {
+            "scaffoldCsvPath": "data/example-county/validation/scaffold.csv",
+            "reviewPacketMdPath": "docs/ops/example-run-validation-review-packet.md",
+            "manifestPath": "tmp/county-onramp/example-run.manifest.json",
+        }
+
+        with patch.object(county_worker, "REPO_ROOT", self.root):
+            parsed = county_worker._parse_payload(job)
+
+        self.assertEqual(parsed["artifactTargets"], job["artifactTargets"])
 
 
 if __name__ == "__main__":

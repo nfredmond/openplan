@@ -1,0 +1,70 @@
+# OpenPlan's modeling worker, in one command. From the `openplan/` app folder:
+#
+#     npm run worker:up
+#
+# (or, from this directory, `docker compose up -d --build`.)
+#
+# WHAT IT IS FOR. Without it, launching a run on /county-runs produces a
+# *handoff* — a complete job description that no machine will ever execute —
+# and the page says so before you click. With it, the same click runs a real
+# travel model and the result comes back on its own. Nothing else changes.
+#
+# The first build takes several minutes and downloads about a gigabyte
+# (AequilibraE, GeoPandas and the SpatiaLite libraries). Later starts are
+# instant.
+#
+# NETWORKING, STATED PLAINLY because every failure here is silent otherwise:
+# the worker runs with `network_mode: host` so that the callback URL OpenPlan
+# puts in each job — http://localhost:3000/api/county-runs/… — reaches the
+# MACHINE rather than the inside of a container where nothing is listening. A
+# job whose callback cannot connect completes in the worker's log and never
+# appears in OpenPlan at all. On Linux this works as written. On Docker Desktop
+# (macOS/Windows) turn on Settings -> Resources -> Network -> "host networking";
+# without it the worker still runs every model correctly and no result ever
+# comes back, which is the worst of the available failures.
+#
+# THE BIND MOUNT IS NOT A CONVENIENCE. OpenPlan reads several of a run's files
+# straight off disk — the validation scaffold CSV, the validation summary — so
+# the worker and the app have to be looking at the same folder. Mounting your
+# checkout at /app is what makes that true. It also means the worker picks up
+# your `openplan/.env.local` (that is where CENSUS_API_KEY comes from; without
+# it a run stops in the first second and says so), and that model results
+# survive `docker compose down`.
+
+services:
+  modeling-worker:
+    build:
+      # The repo root: the worker shells out to sibling scripts by path.
+      context: ../..
+      dockerfile: workers/county_onramp_worker/Dockerfile
+    restart: unless-stopped
+    network_mode: host
+    # Your checkout, live. Code changes need no rebuild; only a dependency
+    # change does.
+    volumes:
+      - ../..:/app
+    # Run as you, so the run outputs written into your checkout are yours to
+    # delete without sudo. Override for a different account:
+    #   OPENPLAN_WORKER_UID=$(id -u) OPENPLAN_WORKER_GID=$(id -g) docker compose up -d
+    # Ignored by Docker Desktop on macOS/Windows, which maps ownership itself.
+    user: "${OPENPLAN_WORKER_UID:-1000}:${OPENPLAN_WORKER_GID:-1000}"
+    environment:
+      # Listens on this port ON THE HOST (host networking). It is the address
+      # you put in OPENPLAN_COUNTY_ONRAMP_WORKER_URL.
+      PORT: "8686"
+      # Loopback only. Host networking puts this socket directly on your
+      # machine's network stack, so binding all interfaces would offer the job
+      # endpoint to everyone on your wifi — and that endpoint starts processes
+      # and writes files. OpenPlan runs on the same machine and reaches it at
+      # 127.0.0.1 either way. Change this only if the app runs elsewhere, and
+      # set a token in the same breath.
+      OPENPLAN_COUNTY_ONRAMP_WORKER_HOST: "127.0.0.1"
+      # One model run at a time. Two runs on one machine mostly means two slow
+      # runs — each one saturates a core for minutes and downloads a road
+      # network. Raise it only on a machine with cores to spare.
+      OPENPLAN_COUNTY_ONRAMP_MAX_CONCURRENCY: "1"
+      # Optional, and empty is the right answer for a local install bound to
+      # loopback. It comes from a `.env` file in this directory, never from
+      # this file. Set it — on both sides — the moment the worker is reachable
+      # from anywhere but this machine. See DEPLOY.md.
+      OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN: "${OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN:-}"

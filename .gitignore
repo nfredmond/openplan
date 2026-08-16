@@ -69,6 +69,21 @@ data/screening-runs/placer-county-runtime-connectorbias2-20260324/
 # Cached LODES WAC downloads for the AequilibraE worker (regenerated on demand)
 workers/aequilibrae_worker/.lodes_cache/
 
+# Where a screening run actually lands. `screening_runtime` defaults to these
+# two paths under the repo root, so anyone who runs a model — including the
+# modeling worker container, which bind-mounts the checkout — writes hundreds
+# of megabytes of OSM extracts, TIGER downloads and matrices straight into
+# their working tree. The individually-listed run directories above predate
+# this rule and stay listed; the tracked reference bundle under
+# data/screening-runs/ is unaffected, because ignore rules never apply to a
+# file git is already tracking.
+data/screening-runs/
+data/_screening_cache/
+
+# Worker job manifests (`tmp/county-onramp/<run>.manifest.json`) — a transcript
+# of one local run, regenerated every time.
+/tmp/
+
 # Personal Claude Code preferences (private, not shared)
 CLAUDE.local.md
 

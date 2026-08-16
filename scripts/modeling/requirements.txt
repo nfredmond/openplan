@@ -1,0 +1,43 @@
+# What the screening model itself needs — the packages `run_screening_model.py`
+# and everything under `scripts/modeling/` import directly.
+#
+# WHY THIS IS SEPARATE FROM THE WORKER'S OWN requirements.txt, and why the
+# separation has already cost us once:
+#
+# `workers/county_onramp_worker/main.py` imports nothing scientific. Neither
+# does `bootstrap_county_validation_onramp.py` — its whole import graph is the
+# standard library. The heavy stack is reached only by the SUBPROCESS the
+# bootstrap launches, so an image built from the worker's four service
+# dependencies starts cleanly, passes its own health check, accepts a job, and
+# then fails that job with ModuleNotFoundError about a second in. Everything
+# upstream looks healthy. That is the exact defect shape this repo keeps being
+# bitten by, so the two lists are kept apart and both are installed:
+# service dependencies here are not a substitute for run dependencies.
+#
+# `modeling-requirements-cover-the-modeling-imports.test.ts` asserts that every
+# third-party module imported anywhere under `scripts/modeling/` appears below.
+# Add an import there and that test fails until this file catches up.
+#
+# Versions: floors, not pins, and they have been run twice against the same
+# county on the same day (2026-08-15, CPython 3.11) with the same answer —
+# 26 zones, 11.1% intrazonal, VMT per capita 24.87 both times:
+#
+#   host venv   aequilibrae 1.6.2 / geopandas 1.1.4 / numpy 2.0.2 / pandas 3.0.3
+#   container   aequilibrae 1.7.0 / geopandas 1.1.4 / numpy 2.0.2 / pandas 3.0.5
+#
+# That is the evidence for leaving these open rather than pinning: the floors
+# admitted a minor-version change in the engine and the number did not move.
+# It is NOT evidence about any version above those — a bump that changes a
+# result is a change to what OpenPlan tells a planner, so re-run a county and
+# compare the number before widening or raising anything here.
+aequilibrae>=1.6.0
+geopandas>=1.0
+# <2.1 is a hard ceiling, not caution: newer numpy ABIs heap-corrupt
+# aequilibrae 1.6.x's compiled path engine, which aborts mid-skim with glibc
+# "corrupted size vs. prev_size" rather than raising. Same ceiling and same
+# reason as workers/aequilibrae_worker/requirements.txt — if you lift it in one
+# place, lift it in both, and only after an assignment actually completes.
+numpy>=1.26,<2.1
+pandas>=2.0
+requests>=2.31
+shapely>=2.0

@@ -82,11 +82,19 @@ def _require_artifact_targets(container: dict[str, Any]) -> dict[str, str]:
     targets = container.get("artifactTargets")
     if not isinstance(targets, dict):
         raise ValueError("Missing or invalid 'artifactTargets'")
-    return {
+    parsed = {
         "scaffoldCsvPath": _require_string(targets, "scaffoldCsvPath"),
         "reviewPacketMdPath": _require_string(targets, "reviewPacketMdPath"),
         "manifestPath": _require_string(targets, "manifestPath"),
     }
+    # Reject an escaping path HERE, so a bad job is refused with 400 at submit
+    # time rather than accepted, started, and reported as a failed run.
+    for key, value in parsed.items():
+        try:
+            _resolve_repo_path(value)
+        except ValueError as exc:
+            raise ValueError(f"Invalid artifact target '{key}': {exc}") from exc
+    return parsed
 
 
 def _require_callback(container: dict[str, Any]) -> dict[str, str | None]:
@@ -122,10 +130,24 @@ def _parse_payload(payload: Any) -> dict[str, Any]:
 
 
 def _resolve_repo_path(relative_or_absolute_path: str) -> Path:
+    """
+    Turn a job's artifact path into a real path inside the checkout — and refuse
+    anything that lands outside it.
+
+    The confinement is the point. Every path here comes off the wire, this
+    process creates the parent directories and the model then writes into them,
+    and under docker-compose the checkout is a bind mount of the operator's own
+    working tree. Without the check, `../../../.ssh/authorized_keys` is a valid
+    artifact target. The app itself only ever sends paths relative to the repo
+    root, so nothing legitimate is lost.
+    """
     path = Path(relative_or_absolute_path).expanduser()
     if not path.is_absolute():
         path = REPO_ROOT / path
-    return path.resolve()
+    resolved = path.resolve()
+    if resolved != REPO_ROOT and REPO_ROOT not in resolved.parents:
+        raise ValueError(f"path escapes the repository root: {relative_or_absolute_path}")
+    return resolved
 
 
 def _build_bootstrap_command(job: dict[str, Any]) -> tuple[list[str], Path]:

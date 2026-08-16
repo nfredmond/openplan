@@ -105,19 +105,54 @@ export function normalizeCountyOnrampRequest(input: CreateCountyRunRequest): Sto
   });
 }
 
+export const COUNTY_ONRAMP_CALLBACK_ORIGIN_ENV = "OPENPLAN_COUNTY_ONRAMP_CALLBACK_ORIGIN";
+
+/**
+ * Where the worker should post a finished run back to.
+ *
+ * Defaults to the origin of the request that launched the run, which is right
+ * whenever the worker can reach OpenPlan at the same address a browser does.
+ * It cannot when the worker is in a container on a bridge network: OpenPlan
+ * sees itself at `http://localhost:3000`, and inside that container
+ * `localhost` is the container, where nothing is listening. The model then runs
+ * correctly for minutes and the result goes nowhere — the failure is entirely
+ * silent from OpenPlan's side, because nothing ever arrives to fail.
+ *
+ * So an operator can name the address the WORKER should use — typically
+ * `http://host.docker.internal:3000` on Docker Desktop, or the deployment's
+ * public URL on a server. Same posture and same fallback as
+ * `OPENPLAN_KB_OCR_CALLBACK_URL` in the OCR lane; deliberately not a second
+ * idea about the same problem.
+ *
+ * Resolved in ONE place so that the callback URL a planner is shown on the run
+ * page is the callback URL the worker was actually handed.
+ */
+export function resolveCountyOnrampCallbackOrigin(
+  requestOrigin: string,
+  env: NodeJS.ProcessEnv = process.env
+): string {
+  const configured = env[COUNTY_ONRAMP_CALLBACK_ORIGIN_ENV]?.trim();
+  return (configured || requestOrigin).replace(/\/+$/, "");
+}
+
 export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
   origin: string;
   jobId: string;
   countyRunId: string;
   input: StoredCountyOnrampRequest;
 }): CountyOnrampWorkerPayload {
-  const { origin, jobId, countyRunId, input } = params;
+  const { jobId, countyRunId, input } = params;
+  const origin = resolveCountyOnrampCallbackOrigin(params.origin);
   const callbackBearerToken = process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN?.trim();
   const countyPrefix = input.countyPrefix;
   const runSlug = input.runName;
-  const artifactBase = input.geographyId.toLowerCase().includes("06061")
-    ? "data/pilot-placer-county/validation"
-    : `data/pilot-${countyPrefix.toLowerCase()}-county/validation`;
+  // Derived from the run's own county prefix, for every county. There used to
+  // be a branch here that matched one FIPS code and returned a fixed path — a
+  // runtime branch keyed to a place, which is the thing non-negotiable #0
+  // forbids. Its only effect was to ignore an operator-supplied prefix for that
+  // one county — with the derived prefix, which is the default, the general
+  // expression already produced the same path.
+  const artifactBase = `data/pilot-${countyPrefix.toLowerCase()}-county/validation`;
 
   return countyOnrampWorkerPayloadSchema.parse({
     jobId,
@@ -135,7 +170,7 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
       manifestPath: `tmp/county-onramp/${runSlug}.manifest.json`,
     },
     callback: {
-      manifestIngestUrl: `${origin.replace(/\/$/, "")}/api/county-runs/${countyRunId}/manifest`,
+      manifestIngestUrl: `${origin}/api/county-runs/${countyRunId}/manifest`,
       ...(callbackBearerToken ? { bearerToken: callbackBearerToken } : {}),
     },
   });

@@ -285,6 +285,65 @@ again later, open a terminal, `cd` back into the `openplan/openplan` folder, and
 run `npm run dev`. Docker Desktop needs to be running first — the database lives
 there.
 
+### Step 7 — turn on travel modelling
+
+**Skip this if you are only here to look around.** Everything else in OpenPlan —
+maps, engagement, grants, plans, reports — works without it.
+
+This step is what makes OpenPlan produce a traffic number: how many
+vehicle-miles a county drives in a day. Without it you can still set a run up,
+and OpenPlan will tell you plainly, before you click, that it will write the job
+down rather than run it.
+
+It runs on your own machine, in Docker, beside the database. Nothing is hosted
+and nothing costs money.
+
+```bash
+npm run modeling:up
+```
+
+The first time, this builds a container: **several minutes**, and about a
+gigabyte of traffic-modelling software. It prints a lot and then goes quiet.
+Later starts take a second.
+
+Then open `.env.local` again and add these two lines:
+
+```bash
+OPENPLAN_COUNTY_ONRAMP_WORKER_URL=http://127.0.0.1:8686/jobs
+OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN=pick-any-long-random-string
+```
+
+The second one is a password OpenPlan makes up to recognise its own results
+coming back. Any long jumble of letters will do; nobody ever types it again.
+**Do not skip it** — without it the model runs for six minutes and OpenPlan
+turns the answer away at the door, with nothing on screen to say why.
+
+You also need `CENSUS_API_KEY` from step 4. Every travel model starts from how
+many people live where, and that comes from the US Census Bureau.
+
+Now stop OpenPlan (`Ctrl+C`) and start it again with `npm run dev`, so it picks
+up the new settings. Check it took:
+
+```bash
+npm run doctor
+```
+
+It should say **the modeling worker answered**. If it does not, it will say
+which of the three settings is missing.
+
+**A county takes about six minutes**, most of it spent downloading the road
+network. Go to **County runs**, search for a county, name the run, and launch
+it. Results land in `data/screening-runs/` inside the OpenPlan folder — a few
+hundred megabytes per county.
+
+`npm run modeling:logs` shows what the modeller is doing. `npm run
+modeling:down` stops it.
+
+> **What these numbers are for.** Screening and prioritisation, and the
+> supporting numbers in a grant application. They are not calibrated forecasts,
+> and OpenPlan will not let them be used for an environmental document. Every
+> figure it produces carries what it was built from.
+
 ### If something goes wrong
 
 **First: run `npm run doctor`.** It diagnoses everything in this table

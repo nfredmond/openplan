@@ -2,6 +2,8 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { stripSourceComments } from "@/test/helpers/source-text";
+
 /**
  * OpenPlan must work for any agency, anywhere in the US — CLAUDE.md
  * non-negotiables #0 and #1. This guard exists because that promise had
@@ -75,7 +77,87 @@ function shippedSourceFiles(): string[] {
   return walk(SRC).filter((file) => !file.startsWith(testDir));
 }
 
+/**
+ * Shipped code may not BRANCH on a five-digit place code.
+ *
+ * WHY THIS EXISTS SEPARATELY from BANNED_PLACE_PATTERNS above. That list names
+ * ONE county, so it was blind for months to
+ * `input.geographyId.toLowerCase().includes("06061")` in the county-onramp
+ * worker payload builder — a different county, the same defect, sitting in the
+ * lane the earlier sweep had just cleaned. A guard that enumerates instances
+ * cannot see the category.
+ *
+ * WHAT IT MATCHES, AND WHY NOT SIMPLY EVERY FIVE-DIGIT STRING. A bare scan for
+ * quoted five-digit literals was written first and immediately found a `12500`
+ * placeholder in a currency input — a false positive of a class that would keep
+ * arriving, and a noisy guard gets exemptions bolted on until it means nothing.
+ * So the match is scoped to the shape that is actually the defect: a five-digit
+ * literal on either side of an equality, or inside a membership test. A FIPS
+ * code in a data structure is a registry and is allowed; a FIPS code deciding
+ * what the code DOES is not.
+ *
+ * The exempt codes are Postgres SQLSTATEs that OpenPlan legitimately compares
+ * against on the write path. That is a closed external vocabulary with
+ * published meanings, which is exactly what a county FIPS is not. Exempting
+ * these by VALUE rather than by the shape `something.code === "…"` is
+ * deliberate: the shape would also silently excuse `county.code === "06057"`,
+ * which is the defect. Every addition here must be a real SQLSTATE, named.
+ */
+const NON_PLACE_FIVE_DIGIT_CODES: readonly string[] = [
+  "42703", // undefined_column — the deploy/migrate degradation path matches it
+  "23514", // check_violation
+  "23505", // unique_violation
+  "23503", // foreign_key_violation
+];
+
+const FIPS_BRANCH =
+  /(?:[=!]==?\s*|\.(?:includes|startsWith|endsWith|indexOf)\(\s*|case\s+)["'`](\d{5})["'`]|["'`](\d{5})["'`]\s*[=!]==?/g;
+
+/**
+ * Comments are stripped first: a comment that quotes an error code or an
+ * example FIPS is prose, not a branch, and prose reaching a matcher has broken
+ * five guards in this repository in both directions.
+ */
+function fipsBranchesIn(source: string): string[] {
+  return [...stripSourceComments(source).matchAll(FIPS_BRANCH)]
+    .map((match) => match[1] ?? match[2])
+    .filter((code) => !NON_PLACE_FIVE_DIGIT_CODES.includes(code));
+}
+
 describe("no hardcoded place in shipped product code", () => {
+  it("branches on no county FIPS literal", () => {
+    const offenders: string[] = [];
+
+    for (const file of shippedSourceFiles()) {
+      const relative = path.relative(process.cwd(), file);
+      for (const code of fipsBranchesIn(readFileSync(file, "utf8"))) {
+        offenders.push(
+          `${relative} → branches on "${code}". Geography comes from the user, never from a literal.`
+        );
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("guards that guard — the FIPS scan bites, and it is not merely quiet", () => {
+    // The exact expression this guard was written after, and the shapes near it.
+    expect(fipsBranchesIn('geographyId.toLowerCase().includes("06061")')).toEqual(["06061"]);
+    expect(fipsBranchesIn("if (fips === '06057') return PILOT;")).toEqual(["06057"]);
+    expect(fipsBranchesIn('if (`36061` === fips) return NYC;')).toEqual(["36061"]);
+    expect(fipsBranchesIn('switch (id) { case "06001": return X; }')).toEqual(["06001"]);
+    expect(fipsBranchesIn('COUNTIES.indexOf("48201")')).toEqual(["48201"]);
+    // A SQLSTATE match is code, not a place, and must stay silent.
+    expect(fipsBranchesIn('if (error.code === "42703") return false;')).toEqual([]);
+    // A comment naming a FIPS is prose. A placeholder or a lookup key is data.
+    expect(fipsBranchesIn('// e.g. county FIPS "06057"')).toEqual([]);
+    expect(fipsBranchesIn('<Input placeholder="12500" />')).toEqual([]);
+    expect(fipsBranchesIn('const RATES = { "06057": 1.2 };')).toEqual([]);
+    // Wrong length is never a county FIPS.
+    expect(fipsBranchesIn('if (state === "06") return CA;')).toEqual([]);
+    expect(fipsBranchesIn('if (tract === "06057000100") return T;')).toEqual([]);
+  });
+
   it("names no pilot county or agency outside the public evidence catalog", () => {
     const offenders: string[] = [];
 
