@@ -584,6 +584,8 @@ def calibrate_run_to_counts(
     run_output_dir: Path,
     centroid_map: dict[int, int],
     demand_matrix: np.ndarray,
+    internal_matrix: np.ndarray,
+    external_matrix: np.ndarray,
     skim_meta: dict[str, Any],
     baseline_assignment: dict[str, Any],
 ) -> dict[str, Any]:
@@ -608,11 +610,15 @@ def calibrate_run_to_counts(
     stations = load_count_stations(counts_csv)
     matched = match_stations_to_links(stations, run_output_dir, project_dir / "project_database.sqlite")
 
-    def reassign(class_factors: dict[str, float], demand_scalar: float = 1.0) -> dict[int, float]:
+    def reassign(
+        class_factors: dict[str, float],
+        demand_scalar: float = 1.0,
+        external_scalar: float = 1.0,
+    ) -> dict[int, float]:
         trial = run_assignment(
             project_dir,
             centroid_map,
-            demand_matrix * float(demand_scalar),
+            internal_matrix * float(demand_scalar) + external_matrix * float(external_scalar),
             run_output_dir,
             skim_meta,
             class_factors=class_factors,
@@ -642,12 +648,14 @@ def calibrate_run_to_counts(
 
     factors = result.get("class_factors") or {}
     scalar = float(result.get("demand_scalar") or 1.0)
-    changed = bool(factors) or abs(scalar - 1.0) > 1e-9
+    external_scalar = float(result.get("external_demand_scalar") or 1.0)
+    changed = bool(factors) or abs(scalar - 1.0) > 1e-9 or abs(external_scalar - 1.0) > 1e-9
     final_assignment = None
     if changed:
         final_assignment = run_assignment(
-            project_dir, centroid_map, demand_matrix * scalar, run_output_dir, skim_meta,
-            class_factors=factors, write_outputs=True,
+            project_dir, centroid_map,
+            internal_matrix * scalar + external_matrix * external_scalar,
+            run_output_dir, skim_meta, class_factors=factors, write_outputs=True,
         )
 
     result.pop("volumes", None)
@@ -1466,6 +1474,16 @@ def synthesize_demand(
         external = external * overall_demand_scalar
 
     write_od_csv(total, zone_ids, package_dir / "od_trip_matrix.csv")
+    # The two halves, kept apart for calibration. External demand is a third of
+    # a rural county's travel and is the most-guessed part of the model — a flat
+    # lookup by road class — so being able to scale it WITHOUT touching resident
+    # travel is what lets a calibration correct the guess instead of smearing
+    # the correction across trips that were never in doubt.
+    internal_component = (hbw + hbo + nhb + supplied) * valid_pairs
+    external_component = external * valid_pairs
+    if overall_demand_scalar != 1.0:
+        internal_component = internal_component * overall_demand_scalar
+        external_component = external_component * overall_demand_scalar
     layers = {
         # Which demand model produced this, named rather than inferred. A run
         # whose trips came from somewhere else must never read like one this
@@ -1496,6 +1514,8 @@ def synthesize_demand(
     (package_dir / "demand_layers.json").write_text(json.dumps(layers, indent=2))
     return {
         "matrix": total,
+        "internal_matrix": internal_component,
+        "external_matrix": external_component,
         "zone_ids": zone_ids,
         "gateways": gateways,
         "summary": layers,
@@ -1882,6 +1902,8 @@ def run_screening_model(
             run_output_dir=run_output_dir,
             centroid_map=network_meta["centroid_map"],
             demand_matrix=demand_meta["matrix"],
+            internal_matrix=demand_meta["internal_matrix"],
+            external_matrix=demand_meta["external_matrix"],
             skim_meta=skim_meta,
             baseline_assignment=assignment_meta,
         )

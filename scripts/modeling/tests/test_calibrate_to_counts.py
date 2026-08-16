@@ -60,7 +60,7 @@ class HoldoutRefusalTests(unittest.TestCase):
         with self.assertRaises(CalibrationUnavailable) as caught:
             calibrate(
                 matched_stations=stations(1),
-                reassign=lambda factors, scalar=1.0: {},
+                reassign=lambda factors, scalar=1.0, ext=1.0: {},
                 baseline_volumes={1: 5000.0},
             )
         self.assertIn("holdout", str(caught.exception))
@@ -79,7 +79,7 @@ class HoldoutRefusalTests(unittest.TestCase):
         for requested in (0.0, 0.01, 0.5):
             result = calibrate(
                 matched_stations=matched,
-                reassign=lambda factors, scalar=1.0: volumes(matched, 10000.0),
+                reassign=lambda factors, scalar=1.0, ext=1.0: volumes(matched, 10000.0),
                 baseline_volumes=volumes(matched, 5000.0),
                 holdout_frac=requested,
                 max_iterations=1,
@@ -102,7 +102,7 @@ class OverfitGuardTests(unittest.TestCase):
     def test_a_step_that_improves_the_holdout_is_accepted(self) -> None:
         result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors, scalar=1.0: volumes(self.matched, 10000.0),
+            reassign=lambda factors, scalar=1.0, ext=1.0: volumes(self.matched, 10000.0),
             baseline_volumes=self.baseline,
             max_iterations=1,
         )
@@ -115,7 +115,7 @@ class OverfitGuardTests(unittest.TestCase):
         thrown away and the baseline kept, with nothing promoted."""
         result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors, scalar=1.0: volumes(self.matched, 500_000.0),
+            reassign=lambda factors, scalar=1.0, ext=1.0: volumes(self.matched, 500_000.0),
             baseline_volumes=self.baseline,
             max_iterations=3,
         )
@@ -130,7 +130,7 @@ class OverfitGuardTests(unittest.TestCase):
         done nothing at all."""
         result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors, scalar=1.0: volumes(self.matched, 5000.0),
+            reassign=lambda factors, scalar=1.0, ext=1.0: volumes(self.matched, 5000.0),
             baseline_volumes=self.baseline,
             max_iterations=3,
         )
@@ -139,7 +139,7 @@ class OverfitGuardTests(unittest.TestCase):
     def test_the_loop_stops_rather_than_spinning(self) -> None:
         calls: list[dict] = []
 
-        def reassign(factors, scalar=1.0):
+        def reassign(factors, scalar=1.0, ext=1.0):
             calls.append(factors)
             return volumes(self.matched, 500_000.0)
 
@@ -149,10 +149,11 @@ class OverfitGuardTests(unittest.TestCase):
             baseline_volumes=self.baseline,
             max_iterations=5,
         )
-        # One rejected trial ends EACH stage — class factors, then the demand
-        # scalar — so two in total. A loop that kept trying after a rejection
-        # would burn a full assignment per iteration for nothing.
-        self.assertEqual(len(calls), 2)
+        # One rejected trial ends EACH stage — class factors, the demand
+        # scalar, then the external-demand scalar — so three in total. A loop
+        # that kept trying after a rejection would burn a full assignment per
+        # iteration for nothing.
+        self.assertEqual(len(calls), 3)
 
 
 class DemandScalarStageTests(unittest.TestCase):
@@ -171,7 +172,7 @@ class DemandScalarStageTests(unittest.TestCase):
     def test_a_uniform_over_assignment_is_corrected_by_scaling_demand(self) -> None:
         """The scalar the fit set implies is applied to the whole matrix, and
         the trial that uses it is judged on the held-out counts like any other."""
-        def reassign(factors, scalar=1.0):
+        def reassign(factors, scalar=1.0, ext=1.0):
             # A model whose volumes track the demand scalar exactly.
             return volumes(self.matched, 5000.0 * scalar)
 
@@ -187,7 +188,7 @@ class DemandScalarStageTests(unittest.TestCase):
         self.assertTrue(any(s.get("stage") == "demand" for s in result["steps"]))
 
     def test_a_demand_step_that_worsens_the_holdout_is_rejected(self) -> None:
-        def reassign(factors, scalar=1.0):
+        def reassign(factors, scalar=1.0, ext=1.0):
             # Scaling makes it worse, not better.
             return volumes(self.matched, 5000.0 / max(scalar, 0.01))
 
@@ -206,7 +207,7 @@ class DemandScalarStageTests(unittest.TestCase):
         exact = volumes(matched, 10000.0)
         result = calibrate(
             matched_stations=matched,
-            reassign=lambda factors, scalar=1.0: exact,
+            reassign=lambda factors, scalar=1.0, ext=1.0: exact,
             baseline_volumes=exact,
             max_iterations=3,
         )
@@ -232,6 +233,27 @@ class DemandScalarStageTests(unittest.TestCase):
         self.assertIsNotNone(step)
         self.assertAlmostEqual(step, 1.2, places=6)  # sqrt(1.44), not 1.44
         self.assertLess(step, implied_ratio)
+
+    def test_external_demand_is_scaled_separately_from_resident_travel(self) -> None:
+        """Cordon traffic and resident travel are different guesses with
+        different evidence, and stage 3 fits them apart. Smearing one correction
+        across both would move trips that were never in doubt."""
+        seen: list[tuple[float, float]] = []
+
+        def reassign(factors, scalar=1.0, ext=1.0):
+            seen.append((scalar, ext))
+            # Only the external scalar helps, so only it should be adopted.
+            return volumes(self.matched, 5000.0 * ext)
+
+        result = calibrate(
+            matched_stations=self.matched,
+            reassign=reassign,
+            baseline_volumes=self.baseline,
+            max_iterations=3,
+        )
+        self.assertGreater(result["external_demand_scalar"], 1.0)
+        # The two scalars are passed independently, never as one number.
+        self.assertTrue(any(ext != scalar for scalar, ext in seen))
 
     def test_no_usable_pairs_yields_no_step_rather_than_one(self) -> None:
         # None means "nothing to fit"; 1.0 would mean "fitted, and the answer
@@ -319,7 +341,7 @@ class JudgedOnHeldOutDataTests(unittest.TestCase):
         self.baseline = volumes(self.matched, 5000.0)
 
     def test_a_trial_that_is_perfect_on_fit_and_wrong_on_holdout_is_rejected(self) -> None:
-        def overfitting_reassign(factors, scalar=1.0):
+        def overfitting_reassign(factors, scalar=1.0, ext=1.0):
             # Exactly right where it was fitted; an order of magnitude out
             # everywhere it was not.
             return {
@@ -342,7 +364,7 @@ class JudgedOnHeldOutDataTests(unittest.TestCase):
 
     def test_a_trial_that_helps_the_holdout_is_still_accepted(self) -> None:
         # The negative control: the guard must not simply reject everything.
-        def honest_reassign(factors, scalar=1.0):
+        def honest_reassign(factors, scalar=1.0, ext=1.0):
             return volumes(self.matched, 10000.0)
 
         result = calibrate(
@@ -361,7 +383,7 @@ class DisclosureTests(unittest.TestCase):
         self.matched = stations(20)
         self.result = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors, scalar=1.0: volumes(self.matched, 10000.0),
+            reassign=lambda factors, scalar=1.0, ext=1.0: volumes(self.matched, 10000.0),
             baseline_volumes=volumes(self.matched, 5000.0),
             max_iterations=1,
         )
@@ -398,7 +420,7 @@ class DisclosureTests(unittest.TestCase):
         self.assertIn("holdout_fraction", self.result)
         again = calibrate(
             matched_stations=self.matched,
-            reassign=lambda factors, scalar=1.0: volumes(self.matched, 10000.0),
+            reassign=lambda factors, scalar=1.0, ext=1.0: volumes(self.matched, 10000.0),
             baseline_volumes=volumes(self.matched, 5000.0),
             max_iterations=1,
         )

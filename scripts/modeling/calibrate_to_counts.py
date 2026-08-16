@@ -156,7 +156,11 @@ def demand_scalar_step(
     lo: float = calibration.DEFAULT_FACTOR_LO,
     hi: float = calibration.DEFAULT_FACTOR_HI,
 ) -> float | None:
-    """One damped correction to the TOTAL amount of travel, from the fit set.
+    """One damped correction to an amount of travel, from the fit set.
+
+    Used by both demand stages — stage 2 applies the result to resident travel,
+    stage 3 to cordon traffic. The arithmetic is the same; what differs is which
+    half of the matrix it lands on, and that is the caller's decision.
 
     WHY THIS STAGE EXISTS. Per-road-class factors redistribute traffic between
     classes; they cannot change how much of it there is. Measured 2026-08-16
@@ -286,6 +290,7 @@ def calibrate(
 
     cumulative: dict[str, float] = {}
     demand_scalar = 1.0
+    external_scalar = 1.0
     best_volumes = baseline_volumes
     best_objective = baseline_holdout["objective"]
     best_fit, best_holdout = baseline_fit, baseline_holdout
@@ -304,7 +309,7 @@ def calibrate(
             steps.append({"stage": "class", "iteration": iteration, "outcome": "factors stopped moving"})
             break
 
-        trial_volumes = reassign(trial_cumulative, demand_scalar)
+        trial_volumes = reassign(trial_cumulative, demand_scalar, external_scalar)
         trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
         trial_objective = trial_holdout["objective"]
 
@@ -343,10 +348,15 @@ def calibrate(
             )
             break
 
-    # ── STAGE 2: how MUCH travel there is ────────────────────────────────────
-    # Stage 1 moves traffic between road classes; it cannot change the total.
-    # This fits one number — a scalar on the whole trip matrix — and is judged
-    # on the same held-out counts by the same rule.
+    # ── STAGE 2: how much RESIDENT travel there is ───────────────────────────
+    # Stage 1 moves traffic between road classes; it cannot change how much
+    # there is. This fits one number and applies it to the internal trip matrix
+    # only — resident and local travel — leaving cordon traffic to stage 3.
+    #
+    # The split matters: resident travel comes from Census population and
+    # employment, and cordon traffic from a flat lookup by road class. They are
+    # guesses of very different quality, and one scalar across both would move
+    # the better-evidenced half to correct the worse-evidenced one.
     for iteration in range(1, max_iterations + 1):
         step = demand_scalar_step(attach_modelled_volumes(fit_stations, best_volumes))
         if step is None or abs(step - 1.0) < 1e-6:
@@ -354,7 +364,7 @@ def calibrate(
             break
 
         trial_scalar = max(0.1, min(10.0, demand_scalar * step))
-        trial_volumes = reassign(cumulative, trial_scalar)
+        trial_volumes = reassign(cumulative, trial_scalar, external_scalar)
         trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
         trial_objective = trial_holdout["objective"]
 
@@ -388,13 +398,73 @@ def calibrate(
             })
             break
 
+
+    # ── STAGE 3: how much travel comes from OUTSIDE ──────────────────────────
+    # External demand is the most-guessed part of the model — a flat lookup by
+    # road class, applied at every boundary crossing — and on a rural county it
+    # is a third of all trips. Measured 2026-08-16 after stages 1 and 2: the
+    # model was within 11% on the busiest roads and 94% out on the quietest,
+    # and the worst stations were beside cordons. External traffic disperses
+    # across the whole county by population and job share, so an over-guess
+    # lands everywhere, hardest where there is least real traffic to hide it.
+    #
+    # Fitted separately from resident travel because they are different guesses
+    # with different evidence behind them. Smearing one correction across both
+    # would move trips that were never in doubt.
+    for iteration in range(1, max_iterations + 1):
+        step = demand_scalar_step(attach_modelled_volumes(fit_stations, best_volumes))
+        if step is None or abs(step - 1.0) < 1e-6:
+            steps.append({"stage": "external", "iteration": iteration, "outcome": "no usable external step"})
+            break
+
+        trial_external = max(0.1, min(10.0, external_scalar * step))
+        trial_volumes = reassign(cumulative, demand_scalar, trial_external)
+        trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
+        trial_objective = trial_holdout["objective"]
+
+        if (
+            trial_objective is not None
+            and calibration.accept_step(best_objective, trial_objective, tol=-min_improvement)
+            and step_improves_the_gate_metric(best_holdout, trial_holdout)
+        ):
+            external_scalar = trial_external
+            best_volumes = trial_volumes
+            best_objective = trial_objective
+            best_holdout = trial_holdout
+            best_fit = calibration.evaluate(attach_modelled_volumes(fit_stations, trial_volumes))
+            accepted += 1
+            steps.append({
+                "stage": "external",
+                "iteration": iteration,
+                "outcome": "accepted",
+                "external_demand_scalar": round(trial_external, 4),
+                "holdout_median_ape": trial_holdout["median_ape"],
+            })
+        else:
+            steps.append({
+                "stage": "external",
+                "iteration": iteration,
+                "outcome": rejection_reason(
+                    best_objective, trial_objective, best_holdout, trial_holdout
+                ),
+                "external_demand_scalar": round(trial_external, 4),
+                "holdout_median_ape": trial_holdout["median_ape"],
+            })
+            break
+
     return {
-        "method": "per-road-class speed/capacity factors then an overall demand scalar, fitted to observed counts",
+        "method": (
+            "per-road-class speed/capacity factors, then an overall demand scalar, then a separate "
+            "external-demand scalar — each fitted to observed counts and validated out-of-sample"
+        ),
         "engine": "workers/aequilibrae_worker/calibration.py",
         "accepted_iterations": accepted,
         "class_factors": {cls: round(value, 4) for cls, value in cumulative.items()},
         # A scalar on the whole trip matrix. 1.0 means stage 2 changed nothing.
         "demand_scalar": round(demand_scalar, 4),
+        # Cordon traffic only. Separate from the demand scalar because the two
+        # are different guesses with different evidence behind them.
+        "external_demand_scalar": round(external_scalar, 4),
         "fit_station_count": len(fit_stations),
         "holdout_station_count": len(holdout_stations),
         "holdout_fraction": holdout_frac,
