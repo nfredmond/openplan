@@ -717,6 +717,15 @@ def build_activitysim_input_bundle(
         "households": population_summary["households"],
         "persons": population_summary["persons"],
         "skim_mode": skim_mode,
+        # Carried in the SUMMARY, not only in the bundle manifest on disk. Every
+        # caller downstream reads this dict to build its own record, and a
+        # household count that does not travel with what kind of household it is
+        # becomes a number nobody can qualify two steps later.
+        "population": {
+            "status": population_block["status"],
+            "method": population_block["method"],
+            "fallback_reason": population_block.get("fallback_reason"),
+        },
         "caveats": manifest["caveats"],
     }
 

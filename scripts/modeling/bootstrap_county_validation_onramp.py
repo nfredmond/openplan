@@ -120,6 +120,11 @@ def summarize_activitysim_bundle(behavioral_manifest: dict[str, Any] | None) -> 
             "households": bundle_metadata.get("households"),
             "persons": bundle_metadata.get("persons"),
             "skim_mode": bundle_metadata.get("skim_mode"),
+            # Carried into the county manifest deliberately. Households fitted
+            # from real survey records and households expanded from the trip
+            # model's own zone attributes produce identical-looking counts, and
+            # this is the only field that tells a reader which one they have.
+            "population": bundle_metadata.get("population"),
         }
 
     if bundle_status == "failed":

@@ -139,7 +139,16 @@ class WhenTheMicrodataCannotBeReached(unittest.TestCase):
         self.assertIn("CENSUS_API_KEY", caveats[0])
 
     def test_asking_for_census_without_a_key_says_where_to_get_one(self) -> None:
-        with mock.patch.dict(os.environ, {}, clear=True):
+        # The synthesiser is replaced with something that fails if it is called
+        # at all, deliberately. Without that this test passed for the wrong
+        # reason: with the key check removed it went on to make a LIVE network
+        # request, got the adapter's own missing-key message back, and the
+        # assertion still matched. A mutation caught it.
+        def must_not_be_called(*_args, **_kwargs):
+            raise AssertionError("the missing key should have been caught before any network call")
+
+        with mock.patch.dict(os.environ, {}, clear=True), \
+             mock.patch.object(sp, "synthesize_study_area", must_not_be_called):
             with self.assertRaises(RuntimeError) as caught:
                 builder.build_population(ZONES, "census")
         self.assertIn("key_signup", str(caught.exception))
@@ -178,6 +187,94 @@ class WhatTheManifestCarries(unittest.TestCase):
             _, _, _, _, caveats = builder.build_population(ZONES, "auto")
 
         self.assertIn("behavioural coefficients", " ".join(caveats))
+
+
+class ItSurvivesTheWholeChainToTheCountyManifest(unittest.TestCase):
+    """Four hops from the bundle to the record a planner reads.
+
+    The bundle writes it, the bundle summary carries it, the prototype step
+    records it, and the county manifest surfaces it. Any hop that drops it
+    leaves a county run reporting 42,000 households with nothing saying where
+    they came from — which is the defect class this repository keeps finding:
+    a complete, tested capability nobody can reach.
+    """
+
+    def test_the_bundle_summary_carries_the_population_kind(self) -> None:
+        # Asserted by BUILDING a bundle, not by reading the source for the key.
+        # A source scan passes while the field is spelled and never filled, and
+        # that is the same mistake as guarding a claim by scanning a document.
+        import csv as csv_module
+        import json as json_module
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as workspace:
+            run_dir = Path(workspace) / "run"
+            (run_dir / "package").mkdir(parents=True)
+            (run_dir / "run_output").mkdir(parents=True)
+            (run_dir / "bundle_manifest.json").write_text(json_module.dumps({"run_name": "t"}))
+            (run_dir / "run_output" / "travel_time_skims.omx").write_bytes(b"not a real omx")
+            with (run_dir / "package" / "zone_attributes.csv").open("w", newline="") as handle:
+                writer = csv_module.DictWriter(handle, fieldnames=list(ZONES[0]))
+                writer.writeheader()
+                writer.writerows(ZONES)
+
+            summary = builder.build_activitysim_input_bundle(
+                screening_run_dir=str(run_dir),
+                output_dir=str(Path(workspace) / "bundle"),
+                population_source="scaffold",
+            )
+
+        self.assertEqual(summary["population"]["status"], "prototype_scaffold")
+        self.assertEqual(summary["population"]["method"], "deterministic_zone_attribute_expansion")
+        self.assertGreater(summary["households"], 0)
+
+    def test_the_county_manifest_surfaces_it(self) -> None:
+        import bootstrap_county_validation_onramp as onramp
+
+        summary = onramp.summarize_activitysim_bundle(
+            {
+                "steps": {
+                    "build_activitysim_input_bundle": {
+                        "status": "succeeded",
+                        "artifacts": {"bundle_dir": "/x", "bundle_manifest_path": "/x/manifest.json"},
+                        "metadata": {
+                            "land_use_rows": 34,
+                            "households": 42392,
+                            "persons": 100382,
+                            "skim_mode": "copy",
+                            "population": {
+                                "status": "fitted_to_published_totals",
+                                "method": "acs_pums_seed_iterative_proportional_updating",
+                                "fallback_reason": None,
+                            },
+                        },
+                    }
+                }
+            }
+        )
+        self.assertEqual(summary["population"]["status"], "fitted_to_published_totals")
+
+    def test_a_county_run_that_fell_back_carries_the_reason_that_far(self) -> None:
+        import bootstrap_county_validation_onramp as onramp
+
+        summary = onramp.summarize_activitysim_bundle(
+            {
+                "steps": {
+                    "build_activitysim_input_bundle": {
+                        "status": "succeeded",
+                        "artifacts": {},
+                        "metadata": {
+                            "population": {
+                                "status": "prototype_scaffold",
+                                "method": "deterministic_zone_attribute_expansion",
+                                "fallback_reason": "No CENSUS_API_KEY was configured.",
+                            }
+                        },
+                    }
+                }
+            }
+        )
+        self.assertIn("CENSUS_API_KEY", summary["population"]["fallback_reason"])
 
 
 if __name__ == "__main__":

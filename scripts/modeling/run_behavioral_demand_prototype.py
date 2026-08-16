@@ -78,6 +78,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--run-label", help="Optional label recorded in the runtime metadata")
     parser.add_argument("--force", action="store_true", help="Replace an existing output root")
+    parser.add_argument(
+        "--population",
+        choices=["auto", "census", "scaffold"],
+        default="auto",
+        help=(
+            "Where households come from. 'census' fits real Census microdata to each zone's "
+            "published totals and fails rather than degrading; 'scaffold' expands the screening "
+            "zone attributes, which are the same inputs the trip-based model uses."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -239,6 +249,7 @@ def run_behavioral_demand_prototype(
     container_network_mode: str | None = "none",
     run_label: str | None = None,
     force: bool = False,
+    population_source: str = "auto",
 ) -> dict[str, Any]:
     screening_path = Path(screening_run_dir).expanduser().resolve()
     if not screening_path.exists():
@@ -281,6 +292,7 @@ def run_behavioral_demand_prototype(
             output_dir=str(bundle_dir),
             skim_mode=skim_mode,
             force=False,
+            population_source=population_source,
         )
         bundle_manifest = read_json(Path(bundle_summary["manifest_path"]))
         record_step_finish(
@@ -297,6 +309,9 @@ def run_behavioral_demand_prototype(
                 "households": bundle_summary["households"],
                 "persons": bundle_summary["persons"],
                 "skim_mode": bundle_summary["skim_mode"],
+                # Which KIND of household this bundle contains. A count that
+                # travels without it becomes a number nobody can qualify later.
+                "population": bundle_summary["population"],
                 "bundle_type": bundle_manifest.get("bundle_type"),
             },
         )
@@ -446,6 +461,7 @@ def main() -> int:
         container_network_mode=args.container_network_mode,
         run_label=args.run_label,
         force=args.force,
+        population_source=args.population,
     )
     print(json.dumps(result, indent=2))
     return 0 if result["pipeline_status"] in {"prototype_preflight_complete", "behavioral_runtime_succeeded"} else 1
