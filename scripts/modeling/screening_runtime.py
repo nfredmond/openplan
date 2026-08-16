@@ -618,8 +618,20 @@ SQ_METRES_PER_SQ_MILE = 2_589_988.0
 
 #: Equilibrium assignment settings. The gap target is the standard one; the
 #: iteration ceiling exists so a pathological network cannot spin forever.
-ASSIGNMENT_MAX_ITERATIONS = 500
-ASSIGNMENT_RGAP_TARGET = 0.01
+#:
+#: OVERRIDABLE, and the reason is a measurement rather than a preference. On
+#: 2026-08-16 two runs whose demand differed by 0.001% were compared link by
+#: link: total network vehicle-miles matched to 0.047%, but 13% of links
+#: carrying real traffic differed by GEH 10 or more, with the diverging links
+#: split 318 up / 189 down. That is flow moving between near-equal-cost parallel
+#: routes, because a relative gap of 0.01 leaves the assignment about 1% short of
+#: equilibrium and both runs had hit the 500-iteration ceiling on the way.
+#:
+#: It matters because the dual-model comparison attributes a link's divergence to
+#: the demand model. Below this floor that attribution is false — the assignment
+#: produces the divergence on its own. A comparison run should tighten both.
+ASSIGNMENT_MAX_ITERATIONS = int(os.getenv("OPENPLAN_ASSIGNMENT_MAX_ITERATIONS", "500"))
+ASSIGNMENT_RGAP_TARGET = float(os.getenv("OPENPLAN_ASSIGNMENT_RGAP_TARGET", "0.01"))
 
 
 def study_area_state_fips(county_fips: str | None, zone_meta: dict[str, Any]) -> set[str]:
