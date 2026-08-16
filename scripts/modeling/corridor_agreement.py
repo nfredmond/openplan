@@ -281,6 +281,42 @@ def corridor_rollup(
     return corridors
 
 
+def noise_floor_disclosure(noise_floor: Mapping[str, Any] | None) -> str:
+    """What the assignment alone does to link volumes, before any demand differs.
+
+    MEASURED, NOT ASSUMED — and it was very nearly reported as a finding. On
+    2026-08-16 two runs whose demand differed by 0.001% were compared over the
+    same 28,670-link network: total vehicle-miles matched to 0.047%, and 13% of
+    the links carrying real traffic still differed by GEH 10 or more, 318 up and
+    189 down. Equilibrium assignment moves flow between near-equal-cost parallel
+    routes, and at a relative gap of 0.01 it has not finished deciding.
+
+    A comparison that does not state this invites its reader to attribute that
+    13% to the demand model, which is the one thing the whole exercise claims to
+    be able to do.
+    """
+    if not noise_floor:
+        return (
+            "THE ASSIGNMENT'S OWN CONTRIBUTION TO THESE DIFFERENCES HAS NOT BEEN MEASURED FOR THIS "
+            "comparison. Equilibrium assignment redistributes flow between near-equal-cost parallel "
+            "routes, so two runs with effectively identical demand still disagree link by link — "
+            "measured once at 13% of busy links at a relative gap of 0.01. Until the same "
+            "measurement is made here, divergence on any single corridor cannot be attributed to "
+            "the demand model. Measure it by re-assigning one model's own demand and comparing the "
+            "result against itself, then read only the divergence that exceeds it."
+        )
+    share = noise_floor.get("diverge_share_meaningful_links")
+    gap = noise_floor.get("relative_gap")
+    return (
+        "The assignment's own contribution was measured for this network by re-assigning one "
+        f"model's own demand and comparing it against itself: {share:.1%} of busy links diverged "
+        f"with no demand difference at all"
+        + (f", at a relative gap of {gap}." if gap is not None else ".")
+        + " Divergence at or below that level is the assignment deciding between parallel routes, "
+        "not the demand models disagreeing."
+    )
+
+
 def build_agreement_map(
     first_rows: Sequence[Mapping[str, Any]],
     second_rows: Sequence[Mapping[str, Any]],
@@ -290,6 +326,7 @@ def build_agreement_map(
     volume_column: str = "PCE_tot",
     minimum_volume: float = DEFAULT_MINIMUM_VOLUME,
     link_names: Mapping[int, Mapping[str, Any]] | None = None,
+    noise_floor: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The whole comparison: links, corridors, headline, and what it does not mean."""
     comparison = compare_link_volumes(
@@ -306,6 +343,11 @@ def build_agreement_map(
         "summary": agreement_summary(comparison),
         "network_alignment": comparison["network_alignment"],
         "settings": comparison["settings"],
+        "assignment_noise_floor": {
+            "measured": bool(noise_floor),
+            "measurement": dict(noise_floor) if noise_floor else None,
+            "note": noise_floor_disclosure(noise_floor),
+        },
         "corridors": corridors,
         "links": comparison["links"],
         "what_this_is_not": [
@@ -316,5 +358,6 @@ def build_agreement_map(
             "GEH thresholds are borrowed from model-versus-count validation, where one side is "
             "measured. They are used here because they are the yardstick a reviewer recognises, not "
             "because a validation standard has been met.",
+            noise_floor_disclosure(noise_floor),
         ],
     }

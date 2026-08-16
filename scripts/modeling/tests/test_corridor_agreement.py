@@ -269,6 +269,34 @@ class TheWholeAgreementMap(unittest.TestCase):
             for key in keys:
                 self.assertNotIn(forbidden, key.lower(), f"key '{key}' reports a blend")
 
+    def test_an_unmeasured_noise_floor_is_stated_as_unmeasured(self) -> None:
+        # The biggest caveat of all, and the one a reader would never think to
+        # ask for. Equilibrium assignment moves flow between near-equal-cost
+        # parallel routes, so two runs with identical demand still disagree link
+        # by link — measured at 13% of busy links on a real network. Silence
+        # here invites a reader to attribute that to the demand model, which is
+        # the one thing this comparison claims to be able to do.
+        result = build_agreement_map(
+            [link(1, 10_000)], [link(1, 12_000)], first_label="a", second_label="b"
+        )
+        floor = result["assignment_noise_floor"]
+        self.assertFalse(floor["measured"])
+        self.assertIsNone(floor["measurement"])
+        self.assertIn("HAS NOT BEEN MEASURED", floor["note"])
+        self.assertIn(floor["note"], result["what_this_is_not"])
+
+    def test_a_measured_noise_floor_is_reported_with_its_number(self) -> None:
+        result = build_agreement_map(
+            [link(1, 10_000)], [link(1, 12_000)],
+            first_label="a", second_label="b",
+            noise_floor={"diverge_share_meaningful_links": 0.13, "relative_gap": 0.01},
+        )
+        floor = result["assignment_noise_floor"]
+        self.assertTrue(floor["measured"])
+        self.assertIn("13.0%", floor["note"])
+        self.assertIn("0.01", floor["note"])
+        self.assertNotIn("HAS NOT BEEN MEASURED", floor["note"])
+
     def test_the_settings_used_travel_with_the_answer(self) -> None:
         result = build_agreement_map(
             [link(1, 10_000)], [link(1, 10_000)],
