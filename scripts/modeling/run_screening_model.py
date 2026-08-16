@@ -90,9 +90,22 @@ def main() -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
-    from screening_runtime import run_screening_model
+    from screening_runtime import ConfigurationError, run_screening_model
 
-    summary = run_screening_model(
+    # A setup problem is printed as a sentence and nothing else. Only
+    # ConfigurationError — anything unexpected still prints its full traceback,
+    # because a friendly line that hides a real crash is worse than the crash.
+    try:
+        summary = _run(run_screening_model, args)
+    except ConfigurationError as exc:
+        print(f"\n{exc}\n", file=sys.stderr)
+        return 2
+
+    return _finish(summary, args)
+
+
+def _run(run_screening_model, args):
+    return run_screening_model(
         name=args.name,
         boundary_geojson=args.boundary_geojson,
         county_fips=args.county_fips,
@@ -111,6 +124,9 @@ def main() -> int:
         hbo_scalar=args.hbo_scalar,
         nhb_scalar=args.nhb_scalar,
     )
+
+
+def _finish(summary, args) -> int:
     print(json.dumps(summary, indent=2))
     return 0
 

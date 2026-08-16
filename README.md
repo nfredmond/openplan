@@ -239,6 +239,19 @@ the **default public token**. It starts with `pk.` — the public prefix matters
 because a secret token (`sk.`) will not work in a browser. Without this key
 OpenPlan still runs, but every map is blank, and the map is most of the product.
 
+**If you plan to run travel models, add `CENSUS_API_KEY` now.** It is free, it
+arrives by email in a minute or two, and you get it here:
+[api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html).
+Click the activation link in the email — an unactivated key is refused the same
+way a missing one is.
+
+Every travel model starts from how many people, households and workers live in
+each area, and that comes from the US Census Bureau. The Census Bureau used to
+answer without a key and no longer does, so **without this key OpenPlan cannot
+build a model at all.** It will tell you so in the first second rather than
+failing partway through, but it cannot work around it. Nothing else in OpenPlan
+needs the key — maps, engagement, grants and reports are all unaffected.
+
 Everything else in the file is optional. OpenPlan works without it and says
 plainly which feature is unavailable rather than failing silently. The one worth
 adding later is `ANTHROPIC_API_KEY`, which turns on the AI assistant, comment

@@ -134,6 +134,104 @@ def buffered_bbox(bounds: tuple[float, float, float, float], miles: float) -> tu
     return (min_lon - lon_pad, min_lat - lat_pad, max_lon + lon_pad, max_lat + lat_pad)
 
 
+class ConfigurationError(RuntimeError):
+    """
+    Something about how this install is SET UP, not something that went wrong mid-run.
+
+    Separated so the CLI can print it as a sentence and exit, instead of burying it
+    under a traceback the reader has to scroll past. Deliberately narrow: only errors
+    this file authors are raised as one, so a genuine crash still prints in full rather
+    than being reduced to a friendly line that hides it.
+    """
+
+
+CENSUS_KEY_SIGNUP_URL = "https://api.census.gov/data/key_signup.html"
+
+CENSUS_KEY_MISSING_MESSAGE = (
+    "OpenPlan needs a Census API key to build a model.\n"
+    "\n"
+    "Every travel model starts from the population, households and workers living in\n"
+    "each area, and that comes from the US Census Bureau's ACS. The Census Bureau now\n"
+    "refuses requests that do not carry a key.\n"
+    "\n"
+    "A key is free and arrives by email in a minute or two:\n"
+    f"  {CENSUS_KEY_SIGNUP_URL}\n"
+    "\n"
+    "Then set CENSUS_API_KEY in openplan/.env.local (or in the environment of whatever\n"
+    "runs the modelling worker) and start the run again."
+)
+
+
+def census_key_failure(response: "requests.Response | None", body: str) -> str | None:
+    """
+    Whether the Census Bureau refused this for want of a usable key, and how to say so.
+
+    WHY THIS IS NOT `raise_for_status()`. A keyless request is not answered with an
+    error status. The API 302-redirects to `missing_key.html` and serves that page
+    with **HTTP 200**, so `raise_for_status()` passes, `response.json()` is handed a
+    page of HTML, and the run dies with `JSONDecodeError: Expecting value: line 1
+    column 1` — after minutes of boundary downloads, naming neither the cause nor the
+    remedy. Measured against the live API on 2026-08-15, including the smallest
+    possible query: keyless access is refused outright, not merely rate-limited.
+
+    The code this replaced was written when a key was optional (`if CENSUS_API_KEY`),
+    which was true of the Census API once and is true nowhere now.
+
+    Returns the sentence to raise, or None when the answer looks like real data.
+    """
+    if response is not None and "missing_key" in response.url:
+        return CENSUS_KEY_MISSING_MESSAGE
+    stripped = body.lstrip()
+    if stripped.startswith("<"):
+        # HTML where JSON was promised. An invalid or unactivated key lands here too,
+        # so the message names both rather than guessing which one it is.
+        #
+        # WHO DID WHAT MATTERS. An earlier draft read "because OpenPlan rejected the
+        # key it was given", which says the opposite of what happened and would send
+        # somebody looking for a bug in OpenPlan. The Census Bureau refused; OpenPlan
+        # is reporting the refusal.
+        detail = (
+            "OpenPlan did not send a key"
+            if not CENSUS_API_KEY
+            else "it did not accept the key OpenPlan sent"
+        )
+        return (
+            f"The Census Bureau answered with a web page instead of data: {detail}.\n"
+            "\n"
+            "If CENSUS_API_KEY is unset, get a free one and set it:\n"
+            f"  {CENSUS_KEY_SIGNUP_URL}\n"
+            "If it is set, check that the activation link in the sign-up email was clicked,\n"
+            "and that the key was copied whole.\n"
+            "\n"
+            f"Asked: {ACS_5_URL}"
+        )
+    return None
+
+
+def preflight_census_access() -> None:
+    """
+    Ask the Census API one tiny question before the run does any real work.
+
+    WHY IT IS A SEPARATE CALL. The ACS fetch happens inside the zone stage, behind the
+    boundary downloads — on a cold cache that is over two minutes of work before the
+    first thing that can fail on a misconfiguration every fresh install has. This
+    costs one request and moves that discovery to the first second.
+    """
+    if not CENSUS_API_KEY:
+        raise ConfigurationError(CENSUS_KEY_MISSING_MESSAGE)
+    try:
+        response = requests.get(
+            ACS_5_URL, params={"get": "NAME", "for": "state:06", "key": CENSUS_API_KEY}, timeout=30
+        )
+    except requests.RequestException as exc:
+        # Not a key problem. Say what actually happened rather than blaming the key —
+        # a wrong cause is worse than no cause.
+        raise ConfigurationError(f"Could not reach the Census API to check the key: {exc}") from exc
+    failure = census_key_failure(response, response.text)
+    if failure:
+        raise ConfigurationError(failure)
+
+
 def fetch_acs_tract_attributes(county_pairs: set[tuple[str, str]]) -> pd.DataFrame:
     rows: list[pd.DataFrame] = []
     for state_fips, county_fips in sorted(county_pairs):
@@ -146,6 +244,9 @@ def fetch_acs_tract_attributes(county_pairs: set[tuple[str, str]]) -> pd.DataFra
             params["key"] = CENSUS_API_KEY
         response = requests.get(ACS_5_URL, params=params, timeout=60)
         response.raise_for_status()
+        failure = census_key_failure(response, response.text)
+        if failure:
+            raise ConfigurationError(failure)
         data = response.json()
         if len(data) < 2:
             continue
@@ -1072,6 +1173,9 @@ def run_screening_model(
         result = fn(*args, **kwargs)
         stage_seconds[stage] = round(time.monotonic() - started, 2)
         return result
+
+    # Before any download: the one misconfiguration every fresh install has.
+    preflight_census_access()
 
     boundary_meta = _timed("boundary", resolve_boundary, boundary_geojson, county_fips, cache_path)
     boundary_path = write_boundary_artifact(boundary_meta["geometry"], boundary_dir)
