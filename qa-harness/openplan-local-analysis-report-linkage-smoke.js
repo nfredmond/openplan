@@ -353,10 +353,18 @@ async function main() {
     assertEqual(reportRun.sort_order, 0, 'Report run link sort order drifted');
     notes.push('Verified durable report_runs linkage between the report and source analysis run.');
 
-    await page.goto(`${baseUrl}/reports/${ids.reportId}`, { waitUntil: 'networkidle' });
+    /*
+      THE LINKED-RUN EVIDENCE IS UNDER "EVIDENCE". The report console is tabbed
+      and opens on "packet"; ReportCompositionAudit — which renders "Linked
+      runs" and each run's title — lives in the evidence tab. A closed tab is
+      `display: none` rather than unmounted, so this assertion used to time out
+      on text that was on the page the whole time.
+    */
+    await page.goto(`${baseUrl}/reports/${ids.reportId}?tab=evidence`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: reportTitle, exact: false }).waitFor({ timeout: 20000 });
-    await page.getByText(ids.sourceAnalysisRunTitle, { exact: false }).first().waitFor({ timeout: 20000 });
-    await page.getByText(/Linked runs/i).first().waitFor({ timeout: 20000 });
+    const evidencePanel = page.locator('[data-page-tab-panel="evidence"][data-page-tab-panel-state="open"]');
+    await evidencePanel.getByText(ids.sourceAnalysisRunTitle, { exact: false }).first().waitFor({ timeout: 20000 });
+    await evidencePanel.getByText(/Linked runs/i).first().waitFor({ timeout: 20000 });
     await screenshot('local-analysis-report-linkage-04-report-detail');
 
     // The packet format defaults to PDF; the generate button label follows it.
@@ -372,9 +380,15 @@ async function main() {
       page.getByRole('button', { name: /Generate HTML packet/i }).click(),
     ]);
     await page.waitForLoadState('networkidle');
-    await page.getByText(/Latest HTML artifact/i).waitFor({ timeout: 30000 });
 
-    const iframe = page.locator('iframe[title="Latest report artifact preview"]');
+    // Generate is page chrome (ReportDetailControls sits above the tab strip),
+    // so it worked from the evidence tab. What it produces is rendered by
+    // ReportNavigationPreview inside "packet", so that is where you look.
+    await page.goto(`${baseUrl}/reports/${ids.reportId}?tab=packet`, { waitUntil: 'networkidle' });
+    const packetPanel = page.locator('[data-page-tab-panel="packet"][data-page-tab-panel-state="open"]');
+    await packetPanel.getByText(/Latest HTML artifact/i).waitFor({ timeout: 30000 });
+
+    const iframe = packetPanel.locator('iframe[title="Latest report artifact preview"]');
     await iframe.waitFor({ timeout: 30000 });
     const srcDoc = (await iframe.getAttribute('srcdoc')) || '';
     for (const expected of [

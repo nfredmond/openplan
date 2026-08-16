@@ -403,7 +403,24 @@ async function main() {
     await page.getByText(packageTitle, { exact: false }).first().waitFor({ timeout: 30000 });
     await page.getByText(/Project aerial summary \(saved\)/i).first().waitFor({ timeout: 30000 });
     await page.getByText(/Mission AOI & export/i).first().waitFor({ timeout: 30000 });
-    await page.getByRole('link', { name: /Export DJI JSON/i }).waitFor({ timeout: 30000 });
+
+    /*
+      THE DJI EXPORT MOVED, AND IT MOVED UP. This asserted an "Export DJI JSON"
+      link that exported the AOI PERIMETER — a polygon, not a flight. It was
+      deliberately removed when the flight-plan section landed, which exports
+      the actual survey grid for DJI Pilot 2, Litchi or GIS, and the migration
+      note in the mission page says so in as many words.
+
+      So this asserts the successor rather than being deleted: a mission detail
+      that offers no way to get a flight out of OpenPlan is still a defect, and
+      dropping the assertion would have stopped anyone noticing. Exports
+      themselves unlock only after a grid is generated and saved, so what is
+      proven here is that the section a planner needs is on the page.
+    */
+    await page
+      .getByRole('heading', { name: /Survey flight plan & exports/i })
+      .first()
+      .waitFor({ timeout: 30000 });
     await screenshot('local-aerial-evidence-smoke-02-mission-detail');
     notes.push('Asserted mission detail renders package log, cached project posture, AOI state, and DJI export state.');
 

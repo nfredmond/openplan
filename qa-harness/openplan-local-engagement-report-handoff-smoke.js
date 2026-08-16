@@ -356,9 +356,36 @@ async function main() {
     if (!ids.reportId) {
       throw new Error('Report detail URL did not expose a report id after handoff creation.');
     }
-    await page.getByText(/Engagement campaign summary/i).first().waitFor({ timeout: 20000 });
-    await page.getByText(/Engagement handoff/i).first().waitFor({ timeout: 20000 });
-    notes.push('Created a handoff report from the engagement campaign detail surface.');
+    /*
+      THE TWO THINGS THIS ASSERTS SIT AT DIFFERENT DEPTHS, and only one of them
+      needed a tab.
+
+      "Engagement campaign summary" is a SECTION TITLE. Section titles are
+      rendered by ReportCompositionAudit, which lives in the report console's
+      "evidence" tab — so on the tab a report opens on ("packet") it was present
+      and `display: none`, and the old assertion timed out with the report
+      sitting right there.
+
+      "Engagement handoff packet for …" is the report's own SUMMARY, written by
+      the handoff builder. It renders above the tab strip, as page chrome, so it
+      is visible whichever tab is open and must NOT be scoped to one — scoping
+      it would assert a layout fact that is not true.
+
+      The distinction is the point: a tab-scoped assertion says "this surface
+      carries this fact", and saying that about page chrome would be wrong.
+    */
+    await page.goto(`${baseUrl}/reports/${ids.reportId}?tab=evidence`, { waitUntil: 'networkidle' });
+
+    // Page chrome: the report's summary, above the tabs, on every tab.
+    await page.getByText(/Engagement handoff packet for/i).first().waitFor({ timeout: 20000 });
+
+    // Tab content: the section list the handoff builder wrote.
+    await page
+      .locator('[data-page-tab-panel="evidence"][data-page-tab-panel-state="open"]')
+      .getByText(/Engagement campaign summary/i)
+      .first()
+      .waitFor({ timeout: 20000 });
+    notes.push('Created a handoff report, and found its summary in the page chrome and its section list under the evidence tab.');
 
     const reportSection = firstRow(
       await restSelect('report_sections', {
@@ -395,9 +422,20 @@ async function main() {
       page.getByRole('button', { name: /Generate HTML packet/i }).click(),
     ]);
     await page.waitForLoadState('networkidle');
-    await page.getByText(/Latest HTML artifact/i).waitFor({ timeout: 30000 });
 
-    const iframe = page.locator('iframe[title="Latest report artifact preview"]');
+    /*
+      GENERATE IS PAGE CHROME; THE RESULT IS NOT. `ReportDetailControls` sits in
+      the <header> above the tab strip, so the format select and the generate
+      button work from whichever tab is open — which is why this step passed
+      while standing on "evidence". The artifact preview it produces is rendered
+      by ReportNavigationPreview inside the "packet" tab, so the packet is where
+      you go to look at what you just built.
+    */
+    await page.goto(`${baseUrl}/reports/${ids.reportId}?tab=packet`, { waitUntil: 'networkidle' });
+    const packetPanel = page.locator('[data-page-tab-panel="packet"][data-page-tab-panel-state="open"]');
+    await packetPanel.getByText(/Latest HTML artifact/i).waitFor({ timeout: 30000 });
+
+    const iframe = packetPanel.locator('iframe[title="Latest report artifact preview"]');
     await iframe.waitFor({ timeout: 30000 });
     const srcDoc = (await iframe.getAttribute('srcdoc')) || '';
     for (const expected of [

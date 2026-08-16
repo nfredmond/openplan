@@ -102,8 +102,18 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ steps.stack.outputs.supabase_url }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.stack.outputs.anon_key }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ steps.stack.outputs.service_role_key }}
+        # RUN THEM ALL, THEN FAIL. `|| exit 1` stopped at the first failure, so
+        # one night reported one broken smoke and said nothing about the five
+        # behind it. This job had never passed since the day it was created
+        # (2026-08-05); each fix bought exactly one more night of information,
+        # which is how five stale surfaces stayed invisible for ten days.
+        #
+        # A run now reports the state of every smoke, and the summary at the end
+        # is what somebody reads instead of scrolling. Still fails the job — the
+        # point is a complete work-list, not a softer gate.
         run: |
           set -u
+          failed=""
           for smoke in \
             local-spine-smoke \
             local-grants-flow-smoke \
@@ -112,8 +122,23 @@ jobs:
             local-analysis-report-linkage-smoke \
             local-aerial-evidence-smoke; do
             echo "=== npm run $smoke"
-            npm run "$smoke" || exit 1
+            if npm run "$smoke"; then
+              echo "=== PASS $smoke"
+            else
+              echo "=== FAIL $smoke"
+              failed="$failed $smoke"
+            fi
           done
+
+          echo ""
+          echo "──────── smoke summary ────────"
+          if [ -n "$failed" ]; then
+            for smoke in $failed; do echo "FAILED: $smoke"; done
+            echo "───────────────────────────────"
+            exit 1
+          fi
+          echo "all smokes passed"
+          echo "───────────────────────────────"
 
       - name: App log on failure
         if: failure()
