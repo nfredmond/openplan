@@ -1,0 +1,239 @@
+{
+  "schema_version": "openplan.agreement_study_registry.v1",
+  "question": "Does agreement between two independent demand models predict accuracy against observed traffic counts, in counties where counts exist?",
+  "why_it_matters": "Only four state DOTs publish AADT feeds this repository can validate against, so in most of the country a corridor number has no check at all. Two independent demand models agreeing is evidence that is available everywhere. If agreement predicts accuracy, it becomes a usable confidence signal where counts do not exist. If it does not, that negative result stops a bad idea and is still a success.",
+  "selection": {
+    "seed": 20260817,
+    "regions": [
+      "CA",
+      "CO",
+      "OR",
+      "WA"
+    ],
+    "eligible_tract_range": [
+      12,
+      150
+    ],
+    "bands": [
+      {
+        "name": "small",
+        "min_tracts": 12,
+        "max_tracts": 34
+      },
+      {
+        "name": "medium",
+        "min_tracts": 35,
+        "max_tracts": 74
+      },
+      {
+        "name": "large",
+        "min_tracts": 75,
+        "max_tracts": 150
+      }
+    ],
+    "counties_per_cell": 2,
+    "excluded_counties": [
+      "06057"
+    ],
+    "excluded_reason": "Nevada County (06057) is excluded because every method decision in this lane was made while looking at it. Including it would report the fit of the choices to the county that shaped them.",
+    "candidates_considered": 84,
+    "cells_under_filled": []
+  },
+  "pre_registered_rules": {
+    "agreement_thresholds": {
+      "geh_close": 5.0,
+      "geh_marginal": 10.0,
+      "minimum_volume": 100.0,
+      "source": "the shipped constants in corridor_agreement.py, unchanged"
+    },
+    "minimum_stations_per_county": 8,
+    "minimum_stations_note": "A county whose clipped count set has fewer than 8 stations is DROPPED AND LOGGED, never quietly kept: a median error over three stations is not an accuracy figure.",
+    "calibration": "Neither side of any comparison may be calibrated. Calibration alters link capacities and free-flow times, so the network would no longer be held constant. The batch driver refuses any run manifest carrying a calibration record.",
+    "convergence": {
+      "rgap_target": 0.0005,
+      "max_iterations": 3000,
+      "note": "Both sides of every comparison run at these settings. At the default gap the assignment generates corridor divergence of its own that a reader cannot distinguish from the demand models disagreeing."
+    },
+    "reported_figures": "Only the holdout half is reported, analysed once. Accuracy comes from validation_summary.json computed on independent stations \u2014 never from a calibration's own holdout_median_ape, which is a best-of-N selection score.",
+    "tuning": "Any threshold change is development-only, appended to this registry with the date and the reason, and never applied retroactively to a holdout result already read."
+  },
+  "counties": {
+    "dev": [
+      {
+        "county_fips": "06047",
+        "region": "CA",
+        "tracts": 63,
+        "band": "medium",
+        "half": "dev"
+      },
+      {
+        "county_fips": "06069",
+        "region": "CA",
+        "tracts": 12,
+        "band": "small",
+        "half": "dev"
+      },
+      {
+        "county_fips": "06107",
+        "region": "CA",
+        "tracts": 103,
+        "band": "large",
+        "half": "dev"
+      },
+      {
+        "county_fips": "08014",
+        "region": "CO",
+        "tracts": 24,
+        "band": "small",
+        "half": "dev"
+      },
+      {
+        "county_fips": "08059",
+        "region": "CO",
+        "tracts": 146,
+        "band": "large",
+        "half": "dev"
+      },
+      {
+        "county_fips": "08101",
+        "region": "CO",
+        "tracts": 58,
+        "band": "medium",
+        "half": "dev"
+      },
+      {
+        "county_fips": "41005",
+        "region": "OR",
+        "tracts": 87,
+        "band": "large",
+        "half": "dev"
+      },
+      {
+        "county_fips": "41029",
+        "region": "OR",
+        "tracts": 52,
+        "band": "medium",
+        "half": "dev"
+      },
+      {
+        "county_fips": "41041",
+        "region": "OR",
+        "tracts": 19,
+        "band": "small",
+        "half": "dev"
+      },
+      {
+        "county_fips": "53011",
+        "region": "WA",
+        "tracts": 115,
+        "band": "large",
+        "half": "dev"
+      },
+      {
+        "county_fips": "53015",
+        "region": "WA",
+        "tracts": 30,
+        "band": "small",
+        "half": "dev"
+      },
+      {
+        "county_fips": "53077",
+        "region": "WA",
+        "tracts": 57,
+        "band": "medium",
+        "half": "dev"
+      }
+    ],
+    "holdout": [
+      {
+        "county_fips": "06007",
+        "region": "CA",
+        "tracts": 54,
+        "band": "medium",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "06039",
+        "region": "CA",
+        "tracts": 34,
+        "band": "small",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "06053",
+        "region": "CA",
+        "tracts": 104,
+        "band": "large",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "08035",
+        "region": "CO",
+        "tracts": 72,
+        "band": "medium",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "08077",
+        "region": "CO",
+        "tracts": 33,
+        "band": "small",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "08123",
+        "region": "CO",
+        "tracts": 83,
+        "band": "large",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "41003",
+        "region": "OR",
+        "tracts": 22,
+        "band": "small",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "41017",
+        "region": "OR",
+        "tracts": 45,
+        "band": "medium",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "41067",
+        "region": "OR",
+        "tracts": 134,
+        "band": "large",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "53029",
+        "region": "WA",
+        "tracts": 24,
+        "band": "small",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "53063",
+        "region": "WA",
+        "tracts": 130,
+        "band": "large",
+        "half": "holdout"
+      },
+      {
+        "county_fips": "53073",
+        "region": "WA",
+        "tracts": 54,
+        "band": "medium",
+        "half": "holdout"
+      }
+    ]
+  },
+  "counts": {
+    "selected": 24,
+    "dev": 12,
+    "holdout": 12
+  }
+}
