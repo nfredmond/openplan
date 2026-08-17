@@ -17,16 +17,24 @@
 #
 # NodeODM stays on the default bridge network with its port published to the
 # host, which is how the host-networked worker reaches it at localhost:3001.
+#
+# THE PORT IS BOUND TO 127.0.0.1, AND THAT IS LOAD-BEARING. NodeODM has no
+# authentication of its own here: anything that can reach the port can list
+# tasks, download the agency's orthomosaics and point clouds, and submit
+# photogrammetry jobs that eat all CPU and RAM. Published as "3001:3000" this
+# compose file handed that to the whole office LAN (found 2026-08-16). Only
+# the worker on this same machine ever needs to talk to NodeODM — that is the
+# entire point of the worker's mandatory bearer tokens.
 
 services:
   nodeodm:
     image: opendronemap/nodeodm
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3001:3000"
     # Photogrammetry is memory-hungry. Give Docker as much RAM as you can
     # spare; a 200-photo mission wants 8 GB or more. NodeODM itself reports
-    # what it has at http://localhost:3001/info.
+    # what it has at http://localhost:3001/info (from this machine only).
 
   odm-worker:
     build: .
