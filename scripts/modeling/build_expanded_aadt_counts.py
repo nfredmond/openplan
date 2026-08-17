@@ -151,6 +151,10 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
         # Say so rather than let a blank year read as an oversight — or worse,
         # let some other source's year be assumed for it.
         notes += "; count vintage not published by this source"
+    # Stamped here, beside the rest of the provenance, because whether a station
+    # measures a road the network contains is a fact about the SOURCE — not a
+    # judgement the validator could make later from the row alone.
+    role, role_reason = count_sources.station_role(prov, desc)
     return {
         "station_id": f"{prov['station_prefix']}_RTE{rte}_{tag}",
         "label": f"{facility} at {desc.title()}" if desc else facility,
@@ -168,6 +172,8 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
         "bbox_min_lat": round(pt["lat"] - BOX_DEG, 5),
         "bbox_max_lon": round(pt["lon"] + BOX_DEG, 5),
         "bbox_max_lat": round(pt["lat"] + BOX_DEG, 5),
+        "station_role": role,
+        "station_role_reason": role_reason,
         "notes": notes,
     }
 
@@ -257,7 +263,7 @@ def main():
     fields = ["station_id", "label", "facility_name", "count_year", "count_type", "direction",
               "observed_volume", "source_agency", "source_description", "candidate_model_names",
               "candidate_link_types", "exclude_model_names", "bbox_min_lon", "bbox_min_lat",
-              "bbox_max_lon", "bbox_max_lat", "notes"]
+              "bbox_max_lon", "bbox_max_lat", "station_role", "station_role_reason", "notes"]
     out_rows = []
     unmatched = []
     # Stations without a postmile sort last within their route, deterministically.

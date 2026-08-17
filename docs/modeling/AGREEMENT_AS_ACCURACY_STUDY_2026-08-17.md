@@ -139,10 +139,43 @@ station**. A link should carry one count; many-to-one is itself a detectable
 matching failure.
 
 This inflates every accuracy figure in this document, misleads a planner about
-their own model, and would poison any calibration fitted to these counts. **It
-must be fixed before any count-fitting work, nationwide or otherwise.** The fix
-belongs in the per-feed registry — "Ramp" is a WSDOT spelling, not a universal
-one — with a place-free many-to-one refusal alongside it.
+their own model, and would poison any calibration fitted to these counts.
+
+### FIXED 2026-08-17, and here is what it moved
+
+Each registry entry now declares how ITS publisher marks a station that does not
+measure a mainline (`non_mainline_patterns` in `count_sources.py`). WSDOT marks
+ramps in its Location text; ODOT marks both ramps and numbered CONNECTIONS;
+Caltrans and CDOT publish neither and therefore declare nothing. The count
+builder stamps `station_role` on every row, and the validator sets those
+stations aside before matching — reporting how many and why, never quietly.
+
+Re-validated across all 24 study counties, same count files, same project
+databases, only the exclusion differing:
+
+| | before | after |
+|---|---:|---:|
+| matched stations | 3,658 | 2,696 |
+| median absolute error | 120.9% | **100.0%** |
+| model ÷ observed | 2.21 | **1.90** |
+| within the 30% gate | 13.8% | 16.6% |
+
+**Every California and Colorado county is identical before and after** — the
+control that shows the rule fires only where its feed declared it. The movement
+is entirely in Oregon and Washington, and it is large where ramps dominated:
+Cowlitz County WA 280.7% → 83.1% (ratio 3.81 → 1.43), Klickitat 135.9% → 76.4%,
+Hood River OR 296.2% → 139.2%.
+
+**The headline figures elsewhere in this document are the pre-fix ones**, and
+are left as they were rather than restated: they are what the study actually
+ran on. The direction of the correction is that the models are somewhat better
+than this document reports, and the ~1.8-1.9× over-assignment survives it
+unchanged.
+
+Still open: **29% of matched stations share a model link with another station**,
+which no per-feed rule addresses. A link should carry one count; many-to-one
+needs a place-free refusal or a documented tie-break, and it is the next thing
+to look at in this area.
 
 ### 3. About 8% of counties contain a zone that can reach nothing
 

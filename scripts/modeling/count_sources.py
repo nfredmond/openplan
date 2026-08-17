@@ -25,7 +25,8 @@ here covers any state that publishes one (most do).
 from __future__ import annotations
 
 import json
-from typing import Any
+import re
+from typing import Any, Mapping
 
 # region -> AADT FeatureServer. `fields` maps this source's attribute names to
 # the normalized keys. A source with a single directional-total AADT field uses
@@ -76,6 +77,10 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
             "route": "RouteIdentifier", "postmile": "AccumulatedRouteMile",
             "description": "Location", "aadt": "AADT",
         },
+        # WSDOT counts ramps as their own stations ("OFF RAMP WYE CONNECTION",
+        # "TODD RD ON RAMP"). See `station_role` for why they must not be
+        # compared against a screening network that has no ramp links.
+        "non_mainline_patterns": [r"\bramps?\b"],
     },
     # Colorado — CDOT "Highways: Traffic Counts" AADT segments (latest year).
     # Linework → the normalizer takes each segment's centroid. Single total AADT.
@@ -117,6 +122,12 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
             "route": "HWYNUMB", "postmile": "MP",
             "description": "LOCATION", "aadt": "AADT",
         },
+        # ODOT publishes ramp counts ("SB I-5 off-ramp") and, separately, counts
+        # on numbered CONNECTIONS — short connector highways between routes
+        # ("HAINES RD. CONN. NO. 3"), which are ramps by another name and are
+        # 300 of this feed's stations in the study counties. Both spellings are
+        # declared because the feed uses both, with and without punctuation.
+        "non_mainline_patterns": [r"\bramps?\b", r"\bconn\.?\s*(?:no\.?\s*)?\d+"],
     },
     # To add a state: append its AADT FeatureServer /query URL + field map + the
     # provenance keys above (agency and station_prefix are mandatory). A
@@ -154,7 +165,51 @@ def source_provenance(region: str) -> dict[str, Any]:
         "route_label_prefix": src.get("route_label_prefix", ""),
         "count_year": src.get("count_year"),
         "query_url": src.get("query_url"),
+        "non_mainline_patterns": tuple(src.get("non_mainline_patterns", ())),
     }
+
+
+MAINLINE_ROLE = "mainline"
+NOT_MAINLINE_ROLE = "not_mainline"
+
+
+def station_role(provenance: Mapping[str, Any], description: str | None) -> tuple[str, str]:
+    """Whether a count station measures a road the screening network contains.
+
+    ================================================= WHY THIS EXISTS AT ALL
+
+    A ramp count is a real count of a real facility. The screening network has
+    no ramp links — it is built from OSM's road hierarchy at a resolution where
+    a freeway is one line — so the nearest thing the matcher can pair a ramp
+    count with is the mainline it leaves. Measured 2026-08-17 in Cowlitz County,
+    Washington: three WSDOT ramp stations counting 410, 510 and 530 vehicles a
+    day were all matched to the mainline carrying 29,040, reporting errors of
+    71x, 57x and 55x — while the genuine mainline station on that same link
+    (37,000 observed) matched it correctly at 0.8.
+
+    Across the eleven development counties this affected 23% of matched
+    stations and carried a median error of 258%. It makes a model look far
+    worse than it is, and it would poison any calibration fitted to the counts.
+
+    ==================================================== WHY IT IS PER-FEED
+
+    "Ramp" is a WSDOT spelling and "CONN. NO. 3" is an ODOT one; Caltrans and
+    CDOT publish no such stations at all. So each registry entry declares how
+    ITS publisher marks a non-mainline station, and this function only applies
+    what the feed declared. Nothing here knows about any particular place, and
+    a feed that declares nothing gets every station treated as mainline — which
+    is exactly the behaviour before this existed.
+    """
+    text = str(description or "")
+    for pattern in provenance.get("non_mainline_patterns", ()):
+        if re.search(pattern, text, re.IGNORECASE):
+            return (
+                NOT_MAINLINE_ROLE,
+                f"{provenance.get('agency', 'this source')} publishes this as a ramp or connector "
+                "count; the screening network has no such link, so comparing it against the "
+                "mainline it leaves would measure the pairing rather than the model.",
+            )
+    return MAINLINE_ROLE, ""
 
 
 def _centroid(geom: dict[str, Any]) -> tuple[float, float] | None:

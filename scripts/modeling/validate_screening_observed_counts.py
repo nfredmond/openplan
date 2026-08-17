@@ -460,6 +460,7 @@ def build_summary(
     required_matches: int,
 ) -> dict[str, Any]:
     matched = [row for row in results if row["match_status"] == "matched"]
+    excluded_not_mainline = [row for row in results if row["match_status"] == "excluded_not_mainline"]
     apes = [float(row["absolute_percent_error"]) for row in matched if row.get("absolute_percent_error") is not None]
     observed = [float(row["observed_volume"]) for row in matched]
     modeled = [float(row["modeled_daily_pce"]) for row in matched]
@@ -522,6 +523,19 @@ def build_summary(
         "stations_total": len(results),
         "stations_matched": len(matched),
         "stations_missed": len(results) - len(matched),
+        # Reported, never merely absent. A count set that quietly shrank is
+        # indistinguishable from one the DOT published fewer stations for, and
+        # the number of set-aside stations is itself worth reading: where it is
+        # large, most of this feed's stations measure ramps.
+        "stations_excluded_not_mainline": len(excluded_not_mainline),
+        "stations_excluded_note": (
+            f"{len(excluded_not_mainline)} station(s) measure a ramp or connector this network has "
+            "no link for, so they were set aside before matching rather than compared against the "
+            "mainline they leave. They are in validation_results.csv with match_status "
+            "'excluded_not_mainline' and the source's own reason."
+            if excluded_not_mainline
+            else "No station was set aside; every published station measures a road this network contains."
+        ),
         "screening_gate": {
             "status_label": status_label,
             "required_matches": required_matches,
@@ -664,6 +678,8 @@ def write_markdown_report(path: Path, summary: dict[str, Any], results: list[dic
         f"- Geometry source: `{summary['model_geometry_source']}`",
         f"- Project DB: `{summary['model_project_db']}`",
         f"- Matched stations: **{summary['stations_matched']} / {summary['stations_total']}**",
+        f"- Set aside as ramp/connector counts: **{summary.get('stations_excluded_not_mainline', 0)}** "
+        f"— {summary.get('stations_excluded_note', '')}",
         f"- Gate status: **{summary['screening_gate']['status_label']}**",
         "",
         "## Gate reasons",
@@ -802,6 +818,31 @@ def run_validation_bundle(
             "candidate_model_names": station.get("candidate_model_names", ""),
             "notes": station.get("notes", ""),
         }
+
+        # A station the SOURCE marked as measuring something the network does
+        # not contain — a ramp or a connector — is set aside before matching.
+        # Left in, it is paired with the mainline it leaves and reports an error
+        # of tens of times, which is the pairing being wrong rather than the
+        # model. A count set that never declared a role behaves exactly as
+        # before, so a hand-supplied CSV is unaffected.
+        station_role = (station.get("station_role") or "").strip().lower()
+        if station_role and station_role != "mainline":
+            result["match_status"] = "excluded_not_mainline"
+            result["notes"] = "; ".join(
+                part for part in (station.get("notes", ""), station.get("station_role_reason", "")) if part
+            )
+            results.append(result)
+            candidate_audit.append(
+                {
+                    "station_id": station.get("station_id", ""),
+                    "label": station.get("label", ""),
+                    "observed_volume": int(round(observed_volume)) if observed_volume is not None else "",
+                    "best_model_link_id": "",
+                    "candidates": [],
+                    "excluded_reason": station.get("station_role_reason", ""),
+                }
+            )
+            continue
 
         if best_model_link is not None and observed_volume is not None and observed_volume > 0:
             modeled_volume = float(best_model_link["volume"] or 0)
