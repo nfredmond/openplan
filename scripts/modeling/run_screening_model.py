@@ -127,6 +127,16 @@ def parse_args() -> argparse.Namespace:
             "disclosed 'calibrated_to_counts' claim and does not by itself make a run pass the gate."
         ),
     )
+    parser.add_argument(
+        "--reuse-network-from-run",
+        help=(
+            "Adopt the road network, zone centroids and gateways of an earlier run made with "
+            "--keep-project, instead of downloading OSM again. Required when two runs are to be "
+            "COMPARED: OSM changes continuously, so two separately-downloaded networks are two "
+            "different networks and any difference in link volumes cannot be attributed to the "
+            "demand. Refuses if the study areas or zone systems differ."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -176,6 +186,7 @@ def _run(run_screening_model, args):
         calibrate_counts_csv=args.calibrate_to_counts,
         counts_mode=args.counts,
         calibrate_to_counts=args.calibrate,
+        reuse_network_from=args.reuse_network_from_run,
     )
 
 

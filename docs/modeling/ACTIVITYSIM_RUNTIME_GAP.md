@@ -1,100 +1,100 @@
-# What actually stands between OpenPlan and an ActivitySim trip list
+# ActivitySim: what stood between OpenPlan and a trip list, and what closed it
 
-> **DATED RECORD — 2026-08-16.** Everything below was measured against the
-> installed ActivitySim 1.5.1 and a real Nevada County screening run on that day,
-> not recalled. Re-measure before trusting any count here: the example
-> configurations change between ActivitySim releases.
+> **DATED RECORD — first written 2026-08-16 describing an OPEN gap; rewritten the
+> same day when the gap closed.** Everything below was measured against
+> ActivitySim 1.5.1 and a real Nevada County run, not recalled. Re-measure before
+> trusting any count here: the example configurations change between releases.
 
-## Why this document exists
+## The gap is CLOSED. ActivitySim runs an OpenPlan study area.
 
-Three previous agents told Nathaniel the two-model comparison was too large and
-did not start it. "Too large" is not a finding — it is the absence of one. This
-file replaces it with numbers, so the next session inherits a work-list.
+Measured 2026-08-16 on Nevada County, California (26 tract zones):
 
-Everything downstream of "ActivitySim produced a trip list" is now built and
-tested:
+| | |
+|---|---|
+| Households simulated | 42,392 (fitted from real Census PUMS records) |
+| Persons | 100,382 |
+| Wall clock | **164 seconds** |
+| Peak memory | 3.0 GB |
+| Trips produced | **312,385** |
+| Configuration | ActivitySim's stock `prototype_mtc`, unmodified |
 
-| Piece | Where | State |
-|---|---|---|
-| Real synthetic population | `scripts/modeling/population_synthesis.py`, `census_pums.py`, `synthetic_population.py` | Working, runs for any US study area |
-| Population wired into the bundle | `build_activitysim_input_bundle.py --population census` | Working |
-| Trip list → assignable demand package | `scripts/modeling/activitysim_demand_package.py` | Working, tested |
-| Demand package → assignment | `run_screening_model.py --demand-package-dir` | Working since `988ffc56`, round-trip proven |
-| Agreement map | `corridor_agreement.py` + `compare_behavioral_demand_outputs.py --link-volumes-*` | Working, proven on 28,670 real links |
+The route is `scripts/modeling/activitysim_mtc_inputs.py` plus
+`build_activitysim_input_bundle.py --population census --config-package mtc`.
 
-**The one missing step is ActivitySim itself producing that trip list.**
+## How it was closed, and why the stock configuration is untouched
 
-## The measured blocker: skims
+The blocker was the skims. OpenPlan wrote one matrix; the stock specifications
+reference **155 distinct skim names**, and the stock skim file contains **826
+matrices** (the difference is 15 `*_WAIT` families the shipped specs never
+read, plus the period suffixes).
 
-ActivitySim's mode and destination choice models read travel times, distances
-and costs out of a skim file, by name, per time period.
+Rather than shrink the model or author coefficients, the adapter now emits the
+whole stock inventory:
 
-```
-OpenPlan's run_output/travel_time_skims.omx  ......  1 matrix  ('travel_time')
-prototype_mtc's specs reference ..................  148 distinct matrices
-    of which transit ............................  124
-```
+- **Auto times** — real free-flow travel time from the OpenPlan network,
+  written identically into all five time periods. Congestion by time of day is
+  not represented, and every artifact says so.
+- **Auto and non-motorised distances** — real routed network distance in miles.
+- **Transit and tolls** — zero, in every family and period. This is not a claim
+  that no transit exists: the stock specifications test `TOTIVT > 0` to decide
+  whether a transit alternative is available at all, so an all-zero transit skim
+  is the configuration's own documented way of saying "no transit service is
+  represented in this run."
 
-Counted on 2026-08-16 by scanning every utility-expression CSV under
-`activitysim/examples/prototype_mtc/configs` for `skims['NAME']`,
-`od_skims['NAME']` and `odt_skims['NAME']`.
+The bundle's own `settings.yaml` is a small overlay (`inherit_settings: True`)
+passed as the FIRST `-c`, with the untouched stock directory as the second.
+Nothing in site-packages is edited. The bundle records a SHA-256 over every
+stock configuration file, and `workers/activitysim_worker/runtime.py`
+recomputes it before every run — a stock directory that has changed since the
+bundle was built fails the run rather than quietly running something else.
 
-This is the whole reason the bundle's generated `settings.yaml` says `models: []`
-and calls itself a starter. It is honest about being a starter; it has never
-been able to run a model.
+Two traps that cost real time, recorded so the next session does not pay again:
 
-### The two shapes of a solution
+1. **A bracket-only scan of the specs misses six skim names.** `accessibility.csv`
+   and `annotate_persons_workplace.csv` reference the generic `WLK_TRN_WLK_*`
+   family with tuple syntax — `skim_od[('WLK_TRN_WLK_IVT', 'AM')]` — not
+   `skims['NAME']`. The scan in `required_skim_names` reads both spellings.
+2. **The screening skim OMX is indexed by aequilibrae NODE id, not zone id.**
+   The node ids are minted above the maximum OSM node id, so they do not
+   necessarily sort in zone order. `zone_row_positions` composes the OMX's own
+   index with the run's recorded centroid map instead of assuming; a mutation
+   that replaced it with positional order is caught by a test whose fixture
+   deliberately reverses the two orderings.
 
-**A — auto-only, reduced model list.** Produce the auto skims OpenPlan genuinely
-has (`SOV_TIME` per time period, `DIST`, and walk/bike distances derivable from
-the network) and author a mode-choice specification restricted to drive-alone,
-shared-2 and shared-3+. Feasible. But authoring a mode-choice utility
-specification means choosing coefficients, which lands squarely on prerequisite
-3 below — you cannot dodge the coefficient problem by shrinking the model.
+## What the model then said, and why it must not be quoted as local behaviour
 
-**B — full transit skims from GTFS.** OpenPlan already has a GTFS lane and
-`workers/aequilibrae_worker/gtfs_skim.py`. Producing the 124 transit matrices
-prototype_mtc expects (`WLK_LOC_WLK_TOTIVT`, `DRV_COM_WLK_BOARDS`, and so on)
-from a real feed is a substantial but bounded piece of work, and it is the path
-that eventually lets a full example configuration run.
+| Mode | Share |
+|---|---:|
+| Drive alone | 48.2% |
+| Walk | **17.5%** |
+| Shared ride 2 | 15.3% |
+| Shared ride 3+ | 11.7% |
+| TNC / taxi | 5.9% |
+| Bike | 1.4% |
+| Transit | 0.0% (disabled by construction, see above) |
 
-Neither is a weekend. Both are ordinary engineering rather than research.
-
-## The blocker that is NOT about skims, and is worse
-
-**ActivitySim's behavioural coefficients are estimated for the regions its
-example configurations came from.** `prototype_mtc` is the San Francisco Bay
-Area. Running it over a Nevada County population produces a complete, plausible
-trip list generated by Bay Area travel behaviour.
-
-Making the model run does not make this go away, and a better synthetic
-population makes it *more* dangerous rather than less: a population fitted from
-local survey records looks local, and lends the output an authority the
-behaviour underneath it has not earned.
+**A 17.5% walk share in a rural county is the borrowed-coefficient problem
+speaking out loud.** `prototype_mtc` is estimated for the San Francisco Bay
+Area. The synthetic population underneath it is genuinely local — fitted from
+real Census microdata to each zone's published totals — and that makes the
+output *more* dangerous rather than less, because a locally-fitted population
+lends the behaviour an authority it has not earned.
 
 This is prerequisite 3 in `~/.claude/plans/dual-model-corridor-comparison.md`
-and it is now the honesty bottleneck for the whole lane. The bundle's caveats
-state it on every run. Three ways it could be resolved, in increasing order of
-work:
-
-1. **Name it and let it set the claim tier.** The output is labelled as using
-   another region's behaviour, and cannot be promoted above screening grade.
-   Cheapest, and honest, and available today.
-2. **Transfer with a stated basis.** Adjust the coefficients against local
-   evidence — a household travel survey, or observed counts — and record what
-   was adjusted and against what.
-3. **Estimate locally.** Needs a local household travel survey. Most agencies do
-   not have one.
-
-Option 1 is what the code does now. Do not let a good population quietly promote
-it to option 2.
+and it remains the honesty bottleneck for the whole lane. Nothing produced
+through this path may rise above screening grade. The three ways out, in
+increasing order of work, are unchanged: name it and let it set the claim tier
+(what the code does today); transfer the coefficients against stated local
+evidence; or estimate locally from a household travel survey most agencies do
+not have.
 
 ## What would tell you this document is stale
 
-- ActivitySim's example set changes, or `prototype_mtc` is replaced. Re-run the
-  skim count.
-- OpenPlan's skim writer starts emitting more than one matrix. Then the gap is
-  the difference, not 147.
-- A published transferable coefficient set for small rural regions appears. That
-  would collapse the second blocker, and it is worth checking for during the
-  landscape review that `docs/modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md` schedules.
+- ActivitySim's example set changes, or `prototype_mtc` is replaced. Re-run
+  `python scripts/modeling/activitysim_mtc_inputs.py`, which counts the skim
+  requirement live and prints the specs digest.
+- The stock configuration digest recorded in a bundle stops matching the
+  installed one. The worker will say so by refusing to run.
+- A published transferable coefficient set for small rural regions appears.
+  That would collapse the remaining blocker, and it is worth checking for
+  during the landscape review that `OPEN_SOURCE_MODEL_LANDSCAPE.md` schedules.

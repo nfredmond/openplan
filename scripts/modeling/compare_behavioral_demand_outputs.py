@@ -67,6 +67,15 @@ def parse_args() -> argparse.Namespace:
             "with the result, never silently applied."
         ),
     )
+    parser.add_argument(
+        "--noise-floor-json",
+        help=(
+            "corridor_agreement.json from a ROUND-TRIP comparison — one model's own demand "
+            "assigned twice over this network. Its divergence is what the assignment produces with "
+            "no demand difference at all, so divergence at or below it here is not the demand "
+            "models disagreeing. Without this flag every report says the floor is unmeasured."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -544,6 +553,37 @@ def read_convergence(manifest_path: str | None) -> dict[str, Any] | None:
     return ((payload.get("assignment") or {}).get("convergence")) or None
 
 
+def read_noise_floor(noise_floor_path: str | None) -> dict[str, Any] | None:
+    """The measured assignment noise floor, from a round-trip comparison's own output.
+
+    Fed the `corridor_agreement.json` of a comparison where BOTH sides came from
+    the same demand — the divergence it reports is the assignment deciding
+    between parallel routes, and nothing else. Refused if that file describes a
+    comparison of two different demand models, because a "floor" that already
+    contains a real demand difference would license attributing that difference
+    to nothing.
+    """
+    if not noise_floor_path:
+        return None
+    path = Path(noise_floor_path).expanduser().resolve()
+    if not path.exists():
+        raise RuntimeError(f"No noise-floor comparison at {path}")
+    payload = json.loads(path.read_text())
+    summary = payload.get("summary") or {}
+    if "diverge_share_meaningful_links" not in summary:
+        raise RuntimeError(
+            f"{path} is not a corridor-agreement comparison, so it cannot supply a noise floor."
+        )
+    sources = payload.get("noise_floor_basis") or {}
+    return {
+        "diverge_share_meaningful_links": summary["diverge_share_meaningful_links"],
+        "median_geh_meaningful_links": summary.get("median_geh_meaningful_links"),
+        "relative_gap": (payload.get("assignment_convergence") or {}).get("gaps", {}).get("first"),
+        "measured_from": str(path),
+        **sources,
+    }
+
+
 def compare_link_volume_runs(
     *,
     first_csv: str,
@@ -557,6 +597,7 @@ def compare_link_volume_runs(
     minimum_volume: float | None = None,
     first_manifest: str | None = None,
     second_manifest: str | None = None,
+    noise_floor_json: str | None = None,
 ) -> dict[str, Any]:
     """Compare two assignments of the same network from different demand models."""
     from corridor_agreement import DEFAULT_MINIMUM_VOLUME, build_agreement_map
@@ -582,6 +623,7 @@ def compare_link_volume_runs(
         ),
         first_convergence=read_convergence(first_manifest),
         second_convergence=read_convergence(second_manifest),
+        noise_floor=read_noise_floor(noise_floor_json),
     )
     agreement["sources"] = {"first": str(first_path), "second": str(second_path)}
     agreement["generated_at_utc"] = _utc_now()
@@ -598,6 +640,7 @@ def compare_link_volume_runs(
         "network_alignment": agreement["network_alignment"],
         "attribution_is_supportable": agreement["attribution_is_supportable"],
         "assignment_convergence": agreement["assignment_convergence"],
+        "assignment_noise_floor": agreement["assignment_noise_floor"],
         "corridors": len(agreement["corridors"]),
     }
 
@@ -656,6 +699,7 @@ def main() -> int:
             minimum_volume=args.minimum_volume,
             first_manifest=args.first_manifest,
             second_manifest=args.second_manifest,
+            noise_floor_json=args.noise_floor_json,
         )
         print(json.dumps(result, indent=2))
         return 0

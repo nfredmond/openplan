@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -20,7 +21,7 @@ import numpy as np
 import pandas as pd
 import requests
 from shapely import wkt
-from shapely.geometry import box
+from shapely.geometry import box, shape
 
 from demand_package import expand_matrix_for_cordons, read_demand_package, read_zone_package
 from screening_boundary import (
@@ -1006,8 +1007,115 @@ def select_spread_connectors(
     return chosen
 
 
-def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, network_buffer_miles: float) -> dict[str, Any]:
+def boundary_fingerprint(boundary_geom) -> str:
+    """A stable digest of the analysis boundary's geometry.
+
+    Hashes the well-known binary rather than the GeoJSON text: the same polygon
+    written by two code paths differs in coordinate formatting and key order,
+    and a fingerprint that changes for those reasons would refuse every legitimate
+    network reuse. Coordinates are rounded first — a boundary that survived a
+    GeoJSON round trip is the same boundary, and full float precision would say
+    otherwise.
+    """
+    from shapely import set_precision, wkb
+
+    return hashlib.sha256(wkb.dumps(set_precision(boundary_geom, 1e-9))).hexdigest()
+
+
+def reuse_network_from_run(
+    bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, source_run_dir: Path
+) -> tuple[dict[str, Any], pd.DataFrame]:
+    """Adopt another run's network, zone system and gateways wholesale.
+
+    THE POINT IS CORRECTNESS, NOT SPEED. Comparing two demand models only means
+    anything if the network underneath them is the same one; OSM changes
+    continuously, so two runs that each download it are two different networks
+    and any divergence in link volumes is unattributable. Copying the retained
+    project makes "the same network" a fact rather than an assumption.
+
+    Everything that could make the adopted network the wrong one is refused
+    rather than caveated: a different study area, a missing project, or a zone
+    system whose internal zones do not match the ones this run was handed.
+    """
+    source_run_dir = Path(source_run_dir).expanduser().resolve()
+    source_project = source_run_dir / "work" / "aeq_project"
+    source_summary_path = source_run_dir / "work" / "network_setup_summary.json"
+    source_zones_path = source_run_dir / "package" / "zone_attributes.csv"
+    source_boundary = source_run_dir / "boundary" / "analysis_boundary.geojson"
+
+    if not source_project.is_dir():
+        raise RuntimeError(
+            f"No retained AequilibraE project at {source_project}. Only a run made with "
+            "--keep-project can lend its network; re-run the source with that flag."
+        )
+    for path, what in (
+        (source_summary_path, "network setup summary"),
+        (source_zones_path, "zone table"),
+        (source_boundary, "analysis boundary"),
+    ):
+        if not path.exists():
+            raise RuntimeError(f"The source run is missing its {what} ({path}); its network cannot be reused.")
+
+    source_geom = shape(json.loads(source_boundary.read_text())["features"][0]["geometry"])
+    if boundary_fingerprint(source_geom) != boundary_fingerprint(boundary_geom):
+        raise RuntimeError(
+            f"The source run {source_run_dir.name} covers a different study area than this run. "
+            "Reusing its network would assign this run's demand over someone else's roads."
+        )
+
+    source_zones = pd.read_csv(source_zones_path, dtype={"GEOID": str})
+    source_internal = source_zones[source_zones["zone_kind"] != "external"]
+    incoming_ids = sorted(int(z) for z in zones_df["zone_id"])
+    source_ids = sorted(int(z) for z in source_internal["zone_id"])
+    if incoming_ids != source_ids:
+        raise RuntimeError(
+            "This run's internal zones do not match the source run's "
+            f"({len(incoming_ids)} vs {len(source_ids)} zones). The adopted network's centroids "
+            "were built for the source's zone system, so the demand would be loaded at the wrong "
+            "points."
+        )
+
+    work_dir = ensure_dir(bundle_dir / "work")
+    proj_dir = work_dir / "aeq_project"
+    if proj_dir.exists():
+        shutil.rmtree(proj_dir)
+    shutil.copytree(source_project, proj_dir)
+
+    summary = json.loads(source_summary_path.read_text())
+    summary["project_dir"] = str(proj_dir)
+    # Recorded so a reader of this run's manifest can tell that its roads were
+    # not downloaded for it, and which run they came from.
+    summary["network_reused_from"] = {
+        "run_dir": str(source_run_dir),
+        "run_name": source_run_dir.name,
+        "boundary_sha256": boundary_fingerprint(boundary_geom),
+        "note": (
+            "The road network, zone centroids and external gateways were copied from this run "
+            "rather than downloaded, so both runs are assigned over exactly the same network."
+        ),
+    }
+    (work_dir / "network_setup_summary.json").write_text(json.dumps(summary, indent=2))
+
+    # The external gateway zones belong to the network, so they come across with
+    # it. Rebuilt from the source zone table rather than re-detected: detection
+    # reads the network, and re-running it could only ever agree or introduce a
+    # discrepancy.
+    external_rows = source_zones[source_zones["zone_kind"] == "external"]
+    combined = pd.concat([zones_df, external_rows[list(EXTERNAL_ZONE_COLUMNS)]], ignore_index=True)
+    return summary, combined
+
+
+def build_network(
+    bundle_dir: Path,
+    boundary_geom,
+    zones_df: pd.DataFrame,
+    network_buffer_miles: float,
+    reuse_network_from: str | None = None,
+) -> dict[str, Any]:
     from aequilibrae import Project
+
+    if reuse_network_from:
+        return reuse_network_from_run(bundle_dir, boundary_geom, zones_df, Path(reuse_network_from))
 
     patch_osm_builder()
 
@@ -2014,6 +2122,7 @@ def run_screening_model(
     calibrate_counts_csv: str | None = None,
     counts_mode: str | None = None,
     calibrate_to_counts: bool = False,
+    reuse_network_from: str | None = None,
 ) -> dict[str, Any]:
     # THE ONE COMBINATION THAT IS REFUSED. Calibrating and then validating
     # against the SAME count file grades the model on most of the data it was
@@ -2102,7 +2211,13 @@ def run_screening_model(
     # The network stage adds one external zone per boundary-crossing highway, so
     # it hands the zone table back rather than taking it read-only.
     network_meta, zones_df = _timed(
-        "network", build_network, run_dir, boundary_meta["geometry"], zones_df, network_buffer_miles
+        "network",
+        build_network,
+        run_dir,
+        boundary_meta["geometry"],
+        zones_df,
+        network_buffer_miles,
+        reuse_network_from,
     )
     # Reassigned, not just called: the cordon counts and the zone-system label
     # belong in the run summary too, and a discarded return value would leave

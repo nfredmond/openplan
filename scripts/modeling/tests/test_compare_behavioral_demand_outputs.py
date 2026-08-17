@@ -229,5 +229,104 @@ class ComparingTwoDemandModelsOnOneNetwork(unittest.TestCase):
         self.assertIn("absent.csv", str(caught.exception))
 
 
+class TheMeasuredNoiseFloor(unittest.TestCase):
+    """A comparison that cannot say what the assignment alone does invites its
+    reader to attribute that to the demand model."""
+
+    def setUp(self) -> None:
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp_dir.name)
+
+    def tearDown(self) -> None:
+        self.temp_dir.cleanup()
+
+    def _links_csv(self, name: str, volumes: dict[int, float]) -> Path:
+        path = self.root / name
+        path.write_text("\n".join(["link_id,PCE_tot"] + [f"{k},{v}" for k, v in volumes.items()]) + "\n")
+        return path
+
+    def _round_trip_floor(self) -> str:
+        """A real round-trip comparison: the same demand assigned twice."""
+        first = self._links_csv("rt_a.csv", {1: 20_000, 2: 9_000, 3: 4_000})
+        second = self._links_csv("rt_b.csv", {1: 20_050, 2: 9_400, 3: 4_010})
+        result = compare_link_volume_runs(
+            first_csv=str(first),
+            second_csv=str(second),
+            first_label="same demand, run 1",
+            second_label="same demand, run 2",
+            output_dir=str(self.root / "floor"),
+        )
+        return result["json_path"]
+
+    def test_without_the_flag_the_report_says_it_is_unmeasured(self) -> None:
+        result = compare_link_volume_runs(
+            first_csv=str(self._links_csv("a.csv", {1: 20_000, 2: 9_000})),
+            second_csv=str(self._links_csv("b.csv", {1: 12_000, 2: 3_000})),
+            first_label="trip-based",
+            second_label="activity-based",
+            output_dir=str(self.root / "out"),
+        )
+        self.assertFalse(result["assignment_noise_floor"]["measured"])
+        self.assertIn("HAS NOT BEEN MEASURED", result["assignment_noise_floor"]["note"])
+
+    def test_the_measured_floor_reaches_the_report(self) -> None:
+        floor_json = self._round_trip_floor()
+        result = compare_link_volume_runs(
+            first_csv=str(self._links_csv("a.csv", {1: 20_000, 2: 9_000})),
+            second_csv=str(self._links_csv("b.csv", {1: 12_000, 2: 3_000})),
+            first_label="trip-based",
+            second_label="activity-based",
+            output_dir=str(self.root / "out"),
+            noise_floor_json=floor_json,
+        )
+        noise = result["assignment_noise_floor"]
+        self.assertTrue(noise["measured"])
+        self.assertIn("re-assigning one model's own demand", noise["note"])
+        self.assertNotIn("HAS NOT BEEN MEASURED", noise["note"])
+        # The measurement itself travels, not just the sentence about it.
+        self.assertEqual(
+            noise["measurement"]["measured_from"], str(Path(floor_json).resolve())
+        )
+        self.assertIn("diverge_share_meaningful_links", noise["measurement"])
+
+    def test_the_markdown_carries_the_floor_a_reader_will_see(self) -> None:
+        result = compare_link_volume_runs(
+            first_csv=str(self._links_csv("a.csv", {1: 20_000, 2: 9_000})),
+            second_csv=str(self._links_csv("b.csv", {1: 12_000, 2: 3_000})),
+            first_label="trip-based",
+            second_label="activity-based",
+            output_dir=str(self.root / "out"),
+            noise_floor_json=self._round_trip_floor(),
+        )
+        text = Path(result["markdown_path"]).read_text()
+        self.assertIn("re-assigning one model's own demand", text)
+
+    def test_a_file_that_is_not_an_agreement_map_is_refused(self) -> None:
+        bogus = self.root / "bogus.json"
+        bogus.write_text(json.dumps({"summary": {"something_else": 1}}))
+        with self.assertRaises(RuntimeError) as ctx:
+            compare_link_volume_runs(
+                first_csv=str(self._links_csv("a.csv", {1: 20_000})),
+                second_csv=str(self._links_csv("b.csv", {1: 12_000})),
+                first_label="trip-based",
+                second_label="activity-based",
+                output_dir=str(self.root / "out"),
+                noise_floor_json=str(bogus),
+            )
+        self.assertIn("not a corridor-agreement comparison", str(ctx.exception))
+
+    def test_a_missing_floor_file_is_named(self) -> None:
+        with self.assertRaises(RuntimeError) as ctx:
+            compare_link_volume_runs(
+                first_csv=str(self._links_csv("a.csv", {1: 20_000})),
+                second_csv=str(self._links_csv("b.csv", {1: 12_000})),
+                first_label="trip-based",
+                second_label="activity-based",
+                output_dir=str(self.root / "out"),
+                noise_floor_json=str(self.root / "nowhere.json"),
+            )
+        self.assertIn("nowhere.json", str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main()
