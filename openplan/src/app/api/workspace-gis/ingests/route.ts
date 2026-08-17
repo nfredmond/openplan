@@ -135,6 +135,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // A layer id is not an authorization. Without this read, the insert below
+    // accepted ANY workspace's layer id — the FK is checked by Postgres, which
+    // bypasses RLS — and the rogue version row then squatted
+    // (layer_id, version_number) slots the owning workspace could not see or
+    // free, jamming its future uploads with an unexplainable 500 (found
+    // 2026-08-16). This read runs on the caller's own client, so a layer that
+    // lives in another workspace answers exactly like one that never existed.
+    // It sits HERE, immediately before the write, on purpose: the refusals
+    // above (unsupported format, feature cap, CRS, datum) are statements about
+    // the uploaded file that reveal nothing about any layer, and their
+    // touch-nothing contracts predate this check. Migration 20260816000001
+    // enforces the same binding in the database.
+    const layerResult = await supabase
+      .from("workspace_gis_layers")
+      .select("id")
+      .eq("id", input.layerId)
+      .eq("workspace_id", membership.workspace_id)
+      .maybeSingle();
+    if (layerResult.error) {
+      return NextResponse.json(
+        { error: "Could not check the layer before opening the upload." },
+        { status: 500 }
+      );
+    }
+    if (!layerResult.data) {
+      return NextResponse.json({ error: "No such map layer in this workspace." }, { status: 404 });
+    }
+
     const isAsserted = crs.basis === "planner_asserted";
     const now = new Date().toISOString();
 

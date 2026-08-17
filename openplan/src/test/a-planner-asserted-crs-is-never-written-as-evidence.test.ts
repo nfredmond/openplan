@@ -112,6 +112,18 @@ function fakeClient() {
   return {
     auth: { getUser: authGetUserMock },
     from: (table: string) => {
+      if (table === "workspace_gis_layers") {
+        // The route's ownership read (2026-08-16): the layer exists in the
+        // caller's workspace. Cross-workspace refusal is pinned in
+        // the-crs-registry-reaches-the-ingest-route.test.ts, not here.
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({ maybeSingle: async () => ({ data: { id: LAYER_ID }, error: null }) }),
+            }),
+          }),
+        };
+      }
       if (table === "workspace_gis_layer_versions") {
         return {
           select: () => ({

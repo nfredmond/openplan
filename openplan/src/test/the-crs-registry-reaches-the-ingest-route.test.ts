@@ -54,8 +54,10 @@ const authGetUserMock = vi.fn();
 const createClientMock = vi.fn();
 const versionMaybeSingleMock = vi.fn();
 const insertSingleMock = vi.fn();
+const layerMaybeSingleMock = vi.fn();
 
 let capturedInsert: Record<string, unknown> | null = null;
+let layerReadFilters: string[] = [];
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
@@ -101,6 +103,24 @@ function fakeClient() {
   return {
     auth: { getUser: authGetUserMock },
     from: (table: string) => {
+      if (table === "workspace_gis_layers") {
+        // The ownership read (added 2026-08-16): the route must ask for the
+        // layer scoped to the caller's own workspace before accepting an
+        // upload against it. The recorded eq columns are the assertion.
+        return {
+          select: () => ({
+            eq: (column: string) => {
+              layerReadFilters.push(column);
+              return {
+                eq: (column2: string) => {
+                  layerReadFilters.push(column2);
+                  return { maybeSingle: layerMaybeSingleMock };
+                },
+              };
+            },
+          }),
+        };
+      }
       if (table === "workspace_gis_layer_versions") {
         return {
           select: () => ({
@@ -144,8 +164,10 @@ function baseBody(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   capturedInsert = null;
+  layerReadFilters = [];
   registryState.absent = false;
   authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+  layerMaybeSingleMock.mockResolvedValue({ data: { id: LAYER_ID }, error: null });
   versionMaybeSingleMock.mockResolvedValue({ data: null, error: null });
   insertSingleMock.mockImplementation(async () => ({
     data: {
@@ -252,6 +274,52 @@ describe("POST /api/workspace-gis/ingests, against the registry OpenPlan really 
     const body = await response.json();
     expect(body.reason).toBe("crs_registry_unavailable");
     expect(body.error).toMatch(/no coordinate-system registry/i);
+    expect(capturedInsert).toBeNull();
+  });
+});
+
+describe("a layer in another workspace cannot take an upload", () => {
+  /**
+   * Found 2026-08-16: the route inserted a version row with a CLIENT-SUPPLIED
+   * layer id and the caller's own workspace id, and never asked whether that
+   * layer belongs to the caller's workspace. RLS could not catch it — the row
+   * satisfied the caller's own INSERT policy, and Postgres checks the layer FK
+   * with table-owner rights. The rogue row then squatted the owning
+   * workspace's (layer_id, version_number) slots invisibly, jamming its future
+   * uploads. The route's side of the fix is the ownership read these tests
+   * pin; the database's side is the composite (layer_id, workspace_id) FK in
+   * migration 20260816000001.
+   */
+  it("refuses a layer id the caller's workspace cannot see, before any insert", async () => {
+    layerMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const response = await openIngest(
+      openRequest(baseBody({ assertedSrsCode: "EPSG:2226" }))
+    );
+
+    expect(response.status).toBe(404);
+    // Refused BEFORE the insert: a 404 that still wrote the row would be the
+    // same defect with better manners.
+    expect(capturedInsert).toBeNull();
+  });
+
+  it("asks for the layer scoped to the caller's workspace, not by id alone", async () => {
+    await openIngest(openRequest(baseBody({ assertedSrsCode: "EPSG:2226" })));
+
+    // Id alone would find another workspace's layer on a permissive read; the
+    // workspace column is the half that makes the read an authorization.
+    expect(layerReadFilters).toContain("id");
+    expect(layerReadFilters).toContain("workspace_id");
+  });
+
+  it("a failed layer read refuses the upload rather than assuming ownership", async () => {
+    layerMaybeSingleMock.mockResolvedValue({ data: null, error: { message: "boom" } });
+
+    const response = await openIngest(
+      openRequest(baseBody({ assertedSrsCode: "EPSG:2226" }))
+    );
+
+    expect(response.status).toBe(500);
     expect(capturedInsert).toBeNull();
   });
 });
