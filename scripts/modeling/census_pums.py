@@ -730,7 +730,7 @@ def seed_provenance(
         "seed_households": seed_size,
         "dropped": dict(dropped),
         "note": (
-            "Household composition is drawn from real anonymised survey records for "
+            "Household composition comes from real anonymised Census survey answers for "
             f"{', '.join(names) if names else 'the covering Public Use Microdata Areas'}, then "
             "reweighted so each zone reproduces its own published totals. A Public Use Microdata "
             "Area covers at least 100,000 people, so the mix of household types comes from a wider "

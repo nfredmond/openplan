@@ -110,7 +110,7 @@ export function buildCountyRunUiCard(input: {
     tone: getCountyRunStageTone(input.stage),
     statusLabel,
     allowedClaim: getCountyRunAllowedClaim(input.stage),
-    caveats: getCountyRunCaveats(input.stage),
+    caveats: getCountyRunCaveats(input.stage, input.manifest ?? null),
     nextAction: getCountyRunNextAction(input.stage),
   };
 }
@@ -229,7 +229,7 @@ export function buildCountyRunManifestProofSummary(input: {
     validationRows,
     operatorNextAction: manifest ? getCountyRunNextAction(stage) : "Prepare the run handoff or ingest a manifest before using this county run as evidence.",
     caveatRows: appendUniqueRows([
-      ...getCountyRunCaveats(stage).map((caveat) => ({ label: caveat, value: caveat })),
+      ...getCountyRunCaveats(stage, manifest ?? null).map((caveat) => ({ label: caveat, value: caveat })),
       {
         label: "Manifest boundary",
         value: "A recorded manifest proves file inventory and validation posture only; it is not a validated behavioral forecast or autonomous planning recommendation.",

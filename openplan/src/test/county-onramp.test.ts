@@ -170,7 +170,7 @@ describe("county onramp primitives", () => {
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");
     expect(getCountyRunStageTone("validation-scaffolded")).toBe("warning");
     expect(getCountyRunAllowedClaim("bootstrap-incomplete")).toContain("in progress");
-    expect(getCountyRunCaveats("runtime-complete")).toContain("No local validation result yet.");
+    expect(getCountyRunCaveats("runtime-complete", null)).toContain("No local validation result yet.");
     expect(getCountyRunNextAction("validation-scaffolded")).toContain("rerun validation");
   });
 

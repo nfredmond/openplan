@@ -398,6 +398,13 @@ def main() -> int:
         # answer used to live only in a Python file nobody outside this repo
         # reads.
         "assumptions": (bundle_manifest or {}).get("assumptions"),
+        # Whether this run was fitted to published traffic counts, and on how
+        # many stations it was graded. WITHOUT THIS THE GRANT APPENDIX SAYS
+        # "Not calibrated" ON EVERY RUN — the appendix reads `manifest.calibration`
+        # and nothing was putting it here, so a run that WAS fitted to counts
+        # produced a funding document denying it. Read from the screening
+        # bundle's own record rather than recomputed.
+        "calibration": (bundle_manifest or {}).get("calibration"),
         "runtime": runtime_options,
         "summary": {
             "run": {

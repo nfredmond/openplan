@@ -984,7 +984,10 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
             screeningGrade: isScreeningGradeStage(stage),
             allowedClaim: stage ? getCountyRunAllowedClaim(stage) : null,
             // The stage's caveat list, verbatim from the county-onramp lib.
-            caveats: stage ? getCountyRunCaveats(stage) : [],
+            // No manifest is parsed on this path, so the caveats are the
+            // stage's alone — which is why null is passed explicitly rather
+            // than omitted.
+            caveats: stage ? getCountyRunCaveats(stage, null) : [],
           },
           evidence: evidenceResult.error
             ? {

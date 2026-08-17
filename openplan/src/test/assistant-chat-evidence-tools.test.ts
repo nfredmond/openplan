@@ -459,7 +459,7 @@ describe("explain_model_claim", () => {
     expect(posture.screeningGrade).toBe(true);
     // The county-onramp lib's own sentences, verbatim.
     expect(posture.allowedClaim).toBe(getCountyRunAllowedClaim("validated-screening"));
-    expect(posture.caveats).toEqual(getCountyRunCaveats("validated-screening"));
+    expect(posture.caveats).toEqual(getCountyRunCaveats("validated-screening", null));
   });
 
   it("refuses a county run from another workspace as not_found", async () => {

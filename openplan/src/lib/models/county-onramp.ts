@@ -290,12 +290,33 @@ export function getCountyRunAllowedClaim(stage: CountyRunStage): string {
   }
 }
 
-export function getCountyRunCaveats(stage: CountyRunStage): string[] {
+/**
+ * The caveats that must travel with a county run, given its stage AND what the
+ * run actually did.
+ *
+ * THE MANIFEST ARGUMENT IS REQUIRED, INCLUDING WHEN IT IS NULL, and that is
+ * deliberate. Two of these caveats used to be fixed strings decided by the stage
+ * alone, and both became false as the modelling lane grew:
+ *
+ *   - "Uncalibrated" was shown on runs that HAD been fitted to published traffic
+ *     counts, on the same screen as the calibration result.
+ *   - nothing said whether the synthetic population came from real survey
+ *     records or was expanded from the trip model's own zone attributes, which
+ *     is the difference between two independent methods and one method twice.
+ *
+ * An optional parameter would have let a call site keep the stale list without
+ * anyone choosing to. Passing `null` is still allowed — a caller with no
+ * manifest genuinely knows nothing — but it has to be written down.
+ */
+export function getCountyRunCaveats(
+  stage: CountyRunStage,
+  manifest: CountyOnrampManifest | null
+): string[] {
   if (stage === "validated-screening") {
     return [
       "Screening-grade only",
-      "Uncalibrated",
-      "Not behavioral demand",
+      calibrationCaveat(manifest),
+      populationCaveat(manifest),
       "Not client-ready forecasting",
       "Validated slice only",
     ];
@@ -307,6 +328,34 @@ export function getCountyRunCaveats(stage: CountyRunStage): string[] {
     return ["Screening-grade runtime output only.", "No local validation result yet."];
   }
   return ["County onboarding job is still in progress."];
+}
+
+/** Whether this run was fitted to published counts, read from its own record. */
+function calibrationCaveat(manifest: CountyOnrampManifest | null): string {
+  const calibration = (manifest as unknown as Record<string, unknown> | null)?.calibration;
+  if (!calibration || typeof calibration !== "object") return "Uncalibrated";
+  const record = calibration as Record<string, unknown>;
+  if (record.performed !== true) return "Uncalibrated";
+  const holdout = (record.holdout_station_count as number | undefined) ?? null;
+  return holdout
+    ? `Calibrated to published counts, graded on ${holdout} stations held back from the fitting`
+    : "Calibrated to published counts";
+}
+
+/**
+ * Where this run's households came from, which decides whether the behavioural
+ * lane is an independent second method or a rearrangement of the first one's
+ * inputs.
+ */
+function populationCaveat(manifest: CountyOnrampManifest | null): string {
+  const summary = (manifest as unknown as Record<string, unknown> | null)?.summary;
+  const bundle = (summary as Record<string, unknown> | undefined)?.activitysim_bundle;
+  const population = (bundle as Record<string, unknown> | undefined)?.population;
+  const status = (population as Record<string, unknown> | undefined)?.status;
+  if (status === "fitted_to_published_totals") {
+    return "Households built from real Census survey answers; travel behaviour still not modelled";
+  }
+  return "Not behavioral demand";
 }
 
 export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): string {
