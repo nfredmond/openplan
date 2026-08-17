@@ -5,6 +5,7 @@ import os
 import shlex
 import shutil
 import subprocess
+import sys
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -19,6 +20,7 @@ DEFAULT_OUTPUT_SUBDIR = "output"
 DEFAULT_CONTAINER_ENGINE = "docker"
 DEFAULT_CONTAINER_BUNDLE_DIR = "/openplan/bundle"
 DEFAULT_CONTAINER_CONFIG_DIR = "/openplan/configs"
+DEFAULT_CONTAINER_STOCK_CONFIG_DIR = "/openplan/stock_configs"
 DEFAULT_CONTAINER_RUNTIME_DIR = "/openplan/runtime"
 EXECUTED_RUNTIME_MODES = {"activitysim_cli", "activitysim_container_cli"}
 
@@ -146,6 +148,60 @@ def _container_path_mapping(*, bundle_dir: Path, config_dir: Path, runtime_dir: 
     return mapping
 
 
+def _stock_configs_digest(configs_dir: Path) -> str:
+    """The layered-configs digest, imported from the single module that defines it.
+
+    The bundle builder and this runtime must agree byte-for-byte on what the
+    digest covers, so this is an import, not a second implementation.
+    """
+    scripts_modeling = Path(__file__).resolve().parents[2] / "scripts" / "modeling"
+    if str(scripts_modeling) not in sys.path:
+        sys.path.insert(0, str(scripts_modeling))
+    from activitysim_mtc_inputs import stock_configs_digest
+
+    return stock_configs_digest(configs_dir)
+
+
+def resolve_layered_config_dirs(config_dir: Path) -> list[Path]:
+    """Extra config directories this bundle layers over, existence- and digest-verified.
+
+    A runnable bundle's descriptor may name the stock configuration directory
+    it was built against, pinned by a SHA-256 over every file in it. A stock
+    directory that is missing or has changed means the run would not be the
+    one the bundle describes — refused, never run anyway.
+    """
+    descriptor_path = config_dir / CONFIG_PACKAGE_DESCRIPTOR_NAME
+    if not descriptor_path.exists():
+        return []
+    descriptor = _read_json(descriptor_path)
+    layered = descriptor.get("layered_stock_configs") if isinstance(descriptor, dict) else None
+    if not isinstance(layered, dict):
+        return []
+    raw_path = str(layered.get("path") or "").strip()
+    if not raw_path:
+        raise BundleContractError(
+            "The bundle's config package declares layered stock configs without a path."
+        )
+    stock_path = Path(raw_path).expanduser()
+    if not stock_path.is_dir():
+        raise BundleContractError(
+            "The stock ActivitySim configuration this bundle layers over is not present on this "
+            f"machine: {stock_path}. Install ActivitySim where the bundle expects it, or rebuild "
+            "the bundle on this machine."
+        )
+    expected_digest = str(layered.get("specs_sha256") or "").strip()
+    if expected_digest:
+        actual_digest = _stock_configs_digest(stock_path)
+        if actual_digest != expected_digest:
+            raise BundleContractError(
+                "The stock ActivitySim configuration no longer matches the digest recorded when "
+                f"this bundle was built ({stock_path}): expected {expected_digest}, found "
+                f"{actual_digest}. Rebuild the bundle against the installed configuration rather "
+                "than running something the bundle does not describe."
+            )
+    return [stock_path]
+
+
 def build_container_command(
     *,
     bundle_dir: Path,
@@ -155,6 +211,7 @@ def build_container_command(
     engine_command: list[str] | None = None,
     container_template: str | None = None,
     network_mode: str | None = "none",
+    layered_config_dirs: list[Path] | None = None,
 ) -> tuple[list[str], dict[str, Any]]:
     engine = _resolve_cli_command(engine_command or [DEFAULT_CONTAINER_ENGINE])
     if not engine:
@@ -185,6 +242,13 @@ def build_container_command(
         mounts.append(
             {"source": str(host_config_dir), "target": DEFAULT_CONTAINER_CONFIG_DIR, "read_only": True}
         )
+    # Layered stock configuration directories ride along read-only, each as an
+    # extra -c AFTER the bundle's own configs (later -c = lower precedence).
+    layered_targets: list[str] = []
+    for index, layered_dir in enumerate(layered_config_dirs or []):
+        target = f"{DEFAULT_CONTAINER_STOCK_CONFIG_DIR}_{index}" if index else DEFAULT_CONTAINER_STOCK_CONFIG_DIR
+        layered_targets.append(target)
+        mounts.append({"source": str(Path(layered_dir).resolve()), "target": target, "read_only": True})
 
     command: list[str] = [*engine, "run", "--rm"]
     if network_mode:
@@ -201,18 +265,19 @@ def build_container_command(
     if container_template:
         inner_command = _format_command(container_template, container_mapping)
     else:
-        inner_command = [
-            "activitysim",
-            "run",
-            "-c",
-            container_mapping["config_dir"],
-            "-d",
-            container_mapping["data_dir"],
-            "-o",
-            container_mapping["output_dir"],
-            "-w",
-            container_mapping["working_dir"],
-        ]
+        inner_command = ["activitysim", "run", "-c", container_mapping["config_dir"]]
+        for target in layered_targets:
+            inner_command.extend(["-c", target])
+        inner_command.extend(
+            [
+                "-d",
+                container_mapping["data_dir"],
+                "-o",
+                container_mapping["output_dir"],
+                "-w",
+                container_mapping["working_dir"],
+            ]
+        )
     command.extend(inner_command)
     return command, {
         "engine_command": engine,
@@ -631,6 +696,10 @@ def run_activitysim_runtime(
                         }
                         stage.notes.append(capability["reason"] or "ActivitySim execution is unavailable")
                     else:
+                        # Verified before any command is built: a missing or
+                        # modified stock configuration fails the stage with
+                        # the reason, never runs something else.
+                        layered_config_dirs = resolve_layered_config_dirs(config_path)
                         host_command_mapping = {
                             "bundle_dir": str(bundle_dir),
                             "config_dir": str(config_path),
@@ -648,6 +717,7 @@ def run_activitysim_runtime(
                                 engine_command=capability["container_engine_command"],
                                 container_template=container_template,
                                 network_mode=capability.get("container_network_mode"),
+                                layered_config_dirs=layered_config_dirs,
                             )
                             runtime_manifest["execution"].update(
                                 {
@@ -674,24 +744,33 @@ def run_activitysim_runtime(
                                 "mode": capability["mode"],
                                 "execution_backend": capability["execution_backend"],
                                 "command": command,
+                                "layered_config_dirs": [str(p) for p in layered_config_dirs],
                             }
+                            if layered_config_dirs:
+                                stage.notes.append(
+                                    "This bundle layers over a stock configuration; a custom CLI "
+                                    "template must pass those directories as additional -c flags "
+                                    "itself (verified paths recorded in layered_config_dirs)."
+                                )
                         else:
-                            command = [
-                                *capability["command"],
-                                "run",
-                                "-c",
-                                str(config_path),
-                                "-d",
-                                str(bundle_dir),
-                                "-o",
-                                str(output_dir / DEFAULT_OUTPUT_SUBDIR),
-                                "-w",
-                                str(output_dir / "workdir"),
-                            ]
+                            command = [*capability["command"], "run", "-c", str(config_path)]
+                            for layered_dir in layered_config_dirs:
+                                command.extend(["-c", str(layered_dir)])
+                            command.extend(
+                                [
+                                    "-d",
+                                    str(bundle_dir),
+                                    "-o",
+                                    str(output_dir / DEFAULT_OUTPUT_SUBDIR),
+                                    "-w",
+                                    str(output_dir / "workdir"),
+                                ]
+                            )
                             stage.metadata = {
                                 "mode": capability["mode"],
                                 "execution_backend": capability["execution_backend"],
                                 "command": command,
+                                "layered_config_dirs": [str(p) for p in layered_config_dirs],
                             }
                         (output_dir / DEFAULT_OUTPUT_SUBDIR).mkdir(parents=True, exist_ok=True)
                         logger.log(f"Executing ActivitySim command: {' '.join(shlex.quote(part) for part in command)}")

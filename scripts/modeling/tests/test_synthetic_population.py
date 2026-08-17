@@ -313,6 +313,47 @@ class WhatTravelsWithTheResult(unittest.TestCase):
         self.assertIn("workers", result["dropped_controls"])
         self.assertEqual(result["summary"]["zone_geography"], "block_group")
 
+    def test_the_raw_survey_codes_travel_with_the_population(self) -> None:
+        """HHT rides on households; ESR/SCHG/WKHP ride on persons, verbatim.
+
+        Downstream adapters (the ActivitySim MTC package) derive person types
+        from the codes themselves; a population that only carries our 0/1
+        reductions of them cannot be coded."""
+        enriched = []
+        for row in SEED_ROWS:
+            copy = dict(row)
+            copy["HHT"] = "1" if row["SERIALNO"] == "2022HU_PAIR" else "3"
+            copy["WKHP"] = "40" if row["ESR"] == "1" else ""
+            enriched.append(copy)
+
+        fakes = fake_fetches({TRACT_A: acs_row(0, 10, 5, 15)})
+
+        def pums_with_codes(_pumas, _key):
+            return enriched, {"sources": [], "person_records": len(enriched)}
+
+        fakes["fetch_pums_person_rows"] = pums_with_codes
+        result = synthesize_study_area([zone(1, TRACT_A)], census_api_key="k", **fakes)
+
+        pair = next(h for h in result["households"] if h["seed_household_id"] == "2022HU_PAIR")
+        family = next(h for h in result["households"] if h["seed_household_id"] == "2022HU_FAMILY")
+        self.assertEqual(pair["hht"], 1)
+        self.assertEqual(family["hht"], 3)
+
+        workers = [p for p in result["persons"] if p["esr"] == "1"]
+        self.assertTrue(workers, "no persons carried a raw ESR code")
+        self.assertTrue(all(p["wkhp"] == "40" for p in workers))
+        child = next(p for p in result["persons"] if p["age"] == 10)
+        self.assertEqual(child["schg"], "5")
+        self.assertEqual(child["wkhp"], "")
+
+    def test_a_seed_without_the_new_codes_still_builds_with_them_blank(self) -> None:
+        # Older fixtures (and any non-US adapter that lacks these fields) must
+        # keep working: absent codes become 0 / empty string, never a crash.
+        totals = {TRACT_A: acs_row(0, 10, 5, 15)}
+        result = synthesize_study_area([zone(1, TRACT_A)], census_api_key="k", **fake_fetches(totals))
+        self.assertEqual(result["households"][0]["hht"], 0)
+        self.assertEqual(result["persons"][0]["wkhp"], "")
+
 
 if __name__ == "__main__":
     unittest.main()

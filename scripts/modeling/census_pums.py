@@ -72,8 +72,11 @@ ACS_VARIABLES_PER_REQUEST = 45
 # PUMS response to one row per person, with the household's own fields repeated
 # on each. Vacant units drop out of that view, which is what we want — a vacant
 # unit is not a household anybody travels from.
-PUMS_HOUSEHOLD_VARIABLES = ("SERIALNO", "NP", "HINCP", "ADJINC", "VEH", "TEN", "WGTP")
-PUMS_PERSON_VARIABLES = ("SPORDER", "AGEP", "SEX", "ESR", "SCHG", "PWGTP")
+# HHT (household/family type, 1-7) and WKHP (usual weekly work hours) ride
+# along for the ActivitySim MTC package: household type feeds the family/
+# non-family terms and hours split full-time from part-time workers.
+PUMS_HOUSEHOLD_VARIABLES = ("SERIALNO", "NP", "HINCP", "ADJINC", "VEH", "TEN", "WGTP", "HHT")
+PUMS_PERSON_VARIABLES = ("SPORDER", "AGEP", "SEX", "ESR", "SCHG", "PWGTP", "WKHP")
 
 # ESR (employment status recode): employed civilians and armed forces, at work or
 # temporarily absent. 3 is unemployed, 6 is not in the labour force, and blank is
@@ -627,26 +630,25 @@ def fetch_pums_person_rows(
     return rows, {"sources": per_source, "person_records": len(rows)}
 
 
-def fetch_acs_zone_controls(
-    geoids: Sequence[str], controls: Sequence[Control], census_api_key: str
+def _fetch_acs_rows(
+    geoids: Sequence[str], variables: Sequence[str], census_api_key: str, *, purpose: str
 ) -> dict[str, dict[str, Any]]:
-    """Fetch the control marginals for every zone, keyed by GEOID.
+    """Fetch ACS cells for every zone, keyed by GEOID.
 
     Queried a county at a time — which county each zone is in comes off the
     GEOID itself, so a study area crossing a county or state line needs no
-    special case and no list of places anywhere in this file.
+    special case and no list of places anywhere in this file. Raises rather
+    than returning a subset: data for only some of a study area is the shape
+    of failure that looks like success downstream.
     """
     if not census_api_key:
-        raise CensusPumsError(
-            "A Census API key is required to read the zone totals a population is fitted to."
-        )
-    variables = acs_variables_for(controls)
+        raise CensusPumsError(f"A Census API key is required to read {purpose}.")
     if not variables:
-        raise CensusPumsError("No control variables were requested, so there is nothing to fit to.")
+        raise CensusPumsError(f"No ACS variables were requested for {purpose}.")
 
     wanted = {str(geoid).strip() for geoid in geoids if str(geoid).strip()}
     if not wanted:
-        raise CensusPumsError("No zones were supplied, so there are no totals to fetch.")
+        raise CensusPumsError(f"No zones were supplied, so there is nothing to fetch for {purpose}.")
     # 11 digits is a tract, 12 a block group. Deriving it per zone rather than
     # trusting a caller's label keeps a mislabelled package from querying the
     # wrong geography and silently matching nothing.
@@ -694,11 +696,69 @@ def fetch_acs_zone_controls(
     missing = sorted(wanted - set(collected))
     if missing:
         raise CensusPumsError(
-            f"{len(missing)} of {len(wanted)} zones have no published totals to fit to "
-            f"(first: {missing[0]}). A population fitted to only some of a study area would "
+            f"{len(missing)} of {len(wanted)} zones have no published data for {purpose} "
+            f"(first: {missing[0]}). Data for only some of a study area would "
             "leave the rest empty without saying so."
         )
     return collected
+
+
+def fetch_acs_zone_controls(
+    geoids: Sequence[str], controls: Sequence[Control], census_api_key: str
+) -> dict[str, dict[str, Any]]:
+    """Fetch the control marginals for every zone, keyed by GEOID."""
+    variables = acs_variables_for(controls)
+    if not variables:
+        raise CensusPumsError("No control variables were requested, so there is nothing to fit to.")
+    return _fetch_acs_rows(
+        geoids, variables, census_api_key, purpose="the zone totals a population is fitted to"
+    )
+
+
+# School enrolment for the ActivitySim MTC package's size terms. B14001 counts
+# ENROLLED RESIDENTS of each zone, not seats at schools located there — the
+# caller's caveats must say so. College includes graduate/professional school.
+ENROLLMENT_HIGH_SCHOOL_CELL = "B14001_007E"  # enrolled in grades 9-12
+ENROLLMENT_COLLEGE_CELLS = ("B14001_008E", "B14001_009E")  # undergraduate + graduate
+
+
+def fetch_acs_school_enrollment(
+    geoids: Sequence[str], census_api_key: str
+) -> dict[str, dict[str, float]]:
+    """High-school and college enrolment by residence zone, keyed by GEOID.
+
+    A zone with null cells reads as zero enrolment, but EVERY cell null across
+    the whole study area is the B08202 shape — an endpoint answering 200 with
+    no data at this geography — and is refused rather than returned as a study
+    area where nobody attends school.
+    """
+    variables = [ENROLLMENT_HIGH_SCHOOL_CELL, *ENROLLMENT_COLLEGE_CELLS]
+    rows = _fetch_acs_rows(geoids, variables, census_api_key, purpose="school enrolment (ACS B14001)")
+
+    enrollment: dict[str, dict[str, float]] = {}
+    any_value = False
+    for geoid, row in rows.items():
+        high_school = _cell_value(row, ENROLLMENT_HIGH_SCHOOL_CELL)
+        college = 0.0
+        college_seen = False
+        for cell in ENROLLMENT_COLLEGE_CELLS:
+            value = _cell_value(row, cell)
+            if value is not None:
+                college += value
+                college_seen = True
+        if high_school is not None or college_seen:
+            any_value = True
+        enrollment[geoid] = {
+            "high_school": float(high_school or 0.0),
+            "college": float(college),
+        }
+    if not any_value:
+        raise CensusPumsError(
+            "ACS B14001 answered with no enrolment values for any zone in this study area — the "
+            "table is not published at this geography, and a study area where nobody attends "
+            "school would be a fabrication, not a default."
+        )
+    return enrollment
 
 
 def seed_provenance(

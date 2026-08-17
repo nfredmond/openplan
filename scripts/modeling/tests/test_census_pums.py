@@ -310,5 +310,69 @@ class WhatTheProvenanceMustSay(unittest.TestCase):
         self.assertNotIn("thin", provenance["note"])
 
 
+class TheRawCodesTheMtcPackageNeeds(unittest.TestCase):
+    def test_hht_and_wkhp_are_in_the_fetch_lists(self) -> None:
+        # The MTC person coding derives full/part-time from WKHP and the
+        # family terms from HHT; a fetch list without them produces a
+        # population that cannot be coded, silently.
+        self.assertIn("HHT", cp.PUMS_HOUSEHOLD_VARIABLES)
+        self.assertIn("WKHP", cp.PUMS_PERSON_VARIABLES)
+
+
+class SchoolEnrollment(unittest.TestCase):
+    """ACS B14001, and the 200-with-no-data shape it shares with B08202."""
+
+    def _payload(self, rows: list[list[str]]) -> list[list[str]]:
+        header = [
+            cp.ENROLLMENT_HIGH_SCHOOL_CELL,
+            *cp.ENROLLMENT_COLLEGE_CELLS,
+            "state",
+            "county",
+            "tract",
+        ]
+        return [header, *rows]
+
+    def test_college_sums_undergraduate_and_graduate(self) -> None:
+        from unittest import mock
+
+        payload = self._payload([["80", "30", "12", "06", "057", "000100"]])
+        with mock.patch.object(cp, "_get_json", return_value=payload):
+            enrollment = cp.fetch_acs_school_enrollment(["06057000100"], "key")
+        self.assertEqual(enrollment["06057000100"]["high_school"], 80.0)
+        self.assertEqual(enrollment["06057000100"]["college"], 42.0)
+
+    def test_one_null_zone_reads_as_zero_but_all_null_is_refused(self) -> None:
+        from unittest import mock
+
+        mixed = self._payload(
+            [
+                ["80", "30", "12", "06", "057", "000100"],
+                [None, None, None, "06", "057", "000200"],
+            ]
+        )
+        with mock.patch.object(cp, "_get_json", return_value=mixed):
+            enrollment = cp.fetch_acs_school_enrollment(["06057000100", "06057000200"], "key")
+        self.assertEqual(enrollment["06057000200"], {"high_school": 0.0, "college": 0.0})
+
+        all_null = self._payload(
+            [
+                [None, None, None, "06", "057", "000100"],
+                [None, None, None, "06", "057", "000200"],
+            ]
+        )
+        with mock.patch.object(cp, "_get_json", return_value=all_null):
+            with self.assertRaises(cp.CensusPumsError) as ctx:
+                cp.fetch_acs_school_enrollment(["06057000100", "06057000200"], "key")
+        self.assertIn("B14001", str(ctx.exception))
+
+    def test_a_zone_the_api_never_answered_for_stops_the_run(self) -> None:
+        from unittest import mock
+
+        payload = self._payload([["80", "30", "12", "06", "057", "000100"]])
+        with mock.patch.object(cp, "_get_json", return_value=payload):
+            with self.assertRaises(cp.CensusPumsError):
+                cp.fetch_acs_school_enrollment(["06057000100", "06057000900"], "key")
+
+
 if __name__ == "__main__":
     unittest.main()

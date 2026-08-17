@@ -119,6 +119,12 @@ def _person_rows_for(
                 "sex": int(float(person.get("SEX") or 1)),
                 "is_worker": 1 if cp.is_worker(person.get("ESR")) else 0,
                 "is_student": 1 if cp.is_student(person.get("SCHG")) else 0,
+                # The raw survey codes, carried verbatim: downstream adapters
+                # (the ActivitySim MTC package derives its person types from
+                # ESR/SCHG/WKHP) need the codes, not our reductions of them.
+                "esr": str(person.get("ESR") or "").strip(),
+                "schg": str(person.get("SCHG") or "").strip(),
+                "wkhp": str(person.get("WKHP") or "").strip(),
                 "seed_household_id": household_row["seed_household_id"],
                 "source_geoid": household_row["source_geoid"],
                 "synthesis_method": household_row["synthesis_method"],
@@ -190,6 +196,10 @@ def synthesize_study_area(
                 "workers": sum(1 for p in people if cp.is_worker(p.get("ESR"))),
                 "autos": _autos_of(people),
                 "income": _income_of(people),
+                # Raw Census household/family type (HHT, 1-7), verbatim from
+                # the seed record — the ActivitySim MTC package's family/
+                # non-family terms read it directly.
+                "hht": _hht_of(people),
                 "seed_household_id": row["seed_household_id"],
                 "source_geoid": geoid,
                 "synthesis_method": SYNTHESIS_METHOD,
@@ -221,6 +231,16 @@ def _autos_of(people: Sequence[Mapping[str, Any]]) -> int:
     if not people:
         return 0
     return int(float(people[0].get("VEH") or 0) or 0)
+
+
+def _hht_of(people: Sequence[Mapping[str, Any]]) -> int:
+    """The household's HHT code, or 0 when the survey did not report one."""
+    if not people:
+        return 0
+    try:
+        return int(float(people[0].get("HHT") or 0))
+    except (TypeError, ValueError):
+        return 0
 
 
 def _income_of(people: Sequence[Mapping[str, Any]]) -> int:

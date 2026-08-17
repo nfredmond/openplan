@@ -88,6 +88,20 @@ def parse_args() -> argparse.Namespace:
             "zone attributes, which are the same inputs the trip-based model uses."
         ),
     )
+    parser.add_argument(
+        "--config-package",
+        choices=["starter", "mtc"],
+        default="starter",
+        help=(
+            "Which config package the bundle ships. 'mtc' builds inputs the stock prototype_mtc "
+            "example can RUN (requires --population census); the runtime then layers the bundle "
+            "configs over the unmodified stock configuration."
+        ),
+    )
+    parser.add_argument(
+        "--stock-configs-dir",
+        help="Explicit path to the installed prototype_mtc example, for the 'mtc' config package.",
+    )
     return parser.parse_args()
 
 
@@ -250,6 +264,8 @@ def run_behavioral_demand_prototype(
     run_label: str | None = None,
     force: bool = False,
     population_source: str = "auto",
+    config_package: str = "starter",
+    stock_configs_dir: str | None = None,
 ) -> dict[str, Any]:
     screening_path = Path(screening_run_dir).expanduser().resolve()
     if not screening_path.exists():
@@ -293,6 +309,8 @@ def run_behavioral_demand_prototype(
             skim_mode=skim_mode,
             force=False,
             population_source=population_source,
+            config_package=config_package,
+            stock_configs_dir=stock_configs_dir,
         )
         bundle_manifest = read_json(Path(bundle_summary["manifest_path"]))
         record_step_finish(
@@ -312,6 +330,7 @@ def run_behavioral_demand_prototype(
                 # Which KIND of household this bundle contains. A count that
                 # travels without it becomes a number nobody can qualify later.
                 "population": bundle_summary["population"],
+                "config_package": bundle_summary.get("config_package"),
                 "bundle_type": bundle_manifest.get("bundle_type"),
             },
         )
@@ -462,6 +481,8 @@ def main() -> int:
         run_label=args.run_label,
         force=args.force,
         population_source=args.population,
+        config_package=args.config_package,
+        stock_configs_dir=args.stock_configs_dir,
     )
     print(json.dumps(result, indent=2))
     return 0 if result["pipeline_status"] in {"prototype_preflight_complete", "behavioral_runtime_succeeded"} else 1

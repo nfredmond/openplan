@@ -1230,7 +1230,13 @@ def compute_freeflow_skims(project_dir: Path, centroid_map: dict[int, int], run_
         graph.prepare_graph(centroids_sorted)
     missing_centroids = extract_missing_centroids_from_warnings(caught_warnings)
     graph.set_blocked_centroid_flows(True)
-    graph.set_skimming([time_field])
+    # Distance rides along with travel time (worker-lane parity): the
+    # ActivitySim bundle needs routed distance for its DIST skims, and a skim
+    # file carrying only time cannot say how far anything is.
+    skim_fields = [time_field]
+    if "distance" in columns and "distance" not in skim_fields:
+        skim_fields.append("distance")
+    graph.set_skimming(skim_fields)
 
     skimming = NetworkSkimming(graph)
     skimming.execute()
@@ -1254,6 +1260,7 @@ def compute_freeflow_skims(project_dir: Path, centroid_map: dict[int, int], run_
         "avg_time_min": float(matrix[finite].mean()) if reachable_pairs else None,
         "max_time_min": float(matrix[finite].max()) if reachable_pairs else None,
         "skim_path": str(skim_path),
+        "skim_fields": skim_fields,
     }
     project.close()
     return result

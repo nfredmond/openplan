@@ -38,6 +38,10 @@ geopandas>=1.0
 # reason as workers/aequilibrae_worker/requirements.txt — if you lift it in one
 # place, lift it in both, and only after an assignment actually completes.
 numpy>=1.26,<2.1
+# The OMX skim format the ActivitySim input bundle reads and writes
+# (activitysim_mtc_inputs.py). 0.3.3 (what aequilibrae brings) and 0.3.5 (the
+# worker execution image) both carry the whole API used here.
+openmatrix>=0.3
 pandas>=2.0
 requests>=2.31
 shapely>=2.0
