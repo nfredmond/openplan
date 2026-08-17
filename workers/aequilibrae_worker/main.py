@@ -60,6 +60,7 @@ import convergence
 import link_vmt
 import select_link
 import calibration
+from assignment_progress import stream_assignment_progress
 from gateways import (
     detect_external_gateways,
     build_cordon_injections,
@@ -2690,7 +2691,22 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
         select_link_sets = {}
         log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"
 
-    assig.execute()
+    # The assignment is one blocking call that can run for minutes. Without
+    # this the stage log froze on its last line and a healthy long run looked
+    # identical to a hung one — the stuck-run banner only fires after ten
+    # minutes, which is longer than many assignments take in total. The engine
+    # already logs an iteration line; this forwards it, throttled.
+    def _emit_progress(line: str) -> None:
+        nonlocal log
+        log += line + "\n"
+        sb_patch_stage(stage_id, {"log_tail": log})
+
+    with stream_assignment_progress(
+        _emit_progress,
+        target_gap=assig.rgap_target,
+        max_iterations=assig.max_iter,
+    ):
+        assig.execute()
 
     rgap = getattr(assig.assignment, "rgap", float("nan"))
     iters = getattr(assig.assignment, "iteration", 50)

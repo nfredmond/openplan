@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, ArrowRight, Loader2, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1362,6 +1362,58 @@ export function ModelRunManager({
   );
 }
 
+/**
+ * The stage's console output, which follows new lines as the worker writes them.
+ *
+ * FOLLOWING STOPS WHEN THE READER SCROLLS UP, and says so. During a long
+ * assignment the worker appends a progress line every few seconds; a box that
+ * always jumped to the bottom would yank the text away from someone who had
+ * scrolled back to read an earlier warning — and one that never scrolled would
+ * leave the newest line permanently out of sight. So it follows while the
+ * reader is at the bottom, releases when they leave it, and resumes when they
+ * come back.
+ */
+function StageLogView({ log, isRunning }: { log: string; isRunning: boolean }) {
+  const boxRef = useRef<HTMLPreElement | null>(null);
+  const [isFollowing, setIsFollowing] = useState(true);
+
+  // "At the bottom" needs slack: a fractional scroll height means an exact
+  // comparison is false on a box the reader has scrolled fully down.
+  const AT_BOTTOM_SLACK_PX = 16;
+
+  const handleScroll = useCallback(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const distanceFromBottom = box.scrollHeight - box.scrollTop - box.clientHeight;
+    setIsFollowing(distanceFromBottom <= AT_BOTTOM_SLACK_PX);
+  }, []);
+
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box || !isFollowing) return;
+    box.scrollTop = box.scrollHeight;
+  }, [log, isFollowing]);
+
+  return (
+    <div>
+      <pre
+        ref={boxRef}
+        onScroll={handleScroll}
+        data-testid="stage-log-output"
+        data-following={isFollowing ? "true" : "false"}
+        className={`${isRunning ? "max-h-64" : "max-h-32"} overflow-auto rounded-[12px] bg-zinc-950/90 p-2 text-[11px] leading-5 text-zinc-100`}
+      >
+        {log}
+      </pre>
+      {isRunning && !isFollowing ? (
+        <p className="mt-1 text-[11px] text-muted-foreground" data-testid="stage-log-paused">
+          Paused following — scroll to the bottom to keep up with new output.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function ModelRunStagingAndArtifacts({
   modelId,
   run,
@@ -1428,9 +1480,7 @@ function ModelRunStagingAndArtifacts({
                               here rather than at the end.
                             </p>
                           ) : null}
-                          <pre className="max-h-32 overflow-auto rounded-[12px] bg-zinc-950/90 p-2 text-[11px] leading-5 text-zinc-100">
-                            {shown.log}
-                          </pre>
+                          <StageLogView log={shown.log} isRunning={stage.status === "running"} />
                         </div>
                       );
                     })()}
