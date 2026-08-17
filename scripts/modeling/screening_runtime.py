@@ -185,6 +185,11 @@ def model_assumptions() -> dict[str, Any]:
         "other": {
             "network_circuity_factor": VMT_NETWORK_CIRCUITY,
             "peak_hour_factor": PEAK_HOUR_FACTOR,
+            # How far a zone's demand will travel to enter the network on a
+            # bigger road. It decides whether trips are injected onto the
+            # nearest arterial or the nearest road of any kind, which shows up
+            # directly in which roads the assignment over-loads.
+            "connector_class_weight_m": CONNECTOR_CLASS_WEIGHT_M,
         },
     }
 
@@ -589,6 +594,22 @@ def extract_missing_centroids_from_warnings(caught_warnings: list[warnings.Warni
     return sorted(missing)
 
 
+#: How many metres of extra walk-equivalent distance one road-class step is
+#: worth when choosing where a zone's centroid connector attaches.
+#:
+#: MEASURED CONSEQUENCE, 2026-08-17. At the shipped 250 a motorway node beats a
+#: residential one 1,500 m farther away, and trunk beats tertiary by 750 m, so a
+#: zone's whole demand is injected directly onto the biggest road nearby and
+#: never traverses the local network. Across 24 counties with published counts
+#: the assignment over-loads exactly those roads and starves the small ones:
+#: trunk 3.39x observed, primary 2.32x, secondary 2.10x, tertiary 0.01x.
+#:
+#: Overridable so the effect can be MEASURED rather than argued about; the
+#: default is the shipped behaviour until an experiment justifies moving it.
+#: 0 makes connector choice purely nearest-node.
+CONNECTOR_CLASS_WEIGHT_M = float(os.getenv("OPENPLAN_CONNECTOR_CLASS_WEIGHT_M", "250") or 250)
+
+
 def rank_connector_candidate(conn: sqlite3.Connection, node_id: int, d2: float) -> tuple[float, float, float, float]:
     rows = conn.execute(
         "SELECT DISTINCT COALESCE(link_type, '') FROM links WHERE a_node=? OR b_node=?",
@@ -598,7 +619,7 @@ def rank_connector_candidate(conn: sqlite3.Connection, node_id: int, d2: float) 
     distance_m = max((float(d2) ** 0.5) * 111000, 10)
     # Conservative scoring: a one-class road upgrade is only worth a few hundred meters,
     # so very close local collectors can still beat farther arterials.
-    score = best_priority * 250.0 - distance_m
+    score = best_priority * CONNECTOR_CLASS_WEIGHT_M - distance_m
     return (score, float(best_priority), -distance_m, -float(node_id))
 
 

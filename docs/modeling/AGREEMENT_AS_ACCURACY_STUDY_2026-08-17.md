@@ -249,3 +249,63 @@ python scripts/modeling/agreement_accuracy_study.py \
 Per-county artifacts live under `data/agreement-study/runs/` and are gitignored:
 6.2 GB per batch of model output, which is product, not evidence. The registry
 and this document are the evidence.
+
+---
+
+## Hunting the 1.8× over-assignment — four causes ruled out (2026-08-17)
+
+With the measurement cleaned twice and the residual unmoved, the over-assignment
+is the model. Four candidate causes were tested against the 24 counties. **All
+four were rejected**, which narrows the search rather than ending it.
+
+| hypothesis | test | result |
+|---|---|---|
+| through/external demand is too big | correlation of external share with over-assignment across 24 counties | **+0.09** — none |
+| zones are too coarse | correlation of zone count with over-assignment | **−0.19** — weak, wrong sign |
+| the 8-gateway cap concentrates through traffic | correlation of share of boundary crossings kept with over-assignment | **+0.21** — wrong direction |
+| connectors attach demand to arterials | 4 counties re-run with the class weight at 0 | **null** (see below) |
+
+Trip generation is close to right and cannot account for it either: **4.32
+trips per capita** median across the counties, against roughly 3.8-4.0 in US
+household travel survey figures — around 10% high, not 78%.
+
+### The connector experiment, in full
+
+`rank_connector_candidate` scores a node as `priority × 250 − distance`, so a
+zone will reach 1,500 m past a residential street to attach its demand to a
+motorway. The hypothesis was that this injects every trip onto an arterial and
+starves the local network, which would match the road-class signature exactly.
+
+The mechanism is real: at weight 0 the connectors moved off motorways (42 → 10
+in Merced County) and onto residential streets (49 → 100). The accuracy did not
+follow. Pooled across three development counties, 209 stations:
+
+| | weight 250 (shipped) | weight 0 |
+|---|---:|---:|
+| median error | 88.6% | 87.3% |
+| model ÷ observed | 1.66 | 1.64 |
+| within the 30% gate | 20.1% | 21.6% |
+| motorway error | 33.6% | **39.7%** |
+| secondary error | 100.0% | 88.6% |
+
+No coherent improvement, and motorways got worse. **The default is therefore
+unchanged.** `OPENPLAN_CONNECTOR_CLASS_WEIGHT_M` now exists so the question can
+be re-measured rather than re-argued, and it defaults to the shipped 250.
+
+Two disclosures. A fourth county, 41017, was also run and is **excluded from
+this conclusion**: it is a holdout county of the study above, and using it to
+choose a parameter would spend a holdout on a question it was not reserved for.
+It got worse too (101.0% → 110.4%). And this experiment had no pre-registration,
+so three counties could not have justified moving a shipped default even had
+they looked good — the most they can support is a properly registered evaluation.
+
+### What is left to test
+
+The strongest remaining candidate is that the model's traffic is spread over
+too few roads: if total travel is roughly right (VMT per capita is credible)
+and trips per capita is roughly right, but the network carries that travel on
+fewer parallel routes than reality has, every counted road reads high. That is
+consistent with the class signature — arterials 2-3.4× and tertiary at 0.01 —
+and it is not something a demand-side scalar can reach. Testing it means
+comparing the model's VMT-by-road-class distribution against the published
+distribution, not adding another correction factor.
