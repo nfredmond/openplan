@@ -129,26 +129,41 @@ export const countyRunEnqueueStatusSchema = z.enum(["not-enqueued", "prepared", 
 
 export type CountyRunEnqueueStatus = z.infer<typeof countyRunEnqueueStatusSchema>;
 
-export const countyOnrampManifestSchema = z.object({
-  schema_version: z.literal("openplan.county_onramp_manifest.v1"),
-  generated_at: z.string(),
-  name: z.string().min(1),
-  county_fips: z.string().nullable(),
-  county_prefix: z.string().min(1),
-  run_dir: z.string().min(1),
-  mode: z.enum(["build-and-bootstrap", "existing-run"]),
-  stage: countyRunStageSchema,
-  artifacts: countyOnrampArtifactsSchema,
-  runtime: countyOnrampRuntimeSchema,
-  summary: z
-    .object({
-      run: countyOnrampRunSnapshotSchema,
-      validation: countyOnrampValidationSummarySchema.nullable(),
-      bundle_validation: z.record(z.string(), z.unknown()).nullable(),
-      scaffold: countyOnrampScaffoldSummarySchema.nullable().optional(),
-    })
-    .passthrough(),
-});
+export const countyOnrampManifestSchema = z
+  .object({
+    schema_version: z.literal("openplan.county_onramp_manifest.v1"),
+    generated_at: z.string(),
+    name: z.string().min(1),
+    county_fips: z.string().nullable(),
+    county_prefix: z.string().min(1),
+    run_dir: z.string().min(1),
+    mode: z.enum(["build-and-bootstrap", "existing-run"]),
+    stage: countyRunStageSchema,
+    artifacts: countyOnrampArtifactsSchema,
+    runtime: countyOnrampRuntimeSchema,
+    // The producer writes these two at the TOP level of the manifest
+    // (scripts/modeling/bootstrap_county_validation_onramp.py). Zod strips
+    // unknown top-level keys, so before these were declared every ingest
+    // silently deleted the calibration record and the assumptions statement —
+    // the caveat card then called fitted runs "Uncalibrated" and the grant
+    // appendix denied any assumptions were recorded, while the suite stayed
+    // green because its fixtures never crossed this parse. Passthrough
+    // records, not typed shapes: their contents are the producer's contract,
+    // quoted verbatim downstream.
+    calibration: z.record(z.string(), z.unknown()).nullable().optional(),
+    assumptions: z.record(z.string(), z.unknown()).nullable().optional(),
+    summary: z
+      .object({
+        run: countyOnrampRunSnapshotSchema,
+        validation: countyOnrampValidationSummarySchema.nullable(),
+        bundle_validation: z.record(z.string(), z.unknown()).nullable(),
+        scaffold: countyOnrampScaffoldSummarySchema.nullable().optional(),
+      })
+      .passthrough(),
+  })
+  // Top-level passthrough kills the CLASS of this defect: the next top-level
+  // key a producer adds must survive ingest without a schema edit here.
+  .passthrough();
 
 export type CountyOnrampArtifacts = z.infer<typeof countyOnrampArtifactsSchema>;
 export type CountyOnrampRuntime = z.infer<typeof countyOnrampRuntimeSchema>;

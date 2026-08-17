@@ -99,6 +99,28 @@ function yesNoUnknown(value: boolean | null | undefined, yes: string, no: string
 }
 
 /**
+ * Whether a counts comparison actually happened, read from its own record.
+ *
+ * An unvalidated run does not store null here — the create route, the worker
+ * callback and a scaffold edit all store `{}` — and `{}` is truthy. Gating on
+ * truthiness made this document assert "was compared against observed counts
+ * and DID NOT meet" about runs where nothing was ever measured, which is a
+ * fabricated comparison on the page built for auditors. Evidence of a real
+ * comparison is a recorded gate verdict, a numeric metric, or a matched-station
+ * count; anything less reads as "never compared" — the weaker claim, and the
+ * only one an empty record can support.
+ */
+function hasCountsComparison(summary: Record<string, unknown> | null): boolean {
+  const validation = asRecord(summary);
+  if (!validation) return false;
+  if (asText(asRecord(validation.screening_gate)?.status_label)) return true;
+  if (asNumber(validation.stations_matched) !== null) return true;
+  const metrics = asRecord(validation.metrics);
+  if (metrics && Object.values(metrics).some((value) => typeof value === "number")) return true;
+  return false;
+}
+
+/**
  * The sentence that limits what this number may be used for.
  *
  * Derived from what the run actually established, never from a default: a run
@@ -109,10 +131,8 @@ function yesNoUnknown(value: boolean | null | undefined, yes: string, no: string
 export function claimCeiling(input: CountyRunProvenanceInput): string {
   const gate = asRecord(asRecord(input.validationSummary)?.screening_gate);
   const gateLabel = asText(gate?.status_label);
-  const calibration = asRecord(input.manifest?.summary?.run as unknown) ? null : null;
-  void calibration;
 
-  if (!input.validationSummary) {
+  if (!hasCountsComparison(input.validationSummary)) {
     return (
       "This run has NOT been compared against observed traffic counts. Its road-by-road volumes " +
       "are unvalidated model output and must not be presented as measured or forecast traffic. " +
@@ -154,7 +174,7 @@ function sourcesSection(evidence: ProvenanceEvidence | null): string[] {
 
 function validationSection(input: CountyRunProvenanceInput): string[] {
   const validation = asRecord(input.validationSummary);
-  if (!validation) {
+  if (!validation || !hasCountsComparison(input.validationSummary)) {
     return [
       "**This run was never compared against observed traffic counts.**",
       "",

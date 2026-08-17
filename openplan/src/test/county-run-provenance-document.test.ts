@@ -5,6 +5,7 @@ import {
   claimCeiling,
   type CountyRunProvenanceInput,
 } from "@/lib/models/county-run-provenance";
+import { countyOnrampManifestSchema, getCountyRunCaveats } from "@/lib/models/county-onramp";
 
 /**
  * A PAPER TRAIL THAT CANNOT DESCRIBE WHAT WAS SKIPPED IS A BROCHURE.
@@ -346,5 +347,134 @@ describe("the document is a record, not a derivation", () => {
     expect(document).toContain("no step improved the held-out counts");
     // It must not read as though calibration succeeded.
     expect(document).not.toContain("Claim tier:");
+  });
+});
+
+/**
+ * THE LIVE PARSE PATH, NOT A CAST.
+ *
+ * On 2026-08-16 a review found both of this file's headline promises broken in
+ * production while every test here stayed green: the ingest schema silently
+ * stripped the producer's top-level `calibration` and `assumptions` keys, so
+ * the caveat card called fitted runs "Uncalibrated" and this appendix denied
+ * any assumptions were recorded. The fixtures above are cast straight past the
+ * zod parse, which is exactly how the defect hid. Every fixture in the two
+ * describe blocks below therefore goes THROUGH countyOnrampManifestSchema.parse
+ * — a schema that strips again fails here first.
+ */
+function parsedProducerManifest(extra: Record<string, unknown> = {}) {
+  return countyOnrampManifestSchema.parse({
+    schema_version: "openplan.county_onramp_manifest.v1",
+    generated_at: "2026-08-16T10:00:00.000Z",
+    name: "example-county-2026",
+    county_fips: "06001",
+    county_prefix: "EXA",
+    run_dir: "data/screening-runs/example-county-2026",
+    mode: "build-and-bootstrap",
+    stage: "runtime-complete",
+    artifacts: {
+      scaffold_csv: "validation/scaffold.csv",
+      review_packet_md: "validation/review.md",
+      run_summary_json: null,
+      bundle_manifest_json: null,
+      validation_summary_json: null,
+    },
+    runtime: {
+      keep_project: false,
+      force: false,
+      overall_demand_scalar: null,
+      external_demand_scalar: null,
+      hbw_scalar: null,
+      hbo_scalar: null,
+      nhb_scalar: null,
+    },
+    summary: {
+      run: {
+        zone_count: 26,
+        population_total: 100_382,
+        jobs_total: 30_000,
+        loaded_links: 28_670,
+        final_gap: null,
+        total_trips: 578_262,
+      },
+      validation: null,
+      bundle_validation: null,
+    },
+    ...extra,
+  });
+}
+
+const producerCalibration = {
+  performed: true,
+  claim_tier: "calibrated_to_counts",
+  fit_station_count: 28,
+  holdout_station_count: 12,
+  selection_trials_scored_on_holdout: 7,
+  baseline: { holdout: { median_ape: 40.1 } },
+  calibrated: { holdout: { median_ape: 16.1 } },
+};
+
+describe("what the producer wrote at the top level survives ingest", () => {
+  it("the calibration record survives the manifest schema", () => {
+    const manifest = parsedProducerManifest({ calibration: producerCalibration });
+    expect(manifest.calibration).toMatchObject({ performed: true, holdout_station_count: 12 });
+  });
+
+  it("the assumptions record survives the manifest schema", () => {
+    const manifest = parsedProducerManifest({ assumptions: { basis: "OpenPlan's own defaults" } });
+    expect(manifest.assumptions).toMatchObject({ basis: "OpenPlan's own defaults" });
+  });
+
+  it("a top-level key this schema has never heard of survives too", () => {
+    // Kills the CLASS, not the instance: the next key a producer adds must not
+    // need a schema edit here to reach the appendix.
+    const manifest = parsedProducerManifest({ some_future_producer_key: { recorded: true } });
+    expect((manifest as Record<string, unknown>).some_future_producer_key).toEqual({ recorded: true });
+  });
+
+  it("the caveat card calls a fitted run calibrated, fed from the parsed manifest", () => {
+    const manifest = parsedProducerManifest({ calibration: producerCalibration });
+    const caveats = getCountyRunCaveats("validated-screening", manifest);
+    expect(caveats).toContain(
+      "Calibrated to published counts, graded on 12 stations held back from the fitting"
+    );
+    expect(caveats).not.toContain("Uncalibrated");
+  });
+
+  it("the appendix renders the calibration section from the parsed manifest", () => {
+    const document = buildCountyRunProvenanceDocument(
+      input({ manifest: parsedProducerManifest({ calibration: producerCalibration }) })
+    );
+    expect(document).toContain("calibrated_to_counts");
+    expect(document).not.toContain("**Not calibrated.**");
+  });
+});
+
+describe("an empty validation record is a run that was never compared", () => {
+  // The create route, the worker callback and a scaffold edit all store `{}`
+  // for a run with no validation — not null. `{}` is truthy, and gating on
+  // truthiness made this appendix assert a failed comparison nobody ran.
+  it("claimCeiling on {} says never-compared, and does not invent a failed comparison", () => {
+    const ceiling = claimCeiling(input({ validationSummary: {} }));
+    expect(ceiling).toContain("NOT been compared");
+    expect(ceiling).not.toContain("DID NOT meet");
+  });
+
+  it("the document body on {} reports no comparison, not a failed one", () => {
+    const document = buildCountyRunProvenanceDocument(input({ validationSummary: {} }));
+    expect(document).toContain("never compared against observed traffic counts");
+    expect(document).not.toContain("DID NOT meet");
+  });
+
+  it("a real failed comparison still reads as one", () => {
+    const ceiling = claimCeiling(
+      input({
+        validationSummary: {
+          screening_gate: { status_label: "internal prototype only" },
+          metrics: { median_absolute_percent_error: 62.8 },
+        },
+      })
+    );
+    expect(ceiling).toContain("DID NOT meet");
   });
 });
