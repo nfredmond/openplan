@@ -149,11 +149,22 @@ class OverfitGuardTests(unittest.TestCase):
             baseline_volumes=self.baseline,
             max_iterations=5,
         )
-        # One rejected trial ends EACH stage — class factors, the demand
-        # scalar, then the external-demand scalar — so three in total. A loop
-        # that kept trying after a rejection would burn a full assignment per
-        # iteration for nothing.
-        self.assertEqual(len(calls), 3)
+        # CHANGED 2026-08-17, and the change is the point. One rejected trial
+        # used to end EVERY stage, so a hopeless run cost three assignments —
+        # and so did a run whose external scalar merely needed a second guess.
+        # On a real county that stopped the external stage after ONE value, and
+        # it left a lever worth a third of all trips at 1.0 while the model
+        # over-assigned every road class it was graded on.
+        #
+        # The external stage now sweeps a fixed candidate list instead. What
+        # must still hold is that the work is BOUNDED: the first two stages
+        # still stop at their first rejection, and the sweep cannot exceed its
+        # candidate list or `max_iterations`, whichever is smaller.
+        from calibrate_to_counts import external_scalar_candidates
+
+        sweep_ceiling = min(len(external_scalar_candidates([], {})) + 1, 5)
+        self.assertLessEqual(len(calls), 2 + sweep_ceiling)
+        self.assertGreater(len(calls), 3, "the external stage must outlive its first rejection")
 
 
 class DemandScalarStageTests(unittest.TestCase):
@@ -442,6 +453,114 @@ class VolumeAttachmentTests(unittest.TestCase):
         matched = stations(2)
         attach_modelled_volumes(matched, {1: 4200.0, 2: 1.0})
         self.assertNotIn("modeled_daily_pce", matched[0])
+
+
+
+
+class ExternalScalarSweepTests(unittest.TestCase):
+    """Stage 3 stopped after one guess, and that was the whole problem.
+
+    MEASURED on a real county: the stage computed one ratio from the fit
+    stations, tried it, landed 0.93 percentage points worse on the holdout, and
+    stopped — leaving the external-demand scalar at 1.0. External travel is a
+    third of all trips there, and the model over-assigned every road class it
+    was graded on, from 1.05 on primary roads to 3.28 on trunk. One sample of
+    that lever is not a search.
+    """
+
+    def setUp(self) -> None:
+        self.matched = stations(20)
+        self.baseline = volumes(self.matched, 5000.0)
+
+    def test_the_suggested_ratio_is_tried_first(self) -> None:
+        # When the fit stations imply a ratio it leads, because a ratio that is
+        # right is right for a reason. The fixed sweep is the fallback.
+        from calibrate_to_counts import external_scalar_candidates
+
+        candidates = external_scalar_candidates([], {})
+        self.assertEqual(candidates[0], 0.5)
+
+    def test_the_candidates_lean_below_one(self) -> None:
+        # The failure mode this lever has is over-assignment, measured on every
+        # road class. Candidates concentrate where the answer is likely to be.
+        from calibrate_to_counts import EXTERNAL_SCALAR_CANDIDATES
+
+        below = [c for c in EXTERNAL_SCALAR_CANDIDATES if c < 1.0]
+        self.assertGreater(len(below), len(EXTERNAL_SCALAR_CANDIDATES) - len(below))
+
+    def test_scalars_above_one_stay_reachable(self) -> None:
+        # A study area whose boundary traffic is genuinely understated must
+        # still be able to get there. Leaning is not excluding.
+        from calibrate_to_counts import EXTERNAL_SCALAR_CANDIDATES
+
+        self.assertTrue(any(c > 1.0 for c in EXTERNAL_SCALAR_CANDIDATES))
+
+    def test_a_duplicate_suggestion_does_not_cost_a_second_assignment(self) -> None:
+        # Every trial is a full assignment. A suggested ratio that happens to
+        # equal a fixed candidate must not spend two of them proving the same
+        # thing twice.
+        #
+        # The suggestion is forced to 0.5 — already in the fixed list — because
+        # a fixture that merely produces NO suggestion cannot tell a working
+        # dedup from an absent one. A mutation proved that: removing the dedup
+        # entirely left the weaker version of this test passing.
+        import calibrate_to_counts as module
+
+        original = module.demand_scalar_step
+        module.demand_scalar_step = lambda *args, **kwargs: 0.5
+        try:
+            candidates = module.external_scalar_candidates(self.matched, self.baseline)
+        finally:
+            module.demand_scalar_step = original
+
+        self.assertIn(0.5, candidates)
+        self.assertEqual(len(candidates), len(set(candidates)))
+        self.assertEqual(candidates.count(0.5), 1)
+
+    def test_a_rejected_candidate_does_not_end_the_stage(self) -> None:
+        # THE BEHAVIOUR CHANGE. Every trial here is worse than baseline, so
+        # every one is rejected — and the stage must still have tried more than
+        # one of them.
+        external_trials: list[float] = []
+
+        def reassign(factors, scalar=1.0, ext=1.0):
+            if ext != 1.0:
+                external_trials.append(ext)
+            return volumes(self.matched, 500_000.0)
+
+        calibrate(
+            matched_stations=self.matched,
+            reassign=reassign,
+            baseline_volumes=self.baseline,
+            max_iterations=6,
+        )
+        self.assertGreater(len(external_trials), 1)
+        self.assertEqual(len(external_trials), len(set(external_trials)))
+
+    def test_the_sweep_cannot_exceed_the_iteration_budget(self) -> None:
+        # A sweep is only an improvement if it stays bounded; each trial costs a
+        # full assignment.
+        external_trials: list[float] = []
+
+        def reassign(factors, scalar=1.0, ext=1.0):
+            if ext != 1.0:
+                external_trials.append(ext)
+            return volumes(self.matched, 500_000.0)
+
+        calibrate(
+            matched_stations=self.matched,
+            reassign=reassign,
+            baseline_volumes=self.baseline,
+            max_iterations=2,
+        )
+        self.assertLessEqual(len(external_trials), 2)
+
+    def test_every_external_scalar_stays_inside_its_clamp(self) -> None:
+        from calibrate_to_counts import EXTERNAL_SCALAR_CANDIDATES
+
+        for candidate in EXTERNAL_SCALAR_CANDIDATES:
+            self.assertGreaterEqual(candidate, 0.1)
+            self.assertLessEqual(candidate, 10.0)
 
 
 if __name__ == "__main__":

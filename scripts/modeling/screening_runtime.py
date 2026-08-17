@@ -1301,7 +1301,23 @@ def gravity_distribute(
     return np.nan_to_num(result, nan=0.0, posinf=0.0, neginf=0.0)
 
 
-def detect_external_gateways(project_dir: Path, boundary_geom, max_gateways: int = 8) -> list[dict[str, Any]]:
+#: How many boundary crossings a study area may model as gateways.
+#:
+#: OVERRIDABLE, and the reason is a measurement. On the county this was written
+#: against, 18 crossings survived corridor grouping and 8 were kept — so ten
+#: real ways in and out of the county were discarded. Two of them carry state
+#: highways with published counts of 12,200 and 5,100 vehicles a day, and the
+#: model puts ZERO traffic on both, because a road whose whole purpose is
+#: leaving the study area has no trips at all once its gateway is gone. The
+#: traffic that should have entered there is injected at the crossings that were
+#: kept instead, which is a candidate explanation for those roads carrying two
+#: to three times too much.
+MAX_GATEWAYS = int(os.getenv("OPENPLAN_MAX_GATEWAYS", "8"))
+
+
+def detect_external_gateways(
+    project_dir: Path, boundary_geom, max_gateways: int = MAX_GATEWAYS
+) -> list[dict[str, Any]]:
     """Find the highways that cross the study-area boundary, and where.
 
     WHAT CHANGED HERE, AND WHY IT MATTERED (2026-08-15). This function used to
@@ -1385,10 +1401,7 @@ def detect_external_gateways(project_dir: Path, boundary_geom, max_gateways: int
         # area with more boundary highways than this keeps its busiest, and a
         # reader has to be able to tell that from a study area that only had
         # this many.
-        corridor_notes.append(
-            f"{len(ranked)} boundary crossings remained after corridor grouping; kept the "
-            f"{max_gateways} busiest and dropped {len(ranked) - max_gateways}."
-        )
+        corridor_notes.append(gateway_cap_note(len(ranked), max_gateways))
     clusters = ranked[:max_gateways]
 
     gateways = []
@@ -1407,6 +1420,30 @@ def detect_external_gateways(project_dir: Path, boundary_geom, max_gateways: int
             }
         )
     return gateways, corridor_notes
+
+
+def gateway_cap_note(crossings_found: int, max_gateways: int) -> str:
+    """What the gateway cap discarded, in the words that made it findable.
+
+    THIS SENTENCE IS THE ONLY REASON THE DEFECT WAS FOUND. It recorded "18
+    boundary crossings remained after corridor grouping; kept the 8 busiest and
+    dropped 10" on a county where two of the dropped crossings carry state
+    highways with published counts of 12,200 and 5,100 vehicles a day — and the
+    model assigns zero traffic to both, because a road whose whole purpose is
+    leaving the study area has no trips once its gateway is gone.
+
+    So it names the number dropped rather than saying the cap was applied, and
+    it says what a dropped crossing costs. A note that only said "capped at 8"
+    would have been read as housekeeping.
+    """
+    dropped = max(0, crossings_found - max_gateways)
+    return (
+        f"{crossings_found} boundary crossings remained after corridor grouping; kept the "
+        f"{max_gateways} busiest and dropped {dropped}. A dropped crossing is a way in and out of "
+        "the study area the model cannot use: roads that exist mainly to leave it carry no traffic "
+        "at all, and the trips that would have entered there are injected at the crossings that "
+        "were kept instead. Raise OPENPLAN_MAX_GATEWAYS to model more of them."
+    )
 
 
 def keep_corridor_endpoints(

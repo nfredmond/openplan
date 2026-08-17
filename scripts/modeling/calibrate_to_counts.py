@@ -70,7 +70,7 @@ from __future__ import annotations
 import csv
 import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping, Sequence
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 WORKER_DIR = SCRIPT_DIR.parents[1] / "workers" / "aequilibrae_worker"
@@ -264,6 +264,45 @@ def rejection_reason(
     return "rejected — no strict improvement on the held-out counts"
 
 
+#: The external-demand scalars a calibration will actually try, before the one
+#: the fit stations suggest is inserted among them.
+#:
+#: Weighted below 1.0 on purpose, and the purpose is measured rather than
+#: assumed: external volumes come from a flat lookup by road class applied at
+#: every boundary crossing, and on the county this was written against the model
+#: over-assigned EVERY road class it was graded on — ratios of 1.05 on primary
+#: roads to 3.28 on trunk. An over-guess is the failure mode this lever has, so
+#: the candidates concentrate where the answer is likely to be. Values above 1.0
+#: are kept because a study area whose boundary traffic is genuinely understated
+#: must still be reachable.
+EXTERNAL_SCALAR_CANDIDATES: tuple[float, ...] = (0.5, 0.7, 0.85, 1.2, 0.35, 1.5)
+
+
+def external_scalar_candidates(
+    fit_stations: Sequence[Mapping[str, Any]], volumes: Mapping[int, float]
+) -> list[float]:
+    """The external scalars to try, best guess first.
+
+    The ratio the fit stations imply leads, because when it is right it is right
+    for a reason. The fixed sweep follows it, so a stage that would have stopped
+    at the first rejection now keeps looking — which is the whole change.
+
+    Duplicates are removed so a suggested ratio that happens to equal a fixed
+    candidate does not spend two assignments proving the same thing twice.
+    """
+    candidates: list[float] = []
+    suggested = demand_scalar_step(attach_modelled_volumes(fit_stations, volumes))
+    if suggested is not None and abs(suggested - 1.0) >= 1e-6:
+        candidates.append(round(float(suggested), 4))
+    for value in EXTERNAL_SCALAR_CANDIDATES:
+        candidates.append(value)
+    ordered: list[float] = []
+    for value in candidates:
+        if not any(abs(value - kept) < 1e-6 for kept in ordered):
+            ordered.append(value)
+    return ordered
+
+
 def calibrate(
     *,
     matched_stations: list[dict[str, Any]],
@@ -430,13 +469,27 @@ def calibrate(
     # Fitted separately from resident travel because they are different guesses
     # with different evidence behind them. Smearing one correction across both
     # would move trips that were never in doubt.
-    for iteration in range(1, max_iterations + 1):
-        step = demand_scalar_step(attach_modelled_volumes(fit_stations, best_volumes))
-        if step is None or abs(step - 1.0) < 1e-6:
-            steps.append({"stage": "external", "iteration": iteration, "outcome": "no usable external step"})
+    # SWEPT, NOT STEPPED, AND THE REASON IS A MEASUREMENT. This stage used to
+    # compute one suggested ratio from the fit stations, try it, and stop on
+    # rejection. On a real county it therefore tried exactly ONE value, landed
+    # 0.93 percentage points worse on the holdout, and left the external scalar
+    # at 1.0 — untouched — while the model over-assigned every road class it
+    # was graded on (ratios 1.05 to 3.28). A single sample of a lever worth a
+    # third of all trips is not a search.
+    #
+    # The candidates are explicit and coarse rather than a gradient, because the
+    # objective is not smooth: external traffic disperses by population and job
+    # share, so moving it changes which links are congested and reroutes
+    # everything. A ratio derived at one scalar does not predict the next.
+    for iteration, candidate in enumerate(external_scalar_candidates(fit_stations, best_volumes), start=1):
+        if iteration > max_iterations:
+            steps.append({
+                "stage": "external",
+                "outcome": f"stopped after {max_iterations} trials with candidates left to try",
+            })
             break
 
-        trial_external = max(0.1, min(10.0, external_scalar * step))
+        trial_external = max(0.1, min(10.0, candidate))
         trial_volumes = reassign(cumulative, demand_scalar, trial_external)
         trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
         trial_objective = trial_holdout["objective"]
@@ -460,6 +513,9 @@ def calibrate(
                 "holdout_median_ape": trial_holdout["median_ape"],
             })
         else:
+            # NO BREAK. The old loop stopped at the first rejection, which is
+            # why one bad guess ended the stage. A rejected candidate says
+            # nothing about the next one.
             steps.append({
                 "stage": "external",
                 "iteration": iteration,
@@ -469,7 +525,6 @@ def calibrate(
                 "external_demand_scalar": round(trial_external, 4),
                 "holdout_median_ape": trial_holdout["median_ape"],
             })
-            break
 
     return {
         "method": (
