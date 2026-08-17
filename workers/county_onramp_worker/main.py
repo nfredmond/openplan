@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hmac
 import json
 import logging
 import os
@@ -42,6 +43,63 @@ def _parse_bearer_token(authorization_header: str | None) -> str | None:
     if len(parts) != 2 or parts[0].lower() != "bearer":
         return None
     return parts[1].strip() or None
+
+
+# Loopback addresses, as Flask reports the socket peer in request.remote_addr.
+_LOOPBACK_ADDRS = frozenset({"127.0.0.1", "::1", "::ffff:127.0.0.1"})
+
+
+def _is_loopback_addr(remote_addr: str | None) -> bool:
+    if not remote_addr:
+        return False
+    return remote_addr in _LOOPBACK_ADDRS or remote_addr.startswith("127.")
+
+
+def _authorize_job_request(
+    configured_token: str, authorization_header: str | None, remote_addr: str | None
+) -> bool:
+    """Whether a job request may proceed.
+
+    This endpoint launches a subprocess whose executable name comes from the
+    payload (runtimeOptions.containerEngineCli), so an unauthenticated caller is
+    remote code execution. Two ways to be authorized, and NO third:
+
+    - a configured token, presented as a bearer and compared in constant time; or
+    - no token configured AND the caller is on loopback (local single-machine
+      dev, not reachable from any network).
+
+    A tokenless request from a non-loopback peer is refused. This is the runtime
+    backstop that holds even under gunicorn, where the app cannot see its own
+    bind address — so it closes the exposure regardless of how the server was
+    started.
+    """
+    if configured_token:
+        provided = _parse_bearer_token(authorization_header)
+        if provided is None:
+            return False
+        return hmac.compare_digest(provided, configured_token)
+    return _is_loopback_addr(remote_addr)
+
+
+def _startup_bind_refusal(host: str, configured_token: str) -> str | None:
+    """Refuse to START an unauthenticated endpoint on a network interface.
+
+    A message means refuse (mirrors odm_worker). Binding a non-loopback host
+    with no token is an explicit request to expose the RCE surface to the
+    network — the exact posture DEPLOY.md's no-Docker recipe used to produce.
+    Loopback binds, and any bind with a token set, are allowed.
+    """
+    if configured_token:
+        return None
+    if _is_loopback_addr(host) or host in {"localhost"}:
+        return None
+    return (
+        f"REFUSING TO START: bind host {host!r} is not loopback and "
+        "OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN is not set. This endpoint runs a "
+        "subprocess named by the request payload, so exposing it unauthenticated "
+        "on a network interface is remote code execution. Set the token, or bind "
+        "127.0.0.1 for local single-machine use."
+    )
 
 
 def _require_string(container: dict[str, Any], key: str) -> str:
@@ -319,10 +377,10 @@ def healthz():
 @app.post("/")
 @app.post("/jobs")
 def create_job():
-    if WORKER_TOKEN:
-        request_token = _parse_bearer_token(request.headers.get("authorization"))
-        if request_token != WORKER_TOKEN:
-            return jsonify({"error": "Unauthorized"}), 401
+    if not _authorize_job_request(
+        WORKER_TOKEN, request.headers.get("authorization"), request.remote_addr
+    ):
+        return jsonify({"error": "Unauthorized"}), 401
 
     payload = request.get_json(silent=True)
     try:
@@ -335,6 +393,14 @@ def create_job():
 
 
 if __name__ == "__main__":
-    host = os.getenv("OPENPLAN_COUNTY_ONRAMP_WORKER_HOST", "0.0.0.0")
+    # Loopback by default: this worker only needs to be reached by the OpenPlan
+    # app on the same machine (the compose file sets 127.0.0.1 under host
+    # networking). A wider bind is an explicit choice, and an unauthenticated
+    # one is refused below.
+    host = os.getenv("OPENPLAN_COUNTY_ONRAMP_WORKER_HOST", "127.0.0.1")
+    refusal = _startup_bind_refusal(host, WORKER_TOKEN)
+    if refusal:
+        print(f"[county-onramp-worker] {refusal}")
+        sys.exit(2)
     port = int(os.getenv("PORT", os.getenv("OPENPLAN_COUNTY_ONRAMP_WORKER_PORT", "8080")))
     app.run(host=host, port=port)

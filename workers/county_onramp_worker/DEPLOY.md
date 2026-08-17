@@ -166,6 +166,25 @@ python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r workers/county_onramp_worker/requirements.txt
 pip install -r scripts/modeling/requirements.txt
+# Loopback-only: the OpenPlan app on this same machine is the only thing that
+# needs to reach the worker. This is the default bind, and it is what keeps the
+# endpoint off the network.
+python workers/county_onramp_worker/main.py
+```
+
+**Do not bind this worker to a network interface without a token.** It launches
+a subprocess whose executable name comes from the request payload, so an
+unauthenticated endpoint on `0.0.0.0` is remote code execution for anyone who
+can reach the port. The worker now enforces this: it binds `127.0.0.1` by
+default, refuses to start on a non-loopback host unless
+`OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN` is set, and rejects any non-loopback
+request that arrives without that bearer token. If you genuinely need it
+reachable from another machine, set the token first and send it as
+`Authorization: Bearer <token>`:
+
+```bash
+export OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN="$(openssl rand -hex 32)"
+export OPENPLAN_COUNTY_ONRAMP_WORKER_HOST=0.0.0.0   # only with the token set
 python workers/county_onramp_worker/main.py
 ```
 

@@ -159,5 +159,37 @@ class CountyOnrampWorkerTests(unittest.TestCase):
         self.assertEqual(parsed["artifactTargets"], job["artifactTargets"])
 
 
+class JobEndpointAuthorizationTests(unittest.TestCase):
+    """This endpoint runs a payload-named subprocess, so an unauthenticated
+    caller is RCE. Authorization is a pure function so it can be tested without
+    Flask; the route and __main__ call it."""
+
+    def test_configured_token_requires_a_matching_bearer(self) -> None:
+        self.assertTrue(
+            county_worker._authorize_job_request("s3cret", "Bearer s3cret", "203.0.113.9")
+        )
+        self.assertFalse(
+            county_worker._authorize_job_request("s3cret", "Bearer wrong", "203.0.113.9")
+        )
+        self.assertFalse(county_worker._authorize_job_request("s3cret", None, "127.0.0.1"))
+
+    def test_no_token_allows_loopback_only(self) -> None:
+        # Local single-machine dev with no token: reachable from this box, and
+        # from nowhere else. This is the ONLY tokenless-allowed state.
+        self.assertTrue(county_worker._authorize_job_request("", None, "127.0.0.1"))
+        self.assertTrue(county_worker._authorize_job_request("", None, "::1"))
+        # The RCE the fix closes: a tokenless request from off-box is refused
+        # even if the server somehow bound a wide interface (e.g. gunicorn).
+        self.assertFalse(county_worker._authorize_job_request("", None, "203.0.113.9"))
+        self.assertFalse(county_worker._authorize_job_request("", "Bearer anything", "203.0.113.9"))
+
+    def test_startup_refuses_a_wide_bind_without_a_token(self) -> None:
+        self.assertIsNotNone(county_worker._startup_bind_refusal("0.0.0.0", ""))
+        # A token, or a loopback bind, is allowed to start.
+        self.assertIsNone(county_worker._startup_bind_refusal("0.0.0.0", "s3cret"))
+        self.assertIsNone(county_worker._startup_bind_refusal("127.0.0.1", ""))
+        self.assertIsNone(county_worker._startup_bind_refusal("localhost", ""))
+
+
 if __name__ == "__main__":
     unittest.main()
