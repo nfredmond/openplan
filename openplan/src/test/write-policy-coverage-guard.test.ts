@@ -191,6 +191,14 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
       "membership-scoped policy could match the row for the person it is for. Accepting and " +
       "declining likewise run service-role from /api/workspaces/invitations/*.",
   },
+  "src/lib/notifications/cron-heartbeat.ts": {
+    functions: ["recordCronHeartbeat"],
+    reason:
+      "cron_job_heartbeats is deployment-global operational metadata with NO workspace_id and no " +
+      "policies — locked to the service role by design (migration 20260817000002). Only the cron " +
+      "routes, which already hold a service-role client, write it; a permissive policy would be a " +
+      "second, weaker door on a table no planner should reach.",
+  },
 };
 
 /**

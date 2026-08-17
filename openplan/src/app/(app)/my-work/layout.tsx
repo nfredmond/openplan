@@ -2,7 +2,12 @@ import type { ReactNode } from "react";
 
 import { WorkNotificationInboxPanel } from "@/components/my-work/notification-inbox";
 import { loadWorkNotifications } from "@/lib/notifications/work";
-import { createClient } from "@/lib/supabase/server";
+import {
+  CRON_JOB_SWEEP_DEADLINES,
+  classifyCronFreshness,
+  readCronHeartbeatAt,
+} from "@/lib/notifications/cron-heartbeat";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 
 /**
  * The reminder panel, above the work queue.
@@ -40,20 +45,28 @@ export default async function MyWorkLayout({ children }: { children: ReactNode }
 
   const inbox = await loadWorkNotifications(supabase, user.id);
 
+  // Whether reminders are ACTUALLY running, read from the sweep's own heartbeat
+  // rather than inferred from CRON_SECRET being set. Presence of the secret told
+  // us nothing — a self-hoster sets it for the model-run reaper and may never
+  // schedule this sweep, and the old panel then claimed reminders were on while
+  // none fired. The heartbeat is deployment-global and locked to the service
+  // role, so it is read with the service-role client here (NOT the caller's,
+  // which governs work_notifications above and must stay that way). A failed or
+  // missing read classifies as `never` — the honest, non-alarming-but-not-
+  // reassuring default.
+  const sweepFreshness = classifyCronFreshness(
+    await readCronHeartbeatAt(
+      createServiceRoleClient() as unknown as Parameters<typeof readCronHeartbeatAt>[0],
+      CRON_JOB_SWEEP_DEADLINES
+    )
+  );
+
   // `grid gap-6` matches `.module-page`'s own 1.5rem gap, so the panel sits in
   // the same rhythm as the sections the page renders below it rather than
   // flush against them.
   return (
     <div className="grid gap-6">
-      <WorkNotificationInboxPanel
-        inbox={inbox}
-        // Whether the daily sweep can run AT ALL on this deployment. Without a
-        // CRON_SECRET the route is closed (by design — an open sweep endpoint
-        // would let a stranger mail an agency's whole team), so reminders never
-        // arrive, and an empty panel would say "nothing is due" forever. The
-        // boolean crosses to the client; the secret itself never does.
-        sweepConfigured={Boolean(process.env.CRON_SECRET?.trim())}
-      />
+      <WorkNotificationInboxPanel inbox={inbox} sweepFreshness={sweepFreshness} />
       {children}
     </div>
   );

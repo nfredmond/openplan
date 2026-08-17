@@ -32,7 +32,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  */
 
 const sweepMock = vi.fn();
-const serviceClient = { serviceRole: true };
+const heartbeatUpsertMock = vi.fn(async () => ({ error: null }));
+// A stub shaped like the real service client: the route stamps the sweep's
+// heartbeat (cron_job_heartbeats) on success via .from(...).upsert(...).
+const serviceClient = {
+  serviceRole: true,
+  from: () => ({ upsert: (...args: unknown[]) => heartbeatUpsertMock(...args) }),
+};
 const createServiceRoleClientMock = vi.fn(() => serviceClient);
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -143,6 +149,22 @@ describe("the deadline sweep cron route", () => {
     expect(sweepMock).toHaveBeenCalledTimes(1);
     expect(sweepMock.mock.calls[0][0]).toBe(serviceClient);
     expect(sweepMock.mock.calls[0][1]).toMatchObject({ appOrigin: "https://plan.example.gov" });
+  });
+
+  it("stamps the sweep's heartbeat on a completed run, so the My Work panel can tell it ran", async () => {
+    await GET(request({ authorization: `Bearer ${SECRET}` }));
+
+    expect(heartbeatUpsertMock).toHaveBeenCalledTimes(1);
+    expect(heartbeatUpsertMock.mock.calls[0][0]).toMatchObject({ job_name: "sweep-deadlines" });
+  });
+
+  it("does NOT stamp the heartbeat when the notification write failed — a failed run is not a run", async () => {
+    sweepMock.mockResolvedValue({ ...emptyResult(), writeError: "the reminder write threw" });
+
+    const response = await GET(request({ authorization: `Bearer ${SECRET}` }));
+
+    expect(response.status).toBe(200);
+    expect(heartbeatUpsertMock).not.toHaveBeenCalled();
   });
 
   it("reports what could not be read, so a quiet sweep is not mistaken for a quiet week", async () => {

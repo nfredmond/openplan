@@ -1,24 +1,47 @@
-import fs from "node:fs";
-import path from "node:path";
-
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+
+const heartbeatState = vi.hoisted(() => ({
+  // The sweep's last recorded success, or null for "never ran". Default null so
+  // the empty-panel test's honest state is deterministic (never, clock-free);
+  // the rows-present tests do not reach the freshness branch at all.
+  lastSucceededAt: null as string | null,
+  reads: [] as string[],
+}));
 
 const createClientMock = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => createClientMock(),
-  createServiceRoleClient: () => {
-    throw new Error("the reminder panel must not read with the service role");
-  },
+  // The heartbeat is deployment-global operational metadata (cron_job_heartbeats),
+  // NOT tenant data, and it is LOCKED to the service role — so the layout reads
+  // it with the service role, and that is correct. What must NOT use the service
+  // role is the work_notifications read; that isolation is asserted behaviorally
+  // below (the reminder comes from the caller's client).
+  createServiceRoleClient: () => ({
+    from: (table: string) => {
+      heartbeatState.reads.push(table);
+      return {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({
+              data: heartbeatState.lastSucceededAt
+                ? { last_succeeded_at: heartbeatState.lastSucceededAt }
+                : null,
+              error: null,
+            }),
+          }),
+        }),
+      };
+    },
+  }),
 }));
 
 import MyWorkLayout from "@/app/(app)/my-work/layout";
 
 import { FakeWorkDb } from "./helpers/fake-work-notification-tables";
-import { stripSourceComments } from "./helpers/source-text";
 
 /**
  * CAN A PLANNER ACTUALLY SEE A REMINDER?
@@ -39,14 +62,12 @@ import { stripSourceComments } from "./helpers/source-text";
  * edit imports it by another name.
  *
  * MUTATION-VERIFIED (each reverted after): removing the panel from the layout
- * fails the first test; swapping the read to a service-role client fails the
- * second.
+ * fails the first test; reading work_notifications with the service-role client
+ * fails the second; keying the "not running" notice on anything but the sweep's
+ * own heartbeat fails the third.
  */
 
 const ALICE = "aaaaaaaa-0000-4000-8000-00000000000a";
-const LAYOUT_PATH = "src/app/(app)/my-work/layout.tsx";
-/** Distinctive on purpose: the assertion below is that it never reaches the DOM. */
-const CRON_SECRET_FIXTURE = "zzq-operator-only-token";
 
 function db() {
   const fake = new FakeWorkDb({
@@ -74,17 +95,10 @@ function db() {
   });
 }
 
-let savedSecret: string | undefined;
-
 beforeEach(() => {
   vi.clearAllMocks();
-  savedSecret = process.env.CRON_SECRET;
-  process.env.CRON_SECRET = CRON_SECRET_FIXTURE;
-});
-
-afterEach(() => {
-  if (savedSecret === undefined) delete process.env.CRON_SECRET;
-  else process.env.CRON_SECRET = savedSecret;
+  heartbeatState.lastSucceededAt = null;
+  heartbeatState.reads = [];
 });
 
 describe("/my-work mounts the reminder panel", () => {
@@ -99,32 +113,27 @@ describe("/my-work mounts the reminder panel", () => {
     // … and so is the page it wraps: a mount that displaced the queue would be
     // a different defect, not a fix.
     expect(screen.getByTestId("queue")).toBeTruthy();
-
-    // Only the BOOLEAN crosses to the client. The layout reads CRON_SECRET to
-    // decide whether the sweep can run at all; shipping the value itself into a
-    // client component's props would put an operator secret in the page source.
-    expect(document.body.innerHTML).not.toContain(CRON_SECRET_FIXTURE);
   });
 
-  it("reads with the caller's own client, so the row-level policy is the access control", async () => {
+  it("reads reminders with the CALLER's client and the heartbeat with the service role", async () => {
     const fake = db();
     createClientMock.mockReturnValue(fake);
 
     await MyWorkLayout({ children: <div /> });
 
+    // work_notifications comes from the caller's client — its SELECT policy
+    // (recipient_user_id = auth.uid() AND member) is the access control, and a
+    // service-role read here would replace that policy with an .eq().
     const read = fake.reads.find((entry) => entry.table === "work_notifications");
     expect(read, "the layout never read the reminders at all").toBeDefined();
-    // Scoped to this caller AND to unread, at the database.
     expect(read?.filters).toContainEqual({ kind: "eq", column: "recipient_user_id", value: ALICE });
     expect(read?.filters).toContainEqual({ kind: "eq", column: "is_read", value: false });
 
-    // The grep half, on the code and not on the prose: the document-library
-    // precedent. The throwing mock above catches a call; this catches an import
-    // that has not been called yet.
-    const source = stripSourceComments(
-      fs.readFileSync(path.join(process.cwd(), LAYOUT_PATH), "utf8")
-    );
-    expect(source).not.toContain("createServiceRoleClient");
+    // The heartbeat — deployment-global, no tenant data — is the ONE thing read
+    // with the service role, and it must be cron_job_heartbeats and nothing else.
+    // The caller's client must NEVER be pointed at that locked table.
+    expect(heartbeatState.reads).toEqual(["cron_job_heartbeats"]);
+    expect(fake.reads.find((entry) => entry.table === "cron_job_heartbeats")).toBeUndefined();
   });
 
   it("reads nothing for a signed-out visitor and still renders the page beneath", async () => {
@@ -138,8 +147,12 @@ describe("/my-work mounts the reminder panel", () => {
     expect(screen.getByTestId("queue")).toBeTruthy();
   });
 
-  it("tells a signed-in planner when the sweep cannot run on this deployment", async () => {
-    delete process.env.CRON_SECRET;
+  it("tells a signed-in planner the sweep is NOT RUNNING when its heartbeat is absent", async () => {
+    // The 2026-08-17 fix: this used to key on CRON_SECRET being unset, so a
+    // self-hoster who set the secret for another cron saw a silent panel that
+    // implied reminders worked. Now the empty inbox + no heartbeat is the honest
+    // "not running" — independent of any secret.
+    heartbeatState.lastSucceededAt = null;
     const fake = new FakeWorkDb({ tables: { work_notifications: [] } });
     createClientMock.mockReturnValue(
       Object.assign(fake, {
@@ -149,6 +162,6 @@ describe("/my-work mounts the reminder panel", () => {
 
     render(await MyWorkLayout({ children: <div /> }));
 
-    expect(document.body.textContent ?? "").toContain("switched off");
+    expect(document.body.textContent ?? "").toContain("not running");
   });
 });

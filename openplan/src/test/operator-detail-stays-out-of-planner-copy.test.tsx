@@ -175,8 +175,11 @@ async function inboxFrom(rows: Array<Record<string, unknown>>, error?: { message
   return loadWorkNotifications(db, ALICE);
 }
 
-function renderInbox(inbox: WorkNotificationInbox, sweepConfigured = true) {
-  return render(<WorkNotificationInboxPanel inbox={inbox} sweepConfigured={sweepConfigured} />);
+function renderInbox(
+  inbox: WorkNotificationInbox,
+  sweepFreshness: "healthy" | "stale" | "never" = "healthy"
+) {
+  return render(<WorkNotificationInboxPanel inbox={inbox} sweepFreshness={sweepFreshness} />);
 }
 
 afterEach(() => {
@@ -400,11 +403,11 @@ describe("the pages that used to concatenate the database's words into a planner
 // ── Operator plumbing in planner copy ────────────────────────────────────────
 
 describe("the reminder panel", () => {
-  it("says reminders are switched off without naming the secret in the planner's line", async () => {
-    renderInbox(await inboxFrom([]), false);
+  it("says reminders are not running without naming the secret or the path in the planner's line", async () => {
+    renderInbox(await inboxFrom([]), "never");
 
     const planner = plannerText();
-    expect(planner).toContain("switched off");
+    expect(planner).toContain("not running");
     expect(planner).toContain("listed below");
     expect(planner).toMatch(PLANNER_CAN_ACT);
     expect(planner).not.toContain("CRON_SECRET");

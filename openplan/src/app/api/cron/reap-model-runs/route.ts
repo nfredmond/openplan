@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { timingSafeSecretEquals } from "@/lib/http/secret-compare";
 import { reapStaleRuns, type ReaperClient, type ReaperRun } from "@/lib/models/run-reaper";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +19,14 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("cron.reap_model_runs", request);
 
-  const secret = process.env.CRON_SECRET;
-  const authorized =
-    typeof secret === "string" && secret.length > 0 && request.headers.get("authorization") === `Bearer ${secret}`;
-  if (!authorized) {
+  // Timing-SAFE compare: a plain `=== \`Bearer ${secret}\`` leaks the secret a
+  // byte at a time to anyone who can measure response time. The sibling crons
+  // (sweep-deadlines, reap-gtfs-ingests) already use this; this one was the last
+  // holdout (found 2026-08-17).
+  const secret = process.env.CRON_SECRET?.trim();
+  const presented =
+    request.headers.get("authorization")?.trim().match(/^Bearer\s+(.+)$/i)?.[1]?.trim() ?? null;
+  if (!secret || !timingSafeSecretEquals(presented, secret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

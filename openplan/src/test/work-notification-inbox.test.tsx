@@ -67,8 +67,11 @@ async function inboxFrom(tableRows: Array<Record<string, unknown>>, error?: { me
   return loadWorkNotifications(db, ALICE);
 }
 
-async function renderPanel(inbox: WorkNotificationInbox, sweepConfigured = true) {
-  render(<WorkNotificationInboxPanel inbox={inbox} sweepConfigured={sweepConfigured} />);
+async function renderPanel(
+  inbox: WorkNotificationInbox,
+  sweepFreshness: "healthy" | "stale" | "never" = "healthy"
+) {
+  render(<WorkNotificationInboxPanel inbox={inbox} sweepFreshness={sweepFreshness} />);
 }
 
 const fetchMock = vi.fn();
@@ -128,23 +131,34 @@ describe("the reminder panel", () => {
     expect(screen.getByText("Award lapse")).toBeTruthy();
   });
 
-  it("renders nothing at all when there is nothing to say", async () => {
+  it("renders nothing at all when a HEALTHY sweep found nothing due", async () => {
     const { container } = render(
-      <WorkNotificationInboxPanel inbox={await inboxFrom([])} sweepConfigured />
+      <WorkNotificationInboxPanel inbox={await inboxFrom([])} sweepFreshness="healthy" />
     );
     // An empty panel above a page that already lists every deadline is
-    // furniture, and furniture is what makes people stop reading a page.
+    // furniture, and furniture is what makes people stop reading a page. Only a
+    // sweep known to be running earns this silence.
     expect(container.innerHTML).toBe("");
   });
 
-  it("says reminders are switched off rather than implying nothing is due", async () => {
-    await renderPanel(await inboxFrom([]), false);
+  it("says reminders are NOT RUNNING rather than implying nothing is due", async () => {
+    // The 2026-08-17 fix: this state used to be inferred from CRON_SECRET being
+    // absent, so a self-hoster who set the secret for another cron saw a silent
+    // panel that implied reminders worked. Now it is the sweep's own heartbeat.
+    await renderPanel(await inboxFrom([]), "never");
 
     const text = document.body.textContent ?? "";
-    expect(text).toContain("switched off");
-    expect(text).toContain("CRON_SECRET");
-    // And it names the deadlines are still listed, so nobody reads this as
-    // "OpenPlan is not tracking my work".
+    expect(text).toContain("not running");
+    expect(text).toContain("listed below");
+  });
+
+  it("warns when the sweep has gone STALE, not silent and not 'never'", async () => {
+    await renderPanel(await inboxFrom([]), "stale");
+
+    const text = document.body.textContent ?? "";
+    // A stopped scheduler must not read as either healthy (silent) or
+    // never-configured; it is its own honest state.
+    expect(text).toContain("not run recently");
     expect(text).toContain("listed below");
   });
 

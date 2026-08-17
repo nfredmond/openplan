@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { WorkNotificationInbox } from "@/lib/notifications/work";
+import type { CronFreshness } from "@/lib/notifications/cron-heartbeat";
 import { formatWorkDeadlineDate } from "@/lib/work/deadlines";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 
@@ -33,12 +34,13 @@ import { OperatorDetail } from "@/components/ui/read-failure-notice";
 export type NotificationInboxProps = {
   inbox: WorkNotificationInbox;
   /**
-   * False when this deployment has no cron secret configured, so the sweep can
-   * never run. An empty panel would otherwise read as "nothing is due" forever
-   * — the honest answer is that reminders are switched off, and who can switch
-   * them on.
+   * Whether the deadline sweep is ACTUALLY running, from its recorded heartbeat
+   * — not inferred from a secret being set. `never` (it has not run, and may not
+   * be scheduled at all) and `stale` (it ran once but not lately, so the
+   * schedule has likely stopped) both mean an empty panel would lie by reading
+   * as "nothing is due"; only `healthy` lets the empty panel stay silent.
    */
-  sweepConfigured: boolean;
+  sweepFreshness: CronFreshness;
 };
 
 /**
@@ -67,7 +69,7 @@ const KIND_LABELS: Record<string, string> = {
   measure_claim_review_due: "Claim waiting",
 };
 
-export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: NotificationInboxProps) {
+export function WorkNotificationInboxPanel({ inbox, sweepFreshness }: NotificationInboxProps) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -140,23 +142,30 @@ export function WorkNotificationInboxPanel({ inbox, sweepConfigured }: Notificat
   }
 
   if (inbox.rows.length === 0) {
-    if (sweepConfigured) return null;
+    // Only a HEALTHY sweep may leave the panel silent when there is nothing due
+    // — that is the one state where an empty panel is honest. A sweep that has
+    // never run, or has gone quiet, must say so rather than imply "nothing is
+    // due"; both keyed on the recorded heartbeat, never on a secret's presence.
+    if (sweepFreshness === "healthy") return null;
+    const neverRan = sweepFreshness === "never";
     return (
       <article className="module-section-surface">
         <h2 className="module-section-title">Reminders</h2>
         {/* What is off and who can turn it on, in the planner's sentence. The
-            secret's name and the schedule to add are the operator's business
-            and stay out of it — folded away, not dropped. */}
+            schedule to add is the operator's business and stays folded away. */}
         <div className="module-note">
           <p>
-            Daily deadline reminders are switched off on this deployment, so nothing arrives here on
-            its own. Whoever runs this OpenPlan can switch them on. The deadlines themselves are
-            listed below either way.
+            {neverRan
+              ? "Daily deadline reminders are not running on this deployment, so nothing arrives here on its own. Whoever runs this OpenPlan can switch them on. The deadlines themselves are listed below either way."
+              : "Daily deadline reminders have not run recently on this deployment, so this panel may be out of date. Whoever runs this OpenPlan can check the schedule. The deadlines themselves are listed below either way."}
           </p>
           <OperatorDetail>
             <p>
-              No CRON_SECRET is configured, so the daily check that writes these reminders cannot
-              run. Set it, then schedule <code>/api/cron/sweep-deadlines</code> daily.
+              {neverRan
+                ? "The daily sweep has never recorded a run. On Vercel this cron is automatic; on any other host you must schedule "
+                : "The daily sweep last recorded a run more than two days ago, so its scheduler may have stopped. Confirm your scheduler is still calling "}
+              <code>/api/cron/sweep-deadlines</code> daily with{" "}
+              <code>Authorization: Bearer $CRON_SECRET</code>. See SELF_HOSTING.md.
             </p>
           </OperatorDetail>
         </div>

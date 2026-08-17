@@ -220,7 +220,7 @@ A Census API key is **free** and issued instantly at
 | `OPENPLAN_MODELING_WORKER` | Declares whether a **polling** AequilibraE worker serves this deployment: `deployed` or `absent`. A poller reads your database, so the app has nothing to probe and cannot find out for itself. **Unset means "not declared"** — nothing changes, and the model launch controls go on inferring a missing worker from runs that were queued and then reaped. Declaring it is what lets the *first* launch be honest instead of the second: with `absent`, worker-backed runs are refused at the launch button naming this deployment; with `deployed`, they launch normally, and a run that is never picked up still refuses the next one, because run history outranks the declaration. Not a plan or a tier — nothing here is for sale. |
 | `OPENPLAN_MODELING_WORKER_URL` / `_TOKEN` | Optional. A worker OpenPlan **pushes** each queued model run to, instead of waiting for one to poll — which is what lets you run a stateless pool rather than an always-on machine, and is the only configuration in which a planner is told *at launch* whether anything took their run. Both are required together: a URL with no token is refused rather than used, because the endpoint starts minutes of compute on request. Give the base URL; the contract path is appended. Run the worker with `AEQ_WORKER_MODE=push` (or `both`) and the same token. It composes with the declaration above rather than replacing it — every stage is claimed atomically, so a poller and a push pool can both serve one deployment with no coordination. |
 | `OPENPLAN_MODELING_QUEUE_DEPTH` | Optional operator bound on how many model runs one workspace may have waiting on the processing worker at once. **Unset means unlimited** and the counting query is never even run — the default, and the right setting for a self-hosted deployment. Set it only to protect compute you pay for; the refusal names you rather than offering anyone an upgrade. |
-| `CRON_SECRET` | Authorizes `/api/cron/reap-model-runs`, which marks crashed model runs as failed instead of leaving them queued forever. **You must set this yourself, on Vercel too** — Vercel *sends* the header automatically on scheduled invocations once the variable exists, but it does not create the variable, and while it is unset the reap cron answers 401 on every run (the model pages' reconcile-on-read then becomes the only rescue for stuck runs). On another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. *(Corrected 2026-08-04: this row previously said Vercel "sets" it.)* |
+| `CRON_SECRET` | Authorizes all three scheduled jobs (see "The scheduled jobs" below): the model-run reaper, the GTFS-ingest reaper, and the daily deadline-reminder sweep. **You must set this yourself, on Vercel too** — Vercel *sends* the header automatically on scheduled invocations once the variable exists, but it does not create the variable, and while it is unset every cron answers 401 on every run. Setting it is necessary but NOT sufficient off Vercel: a scheduler must actually call each path (the model pages' reconcile-on-read is the only rescue for stuck runs meanwhile, and deadline reminders simply do not fire). On another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. *(Corrected 2026-08-04: this row previously said Vercel "sets" it; 2026-08-17: named all three jobs, not only the reaper.)* |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
 | `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to the worker in `workers/county_onramp_worker/` — the service that actually produces a travel number. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted — and `/county-runs` says so *before* the first launch rather than after it, since the URL is the same test the dispatcher itself applies. Unlike the modeling worker there is nothing extra to declare: configuring the URL is the declaration. **`_CALLBACK_BEARER_TOKEN` is not optional once the URL is set**, and its absence is the expensive silent failure in this lane: the worker holds no browser session, so the manifest callback is refused with 401 *after* the model has run for minutes, and the run simply never appears. `_TOKEN` guards the opposite direction and may be left unset only where the worker is unreachable from beyond the machine. On one computer, `npm run modeling:up` starts the worker in Docker and `npm run doctor` reports on all three settings; see `workers/county_onramp_worker/DEPLOY.md`. |
 | `OPENPLAN_COUNTY_ONRAMP_CALLBACK_ORIGIN` | Optional. The address the WORKER should post a finished run back to, when that differs from the address a browser reaches OpenPlan at. Unset, the request origin is used — correct whenever the worker can use the same address. It cannot from inside a bridge-networked container, where `localhost` is the container: set `http://host.docker.internal:3000` there, or the deployment's public URL on a server. Same posture and same fallback as `OPENPLAN_KB_OCR_CALLBACK_URL`. Resolved once, in the payload builder, so the callback URL shown on a run page is the one the worker was handed. |
@@ -282,7 +282,7 @@ detected as **Next.js**. If it says "Other", the root directory is wrong — go 
 rather than after a failed build, because the build error does not name this as the cause.
 
 4. Leave the framework, build command, and output directory alone. The repository's `vercel.json`
-   already sets them, and it also registers the scheduled cleanup job described below.
+   already sets them, and it also registers the scheduled jobs described below.
 5. **Do not click Deploy yet.** Add the environment variables first — the next step.
 
 ### 3c. Add the environment variables
@@ -296,7 +296,7 @@ Two that only matter once you are deployed:
 | Setting | Value |
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | your deployment's address, e.g. `https://openplan-yourteam.vercel.app` |
-| `CRON_SECRET` | any long random string you invent — it authorises the cleanup job below |
+| `CRON_SECRET` | any long random string you invent — it authorises the three scheduled jobs below |
 
 **Success looks like:** at least the four required settings listed, with no empty values. A missing
 Mapbox token is the one that misleads — the site loads perfectly with blank white maps, which reads
@@ -333,13 +333,30 @@ migrations step, not a bug. See [Upgrading a running deployment](#upgrading-a-ru
 Now open your address, click **Create your free workspace**, and make the first account. Then set
 your workspace geography — [section 4](#4-set-your-workspace-geography).
 
-### The scheduled cleanup job
+### The scheduled jobs
 
-`vercel.json` registers a job that calls `GET /api/cron/reap-model-runs` every few minutes to close
-out model runs whose worker died. It authenticates with the `CRON_SECRET` you set above. On Vercel
-this is automatic. **On any other host you must schedule it yourself**, sending an
-`Authorization: Bearer <your CRON_SECRET>` header. Without it, a crashed model run stays marked
-"running" forever rather than being recorded as failed.
+`vercel.json` registers **three** cron jobs, all authenticated with the `CRON_SECRET` you set
+above. On Vercel they run automatically. **On any other host you must schedule every one of them
+yourself** — setting `CRON_SECRET` alone does nothing; a scheduler has to call each path on its
+cadence, sending an `Authorization: Bearer <your CRON_SECRET>` header:
+
+| Path | Cadence | What stops working without it |
+| --- | --- | --- |
+| `GET /api/cron/reap-model-runs` | every 5 min | a crashed model run stays marked "running" forever instead of being recorded as failed |
+| `GET /api/cron/reap-gtfs-ingests` | every 15 min | a stalled transit-feed import never resolves |
+| `GET /api/cron/sweep-deadlines` | daily | **deadline reminders never fire** — the My Work panel will say so plainly ("reminders are not running on this deployment") until a scheduler is wired, because it reports the sweep's own last run, not merely that `CRON_SECRET` is set |
+
+A crontab on any Unix host, with `CRON_SECRET` and your base URL exported:
+
+```cron
+*/5  * * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$OPENPLAN_URL/api/cron/reap-model-runs"    >/dev/null
+*/15 * * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$OPENPLAN_URL/api/cron/reap-gtfs-ingests"  >/dev/null
+0 13 * * *    curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$OPENPLAN_URL/api/cron/sweep-deadlines"    >/dev/null
+```
+
+The My Work reminder panel reads the sweep's recorded heartbeat, so once your scheduler is calling
+`sweep-deadlines` the panel goes quiet on its own within a day; if the scheduler later stops, the
+panel says the sweep "has not run recently" rather than silently implying nothing is due.
 
 ### On a host other than Vercel
 
@@ -351,7 +368,7 @@ npm run build     # webpack builder, not Turbopack
 npm start
 ```
 
-Set the same environment variables in that host's configuration, and schedule the cleanup job
+Set the same environment variables in that host's configuration, and schedule all three cron jobs
 described above.
 
 ---

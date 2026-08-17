@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { timingSafeSecretEquals } from "@/lib/http/secret-compare";
 import { sweepWorkDeadlines, type WorkSweepClient } from "@/lib/notifications/work";
+import {
+  CRON_JOB_SWEEP_DEADLINES,
+  recordCronHeartbeat,
+} from "@/lib/notifications/cron-heartbeat";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -60,6 +64,25 @@ export async function GET(request: NextRequest) {
       createServiceRoleClient() as unknown as WorkSweepClient,
       { appOrigin: request.nextUrl.origin }
     );
+
+    // Stamp the heartbeat when the sweep completed its write — this, not the
+    // presence of CRON_SECRET, is what the My Work panel reads to say honestly
+    // whether reminders are running. A wholesale write failure is not a run, so
+    // it is not stamped; per-source read gaps still count as a run (the sweep
+    // executed) and are recorded in the detail for an operator. Best-effort: a
+    // heartbeat failure is logged, never allowed to fail the sweep. A fresh
+    // service client (inline, not hoisted) keeps the write-policy guard's
+    // resolver able to see it as service-role.
+    if (!result.writeError) {
+      const heartbeat = await recordCronHeartbeat(
+        createServiceRoleClient() as unknown as Parameters<typeof recordCronHeartbeat>[0],
+        CRON_JOB_SWEEP_DEADLINES,
+        { notificationsCreated: result.notificationsCreated }
+      );
+      if (heartbeat.error) {
+        audit.warn("cron_sweep_deadlines_heartbeat_failed", { message: heartbeat.error });
+      }
+    }
 
     // Everything an operator needs to tell "nothing was due" from "the sweep
     // could not read three of its six sources". A reminder system that logs
