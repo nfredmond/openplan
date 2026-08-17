@@ -235,5 +235,38 @@
     "selected": 24,
     "dev": 12,
     "holdout": 12
-  }
+  },
+  "amendments": [
+    {
+      "date": "2026-08-17",
+      "stage": "after the development half ran, BEFORE any holdout county ran",
+      "county_selection_unchanged": true,
+      "thresholds_unchanged": true,
+      "what_the_development_half_said": {
+        "counties_usable": 11,
+        "trip_based": {
+          "stations": 1522,
+          "median_ape": 137.2,
+          "spearman_geh_vs_ape": 0.1822,
+          "lift": 0.9805
+        },
+        "activity_based": {
+          "stations": 1519,
+          "median_ape": 77.97,
+          "spearman_geh_vs_ape": -0.0733,
+          "lift": 1.1058
+        },
+        "reading": "Negative. Agreement as pre-registered (GEH) carried essentially no lift over the base rate on the development half (0.98 trip-based, 1.11 activity-based), and in 5 of 11 counties the stations where the models agreed were LESS accurate than where they diverged. The thresholds are NOT being changed in response; the holdout half will be run and reported with exactly the pre-registered definition."
+      },
+      "secondary_metric_declared_now": {
+        "name": "spearman_relative_disagreement_vs_ape",
+        "definition": "Spearman rank correlation between |a-b|/mean(a,b) at the station's link and the station's absolute percent error",
+        "why": "GEH is a magnitude test and grows with volume, so two models can be proportionally close on a busy corridor and still score as divergent. This companion is scale-free and needs NO threshold, so it introduces no new arbitrary constant. Declared here, before any holdout county has run, and it will be reported whatever it says \u2014 alongside the pre-registered primary metric, never instead of it."
+      },
+      "new_technical_exclusion": {
+        "rule": "A county in which some internal zone can reach no other zone is refused at bundle build.",
+        "why": "Discovered by 41029 (Jackson County OR) failing in the development half: one zone of 52 sits in the largest UNDIRECTED component but is unreachable in the DIRECTED graph. Every destination utility for its residents underflows to zero probability and ActivitySim dies inside pandas. This is a TECHNICAL exclusion \u2014 the model cannot run at all \u2014 and not a results-based one; it is declared before the holdout half runs, and any county it removes is named in the output rather than silently absent."
+      }
+    }
+  ]
 }

@@ -267,10 +267,28 @@ def by_road_class(joined: Sequence[Mapping[str, Any]], *, ape_key: str = "ape") 
     return out
 
 
+def relative_disagreement(row: Mapping[str, Any]) -> float | None:
+    """How far apart the two models are at a link, as a share of their own size.
+
+    GEH is a magnitude test: it grows with volume, so on a busy corridor two
+    models can be close in proportion and still score as divergent. This is the
+    scale-free companion — |a - b| / mean(a, b) — and it needs no threshold, so
+    it adds no new arbitrary constant to the study.
+    """
+    first, second = float(row["first_volume"]), float(row["second_volume"])
+    mean = (first + second) / 2.0
+    return abs(first - second) / mean if mean > 0 else None
+
+
 def analyse(joined: Sequence[Mapping[str, Any]], *, ape_key: str = "ape") -> dict[str, Any]:
     """Every figure the study reports, over one set of joined stations."""
     apes = [r[ape_key] for r in joined]
     gehs = [r["geh"] for r in joined]
+    paired = [(relative_disagreement(r), r[ape_key]) for r in joined]
+    paired = [(d, a) for d, a in paired if d is not None]
+    relative_spearman = (
+        spearman([d for d, _ in paired], [a for _, a in paired]) if len(paired) >= 3 else None
+    )
     return {
         "stations": len(joined),
         "median_ape": round(median(apes), 2) if apes else None,
@@ -279,6 +297,14 @@ def analyse(joined: Sequence[Mapping[str, Any]], *, ape_key: str = "ape") -> dic
         # is the direction the study's hypothesis predicts.
         "spearman_geh_vs_ape": (
             round(spearman(gehs, apes), 4) if spearman(gehs, apes) is not None else None
+        ),
+        # SECONDARY, declared before the holdout half ran. Reported whatever it
+        # says, alongside the primary — not instead of it.
+        "spearman_relative_disagreement_vs_ape": (
+            round(relative_spearman, 4) if relative_spearman is not None else None
+        ),
+        "median_relative_disagreement": (
+            round(median([d for d, _ in paired]), 4) if paired else None
         ),
         "prediction": precision_recall(joined, ape_key=ape_key),
         "by_road_class": by_road_class(joined, ape_key=ape_key),

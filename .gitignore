@@ -80,6 +80,13 @@ workers/aequilibrae_worker/.lodes_cache/
 data/screening-runs/
 data/_screening_cache/
 
+# The agreement study's per-county artifacts — ActivitySim outputs, bundles,
+# demand packages and comparison JSON, several gigabytes per batch. The
+# registry itself IS tracked and must stay so: that commit is the study's
+# pre-registration, and it is the one file here that is evidence rather than
+# output.
+data/agreement-study/runs/
+
 # Worker job manifests (`tmp/county-onramp/<run>.manifest.json`) — a transcript
 # of one local run, regenerated every time.
 /tmp/

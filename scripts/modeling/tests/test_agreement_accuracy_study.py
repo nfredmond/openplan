@@ -232,6 +232,40 @@ class TheAnswer(unittest.TestCase):
         self.assertIn("no lift", failures[0]["reason"])
 
 
+class TheSecondaryScaleFreeMetric(unittest.TestCase):
+    """GEH grows with volume; this companion does not. Declared before the
+    holdout half ran, and reported whatever it says."""
+
+    def test_relative_disagreement_is_the_difference_over_the_mean(self) -> None:
+        row = {"first_volume": 1200.0, "second_volume": 800.0}
+        # |1200-800| / 1000 = 0.4
+        self.assertAlmostEqual(study.relative_disagreement(row), 0.4)
+
+    def test_identical_volumes_are_zero_disagreement(self) -> None:
+        self.assertEqual(study.relative_disagreement({"first_volume": 500, "second_volume": 500}), 0.0)
+
+    def test_two_empty_links_are_not_a_disagreement_of_zero_over_zero(self) -> None:
+        self.assertIsNone(study.relative_disagreement({"first_volume": 0, "second_volume": 0}))
+
+    def test_it_is_scale_free_where_geh_is_not(self) -> None:
+        """The whole reason it is worth reporting: proportionally identical
+        links score identically here and very differently under GEH."""
+        small = {"first_volume": 120.0, "second_volume": 80.0}
+        large = {"first_volume": 12000.0, "second_volume": 8000.0}
+        self.assertAlmostEqual(study.relative_disagreement(small), study.relative_disagreement(large))
+
+    def test_it_reaches_the_analysis_output(self) -> None:
+        rows = [
+            {**station(10, "agree"), "first_volume": 1000, "second_volume": 1000},
+            {**station(50, "diverge"), "first_volume": 1000, "second_volume": 3000},
+            {**station(90, "diverge"), "first_volume": 1000, "second_volume": 5000},
+        ]
+        result = study.analyse(rows)
+        # Disagreement rises with error across these three, so rank correlation is 1.
+        self.assertAlmostEqual(result["spearman_relative_disagreement_vs_ape"], 1.0)
+        self.assertIsNotNone(result["median_relative_disagreement"])
+
+
 class ReadingACountyDirectory(unittest.TestCase):
     def setUp(self) -> None:
         self.tmp = tempfile.TemporaryDirectory()

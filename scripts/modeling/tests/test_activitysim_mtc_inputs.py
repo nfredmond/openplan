@@ -326,9 +326,10 @@ class LandUse(unittest.TestCase):
 class SkimExpansion(unittest.TestCase):
     """Built on a source OMX whose node ids do NOT sort in zone order."""
 
-    # zone 1 -> node 907, zone 2 -> node 903: sorted node order is the REVERSE
-    # of zone order, so positional shortcuts produce visibly transposed values.
-    CENTROID_MAP = {1: 907, 2: 903, 3: 909}
+    # zone 1 -> node 907, zone 2 -> node 903, zone 3 -> node 911: sorted node
+    # order is NOT zone order, so positional shortcuts produce visibly
+    # transposed values.
+    CENTROID_MAP = {1: 907, 2: 903, 3: 911, 4: 909}
 
     def setUp(self):
         import numpy as np
@@ -337,29 +338,32 @@ class SkimExpansion(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         root = Path(self.tmp.name)
 
-        # Source screening skim: 3x3 (2 internal + 1 external), node order
-        # sorted = [903, 907, 909] = [zone 2, zone 1, zone 3]. The zone2->zone1
-        # direction is deliberately unreachable (inf) so the sentinel path is
-        # exercised INSIDE the internal submatrix.
+        # Source screening skim: 4x4 (3 internal + 1 external gateway), node
+        # order sorted = [903, 907, 909, 911] = [zone 2, zone 1, external,
+        # zone 3]. The zone2->zone1 direction is deliberately unreachable so
+        # the sentinel path is exercised INSIDE the internal submatrix — while
+        # zone 2 can still reach zone 3, so no zone is stranded.
         self.source_omx = root / "travel_time_skims.omx"
         time = np.array(
             [
-                [0.0, np.inf, 30.0],  # zone2->zone1 unreachable
-                [11.0, 0.0, 35.0],
-                [31.0, 36.0, 0.0],
+                [0.0, np.inf, 30.0, 22.0],  # zone2 -> zone1 unreachable
+                [11.0, 0.0, 30.0, 20.0],
+                [30.0, 30.0, 0.0, 30.0],
+                [23.0, 21.0, 30.0, 0.0],
             ]
         )
         dist = np.array(
             [
-                [0.0, np.inf, 40000.0],
-                [8850.0, 0.0, 42000.0],
-                [41000.0, 43000.0, 0.0],
+                [0.0, np.inf, 40000.0, 35000.0],
+                [8850.0, 0.0, 40000.0, 32000.0],
+                [40000.0, 40000.0, 0.0, 40000.0],
+                [36000.0, 33000.0, 40000.0, 0.0],
             ]
         )
         with omx.open_file(str(self.source_omx), "w") as handle:
             handle["travel_time"] = time
             handle["distance"] = dist
-            handle.create_mapping("main_index", [903, 907, 909])
+            handle.create_mapping("main_index", [903, 907, 909, 911])
 
         # Fake stock example: a spec referencing names bracket- AND tuple-style,
         # and a stock skims.omx defining the inventory.
@@ -395,11 +399,17 @@ class SkimExpansion(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+    def skim_zones(self):
+        """Three internal zones plus one external gateway."""
+        zone3 = {**ZONES[0], "GEOID": "06057000300", "zone_id": 3, "area_sq_mi": 2.0}
+        external = {**ZONES[2], "zone_id": 4}
+        return [ZONES[0], ZONES[1], zone3, external]
+
     def expand(self, **overrides):
         kwargs = dict(
             source_omx=self.source_omx,
             output_omx=self.output_omx,
-            internal_zone_rows=ZONES,
+            internal_zone_rows=self.skim_zones(),
             centroid_map=self.CENTROID_MAP,
             stock_configs_dir=self.stock_root / "configs",
             stock_skims_omx=self.stock_skims,
@@ -491,6 +501,44 @@ class SkimExpansion(unittest.TestCase):
     def test_a_zone_missing_from_the_centroid_map_is_an_error(self):
         with self.assertRaises(mtc.MtcInputError):
             self.expand(centroid_map={1: 907})
+
+    def test_a_zone_that_can_reach_nothing_is_refused_with_the_zone_named(self):
+        """Measured on Jackson County OR (41029): one stranded zone of 52 kills
+        ActivitySim four minutes in, with a pandas index error naming nothing.
+        Refused here instead, before a model run is spent on it."""
+        import numpy as np
+        import openmatrix as omx
+
+        stranded = Path(self.tmp.name) / "stranded.omx"
+        # zone 3 (node 911, row 3) can neither reach nor be reached by any
+        # other internal zone.
+        time = np.array(
+            [
+                [0.0, 12.0, 30.0, np.inf],
+                [11.0, 0.0, 30.0, np.inf],
+                [30.0, 30.0, 0.0, 30.0],
+                [np.inf, np.inf, 30.0, 0.0],
+            ]
+        )
+        dist = np.where(np.isfinite(time), 20000.0, np.inf)
+        np.fill_diagonal(dist, 0.0)
+        with omx.open_file(str(stranded), "w") as handle:
+            handle["travel_time"] = time
+            handle["distance"] = dist
+            handle.create_mapping("main_index", [903, 907, 909, 911])
+
+        with self.assertRaises(mtc.MtcInputError) as ctx:
+            self.expand(source_omx=stranded)
+        message = str(ctx.exception)
+        self.assertIn("cannot reach any other zone", message)
+        self.assertIn("3", message)
+        self.assertIn("one-way", message)
+
+    def test_a_merely_unreachable_pair_does_not_trip_the_stranded_guard(self):
+        """The negative control for the guard above: the standard fixture has an
+        unreachable pair and must still build."""
+        accounting = self.expand()
+        self.assertEqual(accounting["unreachable_pairs_sentinelled"], 1)
 
     def test_tuple_style_references_are_seen_by_the_scan(self):
         names = mtc.required_skim_names(self.stock_root / "configs")

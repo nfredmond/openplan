@@ -648,6 +648,34 @@ def expand_skims(
     np.fill_diagonal(dist_miles, diagonal_miles)
     np.fill_diagonal(time_minutes, diagonal_miles / INTRAZONAL_SPEED_MPH * 60.0)
 
+    # A zone that can reach nothing cannot be modelled by an activity-based
+    # model: every destination utility for its residents underflows to zero
+    # probability, the destination sample comes back empty, and ActivitySim
+    # dies deep inside pandas with an index error that names nothing.
+    #
+    # Measured 2026-08-17: this is exactly what happened to Jackson County,
+    # Oregon (41029) — one zone of 52, whose centroid attached to a node in the
+    # largest UNDIRECTED component that is unreachable in the DIRECTED graph
+    # (a one-way-street trap). Refused here, with the zone named, rather than
+    # left to surface four minutes into a model run as a pandas traceback.
+    # The diagonal is forced True so a zone's own always-reachable self does not
+    # make every `.all()` below trivially false.
+    cut_off = np.where(np.eye(n, dtype=bool), True, unreachable)
+    stranded = [
+        zone_ids[row]
+        for row in range(n)
+        if bool(cut_off[row, :].all()) or bool(cut_off[:, row].all())
+    ]
+    if stranded:
+        raise MtcInputError(
+            f"{len(stranded)} zone(s) cannot reach any other zone on this network "
+            f"(zone ids {stranded[:5]}). An activity-based model cannot place their residents' "
+            "destinations at all — every utility underflows and the destination sample comes back "
+            "empty. This is a network connectivity defect, usually a centroid connector attached "
+            "where a one-way street can be left but not entered; the trip-based model hides it by "
+            "masking those pairs."
+        )
+
     zeros = np.zeros((n, n))
     counts = {"time": 0, "distance": 0, "zero": 0}
     output_omx.parent.mkdir(parents=True, exist_ok=True)
