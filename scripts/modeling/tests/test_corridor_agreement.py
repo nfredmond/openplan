@@ -240,19 +240,32 @@ class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
         self.assertEqual(verdict["status"], "tight_enough")
         self.assertIn("attributable to the demand model", verdict["note"])
 
-    def test_a_loosely_converged_pair_does_not(self) -> None:
+    def test_a_loosely_converged_pair_supports_corridors_but_not_links(self) -> None:
+        # MEASURED, and it is why this is not a blanket refusal. Assigning
+        # IDENTICAL demand at both settings on one county moved named corridor
+        # totals by 0.5-1.4%, while 21% of individual links moved more than 10%.
+        # A corridor total averages over many links and survives; a single link
+        # is where the assignment is still choosing between parallel routes.
         verdict = convergence_verdict({"final_gap": 0.00916}, {"final_gap": 0.00951})
-        self.assertEqual(verdict["status"], "too_loose_to_attribute")
-        self.assertIn("cannot attribute", verdict["note"])
+        self.assertEqual(verdict["status"], "corridors_only")
+        self.assertEqual(verdict["attributable_at"], ["corridor"])
+        self.assertIn("corridor table, not the individual links", verdict["note"])
         # Both offending gaps named, and the way out given.
         self.assertIn("0.00916", verdict["note"])
         self.assertIn("0.00951", verdict["note"])
         self.assertIn("OPENPLAN_ASSIGNMENT_RGAP_TARGET", verdict["note"])
 
-    def test_one_loose_side_is_enough_to_disqualify_the_pair(self) -> None:
+    def test_one_loose_side_is_enough_to_restrict_the_pair(self) -> None:
         verdict = convergence_verdict({"final_gap": 0.0002}, {"final_gap": 0.009})
-        self.assertEqual(verdict["status"], "too_loose_to_attribute")
+        self.assertEqual(verdict["status"], "corridors_only")
         self.assertIn("second", verdict["note"])
+
+    def test_a_tight_pair_supports_both_units(self) -> None:
+        verdict = convergence_verdict({"final_gap": 0.0004}, {"final_gap": 0.0004})
+        self.assertEqual(verdict["attributable_at"], ["corridor", "link"])
+
+    def test_an_unknown_pair_supports_neither_unit(self) -> None:
+        self.assertEqual(convergence_verdict(None, None)["attributable_at"], [])
 
     def test_an_unrecorded_gap_is_unknown_and_not_fine(self) -> None:
         # The difference that matters. Treating a missing convergence record as
@@ -276,6 +289,8 @@ class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
         )
         self.assertFalse(loose["attribution_is_supportable"])
         self.assertTrue(tight["attribution_is_supportable"])
+        self.assertEqual(loose["attributable_at"], ["corridor"])
+        self.assertEqual(tight["attributable_at"], ["corridor", "link"])
         self.assertIn(loose["assignment_convergence"]["note"], loose["what_this_is_not"])
 
     def test_the_required_gap_is_the_measured_one(self) -> None:

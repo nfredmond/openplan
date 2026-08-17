@@ -66,10 +66,22 @@ DEFAULT_MINIMUM_VOLUME = 100.0
 #   relative gap 0.00046 ->   0.0% of busy links diverged, median GEH 0.141
 #
 # At the loose gap the assignment is still choosing between near-equal-cost
-# parallel routes, and it produces on its own exactly the kind of corridor
-# divergence the comparison exists to attribute to demand. Tightening removes
-# it. A comparison run therefore has to be tightened, and this constant is what
-# makes that a check rather than a note somebody reads.
+# parallel routes, and it produces on its own exactly the kind of divergence the
+# comparison exists to attribute to demand.
+#
+# BUT NOT AT EVERY UNIT, and the difference decides how this is used. Assigning
+# IDENTICAL demand at both settings on one county:
+#
+#   named corridor totals moved ..............  0.5-1.4%
+#   median individual link moved .............  2.7%
+#   the worst tenth of links moved ...........  28.9%
+#   busy links moving more than 10% ..........  21%
+#
+# A corridor total averages over dozens of links and survives; a single link is
+# exactly where the unfinished route choice lands. So a loosely converged pair
+# is restricted to corridor-level attribution rather than refused outright —
+# which is what makes the tool usable at the settings a planner's run actually
+# uses, instead of a check everyone learns to ignore.
 COMPARISON_MAX_RELATIVE_GAP = 0.001
 
 
@@ -352,6 +364,7 @@ def convergence_verdict(
     if not known:
         return {
             "status": "unknown",
+            "attributable_at": [],
             "gaps": gaps,
             "required_gap": COMPARISON_MAX_RELATIVE_GAP,
             "note": (
@@ -364,25 +377,31 @@ def convergence_verdict(
     if too_loose:
         detail = ", ".join(f"{side} at {gap:.5f}" for side, gap in sorted(too_loose.items()))
         return {
-            "status": "too_loose_to_attribute",
+            "status": "corridors_only",
+            "attributable_at": ["corridor"],
             "gaps": gaps,
             "required_gap": COMPARISON_MAX_RELATIVE_GAP,
             "note": (
-                f"This comparison cannot attribute a corridor's difference to the demand model. The "
-                f"assignment converged only to {detail}, against the "
-                f"{COMPARISON_MAX_RELATIVE_GAP} needed. Measured on this network: at a gap of 0.0092 "
-                "the assignment alone made 13% of busy links diverge with IDENTICAL demand, and at "
-                "0.00046 it made none. Set OPENPLAN_ASSIGNMENT_RGAP_TARGET and "
-                "OPENPLAN_ASSIGNMENT_MAX_ITERATIONS and run both sides again."
+                f"Read the corridor table, not the individual links. The assignment converged only "
+                f"to {detail}, against the {COMPARISON_MAX_RELATIVE_GAP} needed for a link-level "
+                "claim. Measured on one county by assigning IDENTICAL demand at both settings: "
+                "named corridor totals moved 0.5-1.4%, while 21% of individual links moved more "
+                "than 10% and the worst tenth moved 29%. A corridor total is an average over many "
+                "links and survives; a single link is where the assignment is still choosing "
+                "between parallel routes. Set OPENPLAN_ASSIGNMENT_RGAP_TARGET and "
+                "OPENPLAN_ASSIGNMENT_MAX_ITERATIONS and re-run both sides to attribute anything "
+                "link by link."
             ),
         }
     return {
         "status": "tight_enough",
+        "attributable_at": ["corridor", "link"],
         "gaps": gaps,
         "required_gap": COMPARISON_MAX_RELATIVE_GAP,
         "note": (
             "Both runs converged tightly enough that the assignment is not itself generating "
-            "corridor-level divergence, so a difference here is attributable to the demand model."
+            "divergence, so a difference here is attributable to the demand model link by link as "
+            "well as corridor by corridor."
         ),
     }
 
@@ -414,6 +433,10 @@ def build_agreement_map(
         "schema_version": "openplan.corridor_agreement.v0",
         "methods": {"first": first_label, "second": second_label},
         "attribution_is_supportable": convergence["status"] == "tight_enough",
+        # Which UNIT a difference can be read at. A loosely converged pair still
+        # supports the corridor table — that is the number a planner asks for —
+        # while its individual links are the assignment still deciding.
+        "attributable_at": convergence["attributable_at"],
         "assignment_convergence": convergence,
         "summary": agreement_summary(comparison),
         "network_alignment": comparison["network_alignment"],
