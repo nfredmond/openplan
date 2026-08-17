@@ -41,6 +41,18 @@ from screening_metrics import (
 ACS_5_URL = os.getenv("CENSUS_ACS5_URL", "https://api.census.gov/data/2022/acs/acs5")
 CENSUS_API_KEY = os.getenv("CENSUS_API_KEY", "")
 TIGER_TRACT_ZIP_TEMPLATE = "https://www2.census.gov/geo/tiger/TIGER2023/TRACT/tl_2023_{state_fips}_tract.zip"
+TIGER_BLOCK_GROUP_ZIP_TEMPLATE = "https://www2.census.gov/geo/tiger/TIGER2023/BG/tl_2023_{state_fips}_bg.zip"
+
+#: The published geographies OpenPlan can build zones from, and the TIGER layer
+#: each one comes from. Block groups are roughly three times finer than tracts
+#: and cost proportionally more runtime, which OpenPlan is willing to spend:
+#: zone size IS the model's spatial resolution, and a trip inside one zone
+#: carries VMT but no link volume at all.
+ZONE_GEOGRAPHIES = {
+    "tract": (TIGER_TRACT_ZIP_TEMPLATE, "tract"),
+    "block_group": (TIGER_BLOCK_GROUP_ZIP_TEMPLATE, "bg"),
+}
+DEFAULT_ZONE_GEOGRAPHY = os.getenv("OPENPLAN_ZONE_GEOGRAPHY", "tract") or "tract"
 
 DEFAULT_SPATIALITE_PATHS = [
     os.getenv("SPATIALITE_LIBRARY_PATH", ""),
@@ -314,13 +326,27 @@ def preflight_census_access() -> None:
         raise ConfigurationError(failure)
 
 
-def fetch_acs_tract_attributes(county_pairs: set[tuple[str, str]]) -> pd.DataFrame:
+def fetch_acs_tract_attributes(
+    county_pairs: set[tuple[str, str]], zone_geography: str = "tract"
+) -> pd.DataFrame:
+    """Population, households and workers for every zone, at the chosen geography.
+
+    Block groups are queried the same way tracts are, with the county's tracts
+    wildcarded — the ACS publishes all three of these cells at block-group
+    level, unlike the workers-per-household table the population synthesiser
+    has to drop there.
+    """
+    is_block_group = zone_geography == "block_group"
     rows: list[pd.DataFrame] = []
     for state_fips, county_fips in sorted(county_pairs):
         params = {
             "get": "NAME,B01003_001E,B11001_001E,B23025_004E",
-            "for": "tract:*",
-            "in": f"state:{state_fips} county:{county_fips}",
+            "for": "block group:*" if is_block_group else "tract:*",
+            "in": (
+                f"state:{state_fips} county:{county_fips} tract:*"
+                if is_block_group
+                else f"state:{state_fips} county:{county_fips}"
+            ),
         }
         if CENSUS_API_KEY:
             params["key"] = CENSUS_API_KEY
@@ -336,7 +362,12 @@ def fetch_acs_tract_attributes(county_pairs: set[tuple[str, str]]) -> pd.DataFra
         df = pd.DataFrame(data[1:], columns=header)
         for col in ["B01003_001E", "B11001_001E", "B23025_004E"]:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-        df["geoid"] = df["state"] + df["county"] + df["tract"]
+        # A block-group GEOID is the tract's plus the group digit, which is how
+        # every other part of this lane recognises the geography (11 digits vs
+        # 12) rather than being told.
+        df["geoid"] = df["state"] + df["county"] + df["tract"] + (
+            df["block group"] if is_block_group else ""
+        )
         df["est_population"] = df["B01003_001E"].astype(float)
         df["households"] = df["B11001_001E"].astype(float)
         df["worker_residents"] = df["B23025_004E"].astype(float)
@@ -358,15 +389,31 @@ def estimate_jobs(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def build_zone_package(boundary_geom, package_dir: Path, cache_dir: Path) -> tuple[pd.DataFrame, dict[str, Any]]:
+def build_zone_package(
+    boundary_geom, package_dir: Path, cache_dir: Path, zone_geography: str = DEFAULT_ZONE_GEOGRAPHY
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """The study area's zones, at tract or block-group resolution.
+
+    Zone size is the model's spatial resolution: a trip between two points in
+    one zone carries VMT and no link volume, so a coarse zone system cannot
+    place local traffic on local roads at all. Block groups are roughly three
+    times finer and cost proportionally more runtime — which OpenPlan spends,
+    because a defensible number matters more than a fast one.
+    """
+    if zone_geography not in ZONE_GEOGRAPHIES:
+        raise ConfigurationError(
+            f"Unknown zone geography {zone_geography!r}; OpenPlan builds zones from "
+            f"{sorted(ZONE_GEOGRAPHIES)}."
+        )
     ensure_dir(package_dir)
     states = intersecting_state_fips(boundary_geom, cache_dir)
+    template, layer_tag = ZONE_GEOGRAPHIES[zone_geography]
 
     tract_frames = []
     for state_fips in states:
         zip_path = download_if_needed(
-            TIGER_TRACT_ZIP_TEMPLATE.format(state_fips=state_fips),
-            cache_dir / "tiger" / f"tl_2023_{state_fips}_tract.zip",
+            template.format(state_fips=state_fips),
+            cache_dir / "tiger" / f"tl_2023_{state_fips}_{layer_tag}.zip",
         )
         gdf = gpd.read_file(zip_uri(zip_path))
         tract_frames.append(gdf.copy())
@@ -399,7 +446,9 @@ def build_zone_package(boundary_geom, package_dir: Path, cache_dir: Path) -> tup
     if tract_gdf.empty:
         raise RuntimeError("All clipped tract fragments were tiny slivers; no usable zones remain")
 
-    acs = fetch_acs_tract_attributes({(g[:2], g[2:5]) for g in tract_gdf["GEOID"].tolist()})
+    acs = fetch_acs_tract_attributes(
+        {(g[:2], g[2:5]) for g in tract_gdf["GEOID"].tolist()}, zone_geography
+    )
     tract_gdf = tract_gdf.merge(acs, left_on="GEOID", right_on="geoid", how="left")
     for col in ["est_population", "households", "worker_residents"]:
         tract_gdf[col] = tract_gdf[col].fillna(0).astype(float) * tract_gdf["area_share"].clip(lower=0, upper=1)
@@ -415,7 +464,11 @@ def build_zone_package(boundary_geom, package_dir: Path, cache_dir: Path) -> tup
     tract_gdf["centroid"] = tract_gdf.geometry.representative_point()
     tract_gdf["centroid_lon"] = tract_gdf["centroid"].x
     tract_gdf["centroid_lat"] = tract_gdf["centroid"].y
-    tract_gdf = tract_gdf.sort_values(["STATEFP", "COUNTYFP", "TRACTCE", "GEOID"]).reset_index(drop=True)
+    # GEOID last and always present: a block-group layer carries BLKGRPCE that a
+    # tract layer does not, so sorting on a column that may not exist would work
+    # for one geography and fail for the other.
+    sort_columns = [c for c in ("STATEFP", "COUNTYFP", "TRACTCE", "BLKGRPCE") if c in tract_gdf.columns]
+    tract_gdf = tract_gdf.sort_values([*sort_columns, "GEOID"]).reset_index(drop=True)
     tract_gdf["zone_id"] = np.arange(1, len(tract_gdf) + 1)
     tract_gdf = estimate_jobs(tract_gdf)
 
@@ -2144,6 +2197,7 @@ def run_screening_model(
     counts_mode: str | None = None,
     calibrate_to_counts: bool = False,
     reuse_network_from: str | None = None,
+    zone_geography: str = DEFAULT_ZONE_GEOGRAPHY,
 ) -> dict[str, Any]:
     # THE ONE COMBINATION THAT IS REFUSED. Calibrating and then validating
     # against the SAME count file grades the model on most of the data it was
@@ -2227,7 +2281,8 @@ def run_screening_model(
         stage_seconds["zones"] = 0.0
     else:
         zones_df, zone_meta = _timed(
-            "zones", build_zone_package, boundary_meta["geometry"], package_dir, cache_path
+            "zones", build_zone_package, boundary_meta["geometry"], package_dir, cache_path,
+            zone_geography,
         )
     # The network stage adds one external zone per boundary-crossing highway, so
     # it hands the zone table back rather than taking it read-only.

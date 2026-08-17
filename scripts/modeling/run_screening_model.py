@@ -128,6 +128,17 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--zone-geography",
+        choices=["tract", "block_group"],
+        default=None,
+        help=(
+            "Spatial resolution of the model's zones. Block groups are roughly three times finer "
+            "than tracts and cost proportionally more runtime — worth it when a trip inside one "
+            "zone would otherwise carry no link volume at all. Defaults to OPENPLAN_ZONE_GEOGRAPHY, "
+            "or tract."
+        ),
+    )
+    parser.add_argument(
         "--reuse-network-from-run",
         help=(
             "Adopt the road network, zone centroids and gateways of an earlier run made with "
@@ -187,6 +198,7 @@ def _run(run_screening_model, args):
         counts_mode=args.counts,
         calibrate_to_counts=args.calibrate,
         reuse_network_from=args.reuse_network_from_run,
+        **({"zone_geography": args.zone_geography} if args.zone_geography else {}),
     )
 
 

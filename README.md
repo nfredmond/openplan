@@ -379,6 +379,27 @@ Unless otherwise marked, source code is licensed under the Apache License, Versi
 
 The license does not grant rights to Nat Ford Planning trademarks, logos, private credentials, client confidential information, third-party datasets, third-party media, or client-specific deliverables unless those materials are explicitly included under the same license.
 
+## How long a model run takes, and why that is not the point
+
+**A travel model run in OpenPlan may take hours, and is allowed to take days.** That is a
+deliberate choice, not a performance problem to report.
+
+A corridor volume gets quoted in a funding application and questioned years later, so the figure
+has to be defensible rather than quick. Wherever the two conflict, OpenPlan spends the time:
+more boundary crossings modelled, finer zones, and an assignment run to a tight convergence
+gap rather than a loose one. Settings that trade accuracy for speed exist for debugging, and
+they say so where they appear.
+
+What this means in practice:
+
+- Start a run and come back to it. The run page shows each stage, and streams the assignment's
+  own progress — the iteration it has reached, the convergence gap it has achieved, and the gap
+  it is aiming for — so a long run is visibly working rather than apparently stuck.
+- Model runs execute in a **worker**, never in a web request, so a browser tab or a serverless
+  timeout can never cut one short.
+- A run that has to be fast — a first look at a new study area, or debugging — is the exception,
+  and the settings that make it fast are the ones that make it less trustworthy.
+
 ## Capability boundaries
 
 OpenPlan states its limits as plainly as its strengths — several are enforced by tests. Modeling outputs are screening-grade with caveats attached, not calibrated or validated forecasting. LAPM support is delivery tracking and an invoice register, not exact Caltrans exhibit/E-76 form generation. Aerial operations cover mission and evidence tracking; imagery-to-orthomosaic processing is on the roadmap. It should not be described as a finished autonomous municipal SaaS or a substitute for qualified planning review.

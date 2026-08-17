@@ -42,6 +42,7 @@ import {
   type ModelRunClaimDecision,
 } from "@/lib/models/evidence-backbone";
 import { stageLogForDisplay, summarizeRunFailure } from "@/lib/models/run-failure";
+import { describeElapsed, latestConvergence, summarizeRunProgress } from "@/lib/models/run-progress";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -1363,6 +1364,73 @@ export function ModelRunManager({
 }
 
 /**
+ * How far along a run is, for runs that legitimately take hours or days.
+ *
+ * The percentage is stages finished over stages declared at launch — a known
+ * denominator, not a guess. There is deliberately no time estimate: stage
+ * durations differ by an order of magnitude and an equilibrium assignment's
+ * length is unknowable until it converges, so minutes-remaining would be a
+ * fabrication wearing a progress bar's authority. Elapsed time IS shown,
+ * because it is a fact and because "4h 12m in this stage" is the difference
+ * between confidence and a support request.
+ */
+function RunProgressBar({ stages }: { stages: ModelRunStage[] }) {
+  const progress = useMemo(() => summarizeRunProgress(stages), [stages]);
+  const running = useMemo(
+    () => stages.find((stage) => (stage.status ?? "").toLowerCase() === "running") ?? null,
+    [stages]
+  );
+  // `now` is state rather than a Date.now() call during render: reading the
+  // clock while rendering is impure, and on a run that lasts a day the elapsed
+  // figure has to advance on its own rather than only when the poll happens to
+  // return changed data.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, [running]);
+
+  const elapsed = describeElapsed(running?.started_at ?? null, now);
+  const convergence = latestConvergence(running?.log_tail ?? null);
+
+  if (progress.percent === null) return null;
+
+  return (
+    <div className="mb-4" data-testid="run-progress">
+      <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
+        <span className="font-medium text-foreground">{progress.label}</span>
+        <span className="tabular-nums text-muted-foreground" data-testid="run-progress-percent">
+          {progress.percent}%
+        </span>
+      </div>
+      <div
+        className="h-2 w-full overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-valuenow={progress.percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Model run progress by stage"
+      >
+        <div
+          className="h-full rounded-full bg-foreground/70 transition-[width] duration-500"
+          style={{ width: `${progress.percent}%` }}
+        />
+      </div>
+      {elapsed || convergence ? (
+        <p className="mt-1 text-[11px] text-muted-foreground" data-testid="run-progress-detail">
+          {elapsed ? `${elapsed} in this stage` : null}
+          {elapsed && convergence ? " · " : null}
+          {convergence
+            ? `convergence gap ${convergence.gap.toPrecision(3)}, aiming for ${convergence.target.toPrecision(3)}`
+            : null}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/**
  * The stage's console output, which follows new lines as the worker writes them.
  *
  * FOLLOWING STOPS WHEN THE READER SCROLLS UP, and says so. During a long
@@ -1438,6 +1506,7 @@ function ModelRunStagingAndArtifacts({
 
   return (
     <div className="mt-4 border-t pt-4">
+      {stages?.length > 0 ? <RunProgressBar stages={stages} /> : null}
       {(stages?.length > 0 || artifacts?.length > 0) ? (
         <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
           {stages?.length > 0 && (

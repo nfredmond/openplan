@@ -205,3 +205,37 @@ describe("a running stage's console output", () => {
     expect(screen.queryByTestId("stage-log-paused")).toBeNull();
   });
 });
+
+describe("the progress bar on a long run", () => {
+  it("shows percent complete by stage, with the running stage named", () => {
+    const run = runningRun(PROGRESS_LOG);
+    run.stages = [
+      stage({ id: "s1", stage_name: "AequilibraE Setup", status: "succeeded", sort_order: 1 }),
+      stage({ id: "s2", stage_name: "Network Assignment", status: "running", sort_order: 2, log_tail: PROGRESS_LOG }),
+      stage({ id: "s3", stage_name: "Validation", status: "queued", sort_order: 3 }),
+      stage({ id: "s4", stage_name: "Artifacts", status: "queued", sort_order: 4 }),
+    ] as never;
+    renderRun(run);
+
+    expect(screen.getByTestId("run-progress-percent").textContent).toBe("25%");
+    expect(screen.getByTestId("run-progress").textContent).toContain("Stage 2 of 4: Network Assignment");
+    const bar = screen.getByRole("progressbar");
+    expect(bar.getAttribute("aria-valuenow")).toBe("25");
+  });
+
+  it("shows the convergence gap and the target it is aiming for", () => {
+    const run = runningRun(PROGRESS_LOG);
+    renderRun(run);
+    const detail = screen.getByTestId("run-progress-detail").textContent ?? "";
+    expect(detail).toContain("0.00340");
+    expect(detail).toContain("0.000500");
+  });
+
+  it("never puts a time estimate on the bar", () => {
+    // Stage durations differ by an order of magnitude and an equilibrium
+    // assignment's length is unknowable until it converges.
+    renderRun(runningRun(PROGRESS_LOG));
+    const text = (screen.getByTestId("run-progress").textContent ?? "").toLowerCase();
+    expect(text).not.toMatch(/remaining|eta|estimated|time left/);
+  });
+});
