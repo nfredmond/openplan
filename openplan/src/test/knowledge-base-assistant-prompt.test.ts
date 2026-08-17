@@ -26,6 +26,7 @@ function excerpt(over: Partial<KnowledgeBaseExcerpt> = {}): KnowledgeBaseExcerpt
     chunkIndex: 0,
     snippet: "Pedestrian safety is the top corridor priority.",
     rank: 0.5,
+    extractionSource: "text_layer",
     ...over,
   };
 }

@@ -54,6 +54,7 @@ type RpcRow = {
   chunk_index: number;
   content: string;
   rank: number;
+  extraction_source: string | null;
 };
 
 function toSnippet(content: string): string {
@@ -191,6 +192,7 @@ export async function GET(request: NextRequest) {
       chunkIndex: row.chunk_index,
       snippet: toSnippet(row.content),
       rank: typeof row.rank === "number" ? row.rank : 0,
+      extractionSource: row.extraction_source ?? null,
     }));
 
     audit.info("kb_search_completed", {

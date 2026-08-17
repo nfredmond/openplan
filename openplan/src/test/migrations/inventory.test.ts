@@ -411,16 +411,23 @@ const EXPECTED = {
   // So: +3 policies, +3 permissive, +0 restrictive, +2 permissiveWrites
   // (INSERT + DELETE), +1 tablesWithPolicies, +1 relations, +1 tables, +1
   // rlsEnabledTables. `views` holds at 7 and `expanded` at 264.
+  //
+  // 20260817000002 (cron_job_heartbeats) adds ONE deployment-global heartbeat
+  // table: RLS enabled with NO policies (locked to the service role), so it is
+  // +1 relations, +1 tables, +1 rlsEnabledTables, and +0 to every policy count
+  // and to tablesWithPolicies. It is a deliberate locked table (see the
+  // write-policy coverage guard's allowlist). 20260817000001 only replaces the
+  // kb_search_chunks function's return columns — a function, not a relation.
   policies: 646,
   permissive: 400,
   restrictive: 246,
   permissiveWrites: 261,
   expanded: 264,
   tablesWithPolicies: 139,
-  relations: 160,
-  tables: 153,
+  relations: 161,
+  tables: 154,
   views: 7,
-  rlsEnabledTables: 153,
+  rlsEnabledTables: 154,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

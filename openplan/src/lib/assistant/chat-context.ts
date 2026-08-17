@@ -5,6 +5,7 @@ import type {
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
 import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
+import { KB_OCR_PROVENANCE_NOTICE } from "@/lib/knowledge-base/ocr-availability";
 import { FUNDING_CLOSING_SOON_WINDOW_DAYS } from "@/lib/operations/funding-decision-status";
 import { formatMoney } from "@/lib/money/format";
 
@@ -505,7 +506,10 @@ export const ASSISTANT_CHAT_MAX_KB_EXCERPTS = 5;
 export function renderKnowledgeBaseExcerptLines(excerpts: KnowledgeBaseExcerpt[]): string[] {
   return excerpts.slice(0, ASSISTANT_CHAT_MAX_KB_EXCERPTS).map((excerpt) => {
     const page = excerptPageLabel(excerpt.pageFrom, excerpt.pageTo);
-    return `- "${excerpt.documentTitle}"${page ? ` (${page})` : ""}: ${excerpt.snippet}`;
+    // An OCR'd excerpt tells the model it was machine-transcribed, so it does
+    // not present a possibly-misread scanned figure to the planner as fact.
+    const ocrNotice = excerpt.extractionSource === "ocr" ? ` [${KB_OCR_PROVENANCE_NOTICE}]` : "";
+    return `- "${excerpt.documentTitle}"${page ? ` (${page})` : ""}: ${excerpt.snippet}${ocrNotice}`;
   });
 }
 

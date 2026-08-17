@@ -176,6 +176,29 @@ describe("Knowledge Base search is reachable from the Knowledge Base page", () =
     expect(screen.getByText(/1 passage matched .*complete streets policy/)).toBeInTheDocument();
   });
 
+  it("a passage read by OCR renders the machine-transcription notice; a text-layer one does not", async () => {
+    const { KB_OCR_PROVENANCE_NOTICE } = await import("@/lib/knowledge-base/ocr-availability");
+
+    rpcResponse = { data: [rpcRow({ extraction_source: "ocr" })], error: null };
+    const view = render(<KnowledgeBaseWorkspace workspaceId={WORKSPACE_ID} initialDocuments={[doc()]} />);
+    typeAndSearch("complete streets policy");
+    await waitFor(() =>
+      expect(screen.getByText(new RegExp(KB_OCR_PROVENANCE_NOTICE.slice(0, 24)))).toBeInTheDocument()
+    );
+    view.unmount();
+
+    // The label tracks the source: a text-layer hit shows no OCR notice.
+    rpcResponse = { data: [rpcRow({ extraction_source: "text_layer" })], error: null };
+    render(<KnowledgeBaseWorkspace workspaceId={WORKSPACE_ID} initialDocuments={[doc()]} />);
+    typeAndSearch("complete streets policy");
+    await waitFor(() =>
+      expect(
+        screen.getByText(/The complete streets policy applies to every arterial resurfacing/)
+      ).toBeInTheDocument()
+    );
+    expect(screen.queryByText(new RegExp(KB_OCR_PROVENANCE_NOTICE.slice(0, 24)))).toBeNull();
+  });
+
   it("scopes the search to the selected project, and says so", async () => {
     rpcResponse = { data: [rpcRow()], error: null };
     render(

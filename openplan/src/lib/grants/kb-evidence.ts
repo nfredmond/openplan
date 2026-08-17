@@ -14,6 +14,7 @@ import {
   type KnowledgeBaseExcerpt,
   type KnowledgeBaseExcerptRead,
 } from "@/lib/knowledge-base/retrieval";
+import { KB_OCR_PROVENANCE_NOTICE } from "@/lib/knowledge-base/ocr-availability";
 import type { KnowledgeBaseGroundingDisclosure } from "@/lib/grants/narrative-grounding";
 
 /** Verbatim caveat every KB-derived narrative fact carries (mirrors BCA/engagement caveats). */
@@ -62,7 +63,13 @@ export function buildKnowledgeBaseFactClaims(
       if (!passage) return null;
       const page = excerptPageLabel(excerpt.pageFrom, excerpt.pageTo);
       const source = `"${excerpt.documentTitle}"${page ? `, ${page}` : ""}`;
-      return `An uploaded document ${source}${scope} states: "${passage}" ${KB_NARRATIVE_CAVEAT}`;
+      // A passage read by OCR carries the machine-transcription notice INSIDE
+      // the fact, so it travels with the [fact:N] a drafter cites — the
+      // document list shows the same notice off the same column, and a scanned
+      // adopted plan's misread digit must not reach a grant narrative looking
+      // like author-embedded text.
+      const ocrNotice = excerpt.extractionSource === "ocr" ? ` ${KB_OCR_PROVENANCE_NOTICE}` : "";
+      return `An uploaded document ${source}${scope} states: "${passage}" ${KB_NARRATIVE_CAVEAT}${ocrNotice}`;
     })
     .filter((claim): claim is string => claim !== null);
 }

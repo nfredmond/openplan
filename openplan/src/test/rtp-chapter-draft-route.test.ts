@@ -239,6 +239,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
           chunkIndex: 0,
           snippet: "The financial element totals were updated in the prior cycle.",
           rank: 1,
+          extractionSource: "text_layer",
         },
       ],
       error: null,

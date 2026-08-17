@@ -18,6 +18,7 @@ function excerpt(over: Partial<KnowledgeBaseExcerpt> = {}): KnowledgeBaseExcerpt
     chunkIndex: 0,
     snippet: "The plan commits $4.2 million to State Route 49 pedestrian safety improvements.",
     rank: 0.5,
+    extractionSource: "text_layer",
     ...over,
   };
 }
@@ -40,6 +41,16 @@ describe("buildKnowledgeBaseFactClaims", () => {
 
   it("drops blank excerpts", () => {
     expect(buildKnowledgeBaseFactClaims([excerpt({ snippet: "   " })])).toEqual([]);
+  });
+
+  it("flags a passage read by OCR inside the cited fact, so a misread digit cannot pass as author text", async () => {
+    const { KB_OCR_PROVENANCE_NOTICE } = await import("@/lib/knowledge-base/ocr-availability");
+    const [ocrClaim] = buildKnowledgeBaseFactClaims([excerpt({ extractionSource: "ocr" })]);
+    expect(ocrClaim).toContain(KB_OCR_PROVENANCE_NOTICE);
+    // A text-layer document carries no such notice — the label must track the
+    // source, not appear on every fact.
+    const [textClaim] = buildKnowledgeBaseFactClaims([excerpt({ extractionSource: "text_layer" })]);
+    expect(textClaim).not.toContain(KB_OCR_PROVENANCE_NOTICE);
   });
 });
 

@@ -1327,6 +1327,9 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
             docKind: excerpt.docKind,
             page: excerptPageLabel(excerpt.pageFrom, excerpt.pageTo) || null,
             snippet: excerpt.snippet,
+            // 'ocr' means machine-transcribed from a scan — the model is told
+            // so it flags a possibly-misread figure rather than stating it.
+            readWithOcr: excerpt.extractionSource === "ocr",
           })),
         };
       },

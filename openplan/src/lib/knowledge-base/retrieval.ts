@@ -26,7 +26,7 @@
  */
 
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-import type { KbDocKind } from "./types";
+import type { KbDocKind, KbExtractionSource } from "./types";
 
 /** Per-excerpt snippet cap so retrieved passages stay within prompt budgets. */
 export const KB_EXCERPT_SNIPPET_CHARS = 480;
@@ -41,6 +41,13 @@ export type KnowledgeBaseExcerpt = {
   chunkIndex: number;
   snippet: string;
   rank: number;
+  /**
+   * How the document's text was obtained — `'ocr'` means a scan was
+   * machine-transcribed and a digit may be misread, which every grounded
+   * surface must disclose (see KB_OCR_PROVENANCE_NOTICE). Null for documents
+   * ingested before the column existed; carried so absence stays honest.
+   */
+  extractionSource: KbExtractionSource | string | null;
 };
 
 /**
@@ -80,6 +87,7 @@ type RpcRow = {
   chunk_index: number;
   content: string;
   rank: number;
+  extraction_source: string | null;
 };
 
 type RpcClient = {
@@ -176,6 +184,7 @@ export async function loadKnowledgeBaseExcerpts(
       chunkIndex: row.chunk_index,
       snippet: toSnippet(row.content ?? ""),
       rank: typeof row.rank === "number" ? row.rank : 0,
+      extractionSource: row.extraction_source ?? null,
     })),
     error: null,
     searched: true,

@@ -20,6 +20,7 @@ const ROW = {
   chunk_index: 0,
   content: "  Corridor   safety   improvements.  ",
   rank: 0.42,
+  extraction_source: "ocr",
 };
 
 function mockSupabase(response: { data: unknown; error: { message: string } | null }) {
@@ -54,6 +55,9 @@ describe("loadKnowledgeBaseExcerpts", () => {
       pageFrom: 3,
       snippet: "Corridor safety improvements.",
       rank: 0.42,
+      // The RPC now returns the document's extraction_source; it must reach the
+      // excerpt so downstream surfaces can flag OCR'd text.
+      extractionSource: "ocr",
     });
     expect(supabase.rpc).toHaveBeenCalledWith("kb_search_chunks", {
       p_workspace_id: "ws-1",

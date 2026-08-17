@@ -872,6 +872,9 @@ export function KnowledgeBaseWorkspace({
                           </span>
                         ) : null}
                       </div>
+                      {hit.extractionSource === "ocr" ? (
+                        <p className="module-record-summary">{KB_OCR_PROVENANCE_NOTICE}</p>
+                      ) : null}
                     </div>
                   </li>
                 ))}

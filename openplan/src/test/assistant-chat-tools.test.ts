@@ -322,6 +322,7 @@ describe("buildAssistantChatTools", () => {
         chunk_index: 0,
         content: "The corridor carries significant freight volume.",
         rank: 0.7,
+        extraction_source: "ocr",
       },
     ]);
     const { tools } = buildTools({ supabase });
@@ -335,6 +336,9 @@ describe("buildAssistantChatTools", () => {
         docKind: "plan",
         page: "pp. 5-7",
         snippet: "The corridor carries significant freight volume.",
+        // The excerpt was read by OCR, so the model is told — a possibly-misread
+        // scanned figure must not reach the planner as fact.
+        readWithOcr: true,
       },
     ]);
     expect(supabase.rpcCalls).toHaveLength(1);
