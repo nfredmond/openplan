@@ -15,6 +15,75 @@ export const runtime = "nodejs";
 const PREVIEW_CHUNK_LIMIT = 12;
 const PREVIEW_CHUNK_CHARS = 600;
 
+type ServiceClient = ReturnType<typeof createServiceRoleClient>;
+
+/**
+ * Whether anything cites this document, and if so a sentence naming it — the
+ * "refuses by NAME, stating the cycle and the count" the RESTRICT foreign keys
+ * on `rtp_extraction_runs.kb_document_id` and `measure_claim_documents` promise.
+ *
+ * A `message` means refuse; `failed` means the check itself errored and the
+ * caller must not proceed (a dependency read that silently returned nothing
+ * would delete a cited source). The database RESTRICT is the real guarantee —
+ * this exists to turn a generic 23503 into something a planner can act on.
+ */
+async function describeDependenciesBlockingDelete(
+  service: ServiceClient,
+  documentId: string
+): Promise<{ message: string | null; failed: boolean }> {
+  const extractionResult = await service
+    .from("rtp_extraction_runs")
+    .select("rtp_cycle_id, rtp_cycles(title)")
+    .eq("kb_document_id", documentId);
+  if (extractionResult.error) return { message: null, failed: true };
+
+  const claimResult = await service
+    .from("measure_claim_documents")
+    .select("id")
+    .eq("kb_document_id", documentId);
+  if (claimResult.error) return { message: null, failed: true };
+
+  const extractionRows = (extractionResult.data ?? []) as Array<{
+    rtp_cycles: { title?: string | null } | { title?: string | null }[] | null;
+  }>;
+  const claimCount = (claimResult.data ?? []).length;
+
+  if (extractionRows.length === 0 && claimCount === 0) {
+    return { message: null, failed: false };
+  }
+
+  const parts: string[] = [];
+  if (extractionRows.length > 0) {
+    const cycleTitles = Array.from(
+      new Set(
+        extractionRows
+          .map((row) => {
+            const cycle = Array.isArray(row.rtp_cycles) ? row.rtp_cycles[0] : row.rtp_cycles;
+            return typeof cycle?.title === "string" ? cycle.title.trim() : "";
+          })
+          .filter((title) => title.length > 0)
+      )
+    );
+    const cycleClause = cycleTitles.length
+      ? ` in ${cycleTitles.length === 1 ? "the RTP cycle" : "RTP cycles"} "${cycleTitles.join('", "')}"`
+      : "";
+    parts.push(
+      `${extractionRows.length} adopted-plan extraction${extractionRows.length === 1 ? "" : "s"}${cycleClause}`
+    );
+  }
+  if (claimCount > 0) {
+    parts.push(`${claimCount} measure claim${claimCount === 1 ? "" : "s"}`);
+  }
+
+  return {
+    message:
+      `This document backs ${parts.join(" and ")}. Deleting it would strand those citations on ` +
+      "records the workspace still shows, so it cannot be removed while they exist. Detach or " +
+      "remove those first.",
+    failed: false,
+  };
+}
+
 const paramsSchema = z.object({ documentId: z.string().uuid() });
 
 type RouteContext = { params: Promise<{ documentId: string }> };
@@ -159,9 +228,62 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
 
     const service = createServiceRoleClient();
+    const documentId = parsedParams.data.documentId;
 
-    // Remove the stored object first (best-effort); the row + chunks are the
-    // authoritative record and cascade on the row delete.
+    // A document that backs figures in an adopted plan or a measure claim may
+    // not be deleted — two migrations make that a RESTRICT foreign key and
+    // promise "the delete route refuses by NAME instead, stating the cycle and
+    // the count." That refusal is BUILT HERE. Named refusal first, so the
+    // planner learns what depends on the file; and because we check before
+    // touching anything, the bytes are safe even for a dependency this code
+    // does not yet know about (see the ordering note below).
+    const refusal = await describeDependenciesBlockingDelete(service, documentId);
+    if (refusal.failed) {
+      audit.error("kb_document_delete_dependency_check_failed", { message: refusal.message });
+      return NextResponse.json(
+        { error: "We could not check what depends on this document, so it was not deleted." },
+        { status: 500 }
+      );
+    }
+    if (refusal.message) {
+      audit.info("kb_document_delete_refused_dependency", { documentId, reason: refusal.message });
+      return NextResponse.json({ error: refusal.message }, { status: 409 });
+    }
+
+    // THE ROW GOES FIRST, THE BYTES SECOND, AND THE ORDER IS THE WHOLE FIX.
+    // This route used to remove the storage object first, "best-effort", then
+    // delete the row. When a RESTRICT dependency existed the row delete failed
+    // 23503 — but the only copy of the file was already gone, leaving the row
+    // 'ready' and still cited on the public plan page with a download link that
+    // 500s at signing (found 2026-08-17). Deleting the row first means the
+    // database's own RESTRICT is a second guard behind the check above: if it
+    // fires, nothing has been destroyed and we refuse.
+    const { error: deleteError } = await service
+      .from("kb_documents")
+      .delete()
+      .eq("id", documentId);
+    if (deleteError) {
+      // 23503 = a dependency the pre-check did not cover (e.g. a new referrer,
+      // or a row inserted between the check and here). The bytes are intact.
+      const isForeignKeyViolation =
+        (deleteError as { code?: string }).code === "23503" ||
+        /foreign key/i.test(deleteError.message);
+      audit.error("kb_document_delete_failed", {
+        message: deleteError.message,
+        foreignKey: isForeignKeyViolation,
+      });
+      return NextResponse.json(
+        {
+          error: isForeignKeyViolation
+            ? "This document is cited by other records in the workspace and cannot be deleted while they exist."
+            : "Failed to delete document",
+        },
+        { status: isForeignKeyViolation ? 409 : 500 }
+      );
+    }
+
+    // The row (and its chunks, by cascade) is gone; now the bytes. Best-effort:
+    // an orphaned object is recoverable, a deleted-then-failed row was not.
     const storageRef = typeof document.storage_ref === "string" ? document.storage_ref : null;
     const prefix = `storage://${KB_DOCUMENTS_BUCKET}/`;
     if (storageRef && storageRef.startsWith(prefix)) {
@@ -171,16 +293,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const { error: deleteError } = await service
-      .from("kb_documents")
-      .delete()
-      .eq("id", parsedParams.data.documentId);
-    if (deleteError) {
-      audit.error("kb_document_delete_failed", { message: deleteError.message });
-      return NextResponse.json({ error: "Failed to delete document" }, { status: 500 });
-    }
-
-    audit.info("kb_document_deleted", { documentId: parsedParams.data.documentId, userId: user.id });
+    audit.info("kb_document_deleted", { documentId, userId: user.id });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     audit.error("kb_document_delete_unhandled_error", { error });

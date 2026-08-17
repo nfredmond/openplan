@@ -28,6 +28,13 @@ type ReadResult = { data: unknown; error: null | { message: string } };
 let documentResponse: ReadResult;
 let chunksResponse: ReadResult;
 let membershipResponse: ReadResult;
+// The dependency pre-check reads and the row-delete result, all defaulted to
+// "nothing depends on it, delete succeeds" so the happy path is unchanged.
+let extractionRefsResponse: ReadResult;
+let claimRefsResponse: ReadResult;
+let kbDeleteResponse: { error: null | { message: string; code?: string } };
+/** Ordered log of destructive ops, to prove the row is deleted before bytes. */
+const order: string[] = [];
 
 /** Every `.select(columns)` string the route asked each table for. */
 const projections: Array<[string, string]> = [];
@@ -84,19 +91,37 @@ vi.mock("@/lib/supabase/server", () => ({
     storage: {
       from: () => ({
         remove: async (paths: string[]) => {
+          order.push("storage.remove");
           storageRemovals.push(paths);
           return { error: null };
         },
       }),
     },
-    from: (table: string) => ({
-      delete: () => ({
-        eq: async (column: string, value: unknown) => {
-          executedDeletes.push({ table, filter: [column, value] });
-          return { error: null };
-        },
-      }),
-    }),
+    from: (table: string) => {
+      // The dependency pre-check reads that turn a RESTRICT foreign key into a
+      // named refusal: rtp_extraction_runs (cited by an adopted plan) and
+      // measure_claim_documents (attached to a measure claim).
+      if (table === "rtp_extraction_runs" || table === "measure_claim_documents") {
+        return {
+          select: (columns: string) => {
+            projections.push([table, columns]);
+            return {
+              eq: async () =>
+                table === "rtp_extraction_runs" ? extractionRefsResponse : claimRefsResponse,
+            };
+          },
+        };
+      }
+      return {
+        delete: () => ({
+          eq: async (column: string, value: unknown) => {
+            order.push("row.delete");
+            executedDeletes.push({ table, filter: [column, value] });
+            return kbDeleteResponse;
+          },
+        }),
+      };
+    },
   }),
 }));
 
@@ -126,9 +151,13 @@ beforeEach(() => {
   };
   chunksResponse = { data: [], error: null };
   membershipResponse = { data: { role: "member" }, error: null };
+  extractionRefsResponse = { data: [], error: null };
+  claimRefsResponse = { data: [], error: null };
+  kbDeleteResponse = { error: null };
   projections.length = 0;
   executedDeletes.length = 0;
   storageRemovals.length = 0;
+  order.length = 0;
   auditInfo.mockClear();
   auditWarn.mockClear();
   auditError.mockClear();
@@ -181,6 +210,67 @@ describe("DELETE /api/knowledge-base/documents/[documentId] — the role read ga
     expect(res.status).toBe(200);
     expect(executedDeletes).toEqual([{ table: "kb_documents", filter: ["id", DOCUMENT_ID] }]);
     expect(storageRemovals).toEqual([[`${WORKSPACE_ID}/${DOCUMENT_ID}/plan.pdf`]]);
+  });
+
+  it("deletes the row BEFORE the bytes, so a RESTRICT never leaves an orphaned citation", async () => {
+    // The critical (found 2026-08-17): the route removed the file bytes first,
+    // then the row — so when a RESTRICT dependency failed the row delete, the
+    // agency's only copy of a cited adopted-plan source was already destroyed
+    // while the row stayed 'ready' and cited. Order is the whole fix.
+    await DELETE(request("DELETE"), context);
+    expect(order).toEqual(["row.delete", "storage.remove"]);
+  });
+
+  it("refuses BY NAME when an adopted-plan extraction cites the document, and destroys nothing", async () => {
+    extractionRefsResponse = {
+      data: [{ rtp_cycle_id: "cycle-1", rtp_cycles: { title: "2050 RTP" } }],
+      error: null,
+    };
+
+    const res = await DELETE(request("DELETE"), context);
+
+    // Nothing destroyed — asserted before the status, because a 409 that still
+    // deleted the bytes would be the same data-loss with better manners.
+    expect(executedDeletes).toEqual([]);
+    expect(storageRemovals).toEqual([]);
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { error?: string };
+    expect(body.error).toContain("adopted-plan extraction");
+    // "stating the cycle" — the migration's promise, verbatim intent.
+    expect(body.error).toContain("2050 RTP");
+  });
+
+  it("refuses when a measure claim attaches the document", async () => {
+    claimRefsResponse = { data: [{ id: "claim-doc-1" }], error: null };
+
+    const res = await DELETE(request("DELETE"), context);
+
+    expect(res.status).toBe(409);
+    expect(executedDeletes).toEqual([]);
+    expect(storageRemovals).toEqual([]);
+    const body = (await res.json()) as { error?: string };
+    expect(body.error).toContain("measure claim");
+  });
+
+  it("refuses when the dependency check itself fails — it must not assume the document is free", async () => {
+    extractionRefsResponse = { data: null, error: { message: "permission denied" } };
+
+    const res = await DELETE(request("DELETE"), context);
+
+    expect(res.status).toBe(500);
+    expect(executedDeletes).toEqual([]);
+    expect(storageRemovals).toEqual([]);
+  });
+
+  it("keeps the bytes when the row delete fails on a foreign key the pre-check did not cover", async () => {
+    // Belt to the pre-check's braces: even a dependency this code does not know
+    // about must not cost the bytes, because the row goes first now.
+    kbDeleteResponse = { error: { message: "violates foreign key constraint", code: "23503" } };
+
+    const res = await DELETE(request("DELETE"), context);
+
+    expect(res.status).toBe(409);
+    expect(storageRemovals).toEqual([]);
   });
 
   it("403s a viewer, which is a role the read did establish", async () => {
