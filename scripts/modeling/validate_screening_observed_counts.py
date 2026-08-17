@@ -78,6 +78,133 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def resolve_shared_links(results: list[dict[str, Any]], *, consistency_ratio: float | None = None) -> dict[str, Any]:
+    """Decide what to do when several count stations match the SAME model link.
+
+    ================================================== WHY THIS IS NOT COSMETIC
+
+    The model holds one volume for a link. Two stations matched to it are two
+    observations of that one number, so the comparison is being made twice —
+    and if they disagree, at most one of them can belong there.
+
+    Measured 2026-08-17 across the 24 study counties, after ramp counts were
+    already excluded: **33% of matched stations sit on a link shared with
+    another station**, across 404 links, and only 166 of those groups have
+    counts that agree with each other. The worst pair is 2 vehicles a day and
+    33,723 on the same link; another is 27 against 38,243. A count of two
+    vehicles is not a mainline observation, and grading a modelled 72,220
+    against it manufactures an error of three million percent.
+
+    ==================================================== WHAT IT DOES, AND WHY
+
+    - **Stations that agree with each other** are collapsed to a single
+      comparison at their median. They are measuring one road; counting them
+      twice weights that link twice for no reason.
+    - **Stations that disagree** take the whole group out, because the pairing
+      is genuinely ambiguous and nothing in the data says which station belongs
+      to the link. Keeping the closest one would be a guess wearing a method.
+
+    "Agree" reuses the screening gate's own 30% band rather than inventing a
+    threshold: if two observations of one quantity sit inside the tolerance
+    OpenPlan already accepts as a model matching reality, they are consistent
+    observations of it.
+
+    The underlying cause is network resolution — a link long enough to span a
+    junction really does carry different volumes at its two ends — and that is
+    not fixable here. This makes the consequence visible instead of silently
+    averaging it into the accuracy figure.
+    """
+    ratio_limit = 1.0 + (DEFAULT_READY_MEDIAN_APE / 100.0 if consistency_ratio is None else consistency_ratio)
+    by_link: dict[str, list[dict[str, Any]]] = {}
+    for row in results:
+        if row.get("match_status") != "matched":
+            continue
+        link_id = str(row.get("model_link_id") or "")
+        if link_id:
+            by_link.setdefault(link_id, []).append(row)
+
+    merged_groups = 0
+    merged_stations = 0
+    ambiguous_groups = 0
+    ambiguous_stations = 0
+    for link_id, group in by_link.items():
+        if len(group) < 2:
+            continue
+        # `is not None`, NOT truthiness: a station reporting zero vehicles is a
+        # real observation and a zero would otherwise drop out of the range,
+        # letting the group look consistent and merge into a live corridor.
+        volumes = [
+            value for value in (parse_float(row.get("observed_volume")) for row in group) if value is not None
+        ]
+        if not volumes:
+            continue
+        low, high = min(volumes), max(volumes)
+        consistent = low > 0 and (high / low) <= ratio_limit
+        ordered = sorted(group, key=lambda row: float(row["observed_volume"]))
+        if consistent:
+            merged_groups += 1
+            merged_stations += len(group) - 1
+            keeper = ordered[len(ordered) // 2]
+            median_observed = float(keeper["observed_volume"])
+            modeled = float(keeper["modeled_daily_pce"])
+            keeper["observed_volume"] = int(round(median_observed))
+            keeper["absolute_difference"] = int(round(abs(modeled - median_observed)))
+            keeper["absolute_percent_error"] = round(100.0 * abs(modeled - median_observed) / median_observed, 2)
+            ratio = safe_ratio(modeled, median_observed)
+            keeper["volume_ratio_model_obs"] = round(ratio, 4) if ratio is not None else ""
+            keeper["notes"] = "; ".join(
+                part for part in (
+                    keeper.get("notes", ""),
+                    f"{len(group)} stations matched this link and agree within "
+                    f"{(ratio_limit - 1) * 100:.0f}%; compared once at their median",
+                ) if part
+            )
+            for row in group:
+                if row is keeper:
+                    continue
+                row["match_status"] = "merged_into_shared_link"
+                row["absolute_percent_error"] = ""
+                row["volume_ratio_model_obs"] = ""
+                row["notes"] = "; ".join(
+                    part for part in (
+                        row.get("notes", ""),
+                        f"merged into station {keeper.get('station_id', '')} on link {link_id}",
+                    ) if part
+                )
+        else:
+            ambiguous_groups += 1
+            ambiguous_stations += len(group)
+            for row in group:
+                row["match_status"] = "excluded_ambiguous_link"
+                row["absolute_percent_error"] = ""
+                row["volume_ratio_model_obs"] = ""
+                row["notes"] = "; ".join(
+                    part for part in (
+                        row.get("notes", ""),
+                        f"{len(group)} stations matched link {link_id} reporting {low:,.0f} to "
+                        f"{high:,.0f} vehicles a day. The model holds one volume for the link and "
+                        "nothing in the data says which station belongs to it, so none of them "
+                        "grades it.",
+                    ) if part
+                )
+
+    return {
+        "consistency_ratio": round(ratio_limit, 4),
+        "links_shared_by_several_stations": merged_groups + ambiguous_groups,
+        "groups_merged_as_consistent": merged_groups,
+        "stations_merged_away": merged_stations,
+        "groups_excluded_as_ambiguous": ambiguous_groups,
+        "stations_excluded_as_ambiguous": ambiguous_stations,
+        "note": (
+            "A model link holds one volume, so several stations matched to it are several "
+            "observations of one number. Where they agree they are compared once at their median; "
+            "where they disagree the pairing is ambiguous and none of them grades the link. The "
+            "cause is network resolution — a link long enough to span a junction genuinely carries "
+            "different volumes at its ends."
+        ),
+    }
+
+
 def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text())
 
@@ -882,6 +1009,10 @@ def run_validation_bundle(
         )
         results.append(result)
 
+    # After every station has been matched, not during: whether a link is shared
+    # is only knowable once they all have.
+    shared_link_resolution = resolve_shared_links(results)
+
     summary = build_summary(
         evidence=evidence,
         counts_csv=counts_csv,
@@ -893,6 +1024,7 @@ def run_validation_bundle(
         ready_critical_ape=ready_critical_ape,
         required_matches=required_matches,
     )
+    summary["shared_model_links"] = shared_link_resolution
 
     write_results_csv(output_dir / "validation_results.csv", results)
     (output_dir / "validation_summary.json").write_text(json.dumps(summary, indent=2))

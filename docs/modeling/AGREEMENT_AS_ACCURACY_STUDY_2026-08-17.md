@@ -172,10 +172,51 @@ ran on. The direction of the correction is that the models are somewhat better
 than this document reports, and the ~1.8-1.9× over-assignment survives it
 unchanged.
 
-Still open: **29% of matched stations share a model link with another station**,
-which no per-feed rule addresses. A link should carry one count; many-to-one
-needs a place-free refusal or a documented tie-break, and it is the next thing
-to look at in this area.
+### The shared-link half, fixed the same day
+
+A model link holds ONE volume, so several stations matched to it are several
+observations of one number. After ramp exclusion, 33% of matched stations still
+sat on a shared link (404 links), and only 166 of those groups had counts that
+agreed with each other. The worst pair was **2 vehicles a day against 33,723**
+on one link, with the model holding 72,220.
+
+`resolve_shared_links` now compares such a group once at its median when the
+stations agree within the screening gate's own 30% band — reusing that
+threshold rather than inventing one — and excludes the whole group when they do
+not, because nothing in the data says which station belongs to the link.
+Choosing the nearest would be a guess wearing a method.
+
+### What cleaning the measurement twice actually bought
+
+All 24 counties, same runs, only the count handling differing:
+
+| stage | stations | median error | model ÷ observed | within the 30% gate |
+|---|---:|---:|---:|---:|
+| as the study ran | 3,658 | 120.9% | 2.21 | 13.8% |
+| ramps excluded | 2,696 | 100.0% | 1.90 | 16.6% |
+| + shared links resolved | 1,998 | 100.0% | **1.78** | 17.1% |
+
+967 stations were set aside as ramps or connectors, 482 as ambiguous pairings,
+and 216 merged into a station they agree with — 45% of the original set. That is
+a large fraction, so it was checked for the obvious way it could flatter the
+model: **the surviving set is not the easy one.** The motorway share FELL from
+16.2% to 12.1%, and the median observed volume rose from 10,800 to 14,972 — the
+stations that left were disproportionately the small and the bogus.
+
+By road class, before and after:
+
+| class | stations | median error |
+|---|---|---|
+| motorway | 592 → 242 | 86.6% → **37.6%** |
+| trunk | 888 → 498 | 194.7% → 138.2% |
+| primary | 1,307 → 826 | 126.8% → 104.5% |
+| secondary | 668 → 334 | 109.8% → 100.0% |
+
+**The most useful thing here: on freeways the model is far closer than this
+study believed** — 37.6% median error against a 30% gate, rather than 86.6%.
+Everything below a freeway remains 100-140% out and ~1.8× over-assigned, and
+that residual did NOT move when the measurement was cleaned. It is the model,
+not the counts.
 
 ### 3. About 8% of counties contain a zone that can reach nothing
 
