@@ -399,11 +399,26 @@ class DisclosureTests(unittest.TestCase):
             max_iterations=1,
         )
 
-    def test_the_reported_accuracy_is_named_as_held_out(self) -> None:
-        self.assertIn("held-out", self.result["reported_accuracy_basis"])
+    def test_the_reported_figure_is_named_a_selection_score_not_an_accuracy(self) -> None:
+        # STRENGTHENED 2026-08-17. This used to assert the basis said "held-out",
+        # and that claim became false: every candidate is scored on those
+        # stations and the best is kept, so the winning score is a best-of-N and
+        # is optimistic by construction. Measured on a real county, this figure
+        # read 16.1% while an independent count set put the same run at 60.0%.
+        basis = self.result["reported_accuracy_basis"]
+        self.assertIn("best-of-trials", basis)
+        self.assertIn("not the run's accuracy", basis)
         self.assertEqual(
             self.result["holdout_median_ape"],
             self.result["calibrated"]["holdout"]["median_ape"],
+        )
+
+    def test_how_many_candidates_were_scored_on_the_holdout_is_recorded(self) -> None:
+        # The size of the optimism. One trial is nearly unbiased; seven is not,
+        # and a reader cannot judge the figure without knowing which it was.
+        self.assertGreaterEqual(self.result["selection_trials_scored_on_holdout"], 1)
+        self.assertEqual(
+            self.result["selection_trials_scored_on_holdout"], len(self.result["steps"])
         )
 
     def test_the_baseline_is_reported_beside_the_result(self) -> None:
@@ -422,7 +437,10 @@ class DisclosureTests(unittest.TestCase):
     def test_the_caveat_says_it_does_not_grant_a_passing_gate(self) -> None:
         # Calibration changes the model, not the standard.
         self.assertIn("does not by itself make a run pass", self.result["caveat"])
-        self.assertIn("held-out", self.result["caveat"])
+        self.assertIn("held back from the fit", self.result["caveat"])
+        # And it must send the reader to the figure that IS the accuracy.
+        self.assertIn("best-of-trials score", self.result["caveat"])
+        self.assertIn("reads better than the model performs", self.result["caveat"])
 
     def test_the_split_is_reproducible_and_says_how(self) -> None:
         # A calibration nobody can reproduce is not evidence. The seed and the

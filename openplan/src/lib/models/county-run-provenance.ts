@@ -223,13 +223,20 @@ function calibrationSection(manifest: CountyOnrampManifest | null): string[] {
     `- **Accuracy before calibration (held out):** ${stated(
       asNumber(asRecord(baseline?.holdout)?.median_ape)
     )}% median absolute percent error`,
-    `- **Accuracy after calibration (held out):** ${stated(
+    `- **Best score found while choosing between calibration candidates:** ${stated(
       asNumber(asRecord(calibrated?.holdout)?.median_ape)
-    )}% median absolute percent error`,
+    )}% median absolute percent error, across ${stated(
+      asNumber(calibration.selection_trials_scored_on_holdout)
+    )} candidates`,
     "",
-    "The accuracy reported here is measured on stations kept back from the fitting. The accuracy",
-    "on the stations used to fit the model is better and is not reported as accuracy, because a",
-    "model graded on the data it was fitted to grades itself.",
+    "**That last figure is not this run's accuracy, and must not be quoted as one.** The stations",
+    "it is measured on were kept back from the fitting, but every calibration candidate was scored",
+    "against them and the best-scoring one was kept — so it is a best-of-several and reads better",
+    "than the model performs. On one measured county it read 16% where an independent set of counts",
+    "put the same run at 60%.",
+    "",
+    "The accuracy for this run is the validation section above, which compares the finished model",
+    "against counts the calibration never saw.",
   ];
 }
 

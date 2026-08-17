@@ -545,19 +545,32 @@ def calibrate(
         "holdout_seed": seed,
         "baseline": {"fit": baseline_fit, "holdout": baseline_holdout},
         "calibrated": {"fit": best_fit, "holdout": best_holdout},
-        # THE NUMBER THAT COUNTS, named so it cannot be confused with the other
-        # one. The fit-set accuracy is reported beside it for completeness and is
-        # not evidence of anything: it is the accuracy on the data the factors
-        # were derived from.
-        "reported_accuracy_basis": "held-out stations, never used to fit",
+        # NOT AN UNBIASED ACCURACY, AND IT USED TO CLAIM IT WAS. These stations
+        # were never used to FIT anything — but every trial is scored on them
+        # and the best-scoring one is kept, so the winning score is a
+        # best-of-N and is optimistic by construction. It was nearly harmless
+        # when each stage took one trial. Once the external stage swept seven,
+        # it stopped being harmless: on a real county this figure read 16.1%
+        # while an independent count set put the same run at 60.0%.
+        #
+        # So it is named for what it is. The run's own validation stage, which
+        # grades against counts this function never saw, is the accuracy.
+        "reported_accuracy_basis": (
+            "best-of-trials score on stations held out of the FITTING, but used to choose between "
+            "calibration candidates — optimistic, and not the run's accuracy"
+        ),
+        "selection_trials_scored_on_holdout": len(steps),
         "holdout_median_ape": best_holdout["median_ape"],
         "steps": steps,
         "volumes": best_volumes,
         "caveat": (
-            "Calibrated to observed counts: per-road-class speed and capacity factors were fitted "
-            f"to {len(fit_stations)} count stations and validated against {len(holdout_stations)} "
-            "held back from the fit. The accuracy reported for this run is the held-out figure. "
-            "This is a disclosed calibrated tier, not the screening default, and calibration does "
-            "not by itself make a run pass the screening gate."
+            "Calibrated to observed counts: per-road-class speed and capacity factors, an overall "
+            f"demand scalar and a separate external-demand scalar were fitted to {len(fit_stations)} "
+            f"count stations, with {len(holdout_stations)} held back from the fit to choose between "
+            f"candidates. {len(steps)} candidates were scored on those held-back stations and the "
+            "best kept, so the figure this calibration reports for them is a best-of-trials score "
+            "and reads better than the model performs. Use the run's own validation against a "
+            "separate count set as the accuracy. This is a disclosed calibrated tier, not the "
+            "screening default, and calibration does not by itself make a run pass the gate."
         ),
     }

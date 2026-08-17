@@ -203,11 +203,22 @@ describe("what a validated, calibrated run reports", () => {
     expect(buildCountyRunProvenanceDocument(validated)).toContain("Caltrans");
   });
 
-  it("reports the held-out accuracy and says why it is the one reported", () => {
+  it("refuses to present the calibration's own best score as the run's accuracy", () => {
+    // CHANGED 2026-08-17, because the old claim became false. The calibration
+    // scores every candidate on its held-back stations and keeps the best, so
+    // that score is a best-of-several and is optimistic by construction. On one
+    // measured county it read 16% where an independent count set put the same
+    // run at 60%. A funding application quoting the 16% would be quoting a
+    // number nobody could reproduce.
     const document = buildCountyRunProvenanceDocument(validated);
+
     expect(document).toContain("17 stations held back and never fitted");
     expect(document).toContain("43.29");
-    expect(document).toContain("model graded on the data it was fitted to grades itself");
+    expect(document).toContain("Best score found while choosing between calibration candidates");
+    expect(document).toContain("not this run's accuracy, and must not be quoted as one");
+    expect(document).toContain("best-of-several and reads better");
+    // And it must point at the figure that IS the accuracy.
+    expect(document).toContain("counts the calibration never saw");
   });
 
   it("shows the before as well as the after, so the gain is checkable", () => {
