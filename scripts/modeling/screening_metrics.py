@@ -8,7 +8,7 @@ geo/modeling stack via `python3 scripts/modeling/test_screening_metrics.py`.
 from __future__ import annotations
 
 import math
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 EARTH_RADIUS_MILES = 3958.7613
 METERS_PER_MILE = 1609.34
@@ -170,3 +170,112 @@ def geh_summary(
         "stations": len(values),
         "basis": GEH_BASIS_NOTE,
     }
+
+
+# The road classes a screening model is graded on, coarsest first. Ordered so a
+# report reads from the roads carrying the most traffic down to the ones
+# carrying the least, which is also the order of how much the model gets right.
+ROAD_CLASS_ORDER = ("motorway", "trunk", "primary", "secondary", "tertiary", "residential", "unclassified")
+
+
+def accuracy_by_road_class(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+    """How accurate this run is on each kind of road, not just overall.
+
+    WHY ONE NUMBER IS NOT ENOUGH, AND IS ARGUABLY MISLEADING. Measured on a real
+    county run, matched against 17 published Caltrans stations:
+
+        motorway   9 stations   median error  22.8%   model/observed 1.10
+        secondary  4 stations   median error 132.4%   model/observed 1.63
+        primary    2 stations   median error 146.6%   model/observed 2.47
+        trunk      1 station    median error 227.1%   model/observed 3.27
+
+    The headline for that run is "39.7% median error". A planner asking about a
+    freeway corridor and a planner asking about an arterial are being handed
+    numbers of completely different quality, and the single figure tells neither
+    of them which one they have.
+
+    The ratio matters as much as the error: consistently above 1 is a model
+    putting traffic where it does not belong, which is a different problem from
+    a model that is merely imprecise, and it is the direction that overstates a
+    corridor's volume in a funding application.
+    """
+    grouped: dict[str, list[dict[str, float]]] = {}
+    for row in rows:
+        road_class = str(row.get("model_link_type") or "").strip().lower()
+        if not road_class:
+            continue
+        observed = _as_float(row.get("observed_volume"))
+        modeled = _as_float(row.get("modeled_daily_pce"))
+        error = _as_float(row.get("absolute_percent_error"))
+        if observed is None or modeled is None or error is None or observed <= 0:
+            continue
+        grouped.setdefault(road_class, []).append(
+            {"error": error, "ratio": modeled / observed}
+        )
+
+    def sort_key(name: str) -> tuple[int, str]:
+        return (ROAD_CLASS_ORDER.index(name) if name in ROAD_CLASS_ORDER else len(ROAD_CLASS_ORDER), name)
+
+    breakdown: list[dict[str, Any]] = []
+    for road_class in sorted(grouped, key=sort_key):
+        entries = grouped[road_class]
+        breakdown.append(
+            {
+                "road_class": road_class,
+                "stations": len(entries),
+                "median_absolute_percent_error": round(_median([e["error"] for e in entries]), 2),
+                "median_model_over_observed": round(_median([e["ratio"] for e in entries]), 3),
+                # One station is a data point, not an accuracy. Said here rather
+                # than left to a reader who sees a tidy percentage next to it.
+                "single_station": len(entries) == 1,
+            }
+        )
+    return breakdown
+
+
+def road_class_accuracy_note(breakdown: Sequence[Mapping[str, Any]]) -> str:
+    """The by-class result in a sentence a planner can act on."""
+    usable = [entry for entry in breakdown if not entry["single_station"]]
+    if not breakdown:
+        return (
+            "No matched count station recorded the kind of road it was on, so this run's accuracy "
+            "cannot be broken down by road type."
+        )
+    if not usable:
+        return (
+            "Every road type here was matched by a single count station, so the per-type figures "
+            "are individual comparisons rather than measures of accuracy."
+        )
+    best = min(usable, key=lambda entry: entry["median_absolute_percent_error"])
+    worst = max(usable, key=lambda entry: entry["median_absolute_percent_error"])
+    if best["road_class"] == worst["road_class"]:
+        return (
+            f"Accuracy was measured on {best['road_class']} roads only "
+            f"({best['stations']} stations, {best['median_absolute_percent_error']}% median error). "
+            "Other road types in this study area have no published counts to check against."
+        )
+    return (
+        f"Accuracy is not the same on every kind of road. On {best['road_class']} the median error "
+        f"is {best['median_absolute_percent_error']}% across {best['stations']} stations; on "
+        f"{worst['road_class']} it is {worst['median_absolute_percent_error']}% across "
+        f"{worst['stations']}. A figure for a {worst['road_class']} road is far weaker evidence "
+        f"than the same figure for a {best['road_class']}, and the study-area median hides that."
+    )
+
+
+def _as_float(value: Any) -> float | None:
+    if value in (None, "", "null"):
+        return None
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return None
+    return result if math.isfinite(result) else None
+
+
+def _median(values: Sequence[float]) -> float:
+    ordered = sorted(values)
+    middle = len(ordered) // 2
+    if len(ordered) % 2:
+        return ordered[middle]
+    return (ordered[middle - 1] + ordered[middle]) / 2.0

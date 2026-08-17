@@ -11,7 +11,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from screening_metrics import geh_summary, percent_rmse
+from screening_metrics import (
+    accuracy_by_road_class,
+    geh_summary,
+    percent_rmse,
+    road_class_accuracy_note,
+)
 
 
 DEFAULT_READY_MEDIAN_APE = 30.0
@@ -468,6 +473,7 @@ def build_summary(
     min_ape = min(apes) if apes else None
     max_ape = max(apes) if apes else None
     spearman_rho = compute_spearman_rho(observed, modeled)
+    by_road_class = accuracy_by_road_class(matched)
     pct_rmse = percent_rmse(observed, modeled)
     geh = geh_summary(observed, modeled)
 
@@ -562,6 +568,13 @@ def build_summary(
             "geh_mean": round(geh["mean"], 2) if geh["mean"] is not None else None,
             "geh_max": round(geh["max"], 2) if geh["max"] is not None else None,
             "geh_basis": geh["basis"],
+            # THE STUDY-AREA MEDIAN HIDES THE THING A PLANNER NEEDS. On the run
+            # that produced this code, the median was 39.7% while freeways sat
+            # at 22.8% and arterials at 132-227% — two numbers of completely
+            # different quality reported as one. A corridor figure is only as
+            # good as the accuracy for ITS kind of road.
+            "by_road_class": by_road_class,
+            "by_road_class_note": road_class_accuracy_note(by_road_class),
         },
         "facility_ranking": facility_ranking,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -694,6 +707,17 @@ def write_markdown_report(path: Path, summary: dict[str, Any], results: list[dic
             f"- Min absolute percent error: **{summary['metrics']['min_absolute_percent_error']}%**",
             f"- Max absolute percent error: **{summary['metrics']['max_absolute_percent_error']}%**",
             f"- Spearman rho (facility ranking): **{summary['metrics']['spearman_rho_facility_ranking']}**",
+            "",
+            summary["metrics"]["by_road_class_note"],
+            "",
+            "| Road type | Stations | Median error | Model ÷ observed |",
+            "|---|---:|---:|---:|",
+            *[
+                f"| {entry['road_class']}{' (one station)' if entry['single_station'] else ''} "
+                f"| {entry['stations']} | {entry['median_absolute_percent_error']}% "
+                f"| {entry['median_model_over_observed']} |"
+                for entry in summary["metrics"]["by_road_class"]
+            ],
             "",
             "## Matched facilities",
             "",
