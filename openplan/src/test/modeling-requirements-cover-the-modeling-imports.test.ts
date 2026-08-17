@@ -54,8 +54,8 @@ const PYTHON_STDLIB = new Set([
   "dataclasses", "datetime", "functools", "gzip", "hashlib", "importlib", "io",
   "itertools", "json", "logging", "math", "os", "pathlib", "random", "re",
   "shlex", "shutil", "sqlite3", "statistics", "string", "subprocess", "sys",
-  "tempfile", "textwrap", "time", "types", "typing", "unittest", "urllib",
-  "uuid", "warnings", "zipfile",
+  "tempfile", "textwrap", "time", "traceback", "types", "typing", "unittest",
+  "urllib", "uuid", "warnings", "zipfile",
 ]);
 
 /**
