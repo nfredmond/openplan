@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 import { resolveActionApiPaths, resolveRouteFile } from "./helpers/action-route-resolution";
+import { stripSourceComments } from "./helpers/source-text";
 
 /**
  * THE APPROVAL TIER IS ENFORCED WHERE THE WRITE HAPPENS, OR IT IS NOT ENFORCED.
@@ -32,9 +33,17 @@ import { resolveActionApiPaths, resolveRouteFile } from "./helpers/action-route-
 
 const KINDS = Object.keys(ACTION_METADATA) as AssistantQuickLinkExecuteAction["kind"][];
 
-/** `name(` — a call — and never the bare identifier an import line contains. */
+/**
+ * `name(` — a call — and never the bare identifier an import line contains, and
+ * never a call written inside a COMMENT. The comment case is not hypothetical:
+ * a 2026-08-17 mutation deleted the real verifyAssistantActionApproval call from
+ * a route and left `// the server used to run verifyAssistantActionApproval(...)`
+ * behind, and this guard stayed green — it is the repo's sixth "comment defeats
+ * a source-scanning guard" incident, and the fix is the one the other guards
+ * already use: strip comments with the shared tested helper before matching.
+ */
 function callsFunction(source: string, name: string): boolean {
-  return new RegExp(`\\b${name}\\s*\\(`).test(source);
+  return new RegExp(`\\b${name}\\s*\\(`).test(stripSourceComments(source));
 }
 
 describe("every registered action's route enforces the seam itself", () => {
@@ -84,5 +93,21 @@ describe("the call-vs-import distinction this guard rests on", () => {
     expect(
       callsFunction("const approval = await verifyAssistantActionApproval({", "verifyAssistantActionApproval")
     ).toBe(true);
+  });
+
+  it("does not count a call written inside a comment", () => {
+    // The exact survivor shape: the real call is gone, only prose about it
+    // remains. A route in this state enforces nothing server-side.
+    const commentOnly =
+      "// the server used to run verifyAssistantActionApproval({ request, action }) here\n" +
+      "export async function POST() { return NextResponse.json({ ok: true }); }";
+    expect(callsFunction(commentOnly, "verifyAssistantActionApproval")).toBe(false);
+  });
+
+  it("does not count a block-comment mention of the audit wrapper", () => {
+    const blockComment =
+      "/* withAssistantActionAudit(...) is applied upstream */\n" +
+      "export async function POST() { return NextResponse.json({ ok: true }); }";
+    expect(callsFunction(blockComment, "withAssistantActionAudit")).toBe(false);
   });
 });
