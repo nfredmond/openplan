@@ -153,10 +153,16 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     summary: string | null;
   };
 
+  // On a service-role page the filters ARE the access control. The map read
+  // below carries this same workspace scope; this list read shipped without it
+  // (found 2026-08-16), so a link row inserted from another workspace against
+  // this cycle's id would have published that workspace's project names and
+  // award amounts on a resident-facing page. Same scope on both reads, always.
   const linksResult = await supabase
     .from("project_rtp_cycle_links")
     .select("id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, projects(id, name, status, summary)")
-    .eq("rtp_cycle_id", cycle.id);
+    .eq("rtp_cycle_id", cycle.id)
+    .eq("workspace_id", cycle.workspace_id);
   const linksFailed = reads.check("the projects in this plan", linksResult);
 
   // The same per-cycle project map the agency sees, built HERE with the page's
@@ -193,12 +199,15 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   );
 
   // Committed award dollars per project — operator-entered award records only,
-  // so a project with none simply shows no funding line.
+  // so a project with none simply shows no funding line. Workspace-scoped like
+  // every other read on this page: project ids arrive from the links read, and
+  // an id list is not an authorization.
   const awardsResult = linkedProjectIds.length
     ? await supabase
         .from("funding_awards")
         .select("project_id, title, awarded_amount")
         .in("project_id", linkedProjectIds)
+        .eq("workspace_id", cycle.workspace_id)
     : { data: [], error: null };
   reads.check("committed funding for these projects", awardsResult);
   const awardData = awardsResult.data;

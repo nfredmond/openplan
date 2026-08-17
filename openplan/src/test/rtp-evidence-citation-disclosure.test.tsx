@@ -548,6 +548,29 @@ describe("public plan page — the per-cycle project map (decision #1's public h
     expect(mapReadFilters).toEqual(expect.arrayContaining(["rtp_cycle_id", "workspace_id"]));
   });
 
+  it("EVERY links read and the awards read carry the workspace scope, not just the map's", async () => {
+    // Found 2026-08-16: the map read above was scoped and mutation-tested while
+    // the project LIST read three lines from it was not, so a link row forged
+    // from another workspace (RLS permits inserting one whose workspace_id is
+    // the forger's own against any cycle id) published that workspace's project
+    // names and award amounts on a resident-facing page. The scope is per-read;
+    // guarding one read proves nothing about its neighbour.
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    const linkReads = filterCalls.project_rtp_cycle_links ?? [];
+    expect(linkReads.length, "no project_rtp_cycle_links read happened").toBeGreaterThan(0);
+    for (const [index, readFilters] of linkReads.entries()) {
+      expect(readFilters, `project_rtp_cycle_links read #${index} lost its workspace scope`).toContain(
+        "workspace_id"
+      );
+    }
+    const awardReads = filterCalls.funding_awards ?? [];
+    expect(awardReads.length, "the awards read never happened").toBeGreaterThan(0);
+    for (const [index, readFilters] of awardReads.entries()) {
+      expect(readFilters, `funding_awards read #${index} lost its workspace scope`).toContain("workspace_id");
+    }
+  });
+
   it("does not instruct the resident to go place projects", async () => {
     // Same plan, no located projects: the honest empty state renders, but the
     // operator instruction ("Open a project from the lists above…") is copy
