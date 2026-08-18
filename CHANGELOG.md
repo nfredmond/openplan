@@ -19,6 +19,42 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**No migrations.** Pull and deploy.
+
+### Traffic models: re-run anything you rely on
+
+**Existing model runs report roughly 27% more traffic than they should.** Two
+unit errors were fixed in the trip-based travel model, and a run made before
+this change is the wrong one:
+
+- **Person-trips were assigned to the road network as though each were a car.**
+  Three people sharing a car are three trips and one car. The model divided by
+  nothing, so every road carried about 1.6 times too many vehicles.
+- **Walking and cycling trips were put on the road network too.** They now go
+  through the same mode-choice model the worker already used.
+
+Measured across five counties against published federal traffic data and against
+state traffic counts, holding the road network and the count stations fixed:
+modelled traffic fell from **2.29× to 1.67×** the published figure, and the
+median error against real traffic counts fell from **97.4% to 78.2%**. Nothing
+was tuned to produce that — both changes are corrections to units.
+
+**What you have to do:** re-run any model whose numbers you have quoted or
+exported. **You do not have to work out which runs are affected** — open a run's
+provenance document and it says whether it counted cars or people, and an
+affected one states that its traffic figures are about 1.6 times too high.
+
+The accuracy check against published traffic counts was corrected too, in three
+ways that all made the model look better than it was: counts on a divided
+highway were compared against one carriageway of two, freeway ramp counts were
+graded against the freeways they leave, and a road segment was graded once per
+count station on it. A run graded under the old rules now says so rather than
+being compared against one graded under the new ones.
+
+**The model is still about 1.67 times high and should not be used for a number
+you have to defend.** It says so itself: a run that cannot support a claim
+refuses to make it rather than printing a figure anyway.
+
 ## 0.20.0 — 2026-08-12
 
 **No migrations.** Pull and deploy.
