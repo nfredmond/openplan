@@ -115,5 +115,145 @@ class TheSwitchExistsToReproduceOldMeasurements(unittest.TestCase):
         self.assertTrue(sr.EXTERNAL_PASSTHROUGH)
 
 
+class AReusedNetworkMustStillKnowItsRoads(unittest.TestCase):
+    """The failure that made pass-through look like it did not matter.
+
+    A run reusing another run's network adopts that run's gateway records, and
+    every run made before 2026-08-18 recorded no road name on them. Route
+    pairing then matches nothing, so a reused network quietly produces a model
+    in which no vehicle can cross the study area — with the same gateway count
+    and the same volumes as a fresh run.
+
+    The first pass-through measurement came back at +0.3% because of this. That
+    reads as "pass-through barely matters"; the truth was "pass-through never
+    ran".
+    """
+
+    def setUp(self) -> None:
+        import sqlite3
+        import tempfile
+
+        self.tmp = tempfile.TemporaryDirectory()
+        self.project = Path(self.tmp.name)
+        connection = sqlite3.connect(self.project / "project_database.sqlite")
+        connection.execute("CREATE TABLE links (link_id INTEGER, name TEXT)")
+        connection.executemany(
+            "INSERT INTO links VALUES (?, ?)",
+            [(6382, "South Valley Freeway"), (77, "Pacheco Pass Highway"), (99, "")],
+        )
+        connection.commit()
+        connection.close()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_a_name_is_recovered_from_the_network_it_came_from(self) -> None:
+        summary = {"gateways": [{"link_id": 6382, "zone_id": 13}, {"link_id": 77, "zone_id": 14}]}
+        filled = sr.backfill_gateway_names_from_project(summary, self.project)
+        self.assertEqual(filled, 2)
+        self.assertEqual(summary["gateways"][0]["name"], "South Valley Freeway")
+
+    def test_a_gateway_that_already_has_a_name_is_left_alone(self) -> None:
+        summary = {"gateways": [{"link_id": 6382, "zone_id": 13, "name": "Something Else"}]}
+        self.assertEqual(sr.backfill_gateway_names_from_project(summary, self.project), 0)
+        self.assertEqual(summary["gateways"][0]["name"], "Something Else")
+
+    def test_a_link_with_no_name_stays_unnamed_rather_than_inventing_one(self) -> None:
+        # An unnamed road is a real thing, and pairing two of them would route
+        # traffic between unrelated crossings.
+        summary = {"gateways": [{"link_id": 99, "zone_id": 15}]}
+        self.assertEqual(sr.backfill_gateway_names_from_project(summary, self.project), 0)
+        self.assertNotIn("name", summary["gateways"][0])
+
+    def test_recovered_names_are_enough_to_pair_a_route(self) -> None:
+        # End to end: the whole point is that pairing works afterwards.
+        from gateways import pair_passthrough_cordons
+
+        summary = {"gateways": [
+            {"link_id": 77, "zone_id": 100}, {"link_id": 77, "zone_id": 101},
+        ]}
+        sr.backfill_gateway_names_from_project(summary, self.project)
+        partners = pair_passthrough_cordons(summary["gateways"], zone_id_field="zone_id")
+        self.assertEqual(sorted(partners), [100, 101])
+
+
+class TheReusePathActuallyCallsTheBackfill(unittest.TestCase):
+    """Because removing the CALL passed every test of the function itself.
+
+    That is the same trap four other fixes hit today: the logic was correct,
+    tested, and not reached. This drives `reuse_network_from_run` end to end
+    against a minimal source run and checks the gateways that come out.
+    """
+
+    def setUp(self) -> None:
+        import json
+        import shutil
+        import sqlite3
+        import tempfile
+
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.source = root / "source-run"
+        (self.source / "work" / "aeq_project").mkdir(parents=True)
+        (self.source / "package").mkdir(parents=True)
+        (self.source / "boundary").mkdir(parents=True)
+        self.bundle = root / "new-run"
+        self.bundle.mkdir()
+
+        connection = sqlite3.connect(self.source / "work" / "aeq_project" / "project_database.sqlite")
+        connection.execute("CREATE TABLE links (link_id INTEGER, name TEXT)")
+        connection.executemany("INSERT INTO links VALUES (?, ?)", [(77, "Pacheco Pass Highway")])
+        connection.commit()
+        connection.close()
+
+        # A gateway record as every run before 2026-08-18 wrote it: no name.
+        (self.source / "work" / "network_setup_summary.json").write_text(json.dumps({
+            "project_dir": str(self.source / "work" / "aeq_project"),
+            "centroid_map": {},
+            "gateways": [
+                {"link_id": 77, "zone_id": 100, "link_type": "trunk",
+                 "daily_in": 9000.0, "daily_out": 9000.0,
+                 "boundary_lon": -121.0, "boundary_lat": 36.9, "label": "trunk-gateway-01"},
+            ],
+        }))
+
+        self.geometry = {
+            "type": "FeatureCollection",
+            "features": [{"type": "Feature", "properties": {}, "geometry": {
+                "type": "Polygon",
+                "coordinates": [[[-121.5, 36.5], [-120.5, 36.5], [-120.5, 37.5], [-121.5, 37.5], [-121.5, 36.5]]],
+            }}],
+        }
+        (self.source / "boundary" / "analysis_boundary.geojson").write_text(json.dumps(self.geometry))
+
+        columns = list(sr.EXTERNAL_ZONE_COLUMNS)
+        internal = {c: 0.0 for c in columns}
+        internal.update({"GEOID": "06069000100", "NAMELSAD": "Tract 1", "zone_id": 1,
+                         "centroid_lon": -121.0, "centroid_lat": 37.0, "zone_kind": "internal"})
+        external = {c: 0.0 for c in columns}
+        external.update({"GEOID": "EXT0100", "NAMELSAD": "External gateway: trunk-gateway-01",
+                         "zone_id": 100, "centroid_lon": -121.0, "centroid_lat": 36.9,
+                         "zone_kind": "external"})
+        pd.DataFrame([internal, external], columns=columns).to_csv(
+            self.source / "package" / "zone_attributes.csv", index=False
+        )
+        self.zones_in = pd.DataFrame([internal], columns=columns)
+        self.shutil = shutil
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_gateways_come_back_named_so_routes_can_pair(self) -> None:
+        from shapely.geometry import shape
+
+        summary, combined = sr.reuse_network_from_run(
+            self.bundle, shape(self.geometry["features"][0]["geometry"]), self.zones_in, self.source
+        )
+        names = [g.get("name") for g in summary["gateways"]]
+        self.assertEqual(names, ["Pacheco Pass Highway"])
+        self.assertEqual(summary["network_reused_from"]["gateway_names_recovered"], 1)
+        self.assertIn(100, set(combined["zone_id"].astype(int)))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

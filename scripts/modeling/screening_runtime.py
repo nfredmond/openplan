@@ -1145,6 +1145,47 @@ def boundary_fingerprint(boundary_geom) -> str:
     return hashlib.sha256(wkb.dumps(set_precision(boundary_geom, 1e-9))).hexdigest()
 
 
+def backfill_gateway_names_from_project(summary: dict[str, Any], project_dir: Path) -> int:
+    """Recover each reused gateway's road name from the network it came from.
+
+    A run whose network is reused adopts the SOURCE run's gateway records, and
+    every run made before 2026-08-18 recorded no `name` on them. Without it the
+    route-pairing that decides pass-through matches nothing, so a reused network
+    silently produces a model in which no vehicle can cross the study area —
+    while reporting the same gateway count and the same volumes as a fresh run.
+
+    That is not hypothetical: it made the first pass-through measurement come
+    back as +0.3%, which read as "pass-through barely matters" rather than
+    "pass-through never ran". The name is in the project database's links table
+    under the gateway's own `link_id`, so it is recovered rather than the run
+    being rebuilt.
+    """
+    gateways = summary.get("gateways") or []
+    missing = [g for g in gateways if not str(g.get("name") or "").strip()]
+    if not missing:
+        return 0
+    database = project_dir / "project_database.sqlite"
+    if not database.exists():
+        return 0
+    connection = sqlite3.connect(str(database))
+    try:
+        names = {
+            int(link_id): str(name or "").strip()
+            for link_id, name in connection.execute("SELECT link_id, name FROM links")
+        }
+    except sqlite3.DatabaseError:
+        return 0
+    finally:
+        connection.close()
+    filled = 0
+    for gateway in missing:
+        name = names.get(int(gateway.get("link_id", -1)), "")
+        if name:
+            gateway["name"] = name
+            filled += 1
+    return filled
+
+
 def reuse_network_from_run(
     bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, source_run_dir: Path
 ) -> tuple[dict[str, Any], pd.DataFrame]:
@@ -1217,6 +1258,9 @@ def reuse_network_from_run(
             "rather than downloaded, so both runs are assigned over exactly the same network."
         ),
     }
+    backfilled = backfill_gateway_names_from_project(summary, proj_dir)
+    if backfilled:
+        summary["network_reused_from"]["gateway_names_recovered"] = backfilled
     (work_dir / "network_setup_summary.json").write_text(json.dumps(summary, indent=2))
 
     # The external gateway zones belong to the network, so they come across with

@@ -614,3 +614,56 @@ changes that.
 
 That is the next piece of work in this lane, and it is a demand-structure
 change, not a parameter.
+
+---
+
+## Pass-through travel reaches the county-script lane — measured, and kept ON
+
+The worker has routed a share of a two-crossing route straight across the study
+area since it was written. This lane never did, so every measurement above was
+taken on a model where no vehicle could drive across a county. Closed
+`dc27421a`; one shared implementation `0b2ead92`.
+
+Five development counties, **the same network in both arms** (the pass-through
+runs reuse each baseline's retained project, so only the demand construction
+differs), graded on the same stations:
+
+| county | crossings paired | VMT ratio | | count error | |
+|---|---:|---:|---:|---:|---:|
+| | | before | after | before | after |
+| Merced, CA | 4 of 8 | 2.88 | **2.70** | 137.8% | **121.7%** |
+| San Benito, CA | 2 of 8 | 2.82 | 2.72 | 97.4% | 91.6% |
+| Tulare, CA | 4 of 8 | 2.29 | 2.26 | 151.9% | 136.9% |
+| Broomfield, CO | 6 of 8 | 1.41 | **1.20** | 76.2% | 69.9% |
+| Pueblo, CO | 2 of 8 | 1.99 | 1.97 | 87.9% | 88.3% |
+| **median** | | **2.29** | **2.26** | **97.4%** | **91.6%** |
+
+**Both measures improve, and they improve together** — which the gateway-seeding
+change did not do. Broomfield gains most and has the most paired crossings: 33
+square miles with two interstates through it, where nearly all boundary traffic
+genuinely passes through. Its ratio moves from 1.41 to 1.20, **inside the
+criterion-1 band**, on a change that fits no parameter to anything.
+
+It is kept on, and it does not close the gap: the median county still assigns
+2.26× the published vehicle-miles.
+
+### The measurement that was wrong first, and why
+
+The first attempt at this table showed +0.3% — no effect. Pass-through had never
+run. The arms reuse each baseline's network, a reused network adopts the source
+run's gateway records, and every run made before 2026-08-18 recorded no road
+name on them; route pairing matches on road identity, so nothing paired. The
+output was a normal-looking run with the same gateway count and the same
+volumes.
+
+**That is the fifth instance in one day of a correction being present and
+unreached**, after `is_one_way` in the count validator's candidates, `direction`
+in its project-database query, `name` on the gateway record, and the whole of
+`gateway_counts.py`. Every one produced plausible numbers and would have been
+read as a finding about the world.
+
+Reused gateways now recover their road name from the project database they came
+with (`backfill_gateway_names_from_project`), so runs already on disk can pair.
+Removing the call — not the function, the call — fails a test that drives the
+reuse path end to end, because testing the function alone is what let this
+through.
