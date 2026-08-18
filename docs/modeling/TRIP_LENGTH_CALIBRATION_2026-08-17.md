@@ -226,3 +226,70 @@ choice, network speed or route choice between parallels explains it.
 
 That is where this investigation stands. It is a narrower question than it was
 this morning, and it is not answered.
+
+## THE FREEWAY GAP IS PARTLY A MEASUREMENT DEFECT (2026-08-17)
+
+The eighth hypothesis is the one that held. OpenStreetMap maps a divided
+highway as **two one-way links**, one per carriageway, and the model reports
+each carriageway's own volume — but a DOT count station on that corridor
+measures **both directions**. Comparing them compares half a road against a
+whole one.
+
+How the network is split, one county:
+
+| class | two-way links | one-way links | % one-way |
+|---|---:|---:|---:|
+| motorway | 9 | 1,174 | **99%** |
+| trunk | 252 | 383 | 60% |
+| primary | 2,437 | 846 | 26% |
+| secondary | 3,941 | 1,594 | 29% |
+| residential | 39,315 | 1,367 | 3% |
+
+**Freeways are almost entirely one-way pairs; local roads almost none.** So the
+defect lands hardest exactly where the model looked worst.
+
+### Measured, within each class, over all 24 counties
+
+| class | link kind | stations | model ÷ observed |
+|---|---|---:|---:|
+| trunk | two-way | 309 | 3.08 |
+| trunk | one-way | 189 | **1.48** |
+| primary | two-way | 654 | 2.31 |
+| primary | one-way | 172 | **1.08** |
+
+**Two-way links read 2.09× and 2.14× higher than one-way links of the same
+class** — the halving, measured twice independently on 1,324 stations. Every
+motorway station in the study sits on a one-way link, which is why motorways
+read 0.78 while everything around them read 2-3.
+
+### What it does NOT explain, stated plainly
+
+Doubling every one-way link's modelled volume narrows the spread between road
+classes from **3.04× to 2.11×** — the defect is real and large — but it does
+not make the model right:
+
+| class | as measured | one-way doubled |
+|---|---:|---:|
+| motorway | 0.78 | **1.57** |
+| trunk | 2.38 | 3.04 |
+| primary | 2.05 | 2.28 |
+| secondary | 1.30 | 1.44 |
+| pooled | 1.78 | 2.20 |
+
+Motorways go from under-assigned to over-assigned. **The model still puts about
+twice as much traffic on the network as belongs there** — the finding from this
+morning's independent FHWA comparison (2.16× published VMT per capita, which
+never touched a count station) survives intact and is now corroborated by the
+corrected count comparison at 2.20×.
+
+So there were two defects stacked, and separating them changes what each lane
+must do:
+
+1. **The validation must compare like with like.** A station on a divided
+   highway is measuring both carriageways; the comparison must sum them. This
+   is a fix to `count_validation.py` and the scripts-lane validator, not to the
+   model.
+2. **The model over-assigns by roughly 2×, uniformly.** With the measurement
+   defect removed, the road-class spread is much smaller than it looked, which
+   makes a magnitude correction more plausible than it appeared an hour ago —
+   and the trip-length lever is back in scope for exactly that.
