@@ -16,7 +16,7 @@ unit-testable without the geo/modeling stack. Keep in step with the county lane.
 from __future__ import annotations
 
 import math
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 from time_of_day import DEFAULT_PEAK_HOUR_FACTOR, PEAK_HOUR_FACTOR_NOTE, peak_hour_volume
 
@@ -497,7 +497,10 @@ def match_station(station: dict[str, Any], modeled_links: Iterable[dict[str, Any
         if not (exact or facility or type_only):
             continue
         score = 3 if exact else 2 if facility else 1
-        volume = float(link.get("volume") or 0.0)
+        # THE CORRIDOR'S volume, not one carriageway's. A count station on a
+        # divided highway measures both directions; OSM maps them as two
+        # one-way links. See `corridor_volume`.
+        volume, carriageways = corridor_volume(link, modeled_links)
         key = (score, volume)
         if best is None or key > (best["match_score"], best["modeled_daily_pce"]):
             best = {
@@ -506,8 +509,76 @@ def match_station(station: dict[str, Any], modeled_links: Iterable[dict[str, Any
                 "matched_link_type": link.get("link_type", ""),
                 "match_score": score,
                 "modeled_daily_pce": round(volume, 1),
+                # Recorded so a reader can tell a summed corridor from a single
+                # link without re-deriving it, and so a wrong pairing is
+                # visible rather than baked into a number.
+                "carriageways_summed": carriageways,
             }
     return best
+
+
+#: How far apart two carriageways of one divided highway can sit, in degrees.
+#: About 150 m at mid-latitudes — wide enough for a motorway with a median and
+#: a frontage separation, tight enough that two different roads of the same
+#: name a quarter-mile apart are not merged.
+CARRIAGEWAY_PAIR_DEGREES = 0.0015
+
+
+def corridor_volume(link: Mapping[str, Any], modeled_links: Sequence[Mapping[str, Any]]) -> tuple[float, int]:
+    """The whole corridor's volume at a link, and how many carriageways it took.
+
+    ================================================ WHY THIS EXISTS AT ALL
+
+    OpenStreetMap maps a divided highway as TWO ONE-WAY LINKS, one per
+    direction, and the assignment reports each carriageway's own volume. A DOT
+    count station on that highway measures BOTH directions. Comparing them puts
+    half a road against a whole one.
+
+    Measured 2026-08-17 across 24 counties and 1,324 stations, within each road
+    class so nothing else could explain it: a two-way link reads **2.09x** (trunk)
+    and **2.14x** (primary) higher than a one-way link of the same class. And
+    99% of motorway links are one-way carriageways against 3% of residential,
+    so the defect lands hardest exactly where the model looked worst — freeways
+    read 0.78 of observed while the arterials around them read 2-3.
+
+    A one-way link's opposite carriageway is the nearest link that shares its
+    name and type, runs the other way, and sits within
+    ``CARRIAGEWAY_PAIR_DEGREES``. Where no such link exists the volume is
+    returned unchanged and the count says one carriageway — an unpaired one-way
+    road is a real thing (a couplet through a town centre) and must not be
+    doubled on suspicion.
+    """
+    volume = float(link.get("volume") or 0.0)
+    if not link.get("is_one_way"):
+        return volume, 1
+
+    name = normalize_text(link.get("name"))
+    link_type = normalize_text(link.get("link_type"))
+    lon, lat = link.get("lon"), link.get("lat")
+    if lon is None or lat is None:
+        return volume, 1
+
+    best_partner = None
+    best_distance = None
+    for other in modeled_links:
+        if other is link or not other.get("is_one_way"):
+            continue
+        if int(other.get("link_id", -1)) == int(link.get("link_id", -2)):
+            continue
+        if normalize_text(other.get("name")) != name or normalize_text(other.get("link_type")) != link_type:
+            continue
+        other_lon, other_lat = other.get("lon"), other.get("lat")
+        if other_lon is None or other_lat is None:
+            continue
+        distance = max(abs(float(other_lon) - float(lon)), abs(float(other_lat) - float(lat)))
+        if distance > CARRIAGEWAY_PAIR_DEGREES:
+            continue
+        if best_distance is None or distance < best_distance:
+            best_distance, best_partner = distance, other
+
+    if best_partner is None:
+        return volume, 1
+    return volume + float(best_partner.get("volume") or 0.0), 2
 
 
 def classify_gate(

@@ -280,6 +280,84 @@ def test_validate_emits_both_geh_bases():
     assert "peak-hour" in out["method"]
 
 
+
+# ── Divided highways: a count measures the road, OSM maps the carriageways ──
+#
+# MEASURED 2026-08-17 across 24 counties and 1,324 stations, within each road
+# class so nothing else could explain it: a two-way link reads 2.09x (trunk)
+# and 2.14x (primary) higher than a one-way link of the SAME class. 99% of
+# motorway links are one-way carriageways against 3% of residential, so the
+# defect landed hardest exactly where the model looked worst — freeways at 0.78
+# of observed while the arterials around them read 2-3.
+
+def _carriageway(link_id, name, lon, lat, volume, one_way=True, link_type="motorway"):
+    return {
+        "link_id": link_id, "name": name, "link_type": link_type,
+        "lon": lon, "lat": lat, "volume": volume, "is_one_way": one_way,
+    }
+
+
+def test_a_two_way_link_is_never_doubled():
+    link = _carriageway(1, "Main Street", -121.0, 39.2, 12000, one_way=False, link_type="primary")
+    assert cv.corridor_volume(link, [link]) == (12000, 1)
+
+
+def test_two_carriageways_of_one_highway_are_summed():
+    north = _carriageway(1, "Golden State Highway", -121.0, 39.2, 20000)
+    south = _carriageway(2, "Golden State Highway", -121.0, 39.2008, 18000)
+    assert cv.corridor_volume(north, [north, south]) == (38000, 2)
+
+
+def test_an_unpaired_one_way_road_is_left_alone():
+    # A one-way couplet through a town centre is real; doubling it on suspicion
+    # would invent traffic that is not there.
+    lone = _carriageway(1, "First Street", -121.0, 39.2, 5000)
+    assert cv.corridor_volume(lone, [lone]) == (5000, 1)
+
+
+def test_a_road_of_the_same_name_far_away_is_not_a_carriageway():
+    here = _carriageway(1, "Main Street", -121.0, 39.2, 9000)
+    away = _carriageway(2, "Main Street", -121.4, 39.6, 9000)
+    assert cv.corridor_volume(here, [here, away]) == (9000, 1)
+
+
+def test_a_road_of_another_class_is_not_a_carriageway():
+    motorway = _carriageway(1, "Highway 20", -121.0, 39.2, 30000)
+    ramp = _carriageway(2, "Highway 20", -121.0, 39.2005, 3000, link_type="primary")
+    assert cv.corridor_volume(motorway, [motorway, ramp]) == (30000, 1)
+
+
+def test_the_nearest_carriageway_is_the_one_summed():
+    here = _carriageway(1, "Golden State Highway", -121.0, 39.2, 20000)
+    near = _carriageway(2, "Golden State Highway", -121.0, 39.2004, 18000)
+    further = _carriageway(3, "Golden State Highway", -121.0, 39.2012, 100)
+    assert cv.corridor_volume(here, [here, near, further])[0] == 38000
+
+
+def test_a_link_without_coordinates_is_left_alone_rather_than_guessed():
+    blind = _carriageway(1, "Highway 20", None, None, 15000)
+    partner = _carriageway(2, "Highway 20", -121.0, 39.2, 15000)
+    assert cv.corridor_volume(blind, [blind, partner]) == (15000, 1)
+
+
+def test_a_matched_station_reports_the_whole_corridor():
+    """End to end: the station's modelled volume must be the whole road."""
+    station = {
+        "station_id": "CT_1", "label": "SR 99 mainline", "observed_volume": 38000,
+        "candidate_model_names": "Golden State Highway",
+        "bbox_min_lon": -122, "bbox_min_lat": 38, "bbox_max_lon": -120, "bbox_max_lat": 40,
+    }
+    links = [
+        _carriageway(1, "Golden State Highway", -121.0, 39.2, 20000),
+        _carriageway(2, "Golden State Highway", -121.0, 39.2008, 18000),
+    ]
+    result = cv.validate_against_counts([station], links)["results"][0]
+    assert result["match_status"] == "matched", result
+    assert result["modeled_daily_pce"] == 38000, result
+    assert result["carriageways_summed"] == 2, result
+    # ~0% error now, against the ~47% a half-road produced.
+    assert result["absolute_percent_error"] < 1.0, result
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:

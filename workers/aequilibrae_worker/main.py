@@ -2940,9 +2940,13 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
     conn.enable_load_extension(True)
     conn.load_extension(SPATIALITE_PATH)
     try:
+        # `direction` rides along because a count station on a divided highway
+        # measures BOTH carriageways while OSM maps them as two one-way links.
+        # Without it the comparison puts half a road against a whole one — worth
+        # a factor of two on 99% of motorway links. See count_validation.corridor_volume.
         rows = conn.execute(
             "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
-            "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
+            "X(Centroid(geometry)), Y(Centroid(geometry)), COALESCE(direction, 0) FROM links "
             "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
         ).fetchall()
     finally:
@@ -2953,8 +2957,9 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
             "lon": float(cx) if cx is not None else None,
             "lat": float(cy) if cy is not None else None,
             "volume": pce.get(int(lid), 0.0),
+            "is_one_way": int(direction or 0) != 0,
         }
-        for lid, name, lt, cx, cy in rows
+        for lid, name, lt, cx, cy, direction in rows
     ]
     return count_validation.validate_against_counts(
         stations, modeled_links,
