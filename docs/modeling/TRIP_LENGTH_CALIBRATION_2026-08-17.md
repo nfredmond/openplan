@@ -517,3 +517,43 @@ sits near the crossing — 58% of gateways in these counties have one within 3 k
 — label the rest as the class default, and only then ask whether any demand
 parameter still needs to move. The gateway cap must not be lifted before that;
 see the section above.
+
+---
+
+## How far the gateway lever can actually reach — measured 2026-08-18
+
+`scripts/modeling/gateway_counts.py` existed, tested, and called by nothing. It
+is now wired (`50d6eb59`), and its first run exposed a bug of the same shape as
+three others found today: the gateway record was built field by field and
+dropped `name`, so identity matching refused every crossing and every county
+reported "no published count is near any of my crossings" as though it were a
+fact about the county (`c77604fa`).
+
+With that fixed, across 24 crossings in the five development counties:
+
+| | crossings |
+|---|---:|
+| have an OSM name to match on | 19 |
+| **have a published count on that road within 2 miles** | **8** |
+| have one within 5 miles | 10 |
+| have one within 10 miles | 11 |
+| have no count on that road anywhere in the county's set | 8 |
+| have no OSM name at all | 5 |
+
+**The distance rule is not what is limiting this.** Going from 2 miles to 10
+buys three more matches and starts accepting counts several junctions away —
+Pueblo's two I-25 crossings would match stations 15 and 30 miles off, which is a
+different road's worth of traffic under the same name. The limits are that a
+third of crossings are unnamed in OSM, and that state count sets cluster in
+towns rather than at county lines.
+
+So today the lever measures **about a third of boundary crossings**, and the
+rest keep the class default and say so per crossing. That is worth having — the
+measured ones are the freeways, which carry most of the boundary traffic — but
+it is not a complete fix, and the honest framing is "some crossings are now
+measured", never "boundary traffic is now real".
+
+The improvement worth trying next is matching on route designation (OSM `ref`,
+"I 25") as well as ceremonial name, because state DOT feeds are organised by
+route number and OpenPlan is matching against names like "John F. Kennedy
+Memorial Highway".
