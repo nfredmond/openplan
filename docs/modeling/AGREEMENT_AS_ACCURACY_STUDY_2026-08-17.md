@@ -309,3 +309,56 @@ consistent with the class signature — arterials 2-3.4× and tertiary at 0.01 �
 and it is not something a demand-side scalar can reach. Testing it means
 comparing the model's VMT-by-road-class distribution against the published
 distribution, not adding another correction factor.
+
+---
+
+## RE-READ WITH A CORRECTED INSTRUMENT, 2026-08-18 — the answer holds
+
+**The pre-registered rules above are unchanged. Nothing in them was edited, and
+no threshold moved.** What changed is the instrument: the validator that graded
+every station was comparing whole-road counts against one carriageway of a
+divided highway, affecting 26% of matched stations and 71% of motorway ones
+(`WHY_THE_MODEL_OVER_ASSIGNS_2026-08-17.md`, correction section).
+
+**Why the holdout was read a second time.** The rule was "read it once", and
+that rule exists to stop a result being re-cut until it looks good. It does not
+oblige anyone to stand behind a measurement now known to be defective. The
+correction was to the instrument, was made for reasons independent of this
+study, and was applied identically to both halves and both models. Both
+readings are reported here; neither is hidden.
+
+### Holdout, pooled
+
+| | original | **corrected** | |
+|---|---:|---:|---|
+| trip-based lift | 0.56 | **1.09** | 1.0 = agreement tells you nothing |
+| activity-based lift | 0.33 | **0.49** | |
+| trip-based Spearman (GEH vs error) | 0.05 | **0.06** | |
+| activity-based Spearman | −0.18 | **−0.27** | |
+| trip-based median error | 122.4% | 121.0% | |
+| activity-based median error | 68.3% | 63.1% | |
+| counties where agreement fails to predict | 9 of 11 | **9 of 11** | |
+
+**The answer to the pre-registered question is still NO.** Agreement between the
+two demand models does not predict accuracy against observed counts.
+
+The nuance that did change is worth stating exactly: trip-based agreement moves
+from **actively misleading** (lift 0.56 — agreeing corridors were *less* likely
+to be accurate than average) to **carrying no information** (lift 1.09, where
+1.0 is chance). Activity-based agreement remains below chance at 0.49. Neither
+is a basis for reporting confidence in a corridor, which is what the study set
+out to test.
+
+### One thing this comparison does NOT isolate
+
+Pooled station counts fall from ~1,509 to ~848. That is **not** the carriageway
+fix. The corrected directories were produced with today's validator, which also
+excludes ramp counts matched to mainlines and resolves stations sharing one
+model link — both landed after the original study ran. Three changes are in that
+station-count difference and this table does not separate them. It is reported
+as what it is: the same question, asked again with the current instrument.
+
+Machine-readable results, both halves:
+`docs/modeling/results/agreement-study-corrected-instrument-2026-08-18/`. The
+run trees they were computed from are gitignored (gigabytes per county); these
+files are the durable record.

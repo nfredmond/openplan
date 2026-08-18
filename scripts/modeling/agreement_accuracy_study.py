@@ -311,7 +311,12 @@ def analyse(joined: Sequence[Mapping[str, Any]], *, ape_key: str = "ape") -> dic
     }
 
 
-def county_result(county_dir: Path, *, minimum_stations: int = MINIMUM_STATIONS_FOR_A_COUNTY_FIGURE) -> dict[str, Any]:
+def county_result(
+    county_dir: Path,
+    *,
+    minimum_stations: int = MINIMUM_STATIONS_FOR_A_COUNTY_FIGURE,
+    validation_subdir: str | None = None,
+) -> dict[str, Any]:
     """One county's answer, from the artifacts its status.json points at."""
     status = json.loads((county_dir / "status.json").read_text())
     if status.get("status") != "completed":
@@ -333,6 +338,11 @@ def county_result(county_dir: Path, *, minimum_stations: int = MINIMUM_STATIONS_
     }
     for label, key in (("trip_based", "base_validation"), ("activity_based", "asim_validation")):
         path = Path(artifacts.get(key, ""))
+        if validation_subdir:
+            # The instrument, not the rule. A station's accuracy is re-read from
+            # a corrected validation directory; nothing about the pre-registered
+            # question or its thresholds changes.
+            path = path.parent.parent / validation_subdir / path.name
         if not path.exists():
             result[label] = {"stations": 0, "reason": f"no validation results at {path}"}
             continue
@@ -398,16 +408,25 @@ def counties_where_agreement_fails(results: Sequence[Mapping[str, Any]], label: 
     return failures
 
 
-def run_analysis(study_half_dir: Path, *, minimum_stations: int = MINIMUM_STATIONS_FOR_A_COUNTY_FIGURE) -> dict[str, Any]:
+def run_analysis(
+    study_half_dir: Path,
+    *,
+    minimum_stations: int = MINIMUM_STATIONS_FOR_A_COUNTY_FIGURE,
+    validation_subdir: str | None = None,
+) -> dict[str, Any]:
     study_half_dir = Path(study_half_dir)
     county_dirs = sorted(p for p in study_half_dir.iterdir() if p.is_dir() and (p / "status.json").exists())
     if not county_dirs:
         raise AgreementAccuracyError(f"No county runs under {study_half_dir}.")
-    results = [county_result(p, minimum_stations=minimum_stations) for p in county_dirs]
+    results = [
+        county_result(p, minimum_stations=minimum_stations, validation_subdir=validation_subdir)
+        for p in county_dirs
+    ]
 
     payload: dict[str, Any] = {
         "schema_version": STUDY_SCHEMA_VERSION,
         "half": study_half_dir.name,
+        "validation_read_from": validation_subdir or "as recorded in each run's status file",
         "question": (
             "Does agreement between two independent demand models predict accuracy against "
             "observed traffic counts?"
@@ -491,10 +510,18 @@ def main() -> int:
     )
     parser.add_argument("--study-half-dir", required=True, help="data/agreement-study/runs/<half>")
     parser.add_argument("--output-dir", help="Where to write the answer (default: alongside the runs)")
+    parser.add_argument(
+        "--validation-subdir",
+        help=(
+            "Read each run's station accuracy from this directory instead of the one its status "
+            "file names. For re-reading with a corrected validator: it changes the INSTRUMENT, "
+            "never the pre-registered question or its thresholds."
+        ),
+    )
     args = parser.parse_args()
 
     half_dir = Path(args.study_half_dir).expanduser().resolve()
-    payload = run_analysis(half_dir)
+    payload = run_analysis(half_dir, validation_subdir=args.validation_subdir)
     output_dir = Path(args.output_dir).expanduser().resolve() if args.output_dir else half_dir
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "agreement_accuracy.json").write_text(json.dumps(payload, indent=2) + "\n")

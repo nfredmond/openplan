@@ -1,0 +1,2066 @@
+{
+  "schema_version": "openplan.agreement_accuracy_study.v1",
+  "half": "dev",
+  "validation_read_from": "validation-carriageway",
+  "question": "Does agreement between two independent demand models predict accuracy against observed traffic counts?",
+  "counties_attempted": 12,
+  "counties_usable": 11,
+  "counties_not_usable": [
+    {
+      "county_fips": "41029",
+      "reason": "run exited 99. Last lines:\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/series.py\", line 536, in __init__\n    data = data.reindex(index, copy=copy)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/series.py\", line 5172, in reindex\n    return super().reindex(\n           ^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/generic.py\", line 5632, in reindex\n    return self._reindex_axes(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/generic.py\", line 5655, in _reindex_axes\n    new_index, indexer = ax.reindex(\n                         ^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/indexes/base.py\", line 4436, in reindex\n    raise ValueError(\"cannot reindex on an axis with duplicate labels\")\nValueError: cannot reindex on an axis with duplicate labels"
+    }
+  ],
+  "pooled": {
+    "trip_based": {
+      "stations": 845,
+      "median_ape": 115.83,
+      "by_agreement_class": {
+        "agree": {
+          "stations": 58,
+          "median_ape": 113.09,
+          "share_within_threshold": 0.1379
+        },
+        "marginal": {
+          "stations": 17,
+          "median_ape": 59.81,
+          "share_within_threshold": 0.1176
+        },
+        "diverge": {
+          "stations": 770,
+          "median_ape": 119.44,
+          "share_within_threshold": 0.1325
+        }
+      },
+      "spearman_geh_vs_ape": 0.181,
+      "spearman_relative_disagreement_vs_ape": 0.0236,
+      "median_relative_disagreement": 0.4944,
+      "prediction": {
+        "stations": 845,
+        "stations_where_models_agree": 58,
+        "stations_accurate": 112,
+        "threshold_ape": 30.0,
+        "precision": 0.1379,
+        "recall": 0.0714,
+        "base_rate": 0.1325,
+        "lift": 1.0406
+      },
+      "by_road_class": [
+        {
+          "road_class": "motorway",
+          "stations": 116,
+          "median_ape": 56.52,
+          "stations_where_models_agree": 10,
+          "median_ape_where_models_agree": 69.09
+        },
+        {
+          "road_class": "primary",
+          "stations": 350,
+          "median_ape": 116.62,
+          "stations_where_models_agree": 13,
+          "median_ape_where_models_agree": 200.0
+        },
+        {
+          "road_class": "secondary",
+          "stations": 156,
+          "median_ape": 96.72,
+          "stations_where_models_agree": 14,
+          "median_ape_where_models_agree": 263.97
+        },
+        {
+          "road_class": "tertiary",
+          "stations": 30,
+          "median_ape": 82.69,
+          "stations_where_models_agree": 2,
+          "median_ape_where_models_agree": 83.38
+        },
+        {
+          "road_class": "trunk",
+          "stations": 193,
+          "median_ape": 215.55,
+          "stations_where_models_agree": 19,
+          "median_ape_where_models_agree": 185.17
+        }
+      ]
+    },
+    "activity_based": {
+      "stations": 893,
+      "median_ape": 70.92,
+      "by_agreement_class": {
+        "agree": {
+          "stations": 63,
+          "median_ape": 109.03,
+          "share_within_threshold": 0.1429
+        },
+        "marginal": {
+          "stations": 24,
+          "median_ape": 62.61,
+          "share_within_threshold": 0.1667
+        },
+        "diverge": {
+          "stations": 806,
+          "median_ape": 68.06,
+          "share_within_threshold": 0.2308
+        }
+      },
+      "spearman_geh_vs_ape": -0.1679,
+      "spearman_relative_disagreement_vs_ape": -0.1651,
+      "median_relative_disagreement": 0.4939,
+      "prediction": {
+        "stations": 893,
+        "stations_where_models_agree": 63,
+        "stations_accurate": 199,
+        "threshold_ape": 30.0,
+        "precision": 0.1429,
+        "recall": 0.0452,
+        "base_rate": 0.2228,
+        "lift": 0.6411
+      },
+      "by_road_class": [
+        {
+          "road_class": "motorway",
+          "stations": 116,
+          "median_ape": 40.55,
+          "stations_where_models_agree": 9,
+          "median_ape_where_models_agree": 69.92
+        },
+        {
+          "road_class": "primary",
+          "stations": 360,
+          "median_ape": 58.2,
+          "stations_where_models_agree": 16,
+          "median_ape_where_models_agree": 94.04
+        },
+        {
+          "road_class": "secondary",
+          "stations": 182,
+          "median_ape": 82.06,
+          "stations_where_models_agree": 14,
+          "median_ape_where_models_agree": 263.94
+        },
+        {
+          "road_class": "tertiary",
+          "stations": 36,
+          "median_ape": 90.72,
+          "stations_where_models_agree": 3,
+          "median_ape_where_models_agree": 98.19
+        },
+        {
+          "road_class": "trunk",
+          "stations": 199,
+          "median_ape": 117.23,
+          "stations_where_models_agree": 21,
+          "median_ape_where_models_agree": 187.0
+        }
+      ]
+    }
+  },
+  "counties_where_agreement_fails_to_predict": {
+    "trip_based": [
+      {
+        "county_fips": "06069",
+        "region": "CA",
+        "band": "small",
+        "reason": "agreement carried no lift over the base rate (lift 0.0)"
+      },
+      {
+        "county_fips": "08059",
+        "region": "CO",
+        "band": "large",
+        "reason": "stations where the models agreed were LESS accurate (median APE 97.95%) than where they diverged (74.54%)"
+      },
+      {
+        "county_fips": "08101",
+        "region": "CO",
+        "band": "medium",
+        "reason": "stations where the models agreed were LESS accurate (median APE 1267.72%) than where they diverged (85.0%)"
+      },
+      {
+        "county_fips": "41005",
+        "region": "OR",
+        "band": "large",
+        "reason": "agreement carried no lift over the base rate (lift 0.0)"
+      },
+      {
+        "county_fips": "53011",
+        "region": "WA",
+        "band": "large",
+        "reason": "agreement carried no lift over the base rate (lift 0.0)"
+      },
+      {
+        "county_fips": "53077",
+        "region": "WA",
+        "band": "medium",
+        "reason": "stations where the models agreed were LESS accurate (median APE 442.86%) than where they diverged (63.8%)"
+      }
+    ],
+    "activity_based": [
+      {
+        "county_fips": "06069",
+        "region": "CA",
+        "band": "small",
+        "reason": "stations where the models agreed were LESS accurate (median APE 96.17%) than where they diverged (81.64%)"
+      },
+      {
+        "county_fips": "06107",
+        "region": "CA",
+        "band": "large",
+        "reason": "stations where the models agreed were LESS accurate (median APE 84.21%) than where they diverged (41.99%)"
+      },
+      {
+        "county_fips": "08059",
+        "region": "CO",
+        "band": "large",
+        "reason": "stations where the models agreed were LESS accurate (median APE 97.88%) than where they diverged (45.06%)"
+      },
+      {
+        "county_fips": "08101",
+        "region": "CO",
+        "band": "medium",
+        "reason": "stations where the models agreed were LESS accurate (median APE 1254.95%) than where they diverged (50.8%)"
+      },
+      {
+        "county_fips": "41005",
+        "region": "OR",
+        "band": "large",
+        "reason": "agreement carried no lift over the base rate (lift 0.0)"
+      },
+      {
+        "county_fips": "53015",
+        "region": "WA",
+        "band": "small",
+        "reason": "stations where the models agreed were LESS accurate (median APE 67.27%) than where they diverged (66.06%)"
+      },
+      {
+        "county_fips": "53077",
+        "region": "WA",
+        "band": "medium",
+        "reason": "stations where the models agreed were LESS accurate (median APE 446.56%) than where they diverged (95.98%)"
+      }
+    ]
+  },
+  "per_county": [
+    {
+      "county_fips": "06047",
+      "region": "CA",
+      "band": "medium",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.0452,
+      "trip_based": {
+        "join": {
+          "stations_in": 75,
+          "stations_joined": 74,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 1
+          },
+          "note": "74 of 75 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 74,
+        "median_ape": 137.75,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 4,
+            "median_ape": 21.16,
+            "share_within_threshold": 0.75
+          },
+          "marginal": {
+            "stations": 3,
+            "median_ape": 58.29,
+            "share_within_threshold": 0.3333
+          },
+          "diverge": {
+            "stations": 67,
+            "median_ape": 162.05,
+            "share_within_threshold": 0.2239
+          }
+        },
+        "spearman_geh_vs_ape": 0.1409,
+        "spearman_relative_disagreement_vs_ape": 0.0735,
+        "median_relative_disagreement": 0.4145,
+        "prediction": {
+          "stations": 74,
+          "stations_where_models_agree": 4,
+          "stations_accurate": 19,
+          "threshold_ape": 30.0,
+          "precision": 0.75,
+          "recall": 0.1579,
+          "base_rate": 0.2568,
+          "lift": 2.9211
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 25,
+            "median_ape": 29.55,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 12.59
+          },
+          {
+            "road_class": "primary",
+            "stations": 33,
+            "median_ape": 227.78,
+            "stations_where_models_agree": 3,
+            "median_ape_where_models_agree": 29.74
+          },
+          {
+            "road_class": "secondary",
+            "stations": 2,
+            "median_ape": 91.38,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 1,
+            "median_ape": 1.16,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 13,
+            "median_ape": 218.47,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 75,
+          "stations_joined": 74,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 1
+          },
+          "note": "74 of 75 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 74,
+        "median_ape": 51.17,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 4,
+            "median_ape": 21.24,
+            "share_within_threshold": 0.75
+          },
+          "marginal": {
+            "stations": 4,
+            "median_ape": 50.06,
+            "share_within_threshold": 0.25
+          },
+          "diverge": {
+            "stations": 66,
+            "median_ape": 51.98,
+            "share_within_threshold": 0.2273
+          }
+        },
+        "spearman_geh_vs_ape": -0.318,
+        "spearman_relative_disagreement_vs_ape": -0.3144,
+        "median_relative_disagreement": 0.4145,
+        "prediction": {
+          "stations": 74,
+          "stations_where_models_agree": 4,
+          "stations_accurate": 19,
+          "threshold_ape": 30.0,
+          "precision": 0.75,
+          "recall": 0.1579,
+          "base_rate": 0.2568,
+          "lift": 2.9211
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 25,
+            "median_ape": 36.6,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 12.59
+          },
+          {
+            "road_class": "primary",
+            "stations": 33,
+            "median_ape": 124.14,
+            "stations_where_models_agree": 3,
+            "median_ape_where_models_agree": 29.89
+          },
+          {
+            "road_class": "secondary",
+            "stations": 2,
+            "median_ape": 70.59,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 1,
+            "median_ape": 4.78,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 13,
+            "median_ape": 87.38,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "06069",
+      "region": "CA",
+      "band": "small",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.3677,
+      "trip_based": {
+        "join": {
+          "stations_in": 14,
+          "stations_joined": 13,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 1
+          },
+          "note": "13 of 14 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 13,
+        "median_ape": 96.33,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 7,
+            "median_ape": 96.33,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 6,
+            "median_ape": 97.66,
+            "share_within_threshold": 0.3333
+          }
+        },
+        "spearman_geh_vs_ape": -0.2724,
+        "spearman_relative_disagreement_vs_ape": -0.2613,
+        "median_relative_disagreement": 0.0514,
+        "prediction": {
+          "stations": 13,
+          "stations_where_models_agree": 7,
+          "stations_accurate": 2,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.1538,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 2,
+            "median_ape": 71.03,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 71.03
+          },
+          {
+            "road_class": "primary",
+            "stations": 6,
+            "median_ape": 1091.45,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 7100.0
+          },
+          {
+            "road_class": "secondary",
+            "stations": 1,
+            "median_ape": 98.57,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 98.57
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 1,
+            "median_ape": 17.34,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 3,
+            "median_ape": 57.83,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 67.32
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 14,
+          "stations_joined": 13,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 1
+          },
+          "note": "13 of 14 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 13,
+        "median_ape": 96.17,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 7,
+            "median_ape": 96.17,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 6,
+            "median_ape": 81.64,
+            "share_within_threshold": 0.3333
+          }
+        },
+        "spearman_geh_vs_ape": -0.3054,
+        "spearman_relative_disagreement_vs_ape": -0.2944,
+        "median_relative_disagreement": 0.0514,
+        "prediction": {
+          "stations": 13,
+          "stations_where_models_agree": 7,
+          "stations_accurate": 2,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.1538,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 2,
+            "median_ape": 72.56,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 72.56
+          },
+          {
+            "road_class": "primary",
+            "stations": 6,
+            "median_ape": 886.78,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 7100.0
+          },
+          {
+            "road_class": "secondary",
+            "stations": 1,
+            "median_ape": 98.66,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 98.66
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 1,
+            "median_ape": 24.52,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 3,
+            "median_ape": 38.06,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 67.12
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "06107",
+      "region": "CA",
+      "band": "large",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.0247,
+      "trip_based": {
+        "join": {
+          "stations_in": 127,
+          "stations_joined": 120,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 7
+          },
+          "note": "120 of 127 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 120,
+        "median_ape": 181.9,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 5,
+            "median_ape": 83.91,
+            "share_within_threshold": 0.4
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 115,
+            "median_ape": 201.16,
+            "share_within_threshold": 0.0783
+          }
+        },
+        "spearman_geh_vs_ape": 0.2267,
+        "spearman_relative_disagreement_vs_ape": 0.2285,
+        "median_relative_disagreement": 0.6741,
+        "prediction": {
+          "stations": 120,
+          "stations_where_models_agree": 5,
+          "stations_accurate": 11,
+          "threshold_ape": 30.0,
+          "precision": 0.4,
+          "recall": 0.1818,
+          "base_rate": 0.0917,
+          "lift": 4.3636
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 23,
+            "median_ape": 58.99,
+            "stations_where_models_agree": 3,
+            "median_ape_where_models_agree": 83.91
+          },
+          {
+            "road_class": "primary",
+            "stations": 59,
+            "median_ape": 279.23,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 26,
+            "median_ape": 143.73,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 5,
+            "median_ape": 65.46,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 7,
+            "median_ape": 327.23,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 71.55
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 127,
+          "stations_joined": 119,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 8
+          },
+          "note": "119 of 127 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 119,
+        "median_ape": 42.14,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 5,
+            "median_ape": 84.21,
+            "share_within_threshold": 0.4
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 114,
+            "median_ape": 41.99,
+            "share_within_threshold": 0.386
+          }
+        },
+        "spearman_geh_vs_ape": -0.3111,
+        "spearman_relative_disagreement_vs_ape": -0.266,
+        "median_relative_disagreement": 0.6605,
+        "prediction": {
+          "stations": 119,
+          "stations_where_models_agree": 5,
+          "stations_accurate": 46,
+          "threshold_ape": 30.0,
+          "precision": 0.4,
+          "recall": 0.0435,
+          "base_rate": 0.3866,
+          "lift": 1.0348
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 23,
+            "median_ape": 23.09,
+            "stations_where_models_agree": 3,
+            "median_ape_where_models_agree": 84.21
+          },
+          {
+            "road_class": "primary",
+            "stations": 58,
+            "median_ape": 64.62,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 27,
+            "median_ape": 39.13,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 4,
+            "median_ape": 82.94,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 7,
+            "median_ape": 91.91,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 68.09
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "08014",
+      "region": "CO",
+      "band": "small",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.1436,
+      "trip_based": {
+        "join": {
+          "stations_in": 21,
+          "stations_joined": 19,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 2
+          },
+          "note": "19 of 21 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 19,
+        "median_ape": 69.92,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 3,
+            "median_ape": 69.92,
+            "share_within_threshold": 0.3333
+          },
+          "marginal": {
+            "stations": 2,
+            "median_ape": 59.08,
+            "share_within_threshold": 0.5
+          },
+          "diverge": {
+            "stations": 14,
+            "median_ape": 73.4,
+            "share_within_threshold": 0.0714
+          }
+        },
+        "spearman_geh_vs_ape": 0.129,
+        "spearman_relative_disagreement_vs_ape": 0.0886,
+        "median_relative_disagreement": 0.1036,
+        "prediction": {
+          "stations": 19,
+          "stations_where_models_agree": 3,
+          "stations_accurate": 3,
+          "threshold_ape": 30.0,
+          "precision": 0.3333,
+          "recall": 0.3333,
+          "base_rate": 0.1579,
+          "lift": 2.1111
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 5,
+            "median_ape": 69.92,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 73.05
+          },
+          {
+            "road_class": "primary",
+            "stations": 8,
+            "median_ape": 83.51,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 1,
+            "median_ape": 3.41,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 3.41
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 1,
+            "median_ape": 65.77,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 4,
+            "median_ape": 101.24,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 21,
+          "stations_joined": 19,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 2
+          },
+          "note": "19 of 21 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 19,
+        "median_ape": 69.92,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 3,
+            "median_ape": 69.92,
+            "share_within_threshold": 0.3333
+          },
+          "marginal": {
+            "stations": 3,
+            "median_ape": 37.09,
+            "share_within_threshold": 0.3333
+          },
+          "diverge": {
+            "stations": 13,
+            "median_ape": 77.63,
+            "share_within_threshold": 0.2308
+          }
+        },
+        "spearman_geh_vs_ape": 0.122,
+        "spearman_relative_disagreement_vs_ape": 0.2694,
+        "median_relative_disagreement": 0.1034,
+        "prediction": {
+          "stations": 19,
+          "stations_where_models_agree": 3,
+          "stations_accurate": 5,
+          "threshold_ape": 30.0,
+          "precision": 0.3333,
+          "recall": 0.2,
+          "base_rate": 0.2632,
+          "lift": 1.2667
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 5,
+            "median_ape": 77.63,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 73.9
+          },
+          {
+            "road_class": "primary",
+            "stations": 8,
+            "median_ape": 60.53,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 1,
+            "median_ape": 0.02,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 0.02
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 1,
+            "median_ape": 82.12,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 4,
+            "median_ape": 88.04,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "08059",
+      "region": "CO",
+      "band": "large",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.0407,
+      "trip_based": {
+        "join": {
+          "stations_in": 162,
+          "stations_joined": 155,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 7
+          },
+          "note": "155 of 162 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 155,
+        "median_ape": 74.54,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 2,
+            "median_ape": 97.95,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 6,
+            "median_ape": 56.62,
+            "share_within_threshold": 0.0
+          },
+          "diverge": {
+            "stations": 147,
+            "median_ape": 74.54,
+            "share_within_threshold": 0.1701
+          }
+        },
+        "spearman_geh_vs_ape": 0.0957,
+        "spearman_relative_disagreement_vs_ape": -0.0906,
+        "median_relative_disagreement": 0.4309,
+        "prediction": {
+          "stations": 155,
+          "stations_where_models_agree": 2,
+          "stations_accurate": 25,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.1613,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 29,
+            "median_ape": 44.61,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 99,
+            "median_ape": 78.16,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 16,
+            "median_ape": 87.87,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 97.55
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 8,
+            "median_ape": 82.86,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 98.35
+          },
+          {
+            "road_class": "trunk",
+            "stations": 3,
+            "median_ape": 45.73,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 164,
+          "stations_joined": 157,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 7
+          },
+          "note": "157 of 164 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 157,
+        "median_ape": 45.59,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 2,
+            "median_ape": 97.88,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 6,
+            "median_ape": 50.21,
+            "share_within_threshold": 0.1667
+          },
+          "diverge": {
+            "stations": 149,
+            "median_ape": 45.06,
+            "share_within_threshold": 0.302
+          }
+        },
+        "spearman_geh_vs_ape": -0.2101,
+        "spearman_relative_disagreement_vs_ape": -0.0524,
+        "median_relative_disagreement": 0.4105,
+        "prediction": {
+          "stations": 157,
+          "stations_where_models_agree": 2,
+          "stations_accurate": 46,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.293,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 29,
+            "median_ape": 42.36,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 100,
+            "median_ape": 43.68,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 17,
+            "median_ape": 94.78,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 97.58
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 8,
+            "median_ape": 79.01,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 98.19
+          },
+          {
+            "road_class": "trunk",
+            "stations": 3,
+            "median_ape": 21.86,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "08101",
+      "region": "CO",
+      "band": "medium",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.09,
+      "trip_based": {
+        "join": {
+          "stations_in": 69,
+          "stations_joined": 66,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 3
+          },
+          "note": "66 of 69 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 66,
+        "median_ape": 87.2,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 4,
+            "median_ape": 1267.72,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 62,
+            "median_ape": 85.0,
+            "share_within_threshold": 0.1774
+          }
+        },
+        "spearman_geh_vs_ape": -0.1094,
+        "spearman_relative_disagreement_vs_ape": -0.3384,
+        "median_relative_disagreement": 0.3783,
+        "prediction": {
+          "stations": 66,
+          "stations_where_models_agree": 4,
+          "stations_accurate": 11,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.1667,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 18,
+            "median_ape": 70.75,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 31,
+            "median_ape": 88.72,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 12,
+            "median_ape": 338.75,
+            "stations_where_models_agree": 3,
+            "median_ape_where_models_agree": 1967.59
+          },
+          {
+            "road_class": "trunk",
+            "stations": 5,
+            "median_ape": 87.53,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 567.85
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 65,
+          "stations_joined": 62,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 3
+          },
+          "note": "62 of 65 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 62,
+        "median_ape": 57.55,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 4,
+            "median_ape": 1254.95,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 58,
+            "median_ape": 50.8,
+            "share_within_threshold": 0.3448
+          }
+        },
+        "spearman_geh_vs_ape": -0.1558,
+        "spearman_relative_disagreement_vs_ape": -0.2627,
+        "median_relative_disagreement": 0.3898,
+        "prediction": {
+          "stations": 62,
+          "stations_where_models_agree": 4,
+          "stations_accurate": 20,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.3226,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 19,
+            "median_ape": 38.31,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 26,
+            "median_ape": 62.77,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 12,
+            "median_ape": 226.26,
+            "stations_where_models_agree": 3,
+            "median_ape_where_models_agree": 1942.07
+          },
+          {
+            "road_class": "trunk",
+            "stations": 5,
+            "median_ape": 24.61,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 567.83
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "41005",
+      "region": "OR",
+      "band": "large",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.0304,
+      "trip_based": {
+        "join": {
+          "stations_in": 154,
+          "stations_joined": 143,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 11
+          },
+          "note": "143 of 154 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 143,
+        "median_ape": 175.51,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 1,
+            "median_ape": 69.28,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 1,
+            "median_ape": 71.78,
+            "share_within_threshold": 0.0
+          },
+          "diverge": {
+            "stations": 141,
+            "median_ape": 179.44,
+            "share_within_threshold": 0.0851
+          }
+        },
+        "spearman_geh_vs_ape": 0.4292,
+        "spearman_relative_disagreement_vs_ape": 0.192,
+        "median_relative_disagreement": 0.8916,
+        "prediction": {
+          "stations": 143,
+          "stations_where_models_agree": 1,
+          "stations_accurate": 12,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.0839,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 2,
+            "median_ape": 459.48,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 56,
+            "median_ape": 152.06,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 69.28
+          },
+          {
+            "road_class": "secondary",
+            "stations": 10,
+            "median_ape": 89.5,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 8,
+            "median_ape": 90.86,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 67,
+            "median_ape": 208.06,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 162,
+          "stations_joined": 149,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 13
+          },
+          "note": "149 of 162 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 149,
+        "median_ape": 71.78,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 1,
+            "median_ape": 71.23,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 3,
+            "median_ape": 41.94,
+            "share_within_threshold": 0.3333
+          },
+          "diverge": {
+            "stations": 145,
+            "median_ape": 71.82,
+            "share_within_threshold": 0.1793
+          }
+        },
+        "spearman_geh_vs_ape": -0.1289,
+        "spearman_relative_disagreement_vs_ape": -0.1438,
+        "median_relative_disagreement": 0.8916,
+        "prediction": {
+          "stations": 149,
+          "stations_where_models_agree": 1,
+          "stations_accurate": 27,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.1812,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 2,
+            "median_ape": 799.26,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 57,
+            "median_ape": 50.25,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 71.23
+          },
+          {
+            "road_class": "secondary",
+            "stations": 16,
+            "median_ape": 75.64,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 6,
+            "median_ape": 98.38,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 68,
+            "median_ape": 80.8,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "41029",
+      "usable": false,
+      "reason": "run exited 99. Last lines:\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/series.py\", line 536, in __init__\n    data = data.reindex(index, copy=copy)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/series.py\", line 5172, in reindex\n    return super().reindex(\n           ^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/generic.py\", line 5632, in reindex\n    return self._reindex_axes(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/generic.py\", line 5655, in _reindex_axes\n    new_index, indexer = ax.reindex(\n                         ^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/core/indexes/base.py\", line 4436, in reindex\n    raise ValueError(\"cannot reindex on an axis with duplicate labels\")\nValueError: cannot reindex on an axis with duplicate labels"
+    },
+    {
+      "county_fips": "41041",
+      "region": "OR",
+      "band": "small",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.1362,
+      "trip_based": {
+        "join": {
+          "stations_in": 94,
+          "stations_joined": 87,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 7
+          },
+          "note": "87 of 94 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 87,
+        "median_ape": 424.34,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 12,
+            "median_ape": 233.64,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 2,
+            "median_ape": 3549.98,
+            "share_within_threshold": 0.0
+          },
+          "diverge": {
+            "stations": 73,
+            "median_ape": 445.96,
+            "share_within_threshold": 0.0
+          }
+        },
+        "spearman_geh_vs_ape": 0.2623,
+        "spearman_relative_disagreement_vs_ape": 0.3818,
+        "median_relative_disagreement": 0.3385,
+        "prediction": {
+          "stations": 87,
+          "stations_where_models_agree": 12,
+          "stations_accurate": 0,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": null,
+          "base_rate": 0.0,
+          "lift": null
+        },
+        "by_road_class": [
+          {
+            "road_class": "secondary",
+            "stations": 18,
+            "median_ape": 1818.71,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 1778.8
+          },
+          {
+            "road_class": "trunk",
+            "stations": 69,
+            "median_ape": 332.84,
+            "stations_where_models_agree": 10,
+            "median_ape_where_models_agree": 213.84
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 90,
+          "stations_joined": 83,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 7
+          },
+          "note": "83 of 90 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 83,
+        "median_ape": 269.73,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 12,
+            "median_ape": 234.01,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 3,
+            "median_ape": 2116.88,
+            "share_within_threshold": 0.0
+          },
+          "diverge": {
+            "stations": 68,
+            "median_ape": 267.44,
+            "share_within_threshold": 0.0
+          }
+        },
+        "spearman_geh_vs_ape": 0.0039,
+        "spearman_relative_disagreement_vs_ape": 0.139,
+        "median_relative_disagreement": 0.3286,
+        "prediction": {
+          "stations": 83,
+          "stations_where_models_agree": 12,
+          "stations_accurate": 0,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": null,
+          "base_rate": 0.0,
+          "lift": null
+        },
+        "by_road_class": [
+          {
+            "road_class": "secondary",
+            "stations": 16,
+            "median_ape": 1019.55,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 1764.74
+          },
+          {
+            "road_class": "trunk",
+            "stations": 67,
+            "median_ape": 210.06,
+            "stations_where_models_agree": 10,
+            "median_ape_where_models_agree": 214.83
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "53011",
+      "region": "WA",
+      "band": "large",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.0388,
+      "trip_based": {
+        "join": {
+          "stations_in": 66,
+          "stations_joined": 64,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 2
+          },
+          "note": "64 of 66 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 64,
+        "median_ape": 95.82,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 3,
+            "median_ape": 68.25,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 61,
+            "median_ape": 97.57,
+            "share_within_threshold": 0.2131
+          }
+        },
+        "spearman_geh_vs_ape": -0.0001,
+        "spearman_relative_disagreement_vs_ape": -0.2265,
+        "median_relative_disagreement": 0.742,
+        "prediction": {
+          "stations": 64,
+          "stations_where_models_agree": 3,
+          "stations_accurate": 13,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.2031,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 10,
+            "median_ape": 44.66,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 65.08
+          },
+          {
+            "road_class": "primary",
+            "stations": 10,
+            "median_ape": 87.03,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "secondary",
+            "stations": 25,
+            "median_ape": 73.46,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 252.94
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 3,
+            "median_ape": 517.42,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 16,
+            "median_ape": 154.68,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 100,
+          "stations_joined": 91,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 9
+          },
+          "note": "91 of 100 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 91,
+        "median_ape": 79.74,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 3,
+            "median_ape": 68.25,
+            "share_within_threshold": 0.3333
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 88,
+            "median_ape": 80.7,
+            "share_within_threshold": 0.2045
+          }
+        },
+        "spearman_geh_vs_ape": -0.2497,
+        "spearman_relative_disagreement_vs_ape": -0.2313,
+        "median_relative_disagreement": 0.6523,
+        "prediction": {
+          "stations": 91,
+          "stations_where_models_agree": 3,
+          "stations_accurate": 19,
+          "threshold_ape": 30.0,
+          "precision": 0.3333,
+          "recall": 0.0526,
+          "base_rate": 0.2088,
+          "lift": 1.5965
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 10,
+            "median_ape": 61.67,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 68.25
+          },
+          {
+            "road_class": "primary",
+            "stations": 15,
+            "median_ape": 72.65,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 20.46
+          },
+          {
+            "road_class": "secondary",
+            "stations": 38,
+            "median_ape": 87.77,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 252.94
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 8,
+            "median_ape": 96.58,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 20,
+            "median_ape": 51.97,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "53015",
+      "region": "WA",
+      "band": "small",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.1659,
+      "trip_based": {
+        "join": {
+          "stations_in": 65,
+          "stations_joined": 60,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 5
+          },
+          "note": "60 of 65 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 60,
+        "median_ape": 88.28,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 9,
+            "median_ape": 68.41,
+            "share_within_threshold": 0.2222
+          },
+          "marginal": {
+            "stations": 0,
+            "median_ape": null,
+            "share_within_threshold": null
+          },
+          "diverge": {
+            "stations": 51,
+            "median_ape": 88.66,
+            "share_within_threshold": 0.098
+          }
+        },
+        "spearman_geh_vs_ape": 0.1148,
+        "spearman_relative_disagreement_vs_ape": -0.1112,
+        "median_relative_disagreement": 0.5747,
+        "prediction": {
+          "stations": 60,
+          "stations_where_models_agree": 9,
+          "stations_accurate": 7,
+          "threshold_ape": 30.0,
+          "precision": 0.2222,
+          "recall": 0.2857,
+          "base_rate": 0.1167,
+          "lift": 1.9048
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 1,
+            "median_ape": 21.51,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 20,
+            "median_ape": 123.86,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 158.8
+          },
+          {
+            "road_class": "secondary",
+            "stations": 33,
+            "median_ape": 87.95,
+            "stations_where_models_agree": 4,
+            "median_ape_where_models_agree": 76.13
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 3,
+            "median_ape": 69.31,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 68.41
+          },
+          {
+            "road_class": "trunk",
+            "stations": 3,
+            "median_ape": 28.36,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 23.48
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 86,
+          "stations_joined": 68,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 18
+          },
+          "note": "68 of 86 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 68,
+        "median_ape": 67.03,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 12,
+            "median_ape": 67.27,
+            "share_within_threshold": 0.1667
+          },
+          "marginal": {
+            "stations": 1,
+            "median_ape": 99.72,
+            "share_within_threshold": 0.0
+          },
+          "diverge": {
+            "stations": 55,
+            "median_ape": 66.06,
+            "share_within_threshold": 0.2
+          }
+        },
+        "spearman_geh_vs_ape": -0.0236,
+        "spearman_relative_disagreement_vs_ape": 0.0851,
+        "median_relative_disagreement": 0.5616,
+        "prediction": {
+          "stations": 68,
+          "stations_where_models_agree": 12,
+          "stations_accurate": 13,
+          "threshold_ape": 30.0,
+          "precision": 0.1667,
+          "recall": 0.1538,
+          "base_rate": 0.1912,
+          "lift": 0.8718
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 1,
+            "median_ape": 2570.93,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 25,
+            "median_ape": 58.87,
+            "stations_where_models_agree": 4,
+            "median_ape_where_models_agree": 84.78
+          },
+          {
+            "road_class": "secondary",
+            "stations": 32,
+            "median_ape": 74.33,
+            "stations_where_models_agree": 4,
+            "median_ape_where_models_agree": 76.52
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 6,
+            "median_ape": 78.94,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 1028.13
+          },
+          {
+            "road_class": "trunk",
+            "stations": 4,
+            "median_ape": 23.48,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 23.48
+          }
+        ]
+      }
+    },
+    {
+      "county_fips": "53077",
+      "region": "WA",
+      "band": "medium",
+      "usable": true,
+      "attribution_is_supportable": true,
+      "noise_floor_measured": true,
+      "agree_share_meaningful_links": 0.0463,
+      "trip_based": {
+        "join": {
+          "stations_in": 48,
+          "stations_joined": 44,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 4
+          },
+          "note": "44 of 48 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 44,
+        "median_ape": 81.69,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 8,
+            "median_ape": 442.86,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 3,
+            "median_ape": 85.43,
+            "share_within_threshold": 0.0
+          },
+          "diverge": {
+            "stations": 33,
+            "median_ape": 63.8,
+            "share_within_threshold": 0.2727
+          }
+        },
+        "spearman_geh_vs_ape": -0.3828,
+        "spearman_relative_disagreement_vs_ape": -0.5303,
+        "median_relative_disagreement": 0.6445,
+        "prediction": {
+          "stations": 44,
+          "stations_where_models_agree": 8,
+          "stations_accurate": 9,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.2045,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "motorway",
+            "stations": 1,
+            "median_ape": 14.29,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "primary",
+            "stations": 28,
+            "median_ape": 78.62,
+            "stations_where_models_agree": 5,
+            "median_ape_where_models_agree": 694.67
+          },
+          {
+            "road_class": "secondary",
+            "stations": 12,
+            "median_ape": 72.58,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 275.0
+          },
+          {
+            "road_class": "trunk",
+            "stations": 3,
+            "median_ape": 355.82,
+            "stations_where_models_agree": 2,
+            "median_ape_where_models_agree": 334.62
+          }
+        ]
+      },
+      "activity_based": {
+        "join": {
+          "stations_in": 68,
+          "stations_joined": 58,
+          "excluded": {
+            "link_not_in_agreement_map": 0,
+            "link_below_meaningful_volume": 10
+          },
+          "note": "58 of 68 matched stations sit on a link the agreement map classifies. The rest are excluded and counted above: a station left in with a made-up verdict would enter the study as agreement and accuracy at the same time."
+        },
+        "usable": true,
+        "stations": 58,
+        "median_ape": 100.0,
+        "by_agreement_class": {
+          "agree": {
+            "stations": 10,
+            "median_ape": 446.56,
+            "share_within_threshold": 0.0
+          },
+          "marginal": {
+            "stations": 4,
+            "median_ape": 83.69,
+            "share_within_threshold": 0.0
+          },
+          "diverge": {
+            "stations": 44,
+            "median_ape": 95.98,
+            "share_within_threshold": 0.0455
+          }
+        },
+        "spearman_geh_vs_ape": -0.3204,
+        "spearman_relative_disagreement_vs_ape": -0.3803,
+        "median_relative_disagreement": 0.7502,
+        "prediction": {
+          "stations": 58,
+          "stations_where_models_agree": 10,
+          "stations_accurate": 2,
+          "threshold_ape": 30.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "base_rate": 0.0345,
+          "lift": 0.0
+        },
+        "by_road_class": [
+          {
+            "road_class": "primary",
+            "stations": 32,
+            "median_ape": 103.61,
+            "stations_where_models_agree": 5,
+            "median_ape_where_models_agree": 694.67
+          },
+          {
+            "road_class": "secondary",
+            "stations": 20,
+            "median_ape": 99.1,
+            "stations_where_models_agree": 1,
+            "median_ape_where_models_agree": 275.0
+          },
+          {
+            "road_class": "tertiary",
+            "stations": 1,
+            "median_ape": 100.0,
+            "stations_where_models_agree": 0,
+            "median_ape_where_models_agree": null
+          },
+          {
+            "road_class": "trunk",
+            "stations": 5,
+            "median_ape": 318.6,
+            "stations_where_models_agree": 4,
+            "median_ape_where_models_agree": 340.07
+          }
+        ]
+      }
+    }
+  ],
+  "what_this_is_not": [
+    "Neither model is ground truth. Agreement means the two methods concur, not that either is right; both can be wrong in the same direction, and the pooled figures below can only detect that where counts exist.",
+    "The two models' volumes are never averaged anywhere in this study.",
+    "Accuracy here is measured only in the four states whose DOTs publish an AADT feed this repository can read. Whether the relationship holds elsewhere is exactly what the study cannot observe, and is the reason it is worth running at all.",
+    "The behavioural coefficients of the activity-based side are estimated for the San Francisco Bay Area and applied unmodified. Its accuracy figures carry that limit."
+  ]
+}
