@@ -301,3 +301,106 @@ def assert_counts_not_reused_for_grading(
             f"area AND to grade the result ({', '.join(overlap[:4])}). A model cannot be graded on "
             "the numbers it was built from. Hold these stations out of the validation set."
         )
+
+
+#: How near a published count must sit to a crossing to describe the volume
+#: entering there. Same reasoning as DEFAULT_MAX_MATCH_MILES and deliberately
+#: tighter: this one is a denominator, so a count from the wrong place scales
+#: the whole estimate.
+CROSSING_COUNT_MAX_MILES = 3.0
+
+#: A route needs a profile, not two endpoints. Two counts can only ever say the
+#: volume at each end; the interior minimum is what bounds through travel.
+MINIMUM_PROFILE_COUNTS = 3
+
+
+def _facility(count: Mapping[str, Any]) -> str:
+    return str(count.get("facility_name") or "").strip()
+
+
+def counts_on_a_route(
+    crossings: Sequence[Mapping[str, Any]], counts: Sequence[Mapping[str, Any]]
+) -> list[dict[str, Any]]:
+    """The published counts that measure the route these crossings sit on.
+
+    Selected by FACILITY, not by candidate road name. The candidate names come
+    from each station's location description, and a description like
+    "JCT. RTE. 5" puts a 1,400-vehicle state route into the middle of
+    Interstate 5's profile — which is exactly how the first version of this
+    estimate produced a through share of 0.03 on a rural interstate. The
+    facility of the station nearest a crossing identifies the route; every
+    station on that facility is its profile.
+    """
+    named = normalize_road_name(crossings[0].get("name")) if crossings else ""
+    pool: list[dict[str, Any]] = []
+    for count in counts:
+        if named and named not in count_road_names(count):
+            continue
+        position = _count_position(count)
+        observed = _observed(count)
+        if position is None or observed is None or observed <= 0:
+            continue
+        distance = min(
+            haversine_miles(float(c["boundary_lat"]), float(c["boundary_lon"]), position[0], position[1])
+            for c in crossings
+        )
+        pool.append({
+            "facility": _facility(count), "distance_miles": distance,
+            "observed_volume": observed, "position": position,
+            "station_id": str(count.get("station_id") or "").strip() or None,
+        })
+    if not pool:
+        return []
+    facility = min(pool, key=lambda row: row["distance_miles"])["facility"]
+    return [row for row in pool if row["facility"] == facility]
+
+
+def passthrough_share_ceiling(
+    crossing: Mapping[str, Any], route_counts: Sequence[Mapping[str, Any]]
+) -> dict[str, Any] | None:
+    """The largest share of this crossing's traffic that CAN be passing through.
+
+    Every vehicle that traverses the study area passes the lowest-volume point
+    on the route inside it, so through traffic is at most that minimum — and as
+    a share of what enters here, at most `minimum / entering`.
+
+    **This is a CEILING, not an estimate.** Counts say how many vehicles are at
+    a place, never which of them are the same vehicles, so no arrangement of
+    counts can measure through travel directly. A route whose minimum sits at
+    its own crossing yields a ceiling of 1.0, which is true and says nothing.
+
+    Returns None when the route has too little profile to bound anything.
+    """
+    if len(route_counts) < MINIMUM_PROFILE_COUNTS:
+        return None
+    nearest = min(
+        route_counts,
+        key=lambda row: haversine_miles(
+            float(crossing["boundary_lat"]), float(crossing["boundary_lon"]),
+            row["position"][0], row["position"][1],
+        ),
+    )
+    distance = haversine_miles(
+        float(crossing["boundary_lat"]), float(crossing["boundary_lon"]),
+        nearest["position"][0], nearest["position"][1],
+    )
+    if distance > CROSSING_COUNT_MAX_MILES or nearest["observed_volume"] <= 0:
+        return None
+    minimum = min(row["observed_volume"] for row in route_counts)
+    ceiling = min(minimum / nearest["observed_volume"], 1.0)
+    return {
+        "ceiling": round(ceiling, 4),
+        "entering_volume": nearest["observed_volume"],
+        "route_minimum_volume": minimum,
+        "profile_stations": len(route_counts),
+        "entering_station_id": nearest["station_id"],
+        "entering_station_miles": round(distance, 3),
+        "is_informative": ceiling < 1.0,
+        "note": (
+            "An upper bound, not a measurement. Every vehicle crossing the study area passes the "
+            f"lowest-volume point on this route inside it ({minimum:,.0f} a day), so at most that "
+            f"many of the {nearest['observed_volume']:,.0f} entering here can be passing through. "
+            "Counts cannot say which vehicles are the same vehicles, so the true share is at most "
+            "this and cannot be measured from counts alone."
+        ),
+    }

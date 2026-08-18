@@ -34,8 +34,10 @@ from gateway_counts import (  # noqa: E402
     GatewayCountsError,
     assert_counts_not_reused_for_grading,
     count_road_names,
+    counts_on_a_route,
     match_count_to_gateway,
     normalize_road_name,
+    passthrough_share_ceiling,
     seed_gateways_from_counts,
 )
 
@@ -201,6 +203,100 @@ class NotGradingTheModelOnWhatBuiltIt(unittest.TestCase):
 
     def test_nothing_consumed_passes(self) -> None:
         assert_counts_not_reused_for_grading([], ["S1", "S2"])
+
+
+
+
+class TheThroughShareIsBoundedNotMeasured(unittest.TestCase):
+    """What counts can and cannot say about traffic crossing a study area.
+
+    Every vehicle that traverses the area passes the lowest-volume point on its
+    route inside it, so through travel is bounded by that minimum. Counts can
+    never say WHICH vehicles are the same vehicles, so this is a ceiling and
+    nothing tighter is available from this data.
+
+    The model currently applies a flat 0.35 to every paired route. Measured
+    across five counties the ceiling runs 0.45 to 1.00 and varies with what the
+    road does — an interstate bypassing towns bounds high, a highway running
+    through a city bounds low.
+    """
+
+    def count(self, station_id, facility, volume, lon, lat, names="Golden State Highway"):
+        return {
+            "station_id": station_id, "facility_name": facility, "observed_volume": str(volume),
+            "candidate_model_names": names,
+            "bbox_min_lon": lon - 0.001, "bbox_min_lat": lat - 0.001,
+            "bbox_max_lon": lon + 0.001, "bbox_max_lat": lat + 0.001,
+        }
+
+    def crossing(self, lon, lat, name="Golden State Highway"):
+        return {"name": name, "boundary_lon": lon, "boundary_lat": lat}
+
+    def test_the_route_is_chosen_by_facility_not_by_candidate_name(self) -> None:
+        # THE BUG THIS EXISTS FOR. A station's candidate names come from its
+        # location description, so "JCT. RTE. 5" put a 1,400-vehicle state route
+        # into Interstate 5's profile and bounded a rural interstate at 0.03.
+        crossings = [self.crossing(-121.0, 37.0), self.crossing(-121.0, 37.5)]
+        counts = [
+            self.count("A", "SR 5", 45500, -121.0, 37.0),
+            self.count("B", "SR 5", 38000, -121.0, 37.5),
+            self.count("C", "SR 5", 40000, -121.0, 37.25),
+            self.count("D", "SR 165", 1400, -121.0, 37.1),   # junction with Route 5
+        ]
+        on_route = counts_on_a_route(crossings, counts)
+        self.assertEqual({row["facility"] for row in on_route}, {"SR 5"})
+        self.assertEqual(len(on_route), 3)
+
+    def test_the_ceiling_is_the_route_minimum_over_what_enters(self) -> None:
+        crossings = [self.crossing(-121.0, 37.0), self.crossing(-121.0, 37.5)]
+        counts = [
+            self.count("A", "SR 99", 100000, -121.0, 37.0),
+            self.count("B", "SR 99", 60000, -121.0, 37.5),
+            self.count("C", "SR 99", 45000, -121.0, 37.25),
+        ]
+        on_route = counts_on_a_route(crossings, counts)
+        bound = passthrough_share_ceiling(crossings[0], on_route)
+        self.assertAlmostEqual(bound["ceiling"], 0.45, places=4)
+        self.assertTrue(bound["is_informative"])
+
+    def test_a_route_whose_minimum_is_its_own_crossing_bounds_nothing(self) -> None:
+        # True and useless: 1.0 says every vehicle COULD be passing through.
+        # Reporting it as a measured share would be the whole error.
+        crossings = [self.crossing(-121.0, 37.0), self.crossing(-121.0, 37.5)]
+        counts = [
+            self.count("A", "SR 99", 40000, -121.0, 37.0),
+            self.count("B", "SR 99", 60000, -121.0, 37.5),
+            self.count("C", "SR 99", 55000, -121.0, 37.25),
+        ]
+        bound = passthrough_share_ceiling(crossings[0], counts_on_a_route(crossings, counts))
+        self.assertEqual(bound["ceiling"], 1.0)
+        self.assertFalse(bound["is_informative"])
+
+    def test_two_counts_are_two_endpoints_and_not_a_profile(self) -> None:
+        crossings = [self.crossing(-121.0, 37.0), self.crossing(-121.0, 37.5)]
+        counts = [
+            self.count("A", "SR 99", 40000, -121.0, 37.0),
+            self.count("B", "SR 99", 60000, -121.0, 37.5),
+        ]
+        self.assertIsNone(passthrough_share_ceiling(crossings[0], counts_on_a_route(crossings, counts)))
+
+    def test_a_crossing_with_no_count_near_it_bounds_nothing(self) -> None:
+        # The nearest station is the denominator, so a far one would scale the
+        # whole estimate by a volume from somewhere else.
+        crossings = [self.crossing(-121.0, 37.0), self.crossing(-121.0, 37.5)]
+        far = [self.count(str(i), "SR 99", 40000, -118.0, 34.0 + i * 0.01) for i in range(3)]
+        self.assertIsNone(passthrough_share_ceiling(crossings[0], counts_on_a_route(crossings, far)))
+
+    def test_the_bound_says_out_loud_that_it_is_a_bound(self) -> None:
+        crossings = [self.crossing(-121.0, 37.0), self.crossing(-121.0, 37.5)]
+        counts = [
+            self.count("A", "SR 99", 100000, -121.0, 37.0),
+            self.count("B", "SR 99", 60000, -121.0, 37.5),
+            self.count("C", "SR 99", 45000, -121.0, 37.25),
+        ]
+        bound = passthrough_share_ceiling(crossings[0], counts_on_a_route(crossings, counts))
+        self.assertIn("upper bound, not a measurement", bound["note"])
+        self.assertIn("cannot say which vehicles are the same", bound["note"])
 
 
 if __name__ == "__main__":
