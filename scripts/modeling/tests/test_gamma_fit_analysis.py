@@ -191,5 +191,52 @@ class WhatItRefusesToConflate(unittest.TestCase):
         self.assertIn("right total is not a right distribution", joined)
 
 
+
+
+class BothArmsMustBeGradedOnTheSameStations(unittest.TestCase):
+    """CAUGHT MID-EXPERIMENT, 2026-08-17.
+
+    The baseline runs predate the ramp-count and shared-link exclusions, so
+    they match 102 stations where a current run matches 75. Graded as-is, a
+    gamma change would have been credited with a station-set change — the
+    comparison would have measured my own earlier fixes.
+    """
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_the_baseline_can_be_graded_from_a_re_validated_directory(self) -> None:
+        run = build_run(
+            self.root, "study-06047",
+            links=[(1, "primary", METERS_PER_MILE)], volumes=[(1, 1000)], population=100,
+            stations=[
+                {"station_id": "A", "match_status": "matched", "model_link_type": "motorway", "absolute_percent_error": "200", "volume_ratio_model_obs": "3"},
+            ],
+        )
+        # The re-validated directory: the same run, current exclusions applied.
+        current = run / "validation_v3"
+        current.mkdir()
+        fields = ["station_id", "match_status", "model_link_type", "absolute_percent_error", "volume_ratio_model_obs"]
+        with (current / "validation_results.csv").open("w", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            writer.writerow({"station_id": "A", "match_status": "excluded_ambiguous_link", "model_link_type": "motorway", "absolute_percent_error": "", "volume_ratio_model_obs": ""})
+
+        stale = gfa.grade_run(run, "06047")
+        fresh = gfa.grade_run(run, "06047", "validation_v3")
+        self.assertEqual(stale["counts"]["stations"], 1)
+        self.assertEqual(fresh["counts"]["stations"], 0)
+        # And the record says which directory each figure came from, so a
+        # reader can tell whether two arms were comparable.
+        self.assertEqual(fresh["validation_read_from"], "validation_v3")
+
+    def test_the_default_is_the_ordinary_directory(self) -> None:
+        run = build_run(self.root, "study-06047", links=[(1, "primary", 100)], volumes=[(1, 1)], population=1)
+        self.assertEqual(gfa.grade_run(run, "06047")["validation_read_from"], "validation")
+
 if __name__ == "__main__":
     unittest.main()

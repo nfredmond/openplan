@@ -93,9 +93,17 @@ def county_population(run_dir: Path) -> float:
         return sum(float(row.get("est_population") or 0) for row in csv.DictReader(handle))
 
 
-def count_accuracy(run_dir: Path) -> dict[str, Any]:
-    """Median error and bias against observed counts — REPORTED, never fitted."""
-    results = run_dir / "validation" / "validation_results.csv"
+def count_accuracy(run_dir: Path, validation_subdir: str = "validation") -> dict[str, Any]:
+    """Median error and bias against observed counts — REPORTED, never fitted.
+
+    `validation_subdir` exists because BOTH ARMS MUST BE GRADED ON THE SAME
+    STATION SET. Runs made before ramp counts were excluded and shared-link
+    pairings resolved (2026-08-17) match more stations than current runs do —
+    102 against 75 in one county — and comparing those two directly would
+    credit a gamma change with a station-set change. A baseline re-validated
+    with current code lives in its own directory, and this is how it is read.
+    """
+    results = run_dir / validation_subdir / "validation_results.csv"
     if not results.exists():
         return {"stations": 0, "median_ape": None, "bias": None, "by_road_class": {}}
     matched: list[dict[str, str]] = []
@@ -124,7 +132,7 @@ def count_accuracy(run_dir: Path) -> dict[str, Any]:
     }
 
 
-def grade_run(run_dir: Path, county_fips: str) -> dict[str, Any]:
+def grade_run(run_dir: Path, county_fips: str, validation_subdir: str = "validation") -> dict[str, Any]:
     published = PUBLISHED_DAILY_VMT_PER_CAPITA.get(county_fips[:2])
     if published is None:
         raise GammaFitError(
@@ -141,7 +149,8 @@ def grade_run(run_dir: Path, county_fips: str) -> dict[str, Any]:
         "model_vmt_per_capita": round(vmt / population, 2),
         "published_vmt_per_capita": published,
         "vmt_ratio": round((vmt / population) / published, 3),
-        "counts": count_accuracy(run_dir),
+        "counts": count_accuracy(run_dir, validation_subdir),
+        "validation_read_from": validation_subdir,
     }
 
 
@@ -180,6 +189,14 @@ def main() -> int:
         help="One per arm: 'gam1.5' matches gam1.5-06069 etc. Repeat for each multiplier.",
     )
     parser.add_argument("--baseline-prefix", default="study", help="The unmultiplied arm's prefix")
+    parser.add_argument(
+        "--baseline-validation-subdir", default="validation",
+        help=(
+            "Which validation directory the BASELINE arm is graded from. Baselines predating the "
+            "ramp and shared-link exclusions must be re-validated with current code and read from "
+            "that directory, or the two arms are graded on different station sets."
+        ),
+    )
     parser.add_argument("--output", help="Write the full result as JSON")
     args = parser.parse_args()
 
@@ -195,7 +212,8 @@ def main() -> int:
             if county is None:
                 continue
             try:
-                runs.append(grade_run(run_dir, county))
+                subdir = args.baseline_validation_subdir if prefix == args.baseline_prefix else "validation"
+                runs.append(grade_run(run_dir, county, subdir))
             except GammaFitError as exc:
                 # Named, never skipped silently: an arm quietly missing a county
                 # is an arm graded on a different set than its neighbour.
