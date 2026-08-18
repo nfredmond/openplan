@@ -6,6 +6,7 @@ Run: python3 workers/aequilibrae_worker/test_gateways.py
 The DB-backed helpers (detect_external_gateways, resolve_exterior_node) need a
 spatialite fixture and are exercised by the live worker run, not here.
 """
+import ast
 import os
 import sys
 
@@ -65,6 +66,42 @@ def test_build_cordon_injections_zero_totals_fall_back_uniform():
     job_shares, pop_shares = gw.build_cordon_injections(df)
     assert np.allclose(job_shares, [0.5, 0.5]) and np.allclose(pop_shares, [0.5, 0.5])
 
+
+
+def test_the_two_lanes_agree_on_what_a_crossing_carries():
+    """PARITY: the worker and the county-script lane must inject the same demand.
+
+    Both files define GATEWAY_DAILY_TRIPS and a comment in each says it is
+    identical to the other. That was a convention, and this constant is next in
+    line to change — the flat per-crossing figure is being replaced with
+    observed AADT where a count station sits near the crossing. Drift here means
+    the app and a county study disagree about how much traffic enters the study
+    area, which moves every corridor volume without moving anything a reader
+    can see.
+
+    Imported rather than transcribed: a copy in this file would be a third
+    place to drift.
+    """
+    import importlib.util  # noqa: PLC0415
+
+    scripts_runtime = os.path.normpath(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                     "scripts", "modeling", "screening_runtime.py")
+    )
+    assert os.path.exists(scripts_runtime), scripts_runtime
+
+    # Read the literal rather than importing the module: screening_runtime pulls
+    # in the whole modelling stack, and this check must run wherever the worker
+    # tests do.
+    source = open(scripts_runtime, encoding="utf-8").read()
+    start = source.index("GATEWAY_DAILY_TRIPS = {")
+    end = source.index("}", start) + 1
+    scripts_value = ast.literal_eval(source[start + len("GATEWAY_DAILY_TRIPS = "):end])
+
+    assert scripts_value == gw.GATEWAY_DAILY_TRIPS, (
+        "gateway demand drift between the lanes: "
+        f"scripts={scripts_value}, worker={gw.GATEWAY_DAILY_TRIPS}"
+    )
 
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
