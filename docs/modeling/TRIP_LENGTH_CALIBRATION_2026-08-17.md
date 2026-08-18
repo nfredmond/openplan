@@ -837,6 +837,8 @@ warned about two sections above and then made myself.
   TAF flows on a real network instead of straight lines tightens the floor, and
   denser count profiles tighten the ceiling.
 - **The gap between the bounds is short-distance through travel**, which TAF
-  does not cover and counts cannot separate. That is the specific thing a
-  cordon survey or probe dataset would buy — a much narrower purchase than
-  "origin-destination data", and worth pricing only if a corridor study needs it.
+  does not cover and counts cannot separate. **OpenPlan is free and open source,
+  so a paid dataset is not a fallback for it.** Where free data cannot close a
+  gap, the band and a plain statement of what it does and does not establish IS
+  the deliverable — a planner has to be able to reach every number in this
+  product without a purchase order.
