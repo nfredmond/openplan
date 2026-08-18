@@ -917,7 +917,13 @@ export function readRoadClassAccuracyFromSummary(value: unknown): RoadClassAccur
   const metrics = summary?.metrics && typeof summary.metrics === "object"
     ? (summary.metrics as Record<string, unknown>)
     : null;
-  const list = metrics?.by_road_class;
+  // TWO LANES PRODUCE A VALIDATION SUMMARY AND THEY NEST THIS DIFFERENTLY.
+  // `scripts/modeling/validate_screening_observed_counts.py` puts it under
+  // `metrics`; `workers/aequilibrae_worker/count_validation.py` — the one whose
+  // output actually reaches this column — puts it at the top level, when it
+  // records it at all. Reading only the first spelling meant the chart rendered
+  // for nobody, which no test caught and looking at real worker output did.
+  const list = metrics?.by_road_class ?? summary?.by_road_class;
   if (!Array.isArray(list)) return [];
   const rows: RoadClassAccuracy[] = [];
   for (const entry of list) {
@@ -966,12 +972,22 @@ export function readStationComparisonsFromSummary(value: unknown): AccuracyPoint
       label:
         typeof record.label === "string" && record.label.trim().length > 0
           ? record.label
-          : typeof record.station_id === "string"
-            ? record.station_id
-            : "",
+          : typeof record.matched_name === "string" && record.matched_name.trim().length > 0
+            ? record.matched_name
+            : typeof record.station_id === "string"
+              ? record.station_id
+              : "",
       observed,
       modelled,
-      roadClass: typeof record.link_type === "string" ? record.link_type : null,
+      // `matched_link_type` is what the WORKER writes (count_validation.py);
+      // `link_type` is the scripts lane's spelling. Both are read because both
+      // shapes exist and only one of them ever reaches this column.
+      roadClass:
+        typeof record.matched_link_type === "string"
+          ? record.matched_link_type
+          : typeof record.link_type === "string"
+            ? record.link_type
+            : null,
     });
   }
   return points;

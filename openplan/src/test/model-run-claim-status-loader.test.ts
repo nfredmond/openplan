@@ -253,6 +253,75 @@ describe("loadModelRunClaimStatuses", () => {
     expect(points[0].label).toBe("CT_9");
   });
 
+  it("reads the shape the WORKER actually writes, not only the scripts lane's", async () => {
+    /**
+     * FOUND BY LOOKING AT REAL WORKER OUTPUT, NOT BY A TEST.
+     *
+     * Two lanes produce a validation summary and they disagree:
+     * `scripts/modeling/validate_screening_observed_counts.py` nests
+     * `by_road_class` under `metrics` and names a station's road `link_type`,
+     * while `workers/aequilibrae_worker/count_validation.py` — the only one
+     * whose output reaches this column — puts the breakdown at the top level
+     * and writes `matched_link_type`. Reading only the first spelling meant
+     * both charts rendered for nobody, and every test still passed.
+     */
+    const supabase = fakeSupabase({
+      data: [
+        {
+          model_run_id: RUN_A,
+          claim_status: "screening_grade",
+          status_reason: null,
+          validation_summary_json: {
+            // Real row shape, copied from count_validation.validate_against_counts.
+            results: [
+              {
+                station_id: "CT_RTE99_PM37_302",
+                label: "SR 99 at Merced/Stanislaus County Line",
+                observed_volume: 97000,
+                match_status: "matched",
+                absolute_percent_error: 28.88,
+                link_id: 57209,
+                matched_name: "Golden State Highway",
+                matched_link_type: "motorway",
+                modeled_daily_pce: 68986,
+              },
+            ],
+            by_road_class: [
+              { road_class: "motorway", stations: 25, median_absolute_percent_error: 42.73, median_model_over_observed: 0.621 },
+            ],
+          },
+        },
+      ],
+    });
+
+    const decision = (await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] })).get(RUN_A);
+    expect(decision?.roadClassAccuracy).toHaveLength(1);
+    expect(decision?.stationComparisons?.[0]).toMatchObject({
+      observed: 97000,
+      modelled: 68986,
+      roadClass: "motorway",
+    });
+  });
+
+  it("falls back to the matched road name when a station carries no label", async () => {
+    const supabase = fakeSupabase({
+      data: [
+        {
+          model_run_id: RUN_A,
+          claim_status: "screening_grade",
+          status_reason: null,
+          validation_summary_json: {
+            results: [
+              { station_id: "CT_9", match_status: "matched", observed_volume: 100, modeled_daily_pce: 120, matched_name: "Golden Center Freeway" },
+            ],
+          },
+        },
+      ],
+    });
+    const points = (await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] })).get(RUN_A)?.stationComparisons ?? [];
+    expect(points[0].label).toBe("Golden Center Freeway");
+  });
+
   it("reports no breakdown at all when the run recorded none", async () => {
     const supabase = fakeSupabase({
       data: [{ model_run_id: RUN_A, claim_status: "prototype_only", status_reason: null, validation_summary_json: null }],

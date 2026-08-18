@@ -53,6 +53,7 @@ import {
   type AccuracyPoint,
 } from "@/lib/models/charts/accuracy-scatter";
 import { describeElapsed, latestConvergence, summarizeRunProgress } from "@/lib/models/run-progress";
+import { useTheme } from "@/components/theme-provider";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -1405,6 +1406,13 @@ function RunAccuracyByClass({
   rows: RoadClassAccuracy[];
   stations: AccuracyPoint[];
 }) {
+  // THE CHART MUST WEAR THE PAGE'S THEME. Found by looking, not by a test: a
+  // light-surfaced SVG injected into the dark app read as a pasted screenshot,
+  // and jsdom applies no stylesheet so nothing in the suite could ever see it.
+  // The palette's dark steps were validated for the dark surface separately —
+  // this is a selection, never an automatic inversion.
+  const { resolvedTheme } = useTheme();
+  const mode = resolvedTheme === "dark" ? "dark" : "light";
   const ordered = useMemo(() => accuracyByClassRows(rows), [rows]);
   // The scatter is the picture a modeller reads first — bias, spread and
   // outliers at once, where a median shows none of them. Drawn only when the
@@ -1413,20 +1421,22 @@ function RunAccuracyByClass({
     () =>
       stations.length
         ? accuracyScatterSvg(stations, {
+            mode,
             title: "Modelled volume against observed count",
             subtitle: `${stations.length} matched station${stations.length === 1 ? "" : "s"} · each dot is one count location`,
           })
         : null,
-    [stations]
+    [stations, mode]
   );
   const worst = useMemo(() => accuracyScatterRows(stations).slice(0, 5), [stations]);
   const svg = useMemo(
     () =>
       accuracyByClassSvg(rows, {
+        mode,
         title: "Accuracy by road type",
         subtitle: `${rows.reduce((total, row) => total + row.stations, 0)} matched count stations`,
       }),
-    [rows]
+    [rows, mode]
   );
 
   return (
