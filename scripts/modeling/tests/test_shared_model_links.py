@@ -392,5 +392,71 @@ class DividedHighwaysAreComparedWhole(unittest.TestCase):
         self.assertIn("roughly half", summary["divided_highways"]["note"])
 
 
+class TheProjectDatabaseCandidatePathCarriesDirection(unittest.TestCase):
+    """A candidate winning from the project database must know if it is one-way.
+
+    This is a SECOND inert-correction bug of the same shape as the first, found
+    only by measuring: with `--project-db` supplied, the winning candidate comes
+    from `query_project_db_candidates`, which builds its own dicts. It did not
+    select `direction`, so on the national 24-county grading only 9 of 239
+    motorway stations were summed -- against 22 of 25 in the same county when
+    the flag was omitted. The correction was installed, tested, and silent.
+
+    It runs against a real spatialite database because the query uses
+    `X(Centroid(geometry))`; a stub would test the stub.
+    """
+
+    def setUp(self) -> None:
+        import sqlite3
+        import tempfile
+
+        from validate_screening_observed_counts import find_spatialite_path
+
+        if not find_spatialite_path():
+            self.skipTest("mod_spatialite not installed")
+        self.tmp = tempfile.TemporaryDirectory()
+        self.db = Path(self.tmp.name) / "project_database.sqlite"
+        conn = sqlite3.connect(self.db)
+        conn.enable_load_extension(True)
+        conn.load_extension(find_spatialite_path())
+        conn.execute("SELECT InitSpatialMetaData(1)")
+        conn.execute("CREATE TABLE links (link_id INTEGER, name TEXT, link_type TEXT, direction INTEGER)")
+        conn.execute("SELECT AddGeometryColumn('links', 'geometry', 4326, 'LINESTRING', 'XY')")
+        conn.execute(
+            "INSERT INTO links VALUES (1, 'Golden State Highway', 'motorway', 1, "
+            "GeomFromText('LINESTRING(-121.0 39.2, -121.0 39.21)', 4326))"
+        )
+        conn.execute(
+            "INSERT INTO links VALUES (2, 'Ridge Road', 'secondary', 0, "
+            "GeomFromText('LINESTRING(-121.01 39.2, -121.01 39.21)', 4326))"
+        )
+        conn.commit()
+        conn.close()
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def candidates(self):
+        from validate_screening_observed_counts import query_project_db_candidates
+
+        station = {
+            "candidate_model_names": "Golden State Highway|Ridge Road",
+            "bbox_min_lon": -121.1, "bbox_min_lat": 39.1,
+            "bbox_max_lon": -120.9, "bbox_max_lat": 39.3,
+        }
+        rows = query_project_db_candidates(self.db, station, {1: {"v": "20000"}, 2: {"v": "5000"}}, "v")
+        return {row["link_id"]: row for row in rows}
+
+    def test_a_one_way_link_arrives_marked_one_way(self) -> None:
+        found = self.candidates()
+        self.assertTrue(found[1]["is_one_way"])
+        self.assertTrue(found[1]["direction_recorded"])
+
+    def test_a_two_way_link_arrives_marked_two_way(self) -> None:
+        # The negative control: reporting every candidate one-way would double
+        # half the network and pass the test above.
+        self.assertFalse(self.candidates()[2]["is_one_way"])
+
+
 if __name__ == "__main__":
     unittest.main()
