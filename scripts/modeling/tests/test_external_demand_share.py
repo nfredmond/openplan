@@ -28,7 +28,11 @@ def make_run(root: Path, name: str, *, scalar: float, county: str = "06047", vmt
     (run / "run_output").mkdir(parents=True)
     (run / "run_summary.json").write_text(json.dumps({
         "manifest": {
-            "study_area": {"county_fips": county},
+            # The REAL shape. The first version of this fixture invented
+            # `study_area.county_fips`, which no run writes — so the guard it
+            # was meant to cover compared None to None and passed on every real
+            # pair. `test_the_fixture_matches_a_real_run` keeps it honest.
+            "boundary": {"source": "county-fips", "source_path": county, "label": f"County {county}"},
             "demand": {"total_trips": 1_000_000, "external_trips": 260_000,
                        "trip_rates": {"external_demand_scalar": scalar}},
         }
@@ -58,6 +62,19 @@ class ThePairMustActuallyBeAPair(unittest.TestCase):
         self.assertEqual(result["external_daily_vmt"], 6_000_000.0)
         self.assertEqual(result["external_share_of_network_vmt"], 0.6)
 
+    def test_a_run_that_records_no_study_area_is_refused_not_defaulted(self) -> None:
+        # The shape of the original defect: no identity, so nothing to compare,
+        # so the check silently passes. It must refuse instead.
+        full = make_run(self.root, "full", scalar=1.0)
+        internal = make_run(self.root, "noext", scalar=0.0)
+        payload = json.loads((internal / "run_summary.json").read_text())
+        payload["manifest"]["boundary"] = {}
+        (internal / "run_summary.json").write_text(json.dumps(payload))
+        self.vmt = {"full": 10_000_000.0, "noext": 4_000_000.0}
+        with self.assertRaises(eds.ExternalShareError) as caught:
+            eds.decompose(full, internal)
+        self.assertIn("records no study area", str(caught.exception))
+
     def test_a_comparison_run_that_still_had_external_demand_is_refused(self) -> None:
         # The whole measurement rests on this one property, and a run named
         # "noext" that was launched without the flag looks identical on disk.
@@ -74,7 +91,7 @@ class ThePairMustActuallyBeAPair(unittest.TestCase):
         self.vmt = {"full": 10_000_000.0, "noext": 1_000_000.0}
         with self.assertRaises(eds.ExternalShareError) as caught:
             eds.decompose(full, internal)
-        self.assertIn("different counties", str(caught.exception))
+        self.assertIn("different study areas", str(caught.exception))
 
     def test_two_internal_only_runs_measure_nothing(self) -> None:
         full = make_run(self.root, "full", scalar=0.0)
@@ -106,6 +123,28 @@ class ThePairMustActuallyBeAPair(unittest.TestCase):
         internal = make_run(self.root, "noext", scalar=0.0)
         self.vmt = {"full": 10_000_000.0, "noext": 4_000_000.0}
         self.assertIn("less congested", eds.decompose(full, internal)["bias"])
+
+
+class TheFixtureMustMatchReality(unittest.TestCase):
+    """A hand-written manifest is a guess about the format until it is checked.
+
+    Skipped when no run is on disk, so this file stays runnable anywhere — but
+    where a run EXISTS the fixture is held to it, because the bug this whole
+    module documents was a fixture that agreed with itself.
+    """
+
+    def test_the_fixture_matches_a_real_run(self) -> None:
+        runs = SCRIPT_DIR.parents[1] / "data" / "screening-runs"
+        summaries = sorted(runs.glob("*/run_summary.json")) if runs.exists() else []
+        if not summaries:
+            self.skipTest("no screening run on disk to check the fixture against")
+        real = json.loads(summaries[0].read_text())["manifest"]
+        self.assertIn("boundary", real, f"{summaries[0]} has no manifest boundary block")
+        boundary = real["boundary"]
+        self.assertTrue(
+            str(boundary.get("source_path") or "").strip() or str(boundary.get("label") or "").strip(),
+            f"{summaries[0]} identifies no study area, so study_area_of would refuse every real run",
+        )
 
 
 class TheMedianAcrossCounties(unittest.TestCase):

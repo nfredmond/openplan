@@ -149,3 +149,81 @@ move.
 
 That does not make gamma the answer. It removes the specific evidence that had
 been used to rule it out.
+
+---
+
+## CORRECTION, 2026-08-18: it is NOT trip length. The two sides of that comparison were different quantities.
+
+**This supersedes "Which half is wrong — and it is not trip generation" above,
+which stands as written.** The finding it reports does not survive measurement.
+
+The table compared:
+
+- **model 11.63** = network VMT ÷ **all** trips — including external trips,
+  every one of which is injected at the boundary and routed across the whole
+  study area;
+- **real ~5.7** = published VMT per **capita** ÷ trips per **capita** — a
+  measure of how far a resident travels.
+
+A number that includes through-traffic was compared against one that does not.
+
+### The comparison the model actually loses or wins
+
+Measured by re-running four development counties with `--external-demand-scalar 0`
+(`scripts/modeling/external_demand_share.py`), which assigns internal demand
+alone on the same network:
+
+| | model | real |
+|---|---:|---:|
+| network miles per **internal** trip, median of 4 counties | **5.59** | **~5.7** |
+| network miles per trip, all trips (the old figure) | 11.46 | not comparable |
+
+**The model's internal trip length is right.** The gravity model is not sending
+trips twice as far as real trips go. Per-county spread is wide — 2.41, 3.01,
+5.59, 8.48 — so this is a median that matches, not four counties that each do.
+
+### What is actually oversized
+
+| county | network VMT | internal | **external** | external share |
+|---|---:|---:|---:|---:|
+| Merced, CA | 17,967,313 | 8,361,029 | 9,606,285 | **53.5%** |
+| San Benito, CA | 4,032,562 | 700,927 | 3,331,635 | **82.6%** |
+| Broomfield, CO | 2,637,176 | 652,797 | 1,984,379 | **75.2%** |
+| Pueblo, CO | 8,452,030 | 3,304,837 | 5,147,194 | **60.9%** |
+
+**A median 68% of all modelled vehicle-miles is traffic injected at the
+boundary** on a flat daily figure by road class — motorway 15,000, trunk 9,000,
+primary 6,000 — identical in every county in the United States and observed
+nowhere. In Merced that term alone is 1.54× the county's entire published daily
+VMT.
+
+(The internal-only run is less congested, so its trips take marginally shorter
+paths than the same trips do in the full run. That biases internal VMT slightly
+low and the external share slightly high, and it is nowhere near large enough to
+change the conclusion.)
+
+### What this does to the +0.93 correlation
+
+That correlation was computed between a county's overshoot and the SAME mixed
+quantity. It is not evidence about trip length, and this correction does not
+claim to know what it becomes when recomputed on internal trips alone. What can
+be said is that "external share of demand" correlated only +0.37 in the same
+table, so *share of trips* is not a substitute for *share of vehicle-miles* —
+7% of trips crossing a county end to end is a different thing from 7% of the
+driving.
+
+### The consequence for the gamma experiment
+
+Retire the lever. `TRIP_LENGTH_CALIBRATION_2026-08-17.md` closes NOT ADOPTED,
+and the reason is now positive rather than a failed threshold: **shortening
+internal trips corrects a quantity that was already right, to compensate for a
+different term that is wrong.** At ×2.5 it drives the mean internal trip to 3.59
+miles against a real ~9-10, and the count error improves anyway — because the
+external term then carries the network almost by itself. That is a fit getting
+better for the wrong reason, which is the failure mode the pre-registration was
+written to catch, and criterion 1 caught it for every arm.
+
+**Fix the boundary traffic first.** 58% of the crossings in these counties have
+a published count station within 3 km, so most gateways can be seeded with a
+real AADT instead of a constant. Then re-measure, and only then ask whether any
+demand parameter still needs moving.

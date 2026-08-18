@@ -58,6 +58,28 @@ def read_manifest(run_dir: Path) -> dict[str, Any]:
     return json.loads(summary.read_text()).get("manifest", {})
 
 
+def study_area_of(run_dir: Path) -> tuple[str, str]:
+    """What area the run covered, from where the run actually records it.
+
+    THIS FUNCTION EXISTS BECAUSE ITS FIRST VERSION READ A PATH THAT DOES NOT
+    EXIST. It looked for `manifest.study_area.county_fips`, got None for every
+    real run, and the "are these the same county?" guard compared None to None
+    and passed. The test that covered it built its own manifest in the invented
+    shape, so it proved the fixture. The identity is refused when missing rather
+    than defaulting, because a missing identity is exactly what the broken
+    version produced.
+    """
+    boundary = read_manifest(run_dir).get("boundary") or {}
+    source_path = str(boundary.get("source_path") or "").strip()
+    label = str(boundary.get("label") or "").strip()
+    if not source_path and not label:
+        raise ExternalShareError(
+            f"{run_dir.name} records no study area in its manifest boundary block, so it cannot "
+            "be shown to cover the same area as the run it is compared against"
+        )
+    return source_path, label
+
+
 def external_scalar_of(run_dir: Path) -> float:
     """What the run itself recorded, never what its directory name suggests."""
     manifest = read_manifest(run_dir)
@@ -75,14 +97,14 @@ def decompose(full_run: Path, internal_only_run: Path) -> dict[str, Any]:
     had its external demand switched off -- a pair that differs in anything else
     measures that instead, and a pair that differs in nothing measures noise.
     """
-    full_manifest, internal_manifest = read_manifest(full_run), read_manifest(internal_only_run)
-    full_county = str(full_manifest.get("study_area", {}).get("county_fips") or "")
-    internal_county = str(internal_manifest.get("study_area", {}).get("county_fips") or "")
-    if full_county and internal_county and full_county != internal_county:
+    full_manifest = read_manifest(full_run)
+    full_area, internal_area = study_area_of(full_run), study_area_of(internal_only_run)
+    if full_area != internal_area:
         raise ExternalShareError(
-            f"different counties: {full_run.name} is {full_county}, "
-            f"{internal_only_run.name} is {internal_county}"
+            f"different study areas: {full_run.name} covers {full_area[1] or full_area[0]}, "
+            f"{internal_only_run.name} covers {internal_area[1] or internal_area[0]}"
         )
+    county_fips, county_label = full_area
 
     full_scalar, internal_scalar = external_scalar_of(full_run), external_scalar_of(internal_only_run)
     if internal_scalar != 0.0:
@@ -97,7 +119,8 @@ def decompose(full_run: Path, internal_only_run: Path) -> dict[str, Any]:
     internal = network_vmt(internal_only_run)
     external = total - internal
     return {
-        "county_fips": full_county or internal_county or None,
+        "county_fips": county_fips or None,
+        "county_label": county_label or None,
         "full_run": full_run.name,
         "internal_only_run": internal_only_run.name,
         "network_daily_vmt": round(total, 1),
