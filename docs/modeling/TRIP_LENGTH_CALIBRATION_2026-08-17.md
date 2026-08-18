@@ -94,3 +94,43 @@ to change what every planner's run does.
 - Gamma changes trip **distribution**, so it moves VMT and link volumes
   together. It cannot fix the tertiary-road problem (0.07× observed), which is
   a zone-resolution artifact and was measured as untouched by finer zones.
+
+---
+
+## Mechanism verified before the sweep finished (2026-08-17)
+
+The lever works and is recorded. First county (06069) at multiplier 1.5:
+
+- gammas recorded as 2.7 / 2.25 / 1.8 with `gamma_multiplier: 1.5` in the run's
+  own assumptions, so the run says what shaped it;
+- trip COUNT unchanged (392,662 both arms) — it redistributes trips rather than
+  generating fewer, which is what the parameter is supposed to do;
+- distributed mean trip length responds strongly: on that county's real skim,
+  ×1.5 shortens the mean trip 27%, ×2.5 halves it.
+
+**But assigned VMT moved far less than trip length did** (ratio 2.82 → 2.65 for
+a 27% shorter trip). The reason is worth recording separately from the
+experiment:
+
+### External gateway traffic is untouchable by gamma, and it is a flat guess
+
+Trips that cross the study-area boundary are injected at gateways and routed
+across; the gravity model never sees them. `GATEWAY_DAILY_TRIPS` assigns each
+crossing a flat daily figure by road class — motorway 15,000, trunk 9,000,
+primary 6,000, secondary 3,000, tertiary 1,500 — regardless of where in the
+country it is or what actually crosses there.
+
+Across the 24 study counties external traffic is a **median 17.3% of all
+trips, ranging from 7% to 54%**. So in a typical county gamma can move about
+83% of the demand, and the experiment is sound — but in the extreme cases it is
+mostly powerless, and 06069 (40.7% external) is one of those. Its weak response
+is explained, not anomalous.
+
+Correlation of external share with a county's VMT overshoot is +0.37 — real but
+secondary to trip length's +0.93, and consistent with the earlier finding that
+external demand alone does not explain the over-assignment.
+
+**This does not change the pre-registered rule.** It is recorded because the
+per-county spread is wide enough that a county-level result should be read with
+its external share beside it, and because the flat gateway figure is now a
+named next target rather than a suspicion.
