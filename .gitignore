@@ -110,6 +110,7 @@ workers/aequilibrae_worker/.venv311
 # genuinely belongs in the repo, that is a deliberate decision — use
 # `git add -f` and record why.
 CLAUDE.md
+AGENTS.md
 .playwright-mcp/
 .mcp.json
 opencode.json
