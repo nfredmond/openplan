@@ -22,6 +22,15 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 const SCRIPT = join(process.cwd(), "scripts/doctor.mjs");
 let workdir: string;
 
+/**
+ * Every test here spawns a real Node process which itself shells out to
+ * `docker`, `supabase` and `node --version`. Vitest's 5-second default is a
+ * limit on machine load, not on correctness: this file timed out on a loaded
+ * CI runner while passing locally, which is a gate that fails for reasons
+ * unrelated to the code under test. The limit is stated rather than inherited.
+ */
+const SPAWNING_A_REAL_PROCESS_IS_SLOW_MS = 60_000;
+
 /** Runs the doctor in a throwaway directory. Non-zero exit is expected output, not a crash. */
 function doctor(dir: string): { code: number; out: string } {
   // Run the COPY inside `dir`, not the original. The script resolves the app
@@ -52,7 +61,7 @@ afterAll(() => {
 
 const scriptIn = (dir: string) => join(dir, "scripts/doctor.mjs");
 
-describe("the setup check tells you what is wrong", () => {
+describe("the setup check tells you what is wrong", { timeout: SPAWNING_A_REAL_PROCESS_IS_SLOW_MS }, () => {
   it("says the settings file is missing, and how to make one", () => {
     const { code, out } = doctor(join(workdir, "scripts", ".."));
 
