@@ -377,3 +377,31 @@ and a two-way negative control kills the opposite error of doubling everything.
 Runs made before the property was exported are still gradable: direction is
 recovered from the AequilibraE project database each run was assigned on, and
 the summary records that the fact came from there rather than from the geometry.
+
+## The 8-gateway cap is not only a speed limit — 2026-08-18
+
+`CLAUDE.md` lists `OPENPLAN_MAX_GATEWAYS` (default 8) among the things that
+exist purely to keep runs fast, and therefore among the things to lift now that
+accuracy outranks runtime. That framing is incomplete, and lifting the cap on
+its own would make the model considerably worse.
+
+**Read from the code** (`workers/aequilibrae_worker/gateways.py`): each
+crossing is given `GATEWAY_DAILY_TRIPS[road class] x lanes`, capped at 20,000,
+**independently of every other crossing**. Total external demand is therefore
+close to linear in the number of gateways. Counties routinely have 25-47
+crossings, so lifting the cap multiplies external demand several times over.
+
+**Measured**: external traffic already contributes more vehicle-miles than the
+county's entire published daily VMT in four of the five development counties.
+It cannot absorb a multiplier.
+
+So the cap is currently the only thing bounding a flat per-crossing guess. The
+order matters: **replace the guess with observed data first, then lift the
+cap.** 58% of the gateways in these five counties have a published count
+station within 3 km of the crossing, so most of them can be seeded with a real
+AADT rather than a constant, falling back to the class figure elsewhere and
+saying which is which.
+
+Doing it the other way round would take a model that over-assigns 2.1x and make
+it worse, while the headline "more crossings modelled" would read as an
+improvement.
