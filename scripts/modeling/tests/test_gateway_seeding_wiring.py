@@ -145,5 +145,50 @@ class TheSeedingStationsCannotAlsoGradeTheRun(unittest.TestCase):
         self.assertEqual(row["station_role"], "mainline")
 
 
+class TheGatewayRecordMustCarryWhatMatchingNeeds(unittest.TestCase):
+    """The bug that made the first seeded run report "no counts nearby".
+
+    `detect_external_gateways` builds its final gateway records field by field
+    rather than copying the candidate, and dropped `name`. `match_count_to_gateway`
+    reads that field first and returned None for every crossing, so all eight
+    fell back to the road-class default and the run said so in a sentence that
+    read like a fact about San Benito County. It was a fact about the dict.
+
+    Third instance in one day of the same shape — the other two were
+    `is_one_way` in the count validator's candidates and `direction` in its
+    project-database query.
+    """
+
+    def test_the_run_builds_gateways_that_carry_a_road_name(self) -> None:
+        # Comments are STRIPPED before matching. The comment sitting on this
+        # very field says the word "name", and a guard satisfied by the
+        # explanation of why it exists is a guard that passes after the code is
+        # deleted — five guards in this repo have been broken exactly that way.
+        import inspect
+
+        source = inspect.getsource(sr.detect_external_gateways)
+        code_only = "\n".join(
+            line for line in source.splitlines() if not line.lstrip().startswith("#")
+        )
+        built = code_only[code_only.index("gateways.append("):]
+        self.assertIn('"name"', built, "the gateway record dropped `name`; seeding cannot match anything")
+
+    def test_a_nameless_crossing_is_refused_rather_than_read_as_unmatched(self) -> None:
+        from gateway_counts import GatewayCountsError, match_count_to_gateway
+
+        nameless = {"link_type": "motorway", "boundary_lon": -121.0, "boundary_lat": 39.2}
+        with self.assertRaises(GatewayCountsError) as caught:
+            match_count_to_gateway(nameless, [])
+        self.assertIn("no `name`", str(caught.exception))
+
+    def test_a_named_crossing_with_no_nearby_count_is_still_just_unmatched(self) -> None:
+        # The refusal above must not swallow the ordinary case, which is most of
+        # the country: a real road with no published count near the boundary.
+        from gateway_counts import match_count_to_gateway
+
+        named = {"name": "Some Road", "link_type": "motorway", "boundary_lon": -121.0, "boundary_lat": 39.2}
+        self.assertIsNone(match_count_to_gateway(named, []))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

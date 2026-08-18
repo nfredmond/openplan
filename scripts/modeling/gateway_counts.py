@@ -150,6 +150,16 @@ def match_count_to_gateway(
     3,150 where the freeway carries 33,000 — a 12-fold error that would have
     been introduced in the name of using real data.
     """
+    if "name" not in gateway:
+        # A crossing with no name key cannot be matched by road identity, and
+        # returning None here looks exactly like "no count is near this road".
+        # It is not: it is the caller not passing the field. Said out loud,
+        # because that silence cost a whole measured run.
+        raise GatewayCountsError(
+            "This boundary crossing has no `name`, so no published count can be matched to it by "
+            "road identity. Every crossing would fall back to its road-class default and the run "
+            "would report that as though no counts were nearby."
+        )
     gateway_name = normalize_road_name(gateway.get("name"))
     if not gateway_name:
         return None

@@ -1627,6 +1627,13 @@ def detect_external_gateways(
         gateways.append(
             {
                 "label": label,
+                # The ROAD's name, not the slugified label. `gateway_counts`
+                # matches a published count to a crossing on road identity plus
+                # closeness, and reads this field to do it — without it the
+                # match refuses every crossing and the seeding silently does
+                # nothing. That is the third time in one day a dict rebuilt
+                # field by field dropped the one property a later step needed.
+                "name": gateway.get("name") or "",
                 "link_type": gateway["link_type"],
                 "link_id": gateway["link_id"],
                 "daily_in": round(float(gateway["daily"]), 2),
