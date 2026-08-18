@@ -101,6 +101,16 @@ class TheGazetteerHeaderHasTrailingSpaces(unittest.TestCase):
             centroids = taf.read_county_centroids(path)
         self.assertEqual(centroids["06047"], (-120.71, 37.19))
 
+    def test_1990_fixed_width_counties_preserve_retired_taf_endpoints(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "counties1990.txt"
+            path.write_text(
+                "02   231 Skagway-Yakutat-Angoon Census Area".ljust(121)
+                + "+58811136 -136622061\n"
+            )
+            centroids = taf.read_county_centroids(path)
+        self.assertEqual(centroids["02231"], (-136.622061, 58.811136))
+
 
 class TheEstimateCarriesItsOwnLimits(unittest.TestCase):
     def test_it_says_what_it_is_not(self) -> None:

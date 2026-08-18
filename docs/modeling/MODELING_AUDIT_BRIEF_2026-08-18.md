@@ -198,10 +198,22 @@ directed edges and routed an Alameda-to-Merced county path. The published file
 also exposed two facts its data dictionary does not: 391 links use `DIR=-1`
 (reverse-only), and free-flow time is numerically minutes. Both are now tested.
 
-**The measurement itself has not been rerun yet.** The remaining job is to
-route the relevant positive TAF OD pairs, feed the completed cache to the five
-county calculation, and compare routed versus chord-based floors. Until that
-happens, the 1–18% floor above is still the straight-line result.
+**2026-08-18 result:** the measurement has now been rerun exhaustively: 3,145
+origin trees and 3,363,222 positive OD pairs, with all five study counties
+classified together. Routed daily through person trips are San Benito 32,509,
+Broomfield 27,360, Merced 114,424, Pueblo 23,677, and Tulare 21,502. Against
+the chord values, routing increases four counties but reduces Tulare from
+69,784 to 21,502; there is no common correction factor.
+
+The run also closes the endpoint-vintage trap rather than hiding it. Census
+1990 + 2010 Gazetteers and the sourced retired-county adapter resolve every TAF
+code. A declared 50-mile snap ceiling accepts 3,142 endpoints and rejects three
+Alaska endpoints at 54.9–55.8 miles. Missing, too-distant, and graph-unreachable
+flows are separate output fields. Roughly 83.0 million annual external person
+trips per study county are graph-unreachable and therefore excluded, so these
+remain conservative floors. At the same illustrative 2.0 occupancy, the five
+cordon floors are now 4–22%, tightening the aggregate band from **1–100% to
+4–100%** without identifying a value to adopt.
 
 ---
 

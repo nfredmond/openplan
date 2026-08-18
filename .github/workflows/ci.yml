@@ -59,7 +59,7 @@ jobs:
       # Same lightweight posture as the worker job: no aequilibrae. geopandas
       # and openmatrix are here because screening_runtime and the ActivitySim
       # input builder and national FAF router import them at module level —
-      # verified in a clean venv with exactly this list. 43 of 44 suites run;
+      # verified in a clean venv with exactly this list. 44 of 45 suites run;
       # the one explicit exclusion below imports aequilibrae.
       - name: Install test deps
         run: pip install "numpy<2.1" pandas scipy shapely requests python-dotenv geopandas openmatrix

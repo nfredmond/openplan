@@ -104,8 +104,8 @@ def build_directed_graph(
     return graph, np.asarray(coordinates, dtype=np.float64), node_ids
 
 
-def load_faf5_graph(gdb_path: Path) -> tuple[csr_matrix, np.ndarray, dict[str, Any]]:
-    """Read the published FAF5 link layer and return its directed graph."""
+def _read_routable_faf5_links(gdb_path: Path):
+    """Read FAF5 once and disclose every published link omitted from routing."""
     path = Path(gdb_path)
     if not path.exists():
         raise Faf5RoutingError(f"FAF5 geodatabase does not exist: {path}")
@@ -130,8 +130,56 @@ def load_faf5_graph(gdb_path: Path) -> tuple[csr_matrix, np.ndarray, dict[str, A
         # measured schema discrepancy from disappearing into implementation.
         "reverse_only_links_undocumented_in_data_dictionary": int(direction.eq(-1).sum()),
     }
-    graph, coordinates, _ = build_directed_graph(links.loc[routable].to_dict("records"))
+    return links.loc[routable].copy(), report
+
+
+def load_faf5_graph(gdb_path: Path) -> tuple[csr_matrix, np.ndarray, dict[str, Any]]:
+    """Read the published FAF5 link layer and return its directed graph."""
+    links, report = _read_routable_faf5_links(gdb_path)
+    graph, coordinates, _ = build_directed_graph(links.to_dict("records"))
     return graph, coordinates, report
+
+
+def load_faf5_graph_with_area_masks(
+    gdb_path: Path,
+    areas: Sequence[Any],
+) -> tuple[csr_matrix, np.ndarray, csr_matrix, dict[str, Any]]:
+    """Load FAF5 plus a bitmask naming every study area each directed link touches.
+
+    The mask is derived from the published link geometry, not merely its end
+    nodes. A long or curved link may cross a study area while both endpoints
+    remain outside it; endpoint-only classification would silently miss that
+    through flow.
+    """
+    if len(areas) > 63:
+        raise Faf5RoutingError("At most 63 study areas fit in one routed bitmask")
+    links, report = _read_routable_faf5_links(gdb_path)
+    records = links.to_dict("records")
+    graph, coordinates, node_ids = build_directed_graph(records)
+    geometry_masks = np.zeros(len(links), dtype=np.uint64)
+    for index, area in enumerate(areas):
+        geometry_masks[links.geometry.intersects(area).to_numpy()] |= np.uint64(1 << index)
+
+    edge_masks: dict[tuple[int, int], int] = {}
+    for record, mask in zip(records, geometry_masks, strict=True):
+        if not mask:
+            continue
+        start, end = _line_endpoints(record["geometry"])
+        a = node_ids[(float(start[0]), float(start[1]))]
+        b = node_ids[(float(end[0]), float(end[1]))]
+        direction = int(record["DIR"])
+        if direction in (0, 1):
+            edge_masks[(a, b)] = edge_masks.get((a, b), 0) | int(mask)
+        if direction in (0, -1):
+            edge_masks[(b, a)] = edge_masks.get((b, a), 0) | int(mask)
+    items = list(edge_masks.items())
+    rows = np.fromiter((item[0][0] for item in items), dtype=np.int64)
+    cols = np.fromiter((item[0][1] for item in items), dtype=np.int64)
+    masks = np.fromiter((item[1] for item in items), dtype=np.uint64)
+    area_mask_graph = csr_matrix((masks, (rows, cols)), shape=graph.shape, dtype=np.uint64)
+    report["study_area_count"] = len(areas)
+    report["directed_links_touching_a_study_area"] = len(items)
+    return graph, coordinates, area_mask_graph, report
 
 
 @dataclass(frozen=True)
@@ -206,6 +254,47 @@ class Faf5Router:
             float(self._distances[target]),
             coordinates,
         )
+
+    def routed_area_masks(
+        self,
+        origin_point: tuple[float, float],
+        edge_area_masks: csr_matrix,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Return reachability and accumulated study-area masks from one origin.
+
+        SciPy supplies a predecessor tree. Pointer jumping then ORs each link's
+        area mask with its ancestors in logarithmic passes, so every national
+        destination is classified without reconstructing millions of paths.
+        """
+        if edge_area_masks.shape != self.graph.shape:
+            raise Faf5RoutingError("FAF5 area-mask graph has the wrong node count")
+        source, _ = self.nearest_node(origin_point)
+        distances, predecessors = dijkstra(
+            self.graph,
+            directed=True,
+            indices=source,
+            return_predecessors=True,
+        )
+        nodes = np.arange(self.graph.shape[0], dtype=np.int64)
+        parents = predecessors.astype(np.int64)
+        unreachable = parents == NO_PREDECESSOR
+        parents[unreachable] = nodes[unreachable]
+        path_masks = np.zeros(self.graph.shape[0], dtype=np.uint64)
+        reachable_non_source = np.isfinite(distances) & (nodes != source)
+        path_masks[reachable_non_source] = np.asarray(
+            edge_area_masks[parents[reachable_non_source], nodes[reachable_non_source]]
+        ).reshape(-1)
+        # A predecessor tree cannot be deeper than its node count. Doubling the
+        # ancestor distance each pass therefore needs at most ceil(log2(n))+1.
+        for _ in range(max(1, int(np.ceil(np.log2(max(1, self.graph.shape[0])))) + 1)):
+            combined = path_masks | path_masks[parents]
+            if np.array_equal(combined, path_masks):
+                break
+            path_masks = combined
+            parents = parents[parents]
+        else:
+            raise Faf5RoutingError("FAF5 predecessor masks did not converge")
+        return np.isfinite(distances), path_masks
 
 
 def route_intersects(path: RoutedPath, area: Any) -> bool:

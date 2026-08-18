@@ -74,6 +74,22 @@ def read_county_centroids(gazetteer_path: Path) -> dict[str, tuple[float, float]
     """
     centroids: dict[str, tuple[float, float]] = {}
     with Path(gazetteer_path).open(encoding="latin-1") as handle:
+        first_line = handle.readline()
+        handle.seek(0)
+        # Census's 1990 national county Gazetteer is fixed-width and has no
+        # header. Supporting it matters because FHWA's 2008 TAF tables retain
+        # several county-equivalent codes that later Census files retired.
+        if "GEOID" not in first_line and "INTPTLAT" not in first_line:
+            for line in handle:
+                try:
+                    geoid = line[0:2] + line[5:8]
+                    centroids[geoid] = (
+                        int(line[131:141]) / 1_000_000.0,
+                        int(line[121:130]) / 1_000_000.0,
+                    )
+                except (ValueError, IndexError):
+                    continue
+            return centroids
         reader = csv.DictReader(handle, delimiter="\t")
         reader.fieldnames = [name.strip() for name in (reader.fieldnames or [])]
         for row in reader:

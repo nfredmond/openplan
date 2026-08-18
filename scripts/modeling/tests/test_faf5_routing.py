@@ -90,5 +90,38 @@ class RouteClassificationNeverSilentlyFallsBack(unittest.TestCase):
             self.assertNotEqual(first, routing.graph_source_fingerprint(Path(tmp)))
 
 
+class WholeTreeAreaClassification(unittest.TestCase):
+    def test_masks_propagate_through_ancestors_to_every_destination(self) -> None:
+        links = [
+            link((0, 0), (1, 0)),
+            link((1, 0), (2, 0)),
+            link((2, 0), (3, 0)),
+        ]
+        graph, coordinates, node_ids = routing.build_directed_graph(links)
+        masks = routing.csr_matrix(
+            ([1], ([node_ids[(1.0, 0.0)]], [node_ids[(2.0, 0.0)]])),
+            shape=graph.shape,
+            dtype="uint64",
+        )
+        router = routing.Faf5Router(graph, coordinates)
+        reachable, path_masks = router.routed_area_masks((0, 0), masks)
+        self.assertTrue(reachable[node_ids[(3.0, 0.0)]])
+        self.assertEqual(path_masks[node_ids[(1.0, 0.0)]], 0)
+        self.assertEqual(path_masks[node_ids[(2.0, 0.0)]], 1)
+        self.assertEqual(path_masks[node_ids[(3.0, 0.0)]], 1)
+
+    def test_unreachable_nodes_never_inherit_an_area_mask(self) -> None:
+        links = [link((0, 0), (1, 0), direction=1), link((2, 0), (3, 0), direction=1)]
+        graph, coordinates, node_ids = routing.build_directed_graph(links)
+        masks = routing.csr_matrix(
+            ([1], ([node_ids[(2.0, 0.0)]], [node_ids[(3.0, 0.0)]])),
+            shape=graph.shape,
+            dtype="uint64",
+        )
+        reachable, path_masks = routing.Faf5Router(graph, coordinates).routed_area_masks((0, 0), masks)
+        self.assertFalse(reachable[node_ids[(3.0, 0.0)]])
+        self.assertEqual(path_masks[node_ids[(3.0, 0.0)]], 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

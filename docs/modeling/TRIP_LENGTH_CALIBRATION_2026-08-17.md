@@ -793,6 +793,10 @@ travel passing through. `scripts/modeling/through_trips_taf.py`.
 
 ### What it says
 
+The table immediately below is the original **straight county-centroid chord**
+calculation. It is retained because this is a dated record, not silently
+rewritten after better evidence arrived.
+
 Share of long-distance travel touching each county that passes through:
 
 | county | through/day | ends there/day | through share |
@@ -802,6 +806,42 @@ Share of long-distance travel touching each county that passes through:
 | San Benito, CA | 27,351 | 8,443 | **76%** |
 | Pueblo, CO | 17,962 | 5,708 | **76%** |
 | Broomfield, CO | 6,608 | 2,365 | **74%** |
+
+### 2026-08-18: the same flows routed on FHWA's national network
+
+The straight-line limitation above is now superseded by an exhaustive route of
+all 3,363,222 positive OD pairs on the published FAF5 strategic highway
+network. One shortest-path tree is computed per origin; no OD pairs are sampled
+or prefiltered. The executed network contained 346,374 nodes and 650,909
+directed edges. The result is fingerprinted and resumable in
+`scripts/modeling/routed_taf_through_trips.py`.
+
+| county | routed through/day | ends there/day | routed through share | chord through/day |
+|---|---:|---:|---:|---:|
+| Merced, CA | **114,424** | 13,854 | **89%** | 64,472 |
+| San Benito, CA | **32,509** | 8,443 | **79%** | 27,351 |
+| Broomfield, CO | **27,360** | 2,365 | **92%** | 6,608 |
+| Pueblo, CO | **23,677** | 5,708 | **81%** | 17,962 |
+| Tulare, CA | **21,502** | 19,532 | **52%** | 69,784 |
+
+Routing is not a cosmetic refinement: it raises four counties and cuts Tulare
+by more than two thirds. The direction is place-specific, so the chord result
+cannot be corrected with one multiplier.
+
+The endpoint audit uses Census 1990 and 2010 Gazetteers plus one explicitly
+sourced 2000 TIGER polygon point for a retired Alaska code. All 3,145 TAF county
+codes have a point. A disclosed 50-mile county-point-to-network ceiling accepts
+3,142 and refuses three Alaska endpoints (54.9–55.8 miles); none is silently
+snapped. For each study county, about 39,100 external OD pairs / 83.0 million
+annual person trips remain unreachable on the strategic network, overwhelmingly
+because the national graph has disconnected non-contiguous components. They
+are excluded and reported, so the routed through figure remains a floor rather
+than pretending the network observed every flow.
+
+At the same illustrative 2.0-person occupancy used below, the routed cordon
+floors are approximately Merced 22%, San Benito 10%, Pueblo 8%, Tulare 6%, and
+Broomfield 4%. The measured overall band therefore tightens from **1–100% to
+4–100%**; it still does not identify a defensible flat through-share.
 
 ### And it does NOT support what I said about 0.35
 
