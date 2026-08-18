@@ -188,6 +188,107 @@ def summarize_arm(runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     }
 
 
+#: The four rules from `docs/modeling/TRIP_LENGTH_CALIBRATION_2026-08-17.md`,
+#: written before any parameter was fitted. They live here as code so that
+#: closing the experiment is arithmetic rather than someone reading a table and
+#: deciding how they feel about it.
+VMT_RATIO_TARGET = 1.0
+VMT_RATIO_TOLERANCE = 0.35
+REQUIRED_APE_IMPROVEMENT_POINTS = 20.0
+CLASS_WORSENING_POINTS = 10.0
+MINIMUM_CLASS_STATIONS = 20
+MULTIPLIER_BAND = (0.5, 3.0)
+
+
+def stations_by_class(runs: Sequence[Mapping[str, Any]]) -> dict[str, int]:
+    totals: dict[str, int] = {}
+    for run in runs:
+        for name, block in run["counts"]["by_road_class"].items():
+            totals[name] = totals.get(name, 0) + int(block["stations"])
+    return totals
+
+
+def grade_against_preregistered_criteria(
+    *,
+    multiplier: float,
+    baseline_arm: Mapping[str, Any],
+    candidate_arm: Mapping[str, Any],
+    candidate_runs: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Apply the four pre-registered rules. Adoption requires ALL of them.
+
+    Graded on whatever counties are passed in. The pre-registration grades
+    criteria 1-3 on the HOLDOUT counties; passing development counties here
+    answers "is this worth confirming", never "adopt this".
+    """
+    criteria: list[dict[str, Any]] = []
+
+    ratio = candidate_arm.get("median_vmt_ratio")
+    low, high = VMT_RATIO_TARGET - VMT_RATIO_TOLERANCE, VMT_RATIO_TARGET + VMT_RATIO_TOLERANCE
+    criteria.append({
+        "criterion": 1,
+        "rule": f"median model/published VMT per capita within {low}-{high}",
+        "value": ratio,
+        "passes": ratio is not None and low <= ratio <= high,
+    })
+
+    before, after = baseline_arm.get("median_count_ape"), candidate_arm.get("median_count_ape")
+    improvement = round(before - after, 2) if before is not None and after is not None else None
+    criteria.append({
+        "criterion": 2,
+        "rule": f"median count error improves by at least {REQUIRED_APE_IMPROVEMENT_POINTS} points",
+        "value": improvement,
+        "from": before,
+        "to": after,
+        "passes": improvement is not None and improvement >= REQUIRED_APE_IMPROVEMENT_POINTS,
+    })
+
+    counts = stations_by_class(candidate_runs)
+    worsened = []
+    for name, after_class in (candidate_arm.get("median_ape_by_road_class") or {}).items():
+        before_class = (baseline_arm.get("median_ape_by_road_class") or {}).get(name)
+        stations = counts.get(name, 0)
+        if before_class is None or stations < MINIMUM_CLASS_STATIONS:
+            continue
+        if after_class - before_class > CLASS_WORSENING_POINTS:
+            worsened.append({
+                "road_class": name, "stations": stations,
+                "from": before_class, "to": after_class,
+                "worse_by_points": round(after_class - before_class, 2),
+            })
+    criteria.append({
+        "criterion": 3,
+        "rule": (
+            f"no road class with at least {MINIMUM_CLASS_STATIONS} stations gets worse by more "
+            f"than {CLASS_WORSENING_POINTS} points"
+        ),
+        "value": worsened,
+        "classes_below_the_station_floor": sorted(n for n, c in counts.items() if c < MINIMUM_CLASS_STATIONS),
+        "passes": not worsened,
+    })
+
+    criteria.append({
+        "criterion": 4,
+        "rule": f"multiplier between {MULTIPLIER_BAND[0]}x and {MULTIPLIER_BAND[1]}x",
+        "value": multiplier,
+        "passes": MULTIPLIER_BAND[0] <= multiplier <= MULTIPLIER_BAND[1],
+    })
+
+    failed = [c["criterion"] for c in criteria if not c["passes"]]
+    return {
+        "multiplier": multiplier,
+        "criteria": criteria,
+        "adoptable": not failed,
+        "failed_criteria": failed,
+        "verdict": (
+            "All four pre-registered criteria pass."
+            if not failed
+            else f"Fails criteri{'on' if len(failed) == 1 else 'a'} {', '.join(str(c) for c in failed)}. "
+            "The defaults stay and the result is reported as measured."
+        ),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Grade a gamma sweep against published VMT per capita, reporting count error separately."
@@ -224,6 +325,13 @@ def main() -> int:
             "prefix glob catches, which silently mixes in other runs and other counties."
         ),
     )
+    parser.add_argument(
+        "--multiplier", action="append", default=None, metavar="PREFIX=VALUE",
+        help=(
+            "Name the gamma multiplier an arm used, e.g. gam2-0=2.0, so the four pre-registered "
+            "criteria can be applied to it. Repeat per arm."
+        ),
+    )
     parser.add_argument("--output", help="Write the full result as JSON")
     args = parser.parse_args()
 
@@ -256,6 +364,26 @@ def main() -> int:
                 problems.append(f"{run_dir.name}: {exc}")
         arms[prefix] = runs
 
+    multipliers: dict[str, float] = {}
+    for pair in args.multiplier or []:
+        prefix, _, value = pair.partition("=")
+        try:
+            multipliers[prefix] = float(value)
+        except ValueError:
+            problems.append(f"--multiplier {pair}: not a number")
+
+    baseline_arm = summarize_arm(arms.get(args.baseline_prefix, []))
+    grading = {
+        prefix: grade_against_preregistered_criteria(
+            multiplier=multiplier,
+            baseline_arm=baseline_arm,
+            candidate_arm=summarize_arm(arms.get(prefix, [])),
+            candidate_runs=arms.get(prefix, []),
+        )
+        for prefix, multiplier in multipliers.items()
+        if arms.get(prefix)
+    }
+
     payload = {
         "schema_version": "openplan.gamma_fit.v1",
         "published_source": "FHWA Highway Statistics 2022 table VM-2 / Census 2022 population",
@@ -274,6 +402,7 @@ def main() -> int:
         },
         "arms": {prefix: summarize_arm(runs) for prefix, runs in arms.items()},
         "per_county": {prefix: runs for prefix, runs in arms.items()},
+        "preregistered_grading": grading,
         "runs_that_could_not_be_graded": problems,
         "what_this_is_not": [
             "The multiplier is chosen on published VMT per capita. The count figures are reported "

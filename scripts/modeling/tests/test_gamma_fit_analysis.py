@@ -238,5 +238,108 @@ class BothArmsMustBeGradedOnTheSameStations(unittest.TestCase):
         run = build_run(self.root, "study-06047", links=[(1, "primary", 100)], volumes=[(1, 1)], population=1)
         self.assertEqual(gfa.grade_run(run, "06047")["validation_read_from"], "validation")
 
+class TheFourPreRegisteredCriteria(unittest.TestCase):
+    """The rules from TRIP_LENGTH_CALIBRATION_2026-08-17.md, applied as arithmetic.
+
+    They are code because the alternative is someone reading a table of numbers
+    and deciding how they feel about it — which is exactly what pre-registering
+    them was meant to prevent. Each test states the rule it is checking.
+    """
+
+    def arms(self, *, ratio, ape_before=100.0, ape_after=60.0, classes_before=None, classes_after=None):
+        baseline = {
+            "median_vmt_ratio": 2.29,
+            "median_count_ape": ape_before,
+            "median_ape_by_road_class": classes_before or {"motorway": 60.0, "primary": 200.0},
+        }
+        candidate = {
+            "median_vmt_ratio": ratio,
+            "median_count_ape": ape_after,
+            "median_ape_by_road_class": classes_after or {"motorway": 40.0, "primary": 120.0},
+        }
+        return baseline, candidate
+
+    def runs(self, **stations):
+        counts = stations or {"motorway": 30, "primary": 50}
+        return [{"counts": {"by_road_class": {n: {"stations": c, "median_ape": 1.0} for n, c in counts.items()}}}]
+
+    def grade(self, multiplier=2.0, **kwargs):
+        from gamma_fit_analysis import grade_against_preregistered_criteria
+
+        runs = kwargs.pop("runs", None) or self.runs()
+        baseline, candidate = self.arms(**kwargs)
+        return grade_against_preregistered_criteria(
+            multiplier=multiplier, baseline_arm=baseline,
+            candidate_arm=candidate, candidate_runs=runs,
+        )
+
+    def criterion(self, result, number):
+        return next(c for c in result["criteria"] if c["criterion"] == number)
+
+    def test_everything_passing_is_adoptable(self) -> None:
+        result = self.grade(ratio=1.0)
+        self.assertTrue(result["adoptable"])
+        self.assertEqual(result["failed_criteria"], [])
+
+    def test_criterion_1_is_a_band_around_one_not_an_improvement(self) -> None:
+        # 1.52 is a huge improvement on 2.29 and still fails. That is the point:
+        # the rule asks whether the model is right, not whether it moved.
+        self.assertFalse(self.criterion(self.grade(ratio=1.52), 1)["passes"])
+        self.assertTrue(self.criterion(self.grade(ratio=1.35), 1)["passes"])
+        self.assertFalse(self.criterion(self.grade(ratio=1.36), 1)["passes"])
+        self.assertTrue(self.criterion(self.grade(ratio=0.65), 1)["passes"])
+        self.assertFalse(self.criterion(self.grade(ratio=0.64), 1)["passes"])
+
+    def test_criterion_2_needs_twenty_points_of_count_error(self) -> None:
+        self.assertTrue(self.criterion(self.grade(ratio=1.0, ape_after=80.0), 2)["passes"])
+        self.assertFalse(self.criterion(self.grade(ratio=1.0, ape_after=80.01), 2)["passes"])
+
+    def test_criterion_3_ignores_a_class_below_the_station_floor(self) -> None:
+        # Tertiary got worse by 30 points on 10 stations. The rule says 20, so
+        # this must not sink an arm — a median over 10 stations is noise.
+        result = self.grade(
+            ratio=1.0,
+            classes_before={"motorway": 60.0, "tertiary": 60.0},
+            classes_after={"motorway": 40.0, "tertiary": 90.0},
+            runs=self.runs(motorway=30, tertiary=10),
+        )
+        self.assertTrue(self.criterion(result, 3)["passes"])
+        self.assertIn("tertiary", self.criterion(result, 3)["classes_below_the_station_floor"])
+
+    def test_criterion_3_catches_a_well_sampled_class_getting_worse(self) -> None:
+        result = self.grade(
+            ratio=1.0,
+            classes_before={"motorway": 30.0, "primary": 200.0},
+            classes_after={"motorway": 47.0, "primary": 120.0},
+            runs=self.runs(motorway=66, primary=50),
+        )
+        self.assertFalse(self.criterion(result, 3)["passes"])
+        self.assertFalse(result["adoptable"])
+        self.assertEqual(self.criterion(result, 3)["value"][0]["road_class"], "motorway")
+        self.assertEqual(self.criterion(result, 3)["value"][0]["worse_by_points"], 17.0)
+
+    def test_criterion_3_tolerates_ten_points_and_not_eleven(self) -> None:
+        for worse_by, expected in ((10.0, True), (10.5, False)):
+            result = self.grade(
+                ratio=1.0,
+                classes_before={"motorway": 30.0},
+                classes_after={"motorway": 30.0 + worse_by},
+                runs=self.runs(motorway=25),
+            )
+            self.assertEqual(self.criterion(result, 3)["passes"], expected, f"worse by {worse_by}")
+
+    def test_criterion_4_rejects_a_multiplier_outside_the_band(self) -> None:
+        self.assertTrue(self.criterion(self.grade(ratio=1.0, multiplier=3.0), 4)["passes"])
+        self.assertFalse(self.criterion(self.grade(ratio=1.0, multiplier=4.0), 4)["passes"])
+        self.assertFalse(self.criterion(self.grade(ratio=1.0, multiplier=0.4), 4)["passes"])
+
+    def test_one_failure_is_enough_to_block_adoption(self) -> None:
+        result = self.grade(ratio=1.52)
+        self.assertFalse(result["adoptable"])
+        self.assertEqual(result["failed_criteria"], [1])
+        self.assertIn("criterion 1", result["verdict"])
+        self.assertIn("defaults stay", result["verdict"])
+
+
 if __name__ == "__main__":
     unittest.main()
