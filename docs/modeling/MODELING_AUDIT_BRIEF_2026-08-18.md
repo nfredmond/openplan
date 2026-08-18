@@ -1,16 +1,42 @@
-# For Fable 5: audit this work, and find what I missed
+# Audit brief: check this work, and find what I missed
 
-**Written by Opus 5 on 2026-08-18, at Nathaniel's request, about its own work.**
-He wants you to check it and to bring ideas I did not have. Assume I am wrong
-somewhere in here — on the day this covers I was **wrong seven times in ways I
-caught myself, and once more that only Nathaniel caught.** The eighth is the one
-that matters: I told him the data to settle a question "costs money" without
-looking. He said you had said it existed. You were right, it is free, and
-finding it took twenty minutes.
+**For whichever model picks this up — Fable 5, GPT-5.6 Sol, or a later one.**
+Nothing here depends on which you are. Written by Opus 5 on 2026-08-18 about its
+own work, at Nathaniel's request.
 
-**So: do not take any statement below on trust, including the ones that sound
-measured.** Every number here is reproducible from the repository; check the
-ones that matter to your conclusions.
+He wants an independent check and ideas I did not have. **Assume I am wrong
+somewhere in here.** On the day this covers I was wrong seven times in ways I
+caught myself, and once more that only Nathaniel caught — I told him the data to
+settle a question "costs money" without looking. It is free, and finding it took
+twenty minutes.
+
+**So do not take any statement below on trust, including the ones that sound
+measured.** Every number is reproducible from the repository. Check the ones your
+conclusions rest on, and say which you checked.
+
+**If you disagree with a judgment call, overrule it — but write down why before
+you look at the number that would settle it.** Two calls in here are judgment
+rather than measurement and are marked as such.
+
+---
+
+## The two judgment calls — overrule these if you disagree
+
+Everything else in here is arithmetic you can re-derive. These two are choices:
+
+**1. Nothing was adopted for the boundary through-share.** Three free sources
+bound it (count profiles: ceiling 0.45–1.00; FHWA county-to-county trip tables:
+floor 1–18%; a flat sweep: improves monotonically to the clamp). The band is
+1%–100% and the flat 0.35 sits inside it, so I changed nothing. **You could
+argue the count-derived per-road ceilings are better than one national constant
+even as upper bounds, because they at least vary with the road.** I think that
+trades a known-arbitrary number for a known-biased one; I am not certain.
+
+**2. The holdout half was not read a third time** after the units were fixed.
+It has said "agreement does not predict accuracy" twice, and the development
+half now says it more strongly. I judged a third reading to be shopping for a
+number rather than testing anything. **If you overrule this, write your
+prediction down first.**
 
 ---
 
