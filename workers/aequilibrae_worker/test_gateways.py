@@ -103,6 +103,67 @@ def test_the_two_lanes_agree_on_what_a_crossing_carries():
         f"scripts={scripts_value}, worker={gw.GATEWAY_DAILY_TRIPS}"
     )
 
+
+def test_one_builder_serves_both_lanes():
+    """The county lane must not carry its own copy of this.
+
+    On 2026-08-18 there were three implementations of the external OD layer:
+    this module's (unused, no pass-through), the county lane's (live, no
+    pass-through), and an inline third in main.py (the only one with it). The
+    two lanes therefore disagreed about whether a car can drive across a county,
+    and this module's header asked a human to keep them in step.
+
+    Comments are stripped before the check: the comment explaining why the
+    county lane imports rather than reimplements names the function, and a guard
+    its own explanation satisfies passes after the code it guards is deleted.
+    """
+    county = os.path.normpath(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                     "scripts", "modeling", "screening_runtime.py")
+    )
+    assert os.path.exists(county), county
+    code = "\n".join(
+        line for line in open(county, encoding="utf-8").read().splitlines()
+        if not line.lstrip().startswith("#")
+    )
+    assert "worker_build_external_gateway_matrix" in code, (
+        "the county lane no longer imports the worker's external OD builder — "
+        "a second implementation of it will drift, and the drift is invisible "
+        "because both sides produce plausible numbers"
+    )
+    assert "job_shares" not in code, (
+        "the county lane is building external OD shares itself again rather than "
+        "calling the worker's builder"
+    )
+
+
+def test_a_pass_through_share_reaches_the_matrix():
+    """The share is applied, not merely defined.
+
+    Both lanes read GATEWAY_PASSTHROUGH_SHARE, so a change that stopped applying
+    it would leave the constant looking correct in both.
+    """
+    import pandas as pd  # noqa: PLC0415
+
+    zones = pd.DataFrame([
+        {"zone_id": 1, "est_population": 1000.0, "total_jobs": 500.0},
+        {"zone_id": 100, "est_population": 0.0, "total_jobs": 0.0},
+        {"zone_id": 101, "est_population": 0.0, "total_jobs": 0.0},
+    ])
+    paired = [
+        {"zone_id": 100, "name": "Interstate 25", "daily_in": 10000.0, "daily_out": 10000.0},
+        {"zone_id": 101, "name": "Interstate 25", "daily_in": 10000.0, "daily_out": 10000.0},
+    ]
+    matrix = gw.build_external_gateway_matrix(paired, zones)
+    assert abs(matrix[1][2] - 10000.0 * gw.GATEWAY_PASSTHROUGH_SHARE) < 1e-6, matrix[1][2]
+
+    # And a route crossing once still sends everything inside.
+    single = [
+        {"zone_id": 100, "name": "Interstate 25", "daily_in": 10000.0, "daily_out": 10000.0},
+        {"zone_id": 101, "name": "State Route 96", "daily_in": 10000.0, "daily_out": 10000.0},
+    ]
+    assert gw.build_external_gateway_matrix(single, zones)[1][2] == 0.0
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:

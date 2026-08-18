@@ -173,7 +173,10 @@ _WORKER_DIR = Path(__file__).resolve().parents[2] / "workers" / "aequilibrae_wor
 if str(_WORKER_DIR) not in sys.path:
     sys.path.insert(0, str(_WORKER_DIR))
 
-from gateways import GATEWAY_PASSTHROUGH_SHARE, pair_passthrough_cordons  # noqa: E402
+from gateways import (  # noqa: E402
+    GATEWAY_PASSTHROUGH_SHARE,
+    build_external_gateway_matrix as worker_build_external_gateway_matrix,
+)
 
 GAMMA_MULTIPLIER = float(os.getenv("OPENPLAN_GAMMA_MULTIPLIER", "1.0") or 1.0)
 
@@ -1892,52 +1895,30 @@ def external_zone_ids(zones_df: pd.DataFrame) -> list[int]:
 def build_external_gateway_matrix(gateways: list[dict[str, Any]], zones_df: pd.DataFrame) -> np.ndarray:
     """Trips entering and leaving the study area, loaded AT the cordon.
 
-    `gateway["zone_id"]` is now the gateway's own external zone — a point on the
+    `gateway["zone_id"]` is the gateway's own external zone — a point on the
     boundary whose connector meets the crossing highway — rather than whichever
     resident tract happened to be nearest. That single index change is what
-    moves a county's through traffic off a forest road and onto the interstate
+    moved a county's through traffic off a forest road and onto the interstate
     it actually uses.
 
-    PASS-THROUGH, added 2026-08-18, and the lane divergence it closes. A route
-    that crosses the boundary at two places carries traffic that enters at one
-    and leaves at the other, and a share of its volume is now routed cordon to
-    cordon instead of into the study area and back out.
+    THE RULES LIVE IN THE WORKER and are imported, not restated. There were
+    three implementations of this on 2026-08-18: this one, an unused copy in
+    `workers/aequilibrae_worker/gateways.py`, and an inline third inside the
+    worker's assignment stage. Only the third routed a share of a two-crossing
+    route straight across the study area, so the two lanes disagreed about
+    whether a car can drive across a county — and the worker module's header
+    asked a human to "keep this in step with the county lane", which is the
+    convention that failed.
 
-    The worker lane has done this since it was written. THIS lane never did, so
-    every figure measured here treated a vehicle clipping a county corner as a
-    trip to the middle of the county plus another one back — which is why total
-    vehicle-miles here tracked injected boundary crossings at +0.981. The rules
-    and the share are imported from the worker rather than restated, because two
-    lanes disagreeing about whether a vehicle can cross a county is not a
-    difference anyone would spot in a number.
-
-    Routes crossing at only one place keep 100% internal-destined volume, and
-    unnamed crossings carry no route identity and are never paired.
+    `EXTERNAL_PASSTHROUGH=0` reproduces a measurement taken before pass-through
+    reached this lane.
     """
-    zone_ids = zones_df["zone_id"].astype(int).tolist()
-    index_lookup = {zone_id: idx for idx, zone_id in enumerate(zone_ids)}
-    pop = zones_df["est_population"].to_numpy(dtype=float)
-    jobs = zones_df["total_jobs"].to_numpy(dtype=float)
-    pop_shares = pop / pop.sum() if pop.sum() > 0 else np.full(len(zone_ids), 1 / len(zone_ids))
-    job_shares = jobs / jobs.sum() if jobs.sum() > 0 else np.full(len(zone_ids), 1 / len(zone_ids))
-    matrix = np.zeros((len(zone_ids), len(zone_ids)), dtype=float)
-
-    partners = pair_passthrough_cordons(gateways, zone_id_field="zone_id")
-    share = 0.0 if not EXTERNAL_PASSTHROUGH else GATEWAY_PASSTHROUGH_SHARE
-
-    for gateway in gateways:
-        zone_id = int(gateway["zone_id"])
-        idx = index_lookup[zone_id]
-        through = share if partners.get(zone_id) else 0.0
-        internal = 1.0 - through
-        matrix[idx, :] += float(gateway["daily_in"]) * internal * job_shares
-        matrix[:, idx] += float(gateway["daily_out"]) * internal * pop_shares
-        if through > 0.0:
-            destinations = partners[zone_id]
-            per_destination = float(gateway["daily_in"]) * through / len(destinations)
-            for destination in destinations:
-                matrix[idx, index_lookup[int(destination)]] += per_destination
-    return matrix
+    return worker_build_external_gateway_matrix(
+        gateways,
+        zones_df,
+        passthrough_share=GATEWAY_PASSTHROUGH_SHARE if EXTERNAL_PASSTHROUGH else 0.0,
+        zone_id_field="zone_id",
+    )
 
 
 def write_od_csv(od_matrix: np.ndarray, zone_ids: list[int], output_path: Path) -> None:

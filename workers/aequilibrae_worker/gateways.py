@@ -220,11 +220,33 @@ def pair_passthrough_cordons(
     return pairs
 
 
-def build_external_gateway_matrix(gateways: list[dict[str, Any]], zones_df: pd.DataFrame) -> np.ndarray:
-    """External OD layer: each gateway injects ``daily_in`` trips distributed to
-    zones by job share (attraction row) and ``daily_out`` by population share
-    (production column). Returned matrix is aligned to ``zones_df`` row order.
+def build_external_gateway_matrix(
+    gateways: list[dict[str, Any]],
+    zones_df: pd.DataFrame,
+    *,
+    passthrough_share: float | None = None,
+    zone_id_field: str = "zone_id",
+) -> np.ndarray:
+    """External OD layer, aligned to ``zones_df`` row order.
+
+    Each gateway sends ``daily_in`` into the study area distributed by job share
+    and draws ``daily_out`` back out by population share — EXCEPT for the part
+    that passes straight through. Where a route crosses the boundary twice,
+    ``passthrough_share`` of its inbound volume goes to that route's other
+    cordon instead, which is what a vehicle driving across the study area does.
+
+    THE SINGLE IMPLEMENTATION FOR BOTH LANES, as of 2026-08-18. There were two
+    copies of this function and an inline third in ``main.py``. The copy here
+    had no pass-through and no caller, the county lane's copy had no
+    pass-through and was live, and only ``main.py`` had it — so the two lanes
+    disagreed about whether a car can drive across a county, and this module's
+    header asked a human to "keep this in step with the county lane", which is
+    the convention that failed. The county lane now imports this.
+
+    ``passthrough_share`` defaults to ``GATEWAY_PASSTHROUGH_SHARE``; pass 0.0 to
+    reproduce a measurement taken before pass-through existed.
     """
+    share = GATEWAY_PASSTHROUGH_SHARE if passthrough_share is None else float(passthrough_share)
     zone_ids = zones_df["zone_id"].astype(int).tolist()
     index_lookup = {zone_id: idx for idx, zone_id in enumerate(zone_ids)}
     pop = zones_df["est_population"].to_numpy(dtype=float)
@@ -233,11 +255,20 @@ def build_external_gateway_matrix(gateways: list[dict[str, Any]], zones_df: pd.D
     job_shares = jobs / jobs.sum() if jobs.sum() > 0 else np.full(len(zone_ids), 1 / len(zone_ids))
     matrix = np.zeros((len(zone_ids), len(zone_ids)), dtype=float)
 
+    partners = pair_passthrough_cordons(gateways, zone_id_field=zone_id_field)
     for gateway in gateways:
-        gid = int(gateway["zone_id"])
+        gid = int(gateway[zone_id_field])
         if gid not in index_lookup:
             continue
         idx = index_lookup[gid]
-        matrix[idx, :] += float(gateway["daily_in"]) * job_shares
-        matrix[:, idx] += float(gateway["daily_out"]) * pop_shares
+        through = share if partners.get(gid) else 0.0
+        internal = 1.0 - through
+        matrix[idx, :] += float(gateway["daily_in"]) * internal * job_shares
+        matrix[:, idx] += float(gateway["daily_out"]) * internal * pop_shares
+        if through > 0.0:
+            destinations = [d for d in partners[gid] if int(d) in index_lookup]
+            if destinations:
+                per_destination = float(gateway["daily_in"]) * through / len(destinations)
+                for destination in destinations:
+                    matrix[idx, index_lookup[int(destination)]] += per_destination
     return matrix
