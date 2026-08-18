@@ -20,7 +20,9 @@ OpenPlan's trip-based screening model assigned **2.2× as much traffic as
 actually exists**; a day of work found the cause was three unrelated things —
 a broken measuring instrument, boundary traffic routed into the county's
 interior instead of across it, and person-trips assigned as if they were cars —
-and the model now sits at **1.67×** with none of it fitted to anything.
+and the model now sits at **1.67×** with none of it fitted to anything. Both
+demand models are in the same units for the first time, and the pre-registered
+agreement study has been re-run on that footing.
 
 ---
 
@@ -118,10 +120,28 @@ wrong:**
   claims no transit share.
 - Is `HBW_PROD_RATE`'s basis (`max(workers, households × 0.35)`) a person-trip
   rate at all? I assumed yes from the provenance string. Verify.
-- The agreement study compared the two lanes **before** this fix. Its conclusion
-  ("agreement does not predict accuracy") may survive a unit correction or may
-  not. **Nobody has re-run it. This is the highest-value single re-run
-  available.**
+- **DONE.** The agreement study has been re-run with both models in the same
+  units (development half, 11 counties, both arms rebuilt on each county's
+  original network). In Merced the two arms were 985,811 against 507,036 trips
+  — a 94% gap that was almost entirely units; corrected, 551,232 against
+  507,036, a difference of 8.7%.
+
+  | | original | units fixed |
+  |---|---:|---:|
+  | trip-based error | 137.2% | **81.2%** |
+  | activity-based error | 78.0% | **66.3%** |
+  | trip-based lift | 0.98 | **0.69** |
+  | activity-based lift | 1.11 | **0.58** |
+
+  **Both models got much more accurate; agreement got LESS informative.** The
+  answer is unchanged and stronger: agreement does not predict accuracy, and the
+  most obvious alternative explanation for that has now been removed.
+
+  **The holdout was deliberately not read a third time** — it has said no twice,
+  the development half now says no again more strongly, and a third reading
+  would be looking for a number rather than testing anything. **If you disagree
+  with that call, it is a defensible thing to overrule — but say why first, in
+  writing, before you look.**
 
 ### 6. The boundary through-share is bounded but unknown
 
@@ -143,8 +163,30 @@ tractable open item in this document.
 
 ---
 
+## The state of the number, end to end
+
+Same five counties, same networks, same stations, nothing fitted:
+
+| stage | too much driving | error vs counts |
+|---|---:|---:|
+| start of 2026-08-18 | 2.29× | 97.4% |
+| + boundary traffic can cross a county | 2.26× | 91.6% |
+| + person trips divided by car occupancy | 1.68× | 80.6% |
+| + walk and cycle trips removed | **1.67×** | **78.2%** |
+
+**Check this table first.** If the arithmetic behind any row does not reproduce,
+everything downstream of it is suspect. The runs are on disk as
+`data/screening-runs/{study-*-base, pass-*, veh-*, units-*}` and the grading
+recipe is in the commits.
+
 ## Things I know are still wrong and did not fix
 
+0. **The model is still 1.67× too high and no single cause is left standing.**
+   Every large lever has been measured: trip length (right), trip generation
+   (right as person trips), units (fixed), boundary routing (fixed), boundary
+   volume (bounded, not settled). What remains is either spread thinly across
+   all of them or is something nobody has looked for. **That is the most
+   valuable thing you could find and I have no candidate for it.**
 1. **Tertiary roads carry 0.07× observed** — a 14× under-assignment on a whole
    road class, untouched by finer zoning, unexplained. Nobody has looked since.
 2. **`main.py`'s inline external OD** (see 4 above).
