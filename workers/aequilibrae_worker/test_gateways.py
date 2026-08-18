@@ -234,11 +234,28 @@ def test_the_share_override_is_parsed_and_clamped_in_one_place():
     assert gw.share_from_env("-1") == 0.0
 
 
-def test_the_worker_and_the_county_lane_read_the_same_share():
-    """Both must resolve to one value, or a sweep means different things in each."""
-    import main  # noqa: PLC0415
+def test_the_worker_reads_the_share_from_this_module_rather_than_its_own_env_call():
+    """Both lanes must resolve to one value, or a sweep means different things in each.
 
-    assert main.PASSTHROUGH_SHARE == gw.GATEWAY_PASSTHROUGH_SHARE
+    Checked by reading main.py rather than importing it: main.py needs Supabase
+    credentials at import, so importing it here passes locally and fails in CI —
+    which is exactly what this test did on its first run.
+
+    Comments are stripped first, because the comment above the assignment names
+    both symbols.
+    """
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "main.py")
+    code = "\n".join(
+        line for line in open(path, encoding="utf-8").read().splitlines()
+        if not line.lstrip().startswith("#")
+    )
+    assert "PASSTHROUGH_SHARE = GATEWAY_PASSTHROUGH_SHARE" in code, (
+        "main.py no longer takes the pass-through share from gateways.py — a second "
+        "os.getenv call there is how the override reached one lane and not the other"
+    )
+    assert 'os.getenv("GATEWAY_PASSTHROUGH_SHARE")' not in code, (
+        "main.py reads the override itself again; it must come from gateways.share_from_env"
+    )
 
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]

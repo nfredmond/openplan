@@ -764,10 +764,8 @@ uncalibrated:
 
 **What is now recorded honestly:** two independent lines of evidence say 0.35 is
 too low, and neither says what it should be. **What would settle it** is a source
-that observes travel rather than counting vehicles at points — origin-destination
-probe data, or a through-trip survey at the cordon. That is a data acquisition
-question, not a modelling one, and it is the first thing to answer before any
-further work on boundary traffic.
+that observes travel rather than counting vehicles at points. One exists and is
+free — FHWA's Traveler Analysis Framework — and it is used in the section below.
 
 ### The sweep's first run was inert, which is the sixth time today
 
