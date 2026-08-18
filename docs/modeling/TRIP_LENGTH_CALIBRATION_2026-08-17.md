@@ -391,9 +391,23 @@ crossing is given `GATEWAY_DAILY_TRIPS[road class] x lanes`, capped at 20,000,
 close to linear in the number of gateways. Counties routinely have 25-47
 crossings, so lifting the cap multiplies external demand several times over.
 
-**Measured**: external traffic already contributes more vehicle-miles than the
-county's entire published daily VMT in four of the five development counties.
-It cannot absorb a multiplier.
+**Estimated, and the estimate is biased high — stated because I published the
+number before checking its basis.** Subtracting internal VMT (internal trips x
+mean trip length) from total network VMT puts external traffic at 51-71% of all
+vehicle-miles, rising as gamma shortens internal trips. But that mean trip
+length is `internal_od_centroid_distance` — centroid to centroid, not the
+assigned network path — so it **understates internal VMT and therefore
+overstates the external share**. A second caveat runs the same way: the
+"published county VMT" it was compared against is a state-average per-capita
+rate applied to county population, and a county with an interstate through it
+genuinely carries travel generated elsewhere.
+
+The direction is not in doubt: external traffic is a large and rising share of
+network vehicle-miles, and gamma cannot touch any of it. The magnitude is being
+measured properly by re-running the five counties with
+`--external-demand-scalar 0`, which assigns internal demand only and gives the
+decomposition by subtraction from an identical network. That result replaces
+these figures.
 
 So the cap is currently the only thing bounding a flat per-crossing guess. The
 order matters: **replace the guess with observed data first, then lift the
