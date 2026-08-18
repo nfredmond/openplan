@@ -223,6 +223,40 @@ class SupabasePollTests(unittest.TestCase):
             {"population_source": "census", "config_package": "mtc"},
         )
 
+    def test_executed_trip_table_becomes_vehicle_demand_package(self):
+        root = Path(self._fixdir)
+        screening = root / "screening"
+        (screening / "package").mkdir(parents=True)
+        (screening / "package" / "zone_attributes.csv").write_text(
+            "zone_id,GEOID,NAMELSAD,centroid_lon,centroid_lat,area_sq_mi,est_population,households,total_jobs,zone_kind\n"
+            "1,06001001,One,-121.0,39.0,1,10,4,3,internal\n"
+            "2,06001002,Two,-120.9,39.1,1,10,4,3,internal\n"
+        )
+        trips = root / "final_trips.csv"
+        trips.write_text(
+            "origin,destination,trip_mode\n"
+            "1,2,DRIVEALONEFREE\n"
+            "1,2,SHARED2FREE\n"
+            "2,1,WALK\n"
+        )
+        ingestion = root / "ingestion.json"
+        ingestion.write_text(
+            json.dumps(
+                {
+                    "runtime": {"runtime_dir": str(root)},
+                    "common_tables": {"trips": {"relative_path": trips.name}},
+                }
+            )
+        )
+        result = supabase_poll._build_executed_demand_package(
+            {"ingestion_summary_path": str(ingestion), "manifest_path": "pipeline.json"},
+            str(screening),
+            str(root / "run"),
+        )
+        self.assertAlmostEqual(result["conversion"]["vehicle_trips"], 1.5)
+        self.assertEqual(result["conversion"]["non_auto_person_trips"], 1)
+        self.assertTrue(Path(result["files"]["od_trip_matrix"]).exists())
+
     def test_executed_kpis_written_and_labeled_uncalibrated(self):
         summary_path = os.path.join(self._fixdir, "kpi_summary.json")
         with open(summary_path, "w") as f:

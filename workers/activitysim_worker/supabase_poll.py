@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 import time
 import urllib.parse
 from datetime import datetime, timezone
@@ -121,6 +122,49 @@ def _bundle_profile_for_execution(exec_cfg: dict[str, Any]) -> dict[str, str]:
         else {"population_source": "scaffold", "config_package": "starter"}
     )
 
+
+def _build_executed_demand_package(
+    pipeline: dict[str, Any], screening_dir: str, run_root: str
+) -> dict[str, Any]:
+    """Reduce a real ActivitySim trip list to the package used by assignment.
+
+    This is deliberately a separate artifact boundary. ActivitySim emits person
+    trips; AequilibraE assigns vehicles. The converter applies occupancy and
+    removes non-auto trips arithmetically, and refuses an absent/empty trip list
+    instead of letting an executed run finish without its comparison input.
+    """
+    ingestion_path = pipeline.get("ingestion_summary_path")
+    if not ingestion_path or not os.path.exists(ingestion_path):
+        raise RuntimeError("Executed ActivitySim run has no ingestion summary for demand packaging")
+    with open(ingestion_path) as fh:
+        ingestion = json.load(fh)
+    trips = (ingestion.get("common_tables") or {}).get("trips") or {}
+    runtime_dir = ((ingestion.get("runtime") or {}).get("runtime_dir") or "").strip()
+    trips_relative_path = (trips.get("relative_path") or "").strip()
+    trips_path = Path(runtime_dir) / trips_relative_path if runtime_dir and trips_relative_path else None
+    if not trips_path or not trips_path.exists():
+        raise RuntimeError("Executed ActivitySim run produced no readable final trip table")
+
+    scripts_dir = str(_REPO_ROOT / "scripts" / "modeling")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    from activitysim_demand_package import (
+        build_activitysim_demand_package,
+        read_zone_rows_from_csv,
+    )
+
+    zone_path = Path(screening_dir) / "package" / "zone_attributes.csv"
+    output_dir = Path(run_root) / "activitysim_demand_package"
+    return build_activitysim_demand_package(
+        trips_csv=trips_path,
+        zone_rows=read_zone_rows_from_csv(zone_path),
+        output_dir=output_dir,
+        source={
+            "trips_csv": str(trips_path),
+            "zone_attributes_csv": str(zone_path),
+            "behavioral_pipeline_manifest": pipeline.get("manifest_path"),
+        },
+    )
 # Per-run scratch dir for the built bundle + prototype pipeline outputs.
 ACTIVITYSIM_WORK_DIR = os.getenv(
     "ACTIVITYSIM_WORK_DIR", str(_REPO_ROOT / "data" / "activitysim-bundles" / "runs")
@@ -441,6 +485,9 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     pipeline_status = pipeline.get("pipeline_status")
     runtime_mode = pipeline.get("runtime_mode") or "preflight_only"
     executed = runtime_mode in EXECUTED_RUNTIME_MODES
+    demand_package = (
+        _build_executed_demand_package(pipeline, screening_dir, run_root) if executed else None
+    )
     log += f"- Bundle built + pipeline: {pipeline_status} (runtime mode: {runtime_mode}).\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
@@ -489,6 +536,11 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "runtime_mode": runtime_mode,
         "bundle": bundle_stats,
         "bundle_profile": bundle_profile,
+        "demand_package": {
+            "status": "ready_for_same_network_assignment",
+            "zones": demand_package["zones"],
+            "conversion": demand_package["conversion"],
+        } if demand_package else None,
         "study_area": {"corridor_geojson_present": bool(corridor)},
         "requirements_for_a_calibrated_run": [
             "A dedicated modeling host with ActivitySim installed (multi-GB RAM, always-on)."
@@ -512,6 +564,29 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                 "metadata_json": {"kind": "behavioral_demand_preflight_evidence", "is_forecast": False},
             }
         )
+
+    if demand_package:
+        artifact_specs = (
+            ("activitysim_demand_package_manifest", demand_package["files"]["manifest"]),
+            ("activitysim_demand_matrix", demand_package["files"]["od_trip_matrix"]),
+            ("activitysim_demand_zones", demand_package["files"]["zone_attributes"]),
+        )
+        for artifact_type, artifact_path in artifact_specs:
+            artifact_bytes = Path(artifact_path).read_bytes()
+            sb_post_artifact(
+                {
+                    "run_id": run_id,
+                    "stage_id": stage_id,
+                    "artifact_type": artifact_type,
+                    "file_url": f"local://{artifact_path}",
+                    "file_size_bytes": len(artifact_bytes),
+                    "content_hash": hashlib.sha256(artifact_bytes).hexdigest(),
+                    "metadata_json": {
+                        "kind": "activitysim_assignment_handoff",
+                        "uncalibrated": True,
+                    },
+                }
+            )
 
     # 5. Structural, non-forecast general KPIs (bundle scaffold sizes + runtime mode).
     scaffold_provenance = (
@@ -561,6 +636,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         f"- Evidence packet: {'uploaded' if storage_ref else 'upload failed (best-effort)'}; "
         f"{len(kpis)} scaffold KPIs"
         + (f" + {real_kpis} uncalibrated behavioral KPIs" if real_kpis else "")
+        + (" + assignment demand package" if demand_package else "")
         + " written.\n"
     )
     sb_patch_stage(stage_id, {"log_tail": log})

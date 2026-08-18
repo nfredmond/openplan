@@ -2,7 +2,8 @@
 #
 # The default preflight worker (requirements.txt: requests + Flask) runs the
 # L1/L2 preflight on light infra. To EXECUTE a real (still uncalibrated,
-# starter-grade) ActivitySim run, a host must install these on Python 3.11
+# screening-grade) ActivitySim run with Census-fitted population and explicitly
+# borrowed prototype_mtc behavior, a host must install these on Python 3.11
 # (the proven version — host Python 3.12 is not dependable per the P2B smoke),
 # then point the worker at the CLI via ACTIVITYSIM_CLI (see DEPLOY.md).
 #

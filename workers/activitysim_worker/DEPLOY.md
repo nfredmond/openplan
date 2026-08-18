@@ -159,9 +159,12 @@ AequilibraE Setup → Network Assignment → Artifact Extraction   (aequilibrae_
 The AequilibraE worker runs the screening (network + `travel_time_skims.omx`) and
 registers `zone_attributes.csv` + the skim as `local://` artifacts. This worker
 reads them, builds an ActivitySim input bundle, runs the runtime, and writes an
-honest evidence packet + KPIs. Preflight uses the explicitly non-behavioral
-scaffold; configured execution requires Census PUMS synthesis and the stock
-`prototype_mtc` package. **Because
+honest evidence packet + KPIs. After configured execution, it also converts the
+person-trip table to an assignment-ready vehicle-demand package, with shared-ride
+occupancy and excluded non-auto trips disclosed in the package manifest. This
+phase does not yet launch the second AequilibraE assignment. Preflight uses the
+explicitly non-behavioral scaffold; configured execution requires Census PUMS
+synthesis and the stock `prototype_mtc` package. **Because
 the handoff is `local://`, the two workers must share a filesystem (co-located on
 one host, or a shared volume).**
 
@@ -206,6 +209,9 @@ npm run worker:activitysim          # from openplan/
   `prototype_mtc` configuration. Its coefficients were estimated for the San
   Francisco Bay Area, so even a locally fitted population does not make its
   behavior local; the evidence packet and KPIs say that explicitly.
+  The worker also registers the demand-package manifest, OD vehicle-trip matrix,
+  and zone table as the explicit handoff for same-network assignment. An executed
+  run fails instead of completing if its trip table is absent or unreadable.
 
 ## ⛔ Infra reality — real behavioral runs are NOT $0
 
