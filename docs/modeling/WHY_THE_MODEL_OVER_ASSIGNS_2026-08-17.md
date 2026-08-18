@@ -230,3 +230,39 @@ written to catch, and criterion 1 caught it for every arm.
 a published count station within 3 km, so most gateways can be seeded with a
 real AADT instead of a constant. Then re-measure, and only then ask whether any
 demand parameter still needs moving.
+
+---
+
+## SCOPE CORRECTION, 2026-08-18: every figure above is the COUNTY-SCRIPT lane
+
+OpenPlan has two implementations of the screening model:
+
+- **`scripts/modeling/screening_runtime.py`** — the county-script lane, driven
+  by `run_screening_model.py`. Every measurement in this document and in
+  `TRIP_LENGTH_CALIBRATION_2026-08-17.md` was made here.
+- **`workers/aequilibrae_worker/main.py`** — the worker, which is what the app
+  and the funder report read.
+
+**They differed on whether a vehicle can drive across the study area.** The
+worker has paired same-route cordons since it was written: where a route crosses
+the boundary twice, 35% of its volume enters at one crossing and leaves at the
+other (`GATEWAY_PASSTHROUGH_SHARE`, honestly labelled uncalibrated). The
+county-script lane had no pass-through at all — every boundary vehicle was sent
+to a destination inside the study area and another one drawn back out.
+
+So the finding that boundary traffic is a median 61% of assigned vehicle-miles,
+and that total VMT tracks injected crossings at +0.981, are **properties of the
+county-script lane as it stood on 2026-08-17.** The worker's figures would be
+lower, by an amount nobody had measured because nobody knew the lanes differed.
+
+Closed in `dc27421a`: the county-script lane now imports the worker's pairing
+rules and share rather than restating them, so the two cannot drift again. The
+measurement of what that changes is appended below when the arm completes.
+
+**The general lesson is the one this repository keeps relearning.** Two lanes
+implementing the same model will diverge, and the divergence will be invisible
+because both produce plausible numbers. Four separate instances turned up in a
+single day: shared-link resolution and ramp exclusion existed only in the
+scripts lane, pass-through existed only in the worker, and the divided-highway
+comparison was fixed in one and left inert in the other. Every one of them was
+found by measuring, not by a test.
