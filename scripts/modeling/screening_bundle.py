@@ -159,6 +159,7 @@ def write_bundle_outputs(
     assumptions: dict[str, Any] | None = None,
     published_counts: dict[str, Any] | None = None,
     boundary_traffic_seeding: dict[str, Any] | None = None,
+    passthrough_bounds: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     manifest = build_bundle_manifest(
         run_name=run_name,
@@ -194,6 +195,11 @@ def write_bundle_outputs(
     # ones.
     if boundary_traffic_seeding is not None:
         manifest["boundary_traffic_seeding"] = boundary_traffic_seeding
+    # Which crossings had their through-share bounded by real counts and which
+    # kept the flat screening figure. Per crossing, because "5 of 8 bounded"
+    # cannot say whether the three that were not are the busy ones.
+    if passthrough_bounds is not None:
+        manifest["passthrough_bounds"] = passthrough_bounds
     write_json(run_dir / "bundle_manifest.json", manifest)
     evidence = build_evidence_packet(
         run_name=run_name,

@@ -51,7 +51,7 @@ from __future__ import annotations
 
 import math
 import re
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Iterable, Mapping, MutableMapping, Sequence
 
 #: How close a published count must be to the boundary crossing to describe it.
 #: Deliberately tight. Traffic on a highway changes at every junction, and a
@@ -402,5 +402,61 @@ def passthrough_share_ceiling(
             f"many of the {nearest['observed_volume']:,.0f} entering here can be passing through. "
             "Counts cannot say which vehicles are the same vehicles, so the true share is at most "
             "this and cannot be measured from counts alone."
+        ),
+    }
+
+
+def attach_passthrough_ceilings(
+    gateways: Sequence[MutableMapping[str, Any]], counts: Sequence[Mapping[str, Any]]
+) -> dict[str, Any]:
+    """Give each paired crossing the largest through-share its route permits.
+
+    Groups crossings by road, bounds each from that road's count profile, and
+    writes `passthrough_share` only where the bound is INFORMATIVE — a route
+    whose minimum sits at its own crossing bounds at 1.0, and writing that would
+    send every vehicle straight across on the strength of a number that means
+    "the counts cannot tell". Those keep the flat constant and say so.
+
+    Mutates the gateway records and returns an account of what each got.
+    """
+    by_road: dict[str, list[MutableMapping[str, Any]]] = {}
+    for gateway in gateways:
+        road = normalize_road_name(gateway.get("name"))
+        if road:
+            by_road.setdefault(road, []).append(gateway)
+
+    decisions: list[dict[str, Any]] = []
+    measured = 0
+    for road, crossings in by_road.items():
+        if len(crossings) < 2:
+            continue  # a route crossing once has no through movement to bound
+        route_counts = counts_on_a_route(crossings, counts)
+        for crossing in crossings:
+            bound = passthrough_share_ceiling(crossing, route_counts) if route_counts else None
+            if bound and bound["is_informative"]:
+                crossing["passthrough_share"] = bound["ceiling"]
+                crossing["passthrough_basis"] = "count_profile_ceiling"
+                crossing["passthrough_basis_note"] = bound["note"]
+                measured += 1
+                decisions.append({"road": road, "basis": "count_profile_ceiling", **bound})
+            else:
+                crossing["passthrough_basis"] = "flat_default"
+                crossing["passthrough_basis_note"] = (
+                    "No count profile on this road bounds its through travel, so this crossing "
+                    "uses OpenPlan's flat screening share — the same figure it would apply to any "
+                    "road anywhere."
+                )
+                decisions.append({
+                    "road": road, "basis": "flat_default",
+                    "reason": "no informative bound" if bound else "not enough count profile",
+                })
+    return {
+        "paired_crossings": sum(len(v) for v in by_road.values() if len(v) >= 2),
+        "crossings_bounded_by_counts": measured,
+        "decisions": decisions,
+        "note": (
+            "Each figure is a CEILING on through travel, not a measurement of it: counts say how "
+            "many vehicles are at a place, never which of them are the same vehicles. Crossings "
+            "without an informative bound keep the flat screening share."
         ),
     }

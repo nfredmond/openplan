@@ -13,6 +13,7 @@ counts), matching the county lane's disclosed behaviour.
 """
 from __future__ import annotations
 
+import os
 import re
 import sqlite3
 from typing import Any
@@ -180,7 +181,28 @@ def build_cordon_injections(zones_df: pd.DataFrame) -> tuple[np.ndarray, np.ndar
 # corridors (US-20/SR-49) carry a substantial through-share; a single flat value
 # is a screening simplification (per-facility shares would refine it). Env
 # override GATEWAY_PASSTHROUGH_SHARE only for what-if sweeps — never to fit counts.
-GATEWAY_PASSTHROUGH_SHARE = 0.35
+DEFAULT_GATEWAY_PASSTHROUGH_SHARE = 0.35
+
+
+def share_from_env(raw: str | None, default: float = DEFAULT_GATEWAY_PASSTHROUGH_SHARE) -> float:
+    """Parse a pass-through share override, refusing nonsense rather than crashing.
+
+    THE OVERRIDE USED TO REACH ONE LANE. `main.py` read GATEWAY_PASSTHROUGH_SHARE
+    from the environment while this module hardcoded 0.35, so a sweep run through
+    the county-script lane produced byte-identical output at 0.35, 0.55, 0.75 and
+    0.90 — a knob that turned and did nothing, and a flat result that read as
+    "the share does not matter". The constant is read here now, once, for both.
+    """
+    if raw is None or not str(raw).strip():
+        return default
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return default
+    return min(max(value, 0.0), 0.9)
+
+
+GATEWAY_PASSTHROUGH_SHARE = share_from_env(os.getenv("GATEWAY_PASSTHROUGH_SHARE"))
 
 
 def pair_passthrough_cordons(
@@ -244,7 +266,10 @@ def build_external_gateway_matrix(
     the convention that failed. The county lane now imports this.
 
     ``passthrough_share`` defaults to ``GATEWAY_PASSTHROUGH_SHARE``; pass 0.0 to
-    reproduce a measurement taken before pass-through existed.
+    reproduce a measurement taken before pass-through existed. An individual
+    gateway carrying its own ``passthrough_share`` overrides both — the flat
+    constant applies the same figure to an interstate and a county road, and
+    anything that can measure one road's share should not be averaged away.
     """
     share = GATEWAY_PASSTHROUGH_SHARE if passthrough_share is None else float(passthrough_share)
     zone_ids = zones_df["zone_id"].astype(int).tolist()
@@ -261,7 +286,11 @@ def build_external_gateway_matrix(
         if gid not in index_lookup:
             continue
         idx = index_lookup[gid]
-        through = share if partners.get(gid) else 0.0
+        # A per-crossing share wins over the flat one. `passthrough_share` is
+        # attached by whatever could measure it for THIS road; the constant is
+        # what a crossing falls back to, and a run records which each got.
+        own = gateway.get("passthrough_share")
+        through = (share if own is None else max(0.0, min(float(own), 1.0))) if partners.get(gid) else 0.0
         internal = 1.0 - through
         matrix[idx, :] += float(gateway["daily_in"]) * internal * job_shares
         matrix[:, idx] += float(gateway["daily_out"]) * internal * pop_shares

@@ -698,3 +698,82 @@ class of guess the per-crossing volume was, one level up. A share that varied
 with road class and with how much of the route lies inside the study area is the
 obvious shape; measuring it needs a source this lane does not have yet, and
 saying that is better than fitting it to these five counties.
+
+---
+
+## The through-share itself: bounded from counts, swept, and NOT adopted
+
+The model routes a flat 35% of every two-crossing route across the study area —
+the same figure for an interstate and a county road, fitted to nothing. I said
+measuring it needed a source this lane does not have. **That was worth checking
+rather than asserting, and it was wrong.**
+
+### It can be bounded, from counts already downloaded
+
+Every vehicle crossing the study area passes the lowest-volume point on its
+route inside it, so through travel is at most that minimum. Across five
+counties, 11 crossings with enough count profile:
+
+| route | county | ceiling |
+|---|---|---:|
+| Interstate 5 | Merced, CA | **0.84** |
+| State Route 99 | Merced, CA | **0.45** |
+| State Route 99 | Tulare, CA | 0.69–0.88 |
+| State Route 43 | Tulare, CA | 0.61 |
+| US 36 | Broomfield, CO | 0.76 |
+| State Route 156 | San Benito, CA | 1.00 (uninformative) |
+
+Median **0.84**, against the 0.35 in use — and it varies the way the road does.
+I-5 bypasses Merced's towns and bounds high; SR-99 runs through Merced city and
+bounds low. **One flat figure cannot describe both.**
+
+**These are CEILINGS.** Counts say how many vehicles are at a place, never which
+of them are the same vehicles, so no arrangement of counts measures through
+travel. A route whose minimum sits at its own crossing bounds at 1.0 — true, and
+it means the counts cannot tell. Those are marked and excluded rather than
+averaged in.
+
+### A sweep says higher is better, and does not say how much higher
+
+Five counties, same networks, flat share varied:
+
+| through share | median VMT ratio | median count error |
+|---|---:|---:|
+| 0.00 (this lane before today) | 2.29 | 97.4% |
+| **0.35 (the default)** | 2.26 | 91.6% |
+| 0.55 | 2.23 | 92.0% |
+| 0.75 | 2.21 | 89.4% |
+| 0.90 | **2.19** | **87.3%** |
+
+Both measures improve monotonically to the clamp. **That is not a calibration —
+it is a parameter improving right up to the edge of its allowed range without
+turning over, which identifies no value and is the classic signature of a knob
+compensating for something else.** The total gain is 4% of a 2.2× error.
+
+### The decision
+
+**Nothing is adopted. `OPENPLAN_PASSTHROUGH_FROM_COUNTS` stays off and the flat
+0.35 stays as the default**, now documented as unsupported rather than merely
+uncalibrated:
+
+- adopting the count ceilings would use an upper bound as an estimate, which
+  overstates through travel wherever the bound is loose;
+- adopting the sweep's best would be fitting a parameter to five counties, which
+  is what the pre-registration for the gamma experiment existed to prevent, and
+  it would have shipped a 35-point "win" there.
+
+**What is now recorded honestly:** two independent lines of evidence say 0.35 is
+too low, and neither says what it should be. **What would settle it** is a source
+that observes travel rather than counting vehicles at points — origin-destination
+probe data, or a through-trip survey at the cordon. That is a data acquisition
+question, not a modelling one, and it is the first thing to answer before any
+further work on boundary traffic.
+
+### The sweep's first run was inert, which is the sixth time today
+
+At 0.35, 0.55, 0.75 and 0.90 it produced **byte-identical** network VMT. The
+override was read in `main.py` while `gateways.py` hardcoded 0.35, so the worker
+honoured it and the county-script lane never did. A flat result across a
+four-fold parameter change would have read as "the share does not matter". The
+share is now parsed and clamped in one place for both lanes, and a test asserts
+they resolve to the same value.

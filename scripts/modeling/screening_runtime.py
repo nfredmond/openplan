@@ -173,6 +173,7 @@ _WORKER_DIR = Path(__file__).resolve().parents[2] / "workers" / "aequilibrae_wor
 if str(_WORKER_DIR) not in sys.path:
     sys.path.insert(0, str(_WORKER_DIR))
 
+from gateway_counts import attach_passthrough_ceilings  # noqa: E402
 from gateways import (  # noqa: E402
     GATEWAY_PASSTHROUGH_SHARE,
     build_external_gateway_matrix as worker_build_external_gateway_matrix,
@@ -193,6 +194,12 @@ SEED_GATEWAYS_FROM_COUNTS = os.getenv("OPENPLAN_SEED_GATEWAYS_FROM_COUNTS", "0")
 #: lane — the one the app and the funder report read — has always done it, and
 #: this lane never did. Off only to reproduce a pre-2026-08-18 measurement.
 EXTERNAL_PASSTHROUGH = os.getenv("OPENPLAN_EXTERNAL_PASSTHROUGH", "1") not in ("0", "false", "False")
+
+#: Bound each paired crossing's through-share from its route's own count profile
+#: instead of applying one flat figure to every road. Default OFF: the bound is
+#: a CEILING, and adopting a ceiling as an estimate assumes all the through
+#: travel a road permits actually happens. Measured before any default changes.
+PASSTHROUGH_FROM_COUNTS = os.getenv("OPENPLAN_PASSTHROUGH_FROM_COUNTS", "0") in ("1", "true", "True")
 HBO_PROD_RATE = 2.2
 NHB_PROD_RATE = 0.9
 HBO_ATTR_RETAIL_RATE = 12.0
@@ -2374,6 +2381,7 @@ def run_screening_model(
     zone_package_dir: str | None = None,
     calibrate_counts_csv: str | None = None,
     seed_gateways_from_published_counts: bool = SEED_GATEWAYS_FROM_COUNTS,
+    passthrough_from_counts: bool = PASSTHROUGH_FROM_COUNTS,
     counts_mode: str | None = None,
     calibrate_to_counts: bool = False,
     reuse_network_from: str | None = None,
@@ -2514,6 +2522,11 @@ def run_screening_model(
             counts_csv = auto_counts_meta.get("validation_counts_csv") or auto_counts_meta["counts_csv"]
         if auto_counts_meta.get("calibration_counts_csv"):
             calibrate_counts_csv = auto_counts_meta["calibration_counts_csv"]
+
+    passthrough_bounds: dict[str, Any] | None = None
+    if passthrough_from_counts and auto_counts_meta and auto_counts_meta.get("counts_csv"):
+        with Path(auto_counts_meta["counts_csv"]).open(newline="") as handle:
+            passthrough_bounds = attach_passthrough_ceilings(network_meta["gateways"], list(csv.DictReader(handle)))
 
     gateway_seeding: dict[str, Any] | None = None
     if seed_gateways_from_published_counts and auto_counts_meta and auto_counts_meta.get("counts_csv"):
@@ -2668,6 +2681,7 @@ def run_screening_model(
         assumptions=model_assumptions(),
         published_counts=auto_counts_meta,
         boundary_traffic_seeding=gateway_seeding,
+        passthrough_bounds=passthrough_bounds,
     )
 
     validation_summary = None

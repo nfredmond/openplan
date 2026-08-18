@@ -37,6 +37,7 @@ from gateway_counts import (  # noqa: E402
     counts_on_a_route,
     match_count_to_gateway,
     normalize_road_name,
+    attach_passthrough_ceilings,
     passthrough_share_ceiling,
     seed_gateways_from_counts,
 )
@@ -297,6 +298,78 @@ class TheThroughShareIsBoundedNotMeasured(unittest.TestCase):
         bound = passthrough_share_ceiling(crossings[0], counts_on_a_route(crossings, counts))
         self.assertIn("upper bound, not a measurement", bound["note"])
         self.assertIn("cannot say which vehicles are the same", bound["note"])
+
+
+
+
+class OnlyAnInformativeBoundReplacesTheFlatShare(unittest.TestCase):
+    """Attaching a ceiling of 1.0 would send every vehicle straight across.
+
+    1.0 is what a route reports when its lowest count sits at its own crossing:
+    true, and it means "these counts cannot tell". Writing it as the share would
+    turn "we do not know" into "all of it passes through" — the same mistake as
+    reading an unnamed road as a road with no counts nearby.
+    """
+
+    def count(self, station_id, facility, volume, lon, lat, names="Golden State Highway"):
+        return {
+            "station_id": station_id, "facility_name": facility, "observed_volume": str(volume),
+            "candidate_model_names": names,
+            "bbox_min_lon": lon - 0.001, "bbox_min_lat": lat - 0.001,
+            "bbox_max_lon": lon + 0.001, "bbox_max_lat": lat + 0.001,
+        }
+
+    def crossings(self, name="Golden State Highway"):
+        return [
+            {"name": name, "boundary_lon": -121.0, "boundary_lat": 37.0, "zone_id": 100},
+            {"name": name, "boundary_lon": -121.0, "boundary_lat": 37.5, "zone_id": 101},
+        ]
+
+    def test_an_informative_bound_is_written_onto_the_crossing(self) -> None:
+        gateways = self.crossings()
+        counts = [
+            self.count("A", "SR 99", 100000, -121.0, 37.0),
+            self.count("B", "SR 99", 60000, -121.0, 37.5),
+            self.count("C", "SR 99", 45000, -121.0, 37.25),
+        ]
+        record = attach_passthrough_ceilings(gateways, counts)
+        self.assertAlmostEqual(gateways[0]["passthrough_share"], 0.45, places=4)
+        self.assertEqual(gateways[0]["passthrough_basis"], "count_profile_ceiling")
+        # Both ends bound, and to DIFFERENT figures — the same route's two
+        # crossings carry different volumes, so one flat share cannot describe
+        # even a single road.
+        self.assertEqual(record["crossings_bounded_by_counts"], 2)
+        self.assertAlmostEqual(gateways[1]["passthrough_share"], 0.75, places=4)
+
+    def test_a_ceiling_of_one_leaves_the_flat_share_in_place(self) -> None:
+        gateways = self.crossings()
+        counts = [
+            self.count("A", "SR 99", 40000, -121.0, 37.0),
+            self.count("B", "SR 99", 60000, -121.0, 37.5),
+            self.count("C", "SR 99", 55000, -121.0, 37.25),
+        ]
+        attach_passthrough_ceilings(gateways, counts)
+        self.assertNotIn("passthrough_share", gateways[0])
+        self.assertEqual(gateways[0]["passthrough_basis"], "flat_default")
+
+    def test_a_route_crossing_once_is_left_entirely_alone(self) -> None:
+        gateways = [{"name": "Lonely Road", "boundary_lon": -121.0, "boundary_lat": 37.0, "zone_id": 100}]
+        record = attach_passthrough_ceilings(gateways, [])
+        self.assertNotIn("passthrough_share", gateways[0])
+        self.assertNotIn("passthrough_basis", gateways[0])
+        self.assertEqual(record["paired_crossings"], 0)
+
+    def test_every_crossing_says_which_basis_it_used(self) -> None:
+        gateways = self.crossings()
+        attach_passthrough_ceilings(gateways, [])
+        for gateway in gateways:
+            self.assertEqual(gateway["passthrough_basis"], "flat_default")
+            self.assertIn("any road anywhere", gateway["passthrough_basis_note"])
+
+    def test_the_record_calls_them_ceilings(self) -> None:
+        gateways = self.crossings()
+        record = attach_passthrough_ceilings(gateways, [])
+        self.assertIn("CEILING on through travel, not a measurement", record["note"])
 
 
 if __name__ == "__main__":

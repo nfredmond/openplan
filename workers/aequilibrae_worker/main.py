@@ -154,11 +154,10 @@ GTFS_DISCOVER = gtfs_skim.discovery_enabled(os.getenv("GTFS_DISCOVER"))
 # pass-through (cordon→same-route cordon) so interior mainlines load, rather than
 # terminating at internal zones. Uncalibrated screening assumption; the env
 # override is for what-if sweeps only, never to fit observed counts.
-try:
-    PASSTHROUGH_SHARE = float(os.getenv("GATEWAY_PASSTHROUGH_SHARE", str(GATEWAY_PASSTHROUGH_SHARE)))
-except ValueError:
-    PASSTHROUGH_SHARE = GATEWAY_PASSTHROUGH_SHARE
-PASSTHROUGH_SHARE = min(max(PASSTHROUGH_SHARE, 0.0), 0.9)
+# One source for the share: `gateways.share_from_env` reads and clamps it, so
+# the worker and the county-script lane cannot honour different values —
+# which they did until 2026-08-18, when only this file read the override.
+PASSTHROUGH_SHARE = GATEWAY_PASSTHROUGH_SHARE
 
 # Observed-count validation: match assigned link volumes to published traffic
 # counts and report screening-grade fit metrics + a gate. Default counts cover

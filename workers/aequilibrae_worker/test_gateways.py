@@ -164,6 +164,82 @@ def test_a_pass_through_share_reaches_the_matrix():
     ]
     assert gw.build_external_gateway_matrix(single, zones)[1][2] == 0.0
 
+
+def test_a_crossing_carrying_its_own_share_overrides_the_flat_one():
+    """One flat figure cannot describe an interstate and a county road.
+
+    Anything able to measure a particular road's through-share attaches it to
+    that crossing; the constant is the fallback. Without this the measurement
+    is computed, recorded, and ignored — which is how five other corrections
+    behaved on 2026-08-18 before anyone measured them.
+    """
+    import pandas as pd  # noqa: PLC0415
+
+    zones = pd.DataFrame([
+        {"zone_id": 1, "est_population": 1000.0, "total_jobs": 500.0},
+        {"zone_id": 100, "est_population": 0.0, "total_jobs": 0.0},
+        {"zone_id": 101, "est_population": 0.0, "total_jobs": 0.0},
+    ])
+    base = [
+        {"zone_id": 100, "name": "Interstate 25", "daily_in": 10000.0, "daily_out": 10000.0},
+        {"zone_id": 101, "name": "Interstate 25", "daily_in": 10000.0, "daily_out": 10000.0},
+    ]
+    flat = gw.build_external_gateway_matrix(base, zones)[1][2]
+    assert abs(flat - 10000.0 * gw.GATEWAY_PASSTHROUGH_SHARE) < 1e-6, flat
+
+    own = [dict(g, passthrough_share=0.84) for g in base]
+    assert abs(gw.build_external_gateway_matrix(own, zones)[1][2] - 8400.0) < 1e-6
+
+    # Each crossing keeps its own, so one route's two ends can differ.
+    mixed = [dict(base[0], passthrough_share=0.45), dict(base[1], passthrough_share=0.75)]
+    matrix = gw.build_external_gateway_matrix(mixed, zones)
+    assert abs(matrix[1][2] - 4500.0) < 1e-6, matrix[1][2]
+    assert abs(matrix[2][1] - 7500.0) < 1e-6, matrix[2][1]
+
+
+def test_a_share_outside_zero_to_one_is_clamped_rather_than_trusted():
+    """A share above 1 would send more vehicles across than arrived."""
+    import pandas as pd  # noqa: PLC0415
+
+    zones = pd.DataFrame([
+        {"zone_id": 1, "est_population": 1000.0, "total_jobs": 500.0},
+        {"zone_id": 100, "est_population": 0.0, "total_jobs": 0.0},
+        {"zone_id": 101, "est_population": 0.0, "total_jobs": 0.0},
+    ])
+    silly = [
+        {"zone_id": 100, "name": "I 25", "daily_in": 10000.0, "daily_out": 10000.0, "passthrough_share": 3.0},
+        {"zone_id": 101, "name": "I 25", "daily_in": 10000.0, "daily_out": 10000.0, "passthrough_share": -1.0},
+    ]
+    matrix = gw.build_external_gateway_matrix(silly, zones)
+    assert abs(matrix[1][2] - 10000.0) < 1e-6, matrix[1][2]
+    assert matrix[2][1] == 0.0, matrix[2][1]
+
+
+def test_the_share_override_is_parsed_and_clamped_in_one_place():
+    """The override reached ONE lane, and the sweep that revealed it looked fine.
+
+    main.py read GATEWAY_PASSTHROUGH_SHARE from the environment while this
+    module hardcoded 0.35, so a five-county sweep at 0.35 / 0.55 / 0.75 / 0.90
+    produced byte-identical network VMT — a knob that turned and did nothing,
+    reported as "the share does not matter".
+    """
+    assert gw.share_from_env(None) == gw.DEFAULT_GATEWAY_PASSTHROUGH_SHARE
+    assert gw.share_from_env("") == gw.DEFAULT_GATEWAY_PASSTHROUGH_SHARE
+    assert gw.share_from_env("0.75") == 0.75
+    # Nonsense falls back rather than crashing a run hours in.
+    assert gw.share_from_env("banana") == gw.DEFAULT_GATEWAY_PASSTHROUGH_SHARE
+    # Clamped: a share above 0.9 would leave a route with almost no local trips,
+    # and a negative one would create them out of nothing.
+    assert gw.share_from_env("3.0") == 0.9
+    assert gw.share_from_env("-1") == 0.0
+
+
+def test_the_worker_and_the_county_lane_read_the_same_share():
+    """Both must resolve to one value, or a sweep means different things in each."""
+    import main  # noqa: PLC0415
+
+    assert main.PASSTHROUGH_SHARE == gw.GATEWAY_PASSTHROUGH_SHARE
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:
