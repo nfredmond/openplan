@@ -358,6 +358,72 @@ def test_a_matched_station_reports_the_whole_corridor():
     # ~0% error now, against the ~47% a half-road produced.
     assert result["absolute_percent_error"] < 1.0, result
 
+
+# ---------------------------------------------------------------------------
+# Several stations on ONE model link. A link holds one volume, so grading each
+# station weights that link several times, and where the stations disagree at
+# most one of them belongs there. This ran only in the county-script lane until
+# 2026-08-18 — every figure a planner saw from a worker run graded 33% of its
+# stations that way, and the worst real pair is 2 vehicles a day against 33,723
+# on one link.
+# ---------------------------------------------------------------------------
+
+
+def _one_link_two_stations(obs_a, obs_b, modelled=10000.0):
+    """Both stations name the same road, so both match the single link."""
+    stations = [
+        _station("A", obs_a, "Shared Road", "primary"),
+        _station("B", obs_b, "Shared Road", "primary"),
+    ]
+    links = [_link(7, "Shared Road", "primary", -121.0, 39.0, modelled)]
+    return cv.validate_against_counts(stations, links, required_matches=1)
+
+
+def test_two_agreeing_stations_on_one_link_are_compared_once():
+    summary = _one_link_two_stations(9500, 10500)
+    assert summary["stations_matched"] == 1, summary["stations_matched"]
+    shared = summary["shared_model_links"]
+    assert shared["groups_merged_as_consistent"] == 1, shared
+    assert shared["stations_merged_away"] == 1, shared
+
+
+def test_two_disagreeing_stations_grade_nothing():
+    # The real worst case, scaled: nothing in the data says which belongs.
+    summary = _one_link_two_stations(2, 33723, modelled=72220.0)
+    assert summary["stations_matched"] == 0, summary["stations_matched"]
+    shared = summary["shared_model_links"]
+    assert shared["groups_excluded_as_ambiguous"] == 1, shared
+    assert shared["stations_excluded_as_ambiguous"] == 2, shared
+
+
+def test_an_excluded_station_carries_no_error_into_the_median():
+    # Left in place, a 3,600,000% error would sit in the same list the gate reads.
+    summary = _one_link_two_stations(2, 33723, modelled=72220.0)
+    assert summary["median_ape"] is None, summary["median_ape"]
+    for row in summary["results"]:
+        assert row["absolute_percent_error"] == "", row
+
+
+def test_one_station_per_link_is_untouched():
+    stations = [
+        _station("A", 10000, "First Road", "primary"),
+        _station("B", 12000, "Second Road", "primary"),
+    ]
+    links = [
+        _link(1, "First Road", "primary", -121.0, 39.0, 10000.0),
+        _link(2, "Second Road", "primary", -121.5, 39.5, 12000.0),
+    ]
+    summary = cv.validate_against_counts(stations, links, required_matches=1)
+    assert summary["stations_matched"] == 2, summary["stations_matched"]
+    assert summary["shared_model_links"]["links_shared_by_several_stations"] == 0, summary
+
+
+def test_the_resolution_travels_in_the_summary():
+    # A station that vanishes without a recorded reason is indistinguishable
+    # from one that was never there.
+    summary = _one_link_two_stations(9500, 10500)
+    assert "network resolution" in summary["shared_model_links"]["note"]
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:
