@@ -253,13 +253,23 @@ describe("accuracy by road type on the run card", () => {
     { roadClass: "tertiary", stations: 1, medianAbsolutePercentError: 1.2, medianModelOverObserved: 1.01 },
   ];
 
-  function runWithAccuracy(rows: typeof ROAD_CLASSES | undefined) {
+  const STATIONS = [
+    { stationId: "CT_1", label: "SR 20 mainline", observed: 47000, modelled: 53055 },
+    { stationId: "CT_2", label: "Idaho-Maryland Road", observed: 12000, modelled: 26000 },
+    { stationId: "CT_3", label: "Rural collector", observed: 900, modelled: 850 },
+  ];
+
+  function runWithAccuracy(
+    rows: typeof ROAD_CLASSES | undefined,
+    stations: typeof STATIONS | undefined = STATIONS
+  ) {
     const run = runningRun(PROGRESS_LOG);
     run.status = "succeeded";
     (run as Record<string, unknown>).claimDecision = {
-      status: "screening",
+      status: "screening_grade",
       reason: null,
       roadClassAccuracy: rows,
+      stationComparisons: stations,
     };
     return run;
   }
@@ -279,6 +289,31 @@ describe("accuracy by road type on the run card", () => {
     expect(screen.getByTestId("run-accuracy-by-class").textContent).toContain(
       "a 1% error over one station is one station"
     );
+  });
+
+  it("draws the modelled-against-observed scatter, one dot per station", () => {
+    // The picture a modeller reads first: bias, spread and outliers at once,
+    // where a median error shows none of them.
+    renderRun(runWithAccuracy(ROAD_CLASSES));
+    const scatter = screen.getByTestId("run-accuracy-scatter");
+    expect(scatter.querySelector("svg")).not.toBeNull();
+    expect(scatter.innerHTML).toContain("3 matched stations");
+    expect(scatter.textContent).toContain("Points above the line");
+  });
+
+  it("names the least-matched stations so an outlier can be chased", () => {
+    // The 2.17x station is how the ramp-matching defect would have surfaced.
+    renderRun(runWithAccuracy(ROAD_CLASSES));
+    const scatter = screen.getByTestId("run-accuracy-scatter");
+    expect(scatter.textContent).toContain("Idaho-Maryland Road");
+    expect(scatter.textContent).toContain("2.17×");
+  });
+
+  it("omits the scatter when the run recorded no per-station comparison", () => {
+    // The road-class panel still renders; only the chart that has no data goes.
+    renderRun(runWithAccuracy(ROAD_CLASSES, []));
+    expect(screen.getByTestId("run-accuracy-by-class")).toBeInTheDocument();
+    expect(screen.queryByTestId("run-accuracy-scatter")).toBeNull();
   });
 
   it("shows nothing at all when the run recorded no breakdown", () => {

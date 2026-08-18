@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { RoadClassAccuracy } from "@/lib/models/charts/accuracy-by-class";
+import type { AccuracyPoint } from "@/lib/models/charts/accuracy-scatter";
 import type { CountyOnrampManifest } from "@/lib/models/county-onramp";
 
 export const MODELING_EVIDENCE_TRACKS = [
@@ -68,6 +69,15 @@ export type ModelRunClaimDecision = {
    * array that would render as a measured nothing.
    */
   roadClassAccuracy?: RoadClassAccuracy[];
+  /**
+   * Every matched count station, for the modelled-against-observed scatter.
+   *
+   * Already stored — the worker's validation summary has carried a per-station
+   * `results` array all along, and nothing ever read it. No schema change was
+   * needed to draw the most informative chart in traffic modelling; the data
+   * was sitting in the column the run card now projects.
+   */
+  stationComparisons?: AccuracyPoint[];
 };
 
 /**
@@ -931,6 +941,42 @@ export function readRoadClassAccuracyFromSummary(value: unknown): RoadClassAccur
   return rows;
 }
 
+/**
+ * The matched count stations out of a stored validation summary.
+ *
+ * Unmatched stations are LEFT OUT rather than plotted at zero: a station the
+ * model could not be compared against is not a comparison, and drawing it at
+ * the origin would read as the model producing no traffic where a road exists.
+ */
+export function readStationComparisonsFromSummary(value: unknown): AccuracyPoint[] {
+  const summary = value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+  const results = summary?.results;
+  if (!Array.isArray(results)) return [];
+  const points: AccuracyPoint[] = [];
+  for (const entry of results) {
+    if (!entry || typeof entry !== "object") continue;
+    const record = entry as Record<string, unknown>;
+    if (record.match_status !== "matched") continue;
+    const observed = typeof record.observed_volume === "number" ? record.observed_volume : null;
+    const modelled =
+      typeof record.modeled_daily_pce === "number" ? record.modeled_daily_pce : null;
+    if (observed === null || modelled === null || observed <= 0) continue;
+    points.push({
+      stationId: typeof record.station_id === "string" ? record.station_id : "",
+      label:
+        typeof record.label === "string" && record.label.trim().length > 0
+          ? record.label
+          : typeof record.station_id === "string"
+            ? record.station_id
+            : "",
+      observed,
+      modelled,
+      roadClass: typeof record.link_type === "string" ? record.link_type : null,
+    });
+  }
+  return points;
+}
+
 export async function loadModelRunClaimStatuses({
   supabase,
   modelRunIds,
@@ -991,6 +1037,7 @@ export async function loadModelRunClaimStatuses({
       strongestByRun.set(runId, {
         status: row.claim_status,
         roadClassAccuracy: readRoadClassAccuracyFromSummary(row.validation_summary_json),
+        stationComparisons: readStationComparisonsFromSummary(row.validation_summary_json),
         // A blank reason is recorded as null rather than "", so the panel can
         // tell "no reason was recorded" from "the reason is empty" and render
         // nothing instead of an empty line under the badge.

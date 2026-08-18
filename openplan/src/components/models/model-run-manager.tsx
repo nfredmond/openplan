@@ -47,6 +47,11 @@ import {
   accuracyByClassSvg,
   type RoadClassAccuracy,
 } from "@/lib/models/charts/accuracy-by-class";
+import {
+  accuracyScatterRows,
+  accuracyScatterSvg,
+  type AccuracyPoint,
+} from "@/lib/models/charts/accuracy-scatter";
 import { describeElapsed, latestConvergence, summarizeRunProgress } from "@/lib/models/run-progress";
 
 const TrafficVolumeMap = dynamic(
@@ -1393,8 +1398,28 @@ export function ModelRunManager({
  * the chart, and it carries the station counts that decide whether a figure is
  * evidence at all.
  */
-function RunAccuracyByClass({ rows }: { rows: RoadClassAccuracy[] }) {
+function RunAccuracyByClass({
+  rows,
+  stations,
+}: {
+  rows: RoadClassAccuracy[];
+  stations: AccuracyPoint[];
+}) {
   const ordered = useMemo(() => accuracyByClassRows(rows), [rows]);
+  // The scatter is the picture a modeller reads first — bias, spread and
+  // outliers at once, where a median shows none of them. Drawn only when the
+  // run actually recorded per-station comparisons.
+  const scatter = useMemo(
+    () =>
+      stations.length
+        ? accuracyScatterSvg(stations, {
+            title: "Modelled volume against observed count",
+            subtitle: `${stations.length} matched station${stations.length === 1 ? "" : "s"} · each dot is one count location`,
+          })
+        : null,
+    [stations]
+  );
+  const worst = useMemo(() => accuracyScatterRows(stations).slice(0, 5), [stations]);
   const svg = useMemo(
     () =>
       accuracyByClassSvg(rows, {
@@ -1413,6 +1438,36 @@ function RunAccuracyByClass({ rows }: { rows: RoadClassAccuracy[] }) {
         // contains no interpolated user input beyond escaped labels.
         dangerouslySetInnerHTML={{ __html: svg }}
       />
+      {scatter ? (
+        <div className="mt-4" data-testid="run-accuracy-scatter">
+          <div
+            className="overflow-x-auto rounded-[12px] border border-border/60"
+            dangerouslySetInnerHTML={{ __html: scatter }}
+          />
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Points above the line are roads the model gives more traffic than the count recorded;
+            below it, less. The dashed lines are twice and half the observed volume. Red points are
+            outside that band.
+          </p>
+          {worst.length ? (
+            <details className="mt-2 text-xs">
+              <summary className="cursor-pointer text-muted-foreground">
+                The {worst.length} least-matched stations
+              </summary>
+              <ul className="mt-1 space-y-0.5">
+                {worst.map((row) => (
+                  <li key={row.label} className="text-muted-foreground">
+                    <span className="text-foreground">{row.label}</span>: observed{" "}
+                    {Math.round(row.observed).toLocaleString()}, modelled{" "}
+                    {Math.round(row.modelled).toLocaleString()} ({row.ratio.toFixed(2)}×)
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+        </div>
+      ) : null}
+
       <table className="mt-3 w-full text-xs">
         <thead>
           <tr className="text-left text-muted-foreground">
@@ -1666,7 +1721,10 @@ function ModelRunStagingAndArtifacts({
       ) : null}
 
       {run.claimDecision?.roadClassAccuracy?.length ? (
-        <RunAccuracyByClass rows={run.claimDecision.roadClassAccuracy} />
+        <RunAccuracyByClass
+          rows={run.claimDecision.roadClassAccuracy}
+          stations={run.claimDecision.stationComparisons ?? []}
+        />
       ) : null}
 
       {(run.status === "succeeded" || run.engine_key === "aequilibrae") ? (

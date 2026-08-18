@@ -205,6 +205,54 @@ describe("loadModelRunClaimStatuses", () => {
     expect(rows.map((row) => row.roadClass)).toEqual(["motorway"]);
   });
 
+  it("carries the per-station comparisons the scatter is drawn from", async () => {
+    /**
+     * NO SCHEMA CHANGE WAS NEEDED FOR THIS. The worker's validation summary has
+     * carried a per-station `results` array all along and nothing read it, so
+     * the most informative chart in traffic modelling was one projection away
+     * the whole time.
+     */
+    const supabase = fakeSupabase({
+      data: [
+        {
+          model_run_id: RUN_A,
+          claim_status: "screening_grade",
+          status_reason: null,
+          validation_summary_json: {
+            results: [
+              { station_id: "CT_1", label: "SR 20 mainline", match_status: "matched", observed_volume: 47000, modeled_daily_pce: 53055, link_type: "motorway" },
+              { station_id: "CT_2", label: "unmatched one", match_status: "unmatched", observed_volume: 900 },
+              { station_id: "CT_3", label: "zero count", match_status: "matched", observed_volume: 0, modeled_daily_pce: 5000 },
+            ],
+          },
+        },
+      ],
+    });
+
+    const points = (await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] })).get(RUN_A)?.stationComparisons ?? [];
+    // Only the matched, plottable station survives: an unmatched station is not
+    // a comparison, and a zero observed count has no place on a log scale.
+    expect(points.map((p) => p.stationId)).toEqual(["CT_1"]);
+    expect(points[0]).toMatchObject({ observed: 47000, modelled: 53055, roadClass: "motorway" });
+  });
+
+  it("falls back to the station id when a station has no label", async () => {
+    const supabase = fakeSupabase({
+      data: [
+        {
+          model_run_id: RUN_A,
+          claim_status: "screening_grade",
+          status_reason: null,
+          validation_summary_json: {
+            results: [{ station_id: "CT_9", match_status: "matched", observed_volume: 100, modeled_daily_pce: 120 }],
+          },
+        },
+      ],
+    });
+    const points = (await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] })).get(RUN_A)?.stationComparisons ?? [];
+    expect(points[0].label).toBe("CT_9");
+  });
+
   it("reports no breakdown at all when the run recorded none", async () => {
     const supabase = fakeSupabase({
       data: [{ model_run_id: RUN_A, claim_status: "prototype_only", status_reason: null, validation_summary_json: null }],
