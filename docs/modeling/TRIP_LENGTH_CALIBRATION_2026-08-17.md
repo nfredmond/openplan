@@ -134,3 +134,37 @@ external demand alone does not explain the over-assignment.
 per-county spread is wide enough that a county-level result should be read with
 its external share beside it, and because the flat gateway figure is now a
 named next target rather than a suspicion.
+
+## First arm (×1.5), five development counties — and the trade-off it exposes
+
+Both arms graded on the SAME station set (the baseline re-validated with
+current ramp and shared-link exclusions; 306 against 302 stations).
+
+| | baseline | ×1.5 |
+|---|---:|---:|
+| median VMT ratio (model ÷ published) | 2.29 | **1.70** |
+| median count error | 97.5% | **76.2%** |
+| primary roads | 227.8% | **133.9%** |
+| trunk roads | 112.1% | 106.1% |
+| secondary | 100.0% | 100.0% |
+| tertiary | 82.7% | 83.6% |
+| **motorway** | **30.7%** | **47.2%** |
+
+Every county moved the right way on VMT (2.88→2.27, 2.29→1.68, 1.99→1.70).
+
+**But motorways got 16.5 points worse, and it is real rather than noise:** 66
+stations across the three well-sampled counties, every one degrading —
+06047 43%→53%, 08101 17%→36%, 06107 19%→41%.
+
+### Why that is exactly what should have been predicted
+
+The model was already UNDER-assigning freeways at 0.78× observed while
+over-assigning arterials at 2-3×. Shortening every trip pulls traffic off the
+long-distance network first, so it fixes the arterials by making the freeways
+worse. The FHWA distribution said the same thing in different words: 26% of
+modelled vehicle-miles on freeways against a published 45%.
+
+**A single multiplier cannot fix a distribution that is wrong in two directions
+at once.** It trades one error for another and reports the average as progress
+— which is precisely what criterion 3 of the pre-registration exists to catch,
+and why it was written before any number existed.
