@@ -424,6 +424,53 @@ def test_the_resolution_travels_in_the_summary():
     summary = _one_link_two_stations(9500, 10500)
     assert "network resolution" in summary["shared_model_links"]["note"]
 
+
+# ---------------------------------------------------------------------------
+# A ramp count measures a facility the screening network does not contain.
+# Matched anyway it pairs with the mainline it leaves: three WSDOT ramps
+# counting 410, 510 and 530 vehicles a day all matched a mainline carrying
+# 29,040, reporting 71x, 57x and 55x. 23% of matched stations across eleven
+# counties, at a median error of 258%. Excluded in the county-script lane since
+# 2026-08-17 and in the worker only from 2026-08-18.
+# ---------------------------------------------------------------------------
+
+
+def _ramp_and_mainline():
+    ramp = _station("RAMP", 510, "State Route 4", "trunk")
+    ramp["station_role"] = "ramp"
+    ramp["station_role_reason"] = "WSDOT description says RAMP"
+    mainline = _station("MAIN", 29040, "State Route 4", "trunk")
+    mainline["station_role"] = "mainline"
+    links = [_link(3, "State Route 4", "trunk", -121.0, 39.0, 29040.0)]
+    return cv.validate_against_counts([ramp, mainline], links, required_matches=1)
+
+
+def test_a_ramp_count_never_grades_the_mainline_it_leaves():
+    summary = _ramp_and_mainline()
+    assert summary["stations_matched"] == 1, summary["stations_matched"]
+    assert summary["stations_excluded_not_mainline"] == 1, summary
+    matched = [r for r in summary["results"] if r["match_status"] == "matched"]
+    assert matched[0]["station_id"] == "MAIN", matched
+    # The mainline matches its own link correctly; the ramp would have reported 57x.
+    assert matched[0]["absolute_percent_error"] < 1.0, matched
+
+
+def test_the_exclusion_says_why_rather_than_dropping_the_station():
+    summary = _ramp_and_mainline()
+    excluded = [r for r in summary["results"] if r["match_status"] == "excluded_not_mainline"]
+    assert excluded and "RAMP" in excluded[0]["notes"], excluded
+
+
+def test_a_count_set_that_declares_no_role_is_unaffected():
+    # The curated Nevada County file and any hand-supplied CSV have no role
+    # column. Treating a missing role as "not mainline" would silently discard
+    # every station in them.
+    stations = [_station("A", 29040, "State Route 4", "trunk")]
+    links = [_link(3, "State Route 4", "trunk", -121.0, 39.0, 29040.0)]
+    summary = cv.validate_against_counts(stations, links, required_matches=1)
+    assert summary["stations_matched"] == 1, summary
+    assert summary["stations_excluded_not_mainline"] == 0, summary
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:

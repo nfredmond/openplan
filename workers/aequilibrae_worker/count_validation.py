@@ -471,6 +471,29 @@ def compute_spearman_rho(observed: Sequence[float], modeled: Sequence[float]) ->
 
 
 # ── station → modeled-link matching ────────────────────────────────────────
+def station_measures_something_the_network_contains(station: Mapping[str, Any]) -> bool:
+    """False for a count the SOURCE marked as a ramp or connector.
+
+    The screening network is built from OSM's road hierarchy at a resolution
+    where a freeway is one line, so it has no ramp links. Left in, a ramp count
+    is paired with the mainline it leaves and reports an error of tens of times
+    -- which is the pairing being wrong, not the model. Measured in Cowlitz
+    County, Washington: three WSDOT ramp stations counting 410, 510 and 530
+    vehicles a day all matched the mainline carrying 29,040, reporting 71x, 57x
+    and 55x, while the genuine mainline station on that same link matched at
+    0.8. Across eleven counties this was 23% of matched stations at a median
+    error of 258%.
+
+    The role is decided at ingest by the per-feed rules in
+    scripts/modeling/count_sources.py -- "ramp" is a WSDOT spelling and
+    "CONN. NO. 3" an ODOT one -- and recorded in the count CSV. A count set that
+    declares no role behaves exactly as before, so a hand-supplied CSV and the
+    curated Nevada County file are unaffected.
+    """
+    role = str(station.get("station_role") or "").strip().lower()
+    return not role or role == "mainline"
+
+
 def resolve_shared_links(
     results: list[dict[str, Any]],
     *,
@@ -803,6 +826,16 @@ def validate_against_counts(
     results = []
     for station in stations:
         observed = parse_float(station.get("observed_volume")) or 0.0
+        if not station_measures_something_the_network_contains(station):
+            results.append({
+                "station_id": station.get("station_id", ""),
+                "label": station.get("label", ""),
+                "observed_volume": round(observed),
+                "match_status": "excluded_not_mainline",
+                "notes": str(station.get("station_role_reason") or ""),
+            })
+            continue
+
         best = match_station(station, modeled_links)
         if best is None or observed <= 0:
             results.append({
@@ -849,6 +882,9 @@ def validate_against_counts(
         "stations_total": len(stations),
         "stations_matched": len(matched),
         "shared_model_links": shared_link_resolution,
+        "stations_excluded_not_mainline": sum(
+            1 for r in results if r["match_status"] == "excluded_not_mainline"
+        ),
         "median_ape": round(median_ape, 2) if median_ape is not None else None,
         "mean_ape": round(sum(apes) / len(apes), 2) if apes else None,
         "max_ape": round(max_ape, 2) if max_ape is not None else None,
