@@ -190,5 +190,46 @@ class TheGatewayRecordMustCarryWhatMatchingNeeds(unittest.TestCase):
         self.assertIsNone(match_count_to_gateway(named, []))
 
 
+class TheCountsStageMustPrecedeDemand(unittest.TestCase):
+    """Seeding is only possible if the counts are fetched before demand is built.
+
+    They used to be fetched AFTER the assignment, which was correct when their
+    only job was grading it. Now they also set how much traffic enters the study
+    area, and a refactor that moved them back would not break anything visibly —
+    every crossing would quietly fall back to its road-class default and the run
+    would report that as a fact about the county.
+
+    Checked against a completed run's own recorded stage order, so it holds the
+    real sequence rather than the shape of the source file. Skipped where no run
+    is on disk, which keeps the file runnable anywhere.
+    """
+
+    def test_the_run_fetches_counts_before_it_builds_demand(self) -> None:
+        # Asserted on the code, not on runs found on disk: this repository holds
+        # a hundred runs made BEFORE the reorder whose stage order is correct
+        # history, and grading them against today's invariant would fail for the
+        # right reason at the wrong target.
+        #
+        # Comments stripped first — the comment explaining the ordering names
+        # both stages, and a guard its own explanation satisfies survives the
+        # deletion of what it guards.
+        import inspect
+
+        source = inspect.getsource(sr.run_screening_model)
+        code_only = "\n".join(
+            line for line in source.splitlines() if not line.lstrip().startswith("#")
+        )
+        counts_at = code_only.find('"counts",')
+        demand_at = code_only.find('"demand",')
+        self.assertNotEqual(counts_at, -1, "the run no longer has a counts stage")
+        self.assertNotEqual(demand_at, -1, "the run no longer has a demand stage")
+        self.assertLess(
+            counts_at, demand_at,
+            "demand is built before the counts are fetched, so no boundary crossing can be seeded "
+            "from a measurement — every one would fall back to its road-class default and the run "
+            "would report that as a fact about the county",
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)
