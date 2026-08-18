@@ -425,7 +425,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     expect(stageInsertMock).not.toHaveBeenCalled();
   });
 
-  it("creates behavioral preflight stages (not AequilibraE stages) when a behavioral run has none", async () => {
+  it("recreates the complete behavioral assignment pipeline when a run has no stages", async () => {
     runMaybeSingleMock.mockResolvedValue({
       data: { id: MODEL_RUN_ID, status: "failed", engine_key: "behavioral_demand" },
       error: null,
@@ -440,6 +440,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
       "Network Assignment",
       "Artifact Extraction",
       "ActivitySim Bundle & Preflight",
+      "ActivitySim Network Assignment",
     ]);
   });
 

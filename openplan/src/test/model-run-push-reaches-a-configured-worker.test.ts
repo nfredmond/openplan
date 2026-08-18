@@ -66,6 +66,16 @@ function jsonResponse(status: number, body: unknown) {
 }
 
 describe("pushing a queued run at a worker", () => {
+  it("queues the same-network ActivitySim assignment after its bundle stage", () => {
+    expect(workerRunStageNames("behavioral_demand")).toEqual([
+      "AequilibraE Setup",
+      "Network Assignment",
+      "Artifact Extraction",
+      "ActivitySim Bundle & Preflight",
+      "ActivitySim Network Assignment",
+    ]);
+  });
+
   it("calls nothing at all when this deployment configures no push endpoint", async () => {
     const fetcher = vi.fn();
     const outcome = await dispatchModelRun(payload(), { env: env({}), fetcher: fetcher as never });

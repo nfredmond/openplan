@@ -96,16 +96,21 @@ export const AEQUILIBRAE_SCREENING_STAGE_NAMES = [
 
 /** Owned by the ActivitySim worker, not the AequilibraE one. */
 export const ACTIVITYSIM_PREFLIGHT_STAGE_NAME = "ActivitySim Bundle & Preflight";
+export const ACTIVITYSIM_ASSIGNMENT_STAGE_NAME = "ActivitySim Network Assignment";
 
 /**
- * The stages a run of this engine is made of. The behavioral-demand preflight
- * runs the same three screening stages and then one ActivitySim stage belonging
- * to a different worker — each worker claims only the names it owns, so the full
- * list is correct for both the rows to insert and the push payload.
+ * The stages a run of this engine is made of. Behavioral demand runs the same
+ * three screening stages, hands execution to the ActivitySim worker, then hands
+ * its vehicle matrix back to AequilibraE for same-network assignment. Each
+ * worker claims only the names it owns.
  */
 export function workerRunStageNames(engineKey: string | null | undefined): readonly string[] {
   return engineKey === "behavioral_demand"
-    ? [...AEQUILIBRAE_SCREENING_STAGE_NAMES, ACTIVITYSIM_PREFLIGHT_STAGE_NAME]
+    ? [
+        ...AEQUILIBRAE_SCREENING_STAGE_NAMES,
+        ACTIVITYSIM_PREFLIGHT_STAGE_NAME,
+        ACTIVITYSIM_ASSIGNMENT_STAGE_NAME,
+      ]
     : AEQUILIBRAE_SCREENING_STAGE_NAMES;
 }
 

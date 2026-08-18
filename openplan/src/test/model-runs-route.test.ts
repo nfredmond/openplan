@@ -224,8 +224,8 @@ describe("/api/models/[modelId]/runs", () => {
       })
     );
 
-    // Stages: 3 AequilibraE screening stages (owned by the aeq worker) + 1
-    // ActivitySim bundle/preflight stage. Named honestly — never "run demand model".
+    // Stages: the first AequilibraE screening, ActivitySim bundle/execution,
+    // then same-network assignment when execution produced vehicle demand.
     expect(modelRunStagesInsertMock).toHaveBeenCalledTimes(1);
     const stages = modelRunStagesInsertMock.mock.calls[0][0] as Array<{ stage_name: string }>;
     expect(stages.map((s) => s.stage_name)).toEqual([
@@ -233,6 +233,7 @@ describe("/api/models/[modelId]/runs", () => {
       "Network Assignment",
       "Artifact Extraction",
       "ActivitySim Bundle & Preflight",
+      "ActivitySim Network Assignment",
     ]);
   });
 

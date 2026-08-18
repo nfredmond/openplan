@@ -7,6 +7,8 @@ Stage pipeline:
   1. AequilibraE Setup     — download OSM network, add centroids, renumber nodes
   2. Network Assignment    — build graph, run skims, load demand, run BFW
   3. Artifact Extraction   — export evidence packet, link volumes, skim matrix
+  4. ActivitySim Network Assignment (behavioral runs only) — reuse the retained
+                             project with ActivitySim vehicle demand
 
 TWO WAYS TO START IT, ONE WAY IT RUNS (AEQ_WORKER_MODE):
   poll (default) — the original behaviour: an always-on process reading queued
@@ -431,6 +433,71 @@ def sb_patch_run(run_id: str, payload: dict):
 def sb_post_artifact(payload: dict):
     url = f"{SUPABASE_URL}/rest/v1/model_run_artifacts"
     requests.post(url, headers=HEADERS, json=payload)
+
+
+def sb_get_run_artifacts(run_id: str) -> list[dict]:
+    url = (
+        f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
+        "&select=artifact_type,file_url,content_hash,metadata_json,created_at"
+        "&order=created_at.desc"
+    )
+    response = requests.get(url, headers=HEADERS, timeout=30)
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Failed to load model artifacts for {run_id}: "
+            f"{response.status_code} {response.text[:200]}"
+        )
+    return response.json()
+
+
+def activitysim_assignment_package(run_id: str) -> str | None:
+    """Resolve the executed ActivitySim demand package on the shared worker volume.
+
+    The manifest is the package boundary: taking a matrix alone would lose its
+    zone-system provenance and make a same-network comparison impossible to
+    defend. Remote storage is deliberately not guessed here; the behavioral
+    worker currently declares and documents a shared-filesystem handoff.
+    """
+    artifacts = sb_get_run_artifacts(run_id)
+    manifests = [
+        artifact for artifact in artifacts
+        if artifact.get("artifact_type") == "activitysim_demand_package_manifest"
+    ]
+    if not manifests:
+        return None
+    required = {
+        "activitysim_demand_package_manifest": "manifest.json",
+        "activitysim_demand_matrix": "od_trip_matrix.csv",
+        "activitysim_demand_zones": "zone_attributes.csv",
+    }
+    verified_paths: dict[str, str] = {}
+    for artifact_type, expected_filename in required.items():
+        matches = [item for item in artifacts if item.get("artifact_type") == artifact_type]
+        if not matches:
+            raise RuntimeError(
+                f"ActivitySim assignment requires {artifact_type}; none was registered"
+            )
+        # The query is newest-first. Relaunching a failed run keeps its earlier
+        # artifact rows, so the latest handoff supersedes them without deleting
+        # historical evidence or mistaking an old hash for the current file.
+        selected = matches[0]
+        file_url = str(selected.get("file_url") or "")
+        if not file_url.startswith("local://"):
+            raise RuntimeError("ActivitySim demand package is not on the shared local worker volume")
+        path = file_url[len("local://"):]
+        if os.path.basename(path) != expected_filename or not os.path.isfile(path):
+            raise RuntimeError(f"ActivitySim demand package has no readable {expected_filename}")
+        expected_hash = str(selected.get("content_hash") or "")
+        with open(path, "rb") as handle:
+            actual_hash = hashlib.sha256(handle.read()).hexdigest()
+        if not expected_hash or actual_hash != expected_hash:
+            raise RuntimeError(f"ActivitySim {expected_filename} failed its content-hash check")
+        verified_paths[artifact_type] = path
+    package_dirs = {os.path.dirname(path) for path in verified_paths.values()}
+    if len(package_dirs) != 1:
+        raise RuntimeError("ActivitySim demand-package artifacts do not share one package directory")
+    package_dir = package_dirs.pop()
+    return package_dir
 
 
 def sb_post_kpi(payload: dict):
@@ -2128,13 +2195,30 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
 
 
 # ─── Stage 2: Network Assignment ───────────────────────────────────────
-def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: dict, pkg_dir: str) -> dict:
+def should_apply_trip_based_mode_split(
+    demand_is_vehicle: bool, mode_split_enabled: bool = MODE_SPLIT_ENABLED
+) -> bool:
+    """A vehicle matrix must never be reduced by person-trip mode choice again."""
+    return mode_split_enabled and not demand_is_vehicle
+
+
+def stage_assignment(
+    run_id: str,
+    stage_id: str,
+    work_dir: str,
+    setup_result: dict,
+    pkg_dir: str,
+    *,
+    output_dir_name: str = "run_output",
+    demand_is_vehicle: bool = False,
+    counts_path_override: str | None = None,
+) -> dict:
     from aequilibrae import Project
     from aequilibrae.matrix import AequilibraeMatrix
     from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
 
     proj_dir = os.path.join(work_dir, "aeq_project")
-    out_dir = os.path.join(work_dir, "run_output")
+    out_dir = os.path.join(work_dir, output_dir_name)
     os.makedirs(out_dir, exist_ok=True)
 
     centroid_map = setup_result["centroid_map"]
@@ -2161,6 +2245,11 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # COUNT_AUTO_INGEST is off.
     run_row = sb_get_run(run_id)
     calibrate_requested = resolve_calibration_enabled(run_row)
+    if demand_is_vehicle and calibrate_requested:
+        raise RuntimeError(
+            "A calibrated behavioral-demand comparison is not supported yet: the first "
+            "assignment's accepted network factors are not persisted for identical reuse"
+        )
 
     # Resolve the counts used for validation/calibration for THIS run: auto-fetch
     # local DOT AADT for the study area when count auto-ingest is on (deployment
@@ -2174,7 +2263,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # process (or after this process has handled a different run), where a global
     # would silently be someone else's count set. See the note by
     # VALIDATION_COUNTS_PATH.
-    counts_path = (
+    counts_path = counts_path_override or (
         auto_ingest_counts(setup_result.get("bbox"), proj_dir, out_dir,
                            calibrate_requested=calibrate_requested)
         or VALIDATION_COUNTS_PATH
@@ -2275,8 +2364,18 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             except OSError:
                 pass
 
-    mode_split = None
-    if MODE_SPLIT_ENABLED:
+    mode_split = (
+        {
+            "method": "supplied_vehicle_trip_matrix",
+            "note": (
+                "ActivitySim person trips were converted to vehicles before assignment; "
+                "the trip-based mode split was not applied a second time."
+            ),
+        }
+        if demand_is_vehicle
+        else None
+    )
+    if should_apply_trip_based_mode_split(demand_is_vehicle):
         try:
             zattr_mc = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
             zattr_mc["zone_id"] = zattr_mc["zone_id"].astype(int)
@@ -4086,6 +4185,61 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 "log_tail": log,
             })
 
+        elif stage_name == "ActivitySim Network Assignment":
+            with open(state_file) as f:
+                state = json.load(f)
+            package_dir = activitysim_assignment_package(run_id)
+            if package_dir is None:
+                log = (
+                    "No executed ActivitySim demand package was registered. The behavioral lane "
+                    "completed in its documented preflight-only posture, so there is no second "
+                    "network assignment to run.\n"
+                )
+                sb_patch_stage(stage_id, {
+                    "status": "succeeded",
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "log_tail": log,
+                })
+                print(f"[{time.strftime('%X')}] ✅ {stage_name} not applicable (preflight only)")
+            else:
+                first_assignment = state.get("assignment") or {}
+                result = stage_assignment(
+                    run_id,
+                    stage_id,
+                    work_dir,
+                    state["setup"],
+                    package_dir,
+                    output_dir_name="activitysim_assignment_output",
+                    demand_is_vehicle=True,
+                    counts_path_override=first_assignment.get("counts_path"),
+                )
+                state["activitysim_assignment"] = result
+                with open(state_file, "w") as f:
+                    json.dump(state, f)
+                volume_path = os.path.join(
+                    work_dir, "activitysim_assignment_output", "link_volumes.csv"
+                )
+                with open(volume_path, "rb") as volume_handle:
+                    volume_bytes = volume_handle.read()
+                sb_post_artifact({
+                    "run_id": run_id,
+                    "stage_id": stage_id,
+                    "artifact_type": "activitysim_link_volumes",
+                    "file_url": f"local://{volume_path}",
+                    "file_size_bytes": len(volume_bytes),
+                    "content_hash": hashlib.sha256(volume_bytes).hexdigest(),
+                    "metadata_json": {
+                        "kind": "same_network_activitysim_assignment",
+                        "demand_is_vehicle": True,
+                        "uncalibrated": True,
+                    },
+                })
+                sb_patch_stage(stage_id, {
+                    "status": "succeeded",
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "log_tail": result["log"],
+                })
+
         else:
             sb_patch_stage(stage_id, {
                 "status": "failed",
@@ -4208,7 +4362,12 @@ def mark_stage_skipped(stage: dict, reason: str):
 # so the poll query is scoped by name — otherwise this worker would claim a
 # behavioral ActivitySim stage it has no code to run. A behavioral_demand run's
 # screening portion reuses these same names, so those stages are still claimed.
-AEQ_STAGE_NAMES = ("AequilibraE Setup", "Network Assignment", "Artifact Extraction")
+AEQ_STAGE_NAMES = (
+    "AequilibraE Setup",
+    "Network Assignment",
+    "Artifact Extraction",
+    "ActivitySim Network Assignment",
+)
 _AEQ_STAGE_FILTER = "stage_name=" + urllib.parse.quote(
     "in.(" + ",".join(f'"{name}"' for name in AEQ_STAGE_NAMES) + ")",
     safe="().,",
