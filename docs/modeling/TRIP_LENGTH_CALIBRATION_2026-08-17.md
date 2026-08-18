@@ -196,3 +196,33 @@ That is exactly what criterion 3 exists to catch, and why it was written before
 any number existed. The fix is not a scalar on trip length; it is whatever
 distinguishes a long freeway trip from a short arterial one — a network or
 assignment property, not a demand-magnitude one.
+
+### Two follow-up hypotheses, both tested and both refuted
+
+Having said the fix is "whatever distinguishes a long freeway trip from a short
+arterial one", the obvious candidates were tested rather than assumed.
+
+**1. Network speeds are wrong.** They are not. The model's free-flow speeds
+match reality closely: motorway 65.9 mph, trunk 56.4, primary 44.3, secondary
+37.1, tertiary 31.4, residential 25.1.
+
+**2. Missing intersection delay makes arterial routes look artificially fast.**
+The model has no signal delay at all, which is true and sounds decisive. It is
+not: worked over a 25% freeway detour, the freeway wins on modelled time at
+every trip length from 2 to 30 miles, so adding arterial delay would not change
+a single one of those choices. (My first version of this test printed a
+conclusion that its own table contradicted — the table is what stands.)
+
+**3. Over-assigned arterials are running parallel to freeways** — traffic that
+should be on the freeway going through town instead. Measured in 06047:
+arterial stations within 2 km of a freeway are **2.95×** observed; those more
+than 2 km from any freeway are **3.26×**. If anything the far ones are worse.
+
+**So the arterials are over-loaded everywhere, not beside freeways.** This is
+not a routing swap between parallel roads. Something is putting too much
+traffic on mid-tier roads across the whole network while leaving freeways
+under-loaded, and none of trip length, zone size, gateway count, connector
+choice, network speed or route choice between parallels explains it.
+
+That is where this investigation stands. It is a narrower question than it was
+this morning, and it is not answered.
