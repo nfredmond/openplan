@@ -145,9 +145,23 @@ GATEWAY_DAILY_TRIPS = {
     "tertiary": 1500,
 }
 
+#: Gravity deterrence exponents: trips decay as ``impedance ** -gamma``, so a
+#: HIGHER gamma means shorter trips. OpenPlan's own screening defaults — not
+#: drawn from a published trip-distribution manual, and never fitted.
 HBW_GAMMA = 1.8
 HBO_GAMMA = 1.5
 NHB_GAMMA = 1.2
+
+#: One multiplier over all three, so the RELATIVE ordering between purposes is
+#: preserved while total trip length can be fitted.
+#:
+#: Measured 2026-08-17 across 24 counties: the model produces 2.16x the
+#: published VMT per capita, and miles-per-trip correlates +0.93 with that
+#: overshoot — so trip length is the defect and this is its lever. Overridable
+#: so the fit can be MEASURED rather than argued about; 1.0 is the shipped
+#: behaviour until a pre-registered experiment moves it
+#: (docs/modeling/TRIP_LENGTH_CALIBRATION_2026-08-17.md).
+GAMMA_MULTIPLIER = float(os.getenv("OPENPLAN_GAMMA_MULTIPLIER", "1.0") or 1.0)
 HBO_PROD_RATE = 2.2
 NHB_PROD_RATE = 0.9
 HBO_ATTR_RETAIL_RATE = 12.0
@@ -190,9 +204,13 @@ def model_assumptions() -> dict[str, Any]:
             "home_based_work_production_floor_per_household": 0.35,
         },
         "trip_distribution_deterrence": {
-            "home_based_work_gamma": HBW_GAMMA,
-            "home_based_other_gamma": HBO_GAMMA,
-            "non_home_based_gamma": NHB_GAMMA,
+            # The gammas AS APPLIED, so a run's own record says what shaped
+            # its trip lengths rather than what the file's constants happen to
+            # be when somebody reads it later.
+            "home_based_work_gamma": HBW_GAMMA * GAMMA_MULTIPLIER,
+            "home_based_other_gamma": HBO_GAMMA * GAMMA_MULTIPLIER,
+            "non_home_based_gamma": NHB_GAMMA * GAMMA_MULTIPLIER,
+            "gamma_multiplier": GAMMA_MULTIPLIER,
         },
         "other": {
             "network_circuity_factor": VMT_NETWORK_CIRCUITY,
@@ -1861,15 +1879,15 @@ def synthesize_demand(
         supplied = zero
         hbw_prod = np.maximum(workers, households * 0.35) * internal
         hbw_attr = np.maximum(jobs, 10) * internal
-        hbw = gravity_distribute(hbw_prod, hbw_attr, skim_matrix, HBW_GAMMA) * hbw_scalar
+        hbw = gravity_distribute(hbw_prod, hbw_attr, skim_matrix, HBW_GAMMA * GAMMA_MULTIPLIER) * hbw_scalar
 
         hbo_prod = np.maximum(pop * HBO_PROD_RATE, 1) * internal
         hbo_attr = np.maximum(retail * HBO_ATTR_RETAIL_RATE + service * HBO_ATTR_SERVICE_RATE + pop * HBO_ATTR_POP_RATE, 1) * internal
-        hbo = gravity_distribute(hbo_prod, hbo_attr, skim_matrix, HBO_GAMMA) * hbo_scalar
+        hbo = gravity_distribute(hbo_prod, hbo_attr, skim_matrix, HBO_GAMMA * GAMMA_MULTIPLIER) * hbo_scalar
 
         nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1) * internal
         nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1) * internal
-        nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA) * nhb_scalar
+        nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA * GAMMA_MULTIPLIER) * nhb_scalar
 
     if external_demand_scalar != 1.0:
         gateways = [
