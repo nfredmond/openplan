@@ -478,3 +478,81 @@ describe("an empty validation record is a run that was never compared", () => {
     expect(ceiling).toContain("DID NOT meet");
   });
 });
+
+describe("the accuracy chart inside the funder document", () => {
+  /**
+   * A SINGLE MEDIAN ERROR IS TRUE OF NO ROAD IN PARTICULAR.
+   *
+   * Measured across 24 counties, a run's error on freeways and on collectors
+   * differ by a factor of three. This document is what leaves the building, so
+   * the breakdown has to travel inside it — including the part that stops a
+   * flattering number being quoted.
+   */
+  const WITH_ROAD_CLASSES = {
+    stations_matched: 66,
+    stations_total: 70,
+    screening_gate: { status_label: "not screening-ready", ready_median_ape_threshold: 30 },
+    metrics: {
+      median_absolute_percent_error: 79.8,
+      by_road_class: [
+        { road_class: "motorway", stations: 25, median_absolute_percent_error: 42.73, median_model_over_observed: 0.621 },
+        { road_class: "primary", stations: 33, median_absolute_percent_error: 227.8, median_model_over_observed: 3.28 },
+        { road_class: "tertiary", stations: 1, median_absolute_percent_error: 1.2, median_model_over_observed: 1.01 },
+      ],
+    },
+  };
+
+  function documentWith(validationSummary: Record<string, unknown> | null): string {
+    return buildCountyRunProvenanceDocument({
+      runName: "Nevada County screening run",
+      geographyLabel: "Nevada County",
+      geographyId: "06057",
+      generatedAt: "2026-08-17T20:00:00.000Z",
+      stage: "completed",
+      manifest: null,
+      sources: [],
+      evidence: null,
+      validationSummary,
+    } as never);
+  }
+
+  it("embeds the chart so it survives being downloaded and emailed", () => {
+    const text = documentWith(WITH_ROAD_CLASSES);
+    // A chart that lives at a URL is a chart that is missing a year later.
+    expect(text).toContain("data:image/svg+xml;base64,");
+    expect(text).toContain("Median error by road type");
+  });
+
+  it("carries the same figures as a table, so a stripped-image viewer still reads them", () => {
+    const text = documentWith(WITH_ROAD_CLASSES);
+    expect(text).toContain("| Road type | Stations | Median error | Model ÷ observed |");
+    expect(text).toContain("| motorway | 25 | 42.7% | 0.62 |");
+    expect(text).toContain("| primary | 33 | 227.8% | 3.28 |");
+  });
+
+  it("warns in words that a one-station figure is not evidence", () => {
+    // Tertiary reads 1.2% here — the best number on the chart, over one station.
+    const text = documentWith(WITH_ROAD_CLASSES);
+    expect(text).toContain("a 1% error over one station is one");
+  });
+
+  it("says nothing at all rather than drawing an empty chart when no breakdown was recorded", () => {
+    const text = documentWith({ stations_matched: 4, metrics: { median_absolute_percent_error: 50 } });
+    expect(text).not.toContain("data:image/svg+xml");
+    expect(text).not.toContain("Median error by road type");
+  });
+
+  it("drops a road class whose figures are missing rather than drawing it as zero", () => {
+    const text = documentWith({
+      ...WITH_ROAD_CLASSES,
+      metrics: {
+        by_road_class: [
+          { road_class: "motorway", stations: 25, median_absolute_percent_error: 42.73 },
+          { road_class: "trunk", stations: null, median_absolute_percent_error: null },
+        ],
+      },
+    });
+    expect(text).toContain("| motorway |");
+    expect(text).not.toContain("| trunk |");
+  });
+});

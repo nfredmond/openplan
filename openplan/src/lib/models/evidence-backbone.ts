@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { RoadClassAccuracy } from "@/lib/models/charts/accuracy-by-class";
 import type { CountyOnrampManifest } from "@/lib/models/county-onramp";
 
 export const MODELING_EVIDENCE_TRACKS = [
@@ -52,6 +53,21 @@ export type ModelRunClaimDecision = {
   status: ModelingClaimStatus;
   /** Null when no reason was recorded — never an empty string. */
   reason: string | null;
+  /**
+   * Per-road-class accuracy, when the run recorded one.
+   *
+   * Carried beside the tier because a SINGLE median error is true of no road in
+   * particular: measured across 24 counties, a screening run's error on
+   * freeways and on collectors differ by a factor of three. A planner deciding
+   * whether to quote a corridor number needs to know which roads the run can
+   * speak for, and that only exists in the validation summary.
+   *
+   * OPTIONAL, and absent means "this run recorded none" rather than "none was
+   * measured" — a run with no counts in its state has no breakdown to carry,
+   * and a caller that never loads it must not be forced to fabricate an empty
+   * array that would render as a measured nothing.
+   */
+  roadClassAccuracy?: RoadClassAccuracy[];
 };
 
 /**
@@ -879,6 +895,42 @@ export async function loadCountyRunModelingEvidence({
  * engine-availability posture. Reads modeling_claim_decisions (NOT
  * model_run_kpis), so it stays outside the model_run_kpis reader-inventory guard.
  */
+/**
+ * Per-road-class accuracy out of a stored validation summary.
+ *
+ * Defensive on purpose: a class missing its station count or its error is
+ * DROPPED rather than defaulted, because a zero drawn on a chart reads as a
+ * perfect match rather than as an absence.
+ */
+export function readRoadClassAccuracyFromSummary(value: unknown): RoadClassAccuracy[] {
+  const summary = value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+  const metrics = summary?.metrics && typeof summary.metrics === "object"
+    ? (summary.metrics as Record<string, unknown>)
+    : null;
+  const list = metrics?.by_road_class;
+  if (!Array.isArray(list)) return [];
+  const rows: RoadClassAccuracy[] = [];
+  for (const entry of list) {
+    if (!entry || typeof entry !== "object") continue;
+    const record = entry as Record<string, unknown>;
+    const roadClass = typeof record.road_class === "string" ? record.road_class : null;
+    const stations = typeof record.stations === "number" ? record.stations : null;
+    const error =
+      typeof record.median_absolute_percent_error === "number"
+        ? record.median_absolute_percent_error
+        : null;
+    if (!roadClass || stations === null || error === null) continue;
+    rows.push({
+      roadClass,
+      stations,
+      medianAbsolutePercentError: error,
+      medianModelOverObserved:
+        typeof record.median_model_over_observed === "number" ? record.median_model_over_observed : null,
+    });
+  }
+  return rows;
+}
+
 export async function loadModelRunClaimStatuses({
   supabase,
   modelRunIds,
@@ -902,7 +954,11 @@ export async function loadModelRunClaimStatuses({
     // planner defending a run needs to know which they have. Dropping this
     // column from the projection is what a mocked Supabase client cannot catch,
     // so `model-run-claim-status-loader.test.ts` asserts the projection string.
-    .select("model_run_id, claim_status, status_reason")
+    // `validation_summary_json` is projected because the run card DRAWS its
+    // per-road-class accuracy. Same reasoning as `status_reason` above, and the
+    // same trap: a mocked client returns whatever the fake was told to return,
+    // so the projection string itself is asserted in the loader test.
+    .select("model_run_id, claim_status, status_reason, validation_summary_json")
     .in("model_run_id", uniqueIds);
 
   if (error || !data) {
@@ -913,6 +969,7 @@ export async function loadModelRunClaimStatuses({
     model_run_id: string | null;
     claim_status: string | null;
     status_reason: string | null;
+    validation_summary_json: unknown;
   }>) {
     const runId = row.model_run_id;
     if (!runId || !isModelingClaimStatus(row.claim_status)) {
@@ -933,6 +990,7 @@ export async function loadModelRunClaimStatuses({
     ) {
       strongestByRun.set(runId, {
         status: row.claim_status,
+        roadClassAccuracy: readRoadClassAccuracyFromSummary(row.validation_summary_json),
         // A blank reason is recorded as null rather than "", so the panel can
         // tell "no reason was recorded" from "the reason is empty" and render
         // nothing instead of an empty line under the badge.

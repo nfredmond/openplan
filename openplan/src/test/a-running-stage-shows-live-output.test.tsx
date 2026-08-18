@@ -239,3 +239,51 @@ describe("the progress bar on a long run", () => {
     expect(text).not.toMatch(/remaining|eta|estimated|time left/);
   });
 });
+
+describe("accuracy by road type on the run card", () => {
+  /**
+   * A SINGLE MEDIAN ERROR IS TRUE OF NO ROAD IN PARTICULAR — measured across
+   * 24 counties, a run's error on freeways and on collectors differ by a
+   * factor of three. The planner deciding whether to quote a corridor number
+   * is the person who most needs the breakdown, and it reached no screen.
+   */
+  const ROAD_CLASSES = [
+    { roadClass: "motorway", stations: 25, medianAbsolutePercentError: 42.73, medianModelOverObserved: 0.621 },
+    { roadClass: "primary", stations: 33, medianAbsolutePercentError: 227.8, medianModelOverObserved: 3.28 },
+    { roadClass: "tertiary", stations: 1, medianAbsolutePercentError: 1.2, medianModelOverObserved: 1.01 },
+  ];
+
+  function runWithAccuracy(rows: typeof ROAD_CLASSES | undefined) {
+    const run = runningRun(PROGRESS_LOG);
+    run.status = "succeeded";
+    (run as Record<string, unknown>).claimDecision = {
+      status: "screening",
+      reason: null,
+      roadClassAccuracy: rows,
+    };
+    return run;
+  }
+
+  it("draws the chart and the table together", () => {
+    renderRun(runWithAccuracy(ROAD_CLASSES));
+    const panel = screen.getByTestId("run-accuracy-by-class");
+    expect(panel.querySelector("svg")).not.toBeNull();
+    expect(panel.textContent).toContain("motorway");
+    expect(panel.textContent).toContain("227.8%");
+    expect(panel.textContent).toContain("3.28");
+  });
+
+  it("warns that a one-station figure is not evidence", () => {
+    // Tertiary reads 1.2% here — the best number shown, over one station.
+    renderRun(runWithAccuracy(ROAD_CLASSES));
+    expect(screen.getByTestId("run-accuracy-by-class").textContent).toContain(
+      "a 1% error over one station is one station"
+    );
+  });
+
+  it("shows nothing at all when the run recorded no breakdown", () => {
+    // Absent must read as "this run recorded none", never as a measured zero.
+    renderRun(runWithAccuracy(undefined));
+    expect(screen.queryByTestId("run-accuracy-by-class")).toBeNull();
+  });
+});

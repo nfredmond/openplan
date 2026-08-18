@@ -10,6 +10,13 @@ type ClaimRow = {
   model_run_id: string | null;
   claim_status: string | null;
   status_reason?: string | null;
+  /**
+   * Present because the loader reads it. Its absence here silently dropped the
+   * field from every fixture — object literals lose properties the declared
+   * type does not name — so two tests of real behaviour failed against correct
+   * production code. A fixture type is part of the test's honesty.
+   */
+  validation_summary_json?: unknown;
 };
 
 function fakeSupabase(
@@ -137,9 +144,73 @@ describe("loadModelRunClaimStatuses", () => {
     await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] });
 
     expect(projection).not.toBeNull();
-    for (const column of ["model_run_id", "claim_status", "status_reason"]) {
+    // `validation_summary_json` joined this list when the run card began
+    // DRAWING per-road-class accuracy from it — same trap, same assertion:
+    // drop it from the projection and every other test here stays green while
+    // the chart silently disappears from the page.
+    for (const column of ["model_run_id", "claim_status", "status_reason", "validation_summary_json"]) {
       expect(projection!).toContain(column);
     }
+  });
+
+  it("carries per-road-class accuracy through to the caller", async () => {
+    const supabase = fakeSupabase({
+      data: [
+        {
+          model_run_id: RUN_A,
+          claim_status: "screening_grade",
+          status_reason: "compared against observed counts",
+          validation_summary_json: {
+            metrics: {
+              by_road_class: [
+                { road_class: "motorway", stations: 25, median_absolute_percent_error: 42.73, median_model_over_observed: 0.621 },
+                { road_class: "tertiary", stations: 1, median_absolute_percent_error: 1.2 },
+              ],
+            },
+          },
+        },
+      ],
+    });
+
+    const result = await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] });
+    const rows = result.get(RUN_A)?.roadClassAccuracy ?? [];
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({ roadClass: "motorway", stations: 25, medianAbsolutePercentError: 42.73 });
+    // A class with no recorded ratio keeps null rather than a fabricated 1.0.
+    expect(rows[1].medianModelOverObserved).toBeNull();
+  });
+
+  it("drops a road class missing its station count rather than drawing it as zero", async () => {
+    // A zero on a chart reads as a perfect match, not as an absence.
+    const supabase = fakeSupabase({
+      data: [
+        {
+          model_run_id: RUN_A,
+          claim_status: "screening_grade",
+          status_reason: null,
+          validation_summary_json: {
+            metrics: {
+              by_road_class: [
+                { road_class: "motorway", stations: 25, median_absolute_percent_error: 42.73 },
+                { road_class: "trunk", stations: null, median_absolute_percent_error: null },
+                { stations: 9, median_absolute_percent_error: 12 },
+              ],
+            },
+          },
+        },
+      ],
+    });
+
+    const rows = (await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] })).get(RUN_A)?.roadClassAccuracy ?? [];
+    expect(rows.map((row) => row.roadClass)).toEqual(["motorway"]);
+  });
+
+  it("reports no breakdown at all when the run recorded none", async () => {
+    const supabase = fakeSupabase({
+      data: [{ model_run_id: RUN_A, claim_status: "prototype_only", status_reason: null, validation_summary_json: null }],
+    });
+    const rows = (await loadModelRunClaimStatuses({ supabase, modelRunIds: [RUN_A] })).get(RUN_A)?.roadClassAccuracy;
+    expect(rows).toEqual([]);
   });
 
   it("ignores rows with an unknown/null claim status or run id", async () => {

@@ -1,3 +1,8 @@
+import {
+  accuracyByClassRows,
+  accuracyByClassSvg,
+  type RoadClassAccuracy,
+} from "@/lib/models/charts/accuracy-by-class";
 import type { CountyOnrampManifest } from "@/lib/models/county-onramp";
 
 /**
@@ -128,6 +133,45 @@ function hasCountsComparison(summary: Record<string, unknown> | null): boolean {
  * one that was never checked says a third thing. All three are ceilings, and
  * the strongest is still not a forecast.
  */
+/**
+ * The per-road-class accuracy the run recorded, or nothing.
+ *
+ * Reads defensively because this document's whole purpose is to be checkable
+ * by someone who cannot re-run the model: a class whose figures are missing is
+ * dropped rather than drawn as zero, which would read as a perfect match.
+ */
+function readRoadClassAccuracy(value: unknown): RoadClassAccuracy[] {
+  if (!Array.isArray(value)) return [];
+  const rows: RoadClassAccuracy[] = [];
+  for (const entry of value) {
+    const record = asRecord(entry);
+    const roadClass = asText(record?.road_class);
+    const stations = asNumber(record?.stations);
+    const error = asNumber(record?.median_absolute_percent_error);
+    if (!roadClass || stations === null || error === null) continue;
+    rows.push({
+      roadClass,
+      stations,
+      medianAbsolutePercentError: error,
+      medianModelOverObserved: asNumber(record?.median_model_over_observed),
+    });
+  }
+  return rows;
+}
+
+/**
+ * An SVG chart as a self-contained Markdown image.
+ *
+ * Base64 rather than a file reference: this document is generated, downloaded
+ * and emailed, and a chart that lives at a URL is a chart that is missing by
+ * the time a reviewer opens it a year later. The alt text carries the same
+ * statement as the chart, so a reader whose viewer strips images still gets it.
+ */
+function inlineSvg(svg: string, altText: string): string {
+  const encoded = Buffer.from(svg, "utf8").toString("base64");
+  return `![${altText}](data:image/svg+xml;base64,${encoded})`;
+}
+
 export function claimCeiling(input: CountyRunProvenanceInput): string {
   const gate = asRecord(asRecord(input.validationSummary)?.screening_gate);
   const gateLabel = asText(gate?.status_label);
@@ -211,6 +255,43 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
   ];
   if (reasons.length) {
     lines.push("", "Why the verdict reads as it does:", ...reasons.map((reason) => `- ${reason}`));
+  }
+
+  // A SINGLE MEDIAN ERROR IS TRUE OF NO ROAD IN PARTICULAR. Measured across 24
+  // counties, a screening run's error on freeways and on collectors differ by
+  // a factor of three, so a corridor number quoted from the overall figure
+  // inherits an accuracy nobody stated. The chart is embedded rather than
+  // linked because this document is what leaves the building.
+  const byClass = readRoadClassAccuracy(metrics?.by_road_class);
+  if (byClass.length) {
+    lines.push(
+      "",
+      "### How accurate this run is, road by road",
+      "",
+      inlineSvg(
+        accuracyByClassSvg(byClass, {
+          title: "Median error by road type",
+          subtitle: `${stated(asNumber(validation.stations_matched))} matched count stations`,
+          gatePercent: asNumber(gate?.ready_median_ape_threshold) ?? 30,
+        }),
+        "Median error by road type, against the screening threshold"
+      ),
+      "",
+      "| Road type | Stations | Median error | Model ÷ observed |",
+      "|---|---:|---:|---:|",
+      ...accuracyByClassRows(byClass).map(
+        (row) =>
+          `| ${row.roadClass} | ${row.stations} | ${row.medianAbsolutePercentError.toFixed(1)}% | ${
+            row.medianModelOverObserved === null || row.medianModelOverObserved === undefined
+              ? "_not recorded_"
+              : row.medianModelOverObserved.toFixed(2)
+          } |`
+      ),
+      "",
+      "A road type with only a handful of stations is shown faded and labelled. Its figure is not",
+      "evidence about that road type, however good it looks: a 1% error over one station is one",
+      "station, and quoting it would be the mistake this table exists to prevent."
+    );
   }
   return lines;
 }
