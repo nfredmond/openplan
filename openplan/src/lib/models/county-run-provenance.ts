@@ -216,6 +216,44 @@ function sourcesSection(evidence: ProvenanceEvidence | null): string[] {
   ];
 }
 
+/**
+ * Why the matched count is lower than the station count, when the run says so.
+ *
+ * Both exclusions make the model look WORSE by removing easy agreements and
+ * better by removing impossible ones, and a planner reading "38 of 71" with no
+ * explanation cannot tell a thin count set from a well-filtered one. Runs made
+ * before the worker recorded these fields say nothing rather than printing
+ * zeros, because "0 excluded" and "never measured" are different facts.
+ */
+function setAsideStations(validation: Record<string, unknown>): string[] {
+  const lines: string[] = [];
+  const ramps = asNumber(validation.stations_excluded_not_mainline);
+  if (ramps !== null && ramps > 0) {
+    lines.push(
+      `- **Set aside — ramps and connectors:** ${ramps}. The count measures a facility the ` +
+        `screening network does not contain, so it would be paired with the mainline it leaves.`
+    );
+  }
+  const shared = validation.shared_model_links as Record<string, unknown> | undefined;
+  if (shared) {
+    const merged = asNumber(shared.stations_merged_away);
+    const ambiguous = asNumber(shared.stations_excluded_as_ambiguous);
+    if (merged !== null && merged > 0) {
+      lines.push(
+        `- **Set aside — several stations on one link:** ${merged}. Their counts agree, so the ` +
+          `link is compared once at their median rather than several times.`
+      );
+    }
+    if (ambiguous !== null && ambiguous > 0) {
+      lines.push(
+        `- **Set aside — one link, disagreeing counts:** ${ambiguous}. The model holds a single ` +
+          `volume for the link and nothing in the data says which station belongs to it.`
+      );
+    }
+  }
+  return lines;
+}
+
 function validationSection(input: CountyRunProvenanceInput): string[] {
   const validation = asRecord(input.validationSummary);
   if (!validation || !hasCountsComparison(input.validationSummary)) {
@@ -243,6 +281,7 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
     `- **Stations matched:** ${stated(asNumber(validation.stations_matched))} of ${stated(
       asNumber(validation.stations_total)
     )}`,
+    ...setAsideStations(validation),
     `- **Median absolute percent error:** ${stated(
       asNumber(metrics?.median_absolute_percent_error)
     )}% (threshold ${stated(asNumber(gate?.ready_median_ape_threshold))}%)`,

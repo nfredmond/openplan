@@ -556,3 +556,52 @@ describe("the accuracy chart inside the funder document", () => {
     expect(text).not.toContain("| trunk |");
   });
 });
+
+describe("why fewer stations were matched than published", () => {
+  // Both exclusions LOWER the matched count. A planner reading "38 of 71" with
+  // no reason cannot tell a thin count set from a well-filtered one, and both
+  // exclusions arrived in the worker on 2026-08-18 — so the number moved for
+  // every run without any explanation on the surface that shows it.
+  const withExclusions = (validation: Record<string, unknown>) =>
+    buildCountyRunProvenanceDocument(
+      input({
+        validationSummary: {
+          screening_gate: { status_label: "bounded screening-ready" },
+          stations_matched: 38,
+          stations_total: 71,
+          ...validation,
+        },
+      })
+    );
+
+  it("names ramp counts that were set aside, and why they would mislead", () => {
+    const document = withExclusions({ stations_excluded_not_mainline: 12 });
+    expect(document).toContain("Set aside — ramps and connectors:** 12");
+    expect(document).toContain("mainline it leaves");
+  });
+
+  it("distinguishes stations merged at their median from stations that disagree", () => {
+    const document = withExclusions({
+      shared_model_links: { stations_merged_away: 9, stations_excluded_as_ambiguous: 12 },
+    });
+    expect(document).toContain("several stations on one link:** 9");
+    expect(document).toContain("compared once at their median");
+    expect(document).toContain("one link, disagreeing counts:** 12");
+    expect(document).toContain("nothing in the data says which station belongs");
+  });
+
+  it("says nothing at all for a run made before the worker recorded this", () => {
+    // "0 excluded" and "never measured" are different facts, and a run that
+    // predates the fields must not be reported as having excluded nothing.
+    const document = withExclusions({});
+    expect(document).not.toContain("Set aside");
+  });
+
+  it("says nothing when a run measured the exclusions and found none", () => {
+    const document = withExclusions({
+      stations_excluded_not_mainline: 0,
+      shared_model_links: { stations_merged_away: 0, stations_excluded_as_ambiguous: 0 },
+    });
+    expect(document).not.toContain("Set aside");
+  });
+});
