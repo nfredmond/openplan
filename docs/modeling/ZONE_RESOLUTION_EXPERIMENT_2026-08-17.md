@@ -76,3 +76,52 @@ Block groups also cost one control in the population synthesiser: workers per
 household (ACS B08202) is not published below tract level. That affects the
 ActivitySim lane, not the trip-based model measured here, and is recorded in
 `census_pums.py`.
+
+---
+
+## RESULT — 2026-08-17. Block groups do not clear the bar. Default unchanged.
+
+Five development counties, tract runs against block-group runs, everything else
+identical. Zone counts roughly tripled as expected (12→46, 63→164, 103→305).
+
+| county | zones | median error | model ÷ observed | model VMT ÷ real |
+|---|---|---|---|---|
+| 06069 | 12 → 46 | 81.6% → 90.9% | 0.81 → 1.27 | 2.82 → 2.59 |
+| 08014 | 24 → 52 | 70.5% → 70.2% | 0.34 → 0.43 | 1.41 → 1.42 |
+| 06047 | 63 → 164 | 81.5% → 104.8% | 1.59 → 2.05 | 2.88 → 2.55 |
+| 08101 | 58 → 153 | 85.1% → 90.7% | 1.70 → 1.55 | 1.99 → 1.97 |
+| 06107 | 103 → 305 | 103.4% → 76.5% | 2.03 → 1.50 | 2.29 → 2.06 |
+
+Pooled: median error **88.7% → 84.2%** (4.5 points), model ÷ observed **1.52 →
+1.41** (0.10 toward 1.0), share within the 30% gate 20.6% → 20.8%.
+
+**Against the rule fixed in advance — improve error by ≥15 points AND move the
+ratio ≥0.15 toward 1.0 AND worsen no road class by >10 points — this FAILS on
+the first two, and trunk roads worsen by 16.9 points. The default stays
+tracts.**
+
+Per county the result is not even consistent in sign: 06107 improved by 27
+points, 06047 got 23 points worse. That spread across five counties is itself
+the finding — zone resolution moves the number around without systematically
+improving it.
+
+### Why this is a coherent negative, not a disappointment
+
+It matches the cause identified the same day
+(`WHY_THE_MODEL_OVER_ASSIGNS_2026-08-17.md`): the model generates **2.16× the
+real amount of driving**, because the gravity model sends trips roughly twice
+as far as real trips go. Finer zones change where trips start and end; they do
+not change how far the deterrence function sends them. The VMT ratio confirms
+it — it barely moves (2.82→2.59, 1.41→1.42, 2.29→2.06) in exactly the counties
+whose count-based error swings wildly.
+
+**Finer zoning cannot fix a distance-decay problem, and now it has been
+measured rather than assumed.** `--zone-geography block_group` remains
+available for a study area where a planner wants the resolution; it is not the
+default, and it is not a fix for the over-assignment.
+
+### The cost, for anyone considering it anyway
+
+Block-group runs took roughly 4-7 minutes each here against 2-4 for tracts, on
+counties of this size, and the finest (06107, 305 zones) was slowest. That is
+affordable under the runtime posture — it simply does not buy accuracy.
