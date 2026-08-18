@@ -82,7 +82,7 @@ jobs:
             count=$((count + 1))
           done
           echo "ran $count suites"
-          test "$count" -ge 38 || { echo "expected at least 38 suites, found $count — the glob broke"; exit 1; }
+          test "$count" -ge 39 || { echo "expected at least 39 suites, found $count — the glob broke"; exit 1; }
 
   worker-tests:
     name: worker (python unit tests)
