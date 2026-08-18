@@ -3024,6 +3024,11 @@ def stage_artifacts(
     # rerun) simply reports neither KPI.
     resident_vmt_network = None
     through_vmt_network = None
+    # Initialised here, not only inside the flows branch: the evidence packet
+    # reads it unconditionally, and a run whose per-class flows were
+    # unavailable would otherwise raise NameError after a successful
+    # assignment — a crash at the very end of an hours-long run.
+    vmt_by_class: dict[str, float] = {}
     try:
         if os.path.exists(db_path) and os.path.exists(link_volumes_csv):
             import csv as _csv
@@ -3041,6 +3046,11 @@ def stage_artifacts(
                 finally:
                     conn.close()
                 per_class = link_vmt.per_class_vmt(class_flows, link_rows)
+                # WHERE the travel went, not just whose it was. FHWA publishes
+                # VMT by functional system for every state every year, so this
+                # is the one accuracy check available in all fifty states
+                # rather than the four whose count feeds this repo can read.
+                vmt_by_class = link_vmt.vmt_by_road_class(class_flows, link_rows)
                 if "resident" in per_class:
                     resident_vmt_network = round(per_class["resident"], 1)
                 if "external" in per_class:
@@ -3403,6 +3413,16 @@ def stage_artifacts(
             "resident_avg_trip_miles": round(resident_meta["avg_trip_miles"], 3) if resident_meta else None,
             "resident_vmt_network": resident_vmt_network,
             "through_vmt_network": through_vmt_network,
+            # Vehicle-miles by KIND OF ROAD, so the run can be compared against
+            # FHWA's published VMT by functional system — the one accuracy
+            # check available in all fifty states rather than the four whose
+            # DOT count feeds this repository can read. Absent rather than
+            # zeroed when the per-class flows were unavailable.
+            "vmt_by_road_class": (
+                {name: round(value, 1) for name, value in sorted(vmt_by_class.items())}
+                if vmt_by_class
+                else None
+            ),
             # Convergence diagnostics between the two estimators (measured on
             # this run; the OD estimator's fixed 1.30 circuity is unchanged).
             "resident_vmt_network_od_ratio": vmt_estimator_ratio,
