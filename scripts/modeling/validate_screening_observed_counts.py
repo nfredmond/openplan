@@ -464,7 +464,8 @@ def query_project_db_candidates(
     name_clauses = " OR ".join(["name = ?" for _ in candidate_names])
     sql = f"""
         SELECT link_id, COALESCE(name, ''), COALESCE(link_type, ''),
-               X(Centroid(geometry)) AS cx, Y(Centroid(geometry)) AS cy
+               X(Centroid(geometry)) AS cx, Y(Centroid(geometry)) AS cy,
+               COALESCE(direction, 0)
         FROM links
         WHERE ({name_clauses})
           AND X(Centroid(geometry)) BETWEEN ? AND ?
@@ -479,7 +480,7 @@ def query_project_db_candidates(
         return []
 
     features = []
-    for link_id, name, link_type, lon, lat in rows:
+    for link_id, name, link_type, lon, lat, direction in rows:
         volume_row = volume_lookup.get(int(link_id), {})
         volume = parse_float(volume_row.get(volume_field)) or 0.0
         features.append(
@@ -490,6 +491,11 @@ def query_project_db_candidates(
                 "lon": float(lon) if lon is not None else None,
                 "lat": float(lat) if lat is not None else None,
                 "volume": round(volume),
+                # Selected because a candidate winning from this source would
+                # otherwise reach the carriageway pairing with no direction and
+                # be compared as a whole road. `direction` 0 means two-way.
+                "is_one_way": int(direction or 0) != 0,
+                "direction_recorded": True,
             }
         )
     return features

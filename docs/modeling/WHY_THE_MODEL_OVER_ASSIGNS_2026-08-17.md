@@ -100,3 +100,52 @@ on development counties and confirmed on holdout ones. **A gamma fitted until
 the counts look better would be exactly the trap this lane already documented**
 — the anchor above is preferable precisely because it is independent of the
 counts the result is then judged against.
+
+---
+
+## CORRECTION, 2026-08-18: the count instrument was reading low, and now the two instruments agree
+
+**Everything above stands as written on 2026-08-17.** One number in it is
+superseded: the count-based over-assignment of **1.78× is wrong. It is 2.11×.**
+
+A count station on a divided highway measures both directions. OSM maps that
+road as two one-way carriageways carrying half the traffic each, and the
+validator was comparing the whole-road count against one of them. **26% of all
+matched stations sit on a divided highway; 71% of motorway stations do.**
+
+Re-graded on the **same 1,983 stations**, same runs, same matching — only the
+comparison corrected:
+
+| class | stations | before | **after** | on a divided highway |
+|---|---:|---:|---:|---:|
+| primary | 822 | 2.04 | **2.23** | 19% |
+| trunk | 491 | 2.41 | **2.92** | 32% |
+| secondary | 334 | 1.30 | **1.38** | 7% |
+| motorway | 239 | 0.78 | **1.22** | 71% |
+| tertiary | 97 | 0.07 | **0.07** | 1% |
+| **all** | **1,983** | **1.78** | **2.11** | 26% |
+
+Median absolute error rises 100.0% → 110.9%, because the model was
+over-assigning and the correction reveals more of it rather than less.
+
+### Why this matters more than a number moving
+
+**The two instruments now agree almost exactly.** Published VMT per capita said
+2.16×; corrected counts say 2.11×. Before the fix they said 2.16 and 1.78 — a
+gap I had no explanation for and did not flag. They are measuring the same thing
+and now say the same thing.
+
+**Motorways are not under-assigned.** They read 1.22× — over-assigned, like
+every other class except tertiary. The earlier 0.78 was an artifact of comparing
+half a freeway to a whole-road count.
+
+**So the claim that "the model is wrong in two directions at once"
+(`TRIP_LENGTH_CALIBRATION_2026-08-17.md`) is now supported by one class, not
+two.** Tertiary roads at 0.07 remain badly under-assigned, and that is a
+zone-resolution artifact already measured as untouched by finer zoning — 97
+stations, one of which is on a divided highway. Everything else is over-assigned
+in the same direction, which is exactly the shape a single decay parameter can
+move.
+
+That does not make gamma the answer. It removes the specific evidence that had
+been used to rule it out.
