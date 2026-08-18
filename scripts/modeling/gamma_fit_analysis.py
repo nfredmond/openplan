@@ -105,7 +105,19 @@ def count_accuracy(run_dir: Path, validation_subdir: str = "validation") -> dict
     """
     results = run_dir / validation_subdir / "validation_results.csv"
     if not results.exists():
-        return {"stations": 0, "median_ape": None, "bias": None, "by_road_class": {}}
+        # A run legitimately has no count grading when its county publishes no
+        # counts, and its VMT ratio is still valid — so this is not an error.
+        # But it is REPORTED: a run never graded from the requested directory
+        # would otherwise be summarized alongside runs that were, and an arm
+        # assembled from a prefix glob would quietly average a different set
+        # than its neighbour while claiming the same one.
+        return {
+            "stations": 0,
+            "median_ape": None,
+            "bias": None,
+            "by_road_class": {},
+            "validation_dir_missing": validation_subdir,
+        }
     matched: list[dict[str, str]] = []
     with results.open(newline="") as handle:
         for row in csv.DictReader(handle):
@@ -190,11 +202,26 @@ def main() -> int:
     )
     parser.add_argument("--baseline-prefix", default="study", help="The unmultiplied arm's prefix")
     parser.add_argument(
-        "--baseline-validation-subdir", default="validation",
+        "--validation-subdir", default="validation",
+        help=(
+            "Which validation directory EVERY arm is graded from. Use this to re-grade a whole "
+            "sweep with a corrected validator: all arms must come from the same one or they are "
+            "compared on different rules."
+        ),
+    )
+    parser.add_argument(
+        "--baseline-validation-subdir", default=None,
         help=(
             "Which validation directory the BASELINE arm is graded from. Baselines predating the "
             "ramp and shared-link exclusions must be re-validated with current code and read from "
             "that directory, or the two arms are graded on different station sets."
+        ),
+    )
+    parser.add_argument(
+        "--county", action="append",
+        help=(
+            "Restrict every arm to these county FIPS codes. Without it an arm is whatever the "
+            "prefix glob catches, which silently mixes in other runs and other counties."
         ),
     )
     parser.add_argument("--output", help="Write the full result as JSON")
@@ -206,13 +233,22 @@ def main() -> int:
 
     for prefix in [args.baseline_prefix, *args.prefix]:
         runs: list[dict[str, Any]] = []
-        for run_dir in sorted(root.glob(f"{prefix}-*")):
+        # A prefix containing '*' is used as the pattern itself. Without this
+        # 'study' matches study-06047-base AND study-06047-asim/-floor, folding
+        # the activity-based and noise-floor arms into the trip-based
+        # baseline's VMT median.
+        pattern = prefix if "*" in prefix else f"{prefix}-*"
+        for run_dir in sorted(root.glob(pattern)):
             parts = run_dir.name.split("-")
             county = next((part for part in parts if part.isdigit() and len(part) == 5), None)
             if county is None:
                 continue
+            if args.county and county not in args.county:
+                continue
             try:
-                subdir = args.baseline_validation_subdir if prefix == args.baseline_prefix else "validation"
+                subdir = args.validation_subdir
+                if prefix == args.baseline_prefix and args.baseline_validation_subdir:
+                    subdir = args.baseline_validation_subdir
                 runs.append(grade_run(run_dir, county, subdir))
             except GammaFitError as exc:
                 # Named, never skipped silently: an arm quietly missing a county
@@ -223,6 +259,19 @@ def main() -> int:
     payload = {
         "schema_version": "openplan.gamma_fit.v1",
         "published_source": "FHWA Highway Statistics 2022 table VM-2 / Census 2022 population",
+        "counties_requested": args.county,
+        "runs_without_count_grading": {
+            prefix: [
+                Path(run["run_dir"]).name
+                for run in runs
+                if (run.get("counts") or {}).get("validation_dir_missing")
+            ]
+            for prefix, runs in arms.items()
+        },
+        "graded_from": {
+            "every_arm": args.validation_subdir,
+            "baseline_override": args.baseline_validation_subdir,
+        },
         "arms": {prefix: summarize_arm(runs) for prefix, runs in arms.items()},
         "per_county": {prefix: runs for prefix, runs in arms.items()},
         "runs_that_could_not_be_graded": problems,

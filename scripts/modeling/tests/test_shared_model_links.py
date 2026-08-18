@@ -331,10 +331,51 @@ class DividedHighwaysAreComparedWhole(unittest.TestCase):
         self.assertEqual(row["carriageways_summed"], "2")
         self.assertEqual(float(row["modeled_daily_pce"]), 38000.0)
         self.assertEqual(float(row["absolute_percent_error"]), 0.0)
-        self.assertTrue(summary["divided_highways"]["direction_recorded_in_geometry"])
+        self.assertTrue(summary["divided_highways"]["direction_known"])
 
     def test_a_two_way_road_is_left_alone(self) -> None:
         self.geojson(one_way=False)
+        self.run_it()
+        row = self.results()[0]
+        self.assertEqual(row["carriageways_summed"], "1")
+        self.assertEqual(float(row["modeled_daily_pce"]), 20000.0)
+
+    def project_db(self, direction: int) -> None:
+        import sqlite3
+
+        db_dir = self.out.parent / "work" / "aeq_project"
+        db_dir.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(db_dir / "project_database.sqlite")
+        conn.execute("CREATE TABLE links (link_id INTEGER, direction INTEGER)")
+        conn.executemany("INSERT INTO links VALUES (?, ?)", [(1, direction), (2, direction)])
+        conn.commit()
+        conn.close()
+
+    def test_direction_is_recovered_from_the_project_database_when_geometry_lacks_it(self) -> None:
+        """Every run made before the property existed is otherwise ungradable.
+
+        The AequilibraE database the run was assigned on records the same fact
+        (`direction` 0 = two-way), so those runs can be compared correctly
+        without re-running them -- and the summary says where the fact came
+        from rather than implying the geometry carried it.
+        """
+        self.geojson(one_way=True, include_property=False)
+        self.project_db(direction=1)
+
+        summary = self.run_it()
+        row = self.results()[0]
+        self.assertEqual(row["carriageways_summed"], "2")
+        self.assertEqual(float(row["modeled_daily_pce"]), 38000.0)
+        self.assertTrue(summary["divided_highways"]["direction_known"])
+        self.assertEqual(summary["divided_highways"]["direction_source"], "project_database")
+        self.assertIn("project database", summary["divided_highways"]["note"])
+
+    def test_a_two_way_road_in_the_project_database_is_not_doubled(self) -> None:
+        """The negative control. Without it, a backfill that marked EVERY link
+        one-way passes every other test here and doubles half the network."""
+        self.geojson(one_way=True, include_property=False)
+        self.project_db(direction=0)
+
         self.run_it()
         row = self.results()[0]
         self.assertEqual(row["carriageways_summed"], "1")
@@ -346,7 +387,7 @@ class DividedHighwaysAreComparedWhole(unittest.TestCase):
         # from one that did not need it.
         self.geojson(one_way=True, include_property=False)
         summary = self.run_it()
-        self.assertFalse(summary["divided_highways"]["direction_recorded_in_geometry"])
+        self.assertFalse(summary["divided_highways"]["direction_known"])
         self.assertIn("predates the carriageway-direction property", summary["divided_highways"]["note"])
         self.assertIn("roughly half", summary["divided_highways"]["note"])
 

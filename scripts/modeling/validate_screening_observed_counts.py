@@ -234,6 +234,67 @@ def connect_spatialite(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
+def find_run_project_db(run_output_dir: Path, explicit: Path | None) -> Path | None:
+    """Locate the AequilibraE database a run was assigned on, for direction only.
+
+    `discover_project_db` deliberately honours only an explicit flag, because a
+    project database also supplies station-matching candidates and turning that
+    on by default would change which link a station matches. Direction is a
+    different question -- it changes no match, only whether both halves of a
+    divided road are counted -- so it is looked up in the run's own conventional
+    layout without disturbing matching.
+    """
+    if explicit is not None:
+        return explicit
+    for candidate in (
+        run_output_dir.parent / "work" / "aeq_project" / "project_database.sqlite",
+        run_output_dir / "work" / "aeq_project" / "project_database.sqlite",
+    ):
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def backfill_direction_from_project_db(features: list[dict[str, Any]], project_db: Path | None) -> int:
+    """Recover which links are one-way carriageways for a run whose geometry predates the property.
+
+    A count station measures a whole road; OSM maps a divided one as two one-way
+    links. Runs made before `is_one_way` was exported cannot be compared
+    correctly from their GeoJSON alone -- but the AequilibraE project database
+    they were assigned on still records `direction` (0 = two-way), which is the
+    same fact from its source. Returns the number of features backfilled, so a
+    caller can say where the direction came from rather than implying the
+    geometry carried it.
+    """
+    if project_db is None or not Path(project_db).exists():
+        return 0
+    if any(feature.get("direction_recorded") for feature in features):
+        return 0
+    try:
+        conn = connect_spatialite(Path(project_db))
+    except sqlite3.Error:
+        return 0
+    try:
+        directions = {
+            str(link_id): int(direction or 0)
+            for link_id, direction in conn.execute("SELECT link_id, direction FROM links")
+        }
+    except sqlite3.Error:
+        return 0
+    finally:
+        conn.close()
+    filled = 0
+    for feature in features:
+        direction = directions.get(str(feature.get("link_id")))
+        if direction is None:
+            continue
+        feature["is_one_way"] = direction != 0
+        feature["direction_recorded"] = True
+        feature["direction_source"] = "project_db"
+        filled += 1
+    return filled
+
+
 def normalize_text(value: Any) -> str:
     return " ".join(str(value or "").strip().lower().replace("_", " ").split())
 
@@ -943,6 +1004,9 @@ def run_validation_bundle(
     project_db_path = discover_project_db(run_output_dir, str(project_db) if project_db is not None else None)
     volume_field, volume_lookup = load_volume_lookup(link_volumes_path, volume_field)
     features = build_feature_index(geometry_path, volume_lookup, volume_field)
+    direction_backfilled = backfill_direction_from_project_db(
+        features, find_run_project_db(run_output_dir, project_db_path)
+    )
 
     with counts_csv.open(newline="") as handle:
         reader = csv.DictReader(handle)
@@ -1053,9 +1117,16 @@ def run_validation_bundle(
     # carriageways summed, and a comparison that quietly skipped the correction
     # is indistinguishable from one that did not need it.
     direction_known = any(feature.get("direction_recorded") for feature in features)
+    direction_source = "project_database" if direction_backfilled else ("geometry" if direction_known else None)
     carriageway_note = (
         f"{sum(1 for row in results if str(row.get('carriageways_summed') or '') == '2')} station(s) "
-        "sit on a divided highway and were compared against both carriageways summed."
+        "sit on a divided highway and were compared against both carriageways summed"
+        + (
+            f", using link direction recovered from the run's AequilibraE project database "
+            f"({direction_backfilled:,} links) because this run's geometry predates the exported property."
+            if direction_backfilled
+            else " using the direction recorded in the run's link geometry."
+        )
         if direction_known
         else (
             "This run's link geometry predates the carriageway-direction property, so a station on a "
@@ -1078,7 +1149,9 @@ def run_validation_bundle(
     )
     summary["shared_model_links"] = shared_link_resolution
     summary["divided_highways"] = {
-        "direction_recorded_in_geometry": direction_known,
+        "direction_known": direction_known,
+        "direction_source": direction_source,
+        "links_backfilled_from_project_db": direction_backfilled,
         "note": carriageway_note,
     }
 
