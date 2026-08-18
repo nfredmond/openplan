@@ -160,7 +160,7 @@ describe("the modeling requirements cover what the modeling code imports", () =>
     // from this directory — if one of these ever stops being imported here, the
     // requirements list has drifted and should shrink.
     const declared = declaredDistributions();
-    for (const heavy of ["aequilibrae", "geopandas", "numpy", "pandas", "shapely", "requests"]) {
+    for (const heavy of ["aequilibrae", "geopandas", "numpy", "pandas", "shapely", "requests", "scipy"]) {
       expect(modules.has(heavy), `${heavy} is declared but no modeling script imports it`).toBe(true);
       expect(declared.has(heavy)).toBe(true);
     }
@@ -168,6 +168,6 @@ describe("the modeling requirements cover what the modeling code imports", () =>
     // And a module that is neither stdlib nor local nor declared must be
     // reported, or the check above could be vacuously green.
     const local = localModuleNames();
-    expect(PYTHON_STDLIB.has("scipy") || local.has("scipy") || declared.has("scipy")).toBe(false);
+    expect(PYTHON_STDLIB.has("tensorflow") || local.has("tensorflow") || declared.has("tensorflow")).toBe(false);
   });
 });

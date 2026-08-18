@@ -187,6 +187,22 @@ centroids**, not routes. Route them on a real network and the floor tightens
 immediately — that is free and I did not do it. It is the single most
 tractable open item in this document.
 
+**2026-08-18 continuation:** the reusable routing seam now exists in
+`scripts/modeling/faf5_routing.py`. It reads FHWA's free FAF5 national highway
+geodatabase, respects AB-only, BA-only, and two-way links, minimizes published
+free-flow time, fingerprints the exact network bytes, and writes a resumable
+route cache. `through_trips_taf.py --route-cache` consumes that cache and
+counts every missing or unreachable positive flow instead of falling back to a
+centroid chord. A real-network smoke test loaded 346,374 nodes / 650,909
+directed edges and routed an Alameda-to-Merced county path. The published file
+also exposed two facts its data dictionary does not: 391 links use `DIR=-1`
+(reverse-only), and free-flow time is numerically minutes. Both are now tested.
+
+**The measurement itself has not been rerun yet.** The remaining job is to
+route the relevant positive TAF OD pairs, feed the completed cache to the five
+county calculation, and compare routed versus chord-based floors. Until that
+happens, the 1–18% floor above is still the straight-line result.
+
 ---
 
 ## The state of the number, end to end

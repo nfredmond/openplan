@@ -100,6 +100,7 @@ def through_and_local_trips(
     study_fips: str,
     study_area,
     centroids: Mapping[str, tuple[float, float]],
+    routes: Mapping[tuple[str, str], Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Split long-distance flows into those crossing the study area and those ending in it.
 
@@ -112,6 +113,7 @@ def through_and_local_trips(
     min_x, min_y, max_x, max_y = study_area.bounds
     through = ends_here = 0.0
     unknown_counties = 0
+    unrouted_flows = 0
     for origin, destination, trips in rows:
         if trips <= 0:
             continue
@@ -125,11 +127,23 @@ def through_and_local_trips(
         if start is None or end is None:
             unknown_counties += 1
             continue
-        if max(start[0], end[0]) < min_x or min(start[0], end[0]) > max_x:
-            continue
-        if max(start[1], end[1]) < min_y or min(start[1], end[1]) > max_y:
-            continue
-        if LineString([start, end]).intersects(study_area):
+        if routes is None:
+            if max(start[0], end[0]) < min_x or min(start[0], end[0]) > max_x:
+                continue
+            if max(start[1], end[1]) < min_y or min(start[1], end[1]) > max_y:
+                continue
+            path = LineString([start, end])
+        else:
+            route = routes.get((origin, destination))
+            if route is None or route.get("status") != "routed":
+                unrouted_flows += 1
+                continue
+            coordinates = route.get("coordinates") or []
+            if len(coordinates) < 2:
+                unrouted_flows += 1
+                continue
+            path = LineString(coordinates)
+        if path.intersects(study_area):
             through += trips
     total = through + ends_here
     return {
@@ -140,14 +154,45 @@ def through_and_local_trips(
         "daily_person_trips_ending_here": round(ends_here / 365.0, 1),
         "through_share_of_long_distance_travel": round(through / total, 4) if total else None,
         "flows_with_an_unknown_county": unknown_counties,
+        "positive_external_flows_without_a_route": unrouted_flows,
+        "path_method": "FHWA FAF5 free-flow shortest path" if routes is not None else "straight county-centroid line",
         "what_this_is_not": (
             f"The share of LONG-DISTANCE travel (FHWA's threshold is {TAF_LONG_DISTANCE_MILES} "
             "miles) that passes through, from 2008 person trips, with each flow's path "
-            "approximated by the straight line between county centroids. It is not the share of "
+            + (
+                "routed on FHWA's strategic FAF5 highway network. "
+                if routes is not None
+                else "approximated by the straight line between county centroids. "
+            )
+            + "It is not the share of "
             "traffic at a boundary crossing, which also carries short trips this product does not "
             "cover."
         ),
     }
+
+
+def read_route_cache(path: Path) -> dict[tuple[str, str], dict[str, Any]]:
+    """Read the resumable JSONL emitted by ``faf5_routing.py``.
+
+    Duplicate OD pairs are refused.  Quietly taking the last record could mix
+    networks or partial reruns while still producing a plausible total.
+    """
+    routes: dict[tuple[str, str], dict[str, Any]] = {}
+    fingerprints: set[str] = set()
+    with Path(path).open() as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            key = (normalize_fips(record["origin"]), normalize_fips(record["destination"]))
+            if key in routes:
+                raise ThroughTripsError(f"Duplicate routed OD pair at {path}:{line_number}: {key}")
+            routes[key] = record
+            if record.get("network_fingerprint"):
+                fingerprints.add(str(record["network_fingerprint"]))
+    if len(fingerprints) > 1:
+        raise ThroughTripsError(f"Route cache mixes {len(fingerprints)} FAF5 network fingerprints")
+    return routes
 
 
 def read_taf_rows(csv_path: Path) -> Iterable[tuple[str, str, float]]:
@@ -168,6 +213,7 @@ def main() -> int:
                         help="Study area, e.g. 06047=data/screening-runs/study-06047-base/boundary/analysis_boundary.geojson")
     parser.add_argument("--taf-csv", action="append", required=True, help="A TAF trip table CSV. Repeat for business and non-business.")
     parser.add_argument("--gazetteer", required=True, help="Census county Gazetteer .txt")
+    parser.add_argument("--route-cache", help="JSONL from faf5_routing.py; missing routes are excluded and counted, never replaced by straight lines")
     parser.add_argument("--output")
     args = parser.parse_args()
 
@@ -184,13 +230,15 @@ def main() -> int:
         areas[fips] = shape(payload["features"][0]["geometry"])
 
     rows = [row for path in args.taf_csv for row in read_taf_rows(Path(path))]
+    routes = read_route_cache(Path(args.route_cache)) if args.route_cache else None
     results = {
-        fips: through_and_local_trips(rows, fips, area, centroids) for fips, area in areas.items()
+        fips: through_and_local_trips(rows, fips, area, centroids, routes) for fips, area in areas.items()
     }
     payload = {
         "schema_version": "openplan.through_trips_taf.v1",
         "source": "FHWA Traveler Analysis Framework, county-to-county long-distance person trips",
         "source_url": "https://www.fhwa.dot.gov/policyinformation/analysisframework/01.cfm",
+        "path_method": "FHWA FAF5 free-flow shortest path" if routes is not None else "straight county-centroid line",
         "counties": results,
     }
     text = json.dumps(payload, indent=2)

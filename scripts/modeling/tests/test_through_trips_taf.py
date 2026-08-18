@@ -7,6 +7,7 @@ reported that nobody travels to Merced County.
 """
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 import unittest
@@ -107,6 +108,38 @@ class TheEstimateCarriesItsOwnLimits(unittest.TestCase):
         self.assertIn("LONG-DISTANCE", note)
         self.assertIn("straight line", note)
         self.assertIn("not the share of traffic at a boundary crossing", note)
+
+
+class RoutedPathsReplaceRatherThanDecorateStraightLines(unittest.TestCase):
+    def test_a_real_route_can_disagree_with_the_centroid_chord(self) -> None:
+        routes = {
+            ("06001", "06002"): {
+                "status": "routed",
+                "coordinates": [(-122.0, 37.5), (-121.5, 39.0), (-119.0, 37.5)],
+            }
+        }
+        result = taf.through_and_local_trips(
+            [("06001", "06002", 3650.0)], "06047", STUDY, CENTROIDS, routes
+        )
+        self.assertEqual(result["annual_person_trips_through"], 0.0)
+        self.assertEqual(result["path_method"], "FHWA FAF5 free-flow shortest path")
+
+    def test_a_missing_route_is_excluded_and_counted_not_replaced_by_the_chord(self) -> None:
+        result = taf.through_and_local_trips(
+            [("06001", "06002", 3650.0)], "06047", STUDY, CENTROIDS, {}
+        )
+        self.assertEqual(result["annual_person_trips_through"], 0.0)
+        self.assertEqual(result["positive_external_flows_without_a_route"], 1)
+
+    def test_route_cache_refuses_mixed_networks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "routes.jsonl"
+            path.write_text(
+                json.dumps({"origin": "6001", "destination": "6002", "network_fingerprint": "a"}) + "\n"
+                + json.dumps({"origin": "6002", "destination": "6003", "network_fingerprint": "b"}) + "\n"
+            )
+            with self.assertRaisesRegex(taf.ThroughTripsError, "mixes 2"):
+                taf.read_route_cache(path)
 
 
 if __name__ == "__main__":

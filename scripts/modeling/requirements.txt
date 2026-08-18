@@ -44,4 +44,5 @@ numpy>=1.26,<2.1
 openmatrix>=0.3
 pandas>=2.0
 requests>=2.31
+scipy>=1.10
 shapely>=2.0
