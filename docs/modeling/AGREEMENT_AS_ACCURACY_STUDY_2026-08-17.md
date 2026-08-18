@@ -362,3 +362,55 @@ Machine-readable results, both halves:
 `docs/modeling/results/agreement-study-corrected-instrument-2026-08-18/`. The
 run trees they were computed from are gitignored (gigabytes per county); these
 files are the durable record.
+
+---
+
+## RE-RUN WITH BOTH MODELS IN THE SAME UNITS, 2026-08-18 — the answer holds
+
+**When this study ran, the two demand models were not comparable.** The
+trip-based lane assigned PERSON trips to the network; the activity-based lane
+divided by vehicle occupancy first, as its own module warned it must: "the
+comparison would report the demand models disagreeing when what actually
+differed was the unit."
+
+That is precisely what happened. In Merced County the trip-based arm carried
+**985,811** trips against ActivitySim's **507,036** — a 94% gap that was almost
+entirely units. With occupancy and mode split applied it is **551,232 against
+507,036, a difference of 8.7%.**
+
+Both arms were rebuilt on each county's ORIGINAL network, so only the demand
+construction differs, and re-compared.
+
+### Development half, 11 usable counties
+
+| | original | units fixed |
+|---|---:|---:|
+| trip-based median error | 137.2% | **81.2%** |
+| activity-based median error | 78.0% | **66.3%** |
+| trip-based lift | 0.98 | **0.69** |
+| activity-based lift | 1.11 | **0.58** |
+| counties where agreement fails to predict | 2 of 11 | 2 of 11 |
+
+**Both models became substantially more accurate — and agreement between them
+became LESS informative, not more.** A lift below 1.0 means corridors where the
+two methods agree are *less* likely to be accurate than corridors picked at
+random.
+
+**So the pre-registered answer is unchanged, and the strongest version of it yet:
+agreement does not predict accuracy.** The most obvious explanation for the
+original result — that the two models were being compared in different units —
+has now been removed, and the answer did not move.
+
+### The holdout was deliberately NOT read a third time
+
+It has been read twice: once as pre-registered, once with the corrected count
+instrument. Both said no. The development half now says no again, more strongly,
+with the units defect removed.
+
+A third reading would not test anything this one has not; it would be looking
+for a number to quote. The pre-registered rule was one reading, the honest
+extension was a second when the measuring instrument was found to be broken, and
+a third on a half that has never disagreed is reaching. **If a future change
+gives a reason to expect a different answer, read it then and say why.**
+
+Machine-readable: `docs/modeling/results/agreement-study-units-fixed-2026-08-18/`.
