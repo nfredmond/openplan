@@ -209,6 +209,19 @@ class SupabasePollTests(unittest.TestCase):
         cfg = supabase_poll._activitysim_exec_config()
         self.assertIsNone(cfg["activitysim_cli"])
         self.assertIsNone(cfg["activitysim_container_image"])
+        self.assertEqual(
+            supabase_poll._bundle_profile_for_execution(cfg),
+            {"population_source": "scaffold", "config_package": "starter"},
+        )
+
+    def test_configured_execution_requires_census_population_and_named_coefficients(self):
+        profile = supabase_poll._bundle_profile_for_execution(
+            {"activitysim_cli": "activitysim", "activitysim_container_image": None}
+        )
+        self.assertEqual(
+            profile,
+            {"population_source": "census", "config_package": "mtc"},
+        )
 
     def test_executed_kpis_written_and_labeled_uncalibrated(self):
         summary_path = os.path.join(self._fixdir, "kpi_summary.json")

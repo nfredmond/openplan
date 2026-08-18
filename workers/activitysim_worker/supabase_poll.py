@@ -96,6 +96,31 @@ def _activitysim_exec_config() -> dict:
         "container_network_mode": os.getenv("ACTIVITYSIM_CONTAINER_NETWORK_MODE", "none"),
     }
 
+
+def _bundle_profile_for_execution(exec_cfg: dict[str, Any]) -> dict[str, str]:
+    """Choose inputs from requested capability, never from a completed output.
+
+    If an operator configures a real ActivitySim command, building a scaffold
+    starter bundle first would make successful execution look more authoritative
+    without making either the population or behavior real. The executable path
+    therefore requires Census synthesis and the named stock MTC package. An
+    unconfigured worker retains the cheap, explicitly non-behavioral preflight.
+    """
+    execution_requested = any(
+        exec_cfg.get(key)
+        for key in (
+            "activitysim_cli",
+            "activitysim_cli_template",
+            "activitysim_container_image",
+            "activitysim_container_cli_template",
+        )
+    )
+    return (
+        {"population_source": "census", "config_package": "mtc"}
+        if execution_requested
+        else {"population_source": "scaffold", "config_package": "starter"}
+    )
+
 # Per-run scratch dir for the built bundle + prototype pipeline outputs.
 ACTIVITYSIM_WORK_DIR = os.getenv(
     "ACTIVITYSIM_WORK_DIR", str(_REPO_ROOT / "data" / "activitysim-bundles" / "runs")
@@ -405,10 +430,12 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     # On a dedicated modeling host (ActivitySim installed / a container image) the
     # same call runs a real, still-UNCALIBRATED ActivitySim run.
     exec_cfg = _activitysim_exec_config()
+    bundle_profile = _bundle_profile_for_execution(exec_cfg)
     pipeline = run_behavioral_demand_prototype(
         screening_run_dir=screening_dir,
         output_root=os.path.join(run_root, "behavioral_demand_prototype"),
         force=True,
+        **bundle_profile,
         **exec_cfg,
     )
     pipeline_status = pipeline.get("pipeline_status")
@@ -434,11 +461,13 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     #    UNCALIBRATED) ActivitySim run executed, say so; never call it a forecast.
     if executed:
         lead_caveats = [
-            "A real but UNCALIBRATED, starter-grade ActivitySim run executed — this is "
+            "A real but UNCALIBRATED, screening-grade ActivitySim run executed — this is "
             "NOT a calibrated behavioral forecast.",
-            "The synthetic population is a deterministic scaffold (incl. a scaffold "
-            "worker_residents estimate), not a calibrated synthesis.",
-            "County-specific calibration is required before any forecast/regulatory use.",
+            "Households and persons come from real Census PUMS records fitted to each zone's "
+            "published totals; the population is local but the behavior coefficients are not.",
+            "Behavior uses ActivitySim's stock prototype_mtc coefficients estimated for the "
+            "San Francisco Bay Area, not this study area. County-specific validation is required "
+            "before any forecast or regulatory use.",
         ]
     else:
         lead_caveats = list(PREFLIGHT_CAVEATS)
@@ -459,6 +488,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "pipeline_status": pipeline_status,
         "runtime_mode": runtime_mode,
         "bundle": bundle_stats,
+        "bundle_profile": bundle_profile,
         "study_area": {"corridor_geojson_present": bool(corridor)},
         "requirements_for_a_calibrated_run": [
             "A dedicated modeling host with ActivitySim installed (multi-GB RAM, always-on)."
@@ -487,6 +517,9 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     scaffold_provenance = (
         "ActivitySim input-bundle scaffold — deterministic synthetic population, "
         "NOT a calibrated synthesis or a behavioral forecast."
+        if not executed
+        else "Census PUMS population fitted to published zone totals; behavior uses uncalibrated "
+        "San Francisco Bay Area prototype_mtc coefficients and is NOT a local forecast."
     )
     kpis = [
         ("activitysim_runtime_mode", "ActivitySim runtime mode", None, "", {"mode": runtime_mode, "provenance": scaffold_provenance}),
@@ -494,9 +527,17 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     if bundle_stats.get("zones") is not None:
         kpis.append(("activitysim_bundle_zones", "ActivitySim bundle zones", float(bundle_stats["zones"]), "zones", {"provenance": scaffold_provenance}))
     if bundle_stats.get("synthetic_households") is not None:
-        kpis.append(("activitysim_bundle_synthetic_households", "ActivitySim bundle synthetic households (scaffold)", float(bundle_stats["synthetic_households"]), "households", {"provenance": scaffold_provenance}))
+        kpis.append((
+            "activitysim_bundle_fitted_households" if executed else "activitysim_bundle_synthetic_households",
+            "ActivitySim bundle Census-fitted households" if executed else "ActivitySim bundle synthetic households (scaffold)",
+            float(bundle_stats["synthetic_households"]), "households", {"provenance": scaffold_provenance},
+        ))
     if bundle_stats.get("synthetic_persons") is not None:
-        kpis.append(("activitysim_bundle_synthetic_persons", "ActivitySim bundle synthetic persons (scaffold)", float(bundle_stats["synthetic_persons"]), "persons", {"provenance": scaffold_provenance}))
+        kpis.append((
+            "activitysim_bundle_fitted_persons" if executed else "activitysim_bundle_synthetic_persons",
+            "ActivitySim bundle Census-fitted persons" if executed else "ActivitySim bundle synthetic persons (scaffold)",
+            float(bundle_stats["synthetic_persons"]), "persons", {"provenance": scaffold_provenance},
+        ))
     for name, label, value, unit, breakdown in kpis:
         sb_post_kpi(
             {

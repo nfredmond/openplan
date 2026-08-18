@@ -158,8 +158,10 @@ AequilibraE Setup → Network Assignment → Artifact Extraction   (aequilibrae_
 
 The AequilibraE worker runs the screening (network + `travel_time_skims.omx`) and
 registers `zone_attributes.csv` + the skim as `local://` artifacts. This worker
-reads them, builds a real (uncalibrated, scaffold-population) ActivitySim input
-bundle, runs the runtime, and writes an honest evidence packet + KPIs. **Because
+reads them, builds an ActivitySim input bundle, runs the runtime, and writes an
+honest evidence packet + KPIs. Preflight uses the explicitly non-behavioral
+scaffold; configured execution requires Census PUMS synthesis and the stock
+`prototype_mtc` package. **Because
 the handoff is `local://`, the two workers must share a filesystem (co-located on
 one host, or a shared volume).**
 
@@ -179,7 +181,10 @@ npm run worker:activitysim          # from openplan/
   honest evidence + structural (scaffold) KPIs. **No** VMT/trip/mode-share number
   is ever written. This is the honest default and runs on modest infra.
 - **Execution (a real, still-UNCALIBRATED run).** Set the execution env so the
-  runtime launches a real ActivitySim CLI:
+  runtime launches a real ActivitySim CLI. Execution also requires
+  `CENSUS_API_KEY`: unlike preflight, it refuses the deterministic population
+  scaffold and fits real PUMS households/persons to the study area's published
+  zone totals.
 
   ```bash
   # On a Python-3.11 host with requirements-exec.txt installed:
@@ -196,9 +201,11 @@ npm run worker:activitysim          # from openplan/
   ```
 
   When a run actually executes, behavioral KPIs are written **only if** the run
-  produced supportable outputs, and are always labeled `uncalibrated`. A
-  starter/zero-model config runs successfully but emits no trips/tours → no
-  behavioral KPI (honest).
+  produced supportable outputs, and are always labeled `uncalibrated`. The
+  executed package layers OpenPlan inputs over ActivitySim's unmodified stock
+  `prototype_mtc` configuration. Its coefficients were estimated for the San
+  Francisco Bay Area, so even a locally fitted population does not make its
+  behavior local; the evidence packet and KPIs say that explicitly.
 
 ## ⛔ Infra reality — real behavioral runs are NOT $0
 
@@ -211,10 +218,11 @@ GB of RAM**, several vCPUs, minutes-to-hours of runtime, and an always-on poller
 1. **A dedicated modeling host** (≈8–16 GB RAM VM/box) running the Python-3.11
    `Dockerfile.exec` image with `ACTIVITYSIM_CLI` set, co-located with (or sharing
    a volume with) the AequilibraE worker. This is **paid infra, not $0.**
-2. **County-specific calibration** — the emitted config is the OpenPlan starter
-   kit (`v0`); a behaviorally meaningful, forecast-grade run needs calibrated
-   settings/coefficients + household/person schema alignment. Until then every run
-   is labeled **uncalibrated / prototype / preflight — never a forecast.**
+2. **Local coefficient evidence** — the executed config is ActivitySim's stock
+   Bay Area `prototype_mtc` package, with a recorded digest and region of
+   estimation. A behaviorally meaningful, forecast-grade run needs transferable
+   or locally estimated coefficients and validation. Until then every executed
+   result remains **uncalibrated and screening-grade — never a forecast.**
 
 Verified locally on 2026-07-22: `activitysim==1.5.1` runs an OpenPlan-built bundle
 end-to-end on Python 3.11 (`activitysim_cli`, settings-checker passes, 0 models →
