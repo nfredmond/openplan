@@ -1153,12 +1153,53 @@ def run_validation_bundle(
         ready_critical_ape=ready_critical_ape,
         required_matches=required_matches,
     )
+    # THE SIGNATURE OF AN INERT CORRECTION, checked rather than trusted.
+    # Twice now the carriageway code was present, tested, and never reached with
+    # the data it needs -- once because a candidate dict dropped `is_one_way`,
+    # once because the project-database query never selected `direction`. Both
+    # times the output said "0 summed" and nobody read it. Nearly every freeway
+    # in the United States is divided, so a county with motorway stations and
+    # none summed is far more likely to be a wiring defect than a county of
+    # undivided freeways.
+    motorway_matched = [
+        row for row in results
+        if row.get("match_status") == "matched"
+        and "motorway" in str(row.get("model_link_type") or "").lower()
+    ]
+    motorway_summed = sum(1 for row in motorway_matched if str(row.get("carriageways_summed") or "") == "2")
+    # The network must actually CONTAIN one-way freeway links for zero summed to
+    # be suspicious. A genuinely undivided network summing nothing is correct,
+    # and flagging it would train everyone to ignore the warning.
+    one_way_motorway_links = sum(
+        1 for feature in features
+        if feature.get("is_one_way") and "motorway" in str(feature.get("link_type") or "").lower()
+    )
+    suspect = (
+        direction_known
+        and len(motorway_matched) >= 10
+        and one_way_motorway_links >= 10
+        and motorway_summed == 0
+    )
+
     summary["shared_model_links"] = shared_link_resolution
     summary["divided_highways"] = {
         "direction_known": direction_known,
+        "one_way_motorway_links_in_network": one_way_motorway_links,
+        "motorway_stations_matched": len(motorway_matched),
+        "motorway_stations_summed": motorway_summed,
+        "looks_like_the_correction_never_fired": suspect,
         "direction_source": direction_source,
         "links_backfilled_from_project_db": direction_backfilled,
-        "note": carriageway_note,
+        "note": (
+            carriageway_note + " WARNING: this network has "
+            f"{one_way_motorway_links:,} one-way motorway link(s) and {len(motorway_matched)} "
+            "motorway station(s) matched, yet NONE were compared against "
+            "both carriageways. Nearly every US freeway is divided, so this is far more likely to "
+            "mean the correction is not reaching the matched links than that these freeways are "
+            "undivided. Freeway figures from this run read roughly half of what they should."
+            if suspect
+            else carriageway_note
+        ),
     }
 
     write_results_csv(output_dir / "validation_results.csv", results)

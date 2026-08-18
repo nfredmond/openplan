@@ -458,5 +458,119 @@ class TheProjectDatabaseCandidatePathCarriesDirection(unittest.TestCase):
         self.assertFalse(self.candidates()[2]["is_one_way"])
 
 
+class AnInertCorrectionIsDetected(unittest.TestCase):
+    """The check that would have caught both wiring bugs, from output already written.
+
+    Twice the carriageway correction was present, tested, and never reached with
+    the data it needs. Both times the summary said "0 summed" and nobody read
+    it. Nearly every US freeway is divided, so motorway stations matched with
+    none summed is a defect signature, not a geography.
+    """
+
+    def setUp(self) -> None:
+        import json
+        import tempfile
+
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.out = self.root / "run_output"
+        self.out.mkdir(parents=True)
+        (self.out / "evidence_packet.json").write_text(json.dumps({"engine": "aequilibrae"}))
+        self.json = json
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def build(self, count: int, one_way: bool, paired: bool = False) -> dict:
+        """`count` freeway stations, each on its own freeway far from the others.
+
+        `paired` gives each freeway a second carriageway alongside it, which is
+        what a real divided highway looks like. Without it nothing can pair, so
+        the correction has nothing to do -- useful for exercising the detector,
+        useless for proving it stays quiet when the wiring is sound.
+        """
+        volumes = ["link_id,PCE_tot"]
+        features = []
+        rows = []
+        for i in range(count):
+            lat = 39.0 + i * 0.1
+            link_id = i * 2
+            volumes.append(f"{link_id},20000")
+            features.append({
+                "type": "Feature",
+                "geometry": {"type": "LineString", "coordinates": [[-121.0, lat], [-121.0, lat + 0.01]]},
+                "properties": {"link_id": link_id, "name": f"Freeway {i}", "link_type": "motorway", "is_one_way": one_way},
+            })
+            if paired:
+                volumes.append(f"{link_id + 1},18000")
+                features.append({
+                    "type": "Feature",
+                    "geometry": {"type": "LineString", "coordinates": [[-121.0008, lat], [-121.0008, lat + 0.01]]},
+                    "properties": {"link_id": link_id + 1, "name": f"Freeway {i}", "link_type": "motorway", "is_one_way": one_way},
+                })
+            rows.append((f"S{i}", f"Freeway {i}", lat))
+        (self.out / "link_volumes.csv").write_text("\n".join(volumes) + "\n")
+        (self.out / "loaded_links.geojson").write_text(
+            self.json.dumps({"type": "FeatureCollection", "features": features})
+        )
+
+        counts = self.root / "counts.csv"
+        fields = [
+            "station_id", "label", "facility_name", "count_type", "direction", "observed_volume",
+            "source_agency", "source_description", "candidate_model_names", "candidate_link_types",
+            "bbox_min_lon", "bbox_min_lat", "bbox_max_lon", "bbox_max_lat", "notes",
+        ]
+        with counts.open("w", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            for station_id, name, lat in rows:
+                writer.writerow({
+                    "station_id": station_id, "label": name, "facility_name": name,
+                    "count_type": "AADT", "direction": "two_way", "observed_volume": "38000",
+                    "source_agency": "DOT", "source_description": "MAINLINE",
+                    "candidate_model_names": name, "candidate_link_types": "motorway",
+                    "bbox_min_lon": -121.05, "bbox_min_lat": lat - 0.02,
+                    "bbox_max_lon": -120.95, "bbox_max_lat": lat + 0.03, "notes": "",
+                })
+
+        from validate_screening_observed_counts import run_validation_bundle
+
+        return run_validation_bundle(
+            run_output_dir=self.out, counts_csv=counts,
+            output_dir=self.root / "validation", required_matches=1,
+        )["divided_highways"]
+
+    def test_ten_freeway_stations_and_none_summed_is_flagged(self) -> None:
+        # One link per station, so nothing can pair: the exact shape of an
+        # inert correction, with direction present and recorded.
+        block = self.build(count=12, one_way=True)
+        self.assertEqual(block["motorway_stations_matched"], 12)
+        self.assertEqual(block["motorway_stations_summed"], 0)
+        self.assertTrue(block["looks_like_the_correction_never_fired"])
+        self.assertIn("WARNING", block["note"])
+
+    def test_an_undivided_network_is_not_flagged(self) -> None:
+        # Direction IS recorded and says two-way. Nothing should be summed and
+        # nothing is wrong -- flagging here would train everyone to ignore it.
+        block = self.build(count=12, one_way=False)
+        self.assertEqual(block["motorway_stations_summed"], 0)
+        self.assertFalse(block["looks_like_the_correction_never_fired"])
+        self.assertNotIn("WARNING", block["note"])
+
+    def test_a_correctly_wired_network_of_divided_freeways_is_not_flagged(self) -> None:
+        """The decisive case. Twelve real divided freeways, each with both
+        carriageways present and pairing normally -- the detector must stay
+        quiet, or it says nothing about whether the wiring works."""
+        block = self.build(count=12, one_way=True, paired=True)
+        self.assertEqual(block["motorway_stations_matched"], 12)
+        self.assertEqual(block["motorway_stations_summed"], 12)
+        self.assertFalse(block["looks_like_the_correction_never_fired"])
+        self.assertNotIn("WARNING", block["note"])
+
+    def test_too_few_freeway_stations_to_conclude_anything(self) -> None:
+        block = self.build(count=4, one_way=True)
+        self.assertFalse(block["looks_like_the_correction_never_fired"])
+
+
 if __name__ == "__main__":
     unittest.main()
