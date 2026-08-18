@@ -605,3 +605,38 @@ describe("why fewer stations were matched than published", () => {
     expect(document).not.toContain("Set aside");
   });
 });
+
+describe("accuracy figures graded by rules that no longer apply", () => {
+  const graded = (validation: Record<string, unknown>) =>
+    buildCountyRunProvenanceDocument(
+      input({
+        validationSummary: {
+          screening_gate: { status_label: "bounded screening-ready" },
+          stations_matched: 38,
+          stations_total: 71,
+          ...validation,
+        },
+      })
+    );
+
+  it("warns when a summary carries no rules version at all", () => {
+    // Every run stored before 2026-08-18. Its median error is a different
+    // quantity under the same name, and on the page the two look identical.
+    expect(graded({})).toContain("superseded rules");
+    expect(graded({})).toContain("unstamped");
+  });
+
+  it("warns when the summary was graded by an older revision", () => {
+    expect(graded({ validation_rules_version: 1 })).toContain("revision 1");
+  });
+
+  it("says nothing when the run was graded by the current rules", () => {
+    expect(graded({ validation_rules_version: 2 })).not.toContain("superseded");
+  });
+
+  it("says nothing about a future revision it does not know", () => {
+    // A worker ahead of the app is not a stale run, and calling it stale would
+    // be worse than silence.
+    expect(graded({ validation_rules_version: 3 })).not.toContain("superseded");
+  });
+});

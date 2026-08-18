@@ -471,6 +471,30 @@ def compute_spearman_rho(observed: Sequence[float], modeled: Sequence[float]) ->
 
 
 # ── station → modeled-link matching ────────────────────────────────────────
+#: Which revision of the count-comparison rules produced a validation summary.
+#:
+#: Accuracy figures are only comparable between runs graded by the same rules,
+#: and three defects were fixed in one day: whole-road counts compared against
+#: one carriageway of a divided highway, ramp counts graded against the
+#: mainlines they leave, and one link graded once per station matched to it.
+#: Every stored summary from before then reports a different quantity under the
+#: same name, and nothing on the surface said so.
+#:
+#: Bump this whenever a change alters what a station's error MEANS -- not for a
+#: new field, a new metric, or a bug fix that leaves the comparison intact.
+VALIDATION_RULES_VERSION = 2
+
+#: What changed at each revision, in the words a planner reads. Version 1 is
+#: implicit: any summary without a version predates the stamp.
+VALIDATION_RULES_CHANGELOG = {
+    2: (
+        "Counts on a divided highway are compared against both carriageways rather than one; "
+        "ramp counts no longer grade the mainline they leave; and a link matched by several "
+        "stations is compared once rather than once per station."
+    ),
+}
+
+
 def station_measures_something_the_network_contains(station: Mapping[str, Any]) -> bool:
     """False for a count the SOURCE marked as a ramp or connector.
 
@@ -879,6 +903,7 @@ def validate_against_counts(
     status_label, gate_reasons = classify_gate(len(matched), median_ape, max_ape, required_matches, ready_median_ape, ready_critical_ape)
 
     summary = {
+        "validation_rules_version": VALIDATION_RULES_VERSION,
         "stations_total": len(stations),
         "stations_matched": len(matched),
         "shared_model_links": shared_link_resolution,

@@ -217,6 +217,32 @@ function sourcesSection(evidence: ProvenanceEvidence | null): string[] {
 }
 
 /**
+ * The rules that produced these accuracy figures, when they are not the current ones.
+ *
+ * Three defects in the count comparison were fixed on 2026-08-18 — divided
+ * highways compared against one carriageway of two, ramp counts grading the
+ * mainlines they leave, and one link graded once per station matched to it.
+ * Every summary stored before then reports a different quantity under the same
+ * name. Without this the two are indistinguishable on the page, and a planner
+ * would compare them to each other.
+ *
+ * The version is what the worker stamped; this file does not restate the rules
+ * themselves, so a future revision needs no change here.
+ */
+const CURRENT_VALIDATION_RULES_VERSION = 2;
+
+function supersededValidationRules(validation: Record<string, unknown>): string[] {
+  const version = asNumber(validation.validation_rules_version);
+  if (version !== null && version >= CURRENT_VALIDATION_RULES_VERSION) return [];
+  return [
+    `- **These accuracy figures were produced by superseded rules** (${
+      version === null ? "unstamped" : `revision ${version}`
+    }, current is ${CURRENT_VALIDATION_RULES_VERSION}). They are not comparable with a run graded ` +
+      `by the current rules, and re-running the validation is what makes them so.`,
+  ];
+}
+
+/**
  * Why the matched count is lower than the station count, when the run says so.
  *
  * Both exclusions make the model look WORSE by removing easy agreements and
@@ -282,6 +308,7 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
       asNumber(validation.stations_total)
     )}`,
     ...setAsideStations(validation),
+    ...supersededValidationRules(validation),
     `- **Median absolute percent error:** ${stated(
       asNumber(metrics?.median_absolute_percent_error)
     )}% (threshold ${stated(asNumber(gate?.ready_median_ape_threshold))}%)`,
