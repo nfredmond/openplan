@@ -28,7 +28,15 @@ DEFAULT_CAVEATS = [
     "OSM default speeds/capacities",
     "tract fragments are not calibrated TAZs",
     "jobs are estimated from tract-scale demographic proxies",
-    "external gateways are inferred from major boundary-crossing roads",
+    # Says what the number IS, not merely where it came from. Traffic entering
+    # and leaving the study area is assigned a flat daily figure per crossing
+    # chosen by road class -- it is not observed, and it does not vary by
+    # place. Measured across five counties it is a large share of all
+    # network vehicle-miles, so a planner reading a corridor volume needs to
+    # know that part of it rests on a constant.
+    "external gateways are inferred from major boundary-crossing roads, and the traffic "
+    "entering at each one is a flat daily figure by road class -- not an observed count, "
+    "and the same figure everywhere in the country",
 ]
 
 
