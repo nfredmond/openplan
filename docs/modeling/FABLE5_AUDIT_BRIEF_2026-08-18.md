@@ -20,7 +20,7 @@ OpenPlan's trip-based screening model assigned **2.2× as much traffic as
 actually exists**; a day of work found the cause was three unrelated things —
 a broken measuring instrument, boundary traffic routed into the county's
 interior instead of across it, and person-trips assigned as if they were cars —
-and the model now sits at **1.68×** with none of it fitted to anything.
+and the model now sits at **1.67×** with none of it fitted to anything.
 
 ---
 
@@ -103,11 +103,19 @@ Fixed with NHTS 2022 Table 5-2 occupancies by purpose. Measured:
 
 **How to break it — and I think this is the most likely place for me to be
 wrong:**
-- The scripts lane applies **no mode split at all.** Walk, bike and transit
-  person-trips are still being assigned as cars. NHTS puts non-auto at roughly
-  13–17% of person trips. **I have not corrected this and it is a second unit
-  error of the same family.** Check whether correcting it over-corrects, since
-  occupancy and mode share interact.
+- **DONE after this brief was first written.** The scripts lane now calls the
+  worker's mode-choice model, so walk and cycle trips are no longer assigned as
+  cars. Auto share comes out 76.5–88.5% across the five counties, which brackets
+  the national figure. Effect on VMT is small (1.68 → 1.67) and that is
+  physically right — the trips removed are the short ones. Count error 80.6% →
+  78.2%.
+  **My first version of it returned a 98.5% auto share**, because AequilibraE's
+  distance skim is in METRES and the mode model wants miles: it asked whether
+  anyone would walk thirty-five thousand miles. A rural county with almost no
+  walking is plausible, so the number survived until it was compared against the
+  published non-auto share. **That is a seventh instance of the pattern below,
+  and I made it.** With no transit skim the split is auto-versus-active only and
+  claims no transit share.
 - Is `HBW_PROD_RATE`'s basis (`max(workers, households × 0.35)`) a person-trip
   rate at all? I assumed yes from the provenance string. Verify.
 - The agreement study compared the two lanes **before** this fix. Its conclusion
@@ -140,7 +148,7 @@ tractable open item in this document.
 1. **Tertiary roads carry 0.07× observed** — a 14× under-assignment on a whole
    road class, untouched by finer zoning, unexplained. Nobody has looked since.
 2. **`main.py`'s inline external OD** (see 4 above).
-3. **No mode split in the scripts lane** (see 5 above).
+3. ~~No mode split in the scripts lane~~ — done; see 5 above.
 4. **`OPENPLAN_MAX_GATEWAYS = 8`** while counties have 25–47 crossings.
    CLAUDE.md says lift it; I showed lifting it *first* makes things worse
    because each crossing gets its flat figure independently. Order matters.
@@ -163,12 +171,13 @@ reached by the data it needed.** Each produced a plausible number:
 | the whole of `gateway_counts.py` (no caller) | — |
 | gateway names in every REUSED network | "pass-through barely matters (+0.3%)" |
 | the pass-through env override reaching one lane | "the share does not matter" (identical output at 0.35/0.55/0.75/0.90) |
+| a metres skim passed to a model wanting miles | "98.5% of trips are by car" — plausible for a rural county |
 
 **None was caught by a test. All six were caught by measuring.** Every one had
 the same shape: a dict rebuilt field by field instead of copied, or a constant
 read in one place and hardcoded in another.
 
-**Please look for a seventh.** A grep for dicts assembled key-by-key from
+**Please look for an eighth.** A grep for dicts assembled key-by-key from
 another dict, in the modelling lane, is where I would start.
 
 ---

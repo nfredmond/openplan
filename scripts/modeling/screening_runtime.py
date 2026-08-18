@@ -236,12 +236,20 @@ CONVERT_PERSON_TRIPS_TO_VEHICLES = os.getenv(
     "OPENPLAN_PERSON_TRIPS_TO_VEHICLES", "1"
 ) not in ("0", "false", "False")
 
+#: Remove walk and cycle trips before assigning. Default ON for the same reason
+#: as the occupancy division: putting a pedestrian on a road link is a unit
+#: error. Off only to reproduce a measurement taken before 2026-08-18.
+SPLIT_NON_AUTO_MODES = os.getenv("OPENPLAN_SPLIT_NON_AUTO_MODES", "1") not in ("0", "false", "False")
+
 HBO_PROD_RATE = 2.2
 NHB_PROD_RATE = 0.9
 HBO_ATTR_RETAIL_RATE = 12.0
 HBO_ATTR_SERVICE_RATE = 5.0
 HBO_ATTR_POP_RATE = 0.5
 NHB_ATTR_EMP_RATE = 2.5
+#: Metres per mile. The AequilibraE link and skim `distance` fields are metres.
+METERS_PER_MILE = 1609.344
+
 PEAK_HOUR_FACTOR = 0.10
 
 
@@ -1567,6 +1575,15 @@ def compute_freeflow_skims(project_dir: Path, centroid_map: dict[int, int], run_
     skim_path = run_output_dir / "travel_time_skims.omx"
     skim_mat.export(str(skim_path))
     matrix = np.array(skim_mat.matrix[time_field], dtype=float)
+    # Distance is skimmed alongside time and returned, not just written to the
+    # file. Mode choice needs how FAR a trip is, not only how long it takes —
+    # a two-mile crawl and a twenty-mile freeway run can share a duration and
+    # are not remotely the same walking decision.
+    distance_matrix = (
+        np.array(skim_mat.matrix["distance"], dtype=float)
+        if "distance" in skim_fields and time_field != "distance"
+        else None
+    )
     finite = np.isfinite(matrix) & (matrix > 0)
     np.fill_diagonal(finite, False)
     reachable_pairs = int(finite.sum())
@@ -1574,6 +1591,7 @@ def compute_freeflow_skims(project_dir: Path, centroid_map: dict[int, int], run_
 
     result = {
         "matrix": matrix,
+        "distance_matrix": distance_matrix,
         "centroids_sorted": centroids_sorted.tolist(),
         "time_field": time_field,
         "capacity_field": capacity_field,
@@ -2031,6 +2049,8 @@ def synthesize_demand(
     nhb_scalar: float = 1.0,
     supplied_internal_matrix: np.ndarray | None = None,
     convert_person_trips_to_vehicles: bool = CONVERT_PERSON_TRIPS_TO_VEHICLES,
+    distance_matrix: np.ndarray | None = None,
+    split_non_auto_modes: bool = SPLIT_NON_AUTO_MODES,
 ) -> dict[str, Any]:
     """Assemble the trip matrix this run will assign.
 
@@ -2084,6 +2104,44 @@ def synthesize_demand(
         nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1) * internal
         nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1) * internal
         nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA * GAMMA_MULTIPLIER) * nhb_scalar
+
+    # WALKING AND CYCLING ARE NOT CARS. This lane assigned every generated
+    # person trip to the road network, including the ones nobody drove. The
+    # worker has had a mode-choice model since it was written; the rules are
+    # imported from it rather than restated, and with no transit skim the split
+    # is auto-versus-active only, which is the honest result of having no
+    # transit data rather than a fabricated transit share.
+    #
+    # Needs DISTANCE as well as time: a two-mile crawl and a twenty-mile
+    # freeway run can share a duration and are not the same walking decision.
+    # Without a distance skim the split is skipped and the run says so, because
+    # guessing distance from time would invent the very thing being decided.
+    mode_split_applied: dict[str, Any] | None = None
+    if split_non_auto_modes and supplied_internal_matrix is None and distance_matrix is not None:
+        from mode_choice import mode_share_matrices
+
+        area = zones_df["area_sq_mi"].to_numpy(dtype=float)
+        density = np.divide(pop, np.maximum(area, 1e-9) * 2.58999, out=np.zeros_like(pop), where=area > 0)
+        # THE SKIM IS IN METRES; the mode model wants miles. Passed unconverted
+        # it asks whether anyone would walk thirty-five thousand miles, answers
+        # no, and returns a 98.5% auto share that looks like a rural county
+        # rather than a unit error. Same shape as the six inert corrections
+        # found earlier today, and I made this one.
+        distance_miles = np.asarray(distance_matrix, dtype=float) / METERS_PER_MILE
+        p_auto, _, p_active = mode_share_matrices(skim_matrix, distance_miles, None, density)
+        before = float(hbw.sum() + hbo.sum() + nhb.sum())
+        hbw, hbo, nhb = hbw * p_auto, hbo * p_auto, nhb * p_auto
+        after = float(hbw.sum() + hbo.sum() + nhb.sum())
+        mode_split_applied = {
+            "auto_share_of_person_trips": round(after / before, 4) if before else None,
+            "transit": "not modelled — no transit skim was supplied, so no transit share is claimed",
+            "source": "workers/aequilibrae_worker/mode_choice.py, the worker lane's own model",
+            # Routed network distance, where the worker uses straight-line
+            # centroid separation. Recorded because the two lanes' splits will
+            # differ slightly and a reader should know why.
+            "distance_basis": "routed network distance from the skim, converted from metres to miles",
+            "median_trip_miles": round(float(np.median(distance_miles[np.isfinite(distance_miles) & (distance_miles > 0)])), 2),
+        }
 
     # PERSON TRIPS BECOME VEHICLE TRIPS HERE, and nowhere else in this lane.
     # Applied after distribution and before anything is assigned, so the trip
@@ -2158,6 +2216,7 @@ def synthesize_demand(
             # activity-based one, is entitled to see the unit conversion rather
             # than have it buried.
             "vehicle_occupancy_applied": occupancy_applied,
+            "mode_split_applied": mode_split_applied,
         },
         "external_gateways": gateways,
         "files": {"od_trip_matrix": "package/od_trip_matrix.csv"},
@@ -2613,6 +2672,7 @@ def run_screening_model(
         hbo_scalar=hbo_scalar,
         nhb_scalar=nhb_scalar,
         supplied_internal_matrix=(supplied_package or {}).get("matrix"),
+        distance_matrix=skim_meta.get("distance_matrix"),
     )
     assignment_meta = _timed(
         "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
