@@ -1971,7 +1971,12 @@ def export_loaded_links_geojson(project_dir: Path, link_results: pd.DataFrame, r
     features = []
     for link_id, row in volume_lookup.items():
         db_row = conn.execute(
-            "SELECT link_id, link_type, COALESCE(name, ''), AsGeoJSON(geometry) FROM links WHERE link_id=?",
+            # `direction` rides along because a count station on a divided
+            # highway measures BOTH carriageways while OSM maps them as two
+            # one-way links — worth a factor of two on 99% of motorway links.
+            # See workers/aequilibrae_worker/count_validation.corridor_volume.
+            "SELECT link_id, link_type, COALESCE(name, ''), AsGeoJSON(geometry), COALESCE(direction, 0) "
+            "FROM links WHERE link_id=?",
             (link_id,),
         ).fetchone()
         if not db_row or not db_row[3]:
@@ -1987,6 +1992,10 @@ def export_loaded_links_geojson(project_dir: Path, link_results: pd.DataFrame, r
                     "pce_ab": round(float(row.get("PCE_AB", 0) or 0), 2),
                     "pce_ba": round(float(row.get("PCE_BA", 0) or 0), 2),
                     "voc_max": round(float(row.get("VOC_max", 0) or 0), 4),
+                    # A divided highway is two one-way links in OSM; a count
+                    # station measures both. Consumers need to know which they
+                    # are looking at.
+                    "is_one_way": bool(int(db_row[4] or 0) != 0),
                 },
                 "geometry": json.loads(db_row[3]),
             }

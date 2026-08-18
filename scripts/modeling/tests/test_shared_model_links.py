@@ -12,6 +12,7 @@ counts that agree. The worst pair is 2 vehicles a day against 33,723.
 """
 from __future__ import annotations
 
+import csv
 import sys
 import unittest
 from pathlib import Path
@@ -245,6 +246,109 @@ class TheWholeValidationRunAppliesIt(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.tmp.cleanup()
+
+
+class DividedHighwaysAreComparedWhole(unittest.TestCase):
+    """A count station measures the road; OSM maps a divided one as halves.
+
+    Measured across 24 counties: 99% of motorway links are one-way
+    carriageways, and a two-way link reads 2.09-2.14x higher than a one-way
+    link of the same class. Freeways read 0.78 of observed for this reason
+    alone.
+
+    THIS TEST EXISTS BECAUSE THE FIRST WIRING SILENTLY DID NOTHING. The
+    candidate dict rebuilds selected fields rather than copying the feature, so
+    `is_one_way` was dropped on the way in and every divided highway was
+    compared against a single carriageway — with the correction code present,
+    tested, and never firing.
+    """
+
+    def setUp(self) -> None:
+        import json
+        import tempfile
+
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.out = self.root / "run_output"
+        self.out.mkdir(parents=True)
+        (self.out / "link_volumes.csv").write_text("link_id,PCE_tot\n1,20000\n2,18000\n")
+        (self.out / "evidence_packet.json").write_text(json.dumps({"engine": "aequilibrae"}))
+        self.json = json
+
+    def geojson(self, one_way: bool, include_property: bool = True) -> None:
+        def feature(link_id, lon, offset):
+            properties = {"link_id": link_id, "name": "Golden State Highway", "link_type": "motorway"}
+            if include_property:
+                properties["is_one_way"] = one_way
+            return {
+                "type": "Feature",
+                "geometry": {"type": "LineString", "coordinates": [[lon, 39.2], [lon, 39.21]]},
+                "properties": properties,
+            }
+
+        (self.out / "loaded_links.geojson").write_text(
+            self.json.dumps({"type": "FeatureCollection", "features": [feature(1, -121.0, 0), feature(2, -121.0008, 1)]})
+        )
+
+    def counts(self) -> Path:
+        path = self.root / "counts.csv"
+        fields = [
+            "station_id", "label", "facility_name", "count_type", "direction", "observed_volume",
+            "source_agency", "source_description", "candidate_model_names", "candidate_link_types",
+            "bbox_min_lon", "bbox_min_lat", "bbox_max_lon", "bbox_max_lat", "notes",
+        ]
+        with path.open("w", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fields)
+            writer.writeheader()
+            writer.writerow({
+                "station_id": "S1", "label": "SR 99", "facility_name": "SR 99", "count_type": "AADT",
+                "direction": "two_way", "observed_volume": "38000", "source_agency": "Caltrans",
+                "source_description": "MAINLINE", "candidate_model_names": "Golden State Highway",
+                "candidate_link_types": "motorway", "bbox_min_lon": -121.1, "bbox_min_lat": 39.1,
+                "bbox_max_lon": -120.9, "bbox_max_lat": 39.3, "notes": "",
+            })
+        return path
+
+    def run_it(self):
+        from validate_screening_observed_counts import run_validation_bundle
+
+        return run_validation_bundle(
+            run_output_dir=self.out, counts_csv=self.counts(),
+            output_dir=self.root / "validation", required_matches=1,
+        )
+
+    def results(self):
+        with (self.root / "validation" / "validation_results.csv").open(newline="") as handle:
+            return list(csv.DictReader(handle))
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_both_carriageways_are_compared_against_the_station(self) -> None:
+        self.geojson(one_way=True)
+        summary = self.run_it()
+        row = self.results()[0]
+        self.assertEqual(row["carriageways_summed"], "2")
+        self.assertEqual(float(row["modeled_daily_pce"]), 38000.0)
+        self.assertEqual(float(row["absolute_percent_error"]), 0.0)
+        self.assertTrue(summary["divided_highways"]["direction_recorded_in_geometry"])
+
+    def test_a_two_way_road_is_left_alone(self) -> None:
+        self.geojson(one_way=False)
+        self.run_it()
+        row = self.results()[0]
+        self.assertEqual(row["carriageways_summed"], "1")
+        self.assertEqual(float(row["modeled_daily_pce"]), 20000.0)
+
+    def test_a_run_without_the_direction_property_says_so_instead_of_silently_halving(self) -> None:
+        # Runs made before the property existed cannot be corrected, and a
+        # comparison that quietly skipped the correction is indistinguishable
+        # from one that did not need it.
+        self.geojson(one_way=True, include_property=False)
+        summary = self.run_it()
+        self.assertFalse(summary["divided_highways"]["direction_recorded_in_geometry"])
+        self.assertIn("predates the carriageway-direction property", summary["divided_highways"]["note"])
+        self.assertIn("roughly half", summary["divided_highways"]["note"])
 
 
 if __name__ == "__main__":

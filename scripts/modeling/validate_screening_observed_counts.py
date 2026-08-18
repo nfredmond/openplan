@@ -7,6 +7,7 @@ import json
 import math
 import os
 import sqlite3
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -372,6 +373,12 @@ def build_feature_index(geojson_path: Path, volume_lookup: dict[int, dict[str, A
                 "lon": lon,
                 "lat": lat,
                 "volume": round(volume) if volume is not None else 0,
+                # Absent on runs made before this property existed. Those
+                # runs cannot have their carriageways summed — the information
+                # is not in the artifact — and the summary says so rather than
+                # reporting a corrected comparison it did not make.
+                "is_one_way": bool(properties.get("is_one_way")),
+                "direction_recorded": "is_one_way" in properties,
             }
         )
     return features
@@ -432,6 +439,25 @@ def station_sort_key(row: dict[str, Any]) -> tuple[int, float]:
     return (0 if volume > 0 else 1, -volume)
 
 
+def corridor_volume_for(candidate: dict[str, Any], features: list[dict[str, Any]]) -> tuple[float, int]:
+    """The whole corridor's volume at a link — ONE authority, the worker's.
+
+    Imported rather than reimplemented: two lanes computing "is this a divided
+    highway" from the same data by different rules is how the app and a report
+    come to disagree about one road. The worker's version is the tested one
+    (workers/aequilibrae_worker/count_validation.py) and it is pure, so it
+    imports cleanly here.
+    """
+    # parents[1] is scripts/, not the repo root — this file lives in
+    # scripts/modeling/, so the repo root is two levels up.
+    worker_dir = Path(__file__).resolve().parents[2] / "workers" / "aequilibrae_worker"
+    if str(worker_dir) not in sys.path:
+        sys.path.insert(0, str(worker_dir))
+    from count_validation import corridor_volume
+
+    return corridor_volume(candidate, features)
+
+
 def collect_station_candidates(
     station: dict[str, Any],
     features: list[dict[str, Any]],
@@ -472,6 +498,11 @@ def collect_station_candidates(
                 "lon": feature.get("lon"),
                 "lat": feature.get("lat"),
                 "volume": float(feature.get("volume") or 0),
+                # Carried through because `corridor_volume` needs it. The
+                # candidate dict rebuilds selected fields rather than copying,
+                # so a field the pairing depends on silently became False here
+                # and every divided highway read as a single carriageway.
+                "is_one_way": bool(feature.get("is_one_way")),
                 "source": source,
                 "exact_name_match": exact_name_match,
                 "facility_name_match": facility_name_match,
@@ -743,6 +774,7 @@ def write_results_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         "absolute_difference",
         "absolute_percent_error",
         "volume_ratio_model_obs",
+        "carriageways_summed",
         "candidate_model_names",
         "notes",
     ]
@@ -972,7 +1004,10 @@ def run_validation_bundle(
             continue
 
         if best_model_link is not None and observed_volume is not None and observed_volume > 0:
-            modeled_volume = float(best_model_link["volume"] or 0)
+            # THE WHOLE CORRIDOR, not one carriageway. A count station on a
+            # divided highway measures both directions while OSM maps them as
+            # two one-way links — a factor of two on 99% of motorway links.
+            modeled_volume, carriageways = corridor_volume_for(best_model_link, features)
             abs_diff = abs(modeled_volume - observed_volume)
             ape = 100.0 * abs_diff / observed_volume
             ratio = safe_ratio(modeled_volume, observed_volume)
@@ -988,6 +1023,7 @@ def run_validation_bundle(
                     "absolute_difference": int(round(abs_diff)),
                     "absolute_percent_error": round(ape, 2),
                     "volume_ratio_model_obs": round(ratio, 4) if ratio is not None else "",
+                    "carriageways_summed": carriageways,
                 }
             )
         candidate_audit.append(
@@ -1013,6 +1049,22 @@ def run_validation_bundle(
     # is only knowable once they all have.
     shared_link_resolution = resolve_shared_links(results)
 
+    # A run whose geometry predates the direction property cannot have its
+    # carriageways summed, and a comparison that quietly skipped the correction
+    # is indistinguishable from one that did not need it.
+    direction_known = any(feature.get("direction_recorded") for feature in features)
+    carriageway_note = (
+        f"{sum(1 for row in results if str(row.get('carriageways_summed') or '') == '2')} station(s) "
+        "sit on a divided highway and were compared against both carriageways summed."
+        if direction_known
+        else (
+            "This run's link geometry predates the carriageway-direction property, so a station on a "
+            "divided highway was compared against ONE carriageway while its count measures both. "
+            "Freeway figures here read roughly half of what a corrected comparison gives. Re-run the "
+            "model to get a comparison that sums them."
+        )
+    )
+
     summary = build_summary(
         evidence=evidence,
         counts_csv=counts_csv,
@@ -1025,6 +1077,10 @@ def run_validation_bundle(
         required_matches=required_matches,
     )
     summary["shared_model_links"] = shared_link_resolution
+    summary["divided_highways"] = {
+        "direction_recorded_in_geometry": direction_known,
+        "note": carriageway_note,
+    }
 
     write_results_csv(output_dir / "validation_results.csv", results)
     (output_dir / "validation_summary.json").write_text(json.dumps(summary, indent=2))
