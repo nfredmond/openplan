@@ -441,13 +441,43 @@ from the carriageway-corrected validation directory:
 
 **No arm is adoptable. Criterion 1 — the VMT band of 1.0 ± 0.35 — fails for
 every one**, and the steps shrink by half each time (−0.59, −0.18, −0.09,
-−0.05), so the curve asymptotes near 1.33: at the very edge of the band, only
-in the limit, and only at multipliers that criterion 4 would reject anyway.
+−0.05).
+
+*(Correction: I first wrote that the curve "asymptotes near 1.33". That was
+extrapolation from four points, and the ×4.0 arm then came in at 1.51, which
+looked like a reversal. It was neither. One county's ×4.0 run had not finished,
+so that median covered four counties against the others' five — the tool named
+the ungraded run and I read the medians instead. Every county falls
+monotonically. `arms_are_comparable` now travels with the comparison so an arm
+with a different county set cannot be read as a result.)*
 
 Count error also has a minimum at ×2.5 and rises again at ×3.0, so the two
 metrics do not even agree on a best arm.
 
 ## The reason, measured rather than inferred
+
+### The median hid the thing worth knowing
+
+Per county, at ×3.0, the model-to-published VMT ratio and how far the lever
+moved it:
+
+| county | external share of VMT | ratio at 1.0 | at ×3.0 | overshoot reduced by |
+|---|---:|---:|---:|---:|
+| Tulare, CA | 25.7% | 2.29 | **1.03** | 55.0% |
+| Merced, CA | 53.5% | 2.88 | 1.74 | 39.7% |
+| Pueblo, CO | 60.9% | 1.99 | 1.38 | 30.4% |
+| Broomfield, CO | 75.2% | 1.41 | 1.21 | 14.3% |
+| San Benito, CA | 82.6% | 2.82 | **2.49** | 11.5% |
+
+**Correlation between a county's external share and how much gamma can reduce
+its overshoot: −0.985** (n = 5, over a 3× range of external share). The lever
+works almost exactly in proportion to how much of the county's driving the
+county itself generates. Tulare, where three quarters of the vehicle-miles are
+internal, lands inside the criterion-1 band. San Benito, where five sixths come
+from the boundary, barely moves.
+
+That is the same finding the headline gives, stated per county: the parameter is
+fine and it is pointed at the wrong term.
 
 **A median 61% of modelled vehicle-miles is boundary traffic** (25.7%–82.6%
 across all five development counties, measured by re-running with

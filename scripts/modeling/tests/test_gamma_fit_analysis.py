@@ -17,6 +17,7 @@ import json
 import sqlite3
 import sys
 import tempfile
+import statistics
 import unittest
 from pathlib import Path
 
@@ -339,6 +340,36 @@ class TheFourPreRegisteredCriteria(unittest.TestCase):
         self.assertEqual(result["failed_criteria"], [1])
         self.assertIn("criterion 1", result["verdict"])
         self.assertIn("defaults stay", result["verdict"])
+
+
+class ArmsWithDifferentCountiesAreNotComparable(unittest.TestCase):
+    """The failure that made a monotone curve look like it reversed.
+
+    A x4.0 arm lost one county to an unfinished run. Its median VMT ratio came
+    out at 1.51 against 1.38 for x3.0, which reads as the parameter turning
+    around. Every county had actually fallen monotonically; the difference was
+    the missing county. The tool DID name the ungraded run in a field — and the
+    medians were what got read.
+    """
+
+    def test_an_arm_summary_names_the_counties_it_covers(self) -> None:
+        runs = [
+            {"county_fips": "06047", "vmt_ratio": 1.7,
+             "counts": {"median_ape": 80.0, "stations": 10, "by_road_class": {}}},
+            {"county_fips": "06069", "vmt_ratio": 2.4,
+             "counts": {"median_ape": 90.0, "stations": 10, "by_road_class": {}}},
+        ]
+        summary = gfa.summarize_arm(runs)
+        self.assertEqual(summary["county_fips"], ["06047", "06069"])
+        self.assertEqual(summary["counties"], 2)
+
+    def test_a_median_over_a_different_county_set_is_a_different_median(self) -> None:
+        # The arithmetic behind the false reversal, stated plainly: dropping one
+        # county moves the median more than the parameter did.
+        five = [1.68, 2.44, 1.03, 1.19, 1.34]
+        four = [1.68, 2.44, 1.19, 1.34]
+        self.assertAlmostEqual(statistics.median(five), 1.34)
+        self.assertAlmostEqual(statistics.median(four), 1.51)
 
 
 if __name__ == "__main__":

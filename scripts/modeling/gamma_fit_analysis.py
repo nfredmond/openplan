@@ -179,6 +179,7 @@ def summarize_arm(runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                 by_class.setdefault(name, []).append(block["median_ape"])
     return {
         "counties": len(runs),
+        "county_fips": sorted({run["county_fips"] for run in runs}),
         "median_vmt_ratio": round(statistics.median(ratios), 3),
         "median_count_ape": round(statistics.median(apes), 2) if apes else None,
         "stations": sum(run["counts"]["stations"] for run in runs),
@@ -372,6 +373,15 @@ def main() -> int:
         except ValueError:
             problems.append(f"--multiplier {pair}: not a number")
 
+    requested = sorted(set(args.county or []))
+    arm_coverage = {
+        prefix: {
+            "counties_present": sorted({run["county_fips"] for run in runs}),
+            "counties_missing": sorted(set(requested) - {run["county_fips"] for run in runs}),
+        }
+        for prefix, runs in arms.items()
+    }
+
     baseline_arm = summarize_arm(arms.get(args.baseline_prefix, []))
     grading = {
         prefix: grade_against_preregistered_criteria(
@@ -402,6 +412,18 @@ def main() -> int:
         },
         "arms": {prefix: summarize_arm(runs) for prefix, runs in arms.items()},
         "per_county": {prefix: runs for prefix, runs in arms.items()},
+        # WHICH ARMS CAN BE COMPARED TO EACH OTHER AT ALL.
+        #
+        # An arm summarized over four counties and one over five are two
+        # different medians, and the difference between them is the missing
+        # county, not the parameter. This happened: a x4.0 arm lost one county
+        # to an unfinished run and its median VMT ratio rose from 1.38 to 1.51,
+        # which read as the curve reversing. Every county had in fact fallen
+        # monotonically. The run WAS named in `runs_that_could_not_be_graded`
+        # and I read the medians instead, so the fact now travels with the
+        # comparison rather than beside it.
+        "arms_are_comparable": len({tuple(sorted(a["counties_present"])) for a in arm_coverage.values()}) <= 1,
+        "arm_coverage": arm_coverage,
         "preregistered_grading": grading,
         "runs_that_could_not_be_graded": problems,
         "what_this_is_not": [
