@@ -449,8 +449,11 @@ metrics do not even agree on a best arm.
 
 ## The reason, measured rather than inferred
 
-**A median 68% of modelled vehicle-miles is boundary traffic** (53.5%–82.6%
-across four counties, measured by re-running with `--external-demand-scalar 0`).
+**A median 61% of modelled vehicle-miles is boundary traffic** (25.7%–82.6%
+across all five development counties, measured by re-running with
+`--external-demand-scalar 0`). The spread matters as much as the median: the
+lever's power over a given county depends on how much of its driving it
+generates itself.
 Gamma cannot touch any of it. It can only shrink the other third, which is why
 the curve flattens exactly where it does.
 

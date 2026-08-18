@@ -158,6 +158,7 @@ def write_bundle_outputs(
     calibration: dict[str, Any] | None = None,
     assumptions: dict[str, Any] | None = None,
     published_counts: dict[str, Any] | None = None,
+    boundary_traffic_seeding: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     manifest = build_bundle_manifest(
         run_name=run_name,
@@ -187,6 +188,12 @@ def write_bundle_outputs(
     # apart; a missing key would let both read as silence.
     if published_counts is not None:
         manifest["published_counts"] = published_counts
+    # Which boundary crossings got a measured volume and which kept the class
+    # default. Recorded per gateway rather than as a count, because "6 of 8
+    # measured" says nothing about whether the two that were not are the busy
+    # ones.
+    if boundary_traffic_seeding is not None:
+        manifest["boundary_traffic_seeding"] = boundary_traffic_seeding
     write_json(run_dir / "bundle_manifest.json", manifest)
     evidence = build_evidence_packet(
         run_name=run_name,

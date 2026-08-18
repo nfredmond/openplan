@@ -169,7 +169,7 @@ A number that includes through-traffic was compared against one that does not.
 
 ### The comparison the model actually loses or wins
 
-Measured by re-running four development counties with `--external-demand-scalar 0`
+Measured by re-running all five development counties with `--external-demand-scalar 0`
 (`scripts/modeling/external_demand_share.py`), which assigns internal demand
 alone on the same network:
 
@@ -186,13 +186,16 @@ trips twice as far as real trips go. Per-county spread is wide — 2.41, 3.01,
 
 | county | network VMT | internal | **external** | external share |
 |---|---:|---:|---:|---:|
-| Merced, CA | 17,967,313 | 8,361,029 | 9,606,285 | **53.5%** |
+| Merced, CA | 17,967,314 | 8,361,029 | 9,606,285 | **53.5%** |
 | San Benito, CA | 4,032,562 | 700,927 | 3,331,635 | **82.6%** |
+| **Tulare, CA** | 23,993,313 | 17,824,160 | 6,169,153 | **25.7%** |
 | Broomfield, CO | 2,637,176 | 652,797 | 1,984,379 | **75.2%** |
 | Pueblo, CO | 8,452,030 | 3,304,837 | 5,147,194 | **60.9%** |
 
-**A median 68% of all modelled vehicle-miles is traffic injected at the
-boundary** on a flat daily figure by road class — motorway 15,000, trunk 9,000,
+**A median 61% of all modelled vehicle-miles is traffic injected at the
+boundary** — and the spread is enormous, 25.7% to 82.6%. Tulare, the largest of
+the five, is the low one: a county with a lot of its own travel dilutes the
+term. The figure is a flat daily figure by road class — motorway 15,000, trunk 9,000,
 primary 6,000 — identical in every county in the United States and observed
 nowhere. In Merced that term alone is 1.54× the county's entire published daily
 VMT.

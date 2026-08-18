@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 import math
@@ -14,7 +15,7 @@ from datetime import datetime, timezone
 import warnings
 from importlib import metadata as importlib_metadata
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import geopandas as gpd
 import numpy as np
@@ -162,6 +163,14 @@ NHB_GAMMA = 1.2
 #: behaviour until a pre-registered experiment moves it
 #: (docs/modeling/TRIP_LENGTH_CALIBRATION_2026-08-17.md).
 GAMMA_MULTIPLIER = float(os.getenv("OPENPLAN_GAMMA_MULTIPLIER", "1.0") or 1.0)
+
+#: Seed each boundary crossing's traffic from a published count where one sits
+#: on that road. Default OFF until the change is measured on the development
+#: counties — the flat per-class figure it replaces is known to be wrong, but
+#: "replace a guess with real data" is exactly the change that feels safe and
+#: introduces a worse error, which is why `gateway_counts.py` is mostly
+#: refusals. Flip the default in the commit that carries the measurement.
+SEED_GATEWAYS_FROM_COUNTS = os.getenv("OPENPLAN_SEED_GATEWAYS_FROM_COUNTS", "0") in ("1", "true", "True")
 HBO_PROD_RATE = 2.2
 NHB_PROD_RATE = 0.9
 HBO_ATTR_RETAIL_RATE = 12.0
@@ -1725,6 +1734,74 @@ def keep_corridor_endpoints(
     return kept, notes
 
 
+def withhold_seeding_stations_from_grading(
+    counts_csv: Path, output_csv: Path, stations_consumed: Sequence[str]
+) -> dict[str, Any]:
+    """Drop the stations that set the boundary traffic from the grading set.
+
+    Seeding a gateway from a count and then reporting how closely the model
+    matches that same count is marking your own exam — the same rule the
+    calibration split already enforces, applied to demand. The count of what was
+    withheld travels with the run, because a validation set that quietly shrank
+    reads as a study area with fewer stations.
+    """
+    from gateway_counts import assert_counts_not_reused_for_grading
+
+    consumed = {str(station) for station in stations_consumed if str(station)}
+    if not consumed:
+        return {"stations_withheld": 0, "counts_csv": None,
+                "note": "No gateway was seeded from a published count, so nothing was withheld."}
+
+    with counts_csv.open(newline="") as handle:
+        reader = csv.DictReader(handle)
+        fieldnames = reader.fieldnames or []
+        rows = list(reader)
+    kept = [row for row in rows if str(row.get("station_id") or "") not in consumed]
+
+    ensure_dir(output_csv.parent)
+    with output_csv.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(kept)
+
+    # Belt and braces, and it costs nothing: if the filter above ever stops
+    # working, this says so instead of publishing a self-graded accuracy figure.
+    assert_counts_not_reused_for_grading(consumed, [row.get("station_id", "") for row in kept])
+    return {
+        "stations_withheld": len(rows) - len(kept),
+        "stations_remaining": len(kept),
+        "counts_csv": str(output_csv),
+        "note": (
+            f"{len(rows) - len(kept)} station(s) set how much traffic enters the study area and "
+            "are therefore excluded from the accuracy comparison; a model cannot be graded on the "
+            "numbers it was built from."
+        ),
+    }
+
+
+def seed_boundary_traffic_from_counts(
+    gateways: list[dict[str, Any]], counts_csv: Path
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Replace each boundary crossing's guessed volume with a measured one where one exists.
+
+    Wiring, not new logic: `gateway_counts.py` was written, tested and never
+    called by anything. It refuses a match that cannot prove BOTH road identity
+    and closeness, because matching on proximity alone once paired a motorway
+    crossing with a count on a different highway 1.2 miles away reading 3,150
+    where the freeway carries 33,000.
+
+    Every gateway comes back saying which basis it used, so a crossing running
+    on the class default is visible rather than blended in with the measured
+    ones. Stations consumed here are recorded so the accuracy check can exclude
+    them: grading the model on the numbers that built it measures nothing.
+    """
+    from gateway_counts import seed_gateways_from_counts
+
+    with counts_csv.open(newline="") as handle:
+        counts = list(csv.DictReader(handle))
+    return seed_gateways_from_counts(gateways, counts)
+
+
 def build_external_zone_rows(gateways: list[dict[str, Any]], first_zone_id: int) -> pd.DataFrame:
     """One zone per gateway, centred on the point its highway crosses the boundary.
 
@@ -2221,6 +2298,7 @@ def run_screening_model(
     demand_package_dir: str | None = None,
     zone_package_dir: str | None = None,
     calibrate_counts_csv: str | None = None,
+    seed_gateways_from_published_counts: bool = SEED_GATEWAYS_FROM_COUNTS,
     counts_mode: str | None = None,
     calibrate_to_counts: bool = False,
     reuse_network_from: str | None = None,
@@ -2328,30 +2406,19 @@ def run_screening_model(
     # systems.
     zone_meta = write_zone_package_files(zones_df, package_dir, zone_meta)
     project_dir = Path(network_meta["project_dir"])
-    skim_meta = _timed("skims", compute_freeflow_skims, project_dir, network_meta["centroid_map"], run_output_dir)
-    demand_meta = _timed(
-        "demand",
-        synthesize_demand,
-        zones_df,
-        skim_meta["matrix"],
-        network_meta["gateways"],
-        package_dir,
-        overall_demand_scalar=overall_demand_scalar,
-        external_demand_scalar=external_demand_scalar,
-        hbw_scalar=hbw_scalar,
-        hbo_scalar=hbo_scalar,
-        nhb_scalar=nhb_scalar,
-        supplied_internal_matrix=(supplied_package or {}).get("matrix"),
-    )
-    assignment_meta = _timed(
-        "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
-    )
 
-    # AUTOMATIC COMPARISON AGAINST PUBLISHED COUNTS. Runs here, after the
-    # baseline assignment, because that is the first moment both things exist:
-    # the road network the counts must be matched against, and a completed set
-    # of link volumes to compare. Fetching earlier would have nothing to match
-    # to; running it as a second pass would download the network twice.
+    # PUBLISHED COUNTS ARE FETCHED HERE, BEFORE DEMAND, because they now do two
+    # jobs and the second one has to happen first.
+    #
+    # They grade the finished assignment, which is why this used to sit after
+    # it. But they also SEED the boundary traffic: measured 2026-08-18, a median
+    # 68% of everything a screening run assigns is traffic injected at the
+    # study-area edge on a flat figure by road class — the same number in every
+    # county in the country, observed nowhere. A published count on the road
+    # where it crosses the boundary is a measurement of exactly that quantity.
+    #
+    # Fetching needs the network and the boundary, not the assignment, so moving
+    # it earlier costs nothing and downloads nothing twice.
     #
     # Nothing is asked of the planner. The study area's own boundary says which
     # state it is in, and state DOTs publish this without a key.
@@ -2372,6 +2439,44 @@ def run_screening_model(
             counts_csv = auto_counts_meta.get("validation_counts_csv") or auto_counts_meta["counts_csv"]
         if auto_counts_meta.get("calibration_counts_csv"):
             calibrate_counts_csv = auto_counts_meta["calibration_counts_csv"]
+
+    gateway_seeding: dict[str, Any] | None = None
+    if seed_gateways_from_published_counts and auto_counts_meta and auto_counts_meta.get("counts_csv"):
+        network_meta["gateways"], gateway_seeding = seed_boundary_traffic_from_counts(
+            network_meta["gateways"], Path(auto_counts_meta["counts_csv"])
+        )
+        # A station that set how much traffic ENTERS the study area cannot also
+        # grade how well the model reproduces it. Withheld from the validation
+        # set rather than refused at the end of the run: the run is fine, it is
+        # the exam that needs one fewer question.
+        withheld = withhold_seeding_stations_from_grading(
+            Path(counts_csv) if counts_csv else Path(auto_counts_meta["counts_csv"]),
+            run_dir / "counts" / "counts_for_grading.csv",
+            gateway_seeding.get("stations_consumed") or [],
+        )
+        gateway_seeding["grading"] = withheld
+        if withheld["counts_csv"]:
+            counts_csv = withheld["counts_csv"]
+
+    skim_meta = _timed("skims", compute_freeflow_skims, project_dir, network_meta["centroid_map"], run_output_dir)
+    demand_meta = _timed(
+        "demand",
+        synthesize_demand,
+        zones_df,
+        skim_meta["matrix"],
+        network_meta["gateways"],
+        package_dir,
+        overall_demand_scalar=overall_demand_scalar,
+        external_demand_scalar=external_demand_scalar,
+        hbw_scalar=hbw_scalar,
+        hbo_scalar=hbo_scalar,
+        nhb_scalar=nhb_scalar,
+        supplied_internal_matrix=(supplied_package or {}).get("matrix"),
+    )
+    assignment_meta = _timed(
+        "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
+    )
+
 
     # OPT-IN CALIBRATION. Off unless a count set is named, and it never runs
     # itself: the uncalibrated screening model is what this product ships, and
@@ -2487,6 +2592,7 @@ def run_screening_model(
         calibration=calibration_meta,
         assumptions=model_assumptions(),
         published_counts=auto_counts_meta,
+        boundary_traffic_seeding=gateway_seeding,
     )
 
     validation_summary = None
