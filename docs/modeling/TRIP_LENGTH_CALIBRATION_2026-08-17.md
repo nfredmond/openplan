@@ -667,3 +667,34 @@ with (`backfill_gateway_names_from_project`), so runs already on disk can pair.
 Removing the call — not the function, the call — fails a test that drives the
 reuse path end to end, because testing the function alone is what let this
 through.
+
+### Seeding re-measured on top of pass-through — the answer does not change
+
+Seeding was rejected before pass-through existed, and the two interact directly,
+so it was re-run with both on. Same network, same stations:
+
+| county | VMT: pass-through | + seeded | error: pass-through | + seeded |
+|---|---:|---:|---:|---:|
+| Merced, CA | 2.70 | 2.97 | 117.7% | 147.3% |
+| San Benito, CA | 2.72 | **2.48** | 98.6% | **74.2%** |
+| Tulare, CA | 2.26 | 2.35 | 140.2% | 149.2% |
+| Broomfield, CO | **1.20** | **2.01** | 58.1% | 60.1% |
+| Pueblo, CO | 1.97 | 1.97 | 88.3% | 88.3% |
+| **median** | **2.26** | **2.35** | **98.6%** | **88.3%** |
+
+Still a trade: counts better, total worse. **`OPENPLAN_SEED_GATEWAYS_FROM_COUNTS`
+stays off**, now tested under both conditions.
+
+**Broomfield says what is actually binding.** Its measured crossings are 66,500
+a day against the flat cap of 20,000, so real volumes more than triple its
+boundary demand — and 35% of that routed across still leaves the other 65%
+flooding a county 33 square miles across. For a small county bisected by two
+interstates the true through-share is nowhere near 35%.
+
+**So the next number to measure is `GATEWAY_PASSTHROUGH_SHARE` itself.** It is a
+flat uncalibrated constant applied identically to a freeway and a county road,
+and it is now the largest unmeasured quantity in the boundary story — the same
+class of guess the per-crossing volume was, one level up. A share that varied
+with road class and with how much of the route lies inside the study area is the
+obvious shape; measuring it needs a source this lane does not have yet, and
+saying that is better than fitting it to these five counties.

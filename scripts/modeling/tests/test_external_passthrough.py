@@ -158,12 +158,26 @@ class AReusedNetworkMustStillKnowItsRoads(unittest.TestCase):
         self.assertEqual(sr.backfill_gateway_names_from_project(summary, self.project), 0)
         self.assertEqual(summary["gateways"][0]["name"], "Something Else")
 
-    def test_a_link_with_no_name_stays_unnamed_rather_than_inventing_one(self) -> None:
+    def test_a_link_with_no_name_is_recorded_as_having_none(self) -> None:
         # An unnamed road is a real thing, and pairing two of them would route
-        # traffic between unrelated crossings.
+        # traffic between unrelated crossings — so no name is invented.
+        #
+        # But the KEY is set, to "". "This road has no name" and "the caller
+        # forgot the field" are different facts, and `match_count_to_gateway`
+        # refuses the second while tolerating the first. Leaving the key absent
+        # made them identical and crashed four of five runs.
         summary = {"gateways": [{"link_id": 99, "zone_id": 15}]}
         self.assertEqual(sr.backfill_gateway_names_from_project(summary, self.project), 0)
-        self.assertNotIn("name", summary["gateways"][0])
+        self.assertEqual(summary["gateways"][0]["name"], "")
+
+    def test_an_unnamed_crossing_survives_the_seeding_match(self) -> None:
+        # The end-to-end consequence: seeding must skip it, not refuse the run.
+        from gateway_counts import match_count_to_gateway
+
+        summary = {"gateways": [{"link_id": 99, "zone_id": 15,
+                                 "boundary_lon": -121.0, "boundary_lat": 36.9}]}
+        sr.backfill_gateway_names_from_project(summary, self.project)
+        self.assertIsNone(match_count_to_gateway(summary["gateways"][0], []))
 
     def test_recovered_names_are_enough_to_pair_a_route(self) -> None:
         # End to end: the whole point is that pairing works afterwards.

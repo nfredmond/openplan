@@ -1180,8 +1180,13 @@ def backfill_gateway_names_from_project(summary: dict[str, Any], project_dir: Pa
     filled = 0
     for gateway in missing:
         name = names.get(int(gateway.get("link_id", -1)), "")
+        # ALWAYS set the key, even to "". A crossing whose road genuinely has no
+        # name in OSM is a real thing and must be distinguishable from a caller
+        # that forgot to pass the field — `match_count_to_gateway` refuses the
+        # second and tolerates the first, and after the first version of this
+        # backfill they were indistinguishable, which crashed four of five runs.
+        gateway["name"] = name
         if name:
-            gateway["name"] = name
             filled += 1
     return filled
 
