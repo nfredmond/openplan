@@ -473,6 +473,50 @@ function handEnteredSection(manifest: CountyOnrampManifest | null): string[] {
  * trail could say where the DATA came from and not where the ASSUMPTIONS came
  * from — and the assumptions are doing most of the work.
  */
+/**
+ * Whether this run counted cars or people, which is a factor of about 1.6.
+ *
+ * Until 2026-08-18 the trip-based model generated PERSON trips and assigned
+ * every one of them to the road network as though it were a car, and assigned
+ * walking and cycling trips too. Both were corrected, and the same county
+ * re-run afterwards reports roughly 27% less traffic.
+ *
+ * A planner holding a run from before and a run from after sees that drop with
+ * nothing on the page to explain it, and the older run is the wrong one. So an
+ * older run says so, rather than the newer one having to justify itself.
+ */
+function demandUnitBasis(manifest: CountyOnrampManifest | null): string[] {
+  const demand = asRecord((manifest as unknown as Record<string, unknown>)?.demand);
+  const rates = asRecord(demand?.trip_rates);
+  if (!rates) return [];
+  const occupancy = asRecord(rates.vehicle_occupancy_applied);
+  const modeSplit = asRecord(rates.mode_split_applied);
+  const supplied = asText(demand?.demand_source) === "supplied_package";
+  if (supplied) return [];
+
+  if (!occupancy) {
+    return [
+      "",
+      "> **This run assigned person-trips to the road network as though each were a vehicle.**",
+      "> Three people sharing a car are three trips and one car, so its traffic figures are",
+      "> roughly 1.6 times too high. Re-run the model to get figures in vehicles. A run made",
+      "> after 2026-08-18 states the vehicle occupancies it applied.",
+    ];
+  }
+
+  const parts = Object.entries(occupancy)
+    .map(([purpose, value]) => `${purpose} ${asNumber(value) ?? "?"}`)
+    .join(", ");
+  const auto = asNumber(modeSplit?.auto_share_of_person_trips);
+  return [
+    "",
+    `- **Person-trips converted to vehicles** using average occupancy by purpose (${parts}).`,
+    auto === null
+      ? "- **No mode split was applied**, so walking and cycling trips are on the road network."
+      : `- **${(auto * 100).toFixed(1)}% of person-trips were driven**; the rest were walked or cycled and are not on the road network.`,
+  ];
+}
+
 function assumptionsSection(manifest: CountyOnrampManifest | null): string[] {
   const assumptions = asRecord((manifest as unknown as Record<string, unknown>)?.assumptions);
   if (!assumptions) {
@@ -564,6 +608,7 @@ export function buildCountyRunProvenanceDocument(input: CountyRunProvenanceInput
     "## What the model assumed",
     "",
     ...assumptionsSection(input.manifest),
+    ...demandUnitBasis(input.manifest),
     "",
     "## Checked against real traffic counts?",
     "",

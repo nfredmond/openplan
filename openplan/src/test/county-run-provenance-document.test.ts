@@ -640,3 +640,52 @@ describe("accuracy figures graded by rules that no longer apply", () => {
     expect(graded({ validation_rules_version: 3 })).not.toContain("superseded");
   });
 });
+
+describe("whether the run counted cars or people", () => {
+  // Until 2026-08-18 the trip-based model assigned PERSON trips to the road
+  // network as though each were a car, and assigned walking and cycling too.
+  // The same county re-run afterwards reports roughly 27% less traffic, and a
+  // planner holding one of each sees that drop with nothing explaining it.
+  const withDemand = (demand: Record<string, unknown>) =>
+    buildCountyRunProvenanceDocument(
+      input({ manifest: manifestWith({ zone_count: 26 }, { demand }) })
+    );
+
+  it("an older run says its traffic figures are about 1.6 times too high", () => {
+    const document = withDemand({ demand_source: "gravity_v1", trip_rates: {} });
+    expect(document).toContain("as though each were a vehicle");
+    expect(document).toContain("1.6 times too high");
+  });
+
+  it("a corrected run states the occupancies it used", () => {
+    const document = withDemand({
+      demand_source: "gravity_v1",
+      trip_rates: {
+        vehicle_occupancy_applied: { hbw: 1.08, hbo: 1.72, nhb: 1.52 },
+        mode_split_applied: { auto_share_of_person_trips: 0.875 },
+      },
+    });
+    expect(document).toContain("hbw 1.08");
+    expect(document).toContain("87.5% of person-trips were driven");
+    expect(document).not.toContain("1.6 times too high");
+  });
+
+  it("a corrected run with no mode split says walking is still on the roads", () => {
+    const document = withDemand({
+      demand_source: "gravity_v1",
+      trip_rates: { vehicle_occupancy_applied: { hbw: 1.08 }, mode_split_applied: null },
+    });
+    expect(document).toContain("No mode split was applied");
+  });
+
+  it("says nothing for a run whose demand came from another model", () => {
+    // An ActivitySim package is already in vehicles; warning about it would be
+    // wrong, and warning about every run trains everyone to ignore the warning.
+    const document = withDemand({ demand_source: "supplied_package", trip_rates: {} });
+    expect(document).not.toContain("as though each were a vehicle");
+  });
+
+  it("says nothing for a run that recorded no trip rates at all", () => {
+    expect(withDemand({ demand_source: "gravity_v1" })).not.toContain("as though each were a vehicle");
+  });
+});
