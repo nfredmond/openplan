@@ -557,3 +557,60 @@ The improvement worth trying next is matching on route designation (OSM `ref`,
 "I 25") as well as ceremonial name, because state DOT feeds are organised by
 route number and OpenPlan is matching against names like "John F. Kennedy
 Memorial Highway".
+
+---
+
+## Seeding boundary traffic from real counts — measured, and NOT switched on
+
+Five development counties, seeded arm against unseeded baseline, **both graded
+on the same stations** (the seeded run withholds the stations that set its own
+boundary traffic, so the baseline was re-graded on that same reduced set).
+
+| county | crossings measured | count error base → seeded | VMT ratio base → seeded |
+|---|---:|---:|---:|
+| Merced, CA | 4 of 8 | 137.8% → **153.9%** | 2.88 → 3.18 |
+| San Benito, CA | 4 of 8 | 98.6% → **80.0%** | 2.82 → **2.58** |
+| Tulare, CA | 5 of 8 | 156.0% → 151.6% | 2.29 → 2.38 |
+| Broomfield, CO | 4 of 8 | 74.3% → 68.7% | 1.41 → **2.56** |
+| Pueblo, CO | 0 of 8 | 87.9% → 87.9% | 1.99 → 1.99 |
+| **median** | | **98.6% → 87.9%** | **2.29 → 2.56** |
+
+**The two measures disagree, and the disagreement is the finding.** Agreement
+with observed counts improves by about 11 points. Total vehicle-miles gets
+worse, by a lot in Broomfield.
+
+### Why, measured rather than reasoned
+
+**Correlation between the change in injected boundary crossings and the change
+in total network VMT: +0.981.** Broomfield's crossings rose 84.7% and its
+network VMT rose 81.4% — very nearly one for one.
+
+Total VMT is close to a linear function of how many trips are injected at the
+edge, because **every one of them is routed into the study area's interior and
+back out.** A gateway's `daily_in` is distributed across all zones by
+employment and its `daily_out` drawn from all zones by population; there is no
+gateway-to-gateway demand at all. So a vehicle that in reality clips a corner of
+Broomfield on I-25 is modelled as a trip from the county line to somewhere in
+the middle of the county, plus another one back.
+
+Replacing the guessed volume with the real one therefore makes that structural
+error **bigger**, in exact proportion. Broomfield is the extreme case for a
+reason: 33 square miles with two interstates through it, so nearly all of its
+boundary traffic is genuinely passing through.
+
+### The decision
+
+**`OPENPLAN_SEED_GATEWAYS_FROM_COUNTS` stays OFF by default.** Seeding is more
+honest per crossing and the run records which crossings are measured, so it is
+available to anyone who wants it — but switching it on today would trade a wrong
+number for a differently wrong number and report the improved count agreement as
+progress.
+
+**The blocker is now named and it is not the gateway volume.** It is that
+boundary traffic has no through-movement: the model cannot represent a vehicle
+crossing the study area. Until gateway-to-gateway demand exists, a truer
+crossing volume makes the total worse, and no amount of accuracy in the volume
+changes that.
+
+That is the next piece of work in this lane, and it is a demand-structure
+change, not a parameter.
