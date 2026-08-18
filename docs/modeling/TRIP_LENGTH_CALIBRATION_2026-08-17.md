@@ -419,3 +419,68 @@ saying which is which.
 Doing it the other way round would take a model that over-assigns 2.1x and make
 it worse, while the headline "more crossings modelled" would read as an
 improvement.
+
+---
+
+# CLOSED 2026-08-18 — NOT ADOPTED. The defaults stay.
+
+**Graded by `grade_against_preregistered_criteria` in
+`scripts/modeling/gamma_fit_analysis.py`, which applies the four rules above as
+arithmetic rather than leaving them to a reading of a table.**
+
+Five development counties (06047, 06069, 06107, 08014, 08101), all arms graded
+from the carriageway-corrected validation directory:
+
+| multiplier | VMT ratio | count error | motorway | primary | secondary | tertiary | trunk | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| 1.0 (default) | 2.29 | 97.5% | 64% | 228% | 100% | 83% | 101% | — |
+| ×1.5 | 1.70 | 85.6% | 44% | 164% | 100% | 84% | 92% | fails 1, 2 |
+| ×2.0 | 1.52 | 72.1% | 37% | 123% | 96% | 88% | 86% | fails 1 |
+| ×2.5 | 1.43 | 62.3% | 39% | 100% | 98% | 93% | 83% | fails 1 |
+| ×3.0 | 1.38 | 64.2% | 42% | 86% | 99% | 90% | 82% | fails 1 |
+
+**No arm is adoptable. Criterion 1 — the VMT band of 1.0 ± 0.35 — fails for
+every one**, and the steps shrink by half each time (−0.59, −0.18, −0.09,
+−0.05), so the curve asymptotes near 1.33: at the very edge of the band, only
+in the limit, and only at multipliers that criterion 4 would reject anyway.
+
+Count error also has a minimum at ×2.5 and rises again at ×3.0, so the two
+metrics do not even agree on a best arm.
+
+## The reason, measured rather than inferred
+
+**A median 68% of modelled vehicle-miles is boundary traffic** (53.5%–82.6%
+across four counties, measured by re-running with `--external-demand-scalar 0`).
+Gamma cannot touch any of it. It can only shrink the other third, which is why
+the curve flattens exactly where it does.
+
+And the third it shrinks was already the right size: **network miles per
+internal trip is 5.59 against a real ~5.7**
+(`WHY_THE_MODEL_OVER_ASSIGNS_2026-08-17.md`, correction). At ×2.5 gamma drives
+the mean internal trip to 3.59 miles — well below anything real — and the count
+error improves anyway, because the external term then carries the network almost
+alone.
+
+**So this experiment did not fail to find a good multiplier. It established that
+no multiplier is the right instrument**, and it did so through a rule written
+before any number existed. Had criterion 1 been "does it improve", ×2.5 would
+have looked like a 35-point win and shipped.
+
+## What the pre-registration got right, and what it did not
+
+Right: fitting against published VMT rather than counts, so the counts stayed
+independent; the band around 1.0 rather than a test for improvement; grading
+per road class with a station floor; and writing all of it down first.
+
+Not right: the premise. The rules were sound and the diagnosis they were built
+on — "the model sends every trip roughly twice as far as real trips go" — was an
+artifact of comparing network-miles-per-trip against a per-resident figure. A
+pre-registration protects the analysis, not the hypothesis.
+
+## Next
+
+Replace the flat per-crossing figure with observed AADT where a count station
+sits near the crossing — 58% of gateways in these counties have one within 3 km
+— label the rest as the class default, and only then ask whether any demand
+parameter still needs to move. The gateway cap must not be lifted before that;
+see the section above.
