@@ -293,3 +293,87 @@ must do:
    defect removed, the road-class spread is much smaller than it looked, which
    makes a magnitude correction more plausible than it appeared an hour ago —
    and the trip-length lever is back in scope for exactly that.
+
+---
+
+## CORRECTION, 2026-08-18: the motorway result above was a measurement defect
+
+**Everything above this line stands as written on 2026-08-17. This section
+supersedes its motorway conclusion, and the pre-registered rules are unchanged.**
+
+The ×1.5 arm was reported as failing criterion 3 because motorway error rose
+30.7% → 47.2%. That comparison was wrong, and in a way that had nothing to do
+with gamma.
+
+**A count station on a divided highway measures both directions. OSM maps that
+road as two one-way carriageways, each carrying half the traffic.** The
+validator compared the station's whole-road count against ONE carriageway. 59 of
+73 motorway stations in these five counties sit on a divided highway, so the
+class most affected was the class the criterion turned on.
+
+Re-graded with both carriageways summed — same runs, same stations, same rules,
+only the comparison corrected:
+
+| | baseline | ×1.5 | ×2.0 |
+|---|---:|---:|---:|
+| median VMT ratio (model ÷ published) | 2.29 | 1.70 | **1.52** |
+| median count error | 97.5% | 82.7% | **67.1%** |
+| motorway (73 stations) | 58.3% | **39.6%** | 41.5% |
+| primary | 227.8% | 169.6% | 125.0% |
+| secondary | 237.1% | 205.7% | 178.9% |
+| trunk | 101.2% | 91.6% | 85.7% |
+| tertiary (10 stations — below the criterion's threshold) | 65.5% | 67.1% | 76.2% |
+
+Motorway model ÷ observed: **1.08 baseline → 0.91 at ×1.5 → 0.82 at ×2.0.**
+
+So the earlier claim that "motorways were already under-assigned and gamma
+pushed them further down" is **wrong on its first half**. At baseline motorways
+are assigned very nearly correctly (1.08); gamma pushes them below 1.0, and
+×1.5 lands them closer to the truth in absolute error than the baseline did.
+
+**Criterion 3 now passes for ×1.5 and for ×2.0** — no road class with ≥ 20
+stations gets materially worse; every one of them improves.
+
+### What this changes about the lane's conclusions
+
+- The per-class over-assignment table in
+  `WHY_THE_MODEL_OVER_ASSIGNS_2026-08-17.md` (motorway 0.78, tertiary 0.07)
+  was computed with the same defect and **understates every divided-highway
+  class by roughly a factor of two.** The worker lane was corrected in
+  `f527df2c` and the scripts lane in `c26873fd`; that table has not yet been
+  recomputed and should not be quoted until it is.
+- The conclusion that "the fix is not a scalar on trip length" was reasoned
+  from the motorway regression. That reasoning no longer holds. It may still be
+  true — a scalar cannot fix a two-directional error — but it is no longer
+  supported by this experiment.
+
+### What has NOT changed
+
+Criterion 1 is still failed by every arm measured so far. The band is
+1.0 ± 0.35 and the VMT ratio goes 2.29 → 1.70 → 1.52: **improving, flattening,
+and still outside.** Gamma at 2.0 leaves half again as much driving as
+published.
+
+The likely reason is recorded above and is not speculative: external gateway
+trips are injected at the boundary and never pass through the gravity model, so
+gamma cannot touch them — a median 17.3% of all trips across the study
+counties, on a flat per-crossing guess.
+
+**×3.0 and ×4.0 arms are running on the same five development counties to
+measure where the curve asymptotes.** ×4.0 is outside criterion 4's adoptable
+band by construction; it is diagnostic, not a candidate. If the curve flattens
+above 1.35, that is the measured answer that gamma alone cannot reach the
+target, and the gateway figure — not the decay parameter — is the next thing to
+fix.
+
+### The mechanism that let this happen
+
+The correction code was present, tested, and inert in the scripts lane: the
+candidate dictionaries are rebuilt field by field rather than copied, so
+`is_one_way` never reached the pairing. A synthetic divided highway read 20,000
+against a 38,000 count with the fix "installed". Three mutations now kill that,
+and a two-way negative control kills the opposite error of doubling everything.
+
+Runs made before the property was exported are still gradable: direction is
+recovered from the AequilibraE project database each run was assigned on, and
+the summary records that the fact came from there rather than from the geometry.
