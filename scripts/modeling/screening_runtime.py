@@ -200,6 +200,42 @@ EXTERNAL_PASSTHROUGH = os.getenv("OPENPLAN_EXTERNAL_PASSTHROUGH", "1") not in ("
 #: a CEILING, and adopting a ceiling as an estimate assumes all the through
 #: travel a road permits actually happens. Measured before any default changes.
 PASSTHROUGH_FROM_COUNTS = os.getenv("OPENPLAN_PASSTHROUGH_FROM_COUNTS", "0") in ("1", "true", "True")
+#: Average vehicle occupancy by trip purpose — persons carried per vehicle.
+#:
+#: PERSON TRIPS ARE NOT VEHICLE TRIPS. Three people sharing a car make three
+#: person-trips and put ONE vehicle on the road. This lane generated person
+#: trips (its own provenance says "trips per person per day") and assigned them
+#: straight to the network as though each were a car, so every link carried
+#: roughly 1.6 times too many vehicles.
+#:
+#: The ActivitySim lane has always divided by occupancy and says why in
+#: `activitysim_demand_package.py`: "the comparison would report the demand
+#: models disagreeing when what actually differed was the unit." The two lanes
+#: were being compared in different units.
+#:
+#: Source: 2022 NHTS Summary of Travel Trends, Table 5-2 (average vehicle
+#: occupancy by trip purpose, person-miles per vehicle-mile), with the non-work
+#: figure weighted by that report's own Table 4-5 daily trip rates:
+#:   shopping+errands  rate 0.80, occupancy 1.56 (mean of 1.53 and 1.60)
+#:   social/recreation rate 0.67, occupancy 1.99
+#:   school/church     rate 0.26, occupancy 1.52 (the report's all-purpose figure)
+#:   => (0.80*1.56 + 0.67*1.99 + 0.26*1.52) / 1.73 = 1.72
+#: 2022 is the most recent published year and its occupancies are LOWER than
+#: 2017's (1.52 against 1.67 all-purpose), so using it applies the SMALLER
+#: correction of the two.
+VEHICLE_OCCUPANCY = {
+    "hbw": 1.08,   # NHTS 2022 Table 5-2, "To/From Work"
+    "hbo": 1.72,   # trip-rate-weighted non-work, derived above
+    "nhb": 1.52,   # NHTS 2022 Table 5-2, "All"
+}
+
+#: Divide generated person trips by occupancy before assignment. Default ON:
+#: assigning a person trip as a vehicle is a unit error, not a modelling choice.
+#: Off only to reproduce a measurement taken before 2026-08-18.
+CONVERT_PERSON_TRIPS_TO_VEHICLES = os.getenv(
+    "OPENPLAN_PERSON_TRIPS_TO_VEHICLES", "1"
+) not in ("0", "false", "False")
+
 HBO_PROD_RATE = 2.2
 NHB_PROD_RATE = 0.9
 HBO_ATTR_RETAIL_RATE = 12.0
@@ -1994,6 +2030,7 @@ def synthesize_demand(
     hbo_scalar: float = 1.0,
     nhb_scalar: float = 1.0,
     supplied_internal_matrix: np.ndarray | None = None,
+    convert_person_trips_to_vehicles: bool = CONVERT_PERSON_TRIPS_TO_VEHICLES,
 ) -> dict[str, Any]:
     """Assemble the trip matrix this run will assign.
 
@@ -2047,6 +2084,17 @@ def synthesize_demand(
         nhb_prod = np.maximum(pop * NHB_PROD_RATE, 1) * internal
         nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1) * internal
         nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA * GAMMA_MULTIPLIER) * nhb_scalar
+
+    # PERSON TRIPS BECOME VEHICLE TRIPS HERE, and nowhere else in this lane.
+    # Applied after distribution and before anything is assigned, so the trip
+    # totals a reader sees in the manifest stay person-scale (which is what the
+    # published trip rates are) while the network carries vehicles.
+    occupancy_applied: dict[str, float] | None = None
+    if convert_person_trips_to_vehicles and supplied_internal_matrix is None:
+        hbw = hbw / VEHICLE_OCCUPANCY["hbw"]
+        hbo = hbo / VEHICLE_OCCUPANCY["hbo"]
+        nhb = nhb / VEHICLE_OCCUPANCY["nhb"]
+        occupancy_applied = dict(VEHICLE_OCCUPANCY)
 
     if external_demand_scalar != 1.0:
         gateways = [
@@ -2105,6 +2153,11 @@ def synthesize_demand(
             "hbw_scalar": hbw_scalar,
             "hbo_scalar": hbo_scalar,
             "nhb_scalar": nhb_scalar,
+            # The single number that scales the whole internal demand. Recorded
+            # because a reader comparing two runs, or this model against an
+            # activity-based one, is entitled to see the unit conversion rather
+            # than have it buried.
+            "vehicle_occupancy_applied": occupancy_applied,
         },
         "external_gateways": gateways,
         "files": {"od_trip_matrix": "package/od_trip_matrix.csv"},
