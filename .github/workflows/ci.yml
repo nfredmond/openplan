@@ -34,6 +34,56 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role
           ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
 
+  modeling-script-tests:
+    name: modeling scripts (python unit tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scripts/modeling/tests
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # NONE of these suites ran in CI until 2026-08-18. The worker job above
+      # globs `workers/aequilibrae_worker/test_*.py` and stops there, so the
+      # county-script lane's 39 suites — count validation, the carriageway
+      # pairing, shared-link resolution, the pre-registered gamma criteria,
+      # population synthesis, ActivitySim inputs — were only ever run by
+      # whoever happened to run them locally. A guard nobody runs is a
+      # convention.
+      #
+      # Same lightweight posture as the worker job: no aequilibrae. geopandas
+      # and openmatrix are here because screening_runtime and the ActivitySim
+      # input builder import them at module level — verified in a clean venv
+      # with exactly this list, where 38 of 39 suites pass.
+      - name: Install test deps
+        run: pip install "numpy<2.1" pandas shapely requests python-dotenv geopandas openmatrix
+
+      # `|| exit 1`, not `|| break`: break leaves the loop with status 0, which
+      # would turn a failing suite into a green job. The floor catches a broken
+      # glob, which is how the worker job silently ran five of twenty for months.
+      - name: Unit tests (all suites the lightweight env can run)
+        run: |
+          set -u
+          count=0
+          for f in test_*.py; do
+            case "$f" in
+              test_reuse_network_from_run.py)
+                echo "=== $f SKIPPED: imports the aequilibrae engine, which this job deliberately does not install"
+                continue
+                ;;
+            esac
+            echo "=== $f"
+            python "$f" || exit 1
+            count=$((count + 1))
+          done
+          echo "ran $count suites"
+          test "$count" -ge 38 || { echo "expected at least 38 suites, found $count — the glob broke"; exit 1; }
+
   worker-tests:
     name: worker (python unit tests)
     runs-on: ubuntu-latest
