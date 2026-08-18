@@ -777,3 +777,68 @@ honoured it and the county-script lane never did. A flat result across a
 four-fold parameter change would have read as "the share does not matter". The
 share is now parsed and clamped in one place for both lanes, and a test asserts
 they resolve to the same value.
+
+---
+
+## The data DOES exist and is free — and it corrects what I concluded above
+
+I wrote, two sections up, that settling the through-share needed data that
+observes travel rather than counting vehicles at points, that such data costs
+money, and that the question should be parked. **The first two claims were
+reasoning from memory instead of looking, and the third followed from them.**
+
+**FHWA's Traveler Analysis Framework** publishes county-to-county person-trip
+tables for long-distance travel, free, as plain CSV of `origin FIPS,
+destination FIPS, annual person trips`. It is derived from observed travel, so a
+flow whose endpoints both lie outside a county and whose path crosses it *is*
+travel passing through. `scripts/modeling/through_trips_taf.py`.
+
+### What it says
+
+Share of long-distance travel touching each county that passes through:
+
+| county | through/day | ends there/day | through share |
+|---|---:|---:|---:|
+| Merced, CA | 64,472 | 13,854 | **82%** |
+| Tulare, CA | 69,784 | 19,532 | **78%** |
+| San Benito, CA | 27,351 | 8,443 | **76%** |
+| Pueblo, CO | 17,962 | 5,708 | **76%** |
+| Broomfield, CO | 6,608 | 2,365 | **74%** |
+
+### And it does NOT support what I said about 0.35
+
+FHWA's long-distance threshold is 100 miles, so these are *only* the long trips.
+Converting to vehicles at an occupancy of 2.0 and comparing against each
+county's modelled boundary crossings gives a **floor** on the cordon share:
+
+| county | long-distance through, vehicles/day | modelled crossings/day | floor |
+|---|---:|---:|---:|
+| Tulare, CA | 34,892 | 194,000 | **18%** |
+| Merced, CA | 32,236 | 260,000 | 12% |
+| San Benito, CA | 13,676 | 160,000 | 9% |
+| Pueblo, CO | 8,981 | 146,000 | 6% |
+| Broomfield, CO | 3,304 | 320,000 | **1%** |
+
+So the through share at a cordon is now bounded on **both** sides from free
+data: **at least 1–18% from observed long-distance travel, at most 45–100% from
+the count profiles.** The flat 0.35 sits inside that band in every county
+measured.
+
+**I said 0.35 was "unsupported and probably too low". The first half stands —
+nothing was ever fitted to produce it. The second half does not: the new
+evidence puts it comfortably inside the only band the data supports, and in
+Broomfield the long-distance floor is 1%.** The count ceilings alone had made it
+look low; they are ceilings, and reading a ceiling as a target is the error I
+warned about two sections above and then made myself.
+
+### What this changes about what to do
+
+- **Still nothing adopted.** A band of 1% to 100% does not identify a value.
+- **But the question is no longer parked on money.** Both bounds come from
+  files anyone can download, and both narrow as the inputs improve: routing the
+  TAF flows on a real network instead of straight lines tightens the floor, and
+  denser count profiles tighten the ceiling.
+- **The gap between the bounds is short-distance through travel**, which TAF
+  does not cover and counts cannot separate. That is the specific thing a
+  cordon survey or probe dataset would buy — a much narrower purchase than
+  "origin-destination data", and worth pricing only if a corridor study needs it.
