@@ -156,15 +156,43 @@ Every county moved the right way on VMT (2.88→2.27, 2.29→1.68, 1.99→1.70).
 stations across the three well-sampled counties, every one degrading —
 06047 43%→53%, 08101 17%→36%, 06107 19%→41%.
 
-### Why that is exactly what should have been predicted
+### Why — and a correction to my first explanation of it
 
-The model was already UNDER-assigning freeways at 0.78× observed while
-over-assigning arterials at 2-3×. Shortening every trip pulls traffic off the
-long-distance network first, so it fixes the arterials by making the freeways
-worse. The FHWA distribution said the same thing in different words: 26% of
-modelled vehicle-miles on freeways against a published 45%.
+My first reading was that shortening trips pulls traffic off the long-distance
+network, so freeway SHARE would fall. **That was wrong, and measuring it said
+so:** freeway share of vehicle-miles barely moved (06047 30.3%→29.7%; 06107
+30.2%→**34.5%**, the opposite direction).
 
-**A single multiplier cannot fix a distribution that is wrong in two directions
-at once.** It trades one error for another and reports the average as progress
-— which is precisely what criterion 3 of the pre-registration exists to catch,
-and why it was written before any number existed.
+What actually happened, at the stations themselves:
+
+| county | motorway stations | model ÷ observed |
+|---|---:|---|
+| 06047 | 25 | 0.62 → **0.49** |
+| 08101 | 17 | 0.86 → **0.73** |
+| 06107 | 23 | 0.81 → **0.59** |
+
+Motorways were already UNDER-assigned, and gamma pushed them further down.
+Gamma removes travel from the network roughly proportionally; the arterials
+could afford to lose it and the freeways could not.
+
+### The defect, stated precisely
+
+Across all 24 counties, 1,998 stations:
+
+| class | stations | model ÷ observed | |
+|---|---:|---:|---|
+| motorway | 242 | **0.78** | under-assigned |
+| trunk | 498 | 2.38 | over-assigned |
+| primary | 826 | 2.05 | over-assigned |
+| secondary | 334 | 1.30 | over-assigned |
+| tertiary | 98 | **0.07** | under-assigned |
+
+**The model is wrong in two directions at once, and a single multiplier moves
+every class the same way.** It can trade the arterial error for a freeway
+error, and the headline figures (VMT ratio 2.29→1.70, error 97.5%→76.2%) will
+call that progress.
+
+That is exactly what criterion 3 exists to catch, and why it was written before
+any number existed. The fix is not a scalar on trip length; it is whatever
+distinguishes a long freeway trip from a short arterial one — a network or
+assignment property, not a demand-magnitude one.
