@@ -198,10 +198,16 @@ class GatewayLoadingTests(unittest.TestCase):
         # cordon's row and column, so the total is exactly in + out.
         self.assertAlmostEqual(self.matrix.sum(), 60000.0, places=3)
 
-    def test_arriving_traffic_reaches_real_places_and_not_other_cordons(self) -> None:
-        # Destinations are employment-weighted and a cordon has no jobs, so a
-        # gateway can never send trips to another gateway. Cordon-to-cordon
-        # movement is real pass-through travel and is a separate, later step.
+    def test_a_route_crossing_once_reaches_real_places_and_no_other_cordon(self) -> None:
+        # REWORDED 2026-08-18. Destinations are employment-weighted and a cordon
+        # has no jobs, so this held for every gateway until pass-through was
+        # added — a route crossing the boundary TWICE now sends a share of its
+        # volume to its own other cordon, which is what a vehicle driving across
+        # the county actually does (test_external_passthrough.py).
+        #
+        # This fixture has a single crossing, so nothing pairs and the old
+        # behaviour is still exactly right. The name used to claim it as a
+        # property of every gateway, which would now be false.
         self.assertAlmostEqual(self.matrix[self.index[4], self.index[4]], 0.0, places=6)
         self.assertGreater(self.matrix[self.index[4], self.index[1]], 0.0)
 

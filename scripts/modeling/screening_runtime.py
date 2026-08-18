@@ -10,6 +10,7 @@ import re
 import shutil
 import sqlite3
 import string
+import sys
 import time
 from datetime import datetime, timezone
 import warnings
@@ -162,6 +163,18 @@ NHB_GAMMA = 1.2
 #: so the fit can be MEASURED rather than argued about; 1.0 is the shipped
 #: behaviour until a pre-registered experiment moves it
 #: (docs/modeling/TRIP_LENGTH_CALIBRATION_2026-08-17.md).
+# The worker owns the boundary-crossing rules. Imported rather than restated:
+# this lane had no pass-through at all until 2026-08-18 while the worker had
+# paired same-route cordons since it was written, and two lanes disagreeing
+# about whether a vehicle can cross a county is not a difference anyone would
+# spot in a number. Set up at module level so the import does not depend on
+# whichever caller happens to have arranged sys.path.
+_WORKER_DIR = Path(__file__).resolve().parents[2] / "workers" / "aequilibrae_worker"
+if str(_WORKER_DIR) not in sys.path:
+    sys.path.insert(0, str(_WORKER_DIR))
+
+from gateways import GATEWAY_PASSTHROUGH_SHARE, pair_passthrough_cordons  # noqa: E402
+
 GAMMA_MULTIPLIER = float(os.getenv("OPENPLAN_GAMMA_MULTIPLIER", "1.0") or 1.0)
 
 #: Seed each boundary crossing's traffic from a published count where one sits
@@ -171,6 +184,12 @@ GAMMA_MULTIPLIER = float(os.getenv("OPENPLAN_GAMMA_MULTIPLIER", "1.0") or 1.0)
 #: introduces a worse error, which is why `gateway_counts.py` is mostly
 #: refusals. Flip the default in the commit that carries the measurement.
 SEED_GATEWAYS_FROM_COUNTS = os.getenv("OPENPLAN_SEED_GATEWAYS_FROM_COUNTS", "0") in ("1", "true", "True")
+
+#: Route a share of a two-crossing route's volume from one cordon to the other
+#: rather than into the study area and back out. Default ON because the worker
+#: lane — the one the app and the funder report read — has always done it, and
+#: this lane never did. Off only to reproduce a pre-2026-08-18 measurement.
+EXTERNAL_PASSTHROUGH = os.getenv("OPENPLAN_EXTERNAL_PASSTHROUGH", "1") not in ("0", "false", "False")
 HBO_PROD_RATE = 2.2
 NHB_PROD_RATE = 0.9
 HBO_ATTR_RETAIL_RATE = 12.0
@@ -1879,13 +1898,21 @@ def build_external_gateway_matrix(gateways: list[dict[str, Any]], zones_df: pd.D
     moves a county's through traffic off a forest road and onto the interstate
     it actually uses.
 
-    The destination shares are population- and employment-weighted, and external
-    zones have neither, so they receive nothing: gateway traffic goes to and
-    from real places, never from one cordon to another. Cordon-to-cordon
-    movement is genuine pass-through travel and is NOT modelled here yet — see
-    `pair_passthrough_cordons` in the worker lane. Adding it changes volumes on
-    exactly the corridors this fix is about, so it is a separate step with its
-    own before-and-after.
+    PASS-THROUGH, added 2026-08-18, and the lane divergence it closes. A route
+    that crosses the boundary at two places carries traffic that enters at one
+    and leaves at the other, and a share of its volume is now routed cordon to
+    cordon instead of into the study area and back out.
+
+    The worker lane has done this since it was written. THIS lane never did, so
+    every figure measured here treated a vehicle clipping a county corner as a
+    trip to the middle of the county plus another one back — which is why total
+    vehicle-miles here tracked injected boundary crossings at +0.981. The rules
+    and the share are imported from the worker rather than restated, because two
+    lanes disagreeing about whether a vehicle can cross a county is not a
+    difference anyone would spot in a number.
+
+    Routes crossing at only one place keep 100% internal-destined volume, and
+    unnamed crossings carry no route identity and are never paired.
     """
     zone_ids = zones_df["zone_id"].astype(int).tolist()
     index_lookup = {zone_id: idx for idx, zone_id in enumerate(zone_ids)}
@@ -1895,10 +1922,21 @@ def build_external_gateway_matrix(gateways: list[dict[str, Any]], zones_df: pd.D
     job_shares = jobs / jobs.sum() if jobs.sum() > 0 else np.full(len(zone_ids), 1 / len(zone_ids))
     matrix = np.zeros((len(zone_ids), len(zone_ids)), dtype=float)
 
+    partners = pair_passthrough_cordons(gateways, zone_id_field="zone_id")
+    share = 0.0 if not EXTERNAL_PASSTHROUGH else GATEWAY_PASSTHROUGH_SHARE
+
     for gateway in gateways:
-        idx = index_lookup[int(gateway["zone_id"])]
-        matrix[idx, :] += float(gateway["daily_in"]) * job_shares
-        matrix[:, idx] += float(gateway["daily_out"]) * pop_shares
+        zone_id = int(gateway["zone_id"])
+        idx = index_lookup[zone_id]
+        through = share if partners.get(zone_id) else 0.0
+        internal = 1.0 - through
+        matrix[idx, :] += float(gateway["daily_in"]) * internal * job_shares
+        matrix[:, idx] += float(gateway["daily_out"]) * internal * pop_shares
+        if through > 0.0:
+            destinations = partners[zone_id]
+            per_destination = float(gateway["daily_in"]) * through / len(destinations)
+            for destination in destinations:
+                matrix[idx, index_lookup[int(destination)]] += per_destination
     return matrix
 
 

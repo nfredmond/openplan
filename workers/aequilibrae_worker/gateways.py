@@ -183,7 +183,9 @@ def build_cordon_injections(zones_df: pd.DataFrame) -> tuple[np.ndarray, np.ndar
 GATEWAY_PASSTHROUGH_SHARE = 0.35
 
 
-def pair_passthrough_cordons(gateways: list[dict[str, Any]]) -> dict[int, list[int]]:
+def pair_passthrough_cordons(
+    gateways: list[dict[str, Any]], *, zone_id_field: str = "cordon_zone_id"
+) -> dict[int, list[int]]:
     """Map each cordon zone id to the OTHER cordon zone ids on the same route
     (same normalized highway name), so a fixed share of its boundary-crossing
     volume can be routed as pass-through across the study area (entering at one
@@ -192,10 +194,17 @@ def pair_passthrough_cordons(gateways: list[dict[str, Any]]) -> dict[int, list[i
     A route detected crossing the boundary at only one place has no partner and
     is omitted (its volume stays 100% internal-destined). Blank-named crossings
     carry no route identity and are never paired.
+
+    `zone_id_field` exists because the county-script lane names the same thing
+    `zone_id`. It had NO pass-through at all until 2026-08-18, so every figure
+    measured in that lane routed boundary traffic into the study area's interior
+    and back out — while the worker, the lane the app reads, had been pairing
+    routes the whole time. Two lanes disagreeing about whether a vehicle can
+    cross a county is not a difference anyone would spot in a number.
     """
     by_route: dict[str, list[int]] = {}
     for gw in gateways:
-        cordon_zid = gw.get("cordon_zone_id")
+        cordon_zid = gw.get(zone_id_field)
         if cordon_zid is None:
             continue
         route = _slugify(gw.get("name") or "")
