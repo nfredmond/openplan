@@ -48,6 +48,7 @@ from typing import Tuple
 import requests
 import numpy as np
 import pandas as pd
+from network_ids import renumber_nodes
 from shapely.geometry import box, shape
 from dotenv import load_dotenv
 
@@ -1695,14 +1696,6 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
 
 
 # ─── Stage 1: AequilibraE Setup ────────────────────────────────────────
-def _renumber_nodes(conn: sqlite3.Connection, remap: dict[int, int]) -> None:
-    """Apply a node-id permutation; AequilibraE's node trigger moves links."""
-    for old, new in remap.items():
-        if old != new:
-            conn.execute("UPDATE nodes SET node_id=? WHERE node_id=?", (-new, old))
-    conn.execute("UPDATE nodes SET node_id=-node_id WHERE node_id<0")
-
-
 def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir: str) -> dict:
     """Download OSM, add centroids + connectors, renumber, populate attrs."""
     from aequilibrae import Project
@@ -1906,7 +1899,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     # link endpoint on each node-id change. Updating links again here applies
     # the permutation twice: in a real county graph that detached 13 of 34
     # centroids and drove native assignment into heap corruption.
-    _renumber_nodes(conn, remap)
+    renumber_nodes(conn, remap)
     conn.commit()
 
     centroid_map = {z: remap[n] for z, n in centroid_map.items()}

@@ -3,7 +3,7 @@
 import sqlite3
 import unittest
 
-from main import _renumber_nodes
+from network_ids import renumber_nodes
 
 
 class LinkEndpointRenumberingTest(unittest.TestCase):
@@ -22,7 +22,7 @@ class LinkEndpointRenumberingTest(unittest.TestCase):
             [(1, 10, 20), (2, 20, 30), (3, 30, 10)],
         )
 
-        _renumber_nodes(conn, {10: 20, 20: 30, 30: 10})
+        renumber_nodes(conn, {10: 20, 20: 30, 30: 10})
 
         self.assertEqual(
             conn.execute("SELECT link_id, a_node, b_node FROM links ORDER BY link_id").fetchall(),
