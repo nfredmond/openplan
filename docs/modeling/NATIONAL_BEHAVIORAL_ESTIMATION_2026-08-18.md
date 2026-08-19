@@ -54,6 +54,29 @@ observations into ActivitySim survey tables. Until that mapping and estimation
 are complete, the existing executed ActivitySim lane remains truthfully labeled
 as borrowed Bay Area behavior.
 
+## Weighted diary mapping now measured
+
+`scripts/modeling/us_nhts_diaries.py` maps the V2.1 archive into auditable
+household, person and trip diaries while retaining every raw mode/purpose code.
+Measured on the full archive:
+
+- 7,893 weighted household records;
+- 16,997 weighted person records;
+- 31,074 weighted trip records;
+- all trip modes mapped;
+- 31,006 trips eligible for tour reconstruction; and
+- 47 trips retaining an explicit unknown purpose rather than a guessed one.
+
+This is not yet an ActivitySim coefficient package. Public-use NHTS does not
+contain local origin/destination zone identifiers or matching network LOS. The
+mapper therefore emits a 23-component support matrix: location/destination and
+LOS-sensitive mode-choice models are blocked by name; tour-dependent models are
+blocked until observed trip chains are reconstructed; auto ownership is only a
+candidate requiring a separately reviewed specification. That partial posture
+is deliberate. A nationwide coefficient set may combine components supported
+by national survey evidence with named donor components, but it may never call
+the whole model nationally estimated when only part of it is.
+
 ## Holdout rule now executable
 
 The adapter assigns whole public-use Census divisions to deterministic,
