@@ -46,8 +46,10 @@ class AutoOwnershipEstimationTests(unittest.TestCase):
             self.assertIn("override_choice", train[0])
             self.assertNotIn("override_choice_code", train[0])
             self.assertEqual(next(row for row in train if row["household_id"] == "b")["override_choice"], "4")
-            self.assertEqual(validation[0]["income_ge_35k"], "1")
-            self.assertEqual(validation[0]["income_ge_75k"], "0")
+            self.assertEqual(validation[0]["income_in_thousands"], "35")
+            spec = (root / "edb/all/auto_ownership/auto_ownership_SPEC.csv").read_text()
+            self.assertIn("income_in_thousands >= 35", spec)
+            self.assertNotIn("income_ge_35k,income_ge_35k", spec)
 
     def test_missing_fields_are_counted_and_never_zero_filled(self):
         households = [

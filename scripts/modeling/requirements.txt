@@ -31,6 +31,10 @@
 # result is a change to what OpenPlan tells a planner, so re-run a county and
 # compare the number before widening or raising anything here.
 aequilibrae>=1.6.0
+# The estimation CLI imports ActivitySim directly. Keep this aligned with the
+# execution worker's proven Python 3.11 version; fitting additionally layers
+# workers/activitysim_worker/requirements-estimation.txt for larch.
+activitysim==1.5.1
 geopandas>=1.0
 # <2.1 is a hard ceiling, not caution: newer numpy ABIs heap-corrupt
 # aequilibrae 1.6.x's compiled path engine, which aborts mid-skim with glibc

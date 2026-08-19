@@ -1,0 +1,51 @@
+{
+  "schema_version": "openplan.activitysim-auto-ownership-transfer-result.v1",
+  "evaluated_at": "2026-08-18",
+  "status": "candidate_rejected",
+  "comparison_outcome": "candidate_did_not_outperform_borrowed",
+  "population": {
+    "discovered_geographies": 12,
+    "complete_geographies": 11,
+    "households": 1186026,
+    "sampling": "none"
+  },
+  "household_weighted_metrics": {
+    "borrowed": {
+      "exact_accuracy": 0.45006264618144964,
+      "mean_absolute_vehicle_error": 0.7130779595051036,
+      "mean_error": -0.03798820599211147
+    },
+    "candidate": {
+      "exact_accuracy": 0.4276820238342161,
+      "mean_absolute_vehicle_error": 0.777012476960876,
+      "mean_error": 0.03913320618603639
+    }
+  },
+  "geography_results": [
+    {"geography_id":"06007","households":84055,"borrowed_mae":0.7547,"candidate_mae":0.8060},
+    {"geography_id":"06039","households":48156,"borrowed_mae":0.7738,"candidate_mae":0.8416},
+    {"geography_id":"06053","households":135808,"borrowed_mae":0.7448,"candidate_mae":0.8102},
+    {"geography_id":"08035","households":133468,"borrowed_mae":0.6435,"candidate_mae":0.6998},
+    {"geography_id":"08077","households":64071,"borrowed_mae":0.6810,"candidate_mae":0.7379},
+    {"geography_id":"08123","households":118526,"borrowed_mae":0.7565,"candidate_mae":0.8072},
+    {"geography_id":"41003","households":37534,"borrowed_mae":0.7477,"candidate_mae":0.8148},
+    {"geography_id":"41017","households":81984,"borrowed_mae":0.7130,"candidate_mae":0.7689},
+    {"geography_id":"41067","households":232117,"borrowed_mae":0.6904,"candidate_mae":0.7783},
+    {"geography_id":"53029","households":35816,"borrowed_mae":0.7369,"candidate_mae":0.8017},
+    {"geography_id":"53063","households":214491,"borrowed_mae":0.7064,"candidate_mae":0.7642}
+  ],
+  "geography_wins": {"candidate_lower_mae": 0, "borrowed_lower_or_equal_mae": 11},
+  "excluded": [
+    {
+      "geography_id": "53073",
+      "reason": "incomplete retained study population",
+      "missing_artifacts": [
+        "activitysim_bundle/households.csv",
+        "activitysim_bundle/persons.csv",
+        "activitysim_bundle/configs/settings.yaml",
+        "activitysim_output/output/final_households.csv"
+      ]
+    }
+  ],
+  "interpretation": "The candidate was not accepted. Agreement and disagreement measure methodological sensitivity, not confidence or correctness."
+}

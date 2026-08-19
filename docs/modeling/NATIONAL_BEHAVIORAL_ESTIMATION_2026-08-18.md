@@ -138,6 +138,40 @@ scientific gate is a versioned coefficient package plus a same-population
 comparison against the borrowed auto-ownership component before changing an
 executed run.
 
+### Transfer gate result: first candidate rejected
+
+That next gate was executed, not assumed. The fitted coefficients were packaged
+as a hash-locked three-file ActivitySim overlay, then ActivitySim ran the
+candidate on the same retained Census-fitted household populations previously
+run with stock MTC. Both sides saw identical households, persons, land use,
+skims and upstream model sequence. The original PUMS-derived vehicle ownership
+on each synthetic household was retained as the accuracy reference.
+
+Eleven complete holdout runs covered 1,186,026 households. A twelfth discovered
+directory (`53073`) lacked both a complete bundle and borrowed output and is
+named as excluded in the machine-readable study result. Across the eleven:
+
+Machine-readable result: [`results/auto-ownership-transfer-2026-08-18.json`](results/auto-ownership-transfer-2026-08-18.json).
+
+- stock MTC exact accuracy: 45.01%; national candidate: 42.77%;
+- stock MTC mean absolute error: 0.7131 vehicles; candidate: 0.7770;
+- stock MTC mean bias: -0.0380 vehicles; candidate: +0.0391; and
+- the candidate had lower mean absolute error in **0 of 11** geographies.
+
+The first national auto-ownership candidate is therefore rejected for
+production. Its national NHTS holdout result proved that the estimator and
+survey mapping work; it did **not** prove transfer to Census-synthetic
+populations. This prevents a familiar calibration failure: replacing borrowed
+coefficients merely because the replacement has a national label and converged.
+The reusable comparison remains in
+`scripts/modeling/run_auto_ownership_transfer_study.py`.
+
+One full 31-stage paired run was also completed on the smallest retained
+population before the component-isolation sweep. It confirmed that the overlay
+runs through downstream ActivitySim, while changing total trips from 266,556
+to 265,795. That difference is sensitivity to the auto-ownership method, not
+evidence that either method is correct.
+
 Sources checked:
 
 - [ActivitySim estimation mode](https://activitysim.github.io/activitysim/develop/users-guide/estimation-mode/index.html)

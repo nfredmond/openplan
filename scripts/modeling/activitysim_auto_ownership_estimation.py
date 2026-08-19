@@ -26,11 +26,19 @@ PREDICTORS = (
     ("drivers_4_up", "num_drivers >= 4"),
     ("hhsize_clip_5", "@df.hhsize.clip(upper=5)"),
     ("workers_clip_3", "@df.num_workers.clip(upper=3)"),
-    ("income_ge_35k", "income_ge_35k"),
-    ("income_ge_75k", "income_ge_75k"),
-    ("income_ge_150k", "income_ge_150k"),
+    ("income_ge_35k", "income_in_thousands >= 35"),
+    ("income_ge_75k", "income_in_thousands >= 75"),
+    ("income_ge_150k", "income_in_thousands >= 150"),
     ("constant", "1"),
 )
+
+# Official HHFAMINC_IMP bracket lower bounds, in thousands of dollars. The
+# lower bound is sufficient for the threshold-only specification and avoids
+# inventing either a midpoint or a value above the open-ended top code.
+INCOME_CATEGORY_LOWER_BOUND_THOUSANDS = {
+    1: 0, 2: 10, 3: 15, 4: 25, 5: 35, 6: 50,
+    7: 75, 8: 100, 9: 125, 10: 150, 11: 200,
+}
 
 
 class AutoOwnershipEstimationError(RuntimeError):
@@ -91,9 +99,9 @@ def estimation_chooser(row: dict[str, str]) -> tuple[dict[str, Any] | None, str 
         "num_workers": values["num_workers"],
         # The official categories have boundaries at $35k, $75k and $150k.
         # Indicators preserve what is known without inventing bracket midpoints.
-        "income_ge_35k": int(values["income_category"] >= 5),
-        "income_ge_75k": int(values["income_category"] >= 7),
-        "income_ge_150k": int(values["income_category"] >= 10),
+        "income_in_thousands": INCOME_CATEGORY_LOWER_BOUND_THOUSANDS[
+            values["income_category"]
+        ],
     }, None
 
 
