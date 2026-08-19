@@ -2145,7 +2145,16 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         a.rgap_target = 0.01
         a.set_algorithm("bfw")
         a.execute()
-        return a.results(), rc
+        result_frame = a.results()
+        result_frame.attrs["convergence"] = {
+            "final_gap": (
+                float(a.assignment.rgap)
+                if _np.isfinite(getattr(a.assignment, "rgap", float("nan")))
+                else None
+            ),
+            "iterations": int(getattr(a.assignment, "iteration", a.max_iter)),
+        }
+        return result_frame, rc
 
     def _apply(cum):
         # factor>1 (under-assigned class) -> faster (tt down) + more capacity, so
@@ -2269,6 +2278,18 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     log += (f"Calibration complete: stage-1 {accepted} + stage-2 (demand) {stage2_accepted} "
             f"accepted step(s). Holdout median APE {base_hold['median_ape']}% -> "
             f"{best_hold_ev['median_ape']}%.\n")
+    network_settings = {
+        "schema_version": "openplan.network-calibration.v1",
+        "road_class_factors": dict(sorted(cum.items())),
+        "application": {
+            "travel_time": "baseline_travel_time / factor",
+            "capacity": "baseline_capacity * factor",
+        },
+        "excludes": ["trip_based_od_adjustments"],
+    }
+    settings_path = os.path.join(out_dir, "accepted_network_calibration.json")
+    with open(settings_path, "w") as settings_file:
+        json.dump(network_settings, settings_file, indent=2, sort_keys=True)
     return {
         "method": (
             "Staged count calibration. Stage 1: per-road-class free-flow speed + capacity tuned "
@@ -2280,10 +2301,15 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         "accepted_iterations": accepted,
         "demand_nudge_iterations": stage2_accepted,
         "applied_class_factors": {k: round(v, 4) for k, v in cum.items()},
+        # Full-precision, versioned assignment settings are the machine handoff.
+        # `applied_class_factors` above remains the rounded presentation summary.
+        "network_settings": network_settings,
+        "network_settings_artifact": os.path.basename(settings_path),
         "holdout_station_count": len(holdout_stations),
         "fit_station_count": len(fit_stations),
         "baseline": {"fit": base_fit, "holdout": base_hold},
         "calibrated": {"fit": best_fit_ev, "holdout": best_hold_ev},
+        "convergence": best_df.attrs.get("convergence"),
         "holdout_station_ids": sorted(str(s.get("station_id")) for s in holdout_stations),
         "calibrated_link_volumes": os.path.basename(cal_csv),
         "calibrated_auto_od": calibrated_auto_od,
@@ -2298,6 +2324,52 @@ def should_apply_trip_based_mode_split(
     return mode_split_enabled and not demand_is_vehicle
 
 
+def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None) -> int:
+    """Apply the first assignment's accepted network calibration exactly once.
+
+    Only speed/capacity factors cross the demand-model boundary.  The calibrated
+    trip-based OD is deliberately absent: sharing it would make the ActivitySim
+    assignment partly trip-based and destroy the comparison's provenance.
+    """
+    if settings is None:
+        return 0
+    if settings.get("schema_version") != "openplan.network-calibration.v1":
+        raise RuntimeError("Unsupported persisted network-calibration settings schema")
+    factors = settings.get("road_class_factors")
+    if not isinstance(factors, dict):
+        raise RuntimeError("Persisted network-calibration settings have no road-class factors")
+
+    clean: dict[str, float] = {}
+    for road_class, raw_factor in factors.items():
+        factor = float(raw_factor)
+        if not road_class or not np.isfinite(factor) or factor <= 0:
+            raise RuntimeError("Persisted network-calibration settings contain an invalid factor")
+        clean[str(road_class)] = factor
+
+    connection = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+    try:
+        type_by_id = {
+            int(link_id): str(link_type or "")
+            for link_id, link_type in connection.execute("SELECT link_id, link_type FROM links")
+        }
+    finally:
+        connection.close()
+
+    link_class = graph.graph["link_id"].map(type_by_id)
+    travel_time = graph.graph["travel_time"].to_numpy(dtype=float).copy()
+    capacity = graph.graph["capacity"].to_numpy(dtype=float).copy()
+    changed = 0
+    for road_class, factor in clean.items():
+        mask = (link_class == road_class).to_numpy()
+        changed += int(mask.sum())
+        travel_time[mask] /= factor
+        capacity[mask] *= factor
+    graph.graph["travel_time"] = travel_time
+    graph.graph["capacity"] = capacity
+    graph.set_graph("travel_time")
+    return changed
+
+
 def stage_assignment(
     run_id: str,
     stage_id: str,
@@ -2308,6 +2380,7 @@ def stage_assignment(
     output_dir_name: str = "run_output",
     demand_is_vehicle: bool = False,
     counts_path_override: str | None = None,
+    persisted_network_settings: dict | None = None,
 ) -> dict:
     from aequilibrae import Project
     from aequilibrae.matrix import AequilibraeMatrix
@@ -2341,11 +2414,6 @@ def stage_assignment(
     # COUNT_AUTO_INGEST is off.
     run_row = sb_get_run(run_id)
     calibrate_requested = resolve_calibration_enabled(run_row)
-    if demand_is_vehicle and calibrate_requested:
-        raise RuntimeError(
-            "A calibrated behavioral-demand comparison is not supported yet: the first "
-            "assignment's accepted network factors are not persisted for identical reuse"
-        )
 
     # Resolve the counts used for validation/calibration for THIS run: auto-fetch
     # local DOT AADT for the study area when count auto-ingest is on (deployment
@@ -2400,6 +2468,15 @@ def stage_assignment(
     graph.set_graph("travel_time")
     graph.prepare_graph(np.array(assignment_centroids))
     graph.set_blocked_centroid_flows(True)
+    reused_network_links = apply_persisted_network_settings(
+        graph, proj_dir, persisted_network_settings
+    )
+    if persisted_network_settings is not None:
+        log += (
+            "Applied the trip-based assignment's persisted, accepted road-class "
+            f"speed/capacity factors to {reused_network_links} retained-network links; "
+            "no trip-based OD adjustment was reused.\n"
+        )
     # "distance"/"distance_net" ride along so the assignment classes carry
     # blended, flow-consistent routed-distance skims (diagnostic inputs).
     graph.set_skimming(skim_fields)
@@ -2984,7 +3061,7 @@ def stage_assignment(
     # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
     # touched; calibrated outputs get distinct KPI names.
     calibration_result = None
-    if should_run_calibration(calibrate_requested, counts_path):
+    if should_run_calibration(calibrate_requested and not demand_is_vehicle, counts_path):
         try:
             def _make_resident_mat(demand_array):
                 m = AequilibraeMatrix()
@@ -3723,6 +3800,8 @@ def stage_artifacts(
     # Register artifacts in Supabase
     for fname, atype in [
         ("link_volumes.csv", "link_volumes"),
+        ("link_volumes_calibrated.csv", "link_volumes_calibrated"),
+        ("accepted_network_calibration.json", "accepted_network_calibration"),
         ("demand.omx", "demand_matrix"),
         ("travel_time_skims.omx", "skim_matrix"),
         ("network_setup_summary.json", "network_setup_summary"),
@@ -4317,6 +4396,9 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     output_dir_name="activitysim_assignment_output",
                     demand_is_vehicle=True,
                     counts_path_override=first_assignment.get("counts_path"),
+                    persisted_network_settings=(first_assignment.get("calibration") or {}).get(
+                        "network_settings"
+                    ),
                 )
                 state["activitysim_assignment"] = result
                 with open(state_file, "w") as f:
@@ -4336,7 +4418,13 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     "metadata_json": {
                         "kind": "same_network_activitysim_assignment",
                         "demand_is_vehicle": True,
-                        "uncalibrated": True,
+                        "network_calibration": (
+                            "accepted_trip_based_network_settings"
+                            if (first_assignment.get("calibration") or {}).get("network_settings")
+                            is not None
+                            else "baseline_network_settings"
+                        ),
+                        "trip_based_od_adjustments_reused": False,
                     },
                 })
                 sb_patch_stage(stage_id, {
@@ -4361,7 +4449,14 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     "log_tail": log,
                 })
             else:
-                first_volumes = verified_latest_local_artifact(run_id, "link_volumes")
+                with open(state_file) as f:
+                    state = json.load(f)
+                first_assignment = state.get("assignment") or {}
+                calibrated_comparison = bool(first_assignment.get("calibration"))
+                first_volumes = verified_latest_local_artifact(
+                    run_id,
+                    "link_volumes_calibrated" if calibrated_comparison else "link_volumes",
+                )
                 second_volumes = verified_latest_local_artifact(
                     run_id, "activitysim_link_volumes"
                 )
@@ -4370,8 +4465,6 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 geometry_path = write_agreement_network_geojson(
                     work_dir, os.path.join(agreement_dir, "retained_network.geojson")
                 )
-                with open(state_file) as f:
-                    state = json.load(f)
                 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
                 scripts_dir = os.path.join(repo_root, "scripts", "modeling")
                 if scripts_dir not in sys.path:
@@ -4381,12 +4474,22 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 result = compare_link_volume_runs(
                     first_csv=first_volumes,
                     second_csv=second_volumes,
-                    first_label="AequilibraE trip-based demand",
+                    first_label=(
+                        "AequilibraE trip-based demand (count-calibrated)"
+                        if calibrated_comparison
+                        else "AequilibraE trip-based demand"
+                    ),
                     second_label="ActivitySim activity-based demand",
                     output_dir=agreement_dir,
                     force=False,
                     loaded_links_geojson=geometry_path,
-                    first_convergence_record=(state.get("assignment") or {}).get("convergence"),
+                    first_convergence_record=(
+                        ((state.get("assignment") or {}).get("calibration") or {}).get(
+                            "convergence"
+                        )
+                        if calibrated_comparison
+                        else (state.get("assignment") or {}).get("convergence")
+                    ),
                     second_convergence_record=(state.get("activitysim_assignment") or {}).get(
                         "convergence"
                     ),

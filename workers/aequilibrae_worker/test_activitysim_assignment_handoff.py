@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import sqlite3
 import sys
 import tempfile
 import types
@@ -35,6 +36,23 @@ except ImportError:
     sys.modules["aequilibrae.project.network.osm.osm_builder"] = osm_builder
 
 import main
+
+
+class FakeGraph:
+    def __init__(self):
+        import pandas as pd
+
+        self.graph = pd.DataFrame(
+            {
+                "link_id": [1, 2, 3],
+                "travel_time": [10.0, 20.0, 30.0],
+                "capacity": [100.0, 200.0, 300.0],
+            }
+        )
+        self.cost_field = None
+
+    def set_graph(self, field):
+        self.cost_field = field
 
 
 def artifact(path: Path, artifact_type: str, *, digest: str | None = None) -> dict:
@@ -72,6 +90,33 @@ def test_vehicle_demand_never_gets_the_trip_based_mode_split_again():
     assert main.should_apply_trip_based_mode_split(False, True) is True
     assert main.should_apply_trip_based_mode_split(True, True) is False
     assert main.should_apply_trip_based_mode_split(False, False) is False
+
+
+def test_persisted_network_factors_apply_without_any_demand_handoff():
+    with tempfile.TemporaryDirectory() as tmp:
+        project = Path(tmp)
+        connection = sqlite3.connect(project / "project_database.sqlite")
+        connection.execute("CREATE TABLE links (link_id INTEGER, link_type TEXT)")
+        connection.executemany(
+            "INSERT INTO links VALUES (?, ?)",
+            [(1, "motorway"), (2, "primary"), (3, "motorway")],
+        )
+        connection.commit()
+        connection.close()
+        graph = FakeGraph()
+        changed = main.apply_persisted_network_settings(
+            graph,
+            str(project),
+            {
+                "schema_version": "openplan.network-calibration.v1",
+                "road_class_factors": {"motorway": 1.25},
+                "excludes": ["trip_based_od_adjustments"],
+            },
+        )
+        assert changed == 2
+        assert graph.graph["travel_time"].tolist() == [8.0, 20.0, 24.0]
+        assert graph.graph["capacity"].tolist() == [125.0, 200.0, 375.0]
+        assert graph.cost_field == "travel_time"
 
 
 def test_exact_hash_verified_package_is_resolved():
@@ -119,7 +164,16 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             json.dumps(
                 {
                     "setup": {"centroid_map": {"1": 1001}},
-                    "assignment": {"counts_path": "/counts/held-out.csv"},
+                    "assignment": {
+                        "counts_path": "/counts/held-out.csv",
+                        "calibration": {
+                            "network_settings": {
+                                "schema_version": "openplan.network-calibration.v1",
+                                "road_class_factors": {"primary": 1.1256789},
+                                "excludes": ["trip_based_od_adjustments"],
+                            }
+                        },
+                    },
                 }
             )
         )
@@ -157,9 +211,16 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         assert kwargs["output_dir_name"] == "activitysim_assignment_output"
         assert kwargs["demand_is_vehicle"] is True
         assert kwargs["counts_path_override"] == "/counts/held-out.csv"
+        assert kwargs["persisted_network_settings"]["road_class_factors"] == {
+            "primary": 1.1256789
+        }
         payload = post_artifact.call_args.args[0]
         assert payload["artifact_type"] == "activitysim_link_volumes"
         assert payload["metadata_json"]["demand_is_vehicle"] is True
+        assert payload["metadata_json"]["network_calibration"] == (
+            "accepted_trip_based_network_settings"
+        )
+        assert payload["metadata_json"]["trip_based_od_adjustments_reused"] is False
 
 
 def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_records():
@@ -171,7 +232,16 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
         (run_dir / "state.json").write_text(
             json.dumps(
                 {
-                    "assignment": {"convergence": {"final_gap": 0.0004}},
+                    "assignment": {
+                        "convergence": {"final_gap": 0.0004},
+                        "calibration": {
+                            "convergence": {"final_gap": 0.0003},
+                            "network_settings": {
+                                "schema_version": "openplan.network-calibration.v1",
+                                "road_class_factors": {"primary": 1.1},
+                            }
+                        },
+                    },
                     "activitysim_assignment": {"convergence": {"final_gap": 0.0005}},
                 }
             )
@@ -216,7 +286,7 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
                 main,
                 "verified_latest_local_artifact",
                 side_effect=["/trip-based.csv", "/activity-based.csv"],
-            ),
+            ) as verified_artifact,
             mock.patch.object(main, "register_agreement_artifact") as register,
             mock.patch.object(
                 main,
@@ -237,7 +307,9 @@ def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_rec
         call = comparator_calls[0]
         assert call["first_csv"] == "/trip-based.csv"
         assert call["second_csv"] == "/activity-based.csv"
-        assert call["first_convergence_record"]["final_gap"] == 0.0004
+        assert call["first_label"] == "AequilibraE trip-based demand (count-calibrated)"
+        assert verified_artifact.call_args_list[0].args[1] == "link_volumes_calibrated"
+        assert call["first_convergence_record"]["final_gap"] == 0.0003
         assert call["second_convergence_record"]["final_gap"] == 0.0005
         assert "retained_network.geojson" in call["loaded_links_geojson"]
         assert write_geometry.call_count == 1
