@@ -71,7 +71,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
           layout: { "line-cap": "round", "line-join": "round" },
         });
 
-        const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "320px" });
+        const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "240px" });
         map.on("mouseenter", "demand-agreement-lines", () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", "demand-agreement-lines", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
         map.on("mousemove", "demand-agreement-lines", (event) => {
@@ -84,6 +84,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
             `ActivitySim volume: <strong>${Number(props.second_volume).toLocaleString()}</strong><br/>` +
             `Sensitivity: <strong>${escapeHtml(props.agreement)}</strong> · GEH ${Number(props.geh).toLocaleString()}</div>`,
           ).addTo(map);
+          popup.getElement()?.style.setProperty("z-index", "20");
         });
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : "Failed to load agreement map");
@@ -98,7 +99,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
         <p className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Demand-method sensitivity</p>
         <p className="mt-1 text-xs text-zinc-400">Agreement is concurrence, not evidence that either method is correct.</p>
       </div>
-      <div className="absolute bottom-4 left-3 z-10 flex gap-3 rounded-xl border border-white/10 bg-zinc-900/90 px-4 py-2 text-xs text-zinc-300">
+      <div className="absolute bottom-4 left-3 z-10 flex flex-wrap gap-x-3 gap-y-1 rounded-xl border border-white/10 bg-zinc-900/90 px-4 py-2 text-xs text-zinc-300">
         <span><b className="text-green-500">●</b> Agree</span><span><b className="text-amber-500">●</b> Marginal</span><span><b className="text-red-500">●</b> Diverge</span>
       </div>
       {error ? <div className="flex h-[520px] items-center justify-center p-6 text-sm text-red-300">{error}</div> : <div ref={containerRef} className="h-[520px] w-full" />}

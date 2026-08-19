@@ -10,9 +10,12 @@ const route = readFileSync(
 
 describe("behavioral demand agreement map live surface", () => {
   it("is reachable from a completed behavioral run through its authenticated artifact route", () => {
-    expect(manager).toContain(
-      'modelRuns.some((run) => run.status === "succeeded" && run.engine_key === "behavioral_demand")',
-    );
+    expect(
+      manager.match(
+        /run\.artifacts\.some\(\(artifact\) => artifact\.artifact_type === "demand_model_agreement_geojson"\)/g,
+      ),
+    ).toHaveLength(1);
+    expect(manager).toContain("latestBehavioralAgreementRun ?");
     expect(manager).toContain("<DemandAgreementMap");
     expect(manager).toContain("/agreement`}");
     expect(route).toContain('loadModelAccess(supabase, modelId, user.id, "models.read")');
@@ -25,6 +28,9 @@ describe("behavioral demand agreement map live surface", () => {
     expect(map).toContain('"diverge", "#ef4444"');
     expect(map).toContain("Trip-based volume:");
     expect(map).toContain("ActivitySim volume:");
+    expect(map).toContain('maxWidth: "240px"');
+    expect(map).toContain('popup.getElement()?.style.setProperty("z-index", "20")');
+    expect(map).toContain("flex flex-wrap gap-x-3 gap-y-1");
     expect(map).toContain("Agreement is concurrence, not evidence that either method is correct.");
   });
 });

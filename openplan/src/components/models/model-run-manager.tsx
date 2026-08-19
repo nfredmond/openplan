@@ -587,6 +587,12 @@ export function ModelRunManager({
   }
 
   const latestRun = modelRuns[0] ?? null;
+  const latestBehavioralAgreementRun = modelRuns.find(
+    (run) =>
+      run.status === "succeeded" &&
+      run.engine_key === "behavioral_demand" &&
+      run.artifacts.some((artifact) => artifact.artifact_type === "demand_model_agreement_geojson"),
+  );
   const hasActiveRun = useMemo(() => modelRuns.some(isNonTerminalRun), [modelRuns]);
   const [now, setNow] = useState(0);
 
@@ -704,6 +710,14 @@ export function ModelRunManager({
       {schemaPending ? (
         <div className="module-empty-state mt-5 text-sm">
           This OpenPlan installation&apos;s database has not been updated for model runs yet (the `model_runs` table is missing). Whoever operates this installation applies the newest database migration; runs cannot be launched until then.
+        </div>
+      ) : null}
+
+      {latestBehavioralAgreementRun ? (
+        <div className="mt-5">
+          <DemandAgreementMap
+            geojsonUrl={`/api/models/${modelId}/runs/${latestBehavioralAgreementRun.id}/agreement`}
+          />
         </div>
       ) : null}
 
@@ -1197,19 +1211,6 @@ export function ModelRunManager({
             return (
               <div className="mt-4">
                 <TrafficVolumeMap geojsonUrl={geojsonUrl} />
-              </div>
-            );
-          })()}
-
-          {modelRuns.some((run) => run.status === "succeeded" && run.engine_key === "behavioral_demand") && (() => {
-            const latestBehavioralRun = modelRuns.find(
-              (run) => run.status === "succeeded" && run.engine_key === "behavioral_demand",
-            )!;
-            return (
-              <div className="mt-4">
-                <DemandAgreementMap
-                  geojsonUrl={`/api/models/${modelId}/runs/${latestBehavioralRun.id}/agreement`}
-                />
               </div>
             );
           })()}
