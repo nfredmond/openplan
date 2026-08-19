@@ -1,0 +1,4 @@
+# ActivitySim estimation is a dedicated scientific workflow layered on the
+# execution host. Larch is not required by the ordinary preflight worker.
+-r requirements-exec.txt
+larch6==6.0.36

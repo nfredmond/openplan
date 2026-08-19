@@ -45,7 +45,10 @@ def _write_fixtures(dirpath: str):
     skim = os.path.join(dirpath, "travel_time_skims.omx")
     with open(skim, "wb") as f:
         f.write(b"OMX-FAKE-SKIM-BYTES")  # copied, never parsed, in the preflight path
-    return za, skim
+    setup = os.path.join(dirpath, "network_setup_summary.json")
+    with open(setup, "w") as f:
+        json.dump({"network_settings": {"classes": ["car"]}}, f)
+    return za, skim, setup
 
 
 class FakeResponse:
@@ -59,11 +62,12 @@ class FakeResponse:
 
 
 class FakeRequests:
-    def __init__(self, za_path, skim_path):
+    def __init__(self, za_path, skim_path, setup_path):
         self.calls = []
         self.claim_returns_rows = True
         self.za_path = za_path
         self.skim_path = skim_path
+        self.setup_path = setup_path
 
     def get(self, url, headers=None, timeout=None):
         self.calls.append(("GET", url, None))
@@ -78,6 +82,7 @@ class FakeRequests:
             return FakeResponse(200, [
                 {"artifact_type": "skim_matrix", "file_url": f"local://{self.skim_path}", "metadata_json": {}},
                 {"artifact_type": "zone_attributes", "file_url": f"local://{self.za_path}", "metadata_json": {}},
+                {"artifact_type": "network_setup_summary", "file_url": f"local://{self.setup_path}", "metadata_json": {}},
             ])
         if "model_run_stages" in url and "status=neq.succeeded" in url:
             return FakeResponse(200, [])
@@ -103,8 +108,8 @@ def make_stage():
 class SupabasePollTests(unittest.TestCase):
     def setUp(self):
         self._fixdir = tempfile.mkdtemp(prefix="astest-fix-")
-        za, skim = _write_fixtures(self._fixdir)
-        self.fake = FakeRequests(za, skim)
+        za, skim, setup = _write_fixtures(self._fixdir)
+        self.fake = FakeRequests(za, skim, setup)
         self._patcher = mock.patch.object(supabase_poll, "requests", self.fake)
         self._patcher.start()
 

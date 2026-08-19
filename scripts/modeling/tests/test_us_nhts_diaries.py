@@ -28,10 +28,10 @@ def fixture(root: Path) -> Path:
     with zipfile.ZipFile(path, "w") as archive:
         write_table(archive, "hhv2pub.csv", [
             "HOUSEID", "WTHHFIN", "CENSUS_D", "HHSIZE", "HHVEHCNT", "WRKCOUNT",
-            "HHFAMINC_IMP", "URBRUR",
+            "HHFAMINC_IMP", "URBRUR", "DRVRCNT",
         ], [
-            {"HOUSEID": "10", "WTHHFIN": "2.5", "CENSUS_D": "01", "HHSIZE": "2", "HHVEHCNT": "1", "WRKCOUNT": "1", "HHFAMINC_IMP": "05", "URBRUR": "02"},
-            {"HOUSEID": "20", "WTHHFIN": "3", "CENSUS_D": "02", "HHSIZE": "1", "HHVEHCNT": "0", "WRKCOUNT": "0", "HHFAMINC_IMP": "02", "URBRUR": "01"},
+            {"HOUSEID": "10", "WTHHFIN": "2.5", "CENSUS_D": "01", "HHSIZE": "2", "HHVEHCNT": "1", "WRKCOUNT": "1", "HHFAMINC_IMP": "05", "URBRUR": "02", "DRVRCNT": "2"},
+            {"HOUSEID": "20", "WTHHFIN": "3", "CENSUS_D": "02", "HHSIZE": "1", "HHVEHCNT": "0", "WRKCOUNT": "0", "HHFAMINC_IMP": "02", "URBRUR": "01", "DRVRCNT": "0"},
         ])
         write_table(archive, "perv2pub.csv", [
             "HOUSEID", "PERSONID", "WTPERFIN", "R_AGE", "R_SEX", "WORKER", "SCHOOL1",
@@ -89,18 +89,21 @@ class NhtsDiaryTests(unittest.TestCase):
                 trips = list(csv.DictReader(handle))
             with (root / "out" / "observed_tours.csv").open() as handle:
                 tours = list(csv.DictReader(handle))
+            with (root / "out" / "observed_households.csv").open() as handle:
+                households = list(csv.DictReader(handle))
             self.assertEqual(trips[0]["mode"], "private_vehicle_driver")
             self.assertEqual(trips[0]["mode_source_code"], "01")
             self.assertEqual(trips[0]["destination_purpose"], "work")
             self.assertEqual(trips[0]["depart_minutes"], "450")
             self.assertEqual(trips[0]["survey_weight"], "8.0")
             self.assertNotEqual(trips[0]["holdout_fold"], trips[2]["holdout_fold"])
-            self.assertEqual(manifest["schema_version"], "openplan.behavioral-survey-diaries.v2")
+            self.assertEqual(manifest["schema_version"], "openplan.behavioral-survey-diaries.v3")
             self.assertEqual(manifest["outputs"], {"households": 2, "persons": 2, "trips": 3, "tours": 1})
             self.assertEqual(trips[0]["tour_id"], "10:1:T1")
             self.assertEqual(trips[0]["outbound"], "True")
             self.assertEqual(trips[1]["outbound"], "False")
             self.assertEqual(tours[0]["survey_weight"], "4.0")
+            self.assertEqual(households[0]["drivers"], "2")
             self.assertEqual(
                 manifest["activitysim_component_support"]["mandatory_tour_frequency"]["status"],
                 "candidate_requires_estimation_specification",

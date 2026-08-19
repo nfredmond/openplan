@@ -103,6 +103,41 @@ one division can never appear in both fit and validation. Fold assignment is
 balanced after hashing, so a requested fold cannot silently be empty when
 enough geographic groups exist.
 
+## First component estimated, not yet accepted
+
+`activitysim_auto_ownership_estimation.py` creates ActivitySim's native
+`simple_simulate` estimation-data bundle rather than a parallel OpenPlan
+regression. It writes one all-data bundle and a train/validation pair for every
+whole-division fold. Larch receives `survey_weight` as its case-weight variable.
+
+The specification deliberately excludes the stock MTC county constants,
+network accessibility terms and local density index. NHTS cannot supply
+matching local LOS, and the Bay Area constants are exactly the transfer problem
+this work is removing. Included predictors are available in both the national
+survey and Census-fitted runtime households: household drivers, household
+size, workers and income thresholds. The official imputed income brackets are
+represented as $35,000, $75,000 and $150,000 threshold indicators; no bracket
+midpoint or open-ended top-code value is invented.
+
+Measured with ActivitySim 1.5.1 and Larch 6.0.36 on all 7,893 households
+(weighted households 127,544,707):
+
+- every geographic-fold fit converged in 178–189 iterations;
+- the all-data fit converged in 180 iterations;
+- held-out weighted log loss ranged from 0.9211 to 0.9994, compared with 1.6094
+  for the zero-start uniform model;
+- held-out weighted exact vehicle-count accuracy ranged from 63.1% to 69.3%;
+  and
+- held-out weighted mean absolute vehicle-count error ranged from 0.36 to 0.44.
+
+The result remains `estimated_not_accepted_for_production`. Convergence and a
+holdout improvement establish that the estimator works; they do not alone set
+an acceptance threshold, prove transfer to Census-synthetic households, or
+make the other ActivitySim components nationally estimated. The next
+scientific gate is a versioned coefficient package plus a same-population
+comparison against the borrowed auto-ownership component before changing an
+executed run.
+
 Sources checked:
 
 - [ActivitySim estimation mode](https://activitysim.github.io/activitysim/develop/users-guide/estimation-mode/index.html)

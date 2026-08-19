@@ -22,11 +22,11 @@ from typing import Any, Iterable
 import us_nhts_survey as source
 
 
-DIARY_SCHEMA_VERSION = "openplan.behavioral-survey-diaries.v2"
+DIARY_SCHEMA_VERSION = "openplan.behavioral-survey-diaries.v3"
 
 HOUSEHOLD_COLUMNS = {
     "HOUSEID", "WTHHFIN", "CENSUS_D", "HHSIZE", "HHVEHCNT", "WRKCOUNT",
-    "HHFAMINC_IMP", "URBRUR",
+    "HHFAMINC_IMP", "URBRUR", "DRVRCNT",
 }
 PERSON_COLUMNS = {
     "HOUSEID", "PERSONID", "WTPERFIN", "R_AGE", "R_SEX", "WORKER", "SCHOOL1",
@@ -346,6 +346,7 @@ def build_diaries(archive_path: str | Path, output_dir: str | Path) -> dict[str,
             "household_size": _integer(row["HHSIZE"]),
             "vehicles": _integer(row["HHVEHCNT"]),
             "workers": _integer(row["WRKCOUNT"]),
+            "drivers": _integer(row["DRVRCNT"]),
             "income_category_code": _code(row["HHFAMINC_IMP"]),
             "urban_rural_code": _code(row["URBRUR"]),
         })
