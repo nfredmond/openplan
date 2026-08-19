@@ -1,0 +1,37 @@
+{
+  "schema_version": "openplan.activitysim-auto-ownership-posthoc-diagnostic.v1",
+  "evaluated_at": "2026-08-19",
+  "status": "posthoc_diagnostic_not_an_acceptance_result",
+  "source_result": "auto-ownership-transfer-2026-08-18.json",
+  "population": {
+    "geographies": 11,
+    "households": 1186026,
+    "sampling": "none"
+  },
+  "metric": {
+    "name": "household_weighted_vehicle_share_total_variation_distance",
+    "formula": "0.5 * sum(abs(modeled_share[k] - reference_share[k])) for k in 0..4",
+    "reason": "The retained PUMS vehicle count and ActivitySim choice are separate stochastic realizations. Individual exact match is diagnostic, not a population-distribution transfer gate."
+  },
+  "borrowed_mtc": {
+    "total_variation_distance": 0.09089008166768688
+  },
+  "national_candidate": {
+    "total_variation_distance": 0.06374480829256694
+  },
+  "geography_wins": {
+    "national_candidate_lower_error": 10,
+    "borrowed_mtc_lower_or_equal_error": 1
+  },
+  "development_confirmation": {
+    "status": "metric_chosen_before_candidate_outputs_were_generated",
+    "geographies": 11,
+    "households": 1103922,
+    "borrowed_mtc_total_variation_distance": 0.11713871088718225,
+    "national_candidate_total_variation_distance": 0.06917517723172469,
+    "national_candidate_lower_error_geographies": 11,
+    "borrowed_mtc_lower_or_equal_error_geographies": 0,
+    "individual_mae_still_favored_borrowed": true
+  },
+  "interpretation": "The national candidate transferred better on the population-distribution measure. The metric was chosen after reading the original eleven geographies, then repeated successfully on eleven development geographies before their candidate outputs were generated. The dated rejection remains unchanged, and neither previously defined study half is an untouched acceptance holdout."
+}

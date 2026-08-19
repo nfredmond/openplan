@@ -9,10 +9,13 @@ import subprocess
 from pathlib import Path
 from typing import Any, Iterable
 
-from compare_activitysim_auto_ownership import compare
+from compare_activitysim_auto_ownership import (
+    SCHEMA_VERSION as COMPARISON_SCHEMA_VERSION,
+    compare,
+)
 
 
-SCHEMA_VERSION = "openplan.activitysim-auto-ownership-transfer-study.v1"
+SCHEMA_VERSION = "openplan.activitysim-auto-ownership-transfer-study.v2"
 
 EVALUATION_SETTINGS = """# Component-isolation run: identical upstream models through auto ownership.
 inherit_settings: True
@@ -45,8 +48,15 @@ def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
     households = sum(row["households"] for row in results)
 
     def combined(model: str, metric: str) -> float:
+        metric_path = metric.split(".")
+
+        def value(row: dict[str, Any]) -> float:
+            current: Any = row[model]["metrics"]
+            for part in metric_path:
+                current = current[part]
+            return float(current)
         return sum(
-            row["households"] * row[model]["metrics"][metric] for row in results
+            row["households"] * value(row) for row in results
         ) / households
 
     candidate_wins = sum(
@@ -56,6 +66,21 @@ def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
     )
     borrowed_mae = combined("borrowed_mtc", "mean_absolute_vehicle_error")
     candidate_mae = combined("candidate_national", "mean_absolute_vehicle_error")
+    borrowed_distribution_error = combined(
+        "borrowed_mtc", "distribution_calibration.total_variation_distance"
+    )
+    candidate_distribution_error = combined(
+        "candidate_national", "distribution_calibration.total_variation_distance"
+    )
+    candidate_distribution_wins = sum(
+        row["candidate_national"]["metrics"]["distribution_calibration"][
+            "total_variation_distance"
+        ]
+        < row["borrowed_mtc"]["metrics"]["distribution_calibration"][
+            "total_variation_distance"
+        ]
+        for row in results
+    )
     return {
         "schema_version": SCHEMA_VERSION,
         "status": "measured_not_accepted_for_production",
@@ -65,24 +90,36 @@ def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
             "exact_accuracy": combined("borrowed_mtc", "exact_accuracy"),
             "mean_absolute_vehicle_error": borrowed_mae,
             "mean_vehicle_bias": combined("borrowed_mtc", "mean_vehicle_bias"),
+            "choice_distribution_total_variation": borrowed_distribution_error,
         },
         "candidate_national": {
             "exact_accuracy": combined("candidate_national", "exact_accuracy"),
             "mean_absolute_vehicle_error": candidate_mae,
             "mean_vehicle_bias": combined("candidate_national", "mean_vehicle_bias"),
+            "choice_distribution_total_variation": candidate_distribution_error,
         },
         "candidate_lower_mae_geographies": candidate_wins,
         "borrowed_lower_or_equal_mae_geographies": len(results) - candidate_wins,
+        "candidate_lower_distribution_error_geographies": candidate_distribution_wins,
+        "borrowed_lower_or_equal_distribution_error_geographies": (
+            len(results) - candidate_distribution_wins
+        ),
         "comparison_outcome": (
             "candidate_lower_aggregate_mae"
             if candidate_mae < borrowed_mae
             else "candidate_did_not_outperform_borrowed"
         ),
+        "distribution_comparison_outcome": (
+            "candidate_lower_aggregate_distribution_error"
+            if candidate_distribution_error < borrowed_distribution_error
+            else "candidate_did_not_improve_aggregate_distribution_error"
+        ),
         "results": results,
         "interpretation": (
-            "This is transfer evidence on retained Census-fitted populations. Model agreement "
-            "measures methodological sensitivity, not confidence. Production acceptance remains "
-            "a separate decision."
+            "This is transfer evidence on retained Census-fitted populations. Vehicle-share "
+            "distribution error is the transfer measure; household exact match compares separate "
+            "stochastic realizations and remains diagnostic. Production acceptance requires an "
+            "untouched holdout and remains a separate decision."
         ),
     }
 
@@ -117,8 +154,23 @@ def run_study(
             continue
         candidate_output = output / study.name / "output"
         comparison_path = output / study.name / "comparison.json"
-        if comparison_path.is_file():
-            result = json.loads(comparison_path.read_text())
+        candidate_households = candidate_output / "final_households.csv"
+        saved = json.loads(comparison_path.read_text()) if comparison_path.is_file() else None
+        if saved and saved.get("schema_version") == COMPARISON_SCHEMA_VERSION:
+            result = saved
+        elif candidate_households.is_file():
+            result = compare(
+                bundle / "households.csv",
+                borrowed,
+                candidate_households,
+                coefficient_package_path=overlay / "coefficient_package.json",
+            )
+            result["geography_key"] = study.name
+            result["candidate_runtime_stdout_tail"] = (
+                (saved or {}).get("candidate_runtime_stdout_tail")
+            )
+            comparison_path.parent.mkdir(parents=True, exist_ok=True)
+            comparison_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
         else:
             command = [
                 str(cli), "run",
@@ -137,7 +189,7 @@ def run_study(
             result = compare(
                 bundle / "households.csv",
                 borrowed,
-                candidate_output / "final_households.csv",
+                candidate_households,
                 coefficient_package_path=overlay / "coefficient_package.json",
             )
             result["geography_key"] = study.name

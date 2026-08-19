@@ -34,7 +34,20 @@ class AutoOwnershipComparisonTests(unittest.TestCase):
             self.assertEqual(result["candidate_national"]["metrics"]["exact_accuracy"], 0.75)
             self.assertEqual(result["method_sensitivity"]["same_choice_share"], 0.25)
             self.assertEqual(result["method_sensitivity"]["candidate_closer_households"], 2)
+            borrowed_distribution = result["borrowed_mtc"]["metrics"][
+                "distribution_calibration"
+            ]
+            candidate_distribution = result["candidate_national"]["metrics"][
+                "distribution_calibration"
+            ]
+            self.assertAlmostEqual(borrowed_distribution["total_variation_distance"], 0.5)
+            self.assertAlmostEqual(candidate_distribution["total_variation_distance"], 0.25)
+            self.assertEqual(
+                candidate_distribution["reference_choice_shares"],
+                {"0": 0.25, "1": 0.25, "2": 0.25, "3": 0.0, "4": 0.25},
+            )
             self.assertIn("does not establish confidence", result["interpretation"])
+            self.assertIn("separate realizations", result["interpretation"])
 
     def test_mismatched_populations_are_refused(self):
         with tempfile.TemporaryDirectory() as tmp:

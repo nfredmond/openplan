@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 
-SCHEMA_VERSION = "openplan.activitysim-auto-ownership-comparison.v1"
+SCHEMA_VERSION = "openplan.activitysim-auto-ownership-comparison.v2"
 
 
 class AutoOwnershipComparisonError(RuntimeError):
@@ -34,16 +34,29 @@ def choice_metrics(reference: list[int], modeled: list[int]) -> dict[str, Any]:
     if not reference or len(reference) != len(modeled):
         raise AutoOwnershipComparisonError("Choice metrics require aligned non-empty arrays")
     count = len(reference)
-    distribution = {
+    reference_distribution = {
+        str(choice): sum(value == choice for value in reference) / count for choice in range(5)
+    }
+    modeled_distribution = {
         str(choice): sum(value == choice for value in modeled) / count for choice in range(5)
     }
+    share_errors = [
+        modeled_distribution[str(choice)] - reference_distribution[str(choice)]
+        for choice in range(5)
+    ]
     return {
         "records": count,
         "exact_accuracy": sum(a == b for a, b in zip(reference, modeled)) / count,
         "mean_absolute_vehicle_error": sum(abs(a - b) for a, b in zip(reference, modeled)) / count,
         "mean_vehicles": sum(modeled) / count,
         "mean_vehicle_bias": sum(b - a for a, b in zip(reference, modeled)) / count,
-        "choice_shares": distribution,
+        "choice_shares": modeled_distribution,
+        "distribution_calibration": {
+            "reference_choice_shares": reference_distribution,
+            "total_variation_distance": 0.5 * sum(abs(error) for error in share_errors),
+            "share_rmse": (sum(error * error for error in share_errors) / 5) ** 0.5,
+            "maximum_absolute_share_error": max(abs(error) for error in share_errors),
+        },
     }
 
 
@@ -118,8 +131,9 @@ def compare(
         ),
         "interpretation": (
             "Agreement identifies insensitivity to the auto-ownership method on this population; "
-            "it does not establish confidence or correctness. Accuracy is measured separately "
-            "against the retained PUMS-derived vehicle choice."
+            "it does not establish confidence or correctness. Distribution calibration is the "
+            "transfer measure because the retained PUMS vehicle count and each simulated choice "
+            "are separate realizations; household-level exact match remains diagnostic only."
         ),
     }
     return result
@@ -140,6 +154,7 @@ def markdown(result: dict[str, Any]) -> str:
         f"| Mean absolute vehicle error | {borrowed['mean_absolute_vehicle_error']:.4f} | {candidate['mean_absolute_vehicle_error']:.4f} |",
         f"| Mean vehicles | {borrowed['mean_vehicles']:.4f} | {candidate['mean_vehicles']:.4f} |",
         f"| Mean vehicle bias | {borrowed['mean_vehicle_bias']:+.4f} | {candidate['mean_vehicle_bias']:+.4f} |",
+        f"| Vehicle-share total variation | {borrowed['distribution_calibration']['total_variation_distance']:.4f} | {candidate['distribution_calibration']['total_variation_distance']:.4f} |",
         "",
         f"The components chose the same vehicle count for {sensitivity['same_choice_share']:.3%} of households.",
         "This is a methodological-sensitivity measure, not confidence or correctness.",

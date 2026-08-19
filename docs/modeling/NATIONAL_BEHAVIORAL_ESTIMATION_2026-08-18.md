@@ -166,6 +166,40 @@ coefficients merely because the replacement has a national label and converged.
 The reusable comparison remains in
 `scripts/modeling/run_auto_ownership_transfer_study.py`.
 
+### Post-hoc diagnosis: the rejection metric compared separate draws
+
+The rejection above remains the dated decision. It is not rewritten after the
+fact. A 2026-08-19 diagnostic found that its primary transfer metric was wrong
+for a stochastic choice model: each fitted household retains one PUMS donor's
+reported vehicle count, while ActivitySim makes a new probabilistic choice.
+Household exact accuracy and mean absolute error therefore reward reproducing
+the donor's individual realization rather than the population distribution.
+
+The reusable comparator now reports vehicle-count distribution calibration as
+total variation distance across the five modeled choices. On the same 1,186,026
+households, the borrowed MTC component scored 0.09089 and the national candidate
+scored 0.06374; the candidate had lower distribution error in 10 of 11
+geographies. The machine-readable post-hoc result is
+[`results/auto-ownership-distribution-diagnostic-2026-08-19.json`](results/auto-ownership-distribution-diagnostic-2026-08-19.json).
+
+That result does not accept the candidate. The metric was selected after these
+geographies were read, so all eleven are spent for this question. The next
+transfer gate must name a fresh geography registry before any candidate output
+is generated, use distribution calibration as its primary measure, retain mean
+vehicle bias and household error as diagnostics, and keep the source-specific
+geography selection inside the US survey adapter. There is no scientific basis
+for changing the coefficients before that fresh gate answers whether the first
+candidate actually failed.
+
+The unchanged candidate was then run on the study's development half after the
+distribution metric was fixed. Across another 11 geographies and 1,103,922
+households, it reduced household-weighted total variation from 0.11714 to
+0.06918 and beat MTC in all 11. Individual household MAE still favored MTC,
+which is the predicted behavior when that metric rewards matching one donor
+realization. Together the two halves show lower distribution error in 21 of 22
+geographies, but neither half is now untouched. Production acceptance still
+requires the pre-registered fresh-geography gate.
+
 One full 31-stage paired run was also completed on the smallest retained
 population before the component-isolation sweep. It confirmed that the overlay
 runs through downstream ActivitySim, while changing total trips from 266,556
