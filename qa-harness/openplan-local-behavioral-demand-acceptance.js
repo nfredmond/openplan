@@ -51,7 +51,7 @@ async function main() {
     await page.getByLabel('Project name').fill(projectName);
     await page.getByLabel('Summary').fill('A fresh-planner project created to exercise the complete behavioral demand run.');
     const projectResponsePromise = page.waitForResponse(
-      (response) => response.request().method() === 'POST' && response.url().endsWith('/api/projects'),
+      (response) => response.request().method() === 'POST' && response.url().includes('/api/projects'),
       { timeout: 30000 },
     );
     await page.getByRole('button', { name: 'Create project' }).click();
@@ -76,7 +76,7 @@ async function main() {
     await page.getByRole('button', { name: /^Next$/ }).click();
     await page.getByRole('button', { name: /^Next$/ }).click();
     const createResponsePromise = page.waitForResponse(
-      (response) => response.request().method() === 'POST' && response.url().endsWith('/api/models'),
+      (response) => response.request().method() === 'POST' && response.url().includes('/api/models'),
       { timeout: 30000 },
     );
     await page.getByRole('button', { name: 'Create the model record' }).click();

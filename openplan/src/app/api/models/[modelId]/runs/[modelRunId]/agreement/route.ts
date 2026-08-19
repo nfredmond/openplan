@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadModelAccess } from "@/lib/models/api";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
   loadJsonArtifact,
   resolveRunWorkDir,
@@ -15,7 +17,8 @@ const paramsSchema = z.object({
 
 type RouteContext = { params: Promise<{ modelId: string; modelRunId: string }> };
 
-export async function GET(_request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("model_runs.agreement", request);
   const parsed = paramsSchema.safeParse(await context.params);
   if (!parsed.success) return NextResponse.json({ error: "Invalid model run route params" }, { status: 400 });
 
@@ -31,25 +34,39 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
   }
 
-  const { data: run } = await supabase
+  const runResult = await supabase
     .from("model_runs")
     .select("id, status")
     .eq("id", modelRunId)
     .eq("model_id", access.model.id)
     .maybeSingle();
+  const runFailure = classifyRouteReadFailure("model run", runResult);
+  if (runFailure) {
+    audit.error("model_run_lookup_failed", { modelRunId, message: runFailure.message });
+    return NextResponse.json(runFailure.body, { status: runFailure.status });
+  }
+  const run = runResult.data;
   if (!run) return NextResponse.json({ error: "Model run not found" }, { status: 404 });
   if (run.status !== "succeeded") {
     return NextResponse.json({ error: "Run has not completed yet", status: run.status }, { status: 400 });
   }
 
-  const { data: artifacts, error } = await supabase
+  const artifactResult = await supabase
     .from("model_run_artifacts")
     .select("artifact_type, file_url")
     .eq("run_id", modelRunId)
     .eq("artifact_type", "demand_model_agreement_geojson")
     .order("created_at", { ascending: false })
     .limit(1);
-  if (error) return NextResponse.json({ error: "Failed to load agreement artifact" }, { status: 500 });
+  const artifactFailure = classifyRouteReadFailure("agreement artifact", artifactResult);
+  if (artifactFailure) {
+    audit.error("agreement_artifact_lookup_failed", {
+      modelRunId,
+      message: artifactFailure.message,
+    });
+    return NextResponse.json(artifactFailure.body, { status: artifactFailure.status });
+  }
+  const artifacts = artifactResult.data;
   const fileUrl = artifacts?.[0]?.file_url;
   if (typeof fileUrl !== "string" || !fileUrl) {
     return NextResponse.json({ error: "Agreement GeoJSON is not available for this run" }, { status: 404 });
@@ -62,8 +79,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       objectPathPrefix: `model-runs/${modelRunId}/`,
       localRoot: localRoot ? resolveRunWorkDir(localRoot, modelRunId) : undefined,
     });
+    audit.info("agreement_artifact_read", { modelRunId });
     return NextResponse.json(geojson);
-  } catch {
+  } catch (error) {
+    audit.error("agreement_artifact_read_failed", { modelRunId, error });
     return NextResponse.json({ error: "Agreement GeoJSON could not be read" }, { status: 404 });
   }
 }

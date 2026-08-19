@@ -79,7 +79,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
           if (!props) return;
           const label = props.name || props.link_type || "Road segment";
           popup.setLngLat(event.lngLat).setHTML(
-            `<div style="font-family:system-ui;font-size:13px;line-height:1.55"><strong>${escapeHtml(label)}</strong><br/>` +
+            `<div class="op-map-popup" style="font-family:system-ui;font-size:13px;line-height:1.55"><strong>${escapeHtml(label)}</strong><br/>` +
             `Trip-based volume: <strong>${Number(props.first_volume).toLocaleString()}</strong><br/>` +
             `ActivitySim volume: <strong>${Number(props.second_volume).toLocaleString()}</strong><br/>` +
             `Sensitivity: <strong>${escapeHtml(props.agreement)}</strong> · GEH ${Number(props.geh).toLocaleString()}</div>`,
