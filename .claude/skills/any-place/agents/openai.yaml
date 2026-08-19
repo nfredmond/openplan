@@ -1,0 +1,3 @@
+interface:
+  display_name: "Any Place"
+  short_description: "Check code works for any geography, not just this one"

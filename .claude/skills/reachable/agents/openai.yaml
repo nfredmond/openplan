@@ -1,0 +1,5 @@
+interface:
+  display_name: "Reachable"
+  short_description: "Can a planner actually get to this from the front door?"
+policy:
+  allow_implicit_invocation: false
