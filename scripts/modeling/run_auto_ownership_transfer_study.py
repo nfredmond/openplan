@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -40,6 +41,56 @@ output_tables:
 
 class TransferStudyError(RuntimeError):
     pass
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_fresh_holdout(
+    registry_path: str | Path,
+    study_runs_dir: str | Path,
+    coefficient_overlay: str | Path,
+) -> dict[str, Any]:
+    registry_file = Path(registry_path).resolve()
+    registry = json.loads(registry_file.read_text())
+    if registry.get("schema_version") != "openplan.activitysim-auto-ownership-fresh-holdout.v1":
+        raise TransferStudyError(f"Unsupported fresh-holdout registry: {registry_file}")
+    if registry.get("status") != "pre_registered_before_candidate_execution":
+        raise TransferStudyError("Fresh-holdout registry is not in its pre-registered state")
+
+    overlay = Path(coefficient_overlay).resolve()
+    manifest_path = overlay / "coefficient_package.json"
+    expected_manifest = registry["candidate"]["package_manifest_sha256"]
+    if _sha256(manifest_path) != expected_manifest:
+        raise TransferStudyError("Candidate package manifest changed after holdout registration")
+    manifest = json.loads(manifest_path.read_text())
+    if manifest.get("status") != registry["candidate"]["package_status"]:
+        raise TransferStudyError("Candidate package status changed after holdout registration")
+    for filename, expected in registry["candidate"]["coefficient_files_sha256"].items():
+        if _sha256(overlay / filename) != expected:
+            raise TransferStudyError(
+                f"Candidate coefficient {filename} changed after holdout registration"
+            )
+
+    expected_geographies = {row["geography_id"] for row in registry["geographies"]}
+    discovered = {path.name for path in Path(study_runs_dir).iterdir() if path.is_dir()}
+    if discovered != expected_geographies:
+        missing = sorted(expected_geographies - discovered)
+        extra = sorted(discovered - expected_geographies)
+        raise TransferStudyError(
+            f"Fresh holdout directories do not match the registry; missing={missing}, extra={extra}"
+        )
+    return {
+        "registry_path": str(registry_file),
+        "registry_sha256": _sha256(registry_file),
+        "candidate_package_manifest_sha256": expected_manifest,
+        "geography_ids": sorted(expected_geographies),
+    }
 
 
 def aggregate(results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -130,12 +181,34 @@ def run_study(
     stock_configs: str | Path,
     activitysim_cli: str | Path,
     output_dir: str | Path,
+    registry_path: str | Path | None = None,
 ) -> dict[str, Any]:
     studies = Path(study_runs_dir)
     overlay = Path(coefficient_overlay).resolve()
     stock = Path(stock_configs).resolve()
     cli = Path(activitysim_cli).resolve()
     output = Path(output_dir)
+    holdout_lock = (
+        validate_fresh_holdout(registry_path, studies, overlay)
+        if registry_path is not None else None
+    )
+    if holdout_lock is not None:
+        incomplete = {}
+        for geography_id in holdout_lock["geography_ids"]:
+            study = studies / geography_id
+            required = [
+                study / "activitysim_bundle/households.csv",
+                study / "activitysim_bundle/persons.csv",
+                study / "activitysim_bundle/configs/settings.yaml",
+                study / "activitysim_output/output/final_households.csv",
+            ]
+            missing = [str(path.relative_to(study)) for path in required if not path.is_file()]
+            if missing:
+                incomplete[geography_id] = missing
+        if incomplete:
+            raise TransferStudyError(
+                f"Fresh holdout has incomplete retained inputs: {incomplete}"
+            )
     eval_config = output / "evaluation_config"
     eval_config.mkdir(parents=True, exist_ok=True)
     (eval_config / "settings.yaml").write_text(EVALUATION_SETTINGS)
@@ -200,6 +273,8 @@ def run_study(
     summary = aggregate(results)
     summary["directories_discovered"] = len(results) + len(exclusions)
     summary["excluded_incomplete_runs"] = exclusions
+    if holdout_lock is not None:
+        summary["fresh_holdout_lock"] = holdout_lock
     (output / "transfer_study.json").write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n"
     )
@@ -213,6 +288,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     parser.add_argument("stock_configs")
     parser.add_argument("activitysim_cli")
     parser.add_argument("output_dir")
+    parser.add_argument("--registry", help="Pre-registered fresh-holdout registry to enforce")
     args = parser.parse_args(argv)
     print(json.dumps(run_study(
         args.study_runs_dir,
@@ -220,6 +296,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         args.stock_configs,
         args.activitysim_cli,
         args.output_dir,
+        registry_path=args.registry,
     ), indent=2, sort_keys=True))
     return 0
 
