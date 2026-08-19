@@ -5,14 +5,15 @@
 
 Two demand models — a trip-based gravity model and an activity-based
 microsimulation — are assigned on the SAME network with the SAME assignment
-settings. Everything downstream of demand is identical, so any difference in a
-link's volume is attributable to the demand model and nothing else.
+settings. Holding those inputs constant isolates methodological sensitivity far
+better than comparing unrelated runs. The recorded convergence limits still
+decide whether that sensitivity can be attributed at corridor or link scale.
 
 This file computes what that difference is, link by link and corridor by
 corridor. The product is an **agreement map**: corridors where both methods land
-in the same place carry higher confidence, and that agreement is itself
-reportable; corridors where they diverge are flagged with the divergence
-quantified.
+in the same place are less sensitive to the demand-method choice; corridors
+where they diverge are flagged and quantified. Agreement does not predict count
+accuracy, confer confidence, or establish that either method is correct.
 
 ============================================================== NEVER AVERAGE
 
