@@ -59,6 +59,10 @@ const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
   { ssr: false, loading: () => <div className="h-[520px] w-full animate-pulse rounded-[0.5rem] bg-zinc-800/50" /> }
 );
+const DemandAgreementMap = dynamic(
+  () => import("@/components/models/demand-agreement-map").then((module) => module.DemandAgreementMap),
+  { ssr: false },
+);
 
 type ScenarioEntryOption = {
   id: string;
@@ -1193,6 +1197,19 @@ export function ModelRunManager({
             return (
               <div className="mt-4">
                 <TrafficVolumeMap geojsonUrl={geojsonUrl} />
+              </div>
+            );
+          })()}
+
+          {modelRuns.some((run) => run.status === "succeeded" && run.engine_key === "behavioral_demand") && (() => {
+            const latestBehavioralRun = modelRuns.find(
+              (run) => run.status === "succeeded" && run.engine_key === "behavioral_demand",
+            )!;
+            return (
+              <div className="mt-4">
+                <DemandAgreementMap
+                  geojsonUrl={`/api/models/${modelId}/runs/${latestBehavioralRun.id}/agreement`}
+                />
               </div>
             );
           })()}
