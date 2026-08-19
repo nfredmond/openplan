@@ -149,12 +149,13 @@ run class (the HTTP wrapper above stays for local/manual use). It mirrors the
 AequilibraE worker's REST poll/claim contract exactly (no Postgres RPCs; the
 atomic stage claim is a conditional PATCH `?status=eq.queued`).
 
-A `behavioral_demand` run is a 5-stage async pipeline:
+A `behavioral_demand` run is a 6-stage async pipeline:
 
 ```
 AequilibraE Setup → Network Assignment → Artifact Extraction   (aequilibrae_worker)
   → ActivitySim Bundle & Preflight                             (this worker)
   → ActivitySim Network Assignment                             (aequilibrae_worker)
+  → Demand Model Agreement                                    (aequilibrae_worker)
 ```
 
 The AequilibraE worker runs the screening (network + `travel_time_skims.omx`) and
@@ -215,6 +216,11 @@ npm run worker:activitysim          # from openplan/
   The worker also registers the demand-package manifest, OD vehicle-trip matrix,
   and zone table as the explicit handoff for same-network assignment. An executed
   run fails instead of completing if its trip table is absent or unreadable.
+  After the second assignment, the final stage uses the existing behavioral
+  comparator to write JSON, Markdown, and GeoJSON agreement artifacts. The map
+  uses every link in the retained project—not only links loaded by the first
+  model—and carries both methods' volumes, GEH, and the agreement class. The
+  models are never averaged.
 
 ## ⛔ Infra reality — real behavioral runs are NOT $0
 

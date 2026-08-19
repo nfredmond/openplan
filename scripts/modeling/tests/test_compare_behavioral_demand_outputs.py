@@ -184,8 +184,10 @@ class ComparingTwoDemandModelsOnOneNetwork(unittest.TestCase):
         second = self._links_csv("b.csv", {1: 30_000, 2: 30_000})
         geojson = self.root / "loaded.geojson"
         geojson.write_text(json.dumps({"features": [
-            {"properties": {"link_id": 1, "name": "SR 49", "link_type": "trunk"}},
-            {"properties": {"link_id": 2, "name": "SR 49", "link_type": "trunk"}},
+            {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[0, 0], [1, 1]]},
+             "properties": {"link_id": 1, "name": "SR 49", "link_type": "trunk"}},
+            {"type": "Feature", "geometry": {"type": "LineString", "coordinates": [[1, 1], [2, 2]]},
+             "properties": {"link_id": 2, "name": "SR 49", "link_type": "trunk"}},
         ]}))
 
         result = compare_link_volume_runs(
@@ -198,6 +200,11 @@ class ComparingTwoDemandModelsOnOneNetwork(unittest.TestCase):
         self.assertEqual(result["corridors"], 1)
         self.assertEqual(payload["corridors"][0]["corridor"], "SR 49")
         self.assertEqual(payload["corridors"][0]["links"], 2)
+        map_payload = json.loads(Path(result["geojson_path"]).read_text())
+        self.assertEqual(len(map_payload["features"]), 2)
+        self.assertEqual(map_payload["features"][0]["properties"]["first_volume"], 20_000)
+        self.assertEqual(map_payload["features"][0]["properties"]["agreement"], "diverge")
+        self.assertIn("never averaged", " ".join(map_payload["metadata"]["what_this_is_not"]))
 
     def test_without_road_names_it_still_compares_but_names_no_corridor(self) -> None:
         # Saying "these links could not be grouped" is better than inventing a

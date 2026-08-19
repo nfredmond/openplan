@@ -97,6 +97,7 @@ export const AEQUILIBRAE_SCREENING_STAGE_NAMES = [
 /** Owned by the ActivitySim worker, not the AequilibraE one. */
 export const ACTIVITYSIM_PREFLIGHT_STAGE_NAME = "ActivitySim Bundle & Preflight";
 export const ACTIVITYSIM_ASSIGNMENT_STAGE_NAME = "ActivitySim Network Assignment";
+export const DEMAND_MODEL_AGREEMENT_STAGE_NAME = "Demand Model Agreement";
 
 /**
  * The stages a run of this engine is made of. Behavioral demand runs the same
@@ -110,6 +111,7 @@ export function workerRunStageNames(engineKey: string | null | undefined): reado
         ...AEQUILIBRAE_SCREENING_STAGE_NAMES,
         ACTIVITYSIM_PREFLIGHT_STAGE_NAME,
         ACTIVITYSIM_ASSIGNMENT_STAGE_NAME,
+        DEMAND_MODEL_AGREEMENT_STAGE_NAME,
       ]
     : AEQUILIBRAE_SCREENING_STAGE_NAMES;
 }

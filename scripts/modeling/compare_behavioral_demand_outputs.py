@@ -19,6 +19,7 @@ JSON_NAME = "behavioral_demand_comparison.json"
 MARKDOWN_NAME = "behavioral_demand_comparison.md"
 AGREEMENT_JSON_NAME = "corridor_agreement.json"
 AGREEMENT_MARKDOWN_NAME = "corridor_agreement.md"
+AGREEMENT_GEOJSON_NAME = "corridor_agreement.geojson"
 
 
 def _utc_now() -> str:
@@ -598,6 +599,8 @@ def compare_link_volume_runs(
     first_manifest: str | None = None,
     second_manifest: str | None = None,
     noise_floor_json: str | None = None,
+    first_convergence_record: dict[str, Any] | None = None,
+    second_convergence_record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Compare two assignments of the same network from different demand models."""
     from corridor_agreement import DEFAULT_MINIMUM_VOLUME, build_agreement_map
@@ -621,8 +624,8 @@ def compare_link_volume_runs(
         link_names=read_link_names(
             Path(loaded_links_geojson).expanduser().resolve() if loaded_links_geojson else None
         ),
-        first_convergence=read_convergence(first_manifest),
-        second_convergence=read_convergence(second_manifest),
+        first_convergence=first_convergence_record or read_convergence(first_manifest),
+        second_convergence=second_convergence_record or read_convergence(second_manifest),
         noise_floor=read_noise_floor(noise_floor_json),
     )
     agreement["sources"] = {"first": str(first_path), "second": str(second_path)}
@@ -632,16 +635,60 @@ def compare_link_volume_runs(
     markdown_path = resolved_output_dir / AGREEMENT_MARKDOWN_NAME
     write_json(json_path, agreement)
     write_markdown(markdown_path, markdown_for_agreement(agreement))
+    geojson_path = None
+    if loaded_links_geojson:
+        geojson_path = resolved_output_dir / AGREEMENT_GEOJSON_NAME
+        write_json(
+            geojson_path,
+            geojson_for_agreement(
+                agreement, Path(loaded_links_geojson).expanduser().resolve()
+            ),
+        )
     return {
         "output_dir": str(resolved_output_dir),
         "json_path": str(json_path),
         "markdown_path": str(markdown_path),
+        "geojson_path": str(geojson_path) if geojson_path else None,
         "summary": agreement["summary"],
         "network_alignment": agreement["network_alignment"],
         "attribution_is_supportable": agreement["attribution_is_supportable"],
         "assignment_convergence": agreement["assignment_convergence"],
         "assignment_noise_floor": agreement["assignment_noise_floor"],
         "corridors": len(agreement["corridors"]),
+    }
+
+
+def geojson_for_agreement(agreement: dict[str, Any], source_path: Path) -> dict[str, Any]:
+    """Join computed agreement fields onto the retained network geometry."""
+    source = read_json(source_path)
+    by_link = {int(link["link_id"]): link for link in agreement.get("links", [])}
+    features = []
+    for feature in source.get("features", []):
+        properties = feature.get("properties") or {}
+        try:
+            link_id = int(float(properties.get("link_id")))
+        except (TypeError, ValueError):
+            continue
+        comparison = by_link.get(link_id)
+        if comparison is None:
+            continue
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": feature.get("geometry"),
+                "properties": {**properties, **comparison},
+            }
+        )
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "metadata": {
+            "schema_version": agreement.get("schema_version"),
+            "methods": agreement.get("methods"),
+            "summary": agreement.get("summary"),
+            "assignment_convergence": agreement.get("assignment_convergence"),
+            "what_this_is_not": agreement.get("what_this_is_not"),
+        },
     }
 
 

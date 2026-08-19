@@ -9,6 +9,8 @@ Stage pipeline:
   3. Artifact Extraction   — export evidence packet, link volumes, skim matrix
   4. ActivitySim Network Assignment (behavioral runs only) — reuse the retained
                              project with ActivitySim vehicle demand
+  5. Demand Model Agreement (behavioral runs only) — compute GEH and agreement
+                             artifacts without averaging the methods
 
 TWO WAYS TO START IT, ONE WAY IT RUNS (AEQ_WORKER_MODE):
   poll (default) — the original behaviour: an always-on process reading queued
@@ -448,6 +450,102 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
             f"{response.status_code} {response.text[:200]}"
         )
     return response.json()
+
+
+def verified_latest_local_artifact(run_id: str, artifact_type: str) -> str:
+    matches = [
+        artifact for artifact in sb_get_run_artifacts(run_id)
+        if artifact.get("artifact_type") == artifact_type
+    ]
+    if not matches:
+        raise RuntimeError(f"No {artifact_type} artifact was registered for this run")
+    selected = matches[0]
+    file_url = str(selected.get("file_url") or "")
+    if not file_url.startswith("local://"):
+        raise RuntimeError(f"{artifact_type} is not available on the shared worker volume")
+    path = file_url[len("local://"):]
+    if not os.path.isfile(path):
+        raise RuntimeError(f"{artifact_type} is unreadable at {path}")
+    expected_hash = str(selected.get("content_hash") or "")
+    with open(path, "rb") as handle:
+        actual_hash = hashlib.sha256(handle.read()).hexdigest()
+    if not expected_hash or not actual_hash.startswith(expected_hash):
+        raise RuntimeError(f"{artifact_type} failed its content-hash check")
+    return path
+
+
+def register_agreement_artifact(
+    run_id: str, stage_id: str, artifact_type: str, path: str, content_type: str
+) -> None:
+    """Put the combined result where the app can read it, with local fallback."""
+    with open(path, "rb") as handle:
+        payload = handle.read()
+    filename = os.path.basename(path)
+    object_path = f"model-runs/{run_id}/agreement/{filename}"
+    upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}"
+    response = requests.post(
+        upload_url,
+        headers={
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": content_type,
+            "x-upsert": "true",
+        },
+        data=payload,
+        timeout=60,
+    )
+    file_url = (
+        f"storage://run-artifacts/{object_path}"
+        if response.status_code in (200, 201)
+        else f"local://{path}"
+    )
+    sb_post_artifact({
+        "run_id": run_id,
+        "stage_id": stage_id,
+        "artifact_type": artifact_type,
+        "file_url": file_url,
+        "file_size_bytes": len(payload),
+        "content_hash": hashlib.sha256(payload).hexdigest(),
+        "metadata_json": {
+            "kind": "dual_demand_model_agreement",
+            "is_average": False,
+            "upload_status": "stored" if response.status_code in (200, 201) else "local_fallback",
+        },
+    })
+
+
+def write_agreement_network_geojson(work_dir: str, output_path: str) -> str:
+    """Export every retained network link, including links one model leaves empty."""
+    db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+    if not os.path.isfile(db_path):
+        raise RuntimeError("The retained AequilibraE project is missing its network database")
+    connection = sqlite3.connect(db_path)
+    try:
+        connection.enable_load_extension(True)
+        connection.load_extension(SPATIALITE_PATH)
+        rows = connection.execute(
+            "SELECT link_id, link_type, name, AsGeoJSON(geometry) FROM links ORDER BY link_id"
+        ).fetchall()
+    finally:
+        connection.close()
+    features = [
+        {
+            "type": "Feature",
+            "properties": {
+                "link_id": row[0],
+                "link_type": row[1] or "",
+                "name": row[2] or "",
+            },
+            "geometry": json.loads(row[3]),
+        }
+        for row in rows
+        if row[3]
+    ]
+    if not features:
+        raise RuntimeError("The retained AequilibraE project has no readable link geometry")
+    with open(output_path, "w") as handle:
+        json.dump({"type": "FeatureCollection", "features": features}, handle)
+    return output_path
 
 
 def activitysim_assignment_package(run_id: str) -> str | None:
@@ -4240,6 +4338,75 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     "log_tail": result["log"],
                 })
 
+        elif stage_name == "Demand Model Agreement":
+            artifacts = sb_get_run_artifacts(run_id)
+            has_activitysim_assignment = any(
+                item.get("artifact_type") == "activitysim_link_volumes" for item in artifacts
+            )
+            if not has_activitysim_assignment:
+                log = (
+                    "No executed ActivitySim assignment exists. The run completed in its "
+                    "preflight-only posture, so there are no two demand models to compare.\n"
+                )
+                sb_patch_stage(stage_id, {
+                    "status": "succeeded",
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "log_tail": log,
+                })
+            else:
+                first_volumes = verified_latest_local_artifact(run_id, "link_volumes")
+                second_volumes = verified_latest_local_artifact(
+                    run_id, "activitysim_link_volumes"
+                )
+                agreement_dir = os.path.join(work_dir, "demand_model_agreement")
+                os.makedirs(agreement_dir, exist_ok=True)
+                geometry_path = write_agreement_network_geojson(
+                    work_dir, os.path.join(agreement_dir, "retained_network.geojson")
+                )
+                with open(state_file) as f:
+                    state = json.load(f)
+                repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+                scripts_dir = os.path.join(repo_root, "scripts", "modeling")
+                if scripts_dir not in sys.path:
+                    sys.path.insert(0, scripts_dir)
+                from compare_behavioral_demand_outputs import compare_link_volume_runs
+
+                result = compare_link_volume_runs(
+                    first_csv=first_volumes,
+                    second_csv=second_volumes,
+                    first_label="AequilibraE trip-based demand",
+                    second_label="ActivitySim activity-based demand",
+                    output_dir=agreement_dir,
+                    force=False,
+                    loaded_links_geojson=geometry_path,
+                    first_convergence_record=(state.get("assignment") or {}).get("convergence"),
+                    second_convergence_record=(state.get("activitysim_assignment") or {}).get(
+                        "convergence"
+                    ),
+                )
+                for artifact_type, path, content_type in (
+                    ("demand_model_agreement", result["json_path"], "application/json"),
+                    ("demand_model_agreement_report", result["markdown_path"], "text/markdown"),
+                    ("demand_model_agreement_geojson", result["geojson_path"], "application/geo+json"),
+                ):
+                    register_agreement_artifact(
+                        run_id, stage_id, artifact_type, path, content_type
+                    )
+                summary = result["summary"]
+                log = (
+                    f"Compared {summary['links_compared']:,} links on the retained network; "
+                    f"{summary['links_carrying_meaningful_traffic']:,} carry meaningful traffic.\n"
+                    f"Busy-link agreement share: {summary['agree_share_meaningful_links']}; "
+                    f"divergence share: {summary['diverge_share_meaningful_links']}.\n"
+                    "The two demand models were not averaged. JSON, report, and agreement-map "
+                    "GeoJSON were registered as run artifacts.\n"
+                )
+                sb_patch_stage(stage_id, {
+                    "status": "succeeded",
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "log_tail": log,
+                })
+
         else:
             sb_patch_stage(stage_id, {
                 "status": "failed",
@@ -4367,6 +4534,7 @@ AEQ_STAGE_NAMES = (
     "Network Assignment",
     "Artifact Extraction",
     "ActivitySim Network Assignment",
+    "Demand Model Agreement",
 )
 _AEQ_STAGE_FILTER = "stage_name=" + urllib.parse.quote(
     "in.(" + ",".join(f'"{name}"' for name in AEQ_STAGE_NAMES) + ")",

@@ -66,13 +66,14 @@ function jsonResponse(status: number, body: unknown) {
 }
 
 describe("pushing a queued run at a worker", () => {
-  it("queues the same-network ActivitySim assignment after its bundle stage", () => {
+  it("queues same-network ActivitySim assignment and the final agreement computation", () => {
     expect(workerRunStageNames("behavioral_demand")).toEqual([
       "AequilibraE Setup",
       "Network Assignment",
       "Artifact Extraction",
       "ActivitySim Bundle & Preflight",
       "ActivitySim Network Assignment",
+      "Demand Model Agreement",
     ]);
   });
 

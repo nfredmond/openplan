@@ -138,6 +138,88 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         assert payload["metadata_json"]["demand_is_vehicle"] is True
 
 
+def test_agreement_stage_calls_the_existing_comparator_with_both_convergence_records():
+    with tempfile.TemporaryDirectory() as tmp:
+        work_root = Path(tmp)
+        run_id = "11111111-1111-4111-8111-111111111111"
+        run_dir = work_root / "runs" / run_id[:12]
+        (run_dir / "run_output").mkdir(parents=True)
+        (run_dir / "state.json").write_text(
+            json.dumps(
+                {
+                    "assignment": {"convergence": {"final_gap": 0.0004}},
+                    "activitysim_assignment": {"convergence": {"final_gap": 0.0005}},
+                }
+            )
+        )
+        comparator_calls = []
+
+        def comparator(**kwargs):
+            comparator_calls.append(kwargs)
+            output = Path(kwargs["output_dir"])
+            output.mkdir(exist_ok=True)
+            result = {}
+            for key, filename in (
+                ("json_path", "corridor_agreement.json"),
+                ("markdown_path", "corridor_agreement.md"),
+                ("geojson_path", "corridor_agreement.geojson"),
+            ):
+                path = output / filename
+                path.write_text("{}")
+                result[key] = str(path)
+            result["summary"] = {
+                "links_compared": 20,
+                "links_carrying_meaningful_traffic": 10,
+                "agree_share_meaningful_links": 0.6,
+                "diverge_share_meaningful_links": 0.2,
+            }
+            return result
+
+        completion = mock.Mock(status_code=200)
+        completion.json.return_value = []
+        fake_module = mock.Mock(compare_link_volume_runs=comparator)
+        with (
+            mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
+            mock.patch.object(main, "sb_claim_stage", return_value=True),
+            mock.patch.object(main, "sb_patch_stage"),
+            mock.patch.object(main, "sb_patch_run"),
+            mock.patch.object(
+                main,
+                "sb_get_run_artifacts",
+                return_value=[{"artifact_type": "activitysim_link_volumes"}],
+            ),
+            mock.patch.object(
+                main,
+                "verified_latest_local_artifact",
+                side_effect=["/trip-based.csv", "/activity-based.csv"],
+            ),
+            mock.patch.object(main, "register_agreement_artifact") as register,
+            mock.patch.object(
+                main,
+                "write_agreement_network_geojson",
+                side_effect=lambda _work, path: path,
+            ) as write_geometry,
+            mock.patch.object(main.requests, "get", return_value=completion),
+            mock.patch.dict("sys.modules", {"compare_behavioral_demand_outputs": fake_module}),
+        ):
+            assert main.process_stage(
+                {
+                    "id": "stage-6",
+                    "run_id": run_id,
+                    "stage_name": "Demand Model Agreement",
+                }
+            )
+
+        call = comparator_calls[0]
+        assert call["first_csv"] == "/trip-based.csv"
+        assert call["second_csv"] == "/activity-based.csv"
+        assert call["first_convergence_record"]["final_gap"] == 0.0004
+        assert call["second_convergence_record"]["final_gap"] == 0.0005
+        assert "retained_network.geojson" in call["loaded_links_geojson"]
+        assert write_geometry.call_count == 1
+        assert register.call_count == 3
+
+
 if __name__ == "__main__":
     tests = [value for name, value in sorted(globals().items()) if name.startswith("test_")]
     for test in tests:

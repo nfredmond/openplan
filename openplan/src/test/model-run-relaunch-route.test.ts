@@ -441,6 +441,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
       "Artifact Extraction",
       "ActivitySim Bundle & Preflight",
       "ActivitySim Network Assignment",
+      "Demand Model Agreement",
     ]);
   });
 
