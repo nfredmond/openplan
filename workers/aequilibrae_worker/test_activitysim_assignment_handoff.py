@@ -3,12 +3,36 @@
 import hashlib
 import json
 import os
+import sys
 import tempfile
+import types
 from pathlib import Path
 from unittest import mock
 
 os.environ.setdefault("SUPABASE_URL", "http://localhost:54321")
 os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key")
+
+
+try:
+    import aequilibrae  # noqa: F401
+except ImportError:
+    # CI deliberately runs the lightweight worker environment. Nothing in this
+    # seam test executes the engine, but main imports its OSM builder at module
+    # load time, so provide only that import boundary rather than skipping the
+    # production orchestration the test exists to exercise.
+    class OSMBuilder:
+        pass
+
+    osm_builder = types.ModuleType("aequilibrae.project.network.osm.osm_builder")
+    osm_builder.OSMBuilder = OSMBuilder
+    for module_name in (
+        "aequilibrae",
+        "aequilibrae.project",
+        "aequilibrae.project.network",
+        "aequilibrae.project.network.osm",
+    ):
+        sys.modules.setdefault(module_name, types.ModuleType(module_name))
+    sys.modules["aequilibrae.project.network.osm.osm_builder"] = osm_builder
 
 import main
 
