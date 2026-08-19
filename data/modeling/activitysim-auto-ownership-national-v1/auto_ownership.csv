@@ -1,0 +1,11 @@
+Label,Description,Expression,cars0,cars1,cars2,cars3,cars4
+util_drivers_1,drivers 1,num_drivers == 1,,coef_cars1_drivers_1,coef_cars2_drivers_1,coef_cars3_drivers_1,coef_cars4_drivers_1
+util_drivers_2,drivers 2,num_drivers == 2,,coef_cars1_drivers_2,coef_cars2_drivers_2,coef_cars3_drivers_2,coef_cars4_drivers_2
+util_drivers_3,drivers 3,num_drivers == 3,,coef_cars1_drivers_3,coef_cars2_drivers_3,coef_cars3_drivers_3,coef_cars4_drivers_3
+util_drivers_4_up,drivers 4 up,num_drivers >= 4,,coef_cars1_drivers_4_up,coef_cars2_drivers_4_up,coef_cars3_drivers_4_up,coef_cars4_drivers_4_up
+util_hhsize_clip_5,hhsize clip 5,@df.hhsize.clip(upper=5),,coef_cars1_hhsize_clip_5,coef_cars2_hhsize_clip_5,coef_cars3_hhsize_clip_5,coef_cars4_hhsize_clip_5
+util_workers_clip_3,workers clip 3,@df.num_workers.clip(upper=3),,coef_cars1_workers_clip_3,coef_cars2_workers_clip_3,coef_cars3_workers_clip_3,coef_cars4_workers_clip_3
+util_income_ge_35k,income ge 35k,income_in_thousands >= 35,,coef_cars1_income_ge_35k,coef_cars2_income_ge_35k,coef_cars3_income_ge_35k,coef_cars4_income_ge_35k
+util_income_ge_75k,income ge 75k,income_in_thousands >= 75,,coef_cars1_income_ge_75k,coef_cars2_income_ge_75k,coef_cars3_income_ge_75k,coef_cars4_income_ge_75k
+util_income_ge_150k,income ge 150k,income_in_thousands >= 150,,coef_cars1_income_ge_150k,coef_cars2_income_ge_150k,coef_cars3_income_ge_150k,coef_cars4_income_ge_150k
+util_constant,constant,1,,coef_cars1_constant,coef_cars2_constant,coef_cars3_constant,coef_cars4_constant

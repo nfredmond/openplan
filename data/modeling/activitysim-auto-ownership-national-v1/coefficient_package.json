@@ -1,0 +1,42 @@
+{
+  "activitysim_overlay_files": [
+    "auto_ownership.yaml",
+    "auto_ownership.csv",
+    "auto_ownership_coefficients.csv"
+  ],
+  "all_data_convergence": {
+    "converged": true,
+    "fitted_loglike": -121363772.63564798,
+    "initial_loglike": -205275286.97609898,
+    "iterations": 180,
+    "message": "Optimization terminated successfully",
+    "status": 0
+  },
+  "caveat": "This overlay replaces only auto ownership. Every other ActivitySim component continues to use its separately named coefficient source. Candidate status does not authorize production selection.",
+  "coefficient_scope": [
+    "auto_ownership"
+  ],
+  "component": "auto_ownership",
+  "files_sha256": {
+    "auto_ownership.csv": "9af0c2d4930c482b7beee620ad71aa28f132025d64687ac4b2459caeb93ff4c1",
+    "auto_ownership.yaml": "3d004b283f619d449bf0c4ea5111009ec3b6efbd558a8100be9c73db16377332",
+    "auto_ownership_coefficients.csv": "9596d29ebdef16a1de701b90bf0287ef97e016206819dba915382a79711a2862"
+  },
+  "holdout_metrics": {
+    "folds": 5,
+    "weighted_exact_accuracy_mean_across_folds": 0.6605897616507501,
+    "weighted_exact_accuracy_range": [
+      0.6313414079502451,
+      0.6931721213001434
+    ],
+    "weighted_log_loss_mean_across_folds": 0.9779190958277766,
+    "weighted_log_loss_range": [
+      0.9210539181760897,
+      0.9993548276926129
+    ]
+  },
+  "schema_version": "openplan.activitysim-coefficient-package.v1",
+  "source_bundle_manifest_sha256": "4f2ac4f0ea36bd99bfce129551f42a12d6b248b7358f9e7e117cce3d943a0f3f",
+  "source_fit_manifest_sha256": "6e7aff415669b5c2a19fe43f0fb2022a4fc0b90aa11a1f32d44e4526ab4a1fe2",
+  "status": "candidate_not_accepted_for_production"
+}

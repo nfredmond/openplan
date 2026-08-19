@@ -1,0 +1,127 @@
+{
+  "acceptance_rules": {
+    "decision": "Accept this component only if every rule passes. Household exact accuracy and individual MAE remain diagnostics because they compare separate realizations.",
+    "maximum_absolute_bias_disadvantage": 0.02,
+    "maximum_single_geography_tv_disadvantage": 0.05,
+    "minimum_geography_win_share": 0.75,
+    "minimum_relative_aggregate_improvement": 0.15,
+    "primary_metric": "household-weighted vehicle-share total variation distance"
+  },
+  "candidate": {
+    "coefficient_files_sha256": {
+      "auto_ownership.csv": "9af0c2d4930c482b7beee620ad71aa28f132025d64687ac4b2459caeb93ff4c1",
+      "auto_ownership.yaml": "3d004b283f619d449bf0c4ea5111009ec3b6efbd558a8100be9c73db16377332",
+      "auto_ownership_coefficients.csv": "9596d29ebdef16a1de701b90bf0287ef97e016206819dba915382a79711a2862"
+    },
+    "component": "auto_ownership",
+    "package_manifest_sha256": "2edc3febdf5d8ceda80ce47955b27f02d1d3e085c2811c81c19ac054b0efcf12",
+    "package_status": "candidate_not_accepted_for_production"
+  },
+  "geographies": [
+    {
+      "census_division": "east_north_central",
+      "geography_id": "39009",
+      "label": "Athens County, Ohio",
+      "population": 61737,
+      "state_fips": "39"
+    },
+    {
+      "census_division": "east_south_central",
+      "geography_id": "21101",
+      "label": "Henderson County, Kentucky",
+      "population": 44280,
+      "state_fips": "21"
+    },
+    {
+      "census_division": "middle_atlantic",
+      "geography_id": "36101",
+      "label": "Steuben County, New York",
+      "population": 92588,
+      "state_fips": "36"
+    },
+    {
+      "census_division": "mountain",
+      "geography_id": "49045",
+      "label": "Tooele County, Utah",
+      "population": 79347,
+      "state_fips": "49"
+    },
+    {
+      "census_division": "new_england",
+      "geography_id": "23003",
+      "label": "Aroostook County, Maine",
+      "population": 67058,
+      "state_fips": "23"
+    },
+    {
+      "census_division": "pacific",
+      "geography_id": "02122",
+      "label": "Kenai Peninsula Borough, Alaska",
+      "population": 60413,
+      "state_fips": "02"
+    },
+    {
+      "census_division": "south_atlantic",
+      "geography_id": "13047",
+      "label": "Catoosa County, Georgia",
+      "population": 68634,
+      "state_fips": "13"
+    },
+    {
+      "census_division": "west_north_central",
+      "geography_id": "19169",
+      "label": "Story County, Iowa",
+      "population": 100466,
+      "state_fips": "19"
+    },
+    {
+      "census_division": "west_south_central",
+      "geography_id": "40071",
+      "label": "Kay County, Oklahoma",
+      "population": 43625,
+      "state_fips": "40"
+    }
+  ],
+  "geography_count": 9,
+  "question": "Does the unchanged nationally estimated auto-ownership component reproduce vehicle-count distributions better than borrowed MTC behavior on untouched places?",
+  "schema_version": "openplan.activitysim-auto-ownership-fresh-holdout.v1",
+  "selection": {
+    "excluded_geography_ids": [
+      "06007",
+      "06039",
+      "06047",
+      "06053",
+      "06057",
+      "06069",
+      "06107",
+      "08014",
+      "08035",
+      "08059",
+      "08077",
+      "08101",
+      "08123",
+      "41003",
+      "41005",
+      "41017",
+      "41029",
+      "41041",
+      "41067",
+      "53011",
+      "53015",
+      "53029",
+      "53063",
+      "53073",
+      "53077"
+    ],
+    "excluded_reason": "Every excluded geography shaped or was read during prior modeling studies; none may be reused as an untouched acceptance holdout.",
+    "population_range": [
+      40000,
+      160000
+    ],
+    "seed": 20260819,
+    "source": "2024 ACS 5-year",
+    "source_url": "https://api.census.gov/data/2024/acs/acs5",
+    "strategy": "one stable seeded draw from each United States Census division"
+  },
+  "status": "pre_registered_before_candidate_execution"
+}
