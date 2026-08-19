@@ -402,7 +402,13 @@ def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:
     return len(rows)
 
 
-def _materialize_screening_dir(run_id: str, skim_path: str, zone_attr_path: str, dest_root: str) -> str:
+def _materialize_screening_dir(
+    run_id: str,
+    skim_path: str,
+    zone_attr_path: str,
+    setup_summary_path: str,
+    dest_root: str,
+) -> str:
     """Lay out the screening-run-dir the bundle builder expects:
     <dir>/bundle_manifest.json, <dir>/package/zone_attributes.csv,
     <dir>/run_output/travel_time_skims.omx."""
@@ -415,6 +421,8 @@ def _materialize_screening_dir(run_id: str, skim_path: str, zone_attr_path: str,
 
     zones = _adapt_zone_attributes(zone_attr_path, os.path.join(screening_dir, "package", "zone_attributes.csv"))
     shutil.copy2(skim_path, os.path.join(screening_dir, "run_output", "travel_time_skims.omx"))
+    os.makedirs(os.path.join(screening_dir, "work"), exist_ok=True)
+    shutil.copy2(setup_summary_path, os.path.join(screening_dir, "work", "network_setup_summary.json"))
 
     # Minimal source manifest — the builder requires the file but tolerates missing
     # fields (they only feed a provenance excerpt).
@@ -448,9 +456,11 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     artifacts = sb_get_run_artifacts(run_id)
     skim_path = _find_artifact_path(artifacts, "skim_matrix")
     zone_attr_path = _find_artifact_path(artifacts, "zone_attributes")
-    if not skim_path or not zone_attr_path:
+    setup_summary_path = _find_artifact_path(artifacts, "network_setup_summary")
+    if not skim_path or not zone_attr_path or not setup_summary_path:
         raise RuntimeError(
-            "Missing AequilibraE screening handoff (skim_matrix / zone_attributes local:// "
+            "Missing AequilibraE screening handoff (skim_matrix / zone_attributes / "
+            "network_setup_summary local:// "
             "artifacts). The behavioral lane needs the ActivitySim worker co-located with "
             "the AequilibraE worker (shared filesystem)."
         )
@@ -463,7 +473,9 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     if os.path.exists(run_root):
         shutil.rmtree(run_root)
     os.makedirs(run_root, exist_ok=True)
-    screening_dir = _materialize_screening_dir(run_id, skim_path, zone_attr_path, run_root)
+    screening_dir = _materialize_screening_dir(
+        run_id, skim_path, zone_attr_path, setup_summary_path, run_root
+    )
 
     scripts_dir = str(_REPO_ROOT / "scripts" / "modeling")
     if scripts_dir not in sys.path:

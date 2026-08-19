@@ -79,6 +79,9 @@ workers/aequilibrae_worker/.lodes_cache/
 # file git is already tracking.
 data/screening-runs/
 data/_screening_cache/
+data/activitysim-bundles/
+qa-harness/output/
+workers/aequilibrae_worker/data/gtfs/.gtfs_cache/
 
 # The agreement study's per-county artifacts — ActivitySim outputs, bundles,
 # demand packages and comparison JSON, several gigabytes per batch. The

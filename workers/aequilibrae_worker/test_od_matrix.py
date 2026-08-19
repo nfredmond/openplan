@@ -112,11 +112,13 @@ def test_enrich_output_feeds_matrix_by_GEOID():
         "NAME": ["Tract 1", "Tract 2", "Tract 3"],
         "centroid_lon": [-121.0, -121.05, -120.98],
         "centroid_lat": [39.2, 39.25, 39.22],
+        "area_sq_mi": [4.25, 8.5, 2.125],
         "est_population": [2500.0, 1200.0, 2000.0],
         "households": [1000.0, 500.0, 800.0],
     })
     enriched = dp.enrich_zone_attributes(tracts, jobs_by_geoid={"06057000100": 400})
     assert "GEOID" in enriched.columns and "geoid" not in enriched.columns
+    assert enriched["area_sq_mi"].tolist() == [4.25, 8.5, 2.125]
     # the exact extraction generate_package performs (line ~432)
     keep = {str(g) for g in enriched["GEOID"].astype(str)}
     assert keep == {"06057000100", "06057000200", "06057000300"}

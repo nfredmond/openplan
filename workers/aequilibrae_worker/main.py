@@ -1695,6 +1695,14 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
 
 
 # ─── Stage 1: AequilibraE Setup ────────────────────────────────────────
+def _renumber_nodes(conn: sqlite3.Connection, remap: dict[int, int]) -> None:
+    """Apply a node-id permutation; AequilibraE's node trigger moves links."""
+    for old, new in remap.items():
+        if old != new:
+            conn.execute("UPDATE nodes SET node_id=? WHERE node_id=?", (-new, old))
+    conn.execute("UPDATE nodes SET node_id=-node_id WHERE node_id<0")
+
+
 def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir: str) -> dict:
     """Download OSM, add centroids + connectors, renumber, populate attrs."""
     from aequilibrae import Project
@@ -1894,14 +1902,11 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     # --- Renumber to contiguous 1..N (sweeps internal + cordon centroids) ---
     old_ids = [r[0] for r in conn.execute("SELECT node_id FROM nodes ORDER BY node_id")]
     remap = {old: new for new, old in enumerate(old_ids, 1)}
-    for old, new in remap.items():
-        if old != new:
-            conn.execute("UPDATE nodes SET node_id=? WHERE node_id=?", (-new, old))
-    conn.execute("UPDATE nodes SET node_id=-node_id WHERE node_id<0")
-    for old, new in remap.items():
-        if old != new:
-            conn.execute("UPDATE links SET a_node=? WHERE a_node=?", (new, old))
-            conn.execute("UPDATE links SET b_node=? WHERE b_node=?", (new, old))
+    # AequilibraE's `aequilibrae_updated_node_id` trigger updates every attached
+    # link endpoint on each node-id change. Updating links again here applies
+    # the permutation twice: in a real county graph that detached 13 of 34
+    # centroids and drove native assignment into heap corruption.
+    _renumber_nodes(conn, remap)
     conn.commit()
 
     centroid_map = {z: remap[n] for z, n in centroid_map.items()}
@@ -3180,6 +3185,14 @@ def stage_artifacts(
     )
     log = "Extracting artifacts...\n"
 
+    # ActivitySim must translate skim matrix rows back to source zone ids. The
+    # worker state already owns that exact centroid map; publish it as an
+    # explicit handoff artifact instead of making a co-located worker guess at
+    # this process's scratch-directory layout.
+    setup_summary_path = os.path.join(out_dir, "network_setup_summary.json")
+    with open(setup_summary_path, "w") as setup_summary_file:
+        json.dump(setup_result, setup_summary_file, indent=2)
+
     # ── Daily VMT (Σ link volume × length in miles) and per-capita VMT ──
     db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
     link_volumes_csv = os.path.join(out_dir, "link_volumes.csv")
@@ -3719,6 +3732,7 @@ def stage_artifacts(
         ("link_volumes.csv", "link_volumes"),
         ("demand.omx", "demand_matrix"),
         ("travel_time_skims.omx", "skim_matrix"),
+        ("network_setup_summary.json", "network_setup_summary"),
         ("evidence_packet.json", "evidence_packet"),
     ]:
         fpath = os.path.join(out_dir, fname)

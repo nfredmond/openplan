@@ -199,7 +199,7 @@ def _tigerweb_features_for_bbox(bbox: tuple[float, float, float, float]) -> list
         "geometry": f"{min_lon},{min_lat},{max_lon},{max_lat}",
         "geometryType": "esriGeometryEnvelope",
         "spatialRel": "esriSpatialRelIntersects",
-        "outFields": "GEOID,STATE,COUNTY,CENTLAT,CENTLON",
+        "outFields": "GEOID,STATE,COUNTY,CENTLAT,CENTLON,AREALAND",
         "returnGeometry": "false",
         "f": "json",
         "resultRecordCount": 5000,
@@ -269,6 +269,7 @@ def fetch_tracts_for_study_area(
             "NAMELSAD": attrs.get("NAMELSAD") or f"Census Tract {tract_geoid[-6:]}",
             "centroid_lon": lon,
             "centroid_lat": lat,
+            "area_sq_mi": max(float(attrs.get("AREALAND") or 0), 0.0) / 2_589_988.110336,
         }
         county_set.add((tract_geoid[:2], tract_geoid[2:5]))
 
@@ -460,7 +461,11 @@ def enrich_zone_attributes(
     zones["education_jobs"] = np.round(total_jobs * 0.10).astype(int)
     zones["accommodation_jobs"] = np.round(total_jobs * 0.04).astype(int)
     zones["govt_jobs"] = np.round(total_jobs * 0.07).astype(int)
-    zones["area_sq_mi"] = 0.0
+    # TIGERweb reports tract land area in square metres. This area is part of
+    # the model, not display metadata: ActivitySim's density terms divide by
+    # it, and replacing every tract with zero area makes density explode and
+    # can overflow destination-choice utilities.
+    zones["area_sq_mi"] = pd.to_numeric(zones["area_sq_mi"], errors="coerce").fillna(0.0)
 
     zones["NAMELSAD"] = zones["NAME"].fillna(zones["NAMELSAD"])
 

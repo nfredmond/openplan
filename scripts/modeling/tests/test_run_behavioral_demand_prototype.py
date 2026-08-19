@@ -127,6 +127,26 @@ class RunBehavioralDemandPrototypeTests(unittest.TestCase):
             "behavioral_runtime_succeeded",
         )
 
+    def test_configured_activitysim_failure_fails_pipeline_instead_of_becoming_preflight(self) -> None:
+        output_root = self.root / "behavioral-demand-failed"
+        config_dir = self.root / "activitysim-config-failed"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        (config_dir / "settings.yaml").write_text("models: []\n")
+
+        with self.assertRaisesRegex(RuntimeError, "run_activitysim"):
+            run_behavioral_demand_prototype(
+                screening_run_dir=str(self.screening_run_dir),
+                output_root=str(output_root),
+                config_dir=str(config_dir),
+                activitysim_cli_template=f'{sys.executable} -c "import sys; sys.exit(9)"',
+            )
+
+        manifest = json.loads((output_root / "behavioral_demand_prototype_manifest.json").read_text())
+        self.assertEqual(manifest["pipeline_status"], "prototype_pipeline_failed")
+        self.assertEqual(manifest["behavioral_runtime_status"], "behavioral_runtime_failed")
+        self.assertEqual(manifest["steps"]["run_activitysim_runtime"]["status"], "failed")
+        self.assertEqual(manifest["steps"]["ingest_activitysim_runtime_outputs"]["status"], "queued")
+
     def test_marks_pipeline_as_behavioral_runtime_succeeded_when_fake_cli_outputs_tables(self) -> None:
         output_root = self.root / "behavioral-demand-success"
         config_dir = self.root / "activitysim-config"

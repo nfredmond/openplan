@@ -21,6 +21,7 @@
     "local-analysis-report-linkage-smoke": "node openplan-local-analysis-report-linkage-smoke.js",
     "local-spine-smoke": "node local-spine-smoke.js",
     "local-aerial-evidence-smoke": "node local-aerial-evidence-smoke.js",
+    "local-behavioral-demand-acceptance": "node openplan-local-behavioral-demand-acceptance.js",
     "local-workspace-url-isolation-smoke": "node openplan-local-workspace-url-isolation-smoke.js",
     "local-ui-ux-settle-capture": "node openplan-local-ui-ux-settle-capture.js",
     "local-card-nesting-audit": "node openplan-local-card-nesting-audit.js",

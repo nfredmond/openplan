@@ -136,10 +136,10 @@ def behavioral_runtime_status(runtime_summary: dict[str, Any] | None) -> str | N
     runtime_status = runtime_summary.get("status")
     if runtime_status == "succeeded" and runtime_mode in EXECUTED_RUNTIME_MODES:
         return "behavioral_runtime_succeeded"
-    if runtime_status == "blocked" or runtime_mode == "preflight_only":
-        return "behavioral_runtime_blocked"
     if runtime_status == "failed":
         return "behavioral_runtime_failed"
+    if runtime_status == "blocked" or runtime_mode == "preflight_only":
+        return "behavioral_runtime_blocked"
     return None
 
 
@@ -375,6 +375,18 @@ def run_behavioral_demand_prototype(
         manifest["artifacts"]["runtime_manifest_path"] = runtime_summary["runtime_manifest_path"]
         manifest["artifacts"]["runtime_summary_path"] = runtime_summary["runtime_summary_path"]
         update_pipeline_manifest(manifest, resolved_output_root, runtime_summary=runtime_summary)
+
+        # An unavailable runtime is an honest, successful preflight. A runtime
+        # that was found and launched but failed is not: do not ingest partial
+        # files or let its unchanged preflight mode turn the job green.
+        if runtime_summary.get("status") == "failed":
+            failed_stages = [
+                name
+                for name, status in runtime_summary.get("stage_statuses", {}).items()
+                if status == "failed"
+            ]
+            stage_label = ", ".join(failed_stages) or "unknown runtime stage"
+            raise RuntimeError(f"ActivitySim configured execution failed during {stage_label}")
 
         step_key = "ingest_activitysim_runtime_outputs"
         record_step_start(manifest, step_key)
