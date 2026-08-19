@@ -49,33 +49,51 @@ that its actual V2.1 link uses `/media/`, not `/assets/`. The adapter would have
 refused the stale bytes rather than deriving `TRIPMODE` locally and silently
 creating an OpenPlan-specific survey release.
 
-The source boundary is therefore open for the next slice: map these weighted
-observations into ActivitySim survey tables. Until that mapping and estimation
-are complete, the existing executed ActivitySim lane remains truthfully labeled
-as borrowed Bay Area behavior.
+The source boundary is therefore open for estimation work. Until component
+estimation and holdout validation are complete, the existing executed
+ActivitySim lane remains truthfully labeled as borrowed Bay Area behavior.
 
 ## Weighted diary mapping now measured
 
 `scripts/modeling/us_nhts_diaries.py` maps the V2.1 archive into auditable
-household, person and trip diaries while retaining every raw mode/purpose code.
+household, person, tour and trip diaries while retaining every raw
+mode/purpose code.
 Measured on the full archive:
 
 - 7,893 weighted household records;
 - 16,997 weighted person records;
 - 31,074 weighted trip records;
+- 11,064 complete home-based tours reconstructed from 27,779 trips;
 - all trip modes mapped;
 - 31,006 trips eligible for tour reconstruction; and
 - 47 trips retaining an explicit unknown purpose rather than a guessed one.
 
+Tour reconstruction requires a home anchor, continuous observed purposes,
+valid times, a non-home primary activity and an observed return home. The
+excluded trip counts are: 1,807 did not return home, 1,009 were not home
+anchored, 391 had no primary activity, 68 had invalid fields, 17 had an invalid
+trip inside a chain, and 3 had a discontinuous purpose chain. Mandatory work or
+school is the primary activity even when a discretionary stop lasts longer;
+otherwise the longest observed dwell wins with diary order as the tie-breaker.
+
+NHTS trip weights differed within 2,567 reconstructed chains. Tour-frequency
+estimation is a person-day observation, so `observed_tours.csv` uses the person
+weight (`WTPERFIN`) rather than selecting an arbitrary trip weight. The
+inconsistency remains in the manifest as a diagnostic.
+
 This is not yet an ActivitySim coefficient package. Public-use NHTS does not
 contain local origin/destination zone identifiers or matching network LOS. The
 mapper therefore emits a 23-component support matrix: location/destination and
-LOS-sensitive mode-choice models are blocked by name; tour-dependent models are
-blocked until observed trip chains are reconstructed; auto ownership is only a
-candidate requiring a separately reviewed specification. That partial posture
-is deliberate. A nationwide coefficient set may combine components supported
-by national survey evidence with named donor components, but it may never call
-the whole model nationally estimated when only part of it is.
+LOS-sensitive mode-choice models are blocked by name. Eight non-spatial
+components now have weighted home-based observations and are candidates for a
+separately reviewed estimation specification: auto ownership, CDAP, mandatory
+tour frequency, work and school tour scheduling, non-mandatory tour frequency
+and scheduling, and stop frequency. Joint-tour components remain blocked until
+participants are mapped; at-work subtour components remain blocked until those
+chains are reconstructed. That partial posture is deliberate. A nationwide
+coefficient set may combine components supported by national survey evidence
+with named donor components, but it may never call the whole model nationally
+estimated when only part of it is.
 
 ## Holdout rule now executable
 

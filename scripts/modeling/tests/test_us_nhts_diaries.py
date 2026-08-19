@@ -45,6 +45,7 @@ def fixture(root: Path) -> Path:
         ]
         write_table(archive, "tripv2pub.csv", trip_fields, [
             {"HOUSEID": "10", "PERSONID": "1", "TRIPID": "1", "WTTRDFIN": "8", "TRIPMODE": "01", "WHYFROM": "01", "WHYTO": "03", "STRTTIME": "0730", "ENDTIME": "0815", "TRPMILES": "12.5", "CENSUS_D": "01"},
+            {"HOUSEID": "10", "PERSONID": "1", "TRIPID": "2", "WTTRDFIN": "8", "TRIPMODE": "01", "WHYFROM": "03", "WHYTO": "01", "STRTTIME": "1700", "ENDTIME": "1745", "TRPMILES": "12.5", "CENSUS_D": "01"},
             {"HOUSEID": "20", "PERSONID": "1", "TRIPID": "1", "WTTRDFIN": "9", "TRIPMODE": "05", "WHYFROM": "01", "WHYTO": "06", "STRTTIME": "2400", "ENDTIME": "-9", "TRPMILES": "0.8", "CENSUS_D": "02"},
         ])
         write_table(archive, "vehv2pub.csv", ["HOUSEID", "VEHID"], [{"HOUSEID": "10", "VEHID": "1"}])
@@ -52,19 +53,58 @@ def fixture(root: Path) -> Path:
 
 
 class NhtsDiaryTests(unittest.TestCase):
+    def test_mandatory_activity_is_primary_and_incomplete_chains_stay_excluded(self):
+        def trip(number, origin, destination, depart, arrive):
+            return {
+                "trip_id": f"p:{number}", "person_id": "p", "household_id": "h",
+                "trip_number": number, "survey_weight": 2.0, "holdout_fold": 0,
+                "origin_purpose": origin, "destination_purpose": destination,
+                "depart_minutes": depart, "arrive_minutes": arrive,
+                "usable_for_tour_reconstruction": True,
+            }
+
+        observed = [
+            trip(1, "home", "shopping", 480, 500),
+            trip(2, "shopping", "work", 900, 920),  # shopping dwell is much longer
+            trip(3, "work", "home", 1020, 1040),
+            trip(4, "home", "social", 1100, 1120),  # never returns home
+        ]
+        tours, assignments, exclusions = diaries.reconstruct_home_based_tours(
+            observed, person_weights={"p": 7.5}
+        )
+        self.assertEqual(len(tours), 1)
+        self.assertEqual(tours[0]["tour_type"], "work")
+        self.assertEqual(tours[0]["tour_category"], "mandatory")
+        self.assertEqual(tours[0]["survey_weight"], 7.5)
+        self.assertTrue(assignments["p:2"]["outbound"])
+        self.assertFalse(assignments["p:3"]["outbound"])
+        self.assertEqual(assignments["p:4"]["tour_reconstruction_status"], "did_not_return_home")
+        self.assertEqual(exclusions, {"did_not_return_home": 1})
+
     def test_weighted_diaries_preserve_raw_codes_and_stable_geographic_folds(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             manifest = diaries.build_diaries(fixture(root), root / "out")
             with (root / "out" / "observed_trips.csv").open() as handle:
                 trips = list(csv.DictReader(handle))
+            with (root / "out" / "observed_tours.csv").open() as handle:
+                tours = list(csv.DictReader(handle))
             self.assertEqual(trips[0]["mode"], "private_vehicle_driver")
             self.assertEqual(trips[0]["mode_source_code"], "01")
             self.assertEqual(trips[0]["destination_purpose"], "work")
             self.assertEqual(trips[0]["depart_minutes"], "450")
             self.assertEqual(trips[0]["survey_weight"], "8.0")
-            self.assertNotEqual(trips[0]["holdout_fold"], trips[1]["holdout_fold"])
-            self.assertEqual(manifest["outputs"], {"households": 2, "persons": 2, "trips": 2})
+            self.assertNotEqual(trips[0]["holdout_fold"], trips[2]["holdout_fold"])
+            self.assertEqual(manifest["schema_version"], "openplan.behavioral-survey-diaries.v2")
+            self.assertEqual(manifest["outputs"], {"households": 2, "persons": 2, "trips": 3, "tours": 1})
+            self.assertEqual(trips[0]["tour_id"], "10:1:T1")
+            self.assertEqual(trips[0]["outbound"], "True")
+            self.assertEqual(trips[1]["outbound"], "False")
+            self.assertEqual(tours[0]["survey_weight"], "4.0")
+            self.assertEqual(
+                manifest["activitysim_component_support"]["mandatory_tour_frequency"]["status"],
+                "candidate_requires_estimation_specification",
+            )
 
     def test_invalid_time_is_absent_and_cannot_enter_tour_reconstruction(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -72,9 +112,10 @@ class NhtsDiaryTests(unittest.TestCase):
             diaries.build_diaries(fixture(root), root / "out")
             with (root / "out" / "observed_trips.csv").open() as handle:
                 trips = list(csv.DictReader(handle))
-            self.assertEqual(trips[1]["depart_minutes"], "1440")
-            self.assertEqual(trips[1]["arrive_minutes"], "")
-            self.assertEqual(trips[1]["usable_for_tour_reconstruction"], "False")
+            self.assertEqual(trips[2]["depart_minutes"], "1440")
+            self.assertEqual(trips[2]["arrive_minutes"], "")
+            self.assertEqual(trips[2]["usable_for_tour_reconstruction"], "False")
+            self.assertEqual(trips[2]["tour_reconstruction_status"], "invalid_trip_fields")
 
     def test_component_matrix_refuses_location_models_instead_of_inventing_zones(self):
         support = diaries.activitysim_component_support()

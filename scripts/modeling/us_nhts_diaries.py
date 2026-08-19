@@ -22,7 +22,7 @@ from typing import Any, Iterable
 import us_nhts_survey as source
 
 
-DIARY_SCHEMA_VERSION = "openplan.behavioral-survey-diaries.v1"
+DIARY_SCHEMA_VERSION = "openplan.behavioral-survey-diaries.v2"
 
 HOUSEHOLD_COLUMNS = {
     "HOUSEID", "WTHHFIN", "CENSUS_D", "HHSIZE", "HHVEHCNT", "WRKCOUNT",
@@ -138,7 +138,130 @@ def _write(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
-def activitysim_component_support() -> dict[str, dict[str, str]]:
+def _activity_dwell_minutes(arrive: int, next_depart: int) -> int:
+    dwell = next_depart - arrive
+    return dwell if dwell >= 0 else dwell + 1440
+
+
+def _primary_activity_index(chain: list[dict[str, Any]]) -> int | None:
+    candidates = [
+        index for index, trip in enumerate(chain)
+        if trip["destination_purpose"] not in {"home", "change_mode", "unknown"}
+    ]
+    if not candidates:
+        return None
+    # Mandatory activity is primary even when a discretionary stop lasts
+    # longer. Work outranks school on a mixed chain; ties retain diary order.
+    for purpose in ("work", "school"):
+        matching = [i for i in candidates if chain[i]["destination_purpose"] == purpose]
+        if matching:
+            return matching[0]
+
+    def dwell(index: int) -> int:
+        if index + 1 >= len(chain):
+            return -1
+        arrive = chain[index]["arrive_minutes"]
+        depart = chain[index + 1]["depart_minutes"]
+        if arrive is None or depart is None:
+            return -1
+        return _activity_dwell_minutes(arrive, depart)
+
+    return max(candidates, key=lambda index: (dwell(index), -index))
+
+
+def reconstruct_home_based_tours(
+    trips: list[dict[str, Any]],
+    *,
+    person_weights: dict[str, float | None] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]], dict[str, int]]:
+    """Reconstruct complete home-based chains without inventing locations."""
+    by_person: dict[str, list[dict[str, Any]]] = {}
+    for trip in trips:
+        by_person.setdefault(str(trip["person_id"]), []).append(trip)
+
+    tours: list[dict[str, Any]] = []
+    assignments: dict[str, dict[str, Any]] = {}
+    exclusions: dict[str, int] = {}
+
+    def exclude(chain: list[dict[str, Any]], reason: str) -> None:
+        exclusions[reason] = exclusions.get(reason, 0) + len(chain)
+        for trip in chain:
+            assignments[str(trip["trip_id"])] = {
+                "tour_id": None, "outbound": None, "tour_reconstruction_status": reason,
+            }
+
+    for person_id, diary in sorted(by_person.items()):
+        diary.sort(key=lambda trip: (trip["trip_number"] is None, trip["trip_number"] or 0))
+        chain: list[dict[str, Any]] = []
+        tour_number = 0
+        for trip in diary:
+            if not trip["usable_for_tour_reconstruction"]:
+                if chain:
+                    exclude(chain, "invalid_trip_inside_chain")
+                    chain = []
+                exclude([trip], "invalid_trip_fields")
+                continue
+
+            if not chain:
+                if trip["origin_purpose"] != "home":
+                    exclude([trip], "not_home_anchored")
+                    continue
+                chain = [trip]
+            elif trip["origin_purpose"] != chain[-1]["destination_purpose"]:
+                exclude(chain, "discontinuous_purpose_chain")
+                chain = []
+                if trip["origin_purpose"] == "home":
+                    chain = [trip]
+                else:
+                    exclude([trip], "discontinuous_purpose_chain")
+                    continue
+            else:
+                chain.append(trip)
+
+            if chain and trip["destination_purpose"] == "home":
+                primary_index = _primary_activity_index(chain)
+                if primary_index is None:
+                    exclude(chain, "no_primary_activity")
+                    chain = []
+                    continue
+                tour_number += 1
+                tour_id = f"{person_id}:T{tour_number}"
+                primary = chain[primary_index]["destination_purpose"]
+                category = "mandatory" if primary in {"work", "school"} else "non_mandatory"
+                weights = {trip["survey_weight"] for trip in chain}
+                tours.append({
+                    "tour_id": tour_id,
+                    "person_id": person_id,
+                    "household_id": chain[0]["household_id"],
+                    "tour_number": tour_number,
+                    # Tour frequency is a person-day observation. NHTS trip
+                    # weights can differ within one chain, so using the first
+                    # trip's weight would make the tour depend on row order.
+                    "survey_weight": (person_weights or {}).get(
+                        person_id, chain[0]["survey_weight"]
+                    ),
+                    "holdout_fold": chain[0]["holdout_fold"],
+                    "tour_type": primary,
+                    "tour_category": category,
+                    "start_minutes": chain[0]["depart_minutes"],
+                    "end_minutes": chain[-1]["arrive_minutes"],
+                    "trip_count": len(chain),
+                    "trip_weights_consistent": len(weights) == 1,
+                    "has_local_zone_geography": False,
+                })
+                for index, member in enumerate(chain):
+                    assignments[str(member["trip_id"])] = {
+                        "tour_id": tour_id,
+                        "outbound": index <= primary_index,
+                        "tour_reconstruction_status": "reconstructed",
+                    }
+                chain = []
+        if chain:
+            exclude(chain, "did_not_return_home")
+    return tours, assignments, dict(sorted(exclusions.items()))
+
+
+def activitysim_component_support(*, tours_reconstructed: bool = False) -> dict[str, dict[str, str]]:
     """Measured support, never a blanket 'nationally calibrated' claim."""
     support = {
         name: {
@@ -161,16 +284,30 @@ def activitysim_component_support() -> dict[str, dict[str, str]]:
             "reason": "This diary slice does not yet map the NHTS workplace parking variables.",
         },
     })
+    for name in ("joint_tour_frequency", "joint_tour_composition", "joint_tour_participation", "joint_tour_scheduling"):
+        support[name] = {
+            "status": "blocked_missing_joint_participant_mapping",
+            "reason": "Joint travel participants are not mapped in this diary slice.",
+        }
+    for name in ("atwork_subtour_frequency", "atwork_subtour_scheduling"):
+        support[name] = {
+            "status": "blocked_until_atwork_subtours_are_reconstructed",
+            "reason": "Home-based tours do not establish work-based subtour chains.",
+        }
     for name in (
         "cdap", "mandatory_tour_frequency", "work_tour_scheduling", "school_tour_scheduling",
-        "joint_tour_frequency", "joint_tour_composition", "joint_tour_participation",
-        "joint_tour_scheduling", "non_mandatory_tour_frequency",
-        "non_mandatory_tour_scheduling", "atwork_subtour_frequency",
-        "atwork_subtour_scheduling", "stop_frequency",
+        "non_mandatory_tour_frequency", "non_mandatory_tour_scheduling", "stop_frequency",
     ):
         support[name] = {
-            "status": "blocked_until_tours_are_reconstructed",
-            "reason": "Observed trips are mapped, but tour chains have not yet been inferred and validated.",
+            "status": (
+                "candidate_requires_estimation_specification"
+                if tours_reconstructed else "blocked_until_tours_are_reconstructed"
+            ),
+            "reason": (
+                "Weighted complete home-based tours are observed; an estimation specification and holdout gate are still required."
+                if tours_reconstructed
+                else "Observed trips are mapped, but tour chains have not yet been inferred and validated."
+            ),
         }
     return dict(sorted(support.items()))
 
@@ -265,14 +402,23 @@ def build_diaries(archive_path: str | Path, output_dir: str | Path) -> dict[str,
             ),
         })
 
+    person_weights = {str(row["person_id"]): row["survey_weight"] for row in persons}
+    tours, tour_assignments, tour_exclusions = reconstruct_home_based_tours(
+        trips, person_weights=person_weights
+    )
+    for trip in trips:
+        trip.update(tour_assignments[str(trip["trip_id"])])
+
     _write(output / "observed_households.csv", households)
     _write(output / "observed_persons.csv", persons)
     _write(output / "observed_trips.csv", trips)
+    _write(output / "observed_tours.csv", tours)
     manifest = {
         "schema_version": DIARY_SCHEMA_VERSION,
         "source": inventory,
         "outputs": {
             "households": len(households), "persons": len(persons), "trips": len(trips),
+            "tours": len(tours),
         },
         "mapping_quality": {
             "unmapped_trip_modes": unmapped_modes,
@@ -280,12 +426,21 @@ def build_diaries(archive_path: str | Path, output_dir: str | Path) -> dict[str,
             "tour_reconstruction_eligible_trips": sum(
                 bool(row["usable_for_tour_reconstruction"]) for row in trips
             ),
+            "trips_in_reconstructed_tours": sum(
+                row["tour_reconstruction_status"] == "reconstructed" for row in trips
+            ),
+            "tour_reconstruction_exclusions": tour_exclusions,
+            "tours_with_inconsistent_trip_weights": sum(
+                not row["trip_weights_consistent"] for row in tours
+            ),
         },
-        "activitysim_component_support": activitysim_component_support(),
+        "activitysim_component_support": activitysim_component_support(
+            tours_reconstructed=bool(tours)
+        ),
         "caveats": [
             "These are weighted observed diaries, not estimated ActivitySim coefficients.",
             "Public-use NHTS has no local zone geography; location and LOS-sensitive components are blocked.",
-            "Tour-dependent components remain blocked until tour chains are reconstructed and validated.",
+            "Only complete, purpose-continuous home-based chains enter observed_tours.csv; exclusions remain counted by reason.",
         ],
     }
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
