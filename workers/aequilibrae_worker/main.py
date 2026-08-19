@@ -73,7 +73,7 @@ from gateways import (
     pair_passthrough_cordons,
     GATEWAY_PASSTHROUGH_SHARE,
 )
-from centroid_geometry import insert_distinct_centroid
+from centroid_geometry import candidates_on_routable_component, insert_distinct_centroid
 import mode_choice
 import gtfs_skim
 import count_validation
@@ -1767,6 +1767,12 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     components.sort(key=len, reverse=True)
     largest = components[0]
 
+    conn.execute("CREATE TEMP TABLE openplan_routable_connector_nodes (node_id INTEGER PRIMARY KEY)")
+    conn.executemany(
+        "INSERT INTO openplan_routable_connector_nodes (node_id) VALUES (?)",
+        ((int(node_id),) for node_id in largest),
+    )
+
     log += f"Network: {len(nodes_all)} nodes, {len(links_raw)} links, {len(components)} components\n"
     log += f"Largest component: {len(largest)} nodes ({100*len(largest)/len(nodes_all):.1f}%)\n"
     sb_patch_stage(stage_id, {"log_tail": log})
@@ -1812,17 +1818,20 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
             (clon, clon, clat, clat, centroid_nid),
         ).fetchall()
 
-        nearest_in_comp = [(nid, d) for nid, d in nearest if nid in largest][:3]
-        if not nearest_in_comp:
-            # None of the 50 nearest network nodes belong to the largest
-            # connected component — the zone sits on a disconnected subnetwork
-            # of this OSM snapshot (or beyond the search radius). A centroid
-            # registered without connectors is absent from the routing graph
-            # and hard-crashes AequilibraE's skimming, so exclude the zone
-            # honestly instead.
-            conn.execute("DELETE FROM nodes WHERE node_id=?", (centroid_nid,))
-            disconnected_zones.append(zid)
-            continue
+        nearest_in_comp, searched_component_directly = candidates_on_routable_component(
+            nearest,
+            largest,
+            lambda: conn.execute(
+                "SELECT node_id, (X(geometry)-?)*(X(geometry)-?)+(Y(geometry)-?)*(Y(geometry)-?) as d2 "
+                "FROM nodes WHERE is_centroid=0 AND node_id IN "
+                "(SELECT node_id FROM openplan_routable_connector_nodes) "
+                "ORDER BY d2 ASC LIMIT 3",
+                (clon, clon, clat, clat),
+            ).fetchall(),
+        )
+        nearest_in_comp = nearest_in_comp[:3]
+        if searched_component_directly:
+            log += f"Zone {zid}: nearest connector search extended to the routable component.\n"
         for near_nid, dist2 in nearest_in_comp:
             nx, ny = conn.execute("SELECT X(geometry),Y(geometry) FROM nodes WHERE node_id=?", (near_nid,)).fetchone()
             line_wkt = f"LINESTRING({connector_lon} {connector_lat}, {nx} {ny})"

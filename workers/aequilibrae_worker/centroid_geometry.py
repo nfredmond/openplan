@@ -4,11 +4,36 @@ from __future__ import annotations
 
 import math
 import sqlite3
-from typing import Any
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any, TypeVar
 
 
 class CentroidGeometryError(RuntimeError):
     pass
+
+
+Candidate = TypeVar("Candidate", bound=Sequence[Any])
+
+
+def candidates_on_routable_component(
+    nearby_candidates: Iterable[Candidate],
+    routable_node_ids: set[int],
+    load_nearest_routable: Callable[[], list[Candidate]],
+) -> tuple[list[Candidate], bool]:
+    """Return nearby nodes on the routable component, searching it directly if needed.
+
+    A fixed nearest-node pool is only a performance shortcut. In sparse or
+    fragmented road networks, every node in that pool can belong to a small
+    island even though the main routable component exists farther away. Falling
+    back to the island produces a centroid that cannot skim to any other zone.
+
+    The boolean records whether the direct component search was required so the
+    resulting connector distance remains visible in run diagnostics.
+    """
+    eligible = [candidate for candidate in nearby_candidates if int(candidate[0]) in routable_node_ids]
+    if eligible:
+        return eligible, False
+    return load_nearest_routable(), True
 
 
 def insert_distinct_centroid(

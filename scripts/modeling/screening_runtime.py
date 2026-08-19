@@ -178,7 +178,7 @@ from gateways import (  # noqa: E402
     GATEWAY_PASSTHROUGH_SHARE,
     build_external_gateway_matrix as worker_build_external_gateway_matrix,
 )
-from centroid_geometry import insert_distinct_centroid  # noqa: E402
+from centroid_geometry import candidates_on_routable_component, insert_distinct_centroid  # noqa: E402
 
 GAMMA_MULTIPLIER = float(os.getenv("OPENPLAN_GAMMA_MULTIPLIER", "1.0") or 1.0)
 
@@ -1401,6 +1401,12 @@ def build_network(
     components.sort(key=len, reverse=True)
     largest_component = components[0] if components else set()
 
+    conn.execute("CREATE TEMP TABLE openplan_routable_connector_nodes (node_id INTEGER PRIMARY KEY)")
+    conn.executemany(
+        "INSERT INTO openplan_routable_connector_nodes (node_id) VALUES (?)",
+        ((int(node_id),) for node_id in largest_component),
+    )
+
     if not conn.execute("SELECT 1 FROM link_types WHERE link_type='centroid_connector'").fetchone():
         conn.execute(
             "INSERT INTO link_types (link_type, link_type_id, description, lanes, lane_capacity) VALUES "
@@ -1431,8 +1437,18 @@ def build_network(
             "FROM nodes WHERE is_centroid=0 AND node_id!=? ORDER BY d2 ASC LIMIT ?",
             (clon, clon, clat, clat, centroid_node, CONNECTOR_CANDIDATE_POOL),
         ).fetchall()
-        nearest_in_largest = [row for row in nearest if row[0] in largest_component]
-        candidate_pool = nearest_in_largest or nearest
+        candidate_pool, searched_largest_component_directly = candidates_on_routable_component(
+            nearest,
+            largest_component,
+            lambda: conn.execute(
+                "SELECT node_id, X(geometry), Y(geometry), "
+                "(X(geometry)-?)*(X(geometry)-?)+(Y(geometry)-?)*(Y(geometry)-?) as d2 "
+                "FROM nodes WHERE is_centroid=0 AND node_id IN "
+                "(SELECT node_id FROM openplan_routable_connector_nodes) "
+                "ORDER BY d2 ASC LIMIT ?",
+                (clon, clon, clat, clat, CONNECTOR_CANDIDATE_POOL),
+            ).fetchall(),
+        )
         ranked = sorted(
             candidate_pool,
             key=lambda item: rank_connector_candidate(conn, int(item[0]), float(item[3])),
@@ -1482,8 +1498,11 @@ def build_network(
                 "centroid_node": int(centroid_node),
                 "virtual_centroid_offset_m": centroid_offset_m,
                 "nearest_candidates_considered": int(len(nearest)),
-                "largest_component_candidates_in_nearest_50": int(len(nearest_in_largest)),
-                "used_fallback_non_largest_component": int(len(nearest_in_largest)) == 0,
+                "routable_component_candidates_in_nearby_pool": int(
+                    sum(1 for row in nearest if row[0] in largest_component)
+                ),
+                "searched_routable_component_directly": searched_largest_component_directly,
+                "used_fallback_non_largest_component": False,
                 "chosen_connectors": chosen_connectors,
             }
         )
