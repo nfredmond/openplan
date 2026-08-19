@@ -73,6 +73,7 @@ from gateways import (
     pair_passthrough_cordons,
     GATEWAY_PASSTHROUGH_SHARE,
 )
+from centroid_geometry import insert_distinct_centroid
 import mode_choice
 import gtfs_skim
 import count_validation
@@ -1801,9 +1802,8 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
         centroid_nid = next_node
         next_node += 1
 
-        conn.execute(
-            "INSERT INTO nodes (node_id, is_centroid, geometry) VALUES (?, 1, MakePoint(?, ?, 4326))",
-            (centroid_nid, clon, clat),
+        connector_lon, connector_lat, _centroid_offset_m = insert_distinct_centroid(
+            conn, centroid_nid, clon, clat
         )
 
         nearest = conn.execute(
@@ -1825,7 +1825,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
             continue
         for near_nid, dist2 in nearest_in_comp:
             nx, ny = conn.execute("SELECT X(geometry),Y(geometry) FROM nodes WHERE node_id=?", (near_nid,)).fetchone()
-            line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
+            line_wkt = f"LINESTRING({connector_lon} {connector_lat}, {nx} {ny})"
             length_m = max((dist2**0.5) * 111000, 10)
             conn.execute(
                 "INSERT INTO links (link_id,a_node,b_node,direction,distance,modes,link_type,name,"
@@ -1870,12 +1870,11 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
             cordon_nid = next_node
             next_node += 1
             clon, clat = gw["boundary_lon"], gw["boundary_lat"]
-            conn.execute(
-                "INSERT INTO nodes (node_id, is_centroid, geometry) VALUES (?, 1, MakePoint(?, ?, 4326))",
-                (cordon_nid, clon, clat),
+            connector_lon, connector_lat, _centroid_offset_m = insert_distinct_centroid(
+                conn, cordon_nid, clon, clat
             )
             nx, ny = conn.execute("SELECT X(geometry),Y(geometry) FROM nodes WHERE node_id=?", (ext_node,)).fetchone()
-            line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
+            line_wkt = f"LINESTRING({connector_lon} {connector_lat}, {nx} {ny})"
             length_m = max(((clon - nx) ** 2 + (clat - ny) ** 2) ** 0.5 * 111000, 10)
             conn.execute(
                 "INSERT INTO links (link_id,a_node,b_node,direction,distance,modes,link_type,name,"

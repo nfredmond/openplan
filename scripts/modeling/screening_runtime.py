@@ -178,6 +178,7 @@ from gateways import (  # noqa: E402
     GATEWAY_PASSTHROUGH_SHARE,
     build_external_gateway_matrix as worker_build_external_gateway_matrix,
 )
+from centroid_geometry import insert_distinct_centroid  # noqa: E402
 
 GAMMA_MULTIPLIER = float(os.getenv("OPENPLAN_GAMMA_MULTIPLIER", "1.0") or 1.0)
 
@@ -1420,9 +1421,8 @@ def build_network(
         clat = float(zone["centroid_lat"])
         centroid_node = next_node
         next_node += 1
-        conn.execute(
-            "INSERT INTO nodes (node_id, is_centroid, geometry) VALUES (?, 1, MakePoint(?, ?, 4326))",
-            (centroid_node, clon, clat),
+        connector_lon, connector_lat, centroid_offset_m = insert_distinct_centroid(
+            conn, centroid_node, clon, clat
         )
 
         nearest = conn.execute(
@@ -1446,7 +1446,7 @@ def build_network(
         chosen_connectors = []
         for near_node, nx, ny in preferred:
             d2 = distance_by_node[near_node]
-            line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
+            line_wkt = f"LINESTRING({connector_lon} {connector_lat}, {nx} {ny})"
             length_m = max((d2 ** 0.5) * 111000, 10)
             # speed_ab/speed_ba are left NULL on purpose: until the normalisation pass below they hold
             # raw OSM `maxspeed` tags (metric by default), and a literal here would be indistinguishable
@@ -1480,6 +1480,7 @@ def build_network(
                 "zone_id": zone_id,
                 "zone_label": str(zone.get("NAMELSAD") or zone.get("GEOID") or zone_id),
                 "centroid_node": int(centroid_node),
+                "virtual_centroid_offset_m": centroid_offset_m,
                 "nearest_candidates_considered": int(len(nearest)),
                 "largest_component_candidates_in_nearest_50": int(len(nearest_in_largest)),
                 "used_fallback_non_largest_component": int(len(nearest_in_largest)) == 0,
