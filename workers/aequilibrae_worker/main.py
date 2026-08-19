@@ -476,7 +476,13 @@ def verified_latest_local_artifact(run_id: str, artifact_type: str) -> str:
 
 
 def register_agreement_artifact(
-    run_id: str, stage_id: str, artifact_type: str, path: str, content_type: str
+    run_id: str,
+    stage_id: str,
+    artifact_type: str,
+    path: str,
+    content_type: str,
+    *,
+    network_settings_digest: str | None = None,
 ) -> None:
     """Put the combined result where the app can read it, with local fallback."""
     with open(path, "rb") as handle:
@@ -510,6 +516,7 @@ def register_agreement_artifact(
         "metadata_json": {
             "kind": "dual_demand_model_agreement",
             "is_average": False,
+            "network_settings_digest": network_settings_digest,
             "upload_status": "stored" if response.status_code in (200, 201) else "local_fallback",
         },
     })
@@ -2287,6 +2294,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         },
         "excludes": ["trip_based_od_adjustments"],
     }
+    settings_digest = network_settings_digest(network_settings)
     settings_path = os.path.join(out_dir, "accepted_network_calibration.json")
     with open(settings_path, "w") as settings_file:
         json.dump(network_settings, settings_file, indent=2, sort_keys=True)
@@ -2304,6 +2312,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         # Full-precision, versioned assignment settings are the machine handoff.
         # `applied_class_factors` above remains the rounded presentation summary.
         "network_settings": network_settings,
+        "network_settings_digest": settings_digest,
         "network_settings_artifact": os.path.basename(settings_path),
         "holdout_station_count": len(holdout_stations),
         "fit_station_count": len(fit_stations),
@@ -2322,6 +2331,35 @@ def should_apply_trip_based_mode_split(
 ) -> bool:
     """A vehicle matrix must never be reduced by person-trip mode choice again."""
     return mode_split_enabled and not demand_is_vehicle
+
+
+def network_settings_digest(settings: dict) -> str:
+    """Return the stable identity of the exact assignment settings object."""
+    canonical = json.dumps(
+        settings, sort_keys=True, separators=(",", ":"), ensure_ascii=True
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def accepted_network_settings_metadata(assign_result: dict, filename: str) -> dict:
+    """Describe the persisted settings independently of the artifact's file encoding."""
+    calibration = assign_result.get("calibration") or {}
+    settings = calibration.get("network_settings") or {}
+    return {
+        "filename": filename,
+        "kind": "accepted_assignment_network_settings",
+        "schema_version": settings.get("schema_version"),
+        "network_settings_digest": calibration.get("network_settings_digest"),
+        "excludes": settings.get("excludes", []),
+    }
+
+
+def require_network_settings_digest(expected: str | None, actual: str | None, context: str) -> None:
+    if actual != expected:
+        raise RuntimeError(
+            f"Refusing {context} because the applied network settings do not match "
+            "the accepted trip-based settings"
+        )
 
 
 def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None) -> int:
@@ -2471,11 +2509,17 @@ def stage_assignment(
     reused_network_links = apply_persisted_network_settings(
         graph, proj_dir, persisted_network_settings
     )
+    reused_network_settings_digest = (
+        network_settings_digest(persisted_network_settings)
+        if persisted_network_settings is not None
+        else None
+    )
     if persisted_network_settings is not None:
         log += (
             "Applied the trip-based assignment's persisted, accepted road-class "
             f"speed/capacity factors to {reused_network_links} retained-network links; "
-            "no trip-based OD adjustment was reused.\n"
+            "no trip-based OD adjustment was reused. "
+            f"Settings SHA-256: {reused_network_settings_digest}.\n"
         )
     # "distance"/"distance_net" ride along so the assignment classes carry
     # blended, flow-consistent routed-distance skims (diagnostic inputs).
@@ -3100,6 +3144,7 @@ def stage_assignment(
         "convergence_diagnostic": convergence_diag,
         "select_link_analysis": select_link_analysis,
         "calibration": calibration_result,
+        "network_settings_digest": reused_network_settings_digest,
         # Carried forward so the artifact stage validates against the counts THIS
         # run used, whichever process picks that stage up. Persisted in the run's
         # state.json by process_stage.
@@ -3817,6 +3862,9 @@ def stage_artifacts(
                 if atype == "evidence_packet" and evidence_storage_ref
                 else f"local://{fpath}"
             )
+            metadata = evidence if atype == "evidence_packet" else {"filename": fname}
+            if atype == "accepted_network_calibration":
+                metadata = accepted_network_settings_metadata(assign_result, fname)
             sb_post_artifact({
                 "run_id": run_id,
                 "stage_id": stage_id,
@@ -3824,7 +3872,7 @@ def stage_artifacts(
                 "file_url": file_url,
                 "file_size_bytes": size,
                 "content_hash": content_hash,
-                "metadata_json": evidence if atype == "evidence_packet" else {"filename": fname},
+                "metadata_json": metadata,
             })
 
     # Register the zone-attributes package input (local:// — same-host consumers
@@ -4387,6 +4435,14 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 print(f"[{time.strftime('%X')}] ✅ {stage_name} not applicable (preflight only)")
             else:
                 first_assignment = state.get("assignment") or {}
+                accepted_settings = (first_assignment.get("calibration") or {}).get(
+                    "network_settings"
+                )
+                expected_settings_digest = (
+                    network_settings_digest(accepted_settings)
+                    if accepted_settings is not None
+                    else None
+                )
                 result = stage_assignment(
                     run_id,
                     stage_id,
@@ -4396,9 +4452,12 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     output_dir_name="activitysim_assignment_output",
                     demand_is_vehicle=True,
                     counts_path_override=first_assignment.get("counts_path"),
-                    persisted_network_settings=(first_assignment.get("calibration") or {}).get(
-                        "network_settings"
-                    ),
+                    persisted_network_settings=accepted_settings,
+                )
+                require_network_settings_digest(
+                    expected_settings_digest,
+                    result.get("network_settings_digest"),
+                    "ActivitySim assignment handoff",
                 )
                 state["activitysim_assignment"] = result
                 with open(state_file, "w") as f:
@@ -4425,6 +4484,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                             else "baseline_network_settings"
                         ),
                         "trip_based_od_adjustments_reused": False,
+                        "network_settings_digest": expected_settings_digest,
                     },
                 })
                 sb_patch_stage(stage_id, {
@@ -4453,6 +4513,35 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     state = json.load(f)
                 first_assignment = state.get("assignment") or {}
                 calibrated_comparison = bool(first_assignment.get("calibration"))
+                shared_settings_digest = None
+                if calibrated_comparison:
+                    calibration = first_assignment.get("calibration") or {}
+                    accepted_settings = calibration.get("network_settings")
+                    if accepted_settings is None:
+                        raise RuntimeError(
+                            "Refusing calibrated comparison without persisted network settings"
+                        )
+                    shared_settings_digest = network_settings_digest(accepted_settings)
+                    recorded_digest = calibration.get("network_settings_digest")
+                    applied_digest = (state.get("activitysim_assignment") or {}).get(
+                        "network_settings_digest"
+                    )
+                    try:
+                        require_network_settings_digest(
+                            shared_settings_digest,
+                            recorded_digest,
+                            "calibrated comparison",
+                        )
+                        require_network_settings_digest(
+                            shared_settings_digest,
+                            applied_digest,
+                            "calibrated comparison",
+                        )
+                    except RuntimeError:
+                        raise RuntimeError(
+                            "Refusing calibrated comparison because the two assignments do not "
+                            "share the accepted network-settings digest"
+                        )
                 first_volumes = verified_latest_local_artifact(
                     run_id,
                     "link_volumes_calibrated" if calibrated_comparison else "link_volumes",
@@ -4500,11 +4589,22 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     ("demand_model_agreement_geojson", result["geojson_path"], "application/geo+json"),
                 ):
                     register_agreement_artifact(
-                        run_id, stage_id, artifact_type, path, content_type
+                        run_id,
+                        stage_id,
+                        artifact_type,
+                        path,
+                        content_type,
+                        network_settings_digest=shared_settings_digest,
                     )
                 summary = result["summary"]
                 log = (
-                    f"Compared {summary['links_compared']:,} links on the retained network; "
+                    (
+                        f"Both assignments used accepted network settings SHA-256 "
+                        f"{shared_settings_digest}.\n"
+                        if shared_settings_digest
+                        else "Both assignments used the baseline retained-network settings.\n"
+                    )
+                    + f"Compared {summary['links_compared']:,} links on the retained network; "
                     f"{summary['links_carrying_meaningful_traffic']:,} carry meaningful traffic.\n"
                     f"Busy-link agreement share: {summary['agree_share_meaningful_links']}; "
                     f"divergence share: {summary['diverge_share_meaningful_links']}.\n"
