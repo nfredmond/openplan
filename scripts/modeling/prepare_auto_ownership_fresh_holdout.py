@@ -62,10 +62,13 @@ def prepare(
             "steps": {},
         }
         if status.get("status") == "completed" and not force:
+            if status.pop("error", None) is not None:
+                _write(status_path, status)
             results.append(status)
             continue
         started = time.monotonic()
         status["status"] = "running"
+        status.pop("error", None)
         _write(status_path, status)
         base_name = f"auto-ownership-fresh-{geography_id}"
         base_run = screening / base_name

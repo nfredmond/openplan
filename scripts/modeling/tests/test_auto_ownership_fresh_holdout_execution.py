@@ -16,6 +16,33 @@ import run_auto_ownership_transfer_study as transfer  # noqa: E402
 
 
 class FreshHoldoutExecutionTests(unittest.TestCase):
+    def test_completed_checkpoint_drops_a_stale_failure_without_rerunning(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            registry_path = root / "registry.json"
+            registry_path.write_text(json.dumps({
+                "status": "pre_registered_before_candidate_execution",
+                "geographies": [{"geography_id": "place-a", "label": "Place A"}],
+            }))
+            place = root / "studies" / "place-a"
+            place.mkdir(parents=True)
+            status_path = place / "status.json"
+            status_path.write_text(json.dumps({
+                "schema_version": preparation.SCHEMA_VERSION,
+                "geography_id": "place-a",
+                "label": "Place A",
+                "status": "completed",
+                "steps": {"screening": {}, "census_bundle": {}, "borrowed_mtc": {}},
+                "error": {"kind": "OldFailure", "message": "no longer true"},
+            }))
+
+            with mock.patch.object(preparation, "run_step") as run_step:
+                results = preparation.prepare(registry_path, root / "studies", root / "screening")
+
+            self.assertNotIn("error", results[0])
+            self.assertNotIn("error", json.loads(status_path.read_text()))
+            run_step.assert_not_called()
+
     def test_preparation_uses_census_population_and_component_isolation(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -27,6 +54,16 @@ class FreshHoldoutExecutionTests(unittest.TestCase):
             studies = root / "studies"
             screening = root / "screening"
             commands = []
+            place = studies / "place-a"
+            place.mkdir(parents=True)
+            (place / "status.json").write_text(json.dumps({
+                "schema_version": preparation.SCHEMA_VERSION,
+                "geography_id": "place-a",
+                "label": "Place A",
+                "status": "failed",
+                "steps": {},
+                "error": {"kind": "OldFailure", "message": "no longer true"},
+            }))
 
             def fake_run(command, *, log_path, env=None):
                 commands.append(command)
@@ -51,6 +88,7 @@ class FreshHoldoutExecutionTests(unittest.TestCase):
             ):
                 results = preparation.prepare(registry_path, studies, screening)
             self.assertEqual(results[0]["status"], "completed")
+            self.assertNotIn("error", results[0])
             build = next(command for command in commands if "build_activitysim_input_bundle.py" in command[1])
             self.assertEqual(build[build.index("--population") + 1], "census")
             activitysim = commands[-1]
