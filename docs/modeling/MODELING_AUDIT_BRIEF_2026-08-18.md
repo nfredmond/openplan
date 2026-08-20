@@ -243,6 +243,13 @@ recipe is in the commits.
    valuable thing you could find and I have no candidate for it.**
 1. **Tertiary roads carry 0.07× observed** — a 14× under-assignment on a whole
    road class, untouched by finer zoning, unexplained. Nobody has looked since.
+   > **SUPERSEDED 2026-08-20** (left as written; the answer is elsewhere).
+   > Somebody looked. It is network coverage, not under-assignment: 77-85% of
+   > the links inside a study boundary receive no assigned traffic at all, and
+   > **34-69% of tertiary links** are among them against 3-7% of motorway and
+   > primary. A tertiary count station often sits on a link the model
+   > structurally cannot load, which is also why finer zoning never moved it.
+   > `docs/modeling/UNLOADED_LINK_COVERAGE_2026-08-20.md`.
 2. **`main.py`'s inline external OD** (see 4 above).
 3. ~~No mode split in the scripts lane~~ — done; see 5 above.
 4. **`OPENPLAN_MAX_GATEWAYS = 8`** while counties have 25–47 crossings.

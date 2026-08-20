@@ -107,6 +107,23 @@ lets a station match an unloaded link:
 
 Four points of headline accuracy sit on that switch. A future session that finds
 the accuracy figure has improved should check this before believing it.
+## The mean-driven worry, checked and closed
+
+Trunk's median volume ratio is 2.65 while its **mean is 239**, so the obvious
+follow-up was whether anything live is fitted or gated on a mean and therefore
+being set by a handful of stations. Checked 2026-08-20: **nothing is, and the
+calibration is already built against exactly this.**
+
+- `calibration_objective` clips each station's APE at 1.0 before taking a
+  **median**, and its GEH term is a bounded soft-penalty `g/(g+5)` averaged over
+  values that cannot exceed 1. A station reading 36,439x contributes 1.0, not
+  36,438.
+- `class_factors` steps on `median(ratios)`, not the mean.
+- `mean_absolute_percent_error` is computed, stored, and parsed by the app's
+  schema — but never rendered on any planner-facing surface.
+
+Recorded because a future session will notice that mean and have to spend the
+same hour: the hazard is real in the data and absent from the code.
 
 ## What this does not settle
 
@@ -118,7 +135,3 @@ the accuracy figure has improved should check this before believing it.
   block-group experiment failed its pre-registered bar, and nothing here
   re-opens it — but that experiment was graded on corridor accuracy, not on
   network coverage, so it did not ask this question.
-- Anything about the mean-driven figures. Noted while measuring and still open:
-  trunk's median volume ratio is 2.65 while its **mean is 239**. Medians in this
-  lane's published figures stand; any metric fitted or gated on a mean is being
-  set by a handful of stations.
