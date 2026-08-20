@@ -229,7 +229,7 @@ function sourcesSection(evidence: ProvenanceEvidence | null): string[] {
  * The version is what the worker stamped; this file does not restate the rules
  * themselves, so a future revision needs no change here.
  */
-const CURRENT_VALIDATION_RULES_VERSION = 2;
+const CURRENT_VALIDATION_RULES_VERSION = 3;
 
 function supersededValidationRules(validation: Record<string, unknown>): string[] {
   const version = asNumber(validation.validation_rules_version);

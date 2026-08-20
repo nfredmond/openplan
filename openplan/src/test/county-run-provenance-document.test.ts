@@ -628,16 +628,20 @@ describe("accuracy figures graded by rules that no longer apply", () => {
 
   it("warns when the summary was graded by an older revision", () => {
     expect(graded({ validation_rules_version: 1 })).toContain("revision 1");
+    // Revision 2 graded frontage-road and interchange-connection counts against
+    // the mainline beside them, and set aside highway counts for being located
+    // near one. Every run stored before 2026-08-20 reports that quantity.
+    expect(graded({ validation_rules_version: 2 })).toContain("revision 2");
   });
 
   it("says nothing when the run was graded by the current rules", () => {
-    expect(graded({ validation_rules_version: 2 })).not.toContain("superseded");
+    expect(graded({ validation_rules_version: 3 })).not.toContain("superseded");
   });
 
   it("says nothing about a future revision it does not know", () => {
     // A worker ahead of the app is not a stale run, and calling it stale would
     // be worse than silence.
-    expect(graded({ validation_rules_version: 3 })).not.toContain("superseded");
+    expect(graded({ validation_rules_version: 4 })).not.toContain("superseded");
   });
 });
 

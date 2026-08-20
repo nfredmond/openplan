@@ -482,11 +482,16 @@ def compute_spearman_rho(observed: Sequence[float], modeled: Sequence[float]) ->
 #:
 #: Bump this whenever a change alters what a station's error MEANS -- not for a
 #: new field, a new metric, or a bug fix that leaves the comparison intact.
-VALIDATION_RULES_VERSION = 2
+VALIDATION_RULES_VERSION = 3
 
 #: What changed at each revision, in the words a planner reads. Version 1 is
 #: implicit: any summary without a version predates the stamp.
 VALIDATION_RULES_CHANGELOG = {
+    3: (
+        "A count whose own description names a frontage road, an interchange connection or a "
+        "ramp is no longer graded against the mainline beside it, and a count on a highway is "
+        "no longer set aside merely for being located near one."
+    ),
     2: (
         "Counts on a divided highway are compared against both carriageways rather than one; "
         "ramp counts no longer grade the mainline they leave; and a link matched by several "

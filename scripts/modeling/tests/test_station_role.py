@@ -87,6 +87,73 @@ class TheRegisteredFeedsMatchTheirOwnData(unittest.TestCase):
     def test_an_odot_mainline_station_survives(self) -> None:
         self.assertEqual(self.role("OR", "North of OR8 [0.11 miles]"), cs.MAINLINE_ROLE)
 
+    def test_an_odot_frontage_road_count_is_not_the_highway_beside_it(self) -> None:
+        """ODOT files a frontage-road count under the parallel highway's own
+        route number and milepost, so the matcher pairs it with the mainline.
+        Measured 2026-08-20: "Biddle Frontage Road", 450 vehicles a day, graded
+        against Crater Lake Highway's 69,385."""
+        for description in (
+            "US97 Frontage Rd., South of Nels Anderson Place [0.05 miles]",
+            "EDY RD. FRONTAGE RD., Nw of PACIFIC HIGHWAY WEST NO. 91 (OR99W)",
+            "BIDDLE FRONTAGE ROAD, North of Crater Lake Highway",
+            "WAKEFIELD FRONT. RD. CONN., Corvallis Newport Highway",
+        ):
+            self.assertEqual(self.role("OR", description), cs.NOT_MAINLINE_ROLE, description)
+
+    def test_an_odot_highway_located_BY_a_ramp_or_frontage_road_survives(self) -> None:
+        """The counted facility is the clause before the first comma; the rest
+        says where it is. Six mainline stations were being discarded for a word
+        in their POSITION, including the largest count in the whole set."""
+        for description in (
+            "BEAVERTON-TIGARD HIGHWAY NO. 144, Nw of southbound Pacific Highway (I5) ramps",
+            "CLACKAMAS HIGHWAY NO. 171, West of southbound ramps to Cascade Highway North",
+            "CORVALLIS-NEWPORT HIGHWAY NO. 33, West of Toledo Frontage Road (West Jct.)",
+            "LAKE OF THE WOODS HIGHWAY NO. 270, Nw of Dean Creek Frontage Road",
+        ):
+            self.assertEqual(self.role("OR", description), cs.MAINLINE_ROLE, description)
+
+    def test_odot_connection_abbreviations_the_numbered_pattern_missed(self) -> None:
+        for description in (
+            "REDLAND RD. CONN.,  CASCADE HIGHWAY SOUTH NO. 160 Redland Dr. Conn.",
+            "LAKE RD. INTCHGE. CONN., North of the interchange",
+            "LOWER BOONES FERRY RD CN 2, EAst of NB I5 ramps [0.05 miles]",
+            "OTIS CONNECTION NO. 2,  WB Salmon River Hwy",
+        ):
+            self.assertEqual(self.role("OR", description), cs.NOT_MAINLINE_ROLE, description)
+
+    def test_an_unnumbered_spelled_out_connection_is_left_alone(self) -> None:
+        """Deliberately not excluded: "DEPOT ST. CONNECTION" matched a link
+        actually named Depot Street. Excluding a fair comparison because it
+        reads badly is how a model gets flattered by its own validator."""
+        self.assertEqual(
+            self.role("OR", "DEPOT ST. CONNECTION, North of Main"), cs.MAINLINE_ROLE
+        )
+
+    def test_wsdot_reads_the_whole_description_because_its_convention_differs(self) -> None:
+        """WSDOT writes "<direction> OF MILEPOST x: <what is there>" — the
+        counted facility is the route and the text is a landmark. Three true
+        WSDOT mainline stations carrying 20,000-37,000 vehicles a day sit at a
+        frontage-road intersection; ODOT's rule applied here would delete them."""
+        self.assertEqual(cs.source_provenance("WA")["facility_clause_pattern"], "")
+        for description in (
+            "EAST OF MILEPOST 281.64: SUNSET FRONTAGE RD INTERSECTION",
+            "NORTHWEST OF MILEPOST 0.17: FRONTAGE RD INTERSECTION",
+        ):
+            self.assertEqual(self.role("WA", description), cs.MAINLINE_ROLE, description)
+        # …while the ramp spelling it DID declare still fires, from a position
+        # ODOT's clause rule would never have looked at.
+        self.assertEqual(
+            self.role("WA", "NORTH OF MILEPOST 41.13: FRONTAGE RD ON RAMP"),
+            cs.NOT_MAINLINE_ROLE,
+        )
+
+    def test_the_reason_quotes_the_text_that_decided_it(self) -> None:
+        _, reason = cs.station_role(
+            cs.source_provenance("OR"), "US97 Frontage Rd., South of Nels Anderson Place"
+        )
+        self.assertIn("Frontage Rd", reason)
+        self.assertIn("ODOT", reason)
+
     def test_caltrans_and_cdot_declare_none_because_their_feeds_publish_none(self) -> None:
         # Measured: zero stations in either feed's descriptions mention a ramp
         # across the study counties. Declaring a pattern they do not need would

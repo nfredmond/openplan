@@ -122,12 +122,39 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
             "route": "HWYNUMB", "postmile": "MP",
             "description": "LOCATION", "aadt": "AADT",
         },
-        # ODOT publishes ramp counts ("SB I-5 off-ramp") and, separately, counts
-        # on numbered CONNECTIONS — short connector highways between routes
-        # ("HAINES RD. CONN. NO. 3"), which are ramps by another name and are
-        # 300 of this feed's stations in the study counties. Both spellings are
-        # declared because the feed uses both, with and without punctuation.
-        "non_mainline_patterns": [r"\bramps?\b", r"\bconn\.?\s*(?:no\.?\s*)?\d+"],
+        # ODOT's LOCATION field is "<COUNTED FACILITY>, <where it is>", so the
+        # facility is the clause before the first comma and the rest is a
+        # positional reference to other roads. Measured 2026-08-20 across 1,334
+        # stations: without this, six mainline highway stations were discarded
+        # because their POSITION mentioned a ramp — including the largest count
+        # in the whole set, 95,729 on Beaverton-Tigard Highway "Nw of
+        # southbound Pacific Highway (I5) ramps".
+        "facility_clause_pattern": r"^([^,]*)",
+        # ODOT publishes ramp counts ("SB I-5 off-ramp"), counts on numbered
+        # CONNECTIONS — short connector highways between routes ("HAINES RD.
+        # CONN. NO. 3"), which are ramps by another name and are 300 of this
+        # feed's stations in the study counties, and counts on FRONTAGE ROADS
+        # filed under the parallel highway's own route number and milepost.
+        # Every spelling below is taken from the feed's own descriptions.
+        #
+        # The frontage-road case was measured 2026-08-20: 72 stations whose
+        # counted facility is a frontage road were being graded against the
+        # highway they run beside — "Biddle Frontage Road", 450 vehicles a day,
+        # against Crater Lake Highway's 69,385. Twenty-five of the 27 that
+        # reached a comparison had matched a differently-named mainline.
+        #
+        # "CONNECTION" spelled out and unnumbered is deliberately NOT here:
+        # "DEPOT ST. CONNECTION" matched a link actually named Depot Street, so
+        # excluding it would discard a fair comparison to make the model look
+        # better. The abbreviated "CONN." is ODOT's interchange-connection
+        # marker and all 24 of its stations are interchange connectors.
+        "non_mainline_patterns": [
+            r"\bramps?\b",
+            r"\bconn(?:ection)?\.?\s*(?:no\.?\s*)?\d+",
+            r"\bconn\.",
+            r"\bcn\.?\s*\d+\b",
+            r"\bfront(?:age|\.)\s*(?:rd|road)?\b",
+        ],
     },
     # To add a state: append its AADT FeatureServer /query URL + field map + the
     # provenance keys above (agency and station_prefix are mandatory). A
@@ -166,6 +193,7 @@ def source_provenance(region: str) -> dict[str, Any]:
         "count_year": src.get("count_year"),
         "query_url": src.get("query_url"),
         "non_mainline_patterns": tuple(src.get("non_mainline_patterns", ())),
+        "facility_clause_pattern": src.get("facility_clause_pattern", ""),
     }
 
 
@@ -199,15 +227,39 @@ def station_role(provenance: Mapping[str, Any], description: str | None) -> tupl
     what the feed declared. Nothing here knows about any particular place, and
     a feed that declares nothing gets every station treated as mainline — which
     is exactly the behaviour before this existed.
+
+    ============================= WHY THE FEED ALSO SAYS WHERE TO READ
+
+    A description names more than one road: the one that was counted, and the
+    ones that locate it. Which position holds which is the publisher's own
+    convention, so the feed declares it too, as `facility_clause_pattern` whose
+    first group is the counted facility.
+
+    The two conventions measured 2026-08-20 are opposites, which is why this
+    cannot be a shared rule. ODOT writes "<FACILITY>, <where it is>", so
+    "CORVALLIS-NEWPORT HIGHWAY NO. 33, West of Toledo Frontage Road" is a
+    highway count and must survive, while "US97 Frontage Rd., South of Nels
+    Anderson Place" is a frontage-road count and must not. WSDOT writes
+    "<direction> OF MILEPOST x: <what is there>", where the counted facility is
+    the route and the text names a landmark — so "FRONTAGE RD INTERSECTION" is
+    the mainline counted AT a frontage road, at 20,000–37,000 vehicles a day,
+    and applying ODOT's rule to it would throw away three true mainline
+    stations. A feed that declares no convention is read whole, as before.
     """
     text = str(description or "")
+    clause_pattern = provenance.get("facility_clause_pattern", "")
+    if clause_pattern:
+        found = re.search(clause_pattern, text)
+        text = found.group(1) if found else ""
     for pattern in provenance.get("non_mainline_patterns", ()):
-        if re.search(pattern, text, re.IGNORECASE):
+        matched = re.search(pattern, text, re.IGNORECASE)
+        if matched:
             return (
                 NOT_MAINLINE_ROLE,
-                f"{provenance.get('agency', 'this source')} publishes this as a ramp or connector "
-                "count; the screening network has no such link, so comparing it against the "
-                "mainline it leaves would measure the pairing rather than the model.",
+                f"{provenance.get('agency', 'this source')} publishes this as a count on "
+                f"{matched.group(0).strip()!r} — a ramp, connector or frontage road rather than "
+                "the mainline; the screening network has no such link, so comparing it against "
+                "the mainline beside it would measure the pairing rather than the model.",
             )
     return MAINLINE_ROLE, ""
 
