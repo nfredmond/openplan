@@ -1,0 +1,221 @@
+{
+  "component": "mandatory_tour_frequency",
+  "implementation": {
+    "closure_sha256": "0623ba910d5e489ad82d105688b9bcc005ea28667c15a6706bca0c265f875c25",
+    "files": [
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_outcomes.py",
+        "sha256": "6c2dd447ce018909255d76d8c0de91a85bd854ba2824b68c4e4887722b4dfd98"
+      },
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_registry.py",
+        "sha256": "e83de685a07970b0cacc9b3b9ffca9aa54f968ab8ac201f63f9d8ebc4594efd1"
+      },
+      {
+        "path": "scripts/modeling/prepare_mandatory_tour_development_source.py",
+        "sha256": "16dd54a6fb9b0e48ae3209dc5c75ce979d997afce0ebe938b992b8a4f7d99d7c"
+      },
+      {
+        "path": "scripts/modeling/us_nhts_diaries.py",
+        "sha256": "64ff0a975c7123df637108d5c5ac3045c3280ed0f5380e8790a235fb29816092"
+      },
+      {
+        "path": "scripts/modeling/us_nhts_survey.py",
+        "sha256": "d1863462e9e89c92027f1374de7c9a4d3e93e71626c7cdbd1e071f9146f9c36a"
+      }
+    ]
+  },
+  "outputs": {
+    "person_days": "mandatory_person_days.csv",
+    "person_days_sha256": "338133f2f1a3db178f4eb4e45a6f2e4fa75c78ae56085e6d1b2ce75713106b50",
+    "person_days_size_bytes": 1386502
+  },
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-outcomes.v1",
+  "source": {
+    "development_archive_sha256": "7cc6b0f93c7c9c8ccadcb237840ac3882737b51e5174c29b0886a19a75406cc3",
+    "development_manifest_sha256": "1e1dfef4ffe9616985798522052323cea2faa6db3969d22dcab7e8ebea2aec27",
+    "preregistration_sha256": "29e5616c208e445f851f79ec3f82c85d923eeb67a319cf747d482700c9121cc6"
+  },
+  "status": "development_outcomes_only_acceptance_unopened",
+  "study_contract": {
+    "acceptance_outcomes_read": false,
+    "eligibility": "observed mandatory daily pattern conditional on complete diary",
+    "unit": "weekday person-day",
+    "unsupported_patterns_coerced": false,
+    "weight": "WTPERFIN5D exactly once per person-day"
+  },
+  "summary": {
+    "by_division": {
+      "01": {
+        "records": 917,
+        "statuses": {
+          "incomplete_diary": {
+            "records": 39,
+            "weekday_weight": 680589.145096
+          },
+          "no_observed_mandatory_pattern": {
+            "records": 424,
+            "weekday_weight": 7584846.912101
+          },
+          "not_weekday_study_population": {
+            "records": 264,
+            "weekday_weight": 0.0
+          },
+          "supported_alternative": {
+            "records": 190,
+            "weekday_weight": 5607027.551494
+          }
+        },
+        "weekday_weight": 13872463.608691
+      },
+      "02": {
+        "records": 1955,
+        "statuses": {
+          "incomplete_diary": {
+            "records": 111,
+            "weekday_weight": 4163202.286757
+          },
+          "no_observed_mandatory_pattern": {
+            "records": 941,
+            "weekday_weight": 22082172.900639
+          },
+          "not_weekday_study_population": {
+            "records": 540,
+            "weekday_weight": 0.0
+          },
+          "out_of_support_mandatory_pattern": {
+            "records": 1,
+            "weekday_weight": 6703.203733
+          },
+          "supported_alternative": {
+            "records": 362,
+            "weekday_weight": 12370833.156506
+          }
+        },
+        "weekday_weight": 38622911.547635
+      },
+      "03": {
+        "records": 2746,
+        "statuses": {
+          "incomplete_diary": {
+            "records": 185,
+            "weekday_weight": 5459870.03813
+          },
+          "no_observed_mandatory_pattern": {
+            "records": 1276,
+            "weekday_weight": 23232818.325815
+          },
+          "not_weekday_study_population": {
+            "records": 769,
+            "weekday_weight": 0.0
+          },
+          "out_of_support_mandatory_pattern": {
+            "records": 1,
+            "weekday_weight": 29839.121457
+          },
+          "supported_alternative": {
+            "records": 515,
+            "weekday_weight": 14728241.543103
+          }
+        },
+        "weekday_weight": 43450769.028505
+      },
+      "04": {
+        "records": 1271,
+        "statuses": {
+          "incomplete_diary": {
+            "records": 61,
+            "weekday_weight": 2537195.761456
+          },
+          "no_observed_mandatory_pattern": {
+            "records": 577,
+            "weekday_weight": 10609620.765369
+          },
+          "not_weekday_study_population": {
+            "records": 359,
+            "weekday_weight": 0.0
+          },
+          "out_of_support_mandatory_pattern": {
+            "records": 1,
+            "weekday_weight": 10703.642637
+          },
+          "supported_alternative": {
+            "records": 273,
+            "weekday_weight": 6673380.262364
+          }
+        },
+        "weekday_weight": 19830900.431826
+      },
+      "07": {
+        "records": 1934,
+        "statuses": {
+          "incomplete_diary": {
+            "records": 126,
+            "weekday_weight": 4330366.16989
+          },
+          "no_observed_mandatory_pattern": {
+            "records": 918,
+            "weekday_weight": 23069628.560695
+          },
+          "not_weekday_study_population": {
+            "records": 579,
+            "weekday_weight": 0.0
+          },
+          "supported_alternative": {
+            "records": 311,
+            "weekday_weight": 10306214.641174
+          }
+        },
+        "weekday_weight": 37706209.371759
+      },
+      "09": {
+        "records": 2418,
+        "statuses": {
+          "incomplete_diary": {
+            "records": 195,
+            "weekday_weight": 5911507.876231
+          },
+          "no_observed_mandatory_pattern": {
+            "records": 1149,
+            "weekday_weight": 27991962.239812
+          },
+          "not_weekday_study_population": {
+            "records": 642,
+            "weekday_weight": 0.0
+          },
+          "supported_alternative": {
+            "records": 432,
+            "weekday_weight": 15414045.672201
+          }
+        },
+        "weekday_weight": 49317515.788244
+      }
+    },
+    "coverage_denominator": "complete weekday person-days with an observed mandatory pattern",
+    "design_weighted_supported_share": 0.999274778947,
+    "records": 11241,
+    "supported_alternatives": {
+      "school1": {
+        "records": 537,
+        "weekday_weight": 17986479.788266
+      },
+      "school2": {
+        "records": 10,
+        "weekday_weight": 525236.814364
+      },
+      "work1": {
+        "records": 1471,
+        "weekday_weight": 44823237.483171
+      },
+      "work2": {
+        "records": 56,
+        "weekday_weight": 1349539.607941
+      },
+      "work_and_school": {
+        "records": 9,
+        "weekday_weight": 415249.133099
+      }
+    },
+    "weekday_records": 8088
+  }
+}
