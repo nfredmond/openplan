@@ -13,6 +13,24 @@ and allows at least 3,000 iterations.  An operator may ask for a tighter target
 or a higher ceiling, but may not trade the measured accuracy back away.
 The core count is also recorded because parallel execution is part of the exact
 method that must survive a handoff between worker instances.
+
+WHAT IT COSTS IN WALL CLOCK, measured 2026-08-20 so nobody has to guess.
+Across 189 county runs already on disk, 97 tight and 92 at the old 0.01/500
+settings, matched by county and restricted to pairs that both reused a network:
+
+    assignment stage .... about 1.4-2x slower (median 1.4x)
+    in seconds .......... 1.4 -> 1.8 up to 7.9 -> 21.0, county-dependent
+
+That is the whole price. It is small because the assignment is a small part of
+a county run: on the same runs the counts stage costs 18-23 seconds and a fresh
+OSM network build costs 250-450. Tightening convergence is close to free, and
+it is what makes a link-level claim available at all — at 0.009 the agreement
+map reports `too_loose_to_attribute` and falls back to corridor totals.
+
+NOT MEASURED, and do not infer it from the same files: an end-to-end multiplier.
+The runs on disk differ in which stages they ran and whether they reused a
+network, and a naive whole-run median comes out BELOW 1.0 — which tighter
+convergence cannot cause. Compare stage to stage, or run a matched pair.
 """
 from __future__ import annotations
 
