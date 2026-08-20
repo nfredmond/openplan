@@ -1,0 +1,304 @@
+{
+  "acceptance_opening_lock": {
+    "development_results_may_not_change_these_rules": true,
+    "required_before_any_acceptance_outcome_is_derived_or_read": [
+      "this preregistration's SHA-256",
+      "outcome-reconstruction implementation SHA-256",
+      "frozen candidate package and every coefficient-file SHA-256",
+      "frozen reference-model implementation SHA-256",
+      "frozen acceptance evaluator implementation SHA-256"
+    ]
+  },
+  "acceptance_rules": {
+    "all_rules_must_pass": true,
+    "choice_distribution": {
+      "maximum_disadvantage_in_remaining_division": 0.02,
+      "maximum_pooled_total_variation_distance": 0.05,
+      "minimum_division_wins": 2,
+      "must_beat_reference_pooled": true
+    },
+    "outcome_coverage": {
+      "minimum_design_weighted_supported_share": 0.95,
+      "publish_exclusions_by_division": true
+    },
+    "primary_predictive_score": {
+      "candidate_minus_reference_one_sided_confidence": 0.95,
+      "candidate_point_estimate_must_win_all_acceptance_divisions": true,
+      "metric": "paired design-weighted multiclass log loss",
+      "upper_confidence_bound_must_be_below": 0.0,
+      "variance_method": "Taylor series with STRATUMID strata and HOUSEID primary sampling units"
+    },
+    "single_opening": true,
+    "stochastic_stability": {
+      "activitysim_seeds": [
+        2026081901,
+        2026081902,
+        2026081903,
+        2026081904,
+        2026081905,
+        2026081906,
+        2026081907,
+        2026081908,
+        2026081909,
+        2026081910,
+        2026081911,
+        2026081912,
+        2026081913,
+        2026081914,
+        2026081915,
+        2026081916,
+        2026081917,
+        2026081918,
+        2026081919,
+        2026081920
+      ],
+      "every_seed_and_alternative_must_be_inside_interval": true,
+      "interval": "For each alternative, expected weighted share is sum(w_i*p_i)/sum(w_i). The two-sided 95% Monte Carlo interval is expected share plus or minus 1.96*sqrt(sum(w_i^2*p_i*(1-p_i)))/sum(w_i)."
+    },
+    "tour_totals": {
+      "inside_design_based_95_percent_interval_pooled": true,
+      "measures": [
+        "work tours per eligible person-day",
+        "school tours per eligible person-day"
+      ],
+      "minimum_divisions_inside_interval": 2,
+      "rescaling_allowed": false,
+      "variance_method": "Taylor series with STRATUMID strata and HOUSEID primary sampling units"
+    },
+    "transfer_cells": {
+      "dimensions": [
+        "WORKER status",
+        "SCHOOL1 status",
+        "URBRUR"
+      ],
+      "minimum_unweighted_observations": 100,
+      "multiple_comparison_correction": "Holm",
+      "reject_any_significant_log_loss_deterioration": true
+    }
+  },
+  "candidate": {
+    "allowed_predictors": [
+      {
+        "observed": "R_AGE",
+        "runtime": "age"
+      },
+      {
+        "observed": "R_SEX",
+        "runtime": "sex"
+      },
+      {
+        "observed": "WORKER",
+        "runtime": "is_worker"
+      },
+      {
+        "observed": "SCHOOL1",
+        "runtime": "is_student"
+      },
+      {
+        "observed": "HHSIZE",
+        "runtime": "household_size"
+      },
+      {
+        "observed": "WRKCOUNT",
+        "runtime": "workers"
+      },
+      {
+        "observed": "DRVRCNT",
+        "runtime": "drivers"
+      },
+      {
+        "observed": "HHVEHCNT",
+        "runtime": "vehicles"
+      },
+      {
+        "observed": "HHFAMINC_IMP",
+        "runtime": "income category"
+      },
+      {
+        "observed": "URBRUR",
+        "runtime": "home urban or rural classification"
+      },
+      {
+        "observed": "linked roster R_AGE",
+        "runtime": "young-child count"
+      }
+    ],
+    "coefficient_scope": "one national coefficient vector",
+    "forbidden_adjustments": [
+      "regional scalar",
+      "division constant",
+      "post-hoc calibration factor",
+      "rescaling expected work or school tours before acceptance grading"
+    ],
+    "forbidden_predictors": [
+      "CENSUS_D or any regional indicator or intercept",
+      "county or state",
+      "GCDWORK",
+      "invented school distance",
+      "invented auto time",
+      "telework until the runtime population carries the same observed field"
+    ]
+  },
+  "component": "mandatory_tour_frequency",
+  "limits": [
+    "Acceptance applies only to mandatory_tour_frequency conditional on observed mandatory DAP.",
+    "It does not validate CDAP, location choice, scheduling, parking, or mode choice.",
+    "It does not prove county-level accuracy in an individual place."
+  ],
+  "outcome_access_lock": {
+    "outcome_tables_read": [],
+    "person_columns_used": [
+      "CENSUS_D",
+      "HOUSEID",
+      "PERSONID",
+      "STRATUMID",
+      "WTPERFIN5D"
+    ],
+    "selection_may_not_use": [
+      "trip purposes",
+      "tour reconstruction",
+      "mandatory-tour alternatives",
+      "candidate or reference losses"
+    ],
+    "selection_may_use": [
+      "weekday person records",
+      "WTPERFIN5D totals"
+    ]
+  },
+  "question": "Does one unchanged nationally estimated mandatory-tour-frequency component transfer to unseen United States Census divisions?",
+  "reference_model": {
+    "additive_smoothing_alpha": 0.5,
+    "definition": "Weighted alternative frequency within the four observed WORKER by SCHOOL1 status cells. Fall back to the pooled development frequency only when a development cell has no eligible person-days.",
+    "fit_geography": "development divisions only",
+    "holdout_information_allowed": false
+  },
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-preregistration.v1",
+  "selection": {
+    "acceptance_divisions": [
+      {
+        "division": "south_atlantic",
+        "division_code": "05",
+        "household_clusters": 1138,
+        "survey_strata": 2,
+        "weekday_person_records": 2440,
+        "weighted_weekday_persons": 61478871.267068
+      },
+      {
+        "division": "east_south_central",
+        "division_code": "06",
+        "household_clusters": 322,
+        "survey_strata": 2,
+        "weekday_person_records": 699,
+        "weighted_weekday_persons": 17875316.387412
+      },
+      {
+        "division": "mountain",
+        "division_code": "08",
+        "household_clusters": 438,
+        "survey_strata": 2,
+        "weekday_person_records": 959,
+        "weighted_weekday_persons": 23405967.568836
+      }
+    ],
+    "acceptance_record_share": 0.336287543082,
+    "acceptance_weight_share": 0.33630005284,
+    "development_divisions": [
+      {
+        "division": "new_england",
+        "division_code": "01",
+        "household_clusters": 308,
+        "survey_strata": 2,
+        "weekday_person_records": 653,
+        "weighted_weekday_persons": 13872463.608691
+      },
+      {
+        "division": "middle_atlantic",
+        "division_code": "02",
+        "household_clusters": 670,
+        "survey_strata": 2,
+        "weekday_person_records": 1415,
+        "weighted_weekday_persons": 38622911.547635
+      },
+      {
+        "division": "east_north_central",
+        "division_code": "03",
+        "household_clusters": 926,
+        "survey_strata": 2,
+        "weekday_person_records": 1977,
+        "weighted_weekday_persons": 43450769.028505
+      },
+      {
+        "division": "west_north_central",
+        "division_code": "04",
+        "household_clusters": 410,
+        "survey_strata": 2,
+        "weekday_person_records": 912,
+        "weighted_weekday_persons": 19830900.431826
+      },
+      {
+        "division": "west_south_central",
+        "division_code": "07",
+        "household_clusters": 633,
+        "survey_strata": 2,
+        "weekday_person_records": 1355,
+        "weighted_weekday_persons": 37706209.371759
+      },
+      {
+        "division": "pacific",
+        "division_code": "09",
+        "household_clusters": 817,
+        "survey_strata": 4,
+        "weekday_person_records": 1776,
+        "weighted_weekday_persons": 49317515.788244
+      }
+    ],
+    "maximum_absolute_balance_error": 0.002966719507,
+    "strategy": "Choose three whole Census divisions whose combined weekday record and WTPERFIN5D shares are closest to one third; break ties by division code.",
+    "target_acceptance_share": 0.333333333333,
+    "total_person_records": 16997,
+    "weekday_person_records": 12186,
+    "weighted_weekday_persons": 305560924.999976,
+    "zero_weekday_weight_records": 4811
+  },
+  "source": {
+    "archive_sha256": "64530c396d5f164d2259a22f7042f27bee5147babcd367568ddbfafe6c8bf34c",
+    "archive_size_bytes": 4533528,
+    "person_table": "perv2pub.csv",
+    "source_id": "us-fhwa-nhts-2022",
+    "source_url": "https://nhts.ornl.gov/media/2022/download/csv.zip",
+    "variance_primary_sampling_unit": "HOUSEID",
+    "variance_stratum": "STRATUMID",
+    "weekday_weight": "WTPERFIN5D"
+  },
+  "status": "pre_registered_before_mandatory_tour_outcome_derivation",
+  "study_population": {
+    "alternatives": {
+      "school1": {
+        "school_tours": 1,
+        "work_tours": 0
+      },
+      "school2": {
+        "school_tours": 2,
+        "work_tours": 0
+      },
+      "work1": {
+        "school_tours": 0,
+        "work_tours": 1
+      },
+      "work2": {
+        "school_tours": 0,
+        "work_tours": 2
+      },
+      "work_and_school": {
+        "school_tours": 1,
+        "work_tours": 1
+      }
+    },
+    "base": "Start from the person table so people with no reported trips remain visible.",
+    "complete_diary_rule": "Exclude the person-day if any trip needed for a home-based chain has invalid time or purpose, a discontinuity, a non-home start, or no return home.",
+    "eligibility": "Condition on an observed mandatory daily pattern: at least one complete home-based work or school tour. This does not estimate CDAP.",
+    "out_of_support": "Publish and exclude every mandatory tour-count pattern outside the five alternatives; never coerce it to the nearest alternative.",
+    "unit": "weekday person-day",
+    "weight": "Use WTPERFIN5D once per eligible person-day; never use a trip weight."
+  }
+}
