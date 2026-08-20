@@ -1,36 +1,126 @@
-import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import React from "react";
+import { cleanup, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import type {
+  ModelRunArtifact,
+  ModelRunStage,
+} from "@/components/models/model-run-manager";
 
-const map = readFileSync("src/components/models/demand-agreement-map.tsx", "utf8");
-const manager = readFileSync("src/components/models/model-run-manager.tsx", "utf8");
-const route = readFileSync(
-  "src/app/api/models/[modelId]/runs/[modelRunId]/agreement/route.ts",
-  "utf8",
-);
+const { agreementMapProps } = vi.hoisted(() => ({ agreementMapProps: vi.fn() }));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}));
+
+vi.mock("@/components/models/study-area-picker", () => ({
+  StudyAreaPicker: () => React.createElement("div", { "data-testid": "study-area-picker" }),
+}));
+
+vi.mock("@/components/models/model-run-headline-answer", () => ({
+  ModelRunHeadlineAnswer: () => null,
+}));
+
+vi.mock("next/dynamic", async () => {
+  const ReactModule = await import("react");
+  let callIndex = 0;
+  return {
+    default: () => {
+      const componentIndex = callIndex;
+      callIndex += 1;
+      if (componentIndex !== 1) return () => null;
+      return (props: { geojsonUrl: string }) => {
+        agreementMapProps(props);
+        return ReactModule.createElement("div", {
+          "data-testid": "rendered-demand-agreement-map",
+          "data-geojson-url": props.geojsonUrl,
+        });
+      };
+    },
+  };
+});
+
+import { ModelRunManager } from "@/components/models/model-run-manager";
+
+const MODEL_ID = "11111111-1111-4111-8111-111111111111";
+
+function behavioralRun(id: string, title: string, withAgreement = true) {
+  return {
+    id,
+    status: "succeeded",
+    run_title: title,
+    engine_key: "behavioral_demand",
+    source_analysis_run_id: null,
+    scenario_entry_id: null,
+    result_summary_json: null,
+    error_message: null,
+    started_at: null,
+    completed_at: null,
+    created_at: null,
+    stages: [] as ModelRunStage[],
+    artifacts: (withAgreement
+      ? [
+          {
+            id: `${id}-artifact`,
+            artifact_type: "demand_model_agreement_geojson",
+            file_url: "storage://run-artifacts/example",
+            file_size_bytes: 100,
+          },
+        ]
+      : []) as ModelRunArtifact[],
+  };
+}
+
+function renderManager(modelRuns: ReturnType<typeof behavioralRun>[]) {
+  return render(
+    React.createElement(ModelRunManager, {
+      modelId: MODEL_ID,
+      modelTitle: "Any-place model",
+      defaultQueryText: "Screening run",
+      defaultCorridorText: "",
+      scenarioEntries: [],
+      modelRuns,
+      schemaPending: false,
+    })
+  );
+}
 
 describe("behavioral demand agreement map live surface", () => {
-  it("is reachable from a completed behavioral run through its authenticated artifact route", () => {
-    expect(
-      manager.match(
-        /run\.artifacts\.some\(\(artifact\) => artifact\.artifact_type === "demand_model_agreement_geojson"\)/g,
-      ),
-    ).toHaveLength(1);
-    expect(manager).toContain("latestBehavioralAgreementRun ?");
-    expect(manager).toContain("<DemandAgreementMap");
-    expect(manager).toContain("/agreement`}");
-    expect(route).toContain('loadModelAccess(supabase, modelId, user.id, "models.read")');
-    expect(route).toContain('"demand_model_agreement_geojson"');
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
   });
 
-  it("styles all three sensitivity classes and shows both source volumes", () => {
-    expect(map).toContain('"agree", "#22c55e"');
-    expect(map).toContain('"marginal", "#f59e0b"');
-    expect(map).toContain('"diverge", "#ef4444"');
-    expect(map).toContain("Trip-based volume:");
-    expect(map).toContain("ActivitySim volume:");
-    expect(map).toContain('maxWidth: "240px"');
-    expect(map).toContain('popup.getElement()?.style.setProperty("z-index", "20")');
-    expect(map).toContain("flex flex-wrap gap-x-3 gap-y-1");
-    expect(map).toContain("Agreement is concurrence, not evidence that either method is correct.");
+  it("mounts the newest eligible run through its run-scoped authenticated URL", () => {
+    const newestId = "22222222-2222-4222-8222-222222222222";
+    const olderId = "33333333-3333-4333-8333-333333333333";
+    renderManager([
+      behavioralRun(newestId, "Newest complete comparison"),
+      behavioralRun(olderId, "Older complete comparison"),
+    ]);
+
+    const map = screen.getByTestId("rendered-demand-agreement-map");
+    expect(map).toHaveAttribute(
+      "data-geojson-url",
+      `/api/models/${MODEL_ID}/runs/${newestId}/agreement`
+    );
+    expect(
+      screen.getByRole("heading", {
+        name: "Demand-method sensitivity from Newest complete comparison",
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", {
+        name: "Demand-method sensitivity from Older complete comparison",
+      })
+    ).toBeNull();
+    expect(agreementMapProps).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not mount a map from a run that has no agreement artifact", () => {
+    renderManager([
+      behavioralRun("22222222-2222-4222-8222-222222222222", "No comparison", false),
+    ]);
+    expect(screen.queryByTestId("rendered-demand-agreement-map")).toBeNull();
+    expect(agreementMapProps).not.toHaveBeenCalled();
   });
 });

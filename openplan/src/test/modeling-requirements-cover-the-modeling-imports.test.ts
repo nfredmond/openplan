@@ -82,7 +82,7 @@ const LOCAL_MODULE_DIRS = [
  */
 const PYTHON_STDLIB = new Set([
   "__future__", "argparse", "collections", "concurrent", "contextlib", "copy", "csv",
-  "dataclasses", "datetime", "functools", "gzip", "hashlib", "importlib", "io",
+  "dataclasses", "datetime", "decimal", "functools", "gzip", "hashlib", "importlib", "io",
   "inspect", "itertools", "json", "logging", "math", "os", "pathlib", "platform", "random", "re",
   "shlex", "shutil", "sqlite3", "statistics", "string", "subprocess", "sys",
   "tempfile", "textwrap", "time", "traceback", "types", "typing", "unittest",

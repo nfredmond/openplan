@@ -714,11 +714,21 @@ export function ModelRunManager({
       ) : null}
 
       {latestBehavioralAgreementRun ? (
-        <div className="mt-5">
+        <section
+          aria-labelledby={`agreement-map-${latestBehavioralAgreementRun.id}`}
+          className="mt-5 space-y-2"
+          data-agreement-run-id={latestBehavioralAgreementRun.id}
+        >
+          <h3
+            className="text-sm font-semibold text-foreground"
+            id={`agreement-map-${latestBehavioralAgreementRun.id}`}
+          >
+            Demand-method sensitivity from {latestBehavioralAgreementRun.run_title}
+          </h3>
           <DemandAgreementMap
             geojsonUrl={`/api/models/${modelId}/runs/${latestBehavioralAgreementRun.id}/agreement`}
           />
-        </div>
+        </section>
       ) : null}
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">

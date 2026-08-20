@@ -59,7 +59,7 @@ class FakeRuns:
                 json.dumps({"stations_matched": self.stations})
             )
             (run_dir / "run_output" / "link_volumes.csv").write_text("link_id,PCE_tot\n1,5000\n")
-            (run_dir / "run_output" / "loaded_links.geojson").write_text(
+            (run_dir / "run_output" / "retained_network.geojson").write_text(
                 json.dumps({"type": "FeatureCollection", "features": []})
             )
             (run_dir / "package" / "zone_attributes.csv").write_text("zone_id\n1\n")
@@ -153,6 +153,8 @@ class RunningOneCounty(unittest.TestCase):
         comparisons = [c for c in fake.commands if Path(c[1]).name == "compare_behavioral_demand_outputs.py"]
         self.assertNotIn("--noise-floor-json", comparisons[0])  # the floor measures itself
         self.assertIn("--noise-floor-json", comparisons[1])
+        geometry_index = comparisons[1].index("--loaded-links-geojson") + 1
+        self.assertTrue(comparisons[1][geometry_index].endswith("/retained_network.geojson"))
 
     def test_a_calibrated_run_stops_the_county(self) -> None:
         fake = FakeRuns(self.root, calibrated="base")

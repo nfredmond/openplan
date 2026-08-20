@@ -1,0 +1,627 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -120.99,
+            39.0
+          ],
+          [
+            -120.99,
+            39.01
+          ]
+        ]
+      },
+      "properties": {
+        "link_id": 1,
+        "name": "Road 1",
+        "link_type": "motorway",
+        "first_volume": 20000.0,
+        "second_volume": 20100.0,
+        "difference": 100.0,
+        "percent_difference": 0.5,
+        "geh": 0.706,
+        "agreement": "agree",
+        "carries_meaningful_traffic": true,
+        "comparison_available": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -120.98,
+            39.0
+          ],
+          [
+            -120.98,
+            39.01
+          ]
+        ]
+      },
+      "properties": {
+        "link_id": 2,
+        "name": "Road 2",
+        "link_type": "primary",
+        "first_volume": 10000.0,
+        "second_volume": 10506.24,
+        "difference": 506.24,
+        "percent_difference": 5.06,
+        "geh": 5.0,
+        "agreement": "marginal",
+        "carries_meaningful_traffic": true,
+        "comparison_available": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -120.97,
+            39.0
+          ],
+          [
+            -120.97,
+            39.01
+          ]
+        ]
+      },
+      "properties": {
+        "link_id": 3,
+        "name": "Road 3",
+        "link_type": "primary",
+        "first_volume": 10000.0,
+        "second_volume": 12000.0,
+        "difference": 2000.0,
+        "percent_difference": 20.0,
+        "geh": 19.069,
+        "agreement": "diverge",
+        "carries_meaningful_traffic": true,
+        "comparison_available": true
+      }
+    }
+  ],
+  "metadata": {
+    "schema_version": "openplan.corridor_agreement.v2",
+    "methods": {
+      "first": "trip-based",
+      "second": "activity-based"
+    },
+    "summary": {
+      "links_compared": 3,
+      "links_carrying_meaningful_traffic": 3,
+      "minimum_volume": 100.0,
+      "agree_share_all_links": 0.3333,
+      "agree_share_meaningful_links": 0.3333,
+      "diverge_share_meaningful_links": 0.3333,
+      "agree_share_by_volume": 0.4718,
+      "median_geh_meaningful_links": 5.0,
+      "note": "Of 3 links carrying more than 100 vehicles, 1 agree closely between the two demand models and 1 diverge. Agreement is judged by GEH, the traffic-engineering yardstick for comparing two volumes \u2014 but its usual thresholds were written for checking a model against measured counts, where one side is ground truth. Here neither side is, so agreement means the two methods concur, NOT that either is correct. The measured holdout study found that agreement does not predict count accuracy; this map identifies sensitivity to the demand method. The two are never averaged: a blended figure would have no provenance and would destroy the only thing this comparison produces."
+    },
+    "settings": {
+      "volume_column": "PCE_tot",
+      "minimum_volume": 100.0,
+      "geh_close": 5.0,
+      "geh_marginal": 10.0
+    },
+    "retained_network_manifest": {
+      "schema_version": "openplan.retained-network-manifest.v1",
+      "all_link_count": 4,
+      "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+      "roadway_link_count": 3,
+      "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+      "modeling_connector_link_count": 1,
+      "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+      "excluded_roles": [
+        "modeling_connector"
+      ],
+      "role_definition": {
+        "roadway": "link_type != centroid_connector",
+        "modeling_connector": "link_type = centroid_connector"
+      }
+    },
+    "network_state_digest": "4cdd29c3bc3fbafa8fb726f0c0c496ee2b7db2a66c684e7b6ca2438c9f831858",
+    "excluded_modeling_connectors": {
+      "role": "modeling_connector",
+      "count": 1,
+      "link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48"
+    },
+    "network_alignment": {
+      "first_links": 4,
+      "second_links": 4,
+      "first_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+      "second_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+      "shared_links": 4,
+      "only_in_first": 0,
+      "only_in_second": 0,
+      "exact": true,
+      "note": "Both volume tables contain exactly the same 4 link ids. This establishes link-set alignment only; the recorded network-settings digests still decide whether the network settings were held constant."
+    },
+    "network_consistency": {
+      "status": "verified_same",
+      "exact_network_alignment": true,
+      "evidence": {
+        "network_settings": {
+          "first": {
+            "state": "verified",
+            "settings": {
+              "application": {
+                "capacity": "baseline_capacity * factor",
+                "travel_time": "baseline_travel_time / factor"
+              },
+              "excludes": [
+                "trip_based_od_adjustments"
+              ],
+              "road_class_factors": {
+                "motorway": 1.05,
+                "primary": 0.98
+              },
+              "schema_version": "openplan.network-calibration.v1"
+            },
+            "payload_json": "{\"application\":{\"capacity\":\"baseline_capacity * factor\",\"travel_time\":\"baseline_travel_time / factor\"},\"excludes\":[\"trip_based_od_adjustments\"],\"road_class_factors\":{\"motorway\":1.05,\"primary\":0.98},\"schema_version\":\"openplan.network-calibration.v1\"}",
+            "digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984",
+            "reason": null,
+            "recorded_payload_json": "{\"application\":{\"capacity\":\"baseline_capacity * factor\",\"travel_time\":\"baseline_travel_time / factor\"},\"excludes\":[\"trip_based_od_adjustments\"],\"road_class_factors\":{\"motorway\":1.05,\"primary\":0.98},\"schema_version\":\"openplan.network-calibration.v1\"}",
+            "recorded_digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984"
+          },
+          "second": {
+            "state": "verified",
+            "settings": {
+              "application": {
+                "capacity": "baseline_capacity * factor",
+                "travel_time": "baseline_travel_time / factor"
+              },
+              "excludes": [
+                "trip_based_od_adjustments"
+              ],
+              "road_class_factors": {
+                "motorway": 1.05,
+                "primary": 0.98
+              },
+              "schema_version": "openplan.network-calibration.v1"
+            },
+            "payload_json": "{\"application\":{\"capacity\":\"baseline_capacity * factor\",\"travel_time\":\"baseline_travel_time / factor\"},\"excludes\":[\"trip_based_od_adjustments\"],\"road_class_factors\":{\"motorway\":1.05,\"primary\":0.98},\"schema_version\":\"openplan.network-calibration.v1\"}",
+            "digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984",
+            "reason": null,
+            "recorded_payload_json": "{\"application\":{\"capacity\":\"baseline_capacity * factor\",\"travel_time\":\"baseline_travel_time / factor\"},\"excludes\":[\"trip_based_od_adjustments\"],\"road_class_factors\":{\"motorway\":1.05,\"primary\":0.98},\"schema_version\":\"openplan.network-calibration.v1\"}",
+            "recorded_digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984"
+          }
+        },
+        "network_states": {
+          "first": {
+            "state": "verified",
+            "record": {
+              "schema_version": "openplan.assignment-network-state.v1",
+              "network_settings_digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984",
+              "assignment_centroid_count": 2,
+              "assignment_centroid_order_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "block_centroid_flows": true,
+              "penalty_through_centroids": "positive_infinity",
+              "cost_field": "travel_time",
+              "capacity_field": "capacity",
+              "graph_row_count": 4,
+              "graph_rows_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_float_dtype": "<f8",
+              "graph_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_cost_dtype": "<f8",
+              "compact_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "compact_cost_dtype": "<f8",
+              "solver_free_flow_tt_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_free_flow_tt_dtype": "<f8",
+              "solver_capacity_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_capacity_dtype": "<f8",
+              "retained_network_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "retained_network_manifest": {
+                "schema_version": "openplan.retained-network-manifest.v1",
+                "all_link_count": 4,
+                "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+                "roadway_link_count": 3,
+                "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+                "modeling_connector_link_count": 1,
+                "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+                "excluded_roles": [
+                  "modeling_connector"
+                ],
+                "role_definition": {
+                  "roadway": "link_type != centroid_connector",
+                  "modeling_connector": "link_type = centroid_connector"
+                }
+              }
+            },
+            "digest": "4cdd29c3bc3fbafa8fb726f0c0c496ee2b7db2a66c684e7b6ca2438c9f831858",
+            "manifest": {
+              "schema_version": "openplan.retained-network-manifest.v1",
+              "all_link_count": 4,
+              "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+              "roadway_link_count": 3,
+              "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+              "modeling_connector_link_count": 1,
+              "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+              "excluded_roles": [
+                "modeling_connector"
+              ],
+              "role_definition": {
+                "roadway": "link_type != centroid_connector",
+                "modeling_connector": "link_type = centroid_connector"
+              }
+            },
+            "reason": null,
+            "recorded_record": {
+              "schema_version": "openplan.assignment-network-state.v1",
+              "network_settings_digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984",
+              "assignment_centroid_count": 2,
+              "assignment_centroid_order_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "block_centroid_flows": true,
+              "penalty_through_centroids": "positive_infinity",
+              "cost_field": "travel_time",
+              "capacity_field": "capacity",
+              "graph_row_count": 4,
+              "graph_rows_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_float_dtype": "<f8",
+              "graph_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_cost_dtype": "<f8",
+              "compact_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "compact_cost_dtype": "<f8",
+              "solver_free_flow_tt_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_free_flow_tt_dtype": "<f8",
+              "solver_capacity_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_capacity_dtype": "<f8",
+              "retained_network_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "retained_network_manifest": {
+                "schema_version": "openplan.retained-network-manifest.v1",
+                "all_link_count": 4,
+                "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+                "roadway_link_count": 3,
+                "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+                "modeling_connector_link_count": 1,
+                "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+                "excluded_roles": [
+                  "modeling_connector"
+                ],
+                "role_definition": {
+                  "roadway": "link_type != centroid_connector",
+                  "modeling_connector": "link_type = centroid_connector"
+                }
+              }
+            },
+            "recorded_digest": "4cdd29c3bc3fbafa8fb726f0c0c496ee2b7db2a66c684e7b6ca2438c9f831858"
+          },
+          "second": {
+            "state": "verified",
+            "record": {
+              "schema_version": "openplan.assignment-network-state.v1",
+              "network_settings_digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984",
+              "assignment_centroid_count": 2,
+              "assignment_centroid_order_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "block_centroid_flows": true,
+              "penalty_through_centroids": "positive_infinity",
+              "cost_field": "travel_time",
+              "capacity_field": "capacity",
+              "graph_row_count": 4,
+              "graph_rows_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_float_dtype": "<f8",
+              "graph_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_cost_dtype": "<f8",
+              "compact_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "compact_cost_dtype": "<f8",
+              "solver_free_flow_tt_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_free_flow_tt_dtype": "<f8",
+              "solver_capacity_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_capacity_dtype": "<f8",
+              "retained_network_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "retained_network_manifest": {
+                "schema_version": "openplan.retained-network-manifest.v1",
+                "all_link_count": 4,
+                "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+                "roadway_link_count": 3,
+                "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+                "modeling_connector_link_count": 1,
+                "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+                "excluded_roles": [
+                  "modeling_connector"
+                ],
+                "role_definition": {
+                  "roadway": "link_type != centroid_connector",
+                  "modeling_connector": "link_type = centroid_connector"
+                }
+              }
+            },
+            "digest": "4cdd29c3bc3fbafa8fb726f0c0c496ee2b7db2a66c684e7b6ca2438c9f831858",
+            "manifest": {
+              "schema_version": "openplan.retained-network-manifest.v1",
+              "all_link_count": 4,
+              "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+              "roadway_link_count": 3,
+              "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+              "modeling_connector_link_count": 1,
+              "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+              "excluded_roles": [
+                "modeling_connector"
+              ],
+              "role_definition": {
+                "roadway": "link_type != centroid_connector",
+                "modeling_connector": "link_type = centroid_connector"
+              }
+            },
+            "reason": null,
+            "recorded_record": {
+              "schema_version": "openplan.assignment-network-state.v1",
+              "network_settings_digest": "1abe99e4eeae935516071fcb0e6c3c704b719a9307505ef7136b660a6d83e984",
+              "assignment_centroid_count": 2,
+              "assignment_centroid_order_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "block_centroid_flows": true,
+              "penalty_through_centroids": "positive_infinity",
+              "cost_field": "travel_time",
+              "capacity_field": "capacity",
+              "graph_row_count": 4,
+              "graph_rows_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_float_dtype": "<f8",
+              "graph_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "graph_cost_dtype": "<f8",
+              "compact_cost_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "compact_cost_dtype": "<f8",
+              "solver_free_flow_tt_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_free_flow_tt_dtype": "<f8",
+              "solver_capacity_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "solver_capacity_dtype": "<f8",
+              "retained_network_digest": "6985ca1f4daa5a584a28eae043a239cb96689af1337ea13afb63e00c2bf512fa",
+              "retained_network_manifest": {
+                "schema_version": "openplan.retained-network-manifest.v1",
+                "all_link_count": 4,
+                "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+                "roadway_link_count": 3,
+                "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+                "modeling_connector_link_count": 1,
+                "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+                "excluded_roles": [
+                  "modeling_connector"
+                ],
+                "role_definition": {
+                  "roadway": "link_type != centroid_connector",
+                  "modeling_connector": "link_type = centroid_connector"
+                }
+              }
+            },
+            "recorded_digest": "4cdd29c3bc3fbafa8fb726f0c0c496ee2b7db2a66c684e7b6ca2438c9f831858"
+          }
+        },
+        "table_coverage": {
+          "first": {
+            "table_link_count": 4,
+            "table_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+            "retained_all_link_count": 4,
+            "retained_all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+            "exact": true
+          },
+          "second": {
+            "table_link_count": 4,
+            "table_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+            "retained_all_link_count": 4,
+            "retained_all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+            "exact": true
+          }
+        },
+        "geometry": {
+          "retained_network_manifest": {
+            "schema_version": "openplan.retained-network-manifest.v1",
+            "all_link_count": 4,
+            "all_link_ids_digest": "4e9e641c11f68e33ce360c5feb5e5b22b6320c7538f2cf2135c50cbdd7f0e7a9",
+            "roadway_link_count": 3,
+            "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+            "modeling_connector_link_count": 1,
+            "modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48",
+            "excluded_roles": [
+              "modeling_connector"
+            ],
+            "role_definition": {
+              "roadway": "link_type != centroid_connector",
+              "modeling_connector": "link_type = centroid_connector"
+            }
+          },
+          "network_state_digest": "4cdd29c3bc3fbafa8fb726f0c0c496ee2b7db2a66c684e7b6ca2438c9f831858",
+          "roadway_link_count": 3,
+          "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+          "exact": true,
+          "reason": null,
+          "derived_modeling_connector_count": 1,
+          "derived_modeling_connector_link_ids_digest": "e0edce42b2e517f3fa9b423a1f71c59dcc633a6f392a9530c371ef644ff10a48"
+        },
+        "assignment_profiles": {
+          "first": {
+            "verification_state": "verified",
+            "reason": null,
+            "profile": {
+              "schema_version": "openplan.assignment-profile.v1",
+              "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+              "engine": "aequilibrae",
+              "engine_version": "1.4.2",
+              "algorithm": "bfw",
+              "vdf": "BPR",
+              "vdf_parameters": {
+                "alpha": 0.15,
+                "beta": 4
+              },
+              "capacity_field": "capacity",
+              "time_field": "travel_time",
+              "class_pce": 1,
+              "cores": 2,
+              "target_gap": 0.0005,
+              "max_iterations": 3000
+            },
+            "payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":2,\"engine\":\"aequilibrae\",\"engine_version\":\"1.4.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+            "digest": "c4fcb51f7fe508e229d323c125536ab7311ffffa24fc1e767038e7ef868cfea6"
+          },
+          "second": {
+            "verification_state": "verified",
+            "reason": null,
+            "profile": {
+              "schema_version": "openplan.assignment-profile.v1",
+              "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+              "engine": "aequilibrae",
+              "engine_version": "1.4.2",
+              "algorithm": "bfw",
+              "vdf": "BPR",
+              "vdf_parameters": {
+                "alpha": 0.15,
+                "beta": 4
+              },
+              "capacity_field": "capacity",
+              "time_field": "travel_time",
+              "class_pce": 1,
+              "cores": 2,
+              "target_gap": 0.0005,
+              "max_iterations": 3000
+            },
+            "payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":2,\"engine\":\"aequilibrae\",\"engine_version\":\"1.4.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+            "digest": "c4fcb51f7fe508e229d323c125536ab7311ffffa24fc1e767038e7ef868cfea6"
+          }
+        }
+      },
+      "note": "Both assignments prove the same exact profile, network settings, observed network state, complete all-link volume coverage, and roadway-only geometry."
+    },
+    "attribution_is_supportable": true,
+    "attributable_at": [
+      "corridor",
+      "link"
+    ],
+    "assignment_convergence": {
+      "attributable_at": [
+        "corridor",
+        "link"
+      ],
+      "gaps": {
+        "first": 0.0003,
+        "second": 0.0003
+      },
+      "required_gap": 0.001,
+      "assignment_profiles": {
+        "first": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 2,
+          "engine": "aequilibrae",
+          "engine_version": "1.4.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "second": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 2,
+          "engine": "aequilibrae",
+          "engine_version": "1.4.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        }
+      },
+      "assignment_profile_payloads": {
+        "first": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":2,\"engine\":\"aequilibrae\",\"engine_version\":\"1.4.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "second": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":2,\"engine\":\"aequilibrae\",\"engine_version\":\"1.4.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}"
+      },
+      "assignment_profile_digests": {
+        "first": "c4fcb51f7fe508e229d323c125536ab7311ffffa24fc1e767038e7ef868cfea6",
+        "second": "c4fcb51f7fe508e229d323c125536ab7311ffffa24fc1e767038e7ef868cfea6"
+      },
+      "assignment_profile_evidence": {
+        "first": {
+          "verification_state": "verified",
+          "reason": null,
+          "profile": {
+            "schema_version": "openplan.assignment-profile.v1",
+            "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+            "engine": "aequilibrae",
+            "engine_version": "1.4.2",
+            "algorithm": "bfw",
+            "vdf": "BPR",
+            "vdf_parameters": {
+              "alpha": 0.15,
+              "beta": 4
+            },
+            "capacity_field": "capacity",
+            "time_field": "travel_time",
+            "class_pce": 1,
+            "cores": 2,
+            "target_gap": 0.0005,
+            "max_iterations": 3000
+          },
+          "payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":2,\"engine\":\"aequilibrae\",\"engine_version\":\"1.4.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+          "digest": "c4fcb51f7fe508e229d323c125536ab7311ffffa24fc1e767038e7ef868cfea6"
+        },
+        "second": {
+          "verification_state": "verified",
+          "reason": null,
+          "profile": {
+            "schema_version": "openplan.assignment-profile.v1",
+            "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+            "engine": "aequilibrae",
+            "engine_version": "1.4.2",
+            "algorithm": "bfw",
+            "vdf": "BPR",
+            "vdf_parameters": {
+              "alpha": 0.15,
+              "beta": 4
+            },
+            "capacity_field": "capacity",
+            "time_field": "travel_time",
+            "class_pce": 1,
+            "cores": 2,
+            "target_gap": 0.0005,
+            "max_iterations": 3000
+          },
+          "payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":2,\"engine\":\"aequilibrae\",\"engine_version\":\"1.4.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+          "digest": "c4fcb51f7fe508e229d323c125536ab7311ffffa24fc1e767038e7ef868cfea6"
+        }
+      },
+      "status": "tight_enough",
+      "note": "Both runs met the measured link-level convergence limit. This removes the stopping gap as a known link-scale confounder; attribution still requires exact verified assignment profiles, network settings, observed network state, complete all-link table coverage, and roadway geometry."
+    },
+    "assignment_noise_floor": {
+      "measured": false,
+      "measurement": null,
+      "note": "THE LOCAL ASSIGNMENT NOISE FLOOR HAS NOT BEEN MEASURED FOR THIS comparison. Equilibrium assignment redistributes flow between near-equal-cost parallel routes; measured once at a loose relative gap of 0.01, 13% of busy links diverged with effectively identical demand. Exact retained-network evidence and the tight convergence limit remain required before attribution. A local round-trip measurement would additionally quantify residual solver sensitivity and should accompany high-stakes interpretation of a single link."
+    },
+    "geometry_alignment": {
+      "source_roadway_feature_count": 3,
+      "manifest_roadway_link_count": 3,
+      "rendered_roadway_feature_count": 3,
+      "compared_roadway_link_count": 3,
+      "roadway_link_ids_digest": "a615eeaee21de5179de080de8c3052c8da901138406ba71c38c032845f7d54f4",
+      "comparison_complete": true,
+      "exact": true
+    },
+    "what_this_is_not": [
+      "Neither method is ground truth. Agreement means the two concur; it does not mean either is correct, and both can be wrong in the same direction. The measured holdout study found that agreement does not predict count accuracy; it identifies methodological sensitivity.",
+      "The two volumes are never averaged. A blended figure has no defensible provenance and destroys the only signal this comparison produces.",
+      "GEH thresholds are borrowed from model-versus-count validation, where one side is measured. They are used here because they are the yardstick a reviewer recognises, not because a validation standard has been met.",
+      "THE LOCAL ASSIGNMENT NOISE FLOOR HAS NOT BEEN MEASURED FOR THIS comparison. Equilibrium assignment redistributes flow between near-equal-cost parallel routes; measured once at a loose relative gap of 0.01, 13% of busy links diverged with effectively identical demand. Exact retained-network evidence and the tight convergence limit remain required before attribution. A local round-trip measurement would additionally quantify residual solver sensitivity and should accompany high-stakes interpretation of a single link.",
+      "Both runs met the measured link-level convergence limit. This removes the stopping gap as a known link-scale confounder; attribution still requires exact verified assignment profiles, network settings, observed network state, complete all-link table coverage, and roadway geometry.",
+      "Both assignments prove the same exact profile, network settings, observed network state, complete all-link volume coverage, and roadway-only geometry."
+    ]
+  }
+}

@@ -15,6 +15,8 @@ that a blend of the two would be a reasonable simplification.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -42,6 +44,137 @@ def link(link_id: int, volume: float) -> dict:
 
 def names(**mapping) -> dict:
     return {int(k.lstrip("l")): v for k, v in mapping.items()}
+
+
+NETWORK_DIGEST = "a" * 64
+
+
+def id_digest(link_ids: list[int]) -> str:
+    return hashlib.sha256(
+        json.dumps(sorted(link_ids), separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def verified_network_evidence(
+    all_link_ids: list[int],
+    *,
+    roadway_link_ids: list[int] | None = None,
+    connector_link_ids: list[int] | None = None,
+    factors: dict[str, float] | None = None,
+) -> dict:
+    roadway_ids = sorted(roadway_link_ids if roadway_link_ids is not None else all_link_ids)
+    connector_ids = sorted(connector_link_ids or [])
+    manifest = {
+        "schema_version": "openplan.retained-network-manifest.v1",
+        "all_link_count": len(all_link_ids),
+        "all_link_ids_digest": id_digest(all_link_ids),
+        "roadway_link_count": len(roadway_ids),
+        "roadway_link_ids_digest": id_digest(roadway_ids),
+        "modeling_connector_link_count": len(connector_ids),
+        "modeling_connector_link_ids_digest": id_digest(connector_ids),
+        "excluded_roles": ["modeling_connector"],
+        "role_definition": {
+            "roadway": "link_type != centroid_connector",
+            "modeling_connector": "link_type = centroid_connector",
+        },
+    }
+    settings = {
+        "schema_version": "openplan.network-calibration.v1",
+        "road_class_factors": factors or {},
+        "application": {
+            "travel_time": "baseline_travel_time / factor",
+            "capacity": "baseline_capacity * factor",
+        },
+        "excludes": ["trip_based_od_adjustments"],
+    }
+    settings_payload = json.dumps(settings, sort_keys=True, separators=(",", ":"))
+    settings_digest = hashlib.sha256(settings_payload.encode()).hexdigest()
+    component_digest = hashlib.sha256(b"component").hexdigest()
+    state = {
+        "schema_version": "openplan.assignment-network-state.v1",
+        "network_settings_digest": settings_digest,
+        "assignment_centroid_count": 2,
+        "assignment_centroid_order_digest": component_digest,
+        "block_centroid_flows": True,
+        "penalty_through_centroids": "positive_infinity",
+        "cost_field": "travel_time",
+        "capacity_field": "capacity",
+        "graph_row_count": len(all_link_ids),
+        "graph_rows_digest": component_digest,
+        "graph_float_dtype": "<f8",
+        "graph_cost_digest": component_digest,
+        "graph_cost_dtype": "<f8",
+        "compact_cost_digest": component_digest,
+        "compact_cost_dtype": "<f8",
+        "solver_free_flow_tt_digest": component_digest,
+        "solver_free_flow_tt_dtype": "<f8",
+        "solver_capacity_digest": component_digest,
+        "solver_capacity_dtype": "<f8",
+        "retained_network_digest": component_digest,
+        "retained_network_manifest": manifest,
+    }
+    state_digest = hashlib.sha256(
+        json.dumps(state, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return {
+        "first_network_settings_payload_json": settings_payload,
+        "first_network_settings_digest": settings_digest,
+        "second_network_settings_payload_json": settings_payload,
+        "second_network_settings_digest": settings_digest,
+        "first_network_state_record": state,
+        "first_network_state_digest": state_digest,
+        "second_network_state_record": json.loads(json.dumps(state)),
+        "second_network_state_digest": state_digest,
+        "retained_network_manifest": manifest,
+        "geometry_network_state_digest": state_digest,
+        "geometry_roadway_link_ids": roadway_ids,
+    }
+
+
+def convergence_record(gap: float, *, target: float = 0.0005, ceiling: int = 3000) -> dict:
+    profile = {
+        "schema_version": "openplan.assignment-profile.v1",
+        "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+        "engine": "aequilibrae",
+        "engine_version": "1.4.2",
+        "algorithm": "bfw",
+        "vdf": "BPR",
+        "vdf_parameters": {"alpha": 0.15, "beta": 4},
+        "capacity_field": "capacity",
+        "time_field": "travel_time",
+        "class_pce": 1,
+        "cores": 1,
+        "target_gap": target,
+        "max_iterations": ceiling,
+    }
+    payload_json = json.dumps(
+        profile,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    digest = hashlib.sha256(payload_json.encode()).hexdigest()
+    return {
+        "final_gap": gap,
+        "target_gap": target,
+        "max_iterations": ceiling,
+        "algorithm": "bfw",
+        "assignment_profile": profile,
+        "assignment_profile_payload_json": payload_json,
+        "assignment_profile_digest": digest,
+    }
+
+
+def rehash_profile(record: dict) -> None:
+    record["assignment_profile_payload_json"] = json.dumps(
+        record["assignment_profile"],
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    record["assignment_profile_digest"] = hashlib.sha256(
+        record["assignment_profile_payload_json"].encode()
+    ).hexdigest()
 
 
 class TheGehStatistic(unittest.TestCase):
@@ -84,13 +217,15 @@ class ComparingTwoRuns(unittest.TestCase):
         self.assertEqual(by_id[2]["difference"], -4800)
         self.assertEqual(by_id[2]["agreement"], "diverge")
 
-    def test_two_runs_on_different_networks_are_refused(self) -> None:
+    def test_two_runs_on_disjoint_networks_keep_diagnostics_but_align_nothing(self) -> None:
         # The premise of the whole comparison is that everything downstream of
         # demand is identical. Two runs sharing no links did not hold the
         # network constant, and nothing about their difference is attributable
         # to the demand model.
-        with self.assertRaises(CorridorAgreementError):
-            compare_link_volumes([link(1, 1000)], [link(99, 1000)])
+        comparison = compare_link_volumes([link(1, 1000)], [link(99, 1000)])
+        self.assertEqual(comparison["links"], [])
+        self.assertFalse(comparison["network_alignment"]["exact"])
+        self.assertEqual(comparison["network_alignment"]["shared_links"], 0)
 
     def test_a_partially_shared_network_is_compared_but_flagged(self) -> None:
         comparison = compare_link_volumes(
@@ -100,15 +235,62 @@ class ComparingTwoRuns(unittest.TestCase):
         self.assertEqual(alignment["shared_links"], 1)
         self.assertEqual(alignment["only_in_first"], 1)
         self.assertEqual(alignment["only_in_second"], 1)
-        self.assertIn("NOT held constant", alignment["note"])
+        self.assertIn("link sets do not match", alignment["note"])
 
     def test_an_identical_network_says_so_positively(self) -> None:
         comparison = compare_link_volumes([link(1, 1000)], [link(1, 1000)])
-        self.assertIn("genuinely held constant", comparison["network_alignment"]["note"])
+        self.assertTrue(comparison["network_alignment"]["exact"])
+        self.assertIn("link-set alignment only", comparison["network_alignment"]["note"])
+
+    def test_the_classification_is_derived_from_the_reported_rounded_geh(self) -> None:
+        comparison = compare_link_volumes(
+            [link(1, 10_000), link(2, 10_000)],
+            [link(1, 10_506.2480516406), link(2, 11_025.270413738388)],
+        )
+        first, second = comparison["links"]
+        self.assertEqual((first["geh"], first["agreement"]), (5.0, "marginal"))
+        self.assertEqual((second["geh"], second["agreement"]), (10.0, "diverge"))
 
     def test_a_run_with_no_usable_volumes_is_refused(self) -> None:
         with self.assertRaises(CorridorAgreementError):
             compare_link_volumes([link(1, 1000)], [])
+
+    def test_every_row_requires_a_finite_nonnegative_volume(self) -> None:
+        invalid_rows = (
+            {"link_id": 1},
+            {"link_id": 1, "PCE_tot": "not-a-number"},
+            {"link_id": 1, "PCE_tot": "NaN"},
+            {"link_id": 1, "PCE_tot": "Infinity"},
+            {"link_id": 1, "PCE_tot": -0.01},
+        )
+        for row in invalid_rows:
+            with self.subTest(row=row), self.assertRaises(CorridorAgreementError):
+                compare_link_volumes([row], [link(1, 1)])
+
+    def test_link_ids_are_unique_and_mathematically_integral(self) -> None:
+        for bad_id in (None, "abc", "NaN", 1.5):
+            with self.subTest(link_id=bad_id), self.assertRaises(CorridorAgreementError):
+                compare_link_volumes(
+                    [{"link_id": bad_id, "PCE_tot": 1}], [link(1, 1)]
+                )
+        with self.assertRaisesRegex(CorridorAgreementError, "duplicate link_id 1"):
+            compare_link_volumes(
+                [link(1, 1), {"link_id": "1.0", "PCE_tot": 2}], [link(1, 1)]
+            )
+        accepted = compare_link_volumes(
+            [{"link_id": "1.0", "PCE_tot": 1}], [link(1, 1)]
+        )
+        self.assertEqual(accepted["links"][0]["link_id"], 1)
+
+    def test_published_geh_is_computed_from_published_volumes(self) -> None:
+        comparison = compare_link_volumes(
+            [link(1, 10_000.0)], [link(1, 10_000.5535)]
+        )
+        published = comparison["links"][0]
+        self.assertEqual(published["first_volume"], 10_000.0)
+        self.assertEqual(published["second_volume"], 10_000.55)
+        self.assertEqual(published["geh"], round(geh(10_000.0, 10_000.55), 3))
+        self.assertEqual(published["agreement"], classify_agreement(published["geh"]))
 
 
 class WhatTheHeadlineMayNotHide(unittest.TestCase):
@@ -159,6 +341,22 @@ class WhatTheHeadlineMayNotHide(unittest.TestCase):
 
 
 class RollingUpToCorridors(unittest.TestCase):
+    def test_corridor_classification_is_derived_from_its_reported_rounded_geh(self) -> None:
+        comparison = compare_link_volumes(
+            [link(1, 10_000), link(2, 10_000)],
+            [link(1, 10_506.2480516406), link(2, 11_025.270413738388)],
+            link_names={1: {"name": "First"}, 2: {"name": "Second"}},
+        )
+        by_name = {row["corridor"]: row for row in corridor_rollup(comparison)}
+        self.assertEqual(
+            (by_name["First"]["geh"], by_name["First"]["agreement"]),
+            (5.0, "marginal"),
+        )
+        self.assertEqual(
+            (by_name["Second"]["geh"], by_name["Second"]["agreement"]),
+            (10.0, "diverge"),
+        )
+
     def test_links_of_one_road_become_one_corridor(self) -> None:
         comparison = compare_link_volumes(
             [link(1, 10_000), link(2, 12_000)],
@@ -236,9 +434,22 @@ class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
     """
 
     def test_a_tightly_converged_pair_supports_attribution(self) -> None:
-        verdict = convergence_verdict({"final_gap": 0.0004}, {"final_gap": 0.0005})
+        verdict = convergence_verdict(
+            convergence_record(0.0004), convergence_record(0.0005)
+        )
         self.assertEqual(verdict["status"], "tight_enough")
-        self.assertIn("attributable to the demand model", verdict["note"])
+        self.assertIn("attribution still requires exact verified", verdict["note"])
+        self.assertEqual(
+            verdict["assignment_profiles"]["first"]["engine"], "aequilibrae"
+        )
+        self.assertEqual(
+            verdict["assignment_profile_digests"]["first"],
+            verdict["assignment_profile_digests"]["second"],
+        )
+        self.assertEqual(
+            verdict["assignment_profile_digests"]["first"],
+            "0ba5e437e9cfd1fea8c5fd37c5642940c376266eecba427b969371078e48d717",
+        )
 
     def test_a_loosely_converged_pair_supports_corridors_but_not_links(self) -> None:
         # MEASURED, and it is why this is not a blanket refusal. Assigning
@@ -246,7 +457,9 @@ class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
         # totals by 0.5-1.4%, while 21% of individual links moved more than 10%.
         # A corridor total averages over many links and survives; a single link
         # is where the assignment is still choosing between parallel routes.
-        verdict = convergence_verdict({"final_gap": 0.00916}, {"final_gap": 0.00951})
+        verdict = convergence_verdict(
+            convergence_record(0.00916), convergence_record(0.00951)
+        )
         self.assertEqual(verdict["status"], "corridors_only")
         self.assertEqual(verdict["attributable_at"], ["corridor"])
         self.assertIn("corridor table, not the individual links", verdict["note"])
@@ -256,16 +469,189 @@ class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
         self.assertIn("OPENPLAN_ASSIGNMENT_RGAP_TARGET", verdict["note"])
 
     def test_one_loose_side_is_enough_to_restrict_the_pair(self) -> None:
-        verdict = convergence_verdict({"final_gap": 0.0002}, {"final_gap": 0.009})
+        verdict = convergence_verdict(
+            convergence_record(0.0002), convergence_record(0.009)
+        )
         self.assertEqual(verdict["status"], "corridors_only")
         self.assertIn("second", verdict["note"])
 
     def test_a_tight_pair_supports_both_units(self) -> None:
-        verdict = convergence_verdict({"final_gap": 0.0004}, {"final_gap": 0.0004})
+        verdict = convergence_verdict(
+            convergence_record(0.0004), convergence_record(0.0004)
+        )
         self.assertEqual(verdict["attributable_at"], ["corridor", "link"])
 
     def test_an_unknown_pair_supports_neither_unit(self) -> None:
         self.assertEqual(convergence_verdict(None, None)["attributable_at"], [])
+
+    def test_either_missing_side_makes_the_pair_unknown(self) -> None:
+        tight = convergence_record(0.0004)
+        for first, second, missing_side in (
+            (None, tight, "first"),
+            (tight, None, "second"),
+        ):
+            with self.subTest(missing_side=missing_side):
+                verdict = convergence_verdict(first, second)
+                self.assertEqual(verdict["status"], "unknown")
+                self.assertEqual(verdict["attributable_at"], [])
+                self.assertIn(missing_side, verdict["note"])
+                self.assertIn("valid nonnegative final gap", verdict["note"])
+
+    def test_a_negative_gap_makes_the_pair_unknown(self) -> None:
+        verdict = convergence_verdict(
+            convergence_record(-0.1),
+            convergence_record(0.0004),
+        )
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertEqual(verdict["attributable_at"], [])
+        self.assertIn("valid nonnegative final gap", verdict["note"])
+
+    def test_mismatched_recorded_profiles_support_no_attribution(self) -> None:
+        first = convergence_record(0.0002)
+        second = convergence_record(0.0001, target=0.0002, ceiling=5000)
+        verdict = convergence_verdict(first, second)
+        self.assertEqual(verdict["status"], "assignment_settings_mismatch")
+        self.assertEqual(verdict["attributable_at"], [])
+        self.assertIn("different recorded assignment profiles", verdict["note"])
+
+    def test_one_recorded_profile_and_one_legacy_record_is_unknown(self) -> None:
+        verdict = convergence_verdict(
+            convergence_record(0.0003),
+            {"final_gap": 0.0003},
+        )
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertEqual(verdict["attributable_at"], [])
+        self.assertIn("second did not record", verdict["note"])
+
+    def test_two_legacy_records_do_not_invent_matching_assignment_settings(self) -> None:
+        verdict = convergence_verdict(
+            {"final_gap": 0.0003},
+            {"final_gap": 0.0003},
+        )
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertEqual(verdict["attributable_at"], [])
+        self.assertIn("first, second did not record", verdict["note"])
+
+    def test_profiles_without_cores_cannot_claim_the_assignment_was_held_constant(self) -> None:
+        first = convergence_record(0.0003)
+        second = convergence_record(0.0003)
+        for record in (first, second):
+            record["assignment_profile"].pop("cores")
+            rehash_profile(record)
+        verdict = convergence_verdict(first, second)
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertEqual(verdict["attributable_at"], [])
+        self.assertIn("fields are not exact", verdict["note"])
+        self.assertIsNone(verdict["assignment_profiles"]["first"])
+
+    def test_a_profile_without_engine_identity_is_not_verified(self) -> None:
+        first = convergence_record(0.0003)
+        second = convergence_record(0.0003)
+        for record in (first, second):
+            record["assignment_profile"].pop("engine_version")
+            rehash_profile(record)
+        verdict = convergence_verdict(first, second)
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertIsNone(verdict["assignment_profiles"]["first"])
+        self.assertIn("engine_version", verdict["note"])
+
+    def test_profile_schema_rejects_an_extra_unhashed_method_field(self) -> None:
+        first = convergence_record(0.0003)
+        second = convergence_record(0.0003)
+        for record in (first, second):
+            record["assignment_profile"]["unrecorded_option"] = True
+            rehash_profile(record)
+        verdict = convergence_verdict(first, second)
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertIn("extra=['unrecorded_option']", verdict["note"])
+
+    def test_profile_schema_enforces_the_v1_method_and_accuracy_limits(self) -> None:
+        mutations = (
+            ("schema_version", "other"),
+            ("profile_id", "other"),
+            ("engine", "other"),
+            ("engine_version", ""),
+            ("algorithm", "msa"),
+            ("vdf", "OTHER"),
+            ("vdf_parameters", {"alpha": 0.2, "beta": 4}),
+            ("capacity_field", ""),
+            ("time_field", ""),
+            ("class_pce", 2),
+            ("cores", 0),
+            ("target_gap", 0.0006),
+            ("max_iterations", 2999),
+        )
+        for field, value in mutations:
+            with self.subTest(field=field):
+                first = convergence_record(0.0003)
+                second = convergence_record(0.0003)
+                for record in (first, second):
+                    record["assignment_profile"][field] = value
+                    if field in ("algorithm", "target_gap", "max_iterations"):
+                        record[field] = value
+                    rehash_profile(record)
+                verdict = convergence_verdict(first, second)
+                self.assertEqual(verdict["status"], "unknown")
+                self.assertEqual(verdict["attributable_at"], [])
+
+    def test_a_recorded_profile_digest_must_match_the_full_profile(self) -> None:
+        first = convergence_record(0.0003)
+        second = convergence_record(0.0003)
+        first["assignment_profile_digest"] = "f" * 64
+        verdict = convergence_verdict(first, second)
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertIsNone(verdict["assignment_profiles"]["first"])
+        self.assertIsNone(verdict["assignment_profile_digests"]["first"])
+        self.assertIn("digest does not match", verdict["note"])
+
+    def test_exact_profile_payload_bytes_are_the_cross_runtime_hash_contract(self) -> None:
+        first = convergence_record(0.0003, target=0.00001)
+        second = convergence_record(0.0003, target=0.00001)
+        tampered_payload = second["assignment_profile_payload_json"] + " "
+        second["assignment_profile_payload_json"] = tampered_payload
+        second["assignment_profile_digest"] = hashlib.sha256(
+            tampered_payload.encode()
+        ).hexdigest()
+        verdict = convergence_verdict(
+            first,
+            second,
+            first_assignment_profile_payload_json=first[
+                "assignment_profile_payload_json"
+            ],
+            first_assignment_profile_digest=first["assignment_profile_digest"],
+            second_assignment_profile_payload_json=tampered_payload,
+            second_assignment_profile_digest=second["assignment_profile_digest"],
+        )
+        self.assertEqual(verdict["status"], "unknown")
+        self.assertIn("exact compact sorted JSON", verdict["note"])
+
+    def test_prepared_graph_field_names_are_recorded_not_hardcoded(self) -> None:
+        first = convergence_record(0.0003)
+        second = convergence_record(0.0003)
+        for record in (first, second):
+            record["assignment_profile"]["capacity_field"] = "capacity_ab"
+            record["assignment_profile"]["time_field"] = "free_flow_time_ab"
+            rehash_profile(record)
+        verdict = convergence_verdict(first, second)
+        self.assertEqual(verdict["status"], "tight_enough")
+        self.assertEqual(
+            verdict["assignment_profiles"]["first"]["capacity_field"],
+            "capacity_ab",
+        )
+
+    def test_final_gap_not_requested_target_decides_link_attribution(self) -> None:
+        # 0.0005 is the requested target. 0.001 is the separately measured
+        # maximum final gap for link attribution. Do not collapse the two.
+        inside_attribution_ceiling = convergence_verdict(
+            convergence_record(0.0009),
+            convergence_record(0.0008),
+        )
+        outside_attribution_ceiling = convergence_verdict(
+            convergence_record(0.0011),
+            convergence_record(0.0004),
+        )
+        self.assertEqual(inside_attribution_ceiling["status"], "tight_enough")
+        self.assertEqual(outside_attribution_ceiling["status"], "corridors_only")
 
     def test_an_unrecorded_gap_is_unknown_and_not_fine(self) -> None:
         # The difference that matters. Treating a missing convergence record as
@@ -277,15 +663,20 @@ class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
         self.assertIn("cannot be established", verdict["note"])
 
     def test_the_verdict_reaches_the_map_as_a_single_readable_flag(self) -> None:
+        evidence = verified_network_evidence([1])
         loose = build_agreement_map(
             [link(1, 10_000)], [link(1, 12_000)],
             first_label="a", second_label="b",
-            first_convergence={"final_gap": 0.009}, second_convergence={"final_gap": 0.009},
+            first_convergence=convergence_record(0.009),
+            second_convergence=convergence_record(0.009),
+            **evidence,
         )
         tight = build_agreement_map(
             [link(1, 10_000)], [link(1, 12_000)],
             first_label="a", second_label="b",
-            first_convergence={"final_gap": 0.0004}, second_convergence={"final_gap": 0.0004},
+            first_convergence=convergence_record(0.0004),
+            second_convergence=convergence_record(0.0004),
+            **evidence,
         )
         self.assertFalse(loose["attribution_is_supportable"])
         self.assertTrue(tight["attribution_is_supportable"])
@@ -301,6 +692,172 @@ class WhetherThisComparisonCanAttributeAnythingAtAll(unittest.TestCase):
         self.assertGreaterEqual(COMPARISON_MAX_RELATIVE_GAP, 0.00046)
 
 
+class WhetherTheNetworkWasActuallyHeldConstant(unittest.TestCase):
+    def _agreement(self, **overrides) -> dict:
+        arguments = {
+            "first_rows": [link(1, 10_000), link(2, 5_000)],
+            "second_rows": [link(1, 11_000), link(2, 5_500)],
+            "first_label": "a",
+            "second_label": "b",
+            "first_convergence": convergence_record(0.0003),
+            "second_convergence": convergence_record(0.0003),
+            **verified_network_evidence([1, 2]),
+        }
+        arguments.update(overrides)
+        return build_agreement_map(**arguments)
+
+    def test_matching_links_settings_and_profiles_support_attribution(self) -> None:
+        agreement = self._agreement()
+        self.assertEqual(agreement["network_consistency"]["status"], "verified_same")
+        self.assertTrue(agreement["attribution_is_supportable"])
+        self.assertEqual(agreement["attributable_at"], ["corridor", "link"])
+
+    def test_missing_network_digest_keeps_the_result_diagnostic_only(self) -> None:
+        agreement = self._agreement(second_network_settings_digest=None)
+        consistency = agreement["network_consistency"]
+        self.assertEqual(consistency["status"], "unverified")
+        self.assertIsNotNone(
+            consistency["evidence"]["network_settings"]["first"]["recorded_digest"]
+        )
+        self.assertIsNone(
+            consistency["evidence"]["network_settings"]["second"]["recorded_digest"]
+        )
+        self.assertFalse(agreement["attribution_is_supportable"])
+        self.assertEqual(agreement["attributable_at"], [])
+
+    def test_mismatched_network_settings_keep_the_result_diagnostic_only(self) -> None:
+        second_settings = {
+            "schema_version": "openplan.network-calibration.v1",
+            "road_class_factors": {"motorway": 1.1},
+            "application": {
+                "travel_time": "baseline_travel_time / factor",
+                "capacity": "baseline_capacity * factor",
+            },
+            "excludes": ["trip_based_od_adjustments"],
+        }
+        second_payload = json.dumps(second_settings, sort_keys=True, separators=(",", ":"))
+        agreement = self._agreement(
+            second_network_settings_payload_json=second_payload,
+            second_network_settings_digest=hashlib.sha256(second_payload.encode()).hexdigest(),
+        )
+        self.assertEqual(
+            agreement["network_consistency"]["status"], "settings_mismatch"
+        )
+        self.assertFalse(agreement["attribution_is_supportable"])
+        self.assertEqual(agreement["attributable_at"], [])
+
+    def test_mismatched_link_sets_override_matching_settings_digests(self) -> None:
+        agreement = self._agreement(
+            second_rows=[link(1, 11_000), link(3, 5_500)]
+        )
+        self.assertEqual(agreement["network_consistency"]["status"], "network_mismatch")
+        self.assertFalse(agreement["network_alignment"]["exact"])
+        self.assertFalse(agreement["attribution_is_supportable"])
+        self.assertEqual(agreement["attributable_at"], [])
+        self.assertEqual(len(agreement["links"]), 1)
+
+    def test_disjoint_link_sets_still_emit_the_mismatch_diagnostic(self) -> None:
+        agreement = self._agreement(second_rows=[link(9, 11_000)])
+        self.assertEqual(agreement["network_consistency"]["status"], "network_mismatch")
+        self.assertEqual(agreement["network_alignment"]["shared_links"], 0)
+        self.assertEqual(agreement["links"], [])
+        self.assertEqual(agreement["attributable_at"], [])
+
+    def test_an_invalid_digest_is_unverified_not_same(self) -> None:
+        agreement = self._agreement(second_network_settings_digest="A" * 64)
+        self.assertEqual(agreement["network_consistency"]["status"], "unverified")
+        self.assertIn(
+            "not a lowercase SHA-256",
+            agreement["network_consistency"]["evidence"]["network_settings"]["second"]["reason"],
+        )
+
+    def test_both_tables_omitting_the_same_retained_link_fails_coverage(self) -> None:
+        agreement = self._agreement(
+            **verified_network_evidence([1, 2, 3]),
+        )
+        self.assertTrue(agreement["network_alignment"]["exact"])
+        self.assertEqual(
+            agreement["network_consistency"]["status"],
+            "retained_network_coverage_mismatch",
+        )
+        self.assertFalse(agreement["attribution_is_supportable"])
+
+    def test_high_volume_modeling_connector_never_enters_the_analysis(self) -> None:
+        evidence = verified_network_evidence(
+            [1, 2, 900], roadway_link_ids=[1, 2], connector_link_ids=[900]
+        )
+        agreement = self._agreement(
+            first_rows=[link(1, 10_000), link(2, 5_000), link(900, 999_999)],
+            second_rows=[link(1, 11_000), link(2, 5_500), link(900, 1)],
+            link_names={
+                1: {"name": "Road 1"},
+                2: {"name": "Road 2"},
+                900: {"name": "Centroid connector"},
+            },
+            **evidence,
+        )
+        self.assertEqual([item["link_id"] for item in agreement["links"]], [1, 2])
+        self.assertEqual(agreement["summary"]["links_compared"], 2)
+        self.assertNotIn("Centroid connector", [row["corridor"] for row in agreement["corridors"]])
+        self.assertEqual(
+            agreement["retained_network"]["excluded_modeling_connector_count"], 1
+        )
+        self.assertEqual(agreement["network_consistency"]["status"], "verified_same")
+
+    def test_matching_arbitrary_hex_does_not_verify_state_records(self) -> None:
+        agreement = self._agreement(
+            first_network_state_digest="a" * 64,
+            second_network_state_digest="a" * 64,
+            geometry_network_state_digest="a" * 64,
+        )
+        self.assertEqual(agreement["network_consistency"]["status"], "unverified")
+
+    def test_two_valid_but_different_observed_states_are_a_mismatch(self) -> None:
+        evidence = verified_network_evidence([1, 2])
+        second_state = json.loads(json.dumps(evidence["second_network_state_record"]))
+        second_state["graph_rows_digest"] = "b" * 64
+        evidence["second_network_state_record"] = second_state
+        evidence["second_network_state_digest"] = hashlib.sha256(
+            json.dumps(second_state, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        agreement = self._agreement(**evidence)
+        self.assertEqual(
+            agreement["network_consistency"]["status"], "network_state_mismatch"
+        )
+
+    def test_noncanonical_settings_payload_is_not_accepted_even_with_its_hash(self) -> None:
+        evidence = verified_network_evidence([1, 2])
+        tampered = evidence["second_network_settings_payload_json"] + " "
+        evidence["second_network_settings_payload_json"] = tampered
+        evidence["second_network_settings_digest"] = hashlib.sha256(tampered.encode()).hexdigest()
+        agreement = self._agreement(**evidence)
+        self.assertEqual(agreement["network_consistency"]["status"], "unverified")
+        self.assertIn(
+            "exact compact sorted JSON",
+            agreement["network_consistency"]["evidence"]["network_settings"]["second"]["reason"],
+        )
+
+    def test_network_factors_must_be_positive_finite_numbers_not_booleans(self) -> None:
+        for factor in (True, 0, -1):
+            with self.subTest(factor=factor):
+                evidence = verified_network_evidence([1, 2])
+                settings = json.loads(evidence["second_network_settings_payload_json"])
+                settings["road_class_factors"] = {"primary": factor}
+                payload = json.dumps(settings, sort_keys=True, separators=(",", ":"))
+                evidence["second_network_settings_payload_json"] = payload
+                evidence["second_network_settings_digest"] = hashlib.sha256(
+                    payload.encode()
+                ).hexdigest()
+                agreement = self._agreement(**evidence)
+                self.assertEqual(
+                    agreement["network_consistency"]["status"], "unverified"
+                )
+                self.assertIn(
+                    "invalid road-class factor",
+                    agreement["network_consistency"]["evidence"]["network_settings"]["second"]["reason"],
+                )
+
+
 class TheWholeAgreementMap(unittest.TestCase):
     def test_it_names_both_methods_and_refuses_to_blend_them(self) -> None:
         result = build_agreement_map(
@@ -311,6 +868,7 @@ class TheWholeAgreementMap(unittest.TestCase):
             link_names={1: {"name": "SR 49", "link_type": "trunk"}},
         )
         self.assertEqual(result["methods"], {"first": "trip-based gravity", "second": "activity-based"})
+        self.assertEqual(result["schema_version"], "openplan.corridor_agreement.v2")
         self.assertIn("never averaged", " ".join(result["what_this_is_not"]))
         self.assertIn("Neither method is ground truth", " ".join(result["what_this_is_not"]))
         self.assertEqual(result["corridors"][0]["corridor"], "SR 49")

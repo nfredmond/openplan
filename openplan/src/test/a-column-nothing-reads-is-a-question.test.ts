@@ -126,13 +126,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
       "The SQL an analysis actually ran — provenance for a result, stored and never shown. The one " +
       "thing that would let a reviewer reproduce a number by hand.",
   },
-  {
-    column: "model_run_artifacts.stage_id",
-    category: "WRITE_ONLY",
-    reason:
-      "Which run stage produced an artifact. Recorded by the worker callback and read by nothing, so " +
-      "an artifact cannot be traced back to the stage that produced it.",
-  },
 
   // ---- UNBUILT: the schema implies a capability that does not exist --------
   {

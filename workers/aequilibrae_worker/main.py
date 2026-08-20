@@ -76,6 +76,20 @@ import link_vmt
 import select_link
 import calibration
 from assignment_progress import stream_assignment_progress
+from assignment_settings import (
+    AssignmentSettingsError,
+    assignment_profile_payload_json,
+    assignment_convergence_record,
+    assignment_iteration_count,
+    assignment_profile_digest,
+    build_traffic_assignment,
+    canonical_convergence_record,
+    canonical_assignment_profile,
+    require_matching_assignment_profiles,
+    resolve_assignment_profile,
+    validated_assignment_profile,
+    validated_convergence_profile,
+)
 from gateways import (
     detect_external_gateways,
     build_cordon_injections,
@@ -89,14 +103,6 @@ import gtfs_skim
 import count_validation
 import emissions
 import equity
-
-# Provenance stamp for the ACTUAL installed engine version — a hardcoded
-# string drifts silently under the >=1.6.0 pin (it already had, to "1.6.1").
-try:
-    from importlib.metadata import version as _pkg_version
-    ENGINE_STAMP = f"AequilibraE {_pkg_version('aequilibrae')}"
-except Exception:
-    ENGINE_STAMP = "AequilibraE (version unknown)"
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -437,7 +443,12 @@ def sb_patch_run(run_id: str, payload: dict):
 
 def sb_post_artifact(payload: dict):
     url = f"{SUPABASE_URL}/rest/v1/model_run_artifacts"
-    requests.post(url, headers=HEADERS, json=payload)
+    response = requests.post(url, headers=HEADERS, json=payload, timeout=30)
+    if not 200 <= response.status_code < 300:
+        raise RuntimeError(
+            "Failed to register model artifact: "
+            f"{response.status_code} {response.text[:200]}"
+        )
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
@@ -455,7 +466,19 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
     return response.json()
 
 
-def verified_latest_local_artifact(run_id: str, artifact_type: str) -> str:
+def verified_latest_local_artifact(
+    run_id: str,
+    artifact_type: str,
+    *,
+    expected_assignment_profile: dict,
+    expected_assignment_profile_payload_json: str,
+    expected_assignment_profile_digest: str,
+    expected_network_settings: dict,
+    expected_network_settings_payload_json: str,
+    expected_network_settings_digest: str,
+    expected_network_state_record: dict,
+    expected_network_state_digest: str,
+) -> str:
     matches = [
         artifact for artifact in sb_get_run_artifacts(run_id)
         if artifact.get("artifact_type") == artifact_type
@@ -469,10 +492,55 @@ def verified_latest_local_artifact(run_id: str, artifact_type: str) -> str:
     path = file_url[len("local://"):]
     if not os.path.isfile(path):
         raise RuntimeError(f"{artifact_type} is unreadable at {path}")
+    expected_profile = validated_assignment_profile(
+        expected_assignment_profile,
+        expected_assignment_profile_payload_json,
+        expected_assignment_profile_digest,
+        f"expected {artifact_type}",
+    )
+    expected_settings = validated_network_settings_record(
+        expected_network_settings,
+        expected_network_settings_payload_json,
+        expected_network_settings_digest,
+        f"expected {artifact_type}",
+    )
+    expected_state = validated_network_state(
+        expected_network_state_record,
+        expected_network_state_digest,
+        f"expected {artifact_type}",
+    )
+    metadata = selected.get("metadata_json")
+    if not isinstance(metadata, dict):
+        raise RuntimeError(f"{artifact_type} has no assignment custody metadata")
+    actual_profile = validated_assignment_profile(
+        metadata.get("assignment_profile"),
+        metadata.get("assignment_profile_payload_json"),
+        metadata.get("assignment_profile_digest"),
+        artifact_type,
+    )
+    actual_settings = validated_network_settings_record(
+        metadata.get("network_settings"),
+        metadata.get("network_settings_payload_json"),
+        metadata.get("network_settings_digest"),
+        artifact_type,
+    )
+    actual_state = validated_network_state(
+        metadata.get("network_state_record"),
+        metadata.get("network_state_digest"),
+        artifact_type,
+    )
+    if actual_profile != expected_profile:
+        raise RuntimeError(f"{artifact_type} assignment-profile metadata does not match")
+    if actual_settings != expected_settings:
+        raise RuntimeError(f"{artifact_type} network-settings metadata does not match")
+    if actual_state != expected_state:
+        raise RuntimeError(f"{artifact_type} assignment network-state metadata does not match")
+    if actual_state[0].get("network_settings_digest") != actual_settings[2]:
+        raise RuntimeError(f"{artifact_type} network state names different settings")
     expected_hash = str(selected.get("content_hash") or "")
     with open(path, "rb") as handle:
         actual_hash = hashlib.sha256(handle.read()).hexdigest()
-    if not expected_hash or not actual_hash.startswith(expected_hash):
+    if not _is_sha256(expected_hash) or actual_hash != expected_hash:
         raise RuntimeError(f"{artifact_type} failed its content-hash check")
     return path
 
@@ -484,7 +552,16 @@ def register_agreement_artifact(
     path: str,
     content_type: str,
     *,
-    network_settings_digest: str | None = None,
+    first_assignment_convergence: dict,
+    second_assignment_convergence: dict,
+    assignment_profile: dict,
+    assignment_profile_payload_json: str,
+    assignment_profile_digest: str,
+    network_settings: dict,
+    network_settings_payload_json: str,
+    network_settings_digest: str,
+    network_state_record: dict,
+    network_state_digest: str,
 ) -> None:
     """Put the combined result where the app can read it, with local fallback."""
     with open(path, "rb") as handle:
@@ -508,6 +585,45 @@ def register_agreement_artifact(
         if response.status_code in (200, 201)
         else f"local://{path}"
     )
+    profile, profile_payload, profile_digest = validated_assignment_profile(
+        assignment_profile,
+        assignment_profile_payload_json,
+        assignment_profile_digest,
+        f"agreement artifact {artifact_type}",
+    )
+    first_convergence = canonical_convergence_record(
+        first_assignment_convergence,
+        f"agreement artifact {artifact_type} first assignment",
+    )
+    second_convergence = canonical_convergence_record(
+        second_assignment_convergence,
+        f"agreement artifact {artifact_type} second assignment",
+    )
+    for label, convergence_record in (
+        ("first", first_convergence),
+        ("second", second_convergence),
+    ):
+        recorded_profile = validated_convergence_profile(
+            convergence_record,
+            f"agreement artifact {artifact_type} {label} assignment",
+        )
+        if recorded_profile != (profile, profile_payload, profile_digest):
+            raise AssignmentSettingsError(
+                f"agreement artifact {artifact_type} {label} convergence names another profile"
+            )
+    settings, settings_payload, settings_digest = validated_network_settings_record(
+        network_settings,
+        network_settings_payload_json,
+        network_settings_digest,
+        f"agreement artifact {artifact_type}",
+    )
+    state, state_digest = validated_network_state(
+        network_state_record,
+        network_state_digest,
+        f"agreement artifact {artifact_type}",
+    )
+    if state.get("network_settings_digest") != settings_digest:
+        raise RuntimeError("Agreement artifact network state names different settings")
     sb_post_artifact({
         "run_id": run_id,
         "stage_id": stage_id,
@@ -518,17 +634,41 @@ def register_agreement_artifact(
         "metadata_json": {
             "kind": "dual_demand_model_agreement",
             "is_average": False,
-            "network_settings_digest": network_settings_digest,
+            "first_assignment_convergence": first_convergence,
+            "second_assignment_convergence": second_convergence,
+            "assignment_profile": profile,
+            "assignment_profile_payload_json": profile_payload,
+            "assignment_profile_digest": profile_digest,
+            "network_settings": settings,
+            "network_settings_payload_json": settings_payload,
+            "network_settings_digest": settings_digest,
+            "network_state_record": state,
+            "network_state_digest": state_digest,
             "upload_status": "stored" if response.status_code in (200, 201) else "local_fallback",
         },
     })
 
 
-def write_agreement_network_geojson(work_dir: str, output_path: str) -> str:
-    """Export every retained network link, including links one model leaves empty."""
+def write_agreement_network_geojson(
+    work_dir: str,
+    output_path: str,
+    *,
+    network_state_record: dict,
+    network_state_digest: str,
+) -> str:
+    """Export the complete retained roadway set, never modeling connectors."""
     db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
     if not os.path.isfile(db_path):
         raise RuntimeError("The retained AequilibraE project is missing its network database")
+    selected_state, selected_state_digest = validated_network_state(
+        network_state_record,
+        network_state_digest,
+        "agreement geometry",
+    )
+    selected_manifest = selected_state["retained_network_manifest"]
+    current_manifest = retained_network_manifest(os.path.dirname(db_path))
+    if current_manifest != selected_manifest:
+        raise RuntimeError("Agreement geometry no longer matches the selected retained network")
     connection = sqlite3.connect(db_path)
     try:
         connection.enable_load_extension(True)
@@ -538,23 +678,55 @@ def write_agreement_network_geojson(work_dir: str, output_path: str) -> str:
         ).fetchall()
     finally:
         connection.close()
-    features = [
-        {
-            "type": "Feature",
-            "properties": {
-                "link_id": row[0],
-                "link_type": row[1] or "",
-                "name": row[2] or "",
-            },
-            "geometry": json.loads(row[3]),
-        }
-        for row in rows
-        if row[3]
-    ]
-    if not features:
-        raise RuntimeError("The retained AequilibraE project has no readable link geometry")
+    features = []
+    roadway_ids: list[int] = []
+    seen_ids: set[int] = set()
+    for raw_link_id, raw_link_type, raw_name, raw_geometry in rows:
+        link_id = _strict_link_id(raw_link_id, "Agreement geometry")
+        if link_id in seen_ids:
+            raise RuntimeError(f"Agreement geometry contains duplicate link id {link_id}")
+        seen_ids.add(link_id)
+        if str(raw_link_type or "").strip().lower() == "centroid_connector":
+            continue
+        if not raw_geometry:
+            raise RuntimeError(f"Agreement roadway link {link_id} has no readable geometry")
+        try:
+            geometry = json.loads(raw_geometry)
+        except (TypeError, json.JSONDecodeError) as error:
+            raise RuntimeError(
+                f"Agreement roadway link {link_id} has invalid geometry"
+            ) from error
+        if not isinstance(geometry, dict):
+            raise RuntimeError(f"Agreement roadway link {link_id} has invalid geometry")
+        roadway_ids.append(link_id)
+        features.append(
+            {
+                "type": "Feature",
+                "properties": {
+                    "link_id": link_id,
+                    "link_type": raw_link_type or "",
+                    "name": raw_name or "",
+                },
+                "geometry": geometry,
+            }
+        )
+    if (
+        len(features) != selected_manifest["roadway_link_count"]
+        or _payload_digest(sorted(roadway_ids))
+        != selected_manifest["roadway_link_ids_digest"]
+    ):
+        raise RuntimeError("Agreement geometry does not cover the exact retained roadway set")
+    feature_collection = {
+        "type": "FeatureCollection",
+        "metadata": {
+            "retained_network_manifest": selected_manifest,
+            "network_state_digest": selected_state_digest,
+            "source_feature_count": len(features),
+        },
+        "features": features,
+    }
     with open(output_path, "w") as handle:
-        json.dump({"type": "FeatureCollection", "features": features}, handle)
+        json.dump(feature_collection, handle, allow_nan=False)
     return output_path
 
 
@@ -2086,7 +2258,8 @@ def _run_demand_nudge(assign_once, make_resident_mat, resident_od, ii_arr, n_ass
 
 def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, baseline_df, log,
                      *, counts_path, resident_od=None, ii=None, assignment_centroids=None,
-                     make_resident_mat=None, pkg_dir=None, ordered_zone_ids=None):
+                     make_resident_mat=None, pkg_dir=None, ordered_zone_ids=None,
+                     assignment_profile):
     """Staged count calibration outer loop. Returns (calibration_result_or_None,
     log). Reuses the prepared graph. Stage 1 (always): mutate per-road-class
     free-flow travel_time + capacity and re-run a fresh BFW assignment. Stage 2
@@ -2139,6 +2312,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     base_tt = graph.graph["travel_time"].to_numpy(dtype=float).copy()
     base_cap = graph.graph["capacity"].to_numpy(dtype=float).copy()
     link_class = graph.graph["link_id"].map(type_by_id)
+    active_network_settings = assignment_network_settings()
 
     def _assign_once(resident_matrix=None, select_links=None):
         """Run one BFW assignment. resident_matrix overrides the resident demand
@@ -2146,44 +2320,55 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         (dict name->[(link_id,dir)]). Returns (results_df, resident_class)."""
         rc = TrafficClass(name="resident", graph=graph, matrix=resident_matrix or resident_mat)
         ec = TrafficClass(name="external", graph=graph, matrix=external_mat)
-        a = TrafficAssignment()
-        for tc in (rc, ec):
-            tc.set_pce(1.0)
-            a.add_class(tc)
         if select_links:
             rc.set_select_links(select_links)
-        a.set_cores(AEQ_CORES)
-        a.set_vdf("BPR")
-        a.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
-        a.set_capacity_field("capacity")
-        a.set_time_field("travel_time")
-        a.max_iter = 50
-        a.rgap_target = 0.01
-        a.set_algorithm("bfw")
+        a = build_traffic_assignment(
+            TrafficAssignment,
+            (rc, ec),
+            profile=assignment_profile,
+        )
+        active_settings_payload = network_settings_payload_json(active_network_settings)
+        active_settings_digest = network_settings_digest(
+            active_network_settings, active_settings_payload
+        )
+        state_centroids = (
+            assignment_centroids
+            if assignment_centroids is not None
+            else list(graph.centroids)
+        )
+        state_record, state_digest = assignment_network_state(
+            a,
+            graph,
+            state_centroids,
+            proj_dir,
+            network_settings_digest_value=active_settings_digest,
+        )
         a.execute()
         result_frame = a.results()
-        result_frame.attrs["convergence"] = {
-            "final_gap": (
-                float(a.assignment.rgap)
-                if _np.isfinite(getattr(a.assignment, "rgap", float("nan")))
-                else None
-            ),
-            "iterations": int(getattr(a.assignment, "iteration", a.max_iter)),
-        }
+        result_frame.attrs["convergence"] = assignment_convergence_record(
+            getattr(a.assignment, "rgap", float("nan")),
+            assignment_iteration_count(a.assignment),
+            assignment_profile,
+        )
+        result_frame.attrs["network_state_record"] = state_record
+        result_frame.attrs["network_state_digest"] = state_digest
         return result_frame, rc
 
     def _apply(cum):
+        nonlocal active_network_settings
+        next_network_settings = assignment_network_settings(cum)
         # factor>1 (under-assigned class) -> faster (tt down) + more capacity, so
         # the class attracts more equilibrium flow. Reset from baseline first.
         tt = base_tt.copy()
         cap = base_cap.copy()
-        for cls, f in cum.items():
+        for cls, f in next_network_settings["road_class_factors"].items():
             m = (link_class == cls).to_numpy()
             tt[m] = base_tt[m] / f
             cap[m] = base_cap[m] * f
         graph.graph["travel_time"] = tt
         graph.graph["capacity"] = cap
         graph.set_graph("travel_time")
+        active_network_settings = next_network_settings
 
     base_hold_obj = base_hold["objective"]
     if base_hold_obj is None:
@@ -2294,19 +2479,37 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     log += (f"Calibration complete: stage-1 {accepted} + stage-2 (demand) {stage2_accepted} "
             f"accepted step(s). Holdout median APE {base_hold['median_ape']}% -> "
             f"{best_hold_ev['median_ape']}%.\n")
-    network_settings = {
-        "schema_version": "openplan.network-calibration.v1",
-        "road_class_factors": dict(sorted(cum.items())),
-        "application": {
-            "travel_time": "baseline_travel_time / factor",
-            "capacity": "baseline_capacity * factor",
-        },
-        "excludes": ["trip_based_od_adjustments"],
-    }
-    settings_digest = network_settings_digest(network_settings)
+    network_settings = assignment_network_settings(cum)
+    settings_payload = network_settings_payload_json(network_settings)
+    settings_digest = network_settings_digest(network_settings, settings_payload)
+    accepted_state, accepted_state_digest = validated_network_state(
+        best_df.attrs.get("network_state_record"),
+        best_df.attrs.get("network_state_digest"),
+        "accepted calibration",
+    )
+    if accepted_state.get("network_settings_digest") != settings_digest:
+        raise AssignmentSettingsError(
+            "Accepted calibration state does not match its network settings"
+        )
+    accepted_convergence = canonical_convergence_record(
+        best_df.attrs.get("convergence"), "accepted calibration"
+    )
     settings_path = os.path.join(out_dir, "accepted_network_calibration.json")
     with open(settings_path, "w") as settings_file:
-        json.dump(network_settings, settings_file, indent=2, sort_keys=True)
+        json.dump(
+            {
+                "network_settings": network_settings,
+                "network_settings_payload_json": settings_payload,
+                "network_settings_digest": settings_digest,
+                "network_state_record": accepted_state,
+                "network_state_digest": accepted_state_digest,
+                "assignment_convergence": accepted_convergence,
+            },
+            settings_file,
+            indent=2,
+            sort_keys=True,
+            allow_nan=False,
+        )
     return {
         "method": (
             "Staged count calibration. Stage 1: per-road-class free-flow speed + capacity tuned "
@@ -2321,13 +2524,16 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         # Full-precision, versioned assignment settings are the machine handoff.
         # `applied_class_factors` above remains the rounded presentation summary.
         "network_settings": network_settings,
+        "network_settings_payload_json": settings_payload,
         "network_settings_digest": settings_digest,
+        "network_state_record": accepted_state,
+        "network_state_digest": accepted_state_digest,
         "network_settings_artifact": os.path.basename(settings_path),
         "holdout_station_count": len(holdout_stations),
         "fit_station_count": len(fit_stations),
         "baseline": {"fit": base_fit, "holdout": base_hold},
         "calibrated": {"fit": best_fit_ev, "holdout": best_hold_ev},
-        "convergence": best_df.attrs.get("convergence"),
+        "convergence": accepted_convergence,
         "holdout_station_ids": sorted(str(s.get("station_id")) for s in holdout_stations),
         "calibrated_link_volumes": os.path.basename(cal_csv),
         "calibrated_auto_od": calibrated_auto_od,
@@ -2342,33 +2548,596 @@ def should_apply_trip_based_mode_split(
     return mode_split_enabled and not demand_is_vehicle
 
 
-def network_settings_digest(settings: dict) -> str:
-    """Return the stable identity of the exact assignment settings object."""
-    canonical = json.dumps(
-        settings, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    ).encode("utf-8")
-    return hashlib.sha256(canonical).hexdigest()
+def assignment_network_settings(road_class_factors: dict | None = None) -> dict:
+    """Build the one versioned settings object for baseline and calibrated networks."""
+    factors: dict[str, float] = {}
+    for road_class, raw_factor in (road_class_factors or {}).items():
+        if isinstance(raw_factor, bool):
+            raise AssignmentSettingsError("Network calibration factors cannot be boolean")
+        try:
+            factor = float(raw_factor)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise AssignmentSettingsError("Network calibration factors must be numeric") from error
+        if not isinstance(road_class, str) or not road_class or not np.isfinite(factor) or factor <= 0:
+            raise AssignmentSettingsError("Network calibration factors must have a name and be finite and positive")
+        factors[road_class] = factor
+    return {
+        "schema_version": "openplan.network-calibration.v1",
+        "road_class_factors": dict(sorted(factors.items())),
+        "application": {
+            "travel_time": "baseline_travel_time / factor",
+            "capacity": "baseline_capacity * factor",
+        },
+        "excludes": ["trip_based_od_adjustments"],
+    }
+
+
+def canonical_network_settings(settings: dict) -> dict:
+    """Validate a persisted network-settings object without trusting its spelling."""
+    if not isinstance(settings, dict):
+        raise AssignmentSettingsError("Network settings are missing")
+    expected_keys = {"schema_version", "road_class_factors", "application", "excludes"}
+    if set(settings) != expected_keys:
+        raise AssignmentSettingsError("Network settings fields do not match the v1 schema")
+    canonical = assignment_network_settings(settings.get("road_class_factors"))
+    if settings.get("schema_version") != canonical["schema_version"]:
+        raise AssignmentSettingsError("Unsupported network-settings schema")
+    if settings.get("application") != canonical["application"]:
+        raise AssignmentSettingsError("Network-settings application semantics do not match v1")
+    if settings.get("excludes") != canonical["excludes"]:
+        raise AssignmentSettingsError("Network-settings exclusions do not match v1")
+    return canonical
+
+
+def network_settings_payload_json(settings: dict) -> str:
+    canonical = canonical_network_settings(settings)
+    return json.dumps(
+        canonical,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+
+
+def network_settings_digest(settings: dict, payload_json: str | None = None) -> str:
+    """SHA-256 of the exact canonical UTF-8 network-settings payload."""
+    expected_payload = network_settings_payload_json(settings)
+    payload = expected_payload if payload_json is None else payload_json
+    if payload != expected_payload:
+        raise AssignmentSettingsError(
+            "Network-settings payload is not the canonical JSON for its settings object"
+        )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def validated_network_settings_record(
+    settings: dict | None,
+    payload_json: str | None,
+    digest: str | None,
+    context: str,
+) -> tuple[dict, str, str]:
+    canonical = canonical_network_settings(settings)
+    expected_payload = network_settings_payload_json(canonical)
+    if not isinstance(payload_json, str) or payload_json != expected_payload:
+        raise AssignmentSettingsError(f"{context} network-settings payload is absent or noncanonical")
+    try:
+        parsed = json.loads(payload_json)
+    except json.JSONDecodeError as error:
+        raise AssignmentSettingsError(f"{context} network-settings payload is invalid JSON") from error
+    if parsed != canonical:
+        raise AssignmentSettingsError(f"{context} network-settings payload does not equal its object")
+    expected_digest = network_settings_digest(canonical, payload_json)
+    if digest != expected_digest:
+        raise AssignmentSettingsError(f"{context} network-settings digest mismatch")
+    return canonical, payload_json, expected_digest
+
+
+def require_matching_network_settings(
+    first: tuple[dict | None, str | None, str | None],
+    second: tuple[dict | None, str | None, str | None],
+    context: str,
+) -> tuple[dict, str, str]:
+    first_record = validated_network_settings_record(*first, f"{context} first side")
+    second_record = validated_network_settings_record(*second, f"{context} second side")
+    if first_record != second_record:
+        raise AssignmentSettingsError(f"{context} network settings differ")
+    return first_record
+
+
+def _compact_json(value) -> str:
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+
+
+def _payload_digest(value) -> str:
+    return hashlib.sha256(_compact_json(value).encode("utf-8")).hexdigest()
+
+
+def _is_sha256(value) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) is not None
+
+
+def _strict_link_id(value, context: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, np.integer)):
+        raise RuntimeError(f"{context} contains a noninteger link id")
+    return int(value)
+
+
+def retained_network_manifest(proj_dir: str) -> dict:
+    """Identify every retained link and the roadway subset without place assumptions."""
+    connection = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+    try:
+        rows = connection.execute("SELECT link_id, COALESCE(link_type, '') FROM links").fetchall()
+    finally:
+        connection.close()
+    roles: dict[int, str] = {}
+    for raw_link_id, raw_link_type in rows:
+        link_id = _strict_link_id(raw_link_id, "Retained network")
+        if link_id in roles:
+            raise RuntimeError(f"Retained network contains duplicate link id {link_id}")
+        roles[link_id] = (
+            "modeling_connector"
+            if str(raw_link_type or "").strip().lower() == "centroid_connector"
+            else "roadway"
+        )
+    all_ids = sorted(roles)
+    roadway_ids = sorted(link_id for link_id, role in roles.items() if role == "roadway")
+    connector_ids = sorted(
+        link_id for link_id, role in roles.items() if role == "modeling_connector"
+    )
+    if not all_ids or not roadway_ids:
+        raise RuntimeError("Retained network must contain at least one link and one roadway link")
+    return {
+        "schema_version": "openplan.retained-network-manifest.v1",
+        "all_link_count": len(all_ids),
+        "all_link_ids_digest": _payload_digest(all_ids),
+        "roadway_link_count": len(roadway_ids),
+        "roadway_link_ids_digest": _payload_digest(roadway_ids),
+        "modeling_connector_link_count": len(connector_ids),
+        "modeling_connector_link_ids_digest": _payload_digest(connector_ids),
+        "excluded_roles": ["modeling_connector"],
+        "role_definition": {
+            "roadway": "link_type != centroid_connector",
+            "modeling_connector": "link_type = centroid_connector",
+        },
+    }
+
+
+_RETAINED_MANIFEST_KEYS = frozenset(
+    {
+        "schema_version",
+        "all_link_count",
+        "all_link_ids_digest",
+        "roadway_link_count",
+        "roadway_link_ids_digest",
+        "modeling_connector_link_count",
+        "modeling_connector_link_ids_digest",
+        "excluded_roles",
+        "role_definition",
+    }
+)
+
+
+def canonical_retained_network_manifest(manifest: dict | None) -> dict:
+    if not isinstance(manifest, dict) or frozenset(manifest) != _RETAINED_MANIFEST_KEYS:
+        raise AssignmentSettingsError("Retained-network manifest fields do not match v1")
+    if manifest.get("schema_version") != "openplan.retained-network-manifest.v1":
+        raise AssignmentSettingsError("Unsupported retained-network manifest schema")
+    canonical = dict(manifest)
+    for field, allow_zero in (
+        ("all_link_count", False),
+        ("roadway_link_count", False),
+        ("modeling_connector_link_count", True),
+    ):
+        value = manifest.get(field)
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, int)
+            or value < (0 if allow_zero else 1)
+        ):
+            raise AssignmentSettingsError(f"Retained-network {field} is invalid")
+    if (
+        canonical["roadway_link_count"] + canonical["modeling_connector_link_count"]
+        != canonical["all_link_count"]
+    ):
+        raise AssignmentSettingsError("Retained-network role counts do not cover all links")
+    for field in (
+        "all_link_ids_digest",
+        "roadway_link_ids_digest",
+        "modeling_connector_link_ids_digest",
+    ):
+        if not _is_sha256(manifest.get(field)):
+            raise AssignmentSettingsError(f"Retained-network {field} is not a full SHA-256")
+    if manifest.get("excluded_roles") != ["modeling_connector"]:
+        raise AssignmentSettingsError("Retained-network excluded roles do not match v1")
+    if manifest.get("role_definition") != {
+        "roadway": "link_type != centroid_connector",
+        "modeling_connector": "link_type = centroid_connector",
+    }:
+        raise AssignmentSettingsError("Retained-network role definition does not match v1")
+    return canonical
+
+
+_NETWORK_STATE_KEYS = frozenset(
+    {
+        "schema_version",
+        "network_settings_digest",
+        "assignment_centroid_count",
+        "assignment_centroid_order_digest",
+        "block_centroid_flows",
+        "penalty_through_centroids",
+        "cost_field",
+        "capacity_field",
+        "graph_row_count",
+        "graph_rows_digest",
+        "graph_float_dtype",
+        "graph_cost_digest",
+        "graph_cost_dtype",
+        "compact_cost_digest",
+        "compact_cost_dtype",
+        "solver_free_flow_tt_digest",
+        "solver_free_flow_tt_dtype",
+        "solver_capacity_digest",
+        "solver_capacity_dtype",
+        "retained_network_digest",
+        "retained_network_manifest",
+    }
+)
+
+
+def _finite_float_hex(value, context: str) -> str:
+    if isinstance(value, bool):
+        raise RuntimeError(f"{context} contains a boolean where a float belongs")
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError) as error:
+        raise RuntimeError(f"{context} contains a nonnumeric value") from error
+    if not np.isfinite(number):
+        raise RuntimeError(f"{context} contains a nonfinite value")
+    return number.hex()
+
+
+def _float_array_identity(values, context: str) -> tuple[str, str, list[str]]:
+    array = np.asarray(values)
+    encoded = [_finite_float_hex(value, context) for value in array.reshape(-1)]
+    return array.dtype.str, _payload_digest(encoded), encoded
+
+
+def assignment_network_state(
+    assignment,
+    graph,
+    assignment_centroids,
+    proj_dir: str,
+    *,
+    network_settings_digest_value: str,
+) -> tuple[dict, str]:
+    """Fingerprint the exact solver-visible network immediately before execute."""
+    if not _is_sha256(network_settings_digest_value):
+        raise AssignmentSettingsError("Assignment network state needs a full settings SHA-256")
+    manifest = retained_network_manifest(proj_dir)
+    frame = graph.graph
+    required_columns = {
+        "link_id",
+        "a_node",
+        "b_node",
+        "direction",
+        "id",
+        "distance",
+        "modes",
+        assignment.time_field,
+        assignment.capacity_field,
+        "__supernet_id__",
+        "__compressed_id__",
+    }
+    missing = sorted(required_columns - set(frame.columns))
+    if missing:
+        raise RuntimeError(f"Prepared assignment graph is missing identity fields: {missing}")
+    columns = {name: frame[name].to_numpy() for name in required_columns}
+    all_nodes = np.asarray(graph.all_nodes)
+    rows = []
+    graph_link_ids: set[int] = set()
+    for ordinal in range(len(frame)):
+        link_id = _strict_link_id(columns["link_id"][ordinal], "Prepared graph")
+        graph_link_ids.add(link_id)
+        internal_a = _strict_link_id(columns["a_node"][ordinal], "Prepared graph a-node map")
+        internal_b = _strict_link_id(columns["b_node"][ordinal], "Prepared graph b-node map")
+        if not (0 <= internal_a < len(all_nodes) and 0 <= internal_b < len(all_nodes)):
+            raise RuntimeError("Prepared graph contains a node index outside its node map")
+        rows.append(
+            [
+                ordinal,
+                link_id,
+                _strict_link_id(all_nodes[internal_a], "Prepared graph original a-node"),
+                _strict_link_id(all_nodes[internal_b], "Prepared graph original b-node"),
+                internal_a,
+                internal_b,
+                _strict_link_id(columns["direction"][ordinal], "Prepared graph direction"),
+                _strict_link_id(columns["id"][ordinal], "Prepared graph row id"),
+                _strict_link_id(
+                    columns["__supernet_id__"][ordinal], "Prepared graph supernet map"
+                ),
+                _strict_link_id(
+                    columns["__compressed_id__"][ordinal], "Prepared graph compressed map"
+                ),
+                _finite_float_hex(columns[assignment.time_field][ordinal], "Prepared travel time"),
+                _finite_float_hex(columns[assignment.capacity_field][ordinal], "Prepared capacity"),
+                _finite_float_hex(columns["distance"][ordinal], "Prepared distance"),
+                str(columns["modes"][ordinal]),
+            ]
+        )
+    if len(frame) <= 0:
+        raise RuntimeError("Prepared assignment graph is empty")
+    graph_link_ids_payload = sorted(graph_link_ids)
+    if (
+        len(graph_link_ids_payload) != manifest["all_link_count"]
+        or _payload_digest(graph_link_ids_payload) != manifest["all_link_ids_digest"]
+    ):
+        raise RuntimeError("Prepared assignment graph does not contain the retained all-link set")
+
+    centroids = [_strict_link_id(value, "Assignment centroids") for value in assignment_centroids]
+    if not centroids or len(set(centroids)) != len(centroids):
+        raise RuntimeError("Assignment has no centroids")
+    graph_cost_dtype, graph_cost_digest, graph_cost = _float_array_identity(
+        graph.cost, "Prepared graph cost"
+    )
+    compact_cost_dtype, compact_cost_digest, compact_cost = _float_array_identity(
+        graph.compact_cost, "Prepared compact graph cost"
+    )
+    solver = getattr(assignment, "assignment", None)
+    if solver is None:
+        raise RuntimeError("TrafficAssignment has no configured solver")
+    free_flow_dtype, free_flow_digest, free_flow = _float_array_identity(
+        solver.free_flow_tt, "Solver free-flow time"
+    )
+    capacity_dtype, capacity_digest, capacity = _float_array_identity(
+        solver.capacity, "Solver capacity"
+    )
+    if len(free_flow) != len(rows) or len(capacity) != len(rows):
+        raise RuntimeError("Solver network arrays do not cover every prepared graph row")
+    penalty = getattr(graph, "penalty_through_centroids", float("inf"))
+    penalty_identity = (
+        "positive_infinity"
+        if np.isposinf(float(penalty))
+        else _finite_float_hex(penalty, "Centroid-through penalty")
+    )
+    detailed_payload = {
+        "assignment_centroids": centroids,
+        "block_centroid_flows": bool(getattr(graph, "block_centroid_flows", False)),
+        "penalty_through_centroids": penalty_identity,
+        "cost_field": str(graph.cost_field),
+        "capacity_field": str(assignment.capacity_field),
+        "graph_rows": rows,
+        "graph_float_dtype": np.dtype(graph.default_types("float")).str,
+        "graph_cost": graph_cost,
+        "compact_cost": compact_cost,
+        "solver_free_flow_tt": free_flow,
+        "solver_capacity": capacity,
+        "retained_network_manifest": manifest,
+        "network_settings_digest": network_settings_digest_value,
+    }
+    record = {
+        "schema_version": "openplan.assignment-network-state.v1",
+        "network_settings_digest": network_settings_digest_value,
+        "assignment_centroid_count": len(centroids),
+        "assignment_centroid_order_digest": _payload_digest(centroids),
+        "block_centroid_flows": bool(getattr(graph, "block_centroid_flows", False)),
+        "penalty_through_centroids": penalty_identity,
+        "cost_field": str(graph.cost_field),
+        "capacity_field": str(assignment.capacity_field),
+        "graph_row_count": len(rows),
+        "graph_rows_digest": _payload_digest(rows),
+        "graph_float_dtype": np.dtype(graph.default_types("float")).str,
+        "graph_cost_digest": graph_cost_digest,
+        "graph_cost_dtype": graph_cost_dtype,
+        "compact_cost_digest": compact_cost_digest,
+        "compact_cost_dtype": compact_cost_dtype,
+        "solver_free_flow_tt_digest": free_flow_digest,
+        "solver_free_flow_tt_dtype": free_flow_dtype,
+        "solver_capacity_digest": capacity_digest,
+        "solver_capacity_dtype": capacity_dtype,
+        "retained_network_digest": _payload_digest(detailed_payload),
+        "retained_network_manifest": manifest,
+    }
+    return record, assignment_network_state_digest(record)
+
+
+def assignment_network_state_digest(record: dict) -> str:
+    canonical = canonical_assignment_network_state(record)
+    return hashlib.sha256(_compact_json(canonical).encode("utf-8")).hexdigest()
+
+
+def canonical_assignment_network_state(record: dict | None) -> dict:
+    if not isinstance(record, dict) or frozenset(record) != _NETWORK_STATE_KEYS:
+        raise AssignmentSettingsError("Assignment network-state fields do not match v1")
+    if record.get("schema_version") != "openplan.assignment-network-state.v1":
+        raise AssignmentSettingsError("Unsupported assignment network-state schema")
+    canonical = dict(record)
+    for field in ("assignment_centroid_count", "graph_row_count"):
+        value = record.get(field)
+        if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+            raise AssignmentSettingsError(f"Assignment network-state {field} is invalid")
+    if not isinstance(record.get("block_centroid_flows"), bool):
+        raise AssignmentSettingsError("Assignment network-state blocked-centroid flag is invalid")
+    penalty = record.get("penalty_through_centroids")
+    if penalty != "positive_infinity":
+        if not isinstance(penalty, str):
+            raise AssignmentSettingsError("Assignment network-state centroid penalty is invalid")
+        try:
+            parsed_penalty = float.fromhex(penalty)
+        except ValueError as error:
+            raise AssignmentSettingsError(
+                "Assignment network-state centroid penalty is invalid"
+            ) from error
+        if (
+            not np.isfinite(parsed_penalty)
+            or parsed_penalty < 0
+            or parsed_penalty.hex() != penalty
+        ):
+            raise AssignmentSettingsError(
+                "Assignment network-state centroid penalty is noncanonical"
+            )
+    for field in ("cost_field", "capacity_field"):
+        value = record.get(field)
+        if not isinstance(value, str) or not value:
+            raise AssignmentSettingsError(
+                f"Assignment network-state {field} is invalid"
+            )
+    for field in (
+        "graph_float_dtype",
+        "graph_cost_dtype",
+        "compact_cost_dtype",
+        "solver_free_flow_tt_dtype",
+        "solver_capacity_dtype",
+    ):
+        value = record.get(field)
+        if not isinstance(value, str) or not value:
+            raise AssignmentSettingsError(f"Assignment network-state {field} is invalid")
+    for field in (
+        "network_settings_digest",
+        "assignment_centroid_order_digest",
+        "graph_rows_digest",
+        "graph_cost_digest",
+        "compact_cost_digest",
+        "solver_free_flow_tt_digest",
+        "solver_capacity_digest",
+        "retained_network_digest",
+    ):
+        if not _is_sha256(record.get(field)):
+            raise AssignmentSettingsError(
+                f"Assignment network-state {field} is not a full SHA-256"
+            )
+    canonical["retained_network_manifest"] = canonical_retained_network_manifest(
+        record.get("retained_network_manifest")
+    )
+    return canonical
+
+
+def validated_network_state(record: dict | None, digest: str | None, context: str) -> tuple[dict, str]:
+    canonical = canonical_assignment_network_state(record)
+    expected = assignment_network_state_digest(canonical)
+    if digest != expected:
+        raise AssignmentSettingsError(f"{context} assignment network-state digest mismatch")
+    return canonical, expected
+
+
+def require_matching_network_states(
+    first_record: dict | None,
+    first_digest: str | None,
+    second_record: dict | None,
+    second_digest: str | None,
+    context: str,
+) -> tuple[dict, str]:
+    first = validated_network_state(first_record, first_digest, f"{context} first side")
+    second = validated_network_state(second_record, second_digest, f"{context} second side")
+    if first != second:
+        raise AssignmentSettingsError(f"{context} assignment network states differ")
+    return first
+
+
+def require_expected_network_state(
+    current_record: dict,
+    current_digest: str,
+    expected_record: dict | None,
+    expected_digest: str | None,
+    network_settings_digest_value: str,
+    context: str,
+) -> tuple[dict, str]:
+    """Refuse a handed-off network before the solver is allowed to execute."""
+    current = validated_network_state(current_record, current_digest, f"{context} current")
+    if (expected_record is None) != (expected_digest is None):
+        raise AssignmentSettingsError(
+            f"{context} expected network-state record and digest must be supplied together"
+        )
+    if expected_record is None:
+        return current
+    expected = validated_network_state(expected_record, expected_digest, context)
+    if expected[0].get("network_settings_digest") != network_settings_digest_value:
+        raise AssignmentSettingsError(
+            f"{context} expected network state names different network settings"
+        )
+    if current != expected:
+        raise AssignmentSettingsError(
+            f"Refusing {context} because its solver-visible retained network changed"
+        )
+    return current
+
+
+def _assignment_identity_source(assign_result: dict, filename: str) -> dict:
+    if filename in {"link_volumes_calibrated.csv", "accepted_network_calibration.json"}:
+        return assign_result.get("calibration") or {}
+    return assign_result
+
+
+def assignment_artifact_metadata(assign_result: dict, filename: str) -> dict:
+    """Attach the assignment method identity to every assignment output."""
+    source = _assignment_identity_source(assign_result, filename)
+    convergence_record = canonical_convergence_record(
+        source.get("convergence"), f"assignment artifact {filename}"
+    )
+    profile, profile_payload, profile_digest = validated_convergence_profile(
+        convergence_record, f"assignment artifact {filename}"
+    )
+    settings, settings_payload, settings_digest_value = validated_network_settings_record(
+        source.get("network_settings"),
+        source.get("network_settings_payload_json"),
+        source.get("network_settings_digest"),
+        f"assignment artifact {filename}",
+    )
+    state_record, state_digest = validated_network_state(
+        source.get("network_state_record"),
+        source.get("network_state_digest"),
+        f"assignment artifact {filename}",
+    )
+    if state_record.get("network_settings_digest") != settings_digest_value:
+        raise AssignmentSettingsError(
+            f"assignment artifact {filename} network state names different settings"
+        )
+    return {
+        "filename": filename,
+        "assignment_convergence": convergence_record,
+        "assignment_profile": profile,
+        "assignment_profile_payload_json": profile_payload,
+        "assignment_profile_digest": profile_digest,
+        "network_settings": settings,
+        "network_settings_payload_json": settings_payload,
+        "network_settings_digest": settings_digest_value,
+        "network_state_record": state_record,
+        "network_state_digest": state_digest,
+    }
+
+
+def assignment_engine_stamp(profile: dict) -> str:
+    canonical = canonical_assignment_profile(profile)
+    engine_name = (
+        "AequilibraE"
+        if canonical["engine"] == "aequilibrae"
+        else canonical["engine"]
+    )
+    return f"{engine_name} {canonical['engine_version']}"
 
 
 def accepted_network_settings_metadata(assign_result: dict, filename: str) -> dict:
     """Describe the persisted settings independently of the artifact's file encoding."""
     calibration = assign_result.get("calibration") or {}
-    settings = calibration.get("network_settings") or {}
+    settings, _, expected_settings_digest = validated_network_settings_record(
+        calibration.get("network_settings"),
+        calibration.get("network_settings_payload_json"),
+        calibration.get("network_settings_digest"),
+        f"assignment artifact {filename}",
+    )
     return {
-        "filename": filename,
+        **assignment_artifact_metadata(assign_result, filename),
         "kind": "accepted_assignment_network_settings",
         "schema_version": settings.get("schema_version"),
-        "network_settings_digest": calibration.get("network_settings_digest"),
+        "network_settings_digest": expected_settings_digest,
         "excludes": settings.get("excludes", []),
     }
-
-
-def require_network_settings_digest(expected: str | None, actual: str | None, context: str) -> None:
-    if actual != expected:
-        raise RuntimeError(
-            f"Refusing {context} because the applied network settings do not match "
-            "the accepted trip-based settings"
-        )
 
 
 def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None) -> int:
@@ -2380,14 +3149,13 @@ def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None
     """
     if settings is None:
         return 0
-    if settings.get("schema_version") != "openplan.network-calibration.v1":
-        raise RuntimeError("Unsupported persisted network-calibration settings schema")
-    factors = settings.get("road_class_factors")
-    if not isinstance(factors, dict):
-        raise RuntimeError("Persisted network-calibration settings have no road-class factors")
+    settings = canonical_network_settings(settings)
+    factors = settings["road_class_factors"]
 
     clean: dict[str, float] = {}
     for road_class, raw_factor in factors.items():
+        if isinstance(raw_factor, bool):
+            raise RuntimeError("Persisted network-calibration settings contain a boolean factor")
         factor = float(raw_factor)
         if not road_class or not np.isfinite(factor) or factor <= 0:
             raise RuntimeError("Persisted network-calibration settings contain an invalid factor")
@@ -2428,6 +3196,13 @@ def stage_assignment(
     demand_is_vehicle: bool = False,
     counts_path_override: str | None = None,
     persisted_network_settings: dict | None = None,
+    persisted_network_settings_payload_json: str | None = None,
+    persisted_network_settings_digest: str | None = None,
+    assignment_profile_override: dict | None = None,
+    assignment_profile_override_payload_json: str | None = None,
+    assignment_profile_override_digest: str | None = None,
+    expected_network_state_record: dict | None = None,
+    expected_network_state_digest: str | None = None,
 ) -> dict:
     from aequilibrae import Project
     from aequilibrae.matrix import AequilibraeMatrix
@@ -2461,6 +3236,39 @@ def stage_assignment(
     # COUNT_AUTO_INGEST is off.
     run_row = sb_get_run(run_id)
     calibrate_requested = resolve_calibration_enabled(run_row)
+    # Resolve once for the first assignment, then persist and hand this exact
+    # profile to the ActivitySim assignment. Stages may run on different worker
+    # replicas with different environments; re-resolving there would turn
+    # "same assignment settings" into an assumption instead of a run property.
+    if assignment_profile_override is None:
+        if (
+            assignment_profile_override_payload_json is not None
+            or assignment_profile_override_digest is not None
+        ):
+            raise AssignmentSettingsError(
+                "Assignment-profile payload/digest were supplied without a profile object"
+            )
+        assignment_profile = resolve_assignment_profile()
+        assignment_profile_payload = assignment_profile_payload_json(assignment_profile)
+        assignment_profile_hash = assignment_profile_digest(
+            assignment_profile, assignment_profile_payload
+        )
+    else:
+        assignment_profile, assignment_profile_payload, assignment_profile_hash = (
+            validated_assignment_profile(
+                assignment_profile_override,
+                assignment_profile_override_payload_json,
+                assignment_profile_override_digest,
+                "assignment-stage handoff",
+            )
+        )
+    log += (
+        f"Assignment profile {assignment_profile['profile_id']}: "
+        f"{assignment_profile['algorithm'].upper()} / {assignment_profile['vdf']}, "
+        f"target gap {assignment_profile['target_gap']}, at most "
+        f"{assignment_profile['max_iterations']:,} iterations; SHA-256 "
+        f"{assignment_profile_hash}.\n"
+    )
 
     # Resolve the counts used for validation/calibration for THIS run: auto-fetch
     # local DOT AADT for the study area when count auto-ingest is on (deployment
@@ -2515,20 +3323,41 @@ def stage_assignment(
     graph.set_graph("travel_time")
     graph.prepare_graph(np.array(assignment_centroids))
     graph.set_blocked_centroid_flows(True)
+    if persisted_network_settings is None:
+        if (
+            persisted_network_settings_payload_json is not None
+            or persisted_network_settings_digest is not None
+        ):
+            raise AssignmentSettingsError(
+                "Network-settings payload/digest were supplied without a settings object"
+            )
+        applied_network_settings = assignment_network_settings()
+        applied_network_settings_payload = network_settings_payload_json(
+            applied_network_settings
+        )
+        applied_network_settings_digest = network_settings_digest(
+            applied_network_settings, applied_network_settings_payload
+        )
+    else:
+        (
+            applied_network_settings,
+            applied_network_settings_payload,
+            applied_network_settings_digest,
+        ) = validated_network_settings_record(
+            persisted_network_settings,
+            persisted_network_settings_payload_json,
+            persisted_network_settings_digest,
+            "assignment-stage handoff",
+        )
     reused_network_links = apply_persisted_network_settings(
-        graph, proj_dir, persisted_network_settings
-    )
-    reused_network_settings_digest = (
-        network_settings_digest(persisted_network_settings)
-        if persisted_network_settings is not None
-        else None
+        graph, proj_dir, applied_network_settings
     )
     if persisted_network_settings is not None:
         log += (
             "Applied the trip-based assignment's persisted, accepted road-class "
             f"speed/capacity factors to {reused_network_links} retained-network links; "
             "no trip-based OD adjustment was reused. "
-            f"Settings SHA-256: {reused_network_settings_digest}.\n"
+            f"Settings SHA-256: {applied_network_settings_digest}.\n"
         )
     # "distance"/"distance_net" ride along so the assignment classes carry
     # blended, flow-consistent routed-distance skims (diagnostic inputs).
@@ -2953,20 +3782,13 @@ def stage_assignment(
     log += "Running BFW assignment (2 classes: resident, external)...\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
-    assig = TrafficAssignment()
     resident_class = TrafficClass(name="resident", graph=graph, matrix=resident_mat)
     external_class = TrafficClass(name="external", graph=graph, matrix=external_mat)
-    for tc in (resident_class, external_class):
-        tc.set_pce(1.0)
-        assig.add_class(tc)
-    assig.set_cores(AEQ_CORES)
-    assig.set_vdf("BPR")
-    assig.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
-    assig.set_capacity_field("capacity")
-    assig.set_time_field("travel_time")
-    assig.max_iter = 50
-    assig.rgap_target = 0.01
-    assig.set_algorithm("bfw")
+    assig = build_traffic_assignment(
+        TrafficAssignment,
+        (resident_class, external_class),
+        profile=assignment_profile,
+    )
 
     # Select-link corridor attribution: resolve the validation-station
     # screenlines to link_ids and attach them to BOTH traffic classes BEFORE
@@ -3015,6 +3837,22 @@ def stage_assignment(
         select_link_sets = {}
         log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"
 
+    network_state_record, network_state_digest_value = assignment_network_state(
+        assig,
+        graph,
+        assignment_centroids,
+        proj_dir,
+        network_settings_digest_value=applied_network_settings_digest,
+    )
+    require_expected_network_state(
+        network_state_record,
+        network_state_digest_value,
+        expected_network_state_record,
+        expected_network_state_digest,
+        applied_network_settings_digest,
+        "assignment-stage handoff",
+    )
+
     # The assignment is one blocking call that can run for minutes. Without
     # this the stage log froze on its last line and a healthy long run looked
     # identical to a hung one — the stuck-run banner only fires after ten
@@ -3033,9 +3871,13 @@ def stage_assignment(
         assig.execute()
 
     rgap = getattr(assig.assignment, "rgap", float("nan"))
-    iters = getattr(assig.assignment, "iteration", 50)
+    iters = assignment_iteration_count(assig.assignment)
 
     results_df = assig.results()
+    convergence_record = assignment_convergence_record(rgap, iters, assignment_profile)
+    results_df.attrs["convergence"] = convergence_record
+    results_df.attrs["network_state_record"] = network_state_record
+    results_df.attrs["network_state_digest"] = network_state_digest_value
     results_df.to_csv(os.path.join(out_dir, "link_volumes.csv"))
     loaded_links = int((results_df["PCE_tot"] > 0).sum()) if "PCE_tot" in results_df.columns else 0
 
@@ -3129,17 +3971,22 @@ def stage_assignment(
                 counts_path=counts_path,
                 resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
                 make_resident_mat=_make_resident_mat, pkg_dir=pkg_dir, ordered_zone_ids=ordered_zone_ids,
+                assignment_profile=assignment_profile,
             )
         except Exception as e:
             log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
 
     project.close()
 
-    log += f"Converged: gap={rgap:.6f}, iterations={iters}\n"
+    log += (
+        f"Converged: {'yes' if convergence_record['converged'] else 'NO'}, "
+        f"gap={rgap:.6f}, target={convergence_record['target_gap']}, "
+        f"iterations={iters}/{convergence_record['max_iterations']}\n"
+    )
     log += f"Links with volume: {loaded_links}/{len(results_df)}\n"
 
     return {
-        "convergence": {"final_gap": float(rgap) if np.isfinite(rgap) else None, "iterations": int(iters)},
+        "convergence": convergence_record,
         "network": {"links": int(graph.num_links), "nodes": int(graph.num_nodes), "zones": n_zones},
         "demand": {
             "total_trips": total_trips,
@@ -3153,7 +4000,11 @@ def stage_assignment(
         "convergence_diagnostic": convergence_diag,
         "select_link_analysis": select_link_analysis,
         "calibration": calibration_result,
-        "network_settings_digest": reused_network_settings_digest,
+        "network_settings": applied_network_settings,
+        "network_settings_payload_json": applied_network_settings_payload,
+        "network_settings_digest": applied_network_settings_digest,
+        "network_state_record": network_state_record,
+        "network_state_digest": network_state_digest_value,
         # Carried forward so the artifact stage validates against the counts THIS
         # run used, whichever process picks that stage up. Persisted in the run's
         # state.json by process_stage.
@@ -3301,6 +4152,18 @@ def stage_artifacts(
     package_meta: dict | None = None,
 ) -> str:
     out_dir = os.path.join(work_dir, "run_output")
+    (
+        verified_assignment_profile,
+        verified_assignment_profile_payload,
+        verified_assignment_profile_digest,
+    ) = validated_convergence_profile(
+        assign_result.get("convergence"),
+        "assignment artifact stage",
+    )
+    baseline_assignment_metadata = assignment_artifact_metadata(
+        assign_result, "link_volumes.csv"
+    )
+    verified_engine_stamp = assignment_engine_stamp(verified_assignment_profile)
     bbox = setup_result.get("bbox")
     model_area_label = (
         f"Dynamic study area ({bbox[0]:.5f},{bbox[1]:.5f} to {bbox[2]:.5f},{bbox[3]:.5f})"
@@ -3725,11 +4588,24 @@ def stage_artifacts(
 
     evidence = {
         "run_id": run_id,
-        "engine": ENGINE_STAMP,
+        "engine": verified_engine_stamp,
         "network_source": "OpenStreetMap",
-        "algorithm": "BFW",
-        "vdf": "BPR (α=0.15, β=4.0)",
+        "algorithm": verified_assignment_profile["algorithm"].upper(),
+        "vdf": verified_assignment_profile["vdf"],
         "convergence": assign_result["convergence"],
+        "assignment_convergence": baseline_assignment_metadata[
+            "assignment_convergence"
+        ],
+        "assignment_profile": verified_assignment_profile,
+        "assignment_profile_payload_json": verified_assignment_profile_payload,
+        "assignment_profile_digest": verified_assignment_profile_digest,
+        "network_settings": baseline_assignment_metadata["network_settings"],
+        "network_settings_payload_json": baseline_assignment_metadata[
+            "network_settings_payload_json"
+        ],
+        "network_settings_digest": baseline_assignment_metadata["network_settings_digest"],
+        "network_state_record": baseline_assignment_metadata["network_state_record"],
+        "network_state_digest": baseline_assignment_metadata["network_state_digest"],
         "network": assign_result["network"],
         "demand": assign_result["demand"],
         "skims": assign_result["skims"],
@@ -3865,13 +4741,17 @@ def stage_artifacts(
         if os.path.exists(fpath):
             size = os.path.getsize(fpath)
             with open(fpath, "rb") as fh:
-                content_hash = hashlib.sha256(fh.read()).hexdigest()[:16]
+                content_hash = hashlib.sha256(fh.read()).hexdigest()
             file_url = (
                 evidence_storage_ref
                 if atype == "evidence_packet" and evidence_storage_ref
                 else f"local://{fpath}"
             )
-            metadata = evidence if atype == "evidence_packet" else {"filename": fname}
+            metadata = (
+                evidence
+                if atype == "evidence_packet"
+                else assignment_artifact_metadata(assign_result, fname)
+            )
             if atype == "accepted_network_calibration":
                 metadata = accepted_network_settings_metadata(assign_result, fname)
             sb_post_artifact({
@@ -3892,7 +4772,7 @@ def stage_artifacts(
     zone_attr_path = os.path.join(work_dir, "package", "zone_attributes.csv")
     if os.path.exists(zone_attr_path):
         with open(zone_attr_path, "rb") as fh:
-            za_hash = hashlib.sha256(fh.read()).hexdigest()[:16]
+            za_hash = hashlib.sha256(fh.read()).hexdigest()
         sb_post_artifact({
             "run_id": run_id,
             "stage_id": stage_id,
@@ -4230,8 +5110,9 @@ def stage_artifacts(
                 "metadata": {
                     "totalLinks": len(features),
                     "maxVolume": max_vol,
-                    "engine": ENGINE_STAMP,
+                    "engine": verified_engine_stamp,
                     "modelRunId": run_id,
+                    **baseline_assignment_metadata,
                 },
             }
 
@@ -4257,7 +5138,7 @@ def stage_artifacts(
             if upload_res.status_code in (200, 201):
                 storage_ref = f"storage://{bucket}/{object_path}"
                 with open(geojson_path, "rb") as geojson_file:
-                    geojson_hash = hashlib.sha256(geojson_file.read()).hexdigest()[:16]
+                    geojson_hash = hashlib.sha256(geojson_file.read()).hexdigest()
                 sb_post_artifact({
                     "run_id": run_id,
                     "stage_id": stage_id,
@@ -4265,7 +5146,12 @@ def stage_artifacts(
                     "file_url": storage_ref,
                     "file_size_bytes": os.path.getsize(geojson_path),
                     "content_hash": geojson_hash,
-                    "metadata_json": {"format": "geojson", "features": len(features), "maxVolume": max_vol},
+                    "metadata_json": {
+                        **baseline_assignment_metadata,
+                        "format": "geojson",
+                        "features": len(features),
+                        "maxVolume": max_vol,
+                    },
                 })
                 log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
             else:
@@ -4444,14 +5330,39 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 print(f"[{time.strftime('%X')}] ✅ {stage_name} not applicable (preflight only)")
             else:
                 first_assignment = state.get("assignment") or {}
-                accepted_settings = (first_assignment.get("calibration") or {}).get(
-                    "network_settings"
+                calibrated_handoff = bool(first_assignment.get("calibration"))
+                handoff_source = (
+                    first_assignment.get("calibration") or {}
+                    if calibrated_handoff
+                    else first_assignment
                 )
-                expected_settings_digest = (
-                    network_settings_digest(accepted_settings)
-                    if accepted_settings is not None
-                    else None
+                (
+                    first_assignment_profile,
+                    first_assignment_profile_payload,
+                    first_assignment_profile_digest,
+                ) = validated_convergence_profile(
+                    handoff_source.get("convergence"),
+                    "trip-based assignment",
                 )
+                (
+                    accepted_settings,
+                    accepted_settings_payload,
+                    expected_settings_digest,
+                ) = validated_network_settings_record(
+                    handoff_source.get("network_settings"),
+                    handoff_source.get("network_settings_payload_json"),
+                    handoff_source.get("network_settings_digest"),
+                    "ActivitySim assignment handoff",
+                )
+                expected_state, expected_state_digest = validated_network_state(
+                    handoff_source.get("network_state_record"),
+                    handoff_source.get("network_state_digest"),
+                    "ActivitySim assignment handoff first assignment",
+                )
+                if expected_state.get("network_settings_digest") != expected_settings_digest:
+                    raise RuntimeError(
+                        "ActivitySim assignment handoff state names different network settings"
+                    )
                 result = stage_assignment(
                     run_id,
                     stage_id,
@@ -4462,10 +5373,37 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     demand_is_vehicle=True,
                     counts_path_override=first_assignment.get("counts_path"),
                     persisted_network_settings=accepted_settings,
+                    persisted_network_settings_payload_json=accepted_settings_payload,
+                    persisted_network_settings_digest=expected_settings_digest,
+                    assignment_profile_override=first_assignment_profile,
+                    assignment_profile_override_payload_json=first_assignment_profile_payload,
+                    assignment_profile_override_digest=first_assignment_profile_digest,
+                    expected_network_state_record=expected_state,
+                    expected_network_state_digest=expected_state_digest,
                 )
-                require_network_settings_digest(
-                    expected_settings_digest,
-                    result.get("network_settings_digest"),
+                require_matching_assignment_profiles(
+                    handoff_source.get("convergence"),
+                    result.get("convergence"),
+                    "ActivitySim assignment handoff",
+                )
+                require_matching_network_settings(
+                    (
+                        accepted_settings,
+                        accepted_settings_payload,
+                        expected_settings_digest,
+                    ),
+                    (
+                        result.get("network_settings"),
+                        result.get("network_settings_payload_json"),
+                        result.get("network_settings_digest"),
+                    ),
+                    "ActivitySim assignment handoff",
+                )
+                require_matching_network_states(
+                    expected_state,
+                    expected_state_digest,
+                    result.get("network_state_record"),
+                    result.get("network_state_digest"),
                     "ActivitySim assignment handoff",
                 )
                 state["activitysim_assignment"] = result
@@ -4484,16 +5422,15 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     "file_size_bytes": len(volume_bytes),
                     "content_hash": hashlib.sha256(volume_bytes).hexdigest(),
                     "metadata_json": {
+                        **assignment_artifact_metadata(result, "link_volumes.csv"),
                         "kind": "same_network_activitysim_assignment",
                         "demand_is_vehicle": True,
                         "network_calibration": (
                             "accepted_trip_based_network_settings"
-                            if (first_assignment.get("calibration") or {}).get("network_settings")
-                            is not None
+                            if calibrated_handoff
                             else "baseline_network_settings"
                         ),
                         "trip_based_od_adjustments_reused": False,
-                        "network_settings_digest": expected_settings_digest,
                     },
                 })
                 sb_patch_stage(stage_id, {
@@ -4521,47 +5458,97 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 with open(state_file) as f:
                     state = json.load(f)
                 first_assignment = state.get("assignment") or {}
+                second_assignment = state.get("activitysim_assignment") or {}
                 calibrated_comparison = bool(first_assignment.get("calibration"))
-                shared_settings_digest = None
-                if calibrated_comparison:
-                    calibration = first_assignment.get("calibration") or {}
-                    accepted_settings = calibration.get("network_settings")
-                    if accepted_settings is None:
-                        raise RuntimeError(
-                            "Refusing calibrated comparison without persisted network settings"
-                        )
-                    shared_settings_digest = network_settings_digest(accepted_settings)
-                    recorded_digest = calibration.get("network_settings_digest")
-                    applied_digest = (state.get("activitysim_assignment") or {}).get(
-                        "network_settings_digest"
+                first_source = (
+                    first_assignment.get("calibration") or {}
+                    if calibrated_comparison
+                    else first_assignment
+                )
+                try:
+                    first_convergence_record = canonical_convergence_record(
+                        first_source.get("convergence"),
+                        "demand-model agreement first side",
                     )
-                    try:
-                        require_network_settings_digest(
-                            shared_settings_digest,
-                            recorded_digest,
-                            "calibrated comparison",
+                    second_convergence_record = canonical_convergence_record(
+                        second_assignment.get("convergence"),
+                        "demand-model agreement second side",
+                    )
+                    (
+                        shared_assignment_profile,
+                        shared_assignment_profile_payload,
+                        shared_assignment_profile_digest,
+                    ) = require_matching_assignment_profiles(
+                        first_convergence_record,
+                        second_convergence_record,
+                        "demand-model agreement",
+                    )
+                    (
+                        shared_settings,
+                        shared_settings_payload,
+                        shared_settings_digest,
+                    ) = require_matching_network_settings(
+                        (
+                            first_source.get("network_settings"),
+                            first_source.get("network_settings_payload_json"),
+                            first_source.get("network_settings_digest"),
+                        ),
+                        (
+                            second_assignment.get("network_settings"),
+                            second_assignment.get("network_settings_payload_json"),
+                            second_assignment.get("network_settings_digest"),
+                        ),
+                        "demand-model agreement",
+                    )
+                    shared_network_state, shared_network_state_digest = (
+                        require_matching_network_states(
+                            first_source.get("network_state_record"),
+                            first_source.get("network_state_digest"),
+                            second_assignment.get("network_state_record"),
+                            second_assignment.get("network_state_digest"),
+                            "demand-model agreement",
                         )
-                        require_network_settings_digest(
-                            shared_settings_digest,
-                            applied_digest,
-                            "calibrated comparison",
-                        )
-                    except RuntimeError:
-                        raise RuntimeError(
-                            "Refusing calibrated comparison because the two assignments do not "
-                            "share the accepted network-settings digest"
-                        )
+                    )
+                except AssignmentSettingsError as error:
+                    raise RuntimeError(
+                        "Refusing demand-model agreement without identical, verified assignment "
+                        f"profile, network settings, and solver-visible retained network: {error}"
+                    ) from error
+                if shared_network_state.get("network_settings_digest") != shared_settings_digest:
+                    raise RuntimeError(
+                        "Refusing demand-model agreement because network state names different settings"
+                    )
                 first_volumes = verified_latest_local_artifact(
                     run_id,
                     "link_volumes_calibrated" if calibrated_comparison else "link_volumes",
+                    expected_assignment_profile=shared_assignment_profile,
+                    expected_assignment_profile_payload_json=shared_assignment_profile_payload,
+                    expected_assignment_profile_digest=shared_assignment_profile_digest,
+                    expected_network_settings=shared_settings,
+                    expected_network_settings_payload_json=shared_settings_payload,
+                    expected_network_settings_digest=shared_settings_digest,
+                    expected_network_state_record=shared_network_state,
+                    expected_network_state_digest=shared_network_state_digest,
                 )
                 second_volumes = verified_latest_local_artifact(
-                    run_id, "activitysim_link_volumes"
+                    run_id,
+                    "activitysim_link_volumes",
+                    expected_assignment_profile=shared_assignment_profile,
+                    expected_assignment_profile_payload_json=shared_assignment_profile_payload,
+                    expected_assignment_profile_digest=shared_assignment_profile_digest,
+                    expected_network_settings=shared_settings,
+                    expected_network_settings_payload_json=shared_settings_payload,
+                    expected_network_settings_digest=shared_settings_digest,
+                    expected_network_state_record=shared_network_state,
+                    expected_network_state_digest=shared_network_state_digest,
                 )
                 agreement_dir = os.path.join(work_dir, "demand_model_agreement")
                 os.makedirs(agreement_dir, exist_ok=True)
                 geometry_path = write_agreement_network_geojson(
-                    work_dir, os.path.join(agreement_dir, "retained_network.geojson")
+                    work_dir,
+                    os.path.join(agreement_dir, "retained_network.geojson"),
+                    network_state_record=shared_network_state,
+                    network_state_digest=shared_network_state_digest,
                 )
                 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
                 scripts_dir = os.path.join(repo_root, "scripts", "modeling")
@@ -4581,16 +5568,20 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     output_dir=agreement_dir,
                     force=False,
                     loaded_links_geojson=geometry_path,
-                    first_convergence_record=(
-                        ((state.get("assignment") or {}).get("calibration") or {}).get(
-                            "convergence"
-                        )
-                        if calibrated_comparison
-                        else (state.get("assignment") or {}).get("convergence")
-                    ),
-                    second_convergence_record=(state.get("activitysim_assignment") or {}).get(
-                        "convergence"
-                    ),
+                    first_convergence_record=first_convergence_record,
+                    second_convergence_record=second_convergence_record,
+                    first_assignment_profile_payload_json=shared_assignment_profile_payload,
+                    first_assignment_profile_digest=shared_assignment_profile_digest,
+                    second_assignment_profile_payload_json=shared_assignment_profile_payload,
+                    second_assignment_profile_digest=shared_assignment_profile_digest,
+                    first_network_settings_payload_json=shared_settings_payload,
+                    first_network_settings_digest=shared_settings_digest,
+                    second_network_settings_payload_json=shared_settings_payload,
+                    second_network_settings_digest=shared_settings_digest,
+                    first_network_state_record=shared_network_state,
+                    first_network_state_digest=shared_network_state_digest,
+                    second_network_state_record=shared_network_state,
+                    second_network_state_digest=shared_network_state_digest,
                 )
                 for artifact_type, path, content_type in (
                     ("demand_model_agreement", result["json_path"], "application/json"),
@@ -4603,16 +5594,25 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         artifact_type,
                         path,
                         content_type,
+                        first_assignment_convergence=first_convergence_record,
+                        second_assignment_convergence=second_convergence_record,
+                        assignment_profile=shared_assignment_profile,
+                        assignment_profile_payload_json=shared_assignment_profile_payload,
+                        assignment_profile_digest=shared_assignment_profile_digest,
+                        network_settings=shared_settings,
+                        network_settings_payload_json=shared_settings_payload,
                         network_settings_digest=shared_settings_digest,
+                        network_state_record=shared_network_state,
+                        network_state_digest=shared_network_state_digest,
                     )
                 summary = result["summary"]
                 log = (
-                    (
-                        f"Both assignments used accepted network settings SHA-256 "
-                        f"{shared_settings_digest}.\n"
-                        if shared_settings_digest
-                        else "Both assignments used the baseline retained-network settings.\n"
-                    )
+                    f"Both assignments used {'accepted' if calibrated_comparison else 'baseline'} "
+                    f"network settings SHA-256 {shared_settings_digest}.\n"
+                    + f"Both assignments used assignment profile SHA-256 "
+                    f"{shared_assignment_profile_digest}.\n"
+                    + f"Both assignments used solver-visible network state SHA-256 "
+                    f"{shared_network_state_digest}.\n"
                     + f"Compared {summary['links_compared']:,} links on the retained network; "
                     f"{summary['links_carrying_meaningful_traffic']:,} carry meaningful traffic.\n"
                     f"Busy-link agreement share: {summary['agree_share_meaningful_links']}; "

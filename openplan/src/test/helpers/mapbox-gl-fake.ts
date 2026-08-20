@@ -109,6 +109,8 @@ class FakePopup {
   content: HTMLElement | null = null;
   lngLat: [number, number] | null = null;
   addedTo: FakeMapboxMap | null = null;
+  removed = false;
+  readonly element = document.createElement("div");
 
   constructor(readonly options?: unknown) {}
 
@@ -119,17 +121,24 @@ class FakePopup {
 
   setDOMContent(node: HTMLElement): this {
     this.content = node;
+    this.element.replaceChildren(node);
     return this;
   }
 
   addTo(map: FakeMapboxMap): this {
     this.addedTo = map;
+    this.removed = false;
     map.openPopups.push(this);
     return this;
   }
 
   remove(): this {
+    this.removed = true;
     return this;
+  }
+
+  getElement(): HTMLElement {
+    return this.element;
   }
 }
 
@@ -188,6 +197,8 @@ type RegisteredLayer = { id: string; spec: Record<string, unknown>; beforeId?: s
  */
 const REGISTRY = Symbol.for("openplan.test.mapbox-gl-fake.instances");
 const registry = ((globalThis as Record<symbol, unknown>)[REGISTRY] ??= []) as FakeMapboxMap[];
+const CONSTRUCTION_ERROR = Symbol.for("openplan.test.mapbox-gl-fake.construction-error");
+const SETUP_ERROR = Symbol.for("openplan.test.mapbox-gl-fake.setup-error");
 
 export class FakeMapboxMap {
 
@@ -213,6 +224,11 @@ export class FakeMapboxMap {
   readonly keyboard = { disable: () => { this.keyboardEnabled = false; } };
 
   constructor(options: FakeMapOptions) {
+    const pendingError = (globalThis as Record<symbol, unknown>)[CONSTRUCTION_ERROR];
+    if (pendingError instanceof Error) {
+      delete (globalThis as Record<symbol, unknown>)[CONSTRUCTION_ERROR];
+      throw pendingError;
+    }
     this.options = options;
     this.styleUrl = options.style;
     registry.push(this);
@@ -267,6 +283,11 @@ export class FakeMapboxMap {
   off(): void {}
 
   addControl(control: unknown): void {
+    const pendingError = (globalThis as Record<symbol, unknown>)[SETUP_ERROR];
+    if (pendingError instanceof Error) {
+      delete (globalThis as Record<symbol, unknown>)[SETUP_ERROR];
+      throw pendingError;
+    }
     this.controls.push(control);
   }
 
@@ -397,6 +418,18 @@ export function lastFakeMap(): FakeMapboxMap {
 
 export function resetFakeMaps(): void {
   registry.length = 0;
+  delete (globalThis as Record<symbol, unknown>)[CONSTRUCTION_ERROR];
+  delete (globalThis as Record<symbol, unknown>)[SETUP_ERROR];
+}
+
+/** Make the next `new Map()` fail before it can register an instance. */
+export function failNextFakeMapConstruction(message: string): void {
+  (globalThis as Record<symbol, unknown>)[CONSTRUCTION_ERROR] = new Error(message);
+}
+
+/** Make the next map-control registration fail after construction. */
+export function failNextFakeMapSetup(message: string): void {
+  (globalThis as Record<symbol, unknown>)[SETUP_ERROR] = new Error(message);
 }
 
 /**

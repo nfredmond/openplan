@@ -327,7 +327,7 @@ def run_county(
                 "--second-label", "ActivitySim prototype_mtc (activity-based)",
                 "--first-manifest", str(base_run / "bundle_manifest.json"),
                 "--second-manifest", str(asim_run / "bundle_manifest.json"),
-                "--loaded-links-geojson", str(base_run / "run_output" / "loaded_links.geojson"),
+                "--loaded-links-geojson", str(base_run / "run_output" / "retained_network.geojson"),
                 "--noise-floor-json", str(floor_json),
                 "--output-dir", str(agreement_dir),
                 "--force",

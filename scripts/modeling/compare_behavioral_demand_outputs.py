@@ -4,11 +4,12 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import shutil
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -45,7 +46,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--second-label", default="second demand model", help="How to name the second method")
     parser.add_argument(
         "--loaded-links-geojson",
-        help="Optional loaded_links.geojson supplying road names, so links roll up into corridors",
+        help=(
+            "retained_network.geojson supplying the exact roadway-only geometry and retained-network "
+            "manifest. Without it the table comparison remains diagnostic and unattributed."
+        ),
     )
     parser.add_argument(
         "--volume-column", default="PCE_tot", help="Which link volume column to compare (default: PCE_tot)"
@@ -59,6 +63,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--second-manifest", help="bundle_manifest.json from the second run")
+    parser.add_argument(
+        "--first-network-settings-digest",
+        help="Lowercase SHA-256 of the exact network settings applied to the first assignment",
+    )
+    parser.add_argument(
+        "--second-network-settings-digest",
+        help="Lowercase SHA-256 of the exact network settings applied to the second assignment",
+    )
     parser.add_argument(
         "--minimum-volume",
         type=float,
@@ -513,45 +525,167 @@ def read_link_volume_rows(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def read_link_names(path: Path | None) -> dict[int, dict[str, Any]]:
-    """Road names per link id, so links can roll up into corridors.
+def _geometry_link_id(value: Any, context: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise RuntimeError(f"{context} must have an integer link_id")
+    return value
 
-    Optional on purpose. Without it the comparison still reports every link;
-    it simply cannot name the corridors, and saying that is better than
-    inventing a grouping.
-    """
+
+def _valid_position(value: Any) -> bool:
+    if not (
+        isinstance(value, list)
+        and len(value) in (2, 3)
+        and all(
+            not isinstance(coordinate, bool)
+            and isinstance(coordinate, (int, float))
+            and math.isfinite(float(coordinate))
+            for coordinate in value
+        )
+    ):
+        return False
+    longitude, latitude = value[:2]
+    return -180 <= longitude <= 180 and -90 <= latitude <= 90
+
+
+def _valid_line_geometry(geometry: Any) -> bool:
+    if not isinstance(geometry, Mapping):
+        return False
+    coordinates = geometry.get("coordinates")
+    if geometry.get("type") == "LineString":
+        return (
+            isinstance(coordinates, list)
+            and len(coordinates) >= 2
+            and all(_valid_position(position) for position in coordinates)
+        )
+    if geometry.get("type") == "MultiLineString":
+        return (
+            isinstance(coordinates, list)
+            and bool(coordinates)
+            and all(
+                isinstance(line, list)
+                and len(line) >= 2
+                and all(_valid_position(position) for position in line)
+                for line in coordinates
+            )
+        )
+    return False
+
+
+def read_retained_network_geometry(path: Path | None) -> dict[str, Any] | None:
+    """Verify the producer's roadway-only retained-network GeoJSON."""
     if path is None:
-        return {}
+        return None
     if not path.exists():
-        raise RuntimeError(f"No loaded-links file at {path}")
-    payload = json.loads(path.read_text())
+        raise RuntimeError(f"No retained-network GeoJSON at {path}")
+    payload = read_json(path)
+    if payload.get("type") != "FeatureCollection" or not isinstance(payload.get("features"), list):
+        raise RuntimeError(f"{path} is not a GeoJSON FeatureCollection")
+    metadata = payload.get("metadata")
+    if not isinstance(metadata, Mapping):
+        raise RuntimeError(f"{path} has no retained-network metadata")
+    from corridor_agreement import (
+        _validate_retained_network_manifest,
+        _valid_digest,
+        link_id_set_digest,
+    )
+
+    manifest, manifest_error = _validate_retained_network_manifest(
+        metadata.get("retained_network_manifest")
+    )
+    if manifest_error:
+        raise RuntimeError(f"{path} has invalid retained-network metadata: {manifest_error}")
+    network_state_digest = metadata.get("network_state_digest")
+    if not _valid_digest(network_state_digest):
+        raise RuntimeError(f"{path} has no valid selected network_state_digest")
+    source_count = metadata.get("source_feature_count")
+    if isinstance(source_count, bool) or not isinstance(source_count, int) or source_count < 1:
+        raise RuntimeError(f"{path} has no valid source_feature_count")
+    if source_count != len(payload["features"]):
+        raise RuntimeError(f"{path} source roadway feature count does not match its features")
+
     names: dict[int, dict[str, Any]] = {}
-    for feature in payload.get("features", []):
-        properties = feature.get("properties") or {}
-        try:
-            link_id = int(float(properties.get("link_id")))
-        except (TypeError, ValueError):
-            continue
+    features_by_link: dict[int, dict[str, Any]] = {}
+    for index, feature in enumerate(payload["features"]):
+        context = f"{path} feature {index}"
+        if not isinstance(feature, Mapping) or feature.get("type") != "Feature":
+            raise RuntimeError(f"{context} is not a GeoJSON Feature")
+        properties = feature.get("properties")
+        if not isinstance(properties, Mapping):
+            raise RuntimeError(f"{context} has no properties")
+        link_id = _geometry_link_id(properties.get("link_id"), context)
+        if link_id in features_by_link:
+            raise RuntimeError(f"{path} contains duplicate roadway link_id {link_id}")
+        if properties.get("link_type") == "centroid_connector":
+            raise RuntimeError(f"{path} includes excluded modeling connector {link_id}")
+        geometry = feature.get("geometry")
+        if not _valid_line_geometry(geometry):
+            raise RuntimeError(f"{context} has no line geometry")
+        features_by_link[link_id] = dict(feature)
         names[link_id] = {
             "name": properties.get("name") or "",
             "link_type": properties.get("link_type") or "",
         }
-    return names
+
+    roadway_ids = sorted(features_by_link)
+    if (
+        len(roadway_ids) != manifest["roadway_link_count"]
+        or link_id_set_digest(roadway_ids) != manifest["roadway_link_ids_digest"]
+    ):
+        raise RuntimeError(
+            f"{path} roadway geometry does not exactly match its retained-network manifest"
+        )
+    return {
+        "payload": payload,
+        "names": names,
+        "features_by_link": features_by_link,
+        "roadway_link_ids": roadway_ids,
+        "retained_network_manifest": manifest,
+        "network_state_digest": network_state_digest,
+        "source_roadway_feature_count": source_count,
+    }
 
 
-def read_convergence(manifest_path: str | None) -> dict[str, Any] | None:
-    """How tightly a run's assignment converged, out of its own manifest.
+def read_link_names(path: Path | None) -> dict[int, dict[str, Any]]:
+    """Backward-compatible names view of verified roadway geometry."""
+    geometry = read_retained_network_geometry(path)
+    return {} if geometry is None else geometry["names"]
 
-    Returns None when there is no manifest, which the verdict treats as
-    'unknown' rather than as 'fine' — an unrecorded gap is not a tight one.
+
+def read_assignment_evidence(
+    manifest_path: str | None,
+) -> dict[str, Any]:
+    """Read convergence and network-settings identity from one run manifest.
+
+    Missing evidence remains missing. The agreement artifact reports it as
+    unverified rather than treating an old manifest as proof.
     """
     if not manifest_path:
-        return None
+        return {}
     path = Path(manifest_path).expanduser().resolve()
     if not path.exists():
         raise RuntimeError(f"No run manifest at {path}")
     payload = json.loads(path.read_text())
-    return ((payload.get("assignment") or {}).get("convergence")) or None
+    assignment = payload.get("assignment") or {}
+    convergence = assignment.get("convergence") or None
+    selected = assignment.get("calibration") or assignment
+    return {
+        "convergence": convergence,
+        "assignment_profile_payload_json": (convergence or {}).get(
+            "assignment_profile_payload_json"
+        ),
+        "assignment_profile_digest": (convergence or {}).get(
+            "assignment_profile_digest"
+        ),
+        "network_settings_payload_json": selected.get("network_settings_payload_json"),
+        "network_settings_digest": selected.get("network_settings_digest"),
+        "network_state_record": selected.get("network_state_record"),
+        "network_state_digest": selected.get("network_state_digest"),
+    }
+
+
+def read_convergence(manifest_path: str | None) -> dict[str, Any] | None:
+    """Backward-compatible convergence-only view of assignment evidence."""
+    return read_assignment_evidence(manifest_path).get("convergence")
 
 
 def read_noise_floor(noise_floor_path: str | None) -> dict[str, Any] | None:
@@ -601,6 +735,18 @@ def compare_link_volume_runs(
     noise_floor_json: str | None = None,
     first_convergence_record: dict[str, Any] | None = None,
     second_convergence_record: dict[str, Any] | None = None,
+    first_assignment_profile_payload_json: str | None = None,
+    first_assignment_profile_digest: str | None = None,
+    second_assignment_profile_payload_json: str | None = None,
+    second_assignment_profile_digest: str | None = None,
+    first_network_settings_payload_json: str | None = None,
+    first_network_settings_digest: str | None = None,
+    second_network_settings_payload_json: str | None = None,
+    second_network_settings_digest: str | None = None,
+    first_network_state_record: dict[str, Any] | None = None,
+    first_network_state_digest: str | None = None,
+    second_network_state_record: dict[str, Any] | None = None,
+    second_network_state_digest: str | None = None,
 ) -> dict[str, Any]:
     """Compare two assignments of the same network from different demand models."""
     from corridor_agreement import DEFAULT_MINIMUM_VOLUME, build_agreement_map
@@ -614,6 +760,15 @@ def compare_link_volume_runs(
         shutil.rmtree(resolved_output_dir)
     resolved_output_dir.mkdir(parents=True, exist_ok=True)
 
+    first_manifest_evidence = read_assignment_evidence(first_manifest)
+    second_manifest_evidence = read_assignment_evidence(second_manifest)
+    retained_geometry = read_retained_network_geometry(
+        Path(loaded_links_geojson).expanduser().resolve() if loaded_links_geojson else None
+    )
+
+    def explicit_or_manifest(explicit: Any, side: Mapping[str, Any], key: str) -> Any:
+        return explicit if explicit is not None else side.get(key)
+
     agreement = build_agreement_map(
         read_link_volume_rows(first_path),
         read_link_volume_rows(second_path),
@@ -621,11 +776,86 @@ def compare_link_volume_runs(
         second_label=second_label,
         volume_column=volume_column,
         minimum_volume=DEFAULT_MINIMUM_VOLUME if minimum_volume is None else minimum_volume,
-        link_names=read_link_names(
-            Path(loaded_links_geojson).expanduser().resolve() if loaded_links_geojson else None
+        link_names={} if retained_geometry is None else retained_geometry["names"],
+        first_convergence=(
+            first_convergence_record
+            if first_convergence_record is not None
+            else first_manifest_evidence.get("convergence")
         ),
-        first_convergence=first_convergence_record or read_convergence(first_manifest),
-        second_convergence=second_convergence_record or read_convergence(second_manifest),
+        second_convergence=(
+            second_convergence_record
+            if second_convergence_record is not None
+            else second_manifest_evidence.get("convergence")
+        ),
+        first_assignment_profile_payload_json=explicit_or_manifest(
+            first_assignment_profile_payload_json,
+            first_manifest_evidence,
+            "assignment_profile_payload_json",
+        ),
+        first_assignment_profile_digest=explicit_or_manifest(
+            first_assignment_profile_digest,
+            first_manifest_evidence,
+            "assignment_profile_digest",
+        ),
+        second_assignment_profile_payload_json=explicit_or_manifest(
+            second_assignment_profile_payload_json,
+            second_manifest_evidence,
+            "assignment_profile_payload_json",
+        ),
+        second_assignment_profile_digest=explicit_or_manifest(
+            second_assignment_profile_digest,
+            second_manifest_evidence,
+            "assignment_profile_digest",
+        ),
+        first_network_settings_payload_json=explicit_or_manifest(
+            first_network_settings_payload_json,
+            first_manifest_evidence,
+            "network_settings_payload_json",
+        ),
+        first_network_settings_digest=explicit_or_manifest(
+            first_network_settings_digest,
+            first_manifest_evidence,
+            "network_settings_digest",
+        ),
+        second_network_settings_payload_json=explicit_or_manifest(
+            second_network_settings_payload_json,
+            second_manifest_evidence,
+            "network_settings_payload_json",
+        ),
+        second_network_settings_digest=explicit_or_manifest(
+            second_network_settings_digest,
+            second_manifest_evidence,
+            "network_settings_digest",
+        ),
+        first_network_state_record=explicit_or_manifest(
+            first_network_state_record,
+            first_manifest_evidence,
+            "network_state_record",
+        ),
+        first_network_state_digest=explicit_or_manifest(
+            first_network_state_digest,
+            first_manifest_evidence,
+            "network_state_digest",
+        ),
+        second_network_state_record=explicit_or_manifest(
+            second_network_state_record,
+            second_manifest_evidence,
+            "network_state_record",
+        ),
+        second_network_state_digest=explicit_or_manifest(
+            second_network_state_digest,
+            second_manifest_evidence,
+            "network_state_digest",
+        ),
+        retained_network_manifest=(
+            None if retained_geometry is None else retained_geometry["retained_network_manifest"]
+        ),
+        geometry_network_state_digest=(
+            None if retained_geometry is None else retained_geometry["network_state_digest"]
+        ),
+        geometry_roadway_link_ids=(
+            None if retained_geometry is None else retained_geometry["roadway_link_ids"]
+        ),
         noise_floor=read_noise_floor(noise_floor_json),
     )
     agreement["sources"] = {"first": str(first_path), "second": str(second_path)}
@@ -640,9 +870,7 @@ def compare_link_volume_runs(
         geojson_path = resolved_output_dir / AGREEMENT_GEOJSON_NAME
         write_json(
             geojson_path,
-            geojson_for_agreement(
-                agreement, Path(loaded_links_geojson).expanduser().resolve()
-            ),
+            geojson_for_agreement(agreement, retained_geometry=retained_geometry),
         )
     return {
         "output_dir": str(resolved_output_dir),
@@ -651,6 +879,8 @@ def compare_link_volume_runs(
         "geojson_path": str(geojson_path) if geojson_path else None,
         "summary": agreement["summary"],
         "network_alignment": agreement["network_alignment"],
+        "network_consistency": agreement["network_consistency"],
+        "attributable_at": agreement["attributable_at"],
         "attribution_is_supportable": agreement["attribution_is_supportable"],
         "assignment_convergence": agreement["assignment_convergence"],
         "assignment_noise_floor": agreement["assignment_noise_floor"],
@@ -658,27 +888,56 @@ def compare_link_volume_runs(
     }
 
 
-def geojson_for_agreement(agreement: dict[str, Any], source_path: Path) -> dict[str, Any]:
-    """Join computed agreement fields onto the retained network geometry."""
-    source = read_json(source_path)
+def geojson_for_agreement(
+    agreement: dict[str, Any],
+    source_path: Path | None = None,
+    *,
+    retained_geometry: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Join agreement fields onto every verified roadway feature, exactly once."""
+    geometry = retained_geometry or read_retained_network_geometry(source_path)
+    if geometry is None:
+        raise RuntimeError("Agreement GeoJSON requires verified retained-network geometry")
     by_link = {int(link["link_id"]): link for link in agreement.get("links", [])}
     features = []
-    for feature in source.get("features", []):
-        properties = feature.get("properties") or {}
-        try:
-            link_id = int(float(properties.get("link_id")))
-        except (TypeError, ValueError):
-            continue
+    compared_count = 0
+    for link_id in geometry["roadway_link_ids"]:
+        feature = geometry["features_by_link"][link_id]
+        properties = dict(feature.get("properties") or {})
         comparison = by_link.get(link_id)
-        if comparison is None:
-            continue
+        compared_count += int(comparison is not None)
+        comparison_properties = (
+            {**comparison, "comparison_available": True}
+            if comparison is not None
+            else {
+                "link_id": link_id,
+                "first_volume": None,
+                "second_volume": None,
+                "difference": None,
+                "percent_difference": None,
+                "geh": None,
+                "agreement": None,
+                "carries_meaningful_traffic": None,
+                "comparison_available": False,
+            }
+        )
         features.append(
             {
                 "type": "Feature",
                 "geometry": feature.get("geometry"),
-                "properties": {**properties, **comparison},
+                "properties": {**properties, **comparison_properties, "link_id": link_id},
             }
         )
+    manifest = geometry["retained_network_manifest"]
+    geometry_alignment = {
+        "source_roadway_feature_count": geometry["source_roadway_feature_count"],
+        "manifest_roadway_link_count": manifest["roadway_link_count"],
+        "rendered_roadway_feature_count": len(features),
+        "compared_roadway_link_count": compared_count,
+        "roadway_link_ids_digest": manifest["roadway_link_ids_digest"],
+        "comparison_complete": compared_count == manifest["roadway_link_count"],
+        "exact": True,
+    }
     return {
         "type": "FeatureCollection",
         "features": features,
@@ -686,7 +945,21 @@ def geojson_for_agreement(agreement: dict[str, Any], source_path: Path) -> dict[
             "schema_version": agreement.get("schema_version"),
             "methods": agreement.get("methods"),
             "summary": agreement.get("summary"),
+            "settings": agreement.get("settings"),
+            "retained_network_manifest": manifest,
+            "network_state_digest": geometry["network_state_digest"],
+            "excluded_modeling_connectors": {
+                "role": "modeling_connector",
+                "count": manifest["modeling_connector_link_count"],
+                "link_ids_digest": manifest["modeling_connector_link_ids_digest"],
+            },
+            "network_alignment": agreement.get("network_alignment"),
+            "network_consistency": agreement.get("network_consistency"),
+            "attribution_is_supportable": agreement.get("attribution_is_supportable"),
+            "attributable_at": agreement.get("attributable_at"),
             "assignment_convergence": agreement.get("assignment_convergence"),
+            "assignment_noise_floor": agreement.get("assignment_noise_floor"),
+            "geometry_alignment": geometry_alignment,
             "what_this_is_not": agreement.get("what_this_is_not"),
         },
     }
@@ -695,17 +968,71 @@ def geojson_for_agreement(agreement: dict[str, Any], source_path: Path) -> dict[
 def markdown_for_agreement(agreement: dict[str, Any]) -> str:
     methods = agreement["methods"]
     summary = agreement["summary"]
+    consistency = agreement["network_consistency"]
+    convergence = agreement["assignment_convergence"]
+    profile_digests = convergence["assignment_profile_digests"]
+    profiles = convergence["assignment_profiles"]
+    evidence = consistency.get("evidence") or {}
+    network_settings = evidence.get("network_settings") or {}
+    network_states = evidence.get("network_states") or {}
     lines = [
         "# Where the two demand models agree",
         "",
-        f"**{methods['first']}** compared against **{methods['second']}**, assigned on the same "
-        "network with the same assignment settings.",
+        f"**{methods['first']}** compared against **{methods['second']}**.",
+        "",
+        f"- Attribution supportable: `{agreement['attribution_is_supportable']}`",
+        f"- Attributable at: `{json.dumps(agreement['attributable_at'], separators=(',', ':'))}`",
+        f"- Network consistency: `{consistency['status']}`",
+        f"- Assignment convergence: `{convergence['status']}`",
+        f"- Volume column: `{agreement['settings']['volume_column']}`",
+        f"- Meaningful-traffic floor: `{agreement['settings']['minimum_volume']}`",
+        f"- Adapted GEH thresholds: agree below `{agreement['settings']['geh_close']}`, marginal below `{agreement['settings']['geh_marginal']}`",
         "",
         summary["note"],
         "",
         agreement["network_alignment"]["note"],
         "",
-        agreement["assignment_convergence"]["note"],
+        consistency["note"],
+        "",
+        convergence["note"],
+        "",
+        "## Network and assignment provenance",
+        "",
+        f"- First network-settings digest: `{(network_settings.get('first') or {}).get('recorded_digest')}`",
+        f"- Second network-settings digest: `{(network_settings.get('second') or {}).get('recorded_digest')}`",
+        f"- First network-state digest: `{(network_states.get('first') or {}).get('recorded_digest')}`",
+        f"- Second network-state digest: `{(network_states.get('second') or {}).get('recorded_digest')}`",
+        f"- Exact link-set alignment: `{agreement['network_alignment']['exact']}`",
+        f"- First links: `{agreement['network_alignment']['first_links']}`",
+        f"- Second links: `{agreement['network_alignment']['second_links']}`",
+        f"- Shared links: `{agreement['network_alignment']['shared_links']}`",
+        f"- Links only in first: `{agreement['network_alignment']['only_in_first']}`",
+        f"- Links only in second: `{agreement['network_alignment']['only_in_second']}`",
+        f"- First final relative gap: `{convergence['gaps']['first']}`",
+        f"- Second final relative gap: `{convergence['gaps']['second']}`",
+        f"- Maximum final gap for link attribution: `{convergence['required_gap']}`",
+        f"- Convergence-only attributable at: `{json.dumps(convergence['attributable_at'], separators=(',', ':'))}`",
+        f"- First assignment-profile digest: `{profile_digests['first']}`",
+        f"- Second assignment-profile digest: `{profile_digests['second']}`",
+        f"- Excluded modeling connectors: `{agreement.get('retained_network', {}).get('excluded_modeling_connector_count')}`",
+        "",
+        "First assignment profile (`null` unless verified):",
+        "",
+        "```json",
+        json.dumps(profiles["first"], sort_keys=True, separators=(",", ":"), ensure_ascii=False),
+        "```",
+        "",
+        "Second assignment profile (`null` unless verified):",
+        "",
+        "```json",
+        json.dumps(profiles["second"], sort_keys=True, separators=(",", ":"), ensure_ascii=False),
+        "```",
+        "",
+        "Exact settings, observed network state, table coverage, and geometry evidence:",
+        "",
+        "```json",
+        json.dumps(evidence, sort_keys=True, separators=(",", ":"), ensure_ascii=False),
+        "```",
         "",
         "## What this is not",
         "",
@@ -746,6 +1073,8 @@ def main() -> int:
             minimum_volume=args.minimum_volume,
             first_manifest=args.first_manifest,
             second_manifest=args.second_manifest,
+            first_network_settings_digest=args.first_network_settings_digest,
+            second_network_settings_digest=args.second_network_settings_digest,
             noise_floor_json=args.noise_floor_json,
         )
         print(json.dumps(result, indent=2))

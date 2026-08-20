@@ -6,6 +6,7 @@ export {
   parseStorageRef,
   storageRefAllowed,
   resolveContainedLocalPath,
+  loadArtifactBytes,
   loadJsonArtifact,
   resolveRunWorkDir,
 } from "@/lib/models/artifact-source";

@@ -73,14 +73,11 @@ export function resolveContainedLocalPath(fileUrl: string, root: string): string
     : null;
 }
 
-export async function loadJsonArtifact(
+/** Read the exact stored bytes after applying the same run scope as JSON reads. */
+export async function loadArtifactBytes(
   fileUrl: string,
   scope?: ArtifactReadScope
-): Promise<unknown> {
-  // Private Storage path — download with the service-role client so workspace
-  // RLS is enforced upstream (the route already gated model/run access) and no
-  // public URL is ever exposed. The scope check keeps member-registered rows
-  // from turning the service-role client into a cross-bucket read oracle.
+): Promise<Uint8Array> {
   const storageRef = parseStorageRef(fileUrl);
   if (storageRef) {
     if (scope && !storageRefAllowed(storageRef, scope)) {
@@ -93,24 +90,20 @@ export async function loadJsonArtifact(
     if (error || !data) {
       throw new Error(`Storage download failed (${error?.message ?? "no data"})`);
     }
-    return JSON.parse(await data.text());
+    return new Uint8Array(await data.arrayBuffer());
   }
 
   if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
-    // Remote fetches of member-controlled URLs are an SSRF surface; scoped
-    // readers never accept them. (Legacy public bucket URLs were repaired to
-    // storage:// refs by migration 20260718000086.)
     if (scope) {
       throw new Error("Remote artifact URLs are not supported for scoped artifact reads.");
     }
-    const res = await fetch(fileUrl, { cache: "no-store" });
-    if (!res.ok) {
-      throw new Error(`Artifact fetch failed (${res.status})`);
+    const response = await fetch(fileUrl, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Artifact fetch failed (${response.status})`);
     }
-    return res.json();
+    return new Uint8Array(await response.arrayBuffer());
   }
 
-  // Local reads are dev-only, gated behind the env flag, and always contained.
   const envRoot = workerLocalRoot();
   if (!envRoot) {
     throw new Error(
@@ -121,7 +114,15 @@ export async function loadJsonArtifact(
   if (!contained) {
     throw new Error("Local artifact path escapes the worker-local root.");
   }
-  const payload = await readFile(contained, "utf8");
+  return new Uint8Array(await readFile(contained));
+}
+
+export async function loadJsonArtifact(
+  fileUrl: string,
+  scope?: ArtifactReadScope
+): Promise<unknown> {
+  const bytes = await loadArtifactBytes(fileUrl, scope);
+  const payload = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   return JSON.parse(payload);
 }
 

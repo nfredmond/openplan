@@ -19,11 +19,19 @@ vi.mock("node:fs/promises", () => {
 });
 
 import {
+  loadArtifactBytes,
   loadJsonArtifact,
   parseStorageRef,
   resolveRunWorkDir,
   workerLocalRoot,
 } from "@/app/api/models/[modelId]/runs/[modelRunId]/volumes/artifact-source";
+
+function storageBlob(bytes: Uint8Array) {
+  return {
+    arrayBuffer: async () =>
+      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+  };
+}
 
 describe("parseStorageRef", () => {
   it("parses a bucket + object path from a storage:// reference", () => {
@@ -72,8 +80,9 @@ describe("loadJsonArtifact", () => {
 
   it("downloads a storage:// reference via the service-role client", async () => {
     const payload = { type: "FeatureCollection", features: [] };
+    const bytes = new TextEncoder().encode(JSON.stringify(payload));
     downloadMock.mockResolvedValue({
-      data: { text: async () => JSON.stringify(payload) },
+      data: storageBlob(bytes),
       error: null,
     });
 
@@ -107,12 +116,12 @@ describe("loadJsonArtifact", () => {
   it("reads local:// paths inside the worker root when the dev flag is set", async () => {
     process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
     const payload = { type: "FeatureCollection", features: [] };
-    readFileMock.mockResolvedValue(JSON.stringify(payload));
+    readFileMock.mockResolvedValue(Buffer.from(JSON.stringify(payload)));
 
     const result = await loadJsonArtifact("local:///srv/runs/runs/abc/volumes.geojson");
 
     expect(result).toEqual(payload);
-    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson", "utf8");
+    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson");
   });
 
   it("refuses local paths that escape the worker root", async () => {
@@ -153,7 +162,7 @@ describe("loadJsonArtifact", () => {
 
   it("contains scoped local reads to the provided localRoot", async () => {
     process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
-    readFileMock.mockResolvedValue(JSON.stringify({ ok: true }));
+    readFileMock.mockResolvedValue(Buffer.from(JSON.stringify({ ok: true })));
 
     await expect(
       loadJsonArtifact("local:///srv/runs/runs/other-run/volumes.geojson", {
@@ -172,5 +181,32 @@ describe("loadJsonArtifact", () => {
       }
     );
     expect(ok).toEqual({ ok: true });
+  });
+
+  it("returns storage bytes without decoding or reserializing them", async () => {
+    const exact = new TextEncoder().encode('{"value":1e-07,"spacing":"kept"}\n');
+    downloadMock.mockResolvedValue({ data: storageBlob(exact), error: null });
+
+    const result = await loadArtifactBytes(
+      "storage://run-artifacts/model-runs/abc/agreement/map.geojson",
+      {
+        bucket: "run-artifacts",
+        objectPathPrefix: "model-runs/abc/",
+      }
+    );
+
+    expect(Array.from(result)).toEqual(Array.from(exact));
+    expect(new TextDecoder().decode(result)).toBe('{"value":1e-07,"spacing":"kept"}\n');
+  });
+
+  it("makes the JSON reader reject invalid UTF-8 instead of replacing bytes", async () => {
+    downloadMock.mockResolvedValue({
+      data: storageBlob(Uint8Array.from([0x7b, 0x22, 0x78, 0x22, 0x3a, 0xff, 0x7d])),
+      error: null,
+    });
+
+    await expect(
+      loadJsonArtifact("storage://run-artifacts/model-runs/abc/invalid.json")
+    ).rejects.toThrow(/encoded data was not valid/i);
   });
 });

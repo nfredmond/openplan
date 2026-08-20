@@ -792,22 +792,457 @@ CONNECTOR_SEPARATION_RADIUS_FRACTION = 0.5
 SQ_METRES_PER_SQ_MILE = 2_589_988.0
 
 
-#: Equilibrium assignment settings. The gap target is the standard one; the
-#: iteration ceiling exists so a pathological network cannot spin forever.
+#: Equilibrium assignment settings, measured rather than chosen for runtime.
 #:
-#: OVERRIDABLE, and the reason is a measurement rather than a preference. On
-#: 2026-08-16 two runs whose demand differed by 0.001% were compared link by
-#: link: total network vehicle-miles matched to 0.047%, but 13% of links
-#: carrying real traffic differed by GEH 10 or more, with the diverging links
-#: split 318 up / 189 down. That is flow moving between near-equal-cost parallel
-#: routes, because a relative gap of 0.01 leaves the assignment about 1% short of
-#: equilibrium and both runs had hit the 500-iteration ceiling on the way.
+#: On 2026-08-16 two assignments whose demand differed only by whole-trip
+#: rounding reached a relative gap near 0.009 and still moved 21% of busy links
+#: by more than 10%. At 0.00046, no busy link crossed GEH 10. Ordinary runs
+#: publish those same link volumes, so the tight setting applies to every run,
+#: not only to a run that happens to be compared later.
 #:
-#: It matters because the dual-model comparison attributes a link's divergence to
-#: the demand model. Below this floor that attribution is false — the assignment
-#: produces the divergence on its own. A comparison run should tighten both.
-ASSIGNMENT_MAX_ITERATIONS = int(os.getenv("OPENPLAN_ASSIGNMENT_MAX_ITERATIONS", "500"))
-ASSIGNMENT_RGAP_TARGET = float(os.getenv("OPENPLAN_ASSIGNMENT_RGAP_TARGET", "0.01"))
+#: An operator may spend more compute on a tighter target or a higher ceiling.
+#: Loosening either one would knowingly restore the measured link instability,
+#: so invalid or looser environment values fail at import instead of quietly
+#: changing the method.
+ASSIGNMENT_PROFILE_SCHEMA_VERSION = "openplan.assignment-profile.v1"
+ASSIGNMENT_PROFILE_ID = "aequilibrae-bfw-bpr-tight-v1"
+ASSIGNMENT_ENGINE = "aequilibrae"
+DEFENSIBLE_ASSIGNMENT_RGAP_TARGET = 0.0005
+DEFENSIBLE_ASSIGNMENT_MAX_ITERATIONS = 3000
+
+
+def installed_assignment_engine_version() -> str | None:
+    try:
+        version = importlib_metadata.version(ASSIGNMENT_ENGINE).strip()
+    except importlib_metadata.PackageNotFoundError:
+        return None
+    return version or None
+
+
+def require_local_assignment_engine(profile: dict[str, Any]) -> None:
+    local_version = installed_assignment_engine_version()
+    if local_version is None:
+        raise RuntimeError(
+            "Cannot construct an assignment because the installed AequilibraE version is unknown"
+        )
+    if (
+        profile.get("engine") != ASSIGNMENT_ENGINE
+        or profile.get("engine_version") != local_version
+    ):
+        raise RuntimeError(
+            "Refusing assignment profile for "
+            f"{profile.get('engine')} {profile.get('engine_version')}; this runtime has "
+            f"{ASSIGNMENT_ENGINE} {local_version}"
+        )
+
+
+def require_effective_assignment_cores(assignment: Any, requested_cores: int) -> None:
+    effective_cores = getattr(assignment, "cores", None)
+    if effective_cores != requested_cores:
+        raise RuntimeError(
+            "AequilibraE did not retain the requested core count: "
+            f"requested {requested_cores}, effective {effective_cores!r}"
+        )
+
+
+def _assignment_target_from_env() -> float:
+    raw = (os.getenv("OPENPLAN_ASSIGNMENT_RGAP_TARGET") or "").strip()
+    if not raw:
+        return DEFENSIBLE_ASSIGNMENT_RGAP_TARGET
+    try:
+        value = float(raw)
+    except ValueError as error:
+        raise ValueError("OPENPLAN_ASSIGNMENT_RGAP_TARGET must be a number") from error
+    if not math.isfinite(value) or value <= 0:
+        raise ValueError("OPENPLAN_ASSIGNMENT_RGAP_TARGET must be finite and greater than zero")
+    if value > DEFENSIBLE_ASSIGNMENT_RGAP_TARGET:
+        raise ValueError(
+            f"Refusing OPENPLAN_ASSIGNMENT_RGAP_TARGET={value}: assignments may tighten the "
+            f"measured {DEFENSIBLE_ASSIGNMENT_RGAP_TARGET} target, not loosen it"
+        )
+    return value
+
+
+def _assignment_ceiling_from_env() -> int:
+    raw = (os.getenv("OPENPLAN_ASSIGNMENT_MAX_ITERATIONS") or "").strip()
+    if not raw:
+        return DEFENSIBLE_ASSIGNMENT_MAX_ITERATIONS
+    try:
+        value = int(raw)
+    except ValueError as error:
+        raise ValueError("OPENPLAN_ASSIGNMENT_MAX_ITERATIONS must be an integer") from error
+    if value < DEFENSIBLE_ASSIGNMENT_MAX_ITERATIONS:
+        raise ValueError(
+            f"Refusing OPENPLAN_ASSIGNMENT_MAX_ITERATIONS={value}: assignments may raise the "
+            f"measured {DEFENSIBLE_ASSIGNMENT_MAX_ITERATIONS}-iteration ceiling, not lower it"
+        )
+    return value
+
+
+def _assignment_cores_from_env() -> int:
+    raw = (os.getenv("AEQ_CORES") or "").strip()
+    if not raw:
+        return 1
+    try:
+        value = int(raw)
+    except ValueError as error:
+        raise ValueError("AEQ_CORES must be an integer") from error
+    if value < 1:
+        raise ValueError("AEQ_CORES must be at least one")
+    return value
+
+
+ASSIGNMENT_RGAP_TARGET = _assignment_target_from_env()
+ASSIGNMENT_MAX_ITERATIONS = _assignment_ceiling_from_env()
+ASSIGNMENT_CORES = _assignment_cores_from_env()
+
+
+def assignment_profile(
+    *,
+    capacity_field: str = "capacity",
+    time_field: str = "travel_time",
+    max_iterations: int = ASSIGNMENT_MAX_ITERATIONS,
+) -> dict[str, Any]:
+    """The complete CLI assignment method, with its actual graph field names."""
+    if isinstance(max_iterations, bool) or not isinstance(max_iterations, int):
+        raise ValueError("Assignment max_iterations must be an integer")
+    if max_iterations < DEFENSIBLE_ASSIGNMENT_MAX_ITERATIONS:
+        raise ValueError("Assignment max_iterations lowers the measured ceiling")
+    if not isinstance(capacity_field, str) or not capacity_field:
+        raise ValueError("Assignment capacity field must be named")
+    if not isinstance(time_field, str) or not time_field:
+        raise ValueError("Assignment time field must be named")
+    engine_version = installed_assignment_engine_version()
+    if engine_version is None:
+        raise RuntimeError(
+            "Cannot resolve an assignment profile because the installed AequilibraE version is unknown"
+        )
+    return {
+        "schema_version": ASSIGNMENT_PROFILE_SCHEMA_VERSION,
+        "profile_id": ASSIGNMENT_PROFILE_ID,
+        "engine": ASSIGNMENT_ENGINE,
+        "engine_version": engine_version,
+        "algorithm": "bfw",
+        "vdf": "BPR",
+        "vdf_parameters": {"alpha": 0.15, "beta": 4},
+        "capacity_field": str(capacity_field),
+        "time_field": str(time_field),
+        "class_pce": 1,
+        "cores": ASSIGNMENT_CORES,
+        "target_gap": ASSIGNMENT_RGAP_TARGET,
+        "max_iterations": max_iterations,
+    }
+
+
+def assignment_profile_payload_json(profile: dict[str, Any]) -> str:
+    return json.dumps(
+        profile,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+
+
+def assignment_profile_digest(
+    profile: dict[str, Any], payload_json: str | None = None
+) -> str:
+    expected_payload = assignment_profile_payload_json(profile)
+    payload = expected_payload if payload_json is None else payload_json
+    if payload != expected_payload:
+        raise ValueError("Assignment-profile payload is not canonical")
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def assignment_iteration_count(assignment_state: Any) -> int | None:
+    """Read AequilibraE's actual counter, preferring the current `.iter` name."""
+    for attribute in ("iter", "iteration"):
+        value = getattr(assignment_state, attribute, None)
+        if isinstance(value, bool) or value is None:
+            continue
+        try:
+            count = int(value)
+        except (TypeError, ValueError, OverflowError):
+            continue
+        if count >= 0:
+            return count
+    return None
+
+
+def assignment_network_settings(
+    road_class_factors: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    """Build the versioned network-settings identity used by both model lanes."""
+    factors: dict[str, float] = {}
+    for road_class, raw_factor in (road_class_factors or {}).items():
+        if isinstance(raw_factor, bool):
+            raise ValueError("Network calibration factors cannot be boolean")
+        try:
+            factor = float(raw_factor)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise ValueError("Network calibration factors must be numeric") from error
+        if (
+            not isinstance(road_class, str)
+            or not road_class
+            or not math.isfinite(factor)
+            or factor <= 0
+        ):
+            raise ValueError("Network calibration factors must be named, finite, and positive")
+        factors[road_class] = factor
+    return {
+        "schema_version": "openplan.network-calibration.v1",
+        "road_class_factors": dict(sorted(factors.items())),
+        "application": {
+            "travel_time": "baseline_travel_time / factor",
+            "capacity": "baseline_capacity * factor",
+        },
+        "excludes": ["trip_based_od_adjustments"],
+    }
+
+
+def network_settings_payload_json(settings: dict[str, Any]) -> str:
+    canonical = assignment_network_settings(settings.get("road_class_factors"))
+    if settings != canonical:
+        raise ValueError("Network settings do not match the v1 schema")
+    return json.dumps(
+        settings,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+
+
+def network_settings_digest(
+    settings: dict[str, Any], payload_json: str | None = None
+) -> str:
+    expected_payload = network_settings_payload_json(settings)
+    payload = expected_payload if payload_json is None else payload_json
+    if payload != expected_payload:
+        raise ValueError("Network-settings payload is not canonical")
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _compact_json(value: Any) -> str:
+    return json.dumps(
+        value,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+
+
+def _payload_digest(value: Any) -> str:
+    return hashlib.sha256(_compact_json(value).encode("utf-8")).hexdigest()
+
+
+def _strict_integer(value: Any, context: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, np.integer)):
+        raise RuntimeError(f"{context} contains a noninteger identifier")
+    return int(value)
+
+
+def retained_network_manifest(project_dir: Path) -> dict[str, Any]:
+    connection = sqlite3.connect(project_dir / "project_database.sqlite")
+    try:
+        rows = connection.execute(
+            "SELECT link_id, COALESCE(link_type, '') FROM links"
+        ).fetchall()
+    finally:
+        connection.close()
+    roles: dict[int, str] = {}
+    for raw_link_id, raw_link_type in rows:
+        link_id = _strict_integer(raw_link_id, "Retained network")
+        if link_id in roles:
+            raise RuntimeError(f"Retained network contains duplicate link id {link_id}")
+        roles[link_id] = (
+            "modeling_connector"
+            if str(raw_link_type or "").strip().lower() == "centroid_connector"
+            else "roadway"
+        )
+    all_ids = sorted(roles)
+    roadway_ids = sorted(link_id for link_id, role in roles.items() if role == "roadway")
+    connector_ids = sorted(
+        link_id for link_id, role in roles.items() if role == "modeling_connector"
+    )
+    if not all_ids or not roadway_ids:
+        raise RuntimeError("Retained network must contain at least one link and roadway link")
+    return {
+        "schema_version": "openplan.retained-network-manifest.v1",
+        "all_link_count": len(all_ids),
+        "all_link_ids_digest": _payload_digest(all_ids),
+        "roadway_link_count": len(roadway_ids),
+        "roadway_link_ids_digest": _payload_digest(roadway_ids),
+        "modeling_connector_link_count": len(connector_ids),
+        "modeling_connector_link_ids_digest": _payload_digest(connector_ids),
+        "excluded_roles": ["modeling_connector"],
+        "role_definition": {
+            "roadway": "link_type != centroid_connector",
+            "modeling_connector": "link_type = centroid_connector",
+        },
+    }
+
+
+def _finite_float_hex(value: Any, context: str) -> str:
+    if isinstance(value, bool):
+        raise RuntimeError(f"{context} contains a boolean where a float belongs")
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError) as error:
+        raise RuntimeError(f"{context} contains a nonnumeric value") from error
+    if not math.isfinite(number):
+        raise RuntimeError(f"{context} contains a nonfinite value")
+    return number.hex()
+
+
+def _float_array_identity(values: Any, context: str) -> tuple[str, str, list[str]]:
+    array = np.asarray(values)
+    encoded = [_finite_float_hex(value, context) for value in array.reshape(-1)]
+    return array.dtype.str, _payload_digest(encoded), encoded
+
+
+def assignment_network_state_digest(record: dict[str, Any]) -> str:
+    if record.get("schema_version") != "openplan.assignment-network-state.v1":
+        raise ValueError("Unsupported assignment network-state schema")
+    return hashlib.sha256(_compact_json(record).encode("utf-8")).hexdigest()
+
+
+def assignment_network_state(
+    assignment: Any,
+    graph: Any,
+    assignment_centroids: Sequence[int],
+    project_dir: Path,
+    *,
+    network_settings_digest_value: str,
+) -> tuple[dict[str, Any], str]:
+    """Fingerprint the actual prepared CLI graph and configured solver arrays."""
+    manifest = retained_network_manifest(project_dir)
+    frame = graph.graph
+    required_columns = {
+        "link_id",
+        "a_node",
+        "b_node",
+        "direction",
+        "id",
+        "distance",
+        "modes",
+        assignment.time_field,
+        assignment.capacity_field,
+        "__supernet_id__",
+        "__compressed_id__",
+    }
+    missing = sorted(required_columns - set(frame.columns))
+    if missing:
+        raise RuntimeError(f"Prepared assignment graph is missing identity fields: {missing}")
+    columns = {name: frame[name].to_numpy() for name in required_columns}
+    all_nodes = np.asarray(graph.all_nodes)
+    rows: list[list[Any]] = []
+    graph_link_ids: set[int] = set()
+    for ordinal in range(len(frame)):
+        link_id = _strict_integer(columns["link_id"][ordinal], "Prepared graph")
+        graph_link_ids.add(link_id)
+        internal_a = _strict_integer(columns["a_node"][ordinal], "Prepared graph a-node map")
+        internal_b = _strict_integer(columns["b_node"][ordinal], "Prepared graph b-node map")
+        if not (0 <= internal_a < len(all_nodes) and 0 <= internal_b < len(all_nodes)):
+            raise RuntimeError("Prepared graph contains a node index outside its node map")
+        rows.append(
+            [
+                ordinal,
+                link_id,
+                _strict_integer(all_nodes[internal_a], "Prepared graph original a-node"),
+                _strict_integer(all_nodes[internal_b], "Prepared graph original b-node"),
+                internal_a,
+                internal_b,
+                _strict_integer(columns["direction"][ordinal], "Prepared graph direction"),
+                _strict_integer(columns["id"][ordinal], "Prepared graph row id"),
+                _strict_integer(
+                    columns["__supernet_id__"][ordinal], "Prepared graph supernet map"
+                ),
+                _strict_integer(
+                    columns["__compressed_id__"][ordinal], "Prepared graph compressed map"
+                ),
+                _finite_float_hex(columns[assignment.time_field][ordinal], "Prepared travel time"),
+                _finite_float_hex(columns[assignment.capacity_field][ordinal], "Prepared capacity"),
+                _finite_float_hex(columns["distance"][ordinal], "Prepared distance"),
+                str(columns["modes"][ordinal]),
+            ]
+        )
+    graph_link_ids_payload = sorted(graph_link_ids)
+    if (
+        not rows
+        or len(graph_link_ids_payload) != manifest["all_link_count"]
+        or _payload_digest(graph_link_ids_payload) != manifest["all_link_ids_digest"]
+    ):
+        raise RuntimeError("Prepared assignment graph does not contain the retained all-link set")
+    centroids = [_strict_integer(value, "Assignment centroids") for value in assignment_centroids]
+    if not centroids or len(set(centroids)) != len(centroids):
+        raise RuntimeError("Assignment centroid order is empty or contains duplicates")
+    graph_cost_dtype, graph_cost_digest, graph_cost = _float_array_identity(
+        graph.cost, "Prepared graph cost"
+    )
+    compact_cost_dtype, compact_cost_digest, compact_cost = _float_array_identity(
+        graph.compact_cost, "Prepared compact graph cost"
+    )
+    solver = getattr(assignment, "assignment", None)
+    if solver is None:
+        raise RuntimeError("TrafficAssignment has no configured solver")
+    free_flow_dtype, free_flow_digest, free_flow = _float_array_identity(
+        solver.free_flow_tt, "Solver free-flow time"
+    )
+    capacity_dtype, capacity_digest, capacity = _float_array_identity(
+        solver.capacity, "Solver capacity"
+    )
+    if len(free_flow) != len(rows) or len(capacity) != len(rows):
+        raise RuntimeError("Solver arrays do not cover every prepared graph row")
+    penalty = getattr(graph, "penalty_through_centroids", float("inf"))
+    if not np.isposinf(float(penalty)) and float(penalty) < 0:
+        raise RuntimeError("Centroid-through penalty cannot be negative")
+    penalty_identity = (
+        "positive_infinity"
+        if np.isposinf(float(penalty))
+        else _finite_float_hex(penalty, "Centroid-through penalty")
+    )
+    graph_float_dtype = np.dtype(graph.default_types("float")).str
+    detailed_payload = {
+        "assignment_centroids": centroids,
+        "block_centroid_flows": bool(getattr(graph, "block_centroid_flows", False)),
+        "penalty_through_centroids": penalty_identity,
+        "cost_field": str(graph.cost_field),
+        "capacity_field": str(assignment.capacity_field),
+        "graph_rows": rows,
+        "graph_float_dtype": graph_float_dtype,
+        "graph_cost": graph_cost,
+        "compact_cost": compact_cost,
+        "solver_free_flow_tt": free_flow,
+        "solver_capacity": capacity,
+        "retained_network_manifest": manifest,
+        "network_settings_digest": network_settings_digest_value,
+    }
+    record = {
+        "schema_version": "openplan.assignment-network-state.v1",
+        "network_settings_digest": network_settings_digest_value,
+        "assignment_centroid_count": len(centroids),
+        "assignment_centroid_order_digest": _payload_digest(centroids),
+        "block_centroid_flows": bool(getattr(graph, "block_centroid_flows", False)),
+        "penalty_through_centroids": penalty_identity,
+        "cost_field": str(graph.cost_field),
+        "capacity_field": str(assignment.capacity_field),
+        "graph_row_count": len(rows),
+        "graph_rows_digest": _payload_digest(rows),
+        "graph_float_dtype": graph_float_dtype,
+        "graph_cost_digest": graph_cost_digest,
+        "graph_cost_dtype": graph_cost_dtype,
+        "compact_cost_digest": compact_cost_digest,
+        "compact_cost_dtype": compact_cost_dtype,
+        "solver_free_flow_tt_digest": free_flow_digest,
+        "solver_free_flow_tt_dtype": free_flow_dtype,
+        "solver_capacity_digest": capacity_digest,
+        "solver_capacity_dtype": capacity_dtype,
+        "retained_network_digest": _payload_digest(detailed_payload),
+        "retained_network_manifest": manifest,
+    }
+    return record, assignment_network_state_digest(record)
 
 
 def study_area_state_fips(county_fips: str | None, zone_meta: dict[str, Any]) -> set[str]:
@@ -1065,7 +1500,8 @@ def apply_class_factors(links_df: pd.DataFrame, class_factors: dict[str, float] 
     empty factor set must produce byte-identical networks, or the "what did
     calibration change?" comparison measures the plumbing.
     """
-    if not class_factors:
+    canonical_factors = assignment_network_settings(class_factors)["road_class_factors"]
+    if not canonical_factors:
         return links_df
 
     adjusted = links_df.copy()
@@ -1075,7 +1511,7 @@ def apply_class_factors(links_df: pd.DataFrame, class_factors: dict[str, float] 
     for column in ("travel_time", "capacity_ab", "capacity_ba"):
         adjusted[column] = adjusted[column].astype(float)
     link_class = adjusted["link_type"].astype(str).str.strip().str.lower()
-    for road_class, factor in class_factors.items():
+    for road_class, factor in canonical_factors.items():
         matches = link_class == str(road_class).strip().lower()
         if not matches.any() or factor <= 0:
             continue
@@ -1085,7 +1521,13 @@ def apply_class_factors(links_df: pd.DataFrame, class_factors: dict[str, float] 
     return adjusted
 
 
-def assignment_convergence(rgap: float, iterations: int, max_iterations: int) -> dict[str, Any]:
+def assignment_convergence(
+    rgap: float,
+    iterations: int | None,
+    max_iterations: int,
+    *,
+    profile: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Did the equilibrium assignment actually reach equilibrium — stated, not implied.
 
     A traffic assignment redistributes trips until no driver can find a faster
@@ -1094,29 +1536,47 @@ def assignment_convergence(rgap: float, iterations: int, max_iterations: int) ->
     finished moving off over-capacity links, and every link volume is therefore
     a figure from part-way through a calculation rather than a result.
 
-    Measured 2026-08-16: a county run stopped at 50 iterations with a gap of
-    0.0243 against the 0.01 target. Both numbers had always been recorded, and
-    the record was true — but reading it required noticing that one exceeded the
-    other, and a run that stopped short looked identical at a glance to one that
-    converged. `converged` and a caveat are what make the difference legible.
+    The record carries the full assignment profile and its digest. A final gap
+    without the method that produced it cannot prove that two assignments held
+    the assignment constant.
     """
+    applied_profile = dict(profile or assignment_profile(max_iterations=max_iterations))
+    if isinstance(applied_profile.get("class_pce"), bool):
+        raise ValueError("Assignment class PCE must be numeric, not boolean")
+    applied_profile["max_iterations"] = int(max_iterations)
+    target_gap = float(applied_profile["target_gap"])
     # bool() wraps the WHOLE expression: `rgap` arrives as a numpy float, so
     # `rgap <= target` is a numpy bool_ and `A and B` returns B — which json
     # cannot serialise, failing the run at the very end after four minutes.
-    converged = bool(math.isfinite(rgap) and rgap <= ASSIGNMENT_RGAP_TARGET)
+    try:
+        numeric_gap = float(rgap) if not isinstance(rgap, bool) else float("nan")
+    except (TypeError, ValueError, OverflowError):
+        numeric_gap = float("nan")
+    valid_gap = bool(math.isfinite(numeric_gap) and numeric_gap >= 0)
+    if isinstance(iterations, bool):
+        iterations = None
+    converged = bool(valid_gap and numeric_gap <= target_gap)
+    profile_payload = assignment_profile_payload_json(applied_profile)
     record: dict[str, Any] = {
-        "final_gap": float(rgap) if math.isfinite(rgap) else None,
-        "iterations": int(iterations),
-        "target_gap": ASSIGNMENT_RGAP_TARGET,
+        "final_gap": numeric_gap if valid_gap else None,
+        "iterations": int(iterations) if iterations is not None else None,
+        "target_gap": target_gap,
         "max_iterations": int(max_iterations),
+        "algorithm": applied_profile["algorithm"],
         "converged": converged,
+        "assignment_profile": applied_profile,
+        "assignment_profile_payload_json": profile_payload,
+        "assignment_profile_digest": assignment_profile_digest(
+            applied_profile, profile_payload
+        ),
     }
     if not converged:
+        iteration_text = str(iterations) if iterations is not None else "an unreported number of"
         record["caveat"] = (
-            f"The traffic assignment did NOT converge: it stopped after {iterations} iterations "
+            f"The traffic assignment did NOT converge: it stopped after {iteration_text} iterations "
             f"with a relative gap of "
-            f"{'unmeasured' if not math.isfinite(rgap) else format(rgap, '.4f')}, against a target "
-            f"of {ASSIGNMENT_RGAP_TARGET}. Link volumes from an unconverged assignment are not "
+            f"{'unmeasured' if not valid_gap else format(numeric_gap, '.4f')}, against a target "
+            f"of {target_gap}. Link volumes from an unconverged assignment are not "
             "equilibrium volumes — traffic has not finished redistributing away from over-capacity "
             "roads — and must not be compared to observed counts or used to rank corridors."
         )
@@ -2305,6 +2765,83 @@ def export_loaded_links_geojson(project_dir: Path, link_results: pd.DataFrame, r
     }
 
 
+def export_retained_network_geojson(
+    project_dir: Path,
+    run_output_dir: Path,
+    *,
+    network_state_record: dict[str, Any],
+    network_state_digest: str,
+) -> str:
+    """Write all and only retained roadway geometry for model comparison."""
+    expected_digest = assignment_network_state_digest(network_state_record)
+    if network_state_digest != expected_digest:
+        raise RuntimeError("Retained-network export received a mismatched state digest")
+    selected_manifest = network_state_record.get("retained_network_manifest")
+    if selected_manifest != retained_network_manifest(project_dir):
+        raise RuntimeError("Retained-network export no longer matches the assignment state")
+    connection = connect_spatialite(project_dir / "project_database.sqlite")
+    try:
+        rows = connection.execute(
+            "SELECT link_id, link_type, COALESCE(name, ''), AsGeoJSON(geometry) "
+            "FROM links ORDER BY link_id"
+        ).fetchall()
+    finally:
+        connection.close()
+    features: list[dict[str, Any]] = []
+    roadway_ids: list[int] = []
+    seen_ids: set[int] = set()
+    for raw_link_id, raw_link_type, raw_name, raw_geometry in rows:
+        link_id = _strict_integer(raw_link_id, "Retained-network geometry")
+        if link_id in seen_ids:
+            raise RuntimeError(f"Retained-network geometry duplicates link id {link_id}")
+        seen_ids.add(link_id)
+        if str(raw_link_type or "").strip().lower() == "centroid_connector":
+            continue
+        if not raw_geometry:
+            raise RuntimeError(f"Retained roadway link {link_id} has no readable geometry")
+        try:
+            geometry = json.loads(raw_geometry)
+        except (TypeError, json.JSONDecodeError) as error:
+            raise RuntimeError(f"Retained roadway link {link_id} has invalid geometry") from error
+        if not isinstance(geometry, dict):
+            raise RuntimeError(f"Retained roadway link {link_id} has invalid geometry")
+        roadway_ids.append(link_id)
+        features.append(
+            {
+                "type": "Feature",
+                "properties": {
+                    "link_id": link_id,
+                    "link_type": raw_link_type or "",
+                    "name": raw_name or "",
+                },
+                "geometry": geometry,
+            }
+        )
+    if (
+        len(features) != selected_manifest.get("roadway_link_count")
+        or _payload_digest(sorted(roadway_ids))
+        != selected_manifest.get("roadway_link_ids_digest")
+    ):
+        raise RuntimeError("Retained-network geometry does not cover its exact roadway manifest")
+    output_path = run_output_dir / "retained_network.geojson"
+    output_path.write_text(
+        json.dumps(
+            {
+                "type": "FeatureCollection",
+                "metadata": {
+                    "retained_network_manifest": selected_manifest,
+                    "network_state_digest": network_state_digest,
+                    "source_feature_count": len(features),
+                },
+                "features": features,
+            },
+            indent=2,
+            allow_nan=False,
+        )
+    )
+    return str(output_path)
+
+
 def run_assignment(
     project_dir: Path,
     centroid_map: dict[int, int],
@@ -2375,32 +2912,42 @@ def run_assignment(
     graph.set_graph(time_field)
     graph.set_blocked_centroid_flows(True)
 
-    assignment = TrafficAssignment()
+    applied_network_settings = assignment_network_settings(class_factors)
+    applied_network_settings_payload = network_settings_payload_json(
+        applied_network_settings
+    )
+    applied_network_settings_digest = network_settings_digest(
+        applied_network_settings, applied_network_settings_payload
+    )
     traffic_class = TrafficClass(name="car", graph=graph, matrix=demand_mat)
-    traffic_class.set_pce(1.0)
+    applied_assignment_profile = assignment_profile(
+        capacity_field=capacity_field,
+        time_field=time_field,
+    )
+    require_local_assignment_engine(applied_assignment_profile)
+    assignment = TrafficAssignment()
+    traffic_class.set_pce(applied_assignment_profile["class_pce"])
     assignment.add_class(traffic_class)
-    assignment.set_vdf("BPR")
-    assignment.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
-    assignment.set_capacity_field(capacity_field)
-    assignment.set_time_field(time_field)
-    # 50 iterations was not enough and nothing said so. Measured 2026-08-16 on a
-    # county run: the assignment stopped at the ceiling with a relative gap of
-    # 0.0243 against the 0.01 target — traffic had not finished redistributing
-    # away from over-capacity links, which is exactly the shape of the observed
-    # validation failure (links far over capacity, weak rank agreement with real
-    # counts).
-    #
-    # Raising it is nearly free: assignment is 1–3 seconds of a four-minute run,
-    # almost all of which is downloading the road network. An unconverged
-    # assignment is not an equilibrium, and every link volume it produces is a
-    # number in the middle of a calculation.
-    assignment.max_iter = ASSIGNMENT_MAX_ITERATIONS
-    assignment.rgap_target = ASSIGNMENT_RGAP_TARGET
-    assignment.set_algorithm("bfw")
+    assignment.set_cores(applied_assignment_profile["cores"])
+    require_effective_assignment_cores(assignment, applied_assignment_profile["cores"])
+    assignment.set_vdf(applied_assignment_profile["vdf"])
+    assignment.set_vdf_parameters(dict(applied_assignment_profile["vdf_parameters"]))
+    assignment.set_capacity_field(applied_assignment_profile["capacity_field"])
+    assignment.set_time_field(applied_assignment_profile["time_field"])
+    assignment.max_iter = applied_assignment_profile["max_iterations"]
+    assignment.rgap_target = applied_assignment_profile["target_gap"]
+    assignment.set_algorithm(applied_assignment_profile["algorithm"])
+    network_state_record, network_state_digest_value = assignment_network_state(
+        assignment,
+        graph,
+        centroids_sorted,
+        project_dir,
+        network_settings_digest_value=applied_network_settings_digest,
+    )
     assignment.execute()
 
     rgap = getattr(assignment.assignment, "rgap", float("nan"))
-    iterations = int(getattr(assignment.assignment, "iteration", assignment.max_iter))
+    iterations = assignment_iteration_count(assignment.assignment)
     results = assignment.results()
     if hasattr(results, "get_load_results"):
         link_results = results.get_load_results()
@@ -2424,6 +2971,12 @@ def run_assignment(
     if write_outputs:
         link_results.to_csv(run_output_dir / "link_volumes.csv", index=False)
         geojson_paths = export_loaded_links_geojson(project_dir, link_results, run_output_dir)
+        geojson_paths["retained_network_geojson"] = export_retained_network_geojson(
+            project_dir,
+            run_output_dir,
+            network_state_record=network_state_record,
+            network_state_digest=network_state_digest_value,
+        )
 
     # Unfiltered network VMT (all loaded links, external/through travel included);
     # links.distance is metres — converted inside compute_network_daily_vmt.
@@ -2448,7 +3001,17 @@ def run_assignment(
         # inequality themselves, and nobody did for as long as this has existed.
         # An unconverged assignment's link volumes are a number taken from the
         # middle of a calculation, so the run has to say so out loud.
-        "convergence": assignment_convergence(rgap, iterations, ASSIGNMENT_MAX_ITERATIONS),
+        "convergence": assignment_convergence(
+            rgap,
+            iterations,
+            ASSIGNMENT_MAX_ITERATIONS,
+            profile=applied_assignment_profile,
+        ),
+        "network_settings": applied_network_settings,
+        "network_settings_payload_json": applied_network_settings_payload,
+        "network_settings_digest": applied_network_settings_digest,
+        "network_state_record": network_state_record,
+        "network_state_digest": network_state_digest_value,
         "network": {
             "links": int(graph.num_links),
             "nodes": int(graph.num_nodes),
@@ -2816,6 +3379,11 @@ def run_screening_model(
         boundary_traffic_seeding=gateway_seeding,
         passthrough_bounds=passthrough_bounds,
     )
+    if assignment_meta.get("retained_network_geojson"):
+        manifest.setdefault("artifacts", {})["retained_network_geojson"] = (
+            "run_output/retained_network.geojson"
+        )
+        (run_dir / "bundle_manifest.json").write_text(json.dumps(manifest, indent=2))
 
     validation_summary = None
     if counts_csv:

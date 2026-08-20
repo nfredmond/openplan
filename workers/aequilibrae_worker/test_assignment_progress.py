@@ -11,12 +11,25 @@ import logging
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 WORKER_DIR = Path(__file__).resolve().parent
 if str(WORKER_DIR) not in sys.path:
     sys.path.insert(0, str(WORKER_DIR))
 
 from assignment_progress import AssignmentProgress, stream_assignment_progress
+import assignment_settings as assignment_settings_module
+from assignment_settings import resolve_assignment_profile
+
+
+def test_assignment_profile() -> dict:
+    version = assignment_settings_module.installed_assignment_engine_version() or "test-only-aequilibrae"
+    with mock.patch.object(
+        assignment_settings_module,
+        "installed_assignment_engine_version",
+        return_value=version,
+    ):
+        return resolve_assignment_profile({})
 
 
 class FakeClock:
@@ -38,9 +51,10 @@ class Throttling(unittest.TestCase):
     def setUp(self) -> None:
         self.lines: list[str] = []
         self.clock = FakeClock()
+        profile = test_assignment_profile()
         self.handler = AssignmentProgress(
             self.lines.append, interval_seconds=5.0, now=self.clock,
-            target_gap=0.0005, max_iterations=3000,
+            target_gap=profile["target_gap"], max_iterations=profile["max_iterations"],
         )
 
     def test_the_first_iteration_is_sent_immediately(self) -> None:
@@ -80,9 +94,10 @@ class WhatGetsThrough(unittest.TestCase):
     def setUp(self) -> None:
         self.lines: list[str] = []
         self.clock = FakeClock()
+        profile = test_assignment_profile()
         self.handler = AssignmentProgress(
             self.lines.append, interval_seconds=5.0, now=self.clock,
-            target_gap=0.0005, max_iterations=3000,
+            target_gap=profile["target_gap"], max_iterations=profile["max_iterations"],
         )
 
     def test_a_warning_is_never_throttled(self) -> None:
