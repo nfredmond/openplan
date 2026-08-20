@@ -104,6 +104,13 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "file_size_limit (the ceiling moved to OPENPLAN_KB_DOCUMENT_MAX_BYTES, enforced by the " +
       "route); WHERE-guarded to the one bucket row, touches no tenant data",
   },
+  {
+    file: "20260820000001_run_artifacts_markdown.sql",
+    kind: "update",
+    reason:
+      "widens only the run-artifacts bucket MIME allowlist with text/markdown; preserves every " +
+      "existing type, is idempotent, and touches no tenant data",
+  },
 ];
 
 /**

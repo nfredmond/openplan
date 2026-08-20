@@ -359,6 +359,21 @@ def test_the_recovery_named_is_the_one_that_actually_works():
     assert ".env.local" not in reason, reason
 
 
+def test_local_operator_configuration_loads_before_environment_backed_modules():
+    # data_pipeline captures CENSUS_API_KEY at import time.  The worker process
+    # must therefore load its local operator environment before that import;
+    # checking main.CENSUS_API_KEY would miss the separate captured constant.
+    main_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "main.py")
+    with open(main_path, encoding="utf-8") as source_file:
+        source = source_file.read()
+    env_load = source.index("load_dotenv(_ENV_LOCAL, override=False)")
+    pipeline_import = source.index("from data_pipeline import (")
+    assert env_load < pipeline_import, (
+        "main.py imported data_pipeline before loading openplan/.env.local; "
+        "the worker-side Census fallback will capture an empty key"
+    )
+
+
 def test_an_empty_worker_fetch_is_not_dressed_up_as_an_answer():
     _, note = dp.supplied_measure_table(None, "equity")
     acs, source, reason, _ = main.resolve_equity_measure_source(

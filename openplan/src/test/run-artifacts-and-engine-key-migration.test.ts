@@ -10,6 +10,10 @@ const engineKeyMigrationSql = readFileSync(
   join(process.cwd(), "supabase/migrations/20260718000087_model_runs_engine_key_behavioral.sql"),
   "utf8",
 );
+const markdownMigrationSql = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260820000001_run_artifacts_markdown.sql"),
+  "utf8",
+);
 
 describe("run-artifacts bucket migration", () => {
   it("provisions the bucket as private and idempotent", () => {
@@ -34,6 +38,13 @@ describe("run-artifacts bucket migration", () => {
     // Object paths carry no workspace prefix; reads are proxied through authed
     // API routes, so a storage-level policy would be a false grant surface.
     expect(bucketMigrationSql).not.toMatch(/CREATE POLICY/i);
+  });
+
+  it("accepts the Markdown agreement report without replacing the existing allowlist", () => {
+    expect(markdownMigrationSql).toMatch(/WHERE id = 'run-artifacts'/i);
+    expect(markdownMigrationSql).toContain("'text/markdown'");
+    expect(markdownMigrationSql).toMatch(/array_append\(allowed_mime_types, 'text\/markdown'\)/i);
+    expect(markdownMigrationSql).not.toMatch(/SET allowed_mime_types\s*=\s*ARRAY\[/i);
   });
 });
 
