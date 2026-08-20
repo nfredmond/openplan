@@ -209,10 +209,12 @@ npm run worker:activitysim          # from openplan/
 
   When a run actually executes, behavioral KPIs are written **only if** the run
   produced supportable outputs, and are always labeled `uncalibrated`. The
-  executed package layers OpenPlan inputs over ActivitySim's unmodified stock
-  `prototype_mtc` configuration. Its coefficients were estimated for the San
-  Francisco Bay Area, so even a locally fitted population does not make its
-  behavior local; the evidence packet and KPIs say that explicitly.
+  executed package layers OpenPlan inputs and the hash-verified accepted-component
+  registry over ActivitySim's stock `prototype_mtc` configuration. Auto ownership
+  now comes from OpenPlan's accepted national component; the remaining behavioral
+  components were estimated for the San Francisco Bay Area, so even a locally fitted
+  population does not make all behavior local. The evidence packet and KPIs name
+  both the accepted component and what remains borrowed.
   The worker also registers the demand-package manifest, OD vehicle-trip matrix,
   and zone table as the explicit handoff for same-network assignment. An executed
   run fails instead of completing if its trip table is absent or unreadable.
@@ -233,11 +235,12 @@ GB of RAM**, several vCPUs, minutes-to-hours of runtime, and an always-on poller
 1. **A dedicated modeling host** (≈8–16 GB RAM VM/box) running the Python-3.11
    `Dockerfile.exec` image with `ACTIVITYSIM_CLI` set, co-located with (or sharing
    a volume with) the AequilibraE worker. This is **paid infra, not $0.**
-2. **Local coefficient evidence** — the executed config is ActivitySim's stock
-   Bay Area `prototype_mtc` package, with a recorded digest and region of
-   estimation. A behaviorally meaningful, forecast-grade run needs transferable
-   or locally estimated coefficients and validation. Until then every executed
-   result remains **uncalibrated and screening-grade — never a forecast.**
+2. **Local coefficient evidence** — the executed config is an immutable overlay:
+   accepted components from OpenPlan's hash-verified registry first, followed by
+   the remaining stock Bay Area `prototype_mtc` components. A behaviorally
+   meaningful, forecast-grade run needs component-by-component transferable or
+   locally estimated coefficients and held-out validation. Until then every
+   executed result remains **uncalibrated and screening-grade — never a forecast.**
 
 Verified locally on 2026-07-22: `activitysim==1.5.1` runs an OpenPlan-built bundle
 end-to-end on Python 3.11 (`activitysim_cli`, settings-checker passes, 0 models →
