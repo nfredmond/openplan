@@ -1,5 +1,6 @@
-# What the screening model itself needs — the packages `run_screening_model.py`
-# and everything under `scripts/modeling/` import directly.
+# What the county/AequilibraE screening subprocess needs. Dedicated ActivitySim
+# scripts use `workers/activitysim_worker/requirements-{exec,estimation}.txt`;
+# the executable import guard maps those scripts to their actual environment.
 #
 # WHY THIS IS SEPARATE FROM THE WORKER'S OWN requirements.txt, and why the
 # separation has already cost us once:
@@ -15,8 +16,9 @@
 # service dependencies here are not a substitute for run dependencies.
 #
 # `modeling-requirements-cover-the-modeling-imports.test.ts` asserts that every
-# third-party module imported anywhere under `scripts/modeling/` appears below.
-# Add an import there and that test fails until this file catches up.
+# third-party module imported under `scripts/modeling/` appears in the owning
+# runtime's requirements. This file is the default; specialized ActivitySim
+# entry points are checked against their dedicated requirements instead.
 #
 # Versions: floors, not pins, and they have been run twice against the same
 # county on the same day (2026-08-15, CPython 3.11) with the same answer —
@@ -31,10 +33,6 @@
 # result is a change to what OpenPlan tells a planner, so re-run a county and
 # compare the number before widening or raising anything here.
 aequilibrae>=1.6.0
-# The estimation CLI imports ActivitySim directly. Keep this aligned with the
-# execution worker's proven Python 3.11 version; fitting additionally layers
-# workers/activitysim_worker/requirements-estimation.txt for larch.
-activitysim==1.5.1
 geopandas>=1.0
 # <2.1 is a hard ceiling, not caution: newer numpy ABIs heap-corrupt
 # aequilibrae 1.6.x's compiled path engine, which aborts mid-skim with glibc

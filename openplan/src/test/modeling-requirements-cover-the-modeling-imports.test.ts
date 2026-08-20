@@ -3,8 +3,10 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 /**
- * Every third-party module the screening model imports must be listed in
- * `scripts/modeling/requirements.txt`.
+ * Every third-party module a modeling script imports must be listed in the
+ * requirements for the runtime that owns that script. The county/AequilibraE
+ * requirements are the default; dedicated ActivitySim scripts are mapped to
+ * the execution or estimation environment below.
  *
  * WHY THIS IS A TEST AND NOT A README LINE. The modeling worker's Docker image
  * shipped for its whole life installing four packages — Flask, gunicorn,
@@ -28,7 +30,36 @@ import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = path.join(process.cwd(), "..");
 const MODELING_DIR = path.join(REPO_ROOT, "scripts", "modeling");
-const REQUIREMENTS = path.join(MODELING_DIR, "requirements.txt");
+const COUNTY_REQUIREMENTS = path.join(MODELING_DIR, "requirements.txt");
+const ACTIVITYSIM_EXEC_REQUIREMENTS = path.join(
+  REPO_ROOT,
+  "workers",
+  "activitysim_worker",
+  "requirements-exec.txt"
+);
+const ACTIVITYSIM_ESTIMATION_REQUIREMENTS = path.join(
+  REPO_ROOT,
+  "workers",
+  "activitysim_worker",
+  "requirements-estimation.txt"
+);
+
+/**
+ * Scripts that run only inside a dedicated ActivitySim environment. Everything
+ * else defaults to the county/AequilibraE image. This mapping is intentionally
+ * by script rather than a union of requirement files: a union would let a
+ * county import pass merely because another image happens to install it.
+ */
+const SPECIALIZED_REQUIREMENTS_BY_SCRIPT = new Map([
+  [
+    path.join(MODELING_DIR, "activitysim_auto_ownership_fit.py"),
+    ACTIVITYSIM_ESTIMATION_REQUIREMENTS,
+  ],
+  [
+    path.join(MODELING_DIR, "mandatory_tour_frequency_acceptance.py"),
+    ACTIVITYSIM_EXEC_REQUIREMENTS,
+  ],
+]);
 
 /**
  * Directories whose `.py` files a modeling script may import as a sibling —
@@ -50,9 +81,9 @@ const LOCAL_MODULE_DIRS = [
  * reviewer question — "is this really stdlib?" — which is the point.
  */
 const PYTHON_STDLIB = new Set([
-  "__future__", "argparse", "collections", "concurrent", "contextlib", "csv",
+  "__future__", "argparse", "collections", "concurrent", "contextlib", "copy", "csv",
   "dataclasses", "datetime", "functools", "gzip", "hashlib", "importlib", "io",
-  "itertools", "json", "logging", "math", "os", "pathlib", "random", "re",
+  "inspect", "itertools", "json", "logging", "math", "os", "pathlib", "platform", "random", "re",
   "shlex", "shutil", "sqlite3", "statistics", "string", "subprocess", "sys",
   "tempfile", "textwrap", "time", "traceback", "types", "typing", "unittest",
   "urllib", "uuid", "warnings", "zipfile",
@@ -121,30 +152,56 @@ function importedRootModules(): Map<string, string[]> {
   return byModule;
 }
 
-/** Distribution names in a requirements file, lowercased, without versions. */
-function declaredDistributions(): Set<string> {
-  return new Set(
-    readFileSync(REQUIREMENTS, "utf8")
-      .split("\n")
-      .map((line) => line.replace(/#.*$/, "").trim())
-      .filter(Boolean)
-      .map((line) => line.split(/[<>=!~[;]/)[0].trim().toLowerCase())
-  );
+/** Distribution names in a requirements file and its relative `-r` includes. */
+function declaredDistributions(requirements: string, visited = new Set<string>()): Set<string> {
+  const resolved = path.resolve(requirements);
+  if (visited.has(resolved)) return new Set();
+  visited.add(resolved);
+
+  const declared = new Set<string>();
+  for (const rawLine of readFileSync(resolved, "utf8").split("\n")) {
+    const line = rawLine.replace(/#.*$/, "").trim();
+    if (!line) continue;
+    const include = /^-r\s+(.+)$/.exec(line);
+    if (include) {
+      for (const distribution of declaredDistributions(
+        path.resolve(path.dirname(resolved), include[1].trim()),
+        visited
+      )) {
+        declared.add(distribution);
+      }
+      continue;
+    }
+    declared.add(line.split(/[<>=!~[;]/)[0].trim().toLowerCase());
+  }
+  return declared;
 }
 
 describe("the modeling requirements cover what the modeling code imports", () => {
   it("lists every third-party module scripts/modeling imports", () => {
     const local = localModuleNames();
-    const declared = declaredDistributions();
+    const declaredByRequirements = new Map<string, Set<string>>();
+    const declarationsFor = (requirements: string) => {
+      const existing = declaredByRequirements.get(requirements);
+      if (existing) return existing;
+      const declared = declaredDistributions(requirements);
+      declaredByRequirements.set(requirements, declared);
+      return declared;
+    };
 
     const missing: string[] = [];
     for (const [module, files] of importedRootModules()) {
       if (PYTHON_STDLIB.has(module) || local.has(module)) continue;
-      if (declared.has(module.toLowerCase())) continue;
-      missing.push(
-        `${module} (imported by ${files.join(", ")}) is not in scripts/modeling/requirements.txt — ` +
-          `add it there, or add it to PYTHON_STDLIB in this test if it really is standard library`
-      );
+      for (const relativeFile of files) {
+        const absoluteFile = path.join(REPO_ROOT, relativeFile);
+        const requirements =
+          SPECIALIZED_REQUIREMENTS_BY_SCRIPT.get(absoluteFile) ?? COUNTY_REQUIREMENTS;
+        if (declarationsFor(requirements).has(module.toLowerCase())) continue;
+        missing.push(
+          `${module} (imported by ${relativeFile}) is not in ${path.relative(REPO_ROOT, requirements)} — ` +
+            `add it there, map the script to its real runtime, or add it to PYTHON_STDLIB if it is standard library`
+        );
+      }
     }
 
     expect(missing).toEqual([]);
@@ -159,15 +216,30 @@ describe("the modeling requirements cover what the modeling code imports", () =>
     // Every heavy dependency the container must install is genuinely reached
     // from this directory — if one of these ever stops being imported here, the
     // requirements list has drifted and should shrink.
-    const declared = declaredDistributions();
+    const declared = declaredDistributions(COUNTY_REQUIREMENTS);
     for (const heavy of ["aequilibrae", "geopandas", "numpy", "pandas", "shapely", "requests", "scipy"]) {
       expect(modules.has(heavy), `${heavy} is declared but no modeling script imports it`).toBe(true);
       expect(declared.has(heavy)).toBe(true);
     }
 
+    const activitysim = declaredDistributions(ACTIVITYSIM_EXEC_REQUIREMENTS);
+    for (const locked of ["activitysim", "numpy", "pandas", "numba", "scipy"]) {
+      expect(activitysim.has(locked), `${locked} is missing from the ActivitySim execution image`).toBe(true);
+    }
+    const estimation = declaredDistributions(ACTIVITYSIM_ESTIMATION_REQUIREMENTS);
+    expect(estimation.has("activitysim")).toBe(true);
+    expect(estimation.has("larch6")).toBe(true);
+    expect(declared.has("activitysim")).toBe(false);
+
     // And a module that is neither stdlib nor local nor declared must be
     // reported, or the check above could be vacuously green.
     const local = localModuleNames();
-    expect(PYTHON_STDLIB.has("tensorflow") || local.has("tensorflow") || declared.has("tensorflow")).toBe(false);
+    expect(
+      PYTHON_STDLIB.has("tensorflow") ||
+        local.has("tensorflow") ||
+        declared.has("tensorflow") ||
+        activitysim.has("tensorflow") ||
+        estimation.has("tensorflow")
+    ).toBe(false);
   });
 });

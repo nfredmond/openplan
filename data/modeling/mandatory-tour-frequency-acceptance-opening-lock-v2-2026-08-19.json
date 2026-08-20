@@ -1,0 +1,137 @@
+{
+  "acceptance_division_codes": [
+    "05",
+    "06",
+    "08"
+  ],
+  "candidate": {
+    "fit_implementation_sha256": "43c44bc516cfb8269b2e5964b9c428bf5892c5c6cc2f187aeaf3e7e3f482f11f",
+    "fit_manifest_path": "data/modeling/activitysim-mandatory-tour-frequency-national-v2/fit_manifest.json",
+    "fit_manifest_sha256": "99e907207e702dea484ef0f60fc94cdb36cef5d85dc793be5ceed8fa3687bb13",
+    "package_files": {
+      "mandatory_tour_frequency.csv": {
+        "sha256": "72af7533346c4e5515d62337184a1994441123ac7da89b73ac09c162c385c854",
+        "size_bytes": 2816
+      },
+      "mandatory_tour_frequency.yaml": {
+        "sha256": "019d835f5fa6bc3512b90507c85ea69f4dc38761adcd14ef7ea9bda92dbfa829",
+        "size_bytes": 107
+      },
+      "mandatory_tour_frequency_coefficients.csv": {
+        "sha256": "0ad86d0f2f97a4cb0804de1f08740e45f1825ec77e7792450f8add1db8bf01e9",
+        "size_bytes": 2736
+      },
+      "mandatory_tour_frequency_model.json": {
+        "sha256": "570fe668ad67dcaa3d27bfb736315e5a6b01248cb6bc850c050d39b97ece026f",
+        "size_bytes": 2707
+      }
+    },
+    "package_manifest_path": "data/modeling/activitysim-mandatory-tour-frequency-national-v2/coefficient_package.json",
+    "package_manifest_sha256": "10ebad2b5d31ead1b872ec100cc57f7ffb3e990f5c32f7d86656b5c5273e2728",
+    "reference_model_implementation_sha256": "43c44bc516cfb8269b2e5964b9c428bf5892c5c6cc2f187aeaf3e7e3f482f11f",
+    "registry_path": "data/modeling/mandatory-tour-frequency-candidate-registry-v2-2026-08-19.json",
+    "registry_sha256": "f5094b0c5a24f8afe40af072dfccd6f0c307e6cf7d35b35df431f2018582bacf"
+  },
+  "component": "mandatory_tour_frequency",
+  "decision_contract": {
+    "accepted_status": "accepted_component",
+    "candidate_package_evidence_key": "evidence_hashes.candidate_package_manifest_sha256",
+    "evaluated_once_status": "acceptance_evaluated_once",
+    "rejected_status": "rejected_component",
+    "result_schema_version": "openplan.activitysim-mandatory-tour-frequency-acceptance-result.v1",
+    "scope": "ActivitySim mandatory-tour-frequency component conditional on observed mandatory DAP"
+  },
+  "evaluator": {
+    "closure_sha256": "02da1d6f1a94a436e3977390689662fc83031fc77efcc498423952e23f16ff07",
+    "files": [
+      {
+        "path": "scripts/modeling/fit_mandatory_tour_frequency_candidate.py",
+        "sha256": "43c44bc516cfb8269b2e5964b9c428bf5892c5c6cc2f187aeaf3e7e3f482f11f"
+      },
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_acceptance.py",
+        "sha256": "1bf7f18e4dfca03d7b0b95b50889fd39c9ba9e9f685e448d1563463956a65e08"
+      },
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_acceptance_protocol.py",
+        "sha256": "dbd13f8e7e1bc05a86d3b0f9575cf7202e3363a13f40b48831b5dea76d51179f"
+      },
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_candidate_registry.py",
+        "sha256": "a21e40210634531aa9d827f2e5d250f26cb282c167be726a1716c4ebade030fe"
+      }
+    ]
+  },
+  "one_shot_outputs": {
+    "aggregate_result_path": "data/modeling/mandatory-tour-frequency-acceptance-result-v2-2026-08-19.json",
+    "individual_outcome_artifact_allowed": false,
+    "opening_receipt_path": "data/modeling/mandatory-tour-frequency-acceptance-opening-receipt-v2-2026-08-19.json"
+  },
+  "outcome_reconstruction": {
+    "closure_sha256": "61cc7afec2761c6ec2d351d9b360df73068db1189e0f9f826c63ce46fd01f858",
+    "development_manifest_path": "data/modeling/mandatory-tour-frequency-development-outcomes-v2-2026-08-19.json",
+    "development_manifest_sha256": "0fd7d9d82902d6d573cadb758b12779aa85ee03d5dad7d5c446e62eafe77e645",
+    "files": [
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_outcomes.py",
+        "sha256": "4a039e0560315dec1d79029992a86cff755976c8d49331d7bd848672fcbd574b"
+      },
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_registry.py",
+        "sha256": "9af1d18b51ea2c59d548e41151982fd02d961fe4da6c76345f6c8d992dd74caa"
+      },
+      {
+        "path": "scripts/modeling/prepare_mandatory_tour_development_source.py",
+        "sha256": "7c8e9a068a51d44396a5331063a7569af69a818ded8efce5b04cc7493e24e963"
+      },
+      {
+        "path": "scripts/modeling/us_nhts_diaries.py",
+        "sha256": "64ff0a975c7123df637108d5c5ac3045c3280ed0f5380e8790a235fb29816092"
+      },
+      {
+        "path": "scripts/modeling/us_nhts_survey.py",
+        "sha256": "406dda991526f3dc2ff6390f3cf19b32c9d7ad315b427a4e96f464dedebaf424"
+      }
+    ]
+  },
+  "protocol": {
+    "implementation_contract_sha256": "a0184589f7b88a1fcb1e8f05e83b0eabae329cf8468607594c95058ee07326e9",
+    "path": "data/modeling/mandatory-tour-frequency-acceptance-protocol-v2-2026-08-19.json",
+    "schema_version": "openplan.activitysim-mandatory-tour-frequency-acceptance-protocol.v2",
+    "sha256": "e26ea887f493fc4e2a38c2e2c75d7e54ec5aa8c6a26deeb44b4bb487a254a3aa",
+    "status": "supersedes_unopened_v1_before_acceptance_outcome_derivation"
+  },
+  "runtime": {
+    "activitysim_version": "1.5.1",
+    "choosing_module": {
+      "filename": "choosing.py",
+      "sha256": "10a393bec5a426dc5118079f367dec4c2d5dfe2fd523712e4f2fc0182b7e164e"
+    },
+    "logit_module": {
+      "filename": "logit.py",
+      "sha256": "9a2f3fe5282576b77ef9b33dc528d83fc21cb182e29f43f911c72b961852e461"
+    },
+    "numba_version": "0.66.0",
+    "numpy_version": "1.25.2",
+    "pandas_version": "2.3.3",
+    "python_version": "3.11.15",
+    "random_module": {
+      "filename": "random.py",
+      "sha256": "b46078a39ffec43fb0f24f497f65c00148900623926942d94d88d3c0a28a2bf7"
+    },
+    "scipy_version": "1.16.3",
+    "simulate_module": {
+      "filename": "simulate.py",
+      "sha256": "30ee80da9be8aac46e05f00a5e27514c58753a3eb973f61d0a20f49652ca7805"
+    }
+  },
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-acceptance-opening-lock.v1",
+  "source": {
+    "archive_sha256": "64530c396d5f164d2259a22f7042f27bee5147babcd367568ddbfafe6c8bf34c",
+    "archive_size_bytes": 4533528,
+    "preregistration_path": "data/modeling/mandatory-tour-frequency-preregistration-2026-08-19.json",
+    "preregistration_sha256": "29e5616c208e445f851f79ec3f82c85d923eeb67a319cf747d482700c9121cc6",
+    "source_id": "us-fhwa-nhts-2022"
+  },
+  "status": "locked_acceptance_unopened"
+}

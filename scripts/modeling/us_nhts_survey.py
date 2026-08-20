@@ -35,6 +35,18 @@ TABLE_FILES = {
     "trips": "tripv2pub.csv",
     "vehicles": "vehv2pub.csv",
 }
+GEOGRAPHIC_HOLDOUT_FIELD = "CENSUS_D"
+CENSUS_DIVISIONS = {
+    "01": "new_england",
+    "02": "middle_atlantic",
+    "03": "east_north_central",
+    "04": "west_north_central",
+    "05": "south_atlantic",
+    "06": "east_south_central",
+    "07": "west_south_central",
+    "08": "mountain",
+    "09": "pacific",
+}
 
 # V2.1's release notes define TRIPMODE as the new summarized mode field.  It is
 # the smallest unambiguous discriminator between the older public-use schema
@@ -58,6 +70,12 @@ ESTIMATION_REQUIRED_COLUMNS = {
 
 class NhtsSourceError(RuntimeError):
     """The received archive cannot support the claimed estimation contract."""
+
+
+def normalize_geographic_holdout_code(value: Any) -> str:
+    """Normalize this U.S. survey's Census-division code at the adapter edge."""
+    text = str(value or "").strip()
+    return text.zfill(2) if text.isdigit() else text
 
 
 def _sha256(path: Path) -> str:

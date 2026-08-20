@@ -1,0 +1,80 @@
+{
+  "alternatives": [
+    "work1",
+    "work2",
+    "school1",
+    "school2",
+    "work_and_school"
+  ],
+  "learned_coefficients": {
+    "school1": {
+      "age_centered_decades": -0.1391641284349161,
+      "age_centered_decades_squared": 0.13241059313039782,
+      "female": -0.04509121870092947,
+      "household_size_minus_one_clip_4": -0.14243388427062012,
+      "no_vehicle": 0.0014507779542047607,
+      "vehicles_clip_4": 0.037478247920872246,
+      "workers_clip_3": -0.11239905080220128
+    },
+    "school2": {
+      "age_centered_decades": -0.045098561241553835,
+      "age_centered_decades_squared": 0.12701804661567045,
+      "female": -0.021906067190169957,
+      "household_size_minus_one_clip_4": 0.023776396018095915,
+      "no_vehicle": -0.012503444998936275,
+      "vehicles_clip_4": -0.1693816671075132,
+      "workers_clip_3": 0.02436880612170762
+    },
+    "work2": {
+      "age_centered_decades": 0.11933831119798936,
+      "age_centered_decades_squared": 0.04284123574866067,
+      "female": -0.0662372539683621,
+      "household_size_minus_one_clip_4": 0.02588603911753531,
+      "no_vehicle": -0.027483430864109936,
+      "vehicles_clip_4": 0.0013776403024834648,
+      "workers_clip_3": -0.07938875774328857
+    },
+    "work_and_school": {
+      "age_centered_decades": -0.06721539747882413,
+      "age_centered_decades_squared": 0.0535351712128934,
+      "female": -0.055308104003889885,
+      "household_size_minus_one_clip_4": -0.002794949814199989,
+      "no_vehicle": -0.0007555672588370369,
+      "vehicles_clip_4": -0.040368501434870106,
+      "workers_clip_3": 0.017178753141329283
+    }
+  },
+  "reference_alternative": "work1",
+  "reference_alternative_learned_coefficients": {},
+  "reference_probabilities": {
+    "not_worker_not_student": {
+      "school1": 0.046122497306681554,
+      "school2": 0.011235955056179771,
+      "work1": 0.9201696375247791,
+      "work2": 0.011235955056179771,
+      "work_and_school": 0.011235955056179771
+    },
+    "not_worker_student": {
+      "school1": 0.9682483360509282,
+      "school2": 0.02347803775552381,
+      "work1": 0.006013897238293398,
+      "work2": 0.0009737098344693269,
+      "work_and_school": 0.001286019120785269
+    },
+    "worker_not_student": {
+      "school1": 0.0019575468673751393,
+      "school2": 0.0003557452863749551,
+      "work1": 0.9660608593498531,
+      "work2": 0.0312701032100219,
+      "work_and_school": 0.0003557452863749551
+    },
+    "worker_student": {
+      "school1": 0.2275298956002139,
+      "school2": 0.033634667588200946,
+      "work1": 0.6286900957693546,
+      "work2": 0.01429249723137383,
+      "work_and_school": 0.09585284381085662
+    }
+  },
+  "selected_regularization": 0.03
+}

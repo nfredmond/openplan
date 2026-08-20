@@ -8,6 +8,7 @@ import tempfile
 import unittest
 import zipfile
 from pathlib import Path
+from unittest import mock
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
@@ -91,6 +92,22 @@ def registry_fixture(root: Path, archive: Path, *, wrong_hash: bool = False) -> 
     return path
 
 
+def opening_lock_fixture(root: Path, archive: Path, registry: Path) -> Path:
+    payload = {
+        "schema_version": preparation.OPENING_LOCK_SCHEMA_VERSION,
+        "status": preparation.OPENING_LOCK_STATUS,
+        "source": {
+            "preregistration_sha256": hashlib.sha256(registry.read_bytes()).hexdigest(),
+            "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+            "archive_size_bytes": archive.stat().st_size,
+        },
+        "acceptance_division_codes": ["05", "06", "08"],
+    }
+    path = root / "opening-lock.json"
+    path.write_text(json.dumps(payload))
+    return path
+
+
 def table_rows(path: Path, member: str):
     with zipfile.ZipFile(path) as archive, archive.open(member) as raw:
         return list(csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8")))
@@ -109,9 +126,50 @@ class PrepareMandatoryTourDevelopmentSourceTests(unittest.TestCase):
                 self.assertEqual(len(rows), 6)
                 self.assertTrue(all(row["CENSUS_D"] not in {"05", "06", "08"} for row in rows))
                 self.assertFalse(any("acceptance-secret" in row["MARKER"] for row in rows))
-            self.assertFalse(manifest["partition"]["acceptance_rows_written"])
-            self.assertEqual(manifest["partition"]["acceptance_outcome_columns_used"], [])
-            self.assertNotIn("acceptance_row_counts", manifest["partition"])
+            self.assertEqual(manifest["partition"]["role"], "development")
+            self.assertEqual(manifest["partition"]["selection_fields_consulted"], ["CENSUS_D"])
+            self.assertFalse(manifest["partition"]["excluded_rows_exported"])
+            self.assertFalse(manifest["partition"]["outcomes_derived"])
+            self.assertIsNone(manifest["authorization"]["opening_lock_sha256"])
+            self.assertIsNone(manifest["authorization"]["opening_receipt_sha256"])
+
+    def test_public_partition_api_refuses_acceptance_with_a_handwritten_lock(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = source_fixture(root)
+            registry = registry_fixture(root, source)
+            opening_lock = opening_lock_fixture(root, source, registry)
+            with mock.patch.object(zipfile, "ZipFile", wraps=zipfile.ZipFile) as zip_constructor:
+                with self.assertRaisesRegex(
+                    preparation.DevelopmentSourceError, "only inside the one-shot evaluator"
+                ):
+                    preparation.build_partition_source(
+                        source,
+                        registry,
+                        root / "acceptance",
+                        role="acceptance",
+                        opening_lock_path=opening_lock,
+                    )
+            zip_constructor.assert_not_called()
+            self.assertFalse((root / "acceptance").exists())
+
+    def test_private_acceptance_path_requires_receipt_before_opening_source_zip(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = source_fixture(root)
+            registry = registry_fixture(root, source)
+            with mock.patch.object(zipfile, "ZipFile", wraps=zipfile.ZipFile) as zip_constructor:
+                with self.assertRaisesRegex(
+                    preparation.DevelopmentSourceError, "lock and consumed receipt"
+                ):
+                    preparation._build_partition_source(
+                        source,
+                        registry,
+                        root / "acceptance",
+                        role="acceptance",
+                        opening_lock_path=opening_lock_fixture(root, source, registry),
+                    )
+            zip_constructor.assert_not_called()
 
     def test_source_bytes_must_match_the_committed_registry_lock(self):
         with tempfile.TemporaryDirectory() as tmp:

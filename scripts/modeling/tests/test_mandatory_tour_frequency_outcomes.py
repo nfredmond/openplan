@@ -57,6 +57,7 @@ def _trip(person, number, origin, destination, start, end):
 
 
 def raw_source(root: Path) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
     households = []
     persons = []
     vehicles = []
@@ -210,6 +211,50 @@ def development_fixture(root: Path) -> tuple[Path, Path]:
     return development, lock
 
 
+def opening_lock_fixture(root: Path, source: Path, registry_path: Path) -> tuple[Path, Path]:
+    path = root / "opening-lock.json"
+    receipt = root / "opening-receipt.json"
+    result = root / "aggregate-result.json"
+    path.write_text(json.dumps({
+        "schema_version": preparation.OPENING_LOCK_SCHEMA_VERSION,
+        "status": preparation.OPENING_LOCK_STATUS,
+        "source": {
+            "preregistration_sha256": hashlib.sha256(registry_path.read_bytes()).hexdigest(),
+            "archive_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "archive_size_bytes": source.stat().st_size,
+        },
+        "acceptance_division_codes": ["05", "06", "08"],
+        "one_shot_outputs": {
+            "opening_receipt_path": str(receipt.resolve()),
+            "aggregate_result_path": str(result.resolve()),
+        },
+    }))
+    receipt.write_text(json.dumps({
+        "schema_version": preparation.OPENING_RECEIPT_SCHEMA_VERSION,
+        "status": preparation.OPENING_RECEIPT_STATUS,
+        "opening_lock_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "source_archive_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        "aggregate_result_path": str(result.resolve()),
+    }))
+    return path, receipt
+
+
+def acceptance_fixture(root: Path) -> tuple[Path, Path, Path, Path]:
+    source = raw_source(root)
+    lock = registry(root, source)
+    opening_lock, opening_receipt = opening_lock_fixture(root, source, lock)
+    acceptance = root / "acceptance"
+    preparation._build_partition_source(
+        source,
+        lock,
+        acceptance,
+        role="acceptance",
+        opening_lock_path=opening_lock,
+        opening_receipt_path=opening_receipt,
+    )
+    return acceptance, lock, opening_lock, opening_receipt
+
+
 def output_rows(path: Path):
     with (path / outcomes.OUTPUT_NAME).open(newline="") as handle:
         return {row["person_id"]: row for row in csv.DictReader(handle)}
@@ -266,6 +311,7 @@ class MandatoryTourFrequencyOutcomeTests(unittest.TestCase):
             )
             self.assertFalse(manifest["study_contract"]["unsupported_patterns_coerced"])
             self.assertFalse(manifest["study_contract"]["acceptance_outcomes_read"])
+            self.assertEqual(manifest["partition_role"], "development")
             self.assertTrue(
                 all(row["census_division_code"] not in {"05", "06", "08"} for row in rows.values())
             )
@@ -290,7 +336,9 @@ class MandatoryTourFrequencyOutcomeTests(unittest.TestCase):
                 return payload.replace(b"h1,1,01,s01", b"h1,1,05,s01", 1)
 
             rewrite_archive(development, "perv2pub.csv", move_person_to_acceptance)
-            with self.assertRaisesRegex(outcomes.MandatoryTourOutcomeError, "outside the development"):
+            with self.assertRaisesRegex(
+                outcomes.MandatoryTourOutcomeError, "outside the development partition"
+            ):
                 outcomes.build_outcomes(development, lock, root / "out")
             self.assertFalse((root / "out").exists())
 
@@ -350,6 +398,120 @@ class MandatoryTourFrequencyOutcomeTests(unittest.TestCase):
             )
             with self.assertRaisesRegex(outcomes.MandatoryTourOutcomeError, "refusing to overwrite"):
                 outcomes.build_outcomes(development, lock, root / "first")
+
+    def test_acceptance_uses_the_same_outcome_reconstruction_semantics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            development, development_lock = development_fixture(root / "development-side")
+            development_rows, _ = outcomes.reconstruct_partition_outcomes(
+                development, development_lock, role="development"
+            )
+            acceptance, acceptance_lock, opening_lock, opening_receipt = acceptance_fixture(
+                root / "acceptance-side"
+            )
+            acceptance_rows, context = outcomes._reconstruct_partition_outcomes(
+                acceptance,
+                acceptance_lock,
+                role="acceptance",
+                opening_lock_path=opening_lock,
+                opening_receipt_path=opening_receipt,
+            )
+            development_work1 = next(
+                row for row in development_rows if row["person_id"] == "h1:1"
+            )
+            acceptance_work1 = next(
+                row for row in acceptance_rows if row["person_id"] == "h5:1"
+            )
+            for field in (
+                "work_tours",
+                "school_tours",
+                "alternative",
+                "outcome_status",
+                "exclusion_reason",
+            ):
+                self.assertEqual(development_work1[field], acceptance_work1[field])
+            self.assertEqual(context["role"], "acceptance")
+            self.assertEqual(context["included_geography_codes"], {"05", "06", "08"})
+
+    def test_acceptance_manifest_role_and_opening_lock_are_enforced(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            acceptance, lock, opening_lock, opening_receipt = acceptance_fixture(
+                root / "wrong-role"
+            )
+            manifest_path = acceptance / preparation.OUTPUT_MANIFEST_NAME
+            manifest = json.loads(manifest_path.read_text())
+            manifest["partition"]["role"] = "development"
+            manifest_path.write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(
+                outcomes.MandatoryTourOutcomeError, "partition role"
+            ):
+                outcomes._reconstruct_partition_outcomes(
+                    acceptance,
+                    lock,
+                    role="acceptance",
+                    opening_lock_path=opening_lock,
+                    opening_receipt_path=opening_receipt,
+                )
+
+            acceptance, lock, opening_lock, opening_receipt = acceptance_fixture(
+                root / "wrong-lock"
+            )
+            manifest_path = acceptance / preparation.OUTPUT_MANIFEST_NAME
+            manifest = json.loads(manifest_path.read_text())
+            manifest["authorization"]["opening_lock_sha256"] = "0" * 64
+            manifest_path.write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(
+                outcomes.MandatoryTourOutcomeError, "another opening lock"
+            ):
+                outcomes._reconstruct_partition_outcomes(
+                    acceptance,
+                    lock,
+                    role="acceptance",
+                    opening_lock_path=opening_lock,
+                    opening_receipt_path=opening_receipt,
+                )
+
+    def test_acceptance_person_days_cannot_be_persisted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            acceptance, lock, opening_lock, _opening_receipt = acceptance_fixture(root)
+            with mock.patch.object(
+                outcomes, "reconstruct_partition_outcomes"
+            ) as reconstruct:
+                with self.assertRaisesRegex(
+                    outcomes.MandatoryTourOutcomeError,
+                    "only be reconstructed in memory",
+                ):
+                    outcomes.build_partition_outcomes(
+                        acceptance,
+                        lock,
+                        root / "persisted-outcomes",
+                        role="acceptance",
+                        opening_lock_path=opening_lock,
+                    )
+            reconstruct.assert_not_called()
+            self.assertFalse((root / "persisted-outcomes").exists())
+
+    def test_public_reconstruction_api_never_returns_acceptance_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            acceptance, lock, opening_lock, opening_receipt = acceptance_fixture(root)
+            with mock.patch.object(
+                zipfile, "ZipFile", wraps=zipfile.ZipFile
+            ) as zip_constructor:
+                with self.assertRaisesRegex(
+                    outcomes.MandatoryTourOutcomeError,
+                    "only inside the one-shot evaluator",
+                ):
+                    outcomes.reconstruct_partition_outcomes(
+                        acceptance,
+                        lock,
+                        role="acceptance",
+                        opening_lock_path=opening_lock,
+                        opening_receipt_path=opening_receipt,
+                    )
+            zip_constructor.assert_not_called()
 
 
 if __name__ == "__main__":

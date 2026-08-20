@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Reconstruct mandatory-tour outcomes from a development-only NHTS source.
+"""Reconstruct mandatory-tour outcomes through one locked partition path.
 
 This adapter is intentionally narrower than the general NHTS diary mapper. It
 keeps every person visible, uses the weekday person weight exactly once, and
 derives no outcome unless the source has already passed the preregistered
-development/acceptance split.
+development/acceptance split.  Development writes a fit input; the frozen
+acceptance evaluator calls the same reconstruction in memory after opening.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Literal, Mapping
 
 import mandatory_tour_frequency_registry as preregistration
 import prepare_mandatory_tour_development_source as development_source
@@ -27,7 +28,8 @@ import us_nhts_diaries as diaries
 import us_nhts_survey as nhts
 
 
-SCHEMA_VERSION = "openplan.activitysim-mandatory-tour-frequency-outcomes.v1"
+SCHEMA_VERSION = "openplan.activitysim-mandatory-tour-frequency-outcomes.v2"
+PartitionRole = Literal["development", "acceptance"]
 OUTPUT_NAME = "mandatory_person_days.csv"
 MANIFEST_NAME = "manifest.json"
 SUPPORTED_ALTERNATIVES = {
@@ -101,7 +103,7 @@ OUTPUT_COLUMNS = [
 
 
 class MandatoryTourOutcomeError(RuntimeError):
-    """Development outcomes cannot be reconstructed without breaking the lock."""
+    """Partition outcomes cannot be reconstructed without breaking the lock."""
 
 
 def _sha256(path: Path) -> str:
@@ -120,6 +122,10 @@ def _code(value: Any) -> str:
         number = int(text)
         return str(number) if number < 0 else f"{number:02d}"
     return text
+
+
+def _holdout_code(value: Any) -> str:
+    return nhts.normalize_geographic_holdout_code(value)
 
 
 def _integer(value: Any) -> int | None:
@@ -155,43 +161,81 @@ def _read_registry(path: Path) -> dict[str, Any]:
 def _division_sets(registry: Mapping[str, Any]) -> tuple[set[str], set[str]]:
     selection = registry.get("selection") or {}
     development = {
-        _code(row.get("division_code"))
+        _holdout_code(row.get("division_code"))
         for row in selection.get("development_divisions") or []
     }
     acceptance = {
-        _code(row.get("division_code"))
+        _holdout_code(row.get("division_code"))
         for row in selection.get("acceptance_divisions") or []
     }
     if not development or not acceptance or development & acceptance:
         raise MandatoryTourOutcomeError("The preregistered division partition is invalid")
-    if development | acceptance != set(preregistration.NHTS_CENSUS_DIVISIONS):
+    if development | acceptance != set(nhts.CENSUS_DIVISIONS):
         raise MandatoryTourOutcomeError("The preregistered division partition is incomplete")
     return development, acceptance
 
 
-def _verify_development_source(
-    source_dir: Path, registry_path: Path, registry: Mapping[str, Any]
+def _verify_partition_source(
+    source_dir: Path,
+    registry_path: Path,
+    registry: Mapping[str, Any],
+    *,
+    role: PartitionRole,
+    opening_lock_path: Path | None,
+    opening_receipt_path: Path | None,
 ) -> tuple[Path, dict[str, Any], set[str]]:
     manifest_path = source_dir / development_source.OUTPUT_MANIFEST_NAME
-    archive_path = source_dir / development_source.OUTPUT_ARCHIVE_NAME
     try:
         manifest = json.loads(manifest_path.read_text())
     except (OSError, json.JSONDecodeError) as exc:
-        raise MandatoryTourOutcomeError("The development-source manifest is unreadable") from exc
+        raise MandatoryTourOutcomeError("The partition-source manifest is unreadable") from exc
     if manifest.get("schema_version") != development_source.SCHEMA_VERSION:
-        raise MandatoryTourOutcomeError("The development-source schema is unsupported")
-    if manifest.get("status") != "development_only_before_acceptance_outcome_derivation":
-        raise MandatoryTourOutcomeError("The source is not marked development-only")
+        raise MandatoryTourOutcomeError("The partition-source schema is unsupported")
+    expected_status = (
+        "development_partition_acceptance_unopened"
+        if role == "development"
+        else "acceptance_partition_opened_under_lock"
+    )
+    if manifest.get("status") != expected_status:
+        raise MandatoryTourOutcomeError(f"The source is not marked for the {role} role")
     development, acceptance = _division_sets(registry)
+    included = development if role == "development" else acceptance
+    excluded = acceptance if role == "development" else development
     partition = manifest.get("partition") or {}
-    if set(partition.get("development_division_codes") or []) != development:
-        raise MandatoryTourOutcomeError("The source development divisions do not match the lock")
-    if set(partition.get("acceptance_division_codes") or []) != acceptance:
-        raise MandatoryTourOutcomeError("The source acceptance divisions do not match the lock")
-    if partition.get("acceptance_rows_written") is not False:
-        raise MandatoryTourOutcomeError("The source does not prove acceptance rows were excluded")
-    if partition.get("acceptance_outcome_columns_used") != []:
-        raise MandatoryTourOutcomeError("The source records acceptance outcome access")
+    if partition.get("role") != role:
+        raise MandatoryTourOutcomeError("The source partition role does not match the request")
+    if set(partition.get("included_geography_codes") or []) != included:
+        raise MandatoryTourOutcomeError("The source included geographies do not match the lock")
+    if set(partition.get("excluded_geography_codes") or []) != excluded:
+        raise MandatoryTourOutcomeError("The source excluded geographies do not match the lock")
+    if partition.get("excluded_rows_exported") is not False:
+        raise MandatoryTourOutcomeError("The source does not prove excluded rows stayed excluded")
+    if partition.get("outcomes_derived") is not False:
+        raise MandatoryTourOutcomeError("The partition source records outcome derivation")
+    if partition.get("selection_fields_consulted") != [nhts.GEOGRAPHIC_HOLDOUT_FIELD]:
+        raise MandatoryTourOutcomeError("The partition source consulted unregistered fields")
+    authorization = manifest.get("authorization") or {}
+    locked_opening_hash = authorization.get("opening_lock_sha256")
+    locked_receipt_hash = authorization.get("opening_receipt_sha256")
+    if role == "development":
+        if (
+            opening_lock_path is not None
+            or opening_receipt_path is not None
+            or locked_opening_hash is not None
+            or locked_receipt_hash is not None
+        ):
+            raise MandatoryTourOutcomeError(
+                "Development outcomes must not use acceptance authorization"
+            )
+    else:
+        if opening_lock_path is None or opening_receipt_path is None:
+            raise MandatoryTourOutcomeError(
+                "Acceptance outcomes require the opening lock and receipt"
+            )
+        if locked_opening_hash != _sha256(opening_lock_path):
+            raise MandatoryTourOutcomeError("The acceptance source used another opening lock")
+        if locked_receipt_hash != _sha256(opening_receipt_path):
+            raise MandatoryTourOutcomeError("The acceptance source used another opening receipt")
     source_record = manifest.get("source") or {}
     if source_record.get("preregistration_sha256") != _sha256(registry_path):
         raise MandatoryTourOutcomeError("The source was built under a different preregistration")
@@ -199,13 +243,18 @@ def _verify_development_source(
         "archive_sha256"
     ):
         raise MandatoryTourOutcomeError("The source archive lock differs from the preregistration")
-    if not archive_path.is_file() or _sha256(archive_path) != (manifest.get("output") or {}).get(
+    output_record = manifest.get("output") or {}
+    archive_name = str(output_record.get("archive") or "")
+    if archive_name != development_source.OUTPUT_ARCHIVE_NAMES[role]:
+        raise MandatoryTourOutcomeError("The partition archive name does not match its role")
+    archive_path = source_dir / archive_name
+    if not archive_path.is_file() or _sha256(archive_path) != output_record.get(
         "archive_sha256"
     ):
-        raise MandatoryTourOutcomeError("The development archive SHA-256 does not match its manifest")
-    if archive_path.stat().st_size != (manifest.get("output") or {}).get("archive_size_bytes"):
-        raise MandatoryTourOutcomeError("The development archive size does not match its manifest")
-    return archive_path, manifest, development
+        raise MandatoryTourOutcomeError("The partition archive SHA-256 does not match its manifest")
+    if archive_path.stat().st_size != output_record.get("archive_size_bytes"):
+        raise MandatoryTourOutcomeError("The partition archive size does not match its manifest")
+    return archive_path, manifest, included
 
 
 def _member_map(archive: zipfile.ZipFile) -> dict[str, str]:
@@ -216,7 +265,8 @@ def _rows(
     archive: zipfile.ZipFile,
     member: str,
     required: set[str],
-    development: set[str],
+    included: set[str],
+    role: PartitionRole,
 ) -> list[dict[str, str]]:
     with archive.open(member) as raw:
         reader = csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8-sig", newline=""))
@@ -226,10 +276,10 @@ def _rows(
                 f"{Path(member).name} cannot reconstruct mandatory tours; missing {', '.join(missing)}"
             )
         rows = list(reader)
-    outside = sorted({_code(row.get("CENSUS_D")) for row in rows} - development)
+    outside = sorted({_holdout_code(row.get("CENSUS_D")) for row in rows} - included)
     if outside:
         raise MandatoryTourOutcomeError(
-            f"{Path(member).name} contains rows outside the development divisions: "
+            f"{Path(member).name} contains rows outside the {role} partition: "
             + ", ".join(outside)
         )
     return rows
@@ -271,7 +321,7 @@ def _trip_for_reconstruction(row: Mapping[str, str]) -> dict[str, Any]:
         "household_id": household_id,
         "trip_number": trip_number,
         "survey_weight": 1.0,
-        "holdout_fold": _code(row.get("CENSUS_D")),
+        "holdout_fold": _holdout_code(row.get("CENSUS_D")),
         "origin_purpose": origin,
         "destination_purpose": destination,
         "depart_minutes": depart,
@@ -355,13 +405,13 @@ def _outcome_for_person(
     }
 
 
-def _summary(rows: list[dict[str, Any]], development: set[str]) -> dict[str, Any]:
+def _summary(rows: list[dict[str, Any]], included: set[str]) -> dict[str, Any]:
     def empty_distribution() -> dict[str, dict[str, float | int]]:
         return {}
 
     by_division: dict[str, Any] = {
         division: {"records": 0, "weekday_weight": 0.0, "statuses": empty_distribution()}
-        for division in sorted(development)
+        for division in sorted(included)
     }
     alternatives = {
         alternative: {"records": 0, "weekday_weight": 0.0}
@@ -408,25 +458,36 @@ def _summary(rows: list[dict[str, Any]], development: set[str]) -> dict[str, Any
     }
 
 
-def build_outcomes(
-    development_dir: str | Path,
+def _reconstruct_partition_outcomes(
+    partition_dir: str | Path,
     registry_path: str | Path,
-    output_dir: str | Path,
-) -> dict[str, Any]:
-    source_dir = Path(development_dir).resolve()
+    *,
+    role: PartitionRole,
+    opening_lock_path: str | Path | None = None,
+    opening_receipt_path: str | Path | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    if role not in development_source.OUTPUT_ARCHIVE_NAMES:
+        raise MandatoryTourOutcomeError(f"Unsupported partition role: {role}")
+    source_dir = Path(partition_dir).resolve()
     registry_file = Path(registry_path).resolve()
-    output = Path(output_dir).resolve()
-    if output.exists() or output.is_symlink():
-        raise MandatoryTourOutcomeError(f"{output} already exists; refusing to overwrite it")
+    opening_lock = Path(opening_lock_path).resolve() if opening_lock_path else None
+    opening_receipt = (
+        Path(opening_receipt_path).resolve() if opening_receipt_path else None
+    )
     registry = _read_registry(registry_file)
-    archive_path, source_manifest, development = _verify_development_source(
-        source_dir, registry_file, registry
+    archive_path, source_manifest, included = _verify_partition_source(
+        source_dir,
+        registry_file,
+        registry,
+        role=role,
+        opening_lock_path=opening_lock,
+        opening_receipt_path=opening_receipt,
     )
 
     try:
         archive = zipfile.ZipFile(archive_path)
     except zipfile.BadZipFile as exc:
-        raise MandatoryTourOutcomeError("The development source is not a readable ZIP") from exc
+        raise MandatoryTourOutcomeError("The partition source is not a readable ZIP") from exc
     with archive:
         members = _member_map(archive)
         required_members = {
@@ -440,21 +501,31 @@ def build_outcomes(
         ]
         if missing_members:
             raise MandatoryTourOutcomeError(
-                "The development source is missing " + ", ".join(missing_members)
+                "The partition source is missing " + ", ".join(missing_members)
             )
         households_raw = _rows(
-            archive, str(required_members["households"]), HOUSEHOLD_COLUMNS, development
+            archive,
+            str(required_members["households"]),
+            HOUSEHOLD_COLUMNS,
+            included,
+            role,
         )
         persons_raw = _rows(
-            archive, str(required_members["persons"]), PERSON_COLUMNS, development
+            archive,
+            str(required_members["persons"]),
+            PERSON_COLUMNS,
+            included,
+            role,
         )
         trips_raw = _rows(
-            archive, str(required_members["trips"]), TRIP_COLUMNS, development
+            archive,
+            str(required_members["trips"]),
+            TRIP_COLUMNS,
+            included,
+            role,
         )
 
-    expected_counts = (source_manifest.get("partition") or {}).get(
-        "development_row_counts"
-    ) or {}
+    expected_counts = (source_manifest.get("partition") or {}).get("row_counts") or {}
     measured_counts = {
         "households": len(households_raw),
         "persons": len(persons_raw),
@@ -463,14 +534,16 @@ def build_outcomes(
     for table, measured in measured_counts.items():
         if expected_counts.get(table) != measured:
             raise MandatoryTourOutcomeError(
-                f"The development {table} row count differs from its manifest"
+                f"The {role} {table} row count differs from its manifest"
             )
 
     households: dict[str, dict[str, str]] = {}
     for row in households_raw:
         household_id = str(row.get("HOUSEID") or "").strip()
         if not household_id or household_id in households:
-            raise MandatoryTourOutcomeError("Development households have a missing or duplicate HOUSEID")
+            raise MandatoryTourOutcomeError(
+                f"{role.title()} households have a missing or duplicate HOUSEID"
+            )
         households[household_id] = row
 
     persons: dict[str, dict[str, Any]] = {}
@@ -480,15 +553,21 @@ def build_outcomes(
         person_id = f"{household_id}:{person_number}"
         household = households.get(household_id)
         if not household:
-            raise MandatoryTourOutcomeError("A development person has no household record")
+            raise MandatoryTourOutcomeError(f"A {role} person has no household record")
         if person_id in persons:
-            raise MandatoryTourOutcomeError("Development persons have a duplicate person identifier")
-        if _code(row.get("CENSUS_D")) != _code(household.get("CENSUS_D")):
-            raise MandatoryTourOutcomeError("A development person and household disagree on CENSUS_D")
+            raise MandatoryTourOutcomeError(
+                f"{role.title()} persons have a duplicate person identifier"
+            )
+        if _holdout_code(row.get("CENSUS_D")) != _holdout_code(household.get("CENSUS_D")):
+            raise MandatoryTourOutcomeError(
+                f"A {role} person and household disagree on CENSUS_D"
+            )
         if str(row.get("STRATUMID") or "").strip() != str(
             household.get("STRATUMID") or ""
         ).strip():
-            raise MandatoryTourOutcomeError("A development person and household disagree on STRATUMID")
+            raise MandatoryTourOutcomeError(
+                f"A {role} person and household disagree on STRATUMID"
+            )
         persons[person_id] = {
             "raw": row,
             "household": household,
@@ -503,14 +582,18 @@ def build_outcomes(
         person_id = f"{household_id}:{person_number}"
         person = persons.get(person_id)
         if not person:
-            raise MandatoryTourOutcomeError("A development trip has no person record")
-        if _code(row.get("CENSUS_D")) != _code(person["raw"].get("CENSUS_D")):
-            raise MandatoryTourOutcomeError("A development trip and person disagree on CENSUS_D")
+            raise MandatoryTourOutcomeError(f"A {role} trip has no person record")
+        if _holdout_code(row.get("CENSUS_D")) != _holdout_code(person["raw"].get("CENSUS_D")):
+            raise MandatoryTourOutcomeError(
+                f"A {role} trip and person disagree on CENSUS_D"
+            )
         if person["weekday_weight"] <= 0:
             continue
         trip = _trip_for_reconstruction(row)
         if trip["trip_id"] in trip_ids:
-            raise MandatoryTourOutcomeError("Development trips have a duplicate trip identifier")
+            raise MandatoryTourOutcomeError(
+                f"{role.title()} trips have a duplicate trip identifier"
+            )
         trip_ids.add(trip["trip_id"])
         trips_by_person.setdefault(person_id, []).append(trip)
 
@@ -525,7 +608,7 @@ def build_outcomes(
         output_rows.append({
             "household_id": str(row["HOUSEID"]).strip(),
             "person_id": person_id,
-            "census_division_code": _code(row["CENSUS_D"]),
+            "census_division_code": _holdout_code(row["CENSUS_D"]),
             "stratum_id": str(row["STRATUMID"]).strip(),
             "age": _integer(row.get("R_AGE")) if _integer(row.get("R_AGE")) is not None else "",
             "sex_code": _code(row.get("R_SEX")),
@@ -540,6 +623,69 @@ def build_outcomes(
             **outcome,
         })
 
+    return output_rows, {
+        "role": role,
+        "source_dir": source_dir,
+        "archive_path": archive_path,
+        "source_manifest": source_manifest,
+        "included_geography_codes": included,
+        "opening_lock_path": opening_lock,
+        "opening_receipt_path": opening_receipt,
+        "registry_file": registry_file,
+        "implementation": _implementation_record(),
+        "summary": _summary(output_rows, included),
+    }
+
+
+def reconstruct_partition_outcomes(
+    partition_dir: str | Path,
+    registry_path: str | Path,
+    *,
+    role: PartitionRole,
+    opening_lock_path: str | Path | None = None,
+    opening_receipt_path: str | Path | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Public reconstruction API; acceptance rows stay inside the evaluator."""
+    if role != "development":
+        raise MandatoryTourOutcomeError(
+            "Acceptance outcomes are available only inside the one-shot evaluator"
+        )
+    return _reconstruct_partition_outcomes(
+        partition_dir,
+        registry_path,
+        role="development",
+        opening_lock_path=opening_lock_path,
+        opening_receipt_path=opening_receipt_path,
+    )
+
+
+def build_partition_outcomes(
+    partition_dir: str | Path,
+    registry_path: str | Path,
+    output_dir: str | Path,
+    *,
+    role: PartitionRole,
+    opening_lock_path: str | Path | None = None,
+) -> dict[str, Any]:
+    if role != "development":
+        raise MandatoryTourOutcomeError(
+            "Acceptance person-days may only be reconstructed in memory by the one-shot evaluator"
+        )
+    output = Path(output_dir).resolve()
+    if output.exists() or output.is_symlink():
+        raise MandatoryTourOutcomeError(f"{output} already exists; refusing to overwrite it")
+    output_rows, context = reconstruct_partition_outcomes(
+        partition_dir,
+        registry_path,
+        role=role,
+        opening_lock_path=opening_lock_path,
+    )
+    source_dir = context["source_dir"]
+    archive_path = context["archive_path"]
+    source_manifest = context["source_manifest"]
+    registry_file = context["registry_file"]
+    opening_lock = context["opening_lock_path"]
+
     output.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=".mandatory-tour-outcomes-", dir=output.parent))
     try:
@@ -550,28 +696,34 @@ def build_outcomes(
             writer.writerows(output_rows)
         manifest = {
             "schema_version": SCHEMA_VERSION,
-            "status": "development_outcomes_only_acceptance_unopened",
+            "status": (
+                "development_outcomes_only_acceptance_unopened"
+                if role == "development"
+                else "acceptance_outcomes_opened_under_lock"
+            ),
             "component": "mandatory_tour_frequency",
+            "partition_role": role,
             "source": {
                 "preregistration_sha256": _sha256(registry_file),
-                "development_manifest_sha256": _sha256(
+                "partition_manifest_sha256": _sha256(
                     source_dir / development_source.OUTPUT_MANIFEST_NAME
                 ),
-                "development_archive_sha256": _sha256(archive_path),
+                "partition_archive_sha256": _sha256(archive_path),
+                "opening_lock_sha256": _sha256(opening_lock) if opening_lock else None,
             },
-            "implementation": _implementation_record(),
+            "implementation": context["implementation"],
             "outputs": {
                 "person_days": OUTPUT_NAME,
                 "person_days_sha256": _sha256(csv_path),
                 "person_days_size_bytes": csv_path.stat().st_size,
             },
-            "summary": _summary(output_rows, development),
+            "summary": context["summary"],
             "study_contract": {
                 "unit": "weekday person-day",
                 "weight": "WTPERFIN5D exactly once per person-day",
                 "eligibility": "observed mandatory daily pattern conditional on complete diary",
                 "unsupported_patterns_coerced": False,
-                "acceptance_outcomes_read": False,
+                "acceptance_outcomes_read": role == "acceptance",
             },
         }
         (staging / MANIFEST_NAME).write_text(
@@ -586,6 +738,19 @@ def build_outcomes(
     finally:
         if staging.exists():
             shutil.rmtree(staging)
+
+
+def build_outcomes(
+    development_dir: str | Path,
+    registry_path: str | Path,
+    output_dir: str | Path,
+) -> dict[str, Any]:
+    return build_partition_outcomes(
+        development_dir,
+        registry_path,
+        output_dir,
+        role="development",
+    )
 
 
 def main(argv: Iterable[str] | None = None) -> int:

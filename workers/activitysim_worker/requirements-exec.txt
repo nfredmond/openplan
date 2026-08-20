@@ -10,8 +10,16 @@
 # Verified locally on 2026-07-22: activitysim==1.5.1 runs OpenPlan-built bundles
 # end-to-end on Python 3.11.
 activitysim==1.5.1
+# These are exact because the accepted-component studies bind ActivitySim's
+# numerical and random-choice semantics, not merely its top-level version.
+# ActivitySim itself specifies ranges; an unconstrained install selected a
+# different Numba release on 2026-08-20 and could not reproduce the unopened
+# mandatory-tour acceptance lock.
+numpy==1.25.2
+pandas==2.3.3
+numba==0.66.0
+scipy==1.16.3
 openmatrix==0.3.5.0
 PyYAML==6.0.3
 tables==3.11.1
 requests>=2.31
-# activitysim pins compatible pandas / numpy / numba / sharrow itself.

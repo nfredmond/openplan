@@ -1,0 +1,3 @@
+SPEC: mandatory_tour_frequency.csv
+COEFFICIENTS: mandatory_tour_frequency_coefficients.csv
+LOGIT_TYPE: MNL

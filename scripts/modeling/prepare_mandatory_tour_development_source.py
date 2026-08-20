@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Create a registry-bound NHTS archive containing development divisions only.
+"""Create a registry-bound NHTS partition without crossing the holdout gate.
 
-The input ZIP stores every division in the same CSV members. This step removes
-acceptance rows before any tour reconstruction or model fitting can run. It
-records development row counts but deliberately does not count, summarize, or
-export acceptance rows.
+The input ZIP stores every division in the same CSV members.  The development
+entry point exports only development rows before fitting.  The private
+acceptance path additionally requires the evaluator's consumed opening receipt;
+the public API and command line refuse it.  Selection parses each row to consult
+``CENSUS_D``; it does not derive, summarize, or export outcomes for the excluded
+partition.
 """
 
 from __future__ import annotations
@@ -18,20 +20,33 @@ import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Mapping
+from typing import Any, Iterable, Iterator, Literal, Mapping
 
 import mandatory_tour_frequency_registry as preregistration
 import us_nhts_survey as source
 
 
-SCHEMA_VERSION = "openplan.activitysim-mandatory-tour-development-source.v1"
-OUTPUT_ARCHIVE_NAME = "nhts-development.zip"
+SCHEMA_VERSION = "openplan.activitysim-mandatory-tour-partition-source.v2"
+OPENING_LOCK_SCHEMA_VERSION = (
+    "openplan.activitysim-mandatory-tour-frequency-acceptance-opening-lock.v1"
+)
+OPENING_LOCK_STATUS = "locked_acceptance_unopened"
+OPENING_RECEIPT_SCHEMA_VERSION = (
+    "openplan.activitysim-mandatory-tour-frequency-acceptance-opening-receipt.v1"
+)
+OPENING_RECEIPT_STATUS = "acceptance_opening_consumed_before_source_member_read"
+PartitionRole = Literal["development", "acceptance"]
+OUTPUT_ARCHIVE_NAMES = {
+    "development": "nhts-development.zip",
+    "acceptance": "nhts-acceptance.zip",
+}
+OUTPUT_ARCHIVE_NAME = OUTPUT_ARCHIVE_NAMES["development"]
 OUTPUT_MANIFEST_NAME = "manifest.json"
 FIXED_ZIP_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
 
 
 class DevelopmentSourceError(RuntimeError):
-    """The blinded development source cannot be produced safely."""
+    """The locked survey partition cannot be produced safely."""
 
 
 def _sha256(path: Path) -> str:
@@ -43,8 +58,7 @@ def _sha256(path: Path) -> str:
 
 
 def _division_code(value: Any) -> str:
-    text = str(value or "").strip()
-    return text.zfill(2) if text.isdigit() else text
+    return source.normalize_geographic_holdout_code(value)
 
 
 def _registry_divisions(registry: Mapping[str, Any]) -> tuple[set[str], set[str]]:
@@ -69,7 +83,7 @@ def _registry_divisions(registry: Mapping[str, Any]) -> tuple[set[str], set[str]
             "The registry assigns divisions to both development and acceptance: "
             + ", ".join(sorted(overlap))
         )
-    expected = set(preregistration.NHTS_CENSUS_DIVISIONS)
+    expected = set(source.CENSUS_DIVISIONS)
     if development | acceptance != expected:
         raise DevelopmentSourceError(
             "The registry's development and acceptance sets do not cover the NHTS divisions"
@@ -94,19 +108,19 @@ def _verify_source_lock(
         raise DevelopmentSourceError("The preregistration file does not exist")
 
 
-def _development_rows(
+def _included_rows(
     rows: Iterable[Mapping[str, Any]],
     *,
-    development: set[str],
-    acceptance: set[str],
+    included: set[str],
+    excluded: set[str],
     table_name: str,
 ) -> Iterator[Mapping[str, Any]]:
-    """Yield development rows without consulting any other acceptance field."""
+    """Yield one role using only the adapter's geographic selection field."""
     for row in rows:
         division = _division_code(row.get("CENSUS_D"))
-        if division in acceptance:
+        if division in excluded:
             continue
-        if division not in development:
+        if division not in included:
             raise DevelopmentSourceError(
                 f"{table_name} has a row with missing or unregistered CENSUS_D: "
                 f"{division or '<missing>'}"
@@ -127,13 +141,14 @@ def _write_filtered_table(
     *,
     source_member: str,
     output_member: str,
-    development: set[str],
-    acceptance: set[str],
+    included: set[str],
+    excluded: set[str],
+    role: PartitionRole,
 ) -> tuple[int, set[str], set[str]]:
     with source_archive.open(source_member) as raw:
         reader = csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8-sig", newline=""))
         fields = list(reader.fieldnames or [])
-        if "CENSUS_D" not in fields:
+        if source.GEOGRAPHIC_HOLDOUT_FIELD not in fields:
             raise DevelopmentSourceError(
                 f"{output_member} has no CENSUS_D and cannot be separated before outcomes"
             )
@@ -151,23 +166,23 @@ def _write_filtered_table(
         ) as text_target:
             writer = csv.DictWriter(text_target, fieldnames=fields, lineterminator="\n")
             writer.writeheader()
-            for row in _development_rows(
+            for row in _included_rows(
                 reader,
-                development=development,
-                acceptance=acceptance,
+                included=included,
+                excluded=excluded,
                 table_name=output_member,
             ):
                 household_id = str(row.get("HOUSEID") or "").strip()
                 if not household_id:
                     raise DevelopmentSourceError(
-                        f"{output_member} has a development row without HOUSEID"
+                        f"{output_member} has a {role} row without HOUSEID"
                     )
                 household_ids.add(household_id)
                 if "PERSONID" in fields:
                     person_number = str(row.get("PERSONID") or "").strip()
                     if not person_number:
                         raise DevelopmentSourceError(
-                            f"{output_member} has a development row without PERSONID"
+                            f"{output_member} has a {role} row without PERSONID"
                         )
                     person_ids.add(f"{household_id}:{person_number}")
                 writer.writerow(row)
@@ -175,10 +190,68 @@ def _write_filtered_table(
     return row_count, household_ids, person_ids
 
 
-def build_development_source(
+def _resolve_recorded_path(value: str) -> Path:
+    path = Path(value)
+    repository_root = Path(__file__).resolve().parents[2]
+    return path.resolve() if path.is_absolute() else (repository_root / path).resolve()
+
+
+def _verify_evaluator_authorization(
+    lock_path: Path,
+    receipt_path: Path,
+    *,
+    registry_path: Path,
+    archive_path: Path,
+    acceptance_codes: set[str],
+) -> str:
+    try:
+        lock = json.loads(lock_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DevelopmentSourceError("The acceptance opening lock is unreadable") from exc
+    if lock.get("schema_version") != OPENING_LOCK_SCHEMA_VERSION:
+        raise DevelopmentSourceError("The acceptance opening-lock schema is unsupported")
+    if lock.get("status") != OPENING_LOCK_STATUS:
+        raise DevelopmentSourceError("The acceptance opening lock is not unopened")
+    locked_source = lock.get("source") or {}
+    if locked_source.get("preregistration_sha256") != _sha256(registry_path):
+        raise DevelopmentSourceError("The opening lock names another preregistration")
+    if locked_source.get("archive_sha256") != _sha256(archive_path):
+        raise DevelopmentSourceError("The opening lock names another source archive")
+    if locked_source.get("archive_size_bytes") != archive_path.stat().st_size:
+        raise DevelopmentSourceError("The opening lock source size does not match")
+    if set(lock.get("acceptance_division_codes") or []) != acceptance_codes:
+        raise DevelopmentSourceError("The opening lock names another acceptance partition")
+    one_shot = lock.get("one_shot_outputs") or {}
+    recorded_receipt = str(one_shot.get("opening_receipt_path") or "")
+    if not recorded_receipt or _resolve_recorded_path(recorded_receipt) != receipt_path:
+        raise DevelopmentSourceError("The opening lock names another opening receipt")
+    try:
+        receipt = json.loads(receipt_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise DevelopmentSourceError(
+            "The evaluator opening receipt must exist before acceptance source access"
+        ) from exc
+    if receipt.get("schema_version") != OPENING_RECEIPT_SCHEMA_VERSION:
+        raise DevelopmentSourceError("The acceptance opening-receipt schema is unsupported")
+    if receipt.get("status") != OPENING_RECEIPT_STATUS:
+        raise DevelopmentSourceError("The acceptance opening receipt is not consumed")
+    if receipt.get("opening_lock_sha256") != _sha256(lock_path):
+        raise DevelopmentSourceError("The opening receipt names another opening lock")
+    if receipt.get("source_archive_sha256") != _sha256(archive_path):
+        raise DevelopmentSourceError("The opening receipt names another source archive")
+    if receipt.get("aggregate_result_path") != one_shot.get("aggregate_result_path"):
+        raise DevelopmentSourceError("The opening receipt names another aggregate result")
+    return _sha256(lock_path)
+
+
+def _build_partition_source(
     archive_path: str | Path,
     registry_path: str | Path,
     output_dir: str | Path,
+    *,
+    role: PartitionRole,
+    opening_lock_path: str | Path | None = None,
+    opening_receipt_path: str | Path | None = None,
 ) -> dict[str, Any]:
     archive_file = Path(archive_path).resolve()
     registry_file = Path(registry_path).resolve()
@@ -190,6 +263,31 @@ def build_development_source(
     registry = json.loads(registry_file.read_text())
     development, acceptance = _registry_divisions(registry)
     _verify_source_lock(archive_file, registry_file, registry)
+    if role not in OUTPUT_ARCHIVE_NAMES:
+        raise DevelopmentSourceError(f"Unsupported partition role: {role}")
+    opening_lock_sha256: str | None = None
+    opening_receipt_sha256: str | None = None
+    if role == "development":
+        if opening_lock_path is not None or opening_receipt_path is not None:
+            raise DevelopmentSourceError(
+                "The development path must not receive acceptance authorization"
+            )
+        included, excluded = development, acceptance
+    else:
+        if opening_lock_path is None or opening_receipt_path is None:
+            raise DevelopmentSourceError(
+                "The acceptance source requires the frozen lock and consumed receipt"
+            )
+        receipt_file = Path(opening_receipt_path).resolve()
+        opening_lock_sha256 = _verify_evaluator_authorization(
+            Path(opening_lock_path).resolve(),
+            receipt_file,
+            registry_path=registry_file,
+            archive_path=archive_file,
+            acceptance_codes=acceptance,
+        )
+        opening_receipt_sha256 = _sha256(receipt_file)
+        included, excluded = acceptance, development
 
     if output.exists() or output.is_symlink():
         raise DevelopmentSourceError(
@@ -203,9 +301,10 @@ def build_development_source(
 
     output.parent.mkdir(parents=True, exist_ok=True)
     staging = Path(
-        tempfile.mkdtemp(prefix=".mandatory-tour-development-", dir=output.parent)
+        tempfile.mkdtemp(prefix=f".mandatory-tour-{role}-", dir=output.parent)
     )
-    output_archive = staging / OUTPUT_ARCHIVE_NAME
+    output_archive_name = OUTPUT_ARCHIVE_NAMES[role]
+    output_archive = staging / output_archive_name
     output_manifest = staging / OUTPUT_MANIFEST_NAME
     try:
         row_counts: dict[str, int] = {}
@@ -224,8 +323,9 @@ def build_development_source(
                     target_zip,
                     source_member=source_member,
                     output_member=filename,
-                    development=development,
-                    acceptance=acceptance,
+                    included=included,
+                    excluded=excluded,
+                    role=role,
                 )
                 row_counts[table_name] = count
                 households_by_table[table_name] = households
@@ -236,17 +336,21 @@ def build_development_source(
             outside = households_by_table[table_name] - household_ids
             if outside:
                 raise DevelopmentSourceError(
-                    f"Development {table_name} reference households absent from the household table"
+                    f"{role.title()} {table_name} reference households absent from the household table"
                 )
         outside_people = persons_by_table["trips"] - persons_by_table["persons"]
         if outside_people:
             raise DevelopmentSourceError(
-                "Development trips reference people absent from the person table"
+                f"{role.title()} trips reference people absent from the person table"
             )
 
         manifest = {
             "schema_version": SCHEMA_VERSION,
-            "status": "development_only_before_acceptance_outcome_derivation",
+            "status": (
+                "development_partition_acceptance_unopened"
+                if role == "development"
+                else "acceptance_partition_opened_under_lock"
+            ),
             "source": {
                 "source_id": source.SOURCE_ID,
                 "source_url": source.SOURCE_URL,
@@ -254,14 +358,20 @@ def build_development_source(
                 "preregistration_sha256": _sha256(registry_file),
             },
             "partition": {
-                "development_division_codes": sorted(development),
-                "acceptance_division_codes": sorted(acceptance),
-                "development_row_counts": row_counts,
-                "acceptance_outcome_columns_used": [],
-                "acceptance_rows_written": False,
+                "role": role,
+                "included_geography_codes": sorted(included),
+                "excluded_geography_codes": sorted(excluded),
+                "row_counts": row_counts,
+                "selection_fields_consulted": [source.GEOGRAPHIC_HOLDOUT_FIELD],
+                "excluded_rows_exported": False,
+                "outcomes_derived": False,
+            },
+            "authorization": {
+                "opening_lock_sha256": opening_lock_sha256,
+                "opening_receipt_sha256": opening_receipt_sha256,
             },
             "output": {
-                "archive": OUTPUT_ARCHIVE_NAME,
+                "archive": output_archive_name,
                 "archive_sha256": _sha256(output_archive),
                 "archive_size_bytes": output_archive.stat().st_size,
                 "members": list(source.TABLE_FILES.values()),
@@ -277,6 +387,41 @@ def build_development_source(
     finally:
         if staging.exists():
             shutil.rmtree(staging)
+
+
+def build_partition_source(
+    archive_path: str | Path,
+    registry_path: str | Path,
+    output_dir: str | Path,
+    *,
+    role: PartitionRole,
+    opening_lock_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Public partition API; acceptance is owned by the one-shot evaluator."""
+    if role != "development":
+        raise DevelopmentSourceError(
+            "Acceptance source access is available only inside the one-shot evaluator"
+        )
+    return _build_partition_source(
+        archive_path,
+        registry_path,
+        output_dir,
+        role="development",
+        opening_lock_path=opening_lock_path,
+    )
+
+
+def build_development_source(
+    archive_path: str | Path,
+    registry_path: str | Path,
+    output_dir: str | Path,
+) -> dict[str, Any]:
+    return build_partition_source(
+        archive_path,
+        registry_path,
+        output_dir,
+        role="development",
+    )
 
 
 def main(argv: Iterable[str] | None = None) -> int:

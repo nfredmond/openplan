@@ -1,0 +1,152 @@
+{
+  "acceptance_rules": {
+    "all_rules_must_pass": true,
+    "choice_distribution": {
+      "maximum_disadvantage_in_remaining_division": 0.02,
+      "maximum_pooled_total_variation_distance": 0.05,
+      "minimum_division_wins": 2,
+      "must_beat_reference_pooled": true
+    },
+    "outcome_coverage": {
+      "minimum_design_weighted_supported_share": 0.95,
+      "publish_exclusions_by_division": true
+    },
+    "primary_predictive_score": {
+      "candidate_minus_reference_one_sided_confidence": 0.95,
+      "candidate_point_estimate_must_win_all_acceptance_divisions": true,
+      "metric": "paired design-weighted multiclass log loss",
+      "upper_confidence_bound_must_be_below": 0.0,
+      "variance_method": "Taylor series with STRATUMID strata and HOUSEID primary sampling units"
+    },
+    "single_opening": true,
+    "stochastic_stability": {
+      "activitysim_seeds": [
+        2026081901,
+        2026081902,
+        2026081903,
+        2026081904,
+        2026081905,
+        2026081906,
+        2026081907,
+        2026081908,
+        2026081909,
+        2026081910,
+        2026081911,
+        2026081912,
+        2026081913,
+        2026081914,
+        2026081915,
+        2026081916,
+        2026081917,
+        2026081918,
+        2026081919,
+        2026081920
+      ],
+      "alternatives": [
+        "work1",
+        "work2",
+        "school1",
+        "school2",
+        "work_and_school"
+      ],
+      "comparison_count": 100,
+      "dependence_contract": "The union bound controls familywise error without assuming independence between alternatives or seeds.",
+      "every_seed_and_alternative_must_be_inside_interval": true,
+      "familywise_confidence": 0.95,
+      "familywise_method": "Bonferroni union bound",
+      "interval": "For each seed and alternative, expected weighted share is sum(w_i*p_i)/sum(w_i). The simultaneous familywise 95% interval is expected share plus or minus 3.48075640434624*sqrt(sum(w_i^2*p_i*(1-p_i)))/sum(w_i).",
+      "normal_critical_value": 3.4807564043462422,
+      "per_comparison_two_sided_alpha": 0.0005
+    },
+    "tour_totals": {
+      "inside_design_based_95_percent_interval_pooled": true,
+      "measures": [
+        "work tours per eligible person-day",
+        "school tours per eligible person-day"
+      ],
+      "minimum_divisions_inside_interval": 2,
+      "rescaling_allowed": false,
+      "variance_method": "Taylor series with STRATUMID strata and HOUSEID primary sampling units"
+    },
+    "transfer_cells": {
+      "dimensions": [
+        "WORKER status",
+        "SCHOOL1 status",
+        "URBRUR"
+      ],
+      "minimum_unweighted_observations": 100,
+      "multiple_comparison_correction": "Holm",
+      "reject_any_significant_log_loss_deterioration": true
+    }
+  },
+  "component": "mandatory_tour_frequency",
+  "implementation_contract": {
+    "outcome_coverage": {
+      "denominator": "supported plus out-of-support mandatory patterns; incomplete diaries, no mandatory pattern, nonweekday records, and nonpositive weights are excluded",
+      "threshold_scope": "pooled acceptance partition only"
+    },
+    "probability_scoring": {
+      "candidate": "Match ActivitySim 1.5.1 with sharrow disabled: cast every executable offset and learned coefficient to float32, promote the rounded values to float64 for the expression-value dot product, then compute shifted multinomial-logit probabilities in float64.",
+      "predictor_invalid_rows": "Use the frozen reference probabilities exactly.",
+      "reference": "Use the frozen unrounded status-cell probabilities in float64.",
+      "rounding_before_grading": false
+    },
+    "recorded_before_acceptance_outcomes_were_derived_or_read": true,
+    "stochastic_stability": {
+      "population": "pooled supported acceptance rows",
+      "random_semantics": "ActivitySim persons channel, mandatory_tour_frequency step, and choice_maker",
+      "row_order": "stable NHTS person identifier order mapped to contiguous person_id"
+    },
+    "survey_estimator": {
+      "confidence_criticals": "Student t, not normal z",
+      "degrees_of_freedom": "sum over strata of PSU count minus one",
+      "domain_method": "Keep every positive-weekday-weight acceptance person in the survey design, including zero-contribution PSUs outside an analysis domain.",
+      "primary_sampling_unit": "NHTS HOUSEID",
+      "stratum": "Census division code crossed with NHTS STRATUMID",
+      "variance": "With-replacement Taylor linearization, no finite-population correction, and refusal of singleton strata."
+    },
+    "tour_totals": {
+      "division_rule": "each measure independently must pass at least two divisions",
+      "interval": "two-sided Taylor interval around the observed weighted mean"
+    },
+    "transfer_cells": {
+      "alternative": "candidate minus reference log loss is greater than zero",
+      "cell_scope": "pooled acceptance cells, not division-by-cell",
+      "family": "all eligible pooled cells across all preregistered dimensions",
+      "holm_family_alpha": 0.05,
+      "p_values": "one-sided Student-t deterioration tests",
+      "urban_rural_codes": {
+        "01": "urban",
+        "02": "rural"
+      }
+    }
+  },
+  "limits": [
+    "The only acceptance rule changed is simultaneous stochastic error control.",
+    "The implementation contract resolves previously unstated evaluator choices without changing a threshold, candidate, reference, population, or geography.",
+    "It does not use, summarize, or reveal acceptance outcomes.",
+    "The original preregistration remains the historical record."
+  ],
+  "reason": {
+    "development_results_used_to_choose_correction": false,
+    "explanation": "The original rule required 100 marginal 95% checks to pass. Even under independence, a correctly sampled model would pass all checks only about 0.6% of the time.",
+    "identified_before_acceptance_outcomes_were_derived_or_read": true,
+    "kind": "a_priori_familywise_multiplicity_correction",
+    "original_independent_check_pass_probability": 0.0059205292203339975
+  },
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-acceptance-protocol.v2",
+  "status": "supersedes_unopened_v1_before_acceptance_outcome_derivation",
+  "supersedes": {
+    "acceptance_outcomes_read": false,
+    "preregistration_sha256": "29e5616c208e445f851f79ec3f82c85d923eeb67a319cf747d482700c9121cc6",
+    "schema_version": "openplan.activitysim-mandatory-tour-frequency-preregistration.v1",
+    "status_at_supersession": "pre_registered_before_mandatory_tour_outcome_derivation"
+  },
+  "unchanged_contract": {
+    "all_non_stochastic_acceptance_rules_canonical_sha256": "9354b3e79cea7d44aef2af685c065e1f48ee80aa9658dd63a4ee7592adc2f9a0",
+    "candidate_and_reference_unchanged": true,
+    "development_and_acceptance_divisions_unchanged": true,
+    "source_archive_unchanged": true,
+    "study_population_unchanged": true
+  }
+}

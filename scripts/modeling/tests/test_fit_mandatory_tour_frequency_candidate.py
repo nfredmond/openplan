@@ -381,6 +381,56 @@ class MandatoryTourCandidateFitTests(unittest.TestCase):
             sha256(directory / fit.PACKAGE_MANIFEST_NAME),
         )
 
+    def test_v2_chain_preserves_the_exact_frozen_candidate(self):
+        v1 = REPO_ROOT / "data/modeling/activitysim-mandatory-tour-frequency-national-v1"
+        v2 = REPO_ROOT / "data/modeling/activitysim-mandatory-tour-frequency-national-v2"
+        v1_manifest = json.loads((v1 / fit.FIT_MANIFEST_NAME).read_text())
+        v2_manifest = json.loads((v2 / fit.FIT_MANIFEST_NAME).read_text())
+        v2_package = json.loads((v2 / fit.PACKAGE_MANIFEST_NAME).read_text())
+        executable_hashes = {
+            fit.SPEC_NAME: "72af7533346c4e5515d62337184a1994441123ac7da89b73ac09c162c385c854",
+            fit.SETTINGS_NAME: "019d835f5fa6bc3512b90507c85ea69f4dc38761adcd14ef7ea9bda92dbfa829",
+            fit.COEFFICIENTS_NAME: "0ad86d0f2f97a4cb0804de1f08740e45f1825ec77e7792450f8add1db8bf01e9",
+            fit.MODEL_NAME: "570fe668ad67dcaa3d27bfb736315e5a6b01248cb6bc850c050d39b97ece026f",
+        }
+        for filename, expected_hash in executable_hashes.items():
+            self.assertEqual((v2 / filename).read_bytes(), (v1 / filename).read_bytes())
+            self.assertEqual(sha256(v2 / filename), expected_hash)
+            self.assertEqual(v2_package["files_sha256"][filename], expected_hash)
+        self.assertEqual(
+            v2_manifest["development_selection"],
+            v1_manifest["development_selection"],
+        )
+        self.assertEqual(
+            v2_manifest["all_development_fit"],
+            v1_manifest["all_development_fit"],
+        )
+        self.assertEqual(
+            v2_manifest["source"]["development_person_days_sha256"],
+            "338133f2f1a3db178f4eb4e45a6f2e4fa75c78ae56085e6d1b2ce75713106b50",
+        )
+        self.assertEqual(
+            v2_manifest["source"]["registry_sha256"],
+            sha256(
+                REPO_ROOT
+                / "data/modeling/mandatory-tour-frequency-candidate-registry-v2-2026-08-19.json"
+            ),
+        )
+        self.assertEqual(
+            v2_manifest["source"]["development_outcome_manifest_sha256"],
+            sha256(
+                REPO_ROOT
+                / "data/modeling/mandatory-tour-frequency-development-outcomes-v2-2026-08-19.json"
+            ),
+        )
+        self.assertEqual(v2_manifest["development_selection"]["selected_regularization"], 0.03)
+        self.assertFalse(v2_package["installation_authorized"])
+        self.assertFalse(v2_package["acceptance_outcomes_read"])
+        self.assertEqual(
+            v2_manifest["candidate_package"]["manifest_sha256"],
+            sha256(v2 / fit.PACKAGE_MANIFEST_NAME),
+        )
+
     def test_runtime_smoke_is_execution_evidence_not_acceptance(self):
         evidence = json.loads((
             REPO_ROOT
@@ -409,6 +459,56 @@ class MandatoryTourCandidateFitTests(unittest.TestCase):
             evidence["output"]["work_tours"] + evidence["output"]["school_tours"],
             evidence["output"]["mandatory_tours"],
         )
+
+    def test_v2_runtime_smoke_locks_the_actual_execution_outputs(self):
+        evidence_path = (
+            REPO_ROOT
+            / "data/modeling/mandatory-tour-frequency-runtime-smoke-v2-2026-08-20.json"
+        )
+        evidence = json.loads(evidence_path.read_text())
+        package = (
+            REPO_ROOT
+            / "data/modeling/activitysim-mandatory-tour-frequency-national-v2"
+            / fit.PACKAGE_MANIFEST_NAME
+        )
+        self.assertEqual(
+            evidence["schema_version"],
+            "openplan.activitysim-mandatory-tour-frequency-runtime-smoke.v2",
+        )
+        self.assertEqual(evidence["status"], "candidate_executed_not_accepted")
+        self.assertFalse(evidence["acceptance_outcomes_read"])
+        self.assertFalse(evidence["candidate"]["installation_authorized"])
+        self.assertEqual(
+            evidence["candidate"]["coefficient_package_sha256"], sha256(package)
+        )
+        self.assertEqual(
+            evidence["supersedes"]["runtime_smoke_sha256"],
+            sha256(
+                REPO_ROOT
+                / "data/modeling/mandatory-tour-frequency-runtime-smoke-2026-08-19.json"
+            ),
+        )
+        self.assertEqual(
+            evidence["output"]["files_sha256"],
+            {
+                "final_households.csv": "c611db1470e46e5fec792a20676c51e906deb6b2b9b8e2437aefa031d8bc7ab0",
+                "final_persons.csv": "0a08d5aa871bf95d90d438c80ef9b5f93ccb57afb040f17b3d754153ea3b2b47",
+                "final_tours.csv": "dbafdade6cdef9b98d769d07b59dd25eaadc5673324049efc94b751e5be69028",
+            },
+        )
+        self.assertEqual(
+            evidence["output"]["mandatory_tour_frequency_choices"],
+            {
+                "work1": 11633,
+                "work2": 429,
+                "school1": 7792,
+                "school2": 182,
+                "work_and_school": 71,
+            },
+        )
+        self.assertEqual(evidence["output"]["mandatory_tours"], 20789)
+        self.assertEqual(evidence["output"]["work_tours"], 12562)
+        self.assertEqual(evidence["output"]["school_tours"], 8227)
 
     def test_candidate_is_not_in_the_production_component_registry(self):
         accepted = json.loads((

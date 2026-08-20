@@ -280,6 +280,46 @@ class MandatoryTourCandidateRegistryTests(unittest.TestCase):
         )
         self.assertFalse(result["acceptance_outcomes_read"])
 
+    def test_v2_registry_locks_the_shared_reconstruction_without_changing_person_days(self):
+        registry_path = (
+            REPO_ROOT
+            / "data/modeling/mandatory-tour-frequency-candidate-registry-v2-2026-08-19.json"
+        )
+        outcome_path = (
+            REPO_ROOT
+            / "data/modeling/mandatory-tour-frequency-development-outcomes-v2-2026-08-19.json"
+        )
+        result = json.loads(registry_path.read_text())
+        outcome_manifest = json.loads(outcome_path.read_text())
+        self.assertEqual(outcome_manifest["schema_version"], outcomes.SCHEMA_VERSION)
+        self.assertEqual(outcome_manifest["partition_role"], "development")
+        self.assertIsNone(outcome_manifest["source"]["opening_lock_sha256"])
+        self.assertEqual(
+            outcome_manifest["implementation"], outcomes._implementation_record()
+        )
+        self.assertEqual(
+            outcome_manifest["outputs"]["person_days_sha256"],
+            "338133f2f1a3db178f4eb4e45a6f2e4fa75c78ae56085e6d1b2ce75713106b50",
+        )
+        self.assertEqual(
+            result["source"]["development_outcome_manifest_sha256"],
+            sha256(outcome_path),
+        )
+        self.assertEqual(
+            result["source"]["development_person_days_sha256"],
+            outcome_manifest["outputs"]["person_days_sha256"],
+        )
+        self.assertEqual(
+            result["source"]["outcome_reconstruction_closure_sha256"],
+            outcome_manifest["implementation"]["closure_sha256"],
+        )
+        self.assertEqual(result["development_inventory"]["supported_records"], 2083)
+        self.assertEqual(
+            result["development_inventory"]["candidate_predictor_invalid_records"],
+            26,
+        )
+        self.assertFalse(result["acceptance_outcomes_read"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -28,19 +28,9 @@ ACCEPTANCE_DIVISION_COUNT = 3
 REFERENCE_SMOOTHING_ALPHA = 0.5
 ACTIVITYSIM_SEEDS = list(range(2026081901, 2026081921))
 
-# NHTS is a United States adapter. These codes never enter a shared geography
-# type, and a future country's travel survey would provide its own registry.
-NHTS_CENSUS_DIVISIONS = {
-    "01": "new_england",
-    "02": "middle_atlantic",
-    "03": "east_north_central",
-    "04": "west_north_central",
-    "05": "south_atlantic",
-    "06": "east_south_central",
-    "07": "west_south_central",
-    "08": "mountain",
-    "09": "pacific",
-}
+# Backward-compatible name; the code universe belongs to the named U.S. source
+# adapter rather than this model component.
+NHTS_CENSUS_DIVISIONS = source.CENSUS_DIVISIONS
 
 PERSON_MEMBER = source.TABLE_FILES["persons"]
 PRE_OUTCOME_PERSON_COLUMNS = {
@@ -77,10 +67,7 @@ def _member_map(archive: zipfile.ZipFile) -> dict[str, str]:
 
 
 def _division_code(value: Any) -> str:
-    text = str(value or "").strip()
-    if text.isdigit():
-        return text.zfill(2)
-    return text
+    return source.normalize_geographic_holdout_code(value)
 
 
 def _weekday_weight(value: Any) -> float:
