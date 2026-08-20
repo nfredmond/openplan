@@ -93,6 +93,25 @@ class AcceptedComponentTests(unittest.TestCase):
             with self.assertRaisesRegex(AcceptedComponentError, "different candidate package"):
                 resolve_accepted_components(registry)
 
+    def test_rejected_acceptance_result_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            registry = self.fixture(root)
+            acceptance = root / "acceptance.json"
+            payload = json.loads(acceptance.read_text())
+            payload["status"] = "rejected_component"
+            acceptance.write_text(json.dumps(payload))
+            registry_payload = json.loads(registry.read_text())
+            registry_payload["components"][0]["acceptance_result_sha256"] = digest(
+                acceptance
+            )
+            registry.write_text(json.dumps(registry_payload))
+
+            with self.assertRaisesRegex(
+                AcceptedComponentError, "no matching accepted decision"
+            ):
+                resolve_accepted_components(registry)
+
 
 if __name__ == "__main__":
     unittest.main()

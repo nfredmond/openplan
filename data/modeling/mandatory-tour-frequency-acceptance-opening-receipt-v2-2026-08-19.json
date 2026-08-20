@@ -1,0 +1,9 @@
+{
+  "aggregate_result_path": "data/modeling/mandatory-tour-frequency-acceptance-result-v2-2026-08-19.json",
+  "component": "mandatory_tour_frequency",
+  "failure_consumes_receipt": true,
+  "opening_lock_sha256": "ed1a69d463aa70afa77418a5ed7b7e61cc4622fa32a31f318d42e76fcb540458",
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-acceptance-opening-receipt.v1",
+  "source_archive_sha256": "64530c396d5f164d2259a22f7042f27bee5147babcd367568ddbfafe6c8bf34c",
+  "status": "acceptance_opening_consumed_before_source_member_read"
+}

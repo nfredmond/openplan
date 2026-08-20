@@ -151,3 +151,38 @@ generator is `scripts/modeling/mandatory_tour_frequency_registry.py`. The lock
 names the exact interval formula, seeds, source hash, accepted predictors, and
 implementation hashes required before the three acceptance divisions may be
 opened.
+
+## Outcome, 2026-08-20
+
+The frozen candidate was evaluated once on the three held-out divisions and
+was rejected. The aggregate result is
+`data/modeling/mandatory-tour-frequency-acceptance-result-v2-2026-08-19.json`
+(SHA-256
+`1a139663438c6522104c852f1811839f17e32fa702bb2f95959cf26b6a3c9de4`).
+The opening receipt was written before any source member was read and records
+that this holdout is consumed. The evaluator did not persist person-day rows.
+
+Two of the six preregistered gates failed. The candidate's pooled log loss was
+0.142452, compared with 0.143564 for the worker/student reference, but the
+candidate-minus-reference upper confidence bound was +0.002766 and the
+candidate won only one of three divisions. Its pooled total-variation distance
+was 0.020830, compared with 0.019263 for the reference, although it won that
+comparison in two divisions. Coverage, tour totals, transfer cells, and
+stochastic stability passed. Passing those four gates does not override either
+failed gate.
+
+The candidate remains outside the production accepted-component registry.
+OpenPlan therefore continues to disclose the borrowed Bay Area source of the
+remaining `prototype_mtc` behavior, including mandatory-tour frequency. The
+simple reference model is not promoted either: selecting it after seeing this
+result would be a post-hoc decision.
+
+Any successor must be a materially new, preregistered study with an independent
+outcome source. It should align survey and runtime predictors exactly, account
+for uncertainty from simulated auto ownership, and share information across
+rare one-versus-two-tour alternatives instead of estimating a separate full
+slope vector for each. It must retain one national coefficient set and must not
+introduce division constants, place identifiers, regional scalars, or post-hoc
+rescaling. The 2022 NHTS acceptance divisions may not be reused as fresh
+confirmation because their aggregate outcomes have now informed the next
+design.

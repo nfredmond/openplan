@@ -1,0 +1,1495 @@
+{
+  "component": "mandatory_tour_frequency",
+  "evaluation": {
+    "gate_count": 6,
+    "gates": {
+      "choice_distribution": {
+        "by_division": {
+          "05": {
+            "candidate_expected_shares": {
+              "school1": 0.2761251544219273,
+              "school2": 0.008910153990916136,
+              "work1": 0.6862375942345476,
+              "work2": 0.022921752528397038,
+              "work_and_school": 0.005805344824212344
+            },
+            "candidate_minus_reference": 0.0031184901939638604,
+            "candidate_total_variation": 0.0320913557098694,
+            "candidate_wins": false,
+            "observed_shares": {
+              "school1": 0.270111619205771,
+              "school2": 0.0,
+              "work1": 0.7183289499444167,
+              "work2": 0.005838517930046868,
+              "work_and_school": 0.005720912919765281
+            },
+            "reference_expected_shares": {
+              "school1": 0.27465722033812645,
+              "school2": 0.008373268345038667,
+              "work1": 0.6898056933869959,
+              "work2": 0.021892513968558056,
+              "work_and_school": 0.00527130396128024
+            },
+            "reference_total_variation": 0.02897286551590554
+          },
+          "06": {
+            "candidate_expected_shares": {
+              "school1": 0.17930951375217666,
+              "school2": 0.007159918109827813,
+              "work1": 0.7816129351076774,
+              "work2": 0.023053210927035387,
+              "work_and_school": 0.008864422103282771
+            },
+            "candidate_minus_reference": -0.0013341398507263971,
+            "candidate_total_variation": 0.0308337570712226,
+            "candidate_wins": true,
+            "observed_shares": {
+              "school1": 0.20699935586789076,
+              "school2": 0.0040799688687198155,
+              "work1": 0.784756850063186,
+              "work2": 0.004163825200203636,
+              "work_and_school": 0.0
+            },
+            "reference_expected_shares": {
+              "school1": 0.17483145894594188,
+              "school2": 0.007275545588494966,
+              "work1": 0.7855514291378699,
+              "work2": 0.023839933922139282,
+              "work_and_school": 0.008501632405554372
+            },
+            "reference_total_variation": 0.032167896921949
+          },
+          "08": {
+            "candidate_expected_shares": {
+              "school1": 0.29038927499896483,
+              "school2": 0.009115750009483115,
+              "work1": 0.6711117723665395,
+              "work2": 0.022292228002243734,
+              "work_and_school": 0.007090974622768935
+            },
+            "candidate_minus_reference": -0.0040868804977187215,
+            "candidate_total_variation": 0.022557121526383072,
+            "candidate_wins": true,
+            "observed_shares": {
+              "school1": 0.29794236814791974,
+              "school2": 0.0,
+              "work1": 0.6626694282218848,
+              "work2": 0.037296256379671905,
+              "work_and_school": 0.002091947250523716
+            },
+            "reference_expected_shares": {
+              "school1": 0.28745366713326803,
+              "school2": 0.009084108989953968,
+              "work1": 0.6759646611423927,
+              "work2": 0.021140955370221905,
+              "work_and_school": 0.006356607364163683
+            },
+            "reference_total_variation": 0.026644002024101793
+          }
+        },
+        "division_wins": 2,
+        "passed": false,
+        "pooled": {
+          "candidate_expected_shares": {
+            "school1": 0.26136026786602756,
+            "school2": 0.00863134792062957,
+            "work1": 0.7005386304295689,
+            "work2": 0.02280305602183686,
+            "work_and_school": 0.006666697761935875
+          },
+          "candidate_minus_reference": 0.001567570001930179,
+          "candidate_total_variation": 0.020830367783172047,
+          "candidate_wins": false,
+          "observed_shares": {
+            "school1": 0.26470075303319096,
+            "school2": 0.0007589046451024527,
+            "work1": 0.7180285130455779,
+            "work2": 0.01268024606883656,
+            "work_and_school": 0.003831583207291636
+          },
+          "reference_expected_shares": {
+            "school1": 0.258998691810298,
+            "school2": 0.008330723095977136,
+            "work1": 0.7044677764872286,
+            "work2": 0.022083850303858385,
+            "work_and_school": 0.006118958302636569
+          },
+          "reference_total_variation": 0.019262797781241868
+        }
+      },
+      "outcome_coverage": {
+        "by_division": {
+          "05": {
+            "complete_mandatory_weight": 20569034.16287759,
+            "supported_share": 0.9900285208855278,
+            "supported_weight": 20363930.46831759
+          },
+          "06": {
+            "complete_mandatory_weight": 6457276.760365697,
+            "supported_share": 1.0,
+            "supported_weight": 6457276.760365697
+          },
+          "08": {
+            "complete_mandatory_weight": 7915684.4980214,
+            "supported_share": 0.9972532640483038,
+            "supported_weight": 7893942.2028284
+          }
+        },
+        "denominator": "supported plus out-of-support complete mandatory person-days",
+        "design_weighted_supported_share": 0.9935079268651343,
+        "exclusion_reasons_by_division": {
+          "05": {
+            "did_not_return_home": {
+              "records": 126,
+              "weekday_weight": 4348684.405664901
+            },
+            "did_not_return_home|not_home_anchored": {
+              "records": 5,
+              "weekday_weight": 153406.749043
+            },
+            "discontinuous_purpose_chain|not_home_anchored": {
+              "records": 1,
+              "weekday_weight": 26284.452674
+            },
+            "invalid_trip_fields": {
+              "records": 3,
+              "weekday_weight": 134709.487168
+            },
+            "invalid_trip_fields|invalid_trip_inside_chain|not_home_anchored": {
+              "records": 1,
+              "weekday_weight": 8888.4765108
+            },
+            "invalid_trip_fields|not_home_anchored": {
+              "records": 2,
+              "weekday_weight": 23584.0177177
+            },
+            "not_home_anchored": {
+              "records": 58,
+              "weekday_weight": 1735910.9382713002
+            },
+            "observed_mandatory_DAP_absent": {
+              "records": 1634,
+              "weekday_weight": 34478368.577140376
+            },
+            "work=3;school=0": {
+              "records": 1,
+              "weekday_weight": 205103.69456
+            }
+          },
+          "06": {
+            "did_not_return_home": {
+              "records": 35,
+              "weekday_weight": 1361174.7212285
+            },
+            "did_not_return_home|not_home_anchored": {
+              "records": 1,
+              "weekday_weight": 31864.484363
+            },
+            "invalid_trip_fields": {
+              "records": 2,
+              "weekday_weight": 9800.7073624
+            },
+            "invalid_trip_fields|not_home_anchored": {
+              "records": 3,
+              "weekday_weight": 141469.791769
+            },
+            "not_home_anchored": {
+              "records": 11,
+              "weekday_weight": 190796.4348538
+            },
+            "observed_mandatory_DAP_absent": {
+              "records": 452,
+              "weekday_weight": 9682933.487470012
+            }
+          },
+          "08": {
+            "did_not_return_home": {
+              "records": 66,
+              "weekday_weight": 2326671.2667878
+            },
+            "did_not_return_home|not_home_anchored": {
+              "records": 3,
+              "weekday_weight": 97914.021636
+            },
+            "invalid_trip_fields|not_home_anchored": {
+              "records": 1,
+              "weekday_weight": 6912.0780924
+            },
+            "not_home_anchored": {
+              "records": 18,
+              "weekday_weight": 415295.7023344999
+            },
+            "observed_mandatory_DAP_absent": {
+              "records": 629,
+              "weekday_weight": 12643490.001963576
+            },
+            "work=1;school=2": {
+              "records": 1,
+              "weekday_weight": 11331.484966
+            },
+            "work=3;school=0": {
+              "records": 1,
+              "weekday_weight": 10410.810227
+            }
+          }
+        },
+        "minimum": 0.95,
+        "passed": true,
+        "statuses_by_division": {
+          "05": {
+            "incomplete_diary": {
+              "positive_weekday_weight_share": 0.10461266439182076,
+              "records": 196,
+              "weekday_weight": 6431468.527049703
+            },
+            "no_observed_mandatory_pattern": {
+              "positive_weekday_weight_share": 0.5608165515493023,
+              "records": 1634,
+              "weekday_weight": 34478368.577140376
+            },
+            "out_of_support_mandatory_pattern": {
+              "positive_weekday_weight_share": 0.003336165585555695,
+              "records": 1,
+              "weekday_weight": 205103.69456
+            },
+            "supported_alternative": {
+              "positive_weekday_weight_share": 0.33123461847332125,
+              "records": 609,
+              "weekday_weight": 20363930.46831759
+            }
+          },
+          "06": {
+            "incomplete_diary": {
+              "positive_weekday_weight_share": 0.09706715685315322,
+              "records": 52,
+              "weekday_weight": 1735106.1395767003
+            },
+            "no_observed_mandatory_pattern": {
+              "positive_weekday_weight_share": 0.5416929847624192,
+              "records": 452,
+              "weekday_weight": 9682933.487470012
+            },
+            "supported_alternative": {
+              "positive_weekday_weight_share": 0.3612398583844276,
+              "records": 195,
+              "weekday_weight": 6457276.760365697
+            }
+          },
+          "08": {
+            "incomplete_diary": {
+              "positive_weekday_weight_share": 0.12162680566306162,
+              "records": 88,
+              "weekday_weight": 2846793.0688507
+            },
+            "no_observed_mandatory_pattern": {
+              "positive_weekday_weight_share": 0.5401823259294777,
+              "records": 629,
+              "weekday_weight": 12643490.001963576
+            },
+            "out_of_support_mandatory_pattern": {
+              "positive_weekday_weight_share": 0.0009289210167901452,
+              "records": 2,
+              "weekday_weight": 21742.295192999998
+            },
+            "supported_alternative": {
+              "positive_weekday_weight_share": 0.3372619473906706,
+              "records": 240,
+              "weekday_weight": 7893942.2028284
+            }
+          }
+        }
+      },
+      "primary_predictive_score": {
+        "by_division": {
+          "05": {
+            "candidate_log_loss": 0.10412265569135774,
+            "candidate_wins": false,
+            "reference_log_loss": 0.10357764858315847
+          },
+          "06": {
+            "candidate_log_loss": 0.1413326548568946,
+            "candidate_wins": true,
+            "reference_log_loss": 0.1549257748742322
+          },
+          "08": {
+            "candidate_log_loss": 0.2422462674754101,
+            "candidate_wins": false,
+            "reference_log_loss": 0.2374225328638585
+          }
+        },
+        "candidate_minus_reference": -0.0011118422227587926,
+        "degrees_of_freedom": 1892,
+        "one_sided_critical_value": 1.6456593986523553,
+        "passed": false,
+        "pooled_candidate_log_loss": 0.14245217732453375,
+        "pooled_reference_log_loss": 0.14356401954729253,
+        "standard_error": 0.002356537972847583,
+        "upper_confidence_bound": 0.0027662166405390013
+      },
+      "stochastic_stability": {
+        "comparisons": [
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7089171961694976,
+            "seed": 2026081901,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.02121371378218006,
+            "seed": 2026081901,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2528911618000806,
+            "seed": 2026081901,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.007880317067014487,
+            "seed": 2026081901,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.009097611181227375,
+            "seed": 2026081901,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6919319927651167,
+            "seed": 2026081902,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.02307927464663404,
+            "seed": 2026081902,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2655613230140358,
+            "seed": 2026081902,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.013974265428895061,
+            "seed": 2026081902,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.005453144145318359,
+            "seed": 2026081902,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7059091214843685,
+            "seed": 2026081903,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.01978122532339037,
+            "seed": 2026081903,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.25719337621842986,
+            "seed": 2026081903,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.011215656623836267,
+            "seed": 2026081903,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.005900620349974971,
+            "seed": 2026081903,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7011715141876559,
+            "seed": 2026081904,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.021948073940182406,
+            "seed": 2026081904,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.26487783030708345,
+            "seed": 2026081904,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.009109081465798254,
+            "seed": 2026081904,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.0028935000992800245,
+            "seed": 2026081904,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6937639911946429,
+            "seed": 2026081905,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.029199133328580335,
+            "seed": 2026081905,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.26217316396948814,
+            "seed": 2026081905,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.007186823308458266,
+            "seed": 2026081905,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.0076768881988302255,
+            "seed": 2026081905,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6867561342286589,
+            "seed": 2026081906,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.033314097728169824,
+            "seed": 2026081906,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2689245947662818,
+            "seed": 2026081906,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.007048467351913249,
+            "seed": 2026081906,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.0039567059249763,
+            "seed": 2026081906,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7015987809564584,
+            "seed": 2026081907,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.03306791699449444,
+            "seed": 2026081907,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.25908615398307505,
+            "seed": 2026081907,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.002722427088659215,
+            "seed": 2026081907,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.003524720977312863,
+            "seed": 2026081907,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7095429040471851,
+            "seed": 2026081908,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.022500715112053187,
+            "seed": 2026081908,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2615428364582075,
+            "seed": 2026081908,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.0035471693386467944,
+            "seed": 2026081908,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.0028663750439073626,
+            "seed": 2026081908,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6861931163057875,
+            "seed": 2026081909,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.03404126614816475,
+            "seed": 2026081909,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.26243426106958795,
+            "seed": 2026081909,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.005891624312192788,
+            "seed": 2026081909,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.011439732164267009,
+            "seed": 2026081909,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6981124747282174,
+            "seed": 2026081910,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.017953442219570473,
+            "seed": 2026081910,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.26608718140114185,
+            "seed": 2026081910,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.011683086549843454,
+            "seed": 2026081910,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.006163815101226893,
+            "seed": 2026081910,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7133871471445304,
+            "seed": 2026081911,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.015035932222068796,
+            "seed": 2026081911,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.24763793135262466,
+            "seed": 2026081911,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.019581159076675743,
+            "seed": 2026081911,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.004357830204100385,
+            "seed": 2026081911,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6945796322766831,
+            "seed": 2026081912,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.024192890615615237,
+            "seed": 2026081912,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2630259382804501,
+            "seed": 2026081912,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.011547182841999484,
+            "seed": 2026081912,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.006654355985252073,
+            "seed": 2026081912,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7041278014063923,
+            "seed": 2026081913,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.022329628524823675,
+            "seed": 2026081913,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.25434196455729935,
+            "seed": 2026081913,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.01656528180021025,
+            "seed": 2026081913,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.0026353237112744926,
+            "seed": 2026081913,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7066861619906586,
+            "seed": 2026081914,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.020610988453006997,
+            "seed": 2026081914,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.25525442414732047,
+            "seed": 2026081914,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.007137357021813357,
+            "seed": 2026081914,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.010311068387200452,
+            "seed": 2026081914,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6824499503564441,
+            "seed": 2026081915,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.03783537724557057,
+            "seed": 2026081915,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2593870318030742,
+            "seed": 2026081915,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.010131030000860488,
+            "seed": 2026081915,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.010196610594050548,
+            "seed": 2026081915,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7073625721843935,
+            "seed": 2026081916,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.025655522529082098,
+            "seed": 2026081916,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.25367055262880156,
+            "seed": 2026081916,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.010052552449402018,
+            "seed": 2026081916,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.003258800208320857,
+            "seed": 2026081916,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7037573765537161,
+            "seed": 2026081917,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.017284349613121378,
+            "seed": 2026081917,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.26223729157679665,
+            "seed": 2026081917,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.009350647779973121,
+            "seed": 2026081917,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.00737033447639284,
+            "seed": 2026081917,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6950261699186305,
+            "seed": 2026081918,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.020992766765038962,
+            "seed": 2026081918,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2693809837912536,
+            "seed": 2026081918,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.00193809988364697,
+            "seed": 2026081918,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.01266197964142996,
+            "seed": 2026081918,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.7070228863497648,
+            "seed": 2026081919,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.017952574425063077,
+            "seed": 2026081919,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.25540160600852724,
+            "seed": 2026081919,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.009804424204207686,
+            "seed": 2026081919,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.00981850901243715,
+            "seed": 2026081919,
+            "upper": 0.018080150072553522
+          },
+          {
+            "alternative": "work1",
+            "expected_weighted_share": 0.7005386304295689,
+            "lower": 0.6691733444949635,
+            "passed": true,
+            "realized_weighted_share": 0.6957298271483997,
+            "seed": 2026081920,
+            "upper": 0.7319039163641743
+          },
+          {
+            "alternative": "work2",
+            "expected_weighted_share": 0.02280305602183686,
+            "lower": -0.0018702202424591245,
+            "passed": true,
+            "realized_weighted_share": 0.025299528255173488,
+            "seed": 2026081920,
+            "upper": 0.04747633228613285
+          },
+          {
+            "alternative": "school1",
+            "expected_weighted_share": 0.26136026786602756,
+            "lower": 0.23910143711536105,
+            "passed": true,
+            "realized_weighted_share": 0.2699162915973531,
+            "seed": 2026081920,
+            "upper": 0.2836190986166941
+          },
+          {
+            "alternative": "school2",
+            "expected_weighted_share": 0.00863134792062957,
+            "lower": -0.006771880073409875,
+            "passed": true,
+            "realized_weighted_share": 0.0069598496834838135,
+            "seed": 2026081920,
+            "upper": 0.024034575914669017
+          },
+          {
+            "alternative": "work_and_school",
+            "expected_weighted_share": 0.006666697761935875,
+            "lower": -0.004746754548681771,
+            "passed": true,
+            "realized_weighted_share": 0.0020945033155898977,
+            "seed": 2026081920,
+            "upper": 0.018080150072553522
+          }
+        ],
+        "comparisons_evaluated": 100,
+        "normal_critical_value": 3.4807564043462422,
+        "passed": true,
+        "seeds_evaluated": 20
+      },
+      "tour_totals": {
+        "measures": {
+          "school": {
+            "by_division": {
+              "05": {
+                "candidate_expected": 0.29975080722797187,
+                "degrees_of_freedom": 1892,
+                "inside": true,
+                "observed": 0.27583253212553627,
+                "observed_95_percent_interval": [
+                  0.18738146806652295,
+                  0.3642835961845496
+                ],
+                "observed_standard_error": 0.04510005325917239
+              },
+              "06": {
+                "candidate_expected": 0.2024937720751151,
+                "degrees_of_freedom": 1892,
+                "inside": true,
+                "observed": 0.21515929360533032,
+                "observed_95_percent_interval": [
+                  0.1308338337363034,
+                  0.2994847534743572
+                ],
+                "observed_standard_error": 0.042996461056250886
+              },
+              "08": {
+                "candidate_expected": 0.3157117496406999,
+                "degrees_of_freedom": 1892,
+                "inside": true,
+                "observed": 0.3000343153984435,
+                "observed_95_percent_interval": [
+                  0.1951338551210754,
+                  0.4049347756758116
+                ],
+                "observed_standard_error": 0.05348738758263587
+              }
+            },
+            "divisions_inside": 3,
+            "passed": true,
+            "pooled": {
+              "candidate_expected": 0.2852896614692223,
+              "degrees_of_freedom": 1892,
+              "inside": true,
+              "observed": 0.27005014553068757,
+              "observed_95_percent_interval": [
+                0.2099860998233086,
+                0.3301141912380665
+              ],
+              "observed_standard_error": 0.030625879848735587
+            }
+          },
+          "work": {
+            "by_division": {
+              "05": {
+                "candidate_expected": 0.7378864441155538,
+                "degrees_of_freedom": 1892,
+                "inside": true,
+                "observed": 0.7357268987242761,
+                "observed_95_percent_interval": [
+                  0.6461075323758002,
+                  0.825346265072752
+                ],
+                "observed_standard_error": 0.04569575548206959
+              },
+              "06": {
+                "candidate_expected": 0.8365837790650309,
+                "degrees_of_freedom": 1892,
+                "inside": true,
+                "observed": 0.793084500463593,
+                "observed_95_percent_interval": [
+                  0.7105610894765657,
+                  0.8756079114506203
+                ],
+                "observed_standard_error": 0.04207761964469265
+              },
+              "08": {
+                "candidate_expected": 0.7227872029937958,
+                "degrees_of_freedom": 1892,
+                "inside": true,
+                "observed": 0.7393538882317521,
+                "observed_95_percent_interval": [
+                  0.6196013656383266,
+                  0.8591064108251776
+                ],
+                "observed_standard_error": 0.061060262014263234
+              }
+            },
+            "divisions_inside": 3,
+            "passed": true,
+            "pooled": {
+              "candidate_expected": 0.75281144023518,
+              "degrees_of_freedom": 1892,
+              "inside": true,
+              "observed": 0.7472205883905431,
+              "observed_95_percent_interval": [
+                0.685236429161242,
+                0.8092047476198441
+              ],
+              "observed_standard_error": 0.031604920892770554
+            }
+          }
+        },
+        "passed": true,
+        "rescaled": false
+      },
+      "transfer_cells": {
+        "cells": [
+          {
+            "candidate_expected_minus_observed_shares": {
+              "school1": -0.025132791260618292,
+              "school2": 0.02328886167158732,
+              "work1": 0.002835308741115904,
+              "work2": 0.00042915657445484105,
+              "work_and_school": -0.001420535726539085
+            },
+            "candidate_log_loss": 0.04266502187120158,
+            "candidate_minus_reference_log_loss": -0.005266339430802081,
+            "candidate_school_expected_minus_observed": 0.020024396356016494,
+            "candidate_work_expected_minus_observed": 0.002273086163486501,
+            "degrees_of_freedom": 1892,
+            "holm_adjusted_p_value": 1.0,
+            "holm_threshold": 0.05,
+            "p_value": 0.9999981851703289,
+            "records": 208,
+            "reference_expected_minus_observed_shares": {
+              "school1": -0.02938680420609263,
+              "school2": 0.023478037755523807,
+              "work1": 0.006013897238293399,
+              "work2": 0.000973709834469326,
+              "work_and_school": -0.0010788406221930306
+            },
+            "reference_log_loss": 0.04793136130200366,
+            "reference_school_expected_minus_observed": 0.016490430682760904,
+            "reference_work_expected_minus_observed": 0.006882476285039018,
+            "significant_deterioration": false,
+            "standard_error": 0.001133689596767954,
+            "student": true,
+            "urban_rural_code": "01",
+            "worker": false
+          },
+          {
+            "candidate_expected_minus_observed_shares": {
+              "school1": 0.001761994252007809,
+              "school2": 0.0003563364322745657,
+              "work1": -0.021865885454292133,
+              "work2": 0.01938993904748782,
+              "work_and_school": 0.0003576157225215106
+            },
+            "candidate_log_loss": 0.0829253161723064,
+            "candidate_minus_reference_log_loss": 0.002215651833802507,
+            "candidate_school_expected_minus_observed": 0.0028322828390784528,
+            "candidate_work_expected_minus_observed": 0.017271608363205626,
+            "degrees_of_freedom": 1892,
+            "holm_adjusted_p_value": 0.08305620639238304,
+            "holm_threshold": 0.016666666666666666,
+            "p_value": 0.027685402130794345,
+            "records": 531,
+            "reference_expected_minus_observed_shares": {
+              "school1": 0.0019575468673751393,
+              "school2": 0.0003557452863749551,
+              "work1": -0.020477443356458402,
+              "work2": 0.017808405916332058,
+              "work_and_school": 0.0003557452863749551
+            },
+            "reference_log_loss": 0.08070966433850389,
+            "reference_school_expected_minus_observed": 0.0030247827265000044,
+            "reference_work_expected_minus_observed": 0.01549511376258228,
+            "significant_deterioration": false,
+            "standard_error": 0.0011557078286098573,
+            "student": false,
+            "urban_rural_code": "01",
+            "worker": true
+          },
+          {
+            "candidate_expected_minus_observed_shares": {
+              "school1": 0.001801785818724307,
+              "school2": 0.00035203362289840757,
+              "work1": -0.02861881975572933,
+              "work2": 0.02610108711792144,
+              "work_and_school": 0.0003639131961839361
+            },
+            "candidate_log_loss": 0.05501964086807899,
+            "candidate_minus_reference_log_loss": -0.0012124386320370767,
+            "candidate_school_expected_minus_observed": 0.002869766260705058,
+            "candidate_work_expected_minus_observed": 0.023947267676298845,
+            "degrees_of_freedom": 1892,
+            "holm_adjusted_p_value": 1.0,
+            "holm_threshold": 0.025,
+            "p_value": 0.7076804650038142,
+            "records": 157,
+            "reference_expected_minus_observed_shares": {
+              "school1": 0.0019575468673751384,
+              "school2": 0.000355745286374955,
+              "work1": -0.02761259147165296,
+              "work2": 0.024943554031526927,
+              "work_and_school": 0.000355745286374955
+            },
+            "reference_log_loss": 0.05623207950011607,
+            "reference_school_expected_minus_observed": 0.0030247827265000044,
+            "reference_work_expected_minus_observed": 0.022630261877776947,
+            "significant_deterioration": false,
+            "standard_error": 0.0022176797863816575,
+            "student": false,
+            "urban_rural_code": "02",
+            "worker": true
+          }
+        ],
+        "eligible_cells": 3,
+        "holm_family_alpha": 0.05,
+        "passed": true
+      }
+    },
+    "inventory": {
+      "acceptance_divisions": [
+        "05",
+        "06",
+        "08"
+      ],
+      "alternatives_in_model_order": [
+        "work1",
+        "work2",
+        "school1",
+        "school2",
+        "work_and_school"
+      ],
+      "design_records": 4098,
+      "supported_records": 1044
+    },
+    "passed": false
+  },
+  "evaluation_status": "acceptance_evaluated_once",
+  "evidence_hashes": {
+    "candidate_package_manifest_sha256": "10ebad2b5d31ead1b872ec100cc57f7ffb3e990f5c32f7d86656b5c5273e2728",
+    "evaluator_closure_sha256": "02da1d6f1a94a436e3977390689662fc83031fc77efcc498423952e23f16ff07",
+    "opening_lock_sha256": "ed1a69d463aa70afa77418a5ed7b7e61cc4622fa32a31f318d42e76fcb540458",
+    "opening_receipt_sha256": "21511a5011bf7634be493ea8f2fc0b8e1d2b64e5507ee1ff6d20aa9ee0934742",
+    "outcome_reconstruction_closure_sha256": "61cc7afec2761c6ec2d351d9b360df73068db1189e0f9f826c63ce46fd01f858",
+    "protocol_sha256": "e26ea887f493fc4e2a38c2e2c75d7e54ec5aa8c6a26deeb44b4bb487a254a3aa"
+  },
+  "limits": [
+    "Acceptance covers mandatory_tour_frequency conditional on observed mandatory DAP only.",
+    "It does not establish county-level accuracy or validate other ActivitySim components.",
+    "The evaluator cannot prove that another process did not access the external raw archive outside this locked path.",
+    "The result contains aggregates only; the evaluator never persisted reconstructed person-days."
+  ],
+  "production_acceptance_passed": false,
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-acceptance-result.v1",
+  "scope": "ActivitySim mandatory-tour-frequency component conditional on observed mandatory DAP",
+  "source": {
+    "candidate_package_manifest_sha256": "10ebad2b5d31ead1b872ec100cc57f7ffb3e990f5c32f7d86656b5c5273e2728",
+    "evaluator_closure_sha256": "02da1d6f1a94a436e3977390689662fc83031fc77efcc498423952e23f16ff07",
+    "opening_lock_sha256": "ed1a69d463aa70afa77418a5ed7b7e61cc4622fa32a31f318d42e76fcb540458",
+    "opening_receipt_sha256": "21511a5011bf7634be493ea8f2fc0b8e1d2b64e5507ee1ff6d20aa9ee0934742",
+    "outcome_reconstruction_closure_sha256": "61cc7afec2761c6ec2d351d9b360df73068db1189e0f9f826c63ce46fd01f858",
+    "protocol_sha256": "e26ea887f493fc4e2a38c2e2c75d7e54ec5aa8c6a26deeb44b4bb487a254a3aa"
+  },
+  "status": "rejected_component"
+}

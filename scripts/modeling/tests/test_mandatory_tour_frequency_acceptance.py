@@ -790,7 +790,7 @@ class LockedStudyFixture:
 
 
 class MandatoryTourFrequencyOpeningTests(unittest.TestCase):
-    def test_checked_in_opening_lock_is_complete_and_still_unconsumed(self):
+    def test_checked_in_opening_lock_is_complete(self):
         lock_path = acceptance.DEFAULT_OPENING_LOCK
         lock = json.loads(lock_path.read_text())
         self.assertEqual(
@@ -872,8 +872,66 @@ class MandatoryTourFrequencyOpeningTests(unittest.TestCase):
                 ),
             },
         )
-        self.assertFalse(acceptance.DEFAULT_OPENING_RECEIPT.exists())
-        self.assertFalse(acceptance.DEFAULT_ACCEPTANCE_RESULT.exists())
+
+    def test_checked_in_acceptance_was_consumed_once_and_rejected(self):
+        lock = json.loads(acceptance.DEFAULT_OPENING_LOCK.read_text())
+        receipt = json.loads(acceptance.DEFAULT_OPENING_RECEIPT.read_text())
+        result = json.loads(acceptance.DEFAULT_ACCEPTANCE_RESULT.read_text())
+
+        self.assertEqual(
+            receipt["schema_version"], acceptance.OPENING_RECEIPT_SCHEMA_VERSION
+        )
+        self.assertEqual(
+            receipt["status"],
+            "acceptance_opening_consumed_before_source_member_read",
+        )
+        self.assertIs(receipt["failure_consumes_receipt"], True)
+        self.assertEqual(
+            sha256(acceptance.DEFAULT_OPENING_RECEIPT),
+            "21511a5011bf7634be493ea8f2fc0b8e1d2b64e5507ee1ff6d20aa9ee0934742",
+        )
+        self.assertEqual(
+            receipt["opening_lock_sha256"], sha256(acceptance.DEFAULT_OPENING_LOCK)
+        )
+        self.assertEqual(
+            receipt["source_archive_sha256"], lock["source"]["archive_sha256"]
+        )
+
+        self.assertEqual(result["schema_version"], acceptance.RESULT_SCHEMA_VERSION)
+        self.assertEqual(result["status"], acceptance.REJECTED_COMPONENT_STATUS)
+        self.assertEqual(result["evaluation_status"], acceptance.EVALUATED_ONCE_STATUS)
+        self.assertIs(result["production_acceptance_passed"], False)
+        self.assertEqual(result["scope"], acceptance.COMPONENT_SCOPE)
+        self.assertEqual(
+            result["evidence_hashes"]["opening_receipt_sha256"],
+            sha256(acceptance.DEFAULT_OPENING_RECEIPT),
+        )
+        self.assertEqual(
+            result["evidence_hashes"]["opening_lock_sha256"],
+            sha256(acceptance.DEFAULT_OPENING_LOCK),
+        )
+        package_manifest_path = acceptance._resolve_recorded_path(
+            lock["candidate"]["package_manifest_path"]
+        )
+        self.assertEqual(
+            result["evidence_hashes"]["candidate_package_manifest_sha256"],
+            sha256(package_manifest_path),
+        )
+        self.assertEqual(result["evaluation"]["gate_count"], 6)
+        self.assertEqual(
+            {
+                name
+                for name, gate in result["evaluation"]["gates"].items()
+                if not gate["passed"]
+            },
+            {"primary_predictive_score", "choice_distribution"},
+        )
+        self.assertIs(result["evaluation"]["passed"], False)
+        acceptance._assert_aggregate_only(result)
+        self.assertEqual(
+            sha256(acceptance.DEFAULT_ACCEPTANCE_RESULT),
+            "1a139663438c6522104c852f1811839f17e32fa702bb2f95959cf26b6a3c9de4",
+        )
 
     def test_lock_binds_source_bytes_and_complete_numeric_runtime(self):
         with tempfile.TemporaryDirectory() as tmp:
