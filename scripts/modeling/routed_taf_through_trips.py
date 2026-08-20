@@ -239,6 +239,32 @@ def main() -> int:
     parser.add_argument("--boundary", action="append", required=True, metavar="FIPS=PATH")
     parser.add_argument("--checkpoint", required=True, help="Resumable per-origin JSONL")
     parser.add_argument("--output", required=True)
+    # Provenance travels with the flow table, not with this script. The defaults
+    # describe TAF because that is what it was written for; a run over any other
+    # table MUST override them, or the result file will name a source it never
+    # read. See the note on the payload below.
+    parser.add_argument(
+        "--source-label",
+        default="FHWA Traveler Analysis Framework, 2008 county-to-county long-distance person trips",
+        help="What the flow tables actually are. Override for any non-TAF input.",
+    )
+    parser.add_argument(
+        "--source-url",
+        default="https://www.fhwa.dot.gov/policyinformation/analysisframework/01.cfm",
+        help="Where that source is published.",
+    )
+    parser.add_argument(
+        "--flow-unit",
+        default="annual person trips",
+        help="What one unit of the flow column counts. TAF publishes annual person trips; "
+             "LODES publishes workers. The per-county fields are named for TAF's unit, so a "
+             "different input needs this to be readable.",
+    )
+    parser.add_argument(
+        "--what-this-is-not",
+        default="",
+        help="Replaces the TAF limitation sentence when the input is not TAF.",
+    )
     args = parser.parse_args()
 
     boundary_paths: dict[str, Path] = {}
@@ -302,8 +328,19 @@ def main() -> int:
     combined = combine_origin_summaries(records.values(), study_fips)
     payload = {
         "schema_version": "openplan.routed_taf_through_trips.v1",
-        "source": "FHWA Traveler Analysis Framework, 2008 county-to-county long-distance person trips",
-        "source_url": "https://www.fhwa.dot.gov/policyinformation/analysisframework/01.cfm",
+        # WHY THIS IS NOT A CONSTANT ANY MORE. The router does not care what its
+        # three-column origin,destination,flow table describes, so on 2026-08-20
+        # it was fed LEHD LODES commute flows — and stamped the result "FHWA
+        # Traveler Analysis Framework, 2008 long-distance person trips" and
+        # "annual person trips" on every field. A file that names the wrong
+        # source and the wrong unit is worse than no file: the numbers are
+        # right, the record of where they came from is a forgery, and nothing
+        # downstream can tell. So a run over anything other than TAF must say
+        # what it read.
+        "source": args.source_label,
+        "source_url": args.source_url,
+        "flow_unit": args.flow_unit,
+        "flow_tables": [str(Path(path)) for path in args.taf_csv],
         "network_source": FAF5_NETWORK_URL,
         "network_fingerprint": network_fingerprint,
         "input_fingerprint": fingerprint,
@@ -318,7 +355,7 @@ def main() -> int:
             "median_observed": round(float(np.median(list(snap_distances_by_fips.values()))), 3),
             "maximum_observed": round(float(np.max(list(snap_distances_by_fips.values()))), 3),
         },
-        "what_this_is_not": (
+        "what_this_is_not": args.what_this_is_not or (
             f"Only TAF long-distance travel (FHWA threshold {TAF_LONG_DISTANCE_MILES} miles), "
             "from 2008 person-trip estimates routed on FHWA's strategic FAF5 network. It is not "
             "the share of all vehicles at a boundary crossing and does not observe short-distance through travel."
