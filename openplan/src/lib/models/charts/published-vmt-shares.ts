@@ -37,6 +37,27 @@
  *
  * The comparison is still drawn as two distributions rather than a per-row
  * error, because the mapping is a judgement however well evidenced.
+ *
+ * ============================ HOW MUCH THAT JUDGEMENT MOVES, MEASURED
+ *
+ * Enough that the two arterial rows carry no information on their own.
+ * Across the twelve development runs, 113,029,728 daily vehicle-miles
+ * (2026-08-20, `docs/modeling/VMT_BY_CLASS_2026-08-20.md`):
+ *
+ *                              trunk here      trunk with freeway
+ *     Freeway ................ 0.74x           1.18x
+ *     Principal arterial ..... 2.01x           1.08x
+ *
+ * "The model puts twice the published share on principal arterials" and "both
+ * arterial rows are within 20% of published" are the same measurement read
+ * under two placements of one OSM tag. Neither is evidence about the model, and
+ * a claim resting on those rows is a claim about this mapping.
+ *
+ * The three rows BELOW them do not contain `trunk` and do not move: minor
+ * arterial 0.89x, collector 0.72x, local 0.33x. Those are the rows a finding
+ * can rest on, and they agree with an independent measurement — 96-100% of
+ * local links and about a third of collector links carry no assigned traffic
+ * (`docs/modeling/UNLOADED_LINK_COVERAGE_2026-08-20.md`).
  */
 
 export type PublishedVmtShare = {
