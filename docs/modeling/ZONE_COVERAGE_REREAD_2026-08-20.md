@@ -85,3 +85,98 @@ a residential street with no through movement genuinely carries little. Only a
 count on a link settles that for that link, and counts are sparse and biased
 toward big roads. Nothing here licenses a claim that the model is missing
 travel — only that it says nothing at all about most of the network.
+
+---
+
+## RESULT — 2026-08-20. Coverage does not move. The old decision stands.
+
+### Q1 — finer zoning buys almost no network reach
+
+Five development counties, `study-<fips>-base` (tracts) against `bg-<fips>`
+(block groups), both already on disk. Centroid connectors are excluded from the
+denominator: block groups add roughly three times as many, and including them
+would credit finer zoning for links it invented. With them removed the two arms
+contain **exactly the same links**, which is the check that the comparison is
+about loading rather than about network content.
+
+| county | zones | in-boundary links | tract carrying zero | block groups | change |
+|---|---|---:|---:|---:|---:|
+| 06069 | 12 → 46 | 7,744 | 81.2% | 76.9% | −4.3 |
+| 08014 | 24 → 52 | 10,678 | 79.7% | 78.2% | −1.5 |
+| 06047 | 63 → 164 | 35,893 | 79.9% | 79.7% | −0.2 |
+| 08101 | 58 → 153 | 34,999 | 82.4% | 80.2% | −2.2 |
+| 06107 | 103 → 305 | 64,639 | 76.0% | 74.4% | −1.6 |
+| **pooled** | | **153,953** | **78.9%** | **77.4%** | **−1.5** |
+
+**Tripling the zone count buys 1.5 points of network coverage.** The
+pre-registered threshold for "improves materially" was 5 points, so this is the
+outcome the pre-registration called the more useful one:
+
+> the skeleton is set by something other than zone size — connector placement or
+> the network itself — and the search for what the model is missing moves there.
+
+Tertiary roads move furthest and still do not move far: **38.9% → 31.3%**
+unloaded (−7.6 points), leaving roughly a third of tertiary links carrying
+nothing at three times the zone resolution.
+
+### Q2 — the unloaded stations pull a median toward 100%, from whichever side it is on
+
+A station on an unloaded link scores an absolute percent error of **exactly
+100%**, because the model says zero. So it does not simply make a run look
+worse. It drags the median toward 100 — penalising a county whose typical error
+is below that, and **flattering one whose typical error is above it**.
+
+Restricting each arm to the stations both arms graded and both loaded:
+
+| county | tract, all | tract, common | move | bg, all | bg, common | move | unloaded (t/bg) |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 06069 | 97.4% | 97.4% | 0.0 | 90.9% | 90.9% | 0.0 | 0 / 0 |
+| 08014 | 76.2% | 73.1% | −3.1 | 67.8% | 61.5% | −6.3 | 2 / 2 |
+| 06047 | 128.4% | 128.4% | 0.0 | 119.4% | 119.4% | 0.0 | 1 / 2 |
+| 08101 | 87.8% | 87.5% | −0.2 | 97.6% | 93.3% | −4.2 | 3 / 2 |
+| 06107 | 153.8% | **175.2%** | **+21.3** | 111.4% | 117.3% | +5.9 | 7 / 1 |
+
+The pre-registered rule was 5 points. **An arm moves more than that in two of
+five counties**, overwhelmingly Tulare (06107), which has seven unloaded-link
+stations in its tract arm and a median error of 154% — so those seven
+exactly-100% stations were holding its headline 21 points below where the
+loaded network puts it. In the three counties with few unloaded stations the
+restriction changes nothing.
+
+So: mostly clean, and badly confounded exactly where the model is worst. **Any
+future zone or network comparison must report unloaded-link stations
+separately**, which both lanes now do.
+
+### The incidental finding, and it is the one worth remembering
+
+The two arms of the 2026-08-17 experiment, as stored on disk, **were not graded
+by the same code**. The tract arms were validated between 05:50 and 07:33 that
+morning; the block-group arms between 21:16 and 21:38 that night. Shared-link
+resolution (`229df071`) landed at 13:16, in between. It shows in the files: the
+tract arms carry an empty `shared_model_links` block, the block-group arms a
+populated one, and the tract arms grade 394 stations against the block-group
+arms' 302 — a 23% difference produced by the validator, not the model.
+
+**Regrading both arms with identical current code closes it**: 305 stations
+against 302, and a pooled median error of 105.2% against 100.0%, a 5.2-point
+edge to block groups. The published table recorded 88.7% against 84.2%, a
+4.5-point edge, on that day's code. **Same direction, same size, same verdict.**
+The uncontrolled difference did not change the answer — but nothing in the
+record said it was there, and it was found only by looking at the timestamps.
+
+This is precisely what `validation_rules_version` was invented for the next day
+(`09e4c897`), and both these runs predate the stamp, so neither carries one. Had
+they, the app would have refused to read them as comparable.
+
+### What this does and does not change
+
+- **`--zone-geography` still defaults to tracts.** The pre-registration bound
+  itself to this before any number was looked at, and nothing here is grounds to
+  revisit it. The regrade agrees with the published verdict.
+- **The coverage question is answered and closed**: zone size is not what makes
+  the network a skeleton.
+- **The search moves to connector placement and the network itself**, which is
+  where the pre-registration said it would go if coverage did not move.
+- **A properly controlled zone re-run is now cheaper than it was**, because both
+  lanes stamp their rules version and report unloaded-link stations. Whether one
+  is worth running is a priority call, not a finding.
