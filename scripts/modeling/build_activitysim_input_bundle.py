@@ -59,9 +59,8 @@ def census_population_caveats(result: dict[str, Any]) -> list[str]:
     for control, reason in (result.get("dropped_controls") or {}).items():
         caveats.append(reason)
     caveats.append(
-        "ActivitySim's behavioural coefficients are estimated for the regions its example "
-        "configurations came from, not for this study area. A population drawn from local survey "
-        "records does not make the travel behaviour local."
+        "ActivitySim behavioural coefficients carry separate provenance for each component. "
+        "A population drawn from local survey records does not make the travel behaviour local."
     )
     return [caveat for caveat in caveats if caveat]
 
@@ -109,6 +108,13 @@ def parse_args() -> argparse.Namespace:
             "Explicit path to the installed prototype_mtc example (or its configs/ directory). "
             "Default: resolve from the importable activitysim package, then the ActivitySim "
             "worker venv."
+        ),
+    )
+    parser.add_argument(
+        "--accepted-components-registry",
+        help=(
+            "Optional accepted-component registry override. The repository registry is used by "
+            "default and every referenced decision and coefficient file is hash-verified."
         ),
     )
     return parser.parse_args()
@@ -551,7 +557,9 @@ def build_config_package_descriptor() -> dict[str, Any]:
     }
 
 
-def build_mtc_config_package_descriptor(stock: dict[str, Any], specs_sha256: str) -> dict[str, Any]:
+def build_mtc_config_package_descriptor(
+    stock: dict[str, Any], specs_sha256: str, accepted_components: list[dict[str, Any]]
+) -> dict[str, Any]:
     """The runnable-package descriptor: what it layers over, pinned by digest.
 
     The digest is what turns "the stock configuration is unmodified" from an
@@ -564,6 +572,7 @@ def build_mtc_config_package_descriptor(stock: dict[str, Any], specs_sha256: str
         "package_status": "runnable_config_package",
         "config_package": "mtc",
         "runnable": True,
+        "accepted_components": accepted_components,
         "layered_stock_configs": {
             "path": str(stock["configs_dir"]),
             "specs_sha256": specs_sha256,
@@ -579,8 +588,9 @@ def build_mtc_config_package_descriptor(stock: dict[str, Any], specs_sha256: str
                 "'unmodified' checkable at run time."
             ),
             (
-                "The behavioural coefficients are estimated for the San Francisco Bay Area, not "
-                "this study area; nothing above screening grade can rest on this output."
+                "Auto ownership uses a nationally estimated component accepted on a locked fresh "
+                "holdout. Every other behavioural component remains estimated for the San "
+                "Francisco Bay Area; nothing above screening grade can rest on this output."
             ),
         ],
         "expected_files": [
@@ -588,11 +598,21 @@ def build_mtc_config_package_descriptor(stock: dict[str, Any], specs_sha256: str
             "settings.yaml",
             "network_los.yaml",
             CONFIG_PACKAGE_DESCRIPTOR_NAME,
-        ],
+        ] + sorted(
+            filename
+            for component in accepted_components
+            for filename in component["installed_files_sha256"]
+        ),
     }
 
 
-def build_mtc_configs_readme(stock: dict[str, Any], specs_sha256: str) -> str:
+def build_mtc_configs_readme(
+    stock: dict[str, Any], specs_sha256: str, accepted_components: list[dict[str, Any]]
+) -> str:
+    accepted_lines = "\n".join(
+        f"- `{component['component']}`: `{component['acceptance_result_sha256']}`"
+        for component in accepted_components
+    )
     return (
         "# OpenPlan ActivitySim Config Overlay — prototype_mtc package\n\n"
         "These files are an OVERLAY, layered as the first `-c` over the unmodified stock\n"
@@ -604,8 +624,10 @@ def build_mtc_configs_readme(stock: dict[str, Any], specs_sha256: str) -> str:
         "There is deliberately NO `constants.yaml` here: config files resolve first-match across\n"
         "the layered directories, and a constants file in this overlay would silently shadow the\n"
         "stock one (person-type codes, income segments) rather than merge with it.\n\n"
-        "The behavioural coefficients belong to the San Francisco Bay Area (MTC Travel Model One)\n"
-        "and are applied unmodified. Every artifact of this bundle carries that caveat.\n"
+        "Accepted component decisions layered into this directory:\n\n"
+        f"{accepted_lines}\n\n"
+        "Auto ownership uses the accepted national component. All other behavioural coefficients\n"
+        "remain from the San Francisco Bay Area MTC example. Every artifact carries that caveat.\n"
     )
 
 
@@ -783,6 +805,7 @@ def build_mtc_package(
     person_rows: list[dict[str, Any]],
     caveats: list[str],
     stock_configs_dir: str | None,
+    accepted_components_registry: str | None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any], list[str]]:
     """Everything the MTC config package adds to a bundle, in one place.
 
@@ -792,6 +815,7 @@ def build_mtc_package(
     # Lazy imports: numpy/openmatrix and the population stack ride in only
     # when an MTC bundle is actually requested.
     import activitysim_mtc_inputs as mtc
+    from activitysim_accepted_components import DEFAULT_REGISTRY, install_accepted_components
     import census_pums as cp
 
     mtc.check_income_vintage(cp.ACS_5_URL)
@@ -828,9 +852,16 @@ def build_mtc_package(
     write_csv(output_path / "persons.csv", mtc_person_rows)
     (output_path / "configs" / "settings.yaml").write_text(mtc.mtc_settings_yaml())
     (output_path / "configs" / "network_los.yaml").write_text(mtc.mtc_network_los_yaml())
-    (output_path / "configs" / "README.md").write_text(build_mtc_configs_readme(stock, specs_sha256))
+    accepted_components = install_accepted_components(
+        output_path / "configs", accepted_components_registry or DEFAULT_REGISTRY
+    )
+    (output_path / "configs" / "README.md").write_text(
+        build_mtc_configs_readme(stock, specs_sha256, accepted_components)
+    )
 
-    config_descriptor = build_mtc_config_package_descriptor(stock, specs_sha256)
+    config_descriptor = build_mtc_config_package_descriptor(
+        stock, specs_sha256, accepted_components
+    )
     mtc_blocks = {
         "files": {
             # The skim the run actually reads; the raw screening skim is kept
@@ -850,9 +881,22 @@ def build_mtc_package(
                 "activitysim_version": stock["activitysim_version"],
                 "resolved_via": stock["resolved_via"],
             },
+            "accepted_components": accepted_components,
         },
     }
-    return land_use_rows, mtc_blocks, config_descriptor, list(caveats) + mtc.mtc_config_caveats()
+    stock_caveats = mtc.mtc_config_caveats()
+    behavior_caveat = (
+        "Auto ownership uses the nationally estimated component accepted by the recorded fresh "
+        "holdout study. Every other behavioral component still uses ActivitySim's stock "
+        "prototype_mtc coefficients estimated for the San Francisco Bay Area. Component "
+        "acceptance does not establish destination, mode, timing, assignment, or corridor accuracy."
+    )
+    return (
+        land_use_rows,
+        mtc_blocks,
+        config_descriptor,
+        list(caveats) + [behavior_caveat] + stock_caveats[1:],
+    )
 
 
 def build_activitysim_input_bundle(
@@ -865,6 +909,7 @@ def build_activitysim_input_bundle(
     population_source: str = "auto",
     config_package: str = "starter",
     stock_configs_dir: str | None = None,
+    accepted_components_registry: str | None = None,
 ) -> dict[str, Any]:
     if config_package not in ("starter", "mtc"):
         raise RuntimeError(f"Unknown config package '{config_package}'.")
@@ -914,6 +959,7 @@ def build_activitysim_input_bundle(
             person_rows=person_rows,
             caveats=caveats,
             stock_configs_dir=stock_configs_dir,
+            accepted_components_registry=accepted_components_registry,
         )
     else:
         land_use_rows = build_land_use_rows(zones)
@@ -993,6 +1039,7 @@ def main() -> int:
         population_source=args.population,
         config_package=args.config_package,
         stock_configs_dir=args.stock_configs_dir,
+        accepted_components_registry=args.accepted_components_registry,
     )
     print(json.dumps(summary, indent=2))
     return 0

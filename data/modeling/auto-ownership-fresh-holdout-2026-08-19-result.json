@@ -1,0 +1,58 @@
+{
+  "schema_version": "openplan.activitysim-auto-ownership-fresh-holdout-result.v1",
+  "status": "accepted_component",
+  "decision": "accept_auto_ownership_component",
+  "scope": "ActivitySim auto-ownership component only",
+  "evidence_hashes": {
+    "preregistered_registry_sha256": "62dde756985ff47b650b7791f1773d1ac0fb7f2705989b0039cf26f4ddd93a0f",
+    "transfer_study_sha256": "0502e6a2fb901df7eea96945bea9f40220eb91ea9227f5a1929c023116e93a8a",
+    "evaluator_decision_sha256": "31317b1df05f299e04600e3bbec6c5f177bace794773984fc953a7612f8071b4",
+    "candidate_package_manifest_sha256": "2edc3febdf5d8ceda80ce47955b27f02d1d3e085c2811c81c19ac054b0efcf12"
+  },
+  "geography_count": 9,
+  "aggregate_metrics": {
+    "borrowed_mtc_choice_distribution_total_variation": 0.09865738438587768,
+    "candidate_choice_distribution_total_variation": 0.07124150505552793,
+    "relative_aggregate_improvement": 0.2778897849462366,
+    "candidate_lower_distribution_error_geographies": 8,
+    "geography_win_share": 0.8888888888888888,
+    "borrowed_mtc_mean_vehicle_bias": -0.01972070280125974,
+    "candidate_mean_vehicle_bias": -0.0005387037957898227,
+    "absolute_bias_disadvantage": -0.019181999005469914,
+    "worst_single_geography_tv_disadvantage": 0.002613802233612794
+  },
+  "acceptance_checks": {
+    "relative_aggregate_improvement": {
+      "threshold": 0.15,
+      "value": 0.2778897849462366,
+      "passed": true
+    },
+    "geography_win_share": {
+      "threshold": 0.75,
+      "value": 0.8888888888888888,
+      "passed": true
+    },
+    "absolute_bias_disadvantage": {
+      "maximum": 0.02,
+      "value": -0.019181999005469914,
+      "passed": true
+    },
+    "worst_single_geography_tv_disadvantage": {
+      "maximum": 0.05,
+      "value": 0.002613802233612794,
+      "passed": true
+    }
+  },
+  "diagnostics_not_used_for_acceptance": {
+    "borrowed_mtc_household_exact_accuracy": 0.45310376263881985,
+    "candidate_household_exact_accuracy": 0.4363583623404608,
+    "borrowed_mtc_mean_absolute_vehicle_error": 0.7046204210177358,
+    "candidate_mean_absolute_vehicle_error": 0.7556688214818498
+  },
+  "qualifications": [
+    "Acceptance applies only to the auto-ownership component. Destination choice, mode choice, scheduling, assignment, and corridor accuracy were not accepted by this study.",
+    "Household exact accuracy and individual household mean absolute error became worse and remain disclosed diagnostics; the preregistered transfer measure was the vehicle-count distribution.",
+    "Agreement identifies methodological sensitivity, not confidence or correctness.",
+    "One retained network required approximately 27 kilometre virtual centroid connectors for a populated zone to reach the routable component. Its distribution result remains in the locked aggregate, and the connector distance remains a network caveat rather than evidence of local network accuracy."
+  ]
+}

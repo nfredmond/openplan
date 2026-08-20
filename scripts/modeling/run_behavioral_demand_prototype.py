@@ -332,6 +332,9 @@ def run_behavioral_demand_prototype(
                 "population": bundle_summary["population"],
                 "config_package": bundle_summary.get("config_package"),
                 "bundle_type": bundle_manifest.get("bundle_type"),
+                "accepted_components": (
+                    (bundle_manifest.get("config_package") or {}).get("accepted_components") or []
+                ),
             },
         )
         manifest["caveats"].extend(bundle_summary.get("caveats", []))

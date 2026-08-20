@@ -505,6 +505,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
 
     # 3. Read the built-bundle structural totals (labeled scaffold, NOT a forecast).
     bundle_stats = {}
+    accepted_components = []
     manifest_path = pipeline.get("manifest_path")
     if manifest_path and os.path.exists(manifest_path):
         with open(manifest_path) as fh:
@@ -515,19 +516,33 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
             "synthetic_households": build_meta.get("households"),
             "synthetic_persons": build_meta.get("persons"),
         }
+        accepted_components = list(build_meta.get("accepted_components") or [])
 
     # 4. Assemble + upload the honest evidence packet. When a real (still
     #    UNCALIBRATED) ActivitySim run executed, say so; never call it a forecast.
     if executed:
+        accepted_names = {
+            str(component.get("component") or "") for component in accepted_components
+        }
         lead_caveats = [
             "A real but UNCALIBRATED, screening-grade ActivitySim run executed — this is "
             "NOT a calibrated behavioral forecast.",
             "Households and persons come from real Census PUMS records fitted to each zone's "
             "published totals; the population is local but the behavior coefficients are not.",
-            "Behavior uses ActivitySim's stock prototype_mtc coefficients estimated for the "
-            "San Francisco Bay Area, not this study area. County-specific validation is required "
-            "before any forecast or regulatory use.",
         ]
+        if "auto_ownership" in accepted_names:
+            lead_caveats.append(
+                "Auto ownership uses OpenPlan's nationally estimated component accepted by a "
+                "locked fresh-holdout study. Destination choice, mode choice, scheduling, and "
+                "the remaining behavior still use prototype_mtc coefficients estimated for the "
+                "San Francisco Bay Area. Component acceptance is not corridor validation."
+            )
+        else:
+            lead_caveats.append(
+                "Behavior uses ActivitySim's stock prototype_mtc coefficients estimated for the "
+                "San Francisco Bay Area, not this study area. County-specific validation is "
+                "required before any forecast or regulatory use."
+            )
     else:
         lead_caveats = list(PREFLIGHT_CAVEATS)
     evidence = {
@@ -548,6 +563,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "runtime_mode": runtime_mode,
         "bundle": bundle_stats,
         "bundle_profile": bundle_profile,
+        "accepted_behavior_components": accepted_components,
         "demand_package": {
             "status": "ready_for_same_network_assignment",
             "zones": demand_package["zones"],
@@ -605,8 +621,9 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "ActivitySim input-bundle scaffold — deterministic synthetic population, "
         "NOT a calibrated synthesis or a behavioral forecast."
         if not executed
-        else "Census PUMS population fitted to published zone totals; behavior uses uncalibrated "
-        "San Francisco Bay Area prototype_mtc coefficients and is NOT a local forecast."
+        else "Census PUMS population fitted to published zone totals; accepted component "
+        "provenance and remaining borrowed behavior are recorded in the evidence packet. This "
+        "is NOT a local forecast."
     )
     kpis = [
         ("activitysim_runtime_mode", "ActivitySim runtime mode", None, "", {"mode": runtime_mode, "provenance": scaffold_provenance}),
@@ -642,7 +659,10 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     #    behavioral outputs, write those KPIs — always LABELED uncalibrated/starter,
     #    never a forecast. On $0 preflight infra this block is skipped entirely, so
     #    no demand-shaped number is ever emitted without a real run behind it.
-    real_kpis = _write_executed_behavioral_kpis(run_id, pipeline) if executed else 0
+    real_kpis = (
+        _write_executed_behavioral_kpis(run_id, pipeline, accepted_components)
+        if executed else 0
+    )
 
     log += (
         f"- Evidence packet: {'uploaded' if storage_ref else 'upload failed (best-effort)'}; "
@@ -655,7 +675,9 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     return {"log": log}
 
 
-def _write_executed_behavioral_kpis(run_id: str, pipeline: dict) -> int:
+def _write_executed_behavioral_kpis(
+    run_id: str, pipeline: dict, accepted_components: list[dict[str, Any]] | None = None
+) -> int:
     """Write behavioral KPIs from a REAL (uncalibrated, starter) ActivitySim run,
     reading the extractor's honest summary. Emits nothing if the run produced
     insufficient behavioral outputs (the common starter/zero-model case)."""
@@ -670,9 +692,19 @@ def _write_executed_behavioral_kpis(run_id: str, pipeline: dict) -> int:
     if kpi_summary.get("availability_status") == "not_enough_behavioral_outputs":
         return 0
 
+    accepted_names = sorted(
+        str(component.get("component") or "")
+        for component in (accepted_components or [])
+        if component.get("component")
+    )
+    component_note = (
+        f" Accepted components: {', '.join(accepted_names)}."
+        if accepted_names else " No accepted behavior component is recorded."
+    )
     provenance = (
-        "Real but UNCALIBRATED, starter-grade ActivitySim run — NOT a calibrated "
-        "behavioral forecast. County-specific calibration required before any use."
+        "Real but UNCALIBRATED, screening-grade ActivitySim run. NOT a calibrated behavioral "
+        "forecast. Component acceptance does not establish corridor accuracy."
+        + component_note
     )
     totals = kpi_summary.get("totals") or {}
     written = 0

@@ -286,6 +286,23 @@ class SupabasePollTests(unittest.TestCase):
         n = supabase_poll._write_executed_behavioral_kpis("run-1", {"kpi_summary_path": summary_path})
         self.assertEqual(n, 0)
 
+    def test_executed_kpi_provenance_names_the_accepted_component(self):
+        summary_path = os.path.join(self._fixdir, "kpi_summary_accepted.json")
+        with open(summary_path, "w") as f:
+            json.dump({
+                "availability_status": "available",
+                "totals": {"households": 100},
+            }, f)
+
+        supabase_poll._write_executed_behavioral_kpis(
+            "run-1",
+            {"kpi_summary_path": summary_path},
+            [{"component": "auto_ownership"}],
+        )
+
+        kpis = [b for m, url, b in self.fake.calls if m == "POST" and url.endswith("/rest/v1/model_run_kpis")]
+        self.assertIn("Accepted components: auto_ownership", kpis[-1]["breakdown_json"]["provenance"])
+
     def test_missing_corridor_fails_honestly(self):
         def get_no_corridor(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:

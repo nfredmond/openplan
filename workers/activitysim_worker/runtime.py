@@ -174,6 +174,23 @@ def resolve_layered_config_dirs(config_dir: Path) -> list[Path]:
     if not descriptor_path.exists():
         return []
     descriptor = _read_json(descriptor_path)
+    for component in descriptor.get("accepted_components") or []:
+        component_name = str(component.get("component") or "unnamed")
+        for relative_path, expected_digest in (
+            component.get("installed_files_sha256") or {}
+        ).items():
+            accepted_file = (config_dir / str(relative_path)).resolve()
+            if not _is_relative_to(accepted_file, config_dir.resolve()) or not accepted_file.is_file():
+                raise BundleContractError(
+                    f"Accepted ActivitySim component {component_name} is missing {relative_path}."
+                )
+            actual_digest = sha256(accepted_file.read_bytes()).hexdigest()
+            if actual_digest != expected_digest:
+                raise BundleContractError(
+                    f"Accepted ActivitySim component {component_name} changed after bundle "
+                    f"construction ({relative_path}): expected {expected_digest}, found "
+                    f"{actual_digest}. Rebuild the bundle from the accepted-component registry."
+                )
     layered = descriptor.get("layered_stock_configs") if isinstance(descriptor, dict) else None
     if not isinstance(layered, dict):
         return []

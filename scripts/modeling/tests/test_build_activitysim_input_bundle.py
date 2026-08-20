@@ -393,6 +393,13 @@ class BuildMtcConfigPackageTests(unittest.TestCase):
         self.assertEqual(manifest["files"]["source_skim_omx"], "skims/travel_time_skims.omx")
         self.assertNotIn("config_constants", manifest["files"])
         self.assertEqual(manifest["config_package"]["package_status"], "runnable_config_package")
+        accepted = manifest["config_package"]["accepted_components"]
+        self.assertEqual([row["component"] for row in accepted], ["auto_ownership"])
+        self.assertTrue((output_dir / "configs" / "auto_ownership_coefficients.csv").is_file())
+        self.assertEqual(
+            accepted[0]["installed_files_sha256"]["auto_ownership_coefficients.csv"],
+            "9596d29ebdef16a1de701b90bf0287ef97e016206819dba915382a79711a2862",
+        )
         layered = manifest["config_package"]["layered_stock_configs"]
         self.assertEqual(layered["path"], str(self.stock_root / "configs"))
         import activitysim_mtc_inputs as mtc
@@ -402,6 +409,7 @@ class BuildMtcConfigPackageTests(unittest.TestCase):
         self.assertEqual(manifest["land_use"]["total_population"], 3)
         joined_caveats = " ".join(manifest["caveats"])
         self.assertIn("San Francisco Bay Area", joined_caveats)
+        self.assertIn("nationally estimated component accepted", joined_caveats)
         # The census population's own caveats survive alongside the MTC ones.
         self.assertIn("seed drawn from real PUMS records", joined_caveats)
 

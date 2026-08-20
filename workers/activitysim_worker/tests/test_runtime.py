@@ -366,6 +366,34 @@ class ActivitySimRuntimeTests(unittest.TestCase):
         run_stage = next(s for s in runtime_manifest["stages"] if s["stage_key"] == "run_activitysim")
         self.assertIn("no longer matches", " ".join(err["message"] for err in run_stage["errors"]))
 
+    def test_a_modified_accepted_component_is_refused_before_execution(self) -> None:
+        bundle_dir, _ = self._write_runnable_layered_bundle()
+        accepted_file = bundle_dir / "configs" / "accepted_component.csv"
+        accepted_file.write_text("coefficient,value\nconstant,1\n")
+        descriptor_path = bundle_dir / "configs" / "openplan_config_package.json"
+        descriptor = json.loads(descriptor_path.read_text())
+        import hashlib
+
+        descriptor["accepted_components"] = [{
+            "component": "auto_ownership",
+            "installed_files_sha256": {
+                accepted_file.name: hashlib.sha256(accepted_file.read_bytes()).hexdigest(),
+            },
+        }]
+        descriptor_path.write_text(json.dumps(descriptor, indent=2))
+        accepted_file.write_text("coefficient,value\nconstant,2\n")
+
+        summary = run_activitysim_runtime(
+            bundle_path=str(bundle_dir),
+            cli_command=[sys.executable, str(self._fake_activitysim_cli())],
+        )
+
+        self.assertEqual(summary["status"], "failed")
+        runtime_manifest = json.loads(Path(summary["runtime_manifest_path"]).read_text())
+        run_stage = next(s for s in runtime_manifest["stages"] if s["stage_key"] == "run_activitysim")
+        errors = " ".join(err["message"] for err in run_stage["errors"])
+        self.assertIn("auto_ownership changed after bundle construction", errors)
+
     def test_a_missing_stock_configuration_is_refused_with_the_path_named(self) -> None:
         bundle_dir, stock_dir = self._write_runnable_layered_bundle()
         import shutil as _shutil
