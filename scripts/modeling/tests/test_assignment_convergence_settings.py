@@ -40,6 +40,38 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 
+def import_worker_main():
+    """The worker entry point, imported without a Supabase project behind it.
+
+    `main.py` raises at IMPORT time when SUPABASE_URL and
+    SUPABASE_SERVICE_ROLE_KEY are absent, which is right for a worker process
+    and wrong for a test: importing it directly passes on a developer machine
+    holding .env.local and fails CI with "Missing Supabase credentials". That is
+    a red gate caused by the test rather than by the code, and it has now
+    happened twice in this repository (see `test_gateways.py`, 2026-08-18).
+
+    Placeholders are safe here because nothing at import time contacts a
+    project: main.py reads the two strings, formats a headers dict, and builds
+    every request URL lazily inside the function that makes the call. The host
+    below is deliberately unroutable, so a regression that DID try to reach a
+    project at import would fail loudly instead of finding a real one.
+
+    Verified under `env -i` with no environment at all.
+    """
+    worker_dir = SCRIPT_DIR.parents[1] / "workers" / "aequilibrae_worker"
+    if str(worker_dir) not in sys.path:
+        sys.path.insert(0, str(worker_dir))
+    # Written as two literal calls rather than a loop so that
+    # `test_suites_import_main_without_credentials.py` can see them: it reads
+    # the AST for a setdefault of each name, and a loop over a dict hides the
+    # names from any reader, guard or human.
+    os.environ.setdefault("SUPABASE_URL", "http://worker-import-only.invalid")
+    os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "import-only-not-a-key")
+    import main as worker_main  # noqa: PLC0415
+
+    return worker_main
+
+
 def reload_runtime(env: dict[str, str]):
     with mock.patch.dict(os.environ, env, clear=False):
         import screening_runtime
@@ -263,10 +295,7 @@ class TheConvergenceSettingsStayDefensible(unittest.TestCase):
 
     def test_worker_and_cli_manifest_and_state_schemas_are_identical(self) -> None:
         runtime = reload_runtime({})
-        worker_dir = SCRIPT_DIR.parents[1] / "workers" / "aequilibrae_worker"
-        if str(worker_dir) not in sys.path:
-            sys.path.insert(0, str(worker_dir))
-        import main as worker_main
+        worker_main = import_worker_main()
 
         cli_tree = ast.parse(inspect.getsource(runtime.assignment_network_state))
         record_keys = None

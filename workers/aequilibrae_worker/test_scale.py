@@ -4,8 +4,15 @@ size) and the metro-scale BFS fix. Run with the worker venv:
 
     workers/aequilibrae_worker/.venv311/bin/python workers/aequilibrae_worker/test_scale.py
 """
+import os
 import sys
 from collections import deque
+
+# main.py raises at import when Supabase credentials are absent, which is right
+# for a worker process and a trap for a test: it passes on a machine holding
+# .env.local and fails in CI. Nothing at import time contacts a project.
+os.environ.setdefault("SUPABASE_URL", "http://worker-import-only.invalid")
+os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "import-only-not-a-key")
 
 import main
 
