@@ -1,0 +1,69 @@
+{
+  "acceptance_outcomes_read": false,
+  "activitysim_version": "1.5.1",
+  "candidate": {
+    "coefficient_package_sha256": "57e887c3b980a8d25e0b34c785f85c527ecf0add39d0667454ebc534f511f084",
+    "component": "mandatory_tour_frequency",
+    "installation_authorized": false,
+    "status": "candidate_not_accepted_for_production"
+  },
+  "config_layers": [
+    "component-isolation model sequence",
+    "mandatory-tour candidate package",
+    "accepted national auto-ownership package",
+    "retained OpenPlan bundle config",
+    "untouched ActivitySim prototype_mtc config"
+  ],
+  "input": {
+    "bundle_kind": "retained Census-fitted ActivitySim bundle",
+    "files_sha256": {
+      "households.csv": "207aa5d9c6f93c0ea3f50c488e08b3ce3ccdfbc9c865429e105f5b28f4071e47",
+      "land_use.csv": "63b64dc7685346dc7b6db723806d0d4f92d8eb5c325e52a0f22bfec7c73f9e1c",
+      "openplan_config_package.json": "003e094ff036833c0021f1774b63c7d271af3e19a5774ffbe5356a1cbc8c791d",
+      "persons.csv": "647d7f87f41dbbe5eca7dd925206705a61f34af6b41ce195123758326976038d"
+    },
+    "households": 17474,
+    "persons": 42210
+  },
+  "models_executed": [
+    "initialize_landuse",
+    "initialize_households",
+    "compute_accessibility",
+    "school_location",
+    "workplace_location",
+    "auto_ownership_simulate",
+    "free_parking",
+    "cdap_simulate",
+    "mandatory_tour_frequency",
+    "write_tables"
+  ],
+  "output": {
+    "files_sha256": {
+      "final_households.csv": "c611db1470e46e5fec792a20676c51e906deb6b2b9b8e2437aefa031d8bc7ab0",
+      "final_persons.csv": "0a08d5aa871bf95d90d438c80ef9b5f93ccb57afb040f17b3d754153ea3b2b47",
+      "final_tours.csv": "dbafdade6cdef9b98d769d07b59dd25eaadc5673324049efc94b751e5be69028"
+    },
+    "mandatory_tour_frequency_choices": {
+      "school1": 7792,
+      "school2": 182,
+      "work1": 11633,
+      "work2": 429,
+      "work_and_school": 71
+    },
+    "mandatory_tours": 20789,
+    "school_tours": 8227,
+    "work_tours": 12562
+  },
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-runtime-smoke.v1",
+  "status": "candidate_executed_not_accepted",
+  "timing_seconds_rounded": {
+    "all_ten_models": 11.8,
+    "mandatory_tour_frequency": 0.3
+  },
+  "upstream_accepted_component": {
+    "coefficient_package_sha256": "2edc3febdf5d8ceda80ce47955b27f02d1d3e085c2811c81c19ac054b0efcf12",
+    "component": "auto_ownership"
+  },
+  "what_this_proves": "The frozen candidate package executes in ActivitySim on a retained Census-fitted OpenPlan bundle and emits all five canonical alternatives.",
+  "what_this_does_not_prove": "This is an execution smoke test, not validation, acceptance, local accuracy evidence, or authorization to install the candidate."
+}

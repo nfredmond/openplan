@@ -1,0 +1,206 @@
+{
+  "acceptance_outcomes_read": false,
+  "candidate_model": {
+    "alternatives": [
+      "work1",
+      "work2",
+      "school1",
+      "school2",
+      "work_and_school"
+    ],
+    "excluded_predictors": {
+      "DRVRCNT": "NHTS counts licensed drivers; prototype_mtc counts every household member age 16+.",
+      "HHFAMINC_IMP": "NHTS brackets are 2022 dollars, while prototype_mtc receives OpenPlan household income deflated to year-2000 dollars. No threshold is treated as equivalent.",
+      "URBRUR": "NHTS reports an official urban/rural classification; prototype_mtc derives a local density area type from OpenPlan zones.",
+      "linked_roster_R_AGE_young_children": "NHTS person records begin at age five, while prototype_mtc counts every person age 0-5.",
+      "regional_or_LOS_fields": "Forbidden by the preregistration or unavailable with the same observed meaning."
+    },
+    "family": "weighted multinomial logit with fixed reference-probability offsets",
+    "identification": "The reference alternative has zero learned coefficients. Each other alternative has one coefficient per predictor and no learned intercept.",
+    "invalid_predictor_row_rule": "Retain the outcome in every score but use the reference probabilities; do not fit a coefficient contribution from that row. Runtime inputs are required to be valid.",
+    "nesting_proof": "Setting every learned coefficient to zero reproduces the reference probabilities exactly.",
+    "predictors": [
+      {
+        "name": "age_centered_decades",
+        "observed": "(R_AGE - 40) / 10",
+        "runtime": "(age - 40) / 10"
+      },
+      {
+        "name": "age_centered_decades_squared",
+        "observed": "((R_AGE - 40) / 10) ** 2",
+        "runtime": "((age - 40) / 10) ** 2"
+      },
+      {
+        "name": "female",
+        "observed": "R_SEX == 2",
+        "runtime": "female"
+      },
+      {
+        "name": "household_size_minus_one_clip_4",
+        "observed": "min(HHSIZE, 5) - 1",
+        "runtime": "@df.hhsize.clip(upper=5) - 1"
+      },
+      {
+        "name": "workers_clip_3",
+        "observed": "min(WRKCOUNT, 3)",
+        "runtime": "@df.num_workers.clip(upper=3)"
+      },
+      {
+        "name": "vehicles_clip_4",
+        "observed": "min(HHVEHCNT, 4)",
+        "runtime": "@df.auto_ownership.clip(upper=4)"
+      },
+      {
+        "name": "no_vehicle",
+        "observed": "HHVEHCNT == 0",
+        "runtime": "auto_ownership == 0"
+      }
+    ],
+    "reference_alternative": "work1"
+  },
+  "component": "mandatory_tour_frequency",
+  "development_inventory": {
+    "candidate_predictor_invalid_records": 26,
+    "candidate_predictor_invalid_records_by_division": {
+      "01": 3,
+      "02": 2,
+      "03": 8,
+      "04": 3,
+      "07": 2,
+      "09": 8
+    },
+    "candidate_predictor_valid_records": 2057,
+    "supported_alternative_records": {
+      "school1": 537,
+      "school2": 10,
+      "work1": 1471,
+      "work2": 56,
+      "work_and_school": 9
+    },
+    "supported_records": 2083,
+    "supported_records_by_division": {
+      "01": 190,
+      "02": 362,
+      "03": 515,
+      "04": 273,
+      "07": 311,
+      "09": 432
+    },
+    "supported_weight_by_division": {
+      "01": 5607027.551494,
+      "02": 12370833.156506,
+      "03": 14728241.543103,
+      "04": 6673380.262364,
+      "07": 10306214.641174,
+      "09": 15414045.672201
+    }
+  },
+  "development_selection": {
+    "acceptance_information_allowed": false,
+    "development_gate": {
+      "all_fits_must_converge": true,
+      "candidate_pooled_log_loss_must_be_below_reference": true,
+      "minimum_division_log_loss_wins": 4,
+      "required_division_wins_denominator": 6
+    },
+    "division_codes": [
+      "01",
+      "02",
+      "03",
+      "04",
+      "07",
+      "09"
+    ],
+    "folds": "leave one whole development Census division out",
+    "grid_boundary_rule": "Refuse to freeze coefficients if the selected lambda is the smallest or largest grid value.",
+    "selection_metric": "pooled original-weight multiclass log loss across held-out divisions",
+    "selection_rule": "Choose the lowest pooled log loss; among lambdas within 1e-10, choose the largest lambda."
+  },
+  "estimation": {
+    "case_weight": "WTPERFIN5D once per supported person-day",
+    "lambda_grid": [
+      0.0001,
+      0.0003,
+      0.001,
+      0.003,
+      0.01,
+      0.03,
+      0.1,
+      0.3,
+      1.0,
+      3.0,
+      10.0,
+      30.0,
+      100.0
+    ],
+    "objective": "mean normalized weighted negative log likelihood + 0.5 * lambda * sum(beta^2)",
+    "optimizer": {
+      "all_folds_and_final_fit_must_converge": true,
+      "analytic_gradient": true,
+      "ftol": 1e-12,
+      "gtol": 1e-08,
+      "implementation": "scipy.optimize.minimize",
+      "maximum_iterations": 5000,
+      "method": "L-BFGS-B"
+    },
+    "regularization": "L2 on every learned coefficient; reference offsets are never penalized",
+    "weight_normalization": "Within each training fit, multiply positive weights so their sum equals the number of training records. Report validation metrics with original weights."
+  },
+  "limits": [
+    "This registry authorizes development fitting, not production installation.",
+    "It estimates only mandatory tour frequency conditional on an observed mandatory DAP.",
+    "It does not validate any other borrowed ActivitySim component."
+  ],
+  "next_lock": {
+    "before_acceptance_outcomes_may_be_derived": [
+      "immutable candidate ActivitySim package and every coefficient-file SHA-256",
+      "immutable reference-model implementation SHA-256",
+      "immutable acceptance-evaluator implementation SHA-256",
+      "this candidate registry SHA-256",
+      "the hashes already required by the original preregistration"
+    ],
+    "candidate_package_status_until_acceptance": "candidate_not_accepted_for_production"
+  },
+  "reference_model": {
+    "additive_smoothing_alpha": 0.5,
+    "candidate_offset": "natural logarithm of the training-only reference probability",
+    "fit_scope": "training divisions only for each fold; all development divisions for final fit",
+    "holdout_information_allowed": false,
+    "observed_status_mapping": {
+      "student": "SCHOOL1 == 01",
+      "worker": "WORKER == 01"
+    },
+    "probabilities": "Within each status cell, normalize positive survey weights to sum to the cell record count, add alpha to every alternative, then renormalize. Use the similarly normalized pooled training distribution only if a cell is empty.",
+    "runtime_status_mapping": {
+      "student": "is_student",
+      "worker": "is_worker"
+    },
+    "status_cells": [
+      "not_worker_not_student",
+      "not_worker_student",
+      "worker_not_student",
+      "worker_student"
+    ]
+  },
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-candidate-registry.v1",
+  "source": {
+    "acceptance_division_codes_committed_but_not_read": [
+      "05",
+      "06",
+      "08"
+    ],
+    "development_division_codes": [
+      "01",
+      "02",
+      "03",
+      "04",
+      "07",
+      "09"
+    ],
+    "development_outcome_manifest_sha256": "e4544b6ac1fa1055ac825f23a458bd0c1cb4276e18a73a29b178bb9d9dfa3184",
+    "development_person_days_sha256": "338133f2f1a3db178f4eb4e45a6f2e4fa75c78ae56085e6d1b2ce75713106b50",
+    "outcome_reconstruction_closure_sha256": "0623ba910d5e489ad82d105688b9bcc005ea28667c15a6706bca0c265f875c25",
+    "preregistration_sha256": "29e5616c208e445f851f79ec3f82c85d923eeb67a319cf747d482700c9121cc6"
+  },
+  "status": "development_protocol_frozen_acceptance_unopened"
+}

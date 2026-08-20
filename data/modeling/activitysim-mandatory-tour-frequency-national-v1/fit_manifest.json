@@ -1,0 +1,1392 @@
+{
+  "acceptance_outcomes_read": false,
+  "all_development_fit": {
+    "converged": true,
+    "gradient_max_absolute": 8.161038582083294e-07,
+    "iterations": 24,
+    "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+    "objective": 0.20191855027082709,
+    "status": 0
+  },
+  "candidate_package": {
+    "files_sha256": {
+      "mandatory_tour_frequency.csv": "72af7533346c4e5515d62337184a1994441123ac7da89b73ac09c162c385c854",
+      "mandatory_tour_frequency.yaml": "019d835f5fa6bc3512b90507c85ea69f4dc38761adcd14ef7ea9bda92dbfa829",
+      "mandatory_tour_frequency_coefficients.csv": "0ad86d0f2f97a4cb0804de1f08740e45f1825ec77e7792450f8add1db8bf01e9",
+      "mandatory_tour_frequency_model.json": "570fe668ad67dcaa3d27bfb736315e5a6b01248cb6bc850c050d39b97ece026f"
+    },
+    "manifest": "coefficient_package.json",
+    "manifest_sha256": "57e887c3b980a8d25e0b34c785f85c527ecf0add39d0667454ebc534f511f084"
+  },
+  "component": "mandatory_tour_frequency",
+  "development_selection": {
+    "development_gate_passed": true,
+    "regularization_results": [
+      {
+        "division_log_loss_wins": 2,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10750627885776248,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.3930272125129827e-07,
+              "iterations": 272,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19867276322242378,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.0001,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.16721882872332502,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.83246073006387e-07,
+              "iterations": 265,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19887677807869322,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.0001,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.2206921196539154,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.1676769223118282e-07,
+              "iterations": 286,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.18504857143835043,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.0001,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.1934803260141179,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.2319665245050048e-07,
+              "iterations": 297,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.1908671572860362,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.0001,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.43665907977250734,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.8822473312884005e-07,
+              "iterations": 268,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.16024678091133782,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.0001,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.2099552458774316,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 8.567311337551891e-07,
+              "iterations": 258,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19350412418908988,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.0001,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.2296408992270113,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.0001
+      },
+      {
+        "division_log_loss_wins": 2,
+        "folds": [
+          {
+            "candidate_log_loss": 0.1068946579189864,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.837285012965407e-07,
+              "iterations": 192,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19977617711249143,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.0003,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.16822420272573835,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.5045153440302254e-07,
+              "iterations": 179,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19953881994723835,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.0003,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.22038984344140233,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 7.13735310300158e-07,
+              "iterations": 198,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.18612808827850105,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.0003,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19347565378199136,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.011949744069164e-06,
+              "iterations": 189,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.1919019873790492,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.0003,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.4178303778272802,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.9609162296446296e-07,
+              "iterations": 177,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.16216448440797365,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.0003,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.20470065521323724,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.3809635357314952e-06,
+              "iterations": 176,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.1950800758983796,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.0003,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.22548539306884266,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.0003
+      },
+      {
+        "division_log_loss_wins": 3,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10575395101473806,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 9.88520082662698e-07,
+              "iterations": 118,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20174350724811088,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.001,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17004850386432624,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.1511863796498188e-07,
+              "iterations": 109,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20083920325098917,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.001,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.2199974492420904,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.2068375205127905e-07,
+              "iterations": 130,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.18798425885190606,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.001,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19318273628106652,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.142611686187091e-06,
+              "iterations": 121,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19378080734672523,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.001,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.3963385531097037,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.2613406948146048e-07,
+              "iterations": 112,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.16520503084977806,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.001,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.1973053278068996,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.355400093580692e-07,
+              "iterations": 117,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19781174966348739,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.001,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.22046151532041167,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.001
+      },
+      {
+        "division_log_loss_wins": 4,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10436533694058564,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 9.577768331374198e-07,
+              "iterations": 67,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20439773346352436,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.003,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.1713752207733518,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.284161311804725e-07,
+              "iterations": 73,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2028781156994328,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.003,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.2196121240487206,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 4.420807532745305e-07,
+              "iterations": 78,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19049848182632512,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.003,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19241323432066765,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.0632151593886344e-07,
+              "iterations": 74,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19636211758086666,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.003,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.3771268456663466,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.262210929439255e-07,
+              "iterations": 72,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.16903013528813418,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.003,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.1917259715062157,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.2070787634818787e-07,
+              "iterations": 71,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20088020914477156,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.003,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.21606542761702735,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.003
+      },
+      {
+        "division_log_loss_wins": 4,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10291362884836062,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.489529801472142e-07,
+              "iterations": 42,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20812649917853876,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.01,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17265288950929036,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.4991229044128505e-07,
+              "iterations": 45,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20615702696276356,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.01,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.21987507784037472,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 6.203050588079713e-07,
+              "iterations": 45,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19408768881454044,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.01,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19154236717958117,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.376828081283912e-07,
+              "iterations": 44,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20001722552089107,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.01,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.363200277337748,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.6165868344008086e-07,
+              "iterations": 40,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.173752952484411,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.01,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.1895316290492528,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.3973055856711207e-07,
+              "iterations": 40,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20424020767228945,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.01,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.21342906361696273,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.01
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10227022834363889,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.1078648459625302e-07,
+              "iterations": 24,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21151715864824322,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.03,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17443360937266272,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 5.103436756179192e-07,
+              "iterations": 27,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20934020547064794,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.03,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.22105309907337511,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.562761489074145e-07,
+              "iterations": 28,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.19742673469422223,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.03,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19123023091371,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 9.113427677466188e-07,
+              "iterations": 26,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20337587149650463,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.03,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.3582462769418514,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.546083625422398e-07,
+              "iterations": 25,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.17747599336652656,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.03,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.1906517130638206,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.1825166381512764e-07,
+              "iterations": 25,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20688972935821726,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.03,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.21342747583777205,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.03
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10223873105444894,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.3993501826704714e-07,
+              "iterations": 15,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21426120113991873,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.1,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17681082243547822,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.0980252811371508e-07,
+              "iterations": 15,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21189127587756323,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.1,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.22214475638402556,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.659088806838226e-07,
+              "iterations": 17,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20026358285819204,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.1,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19118596289796755,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.5909995930863535e-07,
+              "iterations": 16,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20613526481945,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.1,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.3576477956142457,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 7.019093657099906e-07,
+              "iterations": 14,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.18027896855355388,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.1,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.19302443429902663,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 6.928535025152449e-07,
+              "iterations": 16,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20898624997826484,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.1,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.21458599703080886,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.1
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.1023743128193676,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.3239279637807253e-08,
+              "iterations": 11,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21577009519158227,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 0.3,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17851531082270072,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.432819796050617e-08,
+              "iterations": 10,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2131964520105043,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 0.3,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.222425346411654,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 5.057097959837442e-08,
+              "iterations": 10,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2019828010943975,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 0.3,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19129226670593294,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.0068619691841066e-07,
+              "iterations": 10,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20766045659712737,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 0.3,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.35782906166034195,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 7.810341599135502e-09,
+              "iterations": 10,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.1818032523380798,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 0.3,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.19502401253639484,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.0139825832797267e-07,
+              "iterations": 9,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2101371552357892,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 0.3,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.2154981037467201,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 0.3
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10244778022038187,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.3468402915509103e-08,
+              "iterations": 7,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2166179446790376,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 1.0,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17938067220827533,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.4983625475778473e-08,
+              "iterations": 7,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21388171568953906,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 1.0,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.22266274298651745,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.1859382223592128e-08,
+              "iterations": 7,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2030213911817311,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 1.0,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19162786254658817,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.4016962688517005e-08,
+              "iterations": 7,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2085017869605225,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 1.0,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.35652086106106445,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.4939875467821773e-08,
+              "iterations": 7,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.18269455847357133,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 1.0,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.19648235325462357,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 9.06451502226402e-09,
+              "iterations": 7,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21077785614623387,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 1.0,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.21589517908007744,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 1.0
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10254552507432863,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.171914809459552e-09,
+              "iterations": 6,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21695420607473342,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 3.0,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17964458224664545,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.7744683014631057e-09,
+              "iterations": 6,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21413895051117238,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 3.0,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.22294761279981093,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 4.4829291216685885e-09,
+              "iterations": 6,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.20342504085924598,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 3.0,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19199543925562218,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.5883013125203571e-09,
+              "iterations": 6,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.20882255338304653,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 3.0,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.354789574382463,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.1158418950922853e-08,
+              "iterations": 5,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.1830837956102678,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 3.0,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.19721687407096244,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.2662840682270415e-08,
+              "iterations": 5,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21103844762948998,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 3.0,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.21595570744531595,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 3.0
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10266018416355488,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.5422566450123097e-07,
+              "iterations": 4,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21709809135123528,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 10.0,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.1797457595959748,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.7283921155668985e-07,
+              "iterations": 4,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.2142432212748427,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 10.0,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.2231561517205485,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.0705219649891767e-07,
+              "iterations": 4,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20358635262385033,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 10.0,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19226942102872321,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.9570318329558897e-07,
+              "iterations": 4,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.20895449569044747,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 10.0,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.3535809772242993,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 4.220337739870017e-09,
+              "iterations": 4,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.18326376643633532,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 10.0,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.19761220700958373,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 4.538697148230721e-08,
+              "iterations": 4,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.21115559146077081,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 10.0,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.2159623427891567,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 10.0
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10271620523853327,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.6966509221752668e-09,
+              "iterations": 4,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21714398716980593,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 30.0,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17977813818490715,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.795389828467998e-09,
+              "iterations": 4,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21427524202672973,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 30.0,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.22323963758619034,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.6454750314046085e-09,
+              "iterations": 4,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.2036351514868351,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 30.0,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19238218715308883,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.3544564899228024e-09,
+              "iterations": 4,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.2089955644249676,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 30.0,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.3531165545361331,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 3.3448953230472145e-08,
+              "iterations": 3,
+              "message": "CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH",
+              "objective": 0.18332310048792191,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 30.0,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.1977578634533541,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.2637821122712597e-09,
+              "iterations": 4,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21119429616793603,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 30.0,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.21596473155779244,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 30.0
+      },
+      {
+        "division_log_loss_wins": 5,
+        "folds": [
+          {
+            "candidate_log_loss": 0.10273984883661344,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.713754491089071e-09,
+              "iterations": 3,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.2171607535276861,
+              "status": 0
+            },
+            "holdout_division": "01",
+            "reference_log_loss": 0.10275075169346413,
+            "regularization": 100.0,
+            "validation_records": 190,
+            "validation_weight": 5607027.551493701
+          },
+          {
+            "candidate_log_loss": 0.17979013385395756,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.6013788683929007e-09,
+              "iterations": 3,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21428675185282975,
+              "status": 0
+            },
+            "holdout_division": "02",
+            "reference_log_loss": 0.17979540483599665,
+            "regularization": 100.0,
+            "validation_records": 362,
+            "validation_weight": 12370833.156506091
+          },
+          {
+            "candidate_log_loss": 0.22327258080385454,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 1.4980319623658644e-09,
+              "iterations": 3,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.20365257555578345,
+              "status": 0
+            },
+            "holdout_division": "03",
+            "reference_log_loss": 0.2232873829062796,
+            "regularization": 100.0,
+            "validation_records": 515,
+            "validation_weight": 14728241.543103196
+          },
+          {
+            "candidate_log_loss": 0.19242724894551808,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.6891705763240625e-09,
+              "iterations": 3,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.20901042215967805,
+              "status": 0
+            },
+            "holdout_division": "04",
+            "reference_log_loss": 0.19244760474086786,
+            "regularization": 100.0,
+            "validation_records": 273,
+            "validation_weight": 6673380.262363801
+          },
+          {
+            "candidate_log_loss": 0.3529366666167084,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 9.66721796363812e-10,
+              "iterations": 3,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.1833449863001909,
+              "status": 0
+            },
+            "holdout_division": "07",
+            "reference_log_loss": 0.35285647759518785,
+            "regularization": 100.0,
+            "validation_records": 311,
+            "validation_weight": 10306214.641173702
+          },
+          {
+            "candidate_log_loss": 0.19781424354748492,
+            "convergence": {
+              "converged": true,
+              "gradient_max_absolute": 2.3165581727185858e-09,
+              "iterations": 3,
+              "message": "CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL",
+              "objective": 0.21120864227724087,
+              "status": 0
+            },
+            "holdout_division": "09",
+            "reference_log_loss": 0.19783942377529695,
+            "regularization": 100.0,
+            "validation_records": 432,
+            "validation_weight": 15414045.672201023
+          }
+        ],
+        "pooled_candidate_log_loss": 0.2159659905290703,
+        "pooled_reference_log_loss": 0.21596663375549424,
+        "regularization": 100.0
+      }
+    ],
+    "selected_division_log_loss_wins": 5,
+    "selected_is_grid_boundary": false,
+    "selected_pooled_candidate_log_loss": 0.21342747583777205,
+    "selected_pooled_reference_log_loss": 0.21596663375549424,
+    "selected_regularization": 0.03
+  },
+  "implementation_sha256": "43c44bc516cfb8269b2e5964b9c428bf5892c5c6cc2f187aeaf3e7e3f482f11f",
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-fit.v1",
+  "source": {
+    "development_outcome_manifest_sha256": "e4544b6ac1fa1055ac825f23a458bd0c1cb4276e18a73a29b178bb9d9dfa3184",
+    "development_person_days_sha256": "338133f2f1a3db178f4eb4e45a6f2e4fa75c78ae56085e6d1b2ce75713106b50",
+    "registry_sha256": "6b7457fa91b95c644afb7ca438e1164769af57c166781b13fcd0058f49c45f29"
+  },
+  "status": "candidate_not_accepted_for_production"
+}
