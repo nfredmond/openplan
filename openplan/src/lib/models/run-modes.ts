@@ -115,7 +115,14 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     shortLabel: "Behavioral Demand",
     launchLabel: "Behavioral Demand (readiness check — not a forecast)",
     engineLabel: "Behavioral Demand",
-    summaryDetail: "Backed by ActivitySim. Launching checks your inputs and prepares the model — it does not produce a behavioral forecast.",
+    // What launching DOES depends on whether this OpenPlan has an ActivitySim
+    // runtime configured, and the copy has to carry both cases. It described
+    // only the second one until 2026-08-20, by which point a configured
+    // instance had been running the activity model end to end and publishing a
+    // two-method agreement map for two days — a shipped capability the product
+    // was telling planners it did not have. The caveat below is unchanged and
+    // must stay: the behaviour is still borrowed from another region's survey.
+    summaryDetail: "Backed by ActivitySim. If this OpenPlan has an ActivitySim runtime set up, launching runs the activity model, puts its trips on the same road network the trip-based run used, and maps where the two methods agree and where they disagree. If it does not, the run stops after checking your inputs and tells you so. Neither one is a behavioral forecast.",
     runtimeExpectation:
       "The readiness check finishes in a few minutes and keeps working after you leave the page. A calibrated behavioral run takes materially longer (tens of minutes to hours) and needs a dedicated modeling computer.",
     caveatSummary:

@@ -63,6 +63,25 @@ describe("model run launch helpers", () => {
     expect(runMode.caveatSummary).toContain("NOT a behavioral forecast");
   });
 
+  it("says what launching does on BOTH kinds of instance, without softening the caveat", () => {
+    // What a launch does depends on whether the operator configured an
+    // ActivitySim runtime: with one it runs the activity model, assigns it on
+    // the network the trip-based run used, and publishes the agreement map;
+    // without one it stops after a readiness check. The copy described only the
+    // second case for two days after the first shipped, which is this
+    // repository's shipped-invisible defect in its copy form — the capability
+    // exists and the product tells a planner it does not.
+    const runMode = getManagedRunModeDefinition("behavioral_demand");
+
+    expect(runMode.summaryDetail).toMatch(/runtime set up/i);
+    expect(runMode.summaryDetail).toMatch(/same road network/i);
+    expect(runMode.summaryDetail).toMatch(/agree/i);
+    // …and the degraded path is still described, not dropped in the excitement.
+    expect(runMode.summaryDetail).toMatch(/stops after/i);
+    // The claim boundary is untouched by any of that.
+    expect(runMode.summaryDetail).toMatch(/neither one is a behavioral forecast/i);
+  });
+
   it("registers the managed run modes in order", () => {
     expect(MANAGED_RUN_MODE_KEYS).toEqual([
       "deterministic_corridor_v1",
