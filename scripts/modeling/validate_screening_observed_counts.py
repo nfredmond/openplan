@@ -581,6 +581,11 @@ def build_summary(
 ) -> dict[str, Any]:
     matched = [row for row in results if row["match_status"] == "matched"]
     excluded_not_mainline = [row for row in results if row["match_status"] == "excluded_not_mainline"]
+    # See the note attached to this in the summary below: a station on a link the
+    # assignment never loaded is reported, never dropped.
+    matched_on_unloaded_links = [
+        row for row in matched if float(row.get("modeled_daily_pce") or 0.0) == 0.0
+    ]
     apes = [float(row["absolute_percent_error"]) for row in matched if row.get("absolute_percent_error") is not None]
     observed = [float(row["observed_volume"]) for row in matched]
     modeled = [float(row["modeled_daily_pce"]) for row in matched]
@@ -648,6 +653,20 @@ def build_summary(
         # the number of set-aside stations is itself worth reading: where it is
         # large, most of this feed's stations measure ramps.
         "stations_excluded_not_mainline": len(excluded_not_mainline),
+        # Kept identical in wording to the worker lane
+        # (workers/aequilibrae_worker/count_validation.py), which is the copy a
+        # planner sees; `both-count-lanes-disclose-unloaded-links.test.ts` fails
+        # when the two drift. NOT an exclusion — see that file for why.
+        "stations_on_unloaded_links": len(matched_on_unloaded_links),
+        "stations_on_unloaded_links_note": (
+            f"{len(matched_on_unloaded_links)} of {len(matched)} matched station(s) sit on a link "
+            "this run assigned no traffic to at all. Their error measures how much of the network "
+            "the zone system reaches, not how good the demand estimate is. They are still counted "
+            "in every figure below, because removing a comparison the model loses would overstate "
+            "its accuracy."
+            if matched_on_unloaded_links
+            else "Every matched station sits on a link this run assigned traffic to."
+        ),
         "stations_excluded_note": (
             f"{len(excluded_not_mainline)} station(s) measure a ramp or connector this network has "
             "no link for, so they were set aside before matching rather than compared against the "

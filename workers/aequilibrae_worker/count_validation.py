@@ -907,10 +907,36 @@ def validate_against_counts(
     max_ape = max(apes) if apes else None
     status_label, gate_reasons = classify_gate(len(matched), median_ape, max_ape, required_matches, ready_median_ape, ready_critical_ape)
 
+    # A station whose matched link the assignment never loaded. NOT excluded —
+    # dropping a comparison because the model disagrees with it is how a model
+    # gets flattered by its own validator. Reported, because the error at such a
+    # station is a fact about network coverage rather than about demand, and a
+    # planner reading a 100% error cannot otherwise tell the two apart.
+    #
+    # Measured 2026-08-20 across 11 counties in CA, CO, OR and WA: 77-85% of the
+    # links INSIDE the study boundary carry no assigned volume at all, because
+    # travel moves centroid to centroid and loads a skeleton of the network. By
+    # class it is 3-7% of motorway and primary, 34-69% of tertiary, and 96-100%
+    # of residential, service and unclassified roads. So a count on a minor road
+    # is far likelier to land on an unloaded link than a count on a highway, and
+    # 46% of the tertiary-class stations in that sample did.
+    # See docs/modeling/UNLOADED_LINK_COVERAGE_2026-08-20.md.
+    on_unloaded_links = sum(1 for r in matched if float(r["modeled_daily_pce"]) == 0.0)
+
     summary = {
         "validation_rules_version": VALIDATION_RULES_VERSION,
         "stations_total": len(stations),
         "stations_matched": len(matched),
+        "stations_on_unloaded_links": on_unloaded_links,
+        "stations_on_unloaded_links_note": (
+            f"{on_unloaded_links} of {len(matched)} matched station(s) sit on a link this run "
+            "assigned no traffic to at all. Their error measures how much of the network the "
+            "zone system reaches, not how good the demand estimate is. They are still counted "
+            "in every figure below, because removing a comparison the model loses would "
+            "overstate its accuracy."
+            if on_unloaded_links
+            else "Every matched station sits on a link this run assigned traffic to."
+        ),
         "shared_model_links": shared_link_resolution,
         "stations_excluded_not_mainline": sum(
             1 for r in results if r["match_status"] == "excluded_not_mainline"

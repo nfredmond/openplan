@@ -471,6 +471,47 @@ def test_a_count_set_that_declares_no_role_is_unaffected():
     assert summary["stations_matched"] == 1, summary
     assert summary["stations_excluded_not_mainline"] == 0, summary
 
+def test_a_station_on_a_link_the_model_never_loaded_is_reported_not_dropped():
+    """The comparison is kept, and labelled for what it measures.
+
+    Measured 2026-08-20 across 11 counties in four states: 77-85% of the links
+    inside a study boundary carry no assigned volume, because travel moves
+    centroid to centroid and loads a skeleton — 34-69% of tertiary roads and
+    96-100% of residential and service roads. A count on such a link scores a
+    100% error that says nothing about the demand estimate.
+
+    Dropping it would be the obvious move and the wrong one: removing a
+    comparison because the model loses it is how a model gets flattered by its
+    own validator. So the station stays in every figure and the summary says
+    how many of them there are.
+    """
+    on_air = _station("LOADED", 20000, "State Route 4", "trunk")
+    unloaded = _station("UNLOADED", 24000, "Selah Road", "tertiary")
+    links = [
+        _link(1, "State Route 4", "trunk", -121.0, 39.0, 19000.0),
+        _link(2, "Selah Road", "tertiary", -121.1, 39.1, 0.0),
+    ]
+    summary = cv.validate_against_counts([on_air, unloaded], links, required_matches=1)
+
+    assert summary["stations_matched"] == 2, summary["stations_matched"]
+    assert summary["stations_on_unloaded_links"] == 1, summary
+    assert "1 of 2 matched station" in summary["stations_on_unloaded_links_note"], summary
+    # …and it is still in the error figures, dragging them down.
+    matched = [r for r in summary["results"] if r["match_status"] == "matched"]
+    assert any(float(r["modeled_daily_pce"]) == 0.0 for r in matched), matched
+    assert summary["max_ape"] == 100.0, summary["max_ape"]
+
+
+def test_a_run_that_loaded_every_matched_link_says_so_plainly():
+    """The absence has to read as measured, not as a field nobody filled in."""
+    st = _station("A", 29040, "State Route 4", "trunk")
+    links = [_link(3, "State Route 4", "trunk", -121.0, 39.0, 29040.0)]
+    summary = cv.validate_against_counts([st], links, required_matches=1)
+    assert summary["stations_on_unloaded_links"] == 0, summary
+    assert "Every matched station" in summary["stations_on_unloaded_links_note"], summary
+
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:

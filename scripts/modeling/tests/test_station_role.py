@@ -207,6 +207,32 @@ class TheValidatorSetsThemAsideAndSaysSo(unittest.TestCase):
         self.assertEqual(summary["stations_excluded_not_mainline"], 1)
         self.assertIn("ramp or connector", summary["stations_excluded_note"])
 
+    def test_a_station_on_a_link_the_run_never_loaded_is_reported_not_dropped(self) -> None:
+        """Reported, and still counted in every figure.
+
+        Measured 2026-08-20 across 11 counties in four states: 77-85% of the
+        links inside a study boundary carry no assigned volume, so a count on a
+        minor road often lands on one — 46% of tertiary-class stations did.
+        Dropping those comparisons would raise the reported accuracy by
+        removing the ones the model loses, which is the validator flattering
+        its own model. Kept in the same wording as the worker lane, which is
+        the copy a planner reads.
+        """
+        loaded = self.row("matched", 10.0)
+        unloaded = self.row("matched", 100.0)
+        unloaded["modeled_daily_pce"] = 0
+        summary = self.build_summary([loaded, unloaded])
+        self.assertEqual(summary["stations_matched"], 2)
+        self.assertEqual(summary["stations_on_unloaded_links"], 1)
+        self.assertIn("1 of 2 matched station", summary["stations_on_unloaded_links_note"])
+        # …and its error is still in the headline figure.
+        self.assertEqual(summary["metrics"]["max_absolute_percent_error"], 100.0)
+
+    def test_a_run_that_loaded_every_matched_link_says_so_rather_than_going_quiet(self) -> None:
+        summary = self.build_summary([self.row("matched", 10.0)])
+        self.assertEqual(summary["stations_on_unloaded_links"], 0)
+        self.assertIn("Every matched station", summary["stations_on_unloaded_links_note"])
+
     def test_with_nothing_excluded_it_says_so_rather_than_going_quiet(self) -> None:
         summary = self.build_summary([self.row("matched", 10.0)])
         self.assertEqual(summary["stations_excluded_not_mainline"], 0)
