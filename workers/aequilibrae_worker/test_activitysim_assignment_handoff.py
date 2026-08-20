@@ -11,37 +11,12 @@ import types
 from pathlib import Path
 from unittest import mock
 
-os.environ.setdefault("SUPABASE_URL", "http://localhost:54321")
-os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key")
+# Credentials and the engine's module-load boundary both live in one place, so
+# the modeling-lane suite that also needs main.py cannot reimplement half of them
+# (it did, on 2026-08-20, and CI caught the other half).
+from worker_import_for_tests import import_worker_main
 
-
-try:
-    import aequilibrae  # noqa: F401
-except ImportError:
-    # CI deliberately runs the lightweight worker environment. Nothing in this
-    # seam test executes the engine, but main imports its OSM builder at module
-    # load time, so provide only that import boundary rather than skipping the
-    # production orchestration the test exists to exercise.
-    class OSMBuilder:
-        pass
-
-    osm_builder = types.ModuleType("aequilibrae.project.network.osm.osm_builder")
-    osm_builder.OSMBuilder = OSMBuilder
-    for module_name in (
-        "aequilibrae",
-        "aequilibrae.project",
-        "aequilibrae.project.network",
-        "aequilibrae.project.network.osm",
-    ):
-        sys.modules.setdefault(module_name, types.ModuleType(module_name))
-    sys.modules["aequilibrae.project.network.osm.osm_builder"] = osm_builder
-
-import assignment_settings as assignment_settings_module
-
-if assignment_settings_module.installed_assignment_engine_version() is None:
-    assignment_settings_module.installed_assignment_engine_version = lambda: "test-only-aequilibrae"
-
-import main
+main = import_worker_main()
 
 
 def convergence(gap: float, *, profile: dict | None = None) -> dict:
