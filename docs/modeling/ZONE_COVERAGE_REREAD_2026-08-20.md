@@ -180,3 +180,72 @@ they, the app would have refused to read them as comparable.
 - **A properly controlled zone re-run is now cheaper than it was**, because both
   lanes stamp their rules version and report unloaded-link stations. Whether one
   is worth running is a priority call, not a finding.
+
+---
+
+## FOLLOW-UP, same day — what the skeleton is actually made of
+
+The result above sent the search to connector placement and the network itself.
+Measured on four counties, 395,000 minor links (tertiary, residential,
+unclassified, service) against 570–924 centroid-connector endpoints, distance
+from each link's centre to the nearest connector.
+
+**Prediction stated before running:** if connector placement is the mechanism,
+loaded minor roads sit markedly closer to a connector than unloaded ones; if the
+shortest-path skeleton is, the two distributions look alike.
+
+| run | loaded, median distance | unloaded | ratio |
+|---|---:|---:|---:|
+| 08059 Jefferson CO | 0.26 mi | 0.58 mi | 2.2× |
+| 06107 Tulare CA | 0.50 mi | 1.08 mi | 2.2× |
+| 41005 Clackamas OR | 0.39 mi | 1.59 mi | 4.1× |
+| 53011 Clark WA | 0.33 mi | 1.51 mi | 4.6× |
+
+For collectors alone the separation is sharper — 0.35 mi against 3.10 mi in
+Clark County, a factor of nine. **Loaded minor roads are access stubs.**
+
+### And proximity is nowhere near sufficient, which is the real finding
+
+Share of minor links that carry any traffic, by distance to the nearest
+connector (Jefferson CO; the other three agree):
+
+| distance | links | loaded |
+|---|---:|---:|
+| 0.00–0.10 mi | 6,581 | **18.7%** |
+| 0.10–0.25 mi | 19,078 | 10.4% |
+| 0.25–0.50 mi | 25,564 | 8.0% |
+| 0.50–1.00 mi | 17,410 | 5.7% |
+| 1.00–2.00 mi | 22,055 | 1.4% |
+| over 2 mi | 16,980 | **0.4%** |
+
+Proximity multiplies the odds by about fifty. It still leaves **five of every six
+minor links immediately beside a connector carrying nothing.**
+
+**So a connector loads a PATH, not an AREA.** Each one attaches to a single
+network node, so exactly one route leads away from it, and the minor roads that
+get traffic are the specific links on that route — not the neighbourhood around
+it. That is why tripling the connector count with block-group zones moved
+coverage 1.5 points: three times as many connectors is three times as many thin
+paths, not three times the area reached.
+
+It also explains the collector result measured the same day
+(`VMT_BY_CLASS_2026-08-20.md`): roughly the right total collector travel,
+concentrated on the minority of collector links that happen to lie on a
+connector's access path. Distributional, not volumetric.
+
+### The honest limit of this measurement
+
+Connectors attach at zone centroids, which sit in populated, road-dense places
+that carry real traffic anyway. Proximity is therefore **associated** with
+loading, not proven to cause it. The 18.7%-versus-0.4% gradient is real; the
+causal share of it is not established here, and the block-group result is the
+reason not to assume it is large.
+
+### What this means for a planner, and it is a claim boundary rather than a bug
+
+The model cannot say anything about a minor road that does not lie on a
+connector's access path, and that is roughly 95% of them. This is what the
+existing zone-resolution caveat means in practice; the number now quantifies it.
+It is not a defect to be fixed by adding connectors — it is the resolution of a
+screening model, and the honest response is to keep saying so on any surface
+that shows a minor-road volume.
