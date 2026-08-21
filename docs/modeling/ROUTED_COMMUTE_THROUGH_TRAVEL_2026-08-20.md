@@ -177,3 +177,50 @@ share far more tightly, and that is the obvious next step.
 of all trips; a commute-only through share is a component of the answer. What
 has changed is that the component is now measured instead of absent, and it is
 large enough that the flat 0.35 is below the floor in at least one real county.
+
+---
+
+## CORRECTION, 2026-08-20, same day — the unrouted share above is wrong
+
+**The "40–88% unrouted" figures in the result table and in the section headed
+"FAF5 is the wrong network for commuting" are inflated by a bad denominator.**
+They are left in place because this is a dated record; this correction is the
+authority.
+
+Each was computed as `unrouted ÷ (through + ending + unrouted)` **for that
+county** — a denominator that shrinks when a county has little through travel,
+so it inflates the figure exactly where through travel is smallest. That is why
+Pueblo, the county with the least through travel, appeared to have the worst
+routing.
+
+Unroutability is a property of a county PAIR, not of the study county, so the
+denominator should be all flows:
+
+| county | as published | correct: unrouted ÷ all CO inter-county workers |
+|---|---:|---:|
+| 08014 Broomfield | 66% | **25%** |
+| 08059 Jefferson | 40% | **20%** |
+| 08101 Pueblo | 88% | **25%** |
+
+Of 1,534,044 Colorado inter-county commuters across 15,573 pairs, **about a
+quarter are on pairs the FAF5 network cannot route** — consistently, as the
+correct denominator predicts.
+
+**What this changes.** The correction makes the result STRONGER, not weaker, and
+the direction of my error was to under-claim:
+
+- "every figure here is a floor computed from between a third and a tenth of the
+  flows" is wrong. They are floors computed from about **three quarters** of the
+  flows.
+- "Pueblo's 1.2× must not be read as *commuting barely matters there* when 88% of
+  its pairs were dropped" overstated the caveat. A quarter were dropped, so
+  Pueblo's 1.2× is more trustworthy than I said, and the contrast with
+  Broomfield's 9.0× is correspondingly firmer.
+- **Nothing changes in the headline numbers.** The through/long-distance ratios
+  and the 54–76% and 20–25% floors are computed from routed flows only and never
+  touched the bad denominator.
+
+**What does not change:** FAF5 is still the wrong network for this. A quarter of
+commute pairs unroutable is a real limitation and still argues for routing on a
+network that carries minor roads — just not the near-total failure the inflated
+figure implied.
