@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import statistics
 import sys
 from pathlib import Path
@@ -39,6 +40,10 @@ METERS_PER_MILE = 1609.34
 #: Census Bureau 2022 population estimates. Read from the published table on
 #: 2026-08-17, not recalled — an earlier comparison in this lane used recalled
 #: figures and was wrong by 10-15 points.
+#: Same environment override the rest of the modeling lane uses, so one machine
+#: configures spatialite once.
+SPATIALITE_LIBRARY = os.getenv("SPATIALITE_LIBRARY_PATH", "mod_spatialite")
+
 PUBLISHED_DAILY_VMT_PER_CAPITA = {"06": 22.1, "08": 25.3, "41": 23.6, "53": 20.6}
 
 
@@ -162,6 +167,113 @@ def count_accuracy(run_dir: Path, validation_subdir: str = "validation") -> dict
     }
 
 
+def scoped_network_vmt(run_dir: Path) -> dict[str, Any]:
+    """Model vehicle-miles reduced to what HPMS would have counted, for the
+    county-denominator comparison that sits beside `vmt_ratio`.
+
+    Two reductions, both reported rather than merely applied: clip each link by
+    the share of its length inside the analysis boundary, and drop the OSM
+    classes HPMS Full Extent does not publish by county. `vmt_sources` owns the
+    class list and the arithmetic; the geometry stays here because it needs
+    spatialite, and `vmt_sources` is deliberately stdlib-only.
+    """
+    import sqlite3
+
+    from shapely import wkb  # noqa: PLC0415 - heavy, and only this path needs it
+    from shapely.geometry import shape  # noqa: PLC0415
+
+    import vmt_sources  # noqa: PLC0415
+
+    database = run_dir / "work" / "aeq_project" / "project_database.sqlite"
+    volumes = run_dir / "run_output" / "link_volumes.csv"
+    boundary_path = run_dir / "boundary" / "analysis_boundary.geojson"
+    for path in (database, volumes, boundary_path):
+        if not path.exists():
+            raise GammaFitError(f"{run_dir.name} has no {path.name}; cannot scope its vehicle-miles")
+
+    raw = json.loads(boundary_path.read_text())
+    geometry = raw["features"][0]["geometry"] if "features" in raw else raw["geometry"]
+    boundary = shape(geometry)
+
+    connection = sqlite3.connect(database)
+    try:
+        connection.enable_load_extension(True)
+        connection.load_extension(SPATIALITE_LIBRARY)
+        rows = connection.execute(
+            "SELECT link_id, link_type, distance, ST_AsBinary(geometry) FROM links"
+        ).fetchall()
+    finally:
+        connection.close()
+
+    volume_by_link: dict[int, float] = {}
+    with volumes.open(newline="") as handle:
+        for row in csv.DictReader(handle):
+            try:
+                volume_by_link[int(row["link_id"])] = float(row.get("PCE_tot") or 0.0)
+            except (TypeError, ValueError, KeyError):
+                continue
+
+    links = []
+    for link_id, link_type, metres, blob in rows:
+        volume = volume_by_link.get(int(link_id), 0.0)
+        if volume <= 0 or not metres or blob is None:
+            continue
+        try:
+            line = wkb.loads(bytes(blob))
+        except Exception:  # noqa: BLE001 - a link without readable geometry is skipped, not guessed
+            continue
+        try:
+            inside = (line.intersection(boundary).length / line.length) if line.length else 0.0
+        except Exception:  # noqa: BLE001
+            inside = 1.0 if boundary.intersects(line) else 0.0
+        links.append({
+            "link_type": str(link_type or ""),
+            "vehicle_miles": volume * (float(metres) / METERS_PER_MILE),
+            "inside_fraction": inside,
+        })
+    return vmt_sources.scoped_vmt_from_links(links)
+
+
+def county_scoped_comparison(run_dir: Path, county_fips: str) -> dict[str, Any]:
+    """The ratio whose numerator and denominator describe the same thing.
+
+    Best effort by design. `vmt_ratio` is computed offline from files on disk;
+    this needs a live HPMS query, and a study that cannot reach the network must
+    still grade. So a failure is RECORDED with its reason and the caller keeps
+    its other figures — but it is never silently absent, because "not computed"
+    and "computed as nothing" are different facts.
+    """
+    import vmt_sources  # noqa: PLC0415
+
+    try:
+        numerator = scoped_network_vmt(run_dir)
+        published = vmt_sources.county_vmt(county_fips[:2], county_fips)
+    except Exception as error:  # noqa: BLE001 - the reason is the product here
+        return {"available": False, "reason": f"{type(error).__name__}: {error}"}
+
+    denominator = float(published["daily_vehicle_miles"])
+    if denominator <= 0:
+        return {"available": False, "reason": "HPMS reported no vehicle-miles for this county"}
+    return {
+        "available": True,
+        "scope_matched_vmt_ratio": round(numerator["scoped_daily_vehicle_miles"] / denominator, 3),
+        "model_scoped_daily_vmt": numerator["scoped_daily_vehicle_miles"],
+        "model_unclipped_daily_vmt": numerator["unclipped_daily_vehicle_miles"],
+        "dropped_outside_boundary": numerator["dropped_outside_boundary"],
+        "dropped_out_of_hpms_scope": numerator["dropped_out_of_hpms_scope"],
+        "published_county_daily_vmt": denominator,
+        "published_source": published["source"],
+        "published_vintage": published["vintage"],
+        "published_is_derived": not published["is_published_figure"],
+        "note": (
+            "Numerator and denominator describe the same thing: vehicle-miles on this county's "
+            "federal-aid roads. Reported BESIDE vmt_ratio, which does not — see "
+            "docs/modeling/THE_VMT_RATIO_IS_A_BRACKET_2026-08-20.md. The denominator is derived "
+            "from HPMS sections, not a published county figure."
+        ),
+    }
+
+
 def grade_run(run_dir: Path, county_fips: str, validation_subdir: str = "validation") -> dict[str, Any]:
     published = PUBLISHED_DAILY_VMT_PER_CAPITA.get(county_fips[:2])
     if published is None:
@@ -181,6 +293,10 @@ def grade_run(run_dir: Path, county_fips: str, validation_subdir: str = "validat
         "vmt_ratio": round((vmt / population) / published, 3),
         "counts": count_accuracy(run_dir, validation_subdir),
         "validation_read_from": validation_subdir,
+        # Reported beside `vmt_ratio`, never instead of it: every figure this
+        # lane has published rests on that definition, and redefining a number
+        # that appears in dated records is how a record stops being one.
+        "county_scoped": county_scoped_comparison(run_dir, county_fips),
     }
 
 

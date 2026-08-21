@@ -61,6 +61,55 @@ class TheArithmetic(unittest.TestCase):
         self.assertEqual(got["by_functional_system"], {1: 100.0, 5: 200.0})
 
 
+class TheNumeratorIsReducedToWhatHpmsWouldHaveCounted(unittest.TestCase):
+    """Two reductions, both reported, so a reader can see how much each moved."""
+
+    def link(self, link_type, miles, inside=1.0):
+        return {"link_type": link_type, "vehicle_miles": miles, "inside_fraction": inside}
+
+    def test_travel_outside_the_boundary_is_removed_and_reported(self) -> None:
+        got = vs.scoped_vmt_from_links([self.link("primary", 1000, 0.4)])
+        self.assertEqual(got["scoped_daily_vehicle_miles"], 400.0)
+        self.assertEqual(got["dropped_outside_boundary"], 600.0)
+        self.assertEqual(got["unclipped_daily_vehicle_miles"], 1000.0)
+
+    def test_classes_hpms_does_not_publish_are_removed_and_reported(self) -> None:
+        got = vs.scoped_vmt_from_links(
+            [self.link("primary", 1000), self.link("residential", 300), self.link("service", 200)]
+        )
+        self.assertEqual(got["scoped_daily_vehicle_miles"], 1000.0)
+        self.assertEqual(got["dropped_out_of_hpms_scope"], 500.0)
+
+    def test_centroid_connectors_are_out_of_scope_because_they_are_not_roads(self) -> None:
+        got = vs.scoped_vmt_from_links([self.link("centroid_connector", 999)])
+        self.assertEqual(got["scoped_daily_vehicle_miles"], 0.0)
+
+    def test_TERTIARY_IS_KEPT_because_HPMS_publishes_major_collectors(self) -> None:
+        """The judgement that matters most in the mapping.
+
+        HPMS Full Extent excludes LOCAL and RURAL MINOR COLLECTOR, not major
+        collectors — and `tertiary` is the closest OSM class to a major
+        collector. Dropping it would take 8.2% of the model's vehicle-miles out
+        of the numerator against a denominator that kept them, which would make
+        the model look better for a reason that is not about the model.
+        """
+        self.assertNotIn("tertiary", vs.OSM_CLASSES_OUTSIDE_HPMS_SCOPE)
+        got = vs.scoped_vmt_from_links([self.link("tertiary", 800)])
+        self.assertEqual(got["scoped_daily_vehicle_miles"], 800.0)
+
+    def test_a_link_outside_the_boundary_is_not_also_charged_as_out_of_scope(self) -> None:
+        # A residential link half outside must not be counted in both buckets,
+        # or the two disclosures add up to more than the run drove.
+        got = vs.scoped_vmt_from_links([self.link("residential", 1000, 0.5)])
+        self.assertEqual(got["dropped_outside_boundary"], 500.0)
+        self.assertEqual(got["dropped_out_of_hpms_scope"], 500.0)
+        self.assertEqual(
+            got["dropped_outside_boundary"] + got["dropped_out_of_hpms_scope"]
+            + got["scoped_daily_vehicle_miles"],
+            got["unclipped_daily_vehicle_miles"],
+        )
+
+
 class TheServiceNamesAreWrittenDownBecauseTheRuleDoesNotHold(unittest.TestCase):
     def test_every_state_and_dc_is_registered(self) -> None:
         # 50 states + DC + Puerto Rico, verified against the live service

@@ -250,6 +250,64 @@ def county_vmt(state_fips: str, county_fips: str, timeout: int = 120) -> dict[st
     return result
 
 
+#: The OSM classes HPMS Full Extent does NOT publish by county, and which a
+#: numerator compared against it must therefore drop.
+#:
+#: HPMS excludes roads functionally classified LOCAL or RURAL MINOR COLLECTOR.
+#: OpenPlan's network is OSM, whose classes are not FHWA's functional system, so
+#: this mapping is a judgement — stated here rather than hidden, and deliberately
+#: narrow: only the classes nobody would argue are federal-aid roads.
+#:
+#: `tertiary` is NOT here. It is the closest OSM class to "major collector",
+#: which HPMS DOES publish, and dropping it would take 8.2% of the model's
+#: vehicle-miles out of the numerator against a denominator that kept them.
+#: Measured 2026-08-20, these classes carry 2.4% of the model's network
+#: vehicle-miles (`docs/modeling/VMT_BY_CLASS_2026-08-20.md`).
+OSM_CLASSES_OUTSIDE_HPMS_SCOPE = frozenset(
+    {"residential", "unclassified", "service", "living_street", "track", "road",
+     "bridleway", "footway", "path", "cycleway", "steps", "pedestrian",
+     "centroid_connector"}
+)
+
+
+def scoped_vmt_from_links(links: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Model vehicle-miles reduced to what HPMS would have counted.
+
+    `links` are dicts with `link_type`, `vehicle_miles` and `inside_fraction`
+    (0..1, the share of the link's length inside the analysis boundary). Pure
+    arithmetic, so the geometry work stays with the caller and this stays
+    testable without spatialite.
+
+    Both reductions are reported, never merely applied: a reader comparing this
+    against `vmt_ratio` is entitled to see how much each one moved.
+    """
+    total = 0.0
+    inside = 0.0
+    in_scope = 0.0
+    dropped_out_of_scope = 0.0
+    dropped_outside_boundary = 0.0
+    for link in links:
+        miles = float(link.get("vehicle_miles") or 0.0)
+        if miles <= 0:
+            continue
+        total += miles
+        fraction = float(link.get("inside_fraction", 1.0))
+        fraction = min(max(fraction, 0.0), 1.0)
+        inside_miles = miles * fraction
+        inside += inside_miles
+        dropped_outside_boundary += miles - inside_miles
+        if str(link.get("link_type") or "") in OSM_CLASSES_OUTSIDE_HPMS_SCOPE:
+            dropped_out_of_scope += inside_miles
+            continue
+        in_scope += inside_miles
+    return {
+        "scoped_daily_vehicle_miles": round(in_scope, 1),
+        "unclipped_daily_vehicle_miles": round(total, 1),
+        "dropped_outside_boundary": round(dropped_outside_boundary, 1),
+        "dropped_out_of_hpms_scope": round(dropped_out_of_scope, 1),
+    }
+
+
 if __name__ == "__main__":  # pragma: no cover - a convenience probe, not a product surface
     import sys
 
