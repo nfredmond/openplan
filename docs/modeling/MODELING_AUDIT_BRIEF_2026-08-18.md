@@ -217,6 +217,14 @@ cordon floors are now 4–22%, tightening the aggregate band from **1–100% to
 
 ---
 
+> **PARTLY SUPERSEDED 2026-08-20** (left as written; it was true when written).
+> Item 1 below — tertiary at 0.07× — is answered: it is network coverage, not
+> under-assignment. Item 5 — re-measure seeding — is done, and seeding stays off
+> for a reason that is no longer "we did not try it with a better through share".
+> The 1.67× itself now has one contributor sized (concentration, ~1.10×) and
+> still no cause for the remainder. The current synthesis is
+> `docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md`.
+
 ## The state of the number, end to end
 
 Same five counties, same networks, same stations, nothing fitted:
