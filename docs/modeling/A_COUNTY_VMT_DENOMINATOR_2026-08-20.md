@@ -85,3 +85,67 @@ on the derivation rather than a replacement for it.
 - [FHWA — HPMS Field Manual](https://www.fhwa.dot.gov/policyinformation/HPMS/fieldmanual/HPMS_field_manual_dec2016.pdf)
 - [Caltrans — California VMT Data](https://dot.ca.gov/programs/sustainability/sb-743/california-vmt-data)
 - [Caltrans — California Public Road Data](https://dot.ca.gov/-/media/dot-media/programs/research-innovation-system-information/documents/california-public-road-data/prd2009-a11y.pdf)
+
+---
+
+## VERIFIED, same day — and the "has not been downloaded or verified" caveat above is now spent
+
+The section above said nobody had confirmed the field names or that AADT was
+populated. That has now been done, and the answer is better than the
+documentation promised.
+
+**There is no bulk download to do.** FHWA publishes a per-state **ArcGIS
+FeatureServer** for each HPMS Public Release — the same shape as the count feeds
+`count_sources.py` already queries:
+
+```
+https://geo.dot.gov/server/rest/services/Hosted/Colorado_2018_PR/FeatureServer/0/query
+```
+
+Thirty-one fields, including `aadt`, `county_code`, `begin_point`, `end_point`
+and `f_system`, with server-side statistics supported. County VMT is
+Σ `aadt` × (`end_point` − `begin_point`), filtered by `county_code`.
+
+| county | sections | centreline miles | sections with no AADT | derived daily VMT | implied per capita |
+|---|---:|---:|---:|---:|---:|
+| Broomfield CO | 604 | 82.1 | **0** | 1,852,606 | 25.1 |
+| Pueblo CO | 3,724 | 565.8 | **0** | 3,743,002 | 22.3 |
+
+Both carry only functional systems 1–5, confirming the Full Extent scope with no
+local or rural-minor-collector sections. Colorado's published state rate is 25.3
+per capita, so both derivations land in a plausible place rather than an
+implausible one.
+
+### What it does to the ratio, decomposed
+
+The two corrections are separable, and they do not point the same way:
+
+| county | as graded today | + numerator clipped to the county | + county's own VMT as denominator |
+|---|---:|---:|---:|
+| Broomfield | 1.049 | 0.861 | **0.869** |
+| Pueblo | 1.666 | 1.584 | **1.800** |
+
+**Broomfield's correction is almost entirely the numerator** — its roads carry
+25.1 vehicle-miles per resident against the state's 25.3, so the old denominator
+was nearly right for it and clipping did the work.
+
+**Pueblo's is the denominator.** Its roads carry 22.3 per resident, 13% below the
+state rate, so scoring it against the state average understated its ratio; the
+two corrections partly cancel and it ends up **worse** than the instrument said.
+
+**Size this honestly.** For these two counties the denominator error is 1–13%
+and the numerator error 5–18%. This is a 10–20% instrument correction, not a
+factor — the larger finding remains the bracket, that the same model reads 0.9×
+or 2.2× depending on which construction of "the same comparison" is built.
+
+### Still true, and still required before use
+
+- **HPMS 2018 against 2022–23 counts.** The vintages do not match and the year
+  must travel with any ratio built this way. A 2023 release exists in BETA as a
+  4.35 GB national file geodatabase, with no per-state service found for it.
+- **The numerator is not yet scope-matched.** It still contains the 2.4% of
+  model vehicle-miles on local streets, which HPMS excludes by design. Dropping
+  those would move the ratio down about two points.
+- **Two counties in one state.** Nothing here is a national validation of the
+  derivation, and FHWA's warning that its own aggregates will not reconcile with
+  Highway Statistics stands.
