@@ -640,6 +640,53 @@ describe("accuracy figures graded by rules that no longer apply", () => {
     expect(graded({})).not.toContain("put no traffic on");
   });
 
+  it("tells a planner which roads the run can speak about at all", () => {
+    // The claim boundary a corridor number rests on: 77-85% of the links inside
+    // a study area receive no traffic, almost all of the minor ones. A planner
+    // reading a road volume is entitled to know a road with none has NO
+    // estimate rather than a low one.
+    const document = graded({
+      network_coverage: {
+        measured: true,
+        links_inside_study_area: 36096,
+        links_carrying_traffic: 6977,
+        share_carrying_traffic: 0.1933,
+        share_empty: 0.8067,
+        worst_class_a_planner_would_ask_about: "residential",
+        by_road_class: { residential: { links: 20000, carrying_traffic: 400, share_empty: 0.98 } },
+      },
+    });
+    expect(document).toContain("Which roads this run can speak about");
+    expect(document).toContain("19%");
+    expect(document).toContain("36,096");
+    expect(document).toContain("residential");
+    // The sentence that stops a planner reading a missing road as a quiet one.
+    expect(document).toContain("no estimate — which is not the same as a low one");
+  });
+
+  it("says nothing about coverage when the run never measured it", () => {
+    // A run that did not measure coverage has not got full coverage, and
+    // asserting either way would be a claim nobody made.
+    expect(graded({})).not.toContain("Which roads this run can speak about");
+    expect(graded({ network_coverage: { measured: false, reason: "no boundary" } }))
+      .not.toContain("Which roads this run can speak about");
+    // …and `measured: false` governs even when numbers are present beside it.
+    // Without this the flag is defended only by the fields happening to be
+    // absent, which is an accident rather than a contract — a producer that
+    // recorded partial figures on a failed measurement would publish them.
+    expect(
+      graded({
+        network_coverage: {
+          measured: false,
+          reason: "boundary unreadable",
+          links_inside_study_area: 100,
+          share_carrying_traffic: 0.19,
+          share_empty: 0.81,
+        },
+      })
+    ).not.toContain("Which roads this run can speak about");
+  });
+
   it("warns when a summary carries no rules version at all", () => {
     // Every run stored before 2026-08-18. Its median error is a different
     // quantity under the same name, and on the page the two look identical.

@@ -63,25 +63,47 @@ def main_guard_line(tree: ast.Module) -> int | None:
     return None
 
 
-def collects_from_globals(tree: ast.Module, source: str) -> bool:
-    """Whether the runner discovers tests at execution time out of `globals()`.
+def collects_at_runner_time(tree: ast.Module, source: str) -> bool:
+    """Whether the runner can only see what exists when it executes.
 
-    A suite that instead names its tests explicitly, or defers to
-    `unittest.main()`, collects differently and is not exposed to this trap in
-    the same way — `unittest.main()` gathers TestCase classes from the module
-    object after the whole file has executed.
+    BOTH idioms in this repository are exposed, and the second was excluded from
+    this guard until 2026-08-21, when it was found hiding six tests.
+
+      * `globals()` collection: sees the names bound so far, so anything below
+        it is invisible.
+      * `unittest.main()`: gathers TestCase classes off the module object AS IT
+        RUNS. A class defined after the call has not been created yet, so it is
+        equally invisible — `test_link_vmt.py` carried a six-test
+        `VmtByRoadClass` below its runner and reported "Ran 6 tests" for months.
+
+    The earlier version of this function reasoned that unittest.main collects
+    "after the whole file has executed". That is wrong: the module executes top
+    to bottom and the call is a statement like any other.
     """
     return "globals()" in source and "unittest.main" not in source
 
 
 def tests_below(tree: ast.Module, line: int) -> list[str]:
-    return [
-        node.name
-        for node in tree.body
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        and node.name.startswith("test_")
-        and node.lineno > line
-    ]
+    """Every test the runner cannot see: bare functions AND TestCase classes.
+
+    Classes were missed until 2026-08-21. A `unittest.TestCase` below the runner
+    holds however many tests it likes and none of them run, which is the larger
+    version of the same defect.
+    """
+    hidden: list[str] = []
+    for node in tree.body:
+        if node.lineno <= line:
+            continue
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test_"):
+            hidden.append(node.name)
+        elif isinstance(node, ast.ClassDef):
+            methods = [
+                child.name for child in node.body
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and child.name.startswith("test_")
+            ]
+            hidden.extend(f"{node.name}::{name}" for name in methods)
+    return hidden
 
 
 class NoTestIsDefinedBelowTheRunnerThatCollectsIt(unittest.TestCase):
@@ -93,7 +115,7 @@ class NoTestIsDefinedBelowTheRunnerThatCollectsIt(unittest.TestCase):
             for path in suite_paths()
             if (tree := ast.parse(source := path.read_text())) is not None
             and main_guard_line(tree) is not None
-            and collects_from_globals(tree, source)
+            and collects_at_runner_time(tree, source)
         ]
         self.assertGreaterEqual(len(using), 10, "the collect-from-globals runner detector broke")
 
@@ -103,7 +125,7 @@ class NoTestIsDefinedBelowTheRunnerThatCollectsIt(unittest.TestCase):
             source = path.read_text()
             tree = ast.parse(source)
             line = main_guard_line(tree)
-            if line is None or not collects_from_globals(tree, source):
+            if line is None or not collects_at_runner_time(tree, source):
                 continue
             for name in tests_below(tree, line):
                 offenders.append(f"{path.relative_to(REPO_ROOT)}::{name}")

@@ -141,3 +141,95 @@ def vmt_by_road_class(
         totals[road_class] = totals.get(road_class, 0.0) + volume * miles
 
     return totals
+
+
+#: Road classes a screening model is not expected to load, and whose emptiness
+#: is therefore not news. Everything else that carries nothing is a road the run
+#: has no opinion about, and a planner is entitled to know how many there are.
+UNSURPRISING_WHEN_EMPTY = ("service", "track", "path", "footway", "cycleway",
+                           "steps", "pedestrian", "bridleway", "construction")
+
+
+def network_coverage(
+    volumes_by_link: Mapping[int, float],
+    links: Iterable[Sequence[Any]],
+    excluded_link_types: Sequence[str] = EXCLUDED_LINK_TYPES,
+) -> dict[str, Any]:
+    """How much of the road network this run actually put traffic on.
+
+    ``links`` are (link_id, link_type, inside_fraction) — the caller does the
+    geometry, so this stays pure arithmetic and testable without spatialite. A
+    link is counted when any part of it lies inside the study area.
+
+    ============================================ WHY A PLANNER NEEDS THIS
+
+    Measured 2026-08-20 across eleven counties in four states: **77-85% of the
+    links inside a study boundary carry no assigned traffic at all** — 3-7% of
+    motorway and primary, 34-69% of collectors, 96-100% of residential and
+    local streets (`docs/modeling/UNLOADED_LINK_COVERAGE_2026-08-20.md`).
+
+    Travel moves centroid to centroid, so a connector loads a PATH rather than
+    an area: even within a tenth of a mile of one, only 18.7% of minor links
+    carry anything. Adding connectors does not fix it — tripling them with
+    block-group zones bought 1.5 points.
+
+    So this is a CLAIM BOUNDARY, not a defect. A road that received no traffic
+    has no estimate, which is a different thing from a low estimate, and the
+    product must not let a planner read the second when the first is true.
+
+    Centroid connectors are excluded because they are not roads.
+    """
+    excluded = set(excluded_link_types)
+    loaded: dict[str, int] = {}
+    total: dict[str, int] = {}
+    inside_links = 0
+    inside_loaded = 0
+    for link_id, link_type, inside_fraction in links:
+        road_class = str(link_type or "").strip().lower()
+        if not road_class or road_class in excluded:
+            continue
+        try:
+            fraction = float(inside_fraction)
+        except (TypeError, ValueError):
+            continue
+        if fraction <= 0:
+            continue
+        inside_links += 1
+        total[road_class] = total.get(road_class, 0) + 1
+        try:
+            volume = float(volumes_by_link.get(int(link_id), 0.0) or 0.0)
+        except (TypeError, ValueError):
+            volume = 0.0
+        if volume > 0:
+            inside_loaded += 1
+            loaded[road_class] = loaded.get(road_class, 0) + 1
+    if not inside_links:
+        return {"links_inside_study_area": 0, "measured": False}
+    by_class = {
+        road_class: {
+            "links": count,
+            "carrying_traffic": loaded.get(road_class, 0),
+            "share_empty": round(1.0 - (loaded.get(road_class, 0) / count), 4),
+        }
+        for road_class, count in sorted(total.items())
+    }
+    notable = {
+        road_class: stats for road_class, stats in by_class.items()
+        if road_class not in UNSURPRISING_WHEN_EMPTY
+    }
+    return {
+        "measured": True,
+        "links_inside_study_area": inside_links,
+        "links_carrying_traffic": inside_loaded,
+        "share_carrying_traffic": round(inside_loaded / inside_links, 4),
+        "share_empty": round(1.0 - (inside_loaded / inside_links), 4),
+        "by_road_class": by_class,
+        "worst_class_a_planner_would_ask_about": (
+            max(notable.items(), key=lambda kv: kv[1]["share_empty"])[0] if notable else None
+        ),
+        "means": (
+            "A road this run assigned no traffic to has NO estimate, which is not the same as a "
+            "low one. The model puts travel on the paths between zone centroids, so most minor "
+            "roads never receive any and no volume for them should be read off this run."
+        ),
+    }

@@ -60,10 +60,6 @@ class PerClassVmtTest(unittest.TestCase):
         self.assertEqual(per_class_vmt(flows, links), {"resident": 0.0})
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class VmtByRoadClass(unittest.TestCase):
     """Where the model's travel actually goes, by kind of road.
 
@@ -119,3 +115,56 @@ class VmtByRoadClass(unittest.TestCase):
         flows = {"resident": {1: 100.0, 2: 100.0}}
         links = [(1, "Motorway", METERS_PER_MILE), (2, " motorway ", METERS_PER_MILE)]
         self.assertEqual(list(vmt_by_road_class(flows, links)), ["motorway"])
+
+
+class NetworkCoverageTest(unittest.TestCase):
+    """What share of the study area's roads this run has an opinion about."""
+
+    def _cov(self, links, volumes):
+        from link_vmt import network_coverage
+
+        return network_coverage(volumes, links)
+    def test_coverage_counts_only_links_inside_the_study_area(self):
+        """The network is built with a buffer. Counting travel outside the area a
+        planner asked about would overstate the limit being disclosed."""
+        got = self._cov([(1, "primary", 1.0), (2, "primary", 0.0), (3, "primary", 0.5)], {1: 100, 3: 50})
+        assert got["links_inside_study_area"] == 2, got
+        assert got["links_carrying_traffic"] == 2, got
+
+    def test_a_road_with_no_traffic_is_counted_as_having_no_estimate(self):
+        got = self._cov([(1, "residential", 1.0), (2, "residential", 1.0)], {1: 0, 2: 0})
+        assert got["share_empty"] == 1.0, got
+        assert got["by_road_class"]["residential"]["carrying_traffic"] == 0, got
+
+    def test_centroid_connectors_are_not_roads_and_do_not_dilute_the_share(self):
+        with_connector = self._cov([(1, "primary", 1.0), (2, "centroid_connector", 1.0)], {1: 100, 2: 999})
+        without = self._cov([(1, "primary", 1.0)], {1: 100})
+        assert with_connector["links_inside_study_area"] == without["links_inside_study_area"] == 1
+        assert with_connector["share_carrying_traffic"] == without["share_carrying_traffic"]
+
+    def test_the_class_named_for_a_planner_skips_the_ones_nobody_expects_loaded(self):
+        """A service road or a footpath carrying nothing is not news. Naming one as
+        the worst case would bury the finding that matters — the residential and
+        collector streets a planner might otherwise read a volume off."""
+        got = self._cov(
+            [(1, "service", 1.0), (2, "residential", 1.0), (3, "primary", 1.0)],
+            {1: 0, 2: 0, 3: 500},
+        )
+        assert got["by_road_class"]["service"]["share_empty"] == 1.0, got
+        assert got["worst_class_a_planner_would_ask_about"] == "residential", got
+
+    def test_it_says_what_an_empty_road_means_rather_than_leaving_it_to_be_inferred(self):
+        got = self._cov([(1, "primary", 1.0)], {1: 100})
+        assert "NO estimate" in got["means"], got
+        assert "not the same as a low one" in got["means"], got
+
+    def test_a_run_with_no_links_inside_the_area_reports_that_it_measured_nothing(self):
+        """Zero coverage and unmeasured coverage are different facts, and only one
+        of them is a statement about the model."""
+        got = self._cov([(1, "primary", 0.0)], {1: 100})
+        assert got["measured"] is False, got
+        assert "share_empty" not in got, got
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -318,6 +318,58 @@ function stationsOnUnloadedLinks(validation: Record<string, unknown>): string[] 
   ];
 }
 
+/**
+ * How much of the study area's road network this run has an opinion about.
+ *
+ * THE CLAIM BOUNDARY A CORRIDOR NUMBER RESTS ON. Measured 2026-08-20 across
+ * eleven counties in four states: 77-85% of the links inside a study boundary
+ * receive no assigned traffic at all — 3-7% of motorway and primary, 34-69% of
+ * collectors, 96-100% of residential and local streets
+ * (`docs/modeling/UNLOADED_LINK_COVERAGE_2026-08-20.md`).
+ *
+ * Travel moves from one zone centroid to another, so a connector loads a PATH
+ * and not an area: even within a tenth of a mile of one, only 18.7% of minor
+ * links carry anything. It is not fixable by adding connectors — tripling them
+ * with block-group zones bought 1.5 points — so it is the resolution of a
+ * screening model rather than a defect, and the honest response is to say so
+ * wherever a road volume is shown.
+ *
+ * A run that did not record it says nothing rather than claiming full coverage.
+ */
+/** A 0-1 share as a whole-number percentage, for a sentence a planner reads. */
+function percent(share: number): string {
+  return `${Math.round(share * 100)}%`;
+}
+
+function networkCoverage(validation: Record<string, unknown>): string[] {
+  const coverage = asRecord(validation.network_coverage);
+  if (!coverage || coverage.measured !== true) return [];
+  const carrying = asNumber(coverage.share_carrying_traffic);
+  const empty = asNumber(coverage.share_empty);
+  const links = asNumber(coverage.links_inside_study_area);
+  if (carrying === null || empty === null || links === null) return [];
+  const worst = asText(coverage.worst_class_a_planner_would_ask_about);
+  const byClass = asRecord(coverage.by_road_class);
+  const worstShare = worst && byClass ? asNumber(asRecord(byClass[worst])?.share_empty) : null;
+  const worstSentence =
+    worst && worstShare !== null
+      ? ` The kind of road it reaches least is **${worst}**, ${percent(worstShare)} of which carry nothing.`
+      : "";
+  return [
+    "",
+    "### Which roads this run can speak about",
+    "",
+    `This run put traffic on **${percent(carrying)}** of the ${links.toLocaleString()} road links inside ` +
+      `your study area, and none on the other ${percent(empty)}.${worstSentence}`,
+    "",
+    "**A road that received no traffic has no estimate — which is not the same as a low one.** The " +
+      "model routes travel between zone centres, so most minor streets never sit on any route and " +
+      "no volume should be read off this run for them. That is the resolution of a screening model, " +
+      "not a fault in this particular run, and it is why a corridor figure here is defensible where " +
+      "a neighbourhood-street figure is not.",
+  ];
+}
+
 function validationSection(input: CountyRunProvenanceInput): string[] {
   const validation = asRecord(input.validationSummary);
   if (!validation || !hasCountsComparison(input.validationSummary)) {
@@ -347,6 +399,7 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
     )}`,
     ...setAsideStations(validation),
     ...stationsOnUnloadedLinks(validation),
+    ...networkCoverage(validation),
     ...supersededValidationRules(validation),
     `- **Median absolute percent error:** ${stated(
       asNumber(metrics?.median_absolute_percent_error)

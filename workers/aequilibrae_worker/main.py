@@ -4143,6 +4143,57 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
     )
 
 
+def _network_coverage_for_run(run_id: str, db_path: str, link_volumes_csv: str) -> dict | None:
+    """Share of the study area's roads this run put traffic on, or None with the
+    reason logged.
+
+    Best effort by design: it needs the run's study polygon and link geometry,
+    and an artifact stage that cannot reach one of them must still produce every
+    other artifact. `link_vmt.network_coverage` owns the arithmetic; the geometry
+    and the fetch live here.
+    """
+    import csv as _csv
+
+    try:
+        from shapely import wkb as _wkb
+        from shapely.geometry import shape as _shape
+
+        corridor_geojson, _ = resolve_run_study_area(sb_get_run(run_id))
+        boundary = _shape(corridor_geojson)
+
+        volumes: dict[int, float] = {}
+        with open(link_volumes_csv) as handle:
+            for row in _csv.DictReader(handle):
+                try:
+                    volumes[int(float(row["link_id"]))] = float(row.get("PCE_tot") or 0.0)
+                except (TypeError, ValueError, KeyError):
+                    continue
+
+        connection = sqlite3.connect(db_path)
+        try:
+            connection.enable_load_extension(True)
+            connection.load_extension(SPATIALITE_PATH)
+            rows = connection.execute(
+                "SELECT link_id, COALESCE(link_type,''), ST_AsBinary(geometry) FROM links"
+            ).fetchall()
+        finally:
+            connection.close()
+
+        links = []
+        for link_id, link_type, blob in rows:
+            if blob is None:
+                continue
+            try:
+                line = _wkb.loads(bytes(blob))
+                inside = (line.intersection(boundary).length / line.length) if line.length else 0.0
+            except Exception:  # noqa: BLE001 - a link whose geometry will not read is skipped
+                continue
+            links.append((link_id, link_type, inside))
+        return link_vmt.network_coverage(volumes, links)
+    except Exception as error:  # noqa: BLE001 - the reason is the product here
+        return {"measured": False, "reason": f"{type(error).__name__}: {error}"}
+
+
 def stage_artifacts(
     run_id: str,
     stage_id: str,
@@ -4230,6 +4281,7 @@ def stage_artifacts(
     # unavailable would otherwise raise NameError after a successful
     # assignment — a crash at the very end of an hours-long run.
     vmt_by_class: dict[str, float] = {}
+    network_coverage: dict | None = None
     try:
         if os.path.exists(db_path) and os.path.exists(link_volumes_csv):
             import csv as _csv
@@ -4247,6 +4299,18 @@ def stage_artifacts(
                 finally:
                     conn.close()
                 per_class = link_vmt.per_class_vmt(class_flows, link_rows)
+                # HOW MUCH OF THE NETWORK THIS RUN HAS AN OPINION ABOUT.
+                # A road that received no traffic has NO estimate, which is not
+                # the same as a low one, and until 2026-08-21 nothing told a
+                # planner how many of their roads were in that state. Measured
+                # across eleven counties: 77-85% of links inside a study
+                # boundary carry nothing, almost all of the minor ones. Clipped
+                # to the study polygon because the network is built with a
+                # buffer, and counting travel outside the area a planner asked
+                # about would overstate the limit.
+                network_coverage = _network_coverage_for_run(
+                    run_id, db_path, link_volumes_csv
+                )
                 # WHERE the travel went, not just whose it was. FHWA publishes
                 # VMT by functional system for every state every year, so this
                 # is the one accuracy check available in all fifty states
@@ -4553,6 +4617,13 @@ def stage_artifacts(
             ),
             zone_count=assign_result["network"]["zones"],
         )
+        # WHICH ROADS THIS RUN CAN SPEAK ABOUT, carried on the validation summary
+        # beside `zone_resolution` because it answers the same kind of question:
+        # what this comparison can and cannot establish. A road the run assigned
+        # no traffic to has NO estimate, not a low one, and until 2026-08-21
+        # nothing said so on any surface a planner reads.
+        if validation is not None and network_coverage is not None:
+            validation["network_coverage"] = network_coverage
         if validation and not (validation.get("coverage") or {}).get("covered", True):
             log += f"Count validation: not run. {(validation['coverage'] or {}).get('reason', '')}\n"
         elif validation:
@@ -4637,6 +4708,12 @@ def stage_artifacts(
                 if vmt_by_class
                 else None
             ),
+            # WHICH ROADS THIS RUN HAS AN OPINION ABOUT. A road it assigned no
+            # traffic to has no estimate, not a low one, and a planner reading a
+            # corridor number is entitled to know how much of their network is
+            # in that state. Null when it could not be measured, never zeroed —
+            # "no coverage" and "coverage unknown" are different facts.
+            "network_coverage": network_coverage,
             # Convergence diagnostics between the two estimators (measured on
             # this run; the OD estimator's fixed 1.30 circuity is unchanged).
             "resident_vmt_network_od_ratio": vmt_estimator_ratio,
