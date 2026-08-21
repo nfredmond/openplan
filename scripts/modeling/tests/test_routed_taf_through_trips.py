@@ -2,6 +2,7 @@
 """Routed TAF arithmetic stays separate from pathfinding and narration."""
 from __future__ import annotations
 
+import ast
 import sys
 import tempfile
 import unittest
@@ -112,6 +113,81 @@ class FinalReduction(unittest.TestCase):
         self.assertEqual(result["counties"]["06047"]["through_share_of_long_distance_travel"], 0.8)
         self.assertEqual(result["positive_od_pairs"], 2)
 
+
+
+class TheResultSaysWhatItActuallyRead(unittest.TestCase):
+    """A result file that names a source it never read is a forgery.
+
+    Fed a LEHD LODES commute table on 2026-08-20, this router wrote a file
+    declaring its source to be "FHWA Traveler Analysis Framework, 2008
+    county-to-county long-distance person trips" with every field named
+    `annual_person_trips_*`. The arithmetic was correct; the record of where the
+    numbers came from was false, and nothing downstream could have detected it.
+
+    The router genuinely does not care what its three-column
+    origin,destination,flow table describes — that generality is the feature
+    that let LODES reuse it. So provenance has to come from the caller, and the
+    TAF defaults stay only because TAF is what the script was written for.
+
+    PARSED, NOT GREPPED. A guard that searched the source text for
+    `"source": args.source_label` would be satisfied by the comment above it —
+    which is how five guards in this repository were broken in a single day.
+    The payload dict is located in the syntax tree and its values are inspected
+    as nodes, so a constant cannot masquerade as an argument.
+    """
+
+    PROVENANCE_KEYS = ("source", "source_url", "flow_unit")
+
+    def payload_dict(self) -> ast.Dict:
+        tree = ast.parse(Path(routed.__file__).read_text())
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == "payload" for t in node.targets)
+                and isinstance(node.value, ast.Dict)
+            ):
+                return node.value
+        self.fail("the result payload dict was not found — this guard has gone blind")
+
+    def test_provenance_comes_from_the_caller_and_not_from_a_constant(self) -> None:
+        payload = self.payload_dict()
+        seen = {}
+        for key, value in zip(payload.keys, payload.values):
+            if isinstance(key, ast.Constant) and key.value in self.PROVENANCE_KEYS:
+                seen[key.value] = value
+        self.assertEqual(sorted(seen), sorted(self.PROVENANCE_KEYS), seen)
+        for name, value in seen.items():
+            self.assertNotIsInstance(
+                value, ast.Constant,
+                f"payload[{name!r}] is a literal again — a run over any other flow table would "
+                "stamp a source it never read",
+            )
+            self.assertTrue(
+                isinstance(value, ast.Attribute) and isinstance(value.value, ast.Name)
+                and value.value.id == "args",
+                f"payload[{name!r}] should come from the parsed arguments, got {ast.dump(value)[:60]}",
+            )
+
+    def test_the_tables_actually_read_are_recorded(self) -> None:
+        payload = self.payload_dict()
+        keys = {k.value for k in payload.keys if isinstance(k, ast.Constant)}
+        self.assertIn("flow_tables", keys,
+                      "the input fingerprint alone cannot tell a reader WHICH tables were routed")
+
+    def test_the_taf_defaults_survive_for_the_run_this_was_written_for(self) -> None:
+        tree = ast.parse(Path(routed.__file__).read_text())
+        defaults = [
+            kw.value.value
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "add_argument"
+            and any(isinstance(a, ast.Constant) and a.value == "--source-label" for a in node.args)
+            for kw in node.keywords
+            if kw.arg == "default" and isinstance(kw.value, ast.Constant)
+        ]
+        self.assertTrue(defaults, "--source-label lost its default")
+        self.assertIn("FHWA Traveler Analysis Framework", defaults[0])
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)
