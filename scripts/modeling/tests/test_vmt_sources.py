@@ -180,5 +180,67 @@ class ItRefusesRatherThanReportingZero(unittest.TestCase):
         self.assertIn("Colorado_2018_PR", got["source_service"])
 
 
+class TheDenominatorIsFetchedOncePerCounty(unittest.TestCase):
+    """A gamma sweep grades several arms of one county, and a published figure
+    cannot change between them."""
+
+    def setUp(self) -> None:
+        vs.reset_county_vmt_cache()
+        self.calls = 0
+        self.original = vs.fetch_county_sections
+
+        def counting(*args, **kwargs):
+            self.calls += 1
+            return [section(1000, 0.0, 2.0)]
+
+        vs.fetch_county_sections = counting
+
+    def tearDown(self) -> None:
+        vs.fetch_county_sections = self.original
+        vs.reset_county_vmt_cache()
+
+    def test_a_second_ask_for_the_same_county_does_not_refetch(self) -> None:
+        first = vs.county_vmt("08", "08014")
+        second = vs.county_vmt("08", "08014")
+        self.assertEqual(self.calls, 1)
+        self.assertEqual(first["daily_vehicle_miles"], second["daily_vehicle_miles"])
+
+    def test_a_different_county_is_fetched(self) -> None:
+        vs.county_vmt("08", "08014")
+        vs.county_vmt("08", "08101")
+        self.assertEqual(self.calls, 2)
+
+    def test_the_caller_cannot_mutate_what_the_next_caller_receives(self) -> None:
+        """Mutate a CACHED read, not the first one.
+
+        The first call returns the freshly computed dict, which was never the
+        cached object — so mutating it proves nothing, and a version handing out
+        the cache itself passed this test until the mutation exposed it. The
+        protection only exists from the second read onward, so that is where it
+        has to be tested.
+        """
+        vs.county_vmt("08", "08014")                    # populates
+        cached = vs.county_vmt("08", "08014")           # a cached read
+        cached["daily_vehicle_miles"] = -1
+        third = vs.county_vmt("08", "08014")
+        self.assertNotEqual(third["daily_vehicle_miles"], -1)
+        self.assertEqual(third["daily_vehicle_miles"], 2000.0)
+
+    def test_a_failure_is_retried_rather_than_remembered(self) -> None:
+        """Caching a transient 500 would turn one bad minute into a whole study
+        with no denominator. FHWA returned exactly that on 2026-08-20."""
+        vs.fetch_county_sections = lambda *a, **k: []
+        with self.assertRaises(vs.VmtSourceError):
+            vs.county_vmt("08", "08014")
+        vs.fetch_county_sections = self.original
+
+        def works(*a, **k):
+            self.calls += 1
+            return [section(1000, 0.0, 2.0)]
+
+        vs.fetch_county_sections = works
+        self.assertEqual(vs.county_vmt("08", "08014")["daily_vehicle_miles"], 2000.0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

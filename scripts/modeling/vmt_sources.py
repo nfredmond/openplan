@@ -212,6 +212,21 @@ def fetch_county_sections(state_fips: str, county_fips: str, timeout: int = 120)
     return rows
 
 
+#: One county's sections fetched once per process. A gamma sweep grades several
+#: ARMS of the same county, and the denominator cannot change between them — it
+#: is a published figure, not a property of the run. Measured 2026-08-21: the
+#: largest study county spends 15 of its 19 seconds paging this feed, so without
+#: this a five-arm sweep would wait a minute and a quarter for one unchanging
+#: number. Cleared by `reset_county_vmt_cache()` so a test cannot inherit it.
+_COUNTY_VMT_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
+
+
+def reset_county_vmt_cache() -> None:
+    """Forget every cached county. For tests, and for a long-lived process that
+    wants to re-read the feed."""
+    _COUNTY_VMT_CACHE.clear()
+
+
 def county_vmt(state_fips: str, county_fips: str, timeout: int = 120) -> dict[str, Any]:
     """The county's published daily vehicle-miles, derived, with its provenance.
 
@@ -220,6 +235,9 @@ def county_vmt(state_fips: str, county_fips: str, timeout: int = 120) -> dict[st
     and both look identical in a number. The caller is told which it must
     resolve.
     """
+    key = (str(state_fips).zfill(2), str(county_fips))
+    if key in _COUNTY_VMT_CACHE:
+        return dict(_COUNTY_VMT_CACHE[key])
     sections = fetch_county_sections(state_fips, county_fips, timeout=timeout)
     if not sections:
         raise VmtSourceError(
@@ -247,6 +265,8 @@ def county_vmt(state_fips: str, county_fips: str, timeout: int = 120) -> dict[st
             "Highway Statistics tables. This is a derivation, not a published county figure."
         ),
     )
+    # Cached only on success: a failure must be retried, not remembered.
+    _COUNTY_VMT_CACHE[key] = dict(result)
     return result
 
 
