@@ -280,6 +280,44 @@ function setAsideStations(validation: Record<string, unknown>): string[] {
   return lines;
 }
 
+/**
+ * Stations kept in the comparison whose link the assignment never loaded.
+ *
+ * NOT an exclusion, which is why it does not live in `setAsideStations` above.
+ * The station stays in every figure, and it scores an absolute percent error of
+ * exactly 100% because the model says zero.
+ *
+ * A planner has to be told, because that error measures how much of the road
+ * network this zone system reaches rather than how good the demand estimate is.
+ * Measured 2026-08-20 across eleven counties in four states: 77-85% of the links
+ * inside a study boundary carry no assigned traffic, 34-69% of collectors and
+ * 96-100% of local streets among them
+ * (`docs/modeling/UNLOADED_LINK_COVERAGE_2026-08-20.md`).
+ *
+ * And the direction of the distortion cannot be assumed. Because the error is
+ * exactly 100%, these stations pull a median TOWARD 100 from whichever side it
+ * sits — flattering a run whose typical error is worse than that, and
+ * penalising one whose error is better. In Tulare County seven of them were
+ * holding the headline 21 points below where the loaded network puts it.
+ *
+ * Runs made before the worker recorded the field say nothing rather than
+ * printing a zero: "none" and "never measured" are different facts.
+ */
+function stationsOnUnloadedLinks(validation: Record<string, unknown>): string[] {
+  const onUnloaded = asNumber(validation.stations_on_unloaded_links);
+  if (onUnloaded === null || onUnloaded <= 0) return [];
+  const matched = asNumber(validation.stations_matched);
+  const ofMatched = matched !== null ? ` of ${matched}` : "";
+  return [
+    `- **Counted roads this run put no traffic on:** ${onUnloaded}${ofMatched}. The comparison ` +
+      `keeps them, and each scores a 100% error because the model assigned that road nothing. ` +
+      `That measures how much of the road network these zones reach, not how good the traffic ` +
+      `estimate is — and because the error is exactly 100%, they pull the median toward 100 from ` +
+      `whichever side it sits on. Removing them would raise the reported accuracy without ` +
+      `changing the model.`,
+  ];
+}
+
 function validationSection(input: CountyRunProvenanceInput): string[] {
   const validation = asRecord(input.validationSummary);
   if (!validation || !hasCountsComparison(input.validationSummary)) {
@@ -308,6 +346,7 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
       asNumber(validation.stations_total)
     )}`,
     ...setAsideStations(validation),
+    ...stationsOnUnloadedLinks(validation),
     ...supersededValidationRules(validation),
     `- **Median absolute percent error:** ${stated(
       asNumber(metrics?.median_absolute_percent_error)

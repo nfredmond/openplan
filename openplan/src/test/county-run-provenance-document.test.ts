@@ -619,6 +619,27 @@ describe("accuracy figures graded by rules that no longer apply", () => {
       })
     );
 
+  it("tells a planner how many counted roads the run put no traffic on", () => {
+    // Added 2026-08-20 to both count-validation lanes and rendered nowhere,
+    // which is this repository's signature defect — a complete, tested
+    // capability no planner can reach. The station is KEPT in every figure, so
+    // this is not a set-aside line; it explains a 100% error that measures the
+    // zone system's reach rather than the demand estimate.
+    const document = graded({ stations_on_unloaded_links: 7 });
+    expect(document).toContain("Counted roads this run put no traffic on");
+    expect(document).toContain("7 of 38");
+    // The two things a planner must not conclude on their own.
+    expect(document).toContain("pull the median toward 100");
+    expect(document).toContain("Removing them would raise the reported accuracy");
+  });
+
+  it("says nothing about unloaded links when the run recorded none, or never measured", () => {
+    // "none" and "never measured" are different facts, and printing a zero for
+    // an unrecorded field would assert the first while meaning the second.
+    expect(graded({ stations_on_unloaded_links: 0 })).not.toContain("put no traffic on");
+    expect(graded({})).not.toContain("put no traffic on");
+  });
+
   it("warns when a summary carries no rules version at all", () => {
     // Every run stored before 2026-08-18. Its median error is a different
     // quantity under the same name, and on the page the two look identical.
