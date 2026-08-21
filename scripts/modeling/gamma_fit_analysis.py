@@ -51,6 +51,24 @@ def network_vmt(run_dir: Path) -> float:
 
     Connectors are modelling artifacts and carried 8.3% of modelled
     vehicle-miles in the study counties — enough to move every figure here.
+
+    NOT CLIPPED TO THE STUDY AREA, and the ratio built from it is therefore one
+    end of a bracket rather than a measurement. Measured 2026-08-20
+    (`docs/modeling/THE_VMT_RATIO_IS_A_BRACKET_2026-08-20.md`):
+
+      * a screening network is built with a buffer, so **2.6% to 17.9% of these
+        vehicle-miles are driven outside the county** whose residents divide
+        them — a bias against small study areas, which is what OpenPlan is for.
+        Clipping moves the headline median 1.666 to 1.590 and moves Broomfield
+        from 1.049 to 0.861, across the line between over- and under-assigning.
+      * more fundamentally, this counts EVERY vehicle on the county's roads,
+        while `PUBLISHED_DAILY_VMT_PER_CAPITA` below is a per-RESIDENT rate. The
+        same runs read a median 0.912 built from resident VMT and 2.223 built
+        from this. Both are the model against the same published figure.
+
+    So the number this feeds bounds the over-assignment above; it does not
+    measure it. The fix is a county-level published VMT denominator, which this
+    repository does not have and which has not been shown to exist for free.
     """
     import sqlite3
 
