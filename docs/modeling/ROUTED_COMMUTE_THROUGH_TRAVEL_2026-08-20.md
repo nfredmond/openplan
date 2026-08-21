@@ -224,3 +224,49 @@ the direction of my error was to under-claim:
 commute pairs unroutable is a real limitation and still argues for routing on a
 network that carries minor roads — just not the near-total failure the inflated
 figure implied.
+
+---
+
+## FOLLOW-UP, same day — the band now EXCLUDES the flat default at one crossing
+
+The count-profile ceiling machinery (`OPENPLAN_PASSTHROUGH_FROM_COUNTS`, built
+and off) was run on Broomfield to put a second, independent bound on the same
+quantity from the opposite side.
+
+Six paired crossings; **one of them got an informative ceiling**:
+
+| crossing | entering/day | route minimum inside the county | ceiling |
+|---|---:|---:|---:|
+| Denver Boulder Turnpike (US-36) | 94,000 | 71,000 | **0.755** |
+| Northwest Parkway ×2 | — | — | not enough count profile |
+| Denver Boulder Turnpike (2nd) | — | — | no informative bound |
+| Dwight D Eisenhower Highway ×2 | — | — | not enough count profile |
+
+The ceiling's logic: every vehicle that crosses the county on that route must
+pass its lowest-volume interior point, so at most 71,000 of the 94,000 entering
+can be through traffic.
+
+**So for US-36 at Broomfield the through share is bounded [0.54, 0.755] by two
+sources that share no data** — one derived from commute origin–destination flows
+routed on FHWA's network, the other from Colorado's published count profile.
+**The flat `GATEWAY_PASSTHROUGH_SHARE = 0.35` sits below both.**
+
+That is new. `TRIP_LENGTH_CALIBRATION_2026-08-17.md` reported the band as
+1–18% floor against 45–100% ceiling and concluded, correctly for the evidence it
+had, that "the flat 0.35 sits inside that band in every county measured." The
+floor is what moved; the ceiling is unchanged.
+
+**Read the scales carefully.** The floor is a COUNTY figure — through workers
+against all of that county's modelled crossings — while the ceiling is for this
+CROSSING. Mixing them is conservative in the right direction here: US-36 is the
+through route, so its own share is above the county average rather than below,
+and its floor is therefore at least 0.54. The exclusion of 0.35 does not depend
+on that reasoning, only on the county floor exceeding it.
+
+**And five of six crossings still have no ceiling at all**, so this is one
+bounded crossing in one county, not a method. What it establishes is that the
+two free sources CAN bracket a real crossing, and that where they do, the flat
+default has been shown to fall outside.
+
+Nothing is adopted. A per-crossing share needs both bounds at national scale,
+and the ceiling is available at 1 crossing in 6 here.
