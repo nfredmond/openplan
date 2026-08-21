@@ -29,7 +29,8 @@ set -euo pipefail
 INSTANCE_ROOT="${1:-$HOME/apps/openplan}"
 APP_DIR="$INSTANCE_ROOT/openplan"
 SERVICE="openplan-web.service"
-CANONICAL_ENV="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/.env.local"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CANONICAL_ENV="$(cd "$SCRIPT_DIR/../.." && pwd)/.env.local"
 
 step() { printf '\n\033[1m==> %s\033[0m\n' "$1"; }
 fail() { printf '\n\033[31mrefresh aborted: %s\033[0m\n' "$1" >&2; exit 1; }
@@ -58,6 +59,48 @@ else
   step "Fast-forwarding $BEHIND commit(s) to origin/main"
   git merge --ff-only origin/main
 fi
+
+step "Checking the instance database has every migration this build expects"
+# WHY. This script refreshes CODE and nothing else. The database it talks to is
+# refreshed by nobody, so a fast-forward carrying a migration leaves the new
+# build running against the old schema — and that failure is silent in the worst
+# possible way: the service starts, the restart succeeds, `/api/health` answers
+# "ok", and the commit check below MATCHES. Nothing in this script could see it.
+# `/api/health` reports `database: "not_checked"` precisely because it does not
+# look; the planner finds out when one page returns a missing-column error and
+# the rest look fine. So ask the database directly, before the slow steps.
+MIGRATION_JSON="$(cd "$APP_DIR" && npm exec -- supabase migration list --local --output-format json 2>/dev/null | tail -n 1 || true)"
+MIGRATION_VERDICT="$(printf '%s' "$MIGRATION_JSON" | node -e '
+let raw = "";
+process.stdin.on("data", (c) => { raw += c; });
+process.stdin.on("end", () => {
+  let parsed;
+  try { parsed = JSON.parse(raw); } catch { console.log("UNREADABLE"); return; }
+  const rows = parsed && parsed.migrations;
+  if (!Array.isArray(rows)) { console.log("UNREADABLE"); return; }
+  const pending = rows.filter((row) => row && row.local && !row.remote).map((row) => row.local);
+  console.log(pending.length ? "PENDING " + pending.join(" ") : "CURRENT");
+});
+' 2>/dev/null || true)"
+
+case "$MIGRATION_VERDICT" in
+  CURRENT)
+    echo "Every migration in this checkout is applied to the instance database."
+    ;;
+  PENDING*)
+    printf 'These migrations exist in the code but NOT in the instance database:\n'
+    printf '  %s\n' ${MIGRATION_VERDICT#PENDING }
+    fail "the instance database is behind this build — apply them first:
+    (cd $APP_DIR && npm exec -- supabase migration up)
+  then re-run this script. Refusing to serve new code against an old schema."
+    ;;
+  *)
+    printf '\033[31mWARNING: could not read the instance database migration state.\033[0m\n' >&2
+    echo "The local Supabase stack may be down. This script cannot tell whether the" >&2
+    echo "schema matches the code; the instance will build and start either way." >&2
+    echo "Check with: (cd $APP_DIR && npm exec -- supabase status)" >&2
+    ;;
+esac
 
 step "Comparing env var NAMES against the canonical checkout"
 if [ -f "$CANONICAL_ENV" ] && [ -f "$APP_DIR/.env.local" ]; then
@@ -119,4 +162,4 @@ fi
 
 step "Done"
 echo "Instance now serves $(git -C "$INSTANCE_ROOT" rev-parse --short HEAD) on http://localhost:3000"
-echo "Verify at any time with: scripts/ops/which-openplan.sh http://localhost:3000"
+echo "Verify at any time with: $SCRIPT_DIR/which-openplan.sh http://localhost:3000"
