@@ -76,3 +76,74 @@ national method rather than two hand-computed numbers.
 It also cannot separate the through share from the crossing volume, which is
 itself a flat per-class guess. Both terms multiply into the same boundary
 vehicle-miles, and this experiment moves only one of them.
+
+---
+
+## RESULT — 2026-08-20. Each county moved the way its own floor points.
+
+Four runs, each reusing its county's existing network so that only
+`GATEWAY_PASSTHROUGH_SHARE` differed. No calibration on any arm.
+
+| county | share | matched | median APE | network VMT | VMT/capita | on unloaded links |
+|---|---:|---:|---:|---:|---:|---:|
+| **08014 Broomfield** | 0.35 (flat) | 21 | 73.5% | 2,151,732 | 6.05 | 2 |
+| | **0.54 (its floor)** | 21 | **69.9%** | **1,927,385** | 6.05 | 2 |
+| **08101 Pueblo** | 0.35 (flat) | 68 | 50.5% | 7,557,210 | 14.02 | 3 |
+| | **0.20 (its floor)** | 67 | **51.2%** | **7,608,798** | 14.02 | 3 |
+
+**Broomfield, moved UP to its floor:** median error improves 3.6 points and
+network vehicle-miles fall **10.4%**. **Pueblo, moved DOWN to its floor:** median
+error worsens 0.7 points and vehicle-miles rise 0.7%.
+
+One monotonic relationship, in the direction the mechanism predicts: a higher
+share sends traffic across instead of giving it a destination inside the county,
+so internal vehicle-miles fall and the arterials the count stations sit on carry
+less. This is the pre-registered outcome — *"each in the direction its own floor
+points… the flat share is a real contributor to the over-assignment."*
+
+**Three checks that it is a real effect and not an artifact:**
+
+- **The count set did not move.** 21 stations both ways in Broomfield, and the
+  stations sitting on unloaded links — which pull a median toward 100% — are
+  unchanged in both counties. The error moved, not the sample.
+- **VMT per capita is identical to two decimals** in both arms of both counties.
+  That figure is resident travel measured centroid-to-centroid, which the
+  pass-through share does not touch. A change there would have meant the
+  parameter was reaching something it should not.
+- **The parameter demonstrably took effect**: external trips 278,000 → 255,200
+  in Broomfield.
+
+### Size it honestly
+
+Broomfield at its own measured floor still reads **69.9% median error** against a
+30% gate. This is a contributor, not the cause. Moving a parameter 0.19 bought
+3.6 points, and the county needs 40.
+
+### What went wrong, and it is why the check above had to be done by hand
+
+**Nothing in either run's manifest recorded the pass-through share.** Two runs of
+one county, reusing one network, differing by 10% of network vehicle-miles and
+22,800 external trips, and no artifact said which was which. I had to infer that
+the parameter had taken effect from a side effect.
+
+That is the shape of every inert-correction incident in this lane — six of them
+in one day on 2026-08-18 — with the sign reversed: not a change that did nothing
+while appearing to, but a change that did something while leaving no trace. Both
+end with a number nobody can attribute.
+
+`gateway_passthrough_share` and `external_passthrough_enabled` are now in the
+manifest's `trip_rates`, recording what was applied rather than what was
+configured — a run with pass-through off records 0.0, not the share it never
+used. Guarded, with both mutants killed.
+
+## What is NOT adopted
+
+`GATEWAY_PASSTHROUGH_SHARE` remains **0.35**, exactly as the pre-registration
+bound. A floor is not a value; two counties are not a country; and the floors
+rest on occupancy and daily-commute assumptions that are not measurements.
+
+What has changed is the standing of the flat constant. It is now known to sit
+**below the measured floor of at least one real county**, and moving it to that
+floor there improves both the count comparison and the vehicle-mile total. The
+case for a per-county through share is now evidential rather than aesthetic —
+and the method for computing one nationally, from LODES, exists and is cheap.

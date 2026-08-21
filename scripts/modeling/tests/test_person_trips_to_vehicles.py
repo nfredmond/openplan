@@ -111,6 +111,35 @@ class PersonTripsAreDividedByOccupancy(unittest.TestCase):
     def test_it_is_on_by_default_because_it_is_a_unit_error(self) -> None:
         self.assertTrue(sr.CONVERT_PERSON_TRIPS_TO_VEHICLES)
 
+    def test_the_run_records_the_pass_through_share_it_used(self) -> None:
+        """A parameter that moves a headline figure must leave a trace.
+
+        Measured 2026-08-20: the same county reusing the same network, run at a
+        pass-through share of 0.35 and of 0.54, differed by 10% of network
+        vehicle-miles and by 22,800 external trips — and NOTHING in either
+        manifest said which run was which. That is how an inert change gets
+        believed and a real one gets doubted; this lane has had both.
+        """
+        rates = self.run_demand(convert=True)["summary"]["trip_rates"]
+        self.assertIn("gateway_passthrough_share", rates)
+        self.assertIn("external_passthrough_enabled", rates)
+        # It records what the module is actually configured with, not a literal.
+        expected = sr.GATEWAY_PASSTHROUGH_SHARE if sr.EXTERNAL_PASSTHROUGH else 0.0
+        self.assertEqual(rates["gateway_passthrough_share"], expected)
+        self.assertEqual(rates["external_passthrough_enabled"], sr.EXTERNAL_PASSTHROUGH)
+
+    def test_a_run_with_pass_through_off_records_a_zero_share_not_the_default(self) -> None:
+        """Off means none crossed, and the manifest has to say none rather than
+        reporting the share that was configured but never applied."""
+        original = sr.EXTERNAL_PASSTHROUGH
+        try:
+            sr.EXTERNAL_PASSTHROUGH = False
+            rates = self.run_demand(convert=True)["summary"]["trip_rates"]
+            self.assertEqual(rates["gateway_passthrough_share"], 0.0)
+            self.assertFalse(rates["external_passthrough_enabled"])
+        finally:
+            sr.EXTERNAL_PASSTHROUGH = original
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

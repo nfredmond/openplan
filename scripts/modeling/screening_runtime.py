@@ -2697,6 +2697,18 @@ def synthesize_demand(
             # than have it buried.
             "vehicle_occupancy_applied": occupancy_applied,
             "mode_split_applied": mode_split_applied,
+            # The share of each crossing's traffic sent straight across rather
+            # than given a destination inside the study area, and whether
+            # pass-through ran at all. Recorded 2026-08-20 because it was not:
+            # two runs of one county at 0.35 and 0.54 differed by 10% of network
+            # vehicle-miles and NOTHING in either manifest said which was which.
+            # A parameter that moves a headline figure and leaves no trace is
+            # how an inert change gets believed, and how a real one gets
+            # doubted — this lane has had both.
+            "gateway_passthrough_share": (
+                GATEWAY_PASSTHROUGH_SHARE if EXTERNAL_PASSTHROUGH else 0.0
+            ),
+            "external_passthrough_enabled": EXTERNAL_PASSTHROUGH,
         },
         "external_gateways": gateways,
         "files": {"od_trip_matrix": "package/od_trip_matrix.csv"},
