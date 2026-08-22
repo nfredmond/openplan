@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Radar, Loader2 } from "lucide-react";
+import { Radar, Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 import {
   formatAerialMissionTypeLabel,
   formatAerialMissionStatusLabel,
@@ -16,6 +23,35 @@ import {
 const MISSION_TYPES: AerialMissionType[] = ["corridor_survey", "site_inspection", "aoi_capture", "general"];
 const MISSION_STATUSES: AerialMissionStatus[] = ["planned", "active", "complete", "cancelled"];
 
+type MissionValues = {
+  title: string;
+  missionType: AerialMissionType;
+  status: AerialMissionStatus;
+  geographyLabel: string;
+  collectedAt: string;
+  notes: string;
+};
+
+/**
+ * Logging a flight used to be a six-field form open on the project page,
+ * between a planner and the evidence they came to read. It is two short
+ * questions behind a button now.
+ *
+ * WHAT DID NOT CHANGE. The same POST to `/api/aerial/missions` with the same
+ * keys, the same `"" → undefined`, and `collectedAt` still converted to an ISO
+ * string or left absent. It still does NOT navigate: a mission is logged
+ * against the project you are already reading, so it refreshes in place.
+ *
+ * THE RESET COMES FREE, AND THAT IS WORTH SAYING. The inline form cleared its
+ * own fields after a save so a second mission could be logged. `flow.open()`
+ * starts from `initialValues` every time, so reopening gives a blank form
+ * without any clearing code — and the geography label starts from the project's
+ * study area again, which is what it did before.
+ *
+ * THE CONFIRMATION MOVED OUT OF THE FORM. The flow closes on success, so
+ * "Mission logged." would close with it. It sits on the panel instead, where
+ * the person can still see it.
+ */
 export function AerialMissionCreator({
   projectId,
   titleLabel = "Log aerial mission",
@@ -38,34 +74,120 @@ export function AerialMissionCreator({
   defaultGeographyLabel?: string | null;
 }) {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [missionType, setMissionType] = useState<AerialMissionType>("corridor_survey");
-  const [status, setStatus] = useState<AerialMissionStatus>("planned");
-  const [geographyLabel, setGeographyLabel] = useState(defaultGeographyLabel ?? "");
-  const [collectedAt, setCollectedAt] = useState("");
-  const [notes, setNotes] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setMessage(null);
-    setIsSubmitting(true);
+  const steps = useMemo<GuidedFlowStep<MissionValues>[]>(
+    () => [
+      {
+        id: "what",
+        title: "What was flown?",
+        hint: "A name you would recognise later, and what kind of flight it was.",
+        fields: [
+          {
+            name: "title",
+            label: "a name",
+            required: true,
+            requiredMessage: "Give the mission a name before you log it.",
+          },
+          { name: "missionType", label: "a mission type" },
+          { name: "status", label: "a status" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="title" label="Mission name">
+              <Input {...flow.text("title")} placeholder="SR 49 corridor lidar capture" />
+            </GuidedFlowRow>
 
-    try {
+            <GuidedFlowRow flow={flow} name="missionType" label="What kind of flight?">
+              <select className="module-select" {...flow.text("missionType")}>
+                {MISSION_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {formatAerialMissionTypeLabel(type)}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="status" label="Where is it up to?">
+              <select className="module-select" {...flow.text("status")}>
+                {MISSION_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {formatAerialMissionStatusLabel(status)}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "where",
+        title: "Where and when?",
+        hint: "All optional — a mission is still worth logging without them.",
+        fields: [
+          { name: "geographyLabel", label: "the area flown" },
+          { name: "collectedAt", label: "a collection date" },
+          { name: "notes", label: "notes" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow
+              flow={flow}
+              name="geographyLabel"
+              label="Which area was flown?"
+              hint={
+                defaultGeographyLabel
+                  ? "Starting from this project's study area. Narrow it to what was actually flown."
+                  : "In your own words — a corridor, a segment, a bridge approach."
+              }
+            >
+              <Input {...flow.text("geographyLabel")} placeholder="Study corridor, Segment A" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="collectedAt" label="When was it collected?">
+              <Input type="datetime-local" {...flow.text("collectedAt")} />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="notes" label="Anything worth noting?">
+              <Textarea
+                {...flow.text("notes")}
+                placeholder="Flight conditions, what was covered, known gaps, or what still needs doing."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    [defaultGeographyLabel]
+  );
+
+  const flow = useGuidedFlow<MissionValues>({
+    id: "log-aerial-mission",
+    title: titleLabel,
+    submitLabel: "Log the mission",
+    initialValues: {
+      title: "",
+      missionType: "corridor_survey",
+      status: "planned",
+      geographyLabel: defaultGeographyLabel ?? "",
+      collectedAt: "",
+      notes: "",
+    },
+    steps,
+    onSubmit: async (values) => {
+      // Unchanged from the inline form, deliberately: same route, same keys,
+      // same "" → undefined, same ISO conversion for the collection date.
       const response = await fetch("/api/aerial/missions", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           projectId,
-          title,
-          missionType,
-          status,
-          geographyLabel: geographyLabel || undefined,
-          collectedAt: collectedAt ? new Date(collectedAt).toISOString() : undefined,
-          notes: notes || undefined,
+          title: values.title,
+          missionType: values.missionType,
+          status: values.status,
+          geographyLabel: values.geographyLabel || undefined,
+          collectedAt: values.collectedAt ? new Date(values.collectedAt).toISOString() : undefined,
+          notes: values.notes || undefined,
         }),
       });
 
@@ -74,20 +196,10 @@ export function AerialMissionCreator({
         throw new Error(payload.error || "Failed to create aerial mission");
       }
 
-      setTitle("");
-      setMissionType("corridor_survey");
-      setStatus("planned");
-      setGeographyLabel(defaultGeographyLabel ?? "");
-      setCollectedAt("");
-      setNotes("");
       setMessage("Mission logged.");
       router.refresh();
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create aerial mission");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    },
+  });
 
   return (
     <article className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
@@ -102,85 +214,29 @@ export function AerialMissionCreator({
         </div>
       </div>
 
-      <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
-          <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Mission title</label>
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="SR 49 corridor lidar capture"
-            required
-          />
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Mission type</label>
-            <select
-              className="module-select"
-              value={missionType}
-              onChange={(e) => setMissionType(e.target.value as AerialMissionType)}
-            >
-              {MISSION_TYPES.map((t) => (
-                <option key={t} value={t}>{formatAerialMissionTypeLabel(t)}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Status</label>
-            <select
-              className="module-select"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as AerialMissionStatus)}
-            >
-              {MISSION_STATUSES.map((s) => (
-                <option key={s} value={s}>{formatAerialMissionStatusLabel(s)}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Geography label</label>
-            <Input
-              value={geographyLabel}
-              onChange={(e) => setGeographyLabel(e.target.value)}
-              placeholder="Study corridor, Segment A"
-            />
-            {defaultGeographyLabel ? (
-              <p className="text-[0.72rem] text-muted-foreground">
-                Starting from this project&apos;s study area. Narrow it to what was actually flown.
-              </p>
-            ) : null}
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Collection date</label>
-            <Input
-              type="datetime-local"
-              value={collectedAt}
-              onChange={(e) => setCollectedAt(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Notes</label>
-          <Textarea
-            rows={3}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Flight conditions, coverage area, known gaps, or follow-up requirements."
-          />
-        </div>
-
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Radar className="h-4 w-4" />}
-          Log mission
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          onClick={() => {
+            setMessage(null);
+            flow.open();
+          }}
+          data-testid="aerial-mission-creator-open"
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          Log a mission
         </Button>
-        {message ? <p className="text-sm text-emerald-700 dark:text-emerald-300">{message}</p> : null}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      </form>
+        {message ? (
+          <p
+            className="text-sm text-emerald-700 dark:text-emerald-300"
+            data-testid="aerial-mission-logged"
+          >
+            {message}
+          </p>
+        ) : null}
+      </div>
+
+      <GuidedFlow flow={flow} />
     </article>
   );
 }

@@ -140,6 +140,8 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
     "R1 — list-coupled. Rates are entered against the roster shown beside them; the comparison is the point.",
   "src/components/invoicing/time-entry-composer.tsx":
     "R1 — list-coupled. Hours are logged against the week's existing entries, which have to stay visible.",
+  "src/components/invoicing/client-invoice-composer.tsx":
+    "R1 — list-coupled, RECLASSIFIED 2026-08-22 (it was on the debt list as a bounded create; that reading was wrong). On `receivables-lane.tsx` it sits between the client's existing invoices ABOVE it and the unbilled-hours ledger BELOW it — a section the page itself titles \"The ledger behind the lines\" — and its Pull unbilled time button draws from exactly that ledger. A modal hides both the hours the lines are made of and the invoices already sent to that client, which is what stops a duplicate. `time-entry-composer.tsx` writes into the same ledger and is exempt for the same reason.",
   "src/components/projects/project-spend-entry-form.tsx":
     "R1 — list-coupled. Spend is entered against the award's running total on the same screen.",
   "src/components/projects/project-rtp-linker.tsx":
@@ -164,10 +166,8 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
  */
 const AWAITING_CONVERSION: string[] = [
   "src/components/aerial/aerial-evidence-package-creator.tsx",
-  "src/components/aerial/aerial-mission-creator.tsx",
   "src/components/aerial/aerial-processing-request.tsx",
   "src/components/invoicing/client-composer.tsx",
-  "src/components/invoicing/client-invoice-composer.tsx",
   "src/components/invoicing/engagement-composer.tsx",
   "src/components/invoicing/invoice-record-composer.tsx",
   "src/components/programs/funding-opportunity-creator.tsx",
@@ -194,11 +194,19 @@ const AWAITING_CONVERSION: string[] = [
  * and the entry had to be deleted. That is the ratchet doing its job, recorded
  * here rather than described somewhere nobody reads.
  *
- * 16 → 15 → 14 on 2026-08-22: `plan-creator.tsx`, `scenario-set-creator.tsx`. It failed by name twice, exactly
+ * 16 → 15 → 14 on 2026-08-22: `plan-creator.tsx`, `scenario-set-creator.tsx`.
+ *
+ * 14 → 13 the same day WITHOUT A CONVERSION, and that distinction matters:
+ * `client-invoice-composer.tsx` was RECLASSIFIED to `NOT_A_GUIDED_FLOW` under
+ * R1 rather than converted. Reading its page settled it — the composer is
+ * flanked by the invoices already sent to that client and by the unbilled-hours
+ * ledger it pulls its lines from. A ceiling that falls for a reclassification
+ * is not the same as one that falls for work, so it is written down here; the
+ * reason beside the entry is the thing to argue with if this is wrong. It failed by name twice, exactly
  * as designed — once for "listed but no longer a POSTing form", once for
  * "converted but still on the list" — and both entries had to go.
  */
-const AWAITING_CONVERSION_CEILING = 14;
+const AWAITING_CONVERSION_CEILING = 12;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

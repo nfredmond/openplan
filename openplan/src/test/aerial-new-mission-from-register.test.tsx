@@ -147,17 +147,23 @@ describe("The aerial register can start a mission", () => {
     try {
       await renderAerial();
 
-      // No project chosen yet: the form is withheld, because a mission with no
-      // project cannot be created and a half-form would pretend otherwise.
-      expect(screen.queryByPlaceholderText(/corridor lidar capture/i)).not.toBeInTheDocument();
+      // No project chosen yet: the way in is withheld, because a mission with
+      // no project cannot be created and offering the form would pretend
+      // otherwise.
+      expect(screen.queryByTestId("aerial-mission-creator-open")).not.toBeInTheDocument();
 
       fireEvent.change(screen.getByLabelText(/Project this mission is for/i), {
         target: { value: PROJECT_BETA_ID },
       });
 
-      const titleInput = screen.getByPlaceholderText(/corridor lidar capture/i);
-      fireEvent.change(titleInput, { target: { value: "Deck condition overflight" } });
-      fireEvent.submit(titleInput.closest("form") as HTMLFormElement);
+      // The mission form is a guided flow now (2026-08-22), so it is entered
+      // rather than filled in place.
+      fireEvent.click(screen.getByTestId("aerial-mission-creator-open"));
+      fireEvent.change(screen.getByLabelText("Mission name"), {
+        target: { value: "Deck condition overflight" },
+      });
+      fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+      fireEvent.click(screen.getByRole("button", { name: "Log the mission" }));
 
       await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
       const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
@@ -182,8 +188,25 @@ describe("The aerial register can start a mission", () => {
 
     const picker = screen.getByLabelText(/Project this mission is for/i) as HTMLSelectElement;
     expect(picker.value).toBe(PROJECT_BETA_ID);
-    // Preselected means the form is already open for that project.
-    expect(screen.getByPlaceholderText(/corridor lidar capture/i)).toBeInTheDocument();
+    // Preselected means the way into the form is offered for that project.
+    expect(screen.getByTestId("aerial-mission-creator-open")).toBeInTheDocument();
+  });
+
+  it("names the project inside the flow, because the flow covers the picker", async () => {
+    // The launcher exists so a mission's project link is CHOSEN rather than
+    // skipped. Its copy used to say "the project chosen above", which was true
+    // while the form sat under the picker — a flow covers the picker, so
+    // "above" would point at something the planner cannot see.
+    mountSupabase({
+      projectList: twoProjects,
+      focusProject: { data: { id: PROJECT_BETA_ID, name: "Beta bridge inspection" }, error: null },
+    });
+
+    await renderAerial({ projectId: PROJECT_BETA_ID });
+
+    expect(screen.getByText(/Log a mission for Beta bridge inspection/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/linked to Beta bridge inspection/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/the project chosen above/i)).toBeNull();
   });
 
   it("tells a workspace with no projects that a mission needs one", async () => {

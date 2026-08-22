@@ -51,6 +51,9 @@ export function AerialMissionLauncher({
       ? initialProjectId
       : "";
   const [projectId, setProjectId] = useState(validInitialProjectId);
+  // From the same list the picker renders, so the name shown can never disagree
+  // with the option that was chosen.
+  const projectName = projects.find((project) => project.id === projectId)?.name ?? null;
 
   if (projectsUnreadable) {
     return (
@@ -110,7 +113,18 @@ export function AerialMissionLauncher({
         <AerialMissionCreator
           key={projectId}
           projectId={projectId}
-          description="This mission will be linked to the project chosen above, and its evidence packages will feed that project's evidence chain."
+          // THE PROJECT IS NAMED, NOT POINTED AT. This used to read "the
+          // project chosen above", which was true while the form sat under the
+          // picker. The form is a flow now and covers the picker while it is
+          // open, so "above" would refer to something the planner cannot see —
+          // and the whole reason this launcher exists is that the mission's
+          // project link is chosen rather than skipped.
+          titleLabel={`Log a mission for ${projectName ?? "the chosen project"}`}
+          description={
+            projectName
+              ? `This mission will be linked to ${projectName}, and its evidence packages will feed that project's evidence chain.`
+              : "This mission will be linked to the project chosen above, and its evidence packages will feed that project's evidence chain."
+          }
         />
       ) : (
         <p className="text-sm text-muted-foreground">
