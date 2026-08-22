@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 
 type CreateResponse = {
   projectRecordId?: string;
@@ -19,59 +26,187 @@ const projectTypeOptions = [
   { value: "regional_plan", label: "Regional / Program Plan" },
 ];
 
+const deliveryPhaseOptions = [
+  { value: "scoping", label: "Scoping" },
+  { value: "analysis", label: "Analysis" },
+  { value: "engagement", label: "Engagement" },
+  { value: "programming", label: "Programming" },
+  { value: "delivery", label: "Delivery" },
+  { value: "complete", label: "Complete" },
+];
+
+const statusOptions = [
+  { value: "draft", label: "Draft" },
+  { value: "active", label: "Active" },
+  { value: "on_hold", label: "On hold" },
+  { value: "complete", label: "Complete" },
+];
+
+const selectClassName = "module-select";
+
+type ProjectValues = {
+  projectName: string;
+  summary: string;
+  planType: string;
+  deliveryPhase: string;
+  status: string;
+};
+
+const INITIAL_VALUES: ProjectValues = {
+  projectName: "",
+  summary: "",
+  planType: "corridor_plan",
+  deliveryPhase: "scoping",
+  status: "active",
+};
+
+/**
+ * Starting a project is two questions behind a button now, rather than five
+ * fields open on the projects page.
+ *
+ * WHAT DID NOT CHANGE. Same POST to `/api/projects` with the same five keys,
+ * all still sent RAW — a blank summary arrives as `""` here, as it always did.
+ *
+ * THE ERROR STILL PREFERS `details` OVER `error`. The projects route answers
+ * with a specific `details` string beside a generic `error`, and showing the
+ * generic one when the specific one exists tells a planner less than the server
+ * was willing to say.
+ *
+ * IT STILL NAVIGATES ONLY WHEN THERE IS SOMEWHERE TO GO. `projectRecordId` is
+ * optional in the response; without it the flow closes and the page refreshes
+ * where it stands, rather than pushing to `/projects/undefined`.
+ *
+ * THE DISAMBIGUATION SURVIVES, and it is the reason this panel has a paragraph
+ * at all: "workspace" means an OpenPlan tenant everywhere else in the product,
+ * and this button does not make one. A planner who thinks it does creates a
+ * project expecting an empty world and gets a record in the world they are in.
+ */
 export function ProjectWorkspaceCreator() {
   const router = useRouter();
-  const [projectName, setProjectName] = useState("");
-  const [summary, setSummary] = useState("");
-  const [planType, setPlanType] = useState("corridor_plan");
-  const [deliveryPhase, setDeliveryPhase] = useState("scoping");
-  const [status, setStatus] = useState("active");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+  const steps = useMemo<GuidedFlowStep<ProjectValues>[]>(
+    () => [
+      {
+        id: "identity",
+        title: "What is the project?",
+        hint: "A name your colleagues would recognise, and what it is in one or two sentences.",
+        fields: [
+          {
+            name: "projectName",
+            label: "a name",
+            required: true,
+            requiredMessage: "Give the project a name before you start it.",
+          },
+          { name: "summary", label: "a summary" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="projectName" label="Project name">
+              <Input {...flow.text("projectName")} placeholder="Ridge Road safety improvements" />
+            </GuidedFlowRow>
 
-    try {
+            <GuidedFlowRow
+              flow={flow}
+              name="summary"
+              label="What is it?"
+              hint="Optional. One or two sentences is plenty."
+            >
+              <Textarea
+                {...flow.text("summary")}
+                placeholder="What this project is doing, where, and what it should change."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "shape",
+        title: "What kind of work is it, and where is it up to?",
+        hint: "All three can change at any time.",
+        fields: [
+          { name: "planType", label: "a project type" },
+          { name: "deliveryPhase", label: "a phase" },
+          { name: "status", label: "a status" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="planType" label="What kind of project?">
+              <select className={selectClassName} {...flow.text("planType")}>
+                {projectTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="deliveryPhase" label="What stage is it at?">
+              <select className={selectClassName} {...flow.text("deliveryPhase")}>
+                {deliveryPhaseOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="status" label="Is it running?">
+              <select className={selectClassName} {...flow.text("status")}>
+                {statusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    []
+  );
+
+  const flow = useGuidedFlow<ProjectValues>({
+    id: "create-project",
+    title: "Start a project",
+    submitLabel: "Start the project",
+    initialValues: INITIAL_VALUES,
+    steps,
+    onSubmit: async (values) => {
+      // Unchanged from the inline form, deliberately: same route, same five
+      // keys, all still raw.
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          projectName,
-          summary,
-          planType,
-          deliveryPhase,
-          status,
+          projectName: values.projectName,
+          summary: values.summary,
+          planType: values.planType,
+          deliveryPhase: values.deliveryPhase,
+          status: values.status,
         }),
       });
 
-      const payload = (await response.json()) as CreateResponse & { error?: string; details?: string };
+      const payload = (await response.json()) as CreateResponse & {
+        error?: string;
+        details?: string;
+      };
 
       if (!response.ok) {
+        // `details` first: the route says something specific beside its generic
+        // `error`, and showing the generic one tells a planner less than the
+        // server was willing to say.
         throw new Error(payload.details || payload.error || "Failed to create project");
       }
-
-      setProjectName("");
-      setSummary("");
-      setPlanType("corridor_plan");
-      setDeliveryPhase("scoping");
-      setStatus("active");
 
       router.refresh();
       if (payload.projectRecordId) {
         router.push(`/projects/${payload.projectRecordId}`);
-        return;
       }
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create project");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    },
+  });
 
   return (
     <article className="module-section-surface">
@@ -92,110 +227,14 @@ export function ProjectWorkspaceCreator() {
         It does not create a new workspace.
       </p>
 
-      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-2">
-          <label htmlFor="project-name" className="text-sm font-medium">
-            Project name
-          </label>
-          <Input
-            id="project-name"
-            placeholder="Corridor Safety Action Program"
-            value={projectName}
-            onChange={(event) => setProjectName(event.target.value)}
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="project-summary" className="text-sm font-medium">
-            Summary
-          </label>
-          <Textarea
-            id="project-summary"
-            placeholder="What is this project trying to accomplish, for whom, and in what context?"
-            value={summary}
-            onChange={(event) => setSummary(event.target.value)}
-            rows={4}
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
-            <label htmlFor="project-type" className="text-sm font-medium">
-              Plan type
-            </label>
-            <select
-              id="project-type"
-              className="module-select"
-              value={planType}
-              onChange={(event) => setPlanType(event.target.value)}
-            >
-              {projectTypeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="project-phase" className="text-sm font-medium">
-              Delivery phase
-            </label>
-            <select
-              id="project-phase"
-              className="module-select"
-              value={deliveryPhase}
-              onChange={(event) => setDeliveryPhase(event.target.value)}
-            >
-              <option value="scoping">Scoping</option>
-              <option value="analysis">Analysis</option>
-              <option value="engagement">Engagement</option>
-              <option value="programming">Programming</option>
-              <option value="delivery">Delivery</option>
-              <option value="complete">Complete</option>
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="project-status" className="text-sm font-medium">
-              Status
-            </label>
-            <select
-              id="project-status"
-              className="module-select"
-              value={status}
-              onChange={(event) => setStatus(event.target.value)}
-            >
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
-              <option value="on_hold">On hold</option>
-              <option value="complete">Complete</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="module-note text-sm">
-          Create a project record to organize the work and continue from there.
-        </div>
-
-        {error ? (
-          <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-            {error}
-          </p>
-        ) : null}
-
-        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-          {isSubmitting ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Creating project…
-            </span>
-          ) : (
-            "Create project"
-          )}
+      <div className="mt-5">
+        <Button type="button" onClick={flow.open} data-testid="project-workspace-creator-open">
+          <Plus className="mr-1.5 h-4 w-4" />
+          Start a project
         </Button>
-      </form>
+      </div>
+
+      <GuidedFlow flow={flow} />
     </article>
   );
 }
