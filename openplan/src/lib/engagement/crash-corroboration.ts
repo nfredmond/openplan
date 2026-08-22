@@ -350,3 +350,133 @@ export function describeCorroborationBaseline(
     `nearby, and the number worth acting on is the one well above this line.`
   );
 }
+
+/**
+ * The radius choices the console offers, as links that preserve everything else
+ * in the URL.
+ *
+ * It lives here rather than in the page because the page was 29 lines over its
+ * cap when this shipped, and because a query-string rebuild is the kind of thing
+ * that silently drops a parameter — the tab a planner had open, for one — and
+ * has to be testable on its own.
+ */
+export const CRASH_RADIUS_CHOICES_METERS = [50, 100, 250, 500] as const;
+
+export type CrashRadiusChoiceLink = { meters: number; href: string; active: boolean };
+
+export function buildCrashRadiusChoices(
+  campaignId: string,
+  query: Record<string, string | string[] | undefined>,
+  activeMeters: number
+): CrashRadiusChoiceLink[] {
+  return CRASH_RADIUS_CHOICES_METERS.map((meters) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (key === "crashRadius" || value === undefined) continue;
+      if (Array.isArray(value)) value.forEach((entry) => params.append(key, entry));
+      else params.set(key, value);
+    }
+    params.set("crashRadius", String(meters));
+    return {
+      meters,
+      href: `/engagement/${campaignId}?${params.toString()}#crash-corroboration`,
+      active: meters === activeMeters,
+    };
+  });
+}
+
+/** A comment carries a place when it has a drawn geometry or a dropped pin. */
+type MappableItem = {
+  status?: string | null;
+  geometry?: unknown;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+/**
+ * Mapped comments the comparison could not include because moderation has not
+ * reached them yet. Counted from the console's own item list rather than with a
+ * second query, so the two cannot disagree about the same campaign.
+ */
+export function countUnmoderatedMapped(items: readonly MappableItem[] | null): number {
+  return (items ?? []).filter(
+    (item) =>
+      item.status !== "approved" &&
+      (item.geometry != null || (item.latitude != null && item.longitude != null))
+  ).length;
+}
+
+/** The shape `ReadFailureLog.check` classifies, and what the RPC returns. */
+export type CrashReadResult = { data: unknown; error?: { message?: string | null } | null };
+
+/** The slice of a Supabase client this module needs. Structural, as elsewhere here. */
+type RpcClient = {
+  rpc(name: string, args: Record<string, unknown>): PromiseLike<CrashReadResult>;
+};
+
+/**
+ * The one call site of `engagement_items_with_nearby_crashes`.
+ *
+ * The page should not know the function's name or its parameter spellings — an
+ * untyped Supabase client will not catch a renamed argument, and the failure
+ * would surface as an unreadable lane rather than as a build error. Keeping the
+ * call here means one place to change when the signature does.
+ */
+export function readNearbyCrashes(
+  client: RpcClient,
+  workspaceId: string,
+  campaignId: string,
+  radiusMeters: number
+): PromiseLike<CrashReadResult> {
+  return client.rpc("engagement_items_with_nearby_crashes", {
+    p_workspace_id: workspaceId,
+    p_campaign_id: campaignId,
+    p_radius_meters: radiusMeters,
+    p_from_year: null,
+    p_to_year: null,
+  });
+}
+
+/** What the console needs to render the seam, from what it read. */
+export type CrashCorroborationView = {
+  summary: CampaignCrashCorroboration | null;
+  unreadable: boolean;
+  radiusChoices: CrashRadiusChoiceLink[];
+  unmoderatedMappedCount: number;
+};
+
+/**
+ * The whole view model for the engagement <-> safety panel, assembled in one
+ * place.
+ *
+ * Gathered here rather than spread across the campaign console for two reasons:
+ * the console is a 1,400-line server component already at its line cap, and —
+ * the one that matters — a FAILED READ MUST NEVER BECOME A SUMMARY. Binding the
+ * `reads.check` result to the summary in the same expression is what stops a
+ * later edit from computing a reading out of an empty error response, which
+ * would render as a campaign whose every location is collision-free.
+ */
+export function buildCrashCorroborationView(input: {
+  campaignId: string;
+  query: Record<string, string | string[] | undefined>;
+  radiusMeters: number;
+  rpcResult: CrashReadResult;
+  items: readonly MappableItem[] | null;
+  checkRead: (label: string, result: CrashReadResult) => boolean;
+}): CrashCorroborationView {
+  const unreadable = input.checkRead(
+    "reported collisions near this campaign's mapped comments",
+    input.rpcResult
+  );
+  return {
+    unreadable,
+    summary: unreadable
+      ? null
+      : summarizeCampaignCorroboration(
+          (input.rpcResult.data ?? []) as NearbyCrashRow[],
+          input.radiusMeters
+        ),
+    radiusChoices: buildCrashRadiusChoices(input.campaignId, input.query, input.radiusMeters),
+    unmoderatedMappedCount: countUnmoderatedMapped(input.items),
+  };
+}

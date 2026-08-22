@@ -1,13 +1,20 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
+  buildCrashCorroborationView,
+  buildCrashRadiusChoices,
   clampCrashProximityMeters,
+  countUnmoderatedMapped,
   DEFAULT_CRASH_PROXIMITY_METERS,
   describeCorroborationBaseline,
   describeYears,
   MAX_CRASH_PROXIMITY_METERS,
   MIN_CRASH_PROXIMITY_METERS,
   summarizeCampaignCorroboration,
+  readNearbyCrashes,
   weakestCompleteness,
   type NearbyCrashRow,
 } from "@/lib/engagement/crash-corroboration";
@@ -223,5 +230,112 @@ describe("engagement × safety — the radius is chosen, not assumed", () => {
     const summary = summarizeCampaignCorroboration([row({ crash_total: 1 })], 250);
     expect(summary.items[0].sentence).toContain("within 250 m");
     expect(describeCorroborationBaseline(summary)).toContain("within 250 m");
+  });
+});
+
+describe("engagement × safety — what the console is handed", () => {
+  it("never turns a failed read into a reading", () => {
+    // The defect this binding exists to prevent: an error response carries no
+    // rows, so summarizing it would produce a campaign whose every location is
+    // collision-free — the most confident possible version of being wrong.
+    const view = buildCrashCorroborationView({
+      campaignId: "campaign-1",
+      query: {},
+      radiusMeters: 100,
+      rpcResult: { data: null, error: { message: "permission denied" } },
+      items: [],
+      checkRead: (_label, result) => Boolean(result.error),
+    });
+
+    expect(view.unreadable).toBe(true);
+    expect(view.summary).toBeNull();
+  });
+
+  it("summarizes a successful read and names the lane it checked", () => {
+    const labels: string[] = [];
+    const view = buildCrashCorroborationView({
+      campaignId: "campaign-1",
+      query: {},
+      radiusMeters: 100,
+      rpcResult: { data: [row({ crash_total: 2 })], error: null },
+      items: [],
+      checkRead: (label) => {
+        labels.push(label);
+        return false;
+      },
+    });
+
+    expect(view.unreadable).toBe(false);
+    expect(view.summary?.items).toHaveLength(1);
+    expect(labels).toEqual(["reported collisions near this campaign's mapped comments"]);
+  });
+
+  it("keeps every other search parameter when the distance changes", () => {
+    // Losing `tab` here would close the Analysis panel the planner is reading
+    // the moment they change the radius.
+    const choices = buildCrashRadiusChoices(
+      "campaign-1",
+      { tab: "analysis", q: "crosswalk", crashRadius: "100" },
+      100
+    );
+
+    const first = new URL(choices[0].href, "https://example.test");
+    expect(first.searchParams.get("tab")).toBe("analysis");
+    expect(first.searchParams.get("q")).toBe("crosswalk");
+    expect(first.searchParams.get("crashRadius")).toBe("50");
+    expect(first.hash).toBe("#crash-corroboration");
+    expect(choices.filter((choice) => choice.active).map((c) => c.meters)).toEqual([100]);
+  });
+
+  it("counts a mapped comment as held back whether it was pinned or drawn", () => {
+    expect(
+      countUnmoderatedMapped([
+        { status: "pending", latitude: 38.5, longitude: -121.4 },
+        { status: "flagged", geometry: { type: "Point", coordinates: [0, 0] } },
+        // Approved: it is IN the comparison, so it is not held back.
+        { status: "approved", latitude: 38.5, longitude: -121.4 },
+        // Pending but unmapped: it could never have been compared anyway.
+        { status: "pending", latitude: null, longitude: null },
+      ])
+    ).toBe(2);
+    expect(countUnmoderatedMapped(null)).toBe(0);
+  });
+
+  it("sends the campaign and workspace the caller asked about, under the names the function declares", () => {
+    // An untyped client cannot catch a renamed argument, so the spellings are
+    // asserted here rather than discovered as an unreadable lane in production.
+    const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
+    readNearbyCrashes(
+      {
+        rpc: (name, args) => {
+          calls.push({ name, args });
+          return Promise.resolve({ data: [], error: null });
+        },
+      },
+      "ws-1",
+      "campaign-1",
+      250
+    );
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0].name).toBe("engagement_items_with_nearby_crashes");
+    expect(calls[0].args).toEqual({
+      p_workspace_id: "ws-1",
+      p_campaign_id: "campaign-1",
+      p_radius_meters: 250,
+      p_from_year: null,
+      p_to_year: null,
+    });
+
+    // Asserted against the MIGRATION, not against this file's own spelling —
+    // comparing the call to the constant that produced it proves nothing. This
+    // is the only check that can see a rename on either side.
+    const sql = readFileSync(
+      path.join(process.cwd(), "supabase/migrations/20260821000001_engagement_crash_corroboration.sql"),
+      "utf8"
+    );
+    const declared = [...sql.matchAll(/^\s+(p_[a-z_]+)\s+\w/gm)].map((m) => m[1]);
+    expect(new Set(declared)).toEqual(new Set(Object.keys(calls[0].args)));
+    expect(sql).toContain("FUNCTION public.engagement_items_with_nearby_crashes(");
   });
 });
