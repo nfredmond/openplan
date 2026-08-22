@@ -1,103 +1,299 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, Loader2 } from "lucide-react";
+import { FilePlus2, Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 import { RTP_CYCLE_STATUS_OPTIONS } from "@/lib/rtp/catalog";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
-import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 
 type CreateResponse = {
   rtpCycleId: string;
   error?: string;
 };
 
-function FormError({ error }: { error: string | null }) {
-  if (!error) return null;
+const selectClassName = "module-select";
 
-  return (
-    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-      {error}
-    </p>
-  );
-}
+type RtpCycleValues = {
+  title: string;
+  status: (typeof RTP_CYCLE_STATUS_OPTIONS)[number]["value"];
+  geographyLabel: string;
+  anchorLatitude: string;
+  anchorLongitude: string;
+  horizonStartYear: string;
+  horizonEndYear: string;
+  adoptionTargetDate: string;
+  publicReviewOpenAt: string;
+  publicReviewCloseAt: string;
+  summary: string;
+};
 
+const INITIAL_VALUES: RtpCycleValues = {
+  title: "",
+  status: "draft",
+  geographyLabel: "",
+  anchorLatitude: "",
+  anchorLongitude: "",
+  horizonStartYear: "",
+  horizonEndYear: "",
+  adoptionTargetDate: "",
+  publicReviewOpenAt: "",
+  publicReviewCloseAt: "",
+  summary: "",
+};
+
+/**
+ * Eleven fields and a map used to sit open on the RTP operations board. Three
+ * steps behind a button now — and the plan area gets a step of its own, so the
+ * picker has the whole sheet rather than a third of a crowded form.
+ *
+ * THE FRONT DOOR IS UNCHANGED AND STILL THE ONLY ONE. `StudyAreaPicker`
+ * resolves any US county / city / CDP / metro; a resolved place fills the label
+ * and the pin, and both stay editable because "Countywide, including
+ * unincorporated areas" is a legitimate label no gazetteer returns. A
+ * hand-drawn area has no name and fills nothing. This is the
+ * "do not build a second geography selector" non-negotiable, and
+ * `rtp-cycle-creator-uses-the-front-door.test.ts` still holds it.
+ *
+ * THE PIN'S PAIR RULE MOVED TO THE STEP THAT OWNS BOTH HALVES. The map backdrop
+ * needs a latitude AND a longitude to draw anything, so a lone latitude renders
+ * nothing at all. It was checked before submit "because the pair rule is easier
+ * to understand next to the two fields than in a toast after a round trip" —
+ * which is exactly what a step check is: the message appears beside the two
+ * fields, on the step holding them, before the flow will advance.
+ *
+ * IT STILL DOES NOT NAVIGATE. A cycle is created from the board a planner is
+ * working on, so the flow closes and the board refreshes underneath.
+ */
 export function RtpCycleCreator() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [status, setStatus] = useState<(typeof RTP_CYCLE_STATUS_OPTIONS)[number]["value"]>("draft");
-  const [geographyLabel, setGeographyLabel] = useState("");
-  const [horizonStartYear, setHorizonStartYear] = useState("");
-  const [horizonEndYear, setHorizonEndYear] = useState("");
-  const [adoptionTargetDate, setAdoptionTargetDate] = useState("");
-  const [publicReviewOpenAt, setPublicReviewOpenAt] = useState("");
-  const [publicReviewCloseAt, setPublicReviewCloseAt] = useState("");
-  const [summary, setSummary] = useState("");
-  const [anchorLatitude, setAnchorLatitude] = useState("");
-  const [anchorLongitude, setAnchorLongitude] = useState("");
-  // Drives the StudyAreaPicker only. rtp_cycles stores no boundary — the
-  // cycle's spatial identity is a LABEL plus a display pin — so the drawn
-  // geometry is never submitted; picking a place is a fast, correct way to
-  // fill both fields, not a new column.
+  // Drives the StudyAreaPicker only. `rtp_cycles` stores no boundary — the
+  // cycle keeps a label and a display pin, not a geometry.
   const [pickerCorridorText, setPickerCorridorText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * A resolved place fills the label and the pin in one step — the same
-   * any-place front door every other module uses (see StudyAreaPicker's
-   * header), instead of asking a planner to type coordinates by hand. Both
-   * fields stay editable afterwards: "Countywide, including unincorporated
-   * areas" is a legitimate label no gazetteer will ever return, and the pin
-   * is display-only (the map route's own migration calls it that), so a
-   * bbox midpoint is exactly good enough. Fires only for a searched place;
-   * a hand-drawn area has no name and fills nothing.
-   */
-  function handlePlaceResolved(place: PlaceBoundaryResponse | null) {
-    if (!place) return;
-    if (place.label) setGeographyLabel(place.label);
-    setAnchorLatitude(((place.bbox.minLat + place.bbox.maxLat) / 2).toFixed(5));
-    setAnchorLongitude(((place.bbox.minLon + place.bbox.maxLon) / 2).toFixed(5));
-  }
+  const steps = useMemo<GuidedFlowStep<RtpCycleValues>[]>(
+    () => [
+      {
+        id: "identity",
+        title: "Which plan cycle is this?",
+        hint: "The name your agency calls it by, and where it is up to.",
+        fields: [
+          {
+            name: "title",
+            label: "a name",
+            required: true,
+            requiredMessage: "Give the cycle a name before you create it.",
+          },
+          { name: "status", label: "a status" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="title" label="Cycle name">
+              <Input {...flow.text("title")} placeholder="2050 Regional Transportation Plan" />
+            </GuidedFlowRow>
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
+            <GuidedFlowRow flow={flow} name="status" label="Where is it up to?">
+              <select className={selectClassName} {...flow.text("status")}>
+                {RTP_CYCLE_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "area",
+        title: "Which area does the plan cover?",
+        hint: "Search for the place and the label and map pin fill themselves. All of it is optional.",
+        fields: [
+          { name: "geographyLabel", label: "a plan area" },
+          { name: "anchorLatitude", label: "a map pin latitude" },
+          { name: "anchorLongitude", label: "a map pin longitude" },
+        ],
+        check: (values) => {
+          const hasLatitude = values.anchorLatitude.trim().length > 0;
+          const hasLongitude = values.anchorLongitude.trim().length > 0;
+          // Both halves move together: the backdrop needs both to draw
+          // anything, so a lone latitude silently renders nothing.
+          if (hasLatitude !== hasLongitude) {
+            return {
+              field: hasLatitude ? "anchorLongitude" : "anchorLatitude",
+              message: "Enter both a map pin latitude and longitude, or leave both blank.",
+            };
+          }
+          if (
+            hasLatitude &&
+            (!Number.isFinite(Number(values.anchorLatitude)) ||
+              !Number.isFinite(Number(values.anchorLongitude)))
+          ) {
+            return {
+              field: "anchorLatitude",
+              message: "The map pin latitude and longitude must be numbers.",
+            };
+          }
+          return null;
+        },
+        render: (flow) => (
+          <>
+            <div className="space-y-1.5">
+              <p className="text-[0.82rem] font-semibold">
+                Find the plan area
+                <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">
+                  optional — fills the label and pin below
+                </span>
+              </p>
+              <StudyAreaPicker
+                corridorText={pickerCorridorText}
+                onCorridorChange={setPickerCorridorText}
+                onPlaceResolved={(place) => {
+                  // A resolved place fills the label and the pin in one step.
+                  // Both stay editable afterwards, and a hand-drawn area — which
+                  // has no name — fills nothing.
+                  if (!place) return;
+                  // One patch, so a resolved place lands its label and both
+                  // halves of the pin together rather than in three renders.
+                  flow.setValues({
+                    ...(place.label ? { geographyLabel: place.label } : {}),
+                    anchorLatitude: ((place.bbox.minLat + place.bbox.maxLat) / 2).toFixed(5),
+                    anchorLongitude: ((place.bbox.minLon + place.bbox.maxLon) / 2).toFixed(5),
+                  });
+                }}
+                showRunEngineHint={false}
+              />
+            </div>
 
-    // Caught here rather than as a 400, because the pair rule is easier to
-    // understand next to the two fields than in a toast after a round trip.
-    const hasLatitude = anchorLatitude.trim().length > 0;
-    const hasLongitude = anchorLongitude.trim().length > 0;
-    if (hasLatitude !== hasLongitude) {
-      setError("Enter both a map pin latitude and longitude, or leave both blank.");
-      return;
-    }
-    if (hasLatitude && (!Number.isFinite(Number(anchorLatitude)) || !Number.isFinite(Number(anchorLongitude)))) {
-      setError("The map pin latitude and longitude must be numbers.");
-      return;
-    }
+            <GuidedFlowRow
+              flow={flow}
+              name="geographyLabel"
+              label="Geography label"
+              hint="In your agency's own words. A resolved place fills this in, and you can edit it."
+            >
+              <Input
+                {...flow.text("geographyLabel")}
+                placeholder="Countywide, including unincorporated areas"
+              />
+            </GuidedFlowRow>
 
-    setIsSubmitting(true);
+            <GuidedFlowRow flow={flow} name="anchorLatitude" label="Map pin latitude">
+              <Input {...flow.text("anchorLatitude")} placeholder="39.26" />
+            </GuidedFlowRow>
 
-    try {
+            <GuidedFlowRow flow={flow} name="anchorLongitude" label="Map pin longitude">
+              <Input {...flow.text("anchorLongitude")} placeholder="-121.02" />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "dates",
+        title: "What are the dates?",
+        hint: "All optional, and easy to add from the cycle's own page later.",
+        fields: [
+          { name: "horizonStartYear", label: "a first year" },
+          { name: "horizonEndYear", label: "a last year" },
+          { name: "adoptionTargetDate", label: "an adoption target" },
+          { name: "publicReviewOpenAt", label: "a review opening" },
+          { name: "publicReviewCloseAt", label: "a review closing" },
+          { name: "summary", label: "a summary" },
+        ],
+        check: (values) => {
+          const start = values.horizonStartYear.trim();
+          const end = values.horizonEndYear.trim();
+          for (const [field, raw] of [
+            ["horizonStartYear", start],
+            ["horizonEndYear", end],
+          ] as const) {
+            if (!raw) continue;
+            const year = Number(raw);
+            if (!Number.isInteger(year) || year < 1900 || year > 2200) {
+              return { field, message: "Give a year between 1900 and 2200, or leave it blank." };
+            }
+          }
+          if (start && end && Number(end) < Number(start)) {
+            return {
+              field: "horizonEndYear",
+              message: "The last year cannot come before the first year.",
+            };
+          }
+          return null;
+        },
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="horizonStartYear" label="First horizon year">
+              <Input {...flow.text("horizonStartYear")} type="number" placeholder="2028" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="horizonEndYear" label="Last horizon year">
+              <Input {...flow.text("horizonEndYear")} type="number" placeholder="2048" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="adoptionTargetDate" label="Adoption target">
+              <Input {...flow.text("adoptionTargetDate")} type="date" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="publicReviewOpenAt" label="Public review opens">
+              <Input {...flow.text("publicReviewOpenAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="publicReviewCloseAt" label="Public review closes">
+              <Input {...flow.text("publicReviewCloseAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="summary" label="Anything to note?">
+              <Textarea
+                {...flow.text("summary")}
+                placeholder="What this plan cycle covers and what it has to deliver."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    [pickerCorridorText]
+  );
+
+  const flow = useGuidedFlow<RtpCycleValues>({
+    id: "create-rtp-cycle",
+    title: "New plan cycle",
+    submitLabel: "Create the cycle",
+    initialValues: INITIAL_VALUES,
+    steps,
+    onSubmit: async (values) => {
+      // Unchanged from the inline form, deliberately: same route, same keys,
+      // same "" → undefined, same ISO conversion on the two review timestamps.
       const response = await fetch("/api/rtp-cycles", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          title,
-          status,
-          geographyLabel: geographyLabel || undefined,
-          horizonStartYear: horizonStartYear ? Number(horizonStartYear) : undefined,
-          horizonEndYear: horizonEndYear ? Number(horizonEndYear) : undefined,
-          adoptionTargetDate: adoptionTargetDate || undefined,
-          publicReviewOpenAt: publicReviewOpenAt ? new Date(publicReviewOpenAt).toISOString() : undefined,
-          publicReviewCloseAt: publicReviewCloseAt ? new Date(publicReviewCloseAt).toISOString() : undefined,
-          summary: summary || undefined,
-          anchorLatitude: anchorLatitude.trim() ? Number(anchorLatitude) : undefined,
-          anchorLongitude: anchorLongitude.trim() ? Number(anchorLongitude) : undefined,
+          title: values.title,
+          status: values.status,
+          geographyLabel: values.geographyLabel || undefined,
+          horizonStartYear: values.horizonStartYear ? Number(values.horizonStartYear) : undefined,
+          horizonEndYear: values.horizonEndYear ? Number(values.horizonEndYear) : undefined,
+          adoptionTargetDate: values.adoptionTargetDate || undefined,
+          publicReviewOpenAt: values.publicReviewOpenAt
+            ? new Date(values.publicReviewOpenAt).toISOString()
+            : undefined,
+          publicReviewCloseAt: values.publicReviewCloseAt
+            ? new Date(values.publicReviewCloseAt).toISOString()
+            : undefined,
+          summary: values.summary || undefined,
+          anchorLatitude: values.anchorLatitude.trim() ? Number(values.anchorLatitude) : undefined,
+          anchorLongitude: values.anchorLongitude.trim()
+            ? Number(values.anchorLongitude)
+            : undefined,
         }),
       });
 
@@ -106,247 +302,35 @@ export function RtpCycleCreator() {
         throw new Error(payload.error || "Failed to create RTP cycle");
       }
 
-      setTitle("");
-      setStatus("draft");
-      setGeographyLabel("");
-      setHorizonStartYear("");
-      setHorizonEndYear("");
-      setAdoptionTargetDate("");
-      setPublicReviewOpenAt("");
-      setPublicReviewCloseAt("");
-      setSummary("");
-      setAnchorLatitude("");
-      setAnchorLongitude("");
       setPickerCorridorText("");
       router.refresh();
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create RTP cycle");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    },
+  });
 
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New RTP cycle</h2>
+          <h2 className="module-section-title">New plan cycle</h2>
           <p className="module-section-description">
-            Register the cycle now so projects, chapters, engagement windows, and funding logic can hang off one clear parent object.
+            A plan cycle is one edition of your long-range plan — the area it covers, the years it
+            looks across, and the dates it has to hit.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
           <FilePlus2 className="h-5 w-5" />
         </span>
       </div>
 
-      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
-          <label htmlFor="rtp-cycle-title" className="text-[0.82rem] font-semibold">
-            Title
-          </label>
-          <Input
-            id="rtp-cycle-title"
-            placeholder="Regional Transportation Plan 2050"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            required
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-status" className="text-[0.82rem] font-semibold">
-              Status
-            </label>
-            <select
-              id="rtp-cycle-status"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as (typeof RTP_CYCLE_STATUS_OPTIONS)[number]["value"])}
-            >
-              {RTP_CYCLE_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-geography" className="text-[0.82rem] font-semibold">
-              Geography label
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-geography"
-              placeholder="Countywide, including unincorporated areas"
-              value={geographyLabel}
-              onChange={(event) => setGeographyLabel(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <p className="text-[0.82rem] font-semibold">
-            Plan area
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">
-              optional — fills the label and pin below
-            </span>
-          </p>
-          <StudyAreaPicker
-            corridorText={pickerCorridorText}
-            onCorridorChange={setPickerCorridorText}
-            onPlaceResolved={handlePlaceResolved}
-            showRunEngineHint={false}
-          />
-        </div>
-
-        {/*
-          Where the cycle drops its pin on the workspace map. Optional, and both
-          halves move together — the backdrop needs both to draw anything, so a
-          lone latitude would silently render nothing. Until this existed the
-          columns had no writer outside the deleted demo seed, and the RTP layer
-          was permanently empty.
-        */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-anchor-latitude" className="text-[0.82rem] font-semibold">
-              Map pin latitude
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-anchor-latitude"
-              inputMode="decimal"
-              placeholder="39.9612"
-              value={anchorLatitude}
-              onChange={(event) => setAnchorLatitude(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-anchor-longitude" className="text-[0.82rem] font-semibold">
-              Map pin longitude
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-anchor-longitude"
-              inputMode="decimal"
-              placeholder="-82.9988"
-              value={anchorLongitude}
-              onChange={(event) => setAnchorLongitude(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-horizon-start" className="text-[0.82rem] font-semibold">
-              Horizon start year
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-horizon-start"
-              type="number"
-              min={1900}
-              max={2200}
-              placeholder="2028"
-              value={horizonStartYear}
-              onChange={(event) => setHorizonStartYear(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-horizon-end" className="text-[0.82rem] font-semibold">
-              Horizon end year
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-horizon-end"
-              type="number"
-              min={1900}
-              max={2200}
-              placeholder="2048"
-              value={horizonEndYear}
-              onChange={(event) => setHorizonEndYear(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-adoption-target" className="text-[0.82rem] font-semibold">
-              Adoption target
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-adoption-target"
-              type="date"
-              value={adoptionTargetDate}
-              onChange={(event) => setAdoptionTargetDate(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-summary" className="text-[0.82rem] font-semibold md:hidden">
-              Summary
-            </label>
-            <div className="rounded-[0.5rem] border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
-              Treat this as the parent control object for portfolio, chapters, public review, and funding traceability.
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-review-open" className="text-[0.82rem] font-semibold">
-              Public review opens
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-review-open"
-              type="datetime-local"
-              value={publicReviewOpenAt}
-              onChange={(event) => setPublicReviewOpenAt(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="rtp-cycle-review-close" className="text-[0.82rem] font-semibold">
-              Public review closes
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="rtp-cycle-review-close"
-              type="datetime-local"
-              value={publicReviewCloseAt}
-              onChange={(event) => setPublicReviewCloseAt(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="rtp-cycle-summary" className="text-[0.82rem] font-semibold">
-            Summary
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-          </label>
-          <Textarea
-            id="rtp-cycle-summary"
-            placeholder="What RTP update is being assembled, for which geography, toward which board/adoption milestone, and under what review window?"
-            rows={4}
-            value={summary}
-            onChange={(event) => setSummary(event.target.value)}
-          />
-        </div>
-
-        <FormError error={error} />
-
-        <Button type="submit" size="lg" disabled={isSubmitting}>
-          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Create RTP cycle
+      <div className="mt-5">
+        <Button type="button" onClick={flow.open} data-testid="rtp-cycle-creator-open">
+          <Plus className="mr-1.5 h-4 w-4" />
+          New plan cycle
         </Button>
-      </form>
+      </div>
+
+      <GuidedFlow flow={flow} />
     </article>
   );
 }

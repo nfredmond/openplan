@@ -13,6 +13,13 @@
  * is the WIRING — so, per the a-wiring-test-must-vary-the-binding lesson, two
  * DIFFERENT places are resolved and each must land its own values. One fixture
  * cannot tell "threads the binding" from "hardcodes its value".
+ *
+ * UPDATED 2026-08-22: the creator is a guided flow, so the front door lives on
+ * the flow's plan-area step rather than open on the board. Every assertion
+ * below is the one it always made — the picker only had to be reached first.
+ * The picker now mounts when that step is reached rather than on page load,
+ * which is why `openToArea` exists and why it is not an assertion being
+ * weakened.
  */
 import { fireEvent, render, screen, act } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -50,6 +57,14 @@ function place(overrides: Partial<PlaceBoundaryResponse>): PlaceBoundaryResponse
   } as PlaceBoundaryResponse;
 }
 
+/** Open the flow and reach the plan-area step, where the front door lives. */
+function openToArea() {
+  render(<RtpCycleCreator />);
+  fireEvent.click(screen.getByTestId("rtp-cycle-creator-open"));
+  fireEvent.change(screen.getByLabelText("Cycle name"), { target: { value: "2050 RTP" } });
+  fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+}
+
 describe("the RTP cycle creator's geography wiring", () => {
   beforeEach(() => {
     capturedOnPlaceResolved = undefined;
@@ -57,13 +72,13 @@ describe("the RTP cycle creator's geography wiring", () => {
   });
 
   it("mounts the front door, without the run-engine hint (no run follows)", () => {
-    render(<RtpCycleCreator />);
+    openToArea();
     expect(screen.getByTestId("study-area-picker-stub")).toBeInTheDocument();
     expect(capturedShowRunEngineHint).toBe(false);
   });
 
   it("fills the label and pin from EACH resolved place, not from one baked value", () => {
-    render(<RtpCycleCreator />);
+    openToArea();
 
     act(() => {
       capturedOnPlaceResolved?.(place({}));
@@ -88,7 +103,7 @@ describe("the RTP cycle creator's geography wiring", () => {
   });
 
   it("keeps a custom label when the resolved place carries none", () => {
-    render(<RtpCycleCreator />);
+    openToArea();
 
     const label = screen.getByLabelText(/Geography label/);
     act(() => {
@@ -104,7 +119,7 @@ describe("the RTP cycle creator's geography wiring", () => {
   });
 
   it("does nothing for a hand-drawn area, which has no place identity", () => {
-    render(<RtpCycleCreator />);
+    openToArea();
     act(() => {
       capturedOnPlaceResolved?.(null);
     });
