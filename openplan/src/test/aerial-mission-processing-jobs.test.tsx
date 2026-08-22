@@ -185,15 +185,23 @@ async function renderMissionPage(): Promise<HTMLElement> {
   return container;
 }
 
-describe("aerial mission processing jobs are visible", () => {
-  const originalEnv = {
-    [WORKER_URL_ENV]: process.env[WORKER_URL_ENV],
-    [WORKER_TOKEN_ENV]: process.env[WORKER_TOKEN_ENV],
-    [SILENCE_ENV]: process.env[SILENCE_ENV],
-  };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
+/**
+ * THE SETUP EVERY TEST THAT RENDERS THE PAGE NEEDS, in one place.
+ *
+ * It used to live only in the first describe's `beforeEach`, and the third
+ * describe — which also renders the page — relied on the CONFIGURATION LEFT
+ * BEHIND on those module-level mocks after the first describe had finished. A
+ * `beforeEach` inside a describe runs only for that describe's tests, so the
+ * third one never had setup of its own; it worked because nothing reset the
+ * mocks in between and file order put it last.
+ *
+ * Under `--sequence.shuffle` a silence-boundary test can run first, `createClient`
+ * has never been configured, and the page dies on `supabase.auth` — six failures
+ * from one missing call. Sharing the setup is what makes each test's starting
+ * state its own.
+ */
+function installMissionPageMocks() {
+  vi.clearAllMocks();
     delete process.env[SILENCE_ENV];
     process.env[WORKER_URL_ENV] = "https://worker.example.com";
     process.env[WORKER_TOKEN_ENV] = "worker-token";
@@ -226,15 +234,26 @@ describe("aerial mission processing jobs are visible", () => {
     });
     packagesOrderMock.mockResolvedValue({ data: [], error: null });
     postureMaybeSingleMock.mockResolvedValue({ data: null, error: null });
-    jobsLimitMock.mockResolvedValue({ data: [jobRow()], error: null });
-  });
+  jobsLimitMock.mockResolvedValue({ data: [jobRow()], error: null });
+}
 
-  afterEach(() => {
-    for (const [key, value] of Object.entries(originalEnv)) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
-    }
-  });
+/** The env this file rewrites, captured once so every describe can restore it. */
+const originalEnv = {
+  [WORKER_URL_ENV]: process.env[WORKER_URL_ENV],
+  [WORKER_TOKEN_ENV]: process.env[WORKER_TOKEN_ENV],
+  [SILENCE_ENV]: process.env[SILENCE_ENV],
+};
+
+function restoreEnv() {
+  for (const [key, value] of Object.entries(originalEnv)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+}
+
+describe("aerial mission processing jobs are visible", () => {
+  beforeEach(installMissionPageMocks);
+  afterEach(restoreEnv);
 
   it("asks the database for the columns it renders", async () => {
     await renderMissionPage();
@@ -820,6 +839,10 @@ describe("the processing request control's refusals", () => {
 });
 
 describe("the silence boundary itself", () => {
+  // Its own setup, rather than whatever the previous describe left on the mocks.
+  beforeEach(installMissionPageMocks);
+  afterEach(restoreEnv);
+
   it("flips exactly at the configured window", () => {
     const now = new Date("2026-07-30T12:00:00.000Z");
     const inside = summarizeAerialProcessingJob(

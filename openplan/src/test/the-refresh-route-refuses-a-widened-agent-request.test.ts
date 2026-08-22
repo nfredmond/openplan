@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 /**
@@ -86,6 +86,20 @@ function feedParams() {
 }
 
 describe("the refresh route refuses an agent request wider than its action", () => {
+  // CALL HISTORY IS PER-TEST, NOT PER-FILE.
+  //
+  // `authGetUserMock` is module-level, and two tests here assert it was NOT
+  // called — "before any database work" is the whole point of the refusal.
+  // Another test in this file legitimately DOES call it, so with no clearing
+  // between tests those assertions only hold while the refusals happen to run
+  // first. File order gave them that; `--sequence.shuffle` does not.
+  //
+  // `clearAllMocks` resets call history and keeps implementations, which is
+  // exactly the distinction these tests need.
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("rejects adoptDespiteCollapse from the Planner Agent, naming the key, before any database work", async () => {
     // The service-role client throws if constructed and the ingest throws if
     // called, so reaching a 400 here also proves nothing was read or written.

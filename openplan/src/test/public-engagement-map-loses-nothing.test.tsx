@@ -92,6 +92,15 @@ const CONTEXT_LAYERS: ParticipantContextLayerSet = {
 
 afterEach(() => {
   cleanup();
+  // `cleanup()` unmounts the containers TESTING-LIBRARY created and nothing
+  // else. One test below builds a map popup — real DOM, built the way the map
+  // builds it — and appends it straight to `document.body` so it can click the
+  // support button. That node outlives `cleanup()`, and the next test that
+  // looks for the same resident comment finds two of them.
+  //
+  // File order kept that test last, so nothing came after it. Shuffled, it did
+  // not, and "Found multiple elements" is a leak, not a duplicate render.
+  document.body.replaceChildren();
   vi.unstubAllEnvs();
   vi.resetModules();
 });

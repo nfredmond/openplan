@@ -134,7 +134,20 @@ async function renderPage(searchParams: { projectId?: string; programType?: stri
 
 describe("ProgramsPage", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // RESET, NOT CLEAR — the difference is the `mockResolvedValueOnce` QUEUE.
+    //
+    // This setup queues two one-shot values on `reportsInMock` (the linked
+    // reports, then an empty second page). `clearAllMocks` wipes call history
+    // and leaves that queue in place, so every test APPENDED two more and any
+    // test consuming a different number left the queue misaligned for the next
+    // one — which then read someone else's leftover empty page and rendered no
+    // report at all.
+    //
+    // A fixed run order made the arithmetic work out. `--sequence.shuffle` does
+    // not, and the arithmetic was never the contract. Everything this file needs
+    // is configured below, so resetting first is safe and makes each test's
+    // queue its own.
+    vi.resetAllMocks();
 
     authGetUserMock.mockResolvedValue({
       data: {

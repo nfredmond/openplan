@@ -37,7 +37,18 @@ describe("SignInPage", () => {
     signInWithPasswordMock.mockReset();
     signInWithPasswordMock.mockResolvedValue({ error: null });
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ workspaceId: "workspace-1" }), { status: 200 })));
-    searchParamsValue.forEach((_, key) => searchParamsValue.delete(key));
+    // SNAPSHOT THE KEYS BEFORE DELETING THEM.
+    //
+    // This was `searchParamsValue.forEach((_, key) => …delete(key))`, which
+    // mutates the collection it is walking: deleting shifts the remaining
+    // entries down and `forEach` skips the next one, so the reset left params
+    // behind. Whichever query string the previous test set then bled into this
+    // one, and the page took a different branch than the test was describing.
+    //
+    // Under a fixed order the survivors happened to be harmless. Shuffled, they
+    // are not, and a leaked `invite` or `created` is exactly the kind of thing
+    // this page branches on.
+    for (const key of [...searchParamsValue.keys()]) searchParamsValue.delete(key);
   });
 
   it("uses the confident, welcoming product voice in the sign-in header", async () => {
