@@ -222,7 +222,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   posture: 52,
   preset: 13,
   provenance: 12,
-  readiness: 34,
+  readiness: 33,
   record: 265,
   registry: 21,
   resolve: 3,

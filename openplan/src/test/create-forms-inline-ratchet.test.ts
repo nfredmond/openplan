@@ -171,7 +171,6 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
  * This list may only shrink.
  */
 const AWAITING_CONVERSION: string[] = [
-  "src/components/aerial/aerial-evidence-package-creator.tsx",
   "src/components/aerial/aerial-processing-request.tsx",
   "src/components/invoicing/invoice-record-composer.tsx",
 ];
@@ -214,7 +213,7 @@ const AWAITING_CONVERSION: string[] = [
  * as designed — once for "listed but no longer a POSTing form", once for
  * "converted but still on the list" — and both entries had to go.
  */
-const AWAITING_CONVERSION_CEILING = 3;
+const AWAITING_CONVERSION_CEILING = 2;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
