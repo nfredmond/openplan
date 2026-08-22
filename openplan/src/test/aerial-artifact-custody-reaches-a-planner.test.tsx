@@ -353,6 +353,14 @@ describe("what the planner actually sees on the mission page", () => {
     });
     loadAerialProjectPostureMock.mockResolvedValue({ posture: null, updatedAt: null });
     loadAerialProcessingJobsForMissionMock.mockResolvedValue({ jobs: [], unreadableReason: null });
+    // The evidence-package read needs a default here, not only inside the three
+    // tests that care what it returns. `vi.clearAllMocks()` clears call history
+    // without removing an implementation, so a test that set this persistently
+    // was silently lending its value to every test that ran after it — and the
+    // custody-call test below set nothing at all. In file order it always ran
+    // after one of the setters and passed; under `--sequence.shuffle` it could
+    // run first, get `undefined` back, and the page threw on `.data`.
+    pagePackagesOrderMock.mockResolvedValue({ data: [], error: null });
     pageMissionMaybeSingleMock.mockResolvedValue({
       data: {
         id: MISSION_ID,

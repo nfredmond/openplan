@@ -389,10 +389,18 @@ describe("ScenarioSetDetailPage", () => {
 
   it("shows an empty linked-report state when no scenario reports are matched", async () => {
     reportsOrderMock.mockResolvedValueOnce({ data: [], error: null });
-    reportRunsInMock.mockResolvedValueOnce({ data: [], error: null });
-    reportArtifactsInMock.mockResolvedValueOnce({ data: [], error: null });
     comparisonSnapshotsOrderMock.mockResolvedValueOnce({ data: [], error: null });
-    comparisonIndicatorDeltasInMock.mockResolvedValueOnce({ data: [], error: null });
+    // Persistent, NOT `...Once`. With no reports and no snapshots to look up,
+    // the page never runs these three queries, so a queued one-shot value is
+    // never consumed — and `vi.clearAllMocks()` clears call history without
+    // draining the queue. The stranded values were then handed to whichever
+    // test ran next, which under `--sequence.shuffle` was the packet-freshness
+    // test: it read an empty report-runs result and rendered no guidance.
+    // `beforeEach` re-establishes each of these defaults, so setting them
+    // persistently here cannot outlive this test.
+    reportRunsInMock.mockResolvedValue({ data: [], error: null });
+    reportArtifactsInMock.mockResolvedValue({ data: [], error: null });
+    comparisonIndicatorDeltasInMock.mockResolvedValue({ data: [], error: null });
 
     await renderPage();
 

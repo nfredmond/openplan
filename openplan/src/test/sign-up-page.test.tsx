@@ -36,7 +36,14 @@ describe("SignUpPage", () => {
     refreshMock.mockReset();
     signUpMock.mockReset();
     signUpMock.mockResolvedValue({ error: null });
-    searchParamsValue.forEach((_, key) => searchParamsValue.delete(key));
+    // Snapshot the keys before deleting any of them. `URLSearchParams.forEach`
+    // walks a live list, so deleting during the walk shifts the remaining
+    // entries under the cursor and silently skips every other one — clearing
+    // three keys left `redirect` behind. In file-name order the preceding test
+    // happened to set a single key, so the leak was invisible; under
+    // `--sequence.shuffle` the three-key test ran first and this file's intent
+    // test read its `/reports` redirect.
+    for (const key of [...searchParamsValue.keys()]) searchParamsValue.delete(key);
   });
 
   it("uses the confident, welcoming product voice in the sign-up header", async () => {
