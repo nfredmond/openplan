@@ -21,6 +21,11 @@ import { ProjectFundingAwardCreator } from "@/components/projects/project-fundin
  * These pin both halves of the fix: the value is gone from the dropdown, and the
  * legitimate need it was serving (a workspace importing awards that closed years
  * ago) has an explicit path that says what it is.
+ *
+ * UPDATED 2026-08-22: the creator is a guided flow. Every assertion below is
+ * the one it always made — the helpers reach the step holding the field first,
+ * and the closure basis now lives on a step that appears only when the box is
+ * ticked. Nothing was weakened to make it pass.
  */
 
 function renderCreator() {
@@ -32,15 +37,28 @@ function renderCreator() {
   );
 }
 
-function fillRequiredFields() {
-  fireEvent.change(screen.getByPlaceholderText("Cycle 8 ATP award"), {
+function next() {
+  fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+}
+
+/** Open the flow, answer the required name, and land on the spending step. */
+function openToSpending() {
+  fireEvent.click(screen.getByTestId("funding-award-creator-open"));
+  fireEvent.change(screen.getByLabelText("Award name"), {
     target: { value: "Historic ATP award" },
   });
-  fireEvent.change(screen.getByPlaceholderText("1750000"), { target: { value: "500000" } });
+  fireEvent.change(screen.getByLabelText("Awarded amount"), { target: { value: "500000" } });
+  next();
+}
+
+/** From the spending step to the last one, where the submit lives. */
+function advanceToEnd(throughClosure: boolean) {
+  next();
+  if (throughClosure) next();
 }
 
 function submit() {
-  fireEvent.click(screen.getByRole("button", { name: /Save award/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Save the award" }));
 }
 
 describe("ProjectFundingAwardCreator", () => {
@@ -51,6 +69,7 @@ describe("ProjectFundingAwardCreator", () => {
 
   it("offers no way to create an award already closed from the status dropdown", () => {
     renderCreator();
+    openToSpending();
 
     const statusOptions = Array.from(
       (screen.getByLabelText("Spending status") as HTMLSelectElement).options
@@ -69,11 +88,14 @@ describe("ProjectFundingAwardCreator", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderCreator();
-    fillRequiredFields();
+    openToSpending();
     fireEvent.click(screen.getByLabelText(/This award closed before it was recorded here/));
+    // Ticking the box opens a step that an ordinary award never sees.
+    next();
     fireEvent.change(screen.getByLabelText("Basis for the closure (required)"), {
       target: { value: "Closed by the county in FY22; final invoice held by the sponsor." },
     });
+    next();
     submit();
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -116,13 +138,24 @@ describe("ProjectFundingAwardCreator", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderCreator();
-    fillRequiredFields();
+    openToSpending();
+    advanceToEnd(false);
     fireEvent.change(screen.getByLabelText("Obligation due"), {
       target: { value: "2026-09-30T00:00" },
     });
     fireEvent.change(screen.getByLabelText(/Expenditure deadline/), {
       target: { value: "2028-06-30T00:00" },
     });
+
+    // Asserted BEFORE submitting: the flow closes on success, so the sentence
+    // explaining what a lapse date is must be checked while the step carrying
+    // it is on screen — the only moment a planner reads it. Checked against the
+    // step's own text rather than with `getByText`, which matches per element
+    // and could not see this hint beside its field.
+    expect(document.querySelector("dialog")?.textContent ?? "").toContain(
+      "funds must be spent by"
+    );
+
     submit();
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -134,8 +167,6 @@ describe("ProjectFundingAwardCreator", () => {
     expect(new Date(String(body.expenditureDeadlineAt)).toISOString()).toBe(
       new Date("2028-06-30T00:00").toISOString()
     );
-    // The field says what it is for, in the words a planner uses for it.
-    expect(screen.getByText(/funds must be spent by/i)).toBeTruthy();
   });
 
   it("sends no lapse date when the field is left blank", async () => {
@@ -147,7 +178,8 @@ describe("ProjectFundingAwardCreator", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderCreator();
-    fillRequiredFields();
+    openToSpending();
+    advanceToEnd(false);
     submit();
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -160,11 +192,13 @@ describe("ProjectFundingAwardCreator", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderCreator();
-    fillRequiredFields();
+    openToSpending();
     fireEvent.click(screen.getByLabelText(/This award closed before it was recorded here/));
-    submit();
+    // The closure step opens; leaving its basis blank must stop the flow there.
+    next();
+    next();
 
-    expect(await screen.findByText(/needs a written basis/)).toBeTruthy();
+    expect(await screen.findAllByText(/needs a written basis/)).toBeTruthy();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -180,7 +214,8 @@ describe("ProjectFundingAwardCreator", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderCreator();
-    fillRequiredFields();
+    openToSpending();
+    advanceToEnd(false);
     submit();
 
     // The API's `details` carries the way through; dropping it would leave the
@@ -197,7 +232,8 @@ describe("ProjectFundingAwardCreator", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     renderCreator();
-    fillRequiredFields();
+    openToSpending();
+    advanceToEnd(false);
     submit();
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));

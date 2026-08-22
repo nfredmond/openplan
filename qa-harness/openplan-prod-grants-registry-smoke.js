@@ -425,14 +425,19 @@ async function main() {
     notes.push('The grants workspace command queue now retargets the inline award conversion creator to the exact opportunity it flagged for committed-award recording.');
 
     const leadAwardCard = page.locator('#grants-award-conversion-composer').first();
+    // The award form is a guided flow (2026-08-22): entered, answered a step at
+    // a time, and left. The placeholders below are unchanged.
+    await leadAwardCard.getByTestId('funding-award-creator-open').click();
     await leadAwardCard.getByPlaceholder('Cycle 8 ATP award').fill(awardTitle);
     await leadAwardCard.getByPlaceholder('1750000').fill('500000');
     await leadAwardCard.getByPlaceholder('250000').fill('50000');
+    await leadAwardCard.getByRole('button', { name: /^Next/ }).click();
+    await leadAwardCard.getByRole('button', { name: /^Next/ }).click();
     await leadAwardCard.locator('input[type="datetime-local"]').first().fill(toDateTimeLocal(closeIso));
     await leadAwardCard
       .getByPlaceholder('Award terms, obligation risks, reimbursement posture, or scope notes.')
       .fill('Production smoke converted the awarded opportunity into a committed funding award from the shared grants lane.');
-    await leadAwardCard.getByRole('button', { name: /save award/i }).click();
+    await leadAwardCard.getByRole('button', { name: /save the award/i }).click();
     await leadAwardCard.getByText(/Funding award saved\./i).waitFor({ timeout: 30000 });
     await page.getByText(/Award records current/i).waitFor({ timeout: 30000 });
     notes.push('Created the lead funding award directly from `/grants` and cleared the award-conversion pressure for the smoke workspace.');
