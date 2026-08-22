@@ -140,6 +140,12 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
     "R1 — list-coupled. Rates are entered against the roster shown beside them; the comparison is the point.",
   "src/components/invoicing/time-entry-composer.tsx":
     "R1 — list-coupled. Hours are logged against the week's existing entries, which have to stay visible.",
+  "src/components/invoicing/client-composer.tsx":
+    "R1 — list-coupled, RECLASSIFIED 2026-08-22, and it is an editor as well. On `receivables-lane.tsx` it is rendered TWICE: once to add a client under the heading \"Who this workspace bills\", and once with `client={composerRecord}` INSIDE a row of that same list, to edit it. A modal covers the list in the first case and replaces the row being edited in the second.",
+  "src/components/invoicing/engagement-composer.tsx":
+    "R1 — list-coupled, RECLASSIFIED 2026-08-22, and an editor too. The same shape as `client-composer.tsx` beside it: one instance adds an engagement to the client list, another is rendered inside a client's row to edit an existing one.",
+  "src/components/scenarios/scenario-entry-composer.tsx":
+    "R1 — list-coupled, RECLASSIFIED 2026-08-22. It sits directly above `ScenarioEntryRegistry` — already exempt here for the same reason — and adds entries to it. Its OPTIONS depend on that register's contents: `hasBaseline` removes \"baseline\" from the type list once one exists, so the composer cannot be understood apart from the list it is filling.",
   "src/components/invoicing/client-invoice-composer.tsx":
     "R1 — list-coupled, RECLASSIFIED 2026-08-22 (it was on the debt list as a bounded create; that reading was wrong). On `receivables-lane.tsx` it sits between the client's existing invoices ABOVE it and the unbilled-hours ledger BELOW it — a section the page itself titles \"The ledger behind the lines\" — and its Pull unbilled time button draws from exactly that ledger. A modal hides both the hours the lines are made of and the invoices already sent to that client, which is what stops a duplicate. `time-entry-composer.tsx` writes into the same ledger and is exempt for the same reason.",
   "src/components/projects/project-spend-entry-form.tsx":
@@ -167,13 +173,10 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
 const AWAITING_CONVERSION: string[] = [
   "src/components/aerial/aerial-evidence-package-creator.tsx",
   "src/components/aerial/aerial-processing-request.tsx",
-  "src/components/invoicing/client-composer.tsx",
-  "src/components/invoicing/engagement-composer.tsx",
   "src/components/invoicing/invoice-record-composer.tsx",
   "src/components/programs/funding-opportunity-creator.tsx",
   "src/components/projects/project-funding-award-creator.tsx",
   "src/components/projects/work-plan-template-applier.tsx",
-  "src/components/scenarios/scenario-entry-composer.tsx",
 ];
 
 /**
@@ -193,6 +196,17 @@ const AWAITING_CONVERSION: string[] = [
  *
  * 16 → 15 → 14 on 2026-08-22: `plan-creator.tsx`, `scenario-set-creator.tsx`.
  *
+ * 9 → 6 on 2026-08-22, ALL THREE reclassifications rather than conversions:
+ * `client-composer`, `engagement-composer`, `scenario-entry-composer`. Four of
+ * the original eighteen have now turned out to be list-coupled rather than
+ * bounded creates, which says something about the DETECTOR and is worth
+ * recording: it finds a client component that renders a `<form>` and POSTs,
+ * and that is genuinely all it can see. Whether the form is coupled to a list
+ * beside it — the R1 question — is a fact about the PAGE, and only reading the
+ * page settles it. So a name arriving on this list is a candidate, never a
+ * verdict; check the page before converting, and expect the ceiling to fall
+ * for reclassification sometimes as well as for work.
+ *
  * 14 → 13 the same day WITHOUT A CONVERSION, and that distinction matters:
  * `client-invoice-composer.tsx` was RECLASSIFIED to `NOT_A_GUIDED_FLOW` under
  * R1 rather than converted. Reading its page settled it — the composer is
@@ -203,7 +217,7 @@ const AWAITING_CONVERSION: string[] = [
  * as designed — once for "listed but no longer a POSTing form", once for
  * "converted but still on the list" — and both entries had to go.
  */
-const AWAITING_CONVERSION_CEILING = 9;
+const AWAITING_CONVERSION_CEILING = 6;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
@@ -345,12 +359,27 @@ describe("create forms: the inline-form list may only shrink", () => {
     ).toEqual([]);
   });
 
-  it("keeps the debt list shrinking", () => {
+  it("keeps the debt list shrinking, with no slack to hide new debt in", () => {
+    // AN EQUALITY, NOT `<=` — CHANGED 2026-08-22 BY A MUTATION THAT SURVIVED.
+    //
+    // This was `toBeLessThanOrEqual`, on the reasoning that a bare equality
+    // fails on every conversion and invites someone to "fix" it by editing the
+    // number in either direction. The cost of that choice was measured: raising
+    // the ceiling from 6 to 9 PASSED. A ceiling above the real count is slack,
+    // and slack is room for three new inline forms to be added later without
+    // this guard saying a word — which is the whole thing it exists to prevent.
+    //
+    // The equality carries the same risk the original comment named, and the
+    // answer is the one `planner-copy-says-the-plain-thing` already uses for
+    // its BASELINE: fail in BOTH directions and say which happened, so editing
+    // the number is a decision rather than a reflex. That guard has corrected
+    // this session four times, in both directions.
     expect(
       AWAITING_CONVERSION.length,
-      "This number may go down and never up. A new inline create form belongs in a guided flow,\n" +
-        "or in NOT_A_GUIDED_FLOW with a reason — never appended here."
-    ).toBeLessThanOrEqual(AWAITING_CONVERSION_CEILING);
+      "If this ROSE, a new inline create form was appended — it belongs in a guided flow, or in\n" +
+        "NOT_A_GUIDED_FLOW with a reason. If it FELL, good: lower AWAITING_CONVERSION_CEILING in the\n" +
+        "same commit, so the improvement is banked and cannot be spent later on new debt."
+    ).toBe(AWAITING_CONVERSION_CEILING);
   });
 
   it("lists no file twice", () => {
