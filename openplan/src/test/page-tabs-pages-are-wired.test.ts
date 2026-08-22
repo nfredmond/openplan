@@ -41,6 +41,7 @@ const NO_CAMPAIGN_FAILURES = {
   reportSectionLinksUnreadable: false,
   rtpCycleUnreadable: false,
   rtpChapterUnreadable: false,
+  crashCorroborationUnreadable: false,
 };
 
 const NO_CYCLE_FAILURES = {

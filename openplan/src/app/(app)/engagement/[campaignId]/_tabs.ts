@@ -11,6 +11,7 @@ export type CampaignTabReadFlags = {
   reportSectionLinksUnreadable: boolean;
   rtpCycleUnreadable: boolean;
   rtpChapterUnreadable: boolean;
+  crashCorroborationUnreadable: boolean;
 };
 
 /**
@@ -83,8 +84,11 @@ export function buildCampaignTabs(flags: CampaignTabReadFlags): PageTabDefinitio
       // (`public-engagement-portal.tsx`). The console's `DemographicsPanel`
       // reports those answers back and carries no such id, so the claim
       // pointed at an element this page never renders.
-      anchors: ["synthesis-flagged-sentences"],
-      unreadable: unreadableLanes([["the comments on this campaign", flags.itemsUnreadable]]),
+      anchors: ["synthesis-flagged-sentences", "crash-corroboration"],
+      unreadable: unreadableLanes([
+        ["the comments on this campaign", flags.itemsUnreadable],
+        ["reported collisions near this campaign's mapped comments", flags.crashCorroborationUnreadable],
+      ]),
     },
     {
       key: "record",

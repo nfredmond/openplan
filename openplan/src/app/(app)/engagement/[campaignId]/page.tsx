@@ -29,6 +29,12 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { CrashCorroborationPanel } from "@/components/engagement/crash-corroboration-panel";
+import {
+  clampCrashProximityMeters,
+  summarizeCampaignCorroboration,
+  type NearbyCrashRow,
+} from "@/lib/engagement/crash-corroboration";
 import { PageTabPanel } from "@/components/ui/page-tab-panel";
 import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
 import { buildCampaignTabs } from "./_tabs";
@@ -196,9 +202,14 @@ export default async function EngagementCampaignDetailPage({
   // consequential — "No intake items yet" on a live campaign reads as nobody
   // having commented, and "No categories yet" as an unclassified backlog —
   // so each of them names the failure instead. See src/lib/ui/read-failures.ts.
+  // The comparison radius rides in the URL so a planner can hand someone the
+  // exact reading they are citing — a grant reviewer following the link sees
+  // the same distance, not today's default.
+  const crashRadiusMeters = clampCrashProximityMeters(query.crashRadius);
+
   const reads = new ReadFailureLog();
 
-  const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult, rtpCycleResult, rtpChapterResult, publicSlugResult] = await Promise.all([
+  const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult, rtpCycleResult, rtpChapterResult, publicSlugResult, crashCorroborationResult] = await Promise.all([
     campaign.project_id
       ? supabase
           .from("projects")
@@ -244,6 +255,18 @@ export default async function EngagementCampaignDetailPage({
     // console. The share controls only SEND the slug when the planner edits it,
     // so a failed read here can never silently clear a live address.
     supabase.from("engagement_campaigns").select("public_slug").eq("id", campaign.id).maybeSingle(),
+    // The engagement <-> safety seam. SECURITY INVOKER, so the caller's RLS
+    // scopes both the comments and the crash record; the workspace argument is
+    // a second, explicit scope. Returns counts and distances only — the
+    // arithmetic lives in `crash-corroboration.ts` and the pairing judgement
+    // lives with the planner.
+    supabase.rpc("engagement_items_with_nearby_crashes", {
+      p_workspace_id: campaign.workspace_id,
+      p_campaign_id: campaign.id,
+      p_radius_meters: crashRadiusMeters,
+      p_from_year: null,
+      p_to_year: null,
+    }),
   ]);
 
   // Named in the moderator's words, because these labels are read back in a
@@ -256,6 +279,10 @@ export default async function EngagementCampaignDetailPage({
   const rtpCycleUnreadable = reads.check("the RTP cycle this campaign is attached to", rtpCycleResult);
   const rtpChapterUnreadable = reads.check("the RTP chapter this campaign is targeted at", rtpChapterResult);
   reads.check("this campaign's easy link name", publicSlugResult);
+  const crashCorroborationUnreadable = reads.check(
+    "reported collisions near this campaign's mapped comments",
+    crashCorroborationResult
+  );
   const publicSlug =
     (publicSlugResult.data as { public_slug?: string | null } | null)?.public_slug ?? null;
   const rtpCycle = rtpCycleResult.data as { id: string; title: string; status: string } | null;
@@ -597,6 +624,38 @@ export default async function EngagementCampaignDetailPage({
   // READ must never be reported as a language nobody recorded — that is a
   // finding about the agency, and a failed query does not establish it.
 
+  const crashCorroboration = crashCorroborationUnreadable
+    ? null
+    : summarizeCampaignCorroboration(
+        (crashCorroborationResult.data ?? []) as NearbyCrashRow[],
+        crashRadiusMeters
+      );
+
+  // Radii a planner picks between. Every other search param survives the swap,
+  // so changing the distance does not silently close the tab they were on.
+  const crashRadiusChoices = [50, 100, 250, 500].map((meters) => {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query)) {
+      if (key === "crashRadius" || value === undefined) continue;
+      if (Array.isArray(value)) value.forEach((entry) => params.append(key, entry));
+      else params.set(key, value);
+    }
+    params.set("crashRadius", String(meters));
+    return {
+      meters,
+      href: `/engagement/${campaign.id}?${params.toString()}#crash-corroboration`,
+      active: meters === crashRadiusMeters,
+    };
+  });
+
+  // Mapped comments held back by moderation. Taken from the campaign's own
+  // counts rather than recomputed, so the console cannot disagree with itself.
+  const unmoderatedMappedCount = (items ?? []).filter(
+    (item) =>
+      item.status !== "approved" &&
+      (item.geometry !== null || (item.latitude !== null && item.longitude !== null))
+  ).length;
+
   const campaignTabs = buildCampaignTabs({
     categoriesUnreadable,
     itemsUnreadable,
@@ -605,6 +664,7 @@ export default async function EngagementCampaignDetailPage({
     reportSectionLinksUnreadable,
     rtpCycleUnreadable,
     rtpChapterUnreadable,
+    crashCorroborationUnreadable,
   });
 
   // "Live" is the campaign's own status, not a guess from whether a share slug
@@ -1179,6 +1239,13 @@ export default async function EngagementCampaignDetailPage({
 
       <PageTabPanel tabKey="analysis" active={activeTab === "analysis"}>
         <div className="mt-6 space-y-6">
+        <CrashCorroborationPanel
+          summary={crashCorroboration}
+          unreadable={crashCorroborationUnreadable}
+          radiusChoices={crashRadiusChoices}
+          unmoderatedMappedCount={unmoderatedMappedCount}
+          moderationHref={`/engagement/${campaign.id}?tab=responses`}
+        />
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
