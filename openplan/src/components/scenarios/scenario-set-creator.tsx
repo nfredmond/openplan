@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, Loader2 } from "lucide-react";
+import { FilePlus2, Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/state-block";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 
 type ProjectOption = {
   id: string;
@@ -19,23 +26,34 @@ type CreateResponse = {
   error?: string;
 };
 
-function FormError({ error }: { error: string | null }) {
-  if (!error) return null;
+const selectClassName = "module-select";
 
-  return (
-    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-      {error}
-    </p>
-  );
-}
+type ScenarioSetValues = {
+  projectId: string;
+  title: string;
+  summary: string;
+  planningQuestion: string;
+};
 
 /**
- * `projectsUnreadable` is the catalog page telling this panel that its project
- * list is an empty array because the READ FAILED, not because the workspace has
- * no projects. Without it the panel answered a failed read with "No projects
- * available — create a project before opening a scenario set", which is both a
- * claim about the workspace and an instruction that would send a planner to
- * create a duplicate of a project they already have.
+ * A scenario set used to open as a four-field form on the scenarios page. It is
+ * two short questions behind a button now — starting with the one the planner
+ * actually has in their head, which is what they are trying to find out.
+ *
+ * WHAT DID NOT CHANGE, INCLUDING SOMETHING THAT LOOKS LIKE A BUG.
+ * `summary` and `planningQuestion` are still sent RAW, so a blank one arrives
+ * as `""` rather than absent. The plan creator beside this one sends
+ * `|| undefined`; this one never did, and "tidying" it here would be an
+ * unrequested change to what lands in the database, made under cover of a
+ * layout conversion. A conversion changes the shape of the asking and nothing
+ * else. If the difference is wrong it is worth fixing deliberately, in a change
+ * that says so.
+ *
+ * THE TWO DISCLOSURES SURVIVE, AND THEY GATE THE BUTTON RATHER THAN A FORM.
+ * `projectsUnreadable` means the project list is empty because the read FAILED,
+ * not because the workspace has none — answering that with "create a project
+ * first" both states something about the workspace and sends a planner to make
+ * a duplicate of a project they already have.
  */
 export function ScenarioSetCreator({
   projects,
@@ -45,27 +63,107 @@ export function ScenarioSetCreator({
   projectsUnreadable?: boolean;
 }) {
   const router = useRouter();
-  const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [planningQuestion, setPlanningQuestion] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+  const steps = useMemo<GuidedFlowStep<ScenarioSetValues>[]>(
+    () => [
+      {
+        id: "question",
+        title: "What are you trying to find out?",
+        hint: "The question this set of scenarios should answer. You can change it later.",
+        fields: [
+          {
+            name: "title",
+            label: "a name",
+            required: true,
+            requiredMessage: "Give the scenario set a name before you create it.",
+          },
+          { name: "planningQuestion", label: "the question" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="title" label="Name">
+              <Input {...flow.text("title")} placeholder="2026 safety package alternatives" />
+            </GuidedFlowRow>
 
-    try {
+            <GuidedFlowRow
+              flow={flow}
+              name="planningQuestion"
+              label="What decision should it help with?"
+              hint="Optional. In plain words — what would you like to be able to say at the end?"
+            >
+              <Textarea
+                {...flow.text("planningQuestion")}
+                placeholder="Which trade-off, decision, or policy question should this set answer?"
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "anchor",
+        title: "Which project is it for?",
+        hint: "A scenario set stays attached to one project.",
+        fields: [
+          {
+            name: "projectId",
+            label: "a project",
+            required: true,
+            requiredMessage: "Choose the project this scenario set belongs to.",
+          },
+          { name: "summary", label: "a summary" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="projectId" label="Project">
+              <select className={selectClassName} {...flow.text("projectId")}>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow
+              flow={flow}
+              name="summary"
+              label="Anything to note?"
+              hint="Optional."
+            >
+              <Textarea
+                {...flow.text("summary")}
+                placeholder="What is this scenario set comparing?"
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    [projects]
+  );
+
+  const flow = useGuidedFlow<ScenarioSetValues>({
+    id: "create-scenario-set",
+    title: "New scenario set",
+    submitLabel: "Create the scenario set",
+    initialValues: {
+      projectId: projects[0]?.id ?? "",
+      title: "",
+      summary: "",
+      planningQuestion: "",
+    },
+    steps,
+    onSubmit: async (values) => {
+      // Unchanged from the inline form, deliberately: same route, same keys,
+      // and `summary`/`planningQuestion` still sent raw — see the note above.
       const response = await fetch("/api/scenarios", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          projectId,
-          title,
-          summary,
-          planningQuestion,
+          projectId: values.projectId,
+          title: values.title,
+          summary: values.summary,
+          planningQuestion: values.planningQuestion,
         }),
       });
 
@@ -76,12 +174,8 @@ export function ScenarioSetCreator({
 
       router.refresh();
       router.push(`/scenarios/${payload.scenarioSetId}`);
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create scenario set");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    },
+  });
 
   return (
     <article className="module-section-surface">
@@ -90,8 +184,8 @@ export function ScenarioSetCreator({
           <p className="module-section-label">Create</p>
           <h2 className="module-section-title">New scenario set</h2>
           <p className="module-section-description">
-            Start with the planning question, link the set to a project, then register a baseline and alternatives as
-            durable planning records.
+            A scenario set is a question and the options you are weighing against it — a baseline
+            and the alternatives beside it, kept together so the comparison is reproducible.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
@@ -116,74 +210,15 @@ export function ScenarioSetCreator({
           />
         </div>
       ) : (
-        <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-1.5">
-            <label htmlFor="scenario-project" className="text-[0.82rem] font-semibold">
-              Project
-            </label>
-            <select
-              id="scenario-project"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={projectId}
-              onChange={(event) => setProjectId(event.target.value)}
-              required
-            >
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
+        <>
+          <div className="mt-5">
+            <Button type="button" onClick={flow.open} data-testid="scenario-set-creator-open">
+              <Plus className="mr-1.5 h-4 w-4" />
+              New scenario set
+            </Button>
           </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="scenario-title" className="text-[0.82rem] font-semibold">
-              Title
-            </label>
-            <Input
-              id="scenario-title"
-              placeholder="2026 Safety package alternatives"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="scenario-summary" className="text-[0.82rem] font-semibold">
-              Summary
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Textarea
-              id="scenario-summary"
-              placeholder="What is this scenario set trying to compare?"
-              rows={3}
-              value={summary}
-              onChange={(event) => setSummary(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="scenario-question" className="text-[0.82rem] font-semibold">
-              Planning question
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Textarea
-              id="scenario-question"
-              placeholder="What tradeoff, decision, or policy question should this set answer?"
-              rows={4}
-              value={planningQuestion}
-              onChange={(event) => setPlanningQuestion(event.target.value)}
-            />
-          </div>
-
-          <FormError error={error} />
-
-          <Button type="submit" size="lg" disabled={isSubmitting || !projectId}>
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            Create scenario set
-          </Button>
-        </form>
+          <GuidedFlow flow={flow} />
+        </>
       )}
     </article>
   );

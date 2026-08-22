@@ -170,7 +170,6 @@ const AWAITING_CONVERSION: string[] = [
   "src/components/invoicing/client-invoice-composer.tsx",
   "src/components/invoicing/engagement-composer.tsx",
   "src/components/invoicing/invoice-record-composer.tsx",
-  "src/components/plans/plan-creator.tsx",
   "src/components/programs/funding-opportunity-creator.tsx",
   "src/components/programs/program-creator.tsx",
   "src/components/projects/project-funding-award-creator.tsx",
@@ -178,7 +177,6 @@ const AWAITING_CONVERSION: string[] = [
   "src/components/projects/work-plan-template-applier.tsx",
   "src/components/rtp/rtp-cycle-creator.tsx",
   "src/components/scenarios/scenario-entry-composer.tsx",
-  "src/components/scenarios/scenario-set-creator.tsx",
 ];
 
 /**
@@ -195,8 +193,12 @@ const AWAITING_CONVERSION: string[] = [
  * when the first conversion round landed — each time this guard failed BY NAME
  * and the entry had to be deleted. That is the ratchet doing its job, recorded
  * here rather than described somewhere nobody reads.
+ *
+ * 16 → 15 → 14 on 2026-08-22: `plan-creator.tsx`, `scenario-set-creator.tsx`. It failed by name twice, exactly
+ * as designed — once for "listed but no longer a POSTing form", once for
+ * "converted but still on the list" — and both entries had to go.
  */
-const AWAITING_CONVERSION_CEILING = 16;
+const AWAITING_CONVERSION_CEILING = 14;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
