@@ -171,14 +171,22 @@ const PARTIAL_PATH_CALLERS: Record<string, { file: string; expression: string; r
  * still failing on anything NEW. Deleting a line when the route gets wired up
  * is the point. Adding one requires a reason a reviewer will ask about.
  */
-const KNOWN_UNWIRED: readonly string[] = [
-  // A GET that duplicates work the page already does. `/assistant-activity`
-  // imports `buildAssistantActivitySummary` from inside this route's own folder
-  // and runs its own query, so the HTTP endpoint beside it answers to nobody.
-  // Wire it or delete it; do not leave it as a second way to compute the same
-  // answer that can drift from the first.
-  "api/assistant-activity",
-];
+/**
+ * EMPTY, AND THAT IS THE POINT.
+ *
+ * This began as a list of routes nothing called, shrink-only, each entry
+ * carrying a written reason. It reached zero on 2026-08-21 when
+ * `api/assistant-activity` was resolved — the last entry, a GET that duplicated
+ * a computation the page already ran, which is a second answer that can drift
+ * from the first.
+ *
+ * With the list empty the guard states something much stronger than "these are
+ * excused": NO route in this repository is without a caller. Adding an entry
+ * back is therefore a visible, arguable decision rather than a quiet append to
+ * a list nobody reads — and if a route genuinely cannot have an in-app caller,
+ * that reason belongs here in writing.
+ */
+const KNOWN_UNWIRED: readonly string[] = [];
 
 /**
  * A ROUTE PATH IN PROSE IS NOT A CALL SITE.

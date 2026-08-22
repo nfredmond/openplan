@@ -10,7 +10,7 @@ import {
   loadAssistantActivityRows,
   buildAssistantActivitySummary,
   type AssistantActionExecutionRow,
-} from "@/app/api/assistant-activity/summary";
+} from "@/lib/assistant/activity-summary";
 import { moduleMetadata } from "@/lib/ui/page-title";
 
 export const metadata = moduleMetadata("Planner Agent Activity");

@@ -293,7 +293,7 @@ describe("the ledger row survives a deployment that has not migrated yet", () =>
 
 describe("the ledger read model asks for the authorship columns", () => {
   it("selects them, and degrades honestly when the deployment has not migrated", async () => {
-    const { loadAssistantActivityRows } = await import("@/app/api/assistant-activity/summary");
+    const { loadAssistantActivityRows } = await import("@/lib/assistant/activity-summary");
 
     const attempted: string[] = [];
     const supabase = {

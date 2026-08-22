@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { ASSISTANT_ACTIVITY_SELECT } from "@/app/api/assistant-activity/summary";
+import { ASSISTANT_ACTIVITY_SELECT } from "@/lib/assistant/activity-summary";
 import { STAGE_GATE_BINDING_WORKSPACE_COLUMNS } from "@/lib/stage-gates/rebind";
 import { REPORT_ACCESS_COLUMNS } from "@/lib/reports/api";
 

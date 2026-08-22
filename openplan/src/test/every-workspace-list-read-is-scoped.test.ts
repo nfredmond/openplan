@@ -40,7 +40,7 @@ const APP_DIR = path.join(process.cwd(), "src", "app", "(app)");
  */
 const KNOWN_UNSCOPED: ReadonlyArray<{ chain: string; reason: string }> = [
   {
-    chain: 'src/app/api/assistant-activity/summary.ts#loadAssistantActivityRows -> .from("assistant_action_executions")',
+    chain: 'src/lib/assistant/activity-summary.ts#loadAssistantActivityRows -> .from("assistant_action_executions")',
     reason:
       "builder pattern the scanner cannot follow: `const table = supabase.from(...)` then every query applies " +
       ".eq('workspace_id', params.workspaceId) at summary.ts:87-92 — verified scoped by reading, 2026-08-04",
