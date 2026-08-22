@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardPlus, Loader2 } from "lucide-react";
+import { ClipboardPlus, Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 import {
   PROGRAM_FUNDING_CLASSIFICATION_OPTIONS,
   PROGRAM_STATUS_OPTIONS,
@@ -23,67 +30,288 @@ type CreateResponse = {
   error?: string;
 };
 
-function FormError({ error }: { error: string | null }) {
-  if (!error) return null;
+const selectClassName = "module-select";
 
-  return (
-    <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-      {error}
-    </p>
-  );
-}
-
+/** Blank or unparseable becomes absent, exactly as the inline form did. */
 function toIsoDateTime(value: string): string | undefined {
   if (!value) return undefined;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 }
 
+type ProgramValues = {
+  title: string;
+  cycleName: string;
+  programType: (typeof PROGRAM_TYPE_OPTIONS)[number]["value"];
+  status: (typeof PROGRAM_STATUS_OPTIONS)[number]["value"];
+  fundingClassification: (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"];
+  projectId: string;
+  sponsorAgency: string;
+  ownerLabel: string;
+  cadenceLabel: string;
+  fiscalYearStart: string;
+  fiscalYearEnd: string;
+  nominationDueAt: string;
+  adoptionTargetAt: string;
+  summary: string;
+};
+
+/**
+ * Fourteen fields used to occupy a whole column of the programs page before a
+ * planner could reach the programs themselves. Four short steps behind a button
+ * now, and the column is the page's again.
+ *
+ * WHAT DID NOT CHANGE. Same POST to `/api/programs`, same keys, same
+ * `"" → undefined` on the optional text, same `Number()` on the fiscal years,
+ * and `toIsoDateTime` still turns a blank OR an unparseable date into absent
+ * rather than into an invalid string.
+ *
+ * `cycleName` AND `fundingClassification` ARE STILL SENT RAW, like the scenario
+ * creator's blanks — the inline form never guarded them and a layout conversion
+ * is not the place to start. `cycleName` is required anyway, so in practice it
+ * is never the empty string; `fundingClassification` always holds a real option.
+ *
+ * THE FISCAL YEARS ARE CHECKED HERE, which the inline form only asked the
+ * browser to do. They were `type="number"` inputs, and native validation does
+ * not run for a flow's submit — so an end year before the start year, or a year
+ * outside any plausible range, reached the API.
+ */
 export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
   const router = useRouter();
-  const [projectId, setProjectId] = useState("");
-  const [title, setTitle] = useState("");
-  const [programType, setProgramType] = useState<(typeof PROGRAM_TYPE_OPTIONS)[number]["value"]>("rtip");
-  const [status, setStatus] = useState<(typeof PROGRAM_STATUS_OPTIONS)[number]["value"]>("draft");
-  const [cycleName, setCycleName] = useState("");
-  const [fundingClassification, setFundingClassification] = useState<
-    (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"]
-  >("discretionary");
-  const [sponsorAgency, setSponsorAgency] = useState("");
-  const [ownerLabel, setOwnerLabel] = useState("");
-  const [cadenceLabel, setCadenceLabel] = useState("");
-  const [fiscalYearStart, setFiscalYearStart] = useState("");
-  const [fiscalYearEnd, setFiscalYearEnd] = useState("");
-  const [nominationDueAt, setNominationDueAt] = useState("");
-  const [adoptionTargetAt, setAdoptionTargetAt] = useState("");
-  const [summary, setSummary] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+  const steps = useMemo<GuidedFlowStep<ProgramValues>[]>(
+    () => [
+      {
+        id: "identity",
+        title: "What is this program?",
+        hint: "The package name and the funding cycle it belongs to.",
+        fields: [
+          {
+            name: "title",
+            label: "a name",
+            required: true,
+            requiredMessage: "Give the program a name before you create it.",
+          },
+          {
+            name: "cycleName",
+            label: "a cycle",
+            required: true,
+            requiredMessage: "Say which funding cycle this program belongs to.",
+          },
+          { name: "fundingClassification", label: "a funding classification" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="title" label="Name">
+              <Input
+                {...flow.text("title")}
+                placeholder="2027 RTIP downtown active transportation package"
+              />
+            </GuidedFlowRow>
 
-    try {
+            <GuidedFlowRow
+              flow={flow}
+              name="cycleName"
+              label="Which funding cycle?"
+              hint="The cycle this package is being put forward in."
+            >
+              <Input {...flow.text("cycleName")} placeholder="2027 RTIP" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="fundingClassification" label="How is it funded?">
+              <select className={selectClassName} {...flow.text("fundingClassification")}>
+                {PROGRAM_FUNDING_CLASSIFICATION_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "kind",
+        title: "What kind of program, and where is it up to?",
+        hint: "Both can change later.",
+        fields: [
+          { name: "programType", label: "a program type" },
+          { name: "status", label: "a status" },
+          { name: "projectId", label: "a project" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="programType" label="Program type">
+              <select className={selectClassName} {...flow.text("programType")}>
+                {PROGRAM_TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="status" label="Where is it up to?">
+              <select className={selectClassName} {...flow.text("status")}>
+                {PROGRAM_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow
+              flow={flow}
+              name="projectId"
+              label="Primary project"
+              hint="Optional. Linking it now means the project page can find this program later."
+            >
+              <select className={selectClassName} {...flow.text("projectId")}>
+                <option value="">No linked project</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "who",
+        title: "Who runs it?",
+        hint: "All optional.",
+        fields: [
+          { name: "sponsorAgency", label: "a sponsor" },
+          { name: "ownerLabel", label: "an owner" },
+          { name: "cadenceLabel", label: "a cadence" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="sponsorAgency" label="Which agency sponsors it?">
+              <Input {...flow.text("sponsorAgency")} placeholder="Agency sponsoring this program" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="ownerLabel" label="Who owns it here?">
+              <Input {...flow.text("ownerLabel")} placeholder="Regional funding lead" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="cadenceLabel" label="How often does it run?">
+              <Input {...flow.text("cadenceLabel")} placeholder="Biennial statewide cycle" />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "dates",
+        title: "What are the dates?",
+        hint: "All optional, and easy to add later.",
+        fields: [
+          { name: "fiscalYearStart", label: "a first year" },
+          { name: "fiscalYearEnd", label: "a last year" },
+          { name: "nominationDueAt", label: "a nomination deadline" },
+          { name: "adoptionTargetAt", label: "an adoption target" },
+          { name: "summary", label: "a summary" },
+        ],
+        check: (values) => {
+          const start = values.fiscalYearStart.trim();
+          const end = values.fiscalYearEnd.trim();
+          // The inline form asked the BROWSER to bound these, via min/max on a
+          // number input. A flow's submit does not run native validation, so
+          // the bound has to live where the submit can see it.
+          for (const [field, raw] of [
+            ["fiscalYearStart", start],
+            ["fiscalYearEnd", end],
+          ] as const) {
+            if (!raw) continue;
+            const year = Number(raw);
+            if (!Number.isInteger(year) || year < 1900 || year > 2200) {
+              return { field, message: "Give a year between 1900 and 2200, or leave it blank." };
+            }
+          }
+          if (start && end && Number(end) < Number(start)) {
+            return {
+              field: "fiscalYearEnd",
+              message: "The last year cannot come before the first year.",
+            };
+          }
+          return null;
+        },
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="fiscalYearStart" label="First fiscal year">
+              <Input {...flow.text("fiscalYearStart")} type="number" placeholder="2027" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="fiscalYearEnd" label="Last fiscal year">
+              <Input {...flow.text("fiscalYearEnd")} type="number" placeholder="2030" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="nominationDueAt" label="Nominations due">
+              <Input {...flow.text("nominationDueAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="adoptionTargetAt" label="Adoption target">
+              <Input {...flow.text("adoptionTargetAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="summary" label="Anything to note?">
+              <Textarea
+                {...flow.text("summary")}
+                placeholder="What this package is for, how ready it is, and what should back it up."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    [projects]
+  );
+
+  const flow = useGuidedFlow<ProgramValues>({
+    id: "create-program",
+    title: "New program",
+    submitLabel: "Create the program",
+    initialValues: {
+      title: "",
+      cycleName: "",
+      programType: "rtip",
+      status: "draft",
+      fundingClassification: PROGRAM_FUNDING_CLASSIFICATION_OPTIONS[0].value,
+      projectId: "",
+      sponsorAgency: "",
+      ownerLabel: "",
+      cadenceLabel: "",
+      fiscalYearStart: "",
+      fiscalYearEnd: "",
+      nominationDueAt: "",
+      adoptionTargetAt: "",
+      summary: "",
+    },
+    steps,
+    onSubmit: async (values) => {
+      // Unchanged from the inline form, deliberately: same route, same keys,
+      // and `cycleName`/`fundingClassification` still sent raw.
       const response = await fetch("/api/programs", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          projectId: projectId || undefined,
-          title,
-          programType,
-          status,
-          cycleName,
-          fundingClassification,
-          sponsorAgency: sponsorAgency || undefined,
-          ownerLabel: ownerLabel || undefined,
-          cadenceLabel: cadenceLabel || undefined,
-          fiscalYearStart: fiscalYearStart ? Number(fiscalYearStart) : undefined,
-          fiscalYearEnd: fiscalYearEnd ? Number(fiscalYearEnd) : undefined,
-          nominationDueAt: toIsoDateTime(nominationDueAt),
-          adoptionTargetAt: toIsoDateTime(adoptionTargetAt),
-          summary: summary || undefined,
+          projectId: values.projectId || undefined,
+          title: values.title,
+          programType: values.programType,
+          status: values.status,
+          cycleName: values.cycleName,
+          fundingClassification: values.fundingClassification,
+          sponsorAgency: values.sponsorAgency || undefined,
+          ownerLabel: values.ownerLabel || undefined,
+          cadenceLabel: values.cadenceLabel || undefined,
+          fiscalYearStart: values.fiscalYearStart ? Number(values.fiscalYearStart) : undefined,
+          fiscalYearEnd: values.fiscalYearEnd ? Number(values.fiscalYearEnd) : undefined,
+          nominationDueAt: toIsoDateTime(values.nominationDueAt),
+          adoptionTargetAt: toIsoDateTime(values.adoptionTargetAt),
+          summary: values.summary || undefined,
         }),
       });
 
@@ -94,262 +322,33 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
 
       router.refresh();
       router.push(`/programs/${payload.programId}`);
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create program");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    },
+  });
 
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New programming cycle record</h2>
+          <h2 className="module-section-title">New program</h2>
           <p className="module-section-description">
-            Register the funding cycle, package timing, and primary project now. Use the detail page to attach plans,
-            reports, and engagement evidence without pretending the packet is already authored in-app.
+            A program is a package of projects put forward together in one funding cycle — what is
+            in it, who sponsors it, and when it has to be nominated and adopted.
           </p>
         </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">
           <ClipboardPlus className="h-5 w-5" />
         </span>
       </div>
 
-      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
-          <label htmlFor="program-title" className="text-[0.82rem] font-semibold">
-            Title
-          </label>
-          <Input
-            id="program-title"
-            placeholder="2027 RTIP Downtown active transportation package"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            required
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="program-cycle" className="text-[0.82rem] font-semibold">
-              Cycle label
-            </label>
-            <Input
-              id="program-cycle"
-              placeholder="2027 RTIP"
-              value={cycleName}
-              onChange={(event) => setCycleName(event.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="program-classification" className="text-[0.82rem] font-semibold">
-              Funding classification
-            </label>
-            <select
-              id="program-classification"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={fundingClassification}
-              onChange={(event) =>
-                setFundingClassification(
-                  event.target.value as (typeof PROGRAM_FUNDING_CLASSIFICATION_OPTIONS)[number]["value"]
-                )
-              }
-            >
-              {PROGRAM_FUNDING_CLASSIFICATION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="program-sponsor" className="text-[0.82rem] font-semibold">
-              Sponsor agency
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="program-sponsor"
-              placeholder="Agency sponsoring this program"
-              value={sponsorAgency}
-              onChange={(event) => setSponsorAgency(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="program-owner" className="text-[0.82rem] font-semibold">
-              Owner
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="program-owner"
-              placeholder="Regional funding lead"
-              value={ownerLabel}
-              onChange={(event) => setOwnerLabel(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="program-cadence" className="text-[0.82rem] font-semibold">
-            Cadence
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-          </label>
-          <Input
-            id="program-cadence"
-            placeholder="Biennial statewide cycle"
-            value={cadenceLabel}
-            onChange={(event) => setCadenceLabel(event.target.value)}
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="program-type" className="text-[0.82rem] font-semibold">
-              Program lane
-            </label>
-            <select
-              id="program-type"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={programType}
-              onChange={(event) => setProgramType(event.target.value as (typeof PROGRAM_TYPE_OPTIONS)[number]["value"])}
-            >
-              {PROGRAM_TYPE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="program-status" className="text-[0.82rem] font-semibold">
-              Status
-            </label>
-            <select
-              id="program-status"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={status}
-              onChange={(event) => setStatus(event.target.value as (typeof PROGRAM_STATUS_OPTIONS)[number]["value"])}
-            >
-              {PROGRAM_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="program-project" className="text-[0.82rem] font-semibold">
-            Primary project
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-          </label>
-          <select
-            id="program-project"
-            className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-            value={projectId}
-            onChange={(event) => setProjectId(event.target.value)}
-          >
-            <option value="">No primary project</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="program-fy-start" className="text-[0.82rem] font-semibold">
-              Fiscal year start
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="program-fy-start"
-              type="number"
-              min={2000}
-              max={2300}
-              placeholder="2027"
-              value={fiscalYearStart}
-              onChange={(event) => setFiscalYearStart(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="program-fy-end" className="text-[0.82rem] font-semibold">
-              Fiscal year end
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="program-fy-end"
-              type="number"
-              min={2000}
-              max={2300}
-              placeholder="2030"
-              value={fiscalYearEnd}
-              onChange={(event) => setFiscalYearEnd(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="program-nomination" className="text-[0.82rem] font-semibold">
-              Nomination due
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="program-nomination"
-              type="datetime-local"
-              value={nominationDueAt}
-              onChange={(event) => setNominationDueAt(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="program-adoption" className="text-[0.82rem] font-semibold">
-              Adoption target
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="program-adoption"
-              type="datetime-local"
-              value={adoptionTargetAt}
-              onChange={(event) => setAdoptionTargetAt(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="program-summary" className="text-[0.82rem] font-semibold">
-            Summary
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-          </label>
-          <Textarea
-            id="program-summary"
-            rows={4}
-            placeholder="Describe the package intent, readiness posture, and what planning basis or public record should support it."
-            value={summary}
-            onChange={(event) => setSummary(event.target.value)}
-          />
-        </div>
-
-        <FormError error={error} />
-
-        <Button type="submit" size="lg" disabled={isSubmitting}>
-          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Create program record
+      <div className="mt-5">
+        <Button type="button" onClick={flow.open} data-testid="program-creator-open">
+          <Plus className="mr-1.5 h-4 w-4" />
+          New program
         </Button>
-      </form>
+      </div>
+
+      <GuidedFlow flow={flow} />
     </article>
   );
 }

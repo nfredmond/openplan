@@ -171,7 +171,6 @@ const AWAITING_CONVERSION: string[] = [
   "src/components/invoicing/engagement-composer.tsx",
   "src/components/invoicing/invoice-record-composer.tsx",
   "src/components/programs/funding-opportunity-creator.tsx",
-  "src/components/programs/program-creator.tsx",
   "src/components/projects/project-funding-award-creator.tsx",
   "src/components/projects/project-workspace-creator.tsx",
   "src/components/projects/work-plan-template-applier.tsx",
@@ -206,7 +205,7 @@ const AWAITING_CONVERSION: string[] = [
  * as designed — once for "listed but no longer a POSTing form", once for
  * "converted but still on the list" — and both entries had to go.
  */
-const AWAITING_CONVERSION_CEILING = 12;
+const AWAITING_CONVERSION_CEILING = 11;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
