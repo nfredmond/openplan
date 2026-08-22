@@ -1,7 +1,9 @@
 /**
- * MY WORK's source descriptors — one entry per table that can put a date on a
- * planner's week, each declaring exactly how it is read and how its rows become
- * queue items.
+ * MY WORK's source descriptors — one entry per table that can put something on
+ * a planner's week, each declaring exactly how it is read and how its rows
+ * become queue items. Most put a DATE there; the three cross-module review
+ * sources (6–8) put a WAITING THING there instead, and carry `dueOn: null`
+ * rather than presenting the day a comment arrived as the day it is due.
  *
  * TENANCY IS PER-SOURCE AND DELIBERATE, exactly as in the Document Library.
  * NO project sub-record table carries a workspace_id of its own — deliverables,
@@ -28,6 +30,7 @@
  * vocabulary change lands in one place.
  */
 
+import { ENGAGEMENT_ITEM_ACTIONABLE_STATUSES } from "@/lib/engagement/catalog";
 import {
   isClosingSoonFundingOpportunity,
   isOverdueFundingDecision,
@@ -51,6 +54,31 @@ const CLOSED_ISSUE_STATUS = "resolved";
 /** An award whose money is fully spent has met its obligation deadline by definition. */
 const SPENT_AWARD_STATUS = "fully_spent";
 
+/** A model run the engine gave up on (20260317000025 status CHECK). */
+const FAILED_RUN_STATUS = "failed";
+
+/** A narrative draft no operator has accepted or dismissed yet (20260727000013). */
+const UNREVIEWED_DRAFT_STATUS = "draft";
+
+/**
+ * The ONE draft target this queue can name a page for.
+ *
+ * `document_narrative_drafts.target_id` is deliberately polymorphic and carries
+ * no foreign key, so the row cannot be embedded with its target. A report-section
+ * draft is still linkable — `target_id` IS `reports.id`, and the review panel
+ * sits at a known anchor on that page. An RTP CHAPTER draft is not: `target_id`
+ * is `rtp_cycle_chapters.id`, and the review page is
+ * `/rtp/<cycleId>/extraction/chapters`, whose cycle id this row does not carry
+ * and cannot be embedded to fetch.
+ *
+ * So chapter drafts are FILTERED OUT rather than listed with a link to a list
+ * page. An inbox item that cannot take you to the thing it is about is worse
+ * than an absent one: it costs the same attention and returns nothing. Closing
+ * the gap means giving the draft row its cycle (a column, a migration) or the
+ * chapter review page a route of its own — not loosening this filter.
+ */
+const LINKABLE_DRAFT_TARGET_KIND = "report_section";
+
 /**
  * Filters applied to every read of a source regardless of scope — the "is this
  * still live work" question, expressed against the database rather than after
@@ -58,8 +86,10 @@ const SPENT_AWARD_STATUS = "fully_spent";
  * soonest items of which some are already done.
  */
 export type MyWorkStaticFilter =
+  | { kind: "eq"; column: string; value: string }
   | { kind: "neq"; column: string; value: string }
   | { kind: "notNull"; column: string }
+  | { kind: "in"; column: string; values: readonly string[] }
   | { kind: "notIn"; column: string; values: readonly string[] };
 
 export type MyWorkSource = {
@@ -129,6 +159,35 @@ function embedded(value: unknown): Record<string, unknown> | null {
 /** What a row whose `!inner` project came back empty is called — visible, not hidden. */
 const PROJECT_UNAVAILABLE = "(project unavailable)";
 
+function asNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+/** How long a comment's own text may stand in for a title it does not have. */
+const COMMENT_TITLE_MAX_CHARS = 90;
+
+/**
+ * `engagement_items.title` is nullable — a resident dropping a pin usually
+ * types only a body. The first line of what they wrote is what a moderator
+ * recognises the item by, so it becomes the title, trimmed rather than padded
+ * out with a manufactured one.
+ */
+function summarizeComment(body: string | null): string {
+  const text = (body ?? "").replace(/\s+/g, " ").trim();
+  if (!text) return "(no comment text)";
+  if (text.length <= COMMENT_TITLE_MAX_CHARS) return text;
+  return `${text.slice(0, COMMENT_TITLE_MAX_CHARS).trimEnd()}…`;
+}
+
+/** Whether a run failed recently enough to still be live work. See FAILED_RUN_QUEUE_WINDOW_DAYS. */
+function isWithinFailedRunWindow(createdAt: string | null, now: Date): boolean {
+  if (!createdAt) return false;
+  const failedAt = Date.parse(createdAt);
+  if (Number.isNaN(failedAt)) return false;
+  const ageDays = (now.getTime() - failedAt) / 86_400_000;
+  return ageDays <= FAILED_RUN_QUEUE_WINDOW_DAYS;
+}
+
 function humanizeStatus(value: string | null): string | null {
   if (!value) return null;
   const spaced = value.replace(/_/g, " ");
@@ -147,6 +206,25 @@ function deadlineBadge(kindLabel: string, overdue: boolean): MyWorkItem["badge"]
 function projectHref(projectId: string | null, hash?: string): string {
   if (!projectId) return "/projects";
   return hash ? `/projects/${projectId}#${hash}` : `/projects/${projectId}`;
+}
+
+function campaignHref(campaignId: string | null, hash: string): string {
+  if (!campaignId) return "/engagement";
+  return `/engagement/${campaignId}#${hash}`;
+}
+
+function modelHref(modelId: string | null): string {
+  return modelId ? `/models/${modelId}` : "/models";
+}
+
+/**
+ * The report's own page, at the anchor of the panel that accepts or dismisses
+ * the draft (`report-standard-detail.tsx` claims `report-narrative-draft-panel`
+ * for one of its tabs, so the hash opens that tab too).
+ */
+function reportNarrativeDraftHref(reportId: string | null): string {
+  if (!reportId) return "/reports";
+  return `/reports/${reportId}#report-narrative-draft-panel`;
 }
 
 /**
@@ -416,7 +494,199 @@ const stageGateHoldsSource: MyWorkSource = {
       }),
 };
 
-// ── 6. Grant decisions — the shared predicates, used verbatim ───────────────
+// ── 6–8. The cross-module review queue (2026-08-21) ─────────────────────────
+//
+// Three sources that answer one question a planner previously had to open
+// three modules to ask: is anything WAITING ON A PERSON here?
+//
+// NONE OF THEM CARRIES AN ASSIGNEE, AND THAT IS THE POINT. A resident's comment
+// is moderated by whoever reaches it first; a model run that crashed is a fact
+// about the workspace; a drafted narrative awaits any member authorized to
+// accept it. `assigneeColumn: null` therefore also means the scope toggles do
+// not touch these — switching to "Assigned to me" must not hide a queue nobody
+// is assigned to, which is exactly how a moderation backlog becomes invisible.
+// (`engagement_items.created_by` and `model_runs.created_by` DO exist. They are
+// authorship, not assignment: the person who launched a run did not thereby
+// agree to be the one who fixes it, and reading a `created_by` as an assignee
+// would put a name on an obligation nobody accepted — the same rule the
+// workspace-deadline sources follow.)
+
+/**
+ * How far back a failed model run stays on the queue.
+ *
+ * The other two sources have no window and must not have one: a comment that
+ * has waited three weeks is the MOST urgent thing in a moderation queue, and a
+ * narrative draft does not expire while it waits for a verdict. A failed run is
+ * different in kind — nothing in the product ever marks one resolved (this
+ * module writes nothing, deliberately), so without a window every failure a
+ * workspace has ever had would sit in the inbox forever, and a block that can
+ * never be emptied is a block people learn to scroll past. Older failures are
+ * still on the model's own page, which is where run history belongs.
+ */
+export const FAILED_RUN_QUEUE_WINDOW_DAYS = 30;
+
+const engagementModerationSource: MyWorkSource = {
+  id: "engagement_moderation",
+  label: "Comments to moderate",
+  readLabel: "engagement comments",
+  block: "needs_review",
+  table: "engagement_items",
+  // `engagement_items` has NO workspace_id of its own (20260314000020) — it is
+  // scoped through its campaign, exactly like the four project sources are
+  // scoped through `projects`. The `!inner` is load-bearing for the same
+  // reason: a plain embed would keep the comment and null the campaign when the
+  // workspace filter missed, putting one agency's residents in another's queue.
+  select:
+    "id, campaign_id, title, body, status, source_type, created_at, engagement_campaigns!inner(id, title, workspace_id, project_id, projects(id, name))",
+  workspaceFilterColumn: "engagement_campaigns.workspace_id",
+  assigneeColumn: null,
+  // OLDEST FIRST, which is the opposite of every other source here. The queue's
+  // question is "who has been waiting longest for an answer", and a resident who
+  // commented three weeks ago is further down the page under any other ordering.
+  orderColumn: "created_at",
+  orderAscending: true,
+  staticFilters: [
+    // The shared definition, imported rather than spelled out — the campaign
+    // console counts its review queue from this same list.
+    { kind: "in", column: "status", values: ENGAGEMENT_ITEM_ACTIONABLE_STATUSES },
+  ],
+  toItems: (rows) =>
+    rows.map((row) => {
+      const campaign = embedded(row.engagement_campaigns);
+      const project = embedded(campaign?.projects);
+      const status = asString(row.status);
+      const campaignTitle = asString(campaign?.title) ?? "(campaign unavailable)";
+      return {
+        sourceId: "engagement_moderation",
+        block: "needs_review",
+        id: String(row.id),
+        title: asString(row.title) ?? summarizeComment(asString(row.body)),
+        projectId: asString(campaign?.project_id),
+        projectName: asString(project?.name),
+        // A comment has a submission date, not a deadline. Presenting the date
+        // it arrived as a due date would invent an SLA no agency agreed to.
+        dueOn: null,
+        isOverdue: false,
+        ownerLabel: null,
+        badge:
+          status === "flagged"
+            ? { label: "Flagged", tone: "danger" }
+            : { label: "Awaiting review", tone: "warning" },
+        detail: [
+          campaignTitle,
+          asString(row.created_at) ? `received ${formatWorkDeadlineDate(asString(row.created_at))}` : null,
+          humanizeStatus(asString(row.source_type)),
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        // Straight to the comment: `engagement-item-` is the Responses tab's
+        // own anchor prefix (`(app)/engagement/[campaignId]/_tabs.ts`), so the
+        // hash opens the right tab and scrolls to the row, rather than dropping
+        // a moderator at the top of a long console.
+        href: campaignHref(asString(row.campaign_id), `engagement-item-${String(row.id)}`),
+        dedupKey: null,
+      } satisfies MyWorkItem;
+    }),
+};
+
+const failedModelRunsSource: MyWorkSource = {
+  id: "failed_model_runs",
+  label: "Failed model runs",
+  readLabel: "model runs",
+  block: "needs_review",
+  table: "model_runs",
+  select: "id, model_id, run_title, status, error_message, engine_key, created_at",
+  // This table carries its own workspace_id (20260317000025).
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "created_at",
+  orderAscending: false,
+  staticFilters: [{ kind: "eq", column: "status", value: FAILED_RUN_STATUS }],
+  toItems: (rows, { now }) =>
+    rows
+      .filter((row) => isWithinFailedRunWindow(asString(row.created_at), now))
+      .map((row) => {
+        const error = asString(row.error_message);
+        return {
+          sourceId: "failed_model_runs",
+          block: "needs_review",
+          id: String(row.id),
+          title: asString(row.run_title) ?? "(untitled run)",
+          projectId: null,
+          projectName: null,
+          dueOn: null,
+          isOverdue: false,
+          ownerLabel: null,
+          badge: { label: "Run failed", tone: "danger" },
+          // THE CAUSE IS THE ROW'S OWN, OR IT IS ABSENT. A run whose worker
+          // died without writing `error_message` once read as benign on the
+          // model page; the fix there was to stop implying success, and the fix
+          // here is the same — this queue never guesses why a run failed.
+          detail: [
+            humanizeStatus(asString(row.engine_key)),
+            asString(row.created_at) ? `failed ${formatWorkDeadlineDate(asString(row.created_at))}` : null,
+            error ?? "No cause recorded — open the run to see how far it got.",
+          ]
+            .filter(Boolean)
+            .join(" · "),
+          // The model's own page is where run history lives; there is no
+          // per-run route to deep-link to.
+          href: modelHref(asString(row.model_id)),
+          dedupKey: null,
+        } satisfies MyWorkItem;
+      }),
+};
+
+const narrativeDraftsSource: MyWorkSource = {
+  id: "narrative_drafts",
+  label: "Drafts awaiting review",
+  readLabel: "narrative drafts",
+  block: "needs_review",
+  table: "document_narrative_drafts",
+  select:
+    "id, target_kind, target_id, section_key, model, grounded_sentence_count, total_sentence_count, created_at",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "created_at",
+  orderAscending: false,
+  staticFilters: [
+    { kind: "eq", column: "status", value: UNREVIEWED_DRAFT_STATUS },
+    // ONLY REPORT SECTIONS, AND THE OMISSION IS DELIBERATE — see the note below.
+    { kind: "eq", column: "target_kind", value: LINKABLE_DRAFT_TARGET_KIND },
+  ],
+  toItems: (rows) =>
+    rows.map((row) => {
+      const grounded = asNumber(row.grounded_sentence_count);
+      const total = asNumber(row.total_sentence_count);
+      return {
+        sourceId: "narrative_drafts",
+        block: "needs_review",
+        id: String(row.id),
+        title: `Draft narrative — ${humanizeStatus(asString(row.section_key)) ?? "report section"}`,
+        projectId: null,
+        projectName: null,
+        dueOn: null,
+        isOverdue: false,
+        ownerLabel: null,
+        badge: { label: "Awaiting accept", tone: "warning" },
+        // The GROUNDING RATIO rides along, because it is the fact that decides
+        // how hard this draft needs reading: a queue item saying 4 of 11
+        // sentences are grounded is asking for a different kind of attention
+        // than one saying 11 of 11.
+        detail: [
+          grounded !== null && total !== null ? `${grounded} of ${total} sentences grounded` : null,
+          asString(row.model) ? `drafted by ${asString(row.model)}` : null,
+          asString(row.created_at) ? `${formatWorkDeadlineDate(asString(row.created_at))}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        href: reportNarrativeDraftHref(asString(row.target_id)),
+        dedupKey: null,
+      } satisfies MyWorkItem;
+    }),
+};
+
+// ── 9. Grant decisions — the shared predicates, used verbatim ───────────────
 
 const grantDecisionsSource: MyWorkSource = {
   id: "grant_decisions",
@@ -479,7 +749,7 @@ const grantDecisionsSource: MyWorkSource = {
       .filter((item): item is MyWorkItem => item !== null),
 };
 
-// ── 7. Award obligations — de-duplicated against mirrored milestones ────────
+// ── 10. Award obligations — de-duplicated against mirrored milestones ────────
 
 const awardObligationsSource: MyWorkSource = {
   id: "award_obligations",
@@ -528,7 +798,7 @@ const awardObligationsSource: MyWorkSource = {
     }),
 };
 
-// ── 8. Invoice windows — invoicePriority's own vocabulary ───────────────────
+// ── 11. Invoice windows — invoicePriority's own vocabulary ───────────────────
 
 const invoiceWindowsSource: MyWorkSource = {
   id: "invoice_windows",
@@ -594,6 +864,9 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   submittalsSource,
   issuesSource,
   stageGateHoldsSource,
+  engagementModerationSource,
+  failedModelRunsSource,
+  narrativeDraftsSource,
   grantDecisionsSource,
   awardObligationsSource,
   invoiceWindowsSource,

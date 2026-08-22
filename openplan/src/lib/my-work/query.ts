@@ -83,6 +83,7 @@ type WorkReadResult = {
 type WorkQuery = PromiseLike<WorkReadResult> & {
   eq(column: string, value: string): WorkQuery;
   neq(column: string, value: string): WorkQuery;
+  in(column: string, values: readonly string[]): WorkQuery;
   is(column: string, value: null): WorkQuery;
   not(column: string, operator: string, value: unknown): WorkQuery;
   or(filter: string): WorkQuery;
@@ -174,8 +175,10 @@ function applyScope(
 function applyStaticFilters(query: WorkQuery, source: MyWorkSource): WorkQuery {
   let next = query;
   for (const filter of source.staticFilters) {
-    if (filter.kind === "neq") next = next.neq(filter.column, filter.value);
+    if (filter.kind === "eq") next = next.eq(filter.column, filter.value);
+    else if (filter.kind === "neq") next = next.neq(filter.column, filter.value);
     else if (filter.kind === "notNull") next = next.not(filter.column, "is", null);
+    else if (filter.kind === "in") next = next.in(filter.column, filter.values);
     else next = next.not(filter.column, "in", `(${filter.values.join(",")})`);
   }
   return next;

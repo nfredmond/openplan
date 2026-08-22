@@ -13,6 +13,7 @@ import {
   type MyWorkScope,
   type MyWorkSourceId,
 } from "@/lib/my-work/types";
+import { FAILED_RUN_QUEUE_WINDOW_DAYS } from "@/lib/my-work/sources";
 import { formatWorkDeadlineDate } from "@/lib/work/deadlines";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 
@@ -33,7 +34,12 @@ import { OperatorDetail } from "@/components/ui/read-failure-notice";
  *    than writing a second one (the recorded "reimplemented wrongly by the
  *    other caller" defect class).
  * 4. NOTHING IN THE WORKSPACE BLOCK IS PRESENTED AS ASSIGNED. Those tables have
- *    no assignee column, so those items carry no assignee key and no chip.
+ *    no assignee column, so those items carry no assignee key and no chip. The
+ *    same holds for the review queue: a comment waiting for moderation belongs
+ *    to whoever reaches it, and a chip claiming otherwise would be invented.
+ * 5. THE REVIEW QUEUE NAMES THE LANE THAT BROKE. Three different modules feed
+ *    that block, so "could not be read" without saying which one is a sentence
+ *    a planner cannot act on.
  */
 
 export type MyWorkBoardProps = {
@@ -57,6 +63,7 @@ const BLOCK_HEADINGS: Record<MyWorkBlockId, string> = {
   deadlines: "Dated work",
   undated: "Issues (no due date)",
   blocked_projects: "Blocked projects",
+  needs_review: "Waiting on a person",
   workspace_deadlines: "Shared deadlines",
 };
 
@@ -65,6 +72,8 @@ const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
   undated: "Project issues carry no due date, so they are listed separately rather than sorted in as if they were due today.",
   blocked_projects:
     "Stage gates whose latest decision was a hold. A hold is a fact about the project, not an item on one person's list — so this block reads the same for everyone here.",
+  needs_review:
+    "Work in other modules that has stopped and needs someone here to act. Nobody is assigned to these — the queue reads the same for everyone in the workspace.",
   workspace_deadlines:
     "Grant decisions, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.",
 };
@@ -74,7 +83,20 @@ const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
   deadlines: ["deliverables", "milestones", "submittals"],
   undated: ["issues"],
   blocked_projects: ["stage_gate_holds"],
+  needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts"],
   workspace_deadlines: ["grant_decisions", "award_obligations", "invoice_windows"],
+};
+
+/**
+ * What each review-queue lane is called when its read fails. Three separate
+ * modules feed one block here, so an unreadable lane is named: "comments to
+ * moderate could not be read" tells a moderator to go look in the campaign
+ * console, and "this block is unavailable" tells them nothing.
+ */
+const NEEDS_REVIEW_SOURCE_LABELS: Record<string, string> = {
+  engagement_moderation: "comments to moderate",
+  failed_model_runs: "failed model runs",
+  narrative_drafts: "narrative drafts awaiting review",
 };
 
 /** The person-scoped sources — the ones the scope toggles actually move. */
@@ -144,6 +166,10 @@ export function MyWorkBoard({
   );
 
   const personalIsUnreadable = blockHasUnreadableSource("deadlines");
+
+  const unreadableReviewLanes = BLOCK_SOURCES.needs_review
+    .filter(sourceUnavailable)
+    .map((sourceId) => NEEDS_REVIEW_SOURCE_LABELS[sourceId] ?? sourceId);
 
   return (
     <section className="module-page">
@@ -269,6 +295,32 @@ export function MyWorkBoard({
             not counted here.
           </p>
         )}
+      </article>
+
+      <article className="module-section-surface" data-testid="my-work-needs-review">
+        <h2 className="module-section-title">{BLOCK_HEADINGS.needs_review}</h2>
+        <p className="module-note">{BLOCK_NOTES.needs_review}</p>
+        {blocks.needs_review.length > 0 ? (
+          <div className="module-record-list">
+            {blocks.needs_review.map((item) => (
+              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} />
+            ))}
+          </div>
+        ) : null}
+        {unreadableReviewLanes.length > 0 ? (
+          <p className="module-empty-state" data-testid="my-work-needs-review-unreadable">
+            {`${unreadableReviewLanes.join(" and ")} could not be read, so `}
+            {blocks.needs_review.length > 0
+              ? "this list is incomplete rather than complete."
+              : "whether anything is waiting is unknown — not that nothing is."}
+          </p>
+        ) : blocks.needs_review.length === 0 ? (
+          <p className="module-empty-state">
+            Nothing is waiting on a person: no comment is pending moderation, no model run failed
+            in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days, and no drafted narrative is awaiting a
+            decision.
+          </p>
+        ) : null}
       </article>
 
       <article className="module-section-surface">

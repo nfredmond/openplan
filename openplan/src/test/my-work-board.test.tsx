@@ -30,6 +30,8 @@ import { buildDb, loadSeededMyWork, ROSTER } from "./helpers/fake-my-work-tables
  * MUTATION-VERIFIED (2026-08-11), each reverted after: rendering the departed
  * assignee as a blank instead of the shared sentence, dropping the scope
  * toggles from the empty state, and reporting an unreadable block as empty.
+ * MUTATION-VERIFIED AGAIN (2026-08-21) for the review queue — see the tail of
+ * this file.
  */
 
 async function renderBoard(
@@ -192,5 +194,51 @@ describe("my work — the board", () => {
     // A pending migration is not an outage: it does not join the read-failure
     // sentence.
     expect(screen.queryByText(/could not read project deliverables/)).toBeNull();
+  });
+});
+
+/**
+ * THE REVIEW QUEUE, RENDERED. Mutation-verified 2026-08-21, each reverted after:
+ * reporting the block empty while a lane was unreadable (1 failure), and
+ * collapsing the three lane labels into one generic "this block" sentence (1).
+ */
+describe("my work — the review queue on screen", () => {
+  it("shows what is waiting on a person, from three different modules", async () => {
+    await renderBoard();
+    const waiting = blockNamed("Waiting on a person");
+
+    // One comment, one failed run, one draft — the three lanes, side by side,
+    // which is the whole point of the block.
+    expect(waiting.getByText(/The crossing at 4th and Main/)).toBeInTheDocument();
+    expect(waiting.getByText("Corridor screening — build alternative")).toBeInTheDocument();
+    expect(waiting.getByText("Draft narrative — Existing conditions")).toBeInTheDocument();
+    // Nothing here is presented as belonging to anyone.
+    expect(waiting.queryByText(DEPARTED_ASSIGNEE_SENTENCE)).toBeNull();
+    expect(waiting.getByText("Flagged")).toBeInTheDocument();
+    // Both failed runs, including the one whose worker died without writing a
+    // cause — which says so rather than reading as though it were fine.
+    expect(waiting.getAllByText("Run failed")).toHaveLength(2);
+    expect(waiting.getByText(/No cause recorded/)).toBeInTheDocument();
+  });
+
+  it("names the lane that could not be read instead of calling the block empty", async () => {
+    await renderBoard({
+      empty: true,
+      failures: { engagement_items: "permission denied for table engagement_items" },
+    });
+    const waiting = blockNamed("Waiting on a person");
+
+    // The lane is NAMED: three modules feed this block, and "could not be read"
+    // without saying which one is a sentence nobody can act on.
+    expect(waiting.getByText(/comments to moderate could not be read/)).toBeInTheDocument();
+    expect(waiting.getByText(/whether anything is waiting is unknown/)).toBeInTheDocument();
+    expect(waiting.queryByText(/Nothing is waiting on a person/)).toBeNull();
+  });
+
+  it("says the queue is clear only when all three lanes actually read clear", async () => {
+    await renderBoard({ empty: true });
+    const waiting = blockNamed("Waiting on a person");
+
+    expect(waiting.getByText(/Nothing is waiting on a person/)).toBeInTheDocument();
   });
 });

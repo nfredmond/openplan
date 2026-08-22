@@ -21,7 +21,16 @@
  *    (`stage_gate_decisions` has no assignee and never will), so it is rendered
  *    as its own block for the whole workspace rather than mixed into anyone's
  *    queue. Nathaniel's decision, 2026-08-11.
- * 4. `workspace_deadlines` — grant decisions, award obligations and invoice
+ * 4. `needs_review` — work in ANOTHER module that has stopped and is waiting
+ *    for a person here: public comments awaiting moderation, model runs that
+ *    failed, AI-drafted narrative awaiting an operator's accept or dismiss.
+ *    None of these tables carries an assignee and none should: whoever gets to
+ *    it first moderates the comment, and a run that crashed is the workspace's
+ *    problem rather than one person's. This is the block that makes My Work an
+ *    app-wide inbox instead of a project-and-money queue — before it, the only
+ *    way to learn that a run had failed or that residents were waiting was to
+ *    open the module and look.
+ * 5. `workspace_deadlines` — grant decisions, award obligations and invoice
  *    windows. These tables carry no assignee column, so NOTHING here is ever
  *    presented as assigned to anyone: inventing an owner for a grant deadline
  *    would put a name on an obligation nobody accepted.
@@ -38,7 +47,7 @@ import type { StatusTone } from "@/lib/ui/status";
 /**
  * The sources, in the order the page presents them. The numbering follows the
  * design memo (2026-08-11): 1–4 person-scoped, 5 the blocked-projects block,
- * 6–8 workspace-scoped.
+ * 6–8 the cross-module review queue (added 2026-08-21), 9–11 workspace-scoped.
  */
 export const MY_WORK_SOURCE_IDS = [
   "deliverables",
@@ -46,6 +55,9 @@ export const MY_WORK_SOURCE_IDS = [
   "submittals",
   "issues",
   "stage_gate_holds",
+  "engagement_moderation",
+  "failed_model_runs",
+  "narrative_drafts",
   "grant_decisions",
   "award_obligations",
   "invoice_windows",
@@ -57,6 +69,7 @@ export const MY_WORK_BLOCK_IDS = [
   "deadlines",
   "undated",
   "blocked_projects",
+  "needs_review",
   "workspace_deadlines",
 ] as const;
 
@@ -176,6 +189,7 @@ export function groupMyWorkItemsByBlock(
     deadlines: [] as MyWorkItem[],
     undated: [] as MyWorkItem[],
     blocked_projects: [] as MyWorkItem[],
+    needs_review: [] as MyWorkItem[],
     workspace_deadlines: [] as MyWorkItem[],
   } satisfies Record<MyWorkBlockId, MyWorkItem[]>;
 

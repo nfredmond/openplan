@@ -3,6 +3,18 @@ export const ENGAGEMENT_TYPES = ["map_feedback", "comment_collection", "meeting_
 export const ENGAGEMENT_ITEM_STATUSES = ["pending", "approved", "rejected", "flagged"] as const;
 export const ENGAGEMENT_ITEM_SOURCE_TYPES = ["internal", "public", "meeting", "email"] as const;
 
+/**
+ * The item statuses that still need a human — the ONE definition of
+ * "actionable moderation" in the product.
+ *
+ * `summary.ts` counts the campaign console's review queue from this list, and
+ * My Work reads the same list to put those comments on the app-wide queue. It
+ * lives here rather than inside either caller because two surfaces disagreeing
+ * about what "waiting for review" means is how a moderator ends up trusting a
+ * zero on one page while another page still holds work.
+ */
+export const ENGAGEMENT_ITEM_ACTIONABLE_STATUSES = ["pending", "flagged"] as const;
+
 export type EngagementCampaignStatus = (typeof ENGAGEMENT_CAMPAIGN_STATUSES)[number];
 export type EngagementType = (typeof ENGAGEMENT_TYPES)[number];
 export type EngagementItemStatus = (typeof ENGAGEMENT_ITEM_STATUSES)[number];

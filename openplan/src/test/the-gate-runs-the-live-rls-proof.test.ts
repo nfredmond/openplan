@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-// @ts-expect-error — plain ESM script, no types; the gate step must be able to
-// run it with bare `node` before anything is compiled.
+// A plain ESM script with no types — the gate step must be able to run it with
+// bare `node` before anything is compiled.
 import { decideRlsGate } from "../../scripts/ops/rls-gate.mjs";
 
 /**

@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import { loadMyWork, MY_WORK_DEFAULT_LIMIT_PER_SOURCE, MY_WORK_MAX_LIMIT_PER_SOURCE } from "@/lib/my-work/query";
-import { MY_WORK_SOURCES } from "@/lib/my-work/sources";
+import { FAILED_RUN_QUEUE_WINDOW_DAYS, MY_WORK_SOURCES } from "@/lib/my-work/sources";
 import { MY_WORK_SOURCE_IDS, groupMyWorkItemsByBlock } from "@/lib/my-work/types";
 import {
   AWARD_MIRRORED,
   AWARD_PLAIN,
+  CAMPAIGN_A,
+  CAMPAIGN_UNLINKED,
   DEPARTED,
   idsOf,
   loadSeededMyWork as load,
@@ -13,8 +15,11 @@ import {
   NOW,
   P1,
   P2,
+  MODEL_A,
   P_B,
+  REPORT_A,
   ROSTER,
+  RTP_CHAPTER_A,
   WS_A,
 } from "./helpers/fake-my-work-tables";
 
@@ -59,7 +64,22 @@ describe("my work — the union read", () => {
     const { result } = await load({ scope: "all_projects" });
     const ids = idsOf(result.items);
 
-    for (const decoy of ["d-decoy", "m-decoy", "s-decoy", "i-decoy", "g-decoy", "f-decoy", "a-decoy", "inv-decoy"]) {
+    for (const decoy of [
+      "d-decoy",
+      "m-decoy",
+      "s-decoy",
+      "i-decoy",
+      "g-decoy",
+      "f-decoy",
+      "a-decoy",
+      "inv-decoy",
+      // `c-decoy` is the sharpest of these: `engagement_items` has no
+      // workspace_id at all, so another agency's RESIDENT would land in this
+      // moderation queue if the two-level `!inner` were dropped.
+      "c-decoy",
+      "r-decoy",
+      "n-decoy",
+    ]) {
       expect(ids, `${decoy} leaked across workspaces`).not.toContain(decoy);
     }
     expect(result.items.every((item) => item.projectId !== P_B)).toBe(true);
@@ -277,5 +297,127 @@ describe("my work — the per-source cap", () => {
     expect((await load({ limitPerSource: 10_000 })).result.limitPerSource).toBe(
       MY_WORK_MAX_LIMIT_PER_SOURCE
     );
+  });
+});
+
+describe("my work — the cross-module review queue", () => {
+  it("puts everything waiting on a person in one block, oldest comment first", async () => {
+    const { result } = await load();
+    const blocks = groupMyWorkItemsByBlock(result.items);
+
+    expect(idsOf(blocks.needs_review)).toEqual([
+      // Comments oldest-first: whoever has waited longest for an answer is at
+      // the top. Reverse this and the resident from three weeks ago is last.
+      "c-pending-oldest", // 2026-07-20
+      "c-flagged", // 2026-08-02
+      "c-pending-unlinked", // 2026-08-04
+      // Then the other two lanes, newest-first within each.
+      "r-failed-recent",
+      "r-failed-no-cause",
+      "n-draft-report",
+    ]);
+    // The block is undated by construction — a submission date is not a due date.
+    expect(blocks.needs_review.every((item) => item.dueOn === null)).toBe(true);
+    expect(blocks.needs_review.every((item) => item.isOverdue === false)).toBe(true);
+  });
+
+  it("reads the same for everyone, whichever scope is selected", async () => {
+    // These tables have no assignee, so a scope toggle must not move them. If
+    // it did, "Assigned to me" would hide a moderation backlog nobody owns.
+    const assigned = groupMyWorkItemsByBlock((await load({ scope: "assigned" })).result.items);
+    const unassigned = groupMyWorkItemsByBlock((await load({ scope: "unassigned" })).result.items);
+    const all = groupMyWorkItemsByBlock((await load({ scope: "all_projects" })).result.items);
+
+    expect(idsOf(unassigned.needs_review)).toEqual(idsOf(assigned.needs_review));
+    expect(idsOf(all.needs_review)).toEqual(idsOf(assigned.needs_review));
+    // And nothing here claims an owner.
+    expect(assigned.needs_review.every((item) => item.assigneeUserId === undefined)).toBe(true);
+  });
+
+  it("queues only the comments that still need a human, and links straight to each one", async () => {
+    const { result } = await load();
+    const comments = result.items.filter((item) => item.sourceId === "engagement_moderation");
+
+    // pending + flagged, from the shared list. Approved and rejected are done.
+    expect(idsOf(comments)).toEqual(["c-pending-oldest", "c-flagged", "c-pending-unlinked"]);
+    expect(comments.map((item) => item.badge.label)).toEqual([
+      "Awaiting review",
+      "Flagged",
+      "Awaiting review",
+    ]);
+    // The href opens the Responses tab AND scrolls to the row, via that tab's
+    // own `engagement-item-` anchor prefix.
+    expect(comments[0].href).toBe(`/engagement/${CAMPAIGN_A}#engagement-item-c-pending-oldest`);
+    expect(comments[2].href).toBe(
+      `/engagement/${CAMPAIGN_UNLINKED}#engagement-item-c-pending-unlinked`
+    );
+    // A titleless comment is recognised by its own first words, not by a
+    // manufactured title.
+    expect(comments[0].title).toContain("The crossing at 4th and Main");
+    expect(comments[0].title.endsWith("…")).toBe(true);
+    // The campaign's project comes through two embed hops; an unlinked
+    // campaign's comment is a workspace record and says so by carrying null.
+    expect(comments[0].projectId).toBe(P1);
+    expect(comments[0].projectName).toBe("Corridor Rehabilitation");
+    expect(comments[2].projectId).toBe(null);
+    expect(comments[0].detail).toContain("Downtown circulation study");
+  });
+
+  it("never invents a cause for a failed run, and drops failures older than the window", async () => {
+    const { result } = await load();
+    const runs = result.items.filter((item) => item.sourceId === "failed_model_runs");
+
+    expect(idsOf(runs)).toEqual(["r-failed-recent", "r-failed-no-cause"]);
+    expect(runs[0].detail).toContain("Worker exited before writing skims");
+    // The run whose worker died without writing error_message says the cause is
+    // absent. It must never read as though the run were fine, and must never
+    // name a cause the row does not carry.
+    expect(runs[1].detail).toContain("No cause recorded");
+    expect(runs[1].badge).toEqual({ label: "Run failed", tone: "danger" });
+    expect(runs[0].href).toBe(`/models/${MODEL_A}`);
+    // r-failed-stale failed in June — outside the window, so it is history.
+    // Without this the block could never be emptied.
+    expect(idsOf(runs)).not.toContain("r-failed-stale");
+    expect(FAILED_RUN_QUEUE_WINDOW_DAYS).toBeGreaterThan(0);
+  });
+
+  it("lists an unreviewed narrative draft with its grounding ratio, and skips the drafts it cannot link", async () => {
+    const { result } = await load();
+    const drafts = result.items.filter((item) => item.sourceId === "narrative_drafts");
+
+    expect(idsOf(drafts)).toEqual(["n-draft-report"]);
+    expect(drafts[0].href).toBe(`/reports/${REPORT_A}#report-narrative-draft-panel`);
+    // How much of the draft is grounded is the fact that decides how hard it
+    // needs reading, so it rides on the queue row itself.
+    expect(drafts[0].detail).toContain("7 of 11 sentences grounded");
+    expect(drafts[0].title).toBe("Draft narrative — Existing conditions");
+    // Accepted and dismissed drafts are settled.
+    expect(idsOf(drafts)).not.toContain("n-accepted");
+    expect(idsOf(drafts)).not.toContain("n-dismissed");
+    // The RTP CHAPTER draft is genuinely awaiting a human and is still absent:
+    // this row cannot name a page a planner can open. An inbox item that goes
+    // nowhere costs the same attention and returns nothing.
+    expect(idsOf(drafts)).not.toContain("n-draft-chapter");
+    expect(RTP_CHAPTER_A).toBeTruthy();
+  });
+
+  it("discloses one review lane's failure without emptying the other two", async () => {
+    const { result } = await load({
+      failures: { engagement_items: "permission denied for table engagement_items" },
+    });
+    const blocks = groupMyWorkItemsByBlock(result.items);
+
+    expect(result.perSource.engagement_moderation).toEqual({
+      count: 0,
+      pending: false,
+      failed: true,
+    });
+    expect(result.reads.describe()).toContain("engagement comments");
+    // The failed lane must not take the block down with it.
+    expect(idsOf(blocks.needs_review)).toEqual([
+      "r-failed-recent",
+      "r-failed-no-cause",
+      "n-draft-report",
+    ]);
   });
 });

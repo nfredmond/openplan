@@ -1,4 +1,8 @@
-import { ENGAGEMENT_ITEM_SOURCE_TYPES, ENGAGEMENT_ITEM_STATUSES } from "@/lib/engagement/catalog";
+import {
+  ENGAGEMENT_ITEM_ACTIONABLE_STATUSES,
+  ENGAGEMENT_ITEM_SOURCE_TYPES,
+  ENGAGEMENT_ITEM_STATUSES,
+} from "@/lib/engagement/catalog";
 
 type CategoryLike = {
   id: string;
@@ -409,7 +413,12 @@ export function summarizeEngagementItems(
     moderationQueue: {
       pendingCount: statusCounts.pending,
       flaggedCount: statusCounts.flagged,
-      actionableCount: statusCounts.pending + statusCounts.flagged,
+      // Summed from the shared list, not spelled out here: My Work reads the
+      // same one, and a second hand-written pair is how the two surfaces drift.
+      actionableCount: ENGAGEMENT_ITEM_ACTIONABLE_STATUSES.reduce(
+        (total, status) => total + (statusCounts[status] ?? 0),
+        0
+      ),
       uncategorizedCount: uncategorizedItems,
       itemsWithNotesCount: itemsWithModerationNotes,
       triagedCount,

@@ -32,7 +32,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  */
 
 const sweepMock = vi.fn();
-const heartbeatUpsertMock = vi.fn(async () => ({ error: null }));
+// Declared with a rest parameter so the recorded call ARGUMENTS are typed —
+// the assertions below read `mock.calls[0][0]`, which a zero-arity mock
+// types as an empty tuple.
+const heartbeatUpsertMock = vi.fn(async (..._args: unknown[]) => ({ error: null }));
 // A stub shaped like the real service client: the route stamps the sweep's
 // heartbeat (cron_job_heartbeats) on success via .from(...).upsert(...).
 const serviceClient = {

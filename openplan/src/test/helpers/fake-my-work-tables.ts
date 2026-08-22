@@ -1,10 +1,11 @@
 /**
- * The eight tables `/my-work` reads, in memory, WITH POSTGREST'S JOIN SEMANTICS
- * ACTUALLY APPLIED — and one seeded workspace to read them from.
+ * The eleven tables `/my-work` reads, in memory, WITH POSTGREST'S JOIN
+ * SEMANTICS ACTUALLY APPLIED — and one seeded workspace to read them from.
  *
- * WHY A FAKE THIS ELABORATE, AND WHY IT IS SHARED. Four of the eight sources
+ * WHY A FAKE THIS ELABORATE, AND WHY IT IS SHARED. Five of the eleven sources
  * (`project_deliverables`, `project_milestones`, `project_submittals`,
- * `project_issues`) carry no workspace_id of their own: the ONLY thing scoping
+ * `project_issues`, `engagement_items`) carry no workspace_id of their own: the
+ * ONLY thing scoping
  * them to the viewed workspace is the `!inner` embed on `projects` plus the
  * `.eq("projects.workspace_id", …)` filter in the descriptor's select string. A
  * fixture-replaying double would answer the same rows however it was queried,
@@ -48,6 +49,13 @@ const RELATIONS: Record<string, Record<string, { fk: string; parent: string }>> 
   funding_opportunities: { projects: { fk: "project_id", parent: "projects" } },
   funding_awards: { projects: { fk: "project_id", parent: "projects" } },
   billing_invoice_records: { projects: { fk: "project_id", parent: "projects" } },
+  // Engagement comments are scoped through their CAMPAIGN, and the campaign's
+  // project is a second hop — the only two-level embed in the queue, and the
+  // reason `projectRow` recurses.
+  engagement_items: {
+    engagement_campaigns: { fk: "campaign_id", parent: "engagement_campaigns" },
+  },
+  engagement_campaigns: { projects: { fk: "project_id", parent: "projects" } },
 };
 
 type SelectNode =
@@ -156,6 +164,7 @@ function resolvePathValue(db: Db, table: string, row: Row, path: string[]): unkn
 
 type Filter =
   | { kind: "eq"; path: string[]; value: unknown }
+  | { kind: "in"; column: string; values: readonly string[] }
   | { kind: "neq"; column: string; value: unknown }
   | { kind: "notNull"; column: string }
   | { kind: "notIn"; column: string; values: string[] }
@@ -203,6 +212,13 @@ function runQuery(
       }
       if (filter.kind === "notNull") {
         if (row[filter.column] === null || row[filter.column] === undefined) {
+          dropped = true;
+          break;
+        }
+        continue;
+      }
+      if (filter.kind === "in") {
+        if (!filter.values.includes(String(row[filter.column]))) {
           dropped = true;
           break;
         }
@@ -280,6 +296,10 @@ export function createFakeSupabase(db: Db, failures: Record<string, string> = {}
               filters.push({ kind: "neq", column, value });
               return builder;
             },
+            in(column: string, values: readonly string[]) {
+              filters.push({ kind: "in", column, values });
+              return builder;
+            },
             is(column: string, value: null) {
               filters.push({ kind: "or", clauses: [`${column}.is.${String(value)}`] });
               return builder;
@@ -342,6 +362,13 @@ export const TEAMMATE = "55555555-0000-4000-8000-000000000005";
 export const DEPARTED = "66666666-0000-4000-8000-000000000006";
 export const AWARD_MIRRORED = "77777777-0000-4000-8000-000000000007";
 export const AWARD_PLAIN = "88888888-0000-4000-8000-000000000008";
+export const CAMPAIGN_A = "99999999-0000-4000-8000-000000000009";
+/** A campaign in WS_A with NO project — a comment on it is a workspace record. */
+export const CAMPAIGN_UNLINKED = "99999999-0000-4000-8000-000000000010";
+export const CAMPAIGN_B = "99999999-0000-4000-8000-000000000011";
+export const MODEL_A = "cccccccc-0000-4000-8000-000000000012";
+export const REPORT_A = "dddddddd-0000-4000-8000-000000000013";
+export const RTP_CHAPTER_A = "eeeeeeee-0000-4000-8000-000000000014";
 
 export const NOW = new Date("2026-08-11T12:00:00Z");
 
@@ -656,6 +683,200 @@ export function buildDb(): Db {
         obligation_due_at: "2026-08-03T00:00:00Z",
         spending_status: "active",
         risk_flag: "none",
+      },
+    ],
+    engagement_campaigns: [
+      { id: CAMPAIGN_A, workspace_id: WS_A, title: "Downtown circulation study", project_id: P1 },
+      {
+        id: CAMPAIGN_UNLINKED,
+        workspace_id: WS_A,
+        title: "Countywide bike survey",
+        project_id: null,
+      },
+      { id: CAMPAIGN_B, workspace_id: WS_B, title: "Decoy campaign", project_id: P_B },
+    ],
+    engagement_items: [
+      {
+        // Oldest pending, so it must sort FIRST — this queue answers "who has
+        // been waiting longest", the opposite of every other source here.
+        id: "c-pending-oldest",
+        campaign_id: CAMPAIGN_A,
+        title: null,
+        body: "The crossing at 4th and Main is impossible to use with a stroller and the signal is far too short for anyone walking slowly.",
+        status: "pending",
+        source_type: "public",
+        created_at: "2026-07-20T00:00:00Z",
+      },
+      {
+        id: "c-flagged",
+        campaign_id: CAMPAIGN_A,
+        title: "Speeding on Elm",
+        body: "Cars regularly exceed the limit here.",
+        status: "flagged",
+        source_type: "public",
+        created_at: "2026-08-02T00:00:00Z",
+      },
+      {
+        id: "c-pending-unlinked",
+        campaign_id: CAMPAIGN_UNLINKED,
+        title: "Bike lane request",
+        body: "Please stripe a lane on Ridge Road.",
+        status: "pending",
+        source_type: "internal",
+        created_at: "2026-08-04T00:00:00Z",
+      },
+      {
+        // Already moderated — neither pending nor flagged, so it is off the queue.
+        id: "c-approved",
+        campaign_id: CAMPAIGN_A,
+        title: "Thanks for the new signal",
+        body: "It works well.",
+        status: "approved",
+        source_type: "public",
+        created_at: "2026-07-01T00:00:00Z",
+      },
+      {
+        id: "c-rejected",
+        campaign_id: CAMPAIGN_A,
+        title: "Off topic",
+        body: "Unrelated.",
+        status: "rejected",
+        source_type: "public",
+        created_at: "2026-07-02T00:00:00Z",
+      },
+      {
+        // THE DECOY: another workspace's resident, waiting for moderation.
+        // `engagement_items` has no workspace_id — only the `!inner` embed on
+        // engagement_campaigns keeps this off WS_A's queue, and leaking it
+        // would put one agency's residents in another agency's inbox.
+        id: "c-decoy",
+        campaign_id: CAMPAIGN_B,
+        title: "Decoy comment from another workspace",
+        body: "Should never appear.",
+        status: "pending",
+        source_type: "public",
+        created_at: "2026-07-10T00:00:00Z",
+      },
+    ],
+    model_runs: [
+      {
+        id: "r-failed-recent",
+        workspace_id: WS_A,
+        model_id: MODEL_A,
+        run_title: "Corridor screening — build alternative",
+        status: "failed",
+        error_message: "Worker exited before writing skims",
+        engine_key: "aequilibrae",
+        created_at: "2026-08-09T00:00:00Z",
+      },
+      {
+        // Failed with NO recorded cause. The queue must say so rather than
+        // inventing one — the recorded "a failed run said Run recorded" defect.
+        id: "r-failed-no-cause",
+        workspace_id: WS_A,
+        model_id: MODEL_A,
+        run_title: "Corridor screening — no build",
+        status: "failed",
+        error_message: null,
+        engine_key: "activitysim",
+        created_at: "2026-08-08T00:00:00Z",
+      },
+      {
+        // Failed in JUNE — outside the window, so it is history rather than
+        // inbox. Its absence is what keeps this block emptiable.
+        id: "r-failed-stale",
+        workspace_id: WS_A,
+        model_id: MODEL_A,
+        run_title: "Old screening attempt",
+        status: "failed",
+        error_message: "Network package missing",
+        engine_key: "aequilibrae",
+        created_at: "2026-06-01T00:00:00Z",
+      },
+      {
+        id: "r-succeeded",
+        workspace_id: WS_A,
+        model_id: MODEL_A,
+        run_title: "Corridor screening — baseline",
+        status: "succeeded",
+        error_message: null,
+        engine_key: "aequilibrae",
+        created_at: "2026-08-10T00:00:00Z",
+      },
+      {
+        id: "r-decoy",
+        workspace_id: WS_B,
+        model_id: MODEL_A,
+        run_title: "Decoy failed run",
+        status: "failed",
+        error_message: "Should never appear",
+        engine_key: "aequilibrae",
+        created_at: "2026-08-09T00:00:00Z",
+      },
+    ],
+    document_narrative_drafts: [
+      {
+        id: "n-draft-report",
+        workspace_id: WS_A,
+        status: "draft",
+        target_kind: "report_section",
+        target_id: REPORT_A,
+        section_key: "existing_conditions",
+        model: "claude-opus-5",
+        grounded_sentence_count: 7,
+        total_sentence_count: 11,
+        created_at: "2026-08-07T00:00:00Z",
+      },
+      {
+        // An RTP CHAPTER draft. Genuinely awaiting a human — and deliberately
+        // NOT on the queue, because this row cannot name a page a planner can
+        // open (see LINKABLE_DRAFT_TARGET_KIND).
+        id: "n-draft-chapter",
+        workspace_id: WS_A,
+        status: "draft",
+        target_kind: "rtp_chapter",
+        target_id: RTP_CHAPTER_A,
+        section_key: null,
+        model: "claude-opus-5",
+        grounded_sentence_count: 4,
+        total_sentence_count: 9,
+        created_at: "2026-08-06T00:00:00Z",
+      },
+      {
+        id: "n-accepted",
+        workspace_id: WS_A,
+        status: "accepted",
+        target_kind: "report_section",
+        target_id: REPORT_A,
+        section_key: "recommendations",
+        model: "claude-opus-5",
+        grounded_sentence_count: 9,
+        total_sentence_count: 9,
+        created_at: "2026-08-05T00:00:00Z",
+      },
+      {
+        id: "n-dismissed",
+        workspace_id: WS_A,
+        status: "dismissed",
+        target_kind: "report_section",
+        target_id: REPORT_A,
+        section_key: "methodology",
+        model: "claude-opus-5",
+        grounded_sentence_count: 1,
+        total_sentence_count: 8,
+        created_at: "2026-08-04T00:00:00Z",
+      },
+      {
+        id: "n-decoy",
+        workspace_id: WS_B,
+        status: "draft",
+        target_kind: "report_section",
+        target_id: REPORT_A,
+        section_key: "existing_conditions",
+        model: "claude-opus-5",
+        grounded_sentence_count: 3,
+        total_sentence_count: 3,
+        created_at: "2026-08-07T00:00:00Z",
       },
     ],
     billing_invoice_records: [
