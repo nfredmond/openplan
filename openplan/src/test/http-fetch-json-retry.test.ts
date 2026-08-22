@@ -12,6 +12,25 @@ describe("fetchJsonWithRetry", () => {
   });
 
   afterEach(() => {
+    // ORDER IS LOAD-BEARING: SPIES FIRST, THEN THE CLOCK.
+    //
+    // Three tests below do `vi.spyOn(globalThis, "setTimeout")` AFTER
+    // `vi.useFakeTimers()`, so the spy captures the FAKE `setTimeout` as the
+    // value it will restore. Tearing the fake clock down first and restoring
+    // the spy afterwards writes that captured fake back onto `globalThis` —
+    // where it is now an orphan: the clock that would have fired it is gone, so
+    // every later `setTimeout` is a promise that never settles. `vi.isFakeTimers()`
+    // reports FALSE the whole time, because the fake clock really was
+    // uninstalled; only the function pointer is stale.
+    //
+    // That is what `--sequence.shuffle` was surfacing here: with these tests
+    // last in file order nothing ran after them, so the orphaned global was
+    // never used. Shuffled earlier, every subsequent test that waits on a real
+    // timeout hangs for the full 20s, and the failures cascade.
+    //
+    // Restoring mocks while the fake clock is still installed puts the fake
+    // back onto a live clock, and `useRealTimers()` then replaces it properly.
+    vi.restoreAllMocks();
     vi.useRealTimers();
     vi.unstubAllGlobals();
     __clearFetchJsonResponseCacheForTests();
