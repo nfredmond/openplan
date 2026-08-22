@@ -28,6 +28,31 @@ export default defineConfig({
     // longer to be declared hung, and a hung test is a defect either way.
     testTimeout: 20_000,
     hookTimeout: 20_000,
+    // Isolation is a property of the runner, not of whether each of ~1,000 test
+    // files remembered to clean up after itself. Vitest reuses a worker process
+    // across files, so a file that stubs a global or an env var and forgets to
+    // put it back hands it to whatever file the scheduler runs next — which is
+    // how this suite stayed green in file-name order while failing under
+    // `--sequence.shuffle`.
+    //
+    // Turned on one at a time on 2026-08-22, running the full suite in normal
+    // order after each. Blast radius of all three, measured rather than
+    // predicted: ZERO failures — 1053 files / 12178 tests before and after.
+    // `src/test/the-runner-isolates-tests-from-each-other.test.ts` is what
+    // fails if any of the three is later removed; without it nothing in the
+    // suite can tell you they are still on.
+    unstubEnvs: true,
+    unstubGlobals: true,
+    // `clearMocks` clears call history between tests. It does NOT reset mock
+    // implementations (that is `mockReset`) and does not un-spy
+    // (`restoreMocks`) — either of those would be a rewrite of the suite rather
+    // than a config change, because ~300 files set implementations at module
+    // scope and expect them to survive. Note the consequence: `clearMocks`
+    // also does not drain a queued `mockResolvedValueOnce` that the code under
+    // test never consumed, which remains the live leak this config cannot
+    // close. Only running in a varied order finds those — `npm run
+    // test:shuffled`, and the `order independence` CI job.
+    clearMocks: true,
   },
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },

@@ -34,6 +34,45 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role
           ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
 
+  order-independence:
+    name: order independence (shuffled vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./openplan
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: openplan/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      # The qa gate above always walks test files in the same order, so it
+      # cannot see a test that depends on another test having run first. Vitest
+      # reuses a worker process across files: a stubbed global, a stubbed env
+      # var, or a queued `mockResolvedValueOnce` that the code under test never
+      # consumed is inherited by whatever file runs next. Eight such defects
+      # were found on 2026-08-21/22, each green in file-name order.
+      #
+      # The seed is random per run, ON PURPOSE. A fixed seed pins one order and
+      # would go permanently green against the one arrangement it happened to
+      # pick, which is the same blindness as not shuffling at all. A failure
+      # here is a real defect, never a flake, and the script prints the seed
+      # that produced it so the order can be replayed exactly.
+      - name: Shuffled suite
+        run: npm run test:shuffled
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role
+          ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
+
   modeling-script-tests:
     name: modeling scripts (python unit tests)
     runs-on: ubuntu-latest
