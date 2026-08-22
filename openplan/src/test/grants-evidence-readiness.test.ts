@@ -178,6 +178,7 @@ describe("buildGrantEvidenceReadinessCues", () => {
         id: "camp-1",
         title: "Main St corridor feedback",
         status: "active",
+        crashCorroboration: null,
         synthesis: {
           source: "ai",
           analyzedItemCount: 42,

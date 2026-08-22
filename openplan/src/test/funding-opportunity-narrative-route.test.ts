@@ -132,6 +132,10 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
+      // A real client always has `rpc`; omitting it made this fake answer a
+      // TypeError where the database would answer rows, which is not a state
+      // production can reach.
+      rpc: vi.fn(() => Promise.resolve({ data: [], error: null })),
       from: vi.fn((table: string) => {
         if (table === "funding_opportunity_narrative_drafts") {
           return { insert: draftInsertMock };
@@ -493,6 +497,10 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
+      // A real client always has `rpc`; omitting it made this fake answer a
+      // TypeError where the database would answer rows, which is not a state
+      // production can reach.
+      rpc: vi.fn(() => Promise.resolve({ data: [], error: null })),
       from: vi.fn((table: string) => {
         if (table === "funding_opportunity_narrative_drafts") return { insert: draftInsertMock };
         if (table === "projects") {

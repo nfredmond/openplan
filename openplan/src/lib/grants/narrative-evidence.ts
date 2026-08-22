@@ -43,6 +43,12 @@ import {
   type ProjectEngagementEvidence,
 } from "@/lib/grants/engagement-evidence";
 import {
+  DEFAULT_CRASH_PROXIMITY_METERS,
+  readNearbyCrashes,
+  summarizeCampaignCorroboration,
+  type NearbyCrashRow,
+} from "@/lib/engagement/crash-corroboration";
+import {
   buildProjectFundingStackSummary,
   type FundingAwardLike,
   type FundingOpportunityLike,
@@ -60,6 +66,7 @@ import {
 } from "@/lib/grants/narrative-grounding";
 import type { GrantApplicationEvidenceKind } from "@/lib/grants/program-catalog";
 import { formatMoney } from "@/lib/money/format";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 /** Fields of the funding-opportunity row the evidence assembly reads. */
 export type NarrativeEvidenceOpportunity = {
@@ -428,6 +435,61 @@ export async function assembleOpportunityEvidence(
       buildProjectEngagementEvidenceByProjectId(
         (engagementCampaignsResult.data ?? []) as ProjectEngagementCampaignRowLike[]
       ).get(opportunity.project_id) ?? null;
+
+    // The engagement <-> safety reading, for the lead campaign only.
+    //
+    // A SECOND read rather than part of the batch above, because which campaign
+    // leads is only known once the batch has been grouped. It is computed live:
+    // there is no cache, and a planner who acquires crash data BECAUSE a
+    // campaign raised a location needs the very next draft to reflect it.
+    if (engagementEvidence) {
+      // The assembler's contract is NEVER THROWS AND NEVER SWALLOWS, so a
+      // client that cannot make this call at all becomes a reported failure
+      // rather than an exception thrown through every other evidence family.
+      //
+      // `.then(() => call())` rather than `Promise.resolve(call())`: the latter
+      // evaluates the call FIRST, so a client that throws synchronously throws
+      // straight past the catch. Deferring it into the microtask turns both
+      // kinds of failure into the same rejection.
+      const corroborationResult = await Promise.resolve()
+        .then(() =>
+          readNearbyCrashes(
+            client as unknown as Parameters<typeof readNearbyCrashes>[0],
+            opportunity.workspace_id,
+            engagementEvidence!.leadCampaign.id,
+            DEFAULT_CRASH_PROXIMITY_METERS
+          )
+        )
+        .catch((error: unknown) => ({
+          data: null,
+          error: { message: error instanceof Error ? error.message : "crash-proximity read threw" },
+        }));
+
+      const failureMessage = corroborationResult.error?.message ?? null;
+      // A DEPLOYMENT THAT HAS NOT APPLIED 20260821000001 YET IS NOT A FAILURE.
+      // PostgREST answers a missing function with "Could not find the function
+      // … in the schema cache", and this route REFUSES TO DRAFT when any read
+      // failed — so classifying that as a failure would break every grant
+      // narrative on every deployment during its migrate window, to protect an
+      // evidence family that deployment cannot have. It degrades to no reading:
+      // nothing false is stated, the same as a workspace that has acquired no
+      // crash data.
+      if (corroborationResult.error && !looksLikePendingSchema(failureMessage)) {
+        collectReadFailure(
+          "reported collisions near the lead engagement campaign's mapped comments",
+          corroborationResult as { error?: QueryError }
+        );
+      }
+      // Left null on any error, and a genuine failure is recorded above — a
+      // caller that cannot tell "no collisions acquired" from "could not read"
+      // would draft a grant that silently drops this evidence family.
+      if (!corroborationResult.error) {
+        engagementEvidence.leadCampaign.crashCorroboration = summarizeCampaignCorroboration(
+          (corroborationResult.data ?? []) as NearbyCrashRow[],
+          DEFAULT_CRASH_PROXIMITY_METERS
+        );
+      }
+    }
 
     // RTP/MTP programming: resolve each link row's cycle (title/status/horizon)
     // and horizon band (label) so the facts can name them. Any failure in this

@@ -44,7 +44,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         title: "Crash history and safety analysis",
         guidance:
           "Summarize the crash history that motivates the project: pattern, severity, and time window. Verify the current call's required crash-data window and source with Caltrans Local Assistance.",
-        suggestedEvidence: ["project", "bca", "kb"],
+        // Same reason as SS4A's safety-problem section: the crash history a
+        // community reported is evidence about the crash history.
+        suggestedEvidence: ["project", "bca", "engagement", "kb"],
       },
       {
         key: "countermeasure-selection",
@@ -131,7 +133,12 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         title: "Safety problem and expected impact",
         guidance:
           "Document the roadway safety problem — fatality and serious-injury history — and the expected impact of the proposed work. Verify the current NOFO's required safety-data presentation with USDOT.",
-        suggestedEvidence: ["project", "modeling", "bca", "kb"],
+        // `engagement` is here for the locations residents mapped and what the
+        // collision history holds near them. Without it the section that IS the
+        // safety problem could not cite the community's own account of that
+        // problem — only the outreach-process section could, where a reviewer
+        // scoring the problem statement would never look.
+        suggestedEvidence: ["project", "modeling", "bca", "engagement", "kb"],
       },
       {
         key: "equity-and-underserved-communities",

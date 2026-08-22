@@ -14,6 +14,7 @@
 // module is reached from client components via evidence-readiness. The runtime
 // sentiment set is mirrored locally (locked together by a test).
 import type { EngagementSentiment } from "@/lib/engagement/ai-synthesis";
+import type { CampaignCrashCorroboration } from "@/lib/engagement/crash-corroboration";
 import { REPRESENTATIVENESS_SCREENING_CAVEAT } from "@/lib/engagement/representativeness";
 import { formatSavedDate } from "@/lib/grants/bca-evidence";
 
@@ -23,6 +24,21 @@ const SENTIMENT_VALUES: readonly EngagementSentiment[] = [
   "neutral",
   "negative",
 ];
+
+/**
+ * The one-sentence caveat that must ride with every collision-proximity claim.
+ *
+ * ONE SENTENCE, like the others here: a multi-sentence caveat reproduced by a
+ * model leaves its trailing sentences uncited and trips the per-sentence
+ * grounding validator.
+ *
+ * It carries BOTH halves of the honesty, because a reader who takes either one
+ * away is misled in opposite directions — that a comment has been shown to be
+ * about the collisions near it, or that a location outside acquired data is a
+ * location where nothing happened.
+ */
+export const ENGAGEMENT_CRASH_PROXIMITY_NARRATIVE_CAVEAT =
+  "Collision counts near mapped comments state proximity only — no comment has been established as describing the collisions near it, and mapped comments outside acquired crash data are reported as unmeasured rather than as locations without collisions.";
 
 export const ENGAGEMENT_NARRATIVE_CAVEAT =
   "Community-input statements summarize submitted public comments only — a screening-grade synthesis of who chose to comment, not a statistically representative survey, a vote, or a legal-sufficiency finding.";
@@ -68,6 +84,18 @@ export type ProjectEngagementEvidence = {
     synthesizedAt: string | null;
     representativeness: EngagementRepresentativenessEvidence | null;
     representativenessComputedAt: string | null;
+    /**
+     * What the collision history holds near this campaign's mapped comments.
+     *
+     * Computed live from the acquisitions and the comments rather than read
+     * from a cache — there is no cache, and a stale one would be worse here
+     * than none: a planner acquires crash data precisely BECAUSE a campaign
+     * raised a location, and the fact list must reflect the acquisition they
+     * just made. Null means either no reading was attempted (no lead campaign)
+     * or the read failed, and a failed read is reported in the bundle's
+     * `readFailures` so the two are never confused.
+     */
+    crashCorroboration: CampaignCrashCorroboration | null;
   };
 };
 
@@ -202,6 +230,9 @@ export function buildProjectEngagementEvidenceByProjectId(
       projectId,
       campaignCount: candidates.length,
       leadCampaign: {
+        // Filled in by a second, live read once the lead is known — this
+        // function only groups what it was handed.
+        crashCorroboration: null,
         id: lead.row.id,
         title: lead.row.title,
         status: lead.row.status,
@@ -226,6 +257,49 @@ function sentimentPhrase(sentiment: EngagementSentiment): string {
  * carries the screening's own caveat — mirroring how BCA facts embed
  * BCA_NARRATIVE_CAVEAT.
  */
+/**
+ * The collision-proximity claims for one campaign, as citable facts.
+ *
+ * AGGREGATE ONLY, DELIBERATELY. No individual comment's text becomes a fact:
+ * a resident's words can identify them, the pairing of one comment with one
+ * collision is a judgement rather than arithmetic, and a federal application is
+ * the worst possible place to discover either problem. The counts and the share
+ * are what a reviewer scores, and they carry no such risk.
+ *
+ * THE UNMEASURED COMMENTS GET THEIR OWN FACT (Nathaniel's call, 2026-08-21).
+ * "Six of these locations sit outside any crash data we hold" is a legitimate
+ * and fundable statement about a data gap — and leaving it out would let a
+ * drafter imply the whole campaign had been checked against the collision
+ * history when most of it had not.
+ */
+export function buildCrashProximityClaims(
+  corroboration: CampaignCrashCorroboration,
+  campaignTitle: string
+): string[] {
+  const claims: string[] = [];
+  const radius = corroboration.radiusMeters;
+
+  if (corroboration.coveredTotal > 0) {
+    const median = corroboration.medianCrashesWhereAny;
+    claims.push(
+      `Of the ${corroboration.coveredTotal} mapped public comment(s) on "${campaignTitle}" that fall inside acquired crash data, ` +
+        `${corroboration.withAnyCrash} sit within ${radius} m of at least one reported collision` +
+        (median !== null ? ` (median ${median} collision(s) each)` : "") +
+        `. ${ENGAGEMENT_CRASH_PROXIMITY_NARRATIVE_CAVEAT}`
+    );
+  }
+
+  const unmeasured = corroboration.items.filter((item) => item.coverage === "not_acquired").length;
+  if (unmeasured > 0) {
+    claims.push(
+      `${unmeasured} of the ${corroboration.mappedTotal} mapped public comment(s) on "${campaignTitle}" fall outside every completed crash acquisition in this workspace, ` +
+        `so the collision history cannot speak to those locations either way. ${ENGAGEMENT_CRASH_PROXIMITY_NARRATIVE_CAVEAT}`
+    );
+  }
+
+  return claims;
+}
+
 export function buildEngagementFactClaims(
   evidence: ProjectEngagementEvidence,
   projectName?: string | null
@@ -252,6 +326,10 @@ export function buildEngagementFactClaims(
         `Leading comment themes from that synthesis: ${themeList}. ${ENGAGEMENT_NARRATIVE_CAVEAT}`
       );
     }
+  }
+
+  if (lead.crashCorroboration) {
+    claims.push(...buildCrashProximityClaims(lead.crashCorroboration, lead.title));
   }
 
   if (lead.representativeness) {

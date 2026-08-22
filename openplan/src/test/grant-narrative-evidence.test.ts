@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   assembleOpportunityEvidence,
   type NarrativeEvidenceOpportunity,
@@ -124,9 +124,41 @@ function clientResolving(resolve: (table: string, columns: string) => ReadResult
       }
       return chain;
     },
-    // Knowledge Base retrieval; not the subject here, and it swallows by contract.
-    rpc: () => Promise.resolve({ data: [], error: null }),
+    // Knowledge Base retrieval swallows by contract; the crash-proximity read
+    // does NOT, so it is dispatched by name and answered by `rpcResolver`.
+    rpc: (name: string) =>
+      Promise.resolve(
+        name === "engagement_items_with_nearby_crashes"
+          ? rpcResolver(name)
+          : { data: [], error: null }
+      ),
   };
+}
+
+/** What the crash-proximity RPC answers. Swapped per test; reset by default. */
+let rpcResolver: (name: string) => ReadResult = () => ({ data: [], error: null });
+
+/** One campaign on the linked project, so the lead-campaign read actually happens. */
+function withLeadCampaign(table: string, columns: string): ReadResult {
+  if (table === "engagement_campaigns") {
+    return {
+      data: [
+        {
+          id: "campaign-1",
+          project_id: PROJECT_ID,
+          title: "Ridge Road Listening Campaign",
+          status: "active",
+          updated_at: "2026-08-01T00:00:00.000Z",
+          ai_synthesis_json: null,
+          ai_synthesized_at: null,
+          representativeness_json: null,
+          representativeness_computed_at: null,
+        },
+      ],
+      error: null,
+    };
+  }
+  return succeeding(table, columns);
 }
 
 /** Every read succeeds except the one named — the only way to reach the failure path. */
@@ -213,6 +245,122 @@ describe("assembleOpportunityEvidence — a failed read is reported, never answe
       opportunity({ project_id: null })
     );
 
+    expect(bundle.readFailures).toEqual([]);
+  });
+});
+
+describe("assembleOpportunityEvidence — the crash-proximity reading", () => {
+  const CRASH_SUBJECT = "reported collisions near the lead engagement campaign's mapped comments";
+
+  afterEach(() => {
+    rpcResolver = () => ({ data: [], error: null });
+  });
+
+  it("reports a failed crash read instead of drafting as though nothing was near", async () => {
+    // The whole point of the seam: an error and an empty campaign look
+    // identical downstream. A drafter that cannot tell them apart writes a
+    // federal application asserting a clean collision history it never read.
+    rpcResolver = () => ({ data: null, error: { message: "permission denied for safety_crashes" } });
+
+    const bundle = await assembleOpportunityEvidence(clientResolving(withLeadCampaign), opportunity());
+
+    expect(bundle.readFailures.map((failure) => failure.subject)).toContain(CRASH_SUBJECT);
+    expect(bundle.engagementEvidence?.leadCampaign.crashCorroboration).toBeNull();
+  });
+
+  it("attaches the reading when the crash read succeeds, and reports no failure", async () => {
+    rpcResolver = () => ({
+      data: [
+        {
+          id: "item-1",
+          campaign_id: "campaign-1",
+          category_id: null,
+          title: null,
+          body: "the crossing here is dangerous",
+          latitude: 38.5968,
+          longitude: -121.49,
+          votes_count: 0,
+          covered_by_ingest: true,
+          coverage_years: [2024, 2025],
+          coverage_severity_completeness: ["kabco_full"],
+          crash_total: 5,
+          fatal_count: 0,
+          severe_injury_count: 1,
+          injury_count: 2,
+          pdo_count: 2,
+          killed_total: 0,
+          injured_total: 3,
+          pedestrian_crashes: 1,
+          bicyclist_crashes: 0,
+          nearest_crash_meters: 12.4,
+          earliest_crash_year: 2024,
+          latest_crash_year: 2025,
+        },
+      ],
+      error: null,
+    });
+
+    const bundle = await assembleOpportunityEvidence(clientResolving(withLeadCampaign), opportunity());
+
+    expect(bundle.readFailures.map((failure) => failure.subject)).not.toContain(CRASH_SUBJECT);
+    const corroboration = bundle.engagementEvidence?.leadCampaign.crashCorroboration;
+    expect(corroboration?.coveredTotal).toBe(1);
+    expect(corroboration?.withAnyCrash).toBe(1);
+    // The radius is fixed for a citable fact and travels with the reading.
+    expect(corroboration?.radiusMeters).toBe(100);
+  });
+
+  it("does not break grant drafting on a deployment that has not applied the migration", async () => {
+    // THE DEFECT THIS PREVENTS, and it was live until the gate caught it.
+    // PostgREST answers a missing function with "Could not find the function
+    // … in the schema cache". This route REFUSES TO DRAFT when any read failed,
+    // so classifying that as a failure would 500 every grant narrative on every
+    // deployment during its migrate window — to protect an evidence family that
+    // deployment cannot possibly have.
+    rpcResolver = () => ({
+      data: null,
+      error: {
+        message:
+          "Could not find the function public.engagement_items_with_nearby_crashes(p_campaign_id, p_from_year, p_radius_meters, p_to_year, p_workspace_id) in the schema cache",
+      },
+    });
+
+    const bundle = await assembleOpportunityEvidence(clientResolving(withLeadCampaign), opportunity());
+
+    // No failure reported: this is a named operator step, not an outage.
+    expect(bundle.readFailures).toEqual([]);
+    // And no reading invented from it — nothing false is stated, exactly as for
+    // a workspace that has acquired no crash data.
+    expect(bundle.engagementEvidence?.leadCampaign.crashCorroboration).toBeNull();
+  });
+
+  it("reports a client that cannot make the call at all, rather than throwing through the bundle", async () => {
+    // The assembler's contract is NEVER THROWS AND NEVER SWALLOWS. A throw here
+    // would take every other evidence family down with it.
+    const client = clientResolving(withLeadCampaign) as Record<string, unknown>;
+    client.rpc = () => {
+      throw new Error("rpc unavailable");
+    };
+
+    const bundle = await assembleOpportunityEvidence(client, opportunity());
+
+    expect(bundle.readFailures.map((failure) => failure.subject)).toContain(CRASH_SUBJECT);
+    expect(bundle.engagementEvidence?.leadCampaign.crashCorroboration).toBeNull();
+    // The rest of the bundle survived.
+    expect(bundle.engagementEvidence?.leadCampaign.title).toBe("Ridge Road Listening Campaign");
+  });
+
+  it("attempts no crash read at all when the project has no engagement campaign", async () => {
+    const names: string[] = [];
+    rpcResolver = (name) => {
+      names.push(name);
+      return { data: [], error: null };
+    };
+
+    const bundle = await assembleOpportunityEvidence(clientResolving(succeeding), opportunity());
+
+    expect(bundle.engagementEvidence).toBeNull();
+    expect(names).toEqual([]);
     expect(bundle.readFailures).toEqual([]);
   });
 });
