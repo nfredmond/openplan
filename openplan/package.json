@@ -32,7 +32,8 @@
     "qa:first-week": "npm --prefix ../qa-harness run first-week-discovery",
     "qa:first-week-regression": "npm --prefix ../qa-harness run first-week-regression",
     "doctor": "node scripts/doctor.mjs",
-    "deadcode": "knip --no-progress"
+    "deadcode": "knip --no-progress",
+    "test:workers": "node scripts/ops/test-workers.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",
