@@ -21,6 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CountyRunModelingEvidence } from "@/components/county-runs/county-run-modeling-evidence";
+import { CountyRunObservedCounts } from "@/components/county-runs/county-run-observed-counts";
 import { CountyRunValidationPrep } from "@/components/county-runs/county-run-validation-prep";
 
 const COUNTY_RUN_STUCK_THRESHOLD_MS = 10 * 60 * 1000;
@@ -548,6 +549,10 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         refusal ("this run has not brought in its worker output file yet") that the
         page already knows.
       */}
+      {/* Counts first, then the readiness check: a planner fills the file in,
+          then asks whether the validator can run against it. The other order
+          sends them to a check that will always say the same thing. */}
+      {data.manifest ? <CountyRunObservedCounts countyRunId={countyRunId} /> : null}
       {data.manifest ? <CountyRunValidationPrep countyRunId={countyRunId} /> : null}
 
       <Card className="mt-4">

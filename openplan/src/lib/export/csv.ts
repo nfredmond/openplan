@@ -48,6 +48,27 @@ export function escapeCsvField(value: string | null | undefined): string {
 }
 
 /**
+ * Escape one field for a MACHINE ROUND-TRIP: RFC 4180 quoting only, no formula
+ * neutralization.
+ *
+ * WHEN TO USE THIS INSTEAD OF `escapeCsvField`, and why the distinction is not
+ * a nicety. Neutralization prefixes a `\'` so a spreadsheet renders the cell as
+ * text — correct for a file a person opens, and CORRUPTING for a payload that
+ * goes back to the server and is stored. A count station described as
+ * "-- see attachment" would come back as "\'-- see attachment", be saved that
+ * way, and gain another quote on every subsequent edit.
+ *
+ * So: a file a human downloads gets `escapeCsvField`. A document this product
+ * reads back, edits, and writes again gets this one. Anything a person opens in
+ * Excel must NOT come through here.
+ */
+export function quoteCsvField(value: string | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  const text = String(value);
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+/**
  * Escape a value whose TYPE is still known. Numbers and booleans are machine
  * values — they pass through bare so numeric columns stay computable (see the
  * numeric-column decision above). Everything else is treated as text, JSON

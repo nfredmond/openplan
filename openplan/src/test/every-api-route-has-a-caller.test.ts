@@ -178,20 +178,6 @@ const KNOWN_UNWIRED: readonly string[] = [
   // Wire it or delete it; do not leave it as a second way to compute the same
   // answer that can drift from the first.
   "api/assistant-activity",
-  // (2026-08-12, found by the whole-path matcher) GET returns the priority-count
-  // scaffold CSV for a county run — its path on disk and its full contents —
-  // and POST replaces that CSV with observed counts. That is the "source
-  // observed counts" step, the one thing standing between `validation-scaffolded`
-  // and a validated screening run, and no surface in the product opens it. The
-  // county run page offers the readiness check beside it (CountyRunValidationPrep)
-  // but nothing to read or fill the scaffold, so the counts have to be edited on
-  // the operator's own filesystem and the route is dead weight.
-  //
-  // NOT wired in the audit that found it because the shape is a product call,
-  // not a missing button: pasting a CSV into a textarea, uploading a file, and
-  // editing a table are three different answers with different failure modes for
-  // a file that decides whether a model run counts as validated.
-  "api/county-runs/[countyRunId]/scaffold",
 ];
 
 /**

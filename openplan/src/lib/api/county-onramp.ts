@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { countyOnrampManifestSchema, countyRunEnqueueStatusSchema, countyRunStageSchema } from "@/lib/models/county-onramp";
+import { countyOnrampManifestSchema, countyOnrampScaffoldSummarySchema, countyRunEnqueueStatusSchema, countyRunStageSchema } from "@/lib/models/county-onramp";
 import { sanitizedCountyOnrampWorkerPayloadSchema } from "@/lib/api/county-onramp-worker";
 
 export const countyRuntimeOptionsSchema = z.object({
@@ -148,6 +148,14 @@ export const enqueueCountyRunResponseSchema = z.object({
 export const countyRunScaffoldResponseSchema = z.object({
   path: z.string().min(1),
   csvContent: z.string().min(1),
+  // The parsed table and the readiness figures, added 2026-08-21 when this
+  // route finally got a caller. Parsed on the SERVER so no CSV parser ships to
+  // the browser — a hand-rolled one is how a quoted description containing a
+  // comma becomes two columns, in the file that decides whether a run counts as
+  // validated.
+  header: z.array(z.string()),
+  rows: z.array(z.record(z.string(), z.string())),
+  summary: countyOnrampScaffoldSummarySchema,
 });
 
 export const updateCountyRunScaffoldRequestSchema = z.object({

@@ -128,13 +128,23 @@ describe("GET /api/county-runs/[countyRunId]/scaffold", () => {
     });
 
     const payload = await response.json();
-    expect({ status: response.status, payload }).toEqual({
-      status: 200,
-      payload: {
-        path: scaffoldPath,
-        csvContent: "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n",
-      },
-    });
+    expect(response.status).toBe(200);
+    expect(payload.path).toBe(scaffoldPath);
+    expect(payload.csvContent).toBe(
+      "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n"
+    );
+    // The parsed table rides along so the editor never parses CSV in the
+    // browser; the summary is what the readiness figures are computed from.
+    expect(payload.header).toEqual([
+      "station_id",
+      "observed_volume",
+      "source_agency",
+      "source_description",
+    ]);
+    expect(payload.rows).toEqual([
+      { station_id: "A", observed_volume: "123", source_agency: "Caltrans", source_description: "PM 1.2" },
+    ]);
+    expect(payload.summary.station_count).toBe(1);
   });
 
   it("returns inline scaffold content when present even if the registered file is missing", async () => {
@@ -202,13 +212,22 @@ describe("GET /api/county-runs/[countyRunId]/scaffold", () => {
     });
 
     const payload = await response.json();
-    expect({ status: response.status, payload }).toEqual({
-      status: 200,
-      payload: {
-        path: scaffoldPath,
-        csvContent: "station_id,observed_volume,source_agency,source_description\nA,987,Nevada County,Inline test\n",
+    expect(response.status).toBe(200);
+    expect(payload.path).toBe(scaffoldPath);
+    expect(payload.csvContent).toBe(
+      "station_id,observed_volume,source_agency,source_description\nA,987,Nevada County,Inline test\n"
+    );
+    // The inline copy is parsed the same way the file would be — an editor that
+    // only worked against the on-disk variant would be blank exactly where the
+    // manifest carried the content instead.
+    expect(payload.rows).toEqual([
+      {
+        station_id: "A",
+        observed_volume: "987",
+        source_agency: "Nevada County",
+        source_description: "Inline test",
       },
-    });
+    ]);
   });
 
   it("returns 404 when the registered scaffold file is missing", async () => {

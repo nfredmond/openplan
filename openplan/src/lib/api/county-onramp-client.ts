@@ -5,8 +5,10 @@ import {
   createCountyRunResponseSchema,
   enqueueCountyRunResponseSchema,
   ingestCountyRunManifestRequestSchema,
+  countyRunScaffoldResponseSchema,
   prepareCountyRunValidationResponseSchema,
   type CountyRunDetailResponse,
+  type CountyRunScaffoldResponse,
   type CountyRunListResponse,
   type CreateCountyRunRequest,
   type CreateCountyRunResponse,
@@ -137,4 +139,44 @@ export async function prepareCountyRunValidation(
   });
 
   return prepareCountyRunValidationResponseSchema.parse(await parseJson(response));
+}
+
+/**
+ * Load the observed-counts scaffold for editing.
+ *
+ * NOT called on mount, matching `CountyRunValidationPrep`: this reads the
+ * deployment's own filesystem when the manifest carries no inline copy, so
+ * firing it on every render would put a file read behind runs nowhere near this
+ * stage and would report a stale answer as a current one.
+ */
+export async function getCountyRunScaffold(
+  countyRunId: string,
+  fetcher: typeof fetch = fetch
+): Promise<CountyRunScaffoldResponse> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/scaffold`, {
+    headers: { accept: "application/json" },
+  });
+
+  return countyRunScaffoldResponseSchema.parse(await parseJson(response));
+}
+
+/**
+ * Save edited observed counts back over the scaffold.
+ *
+ * Sends the WHOLE file, which is what the route replaces — the counts a planner
+ * did not touch have to arrive unchanged, so the caller serializes the same
+ * table it was given rather than a diff.
+ */
+export async function saveCountyRunScaffold(
+  countyRunId: string,
+  csvContent: string,
+  fetcher: typeof fetch = fetch
+): Promise<void> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/scaffold`, {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({ csvContent }),
+  });
+
+  await parseJson(response);
 }

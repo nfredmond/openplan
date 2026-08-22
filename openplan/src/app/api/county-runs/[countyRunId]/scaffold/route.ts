@@ -14,6 +14,7 @@ import {
   CountyValidationScaffoldCsvError,
   normalizeCountyValidationScaffoldCsvContent,
   diffCountyValidationScaffoldEdits,
+  parseCountyValidationScaffoldTable,
   summarizeCountyValidationScaffoldCsv,
 } from "@/lib/api/county-onramp-scaffold";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
@@ -117,7 +118,22 @@ export async function GET(request: NextRequest, context: RouteContext) {
       durationMs: Date.now() - startedAt,
     });
 
-    return NextResponse.json({ path: scaffoldPath, csvContent }, { status: 200 });
+    // The parsed table rides along so the browser never parses CSV. A
+    // hand-rolled parser in the client is how a quoted description containing a
+    // comma becomes two columns, and this file decides whether a run counts as
+    // validated.
+    const table = parseCountyValidationScaffoldTable(csvContent);
+
+    return NextResponse.json(
+      {
+        path: scaffoldPath,
+        csvContent,
+        header: table.header,
+        rows: table.rows,
+        summary: summarizeCountyValidationScaffoldCsv(csvContent),
+      },
+      { status: 200 }
+    );
   } catch (error) {
     if (error instanceof CountyValidationScaffoldCsvError) {
       audit.warn("county_run_scaffold_invalid_csv", {

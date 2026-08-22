@@ -1,5 +1,6 @@
 import { parse } from "csv-parse/sync";
 import type { CountyOnrampScaffoldSummary } from "@/lib/models/county-onramp";
+import { quoteCsvField } from "@/lib/export/csv";
 
 const PLACEHOLDER_TOKENS = new Set(["", "TBD", "N/A", "NA", "UNKNOWN"]);
 const REQUIRED_COLUMNS = ["station_id", "observed_volume", "source_agency", "source_description"] as const;
@@ -164,4 +165,75 @@ export function summarizeCountyValidationScaffoldCsv(csvContent: string): County
     ready_station_count: readyStationCount,
     next_action_label: nextActionLabel,
   };
+}
+
+
+/**
+ * ONE COUNT STATION, as a row a person can edit.
+ *
+ * Every column the file carried is kept, not just the four this product knows
+ * about. The scaffold is written by the worker and its columns change between
+ * versions; an editor that returned only the fields it recognised would silently
+ * delete the rest on the first save, and the deletion would be invisible because
+ * the file it destroyed is the one nobody can read without this screen.
+ */
+export type CountyValidationScaffoldRow = Record<string, string>;
+
+export type CountyValidationScaffoldTable = {
+  /** The header, in file order — what `serializeCountyValidationScaffoldCsv` writes back. */
+  header: string[];
+  rows: CountyValidationScaffoldRow[];
+};
+
+/** The columns a planner fills in; everything else is shown but not editable. */
+export const COUNTY_SCAFFOLD_EDITABLE_COLUMNS = [
+  "observed_volume",
+  "source_agency",
+  "source_description",
+] as const;
+
+/**
+ * Parse the scaffold into rows for an editor.
+ *
+ * Server-side on purpose: the parser is already a dependency here, and shipping
+ * a second, hand-rolled one to the browser is how a quoted field containing a
+ * comma turns into two columns.
+ */
+export function parseCountyValidationScaffoldTable(
+  csvContent: string
+): CountyValidationScaffoldTable {
+  const header = readHeaderColumns(csvContent);
+  const parsed = parse(csvContent, {
+    bom: true,
+    columns: header,
+    from_line: 2,
+    relax_column_count: true,
+    skip_empty_lines: true,
+  }) as Array<Record<string, unknown>>;
+
+  return {
+    header,
+    rows: parsed.map((row) => {
+      const out: CountyValidationScaffoldRow = {};
+      for (const column of header) out[column] = normalizeCell(row[column]);
+      return out;
+    }),
+  };
+}
+
+/**
+ * Write the table back out.
+ *
+ * Quoting only — never the spreadsheet-formula neutralization `escapeCsvField`
+ * applies. This file is read back by this product and by the Python validator,
+ * not opened in Excel, and a `'` prefix added on every save would accumulate.
+ */
+export function serializeCountyValidationScaffoldCsv(
+  table: CountyValidationScaffoldTable
+): string {
+  const lines = [table.header.map(quoteCsvField).join(",")];
+  for (const row of table.rows) {
+    lines.push(table.header.map((column) => quoteCsvField(row[column] ?? "")).join(","));
+  }
+  return `${lines.join("\n")}\n`;
 }
