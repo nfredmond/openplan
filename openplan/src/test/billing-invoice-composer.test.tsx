@@ -33,6 +33,19 @@ function genericBinding() {
   return resolution.binding;
 }
 
+
+/**
+ * Open the flow and reach the money step, where the preview and the posture
+ * controls live. Added 2026-08-22 when this composer became a guided flow: the
+ * assertions below are unchanged, they only had to be reached.
+ */
+function openToMoney() {
+  fireEvent.click(screen.getByTestId("invoice-record-composer-open"));
+  fireEvent.change(screen.getByLabelText("Invoice number"), { target: { value: "OP-2026-001" } });
+  fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+  fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+}
+
 describe("InvoiceRecordComposer", () => {
   beforeEach(() => {
     refreshMock.mockReset();
@@ -50,6 +63,7 @@ describe("InvoiceRecordComposer", () => {
         projects={[{ id: "project-1", name: "Nevada County ATP" }]}
       />
     );
+    openToMoney();
 
     const grossAmountInput = screen.getByLabelText("Gross amount");
     const retentionPercentInput = screen.getByLabelText("Retention %");
@@ -78,6 +92,7 @@ describe("InvoiceRecordComposer", () => {
         projects={[]}
       />
     );
+    openToMoney();
 
     fireEvent.change(screen.getByLabelText("Gross amount"), { target: { value: "3200" } });
 
@@ -96,6 +111,7 @@ describe("InvoiceRecordComposer", () => {
         reimbursementProfile={binding}
       />
     );
+    openToMoney();
 
     const postureSelect = screen.getByLabelText(
       `Reimbursement stage — ${binding.profileName}`
@@ -133,10 +149,13 @@ describe("InvoiceRecordComposer", () => {
         reimbursementProfile={binding}
       />
     );
+    // `openToMoney` already answers the invoice number on the first step.
+    openToMoney();
 
-    fireEvent.change(screen.getByLabelText("Invoice number"), { target: { value: "OP-2026-101" } });
     fireEvent.change(screen.getByLabelText("Gross amount"), { target: { value: "1000" } });
-    fireEvent.click(screen.getByRole("button", { name: /Save invoice record/i }));
+    // The submit lives on the last step of the flow.
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save the invoice record" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, requestInit] = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
@@ -162,6 +181,7 @@ describe("InvoiceRecordComposer", () => {
         reimbursementProfile={binding}
       />
     );
+    openToMoney();
 
     expect(screen.getByText(binding.framingNote)).toBeInTheDocument();
     expect(screen.getByText("Before submitting a reimbursement packet")).toBeInTheDocument();
@@ -190,6 +210,7 @@ describe("InvoiceRecordComposer", () => {
         reimbursementProfile={binding}
       />
     );
+    openToMoney();
 
     expect(screen.queryByText("Before submitting a reimbursement packet")).toBeNull();
     expect(screen.queryByText(/executed funding agreement controls/)).toBeNull();
@@ -203,6 +224,7 @@ describe("InvoiceRecordComposer", () => {
         projects={[]}
       />
     );
+    openToMoney();
 
     expect(screen.queryByLabelText(/Reimbursement stage/)).toBeNull();
     expect(screen.getByLabelText("Submitted to")).toHaveAttribute(

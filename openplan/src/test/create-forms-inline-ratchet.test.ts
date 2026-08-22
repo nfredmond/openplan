@@ -162,6 +162,8 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
     "R1 — invites are sent against the member list shown beside them, and a duplicate invite is what the list prevents.",
   "src/components/workspaces/workspace-integration-keys-panel.tsx":
     "R1 — keys are issued and revoked against the list of live keys; the list is the safety check.",
+  "src/components/aerial/aerial-processing-request.tsx":
+    "R1 — list-coupled, RECLASSIFIED 2026-08-22 on the component's OWN evidence. Its submit path carries the comment \"A refused dispatch still writes a row (dispatch_failed), so the list below has to be re-read either way\" — and that list is real: `AerialProcessingJobsPanel` renders directly beneath it on the mission page. A modal would cover the panel at exactly the moment a planner needs to see whether their dispatch landed, or failed. It also probes the worker for stored imagery on mount and reshapes itself around the answer, so the form is a reading of server state as much as a set of questions.",
   "src/app/(app)/models/_components/network-package-upload-form.tsx":
     "R1 — an upload bound to the model's network state, which the person is reading while they upload.",
 };
@@ -171,8 +173,6 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
  * This list may only shrink.
  */
 const AWAITING_CONVERSION: string[] = [
-  "src/components/aerial/aerial-processing-request.tsx",
-  "src/components/invoicing/invoice-record-composer.tsx",
 ];
 
 /**
@@ -213,7 +213,7 @@ const AWAITING_CONVERSION: string[] = [
  * as designed — once for "listed but no longer a POSTing form", once for
  * "converted but still on the list" — and both entries had to go.
  */
-const AWAITING_CONVERSION_CEILING = 2;
+const AWAITING_CONVERSION_CEILING = 0;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

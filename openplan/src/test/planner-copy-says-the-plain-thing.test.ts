@@ -195,7 +195,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   artifact: 44,
   attribute: 4,
   basemap: 4,
-  basis: 24,
+  basis: 23,
   bootstrap: 0,
   cadence: 4,
   campaign: 71,
@@ -204,7 +204,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   deterministic: 1,
   downstream: 8,
   durable: 3,
-  entity: 1,
+  entity: 0,
   geometry: 12,
   "governance hold": 4,
   ingest: 8,
@@ -223,7 +223,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   preset: 13,
   provenance: 12,
   readiness: 33,
-  record: 265,
+  record: 263,
   registry: 21,
   resolve: 3,
   scaffold: 3,
@@ -235,7 +235,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   surface: 15,
   trace: 19,
   upstream: 0,
-  workspace: 160,
+  workspace: 159,
 };
 
 describe("planner copy says the plain thing", () => {
