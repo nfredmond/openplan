@@ -1,5 +1,5 @@
 import type { ComponentPropsWithoutRef } from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -205,20 +205,35 @@ describe("a planner reaches the portfolio table on /projects", () => {
 });
 
 describe("a planner reaches the work-plan applier on /projects", () => {
-  it("renders the picker, the anchor-date field and the shipped template's scope notes", async () => {
+  // UPDATED 2026-08-22: the applier is a guided flow, so the questions are
+  // entered rather than sitting open on /projects. The claim these make is
+  // unchanged — a planner can REACH it, the shipped template is offered, and
+  // every project in the list can be applied to. They just open it first.
+  it("offers a way in, and the shipped template inside it", async () => {
     await renderPage();
 
-    expect(screen.getByRole("heading", { name: /start a project from a work-plan template/i })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: /start a project from a work-plan template/i })
+    ).toBeTruthy();
+
+    const open = screen.getByTestId("work-plan-applier-open") as HTMLButtonElement;
+    expect(open.disabled).toBe(false);
+    fireEvent.click(open);
+
+    // The shipped template is offered by name once the flow is open.
     expect(screen.getByText(/Generic planning project/)).toBeTruthy();
-    // The button is disabled until a project, a template and a date are chosen:
-    // no anchor date is pre-filled, deliberately.
-    const button = screen.getByRole("button", { name: /apply work plan/i }) as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
-    expect(screen.getByText(/Choose a project, a template and the date its schedule starts from/i)).toBeTruthy();
+    // And nothing is applied until a template and a date are given: no anchor
+    // date is pre-filled, deliberately.
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    expect(
+      screen.getAllByText(/Choose the project this work plan is for|Choose the template to apply/i)
+        .length
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("offers every project in the list to apply a plan to", async () => {
     await renderPage();
+    fireEvent.click(screen.getByTestId("work-plan-applier-open"));
     const options = screen.getAllByRole("option").map((option) => option.textContent);
     expect(options).toContain("Corridor Rehabilitation");
     expect(options).toContain("Bridge Condition Study");

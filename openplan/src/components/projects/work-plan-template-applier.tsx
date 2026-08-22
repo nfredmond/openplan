@@ -2,9 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarDays, ClipboardList, Loader2 } from "lucide-react";
+import { CalendarDays, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 import {
   WORK_PLAN_ANCHOR_LABELS,
   WORK_PLAN_PRACTICE_AREA_LABELS,
@@ -48,6 +54,22 @@ type ApplyResult = {
   skippedMilestoneTitles: string[];
 };
 
+type ApplierValues = {
+  projectId: string;
+  templateId: string;
+  anchorDate: string;
+};
+
+const selectClassName = "module-select";
+
+/** Module-level so the steps memo depends on `templates` and nothing else. */
+function findTemplate(
+  templates: readonly WorkPlanTemplateDescriptor[],
+  templateId: string
+): WorkPlanTemplateDescriptor | null {
+  return templates.find((entry) => entry.templateId === templateId) ?? null;
+}
+
 export function WorkPlanTemplateApplier({
   projects,
   templates,
@@ -56,31 +78,149 @@ export function WorkPlanTemplateApplier({
   templates: readonly WorkPlanTemplateDescriptor[];
 }) {
   const router = useRouter();
-  const [projectId, setProjectId] = useState("");
-  const [templateId, setTemplateId] = useState("");
-  const [anchorDate, setAnchorDate] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ApplyResult | null>(null);
 
-  const template = useMemo(
-    () => templates.find((entry) => entry.templateId === templateId) ?? null,
-    [templateId, templates]
+  const steps = useMemo<GuidedFlowStep<ApplierValues>[]>(
+    () => [
+      {
+        id: "what",
+        title: "Which project, and which template?",
+        hint: "A template writes the deliverables and milestones this kind of work normally carries.",
+        fields: [
+          {
+            name: "projectId",
+            label: "a project",
+            required: true,
+            requiredMessage: "Choose the project this work plan is for.",
+          },
+          {
+            name: "templateId",
+            label: "a template",
+            required: true,
+            requiredMessage: "Choose the template to apply.",
+          },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="projectId" label="Project">
+              <select className={selectClassName} {...flow.text("projectId")}>
+                <option value="">Choose a project…</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="templateId" label="Template">
+              <select className={selectClassName} {...flow.text("templateId")}>
+                <option value="">Choose a template…</option>
+                {templates.map((entry) => (
+                  <option key={entry.templateId} value={entry.templateId}>
+                    {entry.templateName} — {WORK_PLAN_PRACTICE_AREA_LABELS[entry.practiceArea]}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "when",
+        title: "What day does its schedule start from?",
+        hint: "Every date in the template is counted forward from this one.",
+        fields: [
+          {
+            name: "anchorDate",
+            label: "a start date",
+            required: true,
+            requiredMessage: "Give the day this template's dates are counted from.",
+          },
+        ],
+        check: (values) => {
+          // A BACKSTOP, and honestly labelled as one. The inline form gated its
+          // submit on this shape. A `type="date"` input only ever yields "" or
+          // a real `YYYY-MM-DD`, so in practice the required check above is
+          // what rejects a bad date — a mutation removing this line kills no
+          // test, and pretending otherwise with a contrived case would be
+          // worse than saying so.
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(values.anchorDate)) {
+            return { field: "anchorDate", message: "Give the date as a real calendar day." };
+          }
+          return null;
+        },
+        render: (flow) => {
+          const template = findTemplate(templates, flow.values.templateId);
+          return (
+            <>
+              <GuidedFlowRow
+                flow={flow}
+                name="anchorDate"
+                label={template ? WORK_PLAN_ANCHOR_LABELS[template.anchor] : "Anchor date"}
+                hint={
+                  template
+                    ? `Every date is counted forward from this day — the last one lands ${template.spanDays} days later.`
+                    : "Choose a template first; each one counts its dates from a different real-world event."
+                }
+              >
+                <Input {...flow.text("anchorDate")} type="date" />
+              </GuidedFlowRow>
+
+              {/*
+                THE CONSENT PANEL, KEPT WHOLE. This is what a planner reads
+                before creating a dozen records at once: what the template is
+                for, what it will make, and whose rules it was written against.
+                It moved from below the form to the step that submits, which is
+                the last thing seen before the records exist.
+              */}
+              {template ? (
+                <div className="rounded-[0.5rem] border border-border/70 bg-background/70 px-3 py-3">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Before you apply this
+                  </p>
+                  {template.description ? (
+                    <p className="mt-1.5 text-sm leading-relaxed text-foreground">
+                      {template.description}
+                    </p>
+                  ) : null}
+                  <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
+                    {template.scopeNotes.map((note) => (
+                      <li key={note}>• {note}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {template.deliverableCount} deliverable
+                    {template.deliverableCount === 1 ? "" : "s"} and {template.milestoneCount}{" "}
+                    milestone{template.milestoneCount === 1 ? "" : "s"} will be created, unassigned.
+                    {template.jurisdiction
+                      ? ` Written for ${template.jurisdiction.label} — check it against your own rules before using it elsewhere.`
+                      : " No jurisdiction is assumed."}
+                  </p>
+                </div>
+              ) : null}
+            </>
+          );
+        },
+      },
+    ],
+    [projects, templates]
   );
 
-  const ready = Boolean(projectId) && Boolean(template) && /^\d{4}-\d{2}-\d{2}$/.test(anchorDate);
+  const flow = useGuidedFlow<ApplierValues>({
+    id: "apply-work-plan",
+    title: "Apply a work-plan template",
+    submitLabel: "Apply work plan",
+    initialValues: { projectId: "", templateId: "", anchorDate: "" },
+    steps,
+    onSubmit: async (values) => {
+      const template = findTemplate(templates, values.templateId);
+      if (!template) throw new Error("Choose the template to apply.");
 
-  async function handleApply(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!ready || !template) return;
-    setError(null);
-    setResult(null);
-    setSaving(true);
-    try {
-      const response = await fetch(`/api/projects/${projectId}/work-plan`, {
+      const response = await fetch(`/api/projects/${values.projectId}/work-plan`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ templateId: template.templateId, anchorDate }),
+        body: JSON.stringify({ templateId: template.templateId, anchorDate: values.anchorDate }),
       });
       const data = (await response.json()) as {
         error?: string;
@@ -101,16 +241,8 @@ export function WorkPlanTemplateApplier({
         skippedMilestoneTitles: data.skippedMilestoneTitles ?? [],
       });
       router.refresh();
-    } catch (applyError) {
-      setError(applyError instanceof Error ? applyError.message : "The work plan could not be applied.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  if (projects.length === 0) {
-    return null;
-  }
+    },
+  });
 
   const skipped = result
     ? result.skippedDeliverableTitles.length + result.skippedMilestoneTitles.length
@@ -132,106 +264,40 @@ export function WorkPlanTemplateApplier({
 
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{APPLIER_HELP}</p>
 
-      <form className="mt-4 grid gap-3 md:grid-cols-3" onSubmit={handleApply}>
-        <label className="grid gap-1.5 text-sm">
-          <span className="font-medium text-foreground">Project</span>
-          <select
-            className="h-9 rounded-[0.5rem] border border-border bg-background px-2 text-sm"
-            value={projectId}
-            onChange={(event) => setProjectId(event.target.value)}
-          >
-            <option value="">Choose a project…</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="mt-4">
+        <Button
+          type="button"
+          onClick={() => {
+            setResult(null);
+            flow.open();
+          }}
+          data-testid="work-plan-applier-open"
+        >
+          <CalendarDays className="mr-2 h-4 w-4" />
+          {/* Distinct from the flow's own submit, which is "Apply work plan".
+              Two buttons with one name is ambiguous on screen as well as to a
+              test — the trigger opens the questions, the submit does the work. */}
+          Apply a template
+        </Button>
+      </div>
 
-        <label className="grid gap-1.5 text-sm">
-          <span className="font-medium text-foreground">Template</span>
-          <select
-            className="h-9 rounded-[0.5rem] border border-border bg-background px-2 text-sm"
-            value={templateId}
-            onChange={(event) => setTemplateId(event.target.value)}
-          >
-            <option value="">Choose a template…</option>
-            {templates.map((entry) => (
-              <option key={entry.templateId} value={entry.templateId}>
-                {entry.templateName} — {WORK_PLAN_PRACTICE_AREA_LABELS[entry.practiceArea]}
-              </option>
-            ))}
-          </select>
-        </label>
+      <GuidedFlow flow={flow} />
 
-        <label className="grid gap-1.5 text-sm">
-          <span className="font-medium text-foreground">
-            {template ? WORK_PLAN_ANCHOR_LABELS[template.anchor] : "Anchor date"}
-          </span>
-          <Input
-            type="date"
-            value={anchorDate}
-            onChange={(event) => setAnchorDate(event.target.value)}
-            aria-describedby="work-plan-anchor-help"
-          />
-          <span id="work-plan-anchor-help" className="text-xs text-muted-foreground">
-            {template
-              ? `Every date is counted forward from this day — the last one lands ${template.spanDays} days later.`
-              : "Choose a template first; each one counts its dates from a different real-world event."}
-          </span>
-        </label>
-
-        {template ? (
-          <div className="md:col-span-3 rounded-[0.5rem] border border-border/70 bg-background/70 px-3 py-3">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Before you apply this
-            </p>
-            {template.description ? (
-              <p className="mt-1.5 text-sm leading-relaxed text-foreground">{template.description}</p>
-            ) : null}
-            <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
-              {template.scopeNotes.map((note) => (
-                <li key={note}>• {note}</li>
-              ))}
-            </ul>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {template.deliverableCount} deliverable{template.deliverableCount === 1 ? "" : "s"} and{" "}
-              {template.milestoneCount} milestone{template.milestoneCount === 1 ? "" : "s"} will be created,
-              unassigned.
-              {template.jurisdiction
-                ? ` Written for ${template.jurisdiction.label} — check it against your own rules before using it elsewhere.`
-                : " No jurisdiction is assumed."}
-            </p>
-          </div>
-        ) : null}
-
-        <div className="md:col-span-3 flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={!ready || saving}>
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CalendarDays className="mr-2 h-4 w-4" />}
-            Apply work plan
-          </Button>
-          {!ready ? (
-            <span className="text-xs text-muted-foreground">
-              Choose a project, a template and the date its schedule starts from.
-            </span>
-          ) : null}
-        </div>
-      </form>
-
-      {error ? (
-        <p className="mt-3 rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-          {error}
-        </p>
-      ) : null}
-
+      {/*
+        THE RESULT STAYS ON THE PANEL. It is the only place a planner learns
+        what was created AND what was skipped as already existing, and the flow
+        closes on success — so it cannot live inside the flow.
+      */}
       {result ? (
-        <div className="mt-3 rounded-[0.5rem] border border-emerald-300/70 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
+        <div
+          className="mt-3 rounded-[0.5rem] border border-emerald-300/70 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
+          data-testid="work-plan-applied"
+        >
           <p className="font-medium">
             {result.templateName}: {result.createdDeliverables} deliverable
             {result.createdDeliverables === 1 ? "" : "s"} and {result.createdMilestones} milestone
-            {result.createdMilestones === 1 ? "" : "s"} created. Open the project to edit the dates and assign
-            the work.
+            {result.createdMilestones === 1 ? "" : "s"} created. Open the project to edit the dates
+            and assign the work.
           </p>
           {skipped > 0 ? (
             <p className="mt-1 text-xs leading-relaxed">
