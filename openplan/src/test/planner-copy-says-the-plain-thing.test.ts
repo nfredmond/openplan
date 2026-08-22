@@ -197,7 +197,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   basemap: 4,
   basis: 25,
   bootstrap: 0,
-  cadence: 5,
+  cadence: 4,
   campaign: 71,
   "claim tier": 1,
   compose: 3,

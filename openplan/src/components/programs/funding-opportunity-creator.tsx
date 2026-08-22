@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarPlus2, Loader2 } from "lucide-react";
+import { CalendarPlus2, Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  GuidedFlow,
+  GuidedFlowRow,
+  useGuidedFlow,
+  type GuidedFlowStep,
+} from "@/components/ui/guided-flow";
 import { FUNDING_OPPORTUNITY_STATUS_OPTIONS } from "@/lib/programs/catalog";
 
 type ProgramOption = {
@@ -17,6 +24,8 @@ type ProjectOption = {
   id: string;
   name: string;
 };
+
+const selectClassName = "module-select";
 
 function toIsoDateTime(value: string): string | undefined {
   if (!value) return undefined;
@@ -30,6 +39,47 @@ function toOptionalNumber(value: string): number | undefined {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
 
+type OpportunityValues = {
+  opportunityTitle: string;
+  pursuitKind: "grant" | "proposal";
+  solicitationNumber: string;
+  status: (typeof FUNDING_OPPORTUNITY_STATUS_OPTIONS)[number]["value"];
+  programId: string;
+  projectId: string;
+  agencyName: string;
+  ownerLabel: string;
+  cadenceLabel: string;
+  expectedAwardAmount: string;
+  opensAt: string;
+  closesAt: string;
+  decisionDueAt: string;
+  summary: string;
+};
+
+/**
+ * Thirteen fields, on three different surfaces — the programs index, a program
+ * cycle, and the grants board — each of them opening with the form already
+ * expanded. Three steps behind a button now.
+ *
+ * WHAT DID NOT CHANGE. Same POST to `/api/funding-opportunities`, same keys,
+ * same `"" → undefined`, and the solicitation number still only travels for a
+ * PROPOSAL and still arrives trimmed: a grant has no solicitation number, and
+ * sending one would put a value in a column the pursuit kind says nothing
+ * belongs in.
+ *
+ * THE TWO SYNC EFFECTS ARE GONE, AND NOTHING WAS LOST. They existed to push
+ * `defaultProgramId`/`defaultProjectId` into state when the props changed —
+ * navigating between programs, for instance. `flow.open()` starts from
+ * `initialValues`, which is built from the CURRENT props on every render, so
+ * opening the flow already picks up today's defaults. An effect that copies a
+ * prop into state is exactly what a flow that seeds at open time does not need.
+ *
+ * AN AMOUNT THAT IS NOT A NUMBER NOW SAYS SO. `toOptionalNumber` returns
+ * `undefined` for anything unparseable or negative, which is correct for the
+ * payload and was silent on the screen: a planner typing "1,000,000" got a
+ * saved opportunity with NO expected award and nothing telling them why. The
+ * step checks it before submitting; the payload helper is unchanged.
+ */
 export function FundingOpportunityCreator({
   programs,
   projects,
@@ -46,60 +96,227 @@ export function FundingOpportunityCreator({
   description?: string;
 }) {
   const router = useRouter();
-  const [programId, setProgramId] = useState(defaultProgramId ?? "");
-  const [projectId, setProjectId] = useState(defaultProjectId ?? "");
-  const [opportunityTitle, setOpportunityTitle] = useState("");
-  const [pursuitKind, setPursuitKind] = useState<"grant" | "proposal">("grant");
-  const [solicitationNumber, setSolicitationNumber] = useState("");
-  const [status, setStatus] = useState<(typeof FUNDING_OPPORTUNITY_STATUS_OPTIONS)[number]["value"]>("upcoming");
-  const [agencyName, setAgencyName] = useState("");
-  const [ownerLabel, setOwnerLabel] = useState("");
-  const [cadenceLabel, setCadenceLabel] = useState("");
-  const [expectedAwardAmount, setExpectedAwardAmount] = useState("");
-  const [opensAt, setOpensAt] = useState("");
-  const [closesAt, setClosesAt] = useState("");
-  const [decisionDueAt, setDecisionDueAt] = useState("");
-  const [summary, setSummary] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setProgramId(defaultProgramId ?? "");
-  }, [defaultProgramId]);
+  const steps = useMemo<GuidedFlowStep<OpportunityValues>[]>(
+    () => [
+      {
+        id: "what",
+        title: "What is the opportunity?",
+        hint: "What it is called, whether you are chasing a grant or answering a solicitation.",
+        fields: [
+          {
+            name: "opportunityTitle",
+            label: "a name",
+            required: true,
+            requiredMessage: "Give the opportunity a name before you log it.",
+          },
+          { name: "pursuitKind", label: "a pursuit kind" },
+          { name: "status", label: "a status" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="opportunityTitle" label="Opportunity name">
+              <Input
+                {...flow.text("opportunityTitle")}
+                placeholder="Safe Streets and Roads for All — planning grant"
+              />
+            </GuidedFlowRow>
 
-  useEffect(() => {
-    setProjectId(defaultProjectId ?? "");
-  }, [defaultProjectId]);
+            <GuidedFlowRow flow={flow} name="pursuitKind" label="What kind of pursuit?">
+              <select className={selectClassName} {...flow.text("pursuitKind")}>
+                <option value="grant">A grant we are going for</option>
+                <option value="proposal">A proposal answering a solicitation</option>
+              </select>
+            </GuidedFlowRow>
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setMessage(null);
-    setIsSubmitting(true);
+            <GuidedFlowRow flow={flow} name="status" label="Where is it up to?">
+              <select className={selectClassName} {...flow.text("status")}>
+                {FUNDING_OPPORTUNITY_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        // ONLY A PROPOSAL HAS A SOLICITATION NUMBER, so this step appears only
+        // for one. It is a step rather than a conditional row because the flow
+        // checks that every field a step DECLARES renders a control — a guard
+        // that caught this exact mistake when the row was hidden inside the
+        // first step while still being declared by it.
+        id: "solicitation",
+        title: "Which solicitation is it answering?",
+        hint: "Optional — from the solicitation document itself.",
+        when: (values) => values.pursuitKind === "proposal",
+        fields: [{ name: "solicitationNumber", label: "a solicitation number" }],
+        render: (flow) => (
+          <GuidedFlowRow flow={flow} name="solicitationNumber" label="Solicitation number">
+            <Input {...flow.text("solicitationNumber")} placeholder="RFP-2026-014" />
+          </GuidedFlowRow>
+        ),
+      },
+      {
+        id: "whose",
+        title: "Who is it for, and who runs it?",
+        hint: "All optional. Linking it now means the program and project pages can find it later.",
+        fields: [
+          { name: "programId", label: "a program" },
+          { name: "projectId", label: "a project" },
+          { name: "agencyName", label: "an agency" },
+          { name: "ownerLabel", label: "an owner" },
+        ],
+        render: (flow) => (
+          <>
+            <GuidedFlowRow flow={flow} name="programId" label="Program">
+              <select className={selectClassName} {...flow.text("programId")}>
+                <option value="">No linked program</option>
+                {programs.map((program) => (
+                  <option key={program.id} value={program.id}>
+                    {program.title}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
 
-    try {
+            <GuidedFlowRow flow={flow} name="projectId" label="Project">
+              <select className={selectClassName} {...flow.text("projectId")}>
+                <option value="">No linked project</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="agencyName" label="Which agency is offering it?">
+              <Input {...flow.text("agencyName")} placeholder="US Department of Transportation" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="ownerLabel" label="Who owns it here?">
+              <Input {...flow.text("ownerLabel")} placeholder="Grants lead" />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+      {
+        id: "money",
+        title: "Money and dates",
+        hint: "All optional, and easy to fill in from the opportunity's own page later.",
+        fields: [
+          { name: "expectedAwardAmount", label: "an expected award" },
+          { name: "cadenceLabel", label: "a cadence" },
+          { name: "opensAt", label: "an opening date" },
+          { name: "closesAt", label: "a closing date" },
+          { name: "decisionDueAt", label: "a decision date" },
+          { name: "summary", label: "a summary" },
+        ],
+        check: (values) => {
+          const raw = values.expectedAwardAmount.trim();
+          if (!raw) return null;
+          // The payload helper drops anything unparseable or negative, which is
+          // right for the body and was SILENT on screen: "1,000,000" saved an
+          // opportunity with no expected award and said nothing.
+          const parsed = Number.parseFloat(raw);
+          if (!Number.isFinite(parsed) || parsed < 0) {
+            return {
+              field: "expectedAwardAmount",
+              message: "Give the expected award as a plain number, with no commas or currency sign.",
+            };
+          }
+          return null;
+        },
+        render: (flow) => (
+          <>
+            <GuidedFlowRow
+              flow={flow}
+              name="expectedAwardAmount"
+              label="Expected award"
+              hint="A plain number — no commas, no currency sign."
+            >
+              <Input {...flow.text("expectedAwardAmount")} placeholder="250000" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="cadenceLabel" label="How often does it come round?">
+              <Input {...flow.text("cadenceLabel")} placeholder="Annual notice of funding" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="opensAt" label="Opens">
+              <Input {...flow.text("opensAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="closesAt" label="Closes">
+              <Input {...flow.text("closesAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="decisionDueAt" label="Decision expected">
+              <Input {...flow.text("decisionDueAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow flow={flow} name="summary" label="Anything to note?">
+              <Textarea
+                {...flow.text("summary")}
+                placeholder="What this opportunity would fund, and what makes it a fit."
+              />
+            </GuidedFlowRow>
+          </>
+        ),
+      },
+    ],
+    [programs, projects]
+  );
+
+  const flow = useGuidedFlow<OpportunityValues>({
+    id: "create-funding-opportunity",
+    title,
+    submitLabel: "Log the opportunity",
+    // Built from the CURRENT props, so opening the flow picks up today's
+    // defaults without an effect copying props into state.
+    initialValues: {
+      opportunityTitle: "",
+      pursuitKind: "grant",
+      solicitationNumber: "",
+      status: "upcoming",
+      programId: defaultProgramId ?? "",
+      projectId: defaultProjectId ?? "",
+      agencyName: "",
+      ownerLabel: "",
+      cadenceLabel: "",
+      expectedAwardAmount: "",
+      opensAt: "",
+      closesAt: "",
+      decisionDueAt: "",
+      summary: "",
+    },
+    steps,
+    onSubmit: async (values) => {
+      // Unchanged from the inline form, deliberately: same route, same keys,
+      // and the solicitation number still travels only for a proposal, trimmed.
       const response = await fetch("/api/funding-opportunities", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          programId: programId || undefined,
-          projectId: projectId || undefined,
-          title: opportunityTitle,
-          pursuitKind,
+          programId: values.programId || undefined,
+          projectId: values.projectId || undefined,
+          title: values.opportunityTitle,
+          pursuitKind: values.pursuitKind,
           solicitationNumber:
-            pursuitKind === "proposal" && solicitationNumber.trim()
-              ? solicitationNumber.trim()
+            values.pursuitKind === "proposal" && values.solicitationNumber.trim()
+              ? values.solicitationNumber.trim()
               : undefined,
-          status,
-          agencyName: agencyName || undefined,
-          ownerLabel: ownerLabel || undefined,
-          cadenceLabel: cadenceLabel || undefined,
-          expectedAwardAmount: toOptionalNumber(expectedAwardAmount),
-          opensAt: toIsoDateTime(opensAt),
-          closesAt: toIsoDateTime(closesAt),
-          decisionDueAt: toIsoDateTime(decisionDueAt),
-          summary: summary || undefined,
+          status: values.status,
+          agencyName: values.agencyName || undefined,
+          ownerLabel: values.ownerLabel || undefined,
+          cadenceLabel: values.cadenceLabel || undefined,
+          expectedAwardAmount: toOptionalNumber(values.expectedAwardAmount),
+          opensAt: toIsoDateTime(values.opensAt),
+          closesAt: toIsoDateTime(values.closesAt),
+          decisionDueAt: toIsoDateTime(values.decisionDueAt),
+          summary: values.summary || undefined,
         }),
       });
 
@@ -108,34 +325,16 @@ export function FundingOpportunityCreator({
         throw new Error(payload.error || "Failed to create funding opportunity");
       }
 
-      setOpportunityTitle("");
-      setPursuitKind("grant");
-      setSolicitationNumber("");
-      setStatus("upcoming");
-      setAgencyName("");
-      setOwnerLabel("");
-      setCadenceLabel("");
-      setExpectedAwardAmount("");
-      setOpensAt("");
-      setClosesAt("");
-      setDecisionDueAt("");
-      setSummary("");
-      if (!defaultProgramId) setProgramId("");
-      if (!defaultProjectId) setProjectId("");
       setMessage("Funding opportunity saved.");
       router.refresh();
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create funding opportunity");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+    },
+  });
 
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Funding</p>
+          <p className="module-section-label">Create</p>
           <h2 className="module-section-title">{title}</h2>
           <p className="module-section-description">{description}</p>
         </div>
@@ -144,220 +343,29 @@ export function FundingOpportunityCreator({
         </span>
       </div>
 
-      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
-          <label htmlFor="funding-opportunity-title" className="text-[0.82rem] font-semibold">
-            Opportunity title
-          </label>
-          <Input
-            id="funding-opportunity-title"
-            placeholder="2027 ATP Cycle 8 countywide active transportation call"
-            value={opportunityTitle}
-            onChange={(event) => setOpportunityTitle(event.target.value)}
-            required
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-pursuit-kind" className="text-[0.82rem] font-semibold">
-              Pursuit kind
-            </label>
-            <select
-              id="funding-opportunity-pursuit-kind"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={pursuitKind}
-              onChange={(event) => setPursuitKind(event.target.value === "proposal" ? "proposal" : "grant")}
-            >
-              <option value="grant">Grant application</option>
-              <option value="proposal">Proposal (RFP/RFQ response)</option>
-            </select>
-          </div>
-          {pursuitKind === "proposal" ? (
-            <div className="space-y-1.5">
-              <label htmlFor="funding-opportunity-solicitation" className="text-[0.82rem] font-semibold">
-                Solicitation number
-                <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-              </label>
-              <Input
-                id="funding-opportunity-solicitation"
-                placeholder="As issued on the RFP/RFQ"
-                value={solicitationNumber}
-                onChange={(event) => setSolicitationNumber(event.target.value)}
-              />
-            </div>
-          ) : null}
-        </div>
-
-        {defaultProgramId ? null : (
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-program" className="text-[0.82rem] font-semibold">
-              Funding program
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <select
-              id="funding-opportunity-program"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={programId}
-              onChange={(event) => setProgramId(event.target.value)}
-            >
-              <option value="">No linked program</option>
-              {programs.map((program) => (
-                <option key={program.id} value={program.id}>
-                  {program.title}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-project" className="text-[0.82rem] font-semibold">
-              Linked project
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <select
-              id="funding-opportunity-project"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={projectId}
-              onChange={(event) => setProjectId(event.target.value)}
-            >
-              <option value="">No linked project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-status" className="text-[0.82rem] font-semibold">
-              Status
-            </label>
-            <select
-              id="funding-opportunity-status"
-              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={status}
-              onChange={(event) =>
-                setStatus(event.target.value as (typeof FUNDING_OPPORTUNITY_STATUS_OPTIONS)[number]["value"])
-              }
-            >
-              {FUNDING_OPPORTUNITY_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-agency" className="text-[0.82rem] font-semibold">
-              Agency
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="funding-opportunity-agency"
-              placeholder="Caltrans / CTC"
-              value={agencyName}
-              onChange={(event) => setAgencyName(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-owner" className="text-[0.82rem] font-semibold">
-              Owner
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="funding-opportunity-owner"
-              placeholder="Grant lead"
-              value={ownerLabel}
-              onChange={(event) => setOwnerLabel(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-cadence" className="text-[0.82rem] font-semibold">
-              Cadence
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="funding-opportunity-cadence"
-              placeholder="Annual cycle"
-              value={cadenceLabel}
-              onChange={(event) => setCadenceLabel(event.target.value)}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-expected-award" className="text-[0.82rem] font-semibold">
-              Likely award amount
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="funding-opportunity-expected-award"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="250000"
-              value={expectedAwardAmount}
-              onChange={(event) => setExpectedAwardAmount(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-opens" className="text-[0.82rem] font-semibold">
-              Opens
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input id="funding-opportunity-opens" type="datetime-local" value={opensAt} onChange={(event) => setOpensAt(event.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-closes" className="text-[0.82rem] font-semibold">
-              Closes
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input id="funding-opportunity-closes" type="datetime-local" value={closesAt} onChange={(event) => setClosesAt(event.target.value)} />
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="funding-opportunity-decision" className="text-[0.82rem] font-semibold">
-              Decision due
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-            </label>
-            <Input
-              id="funding-opportunity-decision"
-              type="datetime-local"
-              value={decisionDueAt}
-              onChange={(event) => setDecisionDueAt(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <label htmlFor="funding-opportunity-summary" className="text-[0.82rem] font-semibold">
-            Summary
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
-          </label>
-          <Textarea
-            id="funding-opportunity-summary"
-            rows={4}
-            placeholder="What this opportunity funds, why it matters now, and where the application stands."
-            value={summary}
-            onChange={(event) => setSummary(event.target.value)}
-          />
-        </div>
-
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus2 className="h-4 w-4" />}
-          Save funding opportunity
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          onClick={() => {
+            setMessage(null);
+            flow.open();
+          }}
+          data-testid="funding-opportunity-creator-open"
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          {title}
         </Button>
+        {message ? (
+          <p
+            className="text-sm text-emerald-700 dark:text-emerald-300"
+            data-testid="funding-opportunity-saved"
+          >
+            {message}
+          </p>
+        ) : null}
+      </div>
 
-        {message ? <p className="text-sm text-emerald-700 dark:text-emerald-300">{message}</p> : null}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      </form>
+      <GuidedFlow flow={flow} />
     </article>
   );
 }
