@@ -13,6 +13,7 @@ import {
 } from "@/lib/grants/modeling-evidence";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import type { ProjectFundingSnapshot } from "@/lib/projects/funding";
+import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/reports/dual-demand-agreement";
 import {
   formatDateTime,
   formatReportStatusLabel,
@@ -93,6 +94,8 @@ type ReportStandardDetailProps = {
   citeableModelRuns?: Array<{ id: string; title: string; engineKey: string; status: string }>;
   /** Model runs this report currently cites, in citation order. */
   citedModelRunIds?: string[];
+  agreementEvidence?: ReportAgreementEvidence[];
+  agreementCorridorSelections?: AgreementCorridorSelection[];
   latestArtifact: ReportArtifact | null;
   fundingSnapshot: ProjectFundingSnapshot | null;
   operationsSummary: WorkspaceOperationsSummary;
@@ -123,6 +126,8 @@ export function ReportStandardDetail({
   runs,
   citeableModelRuns = [],
   citedModelRunIds = [],
+  agreementEvidence = [],
+  agreementCorridorSelections = [],
   latestArtifact,
   fundingSnapshot,
   operationsSummary,
@@ -340,6 +345,8 @@ export function ReportStandardDetail({
             fundingSummary={fundingSummaryDigest}
             modelRunOptions={citeableModelRuns}
             citedModelRunIds={citedModelRunIds}
+            agreementEvidence={agreementEvidence}
+            agreementCorridorSelections={agreementCorridorSelections}
           />
         </div>
       </header>

@@ -88,6 +88,12 @@ import {
 import { loadAerialSourceContextRowsForProject } from "@/lib/aerial/queries";
 import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/html";
 import { withCitedModelRunClaimTiers } from "@/lib/reports/run-citations";
+import {
+  freezeReportDualDemandAgreements,
+  loadReportDualDemandAgreements,
+  readAgreementCorridorSelections,
+  validateAgreementCorridorSelections,
+} from "@/lib/reports/dual-demand-agreement";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
@@ -1755,6 +1761,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
               supabase
                 .from("model_runs")
                 .select("id, run_title, engine_key, status, result_summary_json")
+                .eq("workspace_id", report.workspace_id)
+                .eq("project_id", report.project_id)
                 .in("id", citedModelRunIds),
             [] as Array<Record<string, unknown>>
           )
@@ -1779,6 +1787,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         code: firstRunError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to load linked runs" }, { status: 500 });
+    }
+    if ((citedModelRunsResult.data ?? []).length !== new Set(citedModelRunIds).size) {
+      return NextResponse.json(
+        { error: "A cited model run does not belong to this report's project." },
+        { status: 400 },
+      );
     }
 
     const runMap = new Map((runsResult.data ?? []).map((run) => [run.id, run]));
@@ -1821,6 +1835,38 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const citedCountyRuns = reportRunLinkRows
       .map((item) => (item.county_run_id ? citedCountyRunMap.get(item.county_run_id) ?? null : null))
       .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+    const agreementStates = await loadReportDualDemandAgreements({
+      supabase,
+      modelRunIds: citedModelRunIds,
+      workspaceId: report.workspace_id,
+      projectId: report.project_id,
+    });
+    const verifiedAgreements = [];
+    for (const modelRunId of citedModelRunIds) {
+      const state = agreementStates.get(modelRunId);
+      if (!state || state.status === "absent") continue;
+      if (state.status !== "verified") {
+        return NextResponse.json(
+          { error: `Attached dual-model agreement evidence is ${state.status}: ${state.reason}` },
+          { status: state.status === "unreadable" ? 500 : 422 },
+        );
+      }
+      verifiedAgreements.push(state.agreement);
+    }
+    const agreementCorridorSelections = readAgreementCorridorSelections(report.metadata_json);
+    const agreementSelectionValidation = validateAgreementCorridorSelections({
+      selections: agreementCorridorSelections,
+      citedModelRunIds,
+      agreementStates,
+    });
+    if (!agreementSelectionValidation.ok) {
+      return NextResponse.json({ error: agreementSelectionValidation.reason }, { status: 400 });
+    }
+    const dualDemandAgreementSnapshotsV1 = freezeReportDualDemandAgreements({
+      agreements: verifiedAgreements,
+      selections: agreementCorridorSelections,
+    });
 
     const runAudit = linkedRuns.map((run) => ({
       runId: run.id,
@@ -2134,6 +2180,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       stageGateSnapshot,
       modelingEvidence,
       citedModelRuns,
+      dualDemandAgreementSnapshotsV1,
       citedCountyRuns,
       // What the packet DRAWS. The place row is narrowed through the shared
       // owner-agnostic reader rather than re-derived here, so the packet's idea
@@ -2203,6 +2250,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       metadata_schema_version: "2026-04",
       htmlContent: html,
       generatedAt,
+      dualDemandAgreementSnapshotsV1,
       // Which typesetting tier produced the stored file, so the record can
       // answer "why does this PDF look different" without re-rendering it.
       pdfEngine,

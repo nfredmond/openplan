@@ -14,6 +14,7 @@ import {
   formatDriftLabelList,
   type ReportSourceReviewPosture,
 } from "@/lib/reports/source-review-posture";
+import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/reports/dual-demand-agreement";
 
 /** A succeeded worker model run the report may cite as typed evidence. */
 export type ReportModelRunOption = {
@@ -22,6 +23,19 @@ export type ReportModelRunOption = {
   engineKey: string;
   status: string;
 };
+
+function sameSelections(left: AgreementCorridorSelection[], right: AgreementCorridorSelection[]) {
+  if (left.length !== right.length) return false;
+  const keys = new Set(right.map((row) => `${row.modelRunId}\u0000${row.corridor}`));
+  return left.every((row) => keys.has(`${row.modelRunId}\u0000${row.corridor}`));
+}
+
+function formatAgreementNumber(value: number | null, style: "percent" | "number" = "number") {
+  if (value === null) return "Not available";
+  return style === "percent"
+    ? new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 1 }).format(value)
+    : new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
+}
 
 function sameIdSet(left: string[], right: string[]) {
   if (left.length !== right.length) return false;
@@ -49,6 +63,8 @@ export function ReportDetailControls({
   reviewSummary,
   modelRunOptions = [],
   citedModelRunIds = [],
+  agreementEvidence = [],
+  agreementCorridorSelections = [],
 }: {
   report: {
     id: string;
@@ -79,12 +95,16 @@ export function ReportDetailControls({
   } | null;
   modelRunOptions?: ReportModelRunOption[];
   citedModelRunIds?: string[];
+  agreementEvidence?: ReportAgreementEvidence[];
+  agreementCorridorSelections?: AgreementCorridorSelection[];
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(report.title);
   const [summary, setSummary] = useState(report.summary ?? "");
   const [status, setStatus] = useState(report.status);
   const [selectedModelRunIds, setSelectedModelRunIds] = useState<string[]>(citedModelRunIds);
+  const [selectedAgreementCorridors, setSelectedAgreementCorridors] =
+    useState<AgreementCorridorSelection[]>(agreementCorridorSelections);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   // The generate route has accepted "pdf" since the module shipped; the UI
@@ -110,6 +130,13 @@ export function ReportDetailControls({
       // deployment without the typed-evidence migration keeps saving metadata
       // exactly as before.
       const modelRunSelectionChanged = !sameIdSet(selectedModelRunIds, citedModelRunIds);
+      const finalAgreementSelections = selectedAgreementCorridors.filter((selection) =>
+        selectedModelRunIds.includes(selection.modelRunId)
+      );
+      const agreementSelectionChanged = !sameSelections(
+        finalAgreementSelections,
+        agreementCorridorSelections,
+      );
 
       const response = await fetch(`/api/reports/${report.id}`, {
         method: "PATCH",
@@ -121,6 +148,9 @@ export function ReportDetailControls({
           summary: summary.trim() ? summary : null,
           status,
           ...(modelRunSelectionChanged ? { modelRunIds: selectedModelRunIds } : {}),
+          ...(agreementSelectionChanged || modelRunSelectionChanged
+            ? { agreementCorridorSelections: finalAgreementSelections }
+            : {}),
         }),
       });
 
@@ -319,6 +349,84 @@ export function ReportDetailControls({
               status, and screening-grade caveats. Save metadata to apply the
               citation change.
             </p>
+          </div>
+        ) : null}
+
+        {agreementEvidence.length > 0 ? (
+          <div
+            className="space-y-3 rounded-xl border border-border/70 bg-background/70 p-4"
+            data-testid="dual-demand-agreement-panel"
+          >
+            <div>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Dual-model agreement evidence
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Aggregate evidence is included whenever the cited run is verified. Choose named corridors only when they belong in this report; none are chosen automatically.
+              </p>
+            </div>
+            {agreementEvidence.map(({ modelRunId, state }) => {
+              const option = modelRunOptions.find((candidate) => candidate.id === modelRunId);
+              if (state.status !== "verified") {
+                return (
+                  <div key={modelRunId} className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+                    <span className="font-semibold">{option?.title ?? "Cited model run"}: </span>
+                    {state.status === "absent" ? "No agreement results are attached." : state.reason}
+                  </div>
+                );
+              }
+              const agreement = state.agreement;
+              return (
+                <section key={modelRunId} className="space-y-2 rounded-lg border border-border/70 bg-card/80 p-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold">{option?.title ?? "Cited model run"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {agreement.methods.first} vs. {agreement.methods.second} · {agreement.permittedAttributionScale}-level attribution
+                      </p>
+                    </div>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {formatAgreementNumber(agreement.aggregate.agreeShareMeaningfulLinks, "percent")} agree on meaningful links
+                    </span>
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    Agreement measures methodological sensitivity, not accuracy. The two model volumes are never averaged.
+                  </p>
+                  {agreement.namedCorridors.length > 0 ? (
+                    <div className="max-h-80 space-y-1.5 overflow-y-auto pr-1">
+                      {agreement.namedCorridors.map((corridor) => {
+                        const checked = selectedAgreementCorridors.some(
+                          (selection) => selection.modelRunId === modelRunId && selection.corridor === corridor.corridor,
+                        );
+                        return (
+                          <label key={corridor.corridor} className="flex cursor-pointer gap-3 rounded-lg border border-border/60 px-3 py-2">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() =>
+                                setSelectedAgreementCorridors((current) =>
+                                  checked
+                                    ? current.filter((selection) => !(selection.modelRunId === modelRunId && selection.corridor === corridor.corridor))
+                                    : [...current, { modelRunId, corridor: corridor.corridor }]
+                                )
+                              }
+                            />
+                            <span className="min-w-0 text-xs">
+                              <span className="block font-semibold text-foreground">{corridor.corridor}</span>
+                              <span className="text-muted-foreground">
+                                {agreement.methods.first} {formatAgreementNumber(corridor.firstVolume)} · {agreement.methods.second} {formatAgreementNumber(corridor.secondVolume)} · GEH {formatAgreementNumber(corridor.geh)} · {titleize(corridor.classification)}
+                              </span>
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No named corridors are present in these verified results.</p>
+                  )}
+                </section>
+              );
+            })}
           </div>
         ) : null}
 

@@ -19,7 +19,9 @@ import {
   buildGrantDecisionModelingSupport,
   describeProjectGrantModelingReadiness,
   type ProjectGrantModelingEvidence,
+  type ProjectGrantDualDemandAgreementEvidence,
 } from "@/lib/grants/modeling-evidence";
+import { AGREEMENT_METHOD_SENSITIVITY_STATEMENT } from "@/lib/models/verified-dual-demand-agreement";
 import {
   buildGrantEvidenceReadinessCues,
   summarizeGrantEvidenceReadiness,
@@ -58,6 +60,7 @@ export function GrantsOpportunityRegistryCard({
   opportunity,
   activeFocusedOpportunityId,
   projectGrantModelingEvidence,
+  projectGrantDualDemandAgreementEvidence = null,
   latestBcaScreening = null,
   engagementEvidence = null,
   latestNarrativeDraft = null,
@@ -65,6 +68,7 @@ export function GrantsOpportunityRegistryCard({
   opportunity: NormalizedOpportunity;
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidence: ProjectGrantModelingEvidence | null;
+  projectGrantDualDemandAgreementEvidence?: ProjectGrantDualDemandAgreementEvidence | null;
   latestBcaScreening?: ProjectBcaScreeningSummary | null;
   engagementEvidence?: ProjectEngagementEvidence | null;
   latestNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
@@ -201,6 +205,23 @@ export function GrantsOpportunityRegistryCard({
           </div>
         ) : null}
 
+        {projectGrantDualDemandAgreementEvidence ? (
+          <div className="module-note mt-4 text-sm">
+            <p className="font-semibold text-foreground">Frozen dual-model agreement evidence</p>
+            <p className="mt-1 text-muted-foreground">
+              {projectGrantDualDemandAgreementEvidence.leadReport.title} carries {projectGrantDualDemandAgreementEvidence.leadReport.agreements.length} verified comparison{projectGrantDualDemandAgreementEvidence.leadReport.agreements.length === 1 ? "" : "s"}. {AGREEMENT_METHOD_SENSITIVITY_STATEMENT}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <StatusBadge tone={projectGrantDualDemandAgreementEvidence.leadReport.packetFreshness.tone}>
+                {projectGrantDualDemandAgreementEvidence.leadReport.packetFreshness.label}
+              </StatusBadge>
+              <StatusBadge tone="neutral">
+                {projectGrantDualDemandAgreementEvidence.leadReport.agreements.reduce((total, agreement) => total + agreement.namedCorridors.length, 0)} selected corridor{projectGrantDualDemandAgreementEvidence.leadReport.agreements.reduce((total, agreement) => total + agreement.namedCorridors.length, 0) === 1 ? "" : "s"}
+              </StatusBadge>
+            </div>
+          </div>
+        ) : null}
+
         <div className="module-note mt-4 text-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -241,7 +262,7 @@ export function GrantsOpportunityRegistryCard({
           pursuitKind={pursuitKind}
         />
 
-        {projectHref || programHref || projectGrantModelingEvidence ? (
+        {projectHref || programHref || projectGrantModelingEvidence || projectGrantDualDemandAgreementEvidence ? (
           <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
             {projectGrantModelingEvidence ? (
               <Link
@@ -249,6 +270,15 @@ export function GrantsOpportunityRegistryCard({
                 className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
               >
                 Open supporting packet
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
+            {!projectGrantModelingEvidence && projectGrantDualDemandAgreementEvidence ? (
+              <Link
+                href={projectGrantDualDemandAgreementEvidence.leadReport.href}
+                className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+              >
+                Open agreement report
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}

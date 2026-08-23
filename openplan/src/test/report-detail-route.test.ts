@@ -42,7 +42,7 @@ const runsEqMock = vi.fn(() => ({ in: runsInMock }));
 const runsSelectMock = vi.fn(() => ({ in: runsInMock, eq: runsEqMock }));
 
 const modelRunsInMock = vi.fn();
-const modelRunsEqMock = vi.fn(() => ({ in: modelRunsInMock }));
+const modelRunsEqMock = vi.fn(() => ({ eq: modelRunsEqMock, in: modelRunsInMock }));
 const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock, eq: modelRunsEqMock }));
 
 const countyRunsInMock = vi.fn();
@@ -156,6 +156,12 @@ describe("/api/reports/[reportId]", () => {
         title: "Project Status Packet",
         status: "draft",
         report_type: "project_status",
+        metadata_json: {
+          agreementCorridorSelections: [{
+            modelRunId: "88888888-8888-4888-8888-888888888888",
+            corridor: "Central Avenue",
+          }],
+        },
       },
       error: null,
     });
@@ -216,6 +222,12 @@ describe("/api/reports/[reportId]", () => {
     });
 
     expect(response.status).toBe(200);
+    expect(await response.clone().json()).toMatchObject({
+      agreementCorridorSelections: [{
+        modelRunId: "88888888-8888-4888-8888-888888888888",
+        corridor: "Central Avenue",
+      }],
+    });
     expect(await response.json()).toMatchObject({
       report: {
         id: "11111111-1111-4111-8111-111111111111",
@@ -223,6 +235,10 @@ describe("/api/reports/[reportId]", () => {
       sections: [expect.objectContaining({ id: "section-1" })],
       runs: [expect.objectContaining({ id: "55555555-5555-4555-8555-555555555555" })],
       artifacts: [expect.objectContaining({ id: "artifact-1" })],
+      agreementCorridorSelections: [{
+        modelRunId: "88888888-8888-4888-8888-888888888888",
+        corridor: "Central Avenue",
+      }],
     });
   });
 
@@ -370,8 +386,15 @@ describe("/api/reports/[reportId]", () => {
     );
 
     expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      agreementCorridorSelections: [{
+        modelRunId: "88888888-8888-4888-8888-888888888888",
+        corridor: "Central Avenue",
+      }],
+    });
     // Validated against the report's workspace.
     expect(modelRunsEqMock).toHaveBeenCalledWith("workspace_id", "33333333-3333-4333-8333-333333333333");
+    expect(modelRunsEqMock).toHaveBeenCalledWith("project_id", "44444444-4444-4444-8444-444444444444");
     // Deleted by kind, never by report_id alone.
     expect(reportRunsDeleteNotMock).toHaveBeenCalledWith("model_run_id", "is", null);
     expect(reportRunsDeleteNotMock).not.toHaveBeenCalledWith("run_id", "is", null);

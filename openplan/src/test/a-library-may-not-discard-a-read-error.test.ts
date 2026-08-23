@@ -275,7 +275,7 @@ const KNOWN_ERROR_TERNARY: ReadonlyArray<readonly [string, number]> = [
   ["src/app/(app)/invoicing/_components/reimbursement-lane.tsx", 1],
   ["src/lib/engagement/portal-i18n/operator-text.ts", 1],
   ["src/lib/engagement/public-portal-data.ts", 1],
-  ["src/lib/reports/run-citations.ts", 2],
+  ["src/lib/reports/run-citations.ts", 1],
 ];
 
 const RETURN_THE_ERROR =

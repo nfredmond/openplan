@@ -19,6 +19,7 @@
     "local-grants-flow-smoke": "node openplan-local-grants-flow-smoke.js",
     "local-engagement-report-handoff-smoke": "node openplan-local-engagement-report-handoff-smoke.js",
     "local-analysis-report-linkage-smoke": "node openplan-local-analysis-report-linkage-smoke.js",
+    "local-dual-demand-report-grant-smoke": "node openplan-local-dual-demand-report-grant-smoke.js",
     "local-spine-smoke": "node local-spine-smoke.js",
     "local-aerial-evidence-smoke": "node local-aerial-evidence-smoke.js",
     "local-behavioral-demand-acceptance": "node openplan-local-behavioral-demand-acceptance.js",

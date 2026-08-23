@@ -40,6 +40,7 @@ import {
 } from "@/lib/reports/data-lineage-output-contexts";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { buildReportGenerationReadiness } from "@/lib/reports/generation-readiness";
+import { loadReportDualDemandAgreementPanel } from "@/lib/reports/dual-demand-agreement";
 import { buildTypedRunCitations, loadCiteableModelRuns, loadReportRunCitationLinks, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
@@ -352,13 +353,9 @@ export default async function ReportDetailPage({ params, searchParams }: RoutePa
         .in("id", runIds)
     : { data: [], error: null };
   const { citedModelRuns, citedCountyRuns } = await resolveCitedRuns(supabase, reportRunLinks);
-  // The attach control offers the target project's succeeded model runs,
-  // falling back to workspace-scoped succeeded runs when project attribution
-  // is absent (mirrors the project workbench's availableModelRuns).
-  const citeableModelRuns =
-    !report.rtp_cycle_id && report.project_id
-      ? await loadCiteableModelRuns(supabase, { projectId: report.project_id, workspaceId: report.workspace_id })
-      : [];
+  // Typed evidence must belong to the report's project as well as its workspace.
+  const citeableModelRuns = !report.rtp_cycle_id && report.project_id
+    ? await loadCiteableModelRuns(supabase, { projectId: report.project_id }) : [];
 
   const sectionList = sections ?? [];
   // A campaign-targeted report names its campaign directly; handoff packets
@@ -385,9 +382,8 @@ export default async function ReportDetailPage({ params, searchParams }: RoutePa
     .filter((item): item is LinkedRunRow => Boolean(item));
   // Typed citations resolved for display: kind label + honest title/status.
   const typedRunCitations = buildTypedRunCitations(reportRunLinks, citedModelRuns, citedCountyRuns);
-  const citedModelRunIdsInOrder = typedRunCitations
-    .filter((citation) => citation.kind === "model")
-    .map((citation) => citation.runId);
+  const citedModelRunIdsInOrder = typedRunCitations.filter((citation) => citation.kind === "model").map((citation) => citation.runId);
+  const agreementPanel = project ? await loadReportDualDemandAgreementPanel({ supabase, modelRunIds: citedModelRunIdsInOrder, workspaceId: report.workspace_id, projectId: project.id, reportMetadata: report.metadata_json }) : { evidence: [], selections: [] };
 
   const latestArtifact = ((artifacts ?? []) as ReportArtifact[])[0] ?? null;
   const latestHtml = asHtmlContent(latestArtifact?.metadata_json);
@@ -1325,6 +1321,7 @@ export default async function ReportDetailPage({ params, searchParams }: RoutePa
       currentReportComparisonDigest={currentReportComparisonDigest}
       citeableModelRuns={citeableModelRuns}
       citedModelRunIds={citedModelRunIdsInOrder}
+      agreementEvidence={agreementPanel.evidence} agreementCorridorSelections={agreementPanel.selections}
       narrativeDraftPanelProps={narrativeDraftPanelProps}
       compositionAuditProps={{
         reportId: report.id,

@@ -1,5 +1,5 @@
 /**
- * Three modeling writes were deliberately REFUSED as assistant actions on
+ * Modeling writes deliberately REFUSED as assistant actions on
  * 2026-08-08, on the day a fourth — `launch_model_run` — was registered. This
  * is the executable form of that decision.
  *
@@ -121,6 +121,23 @@ const REFUSED: RefusedModelingAction[] = [
       "manufacturing the tier the honesty firewall exists to protect, without ever writing a tier column. " +
       "The launch route refuses a succeeded run with a 400; do not add an action that routes around it.",
   },
+  {
+    label: "selecting agreement corridors for a report or grant",
+    nameGroups: [
+      ["select", "agreement", "corridor"],
+      ["choose", "corridor", "evidence"],
+      ["attach", "corridor", "report"],
+    ],
+    provokes: [
+      "select_agreement_corridor",
+      "choose_corridor_evidence",
+      "attach_corridor_to_report",
+    ],
+    reason:
+      "Choosing which named corridor belongs in a report or funder document is planner judgment, not " +
+      "mechanical assembly. The approved report-generation action may consume selections a planner already " +
+      "saved, but the assistant must not author that evidence choice or empty the planner's selection set.",
+  },
 ];
 
 const REGISTERED_KINDS = Object.keys(ACTION_METADATA);
@@ -137,7 +154,7 @@ describe("the refused modeling actions are still refused", () => {
       expect(
         offenders,
         `${offenders.join(", ")} was registered as an assistant action. This was refused deliberately on ` +
-          `2026-08-08: ${entry.reason} If the argument has genuinely changed, remove this entry AND record ` +
+          `in this executable refusal list: ${entry.reason} If the argument has genuinely changed, remove this entry AND record ` +
           "why — do not delete the assertion to make a build pass."
       ).toEqual([]);
     });

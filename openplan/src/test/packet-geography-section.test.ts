@@ -154,6 +154,7 @@ describe("the packet draws the project's geography", () => {
     expect(html).toContain('class="geo-area"');
     expect(html).toContain('class="geo-corridor"');
     expect(html).toContain('class="geo-marker"');
+    expect(html).not.toContain('height="auto"');
     // Nothing may reach the network from inside a packet: no image element, no
     // stylesheet link, no absolute asset host.
     expect(html).not.toMatch(/<img\b/i);

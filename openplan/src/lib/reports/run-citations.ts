@@ -474,12 +474,12 @@ export async function withCitedModelRunClaimTiers<
   }));
 }
 
-/** The succeeded model runs a report's attach control may cite: the target
- * project's runs first, workspace-scoped runs as the fallback (mirrors the
- * project workbench's availableModelRuns). Empty on any lookup failure. */
+/** The succeeded model runs a report may cite. Project attribution is
+ * required: workspace membership alone must not let one project's evidence
+ * enter another project's report. Empty on any lookup failure. */
 export async function loadCiteableModelRuns(
   supabase: SupabaseLike,
-  { projectId, workspaceId }: { projectId: string; workspaceId: string }
+  { projectId }: { projectId: string }
 ): Promise<Array<{ id: string; title: string; engineKey: string; status: string }>> {
   const projectResult = (await supabase
     .from("model_runs")
@@ -489,17 +489,7 @@ export async function loadCiteableModelRuns(
     .order("created_at", { ascending: false })
     .limit(50)) as { data: unknown; error: QueryError };
 
-  let rows = projectResult.error ? [] : ((projectResult.data ?? []) as CitedModelRunRow[]);
-  if (rows.length === 0) {
-    const workspaceResult = (await supabase
-      .from("model_runs")
-      .select("id, run_title, engine_key, status")
-      .eq("workspace_id", workspaceId)
-      .eq("status", "succeeded")
-      .order("created_at", { ascending: false })
-      .limit(50)) as { data: unknown; error: QueryError };
-    rows = workspaceResult.error ? [] : ((workspaceResult.data ?? []) as CitedModelRunRow[]);
-  }
+  const rows = projectResult.error ? [] : ((projectResult.data ?? []) as CitedModelRunRow[]);
 
   return rows.map((run) => ({ id: run.id, title: run.run_title, engineKey: run.engine_key, status: run.status }));
 }

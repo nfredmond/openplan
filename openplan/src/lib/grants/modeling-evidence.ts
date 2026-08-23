@@ -7,6 +7,10 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import type { FundingOpportunityDecision } from "@/lib/programs/catalog";
+import {
+  verifyFrozenDualDemandAgreementSnapshots,
+  type VerifiedDualDemandAgreement,
+} from "@/lib/models/verified-dual-demand-agreement";
 
 export type ProjectGrantModelingReportRow = {
   id: string;
@@ -53,6 +57,22 @@ export type ProjectGrantModelingEvidence = {
   projectId: string;
   comparisonBackedCount: number;
   leadComparisonReport: ProjectGrantModelingLeadReport;
+};
+
+export type ProjectGrantDualDemandAgreementEvidence = {
+  projectId: string;
+  leadReport: {
+    id: string;
+    title: string;
+    href: string;
+    packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+    agreements: VerifiedDualDemandAgreement[];
+  };
+};
+
+export type ProjectGrantDualDemandAgreementReadFailure = {
+  reportId: string;
+  reason: string;
 };
 
 export const GRANT_MODELING_PLANNING_CAVEAT =
@@ -281,6 +301,64 @@ export function buildProjectGrantModelingEvidenceByProjectId(
   }
 
   return evidenceByProjectId;
+}
+
+/** Read dual-demand evidence only from the newest frozen report artifact. */
+export function buildProjectGrantDualDemandAgreementEvidenceByProjectId(
+  reports: ProjectGrantModelingReportRow[] | null | undefined,
+  artifacts: ProjectGrantModelingArtifactRow[] | null | undefined,
+): {
+  evidenceByProjectId: Map<string, ProjectGrantDualDemandAgreementEvidence>;
+  readFailures: ProjectGrantDualDemandAgreementReadFailure[];
+} {
+  const latestArtifactByReportId = new Map<string, ProjectGrantModelingArtifactRow>();
+  for (const artifact of artifacts ?? []) {
+    if (!latestArtifactByReportId.has(artifact.report_id)) latestArtifactByReportId.set(artifact.report_id, artifact);
+  }
+  const candidates = new Map<string, ProjectGrantDualDemandAgreementEvidence[]>();
+  const readFailures: ProjectGrantDualDemandAgreementReadFailure[] = [];
+  for (const report of reports ?? []) {
+    const artifact = latestArtifactByReportId.get(report.id);
+    if (!artifact) continue;
+    const states = verifyFrozenDualDemandAgreementSnapshots(artifact.metadata_json);
+    if (states.length === 0) continue;
+    const invalid = states.find((state) => state.status !== "verified");
+    if (invalid) {
+      readFailures.push({ reportId: report.id, reason: invalid.reason });
+      continue;
+    }
+    const agreements = states
+      .filter((state): state is Extract<typeof state, { status: "verified" }> => state.status === "verified")
+      .map((state) => state.agreement);
+    if (agreements.length === 0) continue;
+    const evidence: ProjectGrantDualDemandAgreementEvidence = {
+      projectId: report.project_id,
+      leadReport: {
+        id: report.id,
+        title: report.title,
+        href: getReportNavigationHref(report.id, getReportPacketFreshness({
+          latestArtifactKind: report.latest_artifact_kind,
+          generatedAt: artifact.generated_at,
+          updatedAt: report.updated_at,
+        }).label),
+        packetFreshness: getReportPacketFreshness({
+          latestArtifactKind: report.latest_artifact_kind,
+          generatedAt: artifact.generated_at,
+          updatedAt: report.updated_at,
+        }),
+        agreements,
+      },
+    };
+    candidates.set(report.project_id, [...(candidates.get(report.project_id) ?? []), evidence]);
+  }
+  const evidenceByProjectId = new Map<string, ProjectGrantDualDemandAgreementEvidence>();
+  for (const [projectId, rows] of candidates) {
+    rows.sort((left, right) =>
+      getGrantSupportFreshnessPriority(left.leadReport.packetFreshness.label) -
+      getGrantSupportFreshnessPriority(right.leadReport.packetFreshness.label));
+    evidenceByProjectId.set(projectId, rows[0]);
+  }
+  return { evidenceByProjectId, readFailures };
 }
 
 export function buildGrantDecisionModelingSupport(

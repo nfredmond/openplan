@@ -57,6 +57,7 @@ import {
   type SafetyCrashEvidenceSupabaseLike,
 } from "@/lib/safety/crash-evidence";
 import {
+  buildProjectGrantDualDemandAgreementEvidenceByProjectId,
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
@@ -354,6 +355,11 @@ export default async function GrantsPage({
     (projectGrantReportsData ?? []) as ProjectGrantModelingReportRow[],
     (projectGrantReportArtifactsData ?? []) as ReportArtifactRow[]
   );
+  const { evidenceByProjectId: projectGrantDualDemandAgreementEvidenceByProjectId } =
+    buildProjectGrantDualDemandAgreementEvidenceByProjectId(
+      (projectGrantReportsData ?? []) as ProjectGrantModelingReportRow[],
+      (projectGrantReportArtifactsData ?? []) as ReportArtifactRow[],
+    );
 
   const scenarioComparisonSummaryResult = projectIdsWithVisibleFundingOpportunities.length
     ? await loadScenarioComparisonSummaryForProjects({
@@ -946,6 +952,7 @@ export default async function GrantsPage({
           showModelingCaveat={opportunityLinkedModelingProjects.length > 0}
           activeFocusedOpportunityId={activeFocusedOpportunityId}
           projectGrantModelingEvidenceByProjectId={projectGrantModelingEvidenceByProjectId}
+          projectGrantDualDemandAgreementEvidenceByProjectId={projectGrantDualDemandAgreementEvidenceByProjectId}
           latestBcaScreeningByProjectId={latestBcaScreeningByProjectId}
           engagementEvidenceByProjectId={engagementEvidenceByProjectId}
           focusedOpportunityNarrativeDraft={focusedOpportunityNarrativeDraft}

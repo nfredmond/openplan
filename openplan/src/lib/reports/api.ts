@@ -25,6 +25,7 @@ export type ReportAccessRow = {
   generated_at: string | null;
   latest_artifact_url: string | null;
   latest_artifact_kind: string | null;
+  metadata_json: Record<string, unknown> | null;
 };
 
 export type ReportMembershipRow = {
@@ -34,7 +35,7 @@ export type ReportMembershipRow = {
 
 /** The columns every report-access caller needs. Derived, never retyped. */
 export const REPORT_ACCESS_COLUMNS =
-  "id, workspace_id, project_id, title, status, report_type, generated_at, latest_artifact_url, latest_artifact_kind";
+  "id, workspace_id, project_id, title, status, report_type, generated_at, latest_artifact_url, latest_artifact_kind, metadata_json";
 
 type QueryBuilder = {
   eq: (column: string, value: string) => QueryBuilder;

@@ -6,7 +6,10 @@ import { GrantsOpportunityRegistryCard } from "@/components/grants/grants-opport
 import type { FundingOpportunityNarrativeDraftRow } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
 import type { ProjectEngagementEvidence } from "@/lib/grants/engagement-evidence";
-import type { ProjectGrantModelingEvidence } from "@/lib/grants/modeling-evidence";
+import type {
+  ProjectGrantDualDemandAgreementEvidence,
+  ProjectGrantModelingEvidence,
+} from "@/lib/grants/modeling-evidence";
 import {
   type DecisionFilter,
   type FundingOpportunityRow,
@@ -34,6 +37,7 @@ export function GrantsOpportunityRegistrySection({
   showModelingCaveat,
   activeFocusedOpportunityId,
   projectGrantModelingEvidenceByProjectId,
+  projectGrantDualDemandAgreementEvidenceByProjectId,
   latestBcaScreeningByProjectId,
   engagementEvidenceByProjectId,
   decisionCommandCallout,
@@ -47,6 +51,7 @@ export function GrantsOpportunityRegistrySection({
   showModelingCaveat: boolean;
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidenceByProjectId: Map<string, ProjectGrantModelingEvidence>;
+  projectGrantDualDemandAgreementEvidenceByProjectId: Map<string, ProjectGrantDualDemandAgreementEvidence>;
   latestBcaScreeningByProjectId: Map<string, ProjectBcaScreeningSummary>;
   engagementEvidenceByProjectId: Map<string, ProjectEngagementEvidence>;
   decisionCommandCallout: ReactNode | null;
@@ -170,6 +175,11 @@ export function GrantsOpportunityRegistrySection({
               projectGrantModelingEvidence={
                 opportunity.project?.id
                   ? projectGrantModelingEvidenceByProjectId.get(opportunity.project.id) ?? null
+                  : null
+              }
+              projectGrantDualDemandAgreementEvidence={
+                opportunity.project?.id
+                  ? projectGrantDualDemandAgreementEvidenceByProjectId.get(opportunity.project.id) ?? null
                   : null
               }
               latestBcaScreening={

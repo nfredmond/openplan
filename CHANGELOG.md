@@ -21,6 +21,28 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.23.0 — 2026-08-23
+
+**No migrations.** Pull and deploy. Reports generated before this release keep
+working, but they do not contain the frozen dual-model evidence described below;
+regenerate a report after selecting any corridors that belong in the packet.
+
+### Dual-model agreement now travels into reports and grants
+
+A planner can cite a successful dual-demand run on a report, review its verified
+aggregate agreement evidence, and explicitly choose named corridors for the
+packet. No corridor is selected automatically. Generated packets freeze both
+model volumes, GEH, classification, source run, custody hashes, attribution
+scale, and caveats so later grant work does not silently read a changed model
+artifact.
+
+Linked grant opportunities now show that frozen report evidence and give the
+grant drafting flow one deterministic aggregate fact plus one fact for each
+planner-selected corridor. A missing, altered, cross-project, failed, averaged,
+or otherwise unverifiable agreement artifact blocks the handoff instead of
+quietly disappearing. Every surface states that agreement measures sensitivity
+to the demand method, not accuracy; the two model values are never averaged.
+
 ## 0.22.0 — 2026-08-23
 
 **No migrations.** Pull and deploy. Existing runs remain readable, but only a

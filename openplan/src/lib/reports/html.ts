@@ -1,5 +1,10 @@
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import {
+  AGREEMENT_METHOD_SENSITIVITY_STATEMENT,
+  AGREEMENT_NO_AVERAGE_STATEMENT,
+  type DualDemandAgreementSnapshotV1,
+} from "@/lib/models/verified-dual-demand-agreement";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
 import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
@@ -167,6 +172,7 @@ export type ReportGenerationData = {
   safetyEvidence?: readonly SafetyCrashEvidence[] | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
+  dualDemandAgreementSnapshotsV1?: DualDemandAgreementSnapshotV1[];
   citedCountyRuns?: ReportCitedCountyRun[];
   /**
    * The project's geometry, for the "Where this project is" figure.
@@ -784,7 +790,7 @@ function packetGeographySvg(figure: PacketGeographyFigure): string {
     .filter(Boolean)
     .join(" ");
 
-  return `<svg class="geo-svg" viewBox="0 0 ${width} ${height.toFixed(0)}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(description)}">
+  return `<svg class="geo-svg" viewBox="0 0 ${width} ${height.toFixed(0)}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${esc(description)}">
       <rect x="0.5" y="0.5" width="${(width - 1).toFixed(1)}" height="${(height - 1).toFixed(1)}" rx="16" class="geo-plate" />
       ${areaPaths}${extentPaths}${corridorPaths}${markerGlyphs}${badges}
       ${northArrow}${scaleBar}
@@ -1120,6 +1126,39 @@ function modelingEvidenceMarkup(modelingEvidence: ReportModelingEvidence[]): str
         })
         .join("")}
     </div>
+  </section>`;
+}
+
+function dualDemandAgreementMarkup(snapshots: readonly DualDemandAgreementSnapshotV1[]): string {
+  if (snapshots.length === 0) return "";
+  const format = (value: number | null, percent = false) =>
+    value === null
+      ? "Not available"
+      : percent
+        ? new Intl.NumberFormat("en", { style: "percent", maximumFractionDigits: 1 }).format(value)
+        : new Intl.NumberFormat("en", { maximumFractionDigits: 3 }).format(value);
+  return `<section id="dual-demand-agreement">
+    <h2 class="section-title">Dual-model agreement evidence</h2>
+    <div class="warning-box">
+      <strong>Methodological sensitivity, not accuracy</strong>
+      <p>${esc(AGREEMENT_METHOD_SENSITIVITY_STATEMENT)} ${esc(AGREEMENT_NO_AVERAGE_STATEMENT)}</p>
+    </div>
+    ${snapshots.map((snapshot) => `<article class="metric-card">
+      <h3>${esc(snapshot.methods.first)} compared with ${esc(snapshot.methods.second)}</h3>
+      <p class="meta">Source run ${esc(snapshot.modelRunId)} · ${esc(snapshot.permittedAttributionScale)}-level attribution · evidence-file SHA-256 ${esc(snapshot.artifactSha256)}</p>
+      <dl class="facts">
+        <div><dt>Links compared</dt><dd>${snapshot.aggregate.linksCompared}</dd></div>
+        <div><dt>Meaningful links</dt><dd>${snapshot.aggregate.linksCarryingMeaningfulTraffic}</dd></div>
+        <div><dt>Agreement share, meaningful links</dt><dd>${esc(format(snapshot.aggregate.agreeShareMeaningfulLinks, true))}</dd></div>
+        <div><dt>Median GEH, meaningful links</dt><dd>${esc(format(snapshot.aggregate.medianGehMeaningfulLinks))}</dd></div>
+      </dl>
+      ${snapshot.selectedCorridors.length > 0 ? `<table>
+        <thead><tr><th>Named corridor</th><th>${esc(snapshot.methods.first)} volume</th><th>${esc(snapshot.methods.second)} volume</th><th>GEH</th><th>Classification</th></tr></thead>
+        <tbody>${snapshot.selectedCorridors.map((row) => `<tr><td>${esc(row.corridor)}</td><td>${esc(format(row.firstVolume))}</td><td>${esc(format(row.secondVolume))}</td><td>${esc(format(row.geh))}</td><td>${esc(titleize(row.classification))}</td></tr>`).join("")}</tbody>
+      </table>` : `<p class="empty">No named corridors were selected by the planner. Aggregate agreement evidence remains included.</p>`}
+      <p class="meta">Assignment profile ${esc(snapshot.assignmentProfileSha256)} · network settings ${esc(snapshot.networkSettingsSha256)} · network state ${esc(snapshot.networkStateSha256)}</p>
+      <ul>${snapshot.mandatoryCaveats.map((caveat) => `<li>${esc(caveat)}</li>`).join("")}</ul>
+    </article>`).join("")}
   </section>`;
 }
 
@@ -1605,6 +1644,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
       )}
       ${evidenceChainMarkup(evidenceChainSummary)}
       ${modelingEvidenceMarkup(data.modelingEvidence)}
+      ${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}
       ${stageGateProvenanceMarkup(data)}
       ${projectRecordsProvenanceMarkup(data)}
       ${scenarioBasisMarkup(data)}

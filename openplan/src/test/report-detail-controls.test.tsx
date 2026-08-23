@@ -14,6 +14,52 @@ import {
 } from "@/components/reports/report-detail-controls";
 
 describe("ReportDetailControls", () => {
+  it("shows verified agreement evidence but leaves every named corridor unselected by default", () => {
+    render(
+      <ReportDetailControls
+        report={{ id: "report-1", title: "Agreement packet", summary: null, status: "draft", hasGeneratedArtifact: false }}
+        modelRunOptions={[{ id: "22222222-2222-4222-8222-222222222222", title: "Dual demand run", engineKey: "dual_demand", status: "succeeded" }]}
+        citedModelRunIds={["22222222-2222-4222-8222-222222222222"]}
+        agreementEvidence={[{
+          modelRunId: "22222222-2222-4222-8222-222222222222",
+          state: {
+            status: "verified",
+            agreement: {
+              schemaVersion: "openplan.corridor_agreement.v2",
+              modelRunId: "22222222-2222-4222-8222-222222222222",
+              artifactId: "66666666-6666-4666-8666-666666666666",
+              artifactSha256: "a".repeat(64),
+              assignmentProfileSha256: "b".repeat(64),
+              networkSettingsSha256: "c".repeat(64),
+              networkStateSha256: "d".repeat(64),
+              methods: { first: "Trip-based", second: "Activity-based" },
+              permittedAttributionScale: "corridor",
+              thresholds: { minimumVolume: 50, gehClose: 5, gehMarginal: 10 },
+              aggregate: {
+                linksCompared: 12,
+                linksCarryingMeaningfulTraffic: 10,
+                agreeShareAllLinks: 0.75,
+                agreeShareMeaningfulLinks: 0.8,
+                divergeShareMeaningfulLinks: 0.1,
+                agreeShareByVolume: 0.82,
+                medianGehMeaningfulLinks: 3.25,
+              },
+              namedCorridors: [{ corridor: "Central Avenue", links: 3, firstVolume: 1200, secondVolume: 1050, geh: 4.472, classification: "agree" }],
+              mandatoryCaveats: ["Neither method is ground truth.", "This does not measure accuracy.", "The methods are never averaged.", "GEH thresholds are borrowed from validation practice."],
+              isAverage: false,
+            },
+          },
+        }]}
+      />
+    );
+
+    expect(screen.getByText("Dual-model agreement evidence")).toBeInTheDocument();
+    expect(screen.getByText("Central Avenue")).toBeInTheDocument();
+    expect(screen.getByText(/Trip-based 1,200 · Activity-based 1,050 · GEH 4.47/i)).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: /Central Avenue/i })).not.toBeChecked();
+    expect(screen.getByText(/methodological sensitivity, not accuracy/i)).toBeInTheDocument();
+  });
+
   it("distinguishes ready, changed, and missing source-review posture", () => {
     expect(
       describeReportSourceReviewPosture({

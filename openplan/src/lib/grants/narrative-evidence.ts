@@ -20,12 +20,18 @@
 
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
+  buildProjectGrantDualDemandAgreementEvidenceByProjectId,
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
   type ProjectGrantModelingArtifactRow,
   type ProjectGrantModelingEvidence,
   type ProjectGrantModelingReportRow,
+  type ProjectGrantDualDemandAgreementEvidence,
 } from "@/lib/grants/modeling-evidence";
+import {
+  AGREEMENT_METHOD_SENSITIVITY_STATEMENT,
+  AGREEMENT_NO_AVERAGE_STATEMENT,
+} from "@/lib/models/verified-dual-demand-agreement";
 import {
   buildGrantEvidenceReadinessCues,
   summarizeGrantEvidenceReadiness,
@@ -156,6 +162,7 @@ export type OpportunityEvidenceBundle = {
   modelingEvidence: ProjectGrantModelingEvidence | null;
   modelingHeadline: string | null;
   modelingReadinessDetail: string | null;
+  dualDemandAgreementEvidence?: ProjectGrantDualDemandAgreementEvidence | null;
   bcaScreening: ProjectBcaScreeningSummary | null;
   engagementEvidence: ProjectEngagementEvidence | null;
   evidenceReadinessSummary: string;
@@ -277,6 +284,7 @@ export async function assembleOpportunityEvidence(
   let modelingReadinessDetail: string | null = null;
   let modelingHeadline: string | null = null;
   let modelingEvidence: ProjectGrantModelingEvidence | null = null;
+  let dualDemandAgreementEvidence: ProjectGrantDualDemandAgreementEvidence | null = null;
   let bcaScreening: ProjectBcaScreeningSummary | null = null;
   let engagementEvidence: ProjectEngagementEvidence | null = null;
   let linkedProjectStage: NarrativeLinkedProjectStage | null = null;
@@ -330,6 +338,7 @@ export async function assembleOpportunityEvidence(
       client
         .from("reports")
         .select("id, project_id, title, updated_at, generated_at, latest_artifact_kind")
+        .eq("workspace_id", opportunity.workspace_id)
         .eq("project_id", opportunity.project_id)
         .order("updated_at", { ascending: false }),
       client
@@ -419,6 +428,18 @@ export async function assembleOpportunityEvidence(
         reports,
         (artifactsResult.data ?? []) as ProjectGrantModelingArtifactRow[]
       ).get(opportunity.project_id) ?? null;
+    const dualDemandEvidenceResult = buildProjectGrantDualDemandAgreementEvidenceByProjectId(
+      reports,
+      (artifactsResult.data ?? []) as ProjectGrantModelingArtifactRow[],
+    );
+    dualDemandAgreementEvidence =
+      dualDemandEvidenceResult.evidenceByProjectId.get(opportunity.project_id) ?? null;
+    for (const failure of dualDemandEvidenceResult.readFailures) {
+      readFailures.push({
+        subject: "the project's frozen dual-model agreement evidence",
+        message: `Report ${failure.reportId}: ${failure.reason}`,
+      });
+    }
 
     const readiness = describeProjectGrantModelingReadiness(modelingEvidence);
     modelingReadinessDetail = readiness ? `${readiness.label}: ${readiness.detail}` : null;
@@ -654,6 +675,7 @@ export async function assembleOpportunityEvidence(
     modelingEvidence,
     modelingHeadline,
     modelingReadinessDetail,
+    dualDemandAgreementEvidence,
     bcaScreening,
     engagementEvidence,
     evidenceReadinessSummary,
@@ -737,6 +759,14 @@ export function buildOpportunityFactList(
   const { opportunity } = bundle;
   const isProposal = opportunity.pursuit_kind === "proposal";
   const hasModelingEvidence = Boolean(bundle.modelingHeadline && bundle.modelingReadinessDetail);
+  const dualDemandAgreementClaims = bundle.dualDemandAgreementEvidence
+    ? bundle.dualDemandAgreementEvidence.leadReport.agreements.flatMap((agreement) => [
+        `Frozen dual-model agreement aggregate from report "${bundle.dualDemandAgreementEvidence?.leadReport.title}" and source run ${agreement.modelRunId}: ${agreement.methods.first} compared with ${agreement.methods.second}; ${agreement.aggregate.linksCompared} links compared; ${agreement.aggregate.linksCarryingMeaningfulTraffic} carried meaningful traffic; meaningful-link agreement share ${agreement.aggregate.agreeShareMeaningfulLinks === null ? "not available" : `${(agreement.aggregate.agreeShareMeaningfulLinks * 100).toFixed(1)}%`}; median meaningful-link GEH ${agreement.aggregate.medianGehMeaningfulLinks ?? "not available"}; attribution scale ${agreement.permittedAttributionScale}. Packet freshness: ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.label} — ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.detail} ${AGREEMENT_METHOD_SENSITIVITY_STATEMENT} ${AGREEMENT_NO_AVERAGE_STATEMENT}`,
+        ...agreement.namedCorridors.map((corridor) =>
+          `Planner-selected corridor evidence frozen in report "${bundle.dualDemandAgreementEvidence?.leadReport.title}": ${corridor.corridor}; ${agreement.methods.first} volume ${corridor.firstVolume}; ${agreement.methods.second} volume ${corridor.secondVolume}; GEH ${corridor.geh}; classification ${corridor.classification}; source run ${agreement.modelRunId}; attribution scale ${agreement.permittedAttributionScale}. Packet freshness: ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.label} — ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.detail} ${AGREEMENT_METHOD_SENSITIVITY_STATEMENT} ${AGREEMENT_NO_AVERAGE_STATEMENT}`
+        ),
+      ])
+    : [];
 
   return buildNarrativeFactList([
     `The funding opportunity is titled "${opportunity.title}"${opportunity.agency_name ? `, administered by ${opportunity.agency_name}` : ""}.`,
@@ -798,6 +828,7 @@ export function buildOpportunityFactList(
     include("modeling") && hasModelingEvidence
       ? `Modeling evidence readiness: ${bundle.modelingReadinessDetail} ${GRANT_MODELING_PLANNING_CAVEAT}`
       : null,
+    ...(include("modeling") ? dualDemandAgreementClaims : []),
     ...(include("bca") && bundle.bcaScreening
       ? buildBcaScreeningFactClaims(bundle.bcaScreening, bundle.projectName)
       : []),

@@ -17,6 +17,7 @@ export type ReportRow = {
   latest_artifact_kind: string | null;
   created_at: string;
   updated_at: string;
+  metadata_json: Record<string, unknown> | null;
   rtp_basis_stale: boolean | null;
   rtp_basis_stale_reason: string | null;
   rtp_basis_stale_run_id: string | null;

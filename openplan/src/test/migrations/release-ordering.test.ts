@@ -175,6 +175,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
     migrationsAtRelease: 208,
   },
+  // 0.23.0 — verified dual-model agreement evidence can be selected for a
+  // report, frozen into its packet, and cited from that snapshot in grants.
+  // No schema change; selections and snapshots use versioned JSON metadata.
+  {
+    tag: "0.23.0",
+    lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
+    migrationsAtRelease: 208,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

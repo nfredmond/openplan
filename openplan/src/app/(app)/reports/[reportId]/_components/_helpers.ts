@@ -313,7 +313,7 @@ export function summarizeProjectRecordDrift(changes: string[]): string {
 }
 
 const REPORT_DETAIL_COLUMNS =
-  "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, rtp_basis_stale, rtp_basis_stale_reason, rtp_basis_stale_run_id, rtp_basis_stale_marked_at";
+  "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, metadata_json, created_at, updated_at, rtp_basis_stale, rtp_basis_stale_reason, rtp_basis_stale_run_id, rtp_basis_stale_marked_at";
 
 type ReportDetailQueryResult = {
   data: ReportRow | null;

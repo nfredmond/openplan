@@ -6,6 +6,13 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadReportAccess as sharedLoadReportAccess } from "@/lib/reports/api";
+import {
+  loadReportDualDemandAgreements,
+  readAgreementCorridorSelections,
+  retainCitedAgreementCorridorSelections,
+  validateAgreementCorridorSelections,
+  writeAgreementCorridorSelections,
+} from "@/lib/reports/dual-demand-agreement";
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
@@ -20,6 +27,15 @@ const patchReportSchema = z
     // Typed evidence citations (report_runs.model_run_id / county_run_id);
     // each replaces only its own kind.
     modelRunIds: z.array(z.string().uuid()).max(20).optional(),
+    agreementCorridorSelections: z
+      .array(
+        z.object({
+          modelRunId: z.string().uuid(),
+          corridor: z.string().trim().min(1).max(240),
+        })
+      )
+      .max(200)
+      .optional(),
     countyRunIds: z.array(z.string().uuid()).max(20).optional(),
     sections: z
       .array(
@@ -273,6 +289,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json(
       {
         report: access.report,
+        agreementCorridorSelections: readAgreementCorridorSelections(access.report.metadata_json),
         project,
         sections: sections ?? [],
         runs,
@@ -364,10 +381,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (parsed.data.modelRunIds && parsed.data.modelRunIds.length > 0) {
+      if (!access.report.project_id) {
+        return NextResponse.json({ error: "Model-run citations require a project report" }, { status: 400 });
+      }
       const { data: modelRunRows, error: modelRunError } = await access.supabase
         .from("model_runs")
         .select("id")
         .eq("workspace_id", access.report.workspace_id)
+        .eq("project_id", access.report.project_id)
         .in("id", parsed.data.modelRunIds);
 
       if (modelRunError) {
@@ -381,6 +402,49 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
       if ((modelRunRows ?? []).length !== new Set(parsed.data.modelRunIds).size) {
         return NextResponse.json({ error: "One or more linked model runs are invalid" }, { status: 400 });
+      }
+    }
+
+    let finalModelRunIds = parsed.data.modelRunIds;
+    if (parsed.data.agreementCorridorSelections && !finalModelRunIds) {
+      const { data: existingLinks, error: existingLinksError } = await access.supabase
+        .from("report_runs")
+        .select("model_run_id")
+        .eq("report_id", access.report.id)
+        .not("model_run_id", "is", null);
+      if (existingLinksError) {
+        return NextResponse.json({ error: "Failed to verify cited model runs" }, { status: 500 });
+      }
+      finalModelRunIds = ((existingLinks ?? []) as Array<{ model_run_id: string | null }>)
+        .map((row) => row.model_run_id)
+        .filter((value): value is string => Boolean(value));
+    }
+
+    const savedAgreementSelections = readAgreementCorridorSelections(access.report.metadata_json);
+    const submittedAgreementSelections = parsed.data.agreementCorridorSelections
+      ? readAgreementCorridorSelections({ agreementCorridorSelections: parsed.data.agreementCorridorSelections })
+      : undefined;
+    const finalAgreementSelections = submittedAgreementSelections ??
+      (parsed.data.modelRunIds
+        ? retainCitedAgreementCorridorSelections(savedAgreementSelections, parsed.data.modelRunIds)
+        : savedAgreementSelections);
+    if (parsed.data.agreementCorridorSelections) {
+      if (!access.report.project_id) {
+        return NextResponse.json({ error: "Agreement corridors require a project report" }, { status: 400 });
+      }
+      const agreementStates = await loadReportDualDemandAgreements({
+        supabase: access.supabase,
+        modelRunIds: finalModelRunIds ?? [],
+        workspaceId: access.report.workspace_id,
+        projectId: access.report.project_id,
+      });
+      const selectionValidation = validateAgreementCorridorSelections({
+        selections: finalAgreementSelections,
+        citedModelRunIds: finalModelRunIds ?? [],
+        agreementStates,
+      });
+      if (!selectionValidation.ok) {
+        return NextResponse.json({ error: selectionValidation.reason }, { status: 400 });
       }
     }
 
@@ -426,6 +490,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
       reportUpdate.status = parsed.data.status;
+    }
+    if (parsed.data.agreementCorridorSelections || parsed.data.modelRunIds) {
+      reportUpdate.metadata_json = writeAgreementCorridorSelections(
+        access.report.metadata_json,
+        finalAgreementSelections,
+      );
     }
 
     if (Object.keys(reportUpdate).length > 0) {
@@ -591,7 +661,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       durationMs: Date.now() - startedAt,
     });
 
-    return NextResponse.json({ success: true, reportId: access.report.id }, { status: 200 });
+    return NextResponse.json(
+      { success: true, reportId: access.report.id, agreementCorridorSelections: finalAgreementSelections },
+      { status: 200 },
+    );
   } catch (error) {
     audit.error("reports_patch_unhandled_error", {
       durationMs: Date.now() - startedAt,

@@ -22,6 +22,7 @@ const stageEqMock = vi.fn();
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const MODEL_RUN_ID = "22222222-2222-4222-8222-222222222222";
 const STAGE_ID = "33333333-3333-4333-8333-333333333333";
+const ARTIFACT_ID = "66666666-6666-4666-8666-666666666666";
 const WORKSPACE_ID = "44444444-4444-4444-8444-444444444444";
 const USER_ID = "55555555-5555-4555-8555-555555555555";
 const FIXTURE_PATH = "../scripts/modeling/tests/fixtures/producer_corridor_agreement_v2.geojson";
@@ -32,6 +33,7 @@ const ARTIFACT_SHA = createHash("sha256").update(FIXTURE_BYTES).digest("hex");
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 type ArtifactRow = {
+  id: string;
   artifact_type: string;
   file_url: string;
   content_hash: string;
@@ -103,6 +105,7 @@ function custodyMetadata(): Record<string, unknown> {
 
 function validArtifactRow(): ArtifactRow {
   return {
+    id: ARTIFACT_ID,
     artifact_type: "demand_model_agreement_geojson",
     file_url: `storage://run-artifacts/model-runs/${MODEL_RUN_ID}/agreement/corridor_agreement.geojson`,
     content_hash: ARTIFACT_SHA,
@@ -235,7 +238,6 @@ describe("GET authenticated demand agreement artifact", () => {
 
   it("returns the exact registered Python fixture bytes with all custody headers", async () => {
     const response = await getAgreement(request(), context());
-
     expect(response.status).toBe(200);
     expect(Buffer.from(await response.arrayBuffer())).toEqual(FIXTURE_BYTES);
     expect(response.headers.get("content-type")).toBe("application/geo+json; charset=utf-8");
@@ -251,7 +253,7 @@ describe("GET authenticated demand agreement artifact", () => {
       custodyMetadata().network_state_digest,
     );
     expect(artifactSelectMock).toHaveBeenCalledWith(
-      "artifact_type, file_url, content_hash, file_size_bytes, metadata_json, stage_id",
+      "id, artifact_type, file_url, content_hash, file_size_bytes, metadata_json, stage_id",
     );
     expect(runEqMock).toHaveBeenCalledWith("id", MODEL_RUN_ID);
     expect(runEqMock).toHaveBeenCalledWith("model_id", MODEL_ID);

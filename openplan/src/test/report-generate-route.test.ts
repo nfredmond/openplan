@@ -148,7 +148,21 @@ const countyRunsInMock = vi.fn();
 const countyRunsSelectMock = vi.fn(() => ({ eq: countyRunsEqMock, in: countyRunsInMock }));
 
 const modelRunsInMock = vi.fn();
-const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock }));
+const modelRunMaybeSingleMock = vi.fn();
+const modelRunsEqMock = vi.fn((..._args: [string, unknown]) => ({
+  eq: modelRunsEqMock,
+  in: modelRunsInMock,
+  maybeSingle: modelRunMaybeSingleMock,
+}));
+const modelRunsSelectMock = vi.fn((columns: string) =>
+  columns === "id, status, workspace_id, project_id, model_id"
+    ? { eq: modelRunsEqMock }
+    : { eq: modelRunsEqMock, in: modelRunsInMock }
+);
+const agreementArtifactsLimitMock = vi.fn();
+const agreementArtifactsOrderMock = vi.fn(() => ({ limit: agreementArtifactsLimitMock }));
+const agreementArtifactsEqMock = vi.fn(() => ({ eq: agreementArtifactsEqMock, order: agreementArtifactsOrderMock }));
+const agreementArtifactsSelectMock = vi.fn(() => ({ eq: agreementArtifactsEqMock }));
 
 const modelingClaimMaybeSingleMock = vi.fn();
 const modelingClaimEqTrackMock = vi.fn(() => ({ maybeSingle: modelingClaimMaybeSingleMock }));
@@ -394,6 +408,10 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "model_run_artifacts") {
+    return { select: agreementArtifactsSelectMock };
+  }
+
   if (table === "modeling_claim_decisions") {
     return {
       select: modelingClaimSelectMock,
@@ -439,6 +457,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "report_artifacts") {
     return {
       insert: artifactsInsertMock,
+      select: agreementArtifactsSelectMock,
     };
   }
 
@@ -645,6 +664,17 @@ describe("POST /api/reports/[reportId]/generate", () => {
     countyRunsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     countyRunsInMock.mockResolvedValue({ data: [], error: null });
     modelRunsInMock.mockResolvedValue({ data: [], error: null });
+    modelRunMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "88888888-8888-4888-8888-888888888888",
+        status: "succeeded",
+        workspace_id: "workspace-1",
+        project_id: "project-1",
+        model_id: "model-1",
+      },
+      error: null,
+    });
+    agreementArtifactsLimitMock.mockResolvedValue({ data: [], error: null });
     modelingClaimMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     modelingClaimInMock.mockResolvedValue({ data: [], error: null });
     modelingSourcesOrderMock.mockResolvedValue({ data: [], error: null });
@@ -1132,6 +1162,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(200);
     const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
     const htmlContent = String(generatedArtifact?.metadata_json?.htmlContent ?? "");
+    expect(modelRunsEqMock.mock.calls.filter(([column]) => column === "project_id")).toHaveLength(2);
     // The cited model run carries its title, engine, status, KPI line, and the
     // run-mode caveat verbatim.
     expect(htmlContent).toContain("SR-49 fast screening");
@@ -1164,6 +1195,34 @@ describe("POST /api/reports/[reportId]/generate", () => {
       ],
       citedCountyRuns: [{ id: "county-run-1", runName: "County screening baseline", stage: "validated-screening" }],
     });
+  });
+
+  it("blocks generation when an attached agreement artifact cannot be read", async () => {
+    reportRunsOrderMock.mockResolvedValueOnce({
+      data: [{ id: "report-run-2", run_id: null, model_run_id: "model-run-1", county_run_id: null, sort_order: 0 }],
+      error: null,
+    });
+    modelRunsInMock.mockResolvedValueOnce({
+      data: [{ id: "model-run-1", run_title: "Dual demand run", engine_key: "dual_demand", status: "succeeded", result_summary_json: {} }],
+      error: null,
+    });
+    agreementArtifactsLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "artifact registry unavailable" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: expect.stringMatching(/agreement evidence is unreadable/i) });
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 
   it("persists project funding profile scan and source-context readiness in artifact metadata", async () => {

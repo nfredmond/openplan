@@ -96,6 +96,57 @@ function narrative(overrides?: Partial<AcceptedSectionNarrative>): AcceptedSecti
 }
 
 describe("buildReportHtml accepted-narrative rendering", () => {
+  it("renders frozen aggregate evidence and only planner-selected corridor rows without an average", () => {
+    const html = buildReportHtml(baseData({
+      dualDemandAgreementSnapshotsV1: [{
+        schemaVersion: "openplan.dual-demand-agreement-snapshot.v1",
+        modelRunId: "22222222-2222-4222-8222-222222222222",
+        artifactId: "66666666-6666-4666-8666-666666666666",
+        artifactSha256: "a".repeat(64),
+        assignmentProfileSha256: "b".repeat(64),
+        networkSettingsSha256: "c".repeat(64),
+        networkStateSha256: "d".repeat(64),
+        methods: { first: "Trip-based", second: "Activity-based" },
+        permittedAttributionScale: "corridor",
+        thresholds: { minimumVolume: 50, gehClose: 5, gehMarginal: 10 },
+        aggregate: {
+          linksCompared: 12,
+          linksCarryingMeaningfulTraffic: 10,
+          agreeShareAllLinks: 0.75,
+          agreeShareMeaningfulLinks: 0.8,
+          divergeShareMeaningfulLinks: 0.1,
+          agreeShareByVolume: 0.82,
+          medianGehMeaningfulLinks: 3.25,
+        },
+        selectedCorridors: [{
+          corridor: "Central Avenue",
+          links: 3,
+          firstVolume: 1200,
+          secondVolume: 1050,
+          geh: 4.472,
+          classification: "agree",
+        }],
+        mandatoryCaveats: [
+          "Neither method is ground truth.",
+          "Agreement does not mean either method is correct or establish accuracy.",
+          "The methods are never averaged.",
+          "GEH thresholds are borrowed screening thresholds, not local validation.",
+        ],
+        isAverage: false,
+      }],
+    }));
+
+    expect(html).toContain("Dual-model agreement evidence");
+    expect(html).toContain("Central Avenue");
+    expect(html).toContain("Trip-based volume");
+    expect(html).toContain("Activity-based volume");
+    expect(html).toContain("4.472");
+    expect(html).toContain("Source run 22222222-2222-4222-8222-222222222222");
+    expect(html).toContain("Methodological sensitivity, not accuracy");
+    expect(html).toContain("never averaged");
+    expect(html).not.toMatch(/average volume/i);
+  });
+
   it("renders the accepted block under its section with the AI label and grounding stats", () => {
     const html = buildReportHtml(baseData({ acceptedNarratives: [narrative()] }));
 
