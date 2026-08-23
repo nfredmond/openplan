@@ -54,14 +54,10 @@ describe("ModelRunManager per-run calibration toggle", () => {
     selectRunMode("aequilibrae");
     const box = screen.getByRole("checkbox", { name: CALIBRATION_LABEL });
     expect(box).toBeInTheDocument();
-    // HONEST COPY: it discloses the tier and the CEQA boundary. Both claims are
-    // load-bearing and both survived the 2026-08-07 rewording — what changed is
-    // that the tier is now named in the planner's words rather than the
-    // database's, and by the SAME function that labels it on the run itself, so
-    // the two surfaces cannot drift into calling one thing two names.
-    expect(
-      screen.getByText(modelingClaimStatusLabel("calibrated_to_counts"))
-    ).toBeInTheDocument();
+    // The tuning holdout chooses parameters; it cannot also establish their
+    // accuracy. The launch form says that before the planner starts the run.
+    expect(screen.getByText(/candidate-selection evidence, not an independent accuracy test/i)).toBeInTheDocument();
+    expect(screen.getByText(/requires a separate untouched validation result/i)).toBeInTheDocument();
     expect(screen.getByText(/CEQA VMT input is unchanged/i)).toBeInTheDocument();
 
     selectRunMode("behavioral_demand");

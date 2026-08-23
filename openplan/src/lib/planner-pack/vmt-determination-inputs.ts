@@ -39,9 +39,10 @@ import type { CeqaVmtKpiRowLike } from "@/lib/models/ceqa-vmt-screen";
 export const CALIBRATED_RESIDENT_VMT_PER_CAPITA_KPI = "resident_vmt_per_capita_calibrated";
 
 /**
- * The held-out (never-fit) count-validation error published by a calibrated run.
- * A disclosure that travels next to a calibrated determination, not an input to
- * it.
+ * The held-out (never-fit) candidate-selection error published by a calibrated
+ * run. It prevents direct fit-set overfitting but is not independent accuracy
+ * validation. A disclosure that travels next to a calibrated determination,
+ * not an input to it.
  */
 export const CALIBRATED_HOLDOUT_APE_KPI = "validation_median_ape_calibrated";
 
@@ -79,11 +80,11 @@ export function selectCalibratedVmtPerCapita(
 }
 
 /**
- * The run-level held-out median APE from a calibrated run, or null.
+ * The run-level selection-holdout median APE from a calibrated run, or null.
  *
  * Run-level for the same reason as the VMT itself: a corridor's calibration fit
- * rendered under "Count-validated in this study area" would describe the study
- * area using one slice of it. Zero is NOT excluded here — unlike a VMT figure, a
+ * rendered as the study area's selection result would describe the study area
+ * using one slice of it. Zero is NOT excluded here — unlike a VMT figure, a
  * 0% median error is a meaningful (if improbable) calibration result rather than
  * a broken row.
  */

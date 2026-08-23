@@ -49,6 +49,23 @@ export type NormalizedEvidencePacketBenchmarkFit = {
   recommendation: string | null;
 };
 
+export type EvidenceCountSourceStatus =
+  | "available"
+  | "source_unavailable"
+  | "geography_unsupported"
+  | "no_eligible_sections"
+  | "no_traffic_found"
+  | "not_recorded";
+
+export type NormalizedCountSourceEvidence = Record<string, unknown> & {
+  status: EvidenceCountSourceStatus;
+};
+
+export type NormalizedIndependentValidationEvidence = Record<string, unknown> & {
+  status: "passed" | "failed" | "not_run";
+  supports_claim_tier: boolean;
+};
+
 export type NormalizedEvidencePacket = {
   packet_version: string;
   generated_at: string;
@@ -97,6 +114,10 @@ export type NormalizedEvidencePacket = {
    * Null when the run's engine did not compute one.
    */
   benchmark_fit?: NormalizedEvidencePacketBenchmarkFit | null;
+  count_source: NormalizedCountSourceEvidence | null;
+  gateway_volume_basis: Record<string, unknown> | null;
+  calibration_selection: Record<string, unknown> | null;
+  independent_validation: NormalizedIndependentValidationEvidence | null;
   provenance: {
     platform: string;
     engine_version: string;
@@ -253,6 +274,58 @@ function normalizeBenchmarkFit(value: unknown): NormalizedEvidencePacketBenchmar
     sources: dedupeStrings(asArray(raw.sources).map((source) => asString(source))),
     grade: "sketch_screening",
     recommendation: asString(raw.recommendation),
+  };
+}
+
+const COUNT_SOURCE_STATUSES = new Set<EvidenceCountSourceStatus>([
+  "available",
+  "source_unavailable",
+  "geography_unsupported",
+  "no_eligible_sections",
+  "no_traffic_found",
+  "not_recorded",
+]);
+
+export function evidenceCountSourceStatusLabel(status: EvidenceCountSourceStatus): string {
+  switch (status) {
+    case "available":
+      return "Observed-count source available";
+    case "source_unavailable":
+      return "Source unavailable";
+    case "geography_unsupported":
+      return "Geography unsupported";
+    case "no_eligible_sections":
+      return "No eligible sections";
+    case "no_traffic_found":
+      return "No traffic found";
+    case "not_recorded":
+      return "Observed-count source not recorded";
+  }
+}
+
+function normalizeCountSourceEvidence(value: unknown): NormalizedCountSourceEvidence | null {
+  const raw = asRecord(value);
+  if (!raw) return null;
+  const status = asString(raw.status);
+  return {
+    ...raw,
+    status:
+      status && COUNT_SOURCE_STATUSES.has(status as EvidenceCountSourceStatus)
+        ? (status as EvidenceCountSourceStatus)
+        : "not_recorded",
+  };
+}
+
+function normalizeIndependentValidationEvidence(
+  value: unknown
+): NormalizedIndependentValidationEvidence | null {
+  const raw = asRecord(value);
+  if (!raw) return null;
+  const status = asString(raw.status);
+  return {
+    ...raw,
+    status: status === "passed" || status === "failed" || status === "not_run" ? status : "not_run",
+    supports_claim_tier: asBoolean(raw.supports_claim_tier) ?? false,
   };
 }
 
@@ -415,6 +488,10 @@ export function normalizeEvidencePacket({
     ]),
     employment: asRecord(raw.employment),
     benchmark_fit: normalizeBenchmarkFit(raw.benchmark_fit ?? normalizedResultSummary.benchmark_fit),
+    count_source: normalizeCountSourceEvidence(raw.count_source),
+    gateway_volume_basis: asRecord(raw.gateway_volume_basis),
+    calibration_selection: asRecord(raw.calibration_selection),
+    independent_validation: normalizeIndependentValidationEvidence(raw.independent_validation),
     provenance: {
       platform: asString(rawProvenance.platform) ?? "OpenPlan",
       engine_version:
@@ -481,6 +558,86 @@ export function normalizeEvidencePacket({
           }
         : null,
   };
+}
+
+function markdownValue(value: unknown): string {
+  if (typeof value === "number") return Number.isInteger(value) ? value.toLocaleString("en-US") : `${value}`;
+  if (typeof value === "boolean") return value ? "yes" : "no";
+  return asString(value) ?? "Not recorded";
+}
+
+function markdownList(value: unknown): string {
+  const values = asArray(value).map((item) => asString(item)).filter((item): item is string => Boolean(item));
+  return values.length > 0 ? values.join(", ") : "Not recorded";
+}
+
+/** Downloadable planner-readable provenance generated from the same normalized
+ * packet as the run page. It contains no new calculation and therefore cannot
+ * disagree with the UI about which evidence supports a claim. */
+export function renderModelRunProvenanceMarkdown(packet: NormalizedEvidencePacket): string {
+  const countSource = packet.count_source ?? { status: "not_recorded" as const };
+  const gateways = packet.gateway_volume_basis ?? {};
+  const selection = packet.calibration_selection ?? {};
+  const independent = packet.independent_validation ?? {
+    status: "not_run" as const,
+    supports_claim_tier: false,
+  };
+  const baseline = asRecord(selection.baseline) ?? {};
+  const selected = asRecord(selection.selected) ?? {};
+  const exclusionReasons = asRecord(countSource.exclusion_reasons) ?? {};
+  const exclusions = Object.entries(exclusionReasons)
+    .map(([reason, count]) => `${reason}: ${markdownValue(count)}`)
+    .join(", ") || "None recorded";
+
+  return [
+    `# Model run provenance: ${packet.model_title}`,
+    "",
+    `- Run: ${packet.run_id}`,
+    `- Generated: ${packet.generated_at}`,
+    `- Engine: ${packet.engine} (${packet.provenance.engine_version})`,
+    `- Artifact schema: ${packet.packet_version}`,
+    "",
+    "## Observed-count source",
+    "",
+    `- Status: ${evidenceCountSourceStatusLabel(countSource.status)}`,
+    `- Dataset: ${markdownValue(countSource.dataset_id)}`,
+    `- Vintage: ${markdownValue(countSource.vintage)}`,
+    `- Supported road classes: ${markdownList(countSource.supported_road_classes)}`,
+    `- Eligible rows: ${markdownValue(countSource.eligible_rows)}`,
+    `- Excluded rows: ${markdownValue(countSource.excluded_rows)}`,
+    `- Exclusion reasons: ${exclusions}`,
+    `- Coverage: ${markdownValue(countSource.coverage_statement)}`,
+    `- Limitation: ${markdownValue(countSource.limitation)}`,
+    "",
+    "## Gateway volume basis",
+    "",
+    `- Measured: ${markdownValue(gateways.measured)}`,
+    `- Inferred: ${markdownValue(gateways.inferred)}`,
+    `- Unsupported: ${markdownValue(gateways.unsupported)}`,
+    `- Method: ${markdownValue(gateways.default_method)}`,
+    `- Limitation: ${markdownValue(gateways.limitation)}`,
+    "",
+    "## Calibration selection",
+    "",
+    "This is candidate-selection evidence, not an accuracy result.",
+    "",
+    `- Status: ${markdownValue(selection.status)}`,
+    `- Baseline selection objective: ${markdownValue(baseline.objective)}`,
+    `- Selected objective: ${markdownValue(selected.objective)}`,
+    `- Baseline median APE: ${markdownValue(baseline.median_ape)}%`,
+    `- Selected median APE: ${markdownValue(selected.median_ape)}%`,
+    "",
+    "## Independent validation",
+    "",
+    `- Status: ${independent.status}`,
+    `- Supports a count-backed claim tier: ${independent.supports_claim_tier ? "yes" : "no"}`,
+    `- Matched stations: ${markdownValue(independent.stations_matched)}`,
+    `- Median APE: ${markdownValue(independent.median_ape)}%`,
+    `- Reason: ${markdownValue(independent.reason)}`,
+    "",
+    "A national average never promotes an individual run. Missing or unsupported road classes are unknown, not zero traffic.",
+    "",
+  ].join("\n");
 }
 
 function formatCompactNumber(value: number | null) {

@@ -87,7 +87,7 @@ describe("ModelRunCeqaVmtScreen", () => {
     expect(screen.getByText("Screening-level — not a determination of record")).toBeInTheDocument();
   });
 
-  it("surfaces the count-calibration confidence note (without recalculating VMT) on a calibrated run", async () => {
+  it("labels the calibration holdout as selection evidence, not independent accuracy", async () => {
     mockKpisFetch([
       { kpi_name: "vmt_per_capita", kpi_label: "VMT per Capita", value: 25.7, unit: "vehicle-miles/person/day", geometry_ref: null },
       { kpi_name: "daily_vmt", kpi_label: "Daily VMT", value: 2633000.6, unit: "vehicle-miles/day", geometry_ref: null },
@@ -98,9 +98,10 @@ describe("ModelRunCeqaVmtScreen", () => {
     await openScreen();
     await waitFor(() => expect(screen.getByTestId("ceqa-vmt-determination")).toBeInTheDocument());
     const note = screen.getByTestId("ceqa-vmt-calibration-confidence");
-    expect(note).toHaveTextContent("Count-validated in this study area");
+    expect(note).toHaveTextContent("Calibration-selection result");
     expect(note).toHaveTextContent("16.3"); // formatNumber(16.25, 1)
-    expect(note).toHaveTextContent("does not recalculate VMT");
+    expect(note).toHaveTextContent("does not independently validate");
+    expect(note).toHaveTextContent("does not strengthen the accuracy claim");
     // The determination itself still uses the screening VMT (25.7), unchanged.
     expect(screen.getByTestId("ceqa-vmt-determination")).toHaveTextContent("25.7");
   });

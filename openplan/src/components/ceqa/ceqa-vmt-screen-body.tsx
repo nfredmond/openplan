@@ -400,11 +400,12 @@ export function CeqaVmtScreenBody({
           {calibratedActive ? (
             <p className="mt-2 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-foreground/90">
               This determination uses <span className="font-semibold">calibrated (count-tuned) VMT</span>{" "}
-              from the demand-nudge stage, count-validated to{" "}
-              {calibratedHoldoutApe !== null ? `${formatNumber(calibratedHoldoutApe, 1)}% held-out median APE` : "the held-out count set"}.
+              from the demand-nudge stage, selected against{" "}
+              {calibratedHoldoutApe !== null ? `${formatNumber(calibratedHoldoutApe, 1)}% selection-holdout median APE` : "the selection holdout"}.
               It is a screening-grade calibrated estimate, not the default screening determination
-              (toggle off to compare). Calibration primarily improves link-level fit; treat this
-              per-capita figure as a count-informed refinement, not a validated forecast.
+              (toggle off to compare). That holdout helped choose the calibration and is not an
+              independent accuracy test; treat this per-capita figure as a count-informed
+              alternative, not a validated forecast.
             </p>
           ) : null}
           <p className="mt-2 text-sm text-foreground/90">
@@ -425,12 +426,11 @@ export function CeqaVmtScreenBody({
               className="mt-3 rounded-[0.5rem] border border-[color:var(--pine)]/30 bg-[color:var(--pine)]/5 px-3 py-2 text-xs text-foreground/90"
               data-testid="ceqa-vmt-calibration-confidence"
             >
-              <span className="font-semibold">Count-validated in this study area:</span> the model
-              was calibrated to observed traffic counts and reproduces a held-out (never-fit) count
-              set to {formatNumber(calibratedHoldoutApe, 1)}% median absolute percent error. This
-              strengthens the evidence for the screening determination above in this area; it does
-              not recalculate VMT (calibration tunes link-level traffic fidelity, not the per-capita
-              VMT aggregate).
+              <span className="font-semibold">Calibration-selection result:</span> the selected
+              parameters reproduce the never-fit selection holdout to{" "}
+              {formatNumber(calibratedHoldoutApe, 1)}% median absolute percent error. Because this
+              set chose among candidate steps, it does not independently validate the selected
+              model and does not strengthen the accuracy claim for the determination above.
             </p>
           ) : null}
           {/* The jurisdiction basis rides WITH the determination, always. A

@@ -60,9 +60,9 @@ function routeContext() {
   return { params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }) };
 }
 
-function getRequest() {
+function getRequest(format?: "markdown") {
   return new NextRequest(
-    `http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}/evidence-packet`
+    `http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}/evidence-packet${format ? `?format=${format}` : ""}`
   );
 }
 
@@ -141,5 +141,16 @@ describe("/api/models/[modelId]/runs/[modelRunId]/evidence-packet — failed rea
     const payload = await response.json();
     // Genuinely-empty KPI rows on a SUCCESSFUL read may honestly say so.
     expect(payload.caveats).toContain("No KPIs were extracted for this run.");
+  });
+
+  it("downloads the same normalized evidence as a planner-readable Markdown document", async () => {
+    const response = await GET(getRequest("markdown"), routeContext());
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/markdown");
+    expect(response.headers.get("content-disposition")).toContain(`${MODEL_RUN_ID}-provenance.md`);
+    const body = await response.text();
+    expect(body).toContain("# Model run provenance: Test model");
+    expect(body).toContain("Observed-count source not recorded");
+    expect(body).toContain("candidate-selection evidence, not an accuracy result");
   });
 });

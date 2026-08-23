@@ -37,10 +37,7 @@ import {
   type ModelRunDispatchOutcome,
   type ModelRunExecutionOutlook,
 } from "@/lib/models/run-dispatch";
-import {
-  modelingClaimStatusLabel,
-  type ModelRunClaimDecision,
-} from "@/lib/models/evidence-backbone";
+import { type ModelRunClaimDecision } from "@/lib/models/evidence-backbone";
 import { stageLogForDisplay, summarizeRunFailure } from "@/lib/models/run-failure";
 import {
   accuracyByClassRows,
@@ -933,20 +930,16 @@ export function ModelRunManager({
                   onChange={(event) => setCalibrate(event.target.checked)}
                 />
                 <span>
-                  Tune the assignment to local traffic counts, where you have them. A run that
-                  succeeds is labelled{" "}
-                  <span className="font-semibold">
-                    {modelingClaimStatusLabel("calibrated_to_counts")}
-                  </span>{" "}
-                  — the same words shown on the run itself. The CEQA VMT input is unchanged either
-                  way.
+                  Tune the assignment to local traffic counts, where you have them. The CEQA VMT
+                  input is unchanged either way.
                 </span>
               </label>
               <p className="text-xs text-muted-foreground">
-                When observed traffic counts are available for the study area, the assignment is
-                tuned toward them and reports held-out (out-of-sample) accuracy. Where no counts
-                match, the run stays screening-grade. Calibrated VMT publishes under distinct KPI
-                names — it never becomes the CEQA §15064.3 determination input.
+                The held-out counts choose and reject calibration steps; they are candidate-selection
+                evidence, not an independent accuracy test. A calibrated-to-counts claim requires a
+                separate untouched validation result. Where no counts match, calibration does not run.
+                Calibrated VMT publishes under distinct KPI names — it never becomes the CEQA
+                §15064.3 determination input.
               </p>
             </div>
           ) : null}

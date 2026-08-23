@@ -10,6 +10,7 @@ import {
 } from "@/lib/models/artifact-source";
 import {
   normalizeEvidencePacket,
+  renderModelRunProvenanceMarkdown,
   type NormalizedEvidencePacketScenarioBasis,
 } from "@/lib/models/evidence-packet";
 import { getBehavioralDemandDefaultCaveats, getManagedRunModeDefinition } from "@/lib/models/run-modes";
@@ -414,6 +415,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
   });
 
   evidencePacket.caveats = Array.from(new Set([...evidencePacket.caveats, ...caveats]));
+
+  if (request.nextUrl.searchParams.get("format") === "markdown") {
+    return new NextResponse(renderModelRunProvenanceMarkdown(evidencePacket), {
+      headers: {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Content-Disposition": `attachment; filename="openplan-model-run-${parsedParams.data.modelRunId}-provenance.md"`,
+      },
+    });
+  }
 
   return NextResponse.json(evidencePacket);
 }

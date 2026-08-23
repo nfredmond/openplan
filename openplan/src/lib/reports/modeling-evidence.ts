@@ -168,7 +168,7 @@ export function buildPlannerReadableModelingEvidenceSummary(
     strongestStatus === "claim_grade_passed"
       ? "Modeling evidence is ready for supervised planning citation when cited with its validation table."
       : strongestStatus === "calibrated_to_counts"
-        ? "Modeling evidence is calibrated to observed traffic counts and reports held-out validation accuracy; calibrated VMT is separate from the screening CEQA input."
+        ? "Modeling evidence is calibrated to observed traffic counts and passed a separate untouched validation; calibrated VMT is separate from the screening CEQA input."
         : strongestStatus === "screening_grade"
           ? "Modeling evidence is suitable for planning context only."
           : strongestStatus === "prototype_only"

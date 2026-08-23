@@ -17,9 +17,11 @@ The staged method (Nathaniel's call, 2026-07-21):
 
 Everything here is pure and stdlib-only (GEH borrowed from count_validation),
 so the calibration LOGIC is unit-tested independently of the expensive
-assignment re-runs. A ~30% count HOLDOUT is split off up front and never fit;
-the holdout objective is the honest, out-of-sample accuracy and the overfit
-guard — a step that improves the fit set but degrades the holdout is rejected.
+assignment re-runs. A ~30% count SELECTION HOLDOUT is split off up front and
+never fit; it is the overfit guard used to choose steps, not independent
+accuracy evidence. A step that improves the fit set but degrades this holdout is
+rejected. Any claim about the selected calibration requires another untouched
+validation set.
 """
 from __future__ import annotations
 

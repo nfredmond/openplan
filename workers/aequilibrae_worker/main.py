@@ -103,6 +103,7 @@ import gtfs_skim
 import count_validation
 import emissions
 import equity
+import model_credibility
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -270,7 +271,23 @@ def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: b
     # the HPMS adapter; this country-specific decision stays behind the source
     # registry and never enters model geography types.
     region = observed_count_source_for_bbox(tuple(bbox))
+    status_path = os.path.join(out_dir, "count_source_status.json")
+
+    def record_status(status: str, **extra) -> None:
+        # A source attempt that produced no CSV must still survive into the run
+        # artifact. Without this record, "source unavailable", "geography
+        # unsupported", and "no eligible sections" all collapse to the distant
+        # configured fallback and become indistinguishable to a planner.
+        os.makedirs(out_dir, exist_ok=True)
+        payload = {"status": status, "source_id": region, **extra}
+        with open(status_path, "w") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+
     if not region:
+        record_status(
+            "geography_unsupported",
+            error="No registered observed-count adapter supports this study-area bounding box.",
+        )
         return None
     out_csv = os.path.join(out_dir, "auto_aadt_counts.csv")
     try:
@@ -287,22 +304,63 @@ def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: b
             ],
             capture_output=True, text=True, timeout=180,
         )
+        source_sidecar = out_csv + ".count-source.json"
+        sidecar = None
+        if os.path.exists(source_sidecar):
+            try:
+                with open(source_sidecar) as handle:
+                    sidecar = json.load(handle)
+            except (OSError, ValueError, TypeError):
+                sidecar = None
         if res.returncode != 0 or not os.path.exists(out_csv):
+            if isinstance(sidecar, dict) and sidecar.get("status") in {
+                "source_unavailable", "geography_unsupported",
+                "no_eligible_sections", "no_traffic_found",
+            }:
+                source = sidecar.get("source") if isinstance(sidecar.get("source"), dict) else {}
+                record_status(
+                    sidecar["status"],
+                    dataset_id=source.get("dataset_id"),
+                    vintage=source.get("vintage"),
+                    adapter=source.get("adapter"),
+                    country=source.get("country"),
+                    coverage_statement=source.get("coverage_statement"),
+                    error=sidecar.get("error") or (
+                        str(getattr(res, "stderr", "")).strip() or None
+                    ),
+                )
+            else:
+                record_status(
+                    "source_unavailable",
+                    error=(
+                        str(getattr(res, "stderr", "")).strip()
+                        or "Observed-count fetch did not produce a count file."
+                    ),
+                )
             return None
         with open(out_csv) as fh:
             rows = sum(1 for _ in fh)
-        return out_csv if rows >= 2 else None
-    except Exception:
+        if rows < 2:
+            record_status(
+                "no_eligible_sections",
+                error="The source answered, but no eligible roadway section could be matched to the retained network.",
+            )
+            return None
+        record_status("available")
+        return out_csv
+    except Exception as exc:
+        record_status("source_unavailable", error=str(exc))
         return None
 
 # OPT-IN count-based calibration (OFF by default — the product ships an
 # UNCALIBRATED screening model). When enabled, after the baseline assignment the
 # worker tunes per-road-class free-flow speed/capacity toward observed counts,
 # re-running equilibrium assignment and keeping a step only if it improves a
-# held-out count set (see calibration.py). Produces the distinct
-# 'calibrated_to_counts' claim tier + calibrated KPIs under DISTINCT names; the
-# OD-based resident_vmt (CEQA input) is never touched. A larger count set than
-# the 3-station priority file is strongly recommended (VALIDATION_COUNTS_PATH).
+# held-out count set (see calibration.py). Produces calibrated KPIs under
+# DISTINCT names, but the selection holdout does not earn a claim tier; a
+# separate untouched validation must do that. The OD-based resident_vmt (CEQA
+# input) is never touched. A larger count set than the 3-station priority file
+# is strongly recommended (VALIDATION_COUNTS_PATH).
 CALIBRATION_ENABLED = os.getenv("AEQ_CALIBRATE", "0") in ("1", "true", "True")
 CALIBRATION_MAX_ITER = int(os.getenv("AEQ_CALIBRATE_MAX_ITER", "12"))
 # Minimum held-out objective improvement to accept a step (one objective ULP —
@@ -809,15 +867,20 @@ def sb_post_kpi(payload: dict):
     requests.post(url, headers=HEADERS, json=payload)
 
 
-def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, validation: dict | None,
-                                      calibration: dict | None = None) -> None:
+def write_model_run_modeling_evidence(
+    run_id: str,
+    workspace_id: str | None,
+    validation: dict | None,
+    calibration: dict | None = None,
+    independent_validation: dict | None = None,
+) -> None:
     """Write the shared modeling claim-grade spine for THIS model run — the same
     tables the county lane populates (modeling_validation_results +
     modeling_claim_decisions) so reports read one consistent claim grade. Derived
     from the observed-count gate. NEVER 'claim_grade_passed' (that needs the
-    county-lane validation-threshold pass). When count calibration ran and
-    improved a held-out set, the tier is 'calibrated_to_counts' with the
-    out-of-sample holdout accuracy. Best-effort; never fails a run."""
+    county-lane validation-threshold pass). A calibration selection holdout is
+    not independent accuracy evidence: a calibrated tier requires a separate,
+    untouched validation result. Best-effort; never fails a run."""
     if not workspace_id:
         return
     try:
@@ -873,16 +936,22 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
                 "adopted standard."
             )
         elif calibration:
-            # Calibrated tier: the honest accuracy is the HELD-OUT median APE.
-            hold = (calibration.get("calibrated") or {}).get("holdout") or {}
-            base_hold = (calibration.get("baseline") or {}).get("holdout") or {}
-            claim_status, reason = "calibrated_to_counts", (
-                f"Model calibrated to observed counts ({calibration.get('fit_station_count')} fit / "
-                f"{calibration.get('holdout_station_count')} holdout stations, "
-                f"{calibration.get('accepted_iterations')} accepted step(s)). Held-out median APE "
-                f"{base_hold.get('median_ape')}% -> {hold.get('median_ape')}%. Calibrated VMT is "
-                f"published under distinct KPI names and is not the CEQA screening input."
+            independent = model_credibility.summarize_independent_validation(
+                validation, calibration, independent_validation
             )
+            if independent["supports_claim_tier"]:
+                claim_status, reason = "calibrated_to_counts", (
+                    "The selected calibration passed a separate untouched observed-count "
+                    f"validation ({independent['stations_matched']} stations, median APE "
+                    f"{independent['median_ape']}%). Calibration-selection results remain "
+                    "distinct from this independent accuracy result."
+                )
+            else:
+                claim_status, reason = "prototype_only", (
+                    "Count calibration ran, but no calibrated tier is recorded. "
+                    f"{independent['reason']} Calibrated VMT remains under distinct KPI names "
+                    "and is not the CEQA screening input."
+                )
         elif gate == "bounded screening-ready":
             claim_status, reason = "screening_grade", (
                 f"Observed-count validation passed the screening gate ({matched} stations, "
@@ -914,8 +983,13 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
             json={
                 "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
                 "claim_status": claim_status, "status_reason": reason,
-                "validation_summary_json": {**(validation or {}),
-                                            **({"calibration": calibration} if calibration else {})},
+                "validation_summary_json": {
+                    **(validation or {}),
+                    **({"calibration": calibration} if calibration else {}),
+                    "independent_validation": model_credibility.summarize_independent_validation(
+                        validation, calibration, independent_validation
+                    ),
+                },
             }, timeout=20,
         )
         # Refresh the per-metric validation rows for this run/track.
@@ -2299,8 +2373,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
 
     `counts_path` is required and is THIS RUN's count set — see the note where
     the old module global used to live. Calibrating against another study area's
-    stations would promote a run to the calibrated tier on evidence that is not
-    about it."""
+    stations would select parameters on evidence that is not about it."""
     import csv as _csv
     import numpy as _np
     from aequilibrae.paths import TrafficAssignment, TrafficClass
@@ -2323,7 +2396,8 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     link_attrs = [(int(l), n, t, float(x) if x is not None else None,
                    float(y) if y is not None else None) for l, n, t, x, y in rows]
 
-    # Fit / holdout split — a 'calibrated' claim requires an out-of-sample holdout.
+    # Fit / selection-holdout split. This holdout chooses steps and prevents
+    # direct fit-set overfitting; it does NOT independently validate the model.
     all_matched = _match_counts(stations, link_attrs, _volumes_by_link(baseline_df))
     fit_stations, holdout_stations = calibration.split_holdout(all_matched)
     if not fit_stations or not holdout_stations:
@@ -4669,13 +4743,43 @@ def stage_artifacts(
     except Exception as e:
         log += f"Count validation warning: {e}\n"
 
+    # One artifact contract for the evidence that may (or may not) support a
+    # count-backed claim. Calibration's own holdout is selection evidence, so
+    # it is deliberately separated from an untouched accuracy result here.
+    independent_validation_result = assign_result.get("independent_validation")
+    credibility_evidence = model_credibility.build_model_credibility_evidence(
+        counts_path=assign_result.get("counts_path"),
+        out_dir=out_dir,
+        gateways=gateways,
+        validation=validation,
+        calibration=calibration_result,
+        independent_validation=independent_validation_result,
+    )
+
     # Write the shared modeling claim-grade spine (modeling_validation_results +
     # modeling_claim_decisions) so reports read one consistent claim grade for
     # this run — the same tables the county lane populates.
     try:
         _ws_id = (sb_get_run(run_id) or {}).get("workspace_id")
-        write_model_run_modeling_evidence(run_id, _ws_id, validation, calibration_result)
-        _tier = "calibrated_to_counts" if calibration_result else (validation or {}).get("screening_gate", "unvalidated")
+        write_model_run_modeling_evidence(
+            run_id,
+            _ws_id,
+            validation,
+            calibration_result,
+            independent_validation_result,
+        )
+        if calibration_result:
+            _tier = (
+                "calibrated_to_counts"
+                if credibility_evidence["independent_validation"]["supports_claim_tier"]
+                else "prototype_only"
+            )
+        else:
+            _tier = (
+                "screening_grade"
+                if (validation or {}).get("screening_gate") == "bounded screening-ready"
+                else "prototype_only"
+            )
         log += f"Modeling claim spine updated (tier '{_tier}').\n"
     except Exception as e:
         log += f"Modeling evidence spine warning: {e}\n"
@@ -4692,6 +4796,7 @@ def stage_artifacts(
         vmt_estimator_ratio = round(vmt_estimator_ratio, 4)
 
     evidence = {
+        "packet_version": "2.0",
         "run_id": run_id,
         "engine": verified_engine_stamp,
         "network_source": "OpenStreetMap",
@@ -4771,6 +4876,10 @@ def stage_artifacts(
         # accuracy. Calibrated VMT is under distinct KPI names, not the CEQA input.
         "calibration": calibration_result,
         "gateways": gateways,
+        "count_source": credibility_evidence["count_source"],
+        "gateway_volume_basis": credibility_evidence["gateway_volume_basis"],
+        "calibration_selection": credibility_evidence["calibration_selection"],
+        "independent_validation": credibility_evidence["independent_validation"],
         # TAZ resolution the dynamic package was actually built at (post any
         # tract fallback), with its OD-seed provenance. None fields for
         # pre-staged packages whose manifests predate these stamps.
@@ -4792,7 +4901,11 @@ def stage_artifacts(
         "caveats": [
             c
             for c in [
-                "Uncalibrated",
+                (
+                    "Calibration selection is not independent accuracy validation"
+                    if calibration_result
+                    else "Uncalibrated"
+                ),
                 "OSM default speeds/capacities",
                 boundary_caveat,
                 mode_caveat,
@@ -4937,7 +5050,7 @@ def stage_artifacts(
         kpis.append(("general", "daily_vmt", "Daily VMT", daily_vmt, "vehicle-miles/day"))
     if vmt_per_capita is not None:
         kpis.append(("general", "vmt_per_capita", "VMT per Capita", vmt_per_capita, "vehicle-miles/person/day"))
-    # Calibrated network VMT + calibrated holdout accuracy (opt-in calibration).
+    # Calibrated network VMT + calibration-selection holdout result (opt-in).
     # DISTINCT names, deliberately absent from every CEQA_* exact-name set so the
     # §15064.3 screen keeps using the uncalibrated screening VMT — calibrated VMT
     # is a separate, disclosed result, not the CEQA input.
@@ -4953,7 +5066,7 @@ def stage_artifacts(
     if calibration_result:
         _cal_hold = (calibration_result.get("calibrated") or {}).get("holdout") or {}
         if _cal_hold.get("median_ape") is not None:
-            kpis.append(("assignment", "validation_median_ape_calibrated", "Calibrated Holdout Median APE", _cal_hold["median_ape"], "percent"))
+            kpis.append(("assignment", "validation_median_ape_calibrated", "Calibration-selection Holdout Median APE", _cal_hold["median_ape"], "percent"))
     # Resident (internal→internal, gateway-excluded) VMT — the CEQA §15064.3
     # number the screen prefers. Same estimator as the county lane and seed.
     if resident_vmt is not None:

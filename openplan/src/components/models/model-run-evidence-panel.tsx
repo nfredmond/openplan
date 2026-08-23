@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileJson2, Loader2, RefreshCcw, RotateCcw } from "lucide-react";
+import { Download, FileJson2, Loader2, RefreshCcw, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildEvidenceHighlights,
   describeEmploymentProvenance,
   employmentUsedSyntheticFallback,
+  evidenceCountSourceStatusLabel,
   evidenceTransitStatus,
   formatDurationSeconds,
   labelForEngineKey,
@@ -55,6 +56,33 @@ type CrossEngineComparisonBlock = {
   baseline_engine_key: string | null;
   message: string;
 };
+
+function evidenceRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function evidenceText(value: unknown, fallback = "Not recorded"): string {
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function evidenceNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function evidenceMetric(value: unknown, suffix = ""): string {
+  const number = evidenceNumber(value);
+  return number === null
+    ? "Not recorded"
+    : `${number.toLocaleString(undefined, { maximumFractionDigits: 4 })}${suffix}`;
+}
+
+function evidenceStringList(value: unknown): string {
+  return Array.isArray(value) && value.some((item) => typeof item === "string" && item.trim())
+    ? value.filter((item): item is string => typeof item === "string" && Boolean(item.trim())).join(", ")
+    : "Not recorded";
+}
 
 function claimStatusTone(status: ModelingClaimStatus): StatusTone {
   if (status === "calibrated_to_counts" || status === "claim_grade_passed") return "success";
@@ -525,6 +553,12 @@ export function ModelRunEvidencePanel({
     () => comparisonCandidates.find((candidate) => candidate.id === selectedBaselineRunId) ?? null,
     [comparisonCandidates, selectedBaselineRunId]
   );
+  const countSource = evidence?.count_source ?? null;
+  const gatewayVolumeBasis = evidence?.gateway_volume_basis ?? null;
+  const calibrationSelection = evidence?.calibration_selection ?? null;
+  const independentValidation = evidence?.independent_validation ?? null;
+  const selectionBaseline = evidenceRecord(calibrationSelection?.baseline);
+  const selectionResult = evidenceRecord(calibrationSelection?.selected);
 
   async function loadEvidence(force = false) {
     if (!canInspect) {
@@ -1139,6 +1173,142 @@ export function ModelRunEvidencePanel({
                     Open the raw file (JSON)
                   </a>
                 </Button>
+                <Button asChild type="button" variant="outline" size="sm">
+                  <a href={`${packetHref}?format=markdown`}>
+                    <Download className="h-4 w-4" />
+                    Download provenance document
+                  </a>
+                </Button>
+              </div>
+
+              <div
+                className="rounded-[0.5rem] border border-border/65 bg-background/80 p-4"
+                data-testid="model-run-credibility-evidence"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Observed counts and calibration evidence</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      What this run could compare, how gateway traffic was estimated, and which result—if any—was independent.
+                    </p>
+                  </div>
+                  <StatusBadge tone={countSource?.status === "available" ? "info" : "warning"}>
+                    {evidenceCountSourceStatusLabel(countSource?.status ?? "not_recorded")}
+                  </StatusBadge>
+                </div>
+
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Count source</p>
+                    <dl className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                      <div className="flex items-start justify-between gap-3">
+                        <dt>Dataset</dt>
+                        <dd className="text-right text-foreground">{evidenceText(countSource?.dataset_id)}</dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <dt>Vintage</dt>
+                        <dd className="text-right text-foreground">{evidenceText(countSource?.vintage)}</dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <dt>Supported road classes</dt>
+                        <dd className="max-w-[65%] text-right text-foreground">
+                          {evidenceStringList(countSource?.supported_road_classes)}
+                        </dd>
+                      </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <dt>Eligible / excluded rows</dt>
+                        <dd className="text-right text-foreground">
+                          {evidenceMetric(countSource?.eligible_rows)} / {evidenceMetric(countSource?.excluded_rows)}
+                        </dd>
+                      </div>
+                    </dl>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {evidenceText(
+                        countSource?.coverage_statement,
+                        "Coverage was not recorded. Missing coverage is unknown, not zero traffic."
+                      )}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-amber-800 dark:text-amber-200">
+                      {evidenceText(
+                        countSource?.limitation,
+                        "An unsupported road class must not be read as zero traffic."
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Gateway volume basis</p>
+                    <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
+                      <div className="rounded-[0.4rem] border border-border/60 px-2 py-2">
+                        <dt className="text-xs text-muted-foreground">Measured</dt>
+                        <dd className="mt-1 font-semibold text-foreground">{evidenceMetric(gatewayVolumeBasis?.measured)}</dd>
+                      </div>
+                      <div className="rounded-[0.4rem] border border-border/60 px-2 py-2">
+                        <dt className="text-xs text-muted-foreground">Inferred</dt>
+                        <dd className="mt-1 font-semibold text-foreground">{evidenceMetric(gatewayVolumeBasis?.inferred)}</dd>
+                      </div>
+                      <div className="rounded-[0.4rem] border border-border/60 px-2 py-2">
+                        <dt className="text-xs text-muted-foreground">Unsupported</dt>
+                        <dd className="mt-1 font-semibold text-foreground">{evidenceMetric(gatewayVolumeBasis?.unsupported)}</dd>
+                      </div>
+                    </dl>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {evidenceText(gatewayVolumeBasis?.default_method, "Gateway volume basis was not recorded by this run.")}
+                    </p>
+                    {gatewayVolumeBasis?.limitation ? (
+                      <p className="mt-1 text-xs font-medium text-amber-800 dark:text-amber-200">
+                        {evidenceText(gatewayVolumeBasis.limitation)}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Calibration selection</p>
+                    <StatusBadge tone="warning">Candidate-selection evidence — not accuracy</StatusBadge>
+                  </div>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-[0.4rem] border border-border/60 p-3">
+                      <p className="text-xs font-medium text-muted-foreground">Baseline</p>
+                      <p className="mt-1 text-sm text-foreground">
+                        Objective {evidenceMetric(selectionBaseline.objective)} · median APE {evidenceMetric(selectionBaseline.median_ape, "%")}
+                      </p>
+                    </div>
+                    <div className="rounded-[0.4rem] border border-border/60 p-3">
+                      <p className="text-xs font-medium text-muted-foreground">Selected calibration</p>
+                      <p className="mt-1 text-sm text-foreground">
+                        Objective {evidenceMetric(selectionResult.objective)} · median APE {evidenceMetric(selectionResult.median_ape, "%")}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {evidenceText(calibrationSelection?.reason, "No calibration selection result was recorded for this run.")}
+                  </p>
+                </div>
+
+                <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Independent validation</p>
+                    <StatusBadge tone={independentValidation?.status === "passed" ? "success" : "warning"}>
+                      {independentValidation?.status === "passed"
+                        ? "Passed"
+                        : independentValidation?.status === "failed"
+                          ? "Failed"
+                          : "Not run"}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-2 text-sm text-foreground">
+                    {evidenceMetric(independentValidation?.stations_matched)} matched stations · median APE{" "}
+                    {evidenceMetric(independentValidation?.median_ape, "%")}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {evidenceText(independentValidation?.reason, "No independent validation result was recorded for this run.")}
+                  </p>
+                  <p className="mt-2 text-xs font-medium text-amber-800 dark:text-amber-200">
+                    A national average never promotes this run. Only this run&apos;s independent result can support its count-backed claim tier.
+                  </p>
+                </div>
               </div>
 
               {highlights.length > 0 ? (

@@ -334,7 +334,7 @@ export function modelingClaimReportLanguage(decision: ModelingClaimDecision): st
   }
 
   if (decision.claimStatus === "calibrated_to_counts") {
-    return "Calibrated-to-counts modeling result. The model was tuned to observed traffic counts and reports held-out (out-of-sample) validation accuracy; cite the calibration provenance and holdout metrics. Calibrated VMT is published under distinct KPI names and is not the CEQA screening input unless explicitly promoted.";
+    return "Calibrated-to-counts modeling result. The selected calibration passed a separate untouched observed-count validation; cite both the candidate-selection record and the independent validation. Calibrated VMT is published under distinct KPI names and is not the CEQA screening input unless explicitly promoted.";
   }
 
   if (decision.claimStatus === "screening_grade") {
@@ -1067,4 +1067,3 @@ export async function loadModelRunClaimStatuses({
 
   return strongestByRun;
 }
-

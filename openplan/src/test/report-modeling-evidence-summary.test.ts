@@ -120,12 +120,12 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
       linkedEvidence({
         evidence: {
           ...baseEvidence,
-          reportLanguage: "Calibrated-to-counts modeling result with held-out validation accuracy.",
+          reportLanguage: "Calibrated-to-counts modeling result with a separate untouched validation.",
           claimDecision: {
             ...baseClaimDecision,
             claimStatus: "calibrated_to_counts",
-            statusReason: "Model calibrated to observed counts; held-out median APE 32.79% -> 22.98%.",
-            reasons: ["Model calibrated to observed counts; held-out median APE 32.79% -> 22.98%."],
+            statusReason: "The selected calibration passed a separate untouched observed-count validation.",
+            reasons: ["The selected calibration passed a separate untouched observed-count validation."],
           },
         },
       }),
@@ -134,6 +134,7 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
     expect(summary.label).toContain("Calibrated to counts");
     expect(summary.tone).toBe("success");
     expect(summary.headline).toContain("calibrated to observed traffic counts");
+    expect(summary.headline).toContain("separate untouched validation");
     // The boundary: the summary must say calibrated VMT is separate from the CEQA input.
     expect(summary.headline).toContain("separate from the screening CEQA input");
   });
