@@ -1,0 +1,109 @@
+{
+  "by_road_class": {
+    "centroid_connector": {
+      "decreased": 16,
+      "increased": 34,
+      "links": 99,
+      "median_absolute_change": 22.18568,
+      "median_absolute_percent_change_where_baseline_positive": 1.906213,
+      "unchanged": 49
+    },
+    "construction": {
+      "decreased": 0,
+      "increased": 3,
+      "links": 4,
+      "median_absolute_change": 266.225603,
+      "median_absolute_percent_change_where_baseline_positive": 3.023364,
+      "unchanged": 1
+    },
+    "living_street": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 17,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 17
+    },
+    "pedestrian": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 13,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 13
+    },
+    "primary": {
+      "decreased": 183,
+      "increased": 176,
+      "links": 468,
+      "median_absolute_change": 266.225603,
+      "median_absolute_percent_change_where_baseline_positive": 5.737777,
+      "unchanged": 109
+    },
+    "residential": {
+      "decreased": 20,
+      "increased": 27,
+      "links": 3060,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 4.107428,
+      "unchanged": 3013
+    },
+    "secondary": {
+      "decreased": 119,
+      "increased": 126,
+      "links": 289,
+      "median_absolute_change": 305.94706,
+      "median_absolute_percent_change_where_baseline_positive": 4.560208,
+      "unchanged": 44
+    },
+    "service": {
+      "decreased": 1,
+      "increased": 0,
+      "links": 1481,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 7.017801,
+      "unchanged": 1480
+    },
+    "tertiary": {
+      "decreased": 59,
+      "increased": 199,
+      "links": 634,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 6.145285,
+      "unchanged": 376
+    },
+    "trunk": {
+      "decreased": 69,
+      "increased": 246,
+      "links": 593,
+      "median_absolute_change": 28.034022,
+      "median_absolute_percent_change_where_baseline_positive": 0.598291,
+      "unchanged": 278
+    },
+    "unclassified": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 224,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 224
+    }
+  },
+  "demand_method": "ActivitySim activity-based demand",
+  "full_artifact": {
+    "commit_policy": "ignored run storage; hash and compact summary are committed",
+    "location": "data/screening-runs/gwv-development-13009-asim-candidate/gateway_volume_study/corridor_change.json",
+    "sha256": "8a14480b300f62eb301c83d410f036fa338c0e7662bf59269d178dfc1debebed"
+  },
+  "interpretation": "Methodological sensitivity to the one frozen gateway-volume candidate; not an average and not an accuracy claim.",
+  "is_average": false,
+  "schema_version": "openplan.gateway-volume-corridor-change-summary.v1",
+  "summary": {
+    "decreased": 467,
+    "increased": 811,
+    "links": 6882,
+    "median_absolute_change": 0.0,
+    "median_absolute_percent_change_where_baseline_positive": 2.936622,
+    "unchanged": 5604
+  }
+}

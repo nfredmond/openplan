@@ -1,0 +1,13 @@
+{
+  "county_fips": "15001",
+  "error": {
+    "kind": "KeyboardInterrupt",
+    "message": "Execution stopped before a valid county result was assembled. Partial run artifacts may exist and are not study results."
+  },
+  "finished_at_utc": "2026-08-23T08:13:15.376504+00:00",
+  "half": "development",
+  "schema_version": "openplan.gateway-volume-study-county.v1",
+  "seconds": 653.1,
+  "started_at_utc": "2026-08-23T08:02:22.285511+00:00",
+  "status": "aborted_before_result"
+}

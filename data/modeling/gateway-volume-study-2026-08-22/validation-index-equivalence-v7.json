@@ -1,0 +1,21 @@
+{
+  "schema_version": "openplan.gateway-volume-study-validation-index-proof.v1",
+  "candidate_commit": "469afeb2e18dced4fe1e456c769ed26b02d91854",
+  "northwest_hills_exact_equivalence": {
+    "county_fips": "09160",
+    "prior_validation_results_sha256": "e72a9f8a31b0aa2f04bbdb7e8737c9f661ef4934133538f3f335a524e2bf0dec",
+    "indexed_validation_results_sha256": "e72a9f8a31b0aa2f04bbdb7e8737c9f661ef4934133538f3f335a524e2bf0dec",
+    "prior_candidate_audit_sha256": "89c4cc3247a1e7a8212250f3896abdbf9d0012cc73b75077a36dd9db1c3c485d",
+    "indexed_candidate_audit_sha256": "89c4cc3247a1e7a8212250f3896abdbf9d0012cc73b75077a36dd9db1c3c485d",
+    "indexed_elapsed_seconds": 4.032
+  },
+  "hawaii_scaling_probe": {
+    "county_fips": "15001",
+    "count_sections_including_header": 22085,
+    "retained_network_links": 22339,
+    "unindexed_run_stopped_after_seconds": 653.1,
+    "unindexed_validation_completed": false,
+    "indexed_validation_elapsed_seconds": 24.289
+  },
+  "method": "Both retained-network geometry and exact project-database centroids are loaded once into longitude-wrapped grid indexes. The unchanged bbox, raw-name, class, distance, carriageway, and shared-link rules still decide every result."
+}
