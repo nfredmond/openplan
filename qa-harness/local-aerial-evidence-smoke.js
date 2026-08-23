@@ -104,6 +104,11 @@ async function main() {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1700 } }));
   const page = await context.newPage();
+  const browserErrors = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') browserErrors.push(`console: ${message.text()}`);
+  });
+  page.on('pageerror', (error) => browserErrors.push(`pageerror: ${error.message}`));
   const appFetch = createAppFetch(page);
   const expectAppFetch = createExpectingAppFetch(appFetch);
 
@@ -395,8 +400,10 @@ async function main() {
     await page.goto(`${baseUrl}/aerial`, { waitUntil: 'networkidle' });
     await page.getByText(/Mission register/i).first().waitFor({ timeout: 30000 });
     await page.getByText(missionTitle, { exact: false }).first().waitFor({ timeout: 30000 });
+    await page.getByRole('region', { name: 'Aerial imagery layers' }).waitFor({ timeout: 30000 });
+    await page.getByText(/No map-ready aerial preview yet/i).waitFor({ timeout: 30000 });
     await screenshot('local-aerial-evidence-smoke-01-aerial-list');
-    notes.push('Asserted /aerial renders the mission list with the new mission.');
+    notes.push('Asserted /aerial renders the mission list and the normal-path aerial layer panel.');
 
     await page.goto(`${baseUrl}/aerial/missions/${ids.missionId}`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: missionTitle, exact: false }).waitFor({ timeout: 30000 });
@@ -421,8 +428,31 @@ async function main() {
       .getByRole('heading', { name: /Survey flight plan & exports/i })
       .first()
       .waitFor({ timeout: 30000 });
+    assertEqual(
+      await page.locator('.op-cart-mapdock').count(),
+      0,
+      'The shell map dock covered the mission evidence sidebar even though this page owns its map'
+    );
     await screenshot('local-aerial-evidence-smoke-02-mission-detail');
-    notes.push('Asserted mission detail renders package log, cached project posture, AOI state, and DJI export state.');
+    notes.push('Asserted mission detail renders package log, cached project posture, AOI state, and DJI export state without the shell map dock covering its evidence sidebar.');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(300);
+    const narrowLayout = await page.evaluate(() => ({
+      viewportWidth: window.innerWidth,
+      documentWidth: document.documentElement.scrollWidth,
+    }));
+    assertOk(
+      narrowLayout.documentWidth <= narrowLayout.viewportWidth + 1,
+      `Mission detail overflows horizontally at 390px: ${JSON.stringify(narrowLayout)}`
+    );
+    await screenshot('local-aerial-evidence-smoke-03-mission-detail-narrow');
+    notes.push('Asserted the mission detail has no horizontal overflow at 390 x 844.');
+    assertOk(
+      browserErrors.length === 0,
+      `Aerial list/detail browser errors: ${browserErrors.join(' | ')}`
+    );
+    notes.push('Read the browser console and found no console errors or uncaught page errors.');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-local-aerial-evidence-smoke.md`);
     const lines = [
@@ -489,7 +519,7 @@ async function main() {
       ...artifacts.map((artifact) => `- docs/ops/${datePart}-test-output/${artifact}`),
       '',
       '## Verdict',
-      '- PASS: The Aerial evidence spine created its own project, established a known baseline through the aerial routes, created a project-linked mission, attached an AOI through the mission PATCH boundary, created a ready evidence package, verified the cached project posture was rewritten to the baseline-plus-one counts, rendered the Aerial list and detail surfaces including the DJI export affordance, confirmed the map AOI feature, and left the workspace with exactly one project.',
+      '- PASS: The smoke created one project fixture through the project route, established a known baseline through the aerial routes, created a project-linked mission, attached an AOI through the mission PATCH boundary, created a ready evidence package, verified the cached project posture was rewritten to the baseline-plus-one counts, rendered the Aerial list and detail surfaces including the DJI export affordance, confirmed the map AOI feature, and left the workspace with exactly one project.',
       '',
     ];
     fs.writeFileSync(reportPath, lines.join('\n'));

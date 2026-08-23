@@ -12,6 +12,7 @@ import {
 import { useTheme } from "@/components/theme-provider";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import type { MapFeatureCounts } from "@/app/api/map-features/counts/route";
+import { AerialOrthoLayersPanel } from "./aerial-ortho-layers-panel";
 
 const HAS_MAPBOX_BASEMAP = Boolean(
   resolvePublicMapboxToken(
@@ -162,6 +163,7 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
           );
         })}
       </ul>
+      <AerialOrthoLayersPanel />
       {workspaceLayers.length > 0 || workspaceCatalogError ? (
         /*
           THE AGENCY'S OWN LAYERS, in their own group under their own heading.

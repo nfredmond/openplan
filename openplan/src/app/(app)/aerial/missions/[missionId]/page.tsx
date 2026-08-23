@@ -606,6 +606,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
               preview={
                 orthoPreview.status === "ready"
                   ? {
+                      custodyId: orthoPreview.custodyId,
                       url: orthoPreview.url,
                       bounds: orthoPreview.bounds,
                       crs: orthoPreview.crs,

@@ -15,6 +15,7 @@ import {
 } from "@/lib/workspaces/home-geography";
 
 import { CartographicProvider } from "./cartographic-context";
+import { AerialOrthoLayerProvider } from "./aerial-ortho-layer-context";
 import { CartographicZoomControls } from "./cartographic-zoom-controls";
 import { CartographicHeader } from "./cartographic-header";
 import { CartographicInspectorDockConnected } from "./cartographic-inspector-dock-connected";
@@ -99,6 +100,10 @@ export async function CartographicShell({ children }: { children: React.ReactNod
 
   return (
     <CartographicProvider>
+      <AerialOrthoLayerProvider
+        key={membership?.workspace_id ?? "no-workspace"}
+        workspaceId={membership?.workspace_id ?? null}
+      >
       <div className="op-cart-shell">
         <CartographicMapBackdrop
           homeMapView={homeMapView}
@@ -216,6 +221,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
           )}
         </div>
       </div>
+      </AerialOrthoLayerProvider>
     </CartographicProvider>
   );
 }

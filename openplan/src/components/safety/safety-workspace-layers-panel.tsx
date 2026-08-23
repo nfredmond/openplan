@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useWorkspaceMapLayers } from "@/components/cartographic/cartographic-context";
+import { AerialOrthoLayersPanel } from "@/components/cartographic/aerial-ortho-layers-panel";
 
 /**
  * The agency's own uploaded layers, controlling the map on THIS page.
@@ -64,6 +65,7 @@ export function SafetyWorkspaceLayersPanel() {
   ).length;
 
   return (
+    <div className="flex flex-col gap-4">
     <section
       className="rounded-lg border p-4 text-sm"
       aria-label="Your agency's map layers"
@@ -164,5 +166,9 @@ export function SafetyWorkspaceLayersPanel() {
         </details>
       ) : null}
     </section>
+    <section className="rounded-lg border p-4 text-sm">
+      <AerialOrthoLayersPanel compact />
+    </section>
+    </div>
   );
 }

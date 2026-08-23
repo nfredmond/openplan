@@ -1062,6 +1062,7 @@ export default async function EngagementCampaignDetailPage({
             </div>
             <div className="mt-5">
               <LocationDisplayMap
+                privateAerialOrthos
                 contextLayers={publishedContextLayers}
                 items={locatedItems.map((item) => ({
                   id: item.id,

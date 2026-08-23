@@ -42,7 +42,7 @@ const EXPLORE_SUBJECT_LAYER_IDS = [
  * buried under, and the binding re-stacks on every paint once they arrive.
  */
 export function exploreWorkspaceGisAnchorLayerId(
-  map: WorkspaceGisMapTarget,
+  map: Pick<WorkspaceGisMapTarget, "getLayer">,
 ): string | undefined {
   if (map.getLayer("tract-fill")) return "tract-fill";
   return EXPLORE_SUBJECT_LAYER_IDS.find((id) => map.getLayer(id));

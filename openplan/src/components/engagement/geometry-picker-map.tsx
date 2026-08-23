@@ -31,6 +31,7 @@ export type { EngagementDrawMode } from "@/lib/engagement/draw-state";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import { ParticipantMapLegend } from "./participant-map-legend";
+import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -194,6 +195,7 @@ export function GeometryPickerMap({
   initialCenter = CONTINENTAL_US_CENTER,
   initialZoom = 3.5,
   contextLayers = null,
+  privateAerialOrthos = false,
   words = EN_GEOMETRY_PICKER_WORDS,
   lang,
 }: {
@@ -212,6 +214,8 @@ export function GeometryPickerMap({
    * exactly as it did before: a basemap and nothing else.
    */
   contextLayers?: ParticipantContextLayerSet | null;
+  /** Authenticated operator maps may draw explicitly selected private aerial previews. */
+  privateAerialOrthos?: boolean;
   /**
    * What this map says, in the reader's language. Omitted by the operator
    * console, which has no portal locale; passed by the participant surfaces from
@@ -229,6 +233,7 @@ export function GeometryPickerMap({
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const [draw, setDraw] = useState<DrawState>({ mode: initialMode, vertices: [], areaClosed: false });
   const modeOptions: Array<{ id: EngagementDrawMode; label: string }> = [
     { id: "point", label: words.modePoint },
@@ -242,6 +247,16 @@ export function GeometryPickerMap({
   const drawRef = useRef(draw);
   const onGeometryChangeRef = useRef(onGeometryChange);
   const instructionsId = useId();
+
+  useAerialOrthoMapBinding({
+    mapRef,
+    ready: mapReady,
+    enabled: privateAerialOrthos,
+    resolveAnchorLayerId: (map) =>
+      ["engagement-draw-fill", "engagement-draw-line", "engagement-draw-points"].find((id) =>
+        map.getLayer(id),
+      ),
+  });
 
   useEffect(() => {
     drawRef.current = draw;
@@ -310,6 +325,7 @@ export function GeometryPickerMap({
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
     map.on("load", () => {
+      setMapReady(true);
       const canvas = map.getCanvas();
       canvas.setAttribute("tabindex", "-1");
       canvas.setAttribute("aria-hidden", "true");
@@ -395,6 +411,7 @@ export function GeometryPickerMap({
       stopSizing();
       map.remove();
       mapRef.current = null;
+      setMapReady(false);
     };
     // Handlers read state via drawRef, so a single registration is safe.
     // eslint-disable-next-line react-hooks/exhaustive-deps

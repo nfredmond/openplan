@@ -40,6 +40,7 @@ import { ExploreWorkspaceLayersPanel } from "./explore-workspace-layers-panel";
 import { exploreWorkspaceGisAnchorLayerId } from "./explore-workspace-gis-anchor";
 import { useExploreWorkspaceGisHover } from "./explore-workspace-gis-hover";
 import { useWorkspaceGisMapBinding } from "@/components/cartographic/use-workspace-gis-map-binding";
+import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
 import { ExploreResultsBoard } from "./explore-results-board";
 import { describeRequestFailure } from "@/lib/http/request-failure";
 import { ExploreRunHistoryPanel } from "./explore-run-history-panel";
@@ -166,6 +167,12 @@ export function ExploreWorkbench({
     theme: "dark",
     resolveAnchorLayerId: exploreWorkspaceGisAnchorLayerId,
     emphasisLayerId,
+  });
+  useAerialOrthoMapBinding({
+    mapRef,
+    ready: mapReady,
+    enabled: mapReady && workspaceId !== "",
+    resolveAnchorLayerId: (map) => exploreWorkspaceGisAnchorLayerId(map),
   });
 
   const hoveredWorkspaceFeature = useExploreWorkspaceGisHover({

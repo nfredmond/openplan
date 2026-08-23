@@ -11,6 +11,7 @@ import {
 } from "@/lib/engagement/hotspots";
 import type { summarizeEngagementItems } from "@/lib/engagement/summary";
 import type { IntakeTrend } from "@/lib/engagement/participation-dashboard";
+import { AerialOrthoLayersPanel } from "@/components/cartographic/aerial-ortho-layers-panel";
 
 type EngagementCounts = ReturnType<typeof summarizeEngagementItems>;
 
@@ -98,6 +99,9 @@ export function SpatialHotspotTuner({
   return (
     <div className="space-y-6">
       <div className="rounded-lg border border-border/60 bg-background/40 px-4 py-3">
+        <AerialOrthoLayersPanel compact />
+      </div>
+      <div className="rounded-lg border border-border/60 bg-background/40 px-4 py-3">
         <div className="flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
             <span>Cluster radius (metres)</span>
@@ -172,6 +176,7 @@ export function SpatialHotspotTuner({
       */}
       {points.length > 0 || features.features.length > 0 ? (
         <ParticipationHeatmapMap
+          privateAerialOrthos
           points={points}
           hotspots={features}
           sentimentAvailable={hotspots.sentimentAvailable}

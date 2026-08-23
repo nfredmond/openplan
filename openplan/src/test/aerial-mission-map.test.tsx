@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -94,6 +94,19 @@ vi.mock("mapbox-gl", () => ({
     LngLatBounds: mapboxMocks.LngLatBounds,
     accessToken: "",
   },
+}));
+
+const orthoLayerContextMock = vi.hoisted(() => ({
+  selected: {} as Record<string, boolean>,
+  setSelected: vi.fn(),
+}));
+
+vi.mock("@/components/cartographic/aerial-ortho-layer-context", () => ({
+  useAerialOrthoLayers: () => ({
+    layers: [{ custodyId: "44444444-4444-4444-8444-444444444444" }],
+    selected: orthoLayerContextMock.selected,
+    setSelected: orthoLayerContextMock.setSelected,
+  }),
 }));
 
 const MISSION_ID = "22222222-2222-4222-8222-222222222222";
@@ -207,6 +220,25 @@ describe("AerialMissionMap", () => {
     expect(map.layers.some((layer) => layer.id === "aerial-mission-ortho-preview-layer")).toBe(true);
     expect(map.layers.some((layer) => layer.id === "aerial-mission-photo-points-layer")).toBe(true);
     expect(map.fitBounds).toHaveBeenCalled();
+  });
+
+  it("lets the planner explicitly offer this held preview on authenticated workspace maps", async () => {
+    mockImageryFetch({ imagery: [] });
+    const { AerialMissionMap } = await importMap();
+    const custodyId = "44444444-4444-4444-8444-444444444444";
+
+    render(
+      <AerialMissionMap
+        missionId={MISSION_ID}
+        preview={{ ...VALID_PREVIEW, custodyId }}
+        previewNotice={null}
+      />,
+    );
+
+    const checkbox = await screen.findByRole("checkbox", { name: /Show this preview on other planning maps/ });
+    expect(checkbox).not.toBeChecked();
+    fireEvent.click(checkbox);
+    expect(orthoLayerContextMock.setSelected).toHaveBeenCalledWith(custodyId, true);
   });
 
   it("asks the imagery route for THIS mission — and follows the prop", async () => {

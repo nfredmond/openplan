@@ -183,6 +183,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
     migrationsAtRelease: 208,
   },
+  // 0.24.0 — custody-verified aerial previews can be explicitly selected on
+  // authenticated maps throughout the workspace. No schema change.
+  {
+    tag: "0.24.0",
+    lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
+    migrationsAtRelease: 208,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

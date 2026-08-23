@@ -22,6 +22,7 @@ import {
   type ProjectCorridor,
 } from "@/lib/cartographic/project-corridor-record";
 import { ProjectShapeFileInput } from "@/components/projects/project-shape-file-input";
+import { AerialOrthoLayersPanel } from "@/components/cartographic/aerial-ortho-layers-panel";
 
 /**
  * Putting a project on the map.
@@ -287,6 +288,9 @@ export function ProjectMapPresence({
   return (
     <div className="space-y-6">
       <section className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
+        <AerialOrthoLayersPanel compact />
+      </section>
+      <section className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold tracking-tight">Map location</h3>
@@ -302,6 +306,7 @@ export function ProjectMapPresence({
           <>
             <div className="mt-3">
               <GeometryPickerMap
+                privateAerialOrthos
                 onGeometryChange={handleLocationPicked}
                 initialMode="point"
                 allowedModes={["point"]}
@@ -492,6 +497,7 @@ export function ProjectMapPresence({
             />
 
             <GeometryPickerMap
+              privateAerialOrthos
               onGeometryChange={(geometry) => {
                 setDraft((previous) => ({ ...previous, geometry }));
                 // Drawing replaces the file's line, so its sentences must stop

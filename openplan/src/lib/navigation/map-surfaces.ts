@@ -17,9 +17,9 @@
  * the map is being READ. Everywhere else the map is background, and background
  * needs no legend.
  *
- * Prefix-matched, so `/aerial/<missionId>` and `/explore?runId=…` count as the
- * same surface as their index. Add a route here when a new page makes the
- * shared map its working canvas.
+ * Prefix-matched for surface-hood, so an Aerial mission remains a geographic
+ * page. Ownership below is more specific: mission pages build their own map,
+ * while the Aerial index reads the shell map.
  *
  * ═══ THIS LIST GAINED A SECOND JOB (2026-08-12) ═══
  *
@@ -87,6 +87,8 @@ export const MAP_OWNING_ROUTES = [
   "/explore",
   /** Safety builds its map in `components/safety/safety-crash-map.tsx`. */
   "/safety",
+  /** Mission detail/edit pages build the mission evidence or AOI map. */
+  "/aerial/missions",
 ] as const;
 
 /**

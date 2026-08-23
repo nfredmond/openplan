@@ -21,6 +21,35 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.24.0 — 2026-08-23
+
+**No migrations.** Pull and deploy. Existing aerial processing jobs and held
+previews remain usable; no imagery is switched on automatically.
+
+### Processed aerial imagery can follow the planner's work
+
+A held, georeferenced orthophoto preview can now be shown on authenticated
+workspace, safety, project, exploration, and engagement-planning maps. The
+same explicit selection follows the planner between those maps in that browser.
+The Aerial mission map also offers the switch beside the preview. New previews
+start off, and a selection is cleared if its verified custody record disappears.
+
+OpenPlan rechecks workspace and mission ownership, artifact kind and held state,
+storage path, SHA-256 custody record, file type, and map placement before it
+offers a preview. It creates a short-lived display link only after the planner
+selects that exact layer. A failed catalog or image read is disclosed rather
+than presented as no imagery, and the layer panel shows the project, capture and
+custody dates, hash, source coordinate system, resolution, and orientation-only
+caveat.
+
+Resident-facing maps do not receive these private layers. Publishing aerial
+imagery to the public remains a separate, explicit workflow that has not been
+added in this release.
+
+Aerial mission pages now own their map outright, so the shell map dock no
+longer covers the mission's Evidence chain. The browser smoke checks this at
+desktop width and checks for horizontal overflow at 390 pixels.
+
 ## 0.23.0 — 2026-08-23
 
 **No migrations.** Pull and deploy. Reports generated before this release keep

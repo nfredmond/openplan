@@ -82,7 +82,7 @@ describe("map controls appear only on map surfaces", () => {
    * cannot reach Safety's map, and the one that can is already in its sidebar.
    */
   it("renders nothing on a map surface that owns its own map", () => {
-    for (const route of ["/safety", "/explore"]) {
+    for (const route of ["/safety", "/explore", "/aerial/missions/mission-id"]) {
       pathnameMock.mockReturnValue(route);
       const { unmount } = render(
         <MapSurfaceOnly>
@@ -115,13 +115,13 @@ describe("map controls appear only on map surfaces", () => {
     expect(routeOwnsMap(null)).toBe(false);
   });
 
-  /**
-   * Nested routes are the same surface as their index — `/aerial/<missionId>`
-   * is still the aerial map. A test that only checked the index would pass
-   * against an equality check and ship a detail page with no layer controls.
-   */
-  it("treats a nested route as the same surface", () => {
-    expect(isMapSurfaceRoute("/aerial/9a7c1f22-0000-4000-8000-000000000001")).toBe(true);
+  /** A mission stays geographic but owns its own map and controls. */
+  it("keeps the shell map dock off an Aerial mission's evidence sidebar", () => {
+    const missionPath = "/aerial/missions/9a7c1f22-0000-4000-8000-000000000001";
+    expect(isMapSurfaceRoute(missionPath)).toBe(true);
+    expect(routeOwnsMap(missionPath)).toBe(true);
+    expect(showsSharedMapControls(missionPath)).toBe(false);
+    expect(routeOwnsMap("/aerial")).toBe(false);
     expect(isMapSurfaceRoute("/safety/corridors")).toBe(true);
   });
 

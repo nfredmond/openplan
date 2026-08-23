@@ -35,6 +35,7 @@ import { SafetyWorkspaceLayersPanel } from "./safety-workspace-layers-panel";
 import { SafetyLayerDeepLink } from "./safety-layer-deep-link";
 import { SafetyMapFillsSurface } from "./safety-map-fills-surface";
 import { useWorkspaceGisMapBinding } from "@/components/cartographic/use-workspace-gis-map-binding";
+import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
 import type { FitInstruction } from "@/lib/cartographic/geometry-bbox";
 import { useTheme } from "@/components/theme-provider";
 import { CrashExportButton } from "./crash-export-button";
@@ -441,6 +442,12 @@ export function SafetyWorkspace({
     workspaceId,
     theme: basemapInk,
     resolveAnchorLayerId: safetyWorkspaceGisAnchorLayerId,
+  });
+  useAerialOrthoMapBinding({
+    mapRef: crashMapRef,
+    ready: crashMapReady,
+    enabled: crashMapReady && Boolean(workspaceId),
+    resolveAnchorLayerId: (map) => safetyWorkspaceGisAnchorLayerId(map),
   });
 
   /**

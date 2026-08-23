@@ -6,6 +6,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import type { HotspotFeatureCollection } from "@/lib/engagement/hotspots";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
+import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
@@ -101,15 +102,28 @@ export function ParticipationHeatmapMap({
   points,
   hotspots,
   sentimentAvailable,
+  privateAerialOrthos = false,
 }: {
   points: HeatmapPoint[];
   hotspots: HotspotFeatureCollection;
   sentimentAvailable: boolean;
+  privateAerialOrthos?: boolean;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const [mode, setMode] = useState<HeatMode>("participation");
   const modeRef = useRef<HeatMode>(mode);
+
+  useAerialOrthoMapBinding({
+    mapRef,
+    ready: mapReady,
+    enabled: privateAerialOrthos,
+    resolveAnchorLayerId: (map) =>
+      ["engagement-heat", "engagement-hotspots-fill", "engagement-hotspots-outline"].find((id) =>
+        map.getLayer(id),
+      ),
+  });
 
   // Rebuild only when the underlying data actually changes (not on mode toggle).
   const dataSig = useMemo(
@@ -150,6 +164,7 @@ export function ParticipationHeatmapMap({
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
     map.on("load", () => {
+      setMapReady(true);
       map.addSource("engagement-heat-src", { type: "geojson", data: pointsFeatureCollection(points) });
       map.addLayer({
         id: "engagement-heat",
@@ -211,6 +226,7 @@ export function ParticipationHeatmapMap({
       stopSizing();
       map.remove();
       mapRef.current = null;
+      setMapReady(false);
     };
   }, [dataSig]); // eslint-disable-line react-hooks/exhaustive-deps
 

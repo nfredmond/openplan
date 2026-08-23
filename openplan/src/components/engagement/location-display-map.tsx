@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
@@ -11,6 +11,8 @@ import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import { ParticipantMapLegend } from "./participant-map-legend";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
+import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
+import { AerialOrthoLayersPanel } from "@/components/cartographic/aerial-ortho-layers-panel";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -121,6 +123,7 @@ export function LocationDisplayMap({
   onSupport,
   hasVoted,
   contextLayers = null,
+  privateAerialOrthos = false,
 }: {
   items: MapItem[];
   onSupport?: SupportHandler;
@@ -134,15 +137,28 @@ export function LocationDisplayMap({
    * nothing" rule would have hidden it.
    */
   contextLayers?: ParticipantContextLayerSet | null;
+  /** Private workspace imagery is opt-in and must never be set by a public caller. */
+  privateAerialOrthos?: boolean;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const onSupportRef = useRef(onSupport);
   const hasVotedRef = useRef(hasVoted);
   // Read inside the map-creation effect for the opening frame only; the paint
   // effect below owns keeping the drawn layers in step.
   const contextLayersRef = useRef(contextLayers);
+
+  useAerialOrthoMapBinding({
+    mapRef,
+    ready: mapReady,
+    enabled: privateAerialOrthos,
+    resolveAnchorLayerId: (map) =>
+      ["engagement-shapes-fill", "engagement-shapes-outline", "engagement-shapes-line"].find((id) =>
+        map.getLayer(id),
+      ),
+  });
 
   useEffect(() => {
     onSupportRef.current = onSupport;
@@ -216,6 +232,7 @@ export function LocationDisplayMap({
     const shapeItemById = new Map(shapeItems.map((item) => [item.id, item]));
 
     map.on("load", () => {
+      setMapReady(true);
       // Lines and areas render as styled layers with click popups.
       if (shapeItems.length > 0) {
         map.addSource("engagement-shapes", {
@@ -325,6 +342,7 @@ export function LocationDisplayMap({
       stopSizing();
       map.remove();
       mapRef.current = null;
+      setMapReady(false);
     };
   }, [items]);
 
@@ -409,12 +427,19 @@ export function LocationDisplayMap({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[0.5rem] border border-border/70 mb-4">
-      <div ref={mapContainerRef} className="h-[300px] w-full bg-muted/10" />
-      <div className="absolute top-3 left-3 flex items-center gap-2 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
-        <span className="font-medium text-foreground">Community Input Map</span>
+    <div className="space-y-4">
+      {privateAerialOrthos ? (
+        <div className="rounded-lg border border-border/60 bg-background/40 p-4">
+          <AerialOrthoLayersPanel compact />
+        </div>
+      ) : null}
+      <div className="relative overflow-hidden rounded-[0.5rem] border border-border/70 mb-4">
+        <div ref={mapContainerRef} className="h-[300px] w-full bg-muted/10" />
+        <div className="absolute top-3 left-3 flex items-center gap-2 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
+          <span className="font-medium text-foreground">Community Input Map</span>
+        </div>
+        <ParticipantMapLegend contextLayers={contextLayers} />
       </div>
-      <ParticipantMapLegend contextLayers={contextLayers} />
     </div>
   );
 }

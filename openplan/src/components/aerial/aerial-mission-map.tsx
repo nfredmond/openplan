@@ -35,6 +35,7 @@ import { Map as MapIcon } from "lucide-react";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { extractArtifactGeoref } from "@/lib/aerial/artifact-custody";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
+import { useAerialOrthoLayers } from "@/components/cartographic/aerial-ortho-layer-context";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -56,6 +57,8 @@ const PHOTOS_LAYER_ID = "aerial-mission-photo-points-layer";
 const PHOTO_DOT_COLOR = "#e45635";
 
 export type AerialMissionMapPreview = {
+  /** Present on the authenticated mission page so this preview can become a workspace layer. */
+  custodyId?: string;
   /** Short-lived signed URL for the held preview PNG. Never rendered as a link. */
   url: string;
   /** WGS84 [west, south, east, north] — re-validated here before the layer mounts. */
@@ -173,6 +176,8 @@ export function AerialMissionMap({
   const [mapStartupFailed, setMapStartupFailed] = useState(false);
   const [showOrtho, setShowOrtho] = useState(true);
   const [showPhotos, setShowPhotos] = useState(true);
+  const { layers: workspaceOrthoLayers, selected: workspaceOrthoSelected, setSelected: setWorkspaceOrthoSelected } =
+    useAerialOrthoLayers();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -182,6 +187,9 @@ export function AerialMissionMap({
   // A preview whose bounds fail re-validation is not a smaller preview — it is
   // one this map refuses to place, and it says so.
   const previewRejectedHere = preview !== null && bounds === null;
+  const previewIsInWorkspaceCatalog = Boolean(
+    preview?.custodyId && workspaceOrthoLayers.some((layer) => layer.custodyId === preview.custodyId),
+  );
 
   // Photo dots, self-fetched from the imagery lane's GET route by URL string.
   useEffect(() => {
@@ -438,6 +446,16 @@ export function AerialMissionMap({
             ) : preview?.crs ? (
               <span className="text-muted-foreground/80">(source {preview.crs})</span>
             ) : null}
+          </label>
+        ) : null}
+        {preview?.custodyId && previewIsInWorkspaceCatalog ? (
+          <label className="flex items-center gap-1.5 font-medium text-foreground">
+            <input
+              type="checkbox"
+              checked={workspaceOrthoSelected[preview.custodyId] === true}
+              onChange={(event) => setWorkspaceOrthoSelected(preview.custodyId!, event.target.checked)}
+            />
+            Show this preview on other planning maps
           </label>
         ) : null}
         <label className="flex items-center gap-1.5">

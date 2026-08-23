@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useWorkspaceMapLayers } from "@/components/cartographic/cartographic-context";
+import { AerialOrthoLayersPanel } from "@/components/cartographic/aerial-ortho-layers-panel";
 
 /**
  * The agency's own uploaded layers, on the page a planner opens to read a map.
@@ -183,6 +184,9 @@ export function ExploreWorkspaceLayersPanel({
             </div>
           </details>
         ) : null}
+      </div>
+      <div className="mt-4 border-t border-border/60 pt-4">
+        <AerialOrthoLayersPanel compact />
       </div>
     </section>
   );

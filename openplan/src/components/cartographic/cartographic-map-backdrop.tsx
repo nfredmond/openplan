@@ -49,6 +49,7 @@ import {
   type WorkspaceGisMapTarget,
 } from "@/lib/cartographic/workspace-gis-map-layers";
 import { useWorkspaceGisMapBinding } from "./use-workspace-gis-map-binding";
+import { useAerialOrthoMapBinding } from "./use-aerial-ortho-map-binding";
 import {
   describeMapLayerCoverage,
   describeMapLayerFailure,
@@ -187,7 +188,9 @@ const FEATURE_LAYERS = [
  * — correct, because with no feature layers present there is nothing to be
  * buried under.
  */
-function workspaceGisAnchorLayerId(map: WorkspaceGisMapTarget): string | undefined {
+function workspaceGisAnchorLayerId(
+  map: Pick<WorkspaceGisMapTarget, "getLayer">,
+): string | undefined {
   if (map.getLayer(CENSUS_TRACTS_FILL_LAYER_ID)) return CENSUS_TRACTS_FILL_LAYER_ID;
   return FEATURE_LAYERS.find((id) => map.getLayer(id));
 }
@@ -510,6 +513,12 @@ export function CartographicMapBackdrop({
     // and is what decides which Mapbox style this map was built with, so the
     // casing ink and the tiles underneath it can never disagree.
     theme: backdropTheme,
+    resolveAnchorLayerId: workspaceGisAnchorLayerId,
+  });
+  useAerialOrthoMapBinding({
+    mapRef,
+    ready,
+    enabled: !suppressed,
     resolveAnchorLayerId: workspaceGisAnchorLayerId,
   });
   /**
