@@ -1,3 +1,4 @@
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -172,32 +173,52 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const [{ data: categories }, { data: itemsData, error: itemsError }] = await Promise.all([
+    const [{ data: categories }, itemsRead] = await Promise.all([
       supabase
         .from("engagement_categories")
         .select("id, label, slug")
         .eq("campaign_id", access.campaign.id),
-      (() => {
+      // PAGED, because this export states a TOTAL. PostgREST caps a response
+      // at `max_rows` with `error = null`, so the previous single read handed
+      // back at most 1000 items and `meta.totalItems` reported that as the
+      // campaign's whole input — a file a planner attaches to a funder
+      // submission, understating residents with nothing on screen looking
+      // wrong. The `id` tiebreak is what makes the order total: comments
+      // submitted in the same second (a link shared at a meeting) otherwise
+      // have no defined order between two page requests, so one can arrive
+      // twice and another never.
+      readEveryPage<ExportItemRow>((from, toInclusive) => {
         let query = supabase
           .from("engagement_items")
           .select("id, campaign_id, category_id, title, body, submitted_by, status, source_type, latitude, longitude, geometry, votes_count, moderation_notes, metadata_json, created_at, updated_at")
-          .eq("campaign_id", access.campaign.id)
-          .order("created_at", { ascending: true });
+          .eq("campaign_id", access.campaign.id);
 
         if (statusFilter) {
           query = query.eq("status", statusFilter);
         }
 
-        return query;
-      })(),
+        return query
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, toInclusive) as PromiseLike<{
+          data: ExportItemRow[] | null;
+          error: { message: string } | null;
+        }>;
+      }),
     ]);
 
-    if (itemsError) {
-      audit.error("export_items_failed", { message: itemsError.message });
+    // An unfinished read fails the export rather than shipping a short file.
+    // A partial export presenting as complete is the defect being fixed, and it
+    // is worse than no export at all: nobody re-examines a file they already
+    // have.
+    if (itemsRead.error || !itemsRead.complete) {
+      audit.error("export_items_failed", {
+        message: itemsRead.error?.message ?? "the item read could not be completed",
+      });
       return NextResponse.json({ error: "Failed to load items for export" }, { status: 500 });
     }
 
-    const items = (itemsData ?? []) as ExportItemRow[];
+    const items = itemsRead.rows;
     const exportCategories = (categories ?? []) as ExportCategoryRow[];
     const categoryMap = new Map(exportCategories.map((c) => [c.id, c.label]));
     const counts = summarizeEngagementItems(exportCategories, items);

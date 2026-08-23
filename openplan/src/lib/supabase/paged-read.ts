@@ -43,12 +43,12 @@
  */
 
 /** What one page request must resolve to — the shape supabase-js already returns. */
-export type PagedReadPage<Row> = {
+export type PagedReadPage<Row, Err = { message: string }> = {
   data: Row[] | null;
-  error: { message: string } | null;
+  error: Err | null;
 };
 
-export type PagedReadResult<Row> = {
+export type PagedReadResult<Row, Err = { message: string }> = {
   /** Every row read. Meaningless as a total unless `complete` is true. */
   rows: Row[];
   /**
@@ -58,8 +58,13 @@ export type PagedReadResult<Row> = {
    * module exists to prevent.
    */
   complete: boolean;
-  /** The server's message when a page failed, else null. */
-  error: string | null;
+  /**
+   * The server's own error object when a page failed, else null — passed
+   * through rather than reduced to its message, because callers audit fields
+   * beside it (PostgREST's `code`, which is what distinguishes a missing column
+   * from a permission denial).
+   */
+  error: Err | null;
 };
 
 /** Rows requested per page. A request, never an assumption about what the server honours. */
@@ -80,10 +85,10 @@ export const DEFAULT_PAGED_READ_MAX_PAGES = 200;
  * you would have called once, with `.order(...)` and `.range(from, to)` on the
  * end.
  */
-export async function readEveryPage<Row>(
-  fetchPage: (from: number, toInclusive: number) => PromiseLike<PagedReadPage<Row>>,
+export async function readEveryPage<Row, Err = { message: string }>(
+  fetchPage: (from: number, toInclusive: number) => PromiseLike<PagedReadPage<Row, Err>>,
   options: { pageSize?: number; maxPages?: number } = {}
-): Promise<PagedReadResult<Row>> {
+): Promise<PagedReadResult<Row, Err>> {
   const pageSize = options.pageSize ?? DEFAULT_PAGED_READ_SIZE;
   const maxPages = options.maxPages ?? DEFAULT_PAGED_READ_MAX_PAGES;
 
@@ -97,7 +102,7 @@ export async function readEveryPage<Row>(
       // The rows already gathered are deliberately DISCARDED. Returning a
       // prefix alongside an error invites a caller to use it, and a prefix used
       // as a total is exactly the silent undercount being prevented.
-      return { rows: [], complete: false, error: error.message };
+      return { rows: [], complete: false, error };
     }
 
     const batch = Array.isArray(data) ? data : [];

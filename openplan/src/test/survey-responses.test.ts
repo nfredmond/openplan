@@ -6,6 +6,7 @@ import {
   flattenSurveyAnswerForExport,
   insertSurveyResponse,
   loadApprovedSurveyAnswers,
+  loadSurveyAnswersForExport,
   loadSurveyResponseSessions,
   readSurveyConditionRefs,
 } from "@/lib/engagement/survey-responses";
@@ -123,24 +124,49 @@ describe("insertSurveyResponse — transactional-ish write", () => {
 });
 
 /**
- * A query client whose reads can be made to FAIL BY TABLE.
+ * A query client whose reads can be made to FAIL BY TABLE, and which PAGES.
  *
- * Without that lever these tests prove nothing: a fake client hands back its
- * fixture whatever the code asked for, so the failure branch is unreachable and
- * every assertion would pass over code that never runs. Each builder is
- * thenable so it satisfies the three different chains the loaders terminate on
- * (`.order()`, `.limit()`, and the bare `.eq()` of the answers read).
+ * Without the failure lever these tests prove nothing: a fake client hands back
+ * its fixture whatever the code asked for, so the failure branch is unreachable
+ * and every assertion would pass over code that never runs. Each builder is
+ * thenable so it satisfies the chains the unpaged loaders terminate on
+ * (`.order()`, `.limit()`, and a bare `.eq()`).
+ *
+ * `.range(from, to)` SERVES A SLICE, and that is not decoration. The sensitive
+ * loaders page because PostgREST caps a response at `max_rows` while reporting
+ * no error, so a fake that returned its whole fixture to every `.range()` call
+ * would be a server with no cap — the one server on which the bug being fixed
+ * cannot happen. `serverCap` models the cap itself, so a loader that stops at
+ * the first page is visible here rather than only in production.
  */
 function mockReadClient(
-  fixtures: Record<string, { rows?: Record<string, unknown>[]; error?: { message: string } }>
+  fixtures: Record<string, { rows?: Record<string, unknown>[]; error?: { message: string } }>,
+  options: {
+    /** Rows the server will return at most per request, however many were asked for. */
+    serverCap?: number;
+    /** Optional recorder: every `.range(from, to)` this client is asked for, by table. */
+    ranges?: Map<string, Array<[number, number]>>;
+  } = {}
 ) {
+  const rangesByTable = options.ranges ?? new Map<string, Array<[number, number]>>();
+
   const from = (table: string) => {
     const fixture = fixtures[table];
     if (!fixture) throw new Error(`unexpected table ${table}`);
-    const result = { data: fixture.error ? null : fixture.rows ?? [], error: fixture.error ?? null };
+    const all = fixture.rows ?? [];
+    const result = { data: fixture.error ? null : all, error: fixture.error ?? null };
     const builder: Record<string, unknown> = {
       then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
         Promise.resolve(result).then(resolve, reject),
+      range: (rangeFrom: number, rangeTo: number) => {
+        const seen = rangesByTable.get(table) ?? [];
+        seen.push([rangeFrom, rangeTo]);
+        rangesByTable.set(table, seen);
+        if (fixture.error) return Promise.resolve({ data: null, error: fixture.error });
+        const asked = rangeTo - rangeFrom + 1;
+        const allowed = Math.min(asked, options.serverCap ?? Number.POSITIVE_INFINITY);
+        return Promise.resolve({ data: all.slice(rangeFrom, rangeFrom + allowed), error: null });
+      },
     };
     for (const method of ["select", "eq", "order", "limit"]) builder[method] = () => builder;
     return builder;
@@ -190,6 +216,90 @@ describe("the sensitive response loaders report a failed read", () => {
 
     expect(result.rows).toEqual([]);
     expect(result.error?.message).toBe("statement timeout");
+  });
+});
+
+/**
+ * A CAMPAIGN BIGGER THAN THE SERVER'S ROW CAP.
+ *
+ * `supabase/config.toml` sets `max_rows = 1000`, and PostgREST enforces it with
+ * `error = null` — so before paging, a campaign with 2,400 responses handed back
+ * 1,000 rows and every caller treated that as the whole campaign. The
+ * downloadable moderation register printed "# 1000 survey responses recorded."
+ * as a claim about the campaign; the answers export omitted 1,400 residents
+ * while presenting as complete.
+ *
+ * The trigger is lower than the response count suggests, because
+ * `engagement_survey_answers` holds one row per ANSWER: a ten-question survey
+ * reaches the cap at about a hundred respondents.
+ */
+describe("the sensitive response loaders read past the server's row cap", () => {
+  function sessionRows(count: number) {
+    return Array.from({ length: count }, (_, index) => ({
+      ...SESSION_ROW,
+      id: `s${index}`,
+    }));
+  }
+
+  it("returns every session when the campaign has more than the cap", async () => {
+    const ranges = new Map<string, Array<[number, number]>>();
+    const supabase = mockReadClient(
+      { engagement_survey_response_sessions: { rows: sessionRows(2400) } },
+      { serverCap: 1000, ranges }
+    );
+
+    const result = await loadSurveyResponseSessions(supabase, "camp-1");
+
+    expect(result.error).toBeNull();
+    // 2400, not 1000. The number the register prints.
+    expect(result.rows).toHaveLength(2400);
+    expect(result.rows[2399].id).toBe("s2399");
+
+    // It asked more than once, and advanced by what the server actually gave.
+    const asked = ranges.get("engagement_survey_response_sessions") ?? [];
+    expect(asked.length).toBeGreaterThan(1);
+    // Contiguous: each request starts where the previous one actually ended,
+    // not where it was asked to end.
+    expect(asked[1][0]).toBe(asked[0][1] + 1);
+  });
+
+  it("returns every answer for the export when the campaign has more than the cap", async () => {
+    const answers = Array.from({ length: 1500 }, (_, index) => ({
+      session_id: `s${index}`,
+      question_id: "q1",
+      question_type: "free_text",
+      question_prompt_snapshot: "What next?",
+      answer_json: { text: "hi" },
+      answer_text: "More trees",
+      created_at: "2026-03-04T10:00:00.000Z",
+    }));
+    const supabase = mockReadClient(
+      { engagement_survey_answers: { rows: answers } },
+      { serverCap: 1000 }
+    );
+
+    const result = await loadSurveyAnswersForExport(supabase, "camp-1");
+
+    expect(result.error).toBeNull();
+    expect(result.rows).toHaveLength(1500);
+  });
+
+  it("returns every approved answer the aggregation counts", async () => {
+    const answers = Array.from({ length: 1200 }, () => ({
+      question_id: "q1",
+      question_type: "free_text",
+      answer_json: { text: "hi" },
+      answer_text: "More trees",
+    }));
+    const supabase = mockReadClient(
+      { engagement_survey_answers: { rows: answers } },
+      { serverCap: 1000 }
+    );
+
+    const result = await loadApprovedSurveyAnswers(supabase, "camp-1");
+
+    expect(result.error).toBeNull();
+    expect(result.rows).toHaveLength(1200);
   });
 });
 

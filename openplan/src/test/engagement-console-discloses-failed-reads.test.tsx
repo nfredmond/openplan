@@ -31,6 +31,29 @@ const authGetUserMock = vi.fn();
 const campaignsOrderMock = vi.fn();
 const projectsOrderMock = vi.fn();
 const itemsInMock = vi.fn();
+
+/**
+ * Wrap a terminal fixture-mock so the paged catalogue read can drive it.
+ *
+ * The mock is still CALLED with the arguments the query passed, so assertions
+ * about what was filtered keep working; its resolved value is then served in
+ * slices the way PostgREST does.
+ */
+function itemsPaging(terminal: (...args: unknown[]) => unknown, args: unknown[]) {
+  const fixture = Promise.resolve(terminal(...args) as { data?: unknown[] | null; error?: unknown });
+  const chain: Record<string, unknown> = {};
+  for (const method of ["select", "eq", "in", "order", "limit"]) chain[method] = () => chain;
+  chain.range = async (from: number, toInclusive: number) => {
+    const result = await fixture;
+    if (result?.error) return { data: null, error: result.error };
+    return { data: ((result?.data ?? []) as unknown[]).slice(from, toInclusive + 1), error: null };
+  };
+  chain.then = (resolve: (v: unknown) => unknown, reject?: (r: unknown) => unknown) =>
+    fixture.then(resolve, reject);
+  return { chain };
+}
+
+
 const categoriesInMock = vi.fn();
 
 const fromMock = vi.fn((table: string) => {
@@ -41,7 +64,10 @@ const fromMock = vi.fn((table: string) => {
     return { select: () => ({ eq: () => ({ order: projectsOrderMock }) }) };
   }
   if (table === "engagement_items") {
-    return { select: () => ({ in: itemsInMock }) };
+    // The catalogue's comment read PAGES now, so `.in()` is no longer the
+    // terminal: it chains `.order().order().range()`. The fixture is still set
+    // on `itemsInMock`, and the range SLICES it.
+    return { select: () => ({ in: (...args: unknown[]) => itemsPaging(itemsInMock, args).chain }) };
   }
   if (table === "engagement_categories") {
     return { select: () => ({ in: categoriesInMock }) };

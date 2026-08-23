@@ -78,7 +78,10 @@ describe("readEveryPage", () => {
     const result = await readEveryPage(fetchPage);
 
     expect(result.complete).toBe(false);
-    expect(result.error).toBe("permission denied");
+    // The server's own error object, passed through rather than reduced to its
+    // message — callers audit fields beside it, PostgREST's `code` in
+    // particular.
+    expect(result.error).toEqual({ message: "permission denied" });
     // Not the 500 it managed to read. A prefix offered beside an error gets used.
     expect(result.rows).toEqual([]);
   });

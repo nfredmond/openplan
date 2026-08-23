@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   parseEngagementGeometry,
@@ -431,19 +432,70 @@ export async function loadSurveyBuilderDefinition(
   }));
 }
 
+/**
+ * EVERY RESIDENT-INPUT READ BELOW IS PAGED, AND AN UNFINISHED READ IS AN ERROR.
+ *
+ * PostgREST caps a response at `max_rows` — 1000 here — and does it with
+ * `error = null`, so a capped read looks exactly like a complete one. These
+ * tables hold one row per respondent (sessions) and one row per ANSWER
+ * (answers), so a ten-question survey reaches the cap at about a hundred
+ * respondents. What is downstream of them is not a list on a screen: the
+ * moderation register states "# N survey responses recorded", the answers
+ * export presents itself as the whole campaign, and the RTP comment-response
+ * chapter counts engagement in a document that goes to a funder. A silent cap
+ * there understates residents and is invisible on every screen.
+ *
+ * An unfinished read is folded into the EXISTING `error` channel rather than
+ * announced as a new `truncated` flag. Every caller already discloses a failed
+ * read — `a-library-may-not-discard-a-read-error.test.ts` is what makes that
+ * true — and a new field is a new thing for a caller to forget. Rows are
+ * dropped along with it, because a prefix offered beside a warning gets
+ * rendered as a total, which is the defect itself.
+ */
+async function pageSurveyRows<Row>(
+  fetchPage: (from: number, toInclusive: number) => PromiseLike<{
+    data: Row[] | null;
+    error: { message: string } | null;
+  }>
+): Promise<SurveyRowsResult<Row>> {
+  const { rows, complete, error } = await readEveryPage(fetchPage);
+  if (error) return { rows: [], error: { message: error.message } };
+  if (!complete) {
+    return {
+      rows: [],
+      error: {
+        message:
+          "This read could not be completed: it exceeded the paging ceiling, so any total from it would understate the campaign.",
+      },
+    };
+  }
+  return { rows, error: null };
+}
+
 /** Moderation list of response sessions (SENSITIVE, campaign_id-scoped). */
 export async function loadSurveyResponseSessions(
   supabase: QueryClient,
   campaignId: string,
   opts: { status?: SurveyResponseSessionRow["status"] } = {}
 ): Promise<SurveyRowsResult<SurveyResponseSessionRow>> {
-  let query = supabase
-    .from("engagement_survey_response_sessions")
-    .select("id, status, submitted_by, source_type, moderation_notes, created_at, updated_at")
-    .eq("campaign_id", campaignId);
-  if (opts.status) query = query.eq("status", opts.status);
-  const result = await query.order("created_at", { ascending: false });
-  return { rows: (result.data ?? []) as SurveyResponseSessionRow[], error: result.error ?? null };
+  return pageSurveyRows<SurveyResponseSessionRow>((from, toInclusive) => {
+    let query = supabase
+      .from("engagement_survey_response_sessions")
+      .select("id, status, submitted_by, source_type, moderation_notes, created_at, updated_at")
+      .eq("campaign_id", campaignId);
+    if (opts.status) query = query.eq("status", opts.status);
+    return query
+      .order("created_at", { ascending: false })
+      // The tiebreak is what makes the order TOTAL. Sessions submitted in the
+      // same instant — which a survey link shared at a meeting produces in
+      // bursts — otherwise have no defined order between two page requests, so
+      // one can be read twice and another not at all.
+      .order("id", { ascending: true })
+      .range(from, toInclusive) as PromiseLike<{
+      data: SurveyResponseSessionRow[] | null;
+      error: { message: string } | null;
+    }>;
+  });
 }
 
 /** Approved answers for a campaign (SENSITIVE, campaign_id-scoped, inner-joined
@@ -452,12 +504,25 @@ export async function loadApprovedSurveyAnswers(
   supabase: QueryClient,
   campaignId: string
 ): Promise<SurveyRowsResult<SurveyAnswerRow>> {
-  const result = await supabase
-    .from("engagement_survey_answers")
-    .select("question_id, question_type, answer_json, answer_text, engagement_survey_response_sessions!inner(status)")
-    .eq("campaign_id", campaignId)
-    .eq("engagement_survey_response_sessions.status", "approved");
-  return { rows: (result.data ?? []) as SurveyAnswerRow[], error: result.error ?? null };
+  return pageSurveyRows<SurveyAnswerRow>(
+    (from, toInclusive) =>
+      supabase
+        .from("engagement_survey_answers")
+        .select(
+          "question_id, question_type, answer_json, answer_text, engagement_survey_response_sessions!inner(status)"
+        )
+        .eq("campaign_id", campaignId)
+        .eq("engagement_survey_response_sessions.status", "approved")
+        // This read had no ordering at all, which is unpaged-only behaviour: the
+        // primary key is ordered on (never selected — aggregation must not be
+        // able to follow one respondent across questions) purely to make paging
+        // total.
+        .order("id", { ascending: true })
+        .range(from, toInclusive) as PromiseLike<{
+        data: SurveyAnswerRow[] | null;
+        error: { message: string } | null;
+      }>
+  );
 }
 
 // ── Full answer export (SENSITIVE; the door answer CONTENT leaves through) ──
@@ -488,14 +553,21 @@ export async function loadSurveyAnswersForExport(
   supabase: QueryClient,
   campaignId: string
 ): Promise<SurveyRowsResult<SurveyAnswerExportRow>> {
-  const result = await supabase
-    .from("engagement_survey_answers")
-    .select(
-      "session_id, question_id, question_type, question_prompt_snapshot, answer_json, answer_text, created_at"
-    )
-    .eq("campaign_id", campaignId)
-    .order("created_at", { ascending: true });
-  return { rows: (result.data ?? []) as SurveyAnswerExportRow[], error: result.error ?? null };
+  return pageSurveyRows<SurveyAnswerExportRow>(
+    (from, toInclusive) =>
+      supabase
+        .from("engagement_survey_answers")
+        .select(
+          "session_id, question_id, question_type, question_prompt_snapshot, answer_json, answer_text, created_at"
+        )
+        .eq("campaign_id", campaignId)
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, toInclusive) as PromiseLike<{
+        data: SurveyAnswerExportRow[] | null;
+        error: { message: string } | null;
+      }>
+  );
 }
 
 export type SurveyOptionLabelRow = { id: string; label: string };

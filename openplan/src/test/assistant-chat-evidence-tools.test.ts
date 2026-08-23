@@ -138,6 +138,17 @@ function createFilteringSupabaseMock(
       if (error) return Promise.resolve({ data: null, error });
       return Promise.resolve({ data: filteredRows()[0] ?? null, error: null });
     };
+    // The confined survey reads PAGE, because a response table capped at the
+    // server's `max_rows` reports no error and simply counts low. The range
+    // SLICES the filtered rows: a range that ignored its arguments would model
+    // a server with no cap, and a reader that stopped at its first page would
+    // still satisfy every assertion here.
+    chain.range = (from: number, toInclusive: number) => {
+      const error = tableErrors[table] ?? null;
+      if (error) return Promise.resolve({ data: null, error, count: null });
+      const rows = filteredRows().slice(from, toInclusive + 1);
+      return Promise.resolve({ data: rows, error: null, count: rows.length });
+    };
     chain.then = (onFulfilled: (value: unknown) => unknown, onRejected?: (reason: unknown) => unknown) =>
       Promise.resolve(resolve()).then(onFulfilled, onRejected);
     return chain;

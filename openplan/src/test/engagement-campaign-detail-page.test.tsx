@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { pagingFake } from "./helpers/paging-fake";
 
 import { PORTAL_LOCALES } from "@/lib/engagement/portal-i18n/locales";
 
@@ -82,7 +83,8 @@ const categoriesEqMock = vi.fn(() => ({ order: categoriesOrderSortMock }));
 const categoriesSelectMock = vi.fn(() => ({ eq: categoriesEqMock }));
 
 const itemsOrderMock = vi.fn();
-const itemsEqMock = vi.fn(() => ({ order: itemsOrderMock }));
+const itemsPaging = pagingFake(() => itemsOrderMock());
+const itemsEqMock = vi.fn(() => itemsPaging.chain);
 const itemsSelectMock = vi.fn(() => ({ eq: itemsEqMock }));
 
 const reportsOrderMock = vi.fn();
@@ -220,6 +222,15 @@ function flexibleChain(result: () => { data: unknown[]; error: { message: string
   for (const method of ["select", "eq", "order", "limit", "in"]) chain[method] = () => chain;
   chain.then = (resolve: (value: { data: unknown[]; error: { message: string } | null }) => unknown) =>
     resolve(result());
+  // The paged loaders terminate on `.range` instead of awaiting the chain, and
+  // it SLICES: a range that returned the whole fixture would model a server
+  // with no row cap, which is the one server on which a truncating read cannot
+  // be seen.
+  chain.range = async (from: number, toInclusive: number) => {
+    const current = result();
+    if (current.error) return { data: null, error: current.error };
+    return { data: (current.data ?? []).slice(from, toInclusive + 1), error: null };
+  };
   return chain;
 }
 
@@ -325,6 +336,10 @@ vi.mock("@/lib/supabase/server", () => {
     chain.maybeSingle = async () => ({ data: null, error: null });
     chain.single = async () => ({ data: null, error: null });
     chain.then = (resolve: (v: { data: unknown[]; error: null }) => unknown) => resolve({ data: [], error: null });
+    // The survey aggregation pages now, so it terminates on `.range` rather
+    // than awaiting the chain. Empty either way — an empty page is what tells
+    // the loop the read is exhausted.
+    chain.range = async () => ({ data: [], error: null });
     return chain;
   };
   return {
@@ -414,6 +429,8 @@ async function renderPage(searchParams?: { created?: string }) {
 
 describe("EngagementCampaignDetailPage", () => {
   beforeEach(() => {
+    // The paging fake caches its fixture per request; clear it per test.
+    itemsPaging.reset();
     vi.clearAllMocks();
 
     contextLayerRows = [];

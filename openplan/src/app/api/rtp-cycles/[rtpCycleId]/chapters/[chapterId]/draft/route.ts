@@ -1,3 +1,4 @@
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateText } from "ai";
@@ -234,6 +235,20 @@ async function resolveChapterAccess(
   return { response: null, chapter, userId: user.id };
 }
 
+/** The engagement-comment columns this chapter's evidence needs. */
+type EngagementItemEvidenceRow = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  status: string | null;
+  source_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("rtp_cycles.chapters.draft", request);
   const startedAt = Date.now();
@@ -433,35 +448,53 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       const campaigns = (campaignsResult.data ?? []) as Array<{ id: string; rtp_cycle_chapter_id: string | null }>;
       const campaignIds = campaigns.map((campaign) => campaign.id);
-      const engagementItemsResult = campaignIds.length
-        ? await supabase
-            .from("engagement_items")
-            .select(
-              "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-            )
-            .in("campaign_id", campaignIds)
-        : { data: [], error: null };
+      // PAGED. These rows become the engagement counts printed in a chapter of
+      // an adopted RTP — a document that goes to a funder. PostgREST caps a
+      // response at `max_rows` with `error = null`, so the single read this used
+      // to be silently understated resident participation across every campaign
+      // in the cycle at once, and no screen showed anything wrong.
+      //
+      // An unfinished read is handed to `refuseOnEvidenceReadFailure` in the
+      // same shape a server error would be, so the chapter refuses to draft
+      // rather than drafting from a prefix. That chokepoint already exists; this
+      // only has to speak its language.
+      const engagementItemsRead = campaignIds.length
+        ? await readEveryPage<EngagementItemEvidenceRow>(
+            (from, toInclusive) =>
+              supabase
+                .from("engagement_items")
+                .select(
+                  "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+                )
+                .in("campaign_id", campaignIds)
+                .order("created_at", { ascending: true })
+                // The tiebreak makes the order total; comments arriving in the
+                // same second otherwise have no defined order between requests.
+                .order("id", { ascending: true })
+                .range(from, toInclusive) as PromiseLike<{
+                data: EngagementItemEvidenceRow[] | null;
+                error: { message: string } | null;
+              }>
+          )
+        : { rows: [] as EngagementItemEvidenceRow[], complete: true, error: null };
+
+      const engagementItemsResult = engagementItemsRead.complete
+        ? { data: engagementItemsRead.rows, error: null }
+        : {
+            data: null,
+            error: {
+              message:
+                engagementItemsRead.error?.message ??
+                "the engagement comment read could not be completed, so its counts would understate participation",
+            },
+          };
 
       const engagementFailure = refuseOnEvidenceReadFailure(audit, chapter.id, [
         ["engagement comments", engagementItemsResult],
       ]);
       if (engagementFailure) return engagementFailure;
 
-      const engagementCounts = summarizeEngagementItems(
-        [],
-        (engagementItemsResult.data ?? []) as Array<{
-          id: string;
-          campaign_id: string;
-          category_id: string | null;
-          status: string | null;
-          source_type: string | null;
-          latitude: number | null;
-          longitude: number | null;
-          moderation_notes: string | null;
-          created_at: string | null;
-          updated_at: string | null;
-        }>
-      );
+      const engagementCounts = summarizeEngagementItems([], engagementItemsResult.data ?? []);
       const cycleLevelCampaignCount = campaigns.filter((campaign) => !campaign.rtp_cycle_chapter_id).length;
 
       // Modeling evidence via the same per-run loader the RTP packet path uses.

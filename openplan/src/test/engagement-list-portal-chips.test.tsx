@@ -2,6 +2,16 @@ import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+/** A chain that is empty however it is terminated — awaited, or paged with `.range`. */
+function emptyPagedChain(): Record<string, unknown> {
+  const chain: Record<string, unknown> = {};
+  for (const method of ["select", "eq", "in", "order", "limit"]) chain[method] = () => chain;
+  chain.range = async () => ({ data: [], error: null });
+  chain.then = (resolve: (v: { data: unknown[]; error: null }) => unknown) =>
+    resolve({ data: [], error: null });
+  return chain;
+}
+
 const createClientMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 const authGetUserMock = vi.fn();
@@ -20,7 +30,9 @@ const fromMock = vi.fn((table: string) => {
     return { select: () => ({ eq: () => ({ order: projectsOrderMock }) }) };
   }
   if (table === "engagement_items") {
-    return { select: () => ({ in: () => Promise.resolve({ data: [], error: null }) }) };
+    // Paged read: `.in()` chains on to `.order().order().range()`. Empty either
+    // way — an empty page is what tells the paging loop it is exhausted.
+    return { select: () => ({ in: () => emptyPagedChain() }) };
   }
   if (table === "engagement_categories") {
     return { select: () => ({ in: () => Promise.resolve({ data: [], error: null }) }) };

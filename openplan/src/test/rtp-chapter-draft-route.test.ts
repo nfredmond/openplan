@@ -102,6 +102,18 @@ function chainable(result: { data: unknown; error: { message: string } | null })
     maybeSingle: vi.fn(async () => result),
     then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
       Promise.resolve(result).then(resolve, reject),
+    /**
+     * SLICES, the way PostgREST does. The engagement-comment read pages,
+     * because its counts are printed in a chapter that goes to a funder and a
+     * capped read reports no error. A `range` that ignored its arguments and
+     * returned the whole fixture would model a server with no row cap — the one
+     * server on which that defect cannot appear.
+     */
+    range: vi.fn(async (from: number, toInclusive: number) => {
+      if (result.error) return result;
+      const rows = Array.isArray(result.data) ? result.data : [];
+      return { data: rows.slice(from, toInclusive + 1), error: null };
+    }),
   };
   for (const method of ["select", "eq", "in", "order", "limit"]) {
     chain[method] = vi.fn(() => chain);

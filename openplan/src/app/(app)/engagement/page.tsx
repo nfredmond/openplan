@@ -1,3 +1,4 @@
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, FolderKanban, MessagesSquare, ShieldCheck } from "lucide-react";
@@ -174,11 +175,37 @@ export default async function EngagementPage({
 
   const campaignIds = ((campaignsData ?? []) as { id: string }[]).map((campaign) => campaign.id);
   const [itemsResult, categoriesResult] = await Promise.all([
+    // PAGED: these rows become every campaign tile's comment count at once, so
+    // a read capped at `max_rows` understates the whole catalogue rather than
+    // one campaign. PostgREST caps with `error = null`, so nothing here looked
+    // wrong. An unfinished read is handed to `reads.check` as an error, which
+    // makes the tiles say the count could not be read instead of printing a low
+    // one.
     campaignIds.length
-      ? supabase
-          .from("engagement_items")
-          .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
-          .in("campaign_id", campaignIds)
+      ? readEveryPage<CampaignItemSummaryRow>(
+          (from, toInclusive) =>
+            supabase
+              .from("engagement_items")
+              .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
+              .in("campaign_id", campaignIds)
+              .order("created_at", { ascending: true })
+              // The tiebreak makes the order total across page requests.
+              .order("id", { ascending: true })
+              .range(from, toInclusive) as PromiseLike<{
+              data: CampaignItemSummaryRow[] | null;
+              error: { message: string } | null;
+            }>
+        ).then((read) =>
+          read.complete
+            ? { data: read.rows, error: null }
+            : {
+                data: null,
+                error: read.error ?? {
+                  message:
+                    "the comment read could not be completed, so these counts would understate the campaigns",
+                },
+              }
+        )
       : Promise.resolve({ data: [], error: null }),
     campaignIds.length
       ? supabase

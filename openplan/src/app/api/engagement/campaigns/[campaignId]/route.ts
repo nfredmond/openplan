@@ -1,3 +1,4 @@
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -153,6 +154,24 @@ type RouteContext = {
   params: Promise<{ campaignId: string }>;
 };
 
+/** The engagement-comment columns this route reads, as its counts and map need them. */
+type CampaignItemRow = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  title: string | null;
+  body: string | null;
+  submitted_by: string | null;
+  status: string | null;
+  source_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  metadata_json: Record<string, unknown> | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 export async function GET(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("engagement.campaigns.detail", request);
   const startedAt = Date.now();
@@ -219,13 +238,36 @@ export async function GET(request: NextRequest, context: RouteContext) {
           .eq("campaign_id", access.campaign.id)
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: true }),
-        supabase
-          .from("engagement_items")
-          .select(
-            "id, campaign_id, category_id, title, body, submitted_by, status, source_type, latitude, longitude, metadata_json, moderation_notes, created_at, updated_at"
-          )
-          .eq("campaign_id", access.campaign.id)
-          .order("updated_at", { ascending: false }),
+        // PAGED: these rows drive this campaign's tile counts and its handoff
+        // readiness. A read capped at `max_rows` reports no error, so the
+        // counts simply read low. An unfinished read becomes an error rather
+        // than a short list, so the existing failure disclosure covers it.
+        readEveryPage<CampaignItemRow, { message: string; code?: string | null }>(
+          (from, toInclusive) =>
+            supabase
+              .from("engagement_items")
+              .select(
+                "id, campaign_id, category_id, title, body, submitted_by, status, source_type, latitude, longitude, metadata_json, moderation_notes, created_at, updated_at"
+              )
+              .eq("campaign_id", access.campaign.id)
+              .order("updated_at", { ascending: false })
+              .order("id", { ascending: true })
+              .range(from, toInclusive) as PromiseLike<{
+              data: CampaignItemRow[] | null;
+              error: { message: string; code?: string | null } | null;
+            }>
+        ).then((read) =>
+          read.complete
+            ? { data: read.rows, error: null }
+            : {
+                data: null,
+                error: read.error ?? {
+                  message:
+                    "the engagement comment read could not be completed, so any count from it would understate participation",
+                  code: null,
+                },
+              }
+        ),
         access.campaign.project_id
           ? supabase
               .from("reports")

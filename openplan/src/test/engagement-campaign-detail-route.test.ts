@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { pagingFake } from "./helpers/paging-fake";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -78,7 +79,8 @@ const categoriesOrderSortMock = vi.fn(() => ({ order: categoriesOrderCreatedMock
 const categoriesEqCampaignMock = vi.fn(() => ({ order: categoriesOrderSortMock }));
 
 const itemsOrderMock = vi.fn();
-const itemsEqCampaignMock = vi.fn(() => ({ order: itemsOrderMock }));
+const itemsPaging = pagingFake(() => itemsOrderMock());
+const itemsEqCampaignMock = vi.fn(() => itemsPaging.chain);
 const reportsOrderMock = vi.fn();
 const reportsEqProjectMock = vi.fn(() => ({ order: reportsOrderMock }));
 
@@ -211,6 +213,8 @@ import { GET as getCampaignDetail, PATCH as patchCampaignDetail } from "@/app/ap
 
 describe("/api/engagement/campaigns/[campaignId]", () => {
   beforeEach(() => {
+    // The paging fake caches its fixture per request; clear it per test.
+    itemsPaging.reset();
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-15T12:00:00.000Z"));
     vi.clearAllMocks();

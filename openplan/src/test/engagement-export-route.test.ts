@@ -24,9 +24,31 @@ const categoriesResult = vi.fn();
 const categoriesEqMock = vi.fn(() => categoriesResult());
 const categoriesSelectMock = vi.fn(() => ({ eq: categoriesEqMock }));
 
+/**
+ * The items fixture, still configured as `itemsOrderMock.mockResolvedValue(...)`
+ * by every test below. What changed is the terminal: the export PAGES now, so
+ * the chain ends at `.range(from, to)` and this fake SLICES.
+ *
+ * Slicing rather than returning the whole fixture to every call is the point. A
+ * fake that ignored the range would be a server with no row cap — the one
+ * server on which a truncating export cannot be observed — and a route that
+ * read only its first page would still satisfy every assertion here.
+ */
 const itemsOrderMock = vi.fn();
-const itemsEqStatusMock = vi.fn(() => ({ order: itemsOrderMock }));
-const itemsEqCampaignMock = vi.fn(() => ({ order: itemsOrderMock, eq: itemsEqStatusMock }));
+let itemsPageSource: Promise<{ data?: unknown[] | null; error?: unknown }> | null = null;
+const itemsRangeMock = vi.fn(async (from: number, toInclusive: number) => {
+  itemsPageSource ??= Promise.resolve(
+    itemsOrderMock() as unknown as { data?: unknown[] | null; error?: unknown }
+  );
+  const result = await itemsPageSource;
+  if (result?.error) return result;
+  const rows = (result?.data ?? []) as unknown[];
+  return { data: rows.slice(from, toInclusive + 1), error: null };
+});
+const itemsChain: Record<string, unknown> = { range: itemsRangeMock };
+itemsChain.order = vi.fn(() => itemsChain);
+const itemsEqStatusMock = vi.fn(() => itemsChain);
+const itemsEqCampaignMock = vi.fn(() => ({ ...itemsChain, eq: itemsEqStatusMock }));
 const itemsSelectMock = vi.fn(() => ({ eq: itemsEqCampaignMock }));
 
 const fromMock = vi.fn((table: string) => {
@@ -59,6 +81,9 @@ const validCampaignId = "11111111-1111-4111-8111-111111111111";
 
 describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
   beforeEach(() => {
+    // The paging fake resolves its fixture once per request; a test that set
+    // a fixture would otherwise inherit the previous test's cached rows.
+    itemsPageSource = null;
     vi.clearAllMocks();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
@@ -310,6 +335,58 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
         }),
       ],
     });
+  });
+
+  /**
+   * A CAMPAIGN LARGER THAN ONE PAGE.
+   *
+   * PostgREST caps a response at `max_rows` — 1000 on this deployment — and
+   * reports no error while doing it, so the single unpaged read this route used
+   * handed back at most 1000 items and the file presented them as the whole
+   * campaign. A planner attaches that file to a funder submission; the missing
+   * residents are invisible on every screen.
+   *
+   * The fixture is deliberately larger than both the page size and the server
+   * cap, so a route that reads one page fails here rather than in a submission.
+   */
+  it("exports every comment when the campaign holds more than one page of them", async () => {
+    const many = Array.from({ length: 1200 }, (_, index) => ({
+      id: `aaaaaaa1-0000-4000-8000-${String(index).padStart(12, "0")}`,
+      campaign_id: validCampaignId,
+      category_id: null,
+      title: `Comment ${index}`,
+      body: "b",
+      submitted_by: null,
+      status: "approved",
+      source_type: "public",
+      latitude: null,
+      longitude: null,
+      geometry: null,
+      votes_count: 0,
+      moderation_notes: null,
+      metadata_json: {},
+      created_at: "2026-03-20T12:00:00.000Z",
+      updated_at: "2026-03-20T12:00:00.000Z",
+    }));
+    itemsOrderMock.mockResolvedValueOnce({ data: many, error: null });
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=csv`),
+      { params: Promise.resolve({ campaignId: validCampaignId }) }
+    );
+
+    expect(response.status).toBe(200);
+    const csv = await response.text();
+    // One header row plus every comment — 1200, not the 500 of a single page.
+    const dataRows = csv.trimEnd().split("\n").length - 1;
+    expect(dataRows).toBe(1200);
+    expect(csv).toContain("Comment 1199");
+
+    // It asked more than once, each request starting where the last ended.
+    expect(itemsRangeMock.mock.calls.length).toBeGreaterThan(1);
+    const [firstFrom, firstTo] = itemsRangeMock.mock.calls[0];
+    expect(itemsRangeMock.mock.calls[1][0]).toBe(firstTo + 1);
+    expect(firstFrom).toBe(0);
   });
 
   it("returns a GeoJSON FeatureCollection (WGS84) that GIS tools import", async () => {

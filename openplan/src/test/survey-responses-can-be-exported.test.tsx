@@ -36,6 +36,27 @@ const USER_ID = "44444444-4444-4444-8444-444444444444";
 /** Every projection string the route's reads asked the database for. */
 let projections: string[] = [];
 /** Every `.eq()` filter applied to the sensitive response-session read. */
+
+/**
+ * The filters ONE request applied.
+ *
+ * These reads page, so the query is rebuilt per page and every filter is
+ * recorded once per request. Collapsing to the distinct set keeps the
+ * assertions about scoping — and `expect` on the collapsed set is a stronger
+ * claim than before, because a page that dropped the campaign filter (and so
+ * read another campaign's responses) would change this set rather than hide in
+ * a longer list.
+ */
+function appliedFilters(recorded: [string, unknown][]): [string, unknown][] {
+  const seen = new Set<string>();
+  return recorded.filter(([column, value]) => {
+    const key = `${column}=${String(value)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 let sessionFilters: [string, unknown][] = [];
 
 let campaignRow: Record<string, unknown> | null = null;
@@ -96,8 +117,16 @@ function responseClient() {
             sessionFilters.push([column, value]);
             return builder;
           },
-          async order() {
-            return { data: sessionError ? null : sessionRows, error: sessionError };
+          // These reads PAGE now, so `.order()` chains rather than terminating
+          // and `.range()` SLICES. A range that ignored its arguments would be a
+          // server with no row cap — the one server on which the silent
+          // truncation this export used to ship cannot be observed.
+          order() {
+            return builder;
+          },
+          async range(from: number, toInclusive: number) {
+            if (sessionError) return { data: null, error: sessionError };
+            return { data: sessionRows.slice(from, toInclusive + 1), error: null };
           },
         };
         return builder;
@@ -112,8 +141,16 @@ function responseClient() {
             answerFilters.push([column, value]);
             return builder;
           },
-          async order() {
-            return { data: answerError ? null : answerRows, error: answerError };
+          // These reads PAGE now, so `.order()` chains rather than terminating
+          // and `.range()` SLICES. A range that ignored its arguments would be a
+          // server with no row cap — the one server on which the silent
+          // truncation this export used to ship cannot be observed.
+          order() {
+            return builder;
+          },
+          async range(from: number, toInclusive: number) {
+            if (answerError) return { data: null, error: answerError };
+            return { data: answerRows.slice(from, toInclusive + 1), error: null };
           },
         };
         return builder;
@@ -220,7 +257,7 @@ describe("a planner can export a campaign's survey responses", () => {
     expect(body).toContain("resp-1,pending,public,2026-03-04T10:00:00.000Z");
 
     // The sensitive read is scoped to this campaign and nothing else.
-    expect(sessionFilters).toEqual([["campaign_id", CAMPAIGN_ID]]);
+    expect(appliedFilters(sessionFilters)).toEqual([["campaign_id", CAMPAIGN_ID]]);
   });
 
   it("asks the database for the columns the file renders", () => {
@@ -280,7 +317,7 @@ describe("a planner can export a campaign's survey responses", () => {
 
   it("passes a status filter through to the query", async () => {
     await GET(request("?status=flagged"), context);
-    expect(sessionFilters).toEqual([
+    expect(appliedFilters(sessionFilters)).toEqual([
       ["campaign_id", CAMPAIGN_ID],
       ["status", "flagged"],
     ]);
@@ -289,7 +326,7 @@ describe("a planner can export a campaign's survey responses", () => {
   it("refuses an unknown status instead of silently exporting everything", async () => {
     const response = await GET(request("?status=deleted"), context);
     expect(response.status).toBe(400);
-    expect(sessionFilters).toEqual([]);
+    expect(appliedFilters(sessionFilters)).toEqual([]);
   });
 });
 
@@ -455,8 +492,8 @@ describe("the answer export carries what the community actually said", () => {
       "resp-1,pending,public,2026-03-04T10:00:00.000Z,q-1,free_text,What should downtown improve first?,More shade trees"
     );
     // Both sensitive reads are scoped to this campaign and nothing else.
-    expect(sessionFilters).toEqual([["campaign_id", CAMPAIGN_ID]]);
-    expect(answerFilters).toEqual([["campaign_id", CAMPAIGN_ID]]);
+    expect(appliedFilters(sessionFilters)).toEqual([["campaign_id", CAMPAIGN_ID]]);
+    expect(appliedFilters(answerFilters)).toEqual([["campaign_id", CAMPAIGN_ID]]);
   });
 
   it("renders the prompt SNAPSHOT each response saw — an edited question keeps old responses' old prompt", async () => {
