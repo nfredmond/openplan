@@ -1,14 +1,21 @@
 {
+  "assignment_seconds": 850.6,
+  "candidate_freeze_sha256": "f4ea93b1ae92a2a66ee35e19c179d284b937b23a6ac3af9f25be7686016c3923",
+  "corrected_validation_wall_seconds": 159.7,
   "county_fips": "09160",
-  "error": {
-    "kind": "GatewayVolumeStudyError",
-    "message": "Baseline and candidate changed the matched-station exam; refusing the county result.",
-    "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/code/openplan/scripts/modeling/run_gateway_volume_study.py\", line 368, in run_county\n    output_hashes = assemble_county_outputs(\n                    ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/scripts/modeling/run_gateway_volume_study.py\", line 203, in assemble_county_outputs\n    raise GatewayVolumeStudyError(\nGatewayVolumeStudyError: Baseline and candidate changed the matched-station exam; refusing the county result.\n"
-  },
-  "finished_at_utc": "2026-08-23T07:33:26.007228+00:00",
+  "finished_at_utc": "2026-08-23T07:56:24.085017+00:00",
   "half": "development",
+  "output_hashes": {
+    "activitysim_corridors.json": "accec5b2bef0f8b0cc606a0d8ce98ebf9ebb31710d40a71a4c0f41357b841b1e",
+    "aequilibrae_corridors.json": "3de39929344f5b4403b655d1937afa8f0f9699c8c73a6f24006314f0e00ba0db",
+    "artifact_hashes.json": "fd71fcd5d83b0a38488ee6eb7f5061e327caaf955f6a82c15fa72820ae08691d",
+    "baseline_validation.json": "4f92b37d24186c40c4b908482ee9bde38b2efb96f6a137e35b37656562b25d64",
+    "candidate_validation.json": "7991139e2aa7a0d3f94c50d3e0e977e39824880e64a1595787407ddf1694d2fb",
+    "conservation.json": "76a54731297a50fd94df8be167d028fee7f205da0fdeeb292a0eed2bbb768e0b",
+    "gateway_volume_basis.json": "91a3afb6e17ed3b1b9bd63813aa979980816d4f367385f781f6e5f25fbea287a"
+  },
+  "reused_existing_assignments": true,
   "schema_version": "openplan.gateway-volume-study-county.v1",
-  "seconds": 850.6,
   "started_at_utc": "2026-08-23T07:19:15.384960+00:00",
-  "status": "failed"
+  "status": "completed"
 }
