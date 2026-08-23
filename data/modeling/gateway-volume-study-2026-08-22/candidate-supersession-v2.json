@@ -1,0 +1,18 @@
+{
+  "schema_version": "openplan.gateway-volume-study-candidate-supersession.v1",
+  "superseded_freeze": {
+    "path": "candidate-freeze.json",
+    "freeze_sha256": "0d719a4f4b320602f80cc5de602ba8003d69e00a19dcd5e88b4991451b438132",
+    "candidate_commit": "aab061dba5f4f7b04b54b223f7f3a801362bd685"
+  },
+  "active_freeze": {
+    "path": "candidate-freeze-v2.json",
+    "freeze_sha256": "cb87d6b55ebc6121dfa75729ff4bd62128723a6b3487ac942cd03090b7ae5186",
+    "candidate_commit": "0c8c594a65c0e6f0307299e817172a713405eaaa"
+  },
+  "reason": "The first frozen execution path recomputed the same count crosswalk eight times per county. It was stopped during the second crosswalk of the first baseline run, before any demand, assignment, validation, baseline, or candidate result existed. Version 2 builds one wide crosswalk, derives its validation subset, hashes both artifacts, and reuses the exact pair for all four assignments.",
+  "result_visibility_before_supersession": {
+    "development_results_read": false,
+    "holdout_opened": false
+  }
+}
