@@ -1,0 +1,406 @@
+{
+  "adoption_authorized": false,
+  "county_count": 16,
+  "guards_green": true,
+  "half": "development",
+  "interpretation": "Development is candidate-selection evidence only.",
+  "method_results": {
+    "activitysim": {
+      "counties": [
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "09160",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 1552
+        },
+        {
+          "baseline_median_ape": 104.59,
+          "candidate_median_ape": 105.49,
+          "county_fips": "13009",
+          "improved": false,
+          "improvement_percentage_points": -0.9,
+          "matched_stations": 489
+        },
+        {
+          "baseline_median_ape": 88.94,
+          "candidate_median_ape": 88.94,
+          "county_fips": "15001",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 2648
+        },
+        {
+          "baseline_median_ape": 77.81,
+          "candidate_median_ape": 77.54,
+          "county_fips": "18095",
+          "improved": true,
+          "improvement_percentage_points": 0.27,
+          "matched_stations": 2054
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "19015",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 521
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "19045",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 661
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "30049",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 791
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "30111",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 1635
+        },
+        {
+          "baseline_median_ape": 97.55,
+          "candidate_median_ape": 85.05,
+          "county_fips": "33001",
+          "improved": true,
+          "improvement_percentage_points": 12.5,
+          "matched_stations": 1268
+        },
+        {
+          "baseline_median_ape": 126.7,
+          "candidate_median_ape": 100.0,
+          "county_fips": "36073",
+          "improved": true,
+          "improvement_percentage_points": 26.7,
+          "matched_stations": 800
+        },
+        {
+          "baseline_median_ape": 106.17,
+          "candidate_median_ape": 61.67,
+          "county_fips": "37145",
+          "improved": true,
+          "improvement_percentage_points": 44.5,
+          "matched_stations": 364
+        },
+        {
+          "baseline_median_ape": 87.65,
+          "candidate_median_ape": 92.14,
+          "county_fips": "37151",
+          "improved": false,
+          "improvement_percentage_points": -4.49,
+          "matched_stations": 1067
+        },
+        {
+          "baseline_median_ape": 60.75,
+          "candidate_median_ape": 60.52,
+          "county_fips": "37155",
+          "improved": true,
+          "improvement_percentage_points": 0.23,
+          "matched_stations": 782
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "39029",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 608
+        },
+        {
+          "baseline_median_ape": 651.2,
+          "candidate_median_ape": 252.95,
+          "county_fips": "41045",
+          "improved": true,
+          "improvement_percentage_points": 398.25,
+          "matched_stations": 142
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "42095",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 3235
+        }
+      ],
+      "criteria": {
+        "counties_improved": {
+          "actual": 6,
+          "passed": false,
+          "required": 12
+        },
+        "median_county_improvement_percentage_points": {
+          "actual": 0.0,
+          "passed": false,
+          "required": 5.0
+        },
+        "pooled_station_median_ape": {
+          "baseline": 100.0,
+          "candidate": 99.58,
+          "improvement_percentage_points": 0.42,
+          "passed": true
+        },
+        "road_classes": {
+          "maximum_worsening_percentage_points": 5.0,
+          "passed": true
+        }
+      },
+      "passed": false,
+      "road_classes": {
+        "motorway": {
+          "baseline_median_ape": 80.64,
+          "candidate_median_ape": 79.82,
+          "comparisons": 423,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": -0.82
+        },
+        "primary": {
+          "baseline_median_ape": 89.68,
+          "candidate_median_ape": 86.48,
+          "comparisons": 5025,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": -3.2
+        },
+        "secondary": {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 99.83,
+          "comparisons": 4534,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": -0.17
+        },
+        "tertiary": {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "comparisons": 6366,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": 0.0
+        },
+        "trunk": {
+          "baseline_median_ape": 125.56,
+          "candidate_median_ape": 100.0,
+          "comparisons": 2269,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": -25.56
+        }
+      }
+    },
+    "aequilibrae": {
+      "counties": [
+        {
+          "baseline_median_ape": 135.85,
+          "candidate_median_ape": 130.25,
+          "county_fips": "09160",
+          "improved": true,
+          "improvement_percentage_points": 5.6,
+          "matched_stations": 1552
+        },
+        {
+          "baseline_median_ape": 171.25,
+          "candidate_median_ape": 170.73,
+          "county_fips": "13009",
+          "improved": true,
+          "improvement_percentage_points": 0.52,
+          "matched_stations": 489
+        },
+        {
+          "baseline_median_ape": 86.88,
+          "candidate_median_ape": 86.88,
+          "county_fips": "15001",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 2648
+        },
+        {
+          "baseline_median_ape": 86.11,
+          "candidate_median_ape": 92.75,
+          "county_fips": "18095",
+          "improved": false,
+          "improvement_percentage_points": -6.64,
+          "matched_stations": 2054
+        },
+        {
+          "baseline_median_ape": 104.55,
+          "candidate_median_ape": 100.0,
+          "county_fips": "19015",
+          "improved": true,
+          "improvement_percentage_points": 4.55,
+          "matched_stations": 521
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "19045",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 661
+        },
+        {
+          "baseline_median_ape": 116.62,
+          "candidate_median_ape": 100.0,
+          "county_fips": "30049",
+          "improved": true,
+          "improvement_percentage_points": 16.62,
+          "matched_stations": 791
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "30111",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 1635
+        },
+        {
+          "baseline_median_ape": 97.84,
+          "candidate_median_ape": 92.33,
+          "county_fips": "33001",
+          "improved": true,
+          "improvement_percentage_points": 5.51,
+          "matched_stations": 1268
+        },
+        {
+          "baseline_median_ape": 153.19,
+          "candidate_median_ape": 100.0,
+          "county_fips": "36073",
+          "improved": true,
+          "improvement_percentage_points": 53.19,
+          "matched_stations": 800
+        },
+        {
+          "baseline_median_ape": 117.81,
+          "candidate_median_ape": 76.76,
+          "county_fips": "37145",
+          "improved": true,
+          "improvement_percentage_points": 41.05,
+          "matched_stations": 364
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "37151",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 1067
+        },
+        {
+          "baseline_median_ape": 89.53,
+          "candidate_median_ape": 89.53,
+          "county_fips": "37155",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 782
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "county_fips": "39029",
+          "improved": false,
+          "improvement_percentage_points": 0.0,
+          "matched_stations": 608
+        },
+        {
+          "baseline_median_ape": 738.0,
+          "candidate_median_ape": 366.34,
+          "county_fips": "41045",
+          "improved": true,
+          "improvement_percentage_points": 371.66,
+          "matched_stations": 142
+        },
+        {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 110.26,
+          "county_fips": "42095",
+          "improved": false,
+          "improvement_percentage_points": -10.26,
+          "matched_stations": 3235
+        }
+      ],
+      "criteria": {
+        "counties_improved": {
+          "actual": 8,
+          "passed": false,
+          "required": 12
+        },
+        "median_county_improvement_percentage_points": {
+          "actual": 0.26,
+          "passed": false,
+          "required": 5.0
+        },
+        "pooled_station_median_ape": {
+          "baseline": 100.0,
+          "candidate": 100.0,
+          "improvement_percentage_points": 0.0,
+          "passed": false
+        },
+        "road_classes": {
+          "maximum_worsening_percentage_points": 5.0,
+          "passed": false
+        }
+      },
+      "passed": false,
+      "road_classes": {
+        "motorway": {
+          "baseline_median_ape": 88.86,
+          "candidate_median_ape": 97.66,
+          "comparisons": 423,
+          "passed": false,
+          "threshold_applies": true,
+          "worsening_percentage_points": 8.8
+        },
+        "primary": {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "comparisons": 5025,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": 0.0
+        },
+        "secondary": {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "comparisons": 4534,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": 0.0
+        },
+        "tertiary": {
+          "baseline_median_ape": 100.0,
+          "candidate_median_ape": 100.0,
+          "comparisons": 6366,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": 0.0
+        },
+        "trunk": {
+          "baseline_median_ape": 198.82,
+          "candidate_median_ape": 174.45,
+          "comparisons": 2269,
+          "passed": true,
+          "threshold_applies": true,
+          "worsening_percentage_points": -24.37
+        }
+      }
+    }
+  },
+  "methods_are_never_averaged": true,
+  "schema_version": "openplan.gateway-volume-study-evaluation.v1",
+  "thresholds_passed_for_both_methods": false
+}
