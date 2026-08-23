@@ -197,14 +197,42 @@ def assemble_county_outputs(
         raise GatewayVolumeStudyError("At least one assignment failed the registered conservation chain.")
     write_json(results_dir / "conservation.json", {"runs": conservation})
 
-    baseline_validation = validation_record(aeq_baseline)
-    candidate_validation = validation_record(aeq_candidate)
-    if baseline_validation["matched_station_ids"] != candidate_validation["matched_station_ids"]:
-        raise GatewayVolumeStudyError(
-            "Baseline and candidate changed the matched-station exam; refusing the county result."
-        )
-    write_json(results_dir / "baseline_validation.json", baseline_validation)
-    write_json(results_dir / "candidate_validation.json", candidate_validation)
+    validations = {
+        "aequilibrae": {
+            "baseline": validation_record(aeq_baseline),
+            "candidate": validation_record(aeq_candidate),
+        },
+        "activitysim": {
+            "baseline": validation_record(asim_baseline),
+            "candidate": validation_record(asim_candidate),
+        },
+    }
+    for demand_method, records in validations.items():
+        if records["baseline"]["matched_station_ids"] != records["candidate"]["matched_station_ids"]:
+            raise GatewayVolumeStudyError(
+                f"{demand_method} baseline and candidate changed the matched-station exam; "
+                "refusing the county result."
+            )
+    write_json(
+        results_dir / "baseline_validation.json",
+        {
+            "schema_version": "openplan.gateway-volume-validation-evidence.v1",
+            "demand_methods": {
+                demand_method: records["baseline"]
+                for demand_method, records in validations.items()
+            },
+        },
+    )
+    write_json(
+        results_dir / "candidate_validation.json",
+        {
+            "schema_version": "openplan.gateway-volume-validation-evidence.v1",
+            "demand_methods": {
+                demand_method: records["candidate"]
+                for demand_method, records in validations.items()
+            },
+        },
+    )
 
     gateway_basis = {
         "baseline": read_json(aeq_baseline / "gateway_volume_basis.json"),
@@ -240,11 +268,15 @@ def assemble_county_outputs(
             name: read_json(run / "bundle_manifest.json").get("published_counts")
             for name, run in runs.items()
         },
-        "zone_resolution_unchanged": (
-            baseline_validation["summary"].get("zone_resolution")
-            == candidate_validation["summary"].get("zone_resolution")
+        "zone_resolution_unchanged": all(
+            records["baseline"]["summary"].get("zone_resolution")
+            == records["candidate"]["summary"].get("zone_resolution")
+            for records in validations.values()
         ),
         "matched_station_set_unchanged": True,
+        "matched_station_set_by_demand_method": {
+            demand_method: True for demand_method in validations
+        },
     }
     if guards["zone_resolution_unchanged"] is not True:
         raise GatewayVolumeStudyError("Zone resolution changed between baseline and candidate.")

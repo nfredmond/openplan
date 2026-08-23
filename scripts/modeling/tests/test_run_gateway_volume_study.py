@@ -41,7 +41,9 @@ class CorridorChangeIsNotAnAverage(unittest.TestCase):
                 with path.open("w", newline="") as handle:
                     writer = csv.DictWriter(handle, fieldnames=["link_id", "PCE_tot"])
                     writer.writeheader()
-                    writer.writerows({"link_id": link_id, "PCE_tot": volume} for link_id, volume in rows)
+                    writer.writerows(
+                        {"link_id": link_id, "PCE_tot": volume} for link_id, volume in rows
+                    )
 
             baseline = root / "baseline.csv"
             candidate = root / "candidate.csv"
@@ -67,6 +69,42 @@ class CorridorChangeIsNotAnAverage(unittest.TestCase):
             with self.assertRaisesRegex(study.GatewayVolumeStudyError, "same retained link ids"):
                 study.corridor_change_record(
                     root / "baseline.csv", root / "candidate.csv", network, label="probe"
+                )
+
+
+class BothDemandMethodsKeepTheSameObservedExam(unittest.TestCase):
+    def test_activitysim_station_changes_are_refused_before_artifacts_are_published(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            runs = {
+                name: root / name
+                for name in ("aeq_base", "aeq_trial", "asim_base", "asim_trial")
+            }
+            for run in runs.values():
+                run.mkdir()
+                study.write_json(run / "conservation.json", {"status": "passed"})
+
+            records = {
+                "aeq_base": {"matched_station_ids": ["same"], "summary": {"zone_resolution": {}}},
+                "aeq_trial": {"matched_station_ids": ["same"], "summary": {"zone_resolution": {}}},
+                "asim_base": {"matched_station_ids": ["baseline"], "summary": {"zone_resolution": {}}},
+                "asim_trial": {"matched_station_ids": ["candidate"], "summary": {"zone_resolution": {}}},
+            }
+            with (
+                patch.object(
+                    study,
+                    "validation_record",
+                    side_effect=lambda run: records[run.name],
+                ),
+                self.assertRaisesRegex(study.GatewayVolumeStudyError, "activitysim baseline"),
+            ):
+                study.assemble_county_outputs(
+                    county_dir=root / "county",
+                    aeq_baseline=runs["aeq_base"],
+                    aeq_candidate=runs["aeq_trial"],
+                    asim_baseline=runs["asim_base"],
+                    asim_candidate=runs["asim_trial"],
+                    required_outputs=[],
                 )
 
 
