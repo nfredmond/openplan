@@ -6,6 +6,7 @@ import csv
 import sys
 import tempfile
 import unittest
+import json
 from pathlib import Path
 from unittest.mock import patch
 
@@ -38,20 +39,23 @@ class NationwideCountSourceSelection(unittest.TestCase):
             boundary = root / "boundary.geojson"
             database = root / "project_database.sqlite"
             output = root / "counts.csv"
-            boundary.write_text("{}")
+            boundary.write_text(json.dumps({
+                "type": "Polygon",
+                "coordinates": [[[-124, 32], [-80, 32], [-80, 42], [-124, 42], [-124, 32]]],
+            }))
             database.write_text("")
 
             def fake_builder(**kwargs):
                 rows = (
-                    [{"station_id": "CA-DOT", "source_state": ""}]
+                    [{"station_id": "CA-DOT", "source_state": "", "bbox_min_lon": "-120", "bbox_max_lon": "-120", "bbox_min_lat": "35", "bbox_max_lat": "35"}]
                     if kwargs["source"] == "CA"
                     else [
-                        {"station_id": "HPMS-CA", "source_state": "06"},
-                        {"station_id": "HPMS-OH", "source_state": "39"},
+                        {"station_id": "HPMS-CA", "source_state": "06", "bbox_min_lon": "-121", "bbox_max_lon": "-121", "bbox_min_lat": "36", "bbox_max_lat": "36"},
+                        {"station_id": "HPMS-OH", "source_state": "39", "bbox_min_lon": "-82", "bbox_max_lon": "-82", "bbox_min_lat": "40", "bbox_max_lat": "40"},
                     ]
                 )
                 with kwargs["output_csv"].open("w", newline="") as handle:
-                    writer = csv.DictWriter(handle, fieldnames=["station_id", "source_state"])
+                    writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
                     writer.writeheader()
                     writer.writerows(rows)
 
@@ -74,7 +78,7 @@ class NationwideCountSourceSelection(unittest.TestCase):
             with output.open(newline="") as handle:
                 station_ids = [row["station_id"] for row in csv.DictReader(handle)]
             self.assertEqual(station_ids, ["CA-DOT", "HPMS-OH"])
-            self.assertEqual(run.call_count, 4)
+            self.assertEqual(run.call_count, 2)
             self.assertEqual(result["station_count"], 2)
 
     def test_gateway_evidence_query_is_buffered_and_not_boundary_clipped(self) -> None:
@@ -83,16 +87,31 @@ class NationwideCountSourceSelection(unittest.TestCase):
             boundary = root / "boundary.geojson"
             database = root / "project_database.sqlite"
             output = root / "counts.csv"
-            boundary.write_text("{}")
+            boundary.write_text(json.dumps({
+                "type": "Polygon",
+                "coordinates": [[[-80.9, 40.7], [-80.5, 40.7], [-80.5, 41], [-80.9, 41], [-80.9, 40.7]]],
+            }))
             database.write_text("")
             calls = []
 
             def fake_builder(**kwargs):
                 calls.append(kwargs)
                 with kwargs["output_csv"].open("w", newline="") as handle:
-                    writer = csv.DictWriter(handle, fieldnames=["station_id", "source_state"])
+                    writer = csv.DictWriter(handle, fieldnames=[
+                        "station_id", "source_state", "bbox_min_lon", "bbox_max_lon",
+                        "bbox_min_lat", "bbox_max_lat",
+                    ])
                     writer.writeheader()
-                    writer.writerow({"station_id": "S1", "source_state": "39"})
+                    writer.writerow({
+                        "station_id": "S1", "source_state": "39",
+                        "bbox_min_lon": "-80.7", "bbox_max_lon": "-80.7",
+                        "bbox_min_lat": "40.8", "bbox_max_lat": "40.8",
+                    })
+                    writer.writerow({
+                        "station_id": "OUTSIDE", "source_state": "39",
+                        "bbox_min_lon": "-80.95", "bbox_max_lon": "-80.95",
+                        "bbox_min_lat": "40.8", "bbox_max_lat": "40.8",
+                    })
 
                 class Result:
                     returncode = 0
@@ -110,11 +129,13 @@ class NationwideCountSourceSelection(unittest.TestCase):
                     output_csv=output,
                     bbox=bbox,
                 )
-            self.assertEqual(calls[0]["boundary_geojson_path"], boundary)
-            self.assertIsNone(calls[1]["boundary_geojson_path"])
-            self.assertLess(calls[1]["bbox"][0], bbox[0])
-            self.assertGreater(calls[1]["bbox"][2], bbox[2])
+            self.assertEqual(len(calls), 1)
+            self.assertIsNone(calls[0]["boundary_geojson_path"])
+            self.assertLess(calls[0]["bbox"][0], bbox[0])
+            self.assertGreater(calls[0]["bbox"][2], bbox[2])
             self.assertTrue(Path(result["gateway_counts_csv"]).exists())
+            with output.open(newline="") as handle:
+                self.assertEqual([row["station_id"] for row in csv.DictReader(handle)], ["S1"])
 
 
 if __name__ == "__main__":

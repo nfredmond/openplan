@@ -465,6 +465,21 @@ def validate_candidate_freeze(
         raise GatewayVolumeStudyRegistryError("Candidate freeze is missing, altered, or for another registry.")
 
 
+def latest_candidate_freeze_path(study_dir: Path) -> Path:
+    """Select the newest explicitly versioned freeze without rewriting history."""
+    candidates: list[tuple[int, Path]] = []
+    for path in Path(study_dir).glob("candidate-freeze*.json"):
+        match = re.fullmatch(r"candidate-freeze(?:-v([0-9]+))?\.json", path.name)
+        if match:
+            candidates.append((int(match.group(1) or 1), path))
+    if not candidates:
+        raise GatewayVolumeStudyRegistryError(
+            "No candidate-freeze.json or versioned successor is present."
+        )
+    candidates.sort(key=lambda item: item[0])
+    return candidates[-1][1]
+
+
 def freeze_development(
     registry: Mapping[str, Any],
     candidate_freeze: Mapping[str, Any],
@@ -537,6 +552,10 @@ def main() -> int:
     )
     parser.add_argument("--freeze-candidate", action="store_true")
     parser.add_argument("--freeze-development", action="store_true")
+    parser.add_argument(
+        "--candidate-freeze-output",
+        help="Filename for a superseding immutable freeze, relative to the registry directory.",
+    )
     args = parser.parse_args()
     if args.freeze_candidate and args.freeze_development:
         parser.error("choose only one freeze operation")
@@ -554,15 +573,21 @@ def main() -> int:
             candidate_commit=candidate_commit,
             implementation_hashes=hashes,
         )
-        path = output.parent / "candidate-freeze.json"
+        path = (
+            output.parent / args.candidate_freeze_output
+            if args.candidate_freeze_output
+            else output.parent / "candidate-freeze.json"
+        )
+        if path.parent != output.parent:
+            raise GatewayVolumeStudyRegistryError(
+                "The candidate freeze must stay beside the study registry."
+            )
         write_immutable_json(path, frozen)
         print(json.dumps({"candidate_freeze": str(path), "freeze_sha256": frozen["freeze_sha256"]}, indent=2))
         return 0
     if args.freeze_development:
         registry = load_registry(output)
-        candidate_path = output.parent / "candidate-freeze.json"
-        if not candidate_path.exists():
-            raise GatewayVolumeStudyRegistryError("candidate-freeze.json is missing")
+        candidate_path = latest_candidate_freeze_path(output.parent)
         candidate = json.loads(candidate_path.read_text())
         required = registry["protocol"]["required_outputs"]["per_county"]
         county_outputs = {

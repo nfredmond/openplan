@@ -90,6 +90,11 @@ workers/aequilibrae_worker/data/gtfs/.gtfs_cache/
 # output.
 data/agreement-study/runs/
 
+# Gateway study execution logs contain full model subprocess output and can be
+# hundreds of megabytes. The small status, hashes, summaries and dated findings
+# beside them remain tracked evidence.
+data/modeling/gateway-volume-study-2026-08-22/runs/*/*/logs/
+
 # Worker job manifests (`tmp/county-onramp/<run>.manifest.json`) — a transcript
 # of one local run, regenerated every time.
 /tmp/

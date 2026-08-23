@@ -24,9 +24,13 @@ from __future__ import annotations
 import subprocess
 import sys
 import csv
+import json
 import math
 from pathlib import Path
 from typing import Any
+
+from shapely.geometry import Point, shape
+from shapely.ops import unary_union
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 WORKER_DIR = SCRIPT_DIR.parents[1] / "workers" / "aequilibrae_worker"
@@ -150,6 +154,48 @@ def buffer_bbox_miles(
     )
 
 
+def _boundary_geometry(boundary_geojson_path: Path):
+    payload = json.loads(Path(boundary_geojson_path).read_text())
+    if payload.get("type") == "FeatureCollection":
+        geometries = [
+            shape(feature["geometry"])
+            for feature in payload.get("features", [])
+            if feature.get("geometry")
+        ]
+        if not geometries:
+            raise CountsUnavailable("The study-area boundary contains no geometry.")
+        return unary_union(geometries)
+    if payload.get("type") == "Feature":
+        return shape(payload["geometry"])
+    return shape(payload)
+
+
+def _rows_inside_boundary(
+    rows: list[dict[str, str]], boundary_geojson_path: Path
+) -> list[dict[str, str]]:
+    """Derive the validation set from the wider gateway evidence fetch.
+
+    Count rows store a small matching box around their source midpoint. The
+    midpoint is the same point the count builder used for boundary clipping,
+    so filtering the already-crosswalked wide result is equivalent to running
+    the expensive road-name crosswalk a second time inside the boundary.
+    """
+    boundary = _boundary_geometry(boundary_geojson_path)
+    inside: list[dict[str, str]] = []
+    for row in rows:
+        try:
+            longitude = (float(row["bbox_min_lon"]) + float(row["bbox_max_lon"])) / 2.0
+            latitude = (float(row["bbox_min_lat"]) + float(row["bbox_max_lat"])) / 2.0
+        except (KeyError, TypeError, ValueError) as exc:
+            raise CountsUnavailable(
+                "A normalized count row lacks the midpoint bounds needed to prove it lies "
+                "inside the study area. The count-source schema may have drifted."
+            ) from exc
+        if boundary.covers(Point(longitude, latitude)):
+            inside.append(row)
+    return inside
+
+
 def split_counts_for_calibration(counts_csv: Path, fit_csv: Path, holdout_csv: Path) -> dict[str, Any]:
     """Split a count set so the model is never graded on what it was fitted to.
 
@@ -231,34 +277,6 @@ def fetch_counts_for_study_area(
     gateway_output_csv = output_csv.with_name(f"{output_csv.stem}.gateway{output_csv.suffix}")
     gateway_bbox = buffer_bbox_miles(bbox, 3.0)
     for index, (source, source_states) in enumerate(sorted(sources.items())):
-        source_csv = output_csv if len(sources) == 1 else output_csv.with_name(
-            f"{output_csv.stem}.{index:02d}-{source}{output_csv.suffix}"
-        )
-        completed = _run_count_builder(
-            source=source,
-            boundary_geojson_path=boundary_geojson_path,
-            project_db=project_db,
-            output_csv=source_csv,
-            bbox=bbox,
-            python_bin=python_bin or sys.executable,
-            count_source_cache_dir=count_source_cache_dir,
-        )
-        if completed.returncode != 0 or not source_csv.exists():
-            raise CountsUnavailable(
-                f"The {source} count feed could not be read for this study area: "
-                f"{(completed.stderr or completed.stdout or '').strip()[:400] or 'no output'}"
-            )
-        with source_csv.open(newline="") as handle:
-            reader = csv.DictReader(handle)
-            if not fieldnames:
-                fieldnames = list(reader.fieldnames or [])
-            rows = list(reader)
-        # HPMS spans the whole bounding box. In a mixed-source, multi-state
-        # area it is retained only for states that lack a preferred DOT feed.
-        if source == count_sources.HPMS_SOURCE_ID and len(sources) > 1:
-            rows = [row for row in rows if str(row.get("source_state") or "").zfill(2) in source_states]
-        source_rows.extend(rows)
-
         gateway_source_csv = (
             gateway_output_csv
             if len(sources) == 1
@@ -281,7 +299,10 @@ def fetch_counts_for_study_area(
                 f"{(gateway_completed.stderr or gateway_completed.stdout or '').strip()[:400] or 'no output'}"
             )
         with gateway_source_csv.open(newline="") as handle:
-            gateway_source_rows = list(csv.DictReader(handle))
+            reader = csv.DictReader(handle)
+            if not fieldnames:
+                fieldnames = list(reader.fieldnames or [])
+            gateway_source_rows = list(reader)
         if source == count_sources.HPMS_SOURCE_ID and len(sources) > 1:
             gateway_source_rows = [
                 row
@@ -289,6 +310,8 @@ def fetch_counts_for_study_area(
                 if str(row.get("source_state") or "").zfill(2) in source_states
             ]
         gateway_rows.extend(gateway_source_rows)
+        rows = _rows_inside_boundary(gateway_source_rows, boundary_geojson_path)
+        source_rows.extend(rows)
         source_outputs.append(
             {
                 "source": source,
@@ -299,11 +322,14 @@ def fetch_counts_for_study_area(
             }
         )
 
+    # Always materialize both artifacts. With one source the builder already
+    # wrote the wide gateway file; the validation file is the boundary subset.
+    # With several sources both files are source-precedence merges.
+    with output_csv.open("w", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(source_rows)
     if len(sources) > 1:
-        with output_csv.open("w", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(source_rows)
         with gateway_output_csv.open("w", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=fieldnames)
             writer.writeheader()

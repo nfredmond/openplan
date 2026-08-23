@@ -188,6 +188,15 @@ class HoldoutSealTests(unittest.TestCase):
         with self.assertRaisesRegex(registry.GatewayVolumeStudyRegistryError, "altered"):
             registry.authorize_holdout(self.registry, self.candidate, development)
 
+    def test_a_versioned_successor_is_selected_without_rewriting_the_first_freeze(self):
+        with tempfile.TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            first = root / "candidate-freeze.json"
+            second = root / "candidate-freeze-v2.json"
+            first.write_text("{}")
+            second.write_text("{}")
+            self.assertEqual(registry.latest_candidate_freeze_path(root), second)
+
 
 if __name__ == "__main__":
     unittest.main()

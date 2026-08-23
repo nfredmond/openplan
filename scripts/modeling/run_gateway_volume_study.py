@@ -308,6 +308,7 @@ def run_county(
         ]
         if key != "aeq_baseline":
             command.extend(["--reuse-network-from-run", str(runs["aeq_baseline"])])
+            command.extend(["--reuse-counts-from-run", str(runs["aeq_baseline"])])
         if demand is not None:
             command.extend(["--demand-package-dir", str(demand)])
         if force:
@@ -373,6 +374,20 @@ def run_county(
             required_outputs=required_outputs,
         )
         status.update({"status": "completed", "output_hashes": output_hashes})
+    except KeyboardInterrupt:
+        status.update(
+            {
+                "status": "aborted_before_result",
+                "error": {
+                    "kind": "KeyboardInterrupt",
+                    "message": "Execution stopped before any assignment or validation result was produced.",
+                },
+                "finished_at_utc": utc_now(),
+                "seconds": round(time.monotonic() - started, 1),
+            }
+        )
+        write_json(status_path, status)
+        raise
     except Exception as exc:  # noqa: BLE001 - every failed county needs a durable record
         status.update(
             {
@@ -391,9 +406,12 @@ def run_county(
 
 
 def load_freezes(study_dir: Path) -> tuple[dict[str, Any], dict[str, Any] | None]:
-    candidate_path = study_dir / "candidate-freeze.json"
-    if not candidate_path.exists():
-        raise GatewayVolumeStudyError("candidate-freeze.json is missing; development may not start.")
+    try:
+        candidate_path = registry_tools.latest_candidate_freeze_path(study_dir)
+    except registry_tools.GatewayVolumeStudyRegistryError as exc:
+        raise GatewayVolumeStudyError(
+            "A candidate freeze is missing; development may not start."
+        ) from exc
     candidate = read_json(candidate_path)
     development_path = study_dir / "development-freeze.json"
     development = read_json(development_path) if development_path.exists() else None

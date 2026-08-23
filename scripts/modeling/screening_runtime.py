@@ -1304,6 +1304,10 @@ def fetch_study_area_counts(
         "calibration_requested": calibrate,
         **fetched,
         "validation_counts_csv": fetched["counts_csv"],
+        "artifact_hashes": {
+            "counts_csv": _file_sha256(Path(fetched["counts_csv"])),
+            "gateway_counts_csv": _file_sha256(Path(fetched["gateway_counts_csv"])),
+        },
     }
 
     if not calibrate:
@@ -1325,6 +1329,12 @@ def fetch_study_area_counts(
     result.update(split)
     result["calibration_counts_csv"] = split["fit_csv"]
     result["validation_counts_csv"] = split["holdout_csv"]
+    result["artifact_hashes"].update(
+        {
+            "fit_csv": _file_sha256(Path(split["fit_csv"])),
+            "holdout_csv": _file_sha256(Path(split["holdout_csv"])),
+        }
+    )
     return result
 
 
@@ -1659,6 +1669,14 @@ def boundary_fingerprint(boundary_geom) -> str:
     return hashlib.sha256(wkb.dumps(set_precision(boundary_geom, 1e-9))).hexdigest()
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def backfill_gateway_names_from_project(summary: dict[str, Any], project_dir: Path) -> int:
     """Recover each reused gateway's road name from the network it came from.
 
@@ -1703,6 +1721,99 @@ def backfill_gateway_names_from_project(summary: dict[str, Any], project_dir: Pa
         if name:
             filled += 1
     return filled
+
+
+def reuse_study_area_counts(
+    run_dir: Path,
+    boundary_geom,
+    source_run_dir: Path,
+    *,
+    calibrate: bool = False,
+) -> dict[str, Any]:
+    """Copy one completed run's exact observed-count evidence into this run.
+
+    A gateway study compares four assignments. Re-querying and crosswalking the
+    source for each arm is both wasteful and methodologically unsafe: a source
+    update or a different nearest-link tie could change the exam between arms.
+    The source manifest's hashes make reuse fail closed on either condition.
+    """
+    if calibrate:
+        raise RuntimeError(
+            "Count-artifact reuse does not yet carry calibration fit/holdout partitions. "
+            "Refusing to reconstruct a different split."
+        )
+    source_run_dir = Path(source_run_dir).expanduser().resolve()
+    source_manifest_path = source_run_dir / "bundle_manifest.json"
+    source_boundary_path = source_run_dir / "boundary" / "analysis_boundary.geojson"
+    for path, what in (
+        (source_manifest_path, "bundle manifest"),
+        (source_boundary_path, "analysis boundary"),
+    ):
+        if not path.exists():
+            raise RuntimeError(f"The count source run is missing its {what} ({path}).")
+
+    source_boundary_payload = json.loads(source_boundary_path.read_text())
+    source_features = source_boundary_payload.get("features") or []
+    if not source_features:
+        raise RuntimeError("The count source run's analysis boundary contains no geometry.")
+    source_geom = shape(source_features[0]["geometry"])
+    if boundary_fingerprint(source_geom) != boundary_fingerprint(boundary_geom):
+        raise RuntimeError(
+            f"The count source run {source_run_dir.name} covers a different study area. "
+            "Reusing its observations would grade this run against another geography."
+        )
+
+    manifest = json.loads(source_manifest_path.read_text())
+    published = manifest.get("published_counts") or {}
+    if not published.get("available"):
+        raise RuntimeError("The count source run has no available published-count artifact to reuse.")
+    expected_hashes = published.get("artifact_hashes") or {}
+    required = {
+        "counts_csv": published.get("counts_csv"),
+        "gateway_counts_csv": published.get("gateway_counts_csv"),
+    }
+    if set(expected_hashes) < set(required):
+        raise RuntimeError(
+            "The count source run predates hashed count artifacts; exact reuse cannot be proven."
+        )
+
+    counts_dir = ensure_dir(run_dir / "counts")
+    destinations = {
+        "counts_csv": counts_dir / "published_counts.csv",
+        "gateway_counts_csv": counts_dir / "published_counts.gateway.csv",
+    }
+    for key, raw_source in required.items():
+        source = Path(str(raw_source)).expanduser().resolve()
+        if not source.exists():
+            raise RuntimeError(f"The count source run is missing {key} ({source}).")
+        actual = _file_sha256(source)
+        if actual != expected_hashes[key]:
+            raise RuntimeError(
+                f"The count source run's {key} hash changed: expected {expected_hashes[key]}, "
+                f"found {actual}. Refusing altered evidence."
+            )
+        shutil.copy2(source, destinations[key])
+        if _file_sha256(destinations[key]) != expected_hashes[key]:
+            raise RuntimeError(f"The copied {key} did not retain its registered hash.")
+
+    reused = dict(published)
+    reused.update(
+        {
+            "counts_csv": str(destinations["counts_csv"]),
+            "validation_counts_csv": str(destinations["counts_csv"]),
+            "gateway_counts_csv": str(destinations["gateway_counts_csv"]),
+            "calibration_requested": False,
+            "reused_from_run": {
+                "run_dir": str(source_run_dir),
+                "run_name": source_run_dir.name,
+                "boundary_sha256": boundary_fingerprint(boundary_geom),
+                "artifact_hashes": {
+                    key: expected_hashes[key] for key in sorted(required)
+                },
+            },
+        }
+    )
+    return reused
 
 
 def reuse_network_from_run(
@@ -1798,7 +1909,7 @@ def build_network(
     network_buffer_miles: float,
     reuse_network_from: str | None = None,
     gateway_candidate_pool: bool = False,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], pd.DataFrame]:
     from aequilibrae import Project
 
     if reuse_network_from:
@@ -2676,9 +2787,9 @@ def synthesize_demand(
     auto_person_trips = sum(auto_person_by_purpose.values())
 
     # PERSON TRIPS BECOME VEHICLE TRIPS HERE, and nowhere else in this lane.
-    # Applied after distribution and before anything is assigned, so the trip
-    # totals a reader sees in the manifest stay person-scale (which is what the
-    # published trip rates are) while the network carries vehicles.
+    # Applied after distribution and before anything is assigned. The
+    # conservation record retains both person and vehicle totals; the legacy
+    # per-purpose manifest totals below are assignment-scale vehicle trips.
     occupancy_applied: dict[str, float] | None = None
     if convert_person_trips_to_vehicles and supplied_internal_matrix is None:
         hbw = hbw / VEHICLE_OCCUPANCY["hbw"]
@@ -3209,10 +3320,27 @@ def run_screening_model(
     counts_mode: str | None = None,
     calibrate_to_counts: bool = False,
     reuse_network_from: str | None = None,
+    reuse_counts_from: str | None = None,
     zone_geography: str = DEFAULT_ZONE_GEOGRAPHY,
     gateway_volume_mode: str = "default",
 ) -> dict[str, Any]:
     gateway_policy = gateway_volume_policy(gateway_volume_mode)
+    if reuse_counts_from and counts_mode != "auto":
+        raise ConfigurationError(
+            "--reuse-counts-from-run requires --counts auto; otherwise the supplied evidence "
+            "would be silently ignored."
+        )
+    if (
+        gateway_volume_mode != "default"
+        and reuse_counts_from
+        and reuse_network_from
+        and Path(reuse_counts_from).expanduser().resolve()
+        != Path(reuse_network_from).expanduser().resolve()
+    ):
+        raise ConfigurationError(
+            "A gateway-volume study arm must reuse its network and count evidence from the same "
+            "baseline run."
+        )
     # THE ONE COMBINATION THAT IS REFUSED. Calibrating and then validating
     # against the SAME count file grades the model on most of the data it was
     # just fitted to, and produces a flattering number that means nothing. It is
@@ -3334,18 +3462,28 @@ def run_screening_model(
     # state it is in, and state DOTs publish this without a key.
     auto_counts_meta: dict[str, Any] | None = None
     if counts_mode == "auto":
-        auto_counts_meta = _timed(
-            "counts",
-            fetch_study_area_counts,
-            county_fips=county_fips,
-            zone_meta=zone_meta,
-            boundary_path=boundary_path,
-            project_dir=project_dir,
-            run_dir=run_dir,
-            boundary_geom=boundary_meta["geometry"],
-            calibrate=bool(calibrate_to_counts),
-            count_source_cache_dir=cache_path / "count-sources",
-        )
+        if reuse_counts_from:
+            auto_counts_meta = _timed(
+                "counts",
+                reuse_study_area_counts,
+                run_dir,
+                boundary_meta["geometry"],
+                Path(reuse_counts_from),
+                calibrate=bool(calibrate_to_counts),
+            )
+        else:
+            auto_counts_meta = _timed(
+                "counts",
+                fetch_study_area_counts,
+                county_fips=county_fips,
+                zone_meta=zone_meta,
+                boundary_path=boundary_path,
+                project_dir=project_dir,
+                run_dir=run_dir,
+                boundary_geom=boundary_meta["geometry"],
+                calibrate=bool(calibrate_to_counts),
+                count_source_cache_dir=cache_path / "count-sources",
+            )
         if auto_counts_meta.get("counts_csv"):
             counts_csv = auto_counts_meta.get("validation_counts_csv") or auto_counts_meta["counts_csv"]
         if auto_counts_meta.get("calibration_counts_csv"):

@@ -150,6 +150,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--reuse-counts-from-run",
+        help=(
+            "Copy the exact hash-verified observed-count and gateway-evidence artifacts from a "
+            "completed run over the same boundary. Used by controlled comparisons so every arm "
+            "is graded and seeded from one immutable source snapshot."
+        ),
+    )
+    parser.add_argument(
         "--gateway-volume-study-arm",
         choices=["baseline", "candidate"],
         help=(
@@ -209,6 +217,7 @@ def _run(run_screening_model, args):
         counts_mode=args.counts,
         calibrate_to_counts=args.calibrate,
         reuse_network_from=args.reuse_network_from_run,
+        reuse_counts_from=args.reuse_counts_from_run,
         gateway_volume_mode=(
             f"study_{args.gateway_volume_study_arm}"
             if args.gateway_volume_study_arm

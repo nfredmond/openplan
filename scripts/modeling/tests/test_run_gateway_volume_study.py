@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
@@ -94,6 +95,66 @@ class HoldoutCannotOpenEarly(unittest.TestCase):
     def test_holdout_force_rerun_is_refused(self) -> None:
         with self.assertRaisesRegex(study.GatewayVolumeStudyError, "reruns are refused"):
             study.authorize_half("holdout", self.registry, self.study_dir, force=True)
+
+
+class EveryAssignmentUsesOneCountSnapshot(unittest.TestCase):
+    def test_three_comparison_arms_reuse_the_baselines_network_and_counts(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            commands: list[list[str]] = []
+
+            def fake_run_step(command, *, log_path):
+                commands.append(list(command))
+                if log_path.name == "4-activitysim.log":
+                    trips = root / "work" / "gateway-volume-study-work" / "development" / "09160" / "activitysim_output" / "output" / "final_trips.csv"
+                    trips.parent.mkdir(parents=True, exist_ok=True)
+                    trips.write_text("trip_id\n")
+
+            with (
+                patch.object(study, "run_step", side_effect=fake_run_step),
+                patch.object(study, "activitysim_executable", return_value=Path("/tmp/activitysim")),
+                patch.object(study, "stock_configs_dir", return_value=Path("/tmp/configs")),
+                patch.object(study, "assemble_county_outputs", return_value={"result.json": "a" * 64}),
+            ):
+                result = study.run_county(
+                    {"county_fips": "09160"},
+                    half="development",
+                    study_dir=root / "study",
+                    runs_root=root / "work",
+                    force=False,
+                    required_outputs=["result.json"],
+                )
+
+            self.assertEqual(result["status"], "completed")
+            screening = [
+                command for command in commands if Path(command[1]).name == "run_screening_model.py"
+            ]
+            self.assertEqual(len(screening), 4)
+            self.assertNotIn("--reuse-counts-from-run", screening[0])
+            for command in screening[1:]:
+                self.assertIn("--reuse-network-from-run", command)
+                self.assertIn("--reuse-counts-from-run", command)
+                count_source = command[command.index("--reuse-counts-from-run") + 1]
+                self.assertTrue(count_source.endswith("gwv-development-09160-aeq-baseline"))
+
+    def test_an_interrupt_is_recorded_before_it_is_re_raised(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            with patch.object(study, "run_step", side_effect=KeyboardInterrupt):
+                with self.assertRaises(KeyboardInterrupt):
+                    study.run_county(
+                        {"county_fips": "09160"},
+                        half="development",
+                        study_dir=root / "study",
+                        runs_root=root / "work",
+                        force=False,
+                        required_outputs=["result.json"],
+                    )
+            status = study.read_json(
+                root / "study" / "runs" / "development" / "09160" / "status.json"
+            )
+            self.assertEqual(status["status"], "aborted_before_result")
+            self.assertEqual(status["error"]["kind"], "KeyboardInterrupt")
 
 
 if __name__ == "__main__":

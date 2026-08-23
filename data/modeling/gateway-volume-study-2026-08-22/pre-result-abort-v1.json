@@ -1,0 +1,26 @@
+{
+  "schema_version": "openplan.gateway-volume-study-pre-result-abort.v1",
+  "county_fips": "09160",
+  "study_half": "development",
+  "started_at_utc": "2026-08-23T06:22:32.641094+00:00",
+  "stopped_at_utc": "2026-08-23T06:32:27.868587+00:00",
+  "candidate_freeze_sha256": "0d719a4f4b320602f80cc5de602ba8003d69e00a19dcd5e88b4991451b438132",
+  "candidate_commit": "aab061dba5f4f7b04b54b223f7f3a801362bd685",
+  "stage": "gateway_count_crosswalk",
+  "observed_before_stop": {
+    "retained_network_links": 32866,
+    "boundary_query_sections": 16223,
+    "boundary_eligible_sections": 7892,
+    "gateway_query_sections": 23902,
+    "gateway_eligible_sections": 12375
+  },
+  "result_visibility": {
+    "demand_built": false,
+    "assignment_run": false,
+    "validation_run": false,
+    "baseline_result_read": false,
+    "candidate_result_read": false
+  },
+  "reason": "The frozen execution path independently crosswalked boundary and gateway count sets in each of four assignments. That would repeat the same expensive nearest-road work eight times per county and could expose the four arms to different source snapshots.",
+  "required_correction": "Build the widest count crosswalk once, derive the boundary validation subset from it, hash both artifacts, and reuse the exact pair across all four assignments before restarting development."
+}
