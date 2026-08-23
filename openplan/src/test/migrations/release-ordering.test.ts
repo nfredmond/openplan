@@ -158,12 +158,26 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260812000018_workspace_gis_layer_references.sql",
     migrationsAtRelease: 201,
   },
+  // 0.21.0 — observed-count calibration and two behavioral demand methods on
+  // one network, plus the engagement/safety seam, bounded create flows, and
+  // seven additive migrations. Counts read from this release tree.
+  {
+    tag: "0.21.0",
+    lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
+    migrationsAtRelease: 208,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
 
 function version(name: string): string {
   return name.slice(0, 14);
+}
+
+function sectionNamesMigration(section: string, file: string): boolean {
+  const slug = file.replace(/^\d+_/, "").replace(/\.sql$/, "");
+  const escaped = slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-z0-9_])${escaped}(?=$|[^a-z0-9_])`, "i").test(section);
 }
 
 describe("released migration ordering", () => {
@@ -245,10 +259,7 @@ describe("released migration ordering", () => {
         `since ${latest.tag}: ${sinceRelease.join(", ")}`
     ).toBe(false);
 
-    const missing = sinceRelease.filter((file) => {
-      const slug = file.replace(/^\d+_/, "").replace(/\.sql$/, "");
-      return !section.includes(slug);
-    });
+    const missing = sinceRelease.filter((file) => !sectionNamesMigration(section, file));
 
     expect(
       missing,
@@ -278,6 +289,12 @@ describe("released migration ordering", () => {
         version(file) > version(previous?.lastMigration ?? "0") &&
         version(file) <= version(latest.lastMigration)
     );
+    const missing = inRelease.filter((file) => !sectionNamesMigration(section, file));
+    expect(
+      missing,
+      `Every migration in ${latest.tag} must be named in its CHANGELOG section. Missing: ${missing.join(", ")}`
+    ).toEqual([]);
+
     const suffixes = new Set(inRelease.map((file) => version(file).slice(-6)));
     for (const match of section.matchAll(/(?:…|\.{3})(\d{6})/g)) {
       expect(

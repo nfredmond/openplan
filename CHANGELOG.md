@@ -19,6 +19,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**No migrations.** Pull and deploy.
+
+## 0.21.0 — 2026-08-22
+
 **Seven migrations. Run them before the new code is serving traffic.**
 
 ```
@@ -84,6 +88,81 @@ being compared against one graded under the new ones.
 **The model is still about 1.67 times high and should not be used for a number
 you have to defend.** It says so itself: a run that cannot support a claim
 refuses to make it rather than printing a figure anyway.
+
+### Two demand models, one network, no blended answer
+
+OpenPlan can now assign both its trip-based demand and an ActivitySim demand
+package to the same retained road network with the same assignment settings.
+The run page draws an agreement map: corridors where the methods concur and
+where they diverge. It never averages the two outputs. Assignment noise and
+loose convergence are shown separately, so a difference caused by the solver
+is not described as a behavioral finding.
+
+ActivitySim bundles can use Census PUMS households fitted to the selected study
+area instead of households invented from the model's own inputs. The behavioral
+coefficients still carry the place where they were estimated; a coefficient set
+that has not been independently validated for the run's geography cannot support
+a local accuracy claim.
+
+The model now routes measured FHWA through-travel across the national highway
+network instead of drawing county-centroid chords. Unrouted flow stays disclosed
+and is never replaced with a straight line. Alaska's split geometry and study
+areas anywhere in the United States use the same geography front door.
+
+### Calibration is opt-in, held out, and visible
+
+A planner can upload observed traffic counts, see exactly which roads matched,
+and ask OpenPlan to fit a run. Counts used for fitting and counts used for the
+accuracy check are separated deterministically. Baseline and calibrated results,
+road-class errors, convergence, count provenance, and the rules that graded the
+run now appear on the run page and in the downloadable funder document.
+
+Calibration still does not make the current model defensible by itself. The
+best candidate is selected on held-out counts, and a corridor inherits only the
+evidence for its own road class. A national average never promotes an individual
+run. Several pre-registered model changes were tested and rejected; the defaults
+were left alone when the evidence did not improve.
+
+### Public engagement and safety meet on the map
+
+The resident portal is now map-first, keeps its Spanish path from beginning to
+end, and uses the same review-before-submit comment form at all three public
+doors. A campaign can page past 1,000 responses. On the planner side, the safety
+map places crash history beside the locations residents mapped, and grants can
+cite both the corroboration and the places where no comparison was possible.
+
+### Less hunting, fewer dead-end forms
+
+- The dashboard has five planner-chosen figures instead of a fixed summary.
+- Project boundaries can come from the files an agency already has, and those
+  files can travel with the project into a board packet.
+- Starting projects, programs, plan cycles, grants, awards, work plans, and
+  flight records now uses short, bounded flows that a planner enters and leaves.
+- My Work includes items waiting on a person. An assigned viewer can clear their
+  own reminder without being given permission to rewrite it.
+- A run in progress shows assignment progress and its live log. A finished run
+  says what question it was run to answer.
+
+### Measure funds close their own arithmetic
+
+Measure-fund periods now record reserves explicitly, and retention is withheld
+from payment rather than from the amount a subrecipient legitimately claimed.
+The oversight statement's remaining exceptions are backed by probes, so adding a
+new excuse in prose without making it measurable fails the test suite.
+
+### Safer local operation
+
+- A double-click launcher starts the local product and the control panel reports
+  whether the web app, database, workers, and scheduled jobs are actually alive.
+- The county worker's non-Docker server no longer listens without authentication
+  on every network interface. NodeODM is local-only by default, rejects an image
+  whose streamed bytes exceed the limit, and removes partial files after failure.
+- Cross-workspace GIS references are rejected in Postgres, cited documents are
+  not deleted before the database can refuse the deletion, and the public RTP
+  page scopes every related read to its own workspace.
+- CI now runs the live row-isolation proof and dynamically discovers every Python
+  worker suite. Randomized test order exposed and fixed shared-state failures that
+  a fixed order had hidden.
 
 ## 0.20.0 — 2026-08-12
 
