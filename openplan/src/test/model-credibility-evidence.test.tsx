@@ -147,13 +147,18 @@ describe("model-run credibility evidence contract", () => {
     expect(block).toHaveTextContent("0");
     expect(block).toHaveTextContent("Inferred");
     expect(block).toHaveTextContent("8");
+    expect(screen.getByTestId("gateway-volume-basis-counts")).toHaveClass(
+      "grid-cols-1",
+      "sm:grid-cols-3"
+    );
     expect(block).toHaveTextContent("Baseline");
     expect(block).toHaveTextContent("0.5007");
     expect(block).toHaveTextContent("40%");
     expect(block).toHaveTextContent("Selected calibration");
     expect(block).toHaveTextContent("0.4016");
     expect(block).toHaveTextContent("44%");
-    expect(block).toHaveTextContent("Candidate-selection evidence — not accuracy");
+    expect(block).toHaveTextContent("Selection evidence only");
+    expect(block).toHaveTextContent("The holdout selects parameters. It is not an independent accuracy test.");
     expect(block).toHaveTextContent("Not run");
     expect(block).toHaveTextContent("No untouched count set evaluated the selected calibration");
     expect(screen.getByRole("link", { name: /download provenance document/i })).toHaveAttribute(

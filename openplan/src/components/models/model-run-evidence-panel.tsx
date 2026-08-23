@@ -732,7 +732,7 @@ export function ModelRunEvidencePanel({
   }
 
   return (
-    <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
+    <div className="mt-4 min-w-0 max-w-full rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Evidence record</p>
@@ -838,7 +838,7 @@ export function ModelRunEvidencePanel({
       ) : null}
 
       {isOpen ? (
-        <div className="mt-4 space-y-4 border-t border-border/60 pt-4">
+        <div className="mt-4 min-w-0 max-w-full space-y-4 border-t border-border/60 pt-4">
           {evidence ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
@@ -1174,9 +1174,9 @@ export function ModelRunEvidencePanel({
                   </a>
                 </Button>
                 <Button asChild type="button" variant="outline" size="sm">
-                  <a href={`${packetHref}?format=markdown`}>
+                  <a href={`${packetHref}?format=markdown`} aria-label="Download provenance document">
                     <Download className="h-4 w-4" />
-                    Download provenance document
+                    Download provenance
                   </a>
                 </Button>
               </div>
@@ -1192,7 +1192,10 @@ export function ModelRunEvidencePanel({
                       What this run could compare, how gateway traffic was estimated, and which result—if any—was independent.
                     </p>
                   </div>
-                  <StatusBadge tone={countSource?.status === "available" ? "info" : "warning"}>
+                  <StatusBadge
+                    tone={countSource?.status === "available" ? "info" : "warning"}
+                    className="max-w-full whitespace-normal text-center"
+                  >
                     {evidenceCountSourceStatusLabel(countSource?.status ?? "not_recorded")}
                   </StatusBadge>
                 </div>
@@ -1238,7 +1241,10 @@ export function ModelRunEvidencePanel({
 
                   <div className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Gateway volume basis</p>
-                    <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
+                    <dl
+                      className="mt-2 grid grid-cols-1 gap-2 text-center sm:grid-cols-3"
+                      data-testid="gateway-volume-basis-counts"
+                    >
                       <div className="rounded-[0.4rem] border border-border/60 px-2 py-2">
                         <dt className="text-xs text-muted-foreground">Measured</dt>
                         <dd className="mt-1 font-semibold text-foreground">{evidenceMetric(gatewayVolumeBasis?.measured)}</dd>
@@ -1266,8 +1272,11 @@ export function ModelRunEvidencePanel({
                 <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Calibration selection</p>
-                    <StatusBadge tone="warning">Candidate-selection evidence — not accuracy</StatusBadge>
+                    <StatusBadge tone="warning">Selection evidence only</StatusBadge>
                   </div>
+                  <p className="mt-2 text-xs font-medium text-amber-800 dark:text-amber-200">
+                    The holdout selects parameters. It is not an independent accuracy test.
+                  </p>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <div className="rounded-[0.4rem] border border-border/60 p-3">
                       <p className="text-xs font-medium text-muted-foreground">Baseline</p>
