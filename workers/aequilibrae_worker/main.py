@@ -390,7 +390,17 @@ SPATIALITE_PATH = os.getenv("SPATIALITE_LIBRARY_PATH", "/usr/lib/x86_64-linux-gn
 os.environ["SPATIALITE_LIBRARY_PATH"] = SPATIALITE_PATH
 
 # ─── OSM Builder patch (link-type ID collision fix for AequilibraE 1.6.x) ──
-from aequilibrae.project.network.osm.osm_builder import OSMBuilder
+# The engine is imported inside assignment stages everywhere else in this file.
+# Keep this import optional too: the lightweight CI environment exercises the
+# demand, calibration, provenance, and handoff code without installing the heavy
+# assignment engine. A broken installed package still fails loudly; only a
+# genuinely absent top-level package defers the error until an engine stage runs.
+try:
+    from aequilibrae.project.network.osm.osm_builder import OSMBuilder
+except ModuleNotFoundError as exc:
+    if exc.name != "aequilibrae":
+        raise
+    OSMBuilder = None
 
 def _patched_define_link_type(self, link_type: str) -> Tuple[str, str]:
     proj_link_types = self.project.network.link_types
@@ -431,7 +441,8 @@ def _patched_define_link_type(self, link_type: str) -> Tuple[str, str]:
             lt.save()
     return [letter, link_type]
 
-OSMBuilder._OSMBuilder__define_link_type = _patched_define_link_type
+if OSMBuilder is not None:
+    OSMBuilder._OSMBuilder__define_link_type = _patched_define_link_type
 
 # ─── Default speed/capacity by link type ────────────────────────────────
 LINK_DEFAULTS = {

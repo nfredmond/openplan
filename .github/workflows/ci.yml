@@ -186,28 +186,17 @@ jobs:
       # documented interactive `|| break`: `break` leaves the loop with status
       # 0, which would turn a failing suite into a green job.
       #
-      # TWO SUITES ARE EXCLUDED BY NAME, so the cap is stated rather than
-      # silent: test_count_ingest.py and test_scale.py import main.py, whose
-      # module level imports the aequilibrae engine — and keeping that heavy
-      # engine out of CI is this job's own recorded decision (see the install
-      # step above). Verified 2026-08-05 in a clean venv with exactly this
-      # job's deps: the other 18 pass, these two fail at `import main`.
-      # Running them means either installing aequilibrae here or making
-      # main.py's engine import lazy — a worker-lane change, not a CI edit.
-      - name: Unit tests (all suites the lightweight env can run)
+      # AequilibraE itself stays out of this job. `main.py` defers that import
+      # until an engine stage runs, so every pure worker suite can run here;
+      # there is no exclusion list for a new suite to fall outside silently.
+      - name: Unit tests (all lightweight suites)
         run: |
           set -u
           count=0
           for f in test_*.py; do
-            case "$f" in
-              test_count_ingest.py|test_scale.py)
-                echo "=== $f SKIPPED: imports main.py, which imports the aequilibrae engine at module level"
-                continue
-                ;;
-            esac
             echo "=== $f"
             python "$f" || exit 1
             count=$((count + 1))
           done
           echo "ran $count suites"
-          test "$count" -ge 18 || { echo "expected at least 18 suites, found $count — the glob broke"; exit 1; }
+          test "$count" -ge 28 || { echo "expected at least 28 suites, found $count — the glob broke"; exit 1; }
