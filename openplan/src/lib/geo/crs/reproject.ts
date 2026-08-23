@@ -124,10 +124,9 @@ export function reprojectBbox(
   maxY: number
 ): { west: number; south: number; east: number; north: number } | null {
   const steps = 8;
-  let west = Infinity;
   let south = Infinity;
-  let east = -Infinity;
   let north = -Infinity;
+  const longitudes: number[] = [];
 
   for (let index = 0; index <= steps; index += 1) {
     const fraction = index / steps;
@@ -141,12 +140,61 @@ export function reprojectBbox(
     ]) {
       const [longitude, latitude] = reprojectPosition(entry, px, py);
       if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return null;
-      west = Math.min(west, longitude);
-      east = Math.max(east, longitude);
+      longitudes.push(longitude);
       south = Math.min(south, latitude);
       north = Math.max(north, latitude);
     }
   }
 
+  if (longitudes.length === 0) return null;
+  const { west, east } = longitudeExtent(longitudes);
   return { west, south, east, north };
+}
+
+/**
+ * The narrowest longitude range containing every sampled point — WRAPPED when
+ * that is the narrower answer.
+ *
+ * Taking min and max is wrong for real data. Longitudes are normalized into
+ * (-180, 180], so a layer genuinely spanning 180° — Alaska statewide in
+ * EPSG:3338, and the Aleutian zone systems whose stored area of use is already
+ * west > east for exactly this reason — produces samples near -179 and near
+ * +179. Min/max reads that as a box spanning nearly the whole planet, whose
+ * centre sits near longitude 0 in the Gulf of Guinea. The placement check then
+ * refused the layer and told the planner it "lands at" a mid-ocean position it
+ * does not occupy: the one US region this projection code was hardened for
+ * could not get its statewide data in, and the refusal misdiagnosed why.
+ *
+ * The fix is the standard one: the points sit on a circle, so the enclosing
+ * range is the complement of the LARGEST GAP between neighbouring points. When
+ * the largest gap is the one spanning the antimeridian, this returns the
+ * ordinary west < east box; when the data itself spans it, it returns a wrapped
+ * box with west > east — which `contains` in `area-of-use.ts` already
+ * understands, and `centreOf` beside it now does too.
+ *
+ * Exported for its own tests: the behaviour is a property of a set of angles,
+ * and proving it through a projection would be proving two things at once.
+ */
+export function longitudeExtent(longitudes: readonly number[]): { west: number; east: number } {
+  const sorted = [...longitudes].sort((a, b) => a - b);
+  if (sorted.length === 1) return { west: sorted[0], east: sorted[0] };
+
+  // The gap that wraps past the antimeridian, from the easternmost point round
+  // to the westernmost.
+  let widestGap = sorted[0] + 360 - sorted[sorted.length - 1];
+  let west = sorted[0];
+  let east = sorted[sorted.length - 1];
+
+  for (let index = 0; index < sorted.length - 1; index += 1) {
+    const gap = sorted[index + 1] - sorted[index];
+    if (gap > widestGap) {
+      widestGap = gap;
+      // The range runs from the far side of this gap, over the antimeridian,
+      // round to the near side — so west > east and the box is wrapped.
+      west = sorted[index + 1];
+      east = sorted[index];
+    }
+  }
+
+  return { west, east };
 }

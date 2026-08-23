@@ -475,17 +475,25 @@ function verifyAgainstProj(entry: Entry, swap: boolean): ProjCheck {
   if (!greenwichBase) return { ok: false, why: "no Greenwich-referenced base CRS" };
 
   const area = entry.areaOfUse;
-  if (area.west > area.east) {
-    // An area of use that wraps the antimeridian cannot be sampled by linear
-    // interpolation between west and east. Rather than skip the check — which
-    // would let an unverified entry ship — the sample is taken from the eastern
-    // half alone, which is inside the area either way.
-    area.east = 180;
-  }
+  // An area of use that wraps the antimeridian cannot be sampled by linear
+  // interpolation between west and east. Rather than skip the check — which
+  // would let an unverified entry ship — the sample is taken from the eastern
+  // half alone, which is inside the area either way.
+  //
+  // A LOCAL VALUE, NEVER A MUTATION. This used to assign `area.east = 180`, and
+  // `area` IS `entry.areaOfUse` — the object that gets emitted. So a sampling
+  // convenience silently rewrote the shipped registry: every wrapped area of
+  // use lost its whole eastern half, and the registry went out with none at
+  // all. For NAD83 / Alaska Albers that meant a declared extent of 172.42°E to
+  // 180° — the Aleutian tail without the mainland — so `checkCrsPlacement`
+  // refused statewide Alaska data as outside the area its own coordinate system
+  // covers. `contains()` in area-of-use.ts was written for wrapped ranges and
+  // had nothing to read.
+  const sampleEast = area.west > area.east ? 180 : area.east;
   const points: [number, number][] = [];
   for (const u of [0.3, 0.5, 0.7]) {
     for (const v of [0.3, 0.5, 0.7]) {
-      points.push([area.west + (area.east - area.west) * u, area.south + (area.north - area.south) * v]);
+      points.push([area.west + (sampleEast - area.west) * u, area.south + (area.north - area.south) * v]);
     }
   }
 

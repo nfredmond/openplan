@@ -101,7 +101,17 @@ export type CrsPlacementInput = {
 };
 
 function centreOf(bbox: Bbox): { longitude: number; latitude: number } {
-  return { longitude: (bbox.west + bbox.east) / 2, latitude: (bbox.south + bbox.north) / 2 };
+  const latitude = (bbox.south + bbox.north) / 2;
+  // A WRAPPED box is stored west > east, the same convention `contains` below
+  // reads and the same one the registry uses for the western Aleutians. Its
+  // midpoint is not (west + east) / 2 — that lands on the far side of the
+  // planet, which is how an Alaska statewide layer came to be refused for
+  // "landing at" a position in the Gulf of Guinea.
+  if (bbox.west <= bbox.east) {
+    return { longitude: (bbox.west + bbox.east) / 2, latitude };
+  }
+  const midpoint = (bbox.west + bbox.east + 360) / 2;
+  return { longitude: midpoint > 180 ? midpoint - 360 : midpoint, latitude };
 }
 
 function contains(area: CrsRegistryEntry["areaOfUse"], longitude: number, latitude: number, margin: number): boolean {
