@@ -1,0 +1,528 @@
+{
+  "counties": {
+    "development": [
+      {
+        "census_region": "Northeast",
+        "county_fips": "09160",
+        "county_name": "Northwest Hills Planning Region",
+        "half": "development",
+        "population_2020": 112503,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 4,
+        "state": "CT",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "South",
+        "county_fips": "13009",
+        "county_name": "Baldwin County",
+        "half": "development",
+        "population_2020": 43799,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 4,
+        "state": "GA",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "15001",
+        "county_name": "Hawaii County",
+        "half": "development",
+        "population_2020": 200629,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 5,
+        "state": "HI",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "18095",
+        "county_name": "Madison County",
+        "half": "development",
+        "population_2020": 130129,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 1,
+        "state": "IN",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "19015",
+        "county_name": "Boone County",
+        "half": "development",
+        "population_2020": 26715,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 3,
+        "state": "IA",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "19045",
+        "county_name": "Clinton County",
+        "half": "development",
+        "population_2020": 46460,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 4,
+        "state": "IA",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "30049",
+        "county_name": "Lewis and Clark County",
+        "half": "development",
+        "population_2020": 70973,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 3,
+        "state": "MT",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "30111",
+        "county_name": "Yellowstone County",
+        "half": "development",
+        "population_2020": 164731,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 3,
+        "state": "MT",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "Northeast",
+        "county_fips": "33001",
+        "county_name": "Belknap County",
+        "half": "development",
+        "population_2020": 63705,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 4,
+        "state": "NH",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Northeast",
+        "county_fips": "36073",
+        "county_name": "Orleans County",
+        "half": "development",
+        "population_2020": 40343,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 1,
+        "state": "NY",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "South",
+        "county_fips": "37145",
+        "county_name": "Person County",
+        "half": "development",
+        "population_2020": 39097,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 2,
+        "state": "NC",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "South",
+        "county_fips": "37151",
+        "county_name": "Randolph County",
+        "half": "development",
+        "population_2020": 144171,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 2,
+        "state": "NC",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "South",
+        "county_fips": "37155",
+        "county_name": "Robeson County",
+        "half": "development",
+        "population_2020": 116530,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 4,
+        "state": "NC",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "39029",
+        "county_name": "Columbiana County",
+        "half": "development",
+        "population_2020": 101877,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 4,
+        "state": "OH",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "41045",
+        "county_name": "Malheur County",
+        "half": "development",
+        "population_2020": 31571,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 6,
+        "state": "OR",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Northeast",
+        "county_fips": "42095",
+        "county_name": "Northampton County",
+        "half": "development",
+        "population_2020": 312951,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 2,
+        "state": "PA",
+        "urbanicity": "metro"
+      }
+    ],
+    "holdout": [
+      {
+        "census_region": "South",
+        "county_fips": "10005",
+        "county_name": "Sussex County",
+        "half": "holdout",
+        "population_2020": 237378,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 4,
+        "state": "DE",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "South",
+        "county_fips": "13085",
+        "county_name": "Dawson County",
+        "half": "holdout",
+        "population_2020": 26798,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 1,
+        "state": "GA",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "South",
+        "county_fips": "13131",
+        "county_name": "Grady County",
+        "half": "holdout",
+        "population_2020": 26236,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 6,
+        "state": "GA",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "17049",
+        "county_name": "Effingham County",
+        "half": "holdout",
+        "population_2020": 34668,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 7,
+        "state": "IL",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "17201",
+        "county_name": "Winnebago County",
+        "half": "holdout",
+        "population_2020": 285350,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 2,
+        "state": "IL",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "18183",
+        "county_name": "Whitley County",
+        "half": "holdout",
+        "population_2020": 34191,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 2,
+        "state": "IN",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "Northeast",
+        "county_fips": "23025",
+        "county_name": "Somerset County",
+        "half": "holdout",
+        "population_2020": 50477,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 6,
+        "state": "ME",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "35035",
+        "county_name": "Otero County",
+        "half": "holdout",
+        "population_2020": 67839,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 4,
+        "state": "NM",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "35049",
+        "county_name": "Santa Fe County",
+        "half": "holdout",
+        "population_2020": 154823,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 3,
+        "state": "NM",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "Northeast",
+        "county_fips": "36051",
+        "county_name": "Livingston County",
+        "half": "holdout",
+        "population_2020": 61834,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 1,
+        "state": "NY",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "Northeast",
+        "county_fips": "36089",
+        "county_name": "St. Lawrence County",
+        "half": "holdout",
+        "population_2020": 108505,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 4,
+        "state": "NY",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Midwest",
+        "county_fips": "39169",
+        "county_name": "Wayne County",
+        "half": "holdout",
+        "population_2020": 116894,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 4,
+        "state": "OH",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "41019",
+        "county_name": "Douglas County",
+        "half": "holdout",
+        "population_2020": 111201,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 4,
+        "state": "OR",
+        "urbanicity": "nonmetro"
+      },
+      {
+        "census_region": "Northeast",
+        "county_fips": "42081",
+        "county_name": "Lycoming County",
+        "half": "holdout",
+        "population_2020": 114188,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 3,
+        "state": "PA",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "West",
+        "county_fips": "53007",
+        "county_name": "Chelan County",
+        "half": "holdout",
+        "population_2020": 79074,
+        "population_band": "25k_to_99k",
+        "rucc_2023": 3,
+        "state": "WA",
+        "urbanicity": "metro"
+      },
+      {
+        "census_region": "South",
+        "county_fips": "54061",
+        "county_name": "Monongalia County",
+        "half": "holdout",
+        "population_2020": 105822,
+        "population_band": "100k_to_499k",
+        "rucc_2023": 3,
+        "state": "WV",
+        "urbanicity": "metro"
+      }
+    ]
+  },
+  "counts": {
+    "development": 16,
+    "holdout": 16,
+    "total": 32
+  },
+  "integrity": {
+    "county_list_sha256": "f4b0c740edc1c3f91859a0d32b88c25f06d19effdcc889324db2f02306e662b0",
+    "protocol_sha256": "05a5bb0a95360e758f866a70dcc6fe16121c436face2a9a5e34a42a38f11b51a",
+    "registry_payload_sha256": "f5cd0d9e4722c0f98b0de4585130f0f47e8e9cd124ec82070baff3cdc30a960b",
+    "required_output_contract_sha256": "1b3291dab00ae815a7d9a40a6324d2bbc546215816d59befaad9fb437167e3aa"
+  },
+  "protocol": {
+    "acceptance_thresholds": {
+      "counties_improved_minimum": 12,
+      "holdout_counties": 16,
+      "matched_station_set_must_be_identical": true,
+      "maximum_road_class_worsening_percentage_points": 5.0,
+      "median_county_improvement_percentage_points": 5.0,
+      "minimum_road_class_comparisons": 30,
+      "pooled_station_median_must_improve": true,
+      "required_guards": [
+        "conservation",
+        "convergence",
+        "provenance",
+        "zone_resolution"
+      ]
+    },
+    "assignment_profile": {
+      "algorithm": "bfw",
+      "capacity_field": "capacity",
+      "class_pce": 1,
+      "cores": 1,
+      "engine": "aequilibrae",
+      "engine_version": "1.6.2",
+      "max_iterations": 3000,
+      "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+      "schema_version": "openplan.assignment-profile.v1",
+      "target_gap": 0.0005,
+      "time_field": "travel_time",
+      "vdf": "BPR",
+      "vdf_parameters": {
+        "alpha": 0.15,
+        "beta": 4
+      }
+    },
+    "candidate": {
+      "gateway_cap_rule": "Measured crossings may exceed the existing eight-gateway cap; inferred crossings remain capped. Unsupported crossings contribute no invented observed volume.",
+      "measured_gateway_rule": "Replace the flat per-crossing external volume only when route identity, facility class, directionality, and distance all agree with an eligible observed section.",
+      "network_rule": "Use identical accepted network and external-demand settings for AequilibraE and ActivitySim assignment; report each separately and never average them.",
+      "one_candidate_only": true,
+      "unmatched_rule": "Retain the existing flat fallback and label the gateway inferred."
+    },
+    "claim_rule": "The existing 30 percent tier is earned only by an individual run's independent validation and only where zone resolution supports link validation. A national average never promotes a run.",
+    "code_commit_before_candidate_implementation": "b6387050d2f70363faa1cc741340b5183f6a7459",
+    "conservation_chain": [
+      "person_trips",
+      "vehicle_conversion",
+      "internal_demand",
+      "external_demand",
+      "period_totals",
+      "assignment_totals",
+      "reported_vmt"
+    ],
+    "failure_rule": "If holdout fails, defaults remain unchanged. Publish the dated negative result and do not fit a scalar, uncap inferred gateways, or select another candidate.",
+    "metrics": {
+      "county": "paired change in independent-validation median APE, percentage points",
+      "pooled": "median APE over the unchanged pooled matched-station set",
+      "road_class": "paired median APE by retained-network road class"
+    },
+    "observed_count_source": {
+      "adapter": "us-fhwa-hpms-socrata",
+      "country": "US",
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "dataset_id": "42um-tgh5",
+      "field_map": {
+        "aadt": "aadt",
+        "county": "county_id",
+        "facility_class": "f_system",
+        "facility_type": "facility_type",
+        "measurement_date": "aadt_d",
+        "restricted": "is_restricted",
+        "route_id": "route_id",
+        "route_name": "routename",
+        "route_number": "route_number",
+        "route_signing": "route_signing",
+        "section_end": "end_point",
+        "section_shape_id": "shapeid",
+        "section_start": "begin_point",
+        "source_year": "year_record",
+        "state": "stateid"
+      },
+      "geometry_field": "line",
+      "portal_url": "https://data.transportation.gov/Roadways-and-Bridges/HPMS-Spatial-All-Sections-2024/42um-tgh5",
+      "priority": 10,
+      "source_id": "us-fhwa-hpms-2024",
+      "vintage": "2024"
+    },
+    "required_outputs": {
+      "development_freeze": "development-freeze.json",
+      "finding": "dated-finding.json",
+      "holdout_open_marker": "holdout-opened.json",
+      "per_county": [
+        "conservation.json",
+        "baseline_validation.json",
+        "candidate_validation.json",
+        "gateway_volume_basis.json",
+        "aequilibrae_corridors.json",
+        "activitysim_corridors.json",
+        "artifact_hashes.json"
+      ]
+    }
+  },
+  "schema_version": "openplan.gateway-volume-study-registry.v1",
+  "selection": {
+    "counties_per_cell": 2,
+    "population_bands": [
+      {
+        "maximum": 99999,
+        "minimum": 25000,
+        "name": "25k_to_99k"
+      },
+      {
+        "maximum": 499999,
+        "minimum": 100000,
+        "name": "100k_to_499k"
+      }
+    ],
+    "previously_examined_counties": [
+      "06007",
+      "06039",
+      "06047",
+      "06053",
+      "06057",
+      "06069",
+      "06107",
+      "08014",
+      "08035",
+      "08059",
+      "08077",
+      "08101",
+      "08123",
+      "41003",
+      "41005",
+      "41017",
+      "41029",
+      "41041",
+      "41067",
+      "53011",
+      "53015",
+      "53029",
+      "53063",
+      "53073",
+      "53077"
+    ],
+    "refusal": "All 32 named counties are mandatory. Missing, added, or substituted counties invalidate the study rather than shrinking it.",
+    "seed": 20260822,
+    "strata": [
+      "Census region",
+      "2020 population band",
+      "2023 RUCC metro/nonmetro"
+    ]
+  },
+  "source_snapshot": {
+    "sha256": "ec455ee2a8bc5fc8e070575ea5bee7dce46fc6037f8c3449cbf56e8b45331fa7",
+    "url": "https://www.ers.usda.gov/media/5768/2023-rural-urban-continuum-codes.csv?v=30758",
+    "vintage": "2023 RUCC, updated 2024-01-22"
+  },
+  "study": "nationwide observed-AADT gateway-volume candidate"
+}
