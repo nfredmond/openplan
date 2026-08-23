@@ -1,0 +1,382 @@
+{
+  "artifacts": {
+    "activitysim_corridors.json": "e4623035bd7d55508b81f2cf9381d66efe308fea5626719b7e8d457c6b461bfc",
+    "aequilibrae_corridors.json": "a0fb2986e5a4b0d71caebba266c7e3c901377d3538a8ef8cd9df41616bc4d6ee",
+    "baseline_validation.json": "d749474d84286908bccfa7375c057da1f469112124d8d72c7106ad437fd2918c",
+    "candidate_validation.json": "86fba1212e0518f0bb15d9aa7b15798225cbb287c4697ef6d128cdf00dd9c534",
+    "conservation.json": "9969c314b0594eba476c2ac0f86db6c6b73bb198dafcc3e15258a66664ffdf87",
+    "gateway_volume_basis.json": "8a391a25d93801798f5c3e9927e7f4fc3e98bbd0a29174be987a8d1e202e58e5"
+  },
+  "guards": {
+    "conservation": true,
+    "convergence": {
+      "activitysim_baseline": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.00039911926905092214,
+        "iterations": 60,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "activitysim_candidate": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.00039911926905092214,
+        "iterations": 60,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "aequilibrae_baseline": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.0004431480809710563,
+        "iterations": 192,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "aequilibrae_candidate": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.0004431480809710563,
+        "iterations": 192,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      }
+    },
+    "matched_station_set_by_demand_method": {
+      "activitysim": true,
+      "aequilibrae": true
+    },
+    "matched_station_set_unchanged": true,
+    "provenance": {
+      "activitysim_baseline": {
+        "artifact_hashes": {
+          "counts_csv": "ddafa5f13447e233065bbaf8daf69f729f4ec27f6f7d7337c3fe427a61983e4b",
+          "gateway_counts_csv": "3f78b2d4bd15c7fa070797324f068caf1afaf06b51ecaf292722d054b969c206"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-asim-baseline/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-asim-baseline/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "WSDOT",
+          "count_year": null,
+          "coverage_statement": "WSDOT roadway count coverage for WA.",
+          "facility_clause_pattern": "",
+          "name": "WSDOT Traffic Counts AADT",
+          "non_mainline_patterns": [
+            "\\bramps?\\b"
+          ],
+          "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+          "region": "WA",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-wa-wsdot-aadt",
+          "station_prefix": "WSDOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "WA",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "ddafa5f13447e233065bbaf8daf69f729f4ec27f6f7d7337c3fe427a61983e4b",
+            "gateway_counts_csv": "3f78b2d4bd15c7fa070797324f068caf1afaf06b51ecaf292722d054b969c206"
+          },
+          "boundary_sha256": "863256c8cb06e319fef381dd01d7c84c6651e694b595c3f85de1b228b32ccfe3",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-baseline",
+          "run_name": "gwv-holdout-53007-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 188,
+            "provenance": {
+              "agency": "WSDOT",
+              "count_year": null,
+              "coverage_statement": "WSDOT roadway count coverage for WA.",
+              "facility_clause_pattern": "",
+              "name": "WSDOT Traffic Counts AADT",
+              "non_mainline_patterns": [
+                "\\bramps?\\b"
+              ],
+              "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+              "region": "WA",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-wa-wsdot-aadt",
+              "station_prefix": "WSDOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "WA",
+            "states": [
+              "53"
+            ],
+            "stations": 100
+          }
+        ],
+        "station_count": 100,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-asim-baseline/counts/published_counts.csv"
+      },
+      "activitysim_candidate": {
+        "artifact_hashes": {
+          "counts_csv": "ddafa5f13447e233065bbaf8daf69f729f4ec27f6f7d7337c3fe427a61983e4b",
+          "gateway_counts_csv": "3f78b2d4bd15c7fa070797324f068caf1afaf06b51ecaf292722d054b969c206"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-asim-candidate/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-asim-candidate/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "WSDOT",
+          "count_year": null,
+          "coverage_statement": "WSDOT roadway count coverage for WA.",
+          "facility_clause_pattern": "",
+          "name": "WSDOT Traffic Counts AADT",
+          "non_mainline_patterns": [
+            "\\bramps?\\b"
+          ],
+          "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+          "region": "WA",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-wa-wsdot-aadt",
+          "station_prefix": "WSDOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "WA",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "ddafa5f13447e233065bbaf8daf69f729f4ec27f6f7d7337c3fe427a61983e4b",
+            "gateway_counts_csv": "3f78b2d4bd15c7fa070797324f068caf1afaf06b51ecaf292722d054b969c206"
+          },
+          "boundary_sha256": "863256c8cb06e319fef381dd01d7c84c6651e694b595c3f85de1b228b32ccfe3",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-baseline",
+          "run_name": "gwv-holdout-53007-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 188,
+            "provenance": {
+              "agency": "WSDOT",
+              "count_year": null,
+              "coverage_statement": "WSDOT roadway count coverage for WA.",
+              "facility_clause_pattern": "",
+              "name": "WSDOT Traffic Counts AADT",
+              "non_mainline_patterns": [
+                "\\bramps?\\b"
+              ],
+              "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+              "region": "WA",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-wa-wsdot-aadt",
+              "station_prefix": "WSDOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "WA",
+            "states": [
+              "53"
+            ],
+            "stations": 100
+          }
+        ],
+        "station_count": 100,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-asim-candidate/counts/published_counts.csv"
+      },
+      "aequilibrae_baseline": {
+        "artifact_hashes": {
+          "counts_csv": "ddafa5f13447e233065bbaf8daf69f729f4ec27f6f7d7337c3fe427a61983e4b",
+          "gateway_counts_csv": "3f78b2d4bd15c7fa070797324f068caf1afaf06b51ecaf292722d054b969c206"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-baseline/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-baseline/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "WSDOT",
+          "count_year": null,
+          "coverage_statement": "WSDOT roadway count coverage for WA.",
+          "facility_clause_pattern": "",
+          "name": "WSDOT Traffic Counts AADT",
+          "non_mainline_patterns": [
+            "\\bramps?\\b"
+          ],
+          "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+          "region": "WA",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-wa-wsdot-aadt",
+          "station_prefix": "WSDOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "WA",
+        "sources": [
+          {
+            "gateway_evidence_sections": 188,
+            "provenance": {
+              "agency": "WSDOT",
+              "count_year": null,
+              "coverage_statement": "WSDOT roadway count coverage for WA.",
+              "facility_clause_pattern": "",
+              "name": "WSDOT Traffic Counts AADT",
+              "non_mainline_patterns": [
+                "\\bramps?\\b"
+              ],
+              "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+              "region": "WA",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-wa-wsdot-aadt",
+              "station_prefix": "WSDOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "WA",
+            "states": [
+              "53"
+            ],
+            "stations": 100
+          }
+        ],
+        "station_count": 100,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-baseline/counts/published_counts.csv"
+      },
+      "aequilibrae_candidate": {
+        "artifact_hashes": {
+          "counts_csv": "ddafa5f13447e233065bbaf8daf69f729f4ec27f6f7d7337c3fe427a61983e4b",
+          "gateway_counts_csv": "3f78b2d4bd15c7fa070797324f068caf1afaf06b51ecaf292722d054b969c206"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-candidate/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-candidate/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "WSDOT",
+          "count_year": null,
+          "coverage_statement": "WSDOT roadway count coverage for WA.",
+          "facility_clause_pattern": "",
+          "name": "WSDOT Traffic Counts AADT",
+          "non_mainline_patterns": [
+            "\\bramps?\\b"
+          ],
+          "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+          "region": "WA",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-wa-wsdot-aadt",
+          "station_prefix": "WSDOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "WA",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "ddafa5f13447e233065bbaf8daf69f729f4ec27f6f7d7337c3fe427a61983e4b",
+            "gateway_counts_csv": "3f78b2d4bd15c7fa070797324f068caf1afaf06b51ecaf292722d054b969c206"
+          },
+          "boundary_sha256": "863256c8cb06e319fef381dd01d7c84c6651e694b595c3f85de1b228b32ccfe3",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-baseline",
+          "run_name": "gwv-holdout-53007-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 188,
+            "provenance": {
+              "agency": "WSDOT",
+              "count_year": null,
+              "coverage_statement": "WSDOT roadway count coverage for WA.",
+              "facility_clause_pattern": "",
+              "name": "WSDOT Traffic Counts AADT",
+              "non_mainline_patterns": [
+                "\\bramps?\\b"
+              ],
+              "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+              "region": "WA",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-wa-wsdot-aadt",
+              "station_prefix": "WSDOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "WA",
+            "states": [
+              "53"
+            ],
+            "stations": 100
+          }
+        ],
+        "station_count": 100,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-holdout-53007-aeq-candidate/counts/published_counts.csv"
+      }
+    },
+    "zone_resolution_unchanged": true
+  }
+}

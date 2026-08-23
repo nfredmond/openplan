@@ -1,0 +1,226 @@
+{
+  "baseline": {
+    "apply_measured_volumes": false,
+    "boundary_crossings_after": 195000.0,
+    "boundary_crossings_before": 195000.0,
+    "candidate_pool_gateways": 9,
+    "candidate_pool_measured_gateways": 0,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "trunk-us-97",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "trunk-odabashian-bridge",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-senator-george-sellar-bridge",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-05",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-06",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-state-highway-20",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-north-cascades-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-colockum-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 1,
+    "dropped_unmeasured_gateways": 1,
+    "gateways": 9,
+    "gateways_from_published_counts": 0,
+    "gateways_from_road_class_default": 9,
+    "inferred_gateways": 5,
+    "measured_gateways": 0,
+    "note": "None of this study area's 9 boundary crossings has a published count on the same road nearby, so every one of them uses OpenPlan's screening default for its road class. Those defaults are not measurements, and traffic entering the study area is usually a large share of everything the model assigns.",
+    "retain_all_measured": false,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "WSDOT",
+      "count_year": null,
+      "coverage_statement": "WSDOT roadway count coverage for WA.",
+      "facility_clause_pattern": "",
+      "name": "WSDOT Traffic Counts AADT",
+      "non_mainline_patterns": [
+        "\\bramps?\\b"
+      ],
+      "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+      "region": "WA",
+      "route_label_prefix": "",
+      "source_dataset_id": "us-wa-wsdot-aadt",
+      "station_prefix": "WSDOT",
+      "vintage": "publisher-current-vintage-unspecified"
+    },
+    "stations_consumed": [],
+    "study_arm": "study_baseline",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 3
+  },
+  "candidate": {
+    "apply_measured_volumes": true,
+    "boundary_crossings_after": 195000.0,
+    "boundary_crossings_before": 195000.0,
+    "candidate_pool_gateways": 9,
+    "candidate_pool_measured_gateways": 0,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "trunk-us-97",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "trunk-odabashian-bridge",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-senator-george-sellar-bridge",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-05",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-06",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-state-highway-20",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-north-cascades-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-colockum-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 1,
+    "dropped_unmeasured_gateways": 1,
+    "gateways": 9,
+    "gateways_from_published_counts": 0,
+    "gateways_from_road_class_default": 9,
+    "inferred_gateways": 5,
+    "measured_gateways": 0,
+    "note": "None of this study area's 9 boundary crossings has a published count on the same road nearby, so every one of them uses OpenPlan's screening default for its road class. Those defaults are not measurements, and traffic entering the study area is usually a large share of everything the model assigns.",
+    "retain_all_measured": true,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "WSDOT",
+      "count_year": null,
+      "coverage_statement": "WSDOT roadway count coverage for WA.",
+      "facility_clause_pattern": "",
+      "name": "WSDOT Traffic Counts AADT",
+      "non_mainline_patterns": [
+        "\\bramps?\\b"
+      ],
+      "query_url": "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/FeatureServer/0/query",
+      "region": "WA",
+      "route_label_prefix": "",
+      "source_dataset_id": "us-wa-wsdot-aadt",
+      "station_prefix": "WSDOT",
+      "vintage": "publisher-current-vintage-unspecified"
+    },
+    "stations_consumed": [],
+    "study_arm": "study_candidate",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 3
+  }
+}

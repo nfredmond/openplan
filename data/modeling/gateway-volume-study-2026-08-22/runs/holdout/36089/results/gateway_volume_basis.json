@@ -1,0 +1,402 @@
+{
+  "baseline": {
+    "apply_measured_volumes": false,
+    "boundary_crossings_after": 36385.0,
+    "boundary_crossings_before": 138000.0,
+    "candidate_pool_gateways": 10,
+    "candidate_pool_measured_gateways": 9,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-state-highway-37",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.02,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100339011:27.14:27.179:457078120",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100339011:27.14:27.179:457078120",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-ogdensburg-prescott-international-bridge",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.009,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2021-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100487021:50.0261:50.04:457150214",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100487021:50.0261:50.04:457150214",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-state-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100265041:11.43:11.4327:457052770",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100265041:11.43:11.4327:457052770",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-state-route-11",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100032061:63.16:63.161:456960619",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100032061:63.16:63.161:456960619",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-seaway-international-bridge",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.008,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:277084011:0.8:0.804:457790813",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:277084011:0.8:0.804:457790813",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-state-highway-12",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100048061:51.4816:51.4817:456967351",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100048061:51.4816:51.4817:456967351",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-adirondack-trail",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.008,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100267071:1.23:1.231:457057804",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100267071:1.23:1.231:457057804",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-helena-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.613,
+          "facility_class": "minor_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:176337011:0.0:1.234:457468406",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:176337011:0.0:1.234:457468406",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-county-road-52",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "minor_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:179888011:2.9528:2.9529:457480443",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:179888011:2.9528:2.9529:457480443",
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 2,
+    "dropped_unmeasured_gateways": 0,
+    "gateways": 10,
+    "gateways_from_published_counts": 9,
+    "gateways_from_road_class_default": 1,
+    "inferred_gateways": 0,
+    "measured_gateways": 7,
+    "note": "9 of 10 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 138,000 to 36,385 vehicles a day (-74%).",
+    "retain_all_measured": false,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:36:100032061:63.16:63.161:456960619",
+      "hpms:2024:36:100048061:51.4816:51.4817:456967351",
+      "hpms:2024:36:100265041:11.43:11.4327:457052770",
+      "hpms:2024:36:100267071:1.23:1.231:457057804",
+      "hpms:2024:36:100339011:27.14:27.179:457078120",
+      "hpms:2024:36:100487021:50.0261:50.04:457150214",
+      "hpms:2024:36:176337011:0.0:1.234:457468406",
+      "hpms:2024:36:179888011:2.9528:2.9529:457480443",
+      "hpms:2024:36:277084011:0.8:0.804:457790813"
+    ],
+    "study_arm": "study_baseline",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 1
+  },
+  "candidate": {
+    "apply_measured_volumes": true,
+    "boundary_crossings_after": 36385.0,
+    "boundary_crossings_before": 138000.0,
+    "candidate_pool_gateways": 10,
+    "candidate_pool_measured_gateways": 9,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-state-highway-37",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.02,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100339011:27.14:27.179:457078120",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100339011:27.14:27.179:457078120",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-ogdensburg-prescott-international-bridge",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.009,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2021-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100487021:50.0261:50.04:457150214",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100487021:50.0261:50.04:457150214",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-state-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100265041:11.43:11.4327:457052770",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100265041:11.43:11.4327:457052770",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-state-route-11",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100032061:63.16:63.161:456960619",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100032061:63.16:63.161:456960619",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-seaway-international-bridge",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.008,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:277084011:0.8:0.804:457790813",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:277084011:0.8:0.804:457790813",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-state-highway-12",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100048061:51.4816:51.4817:456967351",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100048061:51.4816:51.4817:456967351",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-adirondack-trail",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.008,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:100267071:1.23:1.231:457057804",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:100267071:1.23:1.231:457057804",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-helena-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.613,
+          "facility_class": "minor_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:176337011:0.0:1.234:457468406",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:176337011:0.0:1.234:457468406",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-county-road-52",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "minor_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:36:179888011:2.9528:2.9529:457480443",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:36:179888011:2.9528:2.9529:457480443",
+        "volume_applied": "measured_aadt"
+      }
+    ],
+    "dropped_gateways": 0,
+    "dropped_unmeasured_gateways": 0,
+    "gateways": 10,
+    "gateways_from_published_counts": 9,
+    "gateways_from_road_class_default": 1,
+    "inferred_gateways": 0,
+    "measured_gateways": 9,
+    "note": "9 of 10 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 138,000 to 36,385 vehicles a day (-74%).",
+    "retain_all_measured": true,
+    "retained_gateways": 10,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:36:100032061:63.16:63.161:456960619",
+      "hpms:2024:36:100048061:51.4816:51.4817:456967351",
+      "hpms:2024:36:100265041:11.43:11.4327:457052770",
+      "hpms:2024:36:100267071:1.23:1.231:457057804",
+      "hpms:2024:36:100339011:27.14:27.179:457078120",
+      "hpms:2024:36:100487021:50.0261:50.04:457150214",
+      "hpms:2024:36:176337011:0.0:1.234:457468406",
+      "hpms:2024:36:179888011:2.9528:2.9529:457480443",
+      "hpms:2024:36:277084011:0.8:0.804:457790813"
+    ],
+    "study_arm": "study_candidate",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 1
+  }
+}

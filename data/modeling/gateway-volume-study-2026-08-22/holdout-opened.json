@@ -1,0 +1,26 @@
+{
+  "candidate_freeze_sha256": "9703ba334c491dd126081ae5b31fd90ba9325c85af443ad65ef8e7eb273f8553",
+  "development_freeze_sha256": "f247291ae25c28b58ad815c8491b7fb153a7c905e9b473ec7e7cf1c3a9c5c86b",
+  "holdout_counties": [
+    "10005",
+    "13085",
+    "13131",
+    "17049",
+    "17201",
+    "18183",
+    "23025",
+    "35035",
+    "35049",
+    "36051",
+    "36089",
+    "39169",
+    "41019",
+    "42081",
+    "53007",
+    "54061"
+  ],
+  "open_record_sha256": "731caf90ebb9e394fde0bfe49fad7e905bbe1d9ee5d38aabfa90d83ec130ed25",
+  "registry_payload_sha256": "f5cd0d9e4722c0f98b0de4585130f0f47e8e9cd124ec82070baff3cdc30a960b",
+  "rule": "Open once; do not replace, add, or rerun a county after reading results.",
+  "schema_version": "openplan.gateway-volume-holdout-open.v1"
+}

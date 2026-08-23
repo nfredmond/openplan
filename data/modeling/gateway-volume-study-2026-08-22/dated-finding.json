@@ -1,0 +1,58 @@
+{
+  "schema_version": "openplan.gateway-volume-study-finding.v1",
+  "finding_date": "2026-08-23",
+  "study": "nationwide observed-AADT gateway-volume candidate",
+  "decision": {
+    "candidate_adopted": false,
+    "defaults_changed": false,
+    "reason": "The measured-AADT gateway-volume candidate failed the frozen independent holdout thresholds for both demand methods.",
+    "prohibited_followups": [
+      "fit a scalar after seeing the holdout",
+      "expand the gateway cap for inferred crossings",
+      "select or tune another candidate from these holdout results"
+    ]
+  },
+  "independent_validation": {
+    "half": "holdout",
+    "county_count": 16,
+    "guards_green": true,
+    "matched_station_set_unchanged": true,
+    "methods_are_never_averaged": true,
+    "aequilibrae": {
+      "passed": false,
+      "counties_improved": 5,
+      "counties_required": 12,
+      "median_county_improvement_percentage_points": 0.0,
+      "required_median_improvement_percentage_points": 5.0,
+      "pooled_baseline_median_ape": 100.0,
+      "pooled_candidate_median_ape": 100.0
+    },
+    "activitysim": {
+      "passed": false,
+      "counties_improved": 6,
+      "counties_required": 12,
+      "median_county_improvement_percentage_points": 0.0,
+      "required_median_improvement_percentage_points": 5.0,
+      "pooled_baseline_median_ape": 100.0,
+      "pooled_candidate_median_ape": 99.84
+    }
+  },
+  "evidence_hashes": {
+    "registry_file_sha256": "75c81866a76f6d7c82c1b3aa4aa8e17b2a986b2879cd9753cd8d020e1f8721c8",
+    "registry_payload_sha256": "f5cd0d9e4722c0f98b0de4585130f0f47e8e9cd124ec82070baff3cdc30a960b",
+    "candidate_freeze_sha256": "9703ba334c491dd126081ae5b31fd90ba9325c85af443ad65ef8e7eb273f8553",
+    "development_freeze_sha256": "f247291ae25c28b58ad815c8491b7fb153a7c905e9b473ec7e7cf1c3a9c5c86b",
+    "development_evaluation_file_sha256": "72e0b731ca963b61a02c8ac22bfc275b36cedc886971e04aae451b8a8961ab8c",
+    "holdout_open_marker_file_sha256": "dc5fa0c9b32b00afa596c6e619bb7c137eeb1c2aca508468559507c008390a7c",
+    "holdout_open_record_sha256": "731caf90ebb9e394fde0bfe49fad7e905bbe1d9ee5d38aabfa90d83ec130ed25",
+    "holdout_batch_summary_file_sha256": "cee7b72bfa9dba402ef45e78899ce3324d9d2ed958234fb3965ff2aa1a5bd6ae",
+    "holdout_evaluation_file_sha256": "581868d38ab017f0d0ad77d7b84fcc2a5065e091003c136a7954d261a3b8b310"
+  },
+  "count_source_limitation": "HPMS section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; an absent section is unknown, not zero traffic. Registered state feeds remain preferred where available.",
+  "claim_rule": "A national average never promotes an individual run. The existing count-backed tier requires that run's independent validation and a zone system that supports link-level validation.",
+  "planner_agent": {
+    "write_capability_added": false,
+    "action_registry_entry_owed": false,
+    "reason": "This study and its evidence surfaces add no model-run creation or other write capability; model-run creation remains a recorded refusal."
+  }
+}

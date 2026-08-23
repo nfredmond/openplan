@@ -1,0 +1,1116 @@
+{
+  "baseline": {
+    "apply_measured_volumes": false,
+    "boundary_crossings_after": 265277.0,
+    "boundary_crossings_before": 382000.0,
+    "candidate_pool_gateways": 40,
+    "candidate_pool_measured_gateways": 22,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-02",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-03",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "trunk-alternate-main-trail",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-mercer-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.015,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0002X:77.2:77.23:409599881",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0002X:77.2:77.23:409599881",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-carrabassett-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0027X:101.66:101.67:409649156",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0027X:101.66:101.67:409649156",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-new-vineyard-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0027X:94.36:94.37:409649058",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0027X:94.36:94.37:409649058",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-main-street",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.009,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0104X:21.24:21.26:409673765",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0104X:21.24:21.26:409673765",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-main-street",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-starks-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0134X:8.38:8.39:409691250",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0134X:8.38:8.39:409691250",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-lexington-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.015,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0016X:77.26:77.29:409636452",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0016X:77.26:77.29:409636452",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-industry-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.023,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0043X:15.11:15.15:409653299",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0043X:15.11:15.15:409653299",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-valley-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.01,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0234X:11.54:11.56:409723714",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0234X:11.54:11.56:409723714",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-west-mills-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.02,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0148X:12.63:12.67:409696095",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0148X:12.63:12.67:409696095",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-canaan-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.01,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:23.45:23.47:409641640",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:23.45:23.47:409641640",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-canaan-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.006,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:26.46:26.47:409641689",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:26.46:26.47:409641689",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-fairfield-street",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:15.45:15.46:409641513",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:15.45:15.46:409641513",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-smithfield-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.025,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0137X:47.58:47.63:409692828",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0137X:47.58:47.63:409692828",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-worcester-highway",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0016X:119.84:119.85:409636992",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0016X:119.84:119.85:409636992",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-wellington-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-rockwood-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0006X:51.98:51.989:409613368",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0006X:51.98:51.989:409613368",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-ripley-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.044,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:54.27:54.36:409642127",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:54.27:54.36:409642127",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-state-highway-150",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0150X:27.7:27.71:409696987",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0150X:27.7:27.71:409696987",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-north-main-street",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.01,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0011X:163.35:163.37:409628220",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0011X:163.35:163.37:409628220",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-detroit-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0220X:59.39:59.394:409721285",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0220X:59.39:59.394:409721285",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-corinna-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.006,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0043X:61.47:61.48:409654022",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0043X:61.47:61.48:409654022",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-south-main-street",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.004,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0069X:5.55:5.56:409655254",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0069X:5.55:5.56:409655254",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-ste-aurelie-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-golden-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-golden-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-long-falls-dam-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-long-falls-dam-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-saint-juste-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-saint-juste-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-rome-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0225X:4.93:4.931:409722228",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0225X:4.93:4.931:409722228",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-east-pond-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-saint-aurelie-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-dexter-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-hill-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 32,
+    "dropped_unmeasured_gateways": 13,
+    "gateways": 40,
+    "gateways_from_published_counts": 22,
+    "gateways_from_road_class_default": 18,
+    "inferred_gateways": 1,
+    "measured_gateways": 3,
+    "note": "22 of 40 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 382,000 to 265,277 vehicles a day (-31%).",
+    "retain_all_measured": false,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:23:0002X:77.2:77.23:409599881",
+      "hpms:2024:23:0006X:51.98:51.989:409613368",
+      "hpms:2024:23:0011X:163.35:163.37:409628220",
+      "hpms:2024:23:0016X:119.84:119.85:409636992",
+      "hpms:2024:23:0016X:77.26:77.29:409636452",
+      "hpms:2024:23:0023X:15.45:15.46:409641513",
+      "hpms:2024:23:0023X:23.45:23.47:409641640",
+      "hpms:2024:23:0023X:26.46:26.47:409641689",
+      "hpms:2024:23:0023X:54.27:54.36:409642127",
+      "hpms:2024:23:0027X:101.66:101.67:409649156",
+      "hpms:2024:23:0027X:94.36:94.37:409649058",
+      "hpms:2024:23:0043X:15.11:15.15:409653299",
+      "hpms:2024:23:0043X:61.47:61.48:409654022",
+      "hpms:2024:23:0069X:5.55:5.56:409655254",
+      "hpms:2024:23:0104X:21.24:21.26:409673765",
+      "hpms:2024:23:0134X:8.38:8.39:409691250",
+      "hpms:2024:23:0137X:47.58:47.63:409692828",
+      "hpms:2024:23:0148X:12.63:12.67:409696095",
+      "hpms:2024:23:0150X:27.7:27.71:409696987",
+      "hpms:2024:23:0220X:59.39:59.394:409721285",
+      "hpms:2024:23:0225X:4.93:4.931:409722228",
+      "hpms:2024:23:0234X:11.54:11.56:409723714"
+    ],
+    "study_arm": "study_baseline",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 4
+  },
+  "candidate": {
+    "apply_measured_volumes": true,
+    "boundary_crossings_after": 265277.0,
+    "boundary_crossings_before": 382000.0,
+    "candidate_pool_gateways": 40,
+    "candidate_pool_measured_gateways": 22,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-02",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-03",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "trunk-alternate-main-trail",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-mercer-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.015,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0002X:77.2:77.23:409599881",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0002X:77.2:77.23:409599881",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-carrabassett-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0027X:101.66:101.67:409649156",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0027X:101.66:101.67:409649156",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-new-vineyard-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0027X:94.36:94.37:409649058",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0027X:94.36:94.37:409649058",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-main-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.009,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0104X:21.24:21.26:409673765",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0104X:21.24:21.26:409673765",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-main-street",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-starks-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0134X:8.38:8.39:409691250",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0134X:8.38:8.39:409691250",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-lexington-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.015,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0016X:77.26:77.29:409636452",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0016X:77.26:77.29:409636452",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-industry-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.023,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0043X:15.11:15.15:409653299",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0043X:15.11:15.15:409653299",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-valley-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.01,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0234X:11.54:11.56:409723714",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0234X:11.54:11.56:409723714",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-west-mills-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.02,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0148X:12.63:12.67:409696095",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0148X:12.63:12.67:409696095",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-canaan-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.01,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:23.45:23.47:409641640",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:23.45:23.47:409641640",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-canaan-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.006,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:26.46:26.47:409641689",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:26.46:26.47:409641689",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-fairfield-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:15.45:15.46:409641513",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:15.45:15.46:409641513",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-smithfield-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.025,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0137X:47.58:47.63:409692828",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0137X:47.58:47.63:409692828",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-worcester-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0016X:119.84:119.85:409636992",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0016X:119.84:119.85:409636992",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-wellington-road",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-rockwood-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0006X:51.98:51.989:409613368",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0006X:51.98:51.989:409613368",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-ripley-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.044,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0023X:54.27:54.36:409642127",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0023X:54.27:54.36:409642127",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-state-highway-150",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.005,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0150X:27.7:27.71:409696987",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0150X:27.7:27.71:409696987",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-north-main-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.01,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0011X:163.35:163.37:409628220",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0011X:163.35:163.37:409628220",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-detroit-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0220X:59.39:59.394:409721285",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0220X:59.39:59.394:409721285",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-corinna-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.006,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0043X:61.47:61.48:409654022",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0043X:61.47:61.48:409654022",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-south-main-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.004,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0069X:5.55:5.56:409655254",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0069X:5.55:5.56:409655254",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-ste-aurelie-road",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-golden-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-golden-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-long-falls-dam-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-long-falls-dam-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-saint-juste-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-saint-juste-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-rome-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": "major_collector",
+          "measurement_date": "2023-12-31T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:23:0225X:4.93:4.931:409722228",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:23:0225X:4.93:4.931:409722228",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-east-pond-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-saint-aurelie-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-dexter-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-hill-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 10,
+    "dropped_unmeasured_gateways": 10,
+    "gateways": 40,
+    "gateways_from_published_counts": 22,
+    "gateways_from_road_class_default": 18,
+    "inferred_gateways": 4,
+    "measured_gateways": 22,
+    "note": "22 of 40 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 382,000 to 265,277 vehicles a day (-31%).",
+    "retain_all_measured": true,
+    "retained_gateways": 30,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:23:0002X:77.2:77.23:409599881",
+      "hpms:2024:23:0006X:51.98:51.989:409613368",
+      "hpms:2024:23:0011X:163.35:163.37:409628220",
+      "hpms:2024:23:0016X:119.84:119.85:409636992",
+      "hpms:2024:23:0016X:77.26:77.29:409636452",
+      "hpms:2024:23:0023X:15.45:15.46:409641513",
+      "hpms:2024:23:0023X:23.45:23.47:409641640",
+      "hpms:2024:23:0023X:26.46:26.47:409641689",
+      "hpms:2024:23:0023X:54.27:54.36:409642127",
+      "hpms:2024:23:0027X:101.66:101.67:409649156",
+      "hpms:2024:23:0027X:94.36:94.37:409649058",
+      "hpms:2024:23:0043X:15.11:15.15:409653299",
+      "hpms:2024:23:0043X:61.47:61.48:409654022",
+      "hpms:2024:23:0069X:5.55:5.56:409655254",
+      "hpms:2024:23:0104X:21.24:21.26:409673765",
+      "hpms:2024:23:0134X:8.38:8.39:409691250",
+      "hpms:2024:23:0137X:47.58:47.63:409692828",
+      "hpms:2024:23:0148X:12.63:12.67:409696095",
+      "hpms:2024:23:0150X:27.7:27.71:409696987",
+      "hpms:2024:23:0220X:59.39:59.394:409721285",
+      "hpms:2024:23:0225X:4.93:4.931:409722228",
+      "hpms:2024:23:0234X:11.54:11.56:409723714"
+    ],
+    "study_arm": "study_candidate",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 4
+  }
+}

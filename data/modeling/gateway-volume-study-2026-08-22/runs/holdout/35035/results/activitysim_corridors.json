@@ -1,0 +1,133 @@
+{
+  "by_road_class": {
+    "centroid_connector": {
+      "decreased": 35,
+      "increased": 32,
+      "links": 126,
+      "median_absolute_change": 0.558951,
+      "median_absolute_percent_change_where_baseline_positive": 4.814502,
+      "unchanged": 59
+    },
+    "construction": {
+      "decreased": 2,
+      "increased": 0,
+      "links": 104,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 100.0,
+      "unchanged": 102
+    },
+    "disused": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "escape": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "living_street": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 14,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 14
+    },
+    "pedestrian": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 4,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 4
+    },
+    "primary": {
+      "decreased": 305,
+      "increased": 145,
+      "links": 610,
+      "median_absolute_change": 1247.119339,
+      "median_absolute_percent_change_where_baseline_positive": 14.799175,
+      "unchanged": 160
+    },
+    "residential": {
+      "decreased": 121,
+      "increased": 196,
+      "links": 13758,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 12.15209,
+      "unchanged": 13441
+    },
+    "secondary": {
+      "decreased": 427,
+      "increased": 309,
+      "links": 1301,
+      "median_absolute_change": 21.991758,
+      "median_absolute_percent_change_where_baseline_positive": 7.573608,
+      "unchanged": 565
+    },
+    "service": {
+      "decreased": 8,
+      "increased": 18,
+      "links": 3836,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 78.557234,
+      "unchanged": 3810
+    },
+    "services": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "tertiary": {
+      "decreased": 149,
+      "increased": 242,
+      "links": 1750,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 9.00264,
+      "unchanged": 1359
+    },
+    "trunk": {
+      "decreased": 295,
+      "increased": 314,
+      "links": 929,
+      "median_absolute_change": 943.928917,
+      "median_absolute_percent_change_where_baseline_positive": 9.352911,
+      "unchanged": 320
+    },
+    "unclassified": {
+      "decreased": 2,
+      "increased": 27,
+      "links": 850,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 0.0,
+      "unchanged": 821
+    }
+  },
+  "demand_method": "ActivitySim activity-based demand",
+  "full_artifact": {
+    "commit_policy": "ignored run storage; hash and compact summary are committed",
+    "location": "data/screening-runs/gwv-holdout-35035-asim-candidate/gateway_volume_study/corridor_change.json",
+    "sha256": "16f0d2259697f954c4623406e01543489a60757c532c47d60ea21ed2764bf0bc"
+  },
+  "interpretation": "Methodological sensitivity to the one frozen gateway-volume candidate; not an average and not an accuracy claim.",
+  "is_average": false,
+  "schema_version": "openplan.gateway-volume-corridor-change-summary.v1",
+  "summary": {
+    "decreased": 1344,
+    "increased": 1283,
+    "links": 23285,
+    "median_absolute_change": 0.0,
+    "median_absolute_percent_change_where_baseline_positive": 9.693579,
+    "unchanged": 20658
+  }
+}

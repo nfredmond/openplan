@@ -1,0 +1,243 @@
+{
+  "demand_methods": {
+    "activitysim": {
+      "full_validation_artifacts": {
+        "commit_policy": "ignored run storage; hashes and compact summary are committed",
+        "location": "data/screening-runs/gwv-holdout-41019-asim-baseline/validation",
+        "sha256": {
+          "validation_candidate_audit.json": "578e8a89b7d43271be640e0578a24b1ca602376803d09e08875632c939ba23fe",
+          "validation_results.csv": "89ec7788a65ad4292883c8318e98c5261435dde10e7ef068e6764fbad2623b9e",
+          "validation_summary.json": "4560ec8c5ac5fa82225c31423ac3770a43277ecfa5ebf95f72e90707c50d04c7"
+        }
+      },
+      "matched_station_count": 115,
+      "matched_station_set_sha256": "0cdd79476ec5f08ad416a49bd28fa6755860de8d2d2e01de7738d025d37d6afe",
+      "run_dir": "data/screening-runs/gwv-holdout-41019-asim-baseline",
+      "summary": {
+        "count_source_agencies": [
+          "ODOT"
+        ],
+        "created_at": "2026-08-23T12:59:01.861205+00:00",
+        "divided_highways": {
+          "direction_known": true,
+          "direction_source": "geometry",
+          "links_backfilled_from_project_db": 0,
+          "looks_like_the_correction_never_fired": false,
+          "motorway_stations_matched": 2,
+          "motorway_stations_summed": 0,
+          "note": "7 station(s) sit on a divided highway and were compared against both carriageways summed using the direction recorded in the run's link geometry.",
+          "one_way_motorway_links_in_network": 715
+        },
+        "metrics": {
+          "by_road_class": [
+            {
+              "median_absolute_percent_error": 91.17,
+              "median_model_over_observed": 0.088,
+              "road_class": "motorway",
+              "single_station": false,
+              "stations": 2
+            },
+            {
+              "median_absolute_percent_error": 77.59,
+              "median_model_over_observed": 1.736,
+              "road_class": "trunk",
+              "single_station": false,
+              "stations": 15
+            },
+            {
+              "median_absolute_percent_error": 235.8,
+              "median_model_over_observed": 3.358,
+              "road_class": "primary",
+              "single_station": false,
+              "stations": 88
+            },
+            {
+              "median_absolute_percent_error": 91.87,
+              "median_model_over_observed": 0.081,
+              "road_class": "secondary",
+              "single_station": false,
+              "stations": 2
+            },
+            {
+              "median_absolute_percent_error": 100.0,
+              "median_model_over_observed": 0.0,
+              "road_class": "tertiary",
+              "single_station": false,
+              "stations": 8
+            }
+          ],
+          "by_road_class_note": "Accuracy is not the same on every kind of road. On trunk the median error is 77.59% across 15 stations; on primary it is 235.8% across 88. A figure for a primary road is far weaker evidence than the same figure for a trunk, and the study-area median hides that.",
+          "geh_basis": "GEH computed on average-hourly equivalents (daily volume / 24); peak-hour GEH, the customary basis for the <5 acceptance rule, will differ.",
+          "geh_max": 58.65,
+          "geh_mean": 25.55,
+          "max_absolute_percent_error": 290462.5,
+          "mean_absolute_percent_error": 2857.17,
+          "median_absolute_percent_error": 188.74,
+          "min_absolute_percent_error": 3.39,
+          "percent_rmse": 181.04,
+          "spearman_rho_facility_ranking": -0.1764
+        },
+        "model_caveats": [
+          "screening-grade only",
+          "OSM default speeds/capacities",
+          "tract fragments are not calibrated TAZs",
+          "jobs are estimated from tract-scale demographic proxies",
+          "external gateways are inferred from major boundary-crossing roads, and the traffic entering at each one is a flat daily figure by road class -- not an observed count, and the same figure everywhere in the country"
+        ],
+        "model_engine": "AequilibraE screening runtime",
+        "model_run_id": "gwv-holdout-41019-asim-baseline",
+        "screening_gate": {
+          "ready_critical_ape_threshold": 50.0,
+          "ready_median_ape_threshold": 30.0,
+          "reasons": [
+            "Median absolute percent error is 188.74%, above the 30.00% screening threshold.",
+            "At least one core facility has 290462.50% absolute percent error, above the 50.00% critical-facility threshold."
+          ],
+          "required_matches": 3,
+          "status_label": "internal prototype only"
+        },
+        "shared_model_links": {
+          "consistency_ratio": 1.3,
+          "groups_excluded_as_ambiguous": 0,
+          "groups_merged_as_consistent": 5,
+          "links_shared_by_several_stations": 5,
+          "note": "A model link holds one volume, so several stations matched to it are several observations of one number. Where they agree they are compared once at their median; where they disagree the pairing is ambiguous and none of them grades the link. The cause is network resolution \u2014 a link long enough to span a junction genuinely carries different volumes at its ends.",
+          "stations_excluded_as_ambiguous": 0,
+          "stations_merged_away": 5
+        },
+        "stations_excluded_not_mainline": 167,
+        "stations_matched": 115,
+        "stations_missed": 181,
+        "stations_on_unloaded_links": 13,
+        "stations_total": 296,
+        "validation_type": "screening_assignment_vs_observed_counts",
+        "zone_resolution": {
+          "intrazonal_trip_share": 0.5995,
+          "note": "Share of internal trips that begin and end in the same zone, so they carry VMT but never appear on any link. OpenPlan bands this share when it records a claim for this run: past its threshold the gate above is NOT recorded as a screening claim, because a link-level comparison cannot establish one at that resolution. The banding is OpenPlan's own screening heuristic, not an adopted standard. Null means the run's producer did not record the share.",
+          "zone_count": 30.0,
+          "zone_system": "supplied-demand-package-plus-external-cordons"
+        }
+      }
+    },
+    "aequilibrae": {
+      "full_validation_artifacts": {
+        "commit_policy": "ignored run storage; hashes and compact summary are committed",
+        "location": "data/screening-runs/gwv-holdout-41019-aeq-baseline/validation",
+        "sha256": {
+          "validation_candidate_audit.json": "7a60fc281e1d8c6ca577119b9dd5dd2783b4bb2e94b74cf151b87ef936d704b7",
+          "validation_results.csv": "bcd5272bfa14ed6540e657394fcb8f046f553567f1995e7c44281d724fcd2730",
+          "validation_summary.json": "4f43c3e61516cce0c86befca01c1ce6536f0f698443e236e7f935a86ed6497a3"
+        }
+      },
+      "matched_station_count": 115,
+      "matched_station_set_sha256": "0cdd79476ec5f08ad416a49bd28fa6755860de8d2d2e01de7738d025d37d6afe",
+      "run_dir": "data/screening-runs/gwv-holdout-41019-aeq-baseline",
+      "summary": {
+        "count_source_agencies": [
+          "ODOT"
+        ],
+        "created_at": "2026-08-23T12:55:03.891887+00:00",
+        "divided_highways": {
+          "direction_known": true,
+          "direction_source": "geometry",
+          "links_backfilled_from_project_db": 0,
+          "looks_like_the_correction_never_fired": false,
+          "motorway_stations_matched": 2,
+          "motorway_stations_summed": 0,
+          "note": "7 station(s) sit on a divided highway and were compared against both carriageways summed using the direction recorded in the run's link geometry.",
+          "one_way_motorway_links_in_network": 715
+        },
+        "metrics": {
+          "by_road_class": [
+            {
+              "median_absolute_percent_error": 89.22,
+              "median_model_over_observed": 0.108,
+              "road_class": "motorway",
+              "single_station": false,
+              "stations": 2
+            },
+            {
+              "median_absolute_percent_error": 60.96,
+              "median_model_over_observed": 1.581,
+              "road_class": "trunk",
+              "single_station": false,
+              "stations": 15
+            },
+            {
+              "median_absolute_percent_error": 382.54,
+              "median_model_over_observed": 4.825,
+              "road_class": "primary",
+              "single_station": false,
+              "stations": 88
+            },
+            {
+              "median_absolute_percent_error": 78.91,
+              "median_model_over_observed": 0.211,
+              "road_class": "secondary",
+              "single_station": false,
+              "stations": 2
+            },
+            {
+              "median_absolute_percent_error": 100.0,
+              "median_model_over_observed": 0.0,
+              "road_class": "tertiary",
+              "single_station": false,
+              "stations": 8
+            }
+          ],
+          "by_road_class_note": "Accuracy is not the same on every kind of road. On trunk the median error is 60.96% across 15 stations; on primary it is 382.54% across 88. A figure for a primary road is far weaker evidence than the same figure for a trunk, and the study-area median hides that.",
+          "geh_basis": "GEH computed on average-hourly equivalents (daily volume / 24); peak-hour GEH, the customary basis for the <5 acceptance rule, will differ.",
+          "geh_max": 58.65,
+          "geh_mean": 30.32,
+          "max_absolute_percent_error": 362550.0,
+          "mean_absolute_percent_error": 3581.33,
+          "median_absolute_percent_error": 273.82,
+          "min_absolute_percent_error": 8.4,
+          "percent_rmse": 233.68,
+          "spearman_rho_facility_ranking": -0.1677
+        },
+        "model_caveats": [
+          "screening-grade only",
+          "OSM default speeds/capacities",
+          "tract fragments are not calibrated TAZs",
+          "jobs are estimated from tract-scale demographic proxies",
+          "external gateways are inferred from major boundary-crossing roads, and the traffic entering at each one is a flat daily figure by road class -- not an observed count, and the same figure everywhere in the country"
+        ],
+        "model_engine": "AequilibraE screening runtime",
+        "model_run_id": "gwv-holdout-41019-aeq-baseline",
+        "screening_gate": {
+          "ready_critical_ape_threshold": 50.0,
+          "ready_median_ape_threshold": 30.0,
+          "reasons": [
+            "Median absolute percent error is 273.82%, above the 30.00% screening threshold.",
+            "At least one core facility has 362550.00% absolute percent error, above the 50.00% critical-facility threshold."
+          ],
+          "required_matches": 3,
+          "status_label": "internal prototype only"
+        },
+        "shared_model_links": {
+          "consistency_ratio": 1.3,
+          "groups_excluded_as_ambiguous": 0,
+          "groups_merged_as_consistent": 5,
+          "links_shared_by_several_stations": 5,
+          "note": "A model link holds one volume, so several stations matched to it are several observations of one number. Where they agree they are compared once at their median; where they disagree the pairing is ambiguous and none of them grades the link. The cause is network resolution \u2014 a link long enough to span a junction genuinely carries different volumes at its ends.",
+          "stations_excluded_as_ambiguous": 0,
+          "stations_merged_away": 5
+        },
+        "stations_excluded_not_mainline": 167,
+        "stations_matched": 115,
+        "stations_missed": 181,
+        "stations_on_unloaded_links": 9,
+        "stations_total": 296,
+        "validation_type": "screening_assignment_vs_observed_counts",
+        "zone_resolution": {
+          "intrazonal_trip_share": 0.0327,
+          "note": "Share of internal trips that begin and end in the same zone, so they carry VMT but never appear on any link. OpenPlan bands this share when it records a claim for this run: past its threshold the gate above is NOT recorded as a screening claim, because a link-level comparison cannot establish one at that resolution. The banding is OpenPlan's own screening heuristic, not an adopted standard. Null means the run's producer did not record the share.",
+          "zone_count": 30.0,
+          "zone_system": "census-tract-fragments-plus-external-cordons"
+        }
+      }
+    }
+  },
+  "schema_version": "openplan.gateway-volume-validation-evidence.v1"
+}

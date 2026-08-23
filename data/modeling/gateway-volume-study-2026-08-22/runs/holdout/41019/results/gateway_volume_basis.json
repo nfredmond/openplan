@@ -1,0 +1,678 @@
+{
+  "baseline": {
+    "apply_measured_volumes": false,
+    "boundary_crossings_after": 185803.0,
+    "boundary_crossings_before": 239000.0,
+    "candidate_pool_gateways": 31,
+    "candidate_pool_measured_gateways": 5,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-02",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-oregon-coast-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE009_PM198_580",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-oregon-coast-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE009_PM220_580",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-state-highway-42",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE035_PM44_950",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-territorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-east-diamond-lake-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 1.094,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE138_PM86_240",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-diamond-lake-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.13,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE233_PM5_860",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-tiller-trail-highway",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-crater-lake-highway-north",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-11",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-12",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-13",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-14",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-kelsey-mule-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-kelsey-mule-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-sitkum-county-line-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-burnt-ridge-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-united-states-forest-service-road-48",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-dutch-henry-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-shoestring-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-oxbow-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-forest-road-32",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-snow-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-abbott-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-forest-road-38",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-bureau-of-land-mgmt-rd-13-0",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-windigo-pass-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-big-swamp-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-timpanogas-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-timpanogas-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 23,
+    "dropped_unmeasured_gateways": 23,
+    "gateways": 31,
+    "gateways_from_published_counts": 5,
+    "gateways_from_road_class_default": 26,
+    "inferred_gateways": 1,
+    "measured_gateways": 5,
+    "note": "5 of 31 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 239,000 to 185,803 vehicles a day (-22%).",
+    "retain_all_measured": false,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "ODOT",
+      "count_year": null,
+      "coverage_statement": "ODOT roadway count coverage for OR.",
+      "facility_clause_pattern": "^([^,]*)",
+      "name": "ODOT TransGIS AADT - State",
+      "non_mainline_patterns": [
+        "\\bramps?\\b",
+        "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+        "\\bconn\\.",
+        "\\bcn\\.?\\s*\\d+\\b",
+        "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+      ],
+      "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+      "region": "OR",
+      "route_label_prefix": "",
+      "source_dataset_id": "us-or-odot-aadt",
+      "station_prefix": "ODOT",
+      "vintage": "publisher-current-vintage-unspecified"
+    },
+    "stations_consumed": [
+      "ODOT_RTE009_PM198_580",
+      "ODOT_RTE009_PM220_580",
+      "ODOT_RTE035_PM44_950",
+      "ODOT_RTE138_PM86_240",
+      "ODOT_RTE233_PM5_860"
+    ],
+    "study_arm": "study_baseline",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 2
+  },
+  "candidate": {
+    "apply_measured_volumes": true,
+    "boundary_crossings_after": 185803.0,
+    "boundary_crossings_before": 239000.0,
+    "candidate_pool_gateways": 31,
+    "candidate_pool_measured_gateways": 5,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-02",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-oregon-coast-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE009_PM198_580",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-oregon-coast-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE009_PM220_580",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-state-highway-42",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE035_PM44_950",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "primary-territorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-east-diamond-lake-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 1.094,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE138_PM86_240",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-diamond-lake-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.13,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE233_PM5_860",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-tiller-trail-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-crater-lake-highway-north",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-11",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-12",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-13",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "tertiary-gateway-14",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-kelsey-mule-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-kelsey-mule-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-sitkum-county-line-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-burnt-ridge-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-united-states-forest-service-road-48",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-dutch-henry-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-shoestring-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-oxbow-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-forest-road-32",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-snow-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-abbott-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-forest-road-38",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-bureau-of-land-mgmt-rd-13-0",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-windigo-pass-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-big-swamp-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-timpanogas-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-timpanogas-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 18,
+    "dropped_unmeasured_gateways": 18,
+    "gateways": 31,
+    "gateways_from_published_counts": 5,
+    "gateways_from_road_class_default": 26,
+    "inferred_gateways": 3,
+    "measured_gateways": 5,
+    "note": "5 of 31 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 239,000 to 185,803 vehicles a day (-22%).",
+    "retain_all_measured": true,
+    "retained_gateways": 13,
+    "source": {
+      "agency": "ODOT",
+      "count_year": null,
+      "coverage_statement": "ODOT roadway count coverage for OR.",
+      "facility_clause_pattern": "^([^,]*)",
+      "name": "ODOT TransGIS AADT - State",
+      "non_mainline_patterns": [
+        "\\bramps?\\b",
+        "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+        "\\bconn\\.",
+        "\\bcn\\.?\\s*\\d+\\b",
+        "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+      ],
+      "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+      "region": "OR",
+      "route_label_prefix": "",
+      "source_dataset_id": "us-or-odot-aadt",
+      "station_prefix": "ODOT",
+      "vintage": "publisher-current-vintage-unspecified"
+    },
+    "stations_consumed": [
+      "ODOT_RTE009_PM198_580",
+      "ODOT_RTE009_PM220_580",
+      "ODOT_RTE035_PM44_950",
+      "ODOT_RTE138_PM86_240",
+      "ODOT_RTE233_PM5_860"
+    ],
+    "study_arm": "study_candidate",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 5
+  }
+}
