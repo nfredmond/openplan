@@ -1,0 +1,22 @@
+{
+  "candidate_commit": "37df1d129955827c2c7ead932ad2abb1987b12c8",
+  "candidate_protocol_sha256": "d86d16ee369bddbb6bee7750d14f340ebf0b929a08283ec5f63f767c74a449c7",
+  "freeze_sha256": "c803c3b6c1b0464e78146a76feae1e39ab510af6dc58017532166964b474df47",
+  "implementation_hashes": {
+    "scripts/modeling/auto_counts.py": "b2a67809adc915b70ed72cc82a4bfe3bb3a6be57f05fe53adfd9e116baee2f1e",
+    "scripts/modeling/build_expanded_aadt_counts.py": "0c7425585d663bb986afe8d11d40cd53d312a63b9546778182b100ec55aa08c3",
+    "scripts/modeling/count_sources.py": "c9d885c80e0b97ce5fd1eba905ceea5da8b24d43a506fb74930773aa2ea47820",
+    "scripts/modeling/demand_conservation.py": "22f43c0d6f5b049f2c439a78ecc53033bff49d8d44918756408d0815b82b22d8",
+    "scripts/modeling/gateway_counts.py": "a989c14d659145df998e28bedca2562765750acc7c3a716d096cd62f9b49cc90",
+    "scripts/modeling/hpms_count_source.py": "66e1d29e7919d204037f91d17c25bf18a91322606943af973c478862709d5daf",
+    "scripts/modeling/run_gateway_volume_study.py": "db4a212ba2fc4f15ba26ccb0fd5ae9fea88948f468103fc5209f2f353dc93c29",
+    "scripts/modeling/run_screening_model.py": "a611ec9655b1916562d01e066dd8ab37af6e091cbc198c0a6287ee92700f5101",
+    "scripts/modeling/screening_runtime.py": "223defc0f297f564b0f3a3a5ae767207e2d1a7384a2ad453023608debcc3a631",
+    "scripts/modeling/validate_screening_observed_counts.py": "44ec85051330d1b60ed12d6ea85e656b3de1d4a262773a0dda23302df11fdf03",
+    "workers/aequilibrae_worker/assignment_settings.py": "c97c2a9efc22fbeb70ef3016f0526a1ca9ecfa24436b6c5bd13badec21ddb4b8",
+    "workers/aequilibrae_worker/count_validation.py": "a6cae641de999ab9881872b9b2a36cc688312b099f8dbbc542ea1cf58ad39b3b",
+    "workers/aequilibrae_worker/gateways.py": "6463795f6cb3ad3feaf2cb7276f3906e65fa73fbaa9fb4d8ea881a7f57b30d7a"
+  },
+  "registry_payload_sha256": "f5cd0d9e4722c0f98b0de4585130f0f47e8e9cd124ec82070baff3cdc30a960b",
+  "schema_version": "openplan.gateway-volume-candidate-freeze.v1"
+}

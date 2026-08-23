@@ -1,0 +1,20 @@
+{
+  "schema_version": "openplan.gateway-volume-study-candidate-supersession.v1",
+  "superseded_freeze": {
+    "path": "candidate-freeze-v4.json",
+    "freeze_sha256": "b39122b4fb1fca52557fc0f3ce881049dc13da499fff3ee4e704b39476cfe833",
+    "candidate_commit": "f3053e0e73f105983f929de169081127485ec25f"
+  },
+  "active_freeze": {
+    "path": "candidate-freeze-v5.json",
+    "freeze_sha256": "c803c3b6c1b0464e78146a76feae1e39ab510af6dc58017532166964b474df47",
+    "candidate_commit": "37df1d129955827c2c7ead932ad2abb1987b12c8"
+  },
+  "reason": "Candidate v4 produced a stable matched-station exam for both demand methods, but inspection found the batch assembler enforced that invariant only for AequilibraE. Version 5 changes no model parameter or validation figure; it makes the existing paired-exam refusal cover ActivitySim too and publishes both methods in the county validation evidence.",
+  "result_visibility_before_supersession": {
+    "development_counties_opened": [
+      "09160"
+    ],
+    "holdout_opened": false
+  }
+}
