@@ -12,7 +12,9 @@ counts that agree. The worst pair is 2 vehicles a day against 33,723.
 """
 from __future__ import annotations
 
+import ast
 import csv
+import inspect
 import sys
 import unittest
 from pathlib import Path
@@ -23,6 +25,8 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from validate_screening_observed_counts import (
     DEFAULT_READY_MEDIAN_APE,
+    FeatureSpatialIndex,
+    candidate_project_db_for_geometry,
     choose_geometry_path,
     collect_station_candidates,
     resolve_shared_links,
@@ -114,8 +118,102 @@ class TheObservedExamDoesNotDependOnTheCandidateOutput(unittest.TestCase):
         )
         near = self.feature(10, -179.999, 1.0)
         near["lat"] = 10.0
-        candidates = collect_station_candidates(station, [near], None, {}, "PCE_tot")
-        self.assertEqual([candidate["link_id"] for candidate in candidates], [10])
+        features = [near]
+        brute = collect_station_candidates(station, features, None, {}, "PCE_tot")
+        indexed = collect_station_candidates(
+            station,
+            features,
+            None,
+            {},
+            "PCE_tot",
+            FeatureSpatialIndex(features),
+        )
+        self.assertEqual([candidate["link_id"] for candidate in brute], [10])
+        self.assertEqual(
+            [candidate["link_id"] for candidate in indexed],
+            [candidate["link_id"] for candidate in brute],
+        )
+
+    def test_spatial_prefilter_preserves_exact_regular_bbox_candidates(self) -> None:
+        features = [
+            self.feature(10, -121.0001, 100),
+            self.feature(20, -121.005, 200),
+            self.feature(30, -120.0, 300),
+        ]
+        brute = self.rank(features)
+        indexed = collect_station_candidates(
+            self.station(), features, None, {}, "PCE_tot", FeatureSpatialIndex(features)
+        )
+        self.assertEqual([candidate["link_id"] for candidate in indexed], brute)
+
+    def test_once_loaded_project_centroid_replaces_geometry_for_the_same_exact_name(self) -> None:
+        geometry = self.feature(10, -121.0005, 100)
+        project = self.feature(10, -121.0001, 100)
+        candidates = collect_station_candidates(
+            self.station(),
+            [geometry],
+            None,
+            {},
+            "PCE_tot",
+            FeatureSpatialIndex([geometry]),
+            [project],
+            FeatureSpatialIndex([project]),
+        )
+        self.assertEqual(candidates[0]["source"], "project_db")
+        self.assertEqual(candidates[0]["lon"], -121.0001)
+
+    def test_project_prefilter_keeps_the_old_exact_raw_name_boundary(self) -> None:
+        geometry = self.feature(10, -121.0005, 100)
+        project = self.feature(10, -121.0001, 100)
+        project["name"] = "MAIN STREET"
+        candidates = collect_station_candidates(
+            self.station(),
+            [geometry],
+            None,
+            {},
+            "PCE_tot",
+            FeatureSpatialIndex([geometry]),
+            [project],
+            FeatureSpatialIndex([project]),
+        )
+        self.assertEqual(candidates[0]["source"], "geometry")
+        self.assertEqual(candidates[0]["lon"], -121.0005)
+
+    def test_full_retained_geometry_does_not_repeat_the_same_search_in_sqlite(self) -> None:
+        project_db = Path("project_database.sqlite")
+        self.assertIsNone(
+            candidate_project_db_for_geometry(Path("retained_network.geojson"), project_db)
+        )
+        self.assertEqual(
+            candidate_project_db_for_geometry(Path("loaded_links.geojson"), project_db),
+            project_db,
+        )
+
+    def test_whole_validator_wires_the_spatial_index_into_candidate_collection(self) -> None:
+        from validate_screening_observed_counts import run_validation_bundle
+
+        tree = ast.parse(inspect.getsource(run_validation_bundle))
+        index_calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "FeatureSpatialIndex"
+        ]
+        candidate_calls = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "collect_station_candidates"
+        ]
+        self.assertEqual(len(index_calls), 2)
+        self.assertEqual(len(candidate_calls), 1)
+        self.assertGreaterEqual(len(candidate_calls[0].args), 8)
+        self.assertIsInstance(candidate_calls[0].args[5], ast.Name)
+        self.assertEqual(candidate_calls[0].args[5].id, "spatial_index")
+        self.assertEqual(candidate_calls[0].args[6].id, "project_features")
+        self.assertEqual(candidate_calls[0].args[7].id, "project_spatial_index")
 
 
 class AStationAloneOnItsLinkIsUntouched(unittest.TestCase):

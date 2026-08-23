@@ -522,7 +522,10 @@ def run_county(
                 "status": "aborted_before_result",
                 "error": {
                     "kind": "KeyboardInterrupt",
-                    "message": "Execution stopped before any assignment or validation result was produced.",
+                    "message": (
+                        "Execution stopped before a valid county result was assembled. Partial run "
+                        "artifacts may exist and are not study results."
+                    ),
                 },
                 "finished_at_utc": utc_now(),
                 "seconds": round(time.monotonic() - started, 1),

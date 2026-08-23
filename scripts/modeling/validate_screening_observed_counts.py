@@ -8,6 +8,7 @@ import math
 import os
 import sqlite3
 import sys
+from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -286,6 +287,60 @@ def bbox_contains(row: dict[str, Any], lon: float | None, lat: float | None) -> 
     return longitude_inside and min_lat <= lat <= max_lat
 
 
+class FeatureSpatialIndex:
+    """Grid prefilter for point-like link centroids; exact bbox checks still decide."""
+
+    CELL_DEGREES = 0.05
+
+    def __init__(self, features: list[dict[str, Any]]) -> None:
+        self.features = features
+        self.cells: dict[tuple[int, int], list[dict[str, Any]]] = defaultdict(list)
+        for feature in features:
+            lon = parse_float(feature.get("lon"))
+            lat = parse_float(feature.get("lat"))
+            if lon is None or lat is None:
+                continue
+            self.cells[self._cell(lon, lat)].append(feature)
+
+    @classmethod
+    def _cell(cls, lon: float, lat: float) -> tuple[int, int]:
+        wrapped_lon = ((lon + 180.0) % 360.0) - 180.0
+        return (
+            math.floor((wrapped_lon + 180.0) / cls.CELL_DEGREES),
+            math.floor((lat + 90.0) / cls.CELL_DEGREES),
+        )
+
+    def query(self, station: dict[str, Any]) -> list[dict[str, Any]]:
+        min_lon = parse_float(station.get("bbox_min_lon"))
+        min_lat = parse_float(station.get("bbox_min_lat"))
+        max_lon = parse_float(station.get("bbox_max_lon"))
+        max_lat = parse_float(station.get("bbox_max_lat"))
+        if None in {min_lon, min_lat, max_lon, max_lat}:
+            return self.features
+        lon_intervals = (
+            [(min_lon, max_lon)]
+            if min_lon <= max_lon
+            else [(min_lon, 180.0), (-180.0, max_lon)]
+        )
+        min_lat_cell = self._cell(0.0, min_lat)[1]
+        max_lat_cell = self._cell(0.0, max_lat)[1]
+        found: dict[int, dict[str, Any]] = {}
+        for interval_min, interval_max in lon_intervals:
+            min_lon_cell = self._cell(interval_min, 0.0)[0]
+            # 180 wraps to -180; use the last longitude cell explicitly.
+            max_lon_cell = (
+                math.ceil(360.0 / self.CELL_DEGREES) - 1
+                if interval_max == 180.0
+                else self._cell(interval_max, 0.0)[0]
+            )
+            for lon_cell in range(min_lon_cell, max_lon_cell + 1):
+                for lat_cell in range(min_lat_cell, max_lat_cell + 1):
+                    for feature in self.cells.get((lon_cell, lat_cell), ()):
+                        if bbox_contains(station, feature.get("lon"), feature.get("lat")):
+                            found[int(feature["link_id"])] = feature
+        return list(found.values())
+
+
 def load_volume_lookup(link_volumes_path: Path, override_field: str | None) -> tuple[str, dict[int, dict[str, Any]]]:
     with link_volumes_path.open(newline="") as handle:
         reader = csv.DictReader(handle)
@@ -405,6 +460,43 @@ def query_project_db_candidates(
     return features
 
 
+def load_project_db_features(
+    project_db: Path,
+    volume_lookup: dict[int, dict[str, Any]],
+    volume_field: str,
+) -> list[dict[str, Any]]:
+    """Load exact project centroids once instead of issuing one query per station."""
+    conn = connect_spatialite(project_db)
+    try:
+        rows = conn.execute(
+            """
+            SELECT link_id, COALESCE(name, ''), COALESCE(link_type, ''),
+                   X(Centroid(geometry)) AS cx, Y(Centroid(geometry)) AS cy,
+                   COALESCE(direction, 0)
+            FROM links
+            """
+        ).fetchall()
+    finally:
+        conn.close()
+    features = []
+    for link_id, name, link_type, lon, lat, direction in rows:
+        volume_row = volume_lookup.get(int(link_id), {})
+        volume = parse_float(volume_row.get(volume_field)) or 0.0
+        features.append(
+            {
+                "link_id": int(link_id),
+                "name": str(name or "").strip(),
+                "link_type": str(link_type or "").strip(),
+                "lon": float(lon) if lon is not None else None,
+                "lat": float(lat) if lat is not None else None,
+                "volume": round(volume),
+                "is_one_way": int(direction or 0) != 0,
+                "direction_recorded": True,
+            }
+        )
+    return features
+
+
 def station_sort_key(row: dict[str, Any]) -> tuple[int, float]:
     volume = parse_float(row.get("observed_volume")) or 0.0
     return (0 if volume > 0 else 1, -volume)
@@ -435,6 +527,9 @@ def collect_station_candidates(
     project_db: Path | None,
     volume_lookup: dict[int, dict[str, Any]],
     volume_field: str,
+    spatial_index: FeatureSpatialIndex | None = None,
+    project_features: list[dict[str, Any]] | None = None,
+    project_spatial_index: FeatureSpatialIndex | None = None,
 ) -> list[dict[str, Any]]:
     candidate_names = parse_candidate_names(station.get("candidate_model_names"))
     candidate_names_norm = {normalize_text(name) for name in candidate_names}
@@ -444,7 +539,12 @@ def collect_station_candidates(
 
     candidates: dict[int, dict[str, Any]] = {}
 
-    def ingest(source: str, rows: list[dict[str, Any]]) -> None:
+    def ingest(
+        source: str,
+        rows: list[dict[str, Any]],
+        *,
+        exact_candidate_names_only: bool = False,
+    ) -> None:
         for feature in rows:
             if not bbox_contains(station, feature["lon"], feature["lat"]):
                 continue
@@ -456,6 +556,8 @@ def collect_station_candidates(
             if not type_allowed:
                 continue
             exact_name_match = bool(candidate_names_norm and feature_name_norm in candidate_names_norm)
+            if exact_candidate_names_only and feature.get("name") not in candidate_names:
+                continue
             facility_name_match = bool(facility_name_norm and facility_name_norm in feature_name_norm)
             type_only_match = bool(allowed_link_types_norm)
             if not exact_name_match and not facility_name_match and not type_only_match:
@@ -487,7 +589,14 @@ def collect_station_candidates(
             ):
                 candidates[link_id] = candidate
 
-    ingest("geometry", features)
+    ingest("geometry", spatial_index.query(station) if spatial_index is not None else features)
+    if project_features is not None:
+        project_rows = (
+            project_spatial_index.query(station)
+            if project_spatial_index is not None
+            else project_features
+        )
+        ingest("project_db", project_rows, exact_candidate_names_only=True)
     if project_db is not None:
         ingest("project_db", query_project_db_candidates(project_db, station, volume_lookup, volume_field))
 
@@ -511,8 +620,20 @@ def find_best_model_link(
     project_db: Path | None,
     volume_lookup: dict[int, dict[str, Any]],
     volume_field: str,
+    spatial_index: FeatureSpatialIndex | None = None,
+    project_features: list[dict[str, Any]] | None = None,
+    project_spatial_index: FeatureSpatialIndex | None = None,
 ) -> dict[str, Any] | None:
-    candidates = collect_station_candidates(station, features, project_db, volume_lookup, volume_field)
+    candidates = collect_station_candidates(
+        station,
+        features,
+        project_db,
+        volume_lookup,
+        volume_field,
+        spatial_index,
+        project_features,
+        project_spatial_index,
+    )
     return candidates[0] if candidates else None
 
 
@@ -915,6 +1036,13 @@ def write_markdown_report(path: Path, summary: dict[str, Any], results: list[dic
     path.write_text("\n".join(lines) + "\n")
 
 
+def candidate_project_db_for_geometry(
+    geometry_path: Path, project_db_path: Path | None
+) -> Path | None:
+    """A full retained artifact needs no second, per-station database search."""
+    return None if geometry_path.name == "retained_network.geojson" else project_db_path
+
+
 def run_validation_bundle(
     *,
     run_output_dir: str | Path,
@@ -943,9 +1071,16 @@ def run_validation_bundle(
     project_db_path = discover_project_db(run_output_dir, str(project_db) if project_db is not None else None)
     volume_field, volume_lookup = load_volume_lookup(link_volumes_path, volume_field)
     features = build_feature_index(geometry_path, volume_lookup, volume_field)
+    spatial_index = FeatureSpatialIndex(features)
     direction_backfilled = backfill_direction_from_project_db(
         features, find_run_project_db(run_output_dir, project_db_path)
     )
+    project_features = (
+        load_project_db_features(project_db_path, volume_lookup, volume_field)
+        if geometry_path.name == "retained_network.geojson" and project_db_path is not None
+        else None
+    )
+    project_spatial_index = FeatureSpatialIndex(project_features) if project_features else None
 
     with counts_csv.open(newline="") as handle:
         reader = csv.DictReader(handle)
@@ -955,7 +1090,16 @@ def run_validation_bundle(
     candidate_audit: list[dict[str, Any]] = []
     for station in stations:
         observed_volume = parse_float(station.get("observed_volume"))
-        station_candidates = collect_station_candidates(station, features, project_db_path, volume_lookup, volume_field)
+        station_candidates = collect_station_candidates(
+            station,
+            features,
+            candidate_project_db_for_geometry(geometry_path, project_db_path),
+            volume_lookup,
+            volume_field,
+            spatial_index,
+            project_features,
+            project_spatial_index,
+        )
         best_model_link = station_candidates[0] if station_candidates else None
         result = {
             "station_id": station.get("station_id", ""),
