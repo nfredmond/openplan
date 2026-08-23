@@ -389,13 +389,19 @@ def run_county(
         write_json(status_path, status)
         raise
     except Exception as exc:  # noqa: BLE001 - every failed county needs a durable record
+        message = str(exc)
+        if len(message) > 1000:
+            message = message[:997] + "..."
+        trace = traceback.format_exc(limit=8)
+        if len(trace) > 4000:
+            trace = trace[:3997] + "..."
         status.update(
             {
                 "status": "failed",
                 "error": {
                     "kind": exc.__class__.__name__,
-                    "message": str(exc),
-                    "traceback": traceback.format_exc(limit=8),
+                    "message": message,
+                    "traceback": trace,
                 },
             }
         )

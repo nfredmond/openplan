@@ -20,6 +20,8 @@ from demand_conservation import (  # noqa: E402
     build_conservation_record,
     recompute_network_vmt,
 )
+from screening_metrics import METERS_PER_MILE, compute_network_daily_vmt  # noqa: E402
+import demand_conservation as conservation_module  # noqa: E402
 
 
 def accounting() -> dict:
@@ -134,6 +136,10 @@ class FullChainConservation(unittest.TestCase):
 
 
 class SerializedVmtRecalculation(unittest.TestCase):
+    def test_both_vmt_paths_use_the_exact_international_mile(self) -> None:
+        self.assertEqual(METERS_PER_MILE, 1609.344)
+        self.assertEqual(conservation_module.METERS_PER_MILE, METERS_PER_MILE)
+
     def test_reads_link_lengths_and_written_daily_volumes(self) -> None:
         with tempfile.TemporaryDirectory() as raw_dir:
             root = Path(raw_dir)
@@ -141,12 +147,32 @@ class SerializedVmtRecalculation(unittest.TestCase):
             volumes = root / "link_volumes.csv"
             with sqlite3.connect(database) as connection:
                 connection.execute("CREATE TABLE links (link_id INTEGER, distance REAL)")
-                connection.executemany("INSERT INTO links VALUES (?, ?)", [(1, 1609.344), (2, 804.672)])
+                connection.executemany(
+                    "INSERT INTO links VALUES (?, ?)",
+                    [(1, METERS_PER_MILE), (2, METERS_PER_MILE / 2)],
+                )
             with volumes.open("w", newline="") as handle:
                 writer = csv.DictWriter(handle, fieldnames=["link_id", "PCE_tot"])
                 writer.writeheader()
                 writer.writerows([{"link_id": 1, "PCE_tot": 100}, {"link_id": 2, "PCE_tot": 40}])
             self.assertAlmostEqual(recompute_network_vmt(database, volumes), 120.0)
+
+    def test_reported_and_serialized_vmt_share_one_exact_conversion(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            root = Path(raw_dir)
+            database = root / "project.sqlite"
+            volumes = root / "link_volumes.csv"
+            distance = 9972082431.773428 / 100000.0
+            with sqlite3.connect(database) as connection:
+                connection.execute("CREATE TABLE links (link_id INTEGER, distance REAL)")
+                connection.execute("INSERT INTO links VALUES (?, ?)", (1, distance))
+            with volumes.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=["link_id", "PCE_tot"])
+                writer.writeheader()
+                writer.writerow({"link_id": 1, "PCE_tot": 100000})
+            reported = round(compute_network_daily_vmt([100000], [distance]), 1)
+            recomputed = recompute_network_vmt(database, volumes)
+            self.assertLessEqual(abs(reported - recomputed), 0.05)
 
 
 if __name__ == "__main__":

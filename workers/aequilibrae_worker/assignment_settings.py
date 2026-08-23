@@ -328,9 +328,13 @@ def build_traffic_assignment(
     assignment.set_vdf_parameters(dict(settings["vdf_parameters"]))
     assignment.set_capacity_field(settings["capacity_field"])
     assignment.set_time_field(settings["time_field"])
+    # AequilibraE creates its LinearApproximation object here. Setting the
+    # limits before this call changes only the wrapper; construction then
+    # replaces them with the library defaults (0.001 and 1,000). The old order
+    # made a recorded 0.0005/3,000 profile inert while every digest stayed green.
+    assignment.set_algorithm(settings["algorithm"])
     assignment.max_iter = settings["max_iterations"]
     assignment.rgap_target = settings["target_gap"]
-    assignment.set_algorithm(settings["algorithm"])
     return assignment
 
 

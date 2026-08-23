@@ -18,6 +18,7 @@ coordinate is real DOT data — nothing synthesized.
 import argparse
 import csv
 import json
+import math
 import os
 import re
 import sqlite3
@@ -110,21 +111,53 @@ def load_points(geojson_path):
     return list(uniq.values())
 
 
+def spatial_search_bounds(
+    longitude: float, latitude: float, distance_m: float
+) -> list[tuple[float, float, float, float]]:
+    """Conservative WGS84 rectangles for an exact-distance network lookup."""
+    latitude_pad = distance_m * 1.1 / 110_574.0
+    cosine = abs(math.cos(math.radians(latitude)))
+    longitude_pad = distance_m * 1.1 / max(111_320.0 * cosine, 1.0)
+    min_lat = max(-90.0, latitude - latitude_pad)
+    max_lat = min(90.0, latitude + latitude_pad)
+    if abs(latitude) + latitude_pad >= 90.0 or longitude_pad >= 180.0:
+        return [(-180.0, min_lat, 180.0, max_lat)]
+    min_lon = longitude - longitude_pad
+    max_lon = longitude + longitude_pad
+    if min_lon < -180.0:
+        return [(-180.0, min_lat, max_lon, max_lat), (min_lon + 360.0, min_lat, 180.0, max_lat)]
+    if max_lon > 180.0:
+        return [(min_lon, min_lat, 180.0, max_lat), (-180.0, min_lat, max_lon - 360.0, max_lat)]
+    return [(min_lon, min_lat, max_lon, max_lat)]
+
+
 def route_link(conn, region, rte, lon, lat):
     """The route's OSM link at a count point: among nearby major links whose
     class is plausible for this route in this region, the highest road class,
     nearest-first. Returns (name, link_type, dist_m) or None. Class-then-distance
     ordering picks the route mainline over a closer lower-class cross-street."""
     allowed = ROUTE_CLASSES.get(region, {}).get(str(rte), set(MAJOR_TYPES))
+    bounds = spatial_search_bounds(float(lon), float(lat), NEAR_M)
+    index_clauses = []
+    index_args: list[float] = []
+    for _ in bounds:
+        index_clauses.append(
+            "links.ROWID IN (SELECT ROWID FROM SpatialIndex "
+            "WHERE f_table_name = 'links' AND f_geometry_column = 'geometry' "
+            "AND search_frame = BuildMbr(?, ?, ?, ?, 4326))"
+        )
+    for bound in bounds:
+        index_args.extend(bound)
     rows = conn.execute(
         f"""SELECT name, link_type,
                    Distance(geometry, MakePoint(?, ?, 4326), 1) AS dist_m
             FROM links
             WHERE link_type IN {MAJOR_TYPES}
               AND name IS NOT NULL AND name != ''
+              AND ({' OR '.join(index_clauses)})
               AND Distance(geometry, MakePoint(?, ?, 4326), 1) < ?
             ORDER BY dist_m ASC""",
-        (lon, lat, lon, lat, NEAR_M),
+        (lon, lat, *index_args, lon, lat, NEAR_M),
     ).fetchall()
     cand = [(n, t, d) for n, t, d in rows if t in allowed]
     if not cand:

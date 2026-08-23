@@ -208,7 +208,8 @@ class TheConvergenceSettingsStayDefensible(unittest.TestCase):
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
         }
         self.assertIn("require_local_assignment_engine", called_names)
-        self.assertIn("require_effective_assignment_cores", called_names)
+        self.assertIn("build_traffic_assignment", called_names)
+        self.assertNotIn("require_effective_assignment_cores", called_names)
         self.assertIn("assignment_iteration_count", called_names)
         self.assertIn("assignment_network_state", called_names)
         state_call = inspect.getsource(runtime.run_assignment)

@@ -6,6 +6,7 @@ import math
 
 from screening_metrics import (
     GEH_BASIS_NOTE,
+    METERS_PER_MILE,
     compute_internal_resident_vmt,
     compute_network_daily_vmt,
     geh_statistic,
@@ -61,8 +62,8 @@ def main() -> None:
     all_gateway = compute_internal_resident_vmt(od, zone_ids, lon, lat, areas, pops, gateway_zone_ids=[1, 2, 3])
     check("all-gateway case yields zero VMT without dividing by zero", approx(all_gateway["daily_vmt"], 0.0) and approx(all_gateway["avg_trip_miles"], 0.0))
 
-    check("network VMT one mile link", approx(compute_network_daily_vmt([100.0], [1609.34]), 100.0))
-    check("network VMT skips zero-volume links", approx(compute_network_daily_vmt([0.0, 50.0], [5000.0, 3218.68]), 100.0))
+    check("network VMT one mile link", approx(compute_network_daily_vmt([100.0], [METERS_PER_MILE]), 100.0))
+    check("network VMT skips zero-volume links", approx(compute_network_daily_vmt([0.0, 50.0], [5000.0, 2 * METERS_PER_MILE]), 100.0))
 
     # obs [100, 200], mod [110, 190]: rmse = 10, mean obs = 150 -> 6.6667%
     prmse = percent_rmse([100.0, 200.0], [110.0, 190.0])

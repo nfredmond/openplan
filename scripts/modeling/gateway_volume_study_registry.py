@@ -43,6 +43,7 @@ CANDIDATE_IMPLEMENTATION_FILES = (
     "scripts/modeling/run_screening_model.py",
     "scripts/modeling/screening_runtime.py",
     "workers/aequilibrae_worker/gateways.py",
+    "workers/aequilibrae_worker/assignment_settings.py",
 )
 USDA_RUCC_URL = "https://www.ers.usda.gov/media/5768/2023-rural-urban-continuum-codes.csv?v=30758"
 USDA_RUCC_VINTAGE = "2023 RUCC, updated 2024-01-22"

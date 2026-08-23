@@ -9,7 +9,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Mapping
 
-METERS_PER_MILE = 1609.344
+from screening_metrics import METERS_PER_MILE
 SCHEMA_VERSION = "openplan.demand-conservation.v1"
 
 

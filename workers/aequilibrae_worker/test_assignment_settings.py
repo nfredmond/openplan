@@ -71,6 +71,15 @@ class ClampedCoreAssignment(FakeAssignment):
         self.cores = 1
 
 
+class ResettingAlgorithmAssignment(FakeAssignment):
+    """Faithful probe for AequilibraE's algorithm-construction side effect."""
+
+    def set_algorithm(self, value):
+        super().set_algorithm(value)
+        self.max_iter = 1000
+        self.rgap_target = 0.001
+
+
 class AssignmentProfileTests(unittest.TestCase):
     def setUp(self) -> None:
         self.engine_version = (
@@ -138,6 +147,16 @@ class AssignmentProfileTests(unittest.TestCase):
         self.assertEqual(assignment.max_iter, 3000)
         self.assertEqual(assignment.rgap_target, 0.0005)
         self.assertEqual(assignment.algorithm, "bfw")
+
+    def test_algorithm_construction_cannot_reset_the_registered_limits(self) -> None:
+        profile = resolve_assignment_profile({})
+        assignment = build_traffic_assignment(
+            ResettingAlgorithmAssignment,
+            [FakeTrafficClass()],
+            profile=profile,
+        )
+        self.assertEqual(assignment.max_iter, 3000)
+        self.assertEqual(assignment.rgap_target, 0.0005)
 
     def test_builder_refuses_an_unknown_or_different_local_engine(self) -> None:
         profile = resolve_assignment_profile({})

@@ -1,12 +1,14 @@
 {
   "county_fips": "09160",
+  "error": {
+    "kind": "DemandConservationError",
+    "message": "Demand conservation failed: reported_vmt_matches_serialized_links",
+    "detail_record": "../../../pre-result-failure-v2.json"
+  },
+  "finished_at_utc": "2026-08-23T07:07:55.039599+00:00",
   "half": "development",
   "schema_version": "openplan.gateway-volume-study-county.v1",
-  "started_at_utc": "2026-08-23T06:22:32.641094+00:00",
-  "finished_at_utc": "2026-08-23T06:32:27.868587+00:00",
-  "status": "aborted_before_result",
-  "error": {
-    "kind": "PreResultProtocolCorrection",
-    "message": "Stopped during the second count crosswalk, before demand, assignment, validation, or candidate results, because the frozen driver would recompute identical evidence eight times per county."
-  }
+  "seconds": 1431.1,
+  "started_at_utc": "2026-08-23T06:44:03.949638+00:00",
+  "status": "failed_before_validation"
 }

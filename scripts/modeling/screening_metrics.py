@@ -11,7 +11,10 @@ import math
 from typing import Any, Iterable, Mapping, Sequence
 
 EARTH_RADIUS_MILES = 3958.7613
-METERS_PER_MILE = 1609.34
+# International mile, exact. Shared with the serialized-artifact conservation
+# reread: two rounded variants differed by 2.5 ppm, which becomes 15 VMT on a
+# six-million-VMT network and correctly tripped the fail-closed accounting gate.
+METERS_PER_MILE = 1609.344
 # Great-circle -> network distance adjustment used by the internal-resident VMT
 # estimator. A screening constant, not a calibrated per-place value: straight-line
 # zone-to-zone distance understates travel on a real network, and 1.3 is the

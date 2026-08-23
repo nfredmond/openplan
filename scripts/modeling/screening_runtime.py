@@ -174,6 +174,7 @@ if str(_WORKER_DIR) not in sys.path:
     sys.path.insert(0, str(_WORKER_DIR))
 
 from gateway_counts import attach_passthrough_ceilings  # noqa: E402
+from assignment_settings import build_traffic_assignment  # noqa: E402
 from gateways import (  # noqa: E402
     GATEWAY_PASSTHROUGH_SHARE,
     build_external_gateway_matrix as worker_build_external_gateway_matrix,
@@ -3163,18 +3164,11 @@ def run_assignment(
         time_field=time_field,
     )
     require_local_assignment_engine(applied_assignment_profile)
-    assignment = TrafficAssignment()
-    traffic_class.set_pce(applied_assignment_profile["class_pce"])
-    assignment.add_class(traffic_class)
-    assignment.set_cores(applied_assignment_profile["cores"])
-    require_effective_assignment_cores(assignment, applied_assignment_profile["cores"])
-    assignment.set_vdf(applied_assignment_profile["vdf"])
-    assignment.set_vdf_parameters(dict(applied_assignment_profile["vdf_parameters"]))
-    assignment.set_capacity_field(applied_assignment_profile["capacity_field"])
-    assignment.set_time_field(applied_assignment_profile["time_field"])
-    assignment.max_iter = applied_assignment_profile["max_iterations"]
-    assignment.rgap_target = applied_assignment_profile["target_gap"]
-    assignment.set_algorithm(applied_assignment_profile["algorithm"])
+    assignment = build_traffic_assignment(
+        TrafficAssignment,
+        (traffic_class,),
+        profile=applied_assignment_profile,
+    )
     network_state_record, network_state_digest_value = assignment_network_state(
         assignment,
         graph,

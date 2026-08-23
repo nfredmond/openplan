@@ -1,0 +1,40 @@
+{
+  "schema_version": "openplan.gateway-volume-study-pre-result-failure.v1",
+  "county_fips": "09160",
+  "study_half": "development",
+  "started_at_utc": "2026-08-23T06:44:03.949638+00:00",
+  "stopped_at_utc": "2026-08-23T07:07:55.039599+00:00",
+  "candidate_freeze_sha256": "cb87d6b55ebc6121dfa75729ff4bd62128723a6b3487ac942cd03090b7ae5186",
+  "candidate_commit": "0c8c594a65c0e6f0307299e817172a713405eaaa",
+  "stage": "conservation_gate_before_validation",
+  "result_visibility": {
+    "assignment_completed": true,
+    "conservation_passed": false,
+    "validation_run": false,
+    "baseline_accuracy_result_read": false,
+    "candidate_run_started": false,
+    "holdout_opened": false
+  },
+  "accounting_defect": {
+    "failed_check": "reported_vmt_matches_serialized_links",
+    "reported_vmt_reconstructed": 6196380.2,
+    "serialized_link_vmt": 6196364.749720049,
+    "difference_vmt": 15.450279951,
+    "cause": "The reporting path divided by 1609.34 metres per mile while the independent serialized-artifact path divided by the exact 1609.344."
+  },
+  "assignment_profile_defect": {
+    "registered_target_gap": 0.0005,
+    "effective_engine_target_gap": 0.001,
+    "registered_max_iterations": 3000,
+    "effective_engine_max_iterations": 1000,
+    "cause": "Both drivers set target and ceiling before set_algorithm. AequilibraE creates its LinearApproximation solver during set_algorithm and replaced those earlier wrapper values with library defaults."
+  },
+  "crosswalk_equivalence_proof": {
+    "prior_rows_including_header": 9063,
+    "indexed_rows_including_header": 9063,
+    "prior_sha256": "4af6bbc7d170bcd75a6e4837e65476be88b9a35e65198612200776e36f90232f",
+    "indexed_sha256": "4af6bbc7d170bcd75a6e4837e65476be88b9a35e65198612200776e36f90232f",
+    "indexed_elapsed_seconds": 2.29,
+    "method": "SpatiaLite RTree bounding-box prefilter followed by the unchanged exact 160-metre geodesic distance and route/class selection."
+  }
+}
