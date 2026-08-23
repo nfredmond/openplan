@@ -1,0 +1,20 @@
+{
+  "schema_version": "openplan.gateway-volume-study-candidate-supersession.v1",
+  "superseded_freeze": {
+    "path": "candidate-freeze-v2.json",
+    "freeze_sha256": "cb87d6b55ebc6121dfa75729ff4bd62128723a6b3487ac942cd03090b7ae5186",
+    "candidate_commit": "0c8c594a65c0e6f0307299e817172a713405eaaa"
+  },
+  "active_freeze": {
+    "path": "candidate-freeze-v3.json",
+    "freeze_sha256": "641db1ec31ca0863922325aad43f8d5b350085e4e8126a37d7dd9519b4c383e2",
+    "candidate_commit": "3865580aa6ed00bd03332b8961970a694c8201e5"
+  },
+  "reason": "Candidate v2 reached the fail-closed conservation gate before validation and exposed two shared accounting defects: inconsistent metre-per-mile constants and assignment limits overwritten by AequilibraE solver construction. Version 3 fixes both, centralizes assignment construction for the CLI and worker, and adds an indexed count prefilter proven byte-identical to v2's completed crosswalk.",
+  "result_visibility_before_supersession": {
+    "baseline_accuracy_result_read": false,
+    "candidate_run_started": false,
+    "holdout_opened": false
+  },
+  "detail_record": "pre-result-failure-v2.json"
+}
