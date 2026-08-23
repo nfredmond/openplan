@@ -1,0 +1,19 @@
+{
+  "candidate_commit": "aab061dba5f4f7b04b54b223f7f3a801362bd685",
+  "candidate_protocol_sha256": "d86d16ee369bddbb6bee7750d14f340ebf0b929a08283ec5f63f767c74a449c7",
+  "freeze_sha256": "0d719a4f4b320602f80cc5de602ba8003d69e00a19dcd5e88b4991451b438132",
+  "implementation_hashes": {
+    "scripts/modeling/auto_counts.py": "3b4ff88196855b218cbe2d2635fa4b00dcf14fa166e2cf7e4a84f27b8c2bd083",
+    "scripts/modeling/build_expanded_aadt_counts.py": "79612a3e7118e4db43b7f7a06f36b8f9dd49a7311206c469edcc024a04b6e2b6",
+    "scripts/modeling/count_sources.py": "c9d885c80e0b97ce5fd1eba905ceea5da8b24d43a506fb74930773aa2ea47820",
+    "scripts/modeling/demand_conservation.py": "110e9166fefdf8d192c109d1d1b98cf186d09f8ae98bc3b10610a10493a8644f",
+    "scripts/modeling/gateway_counts.py": "a989c14d659145df998e28bedca2562765750acc7c3a716d096cd62f9b49cc90",
+    "scripts/modeling/hpms_count_source.py": "66e1d29e7919d204037f91d17c25bf18a91322606943af973c478862709d5daf",
+    "scripts/modeling/run_gateway_volume_study.py": "02b1e029ce34c761e27573d38bd7e2f426de58edf36f279ad774a0dcedcdf231",
+    "scripts/modeling/run_screening_model.py": "e91a9e149f8bec3fbd188032b9466d67be49e3b4d0dd36b07941ba8d0ae6284a",
+    "scripts/modeling/screening_runtime.py": "ee7a23e5aab0047ddf686d5799e6909d03f42c5769c1e7527a2f8222c1c35578",
+    "workers/aequilibrae_worker/gateways.py": "6463795f6cb3ad3feaf2cb7276f3906e65fa73fbaa9fb4d8ea881a7f57b30d7a"
+  },
+  "registry_payload_sha256": "f5cd0d9e4722c0f98b0de4585130f0f47e8e9cd124ec82070baff3cdc30a960b",
+  "schema_version": "openplan.gateway-volume-candidate-freeze.v1"
+}
