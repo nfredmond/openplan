@@ -35,6 +35,7 @@ import queue
 import shutil
 import signal
 import subprocess
+import sys
 import threading
 import time
 import tkinter as tk
@@ -60,7 +61,12 @@ DEV_URL = f"http://localhost:{DEV_PORT}"
 
 CHROME = shutil.which("google-chrome") or shutil.which("google-chrome-stable")
 
-OK, WARN, BAD, IDLE = "#1a7f37", "#b8860b", "#b42318", "#6b7280"
+# Status colours live in `check_status`, beside the rule that chooses between
+# them, so the verdict logic can be tested without importing a GUI.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from check_status import BAD, IDLE, OK, WARN, summarize_check_conclusions  # noqa: E402
+
+_ = (WARN,)  # re-exported for the rest of the panel
 
 
 # ---------------------------------------------------------------------------
@@ -220,44 +226,7 @@ def automated_checks() -> tuple[str, str]:
             continue  # still running: not an answer yet
         by_workflow.setdefault(name, []).append(conclusion)
 
-    latest = {name: results[0] for name, results in by_workflow.items()}
-    streak: dict[str, int] = {}
-    for name, results in by_workflow.items():
-        count = 0
-        for conclusion in results:
-            if conclusion != "failure":
-                break
-            count += 1
-        streak[name] = count
-
-    if not latest:
-        return IDLE, "cannot check — no finished runs reported yet"
-
-    # "skipped" is a real answer for Production Health: there is no hosted
-    # OpenPlan to poll, so it skips itself on purpose.
-    broken = [n for n, c in latest.items() if c == "failure"]
-    if broken:
-        parts = []
-        for name in sorted(broken):
-            failed = streak.get(name, 1)
-            # The sample is the last 40 runs across ALL workflows, so a nightly
-            # gets only a handful of slots in it. When every run we can see has
-            # failed, the true streak is longer than the number — say "at least"
-            # rather than printing a figure that understates how long something
-            # has been broken. This row exists because a red check was ignored
-            # for ten days; a reassuringly small number here would be its own
-            # version of that.
-            seen_all = failed >= len(by_workflow[name])
-            count = f"at least {failed}" if seen_all else str(failed)
-            parts.append(f"{name} ({count} run{'s' if failed != 1 else ''} in a row)")
-        return BAD, "FAILING: " + ", ".join(parts)
-
-    passing = [n for n, c in latest.items() if c == "success"]
-    skipped = [n for n, c in latest.items() if c == "skipped"]
-    if not passing:
-        return IDLE, "nothing has actually run — every check was skipped"
-    tail = f", {len(skipped)} skipped on purpose" if skipped else ""
-    return OK, f"all {len(passing)} checks passing{tail}"
+    return summarize_check_conclusions(by_workflow)
 
 
 # ---------------------------------------------------------------------------

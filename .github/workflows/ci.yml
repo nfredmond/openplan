@@ -124,6 +124,36 @@ jobs:
           echo "ran $count suites"
           test "$count" -ge 40 || { echo "expected at least 40 suites, found $count — the glob broke"; exit 1; }
 
+  ops-script-tests:
+    name: ops scripts (python unit tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./openplan/scripts/ops/tests
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # STDLIB ONLY, deliberately. The control panel itself imports tkinter,
+      # which is why the rule these suites exercise was moved into
+      # `scripts/ops/check_status.py` — a module with no GUI import. A test that
+      # needed a display would be a test that never ran here.
+      - name: Unit tests
+        run: |
+          set -u
+          count=0
+          for f in test_*.py; do
+            echo "=== $f"
+            python "$f" || exit 1
+            count=$((count + 1))
+          done
+          echo "ran $count suites"
+          test "$count" -ge 1 || { echo "expected at least 1 suite, found $count — the glob broke"; exit 1; }
+
   worker-tests:
     name: worker (python unit tests)
     runs-on: ubuntu-latest

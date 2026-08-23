@@ -19,7 +19,31 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**No migrations.** Pull and deploy.
+**Six migrations. Run them before the new code is serving traffic.**
+
+```
+npm exec -- supabase migration up --linked
+```
+
+- `…000019` **measure_period_reserve** — the last gap in a public fund's
+  arithmetic: what an ordinance holds back before anything is apportioned.
+  Without it the measure-fund reserve feature errors against a missing table.
+- `…000001` **workspace_gis_workspace_binding** (2026-08-16) — **security.**
+  Postgres checks foreign keys with table-owner rights, so a member of one
+  workspace could attach version, feature and reference rows to another
+  workspace's GIS layer. Composite keys close it. Apply this one promptly.
+- `…000001` **kb_search_chunks_extraction_source** (2026-08-17) — carries each
+  retrieved passage's extraction source, so text that was read by OCR is
+  labelled as such wherever it is quoted into a draft.
+- `…000002` **cron_job_heartbeats** — each scheduled job stamps a heartbeat when
+  it succeeds, so My Work can say whether reminders are actually running instead
+  of inferring it from a secret being set.
+- `…000001` **run_artifacts_markdown** (2026-08-20) — adds `text/markdown` to the
+  private run-artifacts bucket's allowlist; without it agreement reports register
+  as local-only and the run page cannot retrieve them.
+- `…000001` **engagement_crash_corroboration** (2026-08-21) — the function behind
+  the engagement↔safety panel: what the crash record says about the places
+  residents mapped.
 
 ### Traffic models: re-run anything you rely on
 

@@ -201,6 +201,63 @@ describe("released migration ordering", () => {
     expect(newFiles.length + latest.migrationsAtRelease).toBe(files.length);
   });
 
+  it("the CHANGELOG's Unreleased section names every migration landed since the newest tag", () => {
+    /**
+     * THE HALF THE CHECK BELOW CANNOT SEE.
+     *
+     * That one verifies every migration a section REFERENCES exists. It cannot
+     * notice a migration nobody referenced — and on 2026-08-22 the Unreleased
+     * section read "**No migrations.** Pull and deploy." while six had landed
+     * since v0.20.0, one of them a cross-workspace security fix. The
+     * CHANGELOG's stated job is to lead with required migrations; an operator
+     * following it would have deployed code against a schema missing all six,
+     * and the measure-fund reserve feature errors against a table that is not
+     * there.
+     *
+     * Matched on the migration's SLUG, not the six-digit shorthand the section
+     * below uses: four of those six migrations are `…000001` on different
+     * dates, so a suffix match would accept the wrong one and call it covered.
+     *
+     * Applied to UNRELEASED ONLY, deliberately. Requiring it of already-tagged
+     * sections would demand editing dated records to say something they did not
+     * say when written. Unreleased is the live section; by the time it is
+     * tagged it is already complete.
+     */
+    const changelog = readFileSync(CHANGELOG_PATH, "utf8");
+    const start = changelog.search(/^## Unreleased\b/m);
+    expect(start, 'CHANGELOG.md must carry a "## Unreleased" section').toBeGreaterThan(-1);
+
+    const rest = changelog.slice(start);
+    const nextHeading = rest.slice(2).search(/^## /m);
+    const section = nextHeading === -1 ? rest : rest.slice(0, nextHeading + 2);
+
+    const sinceRelease = files.filter((file) => version(file) > version(latest.lastMigration));
+
+    if (sinceRelease.length === 0) {
+      // Nothing has landed, so the section may say so — but it must not claim
+      // migrations that do not exist either.
+      return;
+    }
+
+    expect(
+      /no migrations/i.test(section),
+      `The Unreleased section says there are no migrations, but ${sinceRelease.length} have landed ` +
+        `since ${latest.tag}: ${sinceRelease.join(", ")}`
+    ).toBe(false);
+
+    const missing = sinceRelease.filter((file) => {
+      const slug = file.replace(/^\d+_/, "").replace(/\.sql$/, "");
+      return !section.includes(slug);
+    });
+
+    expect(
+      missing,
+      "Every migration landed since the newest tag must be named in the CHANGELOG's Unreleased " +
+        "section — that section is what an operator reads to know what to run before deploying. " +
+        `Missing: ${missing.join(", ")}`
+    ).toEqual([]);
+  });
+
   it("the CHANGELOG's newest release section exists and its migration references resolve", () => {
     const changelog = readFileSync(CHANGELOG_PATH, "utf8");
     const heading = new RegExp(`^## ${latest.tag.replace(/\./g, "\\.")}\\b`, "m");
