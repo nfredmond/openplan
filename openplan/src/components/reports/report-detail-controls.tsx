@@ -15,6 +15,8 @@ import {
   type ReportSourceReviewPosture,
 } from "@/lib/reports/source-review-posture";
 import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/reports/dual-demand-agreement";
+import type { AerialOrthoCatalog } from "@/lib/aerial/ortho-map-layers";
+import type { ReportAerialOrthoSelection } from "@/lib/reports/aerial-ortho-evidence";
 
 /** A succeeded worker model run the report may cite as typed evidence. */
 export type ReportModelRunOption = {
@@ -65,6 +67,8 @@ export function ReportDetailControls({
   citedModelRunIds = [],
   agreementEvidence = [],
   agreementCorridorSelections = [],
+  aerialOrthoCatalog,
+  aerialOrthoSelections = [],
 }: {
   report: {
     id: string;
@@ -97,6 +101,8 @@ export function ReportDetailControls({
   citedModelRunIds?: string[];
   agreementEvidence?: ReportAgreementEvidence[];
   agreementCorridorSelections?: AgreementCorridorSelection[];
+  aerialOrthoCatalog?: AerialOrthoCatalog;
+  aerialOrthoSelections?: ReportAerialOrthoSelection[];
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(report.title);
@@ -105,6 +111,9 @@ export function ReportDetailControls({
   const [selectedModelRunIds, setSelectedModelRunIds] = useState<string[]>(citedModelRunIds);
   const [selectedAgreementCorridors, setSelectedAgreementCorridors] =
     useState<AgreementCorridorSelection[]>(agreementCorridorSelections);
+  const [selectedAerialCustodyId, setSelectedAerialCustodyId] = useState<string | null>(
+    aerialOrthoSelections[0]?.custodyId ?? null,
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   // The generate route has accepted "pdf" since the module shipped; the UI
@@ -137,6 +146,8 @@ export function ReportDetailControls({
         finalAgreementSelections,
         agreementCorridorSelections,
       );
+      const aerialOrthoSelectionChanged =
+        selectedAerialCustodyId !== (aerialOrthoSelections[0]?.custodyId ?? null);
 
       const response = await fetch(`/api/reports/${report.id}`, {
         method: "PATCH",
@@ -150,6 +161,9 @@ export function ReportDetailControls({
           ...(modelRunSelectionChanged ? { modelRunIds: selectedModelRunIds } : {}),
           ...(agreementSelectionChanged || modelRunSelectionChanged
             ? { agreementCorridorSelections: finalAgreementSelections }
+            : {}),
+          ...(aerialOrthoSelectionChanged
+            ? { aerialOrthoSelections: selectedAerialCustodyId ? [{ custodyId: selectedAerialCustodyId }] : [] }
             : {}),
         }),
       });
@@ -427,6 +441,40 @@ export function ReportDetailControls({
                 </section>
               );
             })}
+          </div>
+        ) : null}
+
+        {aerialOrthoCatalog ? (
+          <div className="space-y-3 rounded-xl border border-border/70 bg-background/70 p-4" data-testid="report-aerial-ortho-panel">
+            <div>
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Held orthophoto evidence</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Choose one held preview only when it belongs in this report. Nothing is selected automatically, and generation does not publish the image publicly.
+              </p>
+            </div>
+            <label className="flex cursor-pointer gap-3 rounded-lg border border-border/60 px-3 py-2">
+              <input type="radio" name="aerial-ortho" checked={selectedAerialCustodyId === null} onChange={() => setSelectedAerialCustodyId(null)} />
+              <span className="text-xs"><span className="block font-semibold text-foreground">Do not include aerial imagery</span><span className="text-muted-foreground">The generated report will contain no orthophoto preview.</span></span>
+            </label>
+            {aerialOrthoCatalog.layers.map((layer) => (
+              <label key={layer.custodyId} className="flex cursor-pointer gap-3 rounded-lg border border-border/60 px-3 py-2">
+                <input type="radio" name="aerial-ortho" checked={selectedAerialCustodyId === layer.custodyId} onChange={() => setSelectedAerialCustodyId(layer.custodyId)} />
+                <span className="min-w-0 text-xs">
+                  <span className="block font-semibold text-foreground">{layer.missionTitle}</span>
+                  <span className="block text-muted-foreground">
+                    {layer.collectedAt ? `Captured ${new Date(layer.collectedAt).toLocaleDateString()} · ` : "Capture date not recorded · "}
+                    {layer.pixelSizeM ? `${layer.pixelSizeM.toLocaleString()} m/pixel · ` : "Resolution not recorded · "}
+                    SHA-256 {layer.checksumSha256.slice(0, 12)}…
+                  </span>
+                </span>
+              </label>
+            ))}
+            {aerialOrthoCatalog.state !== "verified" ? (
+              <p className="rounded-lg border border-amber-300/70 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+                {aerialOrthoCatalog.notes[0] ?? "No verified held preview is available for this project."}
+              </p>
+            ) : null}
+            <p className="text-xs leading-relaxed text-muted-foreground">Orientation only; not survey-grade and not evidence of property boundaries or legal location.</p>
           </div>
         ) : null}
 

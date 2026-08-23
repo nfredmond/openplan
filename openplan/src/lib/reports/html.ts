@@ -42,6 +42,7 @@ import {
 // runtime (narrative-drafts imports compactModelRunKpiLine from here).
 import type { AcceptedSectionNarrative } from "@/lib/reports/narrative-drafts";
 import { formatMoney } from "@/lib/money/format";
+import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 
 /**
  * The disclosure label rendered over every included AI narrative block.
@@ -173,6 +174,10 @@ export type ReportGenerationData = {
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   dualDemandAgreementSnapshotsV1?: DualDemandAgreementSnapshotV1[];
+  aerialOrthoPreview?: {
+    snapshot: FrozenReportAerialOrthoSnapshotV1;
+    imageSrc: string;
+  } | null;
   citedCountyRuns?: ReportCitedCountyRun[];
   /**
    * The project's geometry, for the "Where this project is" figure.
@@ -1162,6 +1167,30 @@ function dualDemandAgreementMarkup(snapshots: readonly DualDemandAgreementSnapsh
   </section>`;
 }
 
+function aerialOrthoMarkup(preview: ReportGenerationData["aerialOrthoPreview"]): string {
+  if (!preview) return "";
+  const { snapshot } = preview;
+  const [west, south, east, north] = snapshot.bounds;
+  return `<section id="held-orthophoto-evidence">
+    <h2 class="section-title">Held orthophoto evidence</h2>
+    <figure class="geo-figure">
+      <img src="${esc(preview.imageSrc)}" alt="Frozen orthophoto preview from ${esc(snapshot.missionTitle)}" style="display:block;width:100%;height:auto;max-height:620px;object-fit:contain;border-radius:18px;background:#eef2f3" />
+      <figcaption><p><strong>${esc(snapshot.missionTitle)}</strong></p><p>${esc(snapshot.caveat)}</p></figcaption>
+    </figure>
+    <dl class="facts" style="margin-top:16px">
+      <div><dt>Mission</dt><dd>${esc(snapshot.missionTitle)}</dd></div>
+      <div><dt>Captured</dt><dd>${esc(snapshot.collectedAt ? formatDateTime(snapshot.collectedAt) : "Not recorded")}</dd></div>
+      <div><dt>Held</dt><dd>${esc(snapshot.heldAt ? formatDateTime(snapshot.heldAt) : "Not recorded")}</dd></div>
+      <div><dt>Frozen into packet</dt><dd>${esc(formatDateTime(snapshot.frozenAt))}</dd></div>
+      <div><dt>Resolution</dt><dd>${snapshot.pixelSizeM === null ? "Not recorded" : `${esc(snapshot.pixelSizeM.toLocaleString())} m/pixel`}</dd></div>
+      <div><dt>Map placement</dt><dd>${esc(`${west}, ${south}, ${east}, ${north}`)}</dd></div>
+      <div><dt>Native CRS</dt><dd>${esc(snapshot.nativeCrs ?? "Not recorded")}</dd></div>
+      <div><dt>Source SHA-256</dt><dd style="overflow-wrap:anywhere;font-size:12px">${esc(snapshot.sourceChecksumSha256)}</dd></div>
+      <div><dt>Frozen SHA-256</dt><dd style="overflow-wrap:anywhere;font-size:12px">${esc(snapshot.frozenChecksumSha256)}</dd></div>
+    </dl>
+  </section>`;
+}
+
 function scenarioBasisMarkup(data: ReportGenerationData): string {
   if (data.scenarioSetLinks.length === 0) {
     return "";
@@ -1645,6 +1674,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
       ${evidenceChainMarkup(evidenceChainSummary)}
       ${modelingEvidenceMarkup(data.modelingEvidence)}
       ${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}
+      ${aerialOrthoMarkup(data.aerialOrthoPreview)}
       ${stageGateProvenanceMarkup(data)}
       ${projectRecordsProvenanceMarkup(data)}
       ${scenarioBasisMarkup(data)}

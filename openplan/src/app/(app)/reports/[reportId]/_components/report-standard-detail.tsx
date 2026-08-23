@@ -14,6 +14,8 @@ import {
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import type { ProjectFundingSnapshot } from "@/lib/projects/funding";
 import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/reports/dual-demand-agreement";
+import type { AerialOrthoCatalog } from "@/lib/aerial/ortho-map-layers";
+import type { ReportAerialOrthoSelection } from "@/lib/reports/aerial-ortho-evidence";
 import {
   formatDateTime,
   formatReportStatusLabel,
@@ -96,6 +98,8 @@ type ReportStandardDetailProps = {
   citedModelRunIds?: string[];
   agreementEvidence?: ReportAgreementEvidence[];
   agreementCorridorSelections?: AgreementCorridorSelection[];
+  aerialOrthoCatalog?: AerialOrthoCatalog;
+  aerialOrthoSelections?: ReportAerialOrthoSelection[];
   latestArtifact: ReportArtifact | null;
   fundingSnapshot: ProjectFundingSnapshot | null;
   operationsSummary: WorkspaceOperationsSummary;
@@ -128,6 +132,8 @@ export function ReportStandardDetail({
   citedModelRunIds = [],
   agreementEvidence = [],
   agreementCorridorSelections = [],
+  aerialOrthoCatalog,
+  aerialOrthoSelections = [],
   latestArtifact,
   fundingSnapshot,
   operationsSummary,
@@ -347,6 +353,8 @@ export function ReportStandardDetail({
             citedModelRunIds={citedModelRunIds}
             agreementEvidence={agreementEvidence}
             agreementCorridorSelections={agreementCorridorSelections}
+            aerialOrthoCatalog={aerialOrthoCatalog}
+            aerialOrthoSelections={aerialOrthoSelections}
           />
         </div>
       </header>

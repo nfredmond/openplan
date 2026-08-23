@@ -41,6 +41,7 @@ import {
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { buildReportGenerationReadiness } from "@/lib/reports/generation-readiness";
 import { loadReportDualDemandAgreementPanel } from "@/lib/reports/dual-demand-agreement";
+import { loadReportAerialOrthoCatalog, readReportAerialOrthoSelections } from "@/lib/reports/aerial-ortho-evidence-server";
 import { buildTypedRunCitations, loadCiteableModelRuns, loadReportRunCitationLinks, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
@@ -374,9 +375,7 @@ export default async function ReportDetailPage({ params, searchParams }: RoutePa
         .maybeSingle()
     : { data: null, error: null };
 
-  const runMap = new Map(
-    (runsResult.data ?? []).map((run) => [run.id, run])
-  );
+  const runMap = new Map((runsResult.data ?? []).map((run) => [run.id, run]));
   const runs = reportRunLinks
     .map((link) => (link.run_id ? runMap.get(link.run_id) ?? null : null))
     .filter((item): item is LinkedRunRow => Boolean(item));
@@ -384,6 +383,7 @@ export default async function ReportDetailPage({ params, searchParams }: RoutePa
   const typedRunCitations = buildTypedRunCitations(reportRunLinks, citedModelRuns, citedCountyRuns);
   const citedModelRunIdsInOrder = typedRunCitations.filter((citation) => citation.kind === "model").map((citation) => citation.runId);
   const agreementPanel = project ? await loadReportDualDemandAgreementPanel({ supabase, modelRunIds: citedModelRunIdsInOrder, workspaceId: report.workspace_id, projectId: project.id, reportMetadata: report.metadata_json }) : { evidence: [], selections: [] };
+  const aerialOrthoCatalog = project ? await loadReportAerialOrthoCatalog({ supabase, workspaceId: report.workspace_id, projectId: project.id }) : { state: "absent" as const, layers: [], notes: [] };
 
   const latestArtifact = ((artifacts ?? []) as ReportArtifact[])[0] ?? null;
   const latestHtml = asHtmlContent(latestArtifact?.metadata_json);
@@ -1322,6 +1322,7 @@ export default async function ReportDetailPage({ params, searchParams }: RoutePa
       citeableModelRuns={citeableModelRuns}
       citedModelRunIds={citedModelRunIdsInOrder}
       agreementEvidence={agreementPanel.evidence} agreementCorridorSelections={agreementPanel.selections}
+      aerialOrthoCatalog={aerialOrthoCatalog} aerialOrthoSelections={readReportAerialOrthoSelections(report.metadata_json)}
       narrativeDraftPanelProps={narrativeDraftPanelProps}
       compositionAuditProps={{
         reportId: report.id,

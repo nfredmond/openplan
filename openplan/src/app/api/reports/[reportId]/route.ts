@@ -13,6 +13,11 @@ import {
   validateAgreementCorridorSelections,
   writeAgreementCorridorSelections,
 } from "@/lib/reports/dual-demand-agreement";
+import {
+  readReportAerialOrthoSelections,
+  writeReportAerialOrthoSelections,
+} from "@/lib/reports/aerial-ortho-evidence";
+import { verifySelectedReportAerialOrtho } from "@/lib/reports/aerial-ortho-evidence-server";
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
@@ -35,6 +40,10 @@ const patchReportSchema = z
         })
       )
       .max(200)
+      .optional(),
+    aerialOrthoSelections: z
+      .array(z.object({ custodyId: z.string().uuid() }))
+      .max(1)
       .optional(),
     countyRunIds: z.array(z.string().uuid()).max(20).optional(),
     sections: z
@@ -290,6 +299,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       {
         report: access.report,
         agreementCorridorSelections: readAgreementCorridorSelections(access.report.metadata_json),
+        aerialOrthoSelections: readReportAerialOrthoSelections(access.report.metadata_json),
         project,
         sections: sections ?? [],
         runs,
@@ -469,6 +479,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    const finalAerialOrthoSelections = parsed.data.aerialOrthoSelections
+      ? readReportAerialOrthoSelections({ aerialOrthoSelections: parsed.data.aerialOrthoSelections })
+      : readReportAerialOrthoSelections(access.report.metadata_json);
+    if (parsed.data.aerialOrthoSelections && finalAerialOrthoSelections.length > 0) {
+      if (!access.report.project_id) {
+        return NextResponse.json({ error: "Aerial preview evidence requires a project report" }, { status: 400 });
+      }
+      const selection = await verifySelectedReportAerialOrtho({
+        supabase: access.supabase,
+        workspaceId: access.report.workspace_id,
+        projectId: access.report.project_id,
+        custodyId: finalAerialOrthoSelections[0].custodyId,
+      });
+      if (selection.status !== "verified") {
+        return NextResponse.json(
+          { error: `${selection.reason} No aerial preview selection was saved.` },
+          { status: selection.status === "unreadable" ? 500 : 400 },
+        );
+      }
+    }
+
     const reportUpdate: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) {
       reportUpdate.title = parsed.data.title;
@@ -491,12 +522,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
       reportUpdate.status = parsed.data.status;
     }
+    let nextReportMetadata: unknown = access.report.metadata_json;
     if (parsed.data.agreementCorridorSelections || parsed.data.modelRunIds) {
-      reportUpdate.metadata_json = writeAgreementCorridorSelections(
-        access.report.metadata_json,
+      nextReportMetadata = writeAgreementCorridorSelections(
+        nextReportMetadata,
         finalAgreementSelections,
       );
     }
+    if (parsed.data.aerialOrthoSelections) {
+      nextReportMetadata = writeReportAerialOrthoSelections(nextReportMetadata, finalAerialOrthoSelections);
+    }
+    if (nextReportMetadata !== access.report.metadata_json) reportUpdate.metadata_json = nextReportMetadata;
 
     if (Object.keys(reportUpdate).length > 0) {
       const { error: updateError } = await access.supabase.from("reports").update(reportUpdate).eq("id", access.report.id);
@@ -662,7 +698,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     });
 
     return NextResponse.json(
-      { success: true, reportId: access.report.id, agreementCorridorSelections: finalAgreementSelections },
+      {
+        success: true,
+        reportId: access.report.id,
+        agreementCorridorSelections: finalAgreementSelections,
+        aerialOrthoSelections: finalAerialOrthoSelections,
+      },
       { status: 200 },
     );
   } catch (error) {

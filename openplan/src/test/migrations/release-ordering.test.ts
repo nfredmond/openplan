@@ -198,6 +198,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
     migrationsAtRelease: 208,
   },
+  // 0.26.0 — a planner-selected held orthophoto can be frozen into a private
+  // report packet and cited from that immutable snapshot in grant narratives.
+  // The additive storage configuration migration admits PNG in report-artifacts.
+  {
+    tag: "0.26.0",
+    lastMigration: "20260823000001_report_artifact_aerial_preview_mime.sql",
+    migrationsAtRelease: 209,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

@@ -21,6 +21,31 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.26.0 — 2026-08-23
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260823000001_report_artifact_aerial_preview_mime.sql` adds PNG to the
+existing private report-artifact bucket's MIME allowlist without replacing any
+locally configured types (`report_artifact_aerial_preview_mime`).
+
+### Held orthophotos can now travel through reports into grant drafts
+
+A planner can explicitly choose one held orthophoto preview on report detail.
+Nothing is selected automatically, and report generation does not publish the
+image. The generated packet freezes the unchanged PNG together with both
+SHA-256 hashes, mission and project identity, capture/custody/freeze dates,
+resolution, map bounds, coordinate system, and the mandatory non-survey caveat.
+
+The in-app report preview serves those private bytes only after workspace access
+and a fresh size-and-hash custody check. PDF generation embeds the same bytes so
+the downloadable packet is self-contained.
+
+Grant narrative evidence reads only the frozen report artifact, never the live
+mission or custody record. An altered or unreadable snapshot blocks drafting
+instead of silently disappearing, and choosing imagery remains a recorded
+planner judgment that the assistant is explicitly refused from making.
+
 ## 0.25.0 — 2026-08-23
 
 **No migrations.** Rebuild and restart the self-hosted ODM worker, then deploy

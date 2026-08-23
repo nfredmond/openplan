@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
+import { createHash } from "node:crypto";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -242,6 +243,14 @@ const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select
 
 const storageUploadMock = vi.fn();
 const storageFromMock = vi.fn(() => ({ upload: storageUploadMock }));
+const aerialCustodyMaybeSingleMock = vi.fn();
+const aerialCustodyEqMock = vi.fn(() => ({ eq: aerialCustodyEqMock, maybeSingle: aerialCustodyMaybeSingleMock }));
+const aerialCustodySelectMock = vi.fn(() => ({ eq: aerialCustodyEqMock }));
+const serviceStorageDownloadMock = vi.fn();
+const serviceStorageUploadMock = vi.fn();
+const serviceStorageFromMock = vi.fn((bucket: string) => bucket === "aerial-artifacts"
+  ? { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock }
+  : { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock });
 const renderReportPdfMock = vi.fn();
 
 const mockAudit = {
@@ -364,6 +373,10 @@ const fromMock = vi.fn((table: string) => {
     return {
       select: aerialPackagesSelectMock,
     };
+  }
+
+  if (table === "aerial_artifact_custody") {
+    return { select: aerialCustodySelectMock };
   }
 
   if (table === "scenario_entries") {
@@ -874,6 +887,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
 
     storageUploadMock.mockResolvedValue({ error: null });
+    serviceStorageUploadMock.mockResolvedValue({ error: null });
     renderReportPdfMock.mockResolvedValue({
       bytes: new Uint8Array([37, 80, 68, 70]),
       engine: "chrome",
@@ -895,7 +909,90 @@ describe("POST /api/reports/[reportId]/generate", () => {
         }
         throw new Error(`Unexpected service table: ${table}`);
       }),
+      storage: { from: serviceStorageFromMock },
     });
+  });
+
+  it("freezes the planner-selected held orthophoto into packet metadata and rendered HTML", async () => {
+    const previewBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1]);
+    const previewHash = createHash("sha256").update(previewBytes).digest("hex");
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: "44444444-4444-4444-8444-444444444444",
+        rtp_cycle_id: null,
+        modeling_county_run_id: null,
+        title: "Project Status Packet",
+        summary: "Packet summary",
+        report_type: "project_status",
+        status: "draft",
+        created_at: "2026-03-14T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: { aerialOrthoSelections: [{ custodyId: "55555555-5555-4555-8555-555555555555" }] },
+      },
+      error: null,
+    });
+    aerialCustodyMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "55555555-5555-4555-8555-555555555555",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        mission_id: "66666666-6666-4666-8666-666666666666",
+        kind: "ortho_preview",
+        state: "held",
+        storage_bucket: "aerial-artifacts",
+        storage_path: "33333333-3333-4333-8333-333333333333/66666666-6666-4666-8666-666666666666/job/ortho-preview.png",
+        byte_size: previewBytes.byteLength,
+        checksum_sha256: previewHash,
+        content_type: "image/png",
+        held_at: "2026-08-21T17:00:00.000Z",
+        bounds_west: -121.2,
+        bounds_south: 39.1,
+        bounds_east: -121.1,
+        bounds_north: 39.2,
+        crs: "EPSG:32610",
+        pixel_size_m: 0.08,
+        aerial_missions: {
+          id: "66666666-6666-4666-8666-666666666666",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          title: "River crossing flight",
+          collected_at: "2026-08-20T17:00:00.000Z",
+          projects: { name: "Project" },
+        },
+      },
+      error: null,
+    });
+    serviceStorageDownloadMock.mockResolvedValueOnce({ data: new Blob([previewBytes]), error: null });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+    expect(response.status).toBe(200);
+    const inserted = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    expect(inserted?.metadata_json?.aerialOrthoSnapshotsV1).toEqual([
+      expect.objectContaining({
+        custodyId: "55555555-5555-4555-8555-555555555555",
+        sourceChecksumSha256: previewHash,
+        frozenChecksumSha256: previewHash,
+        pixelSizeM: 0.08,
+      }),
+    ]);
+    expect(String(inserted?.metadata_json?.htmlContent)).toContain("River crossing flight");
+    expect(String(inserted?.metadata_json?.htmlContent)).toContain("not survey-grade");
+    expect(String(inserted?.metadata_json?.htmlContent)).not.toContain("data:image/png;base64");
+    expect(serviceStorageUploadMock).toHaveBeenCalledWith(
+      expect.stringMatching(/\/aerial\/55555555-5555-4555-8555-555555555555\.png$/),
+      previewBytes,
+      { contentType: "image/png", upsert: false },
+    );
+    const htmlUpload = storageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
+    expect(String(htmlUpload?.[1])).toContain("data:image/png;base64");
   });
 
   it("persists a pdf artifact with storage_path + sets latest_artifact_kind to pdf", async () => {

@@ -133,9 +133,10 @@ export function detectPdfEngineAvailability(): PdfEngineAvailability {
  */
 export const BUILTIN_PDF_NOTICE =
   "Typeset by OpenPlan's built-in PDF writer because this deployment has no browser rendering " +
-  "engine. This is the complete report — no section has been shortened or dropped — but the " +
-  "styled layout (colours, charts, table rules) of the HTML version is not reproduced, and " +
-  "non-Latin scripts are not rendered.";
+  "engine. This is the complete written report — no section has been shortened or dropped — but " +
+  "photographs, charts, styled layout, and table " +
+  "rules from the HTML packet are not reproduced. Frozen image custody facts remain in the " +
+  "document and artifact record. Non-Latin scripts are not rendered.";
 
 export type RenderReportPdfResult = {
   bytes: Uint8Array;

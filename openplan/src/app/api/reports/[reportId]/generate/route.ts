@@ -94,6 +94,8 @@ import {
   readAgreementCorridorSelections,
   validateAgreementCorridorSelections,
 } from "@/lib/reports/dual-demand-agreement";
+import { readReportAerialOrthoSelections, reportAerialOrthoPreviewHref } from "@/lib/reports/aerial-ortho-evidence";
+import { freezeSelectedReportAerialOrtho } from "@/lib/reports/aerial-ortho-evidence-server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
@@ -1867,6 +1869,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
       agreements: verifiedAgreements,
       selections: agreementCorridorSelections,
     });
+    const format = parsed.data.format;
+    const generatedAt = new Date().toISOString();
+    const artifactId = crypto.randomUUID();
+    const serviceSupabase = createServiceRoleClient();
+    const aerialSelections = readReportAerialOrthoSelections(report.metadata_json);
+    const frozenAerial = aerialSelections.length === 1
+      ? await freezeSelectedReportAerialOrtho({
+          supabase,
+          serviceSupabase,
+          workspaceId: report.workspace_id,
+          projectId: report.project_id,
+          reportId: report.id,
+          artifactId,
+          custodyId: aerialSelections[0].custodyId,
+          frozenAt: generatedAt,
+        })
+      : null;
+    if (frozenAerial && frozenAerial.status !== "verified") {
+      return NextResponse.json(
+        { error: `Selected aerial evidence could not be frozen: ${frozenAerial.reason}` },
+        { status: frozenAerial.status === "unreadable" ? 500 : 422 },
+      );
+    }
+    const aerialOrthoSnapshotsV1 = frozenAerial?.status === "verified" ? [frozenAerial.snapshot] : [];
 
     const runAudit = linkedRuns.map((run) => ({
       runId: run.id,
@@ -2129,7 +2155,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       safetyEvidence = null;
     }
 
-    const html = buildReportHtml({
+    const reportHtmlInput = {
       report,
       // Cast: the projection is a template literal (binding columns
       // interpolated from STAGE_GATE_BINDING_WORKSPACE_COLUMNS), which the
@@ -2181,6 +2207,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelingEvidence,
       citedModelRuns,
       dualDemandAgreementSnapshotsV1,
+      aerialOrthoPreview: frozenAerial?.status === "verified"
+        ? { snapshot: frozenAerial.snapshot, imageSrc: "" }
+        : null,
       citedCountyRuns,
       // What the packet DRAWS. The place row is narrowed through the shared
       // owner-agnostic reader rather than re-derived here, so the packet's idea
@@ -2207,12 +2236,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
             ?.home_geography_label ?? null,
       },
       acceptedNarratives,
+    };
+    const frozenAerialRoute = frozenAerial?.status === "verified"
+      ? reportAerialOrthoPreviewHref({ reportId: report.id, artifactId, custodyId: frozenAerial.snapshot.custodyId })
+      : null;
+    const html = buildReportHtml({
+      ...reportHtmlInput,
+      aerialOrthoPreview: frozenAerial?.status === "verified" && frozenAerialRoute
+        ? { snapshot: frozenAerial.snapshot, imageSrc: frozenAerialRoute }
+        : null,
+    });
+    const exportHtml = buildReportHtml({
+      ...reportHtmlInput,
+      aerialOrthoPreview: frozenAerial?.status === "verified"
+        ? { snapshot: frozenAerial.snapshot, imageSrc: `data:image/png;base64,${Buffer.from(frozenAerial.bytes).toString("base64")}` }
+        : null,
     });
 
-    const format = parsed.data.format;
-    const generatedAt = new Date().toISOString();
-    const artifactId = crypto.randomUUID();
-    let projectPdfStoragePath: string | null = null;
+    let artifactStoragePath: string | null = null;
     let pdfEngine: ReportPdfEngine | null = null;
     const reportTitleForPdf = typeof report.title === "string" && report.title.trim()
       ? report.title.trim()
@@ -2220,7 +2261,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (format === "pdf") {
       // See the RTP branch above: a missing browser engine is a typesetting
       // tier, not a failed deliverable.
-      const rendered = await renderReportPdf(html, {
+      const rendered = await renderReportPdf(exportHtml, {
         title: reportTitleForPdf,
         generatedAt,
         footerLabel: "OpenPlan",
@@ -2244,13 +2285,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
       }
-      projectPdfStoragePath = storagePath;
+      artifactStoragePath = storagePath;
+    } else {
+      const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.html`;
+      const { error: uploadError } = await supabase.storage
+        .from("report-artifacts")
+        .upload(storagePath, Buffer.from(exportHtml, "utf8"), { contentType: "text/html; charset=utf-8", upsert: false });
+      if (uploadError) {
+        audit.error("report_html_upload_failed", { reportId: report.id, message: uploadError.message });
+        return NextResponse.json({ error: "Failed to upload HTML artifact" }, { status: 500 });
+      }
+      artifactStoragePath = storagePath;
     }
     const artifactMetadata = {
       metadata_schema_version: "2026-04",
       htmlContent: html,
       generatedAt,
       dualDemandAgreementSnapshotsV1,
+      aerialOrthoSnapshotsV1,
       // Which typesetting tier produced the stored file, so the record can
       // answer "why does this PDF look different" without re-rendering it.
       pdfEngine,
@@ -2343,7 +2395,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         id: artifactId,
         report_id: report.id,
         artifact_kind: format,
-        storage_path: projectPdfStoragePath,
+        storage_path: artifactStoragePath,
         generated_by: user.id,
         generated_at: generatedAt,
         metadata_json: artifactMetadata,
@@ -2361,7 +2413,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // See the RTP branch: a link to the FILE when one was stored.
-    const latestArtifactUrl = projectPdfStoragePath
+    const latestArtifactUrl = artifactStoragePath
       ? `/api/reports/${report.id}/artifacts/${artifact.id}/download`
       : `/reports/${report.id}#artifact-${artifact.id}`;
     const artifactHistoryEntry = buildArtifactHistoryEntry({
@@ -2425,7 +2477,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       reportId: report.id,
       artifactId: artifact.id,
       format,
-      storagePath: projectPdfStoragePath,
+      storagePath: artifactStoragePath,
       userId: user.id,
       linkedRunCount: linkedRuns.length,
       modelingEvidenceCount: modelingEvidenceMetadata.length,
@@ -2435,7 +2487,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const executionCompletedAt = new Date().toISOString();
     const executionStartedAt = new Date(startedAt).toISOString();
-    const serviceSupabase = createServiceRoleClient();
     const approval = await verifyAssistantActionApproval({
       request,
       serviceSupabase,
@@ -2479,7 +2530,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         artifactId: artifact.id,
         format,
         latestArtifactUrl,
-        storagePath: projectPdfStoragePath,
+        storagePath: artifactStoragePath,
         warnings: runAudit.flatMap((item) =>
           item.gate.missingArtifacts.map((missingArtifact) => ({
             runId: item.runId,

@@ -48,6 +48,9 @@ const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock, eq: modelRunsEqM
 const countyRunsInMock = vi.fn();
 const countyRunsEqMock = vi.fn(() => ({ in: countyRunsInMock }));
 const countyRunsSelectMock = vi.fn(() => ({ in: countyRunsInMock, eq: countyRunsEqMock }));
+const aerialCustodyMaybeSingleMock = vi.fn();
+const aerialCustodyEqMock = vi.fn(() => ({ eq: aerialCustodyEqMock, maybeSingle: aerialCustodyMaybeSingleMock }));
+const aerialCustodySelectMock = vi.fn(() => ({ eq: aerialCustodyEqMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -109,6 +112,8 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "aerial_artifact_custody") return { select: aerialCustodySelectMock };
+
   if (table === "report_artifacts") {
     return {
       select: () => ({
@@ -161,6 +166,7 @@ describe("/api/reports/[reportId]", () => {
             modelRunId: "88888888-8888-4888-8888-888888888888",
             corridor: "Central Avenue",
           }],
+          aerialOrthoSelections: [{ custodyId: "99999999-9999-4999-8999-999999999999" }],
         },
       },
       error: null,
@@ -227,6 +233,7 @@ describe("/api/reports/[reportId]", () => {
         modelRunId: "88888888-8888-4888-8888-888888888888",
         corridor: "Central Avenue",
       }],
+      aerialOrthoSelections: [{ custodyId: "99999999-9999-4999-8999-999999999999" }],
     });
     expect(await response.json()).toMatchObject({
       report: {
@@ -240,6 +247,47 @@ describe("/api/reports/[reportId]", () => {
         corridor: "Central Avenue",
       }],
     });
+  });
+
+  it("PATCH refuses a held orthophoto from another project", async () => {
+    aerialCustodyMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "99999999-9999-4999-8999-999999999999",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        mission_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        kind: "ortho_preview",
+        state: "held",
+        storage_bucket: "aerial-artifacts",
+        storage_path: "33333333-3333-4333-8333-333333333333/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/job/ortho-preview.png",
+        byte_size: 10,
+        checksum_sha256: "a".repeat(64),
+        content_type: "image/png",
+        bounds_west: -121.2,
+        bounds_south: 39.1,
+        bounds_east: -121.1,
+        bounds_north: 39.2,
+        aerial_missions: {
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          title: "Other project flight",
+          collected_at: null,
+          projects: { name: "Other project" },
+        },
+      },
+      error: null,
+    });
+    const response = await patchReportDetail(
+      new NextRequest("http://localhost/api/reports/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ aerialOrthoSelections: [{ custodyId: "99999999-9999-4999-8999-999999999999" }] }),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: expect.stringMatching(/another project/i) });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
   });
 
   it("GET resolves typed model-run and county-run citations with kind + status", async () => {

@@ -96,6 +96,44 @@ function narrative(overrides?: Partial<AcceptedSectionNarrative>): AcceptedSecti
 }
 
 describe("buildReportHtml accepted-narrative rendering", () => {
+  it("renders the frozen orthophoto preview, custody facts, placement, and non-survey caveat", () => {
+    const html = buildReportHtml(baseData({
+      aerialOrthoPreview: {
+        imageSrc: "data:image/png;base64,iVBORw0KGgo=",
+        snapshot: {
+          schemaVersion: "openplan.report_aerial_ortho.v1",
+          reportId: "33333333-3333-4333-8333-333333333333",
+          artifactId: "44444444-4444-4444-8444-444444444444",
+          workspaceId: "11111111-1111-4111-8111-111111111111",
+          projectId: "22222222-2222-4222-8222-222222222222",
+          custodyId: "55555555-5555-4555-8555-555555555555",
+          missionId: "66666666-6666-4666-8666-666666666666",
+          missionTitle: "River crossing flight",
+          projectName: "River crossing",
+          sourceChecksumSha256: "a".repeat(64),
+          frozenChecksumSha256: "a".repeat(64),
+          byteSize: 100,
+          collectedAt: "2026-08-20T17:00:00.000Z",
+          heldAt: "2026-08-21T17:00:00.000Z",
+          frozenAt: "2026-08-23T17:00:00.000Z",
+          bounds: [-121.2, 39.1, -121.1, 39.2],
+          nativeCrs: "EPSG:32610",
+          pixelSizeM: 0.08,
+          storageBucket: "report-artifacts",
+          storagePath: "11111111-1111-4111-8111-111111111111/33333333-3333-4333-8333-333333333333/44444444-4444-4444-8444-444444444444/aerial/55555555-5555-4555-8555-555555555555.png",
+          contentType: "image/png",
+          caveat: "This orientation-only preview is derived from a held orthomosaic. It is not survey-grade, does not establish property boundaries or legal location, and must not replace review of the full-resolution source and its custody record.",
+        },
+      },
+    }));
+    expect(html).toContain("data:image/png;base64,iVBORw0KGgo=");
+    expect(html).toContain("River crossing flight");
+    expect(html).toContain("0.08 m/pixel");
+    expect(html).toContain("-121.2, 39.1, -121.1, 39.2");
+    expect(html).toContain("not survey-grade");
+    expect(html.match(/a{64}/g)).toHaveLength(2);
+  });
+
   it("renders frozen aggregate evidence and only planner-selected corridor rows without an average", () => {
     const html = buildReportHtml(baseData({
       dualDemandAgreementSnapshotsV1: [{

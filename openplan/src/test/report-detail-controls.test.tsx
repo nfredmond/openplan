@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -14,6 +14,44 @@ import {
 } from "@/components/reports/report-detail-controls";
 
 describe("ReportDetailControls", () => {
+  it("offers held orthophotos without automatically selecting one and saves only a planner choice", async () => {
+    const fetchMock = vi.fn(async (_input: unknown, _init?: { body?: unknown }) => ({ ok: true, json: async () => ({}) }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <ReportDetailControls
+        report={{ id: "33333333-3333-4333-8333-333333333333", title: "Aerial packet", summary: null, status: "draft", hasGeneratedArtifact: false }}
+        aerialOrthoCatalog={{
+          state: "verified",
+          notes: [],
+          layers: [{
+            custodyId: "55555555-5555-4555-8555-555555555555",
+            missionId: "66666666-6666-4666-8666-666666666666",
+            projectId: "22222222-2222-4222-8222-222222222222",
+            missionTitle: "River crossing flight",
+            projectName: "River crossing",
+            collectedAt: "2026-08-20T17:00:00.000Z",
+            heldAt: "2026-08-21T17:00:00.000Z",
+            checksumSha256: "a".repeat(64),
+            byteSize: 100,
+            bounds: [-121.2, 39.1, -121.1, 39.2],
+            nativeCrs: "EPSG:32610",
+            pixelSizeM: 0.08,
+          }],
+        }}
+      />
+    );
+    expect(screen.getByRole("radio", { name: /Do not include aerial imagery/i })).toBeChecked();
+    expect(screen.getByRole("radio", { name: /River crossing flight/i })).not.toBeChecked();
+    expect(fetchMock).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("radio", { name: /River crossing flight/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Save metadata/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
+      aerialOrthoSelections: [{ custodyId: "55555555-5555-4555-8555-555555555555" }],
+    });
+    vi.unstubAllGlobals();
+  });
+
   it("shows verified agreement evidence but leaves every named corridor unselected by default", () => {
     render(
       <ReportDetailControls

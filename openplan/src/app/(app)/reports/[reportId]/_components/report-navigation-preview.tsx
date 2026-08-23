@@ -99,7 +99,10 @@ export function ReportNavigationPreview({
             <iframe
               title="Latest report artifact preview"
               className="h-[900px] w-full"
-              sandbox=""
+              // Scripts, forms, popups, and top navigation remain disabled.
+              // Same-origin is needed only so private frozen-image requests can
+              // carry the planner's session cookie to their authenticated route.
+              sandbox="allow-same-origin"
               srcDoc={latestHtml}
             />
           </div>

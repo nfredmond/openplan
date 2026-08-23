@@ -111,6 +111,13 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "widens only the run-artifacts bucket MIME allowlist with text/markdown; preserves every " +
       "existing type, is idempotent, and touches no tenant data",
   },
+  {
+    file: "20260823000001_report_artifact_aerial_preview_mime.sql",
+    kind: "update",
+    reason:
+      "widens only the report-artifacts bucket MIME allowlist with image/png; preserves every " +
+      "existing type, is idempotent, and touches no tenant data",
+  },
 ];
 
 /**

@@ -229,6 +229,15 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_meetings") {
     return { select: meetingsSelectMock };
   }
+  if (table === "aerial_artifact_custody") {
+    const result = { data: [], error: null };
+    const chain = {
+      eq: () => chain,
+      order: () => chain,
+      limit: vi.fn().mockResolvedValue(result),
+    };
+    return { select: () => chain };
+  }
   throw new Error(`Unexpected table: ${table}`);
 });
 

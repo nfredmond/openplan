@@ -32,6 +32,7 @@ import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
 
 type RefusedAerialAction = {
   label: string;
+  decisionDate?: string;
   /**
    * Alternative spellings a future session might reach for. A kind matches
    * when it contains every word in ANY one group. The single-word groups
@@ -147,6 +148,23 @@ const REFUSED: RefusedAerialAction[] = [
       "with `imageryZipUrl` and `notes` refused at the route. That is real work, not a rewording, and it " +
       "has not been done.",
   },
+  // ---- Report evidence selection (2026-08-23) ------------------------------
+  {
+    label: "selecting aerial evidence for a report",
+    decisionDate: "2026-08-23",
+    nameGroups: [
+      ["select", "orthophoto"],
+      ["attach", "orthophoto"],
+      ["choose", "aerial", "report"],
+    ],
+    provokes: ["select_report_orthophoto", "attach_orthophoto_evidence", "choose_aerial_for_report"],
+    reason:
+      "The id-only pairing authors a consequential judgment: which image belongs in a report or funder " +
+      "document. A plausible mission id does not let the approval sheet establish relevance, capture " +
+      "quality, or whether the planner intended that image to travel outside the aerial workspace. The " +
+      "planner must save this selection explicitly. The already-approved report-generation action may " +
+      "consume that saved choice, freeze it with custody facts and the non-survey caveat, and keep it private.",
+  },
 ];
 
 const REGISTERED_KINDS = Object.keys(ACTION_METADATA);
@@ -163,7 +181,7 @@ describe("the refused aerial actions are still refused", () => {
       expect(
         offenders,
         `${offenders.join(", ")} was registered as an assistant action. This was refused deliberately on ` +
-          `2026-08-11: ${entry.reason} If the argument has genuinely changed, remove this entry AND record ` +
+          `${entry.decisionDate ?? "2026-08-11"}: ${entry.reason} If the argument has genuinely changed, remove this entry AND record ` +
           "why — do not delete the assertion to make a build pass."
       ).toEqual([]);
     });

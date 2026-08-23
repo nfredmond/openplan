@@ -11,6 +11,10 @@ import {
   verifyFrozenDualDemandAgreementSnapshots,
   type VerifiedDualDemandAgreement,
 } from "@/lib/models/verified-dual-demand-agreement";
+import {
+  verifyFrozenReportAerialOrthoSnapshots,
+  type FrozenReportAerialOrthoSnapshotV1,
+} from "@/lib/reports/aerial-ortho-evidence";
 
 export type ProjectGrantModelingReportRow = {
   id: string;
@@ -22,9 +26,21 @@ export type ProjectGrantModelingReportRow = {
 };
 
 export type ProjectGrantModelingArtifactRow = {
+  id?: string;
   report_id: string;
   generated_at: string;
   metadata_json: Record<string, unknown> | null;
+};
+
+export type ProjectGrantAerialOrthoEvidence = {
+  projectId: string;
+  leadReport: {
+    id: string;
+    title: string;
+    href: string;
+    packetFreshness: ReturnType<typeof getReportPacketFreshness>;
+    snapshots: FrozenReportAerialOrthoSnapshotV1[];
+  };
 };
 
 type ProjectGrantComparisonDigest = NonNullable<
@@ -352,6 +368,66 @@ export function buildProjectGrantDualDemandAgreementEvidenceByProjectId(
     candidates.set(report.project_id, [...(candidates.get(report.project_id) ?? []), evidence]);
   }
   const evidenceByProjectId = new Map<string, ProjectGrantDualDemandAgreementEvidence>();
+  for (const [projectId, rows] of candidates) {
+    rows.sort((left, right) =>
+      getGrantSupportFreshnessPriority(left.leadReport.packetFreshness.label) -
+      getGrantSupportFreshnessPriority(right.leadReport.packetFreshness.label));
+    evidenceByProjectId.set(projectId, rows[0]);
+  }
+  return { evidenceByProjectId, readFailures };
+}
+
+/** Read aerial evidence only from immutable report snapshots, never live missions or custody rows. */
+export function buildProjectGrantAerialOrthoEvidenceByProjectId(
+  reports: ProjectGrantModelingReportRow[] | null | undefined,
+  artifacts: ProjectGrantModelingArtifactRow[] | null | undefined,
+): {
+  evidenceByProjectId: Map<string, ProjectGrantAerialOrthoEvidence>;
+  readFailures: ProjectGrantDualDemandAgreementReadFailure[];
+} {
+  const latestArtifactByReportId = new Map<string, ProjectGrantModelingArtifactRow>();
+  for (const artifact of artifacts ?? []) {
+    if (!latestArtifactByReportId.has(artifact.report_id)) latestArtifactByReportId.set(artifact.report_id, artifact);
+  }
+  const candidates = new Map<string, ProjectGrantAerialOrthoEvidence[]>();
+  const readFailures: ProjectGrantDualDemandAgreementReadFailure[] = [];
+  for (const report of reports ?? []) {
+    const artifact = latestArtifactByReportId.get(report.id);
+    if (!artifact) continue;
+    const rawSnapshots = artifact.metadata_json?.aerialOrthoSnapshotsV1;
+    if (rawSnapshots === undefined) continue;
+    if (!artifact.id) {
+      readFailures.push({ reportId: report.id, reason: "The report artifact identity required to verify frozen aerial evidence was not read." });
+      continue;
+    }
+    const state = verifyFrozenReportAerialOrthoSnapshots(artifact.metadata_json, {
+      projectId: report.project_id,
+      reportId: report.id,
+      artifactId: artifact.id,
+    });
+    if (state.status === "absent") continue;
+    if (state.status !== "verified") {
+      readFailures.push({ reportId: report.id, reason: state.reason });
+      continue;
+    }
+    const packetFreshness = getReportPacketFreshness({
+      latestArtifactKind: report.latest_artifact_kind,
+      generatedAt: artifact.generated_at,
+      updatedAt: report.updated_at,
+    });
+    const evidence: ProjectGrantAerialOrthoEvidence = {
+      projectId: report.project_id,
+      leadReport: {
+        id: report.id,
+        title: report.title,
+        href: getReportNavigationHref(report.id, packetFreshness.label),
+        packetFreshness,
+        snapshots: state.snapshots,
+      },
+    };
+    candidates.set(report.project_id, [...(candidates.get(report.project_id) ?? []), evidence]);
+  }
+  const evidenceByProjectId = new Map<string, ProjectGrantAerialOrthoEvidence>();
   for (const [projectId, rows] of candidates) {
     rows.sort((left, right) =>
       getGrantSupportFreshnessPriority(left.leadReport.packetFreshness.label) -

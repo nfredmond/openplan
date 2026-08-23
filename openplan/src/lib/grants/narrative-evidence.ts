@@ -20,6 +20,7 @@
 
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
+  buildProjectGrantAerialOrthoEvidenceByProjectId,
   buildProjectGrantDualDemandAgreementEvidenceByProjectId,
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
@@ -27,6 +28,7 @@ import {
   type ProjectGrantModelingEvidence,
   type ProjectGrantModelingReportRow,
   type ProjectGrantDualDemandAgreementEvidence,
+  type ProjectGrantAerialOrthoEvidence,
 } from "@/lib/grants/modeling-evidence";
 import {
   AGREEMENT_METHOD_SENSITIVITY_STATEMENT,
@@ -163,6 +165,7 @@ export type OpportunityEvidenceBundle = {
   modelingHeadline: string | null;
   modelingReadinessDetail: string | null;
   dualDemandAgreementEvidence?: ProjectGrantDualDemandAgreementEvidence | null;
+  aerialOrthoEvidence?: ProjectGrantAerialOrthoEvidence | null;
   bcaScreening: ProjectBcaScreeningSummary | null;
   engagementEvidence: ProjectEngagementEvidence | null;
   evidenceReadinessSummary: string;
@@ -285,6 +288,7 @@ export async function assembleOpportunityEvidence(
   let modelingHeadline: string | null = null;
   let modelingEvidence: ProjectGrantModelingEvidence | null = null;
   let dualDemandAgreementEvidence: ProjectGrantDualDemandAgreementEvidence | null = null;
+  let aerialOrthoEvidence: ProjectGrantAerialOrthoEvidence | null = null;
   let bcaScreening: ProjectBcaScreeningSummary | null = null;
   let engagementEvidence: ProjectEngagementEvidence | null = null;
   let linkedProjectStage: NarrativeLinkedProjectStage | null = null;
@@ -417,7 +421,7 @@ export async function assembleOpportunityEvidence(
     const artifactsResult = reportIds.length
       ? await client
           .from("report_artifacts")
-          .select("report_id, generated_at, metadata_json")
+          .select("id, report_id, generated_at, metadata_json")
           .in("report_id", reportIds)
           .order("generated_at", { ascending: false })
       : { data: [], error: null };
@@ -437,6 +441,17 @@ export async function assembleOpportunityEvidence(
     for (const failure of dualDemandEvidenceResult.readFailures) {
       readFailures.push({
         subject: "the project's frozen dual-model agreement evidence",
+        message: `Report ${failure.reportId}: ${failure.reason}`,
+      });
+    }
+    const aerialEvidenceResult = buildProjectGrantAerialOrthoEvidenceByProjectId(
+      reports,
+      (artifactsResult.data ?? []) as ProjectGrantModelingArtifactRow[],
+    );
+    aerialOrthoEvidence = aerialEvidenceResult.evidenceByProjectId.get(opportunity.project_id) ?? null;
+    for (const failure of aerialEvidenceResult.readFailures) {
+      readFailures.push({
+        subject: "the project's frozen aerial orthophoto evidence",
         message: `Report ${failure.reportId}: ${failure.reason}`,
       });
     }
@@ -676,6 +691,7 @@ export async function assembleOpportunityEvidence(
     modelingHeadline,
     modelingReadinessDetail,
     dualDemandAgreementEvidence,
+    aerialOrthoEvidence,
     bcaScreening,
     engagementEvidence,
     evidenceReadinessSummary,
@@ -767,6 +783,12 @@ export function buildOpportunityFactList(
         ),
       ])
     : [];
+  const aerialOrthoClaims = bundle.aerialOrthoEvidence
+    ? bundle.aerialOrthoEvidence.leadReport.snapshots.map((snapshot) => {
+        const [west, south, east, north] = snapshot.bounds;
+        return `Planner-selected orthophoto evidence frozen in report "${bundle.aerialOrthoEvidence?.leadReport.title}": mission ${snapshot.missionTitle}; captured ${snapshot.collectedAt ?? "not recorded"}; held ${snapshot.heldAt ?? "not recorded"}; frozen ${snapshot.frozenAt}; resolution ${snapshot.pixelSizeM === null ? "not recorded" : `${snapshot.pixelSizeM} meters per pixel`}; map placement west ${west}, south ${south}, east ${east}, north ${north}; source SHA-256 ${snapshot.sourceChecksumSha256}; frozen SHA-256 ${snapshot.frozenChecksumSha256}. Packet freshness: ${bundle.aerialOrthoEvidence?.leadReport.packetFreshness.label} — ${bundle.aerialOrthoEvidence?.leadReport.packetFreshness.detail} ${snapshot.caveat}`;
+      })
+    : [];
 
   return buildNarrativeFactList([
     `The funding opportunity is titled "${opportunity.title}"${opportunity.agency_name ? `, administered by ${opportunity.agency_name}` : ""}.`,
@@ -829,6 +851,7 @@ export function buildOpportunityFactList(
       ? `Modeling evidence readiness: ${bundle.modelingReadinessDetail} ${GRANT_MODELING_PLANNING_CAVEAT}`
       : null,
     ...(include("modeling") ? dualDemandAgreementClaims : []),
+    ...(include("project") ? aerialOrthoClaims : []),
     ...(include("bca") && bundle.bcaScreening
       ? buildBcaScreeningFactClaims(bundle.bcaScreening, bundle.projectName)
       : []),
