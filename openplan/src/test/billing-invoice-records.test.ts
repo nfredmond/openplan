@@ -12,7 +12,9 @@ import {
   summarizeAwardSubstantiation,
   summarizeBillingInvoiceLinkage,
   summarizeBillingInvoiceRecords,
+  uninvoicedCommittedAwardAmount,
 } from "@/lib/invoicing/invoice-records";
+import { buildAwardDrawdownLedger } from "@/lib/invoicing/drawdown-ledger";
 
 describe("billing invoice record helpers", () => {
   it("computes retention and net amount from percentage", () => {
@@ -69,6 +71,9 @@ describe("billing invoice record helpers", () => {
       overdueNetAmount: 16125,
       totalNetAmount: 23225,
       claimedNetAmount: 13325,
+      // Σ GROSS over the same claimed rows — what was asked of the funder,
+      // before retention. The gap to the net above IS the retention withheld.
+      claimedGrossAmount: 13700,
       outstandingNetAmount: 12125,
       paidNetAmount: 1200,
       draftNetAmount: 9000,
@@ -105,6 +110,49 @@ describe("billing invoice record helpers", () => {
     expect(summary.claimedNetAmount + summary.draftNetAmount + summary.rejectedNetAmount).toBe(
       summary.totalNetAmount
     );
+  });
+
+  /**
+   * TWO MONEY FIGURES FOR ONE AUTHORIZATION, ON ONE PANEL, DISAGREEING BY THE
+   * RETENTION.
+   *
+   * The project funding panel prints "$X still not yet invoiced" from
+   * `uninvoicedCommittedAwardAmount` and "$Y not yet claimed" from the award's
+   * own `AwardDrawdownLedger.remainingAuthorized`. The first subtracted NET and
+   * the second subtracts GROSS, so on a $500,000 award with one paid $200,000
+   * invoice at 10% retention they read $320,000 and $300,000 on the same
+   * screen.
+   *
+   * $300,000 is the correct one. Retention is withheld from PAYMENT, not from
+   * the claim: the $20,000 was invoiced, is released at close-out, and is not
+   * billable again as new work. The old figure overstated remaining billing
+   * authority — the direction that invites an agency to over-commit an award.
+   *
+   * Asserted as AGREEMENT between the two functions rather than as two
+   * literals, because the defect was never a wrong constant; it was two
+   * definitions of one concept drifting apart.
+   */
+  it("agrees with the award ledger on what is left to claim, retention included", () => {
+    const invoices = [{ status: "paid", amount: 200000, retention_percent: 10 }];
+    const summary = summarizeBillingInvoiceRecords(invoices, "2026-03-15T12:00:00.000Z");
+
+    // The retention really is withheld from payment in this fixture.
+    expect(summary.claimedNetAmount).toBe(180000);
+    expect(summary.claimedGrossAmount).toBe(200000);
+
+    const uninvoiced = uninvoicedCommittedAwardAmount(500000, summary);
+    const ledger = buildAwardDrawdownLedger({
+      award: { awarded_amount: 500000 },
+      invoiceRead: { ok: true, invoices },
+    });
+
+    expect(ledger.ok).toBe(true);
+    if (!ledger.ok) return;
+
+    expect(uninvoiced).toBe(300000);
+    expect(ledger.ledger.remainingAuthorized).toBe(300000);
+    // The invariant, not the number: one authorization, one answer.
+    expect(uninvoiced).toBe(ledger.ledger.remainingAuthorized);
   });
 
   it("counts approved-for-payment as claimed but not as paid", () => {

@@ -71,6 +71,22 @@ export type BillingInvoiceSummary = {
    * funder and has not been rejected. This is the figure "net requested" means.
    */
   claimedNetAmount: number;
+  /**
+   * Σ GROSS over the same claimed statuses — what was ASKED of the funder,
+   * before retention.
+   *
+   * The distinction is not cosmetic and it is the one thing separating this
+   * from `claimedNetAmount`: retention is withheld from PAYMENT, not from the
+   * claim. It has already been invoiced and is released at close-out, so it is
+   * not billable again as new work. Any figure meaning "how much of this award
+   * may still be claimed" must subtract the gross; subtracting the net counts
+   * the funder's withholding as though it were still available to bill.
+   *
+   * Same concept as `AwardDrawdownLedger.claimedGrossToDate`, deliberately
+   * named to match it — the two used to be computed on different bases and
+   * printed on the same panel.
+   */
+  claimedGrossAmount: number;
   outstandingNetAmount: number;
   paidNetAmount: number;
   draftNetAmount: number;
@@ -277,6 +293,10 @@ export function summarizeBillingInvoiceRecords(
     (summary, record) => {
       const status = typeof record.status === "string" ? record.status : "draft";
       const netAmount = computeNetInvoiceAmount(record.amount, record.retention_amount, record.retention_percent);
+      // `max(0, amount)` is the same clamp `computeNetInvoiceAmount` applies, so
+      // gross − retention === net holds row by row. Deriving gross any other way
+      // would let a worksheet print three numbers that do not add up.
+      const grossAmount = roundCurrency(Math.max(0, parseCurrencyAmount(record.amount)));
 
       summary.totalCount += 1;
       summary.totalNetAmount = roundCurrency(summary.totalNetAmount + netAmount);
@@ -298,6 +318,7 @@ export function summarizeBillingInvoiceRecords(
 
       if (isClaimedInvoiceStatus(status)) {
         summary.claimedNetAmount = roundCurrency(summary.claimedNetAmount + netAmount);
+        summary.claimedGrossAmount = roundCurrency(summary.claimedGrossAmount + grossAmount);
       }
 
       if (status === "rejected") {
@@ -321,6 +342,7 @@ export function summarizeBillingInvoiceRecords(
       overdueNetAmount: 0,
       totalNetAmount: 0,
       claimedNetAmount: 0,
+      claimedGrossAmount: 0,
       outstandingNetAmount: 0,
       paidNetAmount: 0,
       draftNetAmount: 0,
@@ -341,6 +363,18 @@ export function summarizeBillingInvoiceRecords(
  * excluded for the same reason from the other side: nothing has been asked of
  * anyone yet, so those dollars are still claimable.
  *
+ * SUBTRACTS GROSS, NOT NET, and that was the second half of the same defect.
+ * Retention is withheld from PAYMENT, not from the claim: it has been invoiced
+ * already and is released at close-out, so it is not billable again as new
+ * work. Subtracting the net counted the funder's withholding as still
+ * claimable — on a $500,000 award with one paid $200,000 invoice at 10%
+ * retention, this line read $320,000 "still not yet invoiced" while the award's
+ * own ledger read $300,000 "not yet claimed", on the SAME panel. Two money
+ * figures for one authorization, disagreeing by exactly the retention, in the
+ * direction that overstates remaining billing authority.
+ * `AwardDrawdownLedger.remainingAuthorized` has always used gross; this now
+ * agrees with it by construction rather than by coincidence.
+ *
  * Clamped at zero deliberately. This is a PORTFOLIO figure spanning many
  * awards, where a negative would be a meaningless mixture; per award,
  * `AwardDrawdownLedger.remainingAuthorized` is unclamped so that an over-claim
@@ -348,9 +382,9 @@ export function summarizeBillingInvoiceRecords(
  */
 export function uninvoicedCommittedAwardAmount(
   committedAwardAmount: number,
-  summary: Pick<BillingInvoiceSummary, "claimedNetAmount">
+  summary: Pick<BillingInvoiceSummary, "claimedGrossAmount">
 ): number {
-  return Math.max(roundCurrency(committedAwardAmount - summary.claimedNetAmount), 0);
+  return Math.max(roundCurrency(committedAwardAmount - summary.claimedGrossAmount), 0);
 }
 
 export function summarizeBillingInvoiceLinkage(
