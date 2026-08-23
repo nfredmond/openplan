@@ -166,6 +166,15 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
     migrationsAtRelease: 208,
   },
+  // 0.22.0 — nationwide HPMS count evidence, one acceptance rule for both
+  // calibration drivers, and the frozen 32-county gateway-volume study. The
+  // candidate failed its untouched holdout, so model defaults did not change.
+  // No schema change; expanded credibility fields live in run artifacts.
+  {
+    tag: "0.22.0",
+    lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
+    migrationsAtRelease: 208,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

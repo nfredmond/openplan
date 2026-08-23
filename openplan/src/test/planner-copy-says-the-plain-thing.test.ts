@@ -230,7 +230,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   schema: 6,
   signal: 8,
   spine: 9,
-  "study area": 23,
+  "study area": 21,
   submission: 11,
   surface: 15,
   trace: 19,

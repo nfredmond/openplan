@@ -21,6 +21,58 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.22.0 — 2026-08-23
+
+**No migrations.** Pull and deploy. Existing runs remain readable, but only a
+new run can record the expanded observed-count and independent-validation
+provenance described below.
+
+### Nationwide count evidence, without a nationwide accuracy claim
+
+OpenPlan can now retrieve eligible road-section AADT from FHWA's public 2024
+HPMS spatial dataset anywhere in the United States. A registered state DOT feed
+still takes precedence where one is available. The run record preserves the
+source, vintage, supported road classes, exclusions, and why a search produced
+no usable count; an unsupported class is never displayed as zero traffic.
+
+Alaska, Hawaii, multi-state areas, and study areas crossing the antimeridian use
+the same bounds-based source path. HPMS is a nationwide validation floor, not
+complete road coverage: lower rural collectors and local roads may have only
+summary coverage, and a roadway count may be three to six years old.
+
+### The gateway correction was tested and rejected
+
+A hash-locked study tested one specific change on 32 previously unexamined
+counties, split before results into 16 development and 16 untouched holdout
+counties. The candidate replaced flat gateway traffic with defensibly matched
+observed AADT and lifted the eight-gateway cap only for measured crossings.
+
+It failed the pre-registered adoption rules on both demand methods. On the
+holdout half, AequilibraE improved in 5 of 16 counties and ActivitySim in 6 of
+16; median county improvement was zero percentage points for both. The pooled
+station median error remained 100% for AequilibraE and moved from 100% to 99.84%
+for ActivitySim. The matched stations did not change and the accounting guards
+passed, so this is a usable negative result rather than a broken run.
+
+**The default model is unchanged.** OpenPlan did not fit regional scalars, lift
+the cap for inferred crossings, or select another candidate after seeing the
+holdout. The dated protocol, hashes, county-level results, and rejection are in
+`docs/modeling/GATEWAY_VOLUME_STUDY_2026-08-23.md`.
+
+### Selection evidence is not accuracy evidence
+
+Both calibration drivers now use one fail-closed acceptance rule: the objective
+must improve by the required amount and held-out median APE must not worsen.
+The worker and county script can no longer disagree about whether a calibration
+step is accepted.
+
+The run page and downloadable provenance document now show observed-count
+source, gateway volumes measured versus inferred, baseline versus selected
+calibration, and any separate independent validation. The calibration holdout
+is labelled as parameter-selection evidence, not accuracy. Only an untouched,
+passing validation for that run and a link-capable zone system can earn the
+count-backed claim tier; a national average cannot promote an individual run.
+
 ## 0.21.0 — 2026-08-22
 
 **Seven migrations. Run them before the new code is serving traffic.**

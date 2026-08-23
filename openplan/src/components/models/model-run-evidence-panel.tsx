@@ -1176,7 +1176,7 @@ export function ModelRunEvidencePanel({
                 <Button asChild type="button" variant="outline" size="sm">
                   <a href={`${packetHref}?format=markdown`} aria-label="Download provenance document">
                     <Download className="h-4 w-4" />
-                    Download provenance
+                    Download source details
                   </a>
                 </Button>
               </div>
@@ -1240,7 +1240,7 @@ export function ModelRunEvidencePanel({
                   </div>
 
                   <div className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Gateway volume basis</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Gateway traffic source</p>
                     <dl
                       className="mt-2 grid grid-cols-1 gap-2 text-center sm:grid-cols-3"
                       data-testid="gateway-volume-basis-counts"
@@ -1259,7 +1259,10 @@ export function ModelRunEvidencePanel({
                       </div>
                     </dl>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      {evidenceText(gatewayVolumeBasis?.default_method, "Gateway volume basis was not recorded by this run.")}
+                      {evidenceText(
+                        gatewayVolumeBasis?.default_method,
+                        "This run did not record how gateway traffic was estimated."
+                      )}
                     </p>
                     {gatewayVolumeBasis?.limitation ? (
                       <p className="mt-1 text-xs font-medium text-amber-800 dark:text-amber-200">
@@ -1315,7 +1318,7 @@ export function ModelRunEvidencePanel({
                     {evidenceText(independentValidation?.reason, "No independent validation result was recorded for this run.")}
                   </p>
                   <p className="mt-2 text-xs font-medium text-amber-800 dark:text-amber-200">
-                    A national average never promotes this run. Only this run&apos;s independent result can support its count-backed claim tier.
+                    A national average never promotes this run. Only this run&apos;s independent result can support a count-backed accuracy statement.
                   </p>
                 </div>
               </div>

@@ -120,7 +120,7 @@ describe("model-run credibility evidence contract", () => {
     expect(markdown).toContain("Baseline median APE: 40%");
     expect(markdown).toContain("Selected median APE: 44%");
     expect(markdown).toContain("candidate-selection evidence, not an accuracy result");
-    expect(markdown).toContain("Supports a count-backed claim tier: no");
+    expect(markdown).toContain("Supports a count-backed accuracy statement: no");
   });
 
   it("shows the evidence and its limitations on the run page", async () => {
