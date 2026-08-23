@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import shutil
+import statistics
 import subprocess
 import sys
 import time
@@ -108,6 +109,60 @@ def validation_record(run_dir: Path) -> dict[str, Any]:
     }
 
 
+def repository_relative(path: Path) -> str:
+    try:
+        return str(Path(path).resolve().relative_to(REPO_ROOT))
+    except ValueError:
+        return str(Path(path).resolve())
+
+
+def compact_validation_record(record: Mapping[str, Any]) -> dict[str, Any]:
+    """Commit the evidence needed to evaluate a county, not every station row."""
+    run_dir = Path(str(record["run_dir"]))
+    validation_dir = run_dir / "validation"
+    full_artifacts = {
+        name: sha256_file(validation_dir / name)
+        for name in (
+            "validation_summary.json",
+            "validation_results.csv",
+            "validation_candidate_audit.json",
+        )
+    }
+    summary = record["summary"]
+    compact_summary = {
+        key: summary.get(key)
+        for key in (
+            "validation_type",
+            "model_run_id",
+            "model_engine",
+            "model_caveats",
+            "count_source_agencies",
+            "stations_total",
+            "stations_matched",
+            "stations_missed",
+            "stations_excluded_not_mainline",
+            "stations_on_unloaded_links",
+            "screening_gate",
+            "zone_resolution",
+            "metrics",
+            "shared_model_links",
+            "divided_highways",
+            "created_at",
+        )
+    }
+    return {
+        "run_dir": repository_relative(run_dir),
+        "matched_station_count": len(record["matched_station_ids"]),
+        "matched_station_set_sha256": record["matched_station_set_sha256"],
+        "full_validation_artifacts": {
+            "location": repository_relative(validation_dir),
+            "sha256": full_artifacts,
+            "commit_policy": "ignored run storage; hashes and compact summary are committed",
+        },
+        "summary": compact_summary,
+    }
+
+
 def corridor_change_record(
     baseline_csv: Path,
     candidate_csv: Path,
@@ -167,6 +222,55 @@ def corridor_change_record(
     }
 
 
+def corridor_change_summary(
+    record: Mapping[str, Any], *, full_artifact_path: Path
+) -> dict[str, Any]:
+    """Small committed index for a full per-link artifact in ignored storage."""
+    links = list(record.get("links") or [])
+
+    def summarize(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+        changes = [float(row["change"]) for row in rows]
+        percents = [
+            abs(float(row["change_percent"]))
+            for row in rows
+            if row.get("change_percent") is not None
+        ]
+        return {
+            "links": len(rows),
+            "increased": sum(change > 0 for change in changes),
+            "decreased": sum(change < 0 for change in changes),
+            "unchanged": sum(change == 0 for change in changes),
+            "median_absolute_change": round(statistics.median(map(abs, changes)), 6)
+            if changes
+            else None,
+            "median_absolute_percent_change_where_baseline_positive": round(
+                statistics.median(percents), 6
+            )
+            if percents
+            else None,
+        }
+
+    road_classes = sorted({str(row.get("road_class") or "unknown") for row in links})
+    return {
+        "schema_version": "openplan.gateway-volume-corridor-change-summary.v1",
+        "demand_method": record["demand_method"],
+        "is_average": False,
+        "interpretation": record["interpretation"],
+        "summary": summarize(links),
+        "by_road_class": {
+            road_class: summarize(
+                [row for row in links if str(row.get("road_class") or "unknown") == road_class]
+            )
+            for road_class in road_classes
+        },
+        "full_artifact": {
+            "location": repository_relative(full_artifact_path),
+            "sha256": sha256_file(full_artifact_path),
+            "commit_policy": "ignored run storage; hash and compact summary are committed",
+        },
+    }
+
+
 def convergence_record(run_dir: Path) -> dict[str, Any]:
     manifest = read_json(run_dir / "bundle_manifest.json")
     convergence = ((manifest.get("assignment") or {}).get("convergence") or {})
@@ -218,7 +322,7 @@ def assemble_county_outputs(
         {
             "schema_version": "openplan.gateway-volume-validation-evidence.v1",
             "demand_methods": {
-                demand_method: records["baseline"]
+                demand_method: compact_validation_record(records["baseline"])
                 for demand_method, records in validations.items()
             },
         },
@@ -228,7 +332,7 @@ def assemble_county_outputs(
         {
             "schema_version": "openplan.gateway-volume-validation-evidence.v1",
             "demand_methods": {
-                demand_method: records["candidate"]
+                demand_method: compact_validation_record(records["candidate"])
                 for demand_method, records in validations.items()
             },
         },
@@ -242,23 +346,29 @@ def assemble_county_outputs(
         raise GatewayVolumeStudyError("Baseline and candidate did not reserve the same gateway count sections.")
     write_json(results_dir / "gateway_volume_basis.json", gateway_basis)
 
+    aeq_corridors = corridor_change_record(
+        aeq_baseline / "run_output" / "link_volumes.csv",
+        aeq_candidate / "run_output" / "link_volumes.csv",
+        aeq_baseline / "run_output" / "retained_network.geojson",
+        label="AequilibraE gravity demand",
+    )
+    aeq_full_path = aeq_candidate / "gateway_volume_study" / "corridor_change.json"
+    write_json(aeq_full_path, aeq_corridors)
     write_json(
         results_dir / "aequilibrae_corridors.json",
-        corridor_change_record(
-            aeq_baseline / "run_output" / "link_volumes.csv",
-            aeq_candidate / "run_output" / "link_volumes.csv",
-            aeq_baseline / "run_output" / "retained_network.geojson",
-            label="AequilibraE gravity demand",
-        ),
+        corridor_change_summary(aeq_corridors, full_artifact_path=aeq_full_path),
     )
+    asim_corridors = corridor_change_record(
+        asim_baseline / "run_output" / "link_volumes.csv",
+        asim_candidate / "run_output" / "link_volumes.csv",
+        aeq_baseline / "run_output" / "retained_network.geojson",
+        label="ActivitySim activity-based demand",
+    )
+    asim_full_path = asim_candidate / "gateway_volume_study" / "corridor_change.json"
+    write_json(asim_full_path, asim_corridors)
     write_json(
         results_dir / "activitysim_corridors.json",
-        corridor_change_record(
-            asim_baseline / "run_output" / "link_volumes.csv",
-            asim_candidate / "run_output" / "link_volumes.csv",
-            aeq_baseline / "run_output" / "retained_network.geojson",
-            label="ActivitySim activity-based demand",
-        ),
+        corridor_change_summary(asim_corridors, full_artifact_path=asim_full_path),
     )
 
     guards = {

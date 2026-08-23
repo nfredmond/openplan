@@ -2,7 +2,9 @@
 """Execution guards for the frozen gateway-volume study."""
 from __future__ import annotations
 
+import ast
 import csv
+import inspect
 import json
 import sys
 import tempfile
@@ -70,6 +72,74 @@ class CorridorChangeIsNotAnAverage(unittest.TestCase):
                 study.corridor_change_record(
                     root / "baseline.csv", root / "candidate.csv", network, label="probe"
                 )
+
+    def test_committed_corridor_record_is_a_hash_linked_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            full_path = Path(raw_dir) / "full.json"
+            full = {
+                "demand_method": "probe",
+                "is_average": False,
+                "interpretation": "sensitivity only",
+                "links": [
+                    {"link_id": 1, "road_class": "primary", "change": 20, "change_percent": 10},
+                    {"link_id": 2, "road_class": "primary", "change": -5, "change_percent": -5},
+                    {"link_id": 3, "road_class": "local", "change": 0, "change_percent": None},
+                ],
+            }
+            study.write_json(full_path, full)
+            summary = study.corridor_change_summary(full, full_artifact_path=full_path)
+            self.assertNotIn("links", summary)
+            self.assertEqual(summary["summary"]["links"], 3)
+            self.assertEqual(summary["summary"]["increased"], 1)
+            self.assertEqual(summary["summary"]["decreased"], 1)
+            self.assertEqual(summary["by_road_class"]["primary"]["links"], 2)
+            self.assertEqual(summary["full_artifact"]["sha256"], study.sha256_file(full_path))
+
+
+class CommittedValidationEvidenceStaysCompact(unittest.TestCase):
+    def test_station_rows_and_facility_rankings_stay_in_hash_linked_run_storage(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            run = Path(raw_dir) / "run"
+            validation = run / "validation"
+            validation.mkdir(parents=True)
+            for name in (
+                "validation_summary.json",
+                "validation_results.csv",
+                "validation_candidate_audit.json",
+            ):
+                (validation / name).write_text("detail")
+            record = {
+                "run_dir": str(run),
+                "matched_station_ids": ["A", "B"],
+                "matched_station_set_sha256": "a" * 64,
+                "summary": {
+                    "model_engine": "probe",
+                    "metrics": {"median_absolute_percent_error": 50},
+                    "facility_ranking": [{"station_id": "A"}] * 100,
+                },
+            }
+            compact = study.compact_validation_record(record)
+            self.assertEqual(compact["matched_station_count"], 2)
+            self.assertNotIn("matched_station_ids", compact)
+            self.assertNotIn("facility_ranking", compact["summary"])
+            self.assertEqual(
+                set(compact["full_validation_artifacts"]["sha256"]),
+                {
+                    "validation_summary.json",
+                    "validation_results.csv",
+                    "validation_candidate_audit.json",
+                },
+            )
+
+    def test_county_assembler_routes_both_methods_through_compaction(self) -> None:
+        tree = ast.parse(inspect.getsource(study.assemble_county_outputs))
+        calls = [
+            node.func.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        ]
+        self.assertEqual(calls.count("compact_validation_record"), 2)
+        self.assertEqual(calls.count("corridor_change_summary"), 2)
 
 
 class BothDemandMethodsKeepTheSameObservedExam(unittest.TestCase):
