@@ -1242,6 +1242,16 @@ const JOIN_SCOPED_EXCUSED: ReadonlyArray<string> = [
   "workspaces",
 ];
 
+/**
+ * How many tables may stand on an excuse instead of a live probe.
+ *
+ * Shrink-only. 37 on 2026-08-22, when the growth half of the ratchet was added
+ * — until then an excuse entry with any text made the census green, so the
+ * list could grow forever and the census would keep reporting that everything
+ * was accounted for.
+ */
+const EXCUSED_TABLE_CEILING = 37;
+
 const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
   /*
     FOUND 2026-08-11, AND REPORTED RATHER THAN QUIETLY PATCHED. The first run of
@@ -1305,7 +1315,9 @@ const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
   /*
     (2026-08-12) THE SELF-HELP LOCAL MEASURE FUND — six tables, excused with the
     honest reason: the boundary is written and the live cross-tenant PROOF is
-    still owed. Every one has row security on, a workspace-membership SELECT
+    still owed. (PARTLY PAID 2026-08-22 — `measure-fund-rls.test.ts` proves the
+    composite-key half for `measure_fund_periods`; the read half for the rest is
+    still owed.) Every one has row security on, a workspace-membership SELECT
     policy, and role-aware write policies through `workspace_member_can_write`
     (asserted statically from the migration corpus by
     `local-measure-fund-migration.test.ts`).
@@ -1332,9 +1344,14 @@ const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
     policy is `workspace_member_can_write(workspace_id) AND status = 'draft'`,
     so a submitted or paid claim must be undeletable BY ANYONE, including a
     workspace owner. A static guard can prove that predicate was written; only
-    a live probe can prove Postgres enforces it. A probe here should attempt the
-    delete of a submitted claim as an owner and require zero rows affected —
-    not merely attempt a cross-tenant read.
+    a live probe can prove Postgres enforces it.
+
+    WRITTEN 2026-08-22: `measure-fund-rls.test.ts` deletes a submitted claim as
+    the workspace OWNER and requires zero rows affected, with a draft claim
+    beside it as the control — without that control the suite would pass just as
+    happily against a database where deleting a claim is broken for everyone.
+    Mutation-proven by relaxing the policy to drop its `status = 'draft'` half
+    against the live database.
   */
   "measure_claims",
   "measure_claim_documents",
@@ -1351,10 +1368,14 @@ const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
     inflate another fund's year-to-date total and stop that agency taking money
     it is entitled to, or delete rows and let it take the cap twice.
 
-    A probe here should attempt the cross-tenant DELETE specifically, not only
-    the read: the composite `(period_id, workspace_id)` foreign key is what
-    stops a row being parented across tenants, and nothing but a live attempt
-    can show Postgres enforcing it.
+    WRITTEN 2026-08-22: `measure-fund-rls.test.ts` now attempts exactly that,
+    live — an off-the-top row parented into another workspace's period while
+    carrying the caller's own workspace_id past the INSERT policy, and the plain
+    cross-tenant write beside it. Mutation-proven by dropping
+    `measure_period_off_the_top_period_fk` against the live database. This entry
+    stays because the census's `probed` set is `WORKSPACE_RLS_PROBES` and the
+    proof lives in a sibling file, the same arrangement as the extraction
+    staging tables above — a pointer now, not an IOU.
   */
   "measure_period_off_the_top",
   /*
@@ -1420,6 +1441,37 @@ liveDescribe("the probe list covers the schema", () => {
       return row.rlsEnabled && row.policyCount === 0; // now deny-all — covered by rule 2
     });
     expect(stale, "these excused tables no longer need an excuse — remove them from PROBE_EXCUSED_TABLES").toEqual([]);
+
+    // ------------------------------------------------------------------
+    // THE RATCHET'S OTHER HALF: the list may not GROW.
+    // ------------------------------------------------------------------
+    //
+    // Staleness above catches an excuse that stopped being needed. Nothing
+    // caught an excuse being ADDED — and an entry with any text at all made the
+    // census green, so "add a fixture, or excuse it by name" was in practice a
+    // choice between work and a sentence. That is the compliant twin of the
+    // pattern this census exists to end: prose promising a probe somebody has
+    // yet to write, standing where the proof should be.
+    //
+    // The stake is not uniform. `measure_period_off_the_top` and
+    // `measure_period_reserve` are excused here, and a composite-FK typo or a
+    // policy joined to the wrong parent would let one tenant write another
+    // fund's rows — forging the year-to-date total that a fiscal-year cap and a
+    // public oversight page are computed from.
+    //
+    // A CEILING, NOT AN EQUALITY, so removing an excuse never requires editing
+    // this number; and it may be LOWERED freely. Raising it means a new
+    // capability shipped without its cross-tenant proof, which is a decision
+    // that should cost a commit message.
+    expect(new Set(PROBE_EXCUSED_TABLES).size, "PROBE_EXCUSED_TABLES has a duplicate").toBe(
+      PROBE_EXCUSED_TABLES.length
+    );
+    expect(
+      PROBE_EXCUSED_TABLES.length,
+      `${PROBE_EXCUSED_TABLES.length} tables are excused from the live cross-tenant proof, above the ` +
+        `ceiling of ${EXCUSED_TABLE_CEILING}. Write the probe rather than raising this — and if the ` +
+        "excuse is genuinely right, lower the ceiling in the same commit that raises it."
+    ).toBeLessThanOrEqual(EXCUSED_TABLE_CEILING);
 
     // ------------------------------------------------------------------
     // THE SECOND CATEGORY, and the reason this census used to miss it.
