@@ -19,7 +19,7 @@ function shortHash(checksum: string): string {
 }
 
 export function AerialOrthoLayersPanel({ compact = false }: { compact?: boolean }) {
-  const { catalogState, layers, notes, selected, failures, toggleSelected } = useAerialOrthoLayers();
+  const { catalogState, layers, notes, selected, failures, toggleSelected, requestFocus } = useAerialOrthoLayers();
   const onCount = layers.filter((layer) => selected[layer.custodyId] === true).length;
 
   return (
@@ -82,6 +82,15 @@ export function AerialOrthoLayersPanel({ compact = false }: { compact?: boolean 
                   </details>
                 </span>
               </label>
+              {selected[layer.custodyId] === true ? (
+                <button
+                  type="button"
+                  className="ml-6 mt-1 text-xs underline underline-offset-2"
+                  onClick={() => requestFocus(layer.custodyId)}
+                >
+                  Zoom to preview
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>

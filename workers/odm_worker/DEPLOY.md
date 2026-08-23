@@ -125,7 +125,7 @@ is normal for large missions.
 | `NODEODM_TOKEN` | unset | Pass-through if your NodeODM runs with `--token`. |
 | `ODM_WORKER_PORT` / `PORT` | `8484` | Port the worker listens on. |
 | `ODM_WORKER_PUBLIC_URL` | `http://localhost:8484` | Base of the output links the worker issues. Must be reachable by the OpenPlan deployment. |
-| `ODM_WORKER_WORK_DIR` | system temp | Per-job scratch and published outputs. Sized for the reconstruction, not the archive: a job's outputs are deleted once its links expire (see the two rows below), and OpenPlan holds the copy that lasts. |
+| `ODM_WORKER_WORK_DIR` | system temp | Per-job scratch and published outputs. Leave room for NodeODM's temporary `all.zip` export plus the extracted outputs; the archive is removed immediately after extraction, and the published files are deleted once their links expire. OpenPlan holds the copy that lasts. |
 | `ODM_WORKER_ARTIFACT_TTL_SECONDS` | `86400` | How long output links stay valid. OpenPlan copies the bytes into its own storage on success, so links only need to outlive that pass. |
 | `ODM_WORKER_SWEEP_INTERVAL_SECONDS` | `600` | How often expired job outputs are deleted from the work directory. Each job leaves an orthomosaic, a DSM, a DTM and a point cloud — hundreds of megabytes to gigabytes — and this is what reclaims them. Before this existed they accumulated forever, and the disk that filled was the one NodeODM reconstructs on. |
 | `ODM_WORKER_MAX_SOURCE_BYTES` | `40 GiB` | The most imagery one job may download and expand, across a ZIP or a whole photo manifest. The source URL is pasted by a planner and this worker shares a disk with NodeODM, so an unbounded download — or a ZIP that is small on the wire and enormous on disk — would take the aerial lane down. |
@@ -145,11 +145,12 @@ is normal for large missions.
    size are verified; a mismatch fails the job **naming the file**, because
    silently corrupted source photos would flow into an orthomosaic nobody
    could distrust.
-4. The photos go to NodeODM with the preset's options (plus `orthophoto-png`,
-   always — the PNG is what a browser can display without a tile server).
-   Progress callbacks flow back to OpenPlan as NodeODM reports it.
-5. On completion the worker downloads the outputs, reads the orthomosaic's
-   GeoTIFF tags, reprojects its corners to WGS84, and POSTs a `succeeded`
+4. The photos go to NodeODM with the preset's options. Progress callbacks flow
+   back to OpenPlan as NodeODM reports them.
+5. On completion the worker downloads NodeODM's supported `all.zip` export
+   once, extracts only the named deliverables, and renders a browser-sized PNG
+   from the real GeoTIFF with GDAL. It reads that GeoTIFF's tags, reprojects its
+   corners to WGS84, and POSTs a `succeeded`
    callback whose artifacts carry time-limited download links plus
    `boundsWgs84`/`crs`/`pixelSizeM`. OpenPlan verifies, stores, and serves the
    files from its own storage from then on.
@@ -167,19 +168,20 @@ need that re-dispatch — nothing is corrupted, only forgotten.
 
 ## Running the worker's test suites
 
-Plain scripts, no pytest — the same posture as the AequilibraE worker. All but
-one run on the standard library alone:
+Plain scripts, no pytest — the same posture as the AequilibraE worker. Use the
+worker venv so the HTTP-client and reprojection checks exercise the deployed
+dependencies:
 
 ```bash
 cd workers/odm_worker
-for f in test_*.py; do python3 "$f" || break; done
+for f in test_*.py; do .venv311/bin/python "$f" || break; done
 ```
 
-`test_georef.py`'s reprojection checks need `pyproj` and say so when it is
-absent (the tag-parser checks still run). Inside the built container all
-dependencies are present, and one check skips by name instead: the contract
-enum cross-check needs the repo's schema file, which is not shipped in the
-image.
+Inside the built container all dependencies are present, including GDAL for
+the real preview-rendering path. Two repository-surface checks skip by name
+there: the contract enum cross-check needs the repo's schema file, and the
+private-port check needs `docker-compose.yml`; neither file is shipped in the
+runtime image. Both checks run from the checkout before the image build.
 
 ```bash
 docker compose exec odm-worker sh -c 'for f in test_*.py; do python "$f" || break; done'

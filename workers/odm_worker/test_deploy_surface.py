@@ -42,6 +42,10 @@ def published_ports(text: str) -> list[str]:
 
 class TheComposeFileKeepsNodeOdmPrivate(unittest.TestCase):
     def test_every_published_port_binds_loopback(self) -> None:
+        if not COMPOSE.exists():
+            self.skipTest(
+                "docker-compose.yml is not shipped in the worker image; run this check from the repo checkout"
+            )
         ports = published_ports(COMPOSE.read_text())
         # An empty parse would pass a vacuous loop; the compose file publishes
         # NodeODM today, so finding nothing means the parser lost the file.

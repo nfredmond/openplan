@@ -21,6 +21,31 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.25.0 — 2026-08-23
+
+**No migrations.** Rebuild and restart the self-hosted ODM worker, then deploy
+the app. Re-run any mission that the previous self-hosted worker marked
+successful without map placement; NodeODM may have returned a 25-byte JSON
+error where that worker expected an image.
+
+### Real orthophotos now survive processing and appear on the map
+
+The ODM worker now collects NodeODM's supported `all.zip` export, extracts only
+the known deliverables, and renders the browser preview from the real GeoTIFF
+with GDAL. It refuses NodeODM's unusual HTTP-200 JSON error response instead of
+hashing and storing those bytes as if they were TIFF, PNG, elevation, and point
+cloud artifacts.
+
+Selected aerial imagery now includes a **Zoom to preview** control on shared
+planning maps. This makes a small mission raster visible instead of leaving it
+effectively hidden at the default city or regional scale.
+
+A repeatable local browser smoke processed 16 genuine overlapping photos,
+verified the held preview's signed bytes and SHA-256, rendered the raster on the
+mission and shared Aerial maps, and proved the shared map canvas changed when
+the layer was switched off. Source photos, exact coordinates, and screenshots
+remain local.
+
 ## 0.24.0 — 2026-08-23
 
 **No migrations.** Pull and deploy. Existing aerial processing jobs and held

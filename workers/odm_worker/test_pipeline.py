@@ -65,12 +65,14 @@ class FakeClient:
             self.infos.pop(0)
         return info
 
-    def download_asset(self, uuid, asset, dest):
-        if asset not in self.assets:
-            return None
-        with open(dest, "wb") as handle:
-            handle.write(self.assets[asset])
-        return len(self.assets[asset])
+    def download_outputs(self, uuid, dest_dir):
+        staged = {}
+        for asset, data in self.assets.items():
+            dest = os.path.join(dest_dir, asset)
+            with open(dest, "wb") as handle:
+                handle.write(data)
+            staged[asset] = dest
+        return staged
 
 
 def make_job(request_id="req-pipe-0001"):
@@ -140,9 +142,6 @@ def check_success_with_georef():
         f"only what NodeODM produced may be claimed: {kinds}"
     )
     assert client.uploaded == ["a.jpg", "b.jpg"], "every image must reach NodeODM"
-    assert {"name": "orthophoto-png", "value": True} in client.options, (
-        "the preview PNG must always be requested from ODM"
-    )
     by_kind = {a["kind"]: a for a in final["artifacts"]}
     for artifact in final["artifacts"]:
         assert artifact["downloadUrl"].startswith(main.CONFIG["public_url"] + "/artifacts/")

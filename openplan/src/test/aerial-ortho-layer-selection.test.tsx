@@ -52,6 +52,11 @@ function FailureControl() {
   );
 }
 
+function FocusProbe() {
+  const { focusRequest } = useAerialOrthoLayers();
+  return <output data-testid="aerial-focus-request">{focusRequest?.custodyId ?? "none"}</output>;
+}
+
 describe("aerial orthophoto layer selection", () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -66,6 +71,7 @@ describe("aerial orthophoto layer selection", () => {
     render(
       <AerialOrthoLayerProvider workspaceId={WORKSPACE_ID}>
         <AerialOrthoLayersPanel compact />
+        <FocusProbe />
       </AerialOrthoLayerProvider>,
     );
 
@@ -81,6 +87,9 @@ describe("aerial orthophoto layer selection", () => {
     expect(screen.getByText("Collected 2026-08-22")).toBeInTheDocument();
     expect(screen.getByText("Ground sample distance 0.04 m")).toBeInTheDocument();
     expect(screen.getByText("Native CRS EPSG:32632")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Zoom to preview" }));
+    expect(checkbox).toBeChecked();
+    expect(screen.getByTestId("aerial-focus-request")).toHaveTextContent(CUSTODY_ID);
   });
 
   it("clears a saved selection when the verified artifact leaves the catalog", async () => {

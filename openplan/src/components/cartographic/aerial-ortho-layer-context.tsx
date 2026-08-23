@@ -16,8 +16,10 @@ type AerialOrthoLayerContextValue = {
   notes: string[];
   selected: Record<string, boolean>;
   failures: Record<string, string>;
+  focusRequest: { custodyId: string; sequence: number } | null;
   setSelected: (custodyId: string, on: boolean) => void;
   toggleSelected: (custodyId: string) => void;
+  requestFocus: (custodyId: string) => void;
   setLayerFailure: (custodyId: string, message: string | null) => void;
 };
 
@@ -66,6 +68,7 @@ export function AerialOrthoLayerProvider({
   const [notes, setNotes] = useState<string[]>([]);
   const [selected, setSelectedState] = useState<Record<string, boolean>>({});
   const [failures, setFailures] = useState<Record<string, string>>({});
+  const [focusRequest, setFocusRequest] = useState<{ custodyId: string; sequence: number } | null>(null);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -142,6 +145,11 @@ export function AerialOrthoLayerProvider({
     [selected, setSelected],
   );
 
+  const requestFocus = useCallback((custodyId: string) => {
+    if (!layers.some((layer) => layer.custodyId === custodyId)) return;
+    setFocusRequest((previous) => ({ custodyId, sequence: (previous?.sequence ?? 0) + 1 }));
+  }, [layers]);
+
   const setLayerFailure = useCallback((custodyId: string, message: string | null) => {
     setFailures((previous) => {
       const next = { ...previous };
@@ -159,11 +167,13 @@ export function AerialOrthoLayerProvider({
       notes,
       selected,
       failures,
+      focusRequest,
       setSelected,
       toggleSelected,
+      requestFocus,
       setLayerFailure,
     }),
-    [workspaceId, catalogState, layers, notes, selected, failures, setSelected, toggleSelected, setLayerFailure],
+    [workspaceId, catalogState, layers, notes, selected, failures, focusRequest, setSelected, toggleSelected, requestFocus, setLayerFailure],
   );
 
   return <AerialOrthoLayerContext.Provider value={value}>{children}</AerialOrthoLayerContext.Provider>;
@@ -183,8 +193,10 @@ export function useAerialOrthoLayers(): AerialOrthoLayerContextValue {
     notes: [],
     selected: EMPTY_SELECTION,
     failures: EMPTY_FAILURES,
+    focusRequest: null,
     setSelected: NOOP,
     toggleSelected: NOOP,
+    requestFocus: NOOP,
     setLayerFailure: NOOP,
   };
 }

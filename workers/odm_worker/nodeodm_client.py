@@ -18,6 +18,9 @@ NodeODM status codes (task info "status": {"code": N}):
 
 import json
 import os
+import shutil
+import subprocess
+import zipfile
 
 import requests
 
@@ -117,9 +120,100 @@ class NodeODMClient:
             raise NodeODMError(
                 f"NodeODM download of {asset} answered HTTP {response.status_code}"
             )
+        content_type = (response.headers.get("content-type") or "").lower()
+        if "application/json" in content_type:
+            try:
+                payload = response.json()
+            except ValueError as exc:
+                raise NodeODMError(
+                    f"NodeODM download of {asset} answered invalid JSON"
+                ) from exc
+            if isinstance(payload, dict) and payload.get("error"):
+                raise NodeODMError(
+                    f"NodeODM download of {asset} answered: {payload['error']}"
+                )
         written = 0
         with open(dest_path, "wb") as out:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 out.write(chunk)
                 written += len(chunk)
         return written
+
+    def download_outputs(self, uuid, dest_dir):
+        """Fetch NodeODM's supported ``all.zip`` export once, then stage the
+        exact outputs OpenPlan understands.
+
+        NodeODM 2.2 answers unknown named downloads with HTTP 200 plus
+        ``{"error":"Invalid asset"}``. Treating those 25 bytes as GeoTIFFs was
+        the defect this path replaces. The preview is rendered from the real
+        orthomosaic because NodeODM's archive does not contain a downloadable
+        preview PNG.
+        """
+        os.makedirs(dest_dir, exist_ok=True)
+        archive_path = os.path.join(dest_dir, "nodeodm-all.zip")
+        written = self.download_asset(uuid, "all.zip", archive_path)
+        if not written:
+            raise NodeODMError("NodeODM completed but its all.zip export is missing")
+
+        members = {
+            "orthophoto.tif": "odm_orthophoto/odm_orthophoto.tif",
+            "dsm.tif": "odm_dem/dsm.tif",
+            "dtm.tif": "odm_dem/dtm.tif",
+            "georeferenced_model.laz": "odm_georeferencing/odm_georeferenced_model.laz",
+        }
+        staged = {}
+        try:
+            with zipfile.ZipFile(archive_path) as archive:
+                names = set(archive.namelist())
+                for asset, member in members.items():
+                    if member not in names:
+                        continue
+                    dest_path = os.path.join(dest_dir, asset)
+                    with archive.open(member) as source, open(dest_path, "wb") as dest:
+                        shutil.copyfileobj(source, dest, length=1024 * 1024)
+                    staged[asset] = dest_path
+        except (OSError, zipfile.BadZipFile) as exc:
+            raise NodeODMError(f"NodeODM all.zip could not be read: {exc}") from exc
+        finally:
+            try:
+                os.unlink(archive_path)
+            except FileNotFoundError:
+                pass
+
+        ortho_path = staged.get("orthophoto.tif")
+        if not ortho_path:
+            return staged
+        gdal_translate = shutil.which("gdal_translate")
+        if not gdal_translate:
+            raise NodeODMError(
+                "gdal_translate is required to render the orthophoto preview"
+            )
+        preview_path = os.path.join(dest_dir, "orthophoto.png")
+        completed = subprocess.run(
+            [
+                gdal_translate,
+                "-q",
+                "-of",
+                "PNG",
+                "-outsize",
+                "1600",
+                "0",
+                ortho_path,
+                preview_path,
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if completed.returncode != 0:
+            detail = (completed.stderr or completed.stdout or "no detail").strip()
+            raise NodeODMError(f"orthophoto preview rendering failed: {detail}"[:2048])
+        try:
+            with open(preview_path, "rb") as preview:
+                signature = preview.read(8)
+        except OSError as exc:
+            raise NodeODMError(f"orthophoto preview was not created: {exc}") from exc
+        if signature != b"\x89PNG\r\n\x1a\n":
+            raise NodeODMError("orthophoto preview is not a PNG")
+        staged["orthophoto.png"] = preview_path
+        return staged

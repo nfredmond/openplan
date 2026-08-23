@@ -2,6 +2,12 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# The map preview is rendered from NodeODM's real GeoTIFF. NodeODM's supported
+# download is all.zip and does not include the requested preview PNG.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gdal-bin \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install Python dependencies first so image rebuilds reuse the layer.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

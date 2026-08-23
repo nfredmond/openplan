@@ -190,6 +190,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
     migrationsAtRelease: 208,
   },
+  // 0.25.0 — the self-hosted ODM worker collects real NodeODM exports and
+  // authenticated planning maps can zoom to a selected preview. No schema
+  // change; the worker image gains GDAL for deterministic PNG rendering.
+  {
+    tag: "0.25.0",
+    lastMigration: "20260822000001_work_notification_recipient_can_mark_read.sql",
+    migrationsAtRelease: 208,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

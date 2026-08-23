@@ -17,7 +17,7 @@ export function useAerialOrthoMapBinding(input: {
   enabled: boolean;
   resolveAnchorLayerId: (map: AerialOrthoMapTarget) => string | undefined;
 }) {
-  const { layers, selected, setLayerFailure } = useAerialOrthoLayers();
+  const { layers, selected, focusRequest, setLayerFailure } = useAerialOrthoLayers();
   const [resolved, setResolved] = useState<Record<string, ResolvedAerialOrthoLayer>>({});
   const anchorResolverRef = useRef(input.resolveAnchorLayerId);
   const knownCustodyIdsRef = useRef(new Set<string>());
@@ -90,5 +90,14 @@ export function useAerialOrthoMapBinding(input: {
     eventMap.on?.("style.load", paint);
     return () => eventMap.off?.("style.load", paint);
   }, [input.mapRef, input.ready, input.enabled, layers, resolved]);
+
+  useEffect(() => {
+    const map = input.mapRef.current;
+    if (!map || !input.ready || !input.enabled || !focusRequest) return;
+    const layer = layers.find((candidate) => candidate.custodyId === focusRequest.custodyId);
+    if (!layer || selected[layer.custodyId] !== true) return;
+    const [west, south, east, north] = layer.bounds;
+    map.fitBounds?.([[west, south], [east, north]], { padding: 72, maxZoom: 19 });
+  }, [input.mapRef, input.ready, input.enabled, layers, selected, focusRequest]);
 
 }

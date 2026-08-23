@@ -92,10 +92,8 @@ PRESET_OPTIONS = {
         {"name": "feature-quality", "value": "high"},
     ],
 }
-ALWAYS_OPTIONS = [{"name": "orthophoto-png", "value": True}]
-
-# Which NodeODM download asset carries which contract artifact kind. Absence of
-# an optional asset is an answer (the preset did not produce it), not an error;
+# Which staged output carries which contract artifact kind. Absence of an
+# optional output is an answer (the preset did not produce it), not an error;
 # only the orthomosaic is required for a job to count as succeeded.
 ASSET_BY_KIND = [
     ("orthomosaic", "orthophoto.tif", "image/tiff", True),
@@ -300,9 +298,7 @@ def process_job(job, make_client=None, prepare=None, publish=None, send=None, sl
             client = make_client()
 
         preset = request.get("presetId") or "balanced"
-        options = list(PRESET_OPTIONS.get(preset, PRESET_OPTIONS["balanced"])) + list(
-            ALWAYS_OPTIONS
-        )
+        options = list(PRESET_OPTIONS.get(preset, PRESET_OPTIONS["balanced"]))
 
         send(
             job,
@@ -348,12 +344,10 @@ def process_job(job, make_client=None, prepare=None, publish=None, send=None, sl
         send(job, "running", progress=92, message="Collecting outputs from NodeODM")
         downloads_dir = os.path.join(work_dir, "outputs")
         os.makedirs(downloads_dir, exist_ok=True)
-        staged = {}
+        staged = client.download_outputs(task_uuid, downloads_dir)
         found_kinds = []
         for kind, asset, content_type, required in ASSET_BY_KIND:
-            dest = os.path.join(downloads_dir, asset)
-            written = client.download_asset(task_uuid, asset, dest)
-            if written is None:
+            if asset not in staged:
                 if required:
                     send(
                         job,
@@ -366,7 +360,6 @@ def process_job(job, make_client=None, prepare=None, publish=None, send=None, sl
                     job["state"] = "failed"
                     return
                 continue
-            staged[asset] = dest
             found_kinds.append((kind, asset, content_type))
 
         # Georeferencing: read the orthomosaic's own tags; the preview PNG is a
@@ -612,7 +605,10 @@ class WorkerHandler(BaseHTTPRequestHandler):
 
 
 def build_server(host="0.0.0.0", port=None):
-    return ThreadingHTTPServer((host, port or CONFIG["port"]), WorkerHandler)
+    return ThreadingHTTPServer(
+        (host, CONFIG["port"] if port is None else port),
+        WorkerHandler,
+    )
 
 
 def main():

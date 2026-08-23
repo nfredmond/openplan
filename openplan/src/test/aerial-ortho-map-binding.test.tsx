@@ -4,8 +4,9 @@ import type { AerialOrthoMapTarget } from "@/lib/cartographic/aerial-ortho-map-l
 
 const mocks = vi.hoisted(() => ({
   custodyId: "44444444-4444-4444-8444-444444444444",
-  layers: [] as Array<{ custodyId: string }>,
+  layers: [] as Array<{ custodyId: string; bounds: [number, number, number, number] }>,
   selected: {} as Record<string, boolean>,
+  focusRequest: null as { custodyId: string; sequence: number } | null,
   setLayerFailure: vi.fn(),
   resolveAerialOrthoLayer: vi.fn(),
 }));
@@ -14,6 +15,7 @@ vi.mock("@/components/cartographic/aerial-ortho-layer-context", () => ({
   useAerialOrthoLayers: () => ({
     layers: mocks.layers,
     selected: mocks.selected,
+    focusRequest: mocks.focusRequest,
     setLayerFailure: mocks.setLayerFailure,
   }),
   resolveAerialOrthoLayer: mocks.resolveAerialOrthoLayer,
@@ -37,8 +39,9 @@ function Harness({ mapRef = { current: null }, ready = false }: {
 describe("useAerialOrthoMapBinding", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.layers = [{ custodyId: mocks.custodyId }];
+    mocks.layers = [{ custodyId: mocks.custodyId, bounds: [7.1, 45.1, 7.2, 45.2] }];
     mocks.selected = { [mocks.custodyId]: true };
+    mocks.focusRequest = null;
     mocks.resolveAerialOrthoLayer.mockRejectedValue(new Error("signed link expired"));
   });
 
@@ -47,6 +50,28 @@ describe("useAerialOrthoMapBinding", () => {
 
     await waitFor(() =>
       expect(mocks.setLayerFailure).toHaveBeenCalledWith(mocks.custodyId, "signed link expired"),
+    );
+  });
+
+  it("fits the map to a planner-requested preview", async () => {
+    const fitBounds = vi.fn();
+    const map = {
+      getSource: () => undefined,
+      addSource: () => undefined,
+      removeSource: () => undefined,
+      getLayer: () => undefined,
+      addLayer: () => undefined,
+      removeLayer: () => undefined,
+      moveLayer: () => undefined,
+      fitBounds,
+    } satisfies AerialOrthoMapTarget;
+    mocks.focusRequest = { custodyId: mocks.custodyId, sequence: 1 };
+
+    render(<Harness mapRef={{ current: map }} ready />);
+
+    expect(fitBounds).toHaveBeenCalledWith(
+      [[7.1, 45.1], [7.2, 45.2]],
+      { padding: 72, maxZoom: 19 },
     );
   });
 

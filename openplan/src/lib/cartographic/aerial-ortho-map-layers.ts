@@ -17,6 +17,10 @@ export type AerialOrthoMapTarget = {
   addLayer(layer: AnyLayer, before?: string): unknown;
   removeLayer(id: string): unknown;
   moveLayer(id: string, before?: string): unknown;
+  fitBounds?(
+    bounds: [[number, number], [number, number]],
+    options?: { padding?: number; maxZoom?: number },
+  ): unknown;
 };
 
 export const aerialOrthoSourceId = (custodyId: string) => `cartographic-aerial-ortho-${custodyId}`;
