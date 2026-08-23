@@ -1,14 +1,14 @@
 {
   "county_fips": "09160",
   "error": {
-    "kind": "DemandConservationError",
-    "message": "Demand conservation failed: reported_vmt_matches_serialized_links",
-    "detail_record": "../../../pre-result-failure-v2.json"
+    "kind": "GatewayVolumeStudyError",
+    "message": "Baseline and candidate changed the matched-station exam; refusing the county result.",
+    "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/code/openplan/scripts/modeling/run_gateway_volume_study.py\", line 368, in run_county\n    output_hashes = assemble_county_outputs(\n                    ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/code/openplan/scripts/modeling/run_gateway_volume_study.py\", line 203, in assemble_county_outputs\n    raise GatewayVolumeStudyError(\nGatewayVolumeStudyError: Baseline and candidate changed the matched-station exam; refusing the county result.\n"
   },
-  "finished_at_utc": "2026-08-23T07:07:55.039599+00:00",
+  "finished_at_utc": "2026-08-23T07:33:26.007228+00:00",
   "half": "development",
   "schema_version": "openplan.gateway-volume-study-county.v1",
-  "seconds": 1431.1,
-  "started_at_utc": "2026-08-23T06:44:03.949638+00:00",
-  "status": "failed_before_validation"
+  "seconds": 850.6,
+  "started_at_utc": "2026-08-23T07:19:15.384960+00:00",
+  "status": "failed"
 }

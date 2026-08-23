@@ -1,0 +1,524 @@
+{
+  "runs": {
+    "activitysim_baseline": {
+      "accounting": {
+        "auto_person_trips": 312983.0,
+        "daily_assignment_vehicle_trips": 402530.83,
+        "external_vehicle_trips": 154000.0,
+        "external_vehicle_trips_before_reachability": 154000.0,
+        "external_vehicle_trips_dropped_unreachable": 0.0,
+        "input_unit": "vehicle_trips",
+        "internal_vehicle_trips": 248530.83,
+        "internal_vehicle_trips_before_reachability": 248530.83,
+        "internal_vehicle_trips_dropped_unreachable": 0.0,
+        "non_auto_person_trips": 56713,
+        "overall_demand_scalar": 1.0,
+        "person_trips": 369696,
+        "unassigned_person_trips": 0.0,
+        "vehicle_conversion": {
+          "method": "producer_preconverted_vehicle_matrix",
+          "producer_record": {
+            "modes_seen": {
+              "BIKE": 5911,
+              "DRIVEALONEFREE": 185919,
+              "SHARED2FREE": 60383,
+              "SHARED3FREE": 45913,
+              "TAXI": 2140,
+              "TNC_SHARED": 4951,
+              "TNC_SINGLE": 13677,
+              "WALK": 50802
+            },
+            "non_auto_person_trips": 56713,
+            "note": "369,696 person-trips became 248,530 vehicle trips after dividing shared rides by their occupancy. 56,713 were walk, bike or transit trips, which put no vehicle on the network being assigned.",
+            "occupancy_applied": {
+              "DRIVEALONE": 1.0,
+              "SHARED2": 2.0,
+              "SHARED3": 3.25,
+              "TAXI": 1.0,
+              "TNC_SHARED": 2.0,
+              "TNC_SINGLE": 1.0
+            },
+            "person_trips": 369696,
+            "person_trips_outside_the_zone_system": 0,
+            "person_trips_with_an_unreadable_zone": 0,
+            "unrecognised_modes": {},
+            "vehicle_trips": 248530.077
+          }
+        }
+      },
+      "assignment": {
+        "daily_vehicle_trips": 402530.83,
+        "period_factor": 0.1,
+        "period_vehicle_trips": 40253.083,
+        "recomputed_network_vmt": 4359088.354338814,
+        "reported_network_vmt": 4359088.4
+      },
+      "chain": [
+        "person_trips",
+        "vehicle_conversion",
+        "internal_demand",
+        "external_demand",
+        "period_totals",
+        "assignment_totals",
+        "reported_vmt"
+      ],
+      "checks": [
+        {
+          "code": "person_trips_split_into_auto_non_auto_and_unassigned",
+          "difference": 0.0,
+          "left": 369696.0,
+          "passed": true,
+          "right": 369696.0,
+          "tolerance": 0.05
+        },
+        {
+          "code": "internal_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 248530.83,
+          "passed": true,
+          "right": 248530.83,
+          "tolerance": 0.05
+        },
+        {
+          "code": "external_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 154000.0,
+          "passed": true,
+          "right": 154000.0,
+          "tolerance": 0.05
+        },
+        {
+          "code": "daily_matrix_is_internal_plus_external",
+          "difference": 0.0,
+          "left": 402530.83,
+          "passed": true,
+          "right": 402530.83,
+          "tolerance": 0.05
+        },
+        {
+          "code": "period_matrix_uses_registered_factor",
+          "difference": -0.0,
+          "left": 40253.083,
+          "passed": true,
+          "right": 40253.083,
+          "tolerance": 0.05
+        },
+        {
+          "code": "assignment_reads_the_daily_matrix",
+          "difference": 0.0,
+          "left": 402530.83,
+          "passed": true,
+          "right": 402530.83,
+          "tolerance": 0.05
+        },
+        {
+          "code": "reported_vmt_matches_serialized_links",
+          "difference": 0.045661,
+          "left": 4359088.4,
+          "passed": true,
+          "right": 4359088.354339,
+          "tolerance": 0.11
+        },
+        {
+          "code": "producer_vehicle_total_reaches_internal_matrix",
+          "difference": -0.753,
+          "left": 248530.077,
+          "passed": true,
+          "right": 248530.83,
+          "tolerance": 4970.60154
+        }
+      ],
+      "failed_checks": [],
+      "schema_version": "openplan.demand-conservation.v1",
+      "status": "passed"
+    },
+    "activitysim_candidate": {
+      "accounting": {
+        "auto_person_trips": 312983.0,
+        "daily_assignment_vehicle_trips": 443706.48,
+        "external_vehicle_trips": 195175.65,
+        "external_vehicle_trips_before_reachability": 195175.65,
+        "external_vehicle_trips_dropped_unreachable": 0.0,
+        "input_unit": "vehicle_trips",
+        "internal_vehicle_trips": 248530.83,
+        "internal_vehicle_trips_before_reachability": 248530.83,
+        "internal_vehicle_trips_dropped_unreachable": 0.0,
+        "non_auto_person_trips": 56713,
+        "overall_demand_scalar": 1.0,
+        "person_trips": 369696,
+        "unassigned_person_trips": 0.0,
+        "vehicle_conversion": {
+          "method": "producer_preconverted_vehicle_matrix",
+          "producer_record": {
+            "modes_seen": {
+              "BIKE": 5911,
+              "DRIVEALONEFREE": 185919,
+              "SHARED2FREE": 60383,
+              "SHARED3FREE": 45913,
+              "TAXI": 2140,
+              "TNC_SHARED": 4951,
+              "TNC_SINGLE": 13677,
+              "WALK": 50802
+            },
+            "non_auto_person_trips": 56713,
+            "note": "369,696 person-trips became 248,530 vehicle trips after dividing shared rides by their occupancy. 56,713 were walk, bike or transit trips, which put no vehicle on the network being assigned.",
+            "occupancy_applied": {
+              "DRIVEALONE": 1.0,
+              "SHARED2": 2.0,
+              "SHARED3": 3.25,
+              "TAXI": 1.0,
+              "TNC_SHARED": 2.0,
+              "TNC_SINGLE": 1.0
+            },
+            "person_trips": 369696,
+            "person_trips_outside_the_zone_system": 0,
+            "person_trips_with_an_unreadable_zone": 0,
+            "unrecognised_modes": {},
+            "vehicle_trips": 248530.077
+          }
+        }
+      },
+      "assignment": {
+        "daily_vehicle_trips": 443706.48,
+        "period_factor": 0.1,
+        "period_vehicle_trips": 44370.648,
+        "recomputed_network_vmt": 5223248.187817238,
+        "reported_network_vmt": 5223248.2
+      },
+      "chain": [
+        "person_trips",
+        "vehicle_conversion",
+        "internal_demand",
+        "external_demand",
+        "period_totals",
+        "assignment_totals",
+        "reported_vmt"
+      ],
+      "checks": [
+        {
+          "code": "person_trips_split_into_auto_non_auto_and_unassigned",
+          "difference": 0.0,
+          "left": 369696.0,
+          "passed": true,
+          "right": 369696.0,
+          "tolerance": 0.05
+        },
+        {
+          "code": "internal_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 248530.83,
+          "passed": true,
+          "right": 248530.83,
+          "tolerance": 0.05
+        },
+        {
+          "code": "external_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 195175.65,
+          "passed": true,
+          "right": 195175.65,
+          "tolerance": 0.05
+        },
+        {
+          "code": "daily_matrix_is_internal_plus_external",
+          "difference": 0.0,
+          "left": 443706.48,
+          "passed": true,
+          "right": 443706.48,
+          "tolerance": 0.05
+        },
+        {
+          "code": "period_matrix_uses_registered_factor",
+          "difference": 0.0,
+          "left": 44370.648,
+          "passed": true,
+          "right": 44370.648,
+          "tolerance": 0.05
+        },
+        {
+          "code": "assignment_reads_the_daily_matrix",
+          "difference": 0.0,
+          "left": 443706.48,
+          "passed": true,
+          "right": 443706.48,
+          "tolerance": 0.05
+        },
+        {
+          "code": "reported_vmt_matches_serialized_links",
+          "difference": 0.012183,
+          "left": 5223248.2,
+          "passed": true,
+          "right": 5223248.187817,
+          "tolerance": 0.11
+        },
+        {
+          "code": "producer_vehicle_total_reaches_internal_matrix",
+          "difference": -0.753,
+          "left": 248530.077,
+          "passed": true,
+          "right": 248530.83,
+          "tolerance": 4970.60154
+        }
+      ],
+      "failed_checks": [],
+      "schema_version": "openplan.demand-conservation.v1",
+      "status": "passed"
+    },
+    "aequilibrae_baseline": {
+      "accounting": {
+        "auto_person_trips": 386576.62658037303,
+        "daily_assignment_vehicle_trips": 404996.38914,
+        "external_vehicle_trips": 154000.0,
+        "external_vehicle_trips_before_reachability": 154000.0,
+        "external_vehicle_trips_dropped_unreachable": 0.0,
+        "input_unit": "person_trips",
+        "internal_vehicle_trips": 250996.38914,
+        "internal_vehicle_trips_before_reachability": 250996.38914,
+        "internal_vehicle_trips_dropped_unreachable": -0.0,
+        "non_auto_person_trips": 20767.97341962671,
+        "overall_demand_scalar": 1.0,
+        "person_trips": 407344.59999999974,
+        "unassigned_person_trips": 0.0,
+        "vehicle_conversion": {
+          "method": "purpose_average_occupancy",
+          "occupancy": {
+            "hbo": 1.72,
+            "hbw": 1.08,
+            "nhb": 1.52
+          },
+          "person_trips_by_purpose": {
+            "hbo": 235054.302773,
+            "hbw": 54662.188706,
+            "nhb": 96860.135101
+          },
+          "vehicle_trips_by_purpose": {
+            "hbo": 136659.478356,
+            "hbw": 50613.137691,
+            "nhb": 63723.773093
+          }
+        }
+      },
+      "assignment": {
+        "daily_vehicle_trips": 404996.39,
+        "period_factor": 0.1,
+        "period_vehicle_trips": 40499.638914,
+        "recomputed_network_vmt": 6196364.749720049,
+        "reported_network_vmt": 6196364.7
+      },
+      "chain": [
+        "person_trips",
+        "vehicle_conversion",
+        "internal_demand",
+        "external_demand",
+        "period_totals",
+        "assignment_totals",
+        "reported_vmt"
+      ],
+      "checks": [
+        {
+          "code": "person_trips_split_into_auto_non_auto_and_unassigned",
+          "difference": 0.0,
+          "left": 407344.6,
+          "passed": true,
+          "right": 407344.6,
+          "tolerance": 0.05
+        },
+        {
+          "code": "internal_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 250996.38914,
+          "passed": true,
+          "right": 250996.38914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "external_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 154000.0,
+          "passed": true,
+          "right": 154000.0,
+          "tolerance": 0.05
+        },
+        {
+          "code": "daily_matrix_is_internal_plus_external",
+          "difference": 0.0,
+          "left": 404996.38914,
+          "passed": true,
+          "right": 404996.38914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "period_matrix_uses_registered_factor",
+          "difference": 0.0,
+          "left": 40499.638914,
+          "passed": true,
+          "right": 40499.638914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "assignment_reads_the_daily_matrix",
+          "difference": 0.00086,
+          "left": 404996.39,
+          "passed": true,
+          "right": 404996.38914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "reported_vmt_matches_serialized_links",
+          "difference": -0.04972,
+          "left": 6196364.7,
+          "passed": true,
+          "right": 6196364.74972,
+          "tolerance": 0.11
+        },
+        {
+          "code": "vehicle_conversion_preserves_auto_person_trips",
+          "difference": 0.0,
+          "left": 386576.62658,
+          "passed": true,
+          "right": 386576.62658,
+          "tolerance": 0.05
+        },
+        {
+          "code": "purpose_person_total_matches_auto_person_trips",
+          "difference": 0.0,
+          "left": 386576.62658,
+          "passed": true,
+          "right": 386576.62658,
+          "tolerance": 0.05
+        }
+      ],
+      "failed_checks": [],
+      "schema_version": "openplan.demand-conservation.v1",
+      "status": "passed"
+    },
+    "aequilibrae_candidate": {
+      "accounting": {
+        "auto_person_trips": 386576.62658037303,
+        "daily_assignment_vehicle_trips": 446172.03914,
+        "external_vehicle_trips": 195175.65,
+        "external_vehicle_trips_before_reachability": 195175.65,
+        "external_vehicle_trips_dropped_unreachable": 0.0,
+        "input_unit": "person_trips",
+        "internal_vehicle_trips": 250996.38914,
+        "internal_vehicle_trips_before_reachability": 250996.38914,
+        "internal_vehicle_trips_dropped_unreachable": -0.0,
+        "non_auto_person_trips": 20767.97341962671,
+        "overall_demand_scalar": 1.0,
+        "person_trips": 407344.59999999974,
+        "unassigned_person_trips": 0.0,
+        "vehicle_conversion": {
+          "method": "purpose_average_occupancy",
+          "occupancy": {
+            "hbo": 1.72,
+            "hbw": 1.08,
+            "nhb": 1.52
+          },
+          "person_trips_by_purpose": {
+            "hbo": 235054.302773,
+            "hbw": 54662.188706,
+            "nhb": 96860.135101
+          },
+          "vehicle_trips_by_purpose": {
+            "hbo": 136659.478356,
+            "hbw": 50613.137691,
+            "nhb": 63723.773093
+          }
+        }
+      },
+      "assignment": {
+        "daily_vehicle_trips": 446172.04,
+        "period_factor": 0.1,
+        "period_vehicle_trips": 44617.203914,
+        "recomputed_network_vmt": 7065517.7787474785,
+        "reported_network_vmt": 7065517.8
+      },
+      "chain": [
+        "person_trips",
+        "vehicle_conversion",
+        "internal_demand",
+        "external_demand",
+        "period_totals",
+        "assignment_totals",
+        "reported_vmt"
+      ],
+      "checks": [
+        {
+          "code": "person_trips_split_into_auto_non_auto_and_unassigned",
+          "difference": 0.0,
+          "left": 407344.6,
+          "passed": true,
+          "right": 407344.6,
+          "tolerance": 0.05
+        },
+        {
+          "code": "internal_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 250996.38914,
+          "passed": true,
+          "right": 250996.38914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "external_reachability_losses_accounted",
+          "difference": 0.0,
+          "left": 195175.65,
+          "passed": true,
+          "right": 195175.65,
+          "tolerance": 0.05
+        },
+        {
+          "code": "daily_matrix_is_internal_plus_external",
+          "difference": 0.0,
+          "left": 446172.03914,
+          "passed": true,
+          "right": 446172.03914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "period_matrix_uses_registered_factor",
+          "difference": -0.0,
+          "left": 44617.203914,
+          "passed": true,
+          "right": 44617.203914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "assignment_reads_the_daily_matrix",
+          "difference": 0.00086,
+          "left": 446172.04,
+          "passed": true,
+          "right": 446172.03914,
+          "tolerance": 0.05
+        },
+        {
+          "code": "reported_vmt_matches_serialized_links",
+          "difference": 0.021253,
+          "left": 7065517.8,
+          "passed": true,
+          "right": 7065517.778747,
+          "tolerance": 0.11
+        },
+        {
+          "code": "vehicle_conversion_preserves_auto_person_trips",
+          "difference": 0.0,
+          "left": 386576.62658,
+          "passed": true,
+          "right": 386576.62658,
+          "tolerance": 0.05
+        },
+        {
+          "code": "purpose_person_total_matches_auto_person_trips",
+          "difference": 0.0,
+          "left": 386576.62658,
+          "passed": true,
+          "right": 386576.62658,
+          "tolerance": 0.05
+        }
+      ],
+      "failed_checks": [],
+      "schema_version": "openplan.demand-conservation.v1",
+      "status": "passed"
+    }
+  }
+}

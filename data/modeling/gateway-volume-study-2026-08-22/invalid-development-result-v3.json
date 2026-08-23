@@ -1,0 +1,37 @@
+{
+  "schema_version": "openplan.gateway-volume-study-invalid-development-result.v1",
+  "county_fips": "09160",
+  "study_half": "development",
+  "started_at_utc": "2026-08-23T07:19:15.384960+00:00",
+  "stopped_at_utc": "2026-08-23T07:33:26.007228+00:00",
+  "candidate_freeze_sha256": "641db1ec31ca0863922325aad43f8d5b350085e4e8126a37d7dd9519b4c383e2",
+  "candidate_commit": "3865580aa6ed00bd03332b8961970a694c8201e5",
+  "stage": "matched_station_exam_guard",
+  "result_visibility": {
+    "all_four_assignments_completed": true,
+    "conservation_passed": true,
+    "validation_run": true,
+    "development_accuracy_outputs_read": true,
+    "valid_paired_county_result": false,
+    "holdout_opened": false
+  },
+  "refusal": {
+    "reason": "Baseline and candidate changed the matched-station exam, so their accuracy figures are not a paired comparison.",
+    "aequilibrae": {
+      "baseline_matched_stations": 1072,
+      "candidate_matched_stations": 1078,
+      "baseline_only_stations": 22,
+      "candidate_only_stations": 28
+    },
+    "activitysim": {
+      "baseline_matched_stations": 1082,
+      "candidate_matched_stations": 1074,
+      "baseline_only_stations": 37,
+      "candidate_only_stations": 29
+    }
+  },
+  "measurement_defect": {
+    "cause": "The validator ranked otherwise eligible links by assigned volume and preferred a GeoJSON containing only positive-flow links. Changing gateway demand could therefore change the link used to grade that same demand.",
+    "correction": "Candidate v4 chooses the exam from full retained-network geometry using name or class agreement, distance, and stable link id before reading assigned volume."
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "openplan.gateway-volume-study-candidate-supersession.v1",
+  "superseded_freeze": {
+    "path": "candidate-freeze-v3.json",
+    "freeze_sha256": "641db1ec31ca0863922325aad43f8d5b350085e4e8126a37d7dd9519b4c383e2",
+    "candidate_commit": "3865580aa6ed00bd03332b8961970a694c8201e5"
+  },
+  "active_freeze": {
+    "path": "candidate-freeze-v4.json",
+    "freeze_sha256": "b39122b4fb1fca52557fc0f3ce881049dc13da499fff3ee4e704b39476cfe833",
+    "candidate_commit": "f3053e0e73f105983f929de169081127485ec25f"
+  },
+  "reason": "Candidate v3 completed all four development assignments but exposed a measurement defect before a valid paired county result existed: assignment volume selected the link used to grade that assignment, and positive-flow-only geometry changed the available exam. Version 4 makes link selection assignment-independent and includes the validation implementation in the immutable candidate hash.",
+  "result_visibility_before_supersession": {
+    "development_accuracy_outputs_read": true,
+    "valid_paired_county_result": false,
+    "holdout_opened": false
+  },
+  "detail_record": "invalid-development-result-v3.json"
+}
