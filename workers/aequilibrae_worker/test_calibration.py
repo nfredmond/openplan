@@ -10,6 +10,8 @@ class the model under-assigns gets factor > 1 and vice versa; and the overfit
 guard rejects any step that degrades the out-of-sample holdout.
 """
 import sys
+import ast
+from pathlib import Path
 
 import calibration as cal
 import count_validation as cv
@@ -118,21 +120,77 @@ def test_evaluate_matches_known_ape():
     assert ev["n"] == 1 and abs(ev["median_ape"] - 20.0) < 1e-6, ev
 
 
-def test_accept_step_overfit_guard():
-    assert cal.accept_step(0.40, 0.35) is True          # holdout improved
-    assert cal.accept_step(0.40, 0.45) is False         # holdout degraded -> reject
-    assert cal.accept_step(0.40, 0.40) is True          # equal (tol 0) accepted
-    assert cal.accept_step(None, 0.40) is True          # first measured step
-    assert cal.accept_step(0.40, None) is False         # can't validate -> reject
+def test_calibration_step_acceptance_contract():
+    previous = {"median_ape": 40.0}
+    improved = {"median_ape": 39.0}
+    verdict = cal.evaluate_calibration_step(0.5007, 0.4016, previous, improved, 0.0001)
+    assert verdict == {"accepted": True, "reason": "accepted"}, verdict
+
+    assert cal.evaluate_calibration_step(0.40, 0.40, previous, previous, 0.0) == {
+        "accepted": False,
+        "reason": "objective_not_improved",
+    }
+    assert cal.evaluate_calibration_step(0.40, 0.39995, previous, improved, 0.0001) == {
+        "accepted": False,
+        "reason": "objective_not_improved",
+    }
 
 
-def test_accept_step_negative_tol_requires_strict_improvement():
-    # The loop passes tol<0 so an EQUAL holdout objective (a no-op step) is
-    # rejected and can't promote the run to the calibrated tier.
-    m = 1e-4
-    assert cal.accept_step(0.40, 0.40, tol=-m) is False   # equal -> reject
-    assert cal.accept_step(0.40, 0.3999, tol=-m) is True  # improved by >= one ULP
-    assert cal.accept_step(0.40, 0.41, tol=-m) is False   # worse -> reject
+def test_blended_improvement_cannot_hide_worse_median_ape():
+    # The measured probe: the blend looks materially better, but the metric the
+    # screening claim is graded on worsens by four percentage points.
+    verdict = cal.evaluate_calibration_step(
+        0.5007,
+        0.4016,
+        {"median_ape": 40.0},
+        {"median_ape": 44.0},
+        0.0001,
+    )
+    assert verdict == {"accepted": False, "reason": "gate_metric_worsened"}, verdict
+
+
+def test_calibration_step_fails_closed_when_evidence_is_missing():
+    cases = (
+        (None, 0.3, {"median_ape": 40.0}, {"median_ape": 35.0}),
+        (0.4, None, {"median_ape": 40.0}, {"median_ape": 35.0}),
+        (0.4, 0.3, {"median_ape": None}, {"median_ape": 35.0}),
+        (0.4, 0.3, {"median_ape": 40.0}, {"median_ape": None}),
+    )
+    for previous, trial, previous_metrics, trial_metrics in cases:
+        assert cal.evaluate_calibration_step(
+            previous, trial, previous_metrics, trial_metrics, 0.0001
+        ) == {"accepted": False, "reason": "unmeasurable"}
+
+
+def test_both_drivers_route_every_acceptance_site_through_the_shared_verdict():
+    """The drivers may differ in assignment plumbing, never in acceptance."""
+    repo = Path(__file__).resolve().parents[2]
+    expected = {
+        repo / "scripts/modeling/calibrate_to_counts.py": {"calibrate": 3},
+        repo / "workers/aequilibrae_worker/main.py": {
+            "_run_calibration": 1,
+            "_run_demand_nudge": 1,
+        },
+    }
+    for path, function_counts in expected.items():
+        tree = ast.parse(path.read_text())
+        functions = {
+            node.name: node
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        for function_name, expected_count in function_counts.items():
+            calls = [
+                node
+                for node in ast.walk(functions[function_name])
+                if isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == "calibration"
+                and node.func.attr == "evaluate_calibration_step"
+            ]
+            assert len(calls) == expected_count, (path.name, function_name, len(calls))
+            assert all(len(call.args) == 5 and not call.keywords for call in calls)
 
 
 def test_demand_nudge_direction_and_weighting():

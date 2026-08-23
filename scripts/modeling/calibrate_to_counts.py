@@ -208,41 +208,8 @@ def demand_scalar_step(
 
 
 
-def step_improves_the_gate_metric(
-    previous: dict[str, Any], trial: dict[str, Any]
-) -> bool:
-    """A step must not push the run further from the gate it is judged by.
-
-    FOUND BY RUNNING IT, 2026-08-16. The shared engine's objective blends a GEH
-    penalty with a median-APE penalty, and the demand stage improved that blend
-    — held-out GEH 21.20 to 16.81 — while making held-out median APE WORSE,
-    43.29% to 46.25%. The engine accepted it, correctly by its own rule.
-
-    But the screening gate is median absolute percent error. A step that
-    improves a blended objective and moves the run away from the standard it is
-    actually measured against is not an improvement from the product's point of
-    view, and accepting it would mean the calibration optimises something no
-    planner is ever shown.
-
-    So this is an ADDITIONAL condition applied here, not a change to the shared
-    engine — the worker lane is judged the same way and would want the same
-    thing, but that is its decision to make, and silently changing an engine two
-    drivers rely on is how one lane's judgement becomes another's surprise.
-    """
-    previous_ape = previous.get("median_ape")
-    trial_ape = trial.get("median_ape")
-    if trial_ape is None:
-        return False
-    if previous_ape is None:
-        return True
-    return trial_ape <= previous_ape
-
-
 def rejection_reason(
-    previous_objective: float | None,
-    trial_objective: float | None,
-    previous_holdout: dict[str, Any],
-    trial_holdout: dict[str, Any],
+    reason: calibration.CalibrationStepReason,
 ) -> str:
     """Why a step was thrown away — the specific reason, not a generic one.
 
@@ -252,16 +219,16 @@ def rejection_reason(
     which is a fact about the model worth knowing and was invisible while both
     printed the same sentence.
     """
-    if trial_objective is None:
+    if reason == "unmeasurable":
         return "rejected — the held-out counts produced no usable objective"
-    if previous_objective is not None and trial_objective > previous_objective:
+    if reason == "objective_not_improved":
         return "rejected — no strict improvement on the held-out counts"
-    if not step_improves_the_gate_metric(previous_holdout, trial_holdout):
+    if reason == "gate_metric_worsened":
         return (
             "rejected — it improved the blended objective but worsened held-out median "
             "absolute percent error, which is the metric the screening gate is judged on"
         )
-    return "rejected — no strict improvement on the held-out counts"
+    raise ValueError("accepted calibration steps do not have a rejection reason")
 
 
 #: The external-demand scalars a calibration will actually try, before the one
@@ -373,11 +340,10 @@ def calibrate(
 
         # STRICT held-out improvement only. An equal-objective step is a no-op
         # and must never move a run into the calibrated tier.
-        if (
-            trial_objective is not None
-            and calibration.accept_step(best_objective, trial_objective, tol=-min_improvement)
-            and step_improves_the_gate_metric(best_holdout, trial_holdout)
-        ):
+        verdict = calibration.evaluate_calibration_step(
+            best_objective, trial_objective, best_holdout, trial_holdout, min_improvement
+        )
+        if verdict["accepted"]:
             cumulative = trial_cumulative
             best_volumes = trial_volumes
             best_objective = trial_objective
@@ -398,9 +364,7 @@ def calibrate(
                 {
                     "stage": "class",
                     "iteration": iteration,
-                    "outcome": rejection_reason(
-                        best_objective, trial_objective, best_holdout, trial_holdout
-                    ),
+                    "outcome": rejection_reason(verdict["reason"]),
                     "holdout_median_ape": trial_holdout["median_ape"],
                 }
             )
@@ -426,11 +390,10 @@ def calibrate(
         trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
         trial_objective = trial_holdout["objective"]
 
-        if (
-            trial_objective is not None
-            and calibration.accept_step(best_objective, trial_objective, tol=-min_improvement)
-            and step_improves_the_gate_metric(best_holdout, trial_holdout)
-        ):
+        verdict = calibration.evaluate_calibration_step(
+            best_objective, trial_objective, best_holdout, trial_holdout, min_improvement
+        )
+        if verdict["accepted"]:
             demand_scalar = trial_scalar
             best_volumes = trial_volumes
             best_objective = trial_objective
@@ -448,9 +411,7 @@ def calibrate(
             steps.append({
                 "stage": "demand",
                 "iteration": iteration,
-                "outcome": rejection_reason(
-                    best_objective, trial_objective, best_holdout, trial_holdout
-                ),
+                "outcome": rejection_reason(verdict["reason"]),
                 "demand_scalar": round(trial_scalar, 4),
                 "holdout_median_ape": trial_holdout["median_ape"],
             })
@@ -494,11 +455,10 @@ def calibrate(
         trial_holdout = calibration.evaluate(attach_modelled_volumes(holdout_stations, trial_volumes))
         trial_objective = trial_holdout["objective"]
 
-        if (
-            trial_objective is not None
-            and calibration.accept_step(best_objective, trial_objective, tol=-min_improvement)
-            and step_improves_the_gate_metric(best_holdout, trial_holdout)
-        ):
+        verdict = calibration.evaluate_calibration_step(
+            best_objective, trial_objective, best_holdout, trial_holdout, min_improvement
+        )
+        if verdict["accepted"]:
             external_scalar = trial_external
             best_volumes = trial_volumes
             best_objective = trial_objective
@@ -519,9 +479,7 @@ def calibrate(
             steps.append({
                 "stage": "external",
                 "iteration": iteration,
-                "outcome": rejection_reason(
-                    best_objective, trial_objective, best_holdout, trial_holdout
-                ),
+                "outcome": rejection_reason(verdict["reason"]),
                 "external_demand_scalar": round(trial_external, 4),
                 "holdout_median_ape": trial_holdout["median_ape"],
             })

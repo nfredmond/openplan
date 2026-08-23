@@ -2239,15 +2239,20 @@ def _run_demand_nudge(assign_once, make_resident_mat, resident_od, ii_arr, n_ass
         trial_vol = _volumes_by_link(trial_df)
         trial_hold = calibration.evaluate(_match_counts(holdout_stations, link_attrs, trial_vol))
         trial_obj = trial_hold["objective"]
-        if trial_obj is not None and calibration.accept_step(
-            best_hold_obj, trial_obj, tol=-CALIBRATION_MIN_IMPROVEMENT
-        ):
+        verdict = calibration.evaluate_calibration_step(
+            best_hold_obj,
+            trial_obj,
+            best_hold_ev,
+            trial_hold,
+            CALIBRATION_MIN_IMPROVEMENT,
+        )
+        if verdict["accepted"]:
             cur_od, best_df, best_hold_obj, best_hold_ev = trial_od, trial_df, trial_obj, trial_hold
             best_fit_ev = calibration.evaluate(_match_counts(fit_stations, link_attrs, trial_vol))
             accepted += 1
             log += f"  demand iter {it + 1}: accepted (holdout median APE {trial_hold['median_ape']}%).\n"
         else:
-            log += f"  demand iter {it + 1}: rejected (no strict holdout improvement); stopping.\n"
+            log += f"  demand iter {it + 1}: rejected ({verdict['reason']}); stopping.\n"
             break
     # final_internal_od = the accepted nudged resident internal OD (ordered as
     # ii → ordered_zone_ids); None if no step was accepted. Used to write a
@@ -2393,12 +2398,17 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         trial_hold = calibration.evaluate(_match_counts(holdout_stations, link_attrs, trial_vol))
         trial_obj = trial_hold["objective"]
         # Accept ONLY on a STRICT held-out improvement — an equal-objective step
-        # is a no-op and must never promote the run to the calibrated tier. A
-        # negative tol makes accept_step require improvement by at least one
-        # objective ULP (the objective is rounded to 1e-4).
-        if trial_obj is not None and calibration.accept_step(
-            best_hold_obj, trial_obj, tol=-CALIBRATION_MIN_IMPROVEMENT
-        ):
+        # is a no-op and must never promote the run to the calibrated tier.
+        # The shared verdict also protects the planner-facing median-APE gate;
+        # improving the blend while worsening that metric is not accepted.
+        verdict = calibration.evaluate_calibration_step(
+            best_hold_obj,
+            trial_obj,
+            best_hold_ev,
+            trial_hold,
+            CALIBRATION_MIN_IMPROVEMENT,
+        )
+        if verdict["accepted"]:
             cum = trial_cum
             best_df = trial_df
             best_hold_obj = trial_obj
@@ -2408,7 +2418,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
             log += (f"  iter {it + 1}: accepted (holdout median APE {trial_hold['median_ape']}%, "
                     f"factors { {k: round(v, 3) for k, v in cum.items()} }).\n")
         else:
-            log += f"  iter {it + 1}: rejected (no strict holdout improvement); stopping.\n"
+            log += f"  iter {it + 1}: rejected ({verdict['reason']}); stopping.\n"
             break
 
     # Set the graph to the ACCEPTED stage-1 state (cum may be {} -> baseline) so

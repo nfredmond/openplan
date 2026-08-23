@@ -24,8 +24,9 @@ guard — a step that improves the fit set but degrades the holdout is rejected.
 from __future__ import annotations
 
 import random
+import math
 from statistics import median
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Literal, Mapping, Sequence, TypedDict
 
 from count_validation import geh_statistic
 
@@ -45,6 +46,21 @@ GEH_HOURLY_DIVISOR = 24.0
 # GEH per station is normalized to a soft 0..1 penalty at this scale: on the
 # average-hourly basis GEH<5 is the customary "good" line, so 5 maps to ~0.5.
 GEH_SCALE = 5.0
+
+
+CalibrationStepReason = Literal[
+    "accepted",
+    "unmeasurable",
+    "objective_not_improved",
+    "gate_metric_worsened",
+]
+
+
+class CalibrationStepVerdict(TypedDict):
+    """One shared decision contract for every count-calibration driver."""
+
+    accepted: bool
+    reason: CalibrationStepReason
 
 
 def split_holdout(
@@ -215,14 +231,40 @@ def demand_nudge_multipliers(sl_od_by_link, count_ratio_by_link, n_zones,
     return mult
 
 
-def accept_step(prev_holdout_obj: float | None, new_holdout_obj: float | None,
-                tol: float = 0.0) -> bool:
-    """Overfit guard: accept a calibration step only if it does not degrade the
-    HOLDOUT objective (new <= prev + tol). Improving the fit set while the
-    holdout worsens is overfitting and is rejected. Unknown holdout (None) is
-    conservative — never accept a step we can't validate out-of-sample."""
-    if new_holdout_obj is None:
-        return False
-    if prev_holdout_obj is None:
-        return True
-    return new_holdout_obj <= prev_holdout_obj + tol
+def evaluate_calibration_step(
+    previous_objective: float | None,
+    trial_objective: float | None,
+    previous_metrics: Mapping[str, Any],
+    trial_metrics: Mapping[str, Any],
+    minimum_improvement: float,
+) -> CalibrationStepVerdict:
+    """Judge a trial on both the selection objective and the published gate.
+
+    Lower is better for the blended objective and median APE. Missing or
+    non-finite evidence fails closed: a calibration cannot become accepted on
+    a comparison that was not measurable on both sides. An equal objective is
+    a no-op when ``minimum_improvement`` is zero, so improvement is always
+    strict and must also meet the configured minimum.
+    """
+    if minimum_improvement < 0 or not math.isfinite(minimum_improvement):
+        raise ValueError("minimum_improvement must be a finite non-negative number")
+
+    previous_ape = previous_metrics.get("median_ape")
+    trial_ape = trial_metrics.get("median_ape")
+    measurements = (previous_objective, trial_objective, previous_ape, trial_ape)
+    if any(
+        value is None
+        or isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(float(value))
+        for value in measurements
+    ):
+        return {"accepted": False, "reason": "unmeasurable"}
+
+    assert previous_objective is not None and trial_objective is not None
+    improvement = previous_objective - trial_objective
+    if improvement <= 0 or improvement + 1e-12 < minimum_improvement:
+        return {"accepted": False, "reason": "objective_not_improved"}
+    if float(trial_ape) > float(previous_ape):
+        return {"accepted": False, "reason": "gate_metric_worsened"}
+    return {"accepted": True, "reason": "accepted"}

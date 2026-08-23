@@ -20,6 +20,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 WORKER_DIR = SCRIPT_DIR.parents[1] / "workers" / "aequilibrae_worker"
@@ -288,20 +289,21 @@ class GateMetricTests(unittest.TestCase):
     """
 
     def test_a_step_that_worsens_median_ape_is_rejected(self) -> None:
-        from calibrate_to_counts import step_improves_the_gate_metric
-
-        self.assertFalse(
-            step_improves_the_gate_metric({"median_ape": 43.29}, {"median_ape": 46.25})
+        verdict = calibration.evaluate_calibration_step(
+            0.5007,
+            0.4016,
+            {"median_ape": 40.0},
+            {"median_ape": 44.0},
+            0.0001,
         )
+        self.assertFalse(verdict["accepted"])
+        self.assertEqual(verdict["reason"], "gate_metric_worsened")
 
     def test_an_improving_or_equal_step_passes(self) -> None:
-        from calibrate_to_counts import step_improves_the_gate_metric
-
-        self.assertTrue(step_improves_the_gate_metric({"median_ape": 62.8}, {"median_ape": 43.29}))
-        # Equal passes here; the engine's own strict-improvement rule is what
-        # stops a no-op being accepted, and duplicating that check would make
-        # which rule rejected a step ambiguous.
-        self.assertTrue(step_improves_the_gate_metric({"median_ape": 40.0}, {"median_ape": 40.0}))
+        verdict = calibration.evaluate_calibration_step(
+            0.5007, 0.4016, {"median_ape": 62.8}, {"median_ape": 43.29}, 0.0001
+        )
+        self.assertTrue(verdict["accepted"])
 
     def test_the_two_rejection_reasons_are_distinguishable(self) -> None:
         """They mean different things. "The blend got no better" says the
@@ -310,23 +312,59 @@ class GateMetricTests(unittest.TestCase):
         that was invisible while both printed the same sentence."""
         from calibrate_to_counts import rejection_reason
 
-        converged = rejection_reason(0.40, 0.45, {"median_ape": 43.0}, {"median_ape": 50.0})
+        converged = rejection_reason("objective_not_improved")
         self.assertIn("no strict improvement", converged)
 
-        disagreed = rejection_reason(0.40, 0.35, {"median_ape": 43.29}, {"median_ape": 46.25})
+        disagreed = rejection_reason("gate_metric_worsened")
         self.assertIn("worsened held-out median", disagreed)
         self.assertIn("screening gate", disagreed)
         self.assertNotEqual(converged, disagreed)
 
     def test_an_unmeasurable_trial_is_not_accepted_on_trust(self) -> None:
-        from calibrate_to_counts import step_improves_the_gate_metric
+        verdict = calibration.evaluate_calibration_step(
+            0.4, 0.3, {"median_ape": 40.0}, {"median_ape": None}, 0.0001
+        )
+        self.assertEqual(verdict, {"accepted": False, "reason": "unmeasurable"})
 
-        self.assertFalse(step_improves_the_gate_metric({"median_ape": 40.0}, {"median_ape": None}))
+    def test_no_previous_measurement_fails_closed(self) -> None:
+        verdict = calibration.evaluate_calibration_step(
+            0.4, 0.3, {"median_ape": None}, {"median_ape": 55.0}, 0.0001
+        )
+        self.assertEqual(verdict, {"accepted": False, "reason": "unmeasurable"})
 
-    def test_no_previous_measurement_does_not_block_a_first_step(self) -> None:
-        from calibrate_to_counts import step_improves_the_gate_metric
+    def test_each_county_driver_stage_uses_its_own_shared_verdict(self) -> None:
+        """Distinct forced reasons prove none of the three sites reuses a stale verdict."""
+        forced = [
+            {"accepted": False, "reason": "objective_not_improved"},
+            {"accepted": False, "reason": "gate_metric_worsened"},
+            {"accepted": False, "reason": "unmeasurable"},
+        ]
+        matched = stations(20)
+        baseline = volumes(matched, 5000.0)
+        with mock.patch.object(
+            calibration,
+            "evaluate_calibration_step",
+            side_effect=forced,
+        ) as shared_verdict:
+            result = calibrate(
+                matched_stations=matched,
+                reassign=lambda factors, scalar=1.0, ext=1.0: volumes(matched, 6000.0),
+                baseline_volumes=baseline,
+                max_iterations=1,
+            )
 
-        self.assertTrue(step_improves_the_gate_metric({"median_ape": None}, {"median_ape": 55.0}))
+        by_stage = {
+            stage: next(
+                step["outcome"]
+                for step in result["steps"]
+                if step["stage"] == stage and "iteration" in step
+            )
+            for stage in ("class", "demand", "external")
+        }
+        self.assertIn("no strict improvement", by_stage["class"])
+        self.assertIn("worsened held-out median", by_stage["demand"])
+        self.assertIn("no usable objective", by_stage["external"])
+        self.assertEqual(shared_verdict.call_count, 3)
 
 
 class JudgedOnHeldOutDataTests(unittest.TestCase):
