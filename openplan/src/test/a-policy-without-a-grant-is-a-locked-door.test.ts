@@ -163,7 +163,27 @@ describe("a policy without a grant is a locked door", () => {
     const grants = loadGrantInventory();
 
     expect(grants.holds("work_notifications", "authenticated", "SELECT")).toBe("table");
-    expect(grants.holds("work_notifications", "authenticated", "UPDATE")).toBe("table");
+    // COLUMN, not table, since 20260822000001. That migration widened the
+    // restrictive UPDATE gate so a reminder's own recipient can mark it read
+    // whatever their rank — a viewer can be assigned work, be reminded of it,
+    // and until then could never clear the badge. Widening a policy without
+    // narrowing the grant would have left a recipient able to rewrite their
+    // reminder's title, body and due date, and a reminder is a record of what a
+    // person was TOLD. RLS cannot express "these columns only", so the grant
+    // does.
+    expect(grants.holds("work_notifications", "authenticated", "UPDATE")).toBe("column");
+    expect(
+      grants
+        .columnGrants()
+        .filter(
+          (grant) =>
+            grant.table === "work_notifications" &&
+            grant.role === "authenticated" &&
+            grant.privilege === "UPDATE"
+        )
+        .map((grant) => grant.column)
+        .sort()
+    ).toEqual(["is_read", "read_at"]);
     expect(grants.holds("work_notifications", "authenticated", "INSERT")).toBe("none");
     expect(grants.holds("work_notifications", "authenticated", "DELETE")).toBe("none");
     expect(grants.holds("work_notifications", "anon", "SELECT")).toBe("none");

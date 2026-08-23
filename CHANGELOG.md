@@ -19,7 +19,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**Six migrations. Run them before the new code is serving traffic.**
+**Seven migrations. Run them before the new code is serving traffic.**
 
 ```
 npm exec -- supabase migration up --linked
@@ -44,6 +44,12 @@ npm exec -- supabase migration up --linked
 - `…000001` **engagement_crash_corroboration** (2026-08-21) — the function behind
   the engagement↔safety panel: what the crash record says about the places
   residents mapped.
+- `…000001` **work_notification_recipient_can_mark_read** (2026-08-22) — a
+  viewer who is assigned work and reminded of it can now clear the reminder.
+  Until this, the restrictive writer gate refused their update and the unread
+  badge could only be cleared by a role change. The same migration narrows the
+  column grant so a recipient can set only `is_read` and `read_at`, not rewrite
+  what the reminder says.
 
 ### Traffic models: re-run anything you rely on
 

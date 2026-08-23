@@ -32,10 +32,15 @@ import { createClient } from "@/lib/supabase/server";
  * writes straight at an id it was handed without reading the row first, so
  * "nothing matched" is the ordinary answer to "is this yours" and must not be
  * distinguished from "no such row" — distinguishing them would confirm the
- * existence of other people's reminders. It is also what a VIEWER sees if one
- * was ever assigned work: the restrictive writer gate (20260728000006) refuses
- * their update, and the honest answer is that it was not marked read, never a
- * cheerful success over a row that did not change.
+ * existence of other people's reminders.
+ *
+ * IT USED TO BE WHAT A VIEWER ALWAYS SAW, and that was a dead end rather than
+ * an honest answer. A writer can assign a deliverable to a viewer and the
+ * nightly sweep writes them a reminder, but the restrictive writer gate refused
+ * their update — so the badge could never be cleared by anything in the
+ * product. Migration 20260822000001 lets a reminder's own recipient mark it
+ * read whatever their rank, and narrows the column grant to `is_read` and
+ * `read_at` so that is all they can do. A 404 here now means what it says.
  */
 
 const markReadSchema = z.union([

@@ -117,6 +117,36 @@ const REFUSED: RefusedAerialAction[] = [
       "shape. The human route already refuses deletion once processing has been dispatched, because OpenPlan " +
       "cannot prove after the fact which photos a job consumed.",
   },
+  {
+    label: "dispatching an aerial processing job",
+    nameGroups: [
+      ["dispatch", "processing"],
+      ["process", "mission"],
+      ["start", "orthomosaic"],
+      ["request", "processing"],
+      ["launch", "aerial"],
+    ],
+    provokes: [
+      "dispatch_aerial_processing",
+      "process_aerial_mission",
+      "start_orthomosaic_run",
+      "request_mission_processing",
+      "launch_aerial_processing",
+    ],
+    reason:
+      "REFUSED FOR NOW, AND THE REASON IS THE ROUTE'S SHAPE RATHER THAN THE CAPABILITY. The obvious " +
+      "comparison is `launch_model_run`, which IS registered with approval_required and also occupies a " +
+      "worker and produces publishable outputs — so 'it spends compute' is not the argument. The argument " +
+      "is that under contract v1, which is the DEFAULT, this route REQUIRES `imageryZipUrl`: a model " +
+      "proposing a dispatch would be authoring an address, which is the GTFS-ingest refusal exactly, and " +
+      "pointing it at a worker that fetches whatever it is given. Contract v1.1 makes the URL optional but " +
+      "still accepts it, so a narrow id-only action riding this route hashes identically with a URL present " +
+      "— the wide-route hazard `refuseOutOfScopeAgentRequest` exists for. `notes` is 2 KB of free text on " +
+      "the same body. WHAT WOULD MAKE IT REGISTRABLE, stated so a future session inherits an argument " +
+      "instead of a blank: an id-only dispatch on a v1.1 deployment, reading the mission's STORED photos, " +
+      "with `imageryZipUrl` and `notes` refused at the route. That is real work, not a rewording, and it " +
+      "has not been done.",
+  },
 ];
 
 const REGISTERED_KINDS = Object.keys(ACTION_METADATA);

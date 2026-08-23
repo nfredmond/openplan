@@ -141,6 +141,188 @@ liveDescribe("viewer write denial (live)", () => {
     expect(after?.name).toBe(`Viewer probe ${suffix}`);
   });
 
+  /*
+    ─────────────────────────────────────────────────────────────────────────
+    THE ONE THING A VIEWER MUST BE ABLE TO WRITE.
+
+    A writer can assign a deliverable to a viewer (deliberate — a viewer can be
+    the right reviewer) and the nightly sweep writes them a reminder. Until
+    20260822000001 the restrictive UPDATE gate asked
+    `workspace_member_can_write`, so the viewer could never mark it read: single
+    mark-read answered 404, mark-all answered marked:0, and the unread badge
+    could only be cleared by a role change or a service-role delete. Three
+    correct decisions composed into a dead end that no single lane owned.
+
+    Live, because the whole point is that it is the DATABASE that decides. The
+    route returning 200 would prove nothing.
+    ─────────────────────────────────────────────────────────────────────────
+  */
+  describe("a reminder addressed to the viewer", () => {
+    const notificationId = randomUUID();
+    const othersNotificationId = randomUUID();
+    let otherUserId = "";
+
+    beforeAll(async () => {
+      // A REAL second user, because `recipient_user_id` references auth.users.
+      // The "somebody else's reminder" assertion is worthless without one, and
+      // a random uuid simply fails the foreign key.
+      const other = await service.auth.admin.createUser({
+        email: `rls-viewer-other-${suffix}@example.test`,
+        password,
+        email_confirm: true,
+      });
+      if (other.error || !other.data.user) {
+        throw new Error(`Failed to create second user: ${other.error?.message ?? "missing user"}`);
+      }
+      otherUserId = other.data.user.id;
+
+      const insert = async (row: Record<string, unknown>) => {
+        const { error } = await service.from("work_notifications").insert(row);
+        if (error) throw new Error(`seeding work_notifications failed: ${error.message}`);
+      };
+
+      // Authored by the service role, exactly as the sweep does.
+      await insert({
+        id: notificationId,
+        workspace_id: workspaceId,
+        recipient_user_id: userId,
+        kind: "deliverable_due",
+        subject_table: "project_deliverables",
+        subject_id: randomUUID(),
+        project_id: projectId,
+        due_on: "2099-12-31",
+        title: `Viewer reminder ${suffix}`,
+        body: `Viewer reminder body ${suffix}`,
+      });
+
+      // A reminder for somebody else in the SAME workspace. The recipient id is
+      // a user that is not this viewer; the row is invisible to them and must
+      // stay untouchable.
+      await insert({
+        id: othersNotificationId,
+        workspace_id: workspaceId,
+        recipient_user_id: otherUserId,
+        kind: "deliverable_due",
+        subject_table: "project_deliverables",
+        subject_id: randomUUID(),
+        project_id: projectId,
+        due_on: "2099-12-31",
+        title: `Someone else reminder ${suffix}`,
+        body: "not yours",
+      });
+    }, 60_000);
+
+    it("can be marked read by the viewer it belongs to", async () => {
+      const { data, error } = await viewer
+        .from("work_notifications")
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .eq("id", notificationId)
+        .select("id");
+
+      expect(error).toBeNull();
+      // A matched row, not a silent zero-row success — that zero was the bug.
+      expect(data?.map((row) => row.id)).toEqual([notificationId]);
+
+      const { data: after } = await service
+        .from("work_notifications")
+        .select("is_read")
+        .eq("id", notificationId)
+        .single();
+      expect(after?.is_read).toBe(true);
+    });
+
+    it("does not let the viewer touch somebody else's reminder", async () => {
+      const { data } = await viewer
+        .from("work_notifications")
+        .update({ is_read: true })
+        .eq("id", othersNotificationId)
+        .select("id");
+
+      expect(data ?? []).toEqual([]);
+
+      const { data: after } = await service
+        .from("work_notifications")
+        .select("is_read")
+        .eq("id", othersNotificationId)
+        .single();
+      expect(after?.is_read).toBe(false);
+    });
+
+    it("does not let the viewer rewrite what the reminder SAYS", async () => {
+      /*
+        The policy was widened, so the column GRANT is what keeps this a record
+        of what a person was told rather than something they can edit. RLS
+        cannot express "these columns only" — WITH CHECK cannot see the old row
+        — so 20260822000001 revoked table-wide UPDATE and granted only
+        (is_read, read_at).
+      */
+      const { error } = await viewer
+        .from("work_notifications")
+        .update({ title: `TAMPERED ${suffix}` })
+        .eq("id", notificationId)
+        .select("id");
+
+      expect(error, "a viewer rewrote their own reminder's title").not.toBeNull();
+
+      const { data: after } = await service
+        .from("work_notifications")
+        .select("title")
+        .eq("id", notificationId)
+        .single();
+      expect(after?.title).toBe(`Viewer reminder ${suffix}`);
+    });
+
+    afterAll(async () => {
+      if (!otherUserId) return;
+
+      // The reminders first: they reference this user and the outer teardown
+      // (which drops THIS suite's workspace) has not run yet.
+      await service.from("work_notifications").delete().in("id", [notificationId, othersNotificationId]);
+
+      // Then the workspace `handle_new_user` created for them. Every new user
+      // gets one automatically, and deleting the user while it exists answers
+      // 500 — which is why the teardown above this one drops workspaces before
+      // users. Verified rather than assumed: `admin.deleteUser` fails for ANY
+      // freshly created user until its auto-created workspace is gone.
+      const { data: memberships } = await service
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", otherUserId);
+      for (const row of (memberships ?? []) as { workspace_id: string }[]) {
+        await service.from("workspaces").delete().eq("id", row.workspace_id);
+      }
+
+      const removed = await service.auth.admin.deleteUser(otherUserId);
+      if (removed.error) {
+        throw new Error(
+          `Viewer-denial probe left second user ${otherUserId} behind: ` +
+            `${removed.error.message || `status ${removed.error.status}`}`
+        );
+      }
+    }, 60_000);
+
+    it("still cannot mint or destroy a reminder", async () => {
+      const insert = await viewer.from("work_notifications").insert({
+        workspace_id: workspaceId,
+        recipient_user_id: userId,
+        kind: "deliverable_due",
+        subject_table: "project_deliverables",
+        subject_id: randomUUID(),
+        due_on: "2099-12-31",
+        title: "self-authored",
+        body: "",
+      });
+      expect(insert.error, "a viewer minted their own reminder").not.toBeNull();
+
+      const { data: deleted } = await viewer
+        .from("work_notifications")
+        .delete()
+        .eq("id", notificationId)
+        .select("id");
+      expect(deleted ?? [], "a viewer destroyed the evidence they were told").toEqual([]);
+    });
+  });
+
   it("refuses a viewer DELETE, and does not remove the row", async () => {
     const { data } = await viewer.from("projects").delete().eq("id", projectId).select("id");
     expect(data ?? []).toEqual([]);
