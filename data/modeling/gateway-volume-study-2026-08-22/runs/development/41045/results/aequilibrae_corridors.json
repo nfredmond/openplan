@@ -1,0 +1,133 @@
+{
+  "by_road_class": {
+    "centroid_connector": {
+      "decreased": 21,
+      "increased": 14,
+      "links": 105,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 4.811685,
+      "unchanged": 70
+    },
+    "construction": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 25,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 25
+    },
+    "living_street": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 25,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 25
+    },
+    "motorway": {
+      "decreased": 57,
+      "increased": 50,
+      "links": 197,
+      "median_absolute_change": 0.464897,
+      "median_absolute_percent_change_where_baseline_positive": 8.559367,
+      "unchanged": 90
+    },
+    "pedestrian": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "primary": {
+      "decreased": 248,
+      "increased": 185,
+      "links": 626,
+      "median_absolute_change": 481.797111,
+      "median_absolute_percent_change_where_baseline_positive": 7.945547,
+      "unchanged": 193
+    },
+    "residential": {
+      "decreased": 174,
+      "increased": 21,
+      "links": 8901,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 39.601646,
+      "unchanged": 8706
+    },
+    "rest_area": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 2,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 2
+    },
+    "secondary": {
+      "decreased": 331,
+      "increased": 178,
+      "links": 781,
+      "median_absolute_change": 350.474863,
+      "median_absolute_percent_change_where_baseline_positive": 40.774821,
+      "unchanged": 272
+    },
+    "service": {
+      "decreased": 21,
+      "increased": 0,
+      "links": 15517,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 100.0,
+      "unchanged": 15496
+    },
+    "services": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 3,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 3
+    },
+    "tertiary": {
+      "decreased": 734,
+      "increased": 92,
+      "links": 2678,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 26.92658,
+      "unchanged": 1852
+    },
+    "trunk": {
+      "decreased": 641,
+      "increased": 140,
+      "links": 972,
+      "median_absolute_change": 997.325957,
+      "median_absolute_percent_change_where_baseline_positive": 10.86707,
+      "unchanged": 191
+    },
+    "unclassified": {
+      "decreased": 134,
+      "increased": 27,
+      "links": 2021,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 41.124761,
+      "unchanged": 1860
+    }
+  },
+  "demand_method": "AequilibraE gravity demand",
+  "full_artifact": {
+    "commit_policy": "ignored run storage; hash and compact summary are committed",
+    "location": "data/screening-runs/gwv-development-41045-aeq-candidate/gateway_volume_study/corridor_change.json",
+    "sha256": "d2ff0ccf13ecacf6e4f41b7f75616ca57ee79da3f46ee9fada69bf3feebda6c8"
+  },
+  "interpretation": "Methodological sensitivity to the one frozen gateway-volume candidate; not an average and not an accuracy claim.",
+  "is_average": false,
+  "schema_version": "openplan.gateway-volume-corridor-change-summary.v1",
+  "summary": {
+    "decreased": 2361,
+    "increased": 707,
+    "links": 31854,
+    "median_absolute_change": 0.0,
+    "median_absolute_percent_change_where_baseline_positive": 23.690357,
+    "unchanged": 28786
+  }
+}

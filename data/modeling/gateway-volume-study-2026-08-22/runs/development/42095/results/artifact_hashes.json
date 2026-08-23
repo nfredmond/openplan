@@ -1,0 +1,366 @@
+{
+  "artifacts": {
+    "activitysim_corridors.json": "c9fac4852422ebabae08731eaa11579a52f30feb9db341b68673fe880fa785ce",
+    "aequilibrae_corridors.json": "bc602467021debf9e8b6a3be6180cb3afe7a0fa18656079fdb8cb869cd9a9538",
+    "baseline_validation.json": "0fa4217e59cffcc138109eae57c3163119465776808949a82f21e52140a7d403",
+    "candidate_validation.json": "6e244ac519243f452beb3b409076b86bd21d5e89bc4c816fe52e2e596dbd86d6",
+    "conservation.json": "cf47105384ee14a9b3a0fb8641c0ba2b0d869f3c0daa9406f34737d513e65ceb",
+    "gateway_volume_basis.json": "d88d99652765c7655d1a958f5026537eb462eefc96e1784132ae94932d1c89b5"
+  },
+  "guards": {
+    "conservation": true,
+    "convergence": {
+      "activitysim_baseline": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.0004615830509051593,
+        "iterations": 22,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "activitysim_candidate": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.00048800503546933956,
+        "iterations": 25,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "aequilibrae_baseline": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.00047512271268731923,
+        "iterations": 27,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "aequilibrae_candidate": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.0004872052092912356,
+        "iterations": 35,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      }
+    },
+    "matched_station_set_by_demand_method": {
+      "activitysim": true,
+      "aequilibrae": true
+    },
+    "matched_station_set_unchanged": true,
+    "provenance": {
+      "activitysim_baseline": {
+        "artifact_hashes": {
+          "counts_csv": "2401be6b24e1b1d7577807f5beb242b544860ade239cffb56d387c050ad44bf8",
+          "gateway_counts_csv": "e67db3df2e2cd5836cf71d1b918d04efd45f882f0d1fa90947f32517e57045a6"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-asim-baseline/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-asim-baseline/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "Federal Highway Administration",
+          "count_year": 2024,
+          "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+          "facility_clause_pattern": "",
+          "name": "FHWA HPMS Spatial All Sections - 2024",
+          "non_mainline_patterns": [],
+          "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+          "region": "us-fhwa-hpms-2024",
+          "route_label_prefix": "",
+          "source_dataset_id": "42um-tgh5",
+          "station_prefix": "HPMS",
+          "vintage": "2024"
+        },
+        "region": "us-fhwa-hpms-2024",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "2401be6b24e1b1d7577807f5beb242b544860ade239cffb56d387c050ad44bf8",
+            "gateway_counts_csv": "e67db3df2e2cd5836cf71d1b918d04efd45f882f0d1fa90947f32517e57045a6"
+          },
+          "boundary_sha256": "ea8aed2c8059e9378bbfc5bbda87bb1e4df4e63ee5dc4c688ec908f50c6d1b90",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-baseline",
+          "run_name": "gwv-development-42095-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 30005,
+            "provenance": {
+              "agency": "Federal Highway Administration",
+              "count_year": 2024,
+              "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+              "facility_clause_pattern": "",
+              "name": "FHWA HPMS Spatial All Sections - 2024",
+              "non_mainline_patterns": [],
+              "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+              "region": "us-fhwa-hpms-2024",
+              "route_label_prefix": "",
+              "source_dataset_id": "42um-tgh5",
+              "station_prefix": "HPMS",
+              "vintage": "2024"
+            },
+            "source": "us-fhwa-hpms-2024",
+            "states": [
+              "42"
+            ],
+            "stations": 11844
+          }
+        ],
+        "station_count": 11844,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-asim-baseline/counts/published_counts.csv"
+      },
+      "activitysim_candidate": {
+        "artifact_hashes": {
+          "counts_csv": "2401be6b24e1b1d7577807f5beb242b544860ade239cffb56d387c050ad44bf8",
+          "gateway_counts_csv": "e67db3df2e2cd5836cf71d1b918d04efd45f882f0d1fa90947f32517e57045a6"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-asim-candidate/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-asim-candidate/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "Federal Highway Administration",
+          "count_year": 2024,
+          "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+          "facility_clause_pattern": "",
+          "name": "FHWA HPMS Spatial All Sections - 2024",
+          "non_mainline_patterns": [],
+          "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+          "region": "us-fhwa-hpms-2024",
+          "route_label_prefix": "",
+          "source_dataset_id": "42um-tgh5",
+          "station_prefix": "HPMS",
+          "vintage": "2024"
+        },
+        "region": "us-fhwa-hpms-2024",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "2401be6b24e1b1d7577807f5beb242b544860ade239cffb56d387c050ad44bf8",
+            "gateway_counts_csv": "e67db3df2e2cd5836cf71d1b918d04efd45f882f0d1fa90947f32517e57045a6"
+          },
+          "boundary_sha256": "ea8aed2c8059e9378bbfc5bbda87bb1e4df4e63ee5dc4c688ec908f50c6d1b90",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-baseline",
+          "run_name": "gwv-development-42095-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 30005,
+            "provenance": {
+              "agency": "Federal Highway Administration",
+              "count_year": 2024,
+              "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+              "facility_clause_pattern": "",
+              "name": "FHWA HPMS Spatial All Sections - 2024",
+              "non_mainline_patterns": [],
+              "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+              "region": "us-fhwa-hpms-2024",
+              "route_label_prefix": "",
+              "source_dataset_id": "42um-tgh5",
+              "station_prefix": "HPMS",
+              "vintage": "2024"
+            },
+            "source": "us-fhwa-hpms-2024",
+            "states": [
+              "42"
+            ],
+            "stations": 11844
+          }
+        ],
+        "station_count": 11844,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-asim-candidate/counts/published_counts.csv"
+      },
+      "aequilibrae_baseline": {
+        "artifact_hashes": {
+          "counts_csv": "2401be6b24e1b1d7577807f5beb242b544860ade239cffb56d387c050ad44bf8",
+          "gateway_counts_csv": "e67db3df2e2cd5836cf71d1b918d04efd45f882f0d1fa90947f32517e57045a6"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-baseline/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-baseline/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "Federal Highway Administration",
+          "count_year": 2024,
+          "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+          "facility_clause_pattern": "",
+          "name": "FHWA HPMS Spatial All Sections - 2024",
+          "non_mainline_patterns": [],
+          "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+          "region": "us-fhwa-hpms-2024",
+          "route_label_prefix": "",
+          "source_dataset_id": "42um-tgh5",
+          "station_prefix": "HPMS",
+          "vintage": "2024"
+        },
+        "region": "us-fhwa-hpms-2024",
+        "sources": [
+          {
+            "gateway_evidence_sections": 30005,
+            "provenance": {
+              "agency": "Federal Highway Administration",
+              "count_year": 2024,
+              "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+              "facility_clause_pattern": "",
+              "name": "FHWA HPMS Spatial All Sections - 2024",
+              "non_mainline_patterns": [],
+              "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+              "region": "us-fhwa-hpms-2024",
+              "route_label_prefix": "",
+              "source_dataset_id": "42um-tgh5",
+              "station_prefix": "HPMS",
+              "vintage": "2024"
+            },
+            "source": "us-fhwa-hpms-2024",
+            "states": [
+              "42"
+            ],
+            "stations": 11844
+          }
+        ],
+        "station_count": 11844,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-baseline/counts/published_counts.csv"
+      },
+      "aequilibrae_candidate": {
+        "artifact_hashes": {
+          "counts_csv": "2401be6b24e1b1d7577807f5beb242b544860ade239cffb56d387c050ad44bf8",
+          "gateway_counts_csv": "e67db3df2e2cd5836cf71d1b918d04efd45f882f0d1fa90947f32517e57045a6"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-candidate/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-candidate/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "Federal Highway Administration",
+          "count_year": 2024,
+          "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+          "facility_clause_pattern": "",
+          "name": "FHWA HPMS Spatial All Sections - 2024",
+          "non_mainline_patterns": [],
+          "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+          "region": "us-fhwa-hpms-2024",
+          "route_label_prefix": "",
+          "source_dataset_id": "42um-tgh5",
+          "station_prefix": "HPMS",
+          "vintage": "2024"
+        },
+        "region": "us-fhwa-hpms-2024",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "2401be6b24e1b1d7577807f5beb242b544860ade239cffb56d387c050ad44bf8",
+            "gateway_counts_csv": "e67db3df2e2cd5836cf71d1b918d04efd45f882f0d1fa90947f32517e57045a6"
+          },
+          "boundary_sha256": "ea8aed2c8059e9378bbfc5bbda87bb1e4df4e63ee5dc4c688ec908f50c6d1b90",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-baseline",
+          "run_name": "gwv-development-42095-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 30005,
+            "provenance": {
+              "agency": "Federal Highway Administration",
+              "count_year": 2024,
+              "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+              "facility_clause_pattern": "",
+              "name": "FHWA HPMS Spatial All Sections - 2024",
+              "non_mainline_patterns": [],
+              "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+              "region": "us-fhwa-hpms-2024",
+              "route_label_prefix": "",
+              "source_dataset_id": "42um-tgh5",
+              "station_prefix": "HPMS",
+              "vintage": "2024"
+            },
+            "source": "us-fhwa-hpms-2024",
+            "states": [
+              "42"
+            ],
+            "stations": 11844
+          }
+        ],
+        "station_count": 11844,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-42095-aeq-candidate/counts/published_counts.csv"
+      }
+    },
+    "zone_resolution_unchanged": true
+  }
+}

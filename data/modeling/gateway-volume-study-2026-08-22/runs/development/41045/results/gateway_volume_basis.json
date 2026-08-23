@@ -1,0 +1,578 @@
+{
+  "baseline": {
+    "apply_measured_volumes": false,
+    "boundary_crossings_after": 221682.0,
+    "boundary_crossings_before": 275000.0,
+    "candidate_pool_gateways": 27,
+    "candidate_pool_measured_gateways": 3,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "inferred",
+        "gateway": "motorway-old-oregon-trail-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "motorway-vietnam-veterans-memorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-veterans-memorial-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.016,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE456_PM121_360",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-05",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-06",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-07",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-08",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-steens-highway",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE442_PM60_880",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-weiser-spur",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE491_PM13_660",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "secondary-gateway-11",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-fields-folly-farm-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-highway-18",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-red-top-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-whitehorse-ranch-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-reservoir-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-juntura-riverside-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-cordero-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-huntington-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-malheur-reservoir-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-clarks-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-golden-age-mine-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-juniper-mountain-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-juniper-mountain-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-cow-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-trout-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-mcbride-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 19,
+    "dropped_unmeasured_gateways": 17,
+    "gateways": 27,
+    "gateways_from_published_counts": 3,
+    "gateways_from_road_class_default": 24,
+    "inferred_gateways": 2,
+    "measured_gateways": 1,
+    "note": "3 of 27 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 275,000 to 221,682 vehicles a day (-19%).",
+    "retain_all_measured": false,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "ODOT",
+      "count_year": null,
+      "coverage_statement": "ODOT roadway count coverage for OR.",
+      "facility_clause_pattern": "^([^,]*)",
+      "name": "ODOT TransGIS AADT - State",
+      "non_mainline_patterns": [
+        "\\bramps?\\b",
+        "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+        "\\bconn\\.",
+        "\\bcn\\.?\\s*\\d+\\b",
+        "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+      ],
+      "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+      "region": "OR",
+      "route_label_prefix": "",
+      "source_dataset_id": "us-or-odot-aadt",
+      "station_prefix": "ODOT",
+      "vintage": "publisher-current-vintage-unspecified"
+    },
+    "stations_consumed": [
+      "ODOT_RTE442_PM60_880",
+      "ODOT_RTE456_PM121_360",
+      "ODOT_RTE491_PM13_660"
+    ],
+    "study_arm": "study_baseline",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 5
+  },
+  "candidate": {
+    "apply_measured_volumes": true,
+    "boundary_crossings_after": 221682.0,
+    "boundary_crossings_before": 275000.0,
+    "candidate_pool_gateways": 27,
+    "candidate_pool_measured_gateways": 3,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "inferred",
+        "gateway": "motorway-old-oregon-trail-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "motorway-vietnam-veterans-memorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-veterans-memorial-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.016,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE456_PM121_360",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-05",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-06",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-07",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-08",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-steens-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE442_PM60_880",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-weiser-spur",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.001,
+          "facility_class": null,
+          "measurement_date": null,
+          "source_dataset_id": "us-or-odot-aadt",
+          "source_section_id": null,
+          "source_vintage": "publisher-current-vintage-unspecified"
+        },
+        "station_id": "ODOT_RTE491_PM13_660",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "secondary-gateway-11",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-fields-folly-farm-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-highway-18",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-red-top-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-whitehorse-ranch-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-reservoir-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-juntura-riverside-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-cordero-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-huntington-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-malheur-reservoir-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-clarks-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-golden-age-mine-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-juniper-mountain-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-juniper-mountain-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-cow-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-trout-creek-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "tertiary-mcbride-road",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 16,
+    "dropped_unmeasured_gateways": 16,
+    "gateways": 27,
+    "gateways_from_published_counts": 3,
+    "gateways_from_road_class_default": 24,
+    "inferred_gateways": 2,
+    "measured_gateways": 3,
+    "note": "3 of 27 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 275,000 to 221,682 vehicles a day (-19%).",
+    "retain_all_measured": true,
+    "retained_gateways": 11,
+    "source": {
+      "agency": "ODOT",
+      "count_year": null,
+      "coverage_statement": "ODOT roadway count coverage for OR.",
+      "facility_clause_pattern": "^([^,]*)",
+      "name": "ODOT TransGIS AADT - State",
+      "non_mainline_patterns": [
+        "\\bramps?\\b",
+        "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+        "\\bconn\\.",
+        "\\bcn\\.?\\s*\\d+\\b",
+        "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+      ],
+      "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+      "region": "OR",
+      "route_label_prefix": "",
+      "source_dataset_id": "us-or-odot-aadt",
+      "station_prefix": "ODOT",
+      "vintage": "publisher-current-vintage-unspecified"
+    },
+    "stations_consumed": [
+      "ODOT_RTE442_PM60_880",
+      "ODOT_RTE456_PM121_360",
+      "ODOT_RTE491_PM13_660"
+    ],
+    "study_arm": "study_candidate",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 6
+  }
+}

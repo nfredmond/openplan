@@ -1,0 +1,326 @@
+{
+  "baseline": {
+    "apply_measured_volumes": false,
+    "boundary_crossings_after": 198287.0,
+    "boundary_crossings_before": 215000.0,
+    "candidate_pool_gateways": 12,
+    "candidate_pool_measured_gateways": 3,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "inferred",
+        "gateway": "motorway-first-special-service-force-memorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "motorway-first-special-service-force-memorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-03",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-05",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-06",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-07",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-montana-route-518",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.6,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:30:C000518A:3.278:4.4649:428764231",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:30:C000518A:3.278:4.4649:428764231",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "secondary-gateway-09",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "secondary-gateway-10",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-montana-highway-282",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.094,
+          "facility_class": "local",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:30:C246368A:0.0:0.0458:428827405",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:30:C246368A:0.0:0.0458:428827405",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-spokane-creek-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.031,
+          "facility_class": "major_collector",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:30:C000284A:0.419:0.4191:428761139",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:30:C000284A:0.419:0.4191:428761139",
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 4,
+    "dropped_unmeasured_gateways": 2,
+    "gateways": 12,
+    "gateways_from_published_counts": 3,
+    "gateways_from_road_class_default": 9,
+    "inferred_gateways": 2,
+    "measured_gateways": 1,
+    "note": "3 of 12 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 215,000 to 198,287 vehicles a day (-8%).",
+    "retain_all_measured": false,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:30:C000284A:0.419:0.4191:428761139",
+      "hpms:2024:30:C000518A:3.278:4.4649:428764231",
+      "hpms:2024:30:C246368A:0.0:0.0458:428827405"
+    ],
+    "study_arm": "study_baseline",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 5
+  },
+  "candidate": {
+    "apply_measured_volumes": true,
+    "boundary_crossings_after": 198287.0,
+    "boundary_crossings_before": 215000.0,
+    "candidate_pool_gateways": 12,
+    "candidate_pool_measured_gateways": 3,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "inferred",
+        "gateway": "motorway-first-special-service-force-memorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "motorway-first-special-service-force-memorial-highway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-03",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-05",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-06",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "primary-gateway-07",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-montana-route-518",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.6,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:30:C000518A:3.278:4.4649:428764231",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:30:C000518A:3.278:4.4649:428764231",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "secondary-gateway-09",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "secondary-gateway-10",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-montana-highway-282",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.094,
+          "facility_class": "local",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:30:C246368A:0.0:0.0458:428827405",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:30:C246368A:0.0:0.0458:428827405",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-spokane-creek-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.031,
+          "facility_class": "major_collector",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:30:C000284A:0.419:0.4191:428761139",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:30:C000284A:0.419:0.4191:428761139",
+        "volume_applied": "measured_aadt"
+      }
+    ],
+    "dropped_gateways": 1,
+    "dropped_unmeasured_gateways": 1,
+    "gateways": 12,
+    "gateways_from_published_counts": 3,
+    "gateways_from_road_class_default": 9,
+    "inferred_gateways": 2,
+    "measured_gateways": 3,
+    "note": "3 of 12 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 215,000 to 198,287 vehicles a day (-8%).",
+    "retain_all_measured": true,
+    "retained_gateways": 11,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:30:C000284A:0.419:0.4191:428761139",
+      "hpms:2024:30:C000518A:3.278:4.4649:428764231",
+      "hpms:2024:30:C246368A:0.0:0.0458:428827405"
+    ],
+    "study_arm": "study_candidate",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 6
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "by_road_class": {
+    "centroid_connector": {
+      "decreased": 41,
+      "increased": 9,
+      "links": 75,
+      "median_absolute_change": 782.327527,
+      "median_absolute_percent_change_where_baseline_positive": 34.094706,
+      "unchanged": 25
+    },
+    "primary": {
+      "decreased": 179,
+      "increased": 7,
+      "links": 290,
+      "median_absolute_change": 582.168319,
+      "median_absolute_percent_change_where_baseline_positive": 59.671128,
+      "unchanged": 104
+    },
+    "residential": {
+      "decreased": 112,
+      "increased": 48,
+      "links": 2391,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 59.25967,
+      "unchanged": 2231
+    },
+    "secondary": {
+      "decreased": 383,
+      "increased": 72,
+      "links": 638,
+      "median_absolute_change": 1780.273184,
+      "median_absolute_percent_change_where_baseline_positive": 56.562701,
+      "unchanged": 183
+    },
+    "service": {
+      "decreased": 0,
+      "increased": 1,
+      "links": 2047,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 3.094848,
+      "unchanged": 2046
+    },
+    "tertiary": {
+      "decreased": 107,
+      "increased": 135,
+      "links": 857,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 69.338772,
+      "unchanged": 615
+    },
+    "trunk": {
+      "decreased": 205,
+      "increased": 0,
+      "links": 227,
+      "median_absolute_change": 7100.615416,
+      "median_absolute_percent_change_where_baseline_positive": 50.569811,
+      "unchanged": 22
+    },
+    "unclassified": {
+      "decreased": 9,
+      "increased": 5,
+      "links": 314,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 21.970861,
+      "unchanged": 300
+    }
+  },
+  "demand_method": "ActivitySim activity-based demand",
+  "full_artifact": {
+    "commit_policy": "ignored run storage; hash and compact summary are committed",
+    "location": "data/screening-runs/gwv-development-36073-asim-candidate/gateway_volume_study/corridor_change.json",
+    "sha256": "42559a610ac95992213a991a4994d68d5b445e29197abc08cfee9d8cd12303e1"
+  },
+  "interpretation": "Methodological sensitivity to the one frozen gateway-volume candidate; not an average and not an accuracy claim.",
+  "is_average": false,
+  "schema_version": "openplan.gateway-volume-corridor-change-summary.v1",
+  "summary": {
+    "decreased": 1036,
+    "increased": 277,
+    "links": 6839,
+    "median_absolute_change": 0.0,
+    "median_absolute_percent_change_where_baseline_positive": 53.430672,
+    "unchanged": 5526
+  }
+}

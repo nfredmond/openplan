@@ -1,0 +1,702 @@
+{
+  "baseline": {
+    "apply_measured_volumes": false,
+    "boundary_crossings_after": 348132.0,
+    "boundary_crossings_before": 417000.0,
+    "candidate_pool_gateways": 22,
+    "candidate_pool_measured_gateways": 15,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-02",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-03",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "motorway-lehigh-valley-thruway",
+        "retained": true,
+        "source": {
+          "directionality": "one_way",
+          "distance_miles": 0.535,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:4 48 DUJZ - 164778:0.07:0.12:454931296",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:4 48 DUJZ - 164778:0.07:0.12:454931296",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "motorway-phillipsburg-newark-expressway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-07",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-william-penn-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.015,
+          "facility_class": "principal_arterial_freeway_expressway",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:34:00000022__:0.0:0.1:461719116",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:34:00000022__:0.0:0.1:461719116",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-easton-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.041,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2023-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 09 0611 - 1953:23.09:23.169:454134500",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 09 0611 - 1953:23.09:23.169:454134500",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-21st-street",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 0329 - 6546:6.059:6.159:454363072",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 0329 - 6546:6.059:6.159:454363072",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-leithsville-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.033,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 09 0412 - 1936:0.986:1.054:454133205",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 09 0412 - 1936:0.986:1.054:454133205",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-portland-columbia-bridge",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.028,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:6 48 48B2 - 86051:0.476:0.546:455086956",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:6 48 48B2 - 86051:0.476:0.546:455086956",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-weaversville-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.024,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2021-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 3017 - 8185:0.1:0.2:454435898",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 3017 - 8185:0.1:0.2:454435898",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-lehigh-street",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.06,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 1014 - 6574:1.039:1.138:454364038",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 1014 - 6574:1.039:1.138:454364038",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-main-street",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 4016 - 6676:0.152:0.227:454367574",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 4016 - 6676:0.152:0.227:454367574",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-apples-church-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.599,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:4 48 DTJ4 - 93747:0.38:0.82:454928090",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:4 48 DTJ4 - 93747:0.38:0.82:454928090",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-riverton-belvidere-bridge",
+        "retained": false,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-valley-view-drive",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 0191 - 8062:22.152:22.161:454431336",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 0191 - 8062:22.152:22.161:454431336",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-north-delaware-drive",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.045,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 0611 - 8081:3.544:3.628:454432719",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 0611 - 8081:3.544:3.628:454432719",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-willowbrook-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.022,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 1013 - 604091:0.6:0.64:454364017",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 1013 - 604091:0.6:0.64:454364017",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-blue-mountain-drive",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.013,
+          "facility_class": "minor_collector",
+          "measurement_date": "2020-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 4001 - 8192:6.459:6.493:454436318",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 4001 - 8192:6.459:6.493:454436318",
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-lower-saucon-road",
+        "retained": false,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.327,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:4 48 DTMM - 129608:0.0:0.16:454928327",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:4 48 DTMM - 129608:0.0:0.16:454928327",
+        "volume_applied": "road_class_default"
+      }
+    ],
+    "dropped_gateways": 14,
+    "dropped_unmeasured_gateways": 1,
+    "gateways": 22,
+    "gateways_from_published_counts": 15,
+    "gateways_from_road_class_default": 7,
+    "inferred_gateways": 1,
+    "measured_gateways": 2,
+    "note": "15 of 22 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 417,000 to 348,132 vehicles a day (-17%).",
+    "retain_all_measured": false,
+    "retained_gateways": 8,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:34:00000022__:0.0:0.1:461719116",
+      "hpms:2024:42:1 09 0412 - 1936:0.986:1.054:454133205",
+      "hpms:2024:42:1 09 0611 - 1953:23.09:23.169:454134500",
+      "hpms:2024:42:1 39 0329 - 6546:6.059:6.159:454363072",
+      "hpms:2024:42:1 39 1013 - 604091:0.6:0.64:454364017",
+      "hpms:2024:42:1 39 1014 - 6574:1.039:1.138:454364038",
+      "hpms:2024:42:1 39 4016 - 6676:0.152:0.227:454367574",
+      "hpms:2024:42:1 48 0191 - 8062:22.152:22.161:454431336",
+      "hpms:2024:42:1 48 0611 - 8081:3.544:3.628:454432719",
+      "hpms:2024:42:1 48 3017 - 8185:0.1:0.2:454435898",
+      "hpms:2024:42:1 48 4001 - 8192:6.459:6.493:454436318",
+      "hpms:2024:42:4 48 DTJ4 - 93747:0.38:0.82:454928090",
+      "hpms:2024:42:4 48 DTMM - 129608:0.0:0.16:454928327",
+      "hpms:2024:42:4 48 DUJZ - 164778:0.07:0.12:454931296",
+      "hpms:2024:42:6 48 48B2 - 86051:0.476:0.546:455086956"
+    ],
+    "study_arm": "study_baseline",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 5
+  },
+  "candidate": {
+    "apply_measured_volumes": true,
+    "boundary_crossings_after": 348132.0,
+    "boundary_crossings_before": 417000.0,
+    "candidate_pool_gateways": 22,
+    "candidate_pool_measured_gateways": 15,
+    "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+    "decisions": [
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-01",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-02",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "motorway-gateway-03",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-04",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "motorway-lehigh-valley-thruway",
+        "retained": true,
+        "source": {
+          "directionality": "one_way",
+          "distance_miles": 0.535,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:4 48 DUJZ - 164778:0.07:0.12:454931296",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:4 48 DUJZ - 164778:0.07:0.12:454931296",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "motorway-phillipsburg-newark-expressway",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "unsupported",
+        "gateway": "trunk-gateway-07",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-william-penn-highway",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.015,
+          "facility_class": "principal_arterial_freeway_expressway",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:34:00000022__:0.0:0.1:461719116",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:34:00000022__:0.0:0.1:461719116",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "trunk-easton-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.041,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2023-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 09 0611 - 1953:23.09:23.169:454134500",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 09 0611 - 1953:23.09:23.169:454134500",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-21st-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": "principal_arterial_other",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 0329 - 6546:6.059:6.159:454363072",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 0329 - 6546:6.059:6.159:454363072",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-leithsville-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.033,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 09 0412 - 1936:0.986:1.054:454133205",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 09 0412 - 1936:0.986:1.054:454133205",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "primary-portland-columbia-bridge",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.028,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:6 48 48B2 - 86051:0.476:0.546:455086956",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:6 48 48B2 - 86051:0.476:0.546:455086956",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-weaversville-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.024,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2021-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 3017 - 8185:0.1:0.2:454435898",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 3017 - 8185:0.1:0.2:454435898",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-lehigh-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.06,
+          "facility_class": "major_collector",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 1014 - 6574:1.039:1.138:454364038",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 1014 - 6574:1.039:1.138:454364038",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-main-street",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.002,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 4016 - 6676:0.152:0.227:454367574",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 4016 - 6676:0.152:0.227:454367574",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-apples-church-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.599,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:4 48 DTJ4 - 93747:0.38:0.82:454928090",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:4 48 DTJ4 - 93747:0.38:0.82:454928090",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "inferred",
+        "gateway": "secondary-riverton-belvidere-bridge",
+        "retained": true,
+        "source": null,
+        "station_id": null,
+        "volume_applied": "road_class_default"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-valley-view-drive",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.003,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 0191 - 8062:22.152:22.161:454431336",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 0191 - 8062:22.152:22.161:454431336",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "secondary-north-delaware-drive",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.045,
+          "facility_class": "minor_arterial",
+          "measurement_date": "2022-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 0611 - 8081:3.544:3.628:454432719",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 0611 - 8081:3.544:3.628:454432719",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-willowbrook-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.022,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 39 1013 - 604091:0.6:0.64:454364017",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 39 1013 - 604091:0.6:0.64:454364017",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-blue-mountain-drive",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.013,
+          "facility_class": "minor_collector",
+          "measurement_date": "2020-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:1 48 4001 - 8192:6.459:6.493:454436318",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:1 48 4001 - 8192:6.459:6.493:454436318",
+        "volume_applied": "measured_aadt"
+      },
+      {
+        "basis": "measured",
+        "gateway": "tertiary-lower-saucon-road",
+        "retained": true,
+        "source": {
+          "directionality": "two_way",
+          "distance_miles": 0.327,
+          "facility_class": "local",
+          "measurement_date": "2024-01-01T00:00:00.000",
+          "source_dataset_id": "42um-tgh5",
+          "source_section_id": "hpms:2024:42:4 48 DTMM - 129608:0.0:0.16:454928327",
+          "source_vintage": "2024"
+        },
+        "station_id": "hpms:2024:42:4 48 DTMM - 129608:0.0:0.16:454928327",
+        "volume_applied": "measured_aadt"
+      }
+    ],
+    "dropped_gateways": 0,
+    "dropped_unmeasured_gateways": 0,
+    "gateways": 22,
+    "gateways_from_published_counts": 15,
+    "gateways_from_road_class_default": 7,
+    "inferred_gateways": 2,
+    "measured_gateways": 15,
+    "note": "15 of 22 boundary crossings are set from a published traffic count taken on the same road near the crossing; the rest use OpenPlan's screening default for their road class. Traffic crossing the boundary changed from 417,000 to 348,132 vehicles a day (-17%).",
+    "retain_all_measured": true,
+    "retained_gateways": 22,
+    "source": {
+      "agency": "Federal Highway Administration",
+      "count_year": 2024,
+      "coverage_statement": "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and local roads may be represented only in summary data; a missing section value is unknown, not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles.",
+      "facility_clause_pattern": "",
+      "name": "FHWA HPMS Spatial All Sections - 2024",
+      "non_mainline_patterns": [],
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.geojson",
+      "region": "us-fhwa-hpms-2024",
+      "route_label_prefix": "",
+      "source_dataset_id": "42um-tgh5",
+      "station_prefix": "HPMS",
+      "vintage": "2024"
+    },
+    "stations_consumed": [
+      "hpms:2024:34:00000022__:0.0:0.1:461719116",
+      "hpms:2024:42:1 09 0412 - 1936:0.986:1.054:454133205",
+      "hpms:2024:42:1 09 0611 - 1953:23.09:23.169:454134500",
+      "hpms:2024:42:1 39 0329 - 6546:6.059:6.159:454363072",
+      "hpms:2024:42:1 39 1013 - 604091:0.6:0.64:454364017",
+      "hpms:2024:42:1 39 1014 - 6574:1.039:1.138:454364038",
+      "hpms:2024:42:1 39 4016 - 6676:0.152:0.227:454367574",
+      "hpms:2024:42:1 48 0191 - 8062:22.152:22.161:454431336",
+      "hpms:2024:42:1 48 0611 - 8081:3.544:3.628:454432719",
+      "hpms:2024:42:1 48 3017 - 8185:0.1:0.2:454435898",
+      "hpms:2024:42:1 48 4001 - 8192:6.459:6.493:454436318",
+      "hpms:2024:42:4 48 DTJ4 - 93747:0.38:0.82:454928090",
+      "hpms:2024:42:4 48 DTMM - 129608:0.0:0.16:454928327",
+      "hpms:2024:42:4 48 DUJZ - 164778:0.07:0.12:454931296",
+      "hpms:2024:42:6 48 48B2 - 86051:0.476:0.546:455086956"
+    ],
+    "study_arm": "study_candidate",
+    "unmeasured_cap": 8,
+    "unsupported_gateways": 5
+  }
+}

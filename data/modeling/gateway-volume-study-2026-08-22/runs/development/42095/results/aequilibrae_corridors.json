@@ -1,0 +1,149 @@
+{
+  "by_road_class": {
+    "bridleway": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 57,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 57
+    },
+    "centroid_connector": {
+      "decreased": 57,
+      "increased": 199,
+      "links": 288,
+      "median_absolute_change": 213.999011,
+      "median_absolute_percent_change_where_baseline_positive": 3.155221,
+      "unchanged": 32
+    },
+    "construction": {
+      "decreased": 0,
+      "increased": 1,
+      "links": 80,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 79
+    },
+    "living_street": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 28,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 28
+    },
+    "motorway": {
+      "decreased": 176,
+      "increased": 730,
+      "links": 1899,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 4.01208,
+      "unchanged": 993
+    },
+    "pedestrian": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 46,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 46
+    },
+    "planned": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "primary": {
+      "decreased": 408,
+      "increased": 2516,
+      "links": 5003,
+      "median_absolute_change": 132.380088,
+      "median_absolute_percent_change_where_baseline_positive": 4.248926,
+      "unchanged": 2079
+    },
+    "residential": {
+      "decreased": 241,
+      "increased": 1303,
+      "links": 44511,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 9.189516,
+      "unchanged": 42967
+    },
+    "rest_area": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "secondary": {
+      "decreased": 206,
+      "increased": 1876,
+      "links": 4746,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 13.322072,
+      "unchanged": 2664
+    },
+    "service": {
+      "decreased": 9,
+      "increased": 14,
+      "links": 42833,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 0.437189,
+      "unchanged": 42810
+    },
+    "services": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "tertiary": {
+      "decreased": 287,
+      "increased": 1861,
+      "links": 8895,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 9.533457,
+      "unchanged": 6747
+    },
+    "trunk": {
+      "decreased": 169,
+      "increased": 1004,
+      "links": 2157,
+      "median_absolute_change": 22.915816,
+      "median_absolute_percent_change_where_baseline_positive": 5.372596,
+      "unchanged": 984
+    },
+    "unclassified": {
+      "decreased": 9,
+      "increased": 83,
+      "links": 2722,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 0.908454,
+      "unchanged": 2630
+    }
+  },
+  "demand_method": "AequilibraE gravity demand",
+  "full_artifact": {
+    "commit_policy": "ignored run storage; hash and compact summary are committed",
+    "location": "data/screening-runs/gwv-development-42095-aeq-candidate/gateway_volume_study/corridor_change.json",
+    "sha256": "fcf22edb00e859c81f0fe23ce13deec48703f2fa5c109b7e4c66ba8d8519d32b"
+  },
+  "interpretation": "Methodological sensitivity to the one frozen gateway-volume candidate; not an average and not an accuracy claim.",
+  "is_average": false,
+  "schema_version": "openplan.gateway-volume-corridor-change-summary.v1",
+  "summary": {
+    "decreased": 1562,
+    "increased": 9587,
+    "links": 113268,
+    "median_absolute_change": 0.0,
+    "median_absolute_percent_change_where_baseline_positive": 6.998336,
+    "unchanged": 102119
+  }
+}

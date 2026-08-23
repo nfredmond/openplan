@@ -1,0 +1,133 @@
+{
+  "by_road_class": {
+    "bridleway": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 12,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 12
+    },
+    "centroid_connector": {
+      "decreased": 15,
+      "increased": 102,
+      "links": 177,
+      "median_absolute_change": 146.828136,
+      "median_absolute_percent_change_where_baseline_positive": 4.817793,
+      "unchanged": 60
+    },
+    "construction": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 8,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 8
+    },
+    "living_street": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 2,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 2
+    },
+    "motorway": {
+      "decreased": 7,
+      "increased": 117,
+      "links": 169,
+      "median_absolute_change": 566.821816,
+      "median_absolute_percent_change_where_baseline_positive": 8.113212,
+      "unchanged": 45
+    },
+    "pedestrian": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 1,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 1
+    },
+    "primary": {
+      "decreased": 73,
+      "increased": 929,
+      "links": 1301,
+      "median_absolute_change": 1069.856944,
+      "median_absolute_percent_change_where_baseline_positive": 13.963166,
+      "unchanged": 299
+    },
+    "residential": {
+      "decreased": 71,
+      "increased": 210,
+      "links": 11586,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 15.641649,
+      "unchanged": 11305
+    },
+    "secondary": {
+      "decreased": 57,
+      "increased": 689,
+      "links": 1033,
+      "median_absolute_change": 362.69137,
+      "median_absolute_percent_change_where_baseline_positive": 8.741107,
+      "unchanged": 287
+    },
+    "service": {
+      "decreased": 7,
+      "increased": 10,
+      "links": 12101,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 49.72485,
+      "unchanged": 12084
+    },
+    "services": {
+      "decreased": 0,
+      "increased": 0,
+      "links": 4,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": null,
+      "unchanged": 4
+    },
+    "tertiary": {
+      "decreased": 160,
+      "increased": 1368,
+      "links": 2978,
+      "median_absolute_change": 6.201219,
+      "median_absolute_percent_change_where_baseline_positive": 8.590797,
+      "unchanged": 1450
+    },
+    "trunk": {
+      "decreased": 1,
+      "increased": 83,
+      "links": 132,
+      "median_absolute_change": 262.681967,
+      "median_absolute_percent_change_where_baseline_positive": 11.237538,
+      "unchanged": 48
+    },
+    "unclassified": {
+      "decreased": 25,
+      "increased": 184,
+      "links": 3364,
+      "median_absolute_change": 0.0,
+      "median_absolute_percent_change_where_baseline_positive": 11.136368,
+      "unchanged": 3155
+    }
+  },
+  "demand_method": "ActivitySim activity-based demand",
+  "full_artifact": {
+    "commit_policy": "ignored run storage; hash and compact summary are committed",
+    "location": "data/screening-runs/gwv-development-18095-asim-candidate/gateway_volume_study/corridor_change.json",
+    "sha256": "91fe8f20bfdae73d094e693b9cbded4e1153e19161fbc2e8d9f1886507dc78b3"
+  },
+  "interpretation": "Methodological sensitivity to the one frozen gateway-volume candidate; not an average and not an accuracy claim.",
+  "is_average": false,
+  "schema_version": "openplan.gateway-volume-corridor-change-summary.v1",
+  "summary": {
+    "decreased": 416,
+    "increased": 3692,
+    "links": 32868,
+    "median_absolute_change": 0.0,
+    "median_absolute_percent_change_where_baseline_positive": 9.830147,
+    "unchanged": 28760
+  }
+}

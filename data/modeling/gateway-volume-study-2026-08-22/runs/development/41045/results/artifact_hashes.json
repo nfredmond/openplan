@@ -1,0 +1,414 @@
+{
+  "artifacts": {
+    "activitysim_corridors.json": "9ab467344f30b614a9ee6a9ec6e593a42e87f1e313b879611aec24b0a4475bd1",
+    "aequilibrae_corridors.json": "c7d2fb7f57827ea2cb95ed0eb37d006343056d5131a98111a7f31a110e085ef1",
+    "baseline_validation.json": "8ead0054820aafcdb8581a4fc216988e06b6acf8f4fbfcdb7b7a8fe76e26be5a",
+    "candidate_validation.json": "b09e168f53ed54a500760932237adc0af11f8c5adc186b1956e7389434f5c65d",
+    "conservation.json": "739fd57dff3bb6a9c28f17f3598f191e5be5db8f38e901b2eab6e84775e061ea",
+    "gateway_volume_basis.json": "ddb550f4489876ae28230dc0b4000c73f2342fbc7044fac6c08b15c09a378a47"
+  },
+  "guards": {
+    "conservation": true,
+    "convergence": {
+      "activitysim_baseline": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.0004570519680222979,
+        "iterations": 76,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "activitysim_candidate": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.00048469590507343774,
+        "iterations": 74,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "aequilibrae_baseline": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.0004707585531145083,
+        "iterations": 144,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      },
+      "aequilibrae_candidate": {
+        "algorithm": "bfw",
+        "assignment_profile": {
+          "algorithm": "bfw",
+          "capacity_field": "capacity",
+          "class_pce": 1,
+          "cores": 1,
+          "engine": "aequilibrae",
+          "engine_version": "1.6.2",
+          "max_iterations": 3000,
+          "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+          "schema_version": "openplan.assignment-profile.v1",
+          "target_gap": 0.0005,
+          "time_field": "travel_time",
+          "vdf": "BPR",
+          "vdf_parameters": {
+            "alpha": 0.15,
+            "beta": 4
+          }
+        },
+        "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157",
+        "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+        "converged": true,
+        "final_gap": 0.00045881873302727,
+        "iterations": 120,
+        "max_iterations": 3000,
+        "target_gap": 0.0005
+      }
+    },
+    "matched_station_set_by_demand_method": {
+      "activitysim": true,
+      "aequilibrae": true
+    },
+    "matched_station_set_unchanged": true,
+    "provenance": {
+      "activitysim_baseline": {
+        "artifact_hashes": {
+          "counts_csv": "20e877b56011043ef074b71253ca38a1a907e904fc458019688d585c6d10bb1b",
+          "gateway_counts_csv": "e88fd2dc18924e464dd3df6ff92adc443618589f8cbfd5195b778fba7fc54264"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-asim-baseline/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-asim-baseline/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "ODOT",
+          "count_year": null,
+          "coverage_statement": "ODOT roadway count coverage for OR.",
+          "facility_clause_pattern": "^([^,]*)",
+          "name": "ODOT TransGIS AADT - State",
+          "non_mainline_patterns": [
+            "\\bramps?\\b",
+            "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+            "\\bconn\\.",
+            "\\bcn\\.?\\s*\\d+\\b",
+            "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+          ],
+          "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+          "region": "OR",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-or-odot-aadt",
+          "station_prefix": "ODOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "OR",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "20e877b56011043ef074b71253ca38a1a907e904fc458019688d585c6d10bb1b",
+            "gateway_counts_csv": "e88fd2dc18924e464dd3df6ff92adc443618589f8cbfd5195b778fba7fc54264"
+          },
+          "boundary_sha256": "bb1be634497a25a41733f25156822e64566d175641fff0c24249e6715c8e88e8",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-baseline",
+          "run_name": "gwv-development-41045-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 248,
+            "provenance": {
+              "agency": "ODOT",
+              "count_year": null,
+              "coverage_statement": "ODOT roadway count coverage for OR.",
+              "facility_clause_pattern": "^([^,]*)",
+              "name": "ODOT TransGIS AADT - State",
+              "non_mainline_patterns": [
+                "\\bramps?\\b",
+                "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+                "\\bconn\\.",
+                "\\bcn\\.?\\s*\\d+\\b",
+                "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+              ],
+              "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+              "region": "OR",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-or-odot-aadt",
+              "station_prefix": "ODOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "OR",
+            "states": [
+              "41"
+            ],
+            "stations": 207
+          }
+        ],
+        "station_count": 207,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-asim-baseline/counts/published_counts.csv"
+      },
+      "activitysim_candidate": {
+        "artifact_hashes": {
+          "counts_csv": "20e877b56011043ef074b71253ca38a1a907e904fc458019688d585c6d10bb1b",
+          "gateway_counts_csv": "e88fd2dc18924e464dd3df6ff92adc443618589f8cbfd5195b778fba7fc54264"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-asim-candidate/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-asim-candidate/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "ODOT",
+          "count_year": null,
+          "coverage_statement": "ODOT roadway count coverage for OR.",
+          "facility_clause_pattern": "^([^,]*)",
+          "name": "ODOT TransGIS AADT - State",
+          "non_mainline_patterns": [
+            "\\bramps?\\b",
+            "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+            "\\bconn\\.",
+            "\\bcn\\.?\\s*\\d+\\b",
+            "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+          ],
+          "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+          "region": "OR",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-or-odot-aadt",
+          "station_prefix": "ODOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "OR",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "20e877b56011043ef074b71253ca38a1a907e904fc458019688d585c6d10bb1b",
+            "gateway_counts_csv": "e88fd2dc18924e464dd3df6ff92adc443618589f8cbfd5195b778fba7fc54264"
+          },
+          "boundary_sha256": "bb1be634497a25a41733f25156822e64566d175641fff0c24249e6715c8e88e8",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-baseline",
+          "run_name": "gwv-development-41045-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 248,
+            "provenance": {
+              "agency": "ODOT",
+              "count_year": null,
+              "coverage_statement": "ODOT roadway count coverage for OR.",
+              "facility_clause_pattern": "^([^,]*)",
+              "name": "ODOT TransGIS AADT - State",
+              "non_mainline_patterns": [
+                "\\bramps?\\b",
+                "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+                "\\bconn\\.",
+                "\\bcn\\.?\\s*\\d+\\b",
+                "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+              ],
+              "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+              "region": "OR",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-or-odot-aadt",
+              "station_prefix": "ODOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "OR",
+            "states": [
+              "41"
+            ],
+            "stations": 207
+          }
+        ],
+        "station_count": 207,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-asim-candidate/counts/published_counts.csv"
+      },
+      "aequilibrae_baseline": {
+        "artifact_hashes": {
+          "counts_csv": "20e877b56011043ef074b71253ca38a1a907e904fc458019688d585c6d10bb1b",
+          "gateway_counts_csv": "e88fd2dc18924e464dd3df6ff92adc443618589f8cbfd5195b778fba7fc54264"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-baseline/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-baseline/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "ODOT",
+          "count_year": null,
+          "coverage_statement": "ODOT roadway count coverage for OR.",
+          "facility_clause_pattern": "^([^,]*)",
+          "name": "ODOT TransGIS AADT - State",
+          "non_mainline_patterns": [
+            "\\bramps?\\b",
+            "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+            "\\bconn\\.",
+            "\\bcn\\.?\\s*\\d+\\b",
+            "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+          ],
+          "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+          "region": "OR",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-or-odot-aadt",
+          "station_prefix": "ODOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "OR",
+        "sources": [
+          {
+            "gateway_evidence_sections": 248,
+            "provenance": {
+              "agency": "ODOT",
+              "count_year": null,
+              "coverage_statement": "ODOT roadway count coverage for OR.",
+              "facility_clause_pattern": "^([^,]*)",
+              "name": "ODOT TransGIS AADT - State",
+              "non_mainline_patterns": [
+                "\\bramps?\\b",
+                "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+                "\\bconn\\.",
+                "\\bcn\\.?\\s*\\d+\\b",
+                "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+              ],
+              "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+              "region": "OR",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-or-odot-aadt",
+              "station_prefix": "ODOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "OR",
+            "states": [
+              "41"
+            ],
+            "stations": 207
+          }
+        ],
+        "station_count": 207,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-baseline/counts/published_counts.csv"
+      },
+      "aequilibrae_candidate": {
+        "artifact_hashes": {
+          "counts_csv": "20e877b56011043ef074b71253ca38a1a907e904fc458019688d585c6d10bb1b",
+          "gateway_counts_csv": "e88fd2dc18924e464dd3df6ff92adc443618589f8cbfd5195b778fba7fc54264"
+        },
+        "available": true,
+        "calibration_requested": false,
+        "counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-candidate/counts/published_counts.csv",
+        "gateway_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-candidate/counts/published_counts.gateway.csv",
+        "provenance": {
+          "agency": "ODOT",
+          "count_year": null,
+          "coverage_statement": "ODOT roadway count coverage for OR.",
+          "facility_clause_pattern": "^([^,]*)",
+          "name": "ODOT TransGIS AADT - State",
+          "non_mainline_patterns": [
+            "\\bramps?\\b",
+            "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+            "\\bconn\\.",
+            "\\bcn\\.?\\s*\\d+\\b",
+            "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+          ],
+          "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+          "region": "OR",
+          "route_label_prefix": "",
+          "source_dataset_id": "us-or-odot-aadt",
+          "station_prefix": "ODOT",
+          "vintage": "publisher-current-vintage-unspecified"
+        },
+        "region": "OR",
+        "reused_from_run": {
+          "artifact_hashes": {
+            "counts_csv": "20e877b56011043ef074b71253ca38a1a907e904fc458019688d585c6d10bb1b",
+            "gateway_counts_csv": "e88fd2dc18924e464dd3df6ff92adc443618589f8cbfd5195b778fba7fc54264"
+          },
+          "boundary_sha256": "bb1be634497a25a41733f25156822e64566d175641fff0c24249e6715c8e88e8",
+          "run_dir": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-baseline",
+          "run_name": "gwv-development-41045-aeq-baseline"
+        },
+        "sources": [
+          {
+            "gateway_evidence_sections": 248,
+            "provenance": {
+              "agency": "ODOT",
+              "count_year": null,
+              "coverage_statement": "ODOT roadway count coverage for OR.",
+              "facility_clause_pattern": "^([^,]*)",
+              "name": "ODOT TransGIS AADT - State",
+              "non_mainline_patterns": [
+                "\\bramps?\\b",
+                "\\bconn(?:ection)?\\.?\\s*(?:no\\.?\\s*)?\\d+",
+                "\\bconn\\.",
+                "\\bcn\\.?\\s*\\d+\\b",
+                "\\bfront(?:age|\\.)\\s*(?:rd|road)?\\b"
+              ],
+              "query_url": "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/MapServer/155/query",
+              "region": "OR",
+              "route_label_prefix": "",
+              "source_dataset_id": "us-or-odot-aadt",
+              "station_prefix": "ODOT",
+              "vintage": "publisher-current-vintage-unspecified"
+            },
+            "source": "OR",
+            "states": [
+              "41"
+            ],
+            "stations": 207
+          }
+        ],
+        "station_count": 207,
+        "validation_counts_csv": "/home/nathaniel/code/openplan/data/screening-runs/gwv-development-41045-aeq-candidate/counts/published_counts.csv"
+      }
+    },
+    "zone_resolution_unchanged": true
+  }
+}

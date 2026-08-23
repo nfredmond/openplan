@@ -1,13 +1,18 @@
 {
   "county_fips": "15001",
-  "error": {
-    "kind": "KeyboardInterrupt",
-    "message": "Execution stopped before a valid county result was assembled. Partial run artifacts may exist and are not study results."
-  },
-  "finished_at_utc": "2026-08-23T08:13:15.376504+00:00",
+  "finished_at_utc": "2026-08-23T08:31:40.761076+00:00",
   "half": "development",
+  "output_hashes": {
+    "activitysim_corridors.json": "b3bd015e33a49eebb23e6a58b4121d2f614e7d953c6a5e3c7eb5e9cc2b4a5404",
+    "aequilibrae_corridors.json": "7ca84e60eee7292fdaded3489786d38a1f306643b8a6e92886a5fed30aadb8b3",
+    "artifact_hashes.json": "5730c1cb02a145f6822a16f51cf69387ea788cf80313a6cc2bd91df097d81e3c",
+    "baseline_validation.json": "63e2ec42cae9a406e1f7877fe886b6a1bc073454a65a70b75ec580b5ed0721e0",
+    "candidate_validation.json": "defef01afe5d2bd91be68024b832e57aff3468b390ffb521e3a4fa7ead3029f3",
+    "conservation.json": "0a5e10192b1aaaaae44d19ed4e7ca4f54ab430778d81a4dfd81763fba3e70931",
+    "gateway_volume_basis.json": "0025c4ac77059016512eea5b64fa8a78c4f9238df59e98f998abbeca86a21450"
+  },
   "schema_version": "openplan.gateway-volume-study-county.v1",
-  "seconds": 653.1,
-  "started_at_utc": "2026-08-23T08:02:22.285511+00:00",
-  "status": "aborted_before_result"
+  "seconds": 608.3,
+  "started_at_utc": "2026-08-23T08:21:32.434400+00:00",
+  "status": "completed"
 }

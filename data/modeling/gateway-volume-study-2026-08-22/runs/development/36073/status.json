@@ -1,0 +1,18 @@
+{
+  "county_fips": "36073",
+  "finished_at_utc": "2026-08-23T09:12:36.674212+00:00",
+  "half": "development",
+  "output_hashes": {
+    "activitysim_corridors.json": "57ee9f5ab2b51a7c1e47969561db19d1b58b9654896898c330e280eae0e86da6",
+    "aequilibrae_corridors.json": "f869a879059fd94ae1440c9732bbf2725394d3c241283b713115c0814a4532ed",
+    "artifact_hashes.json": "1aa7a90ab814cc36b413f14ad42002374a6c1a9b6822b1e601c73744f0dbfade",
+    "baseline_validation.json": "8c0438c727a6aa25452b76d9d4ae3d03ebd1d4fc035b58b0d377050d52ecdcbe",
+    "candidate_validation.json": "79d32052aaad0a2f74d566d88385e29503a82839ffc1a135412232f427584ff4",
+    "conservation.json": "e64082c797d91d32d914b0ef5bd70e48ef210bfc17ec951722827b14849bf2a3",
+    "gateway_volume_basis.json": "bb927d358c511a3fcb0e085333bd423a1e54493c31598d34abf25e04bbf6fd6a"
+  },
+  "schema_version": "openplan.gateway-volume-study-county.v1",
+  "seconds": 178.0,
+  "started_at_utc": "2026-08-23T09:09:38.649359+00:00",
+  "status": "completed"
+}
