@@ -403,7 +403,8 @@ def bbox_contains(station: dict[str, Any], lon: float | None, lat: float | None)
     mx_lat = parse_float(station.get("bbox_max_lat"))
     if None in {mn_lon, mn_lat, mx_lon, mx_lat}:
         return True
-    return mn_lon <= lon <= mx_lon and mn_lat <= lat <= mx_lat
+    longitude_inside = mn_lon <= lon <= mx_lon if mn_lon <= mx_lon else lon >= mn_lon or lon <= mx_lon
+    return longitude_inside and mn_lat <= lat <= mx_lat
 
 
 # ── metrics (parity with screening_metrics.py) ─────────────────────────────
@@ -661,15 +662,19 @@ def resolve_shared_links(
 
 def match_station(station: dict[str, Any], modeled_links: Iterable[dict[str, Any]]) -> dict[str, Any] | None:
     """Best modeled link for a count station: exact name (3) > facility substring
-    (2) > allowed-link-type-only (1); ties broken by higher modeled volume. Links
-    must fall inside the station bbox and an allowed link type."""
+    (2) > allowed-link-type-only (1); ties broken by distance, then stable link
+    id. Assignment volume cannot choose the link used to grade that assignment.
+    Links must fall inside the station bbox and an allowed link type."""
     candidate_names_norm = {normalize_text(n) for n in parse_pipe_list(station.get("candidate_model_names"))}
     excluded_norm = {normalize_text(n) for n in parse_pipe_list(station.get("exclude_model_names"))}
     allowed_types_norm = {normalize_text(t) for t in parse_pipe_list(station.get("candidate_link_types"))}
     facility_norm = normalize_text(station.get("facility_name"))
 
-    best: dict[str, Any] | None = None
-    for link in modeled_links:
+    links = list(modeled_links)
+    best_link: dict[str, Any] | None = None
+    best_score = 0
+    best_distance = math.inf
+    for link in links:
         lon, lat = link.get("lon"), link.get("lat")
         if not bbox_contains(station, lon, lat):
             continue
@@ -685,24 +690,71 @@ def match_station(station: dict[str, Any], modeled_links: Iterable[dict[str, Any
         if not (exact or facility or type_only):
             continue
         score = 3 if exact else 2 if facility else 1
-        # THE CORRIDOR'S volume, not one carriageway's. A count station on a
-        # divided highway measures both directions; OSM maps them as two
-        # one-way links. See `corridor_volume`.
-        volume, carriageways = corridor_volume(link, modeled_links)
-        key = (score, volume)
-        if best is None or key > (best["match_score"], best["modeled_daily_pce"]):
-            best = {
-                "link_id": int(link["link_id"]),
-                "matched_name": link.get("name", ""),
-                "matched_link_type": link.get("link_type", ""),
-                "match_score": score,
-                "modeled_daily_pce": round(volume, 1),
-                # Recorded so a reader can tell a summed corridor from a single
-                # link without re-deriving it, and so a wrong pairing is
-                # visible rather than baked into a number.
-                "carriageways_summed": carriageways,
-            }
-    return best
+        distance = station_candidate_distance_meters(station, link)
+        if best_link is None or station_candidate_rank(station, link, score) > station_candidate_rank(
+            station, best_link, best_score
+        ):
+            best_link = link
+            best_score = score
+            best_distance = distance
+    if best_link is None:
+        return None
+
+    # Volume is read only AFTER geometry chooses the exam. Otherwise a changed
+    # assignment can select a different observed station/link pairing and grade
+    # itself on a different question.
+    volume, carriageways = corridor_volume(best_link, links)
+    return {
+        "link_id": int(best_link["link_id"]),
+        "matched_name": best_link.get("name", ""),
+        "matched_link_type": best_link.get("link_type", ""),
+        "match_score": best_score,
+        "distance_to_station_meters": round(best_distance, 3) if math.isfinite(best_distance) else None,
+        "modeled_daily_pce": round(volume, 1),
+        # Recorded so a reader can tell a summed corridor from a single link
+        # without re-deriving it, and so a wrong pairing is visible rather than
+        # baked into a number.
+        "carriageways_summed": carriageways,
+    }
+
+
+def station_candidate_distance_meters(
+    station: Mapping[str, Any], candidate: Mapping[str, Any]
+) -> float:
+    """Great-circle distance from a station bbox midpoint to a link midpoint.
+
+    Count adapters express the station location as a small bbox. Longitude
+    midpoint calculation wraps across the antimeridian, so the same country-
+    neutral matcher works for Aleutian and western-Pacific study areas.
+    """
+    min_lon = parse_float(station.get("bbox_min_lon"))
+    min_lat = parse_float(station.get("bbox_min_lat"))
+    max_lon = parse_float(station.get("bbox_max_lon"))
+    max_lat = parse_float(station.get("bbox_max_lat"))
+    lon = parse_float(candidate.get("lon"))
+    lat = parse_float(candidate.get("lat"))
+    if None in {min_lon, min_lat, max_lon, max_lat, lon, lat}:
+        return math.inf
+    lon_span = (max_lon - min_lon) % 360.0
+    station_lon = ((min_lon + lon_span / 2.0 + 180.0) % 360.0) - 180.0
+    station_lat = (min_lat + max_lat) / 2.0
+    lat1 = math.radians(station_lat)
+    lat2 = math.radians(lat)
+    delta_lat = lat2 - lat1
+    delta_lon = math.radians(((lon - station_lon + 180.0) % 360.0) - 180.0)
+    haversine = (
+        math.sin(delta_lat / 2.0) ** 2
+        + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lon / 2.0) ** 2
+    )
+    return 6_371_008.8 * 2.0 * math.asin(min(1.0, math.sqrt(haversine)))
+
+
+def station_candidate_rank(
+    station: Mapping[str, Any], candidate: Mapping[str, Any], match_score: int
+) -> tuple[int, float, int]:
+    """Volume-independent rank shared by the worker and county validator."""
+    distance = station_candidate_distance_meters(station, candidate)
+    return match_score, -distance, -int(candidate["link_id"])
 
 
 #: How far apart two carriageways of one divided highway can sit, in degrees.

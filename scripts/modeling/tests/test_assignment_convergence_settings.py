@@ -66,6 +66,54 @@ def reload_runtime(env: dict[str, str]):
         return runtime
 
 
+class RetainedNetworkGeometryCarriesDirection(unittest.TestCase):
+    def test_export_distinguishes_one_way_and_two_way_links(self) -> None:
+        runtime = reload_runtime({})
+        line = json.dumps(
+            {"type": "LineString", "coordinates": [[-121.0, 39.0], [-120.99, 39.01]]}
+        )
+        rows = [
+            (1, "motorway", "Road A", line, 1),
+            (2, "primary", "Road B", line, 0),
+        ]
+
+        class Connection:
+            def execute(self, _query):
+                return SimpleNamespace(fetchall=lambda: rows)
+
+            def close(self):
+                pass
+
+        manifest = {
+            "roadway_link_count": 2,
+            "roadway_link_ids_digest": runtime._payload_digest([1, 2]),
+        }
+        state = {
+            "schema_version": "openplan.assignment-network-state.v1",
+            "retained_network_manifest": manifest,
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            output_dir = root / "run_output"
+            output_dir.mkdir()
+            with (
+                mock.patch.object(runtime, "connect_spatialite", return_value=Connection()),
+                mock.patch.object(runtime, "retained_network_manifest", return_value=manifest),
+            ):
+                output = runtime.export_retained_network_geojson(
+                    root,
+                    output_dir,
+                    network_state_record=state,
+                    network_state_digest=runtime.assignment_network_state_digest(state),
+                )
+            properties = {
+                feature["properties"]["link_id"]: feature["properties"]
+                for feature in json.loads(Path(output).read_text())["features"]
+            }
+            self.assertTrue(properties[1]["is_one_way"])
+            self.assertFalse(properties[2]["is_one_way"])
+
+
 class TheConvergenceSettingsStayDefensible(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:

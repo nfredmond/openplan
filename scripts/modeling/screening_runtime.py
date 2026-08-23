@@ -3021,7 +3021,8 @@ def export_retained_network_geojson(
     connection = connect_spatialite(project_dir / "project_database.sqlite")
     try:
         rows = connection.execute(
-            "SELECT link_id, link_type, COALESCE(name, ''), AsGeoJSON(geometry) "
+            "SELECT link_id, link_type, COALESCE(name, ''), AsGeoJSON(geometry), "
+            "COALESCE(direction, 0) "
             "FROM links ORDER BY link_id"
         ).fetchall()
     finally:
@@ -3029,7 +3030,7 @@ def export_retained_network_geojson(
     features: list[dict[str, Any]] = []
     roadway_ids: list[int] = []
     seen_ids: set[int] = set()
-    for raw_link_id, raw_link_type, raw_name, raw_geometry in rows:
+    for raw_link_id, raw_link_type, raw_name, raw_geometry, raw_direction in rows:
         link_id = _strict_integer(raw_link_id, "Retained-network geometry")
         if link_id in seen_ids:
             raise RuntimeError(f"Retained-network geometry duplicates link id {link_id}")
@@ -3052,6 +3053,7 @@ def export_retained_network_geojson(
                     "link_id": link_id,
                     "link_type": raw_link_type or "",
                     "name": raw_name or "",
+                    "is_one_way": bool(int(raw_direction or 0) != 0),
                 },
                 "geometry": geometry,
             }

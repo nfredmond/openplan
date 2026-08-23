@@ -22,7 +22,11 @@ _WORKER_DIR = Path(__file__).resolve().parents[2] / "workers" / "aequilibrae_wor
 if str(_WORKER_DIR) not in sys.path:
     sys.path.insert(0, str(_WORKER_DIR))
 
-from count_validation import resolve_shared_links as _worker_resolve_shared_links
+from count_validation import (
+    resolve_shared_links as _worker_resolve_shared_links,
+    station_candidate_distance_meters,
+    station_candidate_rank,
+)
 
 from screening_metrics import (
     accuracy_by_road_class,
@@ -225,14 +229,18 @@ def parse_pipe_list(value: Any) -> list[str]:
 
 
 def choose_geometry_path(run_output_dir: Path) -> Path:
+    retained = run_output_dir / "retained_network.geojson"
     loaded = run_output_dir / "loaded_links.geojson"
     top = run_output_dir / "top_loaded_links.geojson"
+    if retained.exists():
+        return retained
     if loaded.exists():
         return loaded
     if top.exists():
         return top
     raise FileNotFoundError(
-        f"No loaded link GeoJSON found in {run_output_dir}. Expected loaded_links.geojson or top_loaded_links.geojson"
+        f"No network GeoJSON found in {run_output_dir}. Expected retained_network.geojson, "
+        "loaded_links.geojson, or top_loaded_links.geojson"
     )
 
 
@@ -274,7 +282,8 @@ def bbox_contains(row: dict[str, Any], lon: float | None, lat: float | None) -> 
     max_lat = parse_float(row.get("bbox_max_lat"))
     if None in {min_lon, min_lat, max_lon, max_lat}:
         return True
-    return min_lon <= lon <= max_lon and min_lat <= lat <= max_lat
+    longitude_inside = min_lon <= lon <= max_lon if min_lon <= max_lon else lon >= min_lon or lon <= max_lon
+    return longitude_inside and min_lat <= lat <= max_lat
 
 
 def load_volume_lookup(link_volumes_path: Path, override_field: str | None) -> tuple[str, dict[int, dict[str, Any]]]:
@@ -472,9 +481,8 @@ def collect_station_candidates(
                 "match_score": match_score,
             }
             existing = candidates.get(link_id)
-            if existing is None or (candidate["match_score"], candidate["volume"], source == "project_db") > (
+            if existing is None or (candidate["match_score"], source == "project_db") > (
                 existing["match_score"],
-                existing["volume"],
                 existing["source"] == "project_db",
             ):
                 candidates[link_id] = candidate
@@ -483,9 +491,17 @@ def collect_station_candidates(
     if project_db is not None:
         ingest("project_db", query_project_db_candidates(project_db, station, volume_lookup, volume_field))
 
-    ordered = sorted(candidates.values(), key=lambda item: (item["match_score"], item["volume"]), reverse=True)
+    ordered = sorted(
+        candidates.values(),
+        key=lambda item: station_candidate_rank(station, item, int(item["match_score"])),
+        reverse=True,
+    )
     for idx, candidate in enumerate(ordered, start=1):
         candidate["rank"] = idx
+        distance = station_candidate_distance_meters(station, candidate)
+        candidate["distance_to_station_meters"] = (
+            round(distance, 3) if math.isfinite(distance) else None
+        )
     return ordered
 
 
@@ -794,6 +810,9 @@ def write_candidate_audit_csv(path: Path, audit: list[dict[str, Any]]) -> None:
                     "candidate_type_only_match": candidate.get("type_only_match", False),
                     "candidate_lon": candidate.get("lon", ""),
                     "candidate_lat": candidate.get("lat", ""),
+                    "candidate_distance_to_station_meters": candidate.get(
+                        "distance_to_station_meters", ""
+                    ),
                     "candidate_modeled_daily_pce": int(round(float(candidate.get("volume") or 0))),
                 }
             )

@@ -25,15 +25,25 @@ def _link(lid, name, ltype, lon, lat, vol):
     return {"link_id": lid, "name": name, "link_type": ltype, "lon": lon, "lat": lat, "volume": vol}
 
 
-def test_match_prefers_exact_name_then_volume():
+def test_match_prefers_exact_name_then_distance_without_looking_at_volume():
     st = _station("S", 40000, "Grass Valley Highway", "motorway")
     links = [
-        _link(1, "Grass Valley Highway", "motorway", -121.05, 39.22, 38000),  # exact
-        _link(2, "Grass Valley Highway", "motorway", -121.04, 39.23, 41000),  # exact, higher vol
+        _link(1, "Grass Valley Highway", "motorway", -121.0001, 39.0001, 38000),  # exact, closer
+        _link(2, "Grass Valley Highway", "motorway", -121.04, 39.03, 99999),  # exact, higher vol
         _link(3, "Some Road", "motorway", -121.05, 39.22, 99999),             # type-only, ignored vs exact
     ]
     best = cv.match_station(st, links)
-    assert best["link_id"] == 2 and best["match_score"] == 3, best
+    assert best["link_id"] == 1 and best["match_score"] == 3, best
+
+    links[0]["volume"], links[1]["volume"] = links[1]["volume"], links[0]["volume"]
+    assert cv.match_station(st, links)["link_id"] == 1
+
+
+def test_candidate_distance_wraps_across_the_antimeridian():
+    st = _station("S", 1000, "Dateline Road", "primary", bbox=(179.99, 10.0, -179.99, 10.02))
+    near = _link(1, "Dateline Road", "primary", -179.999, 10.01, 1)
+    far = _link(2, "Dateline Road", "primary", 179.9, 10.01, 99999)
+    assert cv.match_station(st, [far, near])["link_id"] == 1
 
 
 def test_bbox_and_type_gates():

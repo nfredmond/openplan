@@ -21,7 +21,12 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from validate_screening_observed_counts import DEFAULT_READY_MEDIAN_APE, resolve_shared_links
+from validate_screening_observed_counts import (
+    DEFAULT_READY_MEDIAN_APE,
+    choose_geometry_path,
+    collect_station_candidates,
+    resolve_shared_links,
+)
 
 
 def station(station_id: str, link_id: str, observed: float, modeled: float = 10000.0) -> dict:
@@ -42,6 +47,75 @@ def station(station_id: str, link_id: str, observed: float, modeled: float = 100
 
 def by_id(rows):
     return {row["station_id"]: row for row in rows}
+
+
+class TheObservedExamDoesNotDependOnTheCandidateOutput(unittest.TestCase):
+    def station(self) -> dict:
+        return {
+            "station_id": "S",
+            "facility_name": "Main Street",
+            "candidate_model_names": "Main Street",
+            "candidate_link_types": "primary",
+            "bbox_min_lon": -121.01,
+            "bbox_min_lat": 38.99,
+            "bbox_max_lon": -120.99,
+            "bbox_max_lat": 39.01,
+        }
+
+    @staticmethod
+    def feature(link_id: int, lon: float, volume: float) -> dict:
+        return {
+            "link_id": link_id,
+            "name": "Main Street",
+            "link_type": "primary",
+            "lon": lon,
+            "lat": 39.0,
+            "volume": volume,
+            "is_one_way": False,
+        }
+
+    def rank(self, features: list[dict]) -> list[int]:
+        candidates = collect_station_candidates(
+            self.station(), features, None, {}, "PCE_tot"
+        )
+        return [candidate["link_id"] for candidate in candidates]
+
+    def test_closest_link_wins_even_when_the_other_link_has_more_assigned_volume(self) -> None:
+        closer = self.feature(10, -121.0001, 100.0)
+        farther = self.feature(20, -121.005, 100_000.0)
+        self.assertEqual(self.rank([farther, closer]), [10, 20])
+
+        closer["volume"], farther["volume"] = farther["volume"], closer["volume"]
+        self.assertEqual(self.rank([farther, closer]), [10, 20])
+
+    def test_full_retained_network_precedes_assignment_filtered_geometry(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            loaded = root / "loaded_links.geojson"
+            retained = root / "retained_network.geojson"
+            loaded.write_text("{}")
+            retained.write_text("{}")
+            self.assertEqual(choose_geometry_path(root), retained)
+
+            retained.unlink()
+            self.assertEqual(choose_geometry_path(root), loaded)
+
+    def test_county_validator_matches_across_the_antimeridian(self) -> None:
+        station = self.station()
+        station.update(
+            {
+                "bbox_min_lon": 179.99,
+                "bbox_max_lon": -179.99,
+                "bbox_min_lat": 9.99,
+                "bbox_max_lat": 10.01,
+            }
+        )
+        near = self.feature(10, -179.999, 1.0)
+        near["lat"] = 10.0
+        candidates = collect_station_candidates(station, [near], None, {}, "PCE_tot")
+        self.assertEqual([candidate["link_id"] for candidate in candidates], [10])
 
 
 class AStationAloneOnItsLinkIsUntouched(unittest.TestCase):

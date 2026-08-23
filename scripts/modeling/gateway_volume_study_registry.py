@@ -42,6 +42,8 @@ CANDIDATE_IMPLEMENTATION_FILES = (
     "scripts/modeling/run_gateway_volume_study.py",
     "scripts/modeling/run_screening_model.py",
     "scripts/modeling/screening_runtime.py",
+    "scripts/modeling/validate_screening_observed_counts.py",
+    "workers/aequilibrae_worker/count_validation.py",
     "workers/aequilibrae_worker/gateways.py",
     "workers/aequilibrae_worker/assignment_settings.py",
 )
