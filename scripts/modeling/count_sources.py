@@ -17,16 +17,49 @@ normalized to the columns build_expanded_aadt_counts.py already reads
 station namespace, published vintage) so the count builder can stamp the agency
 that actually published a count set instead of assuming one.
 
-Not included: a single national HPMS source — FHWA HPMS is distributed as bulk
-per-state shapefiles / functional-system-split linework, not a clean bbox API,
-so a national ingest is a larger follow-up. The per-state FeatureServer path
-here covers any state that publishes one (most do).
+The registry also carries the national HPMS fallback. Its U.S.-specific Socrata
+adapter lives in ``hpms_count_source.py``; FHWA field names and coding never
+enter the country-neutral descriptor or normalized-record contracts here.
 """
 from __future__ import annotations
 
 import json
 import re
-from typing import Any, Mapping
+from typing import Any, Literal, Mapping, TypedDict
+
+
+class ObservedCountSourceDescriptor(TypedDict):
+    """Country-neutral description of an observed-count source adapter."""
+
+    adapter: str
+    country: str
+    dataset_id: str
+    vintage: str
+    coverage_statement: str
+    field_map: dict[str, str]
+    geometry_field: str
+    priority: int
+
+
+class ObservedCountRecord(TypedDict):
+    """Normalized section/count evidence shared by source adapters."""
+
+    source_dataset_id: str
+    vintage: str
+    section_id: str
+    measurement_date: str | None
+    observed_volume: float | None
+    longitude: float
+    latitude: float
+    directionality: str
+    facility_class: str
+    source_state: str
+    source_county: str
+    route_identifiers: dict[str, str]
+    section_limits: dict[str, str]
+    exclusion_status: Literal["eligible", "excluded"]
+    exclusion_reason: str | None
+    provenance: dict[str, Any]
 
 # region -> AADT FeatureServer. `fields` maps this source's attribute names to
 # the normalized keys. A source with a single directional-total AADT field uses
@@ -164,6 +197,90 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
     # workers/aequilibrae_worker/main.py::_REGION_BOUNDS so auto-ingest recognizes it.
 }
 
+
+HPMS_SOURCE_ID = "us-fhwa-hpms-2024"
+HPMS_DATASET_ID = "42um-tgh5"
+HPMS_COVERAGE_STATEMENT = (
+    "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and "
+    "local roads may be represented only in summary data; a missing section value is unknown, "
+    "not zero traffic. Counts may be three to six years old under FHWA traffic-count cycles."
+)
+
+
+def _state_source_descriptor(region: str, source: Mapping[str, Any]) -> ObservedCountSourceDescriptor:
+    fields = source.get("fields") or {}
+    return {
+        "adapter": "arcgis-feature-service",
+        "country": "US",
+        "dataset_id": f"us-{region.lower()}-{source['station_prefix'].lower()}-aadt",
+        "vintage": str(source.get("count_year") or "publisher-current-vintage-unspecified"),
+        "coverage_statement": f"{source['agency']} roadway count coverage for {region}.",
+        "field_map": {
+            "route_id": fields.get("route", ""),
+            "section_start": fields.get("postmile", ""),
+            "description": fields.get("description", ""),
+            "aadt": fields.get("aadt") or fields.get("ahead_aadt") or "",
+        },
+        "geometry_field": "geometry",
+        "priority": 100,
+    }
+
+
+OBSERVED_COUNT_SOURCE_DESCRIPTORS: dict[str, ObservedCountSourceDescriptor] = {
+    **{
+        f"us-state-{region.lower()}": _state_source_descriptor(region, source)
+        for region, source in COUNT_SOURCES.items()
+    },
+    HPMS_SOURCE_ID: {
+        "adapter": "us-fhwa-hpms-socrata",
+        "country": "US",
+        "dataset_id": HPMS_DATASET_ID,
+        "vintage": "2024",
+        "coverage_statement": HPMS_COVERAGE_STATEMENT,
+        "field_map": {
+            "aadt": "aadt",
+            "measurement_date": "aadt_d",
+            "state": "stateid",
+            "county": "county_id",
+            "facility_class": "f_system",
+            "facility_type": "facility_type",
+            "restricted": "is_restricted",
+            "route_id": "route_id",
+            "route_number": "route_number",
+            "route_signing": "route_signing",
+            "route_name": "routename",
+            "section_start": "begin_point",
+            "section_end": "end_point",
+            "source_year": "year_record",
+            "section_shape_id": "shapeid",
+        },
+        "geometry_field": "line",
+        "priority": 10,
+    },
+}
+
+
+def observed_count_source_descriptor(source_id: str) -> ObservedCountSourceDescriptor:
+    """Resolve a source explicitly; source identity is never guessed."""
+    try:
+        return OBSERVED_COUNT_SOURCE_DESCRIPTORS[source_id]
+    except KeyError as exc:
+        raise ValueError(
+            f"No observed-count source {source_id!r}; registered: "
+            f"{sorted(OBSERVED_COUNT_SOURCE_DESCRIPTORS)}"
+        ) from exc
+
+
+def observed_count_sources_for_regions(regions: list[str]) -> list[tuple[str, ObservedCountSourceDescriptor]]:
+    """State publishers first, followed once by the nationwide HPMS fallback."""
+    selected: list[tuple[str, ObservedCountSourceDescriptor]] = []
+    for region in sorted(set(regions)):
+        source_id = f"us-state-{region.lower()}"
+        if source_id in OBSERVED_COUNT_SOURCE_DESCRIPTORS:
+            selected.append((source_id, OBSERVED_COUNT_SOURCE_DESCRIPTORS[source_id]))
+    selected.append((HPMS_SOURCE_ID, OBSERVED_COUNT_SOURCE_DESCRIPTORS[HPMS_SOURCE_ID]))
+    return sorted(selected, key=lambda item: (-item[1]["priority"], item[0]))
+
 # A registry entry without these cannot describe where its counts came from.
 _REQUIRED_PROVENANCE_KEYS = ("name", "agency", "station_prefix")
 
@@ -176,6 +293,22 @@ def source_provenance(region: str) -> dict[str, Any]:
     Fails closed on an unregistered region and on an entry missing its agency: a
     count row must never inherit some other jurisdiction's attribution because a
     default was in scope. Vintage may legitimately be None (unknown ≠ wrong)."""
+    if region == HPMS_SOURCE_ID:
+        descriptor = observed_count_source_descriptor(region)
+        return {
+            "region": region,
+            "name": "FHWA HPMS Spatial All Sections - 2024",
+            "agency": "Federal Highway Administration",
+            "station_prefix": "HPMS",
+            "route_label_prefix": "",
+            "count_year": 2024,
+            "query_url": f"https://data.transportation.gov/resource/{descriptor['dataset_id']}.geojson",
+            "non_mainline_patterns": (),
+            "facility_clause_pattern": "",
+            "source_dataset_id": descriptor["dataset_id"],
+            "vintage": descriptor["vintage"],
+            "coverage_statement": descriptor["coverage_statement"],
+        }
     if region not in COUNT_SOURCES:
         raise ValueError(f"No count source registered for region {region!r}. "
                          f"Registered: {sorted(COUNT_SOURCES)}. Add one to COUNT_SOURCES.")
@@ -184,6 +317,7 @@ def source_provenance(region: str) -> dict[str, Any]:
     if missing:
         raise ValueError(f"Count source {region!r} does not declare {missing}; a count set "
                          f"cannot be written without the agency that published it.")
+    descriptor = observed_count_source_descriptor(f"us-state-{region.lower()}")
     return {
         "region": region,
         "name": src["name"],
@@ -194,6 +328,9 @@ def source_provenance(region: str) -> dict[str, Any]:
         "query_url": src.get("query_url"),
         "non_mainline_patterns": tuple(src.get("non_mainline_patterns", ())),
         "facility_clause_pattern": src.get("facility_clause_pattern", ""),
+        "source_dataset_id": descriptor["dataset_id"],
+        "vintage": descriptor["vintage"],
+        "coverage_statement": descriptor["coverage_statement"],
     }
 
 

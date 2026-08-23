@@ -1,0 +1,28 @@
+name: Modeling source contracts
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "19 11 * * 2"
+
+permissions:
+  contents: read
+
+jobs:
+  hpms:
+    name: FHWA HPMS live schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install source client
+        run: pip install requests
+
+      - name: Probe pinned dataset and fields
+        working-directory: scripts/modeling
+        run: python check_hpms_live_contract.py

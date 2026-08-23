@@ -40,6 +40,18 @@ def test_region_for_bbox_returns_none_outside_registered_regions():
     assert main._region_for_bbox((-74.02, 40.70, -73.90, 40.80)) is None  # NYC (no registered source)
 
 
+def test_national_hpms_fallback_covers_unregistered_us_geographies():
+    assert main.observed_count_source_for_bbox((-83.2, 39.8, -82.8, 40.1)) == "us-fhwa-hpms-2024"
+    assert main.observed_count_source_for_bbox((-150.0, 60.0, -149.0, 61.0)) == "us-fhwa-hpms-2024"
+    assert main.observed_count_source_for_bbox((-158.5, 20.5, -157.5, 21.5)) == "us-fhwa-hpms-2024"
+    assert main.observed_count_source_for_bbox((179.0, 51.0, -179.0, 53.0)) == "us-fhwa-hpms-2024"
+    assert main.observed_count_source_for_bbox((2.0, 48.0, 3.0, 49.0)) is None
+
+
+def test_registered_state_feed_remains_preferred_to_hpms():
+    assert main.observed_count_source_for_bbox((-121.83, 38.51, -121.68, 38.58)) == "CA"
+
+
 def test_auto_ingest_is_off_by_default():
     # COUNT_AUTO_INGEST defaults OFF, so the pilot/CI stay on the curated file.
     assert main.COUNT_AUTO_INGEST is False
@@ -185,6 +197,8 @@ if __name__ == "__main__":
         test_region_for_bbox_detects_california,
         test_region_for_bbox_detects_registered_states,
         test_region_for_bbox_returns_none_outside_registered_regions,
+        test_national_hpms_fallback_covers_unregistered_us_geographies,
+        test_registered_state_feed_remains_preferred_to_hpms,
         test_auto_ingest_is_off_by_default,
         test_auto_ingest_passes_bbox_as_equals_form,
         test_resolve_calibration_enabled_snapshot_over_env,

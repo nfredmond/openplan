@@ -224,6 +224,27 @@ COUNT_AUTO_INGEST = os.getenv("COUNT_AUTO_INGEST", "0") in ("1", "true", "True")
 _region_for_bbox = count_validation.region_for_bbox
 
 
+def observed_count_source_for_bbox(bbox) -> str | None:
+    """Preferred registered source for a study bbox, with national fallback."""
+    region = _region_for_bbox(tuple(bbox))
+    if region:
+        return region
+    modeling_scripts = os.path.normpath(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts", "modeling")
+    )
+    if modeling_scripts not in sys.path:
+        sys.path.insert(0, modeling_scripts)
+    try:
+        import count_sources as _count_sources
+        import hpms_count_source as _hpms_count_source
+
+        if _hpms_count_source.geography_supported(tuple(bbox)):
+            return _count_sources.HPMS_SOURCE_ID
+    except Exception:
+        pass
+    return None
+
+
 def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: bool = False) -> str | None:
     """Best-effort: fetch local DOT AADT for the study bbox and build a per-run
     validation CSV, returning its path (or None). Shells out to the existing
@@ -236,9 +257,6 @@ def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: b
         return None
     if not bbox or len(bbox) != 4:
         return None
-    region = _region_for_bbox(tuple(bbox))
-    if not region:
-        return None
     db_path = os.path.join(proj_dir, "project_database.sqlite")
     script = os.path.normpath(
         os.path.join(
@@ -247,6 +265,12 @@ def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: b
         )
     )
     if not os.path.exists(db_path) or not os.path.exists(script):
+        return None
+    # Prefer a registered state publisher. Everywhere else in the U.S. uses
+    # the HPMS adapter; this country-specific decision stays behind the source
+    # registry and never enters model geography types.
+    region = observed_count_source_for_bbox(tuple(bbox))
+    if not region:
         return None
     out_csv = os.path.join(out_dir, "auto_aadt_counts.csv")
     try:

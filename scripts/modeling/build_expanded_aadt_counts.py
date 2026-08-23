@@ -27,6 +27,7 @@ from shapely.geometry import Point, shape
 from shapely.ops import unary_union
 
 import count_sources
+import hpms_count_source
 
 SPATIALITE = os.getenv("SPATIALITE_LIBRARY_PATH", "/usr/lib/x86_64-linux-gnu/mod_spatialite.so")
 
@@ -57,18 +58,23 @@ def _as_float(value):
 
 
 def load_points(geojson_path):
-    d = json.load(open(geojson_path))
+    d = json.loads(Path(geojson_path).read_text())
     uniq = {}
     for f in d["features"]:
         p, g = f["properties"], f.get("geometry")
         if not g:
             continue
+        if p.get("exclusion_status") == "excluded":
+            continue
         # Postmile/milepost is optional: not every DOT feed publishes one, and a
         # station without it is still a real count. It only ever names the
         # station, so a missing value falls back to the coordinate (see row()).
         pm = _as_float(p.get("PM"))
-        key = (str(p.get("RTE") or ""), round(pm, 3) if pm is not None else None,
-               p.get("DESCRIPTION") or "")
+        key = p.get("source_section_id") or (
+            str(p.get("RTE") or ""),
+            round(pm, 3) if pm is not None else None,
+            p.get("DESCRIPTION") or "",
+        )
         # observed = mainline (higher-volume) segment = max(back, ahead).
         # AADT fields arrive as STRINGS — coerce before max or "4450" > "13500"
         # lexicographically and the wrong segment wins.
@@ -84,9 +90,23 @@ def load_points(geojson_path):
         obs = max(vals)
         lon, lat = g["coordinates"][0], g["coordinates"][1]
         if key not in uniq:
-            uniq[key] = {"rte": str(p.get("RTE") or ""), "pm": pm,
-                         "desc": p.get("DESCRIPTION") or "",
-                         "obs": obs, "lon": float(lon), "lat": float(lat)}
+            uniq[key] = {
+                "rte": str(p.get("RTE") or ""),
+                "pm": pm,
+                "desc": p.get("DESCRIPTION") or "",
+                "obs": obs,
+                "lon": float(lon),
+                "lat": float(lat),
+                "source_dataset_id": p.get("source_dataset_id", ""),
+                "source_vintage": p.get("source_vintage", ""),
+                "source_section_id": p.get("source_section_id", ""),
+                "measurement_date": p.get("measurement_date"),
+                "directionality": p.get("directionality") or "two_way",
+                "facility_class": p.get("facility_class", ""),
+                "source_state": p.get("source_state", ""),
+                "source_county": p.get("source_county", ""),
+                "source_provenance": p.get("source_provenance") or {},
+            }
     return list(uniq.values())
 
 
@@ -141,10 +161,14 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
     desc = (pt.get("desc") or "").strip()
     # Postmile names the station when the feed publishes one; otherwise the
     # coordinate does, which every station has.
-    if pt.get("pm") is not None:
+    if pt.get("source_section_id"):
+        station_id = pt["source_section_id"]
+    elif pt.get("pm") is not None:
         tag = "PM" + re.sub(r"[^0-9]", "_", "{:.3f}".format(pt["pm"]))
+        station_id = f"{prov['station_prefix']}_RTE{rte}_{tag}"
     else:
         tag = "AT" + re.sub(r"[^0-9]", "_", "{:.5f}_{:.5f}".format(pt["lon"], pt["lat"]))
+        station_id = f"{prov['station_prefix']}_RTE{rte}_{tag}"
     vintage = prov.get("count_year")
     notes = f"{prov['name']}; observed=max(back,ahead); network-derived candidates"
     if vintage is None:
@@ -156,12 +180,12 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
     # judgement the validator could make later from the row alone.
     role, role_reason = count_sources.station_role(prov, desc)
     return {
-        "station_id": f"{prov['station_prefix']}_RTE{rte}_{tag}",
+        "station_id": station_id,
         "label": f"{facility} at {desc.title()}" if desc else facility,
         "facility_name": facility,
         "count_year": vintage if vintage is not None else "",
         "count_type": "AADT",
-        "direction": "two_way",
+        "direction": pt.get("directionality") or "two_way",
         "observed_volume": pt["obs"],
         "source_agency": prov["agency"],
         "source_description": desc,
@@ -174,6 +198,16 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
         "bbox_max_lat": round(pt["lat"] + BOX_DEG, 5),
         "station_role": role,
         "station_role_reason": role_reason,
+        "source_dataset_id": pt.get("source_dataset_id") or prov.get("source_dataset_id", ""),
+        "source_vintage": pt.get("source_vintage") or prov.get("vintage", ""),
+        "source_section_id": pt.get("source_section_id", ""),
+        "measurement_date": pt.get("measurement_date") or "",
+        "facility_class": pt.get("facility_class", ""),
+        "source_state": pt.get("source_state", ""),
+        "source_county": pt.get("source_county", ""),
+        "exclusion_status": "eligible",
+        "exclusion_reason": "",
+        "source_provenance": json.dumps(pt.get("source_provenance") or {}, sort_keys=True),
         "notes": notes,
     }
 
@@ -208,7 +242,7 @@ def main():
     # so guessing it would mean publishing counts under an agency that never
     # produced them. A pre-fetched --geojson must declare its region too.
     ap.add_argument("--region", required=True,
-                    help="Count-source region key — supplies the publishing agency (see count_sources.COUNT_SOURCES)")
+                    help="Count-source region or source id — supplies the publishing agency (see count_sources)")
     ap.add_argument("--db", required=True, help="A built AequilibraE project_database.sqlite (for real link names/types)")
     ap.add_argument("--out", required=True, help="Output counts CSV path")
     ap.add_argument(
@@ -232,7 +266,22 @@ def main():
     if args.fetch_bbox:
         bbox = tuple(float(v) for v in args.fetch_bbox.split(","))
         geojson_path = args.out + ".aadt.geojson"
-        n = count_sources.fetch_aadt_geojson(bbox, args.region, geojson_path)
+        if args.region == count_sources.HPMS_SOURCE_ID:
+            result = hpms_count_source.fetch_hpms_records(
+                bbox,
+                Path(args.out).parent / ".count-source-cache",
+                fail_on_source_error=True,
+            )
+            Path(geojson_path).write_text(json.dumps(hpms_count_source.records_geojson(result)))
+            Path(args.out + ".count-source.json").write_text(json.dumps(result, indent=2, sort_keys=True))
+            if result["status"] != "available":
+                raise SystemExit(
+                    f"error: HPMS count source status is {result['status']}; "
+                    "this is not a zero-traffic finding"
+                )
+            n = len(result["records"])
+        else:
+            n = count_sources.fetch_aadt_geojson(bbox, args.region, geojson_path)
         print(f"Fetched {n} AADT features for {args.region} bbox {bbox} -> {geojson_path}")
     if not geojson_path:
         ap.error("provide --geojson or --fetch-bbox")
@@ -263,7 +312,10 @@ def main():
     fields = ["station_id", "label", "facility_name", "count_year", "count_type", "direction",
               "observed_volume", "source_agency", "source_description", "candidate_model_names",
               "candidate_link_types", "exclude_model_names", "bbox_min_lon", "bbox_min_lat",
-              "bbox_max_lon", "bbox_max_lat", "station_role", "station_role_reason", "notes"]
+              "bbox_max_lon", "bbox_max_lat", "station_role", "station_role_reason",
+              "source_dataset_id", "source_vintage", "source_section_id", "measurement_date",
+              "facility_class", "source_state", "source_county", "exclusion_status",
+              "exclusion_reason", "source_provenance", "notes"]
     out_rows = []
     unmatched = []
     # Stations without a postmile sort last within their route, deterministically.
