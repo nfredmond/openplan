@@ -160,6 +160,112 @@ def check_manifest_filenames_are_data():
     print("  manifest filenames are treated as data, never as paths")
 
 
+def check_download_ceiling(base_url, work_root):
+    """
+    A SOURCE URL IS PLANNER-PASTED, AND THIS WORKER SHARES A DISK WITH NodeODM.
+
+    Any non-viewer member can paste an imagery URL. With no ceiling, one
+    pointing at an endless stream or a multi-hundred-gigabyte file fills the
+    volume every reconstruction on this host writes to, and the aerial lane goes
+    down with no failed job to point at. The sibling ocr_worker refuses exactly
+    this on its own intake seam.
+    """
+    work = os.path.join(work_root, "ceiling")
+    os.makedirs(work, exist_ok=True)
+    dest = os.path.join(work, "too-big.jpg")
+
+    try:
+        intake.default_fetcher(f"{base_url}/DJI_0001.JPG", dest, 10)
+    except intake.IntakeError as exc:
+        assert "ceiling" in str(exc), f"message does not name the limit: {exc}"
+        assert "ODM_WORKER_MAX_SOURCE_BYTES" in str(exc), f"message does not name the knob: {exc}"
+    else:
+        raise AssertionError("a download past the ceiling was allowed")
+
+    # It stopped READING rather than writing the whole thing and complaining.
+    # Anything up to one chunk may already be on disk; the whole file must not.
+    written = os.path.getsize(dest) if os.path.exists(dest) else 0
+    assert written < len(JPEG_A), f"the whole file was written before refusing ({written} bytes)"
+
+    # And a ceiling above the file is not a refusal.
+    ok_dest = os.path.join(work, "fine.jpg")
+    assert intake.default_fetcher(f"{base_url}/DJI_0001.JPG", ok_dest, len(JPEG_A)) == len(JPEG_A)
+    print("  a download past the ceiling is refused before the disk is spent")
+
+
+def check_zip_expansion_ceiling(serve_dir, base_url, work_root):
+    """
+    A ZIP SMALL ON THE WIRE CAN EXPAND TO ANY SIZE. The download ceiling says
+    nothing about what lands on the disk, so the extractor counts what it
+    actually writes — the entry headers are written by whoever made the archive,
+    and the hazard is an archive nobody here made.
+    """
+    bomb_path = os.path.join(serve_dir, "bomb.zip")
+    with zipfile.ZipFile(bomb_path, "w", zipfile.ZIP_DEFLATED) as archive:
+        # Highly compressible: tiny on the wire, large on disk.
+        archive.writestr("DJI_0001.JPG", b"\xff\xd8\xff\xe0" + b"\x00" * (4 * 1024 * 1024))
+
+    compressed = os.path.getsize(bomb_path)
+    work = os.path.join(work_root, "bomb")
+    os.makedirs(work, exist_ok=True)
+    imagery = {"type": "zip_url", "url": f"{base_url}/bomb.zip"}
+
+    # A ceiling comfortably ABOVE the compressed size and below the expanded
+    # size — the exact gap a download-only limit cannot see.
+    ceiling = max(compressed * 4, 64 * 1024)
+    assert ceiling < 4 * 1024 * 1024, "fixture is not compressible enough to prove the point"
+
+    try:
+        intake.prepare_imagery(imagery, work, max_bytes=ceiling)
+    except intake.IntakeError as exc:
+        assert "expands" in str(exc), f"message does not describe expansion: {exc}"
+    else:
+        raise AssertionError("a zip bomb was extracted in full")
+    print("  a ZIP that expands past the ceiling is refused mid-extraction")
+
+
+def check_manifest_total_ceiling(base_url, work_root):
+    """A per-file limit would let ten thousand acceptable photos fill the disk,
+    so the budget is for the whole job."""
+    work = os.path.join(work_root, "manifest-total")
+    imagery = {
+        "type": "photo_manifest",
+        "photos": [
+            {"url": f"{base_url}/DJI_0001.JPG", "filename": "DJI_0001.JPG"},
+            {"url": f"{base_url}/DJI_0002.JPG", "filename": "DJI_0002.JPG"},
+        ],
+        "imageCount": 2,
+    }
+
+    # EACH PHOTO FITS ON ITS OWN; TOGETHER THEY DO NOT. That gap is the whole
+    # assertion, and the first version of this fixture did not have it: the
+    # ceiling was smaller than the second photo, so the per-file check refused
+    # it either way and removing the running budget changed nothing. The
+    # mutation survived and said so.
+    ceiling = len(JPEG_B) + 10
+    assert len(JPEG_A) <= ceiling and len(JPEG_B) <= ceiling, "fixture: a photo alone must fit"
+    assert len(JPEG_A) + len(JPEG_B) > ceiling, "fixture: the two together must not fit"
+    try:
+        intake.prepare_imagery(imagery, work, max_bytes=ceiling)
+    except intake.IntakeError as exc:
+        assert "ceiling" in str(exc), f"message does not name the limit: {exc}"
+    else:
+        raise AssertionError("a manifest totalling past the ceiling was accepted")
+    print("  a manifest whose TOTAL passes the ceiling is refused")
+
+
+def check_ceiling_configuration():
+    default = intake.DEFAULT_MAX_SOURCE_BYTES
+    assert intake.resolve_max_source_bytes({}) == default
+    assert intake.resolve_max_source_bytes({"ODM_WORKER_MAX_SOURCE_BYTES": "1234"}) == 1234
+    # Nonsense and "refuse everything" both fall back rather than bricking
+    # intake in a way that would look like a network fault.
+    assert intake.resolve_max_source_bytes({"ODM_WORKER_MAX_SOURCE_BYTES": "banana"}) == default
+    assert intake.resolve_max_source_bytes({"ODM_WORKER_MAX_SOURCE_BYTES": "0"}) == default
+    assert intake.resolve_max_source_bytes({"ODM_WORKER_MAX_SOURCE_BYTES": "-5"}) == default
+    print("  the ceiling reads its env var, and falls back rather than bricking")
+
+
 def main():
     print("intake checks:")
     serve_dir = tempfile.mkdtemp(prefix="odm_intake_serve_")
@@ -176,6 +282,10 @@ def main():
         check_zip_happy_path_and_slip(base_url, serve_dir, work_root)
         check_zip_with_no_images(base_url, serve_dir, work_root)
         check_manifest_filenames_are_data()
+        check_download_ceiling(base_url, work_root)
+        check_zip_expansion_ceiling(serve_dir, base_url, work_root)
+        check_manifest_total_ceiling(base_url, work_root)
+        check_ceiling_configuration()
     finally:
         server.shutdown()
         shutil.rmtree(serve_dir, ignore_errors=True)

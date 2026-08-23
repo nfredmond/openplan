@@ -125,8 +125,10 @@ is normal for large missions.
 | `NODEODM_TOKEN` | unset | Pass-through if your NodeODM runs with `--token`. |
 | `ODM_WORKER_PORT` / `PORT` | `8484` | Port the worker listens on. |
 | `ODM_WORKER_PUBLIC_URL` | `http://localhost:8484` | Base of the output links the worker issues. Must be reachable by the OpenPlan deployment. |
-| `ODM_WORKER_WORK_DIR` | system temp | Per-job scratch and published outputs. |
+| `ODM_WORKER_WORK_DIR` | system temp | Per-job scratch and published outputs. Sized for the reconstruction, not the archive: a job's outputs are deleted once its links expire (see the two rows below), and OpenPlan holds the copy that lasts. |
 | `ODM_WORKER_ARTIFACT_TTL_SECONDS` | `86400` | How long output links stay valid. OpenPlan copies the bytes into its own storage on success, so links only need to outlive that pass. |
+| `ODM_WORKER_SWEEP_INTERVAL_SECONDS` | `600` | How often expired job outputs are deleted from the work directory. Each job leaves an orthomosaic, a DSM, a DTM and a point cloud — hundreds of megabytes to gigabytes — and this is what reclaims them. Before this existed they accumulated forever, and the disk that filled was the one NodeODM reconstructs on. |
+| `ODM_WORKER_MAX_SOURCE_BYTES` | `40 GiB` | The most imagery one job may download and expand, across a ZIP or a whole photo manifest. The source URL is pasted by a planner and this worker shares a disk with NodeODM, so an unbounded download — or a ZIP that is small on the wire and enormous on disk — would take the aerial lane down. |
 | `ODM_WORKER_MAX_QUEUED` | `4` | Jobs held unstarted before the worker answers 503 rather than accepting work it may never reach. |
 | `ODM_WORKER_POLL_INTERVAL_SECONDS` | `10` | How often NodeODM is polled for progress. |
 

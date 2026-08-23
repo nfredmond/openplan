@@ -24,15 +24,50 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
 
 _DOWNLOAD_CHUNK = 1024 * 1024
 
+# How many bytes of imagery one job may pull in, across the ZIP or every photo
+# in a manifest.
+#
+# THIS EXISTS BECAUSE THE WORKER SHARES A DISK WITH NodeODM. Without a ceiling,
+# any non-viewer workspace member could paste a URL pointing at an endless
+# stream, a multi-hundred-gigabyte file, or a zip bomb, and fill the volume that
+# every reconstruction on this host writes to — taking the whole aerial lane
+# down, with no failed job to point at. The sibling `ocr_worker` refuses exactly
+# this on its own intake seam, and the app-side custody pass already enforces
+# `resolveAerialArtifactMaxBytes` on its stream; this is the same rule at the
+# one hop that had none.
+#
+# 40 GiB is deliberately generous — a real corridor survey is thousands of
+# 8-12 MB frames — because the point is to stop the unbounded case, not to
+# second-guess a planner's flight.
+DEFAULT_MAX_SOURCE_BYTES = 40 * 1024 * 1024 * 1024
+
+
+def resolve_max_source_bytes(environ=None):
+    """The imagery ceiling for this worker, from ODM_WORKER_MAX_SOURCE_BYTES."""
+    source = os.environ if environ is None else environ
+    raw = str(source.get("ODM_WORKER_MAX_SOURCE_BYTES", "")).strip()
+    if not raw:
+        return DEFAULT_MAX_SOURCE_BYTES
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_MAX_SOURCE_BYTES
+    # A zero or negative ceiling would mean "refuse everything", which is never
+    # what an operator setting this meant; treat it as unset rather than
+    # bricking intake in a way that looks like a network fault.
+    return value if value > 0 else DEFAULT_MAX_SOURCE_BYTES
+
 
 class IntakeError(Exception):
     """A named intake failure whose message is safe to send in a callback."""
 
 
-def default_fetcher(url, dest_path, timeout=300):
-    """Stream `url` to `dest_path`; returns bytes written. http(s) only."""
+def default_fetcher(url, dest_path, max_bytes=None, timeout=300):
+    """Stream `url` to `dest_path`, refusing past `max_bytes`; returns bytes
+    written. http(s) only."""
     if not (url.startswith("https://") or url.startswith("http://")):
         raise IntakeError(f"imagery URL is not http(s): {url[:80]}")
+    ceiling = resolve_max_source_bytes() if max_bytes is None else max_bytes
     request = urllib.request.Request(url, headers={"User-Agent": "openplan-odm-worker"})
     written = 0
     with urllib.request.urlopen(request, timeout=timeout) as response, open(
@@ -42,8 +77,16 @@ def default_fetcher(url, dest_path, timeout=300):
             chunk = response.read(_DOWNLOAD_CHUNK)
             if not chunk:
                 break
-            out.write(chunk)
             written += len(chunk)
+            if written > ceiling:
+                # Stop READING. A ceiling checked after the fact spends the disk
+                # first and complains about it afterwards, which is the failure
+                # being prevented rather than a report of it.
+                raise IntakeError(
+                    f"the imagery at {url[:80]} is larger than this worker's ceiling of "
+                    f"{ceiling} bytes (ODM_WORKER_MAX_SOURCE_BYTES). Nothing was processed."
+                )
+            out.write(chunk)
     return written
 
 
@@ -73,9 +116,21 @@ def collect_images(root):
     return sorted(found)
 
 
-def _extract_zip_safely(zip_path, dest_dir):
-    """Extract, refusing entries that would escape dest_dir (zip-slip)."""
+def _extract_zip_safely(zip_path, dest_dir, max_total_bytes=None):
+    """Extract, refusing entries that would escape dest_dir (zip-slip) and
+    stopping once the extracted total would pass `max_total_bytes`.
+
+    THE SIZE CAP IS SEPARATE FROM THE DOWNLOAD CEILING ON PURPOSE. A ZIP that
+    is small on the wire can expand to any size at all — the archive format
+    permits ratios in the thousands — so a download limit says nothing about
+    what lands on the disk. This counts what is actually written, chunk by
+    chunk, rather than trusting the entry headers: a header is written by
+    whoever made the archive, and the whole hazard is an archive nobody here
+    made.
+    """
+    ceiling = resolve_max_source_bytes() if max_total_bytes is None else max_total_bytes
     extracted = 0
+    written_total = 0
     with zipfile.ZipFile(zip_path) as archive:
         for info in archive.infolist():
             if info.is_dir():
@@ -88,29 +143,47 @@ def _extract_zip_safely(zip_path, dest_dir):
                 continue
             os.makedirs(os.path.dirname(resolved), exist_ok=True)
             with archive.open(info) as src, open(resolved, "wb") as out:
-                shutil.copyfileobj(src, out)
+                while True:
+                    chunk = src.read(_DOWNLOAD_CHUNK)
+                    if not chunk:
+                        break
+                    written_total += len(chunk)
+                    if written_total > ceiling:
+                        raise IntakeError(
+                            "the imagery ZIP expands to more than this worker's ceiling of "
+                            f"{ceiling} bytes (ODM_WORKER_MAX_SOURCE_BYTES). Nothing was "
+                            "processed."
+                        )
+                    out.write(chunk)
             extracted += 1
     return extracted
 
 
-def prepare_imagery(imagery, work_dir, fetcher=default_fetcher):
+def prepare_imagery(imagery, work_dir, fetcher=default_fetcher, max_bytes=None):
     """Materialize the request's imagery under work_dir; returns the directory
-    holding the images. Raises IntakeError with a sendable message."""
+    holding the images. Raises IntakeError with a sendable message.
+
+    `max_bytes` is the ceiling for the WHOLE job — the ZIP and its expansion, or
+    every photo in a manifest added together. A per-file limit would let a
+    manifest of ten thousand acceptable photos fill the same disk.
+    """
     images_dir = os.path.join(work_dir, "images")
     os.makedirs(images_dir, exist_ok=True)
+    ceiling = resolve_max_source_bytes() if max_bytes is None else max_bytes
+    remaining = ceiling
 
     imagery_type = imagery.get("type")
 
     if imagery_type == "zip_url":
         zip_path = os.path.join(work_dir, "imagery.zip")
         try:
-            fetcher(imagery["url"], zip_path)
+            fetcher(imagery["url"], zip_path, ceiling)
         except IntakeError:
             raise
         except Exception as exc:  # noqa: BLE001 - the cause goes in the message
             raise IntakeError(f"the imagery ZIP could not be downloaded: {exc}") from exc
         try:
-            _extract_zip_safely(zip_path, images_dir)
+            _extract_zip_safely(zip_path, images_dir, ceiling)
         except zipfile.BadZipFile as exc:
             raise IntakeError("the downloaded file is not a readable ZIP archive") from exc
         images = collect_images(images_dir)
@@ -127,7 +200,10 @@ def prepare_imagery(imagery, work_dir, fetcher=default_fetcher):
             name = sanitize_filename(photo.get("filename", ""), index)
             dest = os.path.join(images_dir, name)
             try:
-                written = fetcher(photo["url"], dest)
+                # The remaining budget, not the whole ceiling: ten thousand
+                # individually acceptable photos fill a disk exactly as well as
+                # one enormous file.
+                written = fetcher(photo["url"], dest, remaining)
             except IntakeError:
                 raise
             except Exception as exc:  # noqa: BLE001
@@ -146,6 +222,13 @@ def prepare_imagery(imagery, work_dir, fetcher=default_fetcher):
                     )
             else:
                 actual_size = written
+
+            remaining -= actual_size
+            if remaining < 0:
+                raise IntakeError(
+                    "the photo manifest totals more than this worker's ceiling of "
+                    f"{ceiling} bytes (ODM_WORKER_MAX_SOURCE_BYTES). Nothing was processed."
+                )
 
             checksum = photo.get("checksumSha256")
             if checksum:

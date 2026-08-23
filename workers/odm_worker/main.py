@@ -37,6 +37,11 @@ Environment:
                            links stay valid (OpenPlan takes custody of the
                            bytes on the succeeded callback, so links only need
                            to outlive that pass).
+  ODM_WORKER_SWEEP_INTERVAL_SECONDS  default 600 — how often expired job
+                           outputs are deleted from ODM_WORKER_WORK_DIR.
+  ODM_WORKER_MAX_SOURCE_BYTES  default 40 GiB — the most imagery one job may
+                           download and expand. The worker shares a disk with
+                           NodeODM, so an unbounded source URL is a self-DoS.
   ODM_WORKER_MAX_QUEUED    default 4
   ODM_WORKER_POLL_INTERVAL_SECONDS  default 10 — NodeODM task polling
 """
@@ -132,6 +137,7 @@ def config():
         "work_dir": os.environ.get("ODM_WORKER_WORK_DIR", "").strip()
         or os.path.join(tempfile.gettempdir(), "odm_worker_jobs"),
         "artifact_ttl_seconds": env_int("ODM_WORKER_ARTIFACT_TTL_SECONDS", 86400),
+        "sweep_interval_seconds": env_int("ODM_WORKER_SWEEP_INTERVAL_SECONDS", 600),
         "max_queued": env_int("ODM_WORKER_MAX_QUEUED", 4),
         "poll_interval_seconds": env_int("ODM_WORKER_POLL_INTERVAL_SECONDS", 10),
     }
@@ -185,6 +191,64 @@ def publish_artifacts(job_reference, staged_files, ttl_seconds=None):
 
 def artifact_download_url(job_reference, token, filename):
     return f"{CONFIG['public_url']}/artifacts/{job_reference}/{token}/{filename}"
+
+
+def sweep_expired_artifacts(now=None, work_dir=None):
+    """Delete the outputs of every job whose links have expired.
+
+    THIS DID NOT EXIST, AND A COMMENT SAID IT DID. The pipeline's `finally`
+    block removed the source images and left the outputs "until expiry sweep";
+    there was no sweep. The `/artifacts` handler answered 410 past `expires_at`
+    and left the files exactly where they were, and its message told the caller
+    "the worker does not keep outputs forever" — which was false in the
+    direction that fills a disk.
+
+    Each job's outputs are an orthomosaic GeoTIFF plus a DSM, a DTM and a point
+    cloud: hundreds of megabytes to gigabytes, every job, forever. DEPLOY.md
+    invites operators to point `ODM_WORKER_WORK_DIR` at persistent storage,
+    which removes even the OS's tmp cleanup as a backstop. The disk that fills
+    is the one NodeODM reconstructs on, so the symptom is jobs failing
+    mid-reconstruction on a healthy-looking worker.
+
+    Returns the job references it removed. Pure enough to test: the clock and
+    the root are both injectable.
+    """
+    moment = time.time() if now is None else now
+    root = CONFIG["work_dir"] if work_dir is None else work_dir
+
+    with ARTIFACTS_LOCK:
+        expired = [ref for ref, entry in ARTIFACTS.items() if entry["expires_at"] <= moment]
+        for ref in expired:
+            ARTIFACTS.pop(ref, None)
+
+    removed = []
+    for ref in expired:
+        # The job's whole working directory, not just `outputs`: by the time the
+        # links have expired nothing else in it is wanted either, and leaving
+        # the parent behind is how a directory of empty directories accumulates
+        # instead of a directory of large ones.
+        job_dir = os.path.join(root, ref)
+        # Refuse to delete anything that is not inside the work root — `ref`
+        # arrives from a request body, and a path is not an authorization.
+        resolved = os.path.realpath(job_dir)
+        if not resolved.startswith(os.path.realpath(root) + os.sep):
+            continue
+        shutil.rmtree(resolved, ignore_errors=True)
+        removed.append(ref)
+    return removed
+
+
+def sweep_loop(interval=None, sleep=time.sleep):
+    """Run the sweep forever. Daemon thread; never lets one failure end it."""
+    every = CONFIG["sweep_interval_seconds"] if interval is None else interval
+    while True:
+        sleep(every)
+        try:
+            removed = sweep_expired_artifacts()
+            if removed:
+                print(f"[odm-worker] swept {len(removed)} expired job output(s)", flush=True)
+        except Exception as exc:  # noqa: BLE001 - a sweep that dies silently is the defect
+            print(f"[odm-worker] artifact sweep failed: {exc}", flush=True)
 
 
 # ── The pipeline ─────────────────────────────────────────────────────────────
@@ -366,9 +430,9 @@ def process_job(job, make_client=None, prepare=None, publish=None, send=None, sl
         send(job, "failed", message=f"Processing failed: {exc}"[:2048])
         job["state"] = "failed"
     finally:
-        # Keep only published outputs; the working copies (source photos,
-        # NodeODM downloads are the published copies' own paths) stay until
-        # expiry sweep. Source images are always removable.
+        # Keep only published outputs; the source photos go now. What is left
+        # is removed by `sweep_expired_artifacts` once the links expire — a
+        # sweep that this comment referred to for months before it existed.
         shutil.rmtree(os.path.join(work_dir, "images"), ignore_errors=True)
 
 
@@ -571,6 +635,7 @@ def main():
 
     os.makedirs(CONFIG["work_dir"], exist_ok=True)
     threading.Thread(target=worker_loop, daemon=True, name="odm-pipeline").start()
+    threading.Thread(target=sweep_loop, daemon=True, name="odm-artifact-sweep").start()
     server = build_server()
     print(
         f"[odm-worker] serving on :{CONFIG['port']} "

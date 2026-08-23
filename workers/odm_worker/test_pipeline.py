@@ -222,6 +222,79 @@ def check_intake_failure_reaches_the_callback_trail():
     print("  an intake failure reaches the callback trail with its own sentence")
 
 
+def check_expired_outputs_are_actually_deleted():
+    """
+    THE SWEEP THE COMMENT PROMISED FOR MONTHS.
+
+    The pipeline's `finally` block removed source images and left the outputs
+    "until expiry sweep"; no sweep existed. The /artifacts handler answered 410
+    past expiry and left the files on disk, telling the caller "the worker does
+    not keep outputs forever" — false, in the direction that fills the disk
+    NodeODM reconstructs on. Each job leaves an orthomosaic, a DSM, a DTM and a
+    point cloud behind: hundreds of megabytes to gigabytes, per job, forever.
+    """
+    root = main.CONFIG["work_dir"]
+
+    def stage(reference, expires_at):
+        job_dir = os.path.join(root, reference)
+        outputs = os.path.join(job_dir, "outputs")
+        os.makedirs(outputs, exist_ok=True)
+        path = os.path.join(outputs, "odm_orthophoto.tif")
+        with open(path, "wb") as handle:
+            handle.write(b"\x00" * 1024)
+        main.ARTIFACTS[reference] = {
+            "token": "t-" + reference,
+            "expires_at": expires_at,
+            "files": {"odm_orthophoto.tif": path},
+        }
+        return job_dir
+
+    now = 1_000_000.0
+    stale = stage("job-stale", now - 1)
+    fresh = stage("job-fresh", now + 3600)
+    exactly_now = stage("job-boundary", now)
+
+    removed = main.sweep_expired_artifacts(now=now, work_dir=root)
+
+    assert sorted(removed) == ["job-boundary", "job-stale"], f"swept the wrong set: {removed}"
+    assert not os.path.exists(stale), "an expired job's outputs are still on disk"
+    assert not os.path.exists(exactly_now), "a job expiring exactly now was kept"
+    assert os.path.exists(fresh), "a live job's outputs were deleted"
+
+    # And it forgets them, so a later sweep is not re-deleting nothing forever
+    # and a stale token cannot resolve.
+    assert "job-stale" not in main.ARTIFACTS, "the registry still holds a swept job"
+    assert "job-fresh" in main.ARTIFACTS, "the registry dropped a live job"
+
+    # A second sweep is a no-op rather than an error.
+    assert main.sweep_expired_artifacts(now=now, work_dir=root) == []
+
+    # A job reference arriving from a request body is not a path: a traversal
+    # attempt must not delete anything outside the work root.
+    # ONE level up, into the same tmp parent as the work root. The first
+    # version of this used "../../", which resolved to a path that does not
+    # exist — so the canary survived whether or not the guard was there, and
+    # removing the guard left the test green. The mutation said so.
+    outside = tempfile.mkdtemp(prefix="odm_outside_", dir=os.path.dirname(os.path.realpath(root)))
+    canary = os.path.join(outside, "keep-me")
+    with open(canary, "wb") as handle:
+        handle.write(b"canary")
+    traversal = os.path.join("..", os.path.basename(outside))
+    assert os.path.realpath(os.path.join(root, traversal)) == os.path.realpath(outside), (
+        "fixture: the traversal must actually resolve outside the work root"
+    )
+    main.ARTIFACTS[traversal] = {
+        "token": "t",
+        "expires_at": now - 1,
+        "files": {},
+    }
+    main.sweep_expired_artifacts(now=now, work_dir=root)
+    assert os.path.exists(canary), "the sweep followed a traversal out of the work root"
+
+    main.ARTIFACTS.clear()
+    print("  expired job outputs are deleted; live ones and anything outside the root are not")
+
+
 def main_check():
     print("pipeline checks:")
     main.CONFIG["work_dir"] = tempfile.mkdtemp(prefix="odm_pipeline_test_")
@@ -231,6 +304,7 @@ def main_check():
     check_missing_orthomosaic_fails_by_name()
     check_odm_failure_carries_odms_own_detail()
     check_intake_failure_reaches_the_callback_trail()
+    check_expired_outputs_are_actually_deleted()
     print("all pipeline checks passed")
 
 
