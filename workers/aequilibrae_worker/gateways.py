@@ -57,7 +57,7 @@ def detect_external_gateways(
     try:
         rows = conn.execute(
             "SELECT link_id, link_type, COALESCE(name, ''), COALESCE(lanes_ab, 1), "
-            "COALESCE(lanes_ba, 1), AsText(geometry) "
+            "COALESCE(lanes_ba, 1), COALESCE(direction, 0), AsText(geometry) "
             "FROM links WHERE link_type IN ('motorway', 'trunk', 'primary', 'secondary', 'tertiary')"
         ).fetchall()
     finally:
@@ -66,7 +66,7 @@ def detect_external_gateways(
     tol_deg = 0.005
     cluster_tol_deg = 0.02
     candidates: list[dict[str, Any]] = []
-    for link_id, link_type, name, lanes_ab, lanes_ba, geom_wkt in rows:
+    for link_id, link_type, name, lanes_ab, lanes_ba, direction, geom_wkt in rows:
         if not geom_wkt:
             continue
         line = wkt.loads(geom_wkt)
@@ -88,6 +88,7 @@ def detect_external_gateways(
                 "link_id": int(link_id),
                 "link_type": str(link_type),
                 "name": str(name or ""),
+                "direction": int(direction or 0),
                 "point": point,
                 "daily": float(daily),
             }
@@ -126,6 +127,7 @@ def detect_external_gateways(
                 "zone_id": int(zone_id),
                 "link_type": gateway["link_type"],
                 "link_id": gateway["link_id"],
+                "direction": gateway["direction"],
                 "daily_in": round(float(gateway["daily"]), 2),
                 "daily_out": round(float(gateway["daily"]), 2),
                 "boundary_lon": round(float(gateway["point"].x), 6),

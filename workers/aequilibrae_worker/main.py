@@ -189,8 +189,8 @@ VALIDATION_COUNTS_PATH = os.getenv(
     os.path.join(os.path.dirname(__file__), "data", "validation", "nevada_county_priority_counts.csv"),
 )
 
-# Auto-ingest local DOT AADT counts for the study area (keyless Caltrans / state
-# FeatureServers via scripts/modeling/count_sources.py). Default OFF so the
+# Auto-ingest observed AADT for the study area (preferred keyless state DOT
+# FeatureServers, then nationwide FHWA HPMS). Default OFF so the
 # Nevada pilot + CI stay byte-identical on the curated priority file; a real
 # deployment sets COUNT_AUTO_INGEST=1 to auto-fetch local counts for any run in
 # a registered region. Best-effort: any failure keeps the default counts.

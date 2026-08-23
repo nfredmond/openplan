@@ -34,11 +34,14 @@ from gateway_counts import (  # noqa: E402
     GatewayCountsError,
     assert_counts_not_reused_for_grading,
     count_road_names,
+    directionality_agrees,
+    facility_class_agrees,
     counts_on_a_route,
     match_count_to_gateway,
     normalize_road_name,
     attach_passthrough_ceilings,
     passthrough_share_ceiling,
+    select_measured_gateway_candidate,
     seed_gateways_from_counts,
 )
 
@@ -52,6 +55,8 @@ def gateway(label: str, name: str, *, daily: float = 9000.0, lat: float = BASE_L
         "label": label,
         "name": name,
         "link_type": "trunk",
+        "direction": 0,
+        "link_id": label,
         "daily_in": daily,
         "daily_out": daily,
         "boundary_lat": lat,
@@ -130,6 +135,40 @@ class MatchingACountToACrossing(unittest.TestCase):
         self.assertIsNotNone(match_count_to_gateway(gateway("g1", "Nevada City Highway"), [multi]))
         self.assertIn("colfax highway", count_road_names(multi))
 
+    def test_candidate_match_requires_facility_class_and_direction(self) -> None:
+        observed = count("S1", "Colfax Highway", 5_600)
+        observed.update({"candidate_link_types": "trunk", "direction": "two_way"})
+        self.assertTrue(facility_class_agrees(gateway("g1", "Colfax Highway"), observed))
+        self.assertTrue(directionality_agrees(gateway("g1", "Colfax Highway"), observed))
+        self.assertIsNotNone(
+            match_count_to_gateway(
+                gateway("g1", "Colfax Highway"),
+                [observed],
+                require_facility_and_direction=True,
+            )
+        )
+        for field, wrong in (("candidate_link_types", "motorway"), ("direction", "one_way")):
+            altered = {**observed, field: wrong}
+            self.assertIsNone(
+                match_count_to_gateway(
+                    gateway("g1", "Colfax Highway"),
+                    [altered],
+                    require_facility_and_direction=True,
+                ),
+                field,
+            )
+
+    def test_excluded_source_section_cannot_seed_a_gateway(self) -> None:
+        observed = count("S1", "Colfax Highway", 5_600)
+        observed.update({"candidate_link_types": "trunk", "direction": "two_way", "exclusion_status": "excluded"})
+        self.assertIsNone(
+            match_count_to_gateway(
+                gateway("g1", "Colfax Highway"),
+                [observed],
+                require_facility_and_direction=True,
+            )
+        )
+
 
 class SeedingTheCrossings(unittest.TestCase):
     def test_a_two_way_count_becomes_half_in_and_half_out(self) -> None:
@@ -187,6 +226,89 @@ class SeedingTheCrossings(unittest.TestCase):
             [count("S1", "Colfax Highway", 5_600), count("S2", "Colfax Highway", 6_100, lat=BASE_LAT + MILE_LAT * 0.3)],
         )
         self.assertEqual(summary["stations_consumed"], ["S1", "S2"])
+
+
+class FrozenMeasuredGatewayCandidate(unittest.TestCase):
+    def qualifying_count(self, station: str, road: str, volume: float, *, lat: float = BASE_LAT) -> dict:
+        row = count(station, road, volume, lat=lat)
+        row.update(
+            {
+                "candidate_link_types": "trunk",
+                "direction": "two_way",
+                "source_dataset_id": "42um-tgh5",
+                "source_vintage": "2024",
+                "source_section_id": f"section-{station}",
+            }
+        )
+        return row
+
+    def test_measured_crossings_exceed_the_cap_but_inferred_crossings_do_not(self) -> None:
+        gateways = [
+            gateway(f"g{i}", f"Road {i}", lat=BASE_LAT + i * 0.0001)
+            for i in range(6)
+        ]
+        counts = [self.qualifying_count(f"S{i}", f"Road {i}", 5_000 + i) for i in range(4)]
+        selected, summary = select_measured_gateway_candidate(
+            gateways,
+            counts,
+            max_inferred_gateways=1,
+        )
+        self.assertEqual(len(selected), 5)
+        self.assertEqual(summary["measured_gateways"], 4)
+        self.assertEqual(summary["inferred_gateways"], 1)
+        self.assertEqual(summary["dropped_unmeasured_gateways"], 1)
+        self.assertEqual(sum(row["gateway_volume_basis"] == "measured" for row in selected), 4)
+
+    def test_baseline_and_candidate_consume_the_same_station_set(self) -> None:
+        gateways = [gateway("g1", "Road 1"), gateway("g2", "Road 2")]
+        counts = [self.qualifying_count("S1", "Road 1", 5_000)]
+        baseline, baseline_summary = select_measured_gateway_candidate(
+            gateways,
+            counts,
+            max_inferred_gateways=8,
+            apply_measured_volumes=False,
+            retain_all_measured=False,
+        )
+        candidate, candidate_summary = select_measured_gateway_candidate(
+            gateways, counts, max_inferred_gateways=8, apply_measured_volumes=True
+        )
+        self.assertEqual(baseline_summary["stations_consumed"], candidate_summary["stations_consumed"])
+        self.assertEqual(baseline[0]["daily_in"], 9_000)
+        self.assertEqual(candidate[0]["daily_in"], 2_500)
+        self.assertEqual(baseline[0]["gateway_volume_basis"], "measured")
+        self.assertEqual(baseline[0]["gateway_volume_applied"], "road_class_default")
+
+    def test_baseline_preserves_the_old_total_cap(self) -> None:
+        gateways = [gateway(f"g{i}", f"Road {i}", lat=BASE_LAT + i * 0.0001) for i in range(6)]
+        counts = [self.qualifying_count(f"S{i}", f"Road {i}", 5_000 + i) for i in range(4)]
+        baseline, summary = select_measured_gateway_candidate(
+            gateways,
+            counts,
+            max_inferred_gateways=2,
+            apply_measured_volumes=False,
+            retain_all_measured=False,
+        )
+        self.assertEqual(len(baseline), 2)
+        self.assertEqual(summary["stations_consumed"], ["S0", "S1", "S2", "S3"])
+
+    def test_missing_source_is_unsupported_not_inferred(self) -> None:
+        selected, summary = select_measured_gateway_candidate(
+            [gateway("g1", "Road 1")],
+            [],
+            max_inferred_gateways=8,
+            source_status="source_unavailable",
+        )
+        self.assertEqual(selected[0]["gateway_volume_basis"], "unsupported")
+        self.assertEqual(summary["unsupported_gateways"], 1)
+
+    def test_candidate_call_site_does_not_accept_a_wrong_facility_class(self) -> None:
+        observed = self.qualifying_count("S1", "Road 1", 5_000)
+        observed["candidate_link_types"] = "motorway"
+        selected, summary = select_measured_gateway_candidate(
+            [gateway("g1", "Road 1")], [observed], max_inferred_gateways=8
+        )
+        self.assertEqual(selected[0]["gateway_volume_basis"], "inferred")
+        self.assertEqual(summary["stations_consumed"], [])
 
 
 class NotGradingTheModelOnWhatBuiltIt(unittest.TestCase):

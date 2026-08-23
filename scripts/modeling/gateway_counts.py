@@ -64,6 +64,17 @@ DIRECTION_SPLIT = 0.5
 
 EARTH_RADIUS_MILES = 3958.8
 
+# HPMS functional systems translated only as far as the retained OSM network
+# can support them. This is matching evidence, not a new model geography type.
+FACILITY_CLASS_TO_LINK_TYPES = {
+    "interstate": {"motorway"},
+    "principal_arterial_freeway_expressway": {"motorway", "trunk"},
+    "principal_arterial_other": {"trunk", "primary"},
+    "minor_arterial": {"primary", "secondary"},
+    "major_collector": {"secondary", "tertiary"},
+    "minor_collector": {"tertiary"},
+}
+
 
 class GatewayCountsError(ValueError):
     """The gateway seeding cannot be trusted, with the reason to show."""
@@ -137,11 +148,45 @@ def _count_position(count: Mapping[str, Any]) -> tuple[float, float] | None:
         return None
 
 
+def _field_values(value: Any) -> set[str]:
+    return {
+        str(piece).strip().lower()
+        for part in str(value or "").split("|")
+        for piece in part.split(",")
+        if str(piece).strip()
+    }
+
+
+def facility_class_agrees(gateway: Mapping[str, Any], count: Mapping[str, Any]) -> bool:
+    """Whether source and retained-network facility classes describe one road."""
+    link_type = str(gateway.get("link_type") or "").strip().lower()
+    candidate_types = _field_values(count.get("candidate_link_types"))
+    if candidate_types:
+        return link_type in candidate_types
+    facility_class = str(count.get("facility_class") or "").strip().lower()
+    return link_type in FACILITY_CLASS_TO_LINK_TYPES.get(facility_class, set())
+
+
+def directionality_agrees(gateway: Mapping[str, Any], count: Mapping[str, Any]) -> bool:
+    """Require the observed section and retained link to agree on one/two-way."""
+    count_direction = str(count.get("direction") or count.get("directionality") or "").strip().lower()
+    if count_direction not in {"one_way", "two_way"}:
+        return False
+    if "direction" not in gateway:
+        return False
+    try:
+        link_direction = int(gateway["direction"])
+    except (TypeError, ValueError):
+        return False
+    return (link_direction == 0) == (count_direction == "two_way")
+
+
 def match_count_to_gateway(
     gateway: Mapping[str, Any],
     counts: Sequence[Mapping[str, Any]],
     *,
     max_match_miles: float = DEFAULT_MAX_MATCH_MILES,
+    require_facility_and_direction: bool = False,
 ) -> dict[str, Any] | None:
     """The published count that describes this crossing, or None.
 
@@ -171,7 +216,13 @@ def match_count_to_gateway(
 
     best: dict[str, Any] | None = None
     for count in counts:
+        if str(count.get("exclusion_status") or "eligible") != "eligible":
+            continue
         if gateway_name not in count_road_names(count):
+            continue
+        if require_facility_and_direction and not facility_class_agrees(gateway, count):
+            continue
+        if require_facility_and_direction and not directionality_agrees(gateway, count):
             continue
         observed = _observed(count)
         position = _count_position(count)
@@ -186,6 +237,12 @@ def match_count_to_gateway(
                 "facility_name": str(count.get("facility_name") or "").strip() or None,
                 "observed_volume": observed,
                 "distance_miles": round(distance, 3),
+                "source_dataset_id": str(count.get("source_dataset_id") or "").strip() or None,
+                "source_vintage": str(count.get("source_vintage") or "").strip() or None,
+                "source_section_id": str(count.get("source_section_id") or "").strip() or None,
+                "measurement_date": str(count.get("measurement_date") or "").strip() or None,
+                "directionality": str(count.get("direction") or count.get("directionality") or "").strip() or None,
+                "facility_class": str(count.get("facility_class") or "").strip() or None,
             }
     return best
 
@@ -195,6 +252,7 @@ def seed_gateways_from_counts(
     counts: Sequence[Mapping[str, Any]],
     *,
     max_match_miles: float = DEFAULT_MAX_MATCH_MILES,
+    require_facility_and_direction: bool = False,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Replace each gateway's guessed volume with a measured one where there is one.
 
@@ -208,7 +266,12 @@ def seed_gateways_from_counts(
 
     for gateway in gateways:
         updated = dict(gateway)
-        match = match_count_to_gateway(gateway, counts, max_match_miles=max_match_miles)
+        match = match_count_to_gateway(
+            gateway,
+            counts,
+            max_match_miles=max_match_miles,
+            require_facility_and_direction=require_facility_and_direction,
+        )
         previous = float(gateway.get("daily_in") or 0.0) + float(gateway.get("daily_out") or 0.0)
         if match is None:
             updated["daily_basis"] = "road_class_default"
@@ -238,6 +301,19 @@ def seed_gateways_from_counts(
                 "balances."
             )
             updated["daily_basis_station_id"] = match["station_id"]
+            updated["gateway_volume_basis"] = "measured"
+            updated["daily_basis_source"] = {
+                key: match[key]
+                for key in (
+                    "source_dataset_id",
+                    "source_vintage",
+                    "source_section_id",
+                    "measurement_date",
+                    "directionality",
+                    "facility_class",
+                    "distance_miles",
+                )
+            }
             if match["station_id"]:
                 consumed.append(match["station_id"])
             decisions.append(
@@ -266,6 +342,105 @@ def seed_gateways_from_counts(
         "decisions": decisions,
         "note": _seeding_note(len(seeded), len(measured), before, after),
     }
+
+
+def select_measured_gateway_candidate(
+    gateways: Sequence[Mapping[str, Any]],
+    counts: Sequence[Mapping[str, Any]],
+    *,
+    max_inferred_gateways: int,
+    source_status: str = "available",
+    apply_measured_volumes: bool = True,
+    retain_all_measured: bool = True,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Select the frozen candidate: all measured crossings plus capped inference.
+
+    All gateway/count matches are computed even for the baseline study arm. The
+    baseline keeps its old class volumes, but withholds exactly the same source
+    sections from validation as the candidate; otherwise a changed exam could
+    masquerade as a changed model.
+    """
+    seeded, seeding = seed_gateways_from_counts(
+        gateways,
+        counts,
+        require_facility_and_direction=True,
+    )
+    classified: list[dict[str, Any]] = []
+    for original, trial in zip(gateways, seeded):
+        row = dict(trial if apply_measured_volumes else original)
+        if trial.get("daily_basis") == "published_count":
+            basis = "measured"
+            # Preserve the evidence even in the baseline arm, whose volume is
+            # deliberately left at the class default.
+            for field in ("daily_basis_station_id", "daily_basis_source"):
+                if field in trial:
+                    row[field] = trial[field]
+        elif source_status != "available" or not str(original.get("name") or "").strip():
+            basis = "unsupported"
+        else:
+            basis = "inferred"
+        row["gateway_volume_basis"] = basis
+        row["gateway_volume_applied"] = "measured_aadt" if basis == "measured" and apply_measured_volumes else "road_class_default"
+        classified.append(row)
+
+    measured = [row for row in classified if row["gateway_volume_basis"] == "measured"]
+    not_measured = [row for row in classified if row["gateway_volume_basis"] != "measured"]
+    if retain_all_measured:
+        retained_fallback = not_measured[:max_inferred_gateways]
+        selected = [*measured, *retained_fallback]
+    else:
+        # The study baseline reproduces the existing eight-crossing rule. It
+        # still computes every strict match so both arms exclude the same exam
+        # stations, but a measurement does not change which gateways it runs.
+        selected = classified[:max_inferred_gateways]
+    selected_key_seed = {
+        (row.get("link_id"), row.get("boundary_lon"), row.get("boundary_lat"))
+        for row in selected
+    }
+    dropped = [
+        row
+        for row in classified
+        if (row.get("link_id"), row.get("boundary_lon"), row.get("boundary_lat"))
+        not in selected_key_seed
+    ]
+    def gateway_key(row: Mapping[str, Any]) -> tuple[Any, Any, Any]:
+        return (row.get("link_id"), row.get("boundary_lon"), row.get("boundary_lat"))
+
+    selected_keys = {gateway_key(row) for row in selected}
+    # Preserve deterministic roadway-rank order. The lists above express the
+    # cap rule, while model execution should not reorder otherwise identical
+    # external zones because a count happened to exist.
+    selected = [row for row in classified if gateway_key(row) in selected_keys]
+    decisions = [
+        {
+            "gateway": row.get("label"),
+            "basis": row["gateway_volume_basis"],
+            "retained": gateway_key(row) in selected_keys,
+            "volume_applied": row["gateway_volume_applied"],
+            "station_id": row.get("daily_basis_station_id"),
+            "source": row.get("daily_basis_source"),
+        }
+        for row in classified
+    ]
+    summary = {
+        **seeding,
+        "candidate_rule": "all measured crossings plus capped inferred or unsupported crossings",
+        "apply_measured_volumes": apply_measured_volumes,
+        "retain_all_measured": retain_all_measured,
+        "candidate_pool_gateways": len(classified),
+        "retained_gateways": len(selected),
+        "candidate_pool_measured_gateways": len(measured),
+        "measured_gateways": sum(row["gateway_volume_basis"] == "measured" for row in selected),
+        "inferred_gateways": sum(row["gateway_volume_basis"] == "inferred" for row in selected),
+        "unsupported_gateways": sum(row["gateway_volume_basis"] == "unsupported" for row in selected),
+        "unmeasured_cap": max_inferred_gateways,
+        "dropped_gateways": len(dropped),
+        "dropped_unmeasured_gateways": sum(
+            row["gateway_volume_basis"] != "measured" for row in dropped
+        ),
+        "decisions": decisions,
+    }
+    return selected, summary
 
 
 def _seeding_note(total: int, measured: int, before: float, after: float) -> str:

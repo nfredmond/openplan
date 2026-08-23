@@ -113,9 +113,10 @@ def parse_args() -> argparse.Namespace:
         choices=["auto", "none"],
         default="none",
         help=(
-            "'auto' fetches this study area's published DOT traffic counts (no key, no path to "
-            "supply) and compares the run against them. Where no feed is registered for the state, "
-            "the run records that it has no accuracy figure rather than leaving it unsaid."
+            "'auto' fetches this study area's published traffic counts (no key, no path to "
+            "supply) and compares the run against them. Registered state DOT feeds are preferred; "
+            "FHWA HPMS is the nationwide fallback. Source failures and unsupported road classes "
+            "are recorded rather than read as zero traffic."
         ),
     )
     parser.add_argument(
@@ -146,6 +147,16 @@ def parse_args() -> argparse.Namespace:
             "COMPARED: OSM changes continuously, so two separately-downloaded networks are two "
             "different networks and any difference in link volumes cannot be attributed to the "
             "demand. Refuses if the study areas or zone systems differ."
+        ),
+    )
+    parser.add_argument(
+        "--gateway-volume-study-arm",
+        choices=["baseline", "candidate"],
+        help=(
+            "Run the hash-locked nationwide gateway-volume study arm. Both arms discover the "
+            "full crossing pool and withhold the same matched count sections; baseline retains "
+            "the existing eight-crossing/class-volume behavior, while candidate applies measured "
+            "AADT and lifts the cap only for defensibly matched crossings. Not a production default."
         ),
     )
     return parser.parse_args()
@@ -198,6 +209,11 @@ def _run(run_screening_model, args):
         counts_mode=args.counts,
         calibrate_to_counts=args.calibrate,
         reuse_network_from=args.reuse_network_from_run,
+        gateway_volume_mode=(
+            f"study_{args.gateway_volume_study_arm}"
+            if args.gateway_volume_study_arm
+            else "default"
+        ),
         **({"zone_geography": args.zone_geography} if args.zone_geography else {}),
     )
 

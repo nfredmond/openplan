@@ -108,6 +108,19 @@ class PersonTripsAreDividedByOccupancy(unittest.TestCase):
             self.run_demand(convert=False)["summary"]["trip_rates"]["vehicle_occupancy_applied"]
         )
 
+    def test_the_manifest_keeps_person_and_vehicle_units_separate(self) -> None:
+        summary = self.run_demand(convert=True)["summary"]
+        accounting = summary["conservation_accounting"]
+        self.assertGreaterEqual(accounting["person_trips"], accounting["auto_person_trips"])
+        self.assertGreater(
+            accounting["auto_person_trips"],
+            accounting["internal_vehicle_trips_before_reachability"],
+        )
+        self.assertEqual(
+            accounting["daily_assignment_vehicle_trips"],
+            accounting["internal_vehicle_trips"] + accounting["external_vehicle_trips"],
+        )
+
     def test_it_is_on_by_default_because_it_is_a_unit_error(self) -> None:
         self.assertTrue(sr.CONVERT_PERSON_TRIPS_TO_VEHICLES)
 

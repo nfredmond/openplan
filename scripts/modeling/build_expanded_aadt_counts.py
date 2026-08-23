@@ -246,6 +246,10 @@ def main():
     ap.add_argument("--db", required=True, help="A built AequilibraE project_database.sqlite (for real link names/types)")
     ap.add_argument("--out", required=True, help="Output counts CSV path")
     ap.add_argument(
+        "--count-source-cache-dir",
+        help="Shared cache for paged source responses; defaults beside --out.",
+    )
+    ap.add_argument(
         "--boundary-geojson",
         help=(
             "Study-area boundary. Stations whose coordinates fall outside it are DROPPED. "
@@ -269,7 +273,7 @@ def main():
         if args.region == count_sources.HPMS_SOURCE_ID:
             result = hpms_count_source.fetch_hpms_records(
                 bbox,
-                Path(args.out).parent / ".count-source-cache",
+                Path(args.count_source_cache_dir) if args.count_source_cache_dir else Path(args.out).parent / ".count-source-cache",
                 fail_on_source_error=True,
             )
             Path(geojson_path).write_text(json.dumps(hpms_count_source.records_geojson(result)))

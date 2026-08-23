@@ -14,19 +14,17 @@ boundary says which state it is in. There is nothing for a planner to supply.
 
 ======================================================= WHAT IT WILL NOT PRETEND
 
-Most states are not registered yet — four are. A study area outside those does
-not get a quiet skip: it gets a recorded reason, so a run without an accuracy
-figure is distinguishable from one that was never checked, and both are
-distinguishable from one that was checked and did badly.
-
-A study area spanning two states is refused rather than guessed at. Counts from
-one state's DOT wearing another's name in an appendix is a falsified citation,
-and picking "the state most of the area is in" is exactly how that happens.
+Four state DOT feeds are registered and preferred because they are usually more
+current and locally descriptive. Every other U.S. state uses FHWA HPMS as the
+nationwide floor. A multi-state area selects a publisher per source state and
+never merges a DOT row with HPMS into one apparent observation.
 """
 from __future__ import annotations
 
 import subprocess
 import sys
+import csv
+import math
 from pathlib import Path
 from typing import Any
 
@@ -81,6 +79,75 @@ def region_for_state_fips(state_fips_codes: set[str]) -> str:
             "figure — not a poor one, none — and says so rather than leaving it to be assumed."
         )
     return region
+
+
+def preferred_sources_for_state_fips(state_fips_codes: set[str]) -> dict[str, set[str]]:
+    """The preferred count publisher for each state in a U.S. study area.
+
+    A registered state feed wins for its own rows. States without one use the
+    national HPMS adapter. Returning the state membership with each source is
+    what lets a multi-state run query HPMS once and then retain only the states
+    for which it is the fallback, rather than blending duplicate state and
+    federal representations into one apparent count set.
+    """
+    if not state_fips_codes:
+        raise CountsUnavailable("The study area did not record which state it is in.")
+    selected: dict[str, set[str]] = {}
+    for fips in sorted(str(code).zfill(2) for code in state_fips_codes):
+        region = (STATE_FIPS_TO_ABBR.get(fips) or "").upper()
+        if not region:
+            raise CountsUnavailable(f"No U.S. state or territory is recorded for FIPS {fips}.")
+        source = region if region in count_sources.COUNT_SOURCES else count_sources.HPMS_SOURCE_ID
+        selected.setdefault(source, set()).add(fips)
+    return selected
+
+
+def _run_count_builder(
+    *,
+    source: str,
+    boundary_geojson_path: Path | None,
+    project_db: Path,
+    output_csv: Path,
+    bbox: tuple[float, float, float, float],
+    python_bin: str,
+    count_source_cache_dir: Path | None = None,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        python_bin,
+        str(SCRIPT_DIR / "build_expanded_aadt_counts.py"),
+        f"--fetch-bbox={','.join(f'{value:.5f}' for value in bbox)}",
+        "--region",
+        source,
+        "--db",
+        str(project_db),
+        "--out",
+        str(output_csv),
+    ]
+    if boundary_geojson_path is not None:
+        command.extend(["--boundary-geojson", str(boundary_geojson_path)])
+    if count_source_cache_dir is not None:
+        command.extend(["--count-source-cache-dir", str(count_source_cache_dir)])
+    return subprocess.run(command, capture_output=True, text=True)
+
+
+def buffer_bbox_miles(
+    bbox: tuple[float, float, float, float], miles: float
+) -> tuple[float, float, float, float]:
+    """Expand WGS84 query bounds by distance without a place-specific degree guess."""
+    min_lon, min_lat, max_lon, max_lat = (float(value) for value in bbox)
+    mid_lat = (min_lat + max_lat) / 2.0
+    lat_delta = miles / 69.0
+    lon_delta = miles / max(69.172 * abs(math.cos(math.radians(mid_lat))), 0.01)
+
+    def wrap(longitude: float) -> float:
+        return ((longitude + 180.0) % 360.0) - 180.0
+
+    return (
+        wrap(min_lon - lon_delta),
+        max(-90.0, min_lat - lat_delta),
+        wrap(max_lon + lon_delta),
+        min(90.0, max_lat + lat_delta),
+    )
 
 
 def split_counts_for_calibration(counts_csv: Path, fit_csv: Path, holdout_csv: Path) -> dict[str, Any]:
@@ -146,47 +213,122 @@ def fetch_counts_for_study_area(
     output_csv: Path,
     bbox: tuple[float, float, float, float],
     python_bin: str | None = None,
+    count_source_cache_dir: Path | None = None,
 ) -> dict[str, Any]:
-    """Build a boundary-clipped count set for this study area, or say why not.
+    """Build a boundary-clipped preferred count set for this study area, or say why not.
 
     Shells out to `build_expanded_aadt_counts.py` rather than importing it: that
     script owns the fetch, the normalisation, the boundary clip and the station
     crosswalk, and a second in-process path through the same work is how the two
     drift apart.
     """
-    region = region_for_state_fips(state_fips_codes)
+    sources = preferred_sources_for_state_fips(state_fips_codes)
     output_csv.parent.mkdir(parents=True, exist_ok=True)
+    source_rows: list[dict[str, str]] = []
+    gateway_rows: list[dict[str, str]] = []
+    fieldnames: list[str] = []
+    source_outputs: list[dict[str, Any]] = []
+    gateway_output_csv = output_csv.with_name(f"{output_csv.stem}.gateway{output_csv.suffix}")
+    gateway_bbox = buffer_bbox_miles(bbox, 3.0)
+    for index, (source, source_states) in enumerate(sorted(sources.items())):
+        source_csv = output_csv if len(sources) == 1 else output_csv.with_name(
+            f"{output_csv.stem}.{index:02d}-{source}{output_csv.suffix}"
+        )
+        completed = _run_count_builder(
+            source=source,
+            boundary_geojson_path=boundary_geojson_path,
+            project_db=project_db,
+            output_csv=source_csv,
+            bbox=bbox,
+            python_bin=python_bin or sys.executable,
+            count_source_cache_dir=count_source_cache_dir,
+        )
+        if completed.returncode != 0 or not source_csv.exists():
+            raise CountsUnavailable(
+                f"The {source} count feed could not be read for this study area: "
+                f"{(completed.stderr or completed.stdout or '').strip()[:400] or 'no output'}"
+            )
+        with source_csv.open(newline="") as handle:
+            reader = csv.DictReader(handle)
+            if not fieldnames:
+                fieldnames = list(reader.fieldnames or [])
+            rows = list(reader)
+        # HPMS spans the whole bounding box. In a mixed-source, multi-state
+        # area it is retained only for states that lack a preferred DOT feed.
+        if source == count_sources.HPMS_SOURCE_ID and len(sources) > 1:
+            rows = [row for row in rows if str(row.get("source_state") or "").zfill(2) in source_states]
+        source_rows.extend(rows)
 
-    command = [
-        python_bin or sys.executable,
-        str(SCRIPT_DIR / "build_expanded_aadt_counts.py"),
-        f"--fetch-bbox={','.join(f'{value:.5f}' for value in bbox)}",
-        "--region",
-        region,
-        "--boundary-geojson",
-        str(boundary_geojson_path),
-        "--db",
-        str(project_db),
-        "--out",
-        str(output_csv),
-    ]
-    completed = subprocess.run(command, capture_output=True, text=True)
-    if completed.returncode != 0 or not output_csv.exists():
-        raise CountsUnavailable(
-            f"The {region} count feed could not be read for this study area: "
-            f"{(completed.stderr or completed.stdout or '').strip()[:400] or 'no output'}"
+        gateway_source_csv = (
+            gateway_output_csv
+            if len(sources) == 1
+            else gateway_output_csv.with_name(
+                f"{gateway_output_csv.stem}.{index:02d}-{source}{gateway_output_csv.suffix}"
+            )
+        )
+        gateway_completed = _run_count_builder(
+            source=source,
+            boundary_geojson_path=None,
+            project_db=project_db,
+            output_csv=gateway_source_csv,
+            bbox=gateway_bbox,
+            python_bin=python_bin or sys.executable,
+            count_source_cache_dir=count_source_cache_dir,
+        )
+        if gateway_completed.returncode != 0 or not gateway_source_csv.exists():
+            raise CountsUnavailable(
+                f"The {source} count feed could not build the boundary-crossing evidence set: "
+                f"{(gateway_completed.stderr or gateway_completed.stdout or '').strip()[:400] or 'no output'}"
+            )
+        with gateway_source_csv.open(newline="") as handle:
+            gateway_source_rows = list(csv.DictReader(handle))
+        if source == count_sources.HPMS_SOURCE_ID and len(sources) > 1:
+            gateway_source_rows = [
+                row
+                for row in gateway_source_rows
+                if str(row.get("source_state") or "").zfill(2) in source_states
+            ]
+        gateway_rows.extend(gateway_source_rows)
+        source_outputs.append(
+            {
+                "source": source,
+                "states": sorted(source_states),
+                "stations": len(rows),
+                "gateway_evidence_sections": len(gateway_source_rows),
+                "provenance": count_sources.source_provenance(source),
+            }
         )
 
-    station_count = max(sum(1 for _ in output_csv.open()) - 1, 0)
+    if len(sources) > 1:
+        with output_csv.open("w", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(source_rows)
+        with gateway_output_csv.open("w", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(gateway_rows)
+
+    station_count = len(source_rows)
     if station_count == 0:
         raise CountsUnavailable(
-            f"The {region} count feed returned no stations inside this study area. Published "
-            "counts cover state highways; an area with none is not a modelling failure."
+            "The preferred observed-count sources returned no eligible sections inside this study area. "
+            "Published section coverage is incomplete on the lowest road classes; this is not a "
+            "zero-traffic finding or a modelling failure."
         )
 
     return {
-        "region": region,
+        "region": next(iter(sources)) if len(sources) == 1 else "multi-source",
+        "sources": source_outputs,
         "counts_csv": str(output_csv),
+        "gateway_counts_csv": str(gateway_output_csv),
         "station_count": station_count,
-        "provenance": count_sources.source_provenance(region),
+        "provenance": (
+            source_outputs[0]["provenance"]
+            if len(source_outputs) == 1
+            else {
+                "selection": "registered state publisher per state, otherwise nationwide HPMS fallback",
+                "sources": source_outputs,
+            }
+        ),
     }

@@ -32,6 +32,18 @@ COUNTIES_PER_CELL = 2
 EXPECTED_COUNTIES = 32
 EXPECTED_PER_HALF = 16
 DEFAULT_REGISTRY_PATH = Path("data/modeling/gateway-volume-study-2026-08-22/registry.json")
+CANDIDATE_IMPLEMENTATION_FILES = (
+    "scripts/modeling/auto_counts.py",
+    "scripts/modeling/build_expanded_aadt_counts.py",
+    "scripts/modeling/count_sources.py",
+    "scripts/modeling/demand_conservation.py",
+    "scripts/modeling/gateway_counts.py",
+    "scripts/modeling/hpms_count_source.py",
+    "scripts/modeling/run_gateway_volume_study.py",
+    "scripts/modeling/run_screening_model.py",
+    "scripts/modeling/screening_runtime.py",
+    "workers/aequilibrae_worker/gateways.py",
+)
 USDA_RUCC_URL = "https://www.ers.usda.gov/media/5768/2023-rural-urban-continuum-codes.csv?v=30758"
 USDA_RUCC_VINTAGE = "2023 RUCC, updated 2024-01-22"
 
@@ -401,6 +413,22 @@ def load_registry(path: Path) -> dict[str, Any]:
     return registry
 
 
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_immutable_json(path: Path, payload: Mapping[str, Any]) -> None:
+    rendered = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    if path.exists() and path.read_text() != rendered:
+        raise GatewayVolumeStudyRegistryError(f"{path} is already sealed with different content.")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(rendered)
+
+
 def freeze_candidate(
     registry: Mapping[str, Any],
     *,
@@ -507,14 +535,55 @@ def main() -> int:
         "--output",
         default=str(_SCRIPT_DIR.parents[1] / DEFAULT_REGISTRY_PATH),
     )
+    parser.add_argument("--freeze-candidate", action="store_true")
+    parser.add_argument("--freeze-development", action="store_true")
     args = parser.parse_args()
+    if args.freeze_candidate and args.freeze_development:
+        parser.error("choose only one freeze operation")
+    repo_root = _SCRIPT_DIR.parents[1]
+    output = Path(args.output).resolve()
+    if args.freeze_candidate:
+        registry = load_registry(output)
+        candidate_commit = current_commit(repo_root)
+        hashes = {
+            relative: sha256_file(repo_root / relative)
+            for relative in CANDIDATE_IMPLEMENTATION_FILES
+        }
+        frozen = freeze_candidate(
+            registry,
+            candidate_commit=candidate_commit,
+            implementation_hashes=hashes,
+        )
+        path = output.parent / "candidate-freeze.json"
+        write_immutable_json(path, frozen)
+        print(json.dumps({"candidate_freeze": str(path), "freeze_sha256": frozen["freeze_sha256"]}, indent=2))
+        return 0
+    if args.freeze_development:
+        registry = load_registry(output)
+        candidate_path = output.parent / "candidate-freeze.json"
+        if not candidate_path.exists():
+            raise GatewayVolumeStudyRegistryError("candidate-freeze.json is missing")
+        candidate = json.loads(candidate_path.read_text())
+        required = registry["protocol"]["required_outputs"]["per_county"]
+        county_outputs = {
+            row["county_fips"]: {
+                name: sha256_file(
+                    output.parent / "runs" / "development" / row["county_fips"] / "results" / name
+                )
+                for name in required
+            }
+            for row in registry["counties"]["development"]
+        }
+        frozen = freeze_development(registry, candidate, county_outputs)
+        path = output.parent / registry["protocol"]["required_outputs"]["development_freeze"]
+        write_immutable_json(path, frozen)
+        print(json.dumps({"development_freeze": str(path), "freeze_sha256": frozen["freeze_sha256"]}, indent=2))
+        return 0
     import requests
 
     response = requests.get(USDA_RUCC_URL, timeout=60)
     response.raise_for_status()
-    repo_root = _SCRIPT_DIR.parents[1]
     registry = build_registry(response.content, code_commit=current_commit(repo_root))
-    output = Path(args.output).resolve()
     write_registry(registry, output)
     print(
         json.dumps(

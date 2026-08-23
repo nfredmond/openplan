@@ -51,6 +51,7 @@ def count_row(station_id: str, name: str, volume: float, lon: float, lat: float)
 def gateway(label: str, name: str, lon: float, lat: float, daily: float = 15000.0) -> dict:
     return {
         "label": label, "link_type": "motorway", "link_id": 1, "name": name,
+        "direction": 0,
         "daily_in": daily, "daily_out": daily,
         "boundary_lon": lon, "boundary_lat": lat,
     }
@@ -172,6 +173,20 @@ class TheGatewayRecordMustCarryWhatMatchingNeeds(unittest.TestCase):
         )
         built = code_only[code_only.index("gateways.append("):]
         self.assertIn('"name"', built, "the gateway record dropped `name`; seeding cannot match anything")
+
+    def test_the_run_builds_gateways_that_carry_link_direction(self) -> None:
+        import inspect
+
+        source = inspect.getsource(sr.detect_external_gateways)
+        code_only = "\n".join(
+            line for line in source.splitlines() if not line.lstrip().startswith("#")
+        )
+        built = code_only[code_only.index("gateways.append("):]
+        self.assertIn(
+            '"direction"',
+            built,
+            "the gateway record dropped link direction; strict count matching would reject every crossing",
+        )
 
     def test_a_nameless_crossing_is_refused_rather_than_read_as_unmatched(self) -> None:
         from gateway_counts import GatewayCountsError, match_count_to_gateway

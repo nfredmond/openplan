@@ -1273,6 +1273,7 @@ def fetch_study_area_counts(
     run_dir: Path,
     boundary_geom,
     calibrate: bool,
+    count_source_cache_dir: Path | None = None,
 ) -> dict[str, Any]:
     """Get published counts for this study area, and say plainly when there are none.
 
@@ -1293,6 +1294,7 @@ def fetch_study_area_counts(
             project_db=project_dir / "project_database.sqlite",
             output_csv=counts_dir / "published_counts.csv",
             bbox=tuple(float(v) for v in boundary_geom.bounds),
+            count_source_cache_dir=count_source_cache_dir,
         )
     except CountsUnavailable as exc:
         return {"available": False, "reason": str(exc), "calibration_requested": calibrate}
@@ -1795,6 +1797,7 @@ def build_network(
     zones_df: pd.DataFrame,
     network_buffer_miles: float,
     reuse_network_from: str | None = None,
+    gateway_candidate_pool: bool = False,
 ) -> dict[str, Any]:
     from aequilibrae import Project
 
@@ -1827,7 +1830,11 @@ def build_network(
     # by the same pass as every other zone). Detecting them later — which is
     # where this used to live, inside demand synthesis — left no way to give a
     # gateway a centroid, which is why it borrowed the nearest tract's.
-    gateways, gateway_notes = detect_external_gateways(proj_dir, boundary_geom)
+    gateways, gateway_notes = detect_external_gateways(
+        proj_dir,
+        boundary_geom,
+        max_gateways=None if gateway_candidate_pool else MAX_GATEWAYS,
+    )
     zones_df = pd.concat(
         [zones_df, build_external_zone_rows(gateways, int(zones_df["zone_id"].max()) + 1)],
         ignore_index=True,
@@ -2143,9 +2150,36 @@ def gravity_distribute(
 MAX_GATEWAYS = int(os.getenv("OPENPLAN_MAX_GATEWAYS", "8"))
 
 
+def gateway_volume_policy(mode: str) -> dict[str, bool]:
+    """One explicit switchboard for default, baseline, and frozen candidate."""
+    policies = {
+        "default": {
+            "discover_full_candidate_pool": False,
+            "apply_measured_volumes": False,
+            "retain_all_measured": False,
+        },
+        "study_baseline": {
+            "discover_full_candidate_pool": True,
+            "apply_measured_volumes": False,
+            "retain_all_measured": False,
+        },
+        "study_candidate": {
+            "discover_full_candidate_pool": True,
+            "apply_measured_volumes": True,
+            "retain_all_measured": True,
+        },
+    }
+    try:
+        return policies[mode]
+    except KeyError as exc:
+        raise ConfigurationError(
+            "gateway_volume_mode must be default, study_baseline, or study_candidate"
+        ) from exc
+
+
 def detect_external_gateways(
-    project_dir: Path, boundary_geom, max_gateways: int = MAX_GATEWAYS
-) -> list[dict[str, Any]]:
+    project_dir: Path, boundary_geom, max_gateways: int | None = MAX_GATEWAYS
+) -> tuple[list[dict[str, Any]], list[str]]:
     """Find the highways that cross the study-area boundary, and where.
 
     WHAT CHANGED HERE, AND WHY IT MATTERED (2026-08-15). This function used to
@@ -2173,7 +2207,8 @@ def detect_external_gateways(
     """
     conn = connect_spatialite(project_dir / "project_database.sqlite")
     rows = conn.execute(
-        "SELECT link_id, link_type, COALESCE(name, ''), COALESCE(lanes_ab, 1), COALESCE(lanes_ba, 1), AsText(geometry) "
+        "SELECT link_id, link_type, COALESCE(name, ''), COALESCE(lanes_ab, 1), COALESCE(lanes_ba, 1), "
+        "COALESCE(direction, 0), AsText(geometry) "
         "FROM links WHERE link_type IN ('motorway', 'trunk', 'primary', 'secondary', 'tertiary')"
     ).fetchall()
     conn.close()
@@ -2181,7 +2216,7 @@ def detect_external_gateways(
     tol_deg = 0.005
     cluster_tol_deg = 0.02
     candidates: list[dict[str, Any]] = []
-    for link_id, link_type, name, lanes_ab, lanes_ba, geom_wkt in rows:
+    for link_id, link_type, name, lanes_ab, lanes_ba, direction, geom_wkt in rows:
         if not geom_wkt:
             continue
         line = wkt.loads(geom_wkt)
@@ -2203,6 +2238,7 @@ def detect_external_gateways(
                 "link_id": int(link_id),
                 "link_type": str(link_type),
                 "name": str(name or ""),
+                "direction": int(direction or 0),
                 "point": point,
                 "daily": float(daily),
             }
@@ -2224,13 +2260,13 @@ def detect_external_gateways(
     clusters, corridor_notes = keep_corridor_endpoints(clusters)
 
     ranked = sorted(clusters, key=lambda item: item["daily"], reverse=True)
-    if len(ranked) > max_gateways:
+    if max_gateways is not None and len(ranked) > max_gateways:
         # A second cap, and the same rule applies: say what it dropped. A study
         # area with more boundary highways than this keeps its busiest, and a
         # reader has to be able to tell that from a study area that only had
         # this many.
         corridor_notes.append(gateway_cap_note(len(ranked), max_gateways))
-    clusters = ranked[:max_gateways]
+    clusters = ranked if max_gateways is None else ranked[:max_gateways]
 
     gateways = []
     for idx, gateway in enumerate(clusters, start=1):
@@ -2248,6 +2284,7 @@ def detect_external_gateways(
                 "name": gateway.get("name") or "",
                 "link_type": gateway["link_type"],
                 "link_id": gateway["link_id"],
+                "direction": gateway["direction"],
                 "daily_in": round(float(gateway["daily"]), 2),
                 "daily_out": round(float(gateway["daily"]), 2),
                 "boundary_lon": round(float(gateway["point"].x), 6),
@@ -2531,6 +2568,7 @@ def synthesize_demand(
     convert_person_trips_to_vehicles: bool = CONVERT_PERSON_TRIPS_TO_VEHICLES,
     distance_matrix: np.ndarray | None = None,
     split_non_auto_modes: bool = SPLIT_NON_AUTO_MODES,
+    supplied_conversion: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Assemble the trip matrix this run will assign.
 
@@ -2585,6 +2623,13 @@ def synthesize_demand(
         nhb_attr = np.maximum(jobs * NHB_ATTR_EMP_RATE, 1) * internal
         nhb = gravity_distribute(nhb_prod, nhb_attr, skim_matrix, NHB_GAMMA * GAMMA_MULTIPLIER) * nhb_scalar
 
+    generated_person_by_purpose = {
+        "hbw": float(hbw.sum()),
+        "hbo": float(hbo.sum()),
+        "nhb": float(nhb.sum()),
+    }
+    generated_person_trips = sum(generated_person_by_purpose.values())
+
     # WALKING AND CYCLING ARE NOT CARS. This lane assigned every generated
     # person trip to the road network, including the ones nobody drove. The
     # worker has had a mode-choice model since it was written; the rules are
@@ -2623,6 +2668,13 @@ def synthesize_demand(
             "median_trip_miles": round(float(np.median(distance_miles[np.isfinite(distance_miles) & (distance_miles > 0)])), 2),
         }
 
+    auto_person_by_purpose = {
+        "hbw": float(hbw.sum()),
+        "hbo": float(hbo.sum()),
+        "nhb": float(nhb.sum()),
+    }
+    auto_person_trips = sum(auto_person_by_purpose.values())
+
     # PERSON TRIPS BECOME VEHICLE TRIPS HERE, and nowhere else in this lane.
     # Applied after distribution and before anything is assigned, so the trip
     # totals a reader sees in the manifest stay person-scale (which is what the
@@ -2633,6 +2685,8 @@ def synthesize_demand(
         hbo = hbo / VEHICLE_OCCUPANCY["hbo"]
         nhb = nhb / VEHICLE_OCCUPANCY["nhb"]
         occupancy_applied = dict(VEHICLE_OCCUPANCY)
+
+    internal_vehicle_before_reachability = float(hbw.sum() + hbo.sum() + nhb.sum() + supplied.sum())
 
     if external_demand_scalar != 1.0:
         gateways = [
@@ -2645,6 +2699,7 @@ def synthesize_demand(
             for gateway in gateways
         ]
     external = build_external_gateway_matrix(gateways, zones_df)
+    external_vehicle_before_reachability = float(external.sum())
 
     valid_pairs = np.isfinite(skim_matrix) & (skim_matrix > 0)
     np.fill_diagonal(valid_pairs, True)
@@ -2668,6 +2723,44 @@ def synthesize_demand(
     if overall_demand_scalar != 1.0:
         internal_component = internal_component * overall_demand_scalar
         external_component = external_component * overall_demand_scalar
+    internal_vehicle_trips = float(internal_component.sum())
+    external_vehicle_trips = float(external_component.sum())
+    daily_assignment_vehicle_trips = float(total.sum())
+    supplied_conversion = dict(supplied_conversion or {})
+    if supplied_internal_matrix is not None:
+        conservation_person_trips = supplied_conversion.get("person_trips")
+        conservation_non_auto = supplied_conversion.get("non_auto_person_trips")
+        conservation_unassigned = (
+            float(supplied_conversion.get("person_trips_outside_the_zone_system") or 0.0)
+            + float(supplied_conversion.get("person_trips_with_an_unreadable_zone") or 0.0)
+            + sum(float(value) for value in (supplied_conversion.get("unrecognised_modes") or {}).values())
+        )
+        conservation_auto_person = (
+            float(conservation_person_trips)
+            - float(conservation_non_auto or 0.0)
+            - conservation_unassigned
+            if conservation_person_trips is not None
+            else None
+        )
+        vehicle_conversion = {
+            "method": "producer_preconverted_vehicle_matrix",
+            "producer_record": supplied_conversion or None,
+        }
+    else:
+        conservation_person_trips = generated_person_trips
+        conservation_non_auto = generated_person_trips - auto_person_trips
+        conservation_unassigned = 0.0
+        conservation_auto_person = auto_person_trips
+        vehicle_conversion = {
+            "method": "purpose_average_occupancy" if occupancy_applied else "none_all_auto_person_trips_assigned_as_vehicles",
+            "occupancy": occupancy_applied,
+            "person_trips_by_purpose": {key: round(value, 6) for key, value in auto_person_by_purpose.items()},
+            "vehicle_trips_by_purpose": {
+                "hbw": round(float(hbw.sum()), 6),
+                "hbo": round(float(hbo.sum()), 6),
+                "nhb": round(float(nhb.sum()), 6),
+            },
+        }
     layers = {
         # Which demand model produced this, named rather than inferred. A run
         # whose trips came from somewhere else must never read like one this
@@ -2711,6 +2804,28 @@ def synthesize_demand(
             "external_passthrough_enabled": EXTERNAL_PASSTHROUGH,
         },
         "external_gateways": gateways,
+        "conservation_accounting": {
+            "input_unit": "vehicle_trips" if supplied_internal_matrix is not None else "person_trips",
+            "person_trips": conservation_person_trips,
+            "non_auto_person_trips": conservation_non_auto,
+            "unassigned_person_trips": conservation_unassigned,
+            "auto_person_trips": conservation_auto_person,
+            "vehicle_conversion": vehicle_conversion,
+            "internal_vehicle_trips_before_reachability": round(internal_vehicle_before_reachability * overall_demand_scalar, 6),
+            "internal_vehicle_trips_dropped_unreachable": round(
+                internal_vehicle_before_reachability * overall_demand_scalar - internal_vehicle_trips,
+                6,
+            ),
+            "internal_vehicle_trips": round(internal_vehicle_trips, 6),
+            "external_vehicle_trips_before_reachability": round(external_vehicle_before_reachability * overall_demand_scalar, 6),
+            "external_vehicle_trips_dropped_unreachable": round(
+                external_vehicle_before_reachability * overall_demand_scalar - external_vehicle_trips,
+                6,
+            ),
+            "external_vehicle_trips": round(external_vehicle_trips, 6),
+            "daily_assignment_vehicle_trips": round(daily_assignment_vehicle_trips, 6),
+            "overall_demand_scalar": overall_demand_scalar,
+        },
         "files": {"od_trip_matrix": "package/od_trip_matrix.csv"},
     }
     (package_dir / "demand_layers.json").write_text(json.dumps(layers, indent=2))
@@ -3034,6 +3149,8 @@ def run_assignment(
         "demand": {
             "total_trips": float(np.round(demand_matrix.sum(), 2)),
             "peak_hour_factor": PEAK_HOUR_FACTOR,
+            "period_total_trips": float(np.round(demand_matrix.sum() * PEAK_HOUR_FACTOR, 6)),
+            "period": "representative peak hour",
         },
         "loaded_links": int((link_results["PCE_tot"] > 0).sum()) if "PCE_tot" in link_results.columns else 0,
         "link_results_path": str(run_output_dir / "link_volumes.csv"),
@@ -3093,7 +3210,9 @@ def run_screening_model(
     calibrate_to_counts: bool = False,
     reuse_network_from: str | None = None,
     zone_geography: str = DEFAULT_ZONE_GEOGRAPHY,
+    gateway_volume_mode: str = "default",
 ) -> dict[str, Any]:
+    gateway_policy = gateway_volume_policy(gateway_volume_mode)
     # THE ONE COMBINATION THAT IS REFUSED. Calibrating and then validating
     # against the SAME count file grades the model on most of the data it was
     # just fitted to, and produces a flattering number that means nothing. It is
@@ -3189,6 +3308,7 @@ def run_screening_model(
         zones_df,
         network_buffer_miles,
         reuse_network_from,
+        gateway_policy["discover_full_candidate_pool"],
     )
     # Reassigned, not just called: the cordon counts and the zone-system label
     # belong in the run summary too, and a discarded return value would leave
@@ -3224,21 +3344,52 @@ def run_screening_model(
             run_dir=run_dir,
             boundary_geom=boundary_meta["geometry"],
             calibrate=bool(calibrate_to_counts),
+            count_source_cache_dir=cache_path / "count-sources",
         )
         if auto_counts_meta.get("counts_csv"):
             counts_csv = auto_counts_meta.get("validation_counts_csv") or auto_counts_meta["counts_csv"]
         if auto_counts_meta.get("calibration_counts_csv"):
             calibrate_counts_csv = auto_counts_meta["calibration_counts_csv"]
 
-    passthrough_bounds: dict[str, Any] | None = None
-    if passthrough_from_counts and auto_counts_meta and auto_counts_meta.get("counts_csv"):
-        with Path(auto_counts_meta["counts_csv"]).open(newline="") as handle:
-            passthrough_bounds = attach_passthrough_ceilings(network_meta["gateways"], list(csv.DictReader(handle)))
-
     gateway_seeding: dict[str, Any] | None = None
-    if seed_gateways_from_published_counts and auto_counts_meta and auto_counts_meta.get("counts_csv"):
+    if gateway_volume_mode != "default":
+        if not auto_counts_meta or not auto_counts_meta.get("counts_csv"):
+            raise RuntimeError(
+                "The pre-registered gateway-volume study requires an available observed-count "
+                "source and refuses to shrink to the class-default model. Run with --counts auto "
+                "and resolve the recorded source failure before continuing."
+            )
+        from gateway_counts import select_measured_gateway_candidate
+
+        gateway_counts_path = Path(
+            auto_counts_meta.get("gateway_counts_csv") or auto_counts_meta["counts_csv"]
+        )
+        with gateway_counts_path.open(newline="") as handle:
+            candidate_counts = list(csv.DictReader(handle))
+        network_meta["gateways"], gateway_seeding = select_measured_gateway_candidate(
+            network_meta["gateways"],
+            candidate_counts,
+            max_inferred_gateways=MAX_GATEWAYS,
+            source_status="available",
+            apply_measured_volumes=gateway_policy["apply_measured_volumes"],
+            retain_all_measured=gateway_policy["retain_all_measured"],
+        )
+        gateway_seeding["study_arm"] = gateway_volume_mode
+        gateway_seeding["source"] = auto_counts_meta.get("provenance")
+        gateway_basis_path = run_dir / "gateway_volume_basis.json"
+        gateway_basis_path.write_text(json.dumps(gateway_seeding, indent=2, sort_keys=True))
+        withheld = withhold_seeding_stations_from_grading(
+            Path(counts_csv) if counts_csv else Path(auto_counts_meta["counts_csv"]),
+            run_dir / "counts" / "counts_for_grading.csv",
+            gateway_seeding.get("stations_consumed") or [],
+        )
+        gateway_seeding["grading"] = withheld
+        if withheld["counts_csv"]:
+            counts_csv = withheld["counts_csv"]
+    elif seed_gateways_from_published_counts and auto_counts_meta and auto_counts_meta.get("counts_csv"):
         network_meta["gateways"], gateway_seeding = seed_boundary_traffic_from_counts(
-            network_meta["gateways"], Path(auto_counts_meta["counts_csv"])
+            network_meta["gateways"],
+            Path(auto_counts_meta.get("gateway_counts_csv") or auto_counts_meta["counts_csv"]),
         )
         # A station that set how much traffic ENTERS the study area cannot also
         # grade how well the model reproduces it. Withheld from the validation
@@ -3253,7 +3404,20 @@ def run_screening_model(
         if withheld["counts_csv"]:
             counts_csv = withheld["counts_csv"]
 
+    passthrough_bounds: dict[str, Any] | None = None
+    if passthrough_from_counts and auto_counts_meta and auto_counts_meta.get("counts_csv"):
+        with Path(
+            auto_counts_meta.get("gateway_counts_csv") or auto_counts_meta["counts_csv"]
+        ).open(newline="") as handle:
+            passthrough_bounds = attach_passthrough_ceilings(
+                network_meta["gateways"], list(csv.DictReader(handle))
+            )
+
     skim_meta = _timed("skims", compute_freeflow_skims, project_dir, network_meta["centroid_map"], run_output_dir)
+    producer_manifest = ((supplied_package or {}).get("provenance") or {}).get("producer_manifest")
+    supplied_conversion = (
+        producer_manifest.get("conversion") if isinstance(producer_manifest, dict) else None
+    )
     demand_meta = _timed(
         "demand",
         synthesize_demand,
@@ -3268,6 +3432,7 @@ def run_screening_model(
         nhb_scalar=nhb_scalar,
         supplied_internal_matrix=(supplied_package or {}).get("matrix"),
         distance_matrix=skim_meta.get("distance_matrix"),
+        supplied_conversion=supplied_conversion,
     )
     assignment_meta = _timed(
         "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
@@ -3297,6 +3462,26 @@ def run_screening_model(
             # The final assignment was re-run with the ACCEPTED factors and its
             # outputs written, so downstream reads the calibrated network.
             assignment_meta = calibration_meta.pop("assignment")
+
+    # PROVE THE UNITS AND TOTALS BEFORE ANY METRIC IS PUBLISHED. This reads the
+    # serialized link-volume CSV back from disk and independently totals VMT;
+    # the run stops here if person trips, vehicle conversion, reachability
+    # losses, daily/period assignment totals, or the reported VMT do not balance.
+    from demand_conservation import (
+        build_conservation_record,
+        recompute_network_vmt,
+        write_conservation_record,
+    )
+
+    conservation_record = build_conservation_record(
+        demand_meta["summary"]["conservation_accounting"],
+        assignment_meta,
+        recomputed_network_vmt=recompute_network_vmt(
+            project_dir / "project_database.sqlite",
+            run_output_dir / "link_volumes.csv",
+        ),
+    )
+    write_conservation_record(conservation_record, run_dir / "conservation.json")
 
     # Internal-resident VMT (the CEQA §15064.3 estimator): internal OD ×
     # centroid distance × circuity, with the cordon zones excluded so travel
@@ -3391,6 +3576,13 @@ def run_screening_model(
         boundary_traffic_seeding=gateway_seeding,
         passthrough_bounds=passthrough_bounds,
     )
+    manifest.setdefault("artifacts", {})["conservation"] = "conservation.json"
+    manifest["conservation"] = {
+        "schema_version": conservation_record["schema_version"],
+        "status": conservation_record["status"],
+        "checks": len(conservation_record["checks"]),
+    }
+    (run_dir / "bundle_manifest.json").write_text(json.dumps(manifest, indent=2))
     if assignment_meta.get("retained_network_geojson"):
         manifest.setdefault("artifacts", {})["retained_network_geojson"] = (
             "run_output/retained_network.geojson"
@@ -3438,6 +3630,11 @@ def run_screening_model(
     summary["vmt"] = vmt_block
     summary["engine_versions"] = engine_versions
     summary["stage_wall_clock_seconds"] = stage_seconds
+    summary["conservation"] = {
+        "status": conservation_record["status"],
+        "checks": len(conservation_record["checks"]),
+        "artifact": "conservation.json",
+    }
     if validation_summary is not None:
         summary["validation"] = {
             "status_label": validation_summary["screening_gate"]["status_label"],
