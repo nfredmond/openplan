@@ -1231,7 +1231,7 @@ describe("ProjectDetailPage", () => {
       "/reports/report-1#drift-since-generation"
     );
     expectLinkByHref(/Downtown Safety Packet/i, "/reports/report-1#drift-since-generation");
-  }, 10000);
+  });
 
   it("prioritizes a governance-only report hold over a newer clean current packet", async () => {
     projectSingleMock.mockResolvedValueOnce({
