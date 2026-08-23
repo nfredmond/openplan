@@ -112,13 +112,27 @@ describe("crash evidence counts are not capped at one page", () => {
     const pageSize = probe.ranges[0][1] - probe.ranges[0][0] + 1;
     expect(pageSize).toBeGreaterThan(0);
 
-    const paged = pagingClient([{ data: rows(pageSize, INGEST.id) }, { data: [tailRow(INGEST.id)] }]);
+    const paged = pagingClient([
+      { data: rows(pageSize, INGEST.id) },
+      { data: [tailRow(INGEST.id)] },
+      { data: [] },
+    ]);
 
     const evidence = await loadSafetyCrashEvidence(paged.client, "w1", [INGEST]);
 
-    // Two requests: the full page, then the one that came back short.
-    expect(paged.callCount()).toBe(2);
+    // THREE requests: the full page, the short page, and the EMPTY page that is
+    // the only thing proving there was nothing more.
+    //
+    // This assertion used to read `toBe(2)`, stopping at the short page — the
+    // defect. A short page does not mean the server is out of rows; it means
+    // the server returned fewer than were asked for, which is exactly what
+    // PostgREST does on EVERY page when its `max-rows` is below the requested
+    // page size. Under that setting the old rule ended after page one and folded
+    // a prefix into totals that rendered as complete.
+    expect(paged.callCount()).toBe(3);
     expect(paged.ranges[1][0]).toBe(pageSize);
+    // It advanced by what came back (1 tail row), not by what it asked for.
+    expect(paged.ranges[2][0]).toBe(pageSize + 1);
 
     const counts = evidence.get(INGEST.id)?.severityCounts;
     expect(counts).toBeTruthy();
@@ -127,6 +141,42 @@ describe("crash evidence counts are not capped at one page", () => {
     // The tail row is the one an unpaged read loses. Its presence, with its own
     // count, is the whole assertion.
     expect((counts as Record<string, number>).fatal).toBe(42);
+  });
+
+  /*
+    THE SELF-HOSTED INSTALL. An operator sets PostgREST's max-rows BELOW the
+    page size this module requests, so EVERY page comes back short — including
+    the first. The rule "stop when a page is short" reads one page and reports
+    it as the complete count; nothing errors and nothing on screen looks wrong.
+
+    Asserted at the loader, not only on the shared helper, because the loader is
+    what folds these rows into the totals a funder reads.
+  */
+  it("reads every page when the server's cap is below the requested page size", async () => {
+    const probe = pagingClient([{ data: [] }]);
+    await loadSafetyCrashEvidence(probe.client, "w1", [INGEST]);
+    const pageSize = probe.ranges[0][1] - probe.ranges[0][0] + 1;
+
+    const serverCap = Math.max(1, Math.floor(pageSize / 4));
+    const capped = pagingClient([
+      { data: rows(serverCap, INGEST.id) },
+      { data: rows(serverCap, INGEST.id) },
+      { data: [tailRow(INGEST.id)] },
+      { data: [] },
+    ]);
+
+    const evidence = await loadSafetyCrashEvidence(capped.client, "w1", [INGEST]);
+
+    expect(capped.callCount()).toBe(4);
+    // Every request advanced by the SHORT length actually returned.
+    expect(capped.ranges[1][0]).toBe(serverCap);
+    expect(capped.ranges[2][0]).toBe(serverCap * 2);
+
+    const counts = evidence.get(INGEST.id)?.severityCounts as Record<string, number> | null;
+    expect(counts).toBeTruthy();
+    // The tail survived, and so did both capped pages of injuries.
+    expect(counts?.fatal).toBe(42);
+    expect(counts?.injury).toBe(serverCap * 2);
   });
 
   it("treats a failed page as unreadable, never as a partial total", async () => {

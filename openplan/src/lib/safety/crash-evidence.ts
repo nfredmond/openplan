@@ -49,6 +49,7 @@ import {
   type CrashPartyRole,
   type CrashSeverity,
 } from "./vocabulary";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import {
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_CRASH_DATA_NARRATIVE_CAVEAT,
@@ -385,10 +386,22 @@ export type SafetyCrashEvidenceSupabaseLike = {
   rpc(
     name: string,
     args: Record<string, unknown>
-  ): PromiseLike<{ data: unknown; error: unknown }> & {
-    /** PostgREST range header. Present on the real builder; see the paging note below. */
-    range?: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>;
-  };
+  ): SafetyCrashEvidenceRpcBuilder;
+};
+
+/**
+ * The bits of the PostgREST builder this module drives. Both are optional
+ * because the older structural fakes provide neither, and a fake missing
+ * `.range` is served one unpaged read — the behaviour before paging existed.
+ */
+export type SafetyCrashEvidenceRpcBuilder = PromiseLike<{ data: unknown; error: unknown }> & {
+  /** PostgREST range header. Present on the real builder; see the paging note below. */
+  range?: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>;
+  /** PostgREST ordering. Required for paging to be correct — see the loop below. */
+  order?: (
+    column: string,
+    options?: { ascending?: boolean; nullsFirst?: boolean }
+  ) => SafetyCrashEvidenceRpcBuilder;
 };
 
 /**
@@ -404,11 +417,30 @@ export type SafetyCrashEvidenceSupabaseLike = {
  * have looked wrong; the counts would simply have been low, in documents that
  * go to funders.
  *
- * Paging is deliberately cap-AGNOSTIC: it keeps asking until a page comes back
- * short, so it stays correct if an operator raises or lowers `max-rows` on
- * their own install. The page size is a request, never an assumption about what
- * the server will honour.
+ * Paging is deliberately cap-AGNOSTIC, and the shared loop in
+ * `@/lib/supabase/paged-read` is what makes that true. An earlier version of
+ * this file stopped when a page came back SHORT and claimed in this very
+ * docblock that it stayed correct if an operator "raises or lowers" max-rows.
+ * The lowering half was false: with max-rows below this page size the FIRST
+ * page is short, so the loop ended immediately and folded a prefix into
+ * totals that read as complete. The page size is a request, never an
+ * assumption about what the server will honour.
  */
+/**
+ * The columns that give the RPC's result a stable TOTAL order.
+ *
+ * These are `safety_crash_evidence_counts`'s own GROUP BY key (migration
+ * 20260812000003 groups both UNION ALL arms by ingest and by the dimension's
+ * value), so together they are unique per returned row. Ordering on fewer of
+ * them would leave ties, and a tie is exactly where a row slips across a page
+ * boundary between two requests — read twice, or not at all.
+ *
+ * `src/test/paged-reads-order-before-they-range.test.ts` checks these against
+ * the migration, so adding a dimension to the function without extending this
+ * list fails rather than silently destabilising the paging.
+ */
+export const SAFETY_CRASH_EVIDENCE_ORDER_COLUMNS = ["ingest_id", "dimension", "value"] as const;
+
 const EVIDENCE_COUNT_PAGE_SIZE = 500;
 
 /** A defensive ceiling: 200 pages is far past any real workspace and stops a
@@ -492,44 +524,67 @@ export async function loadSafetyCrashEvidence(
   const ingestIds = Array.from(new Set(ingests.map((ingest) => ingest.id)));
   if (ingestIds.length === 0) return new Map();
 
-  const rows: EvidenceCountRow[] = [];
-  let failed = false;
-
-  for (let page = 0; page < EVIDENCE_COUNT_MAX_PAGES; page += 1) {
-    const query = supabase.rpc(SAFETY_CRASH_EVIDENCE_COUNTS_RPC, {
+  const makeQuery = () =>
+    supabase.rpc(SAFETY_CRASH_EVIDENCE_COUNTS_RPC, {
       p_workspace_id: workspaceId,
       p_ingest_ids: ingestIds,
     });
-    const from = page * EVIDENCE_COUNT_PAGE_SIZE;
-    // A client without `.range` (the older structural fakes, and any caller
-    // passing a minimal stub) gets one unpaged read rather than an exception —
-    // and one unpaged read is exactly the previous behaviour, so nothing that
-    // worked before breaks here.
-    const { data, error } = await (query.range
-      ? query.range(from, from + EVIDENCE_COUNT_PAGE_SIZE - 1)
-      : query);
 
-    if (error) {
-      failed = true;
-      break;
-    }
+  // A client without `.range` (the older structural fakes, and any caller
+  // passing a minimal stub) gets one unpaged read rather than an exception —
+  // one unpaged read is exactly the behaviour before paging existed, so nothing
+  // that worked before breaks here. The builder is inspected, never an extra
+  // request: this same builder becomes either the single read or page zero.
+  let pending: SafetyCrashEvidenceRpcBuilder | null = makeQuery();
 
-    const batch = Array.isArray(data) ? (data as EvidenceCountRow[]) : [];
-    rows.push(...batch);
-
-    // Short page means the server had nothing more. A FULL page means there may
-    // be more even if there is not, so it asks again; one extra empty request
-    // is the price of never silently stopping at a cap.
-    if (!query.range || batch.length < EVIDENCE_COUNT_PAGE_SIZE) break;
-
-    // The loop's last iteration ran a full page, so more rows may remain and
-    // this read cannot claim to be complete.
-    if (page === EVIDENCE_COUNT_MAX_PAGES - 1) failed = true;
+  if (!pending.range) {
+    const { data, error } = await pending;
+    const unpaged = Array.isArray(data) ? (data as EvidenceCountRow[]) : [];
+    return buildSafetyCrashEvidenceMap(ingests, error ? null : foldCrashEvidenceCounts(unpaged));
   }
 
-  const countsByIngest = failed ? null : foldCrashEvidenceCounts(rows);
+  const { rows, complete } = await readEveryPage<EvidenceCountRow>(
+    (from, toInclusive) => {
+      const query = pending ?? makeQuery();
+      pending = null;
 
-  return buildSafetyCrashEvidenceMap(ingests, countsByIngest);
+      // A STABLE TOTAL ORDER, WITHOUT WHICH PAGING IS WORSE THAN NOT PAGING.
+      //
+      // The RPC is a UNION ALL of two GROUP BYs and defines no ORDER BY, so
+      // Postgres owes no consistent row order between the separate requests
+      // that LIMIT/OFFSET paging makes. A row that shifts across a page
+      // boundary between requests is read twice or not at all — and
+      // `foldCrashEvidenceCounts` SUMS what it reads, so a duplicate inflates a
+      // severity band in the RTP safety criterion, the BCA input and drafted
+      // grant narratives. These three columns are the function's own grouping
+      // key, so together they are unique per row: a total order, not merely an
+      // order.
+      const ordered = SAFETY_CRASH_EVIDENCE_ORDER_COLUMNS.reduce<SafetyCrashEvidenceRpcBuilder>(
+        (builder, column) =>
+          builder.order ? builder.order(column, { ascending: true, nullsFirst: false }) : builder,
+        query
+      );
+
+      const range = ordered.range ?? query.range;
+      if (!range) {
+        // Unreachable: `pending.range` was proven above, and `.order` returns
+        // the same builder. Stated rather than asserted so a future client whose
+        // `.order` drops `.range` fails as an unreadable count, not as a silent
+        // single page presented as a total.
+        return Promise.resolve({ data: null, error: { message: "client cannot page this read" } });
+      }
+
+      return range(from, toInclusive) as PromiseLike<{
+        data: EvidenceCountRow[] | null;
+        error: { message: string } | null;
+      }>;
+    },
+    { pageSize: EVIDENCE_COUNT_PAGE_SIZE, maxPages: EVIDENCE_COUNT_MAX_PAGES }
+  );
+
+  // An incomplete read becomes `null` counts, never a partial total. Every
+  // consumer renders null as "could not be read".
+  return buildSafetyCrashEvidenceMap(ingests, complete ? foldCrashEvidenceCounts(rows) : null);
 }
 
 /**
