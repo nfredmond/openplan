@@ -8,6 +8,13 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
+/** A generated packet recorded that its project crash evidence read failed. */
+export function artifactSafetyEvidenceReadFailed(
+  artifactMetadata: Record<string, unknown> | null | undefined
+): boolean {
+  return asRecord(artifactMetadata?.sourceContext)?.safetyEvidenceReadStatus === "failed";
+}
+
 const REPORT_WRITEBACK_GRACE_MS = 15 * 60 * 1000;
 
 function hasMaterialReportWritebackAfterGeneration(
@@ -38,6 +45,7 @@ export function buildReportRegistryDriftSummary(input: {
   reportUpdatedAt: string | null | undefined;
   rtpCycleUpdatedAt: string | null | undefined;
   safetyUpdatedAt?: string | null;
+  safetyEvidenceReadFailed?: boolean;
 }): ReportDriftSummary {
   if (input.packetFreshnessLabel !== PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED) {
     return { changedCount: 0, totalCount: 0, labels: [] };
@@ -46,6 +54,7 @@ export function buildReportRegistryDriftSummary(input: {
   const labels: string[] = [];
   if (isTimestampAfter(input.rtpCycleUpdatedAt, input.generatedAt)) labels.push("RTP cycle");
   if (isTimestampAfter(input.safetyUpdatedAt, input.generatedAt)) labels.push("Crash evidence");
+  if (input.safetyEvidenceReadFailed) labels.push("Crash evidence read");
   if (hasMaterialReportWritebackAfterGeneration(input.generatedAt, input.reportUpdatedAt)) {
     labels.push("Report metadata");
   }

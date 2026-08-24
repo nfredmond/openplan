@@ -34,6 +34,7 @@ import {
   parseStoredComparisonSnapshotAggregate,
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
+import { artifactSafetyEvidenceReadFailed } from "@/lib/reports/report-registry-freshness";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 // The Safety module owns its own claim boundary; the operations queue reuses the
 // single-sentence variant verbatim rather than paraphrasing screening output
@@ -1442,11 +1443,19 @@ export function buildWorkspaceOperationsSummary({
   now?: Date;
 }): WorkspaceOperationsSummary {
   const reportRows = reports.map((report) => {
-    const freshness = getReportPacketFreshness({
+    const computedFreshness = getReportPacketFreshness({
       latestArtifactKind: report.latestArtifactKind,
       generatedAt: report.generatedAt,
       updatedAt: resolveReportSourceUpdatedAt(report),
     });
+    const freshness = artifactSafetyEvidenceReadFailed(report.metadataJson) &&
+      computedFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
+      ? {
+          label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
+          tone: "warning" as const,
+          detail: "The generated packet recorded a failed crash-evidence read.",
+        }
+      : computedFreshness;
     const comparisonAggregate = parseStoredComparisonSnapshotAggregate(report.metadataJson);
     const comparisonDigest = describeComparisonSnapshotAggregate(comparisonAggregate);
     const storedRtpFundingReview = parseStoredRtpFundingReview(report.metadataJson);

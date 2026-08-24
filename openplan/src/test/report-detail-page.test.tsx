@@ -960,6 +960,30 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     ).toBeInTheDocument();
   });
 
+  it("refuses current-ready posture when the artifact recorded a failed crash read", async () => {
+    artifactsOrderMock.mockResolvedValueOnce({
+      data: [{
+        id: "artifact-safety-failed",
+        artifact_kind: "html",
+        generated_at: "2026-03-29T12:00:00.000Z",
+        storage_path: "packet.html",
+        metadata_json: {
+          sourceContext: {
+            projectUpdatedAt: "2026-03-28T18:01:00.000Z",
+            safetyEvidenceReadStatus: "failed",
+          },
+        },
+      }],
+      error: null,
+    });
+
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }), searchParams: Promise.resolve({}) }));
+
+    expect(screen.getByText("Crash evidence read")).toBeInTheDocument();
+    expect(screen.getByText(/not current or ready until regeneration completes/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+  });
+
   it("shows the project records and scenario basis the packet was built from", async () => {
     render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
 

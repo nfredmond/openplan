@@ -8,9 +8,11 @@ import {
 import {
   readSafetyKsiBounds,
   readSafetyKsiConcentrations,
+  readSafetyKsiEquityTracts,
 } from "@/lib/safety/ksi-concentrations";
 import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
-import type { SafetyKsiConcentration } from "@/lib/safety/client-types";
+import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
+import { ACS_YEAR } from "@/lib/data-sources/census";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -2137,6 +2139,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
      */
     let safetyEvidence: SafetyCrashEvidence[] | null = [];
     let safetyKsiConcentrations: SafetyKsiConcentration[] | null = [];
+    let safetyKsiEquityTracts: SafetyKsiEquityTract[] | null = [];
+    let safetyIngestRowsForConcentrations: unknown[] = [];
     try {
       const { data: safetyIngestRows, error: safetyIngestError } = await supabase
         .from("safety_crash_ingests")
@@ -2149,6 +2153,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         safetyEvidence = null;
         safetyKsiConcentrations = null;
       } else {
+        safetyIngestRowsForConcentrations = safetyIngestRows ?? [];
         const ingests = (safetyIngestRows ?? [])
           .map((row) => readSafetyCrashEvidenceIngest(row as unknown as Record<string, unknown>))
           .filter((ingest): ingest is NonNullable<typeof ingest> => ingest !== null);
@@ -2158,28 +2163,53 @@ export async function POST(request: NextRequest, context: RouteContext) {
           ingests
         );
         safetyEvidence = [...evidenceByIngest.values()];
-        const concentrationBounds = readSafetyKsiBounds(safetyIngestRows);
-        if (concentrationBounds && ingests.length > 0) {
-          const concentrationResult = await supabase.rpc("safety_ksi_concentrations", {
-            p_workspace_id: report.workspace_id,
-            p_min_lon: concentrationBounds.minLon,
-            p_min_lat: concentrationBounds.minLat,
-            p_max_lon: concentrationBounds.maxLon,
-            p_max_lat: concentrationBounds.maxLat,
-            p_project_id: projectRow.id,
-            p_severities: [...CRASH_KSI_SEVERITIES],
-            p_radius_meters: 150,
-            p_min_points: 2,
-            p_result_limit: 10,
-          });
-          safetyKsiConcentrations = concentrationResult.error
-            ? null
-            : readSafetyKsiConcentrations(concentrationResult.data);
-        }
       }
     } catch {
       safetyEvidence = null;
+    }
+
+    try {
+      const concentrationBounds = readSafetyKsiBounds(safetyIngestRowsForConcentrations);
+      if (concentrationBounds && safetyIngestRowsForConcentrations.length > 0) {
+        const concentrationResult = await supabase.rpc("safety_ksi_concentrations", {
+          p_workspace_id: report.workspace_id,
+          p_min_lon: concentrationBounds.minLon,
+          p_min_lat: concentrationBounds.minLat,
+          p_max_lon: concentrationBounds.maxLon,
+          p_max_lat: concentrationBounds.maxLat,
+          p_project_id: projectRow.id,
+          p_severities: [...CRASH_KSI_SEVERITIES],
+          p_radius_meters: 150,
+          p_min_points: 2,
+          p_result_limit: 10,
+        });
+        safetyKsiConcentrations = concentrationResult.error
+          ? null
+          : readSafetyKsiConcentrations(concentrationResult.data);
+      }
+    } catch {
       safetyKsiConcentrations = null;
+    }
+
+    try {
+      const equityBounds = readSafetyKsiBounds(safetyIngestRowsForConcentrations);
+      if (equityBounds && safetyIngestRowsForConcentrations.length > 0) {
+        const equityResult = await supabase.rpc("safety_ksi_tract_burden", {
+          p_workspace_id: report.workspace_id,
+          p_min_lon: equityBounds.minLon,
+          p_min_lat: equityBounds.minLat,
+          p_max_lon: equityBounds.maxLon,
+          p_max_lat: equityBounds.maxLat,
+          p_project_id: projectRow.id,
+          p_severities: [...CRASH_KSI_SEVERITIES],
+          p_result_limit: 10,
+        });
+        safetyKsiEquityTracts = equityResult.error
+          ? null
+          : readSafetyKsiEquityTracts(equityResult.data);
+      }
+    } catch {
+      safetyKsiEquityTracts = null;
     }
 
     const reportHtmlInput = {
@@ -2193,6 +2223,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       sections: sectionsResult.data ?? [],
       safetyEvidence,
       safetyKsiConcentrations,
+      safetyKsiEquityTracts,
+      safetyKsiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
         id: item.id,
         title: item.title,
@@ -2370,6 +2402,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         projectFundingProfileScan,
         fundingSourceContextReadiness,
         evidenceChainSummary,
+        safetyEvidenceReadStatus: safetyEvidence === null ? "failed" : "readable",
+        safetyKsiConcentrationReadStatus:
+          safetyKsiConcentrations === null ? "failed" : "readable",
+        safetyKsiEquityReadStatus: safetyKsiEquityTracts === null ? "failed" : "readable",
+        safetyAcquisitionCount: safetyEvidence?.length ?? null,
         aerialEvidenceSourceContext,
         modelingEvidence: modelingEvidenceMetadata,
         modelingEvidenceCount: modelingEvidenceMetadata.length,

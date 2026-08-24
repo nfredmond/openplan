@@ -68,6 +68,24 @@ export type SafetyKsiBounds = {
   maxLat: number;
 };
 
+/** One Census-tract context row for mapped KSI crash burden. */
+export type SafetyKsiEquityTract = {
+  rank: number;
+  geoid: string;
+  tractName: string | null;
+  ksiCrashCount: number;
+  fatalCrashCount: number;
+  seriousInjuryCrashCount: number;
+  population: number | null;
+  ksiPer100k: number | null;
+  pctPoverty: number | null;
+  pctNonwhite: number | null;
+  pctZeroVehicle: number | null;
+  areaMedianPctPoverty: number | null;
+  areaMedianPctNonwhite: number | null;
+  areaMedianPctZeroVehicle: number | null;
+};
+
 /** The crash-query response, including the counts that keep the UI honest. */
 export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   /** How many features this response actually carries. */
@@ -111,6 +129,9 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   limit: number;
   /** Exact database-side clusters over the whole requested area, or null when unavailable. */
   ksiConcentrations: SafetyKsiConcentration[] | null;
+  /** US Census tract context for mapped KSI records; empty where no adapter data exists. */
+  ksiEquityTracts: SafetyKsiEquityTract[] | null;
+  ksiEquityDemographicSource: { label: string; vintage: string };
 };
 
 /** The latest ingest for a workspace, as rendered by the coverage banner. */

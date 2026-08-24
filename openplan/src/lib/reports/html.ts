@@ -31,7 +31,7 @@ import {
   type PacketGeographyInput,
 } from "@/lib/reports/geography-figure";
 import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
-import type { SafetyKsiConcentration } from "@/lib/safety/client-types";
+import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import {
@@ -174,6 +174,8 @@ export type ReportGenerationData = {
   safetyEvidence?: readonly SafetyCrashEvidence[] | null;
   /** Ranked project-linked KSI clusters, or null when the database read failed. */
   safetyKsiConcentrations?: readonly SafetyKsiConcentration[] | null;
+  safetyKsiEquityTracts?: readonly SafetyKsiEquityTract[] | null;
+  safetyKsiEquityDemographicSource?: { label: string; vintage: string };
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   dualDemandAgreementSnapshotsV1?: DualDemandAgreementSnapshotV1[];
@@ -926,7 +928,19 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
         <ol>${concentrations.map((item) => `<li><strong>${esc(item.crashCount.toLocaleString())} KSI crashes</strong> (${esc(item.fatalCrashCount.toLocaleString())} fatal; ${esc(item.seriousInjuryCrashCount.toLocaleString())} serious injury) near ${esc(item.latitude.toFixed(5))}, ${esc(item.longitude.toFixed(5))}</li>`).join("")}</ol>`
       : `<h3>Highest observed KSI concentrations</h3><p>No pair of mapped fatal or serious-injury crash records fell within the 150-meter screening radius. That is not a finding that the project area is safe.</p>`;
 
-  return acquisitionMarkup + concentrationMarkup;
+  const equityTracts = data.safetyKsiEquityTracts;
+  const equitySource = data.safetyKsiEquityDemographicSource;
+  const equityMarkup = equityTracts === undefined
+    ? ""
+    : equityTracts === null
+      ? `<h3>Community burden screen</h3><p>The mapped KSI-to-Census-tract comparison could not be read. That is a failed calculation, not a finding that harm is evenly distributed.</p>`
+      : equityTracts.length === 0
+        ? `<h3>Community burden screen</h3><p>No loaded Census tract demographics overlap the mapped KSI records, so community burden is not determined in this packet.</p>`
+        : `<h3>Community burden screen</h3>
+          <p>Mapped KSI records are grouped by Census tract and ranked by observed count. Demographics come from ${esc(equitySource?.label ?? "the loaded demographic source")} ${esc(equitySource?.vintage ?? "vintage not recorded")}. Counts per 100,000 residents are not adjusted for roadway exposure, travel, or time. This is screening context, not a causal, protected-class, or legal disparity finding.</p>
+          <ol>${equityTracts.slice(0, 5).map((tract) => `<li><strong>${esc(tract.tractName ?? `Census tract ${tract.geoid}`)}: ${esc(tract.ksiCrashCount.toLocaleString())} KSI crashes</strong>; poverty ${tract.pctPoverty === null ? "not available" : `${esc(tract.pctPoverty.toFixed(1))}%`}${tract.areaMedianPctPoverty === null ? "" : ` vs area median ${esc(tract.areaMedianPctPoverty.toFixed(1))}%`}; nonwhite population ${tract.pctNonwhite === null ? "not available" : `${esc(tract.pctNonwhite.toFixed(1))}%`}; zero-vehicle households ${tract.pctZeroVehicle === null ? "not available" : `${esc(tract.pctZeroVehicle.toFixed(1))}%`}.</li>`).join("")}</ol>`;
+
+  return acquisitionMarkup + concentrationMarkup + equityMarkup;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {

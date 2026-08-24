@@ -16,8 +16,12 @@ import {
   type CrashFilterSelection,
 } from "@/lib/safety/crash-filters";
 import { toStoredCrashProperties } from "@/lib/safety/crash-properties";
-import { readSafetyKsiConcentrations } from "@/lib/safety/ksi-concentrations";
+import {
+  readSafetyKsiConcentrations,
+  readSafetyKsiEquityTracts,
+} from "@/lib/safety/ksi-concentrations";
 import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
+import { ACS_YEAR } from "@/lib/data-sources/census";
 
 /**
  * Crash query for the Safety map and list.
@@ -45,13 +49,15 @@ import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
  * headline and the map disagreeing: there is one filter definition
  * (`crash-filters.ts`), one interpreter over it, and one scope closure here.
  *
- * NO NEW MIGRATION, deliberately. `idx_safety_crashes_severity (workspace_id,
+ * NO GROUPED-COUNT MIGRATION, deliberately. `idx_safety_crashes_severity (workspace_id,
  * severity)` already serves this: measured against the local 32,650-row extract,
  * one band count is a 0.2 ms bitmap scan. The alternatives were both worse — a
  * PostgREST grouped aggregate depends on `db-aggregates-enabled`, which is an
  * operator setting a self-hosting agency controls and can turn off, and a new
  * SQL function would have to re-spell every filter in Postgres, which is the
- * second filter definition this module was refactored to eliminate.
+ * second filter definition this module was refactored to eliminate. The two
+ * spatial screening outputs below do use narrowly scoped SQL functions because
+ * they must inspect every matched point rather than the capped map slice.
  */
 
 const DEFAULT_LIMIT = 2000;
@@ -194,6 +200,8 @@ export async function GET(request: NextRequest) {
               CRASH_SEVERITY_BANDS.map((band) => [band, 0])
             ),
             ksiConcentrations: [],
+            ksiEquityTracts: [],
+            ksiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
             truncated: false,
             limit,
           },
@@ -240,7 +248,7 @@ export async function GET(request: NextRequest) {
         band
       );
 
-    const [countResult, rowsResult, bandResults, concentrationResult] = await Promise.all([
+    const [countResult, rowsResult, bandResults, concentrationResult, equityResult] = await Promise.all([
       applyFilters(supabase.from("safety_crashes").select("id", { count: "exact", head: true })),
       applyFilters(supabase.from("safety_crashes").select(CRASH_QUERY_PROJECTION))
         .order("collision_date", { ascending: false, nullsFirst: false })
@@ -256,6 +264,16 @@ export async function GET(request: NextRequest) {
         p_severities: [...CRASH_KSI_SEVERITIES],
         p_radius_meters: 150,
         p_min_points: 2,
+        p_result_limit: 10,
+      }),
+      supabase.rpc("safety_ksi_tract_burden", {
+        p_workspace_id: query.workspaceId,
+        p_min_lon: query.minLon,
+        p_min_lat: query.minLat,
+        p_max_lon: query.maxLon,
+        p_max_lat: query.maxLat,
+        p_project_id: query.projectId ?? null,
+        p_severities: [...CRASH_KSI_SEVERITIES],
         p_result_limit: 10,
       }),
     ]);
@@ -317,6 +335,15 @@ export async function GET(request: NextRequest) {
         error: concentrationResult.error.message,
       });
     }
+    const ksiEquityTracts = equityResult.error
+      ? null
+      : readSafetyKsiEquityTracts(equityResult.data);
+    if (equityResult.error) {
+      audit.warn("safety_ksi_equity_unavailable", {
+        workspaceId: query.workspaceId,
+        error: equityResult.error.message,
+      });
+    }
 
     // Built through the shared reader so this route and the shared backdrop
     // layer cannot disagree about what a row means — in particular about a
@@ -367,6 +394,8 @@ export async function GET(request: NextRequest) {
          */
         severityTotals,
         ksiConcentrations,
+        ksiEquityTracts,
+        ksiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
         truncated: features.length + undrawableCount < matchedCount,
         limit,
       },

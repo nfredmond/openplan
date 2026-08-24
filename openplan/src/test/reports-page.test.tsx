@@ -345,6 +345,47 @@ describe("ReportsPage", () => {
     expect(screen.getAllByText(/Crash evidence/i).length).toBeGreaterThan(0);
   });
 
+  it("does not call a packet current when its own crash evidence read failed", async () => {
+    reportsOrderMock.mockResolvedValueOnce({
+      data: [{
+        id: "report-1",
+        workspace_id: "workspace-1",
+        project_id: "project-1",
+        rtp_cycle_id: null,
+        title: "Safety read failure packet",
+        report_type: "project_status",
+        status: "generated",
+        summary: "Packet with an unreadable safety section.",
+        generated_at: null,
+        latest_artifact_kind: "html",
+        created_at: "2026-03-28T18:00:00.000Z",
+        updated_at: "2026-03-28T19:00:00.000Z",
+        projects: { id: "project-1", name: "Downtown Mobility Plan" },
+        rtp_cycles: null,
+      }],
+      error: null,
+    });
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      data: [{
+        report_id: "report-1",
+        generated_at: "2026-03-28T20:00:00.000Z",
+        metadata_json: {
+          sourceContext: {
+            projectUpdatedAt: "2026-03-28T19:00:00.000Z",
+            safetyEvidenceReadStatus: "failed",
+          },
+        },
+      }],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Crash evidence read/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+  });
+
   it("keeps artifact-backed reports in regenerate posture when report generated_at is null", async () => {
     await renderPage();
 

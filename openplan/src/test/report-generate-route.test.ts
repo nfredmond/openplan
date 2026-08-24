@@ -1248,8 +1248,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }],
       error: null,
     });
-    rpcMock.mockImplementation((name: string) => Promise.resolve(name === "safety_ksi_concentrations"
-      ? {
+    rpcMock.mockImplementation((name: string) => Promise.resolve(
+      name === "safety_ksi_concentrations" ? {
           data: [{
             rank: 1,
             longitude: -121.061,
@@ -1258,6 +1258,25 @@ describe("POST /api/reports/[reportId]/generate", () => {
             fatal_crash_count: 2,
             serious_injury_crash_count: 5,
             radius_meters: 150,
+          }],
+          error: null,
+        }
+      : name === "safety_ksi_tract_burden" ? {
+          data: [{
+            rank: 1,
+            geoid: "06019000100",
+            tract_name: "Census Tract 1",
+            ksi_crash_count: 7,
+            fatal_crash_count: 2,
+            serious_injury_crash_count: 5,
+            population: 3500,
+            ksi_per_100k: 200,
+            pct_poverty: 24,
+            pct_nonwhite: 61,
+            pct_zero_vehicle: 9,
+            area_median_pct_poverty: 16,
+            area_median_pct_nonwhite: 48,
+            area_median_pct_zero_vehicle: 7,
           }],
           error: null,
         }
@@ -1281,10 +1300,86 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(200);
     const inserted = artifactsInsertMock.mock.calls.at(-1)?.[0];
     expect(inserted?.metadata_json?.htmlContent).toContain("7 KSI crashes");
+    expect(inserted?.metadata_json?.htmlContent).toContain("Community burden screen");
+    expect(inserted?.metadata_json?.sourceContext).toEqual(expect.objectContaining({
+      safetyEvidenceReadStatus: "readable",
+      safetyKsiConcentrationReadStatus: "readable",
+      safetyKsiEquityReadStatus: "readable",
+      safetyAcquisitionCount: 1,
+    }));
     expect(rpcMock).toHaveBeenCalledWith("safety_ksi_concentrations", expect.objectContaining({
       p_project_id: "44444444-4444-4444-8444-444444444444",
       p_min_lon: -121.2,
       p_max_lon: -120.8,
+    }));
+  });
+
+  it("keeps crash counts when the optional concentration calculation throws", async () => {
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [{
+        id: "section-safety",
+        section_key: "project_safety_evidence",
+        title: "Reported collisions",
+        enabled: true,
+        sort_order: 0,
+        config_json: {},
+      }],
+      error: null,
+    });
+    safetyIngestOrderMock.mockResolvedValueOnce({
+      data: [{
+        id: "ingest-1",
+        project_id: "44444444-4444-4444-8444-444444444444",
+        min_lon: -121.2,
+        min_lat: 39.1,
+        max_lon: -120.8,
+        max_lat: 39.5,
+        status: "ready",
+        source_label: "State crash source",
+        attribution: "State agency",
+        severity_completeness: "kabco_full",
+        crash_count: 7,
+        geocoded_count: 7,
+        truncated: false,
+        years_requested: [2024],
+        created_at: "2026-08-24T01:00:00.000Z",
+        dimension_coverage: null,
+        party_completeness: "not_retrieved",
+        party_count: null,
+        involvement_basis: null,
+      }],
+      error: null,
+    });
+    rpcMock.mockImplementation((name: string) => {
+      if (name === "safety_ksi_concentrations") {
+        return Promise.reject(new Error("concentration timeout"));
+      }
+      return Promise.resolve({
+        data: [
+          { ingest_id: "ingest-1", dimension: "severity", value: "fatal", record_count: 2 },
+          { ingest_id: "ingest-1", dimension: "severity", value: "severe_injury", record_count: 5 },
+        ],
+        error: null,
+      });
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(200);
+    const inserted = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    expect(inserted?.metadata_json?.htmlContent).toContain("State crash source");
+    expect(inserted?.metadata_json?.htmlContent).not.toContain("crash evidence attached to this project could not be read");
+    expect(inserted?.metadata_json?.sourceContext).toEqual(expect.objectContaining({
+      safetyEvidenceReadStatus: "readable",
+      safetyKsiConcentrationReadStatus: "failed",
+      safetyAcquisitionCount: 1,
     }));
   });
 

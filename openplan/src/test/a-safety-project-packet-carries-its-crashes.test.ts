@@ -213,6 +213,33 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("screening locations, not named intersections");
     });
 
+    it("prints tract-level community context with its non-causal limit", () => {
+      const html = buildReportHtml({
+        ...packetData([evidence()]),
+        safetyKsiEquityTracts: [{
+          rank: 1,
+          geoid: "06019000100",
+          tractName: "Census Tract 1",
+          ksiCrashCount: 7,
+          fatalCrashCount: 2,
+          seriousInjuryCrashCount: 5,
+          population: 3500,
+          ksiPer100k: 200,
+          pctPoverty: 24,
+          pctNonwhite: 61,
+          pctZeroVehicle: 9,
+          areaMedianPctPoverty: 16,
+          areaMedianPctNonwhite: 48,
+          areaMedianPctZeroVehicle: 7,
+        }],
+        safetyKsiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: "2023" },
+      });
+
+      expect(html).toContain("Community burden screen");
+      expect(html).toContain("poverty 24.0% vs area median 16.0%");
+      expect(html).toContain("not a causal, protected-class, or legal disparity finding");
+    });
+
     it("says why a figure is absent instead of printing a zero", () => {
       const html = buildReportHtml(packetData([evidence({ ksi: null })]));
       expect(html).toMatch(/does not separate suspected serious injuries/i);

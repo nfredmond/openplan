@@ -85,7 +85,7 @@ import type {
 } from "./_components/_types";
 import { buildFundingPostureDriftItem } from "./_components/_funding-drift";
 import { buildEngagementDriftItem } from "./_components/_engagement-drift";
-import { buildProjectSafetyDriftItem, describeSafetyEvidenceReadFailure, loadLatestProjectSafetyIngest, type ReportSafetyFreshnessSupabaseLike } from "./_components/_safety-drift";
+import { buildArtifactSafetyReadDriftItem, buildProjectSafetyDriftItem, describeSafetyEvidenceReadFailure, loadLatestProjectSafetyIngest, type ReportSafetyFreshnessSupabaseLike } from "./_components/_safety-drift";
 import {
   checkLiveScenarioSpineReads,
   checkRtpFundingReads,
@@ -1062,6 +1062,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   const driftItems: DriftItem[] = [];
 
   const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
+  const artifactSafetyDriftItem = buildArtifactSafetyReadDriftItem(latestArtifact?.metadata_json);
+  if (artifactSafetyDriftItem) driftItems.push(artifactSafetyDriftItem);
   const safetyDriftItem = buildProjectSafetyDriftItem({
     readFailed: safetyEvidenceLiveReadFailure,
     result: latestSafetyIngestResult,

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   readSafetyKsiBounds,
   readSafetyKsiConcentrations,
+  readSafetyKsiEquityTracts,
 } from "@/lib/safety/ksi-concentrations";
 
 describe("readSafetyKsiConcentrations", () => {
@@ -50,5 +51,29 @@ describe("readSafetyKsiConcentrations", () => {
         radius_meters: 150,
       },
     ])).toEqual([]);
+  });
+
+  it("keeps missing tract demographics nullable at the RPC boundary", () => {
+    expect(readSafetyKsiEquityTracts([{
+      rank: 1,
+      geoid: "06019000100",
+      tract_name: "Census Tract 1",
+      ksi_crash_count: 3,
+      fatal_crash_count: 1,
+      serious_injury_crash_count: 2,
+      population: 2500,
+      ksi_per_100k: 120,
+      pct_poverty: null,
+      pct_nonwhite: 55,
+      pct_zero_vehicle: null,
+      area_median_pct_poverty: 18,
+      area_median_pct_nonwhite: 45,
+      area_median_pct_zero_vehicle: 7,
+    }])).toEqual([expect.objectContaining({
+      geoid: "06019000100",
+      ksiCrashCount: 3,
+      pctPoverty: null,
+      pctZeroVehicle: null,
+    })]);
   });
 });

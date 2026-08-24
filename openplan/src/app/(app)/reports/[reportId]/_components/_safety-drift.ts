@@ -1,5 +1,6 @@
 import { formatCompactDateTime } from "./_helpers";
 import type { DriftItem } from "./_types";
+import { artifactSafetyEvidenceReadFailed } from "@/lib/reports/report-registry-freshness";
 
 type SafetyIngestReadResult = {
   data: Array<{ id?: string; created_at?: string | null }> | null;
@@ -64,4 +65,17 @@ export function buildProjectSafetyDriftItem(input: {
       ? `A newer project crash acquisition is not in this packet. Packet generated ${formatCompactDateTime(input.packetGeneratedAt)}; latest crash evidence attached ${formatCompactDateTime(latest.created_at)}.`
       : "The latest project crash acquisition predates this packet.",
   };
+}
+
+export function buildArtifactSafetyReadDriftItem(
+  artifactMetadata: Record<string, unknown> | null | undefined
+): DriftItem | null {
+  return artifactSafetyEvidenceReadFailed(artifactMetadata)
+    ? {
+        key: "safety-evidence-read",
+        label: "Crash evidence read",
+        status: "updated",
+        detail: "This packet recorded that its project-linked crash evidence could not be read. It is not current or ready until regeneration completes with a readable safety section.",
+      }
+    : null;
 }

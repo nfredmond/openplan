@@ -66,6 +66,7 @@ import {
   describeReportSourceReviewPosture,
 } from "@/lib/reports/source-review-posture";
 import {
+  artifactSafetyEvidenceReadFailed,
   buildReportRegistryDriftSummary,
   resolveTrackedReportSourceUpdatedAt,
 } from "@/lib/reports/report-registry-freshness";
@@ -318,12 +319,18 @@ export default async function ReportsPage({
           safetyUpdatedAt,
         }),
       });
+      const packetSafetyEvidenceReadFailed = artifactSafetyEvidenceReadFailed(
+        latestArtifact?.metadata_json
+      );
       const packetFreshness =
-        safetyIngestReadFailed && report.project_id && computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
+        (packetSafetyEvidenceReadFailed || (safetyIngestReadFailed && report.project_id)) &&
+        computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
           ? {
               label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
               tone: "warning" as const,
-              detail: "Project-linked crash evidence could not be checked, so this packet is not verified against every live source.",
+              detail: packetSafetyEvidenceReadFailed
+                ? "This packet recorded a failed project crash-evidence read and is not ready until it regenerates successfully."
+                : "Project-linked crash evidence could not be checked, so this packet is not verified against every live source.",
             }
           : computedPacketFreshness;
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
@@ -333,6 +340,7 @@ export default async function ReportsPage({
         reportUpdatedAt: report.updated_at,
         rtpCycleUpdatedAt: rtpCycle?.updated_at ?? null,
         safetyUpdatedAt,
+        safetyEvidenceReadFailed: packetSafetyEvidenceReadFailed,
       });
       const evidenceChainDigest = describeEvidenceChainSummary(evidenceChainSummary);
       const sourceReviewPosture = describeReportSourceReviewPosture({

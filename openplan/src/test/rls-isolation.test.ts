@@ -1733,6 +1733,7 @@ liveDescribe("workspace RLS live isolation", () => {
   let userA: SupabaseClient;
   let userB: SupabaseClient;
   let context: SeedContext;
+  let safetyEquityTractGeoid = "";
 
   const password = "OpenPlanRls!2026";
 
@@ -1831,6 +1832,9 @@ liveDescribe("workspace RLS live isolation", () => {
     await userB?.auth.signOut();
 
     await service.from("workspaces").delete().in("id", [context.workspaceAId, context.workspaceBId]);
+    if (safetyEquityTractGeoid) {
+      await service.from("census_tracts").delete().eq("geoid", safetyEquityTractGeoid);
+    }
     // Delete each user's trigger-provisioned personal workspaces by
     // MEMBERSHIP, then the user, CHECKED — a discarded deleteUser result
     // strands a live auth account carrying this suite's fixed password in
@@ -1947,6 +1951,42 @@ liveDescribe("workspace RLS live isolation", () => {
     const anonymous = await anon.rpc("safety_ksi_concentrations", args);
     expect(anonymous.error?.message ?? "").toMatch(/permission denied|function/i);
     expect(anonymous.data).toBeNull();
+
+    safetyEquityTractGeoid = `99${context.suffix}`;
+    executeSql(
+      resolveLocalDbContainer(),
+      `INSERT INTO public.census_tracts (` +
+        `geoid, state_fips, county_fips, name, geometry, pop_total, pop_white, households, ` +
+        `households_zero_vehicle, pop_below_poverty` +
+      `) VALUES (` +
+        `'${safetyEquityTractGeoid}', '99', '999', 'RLS safety equity tract', ` +
+        `ST_Multi(ST_GeomFromText('POLYGON((-121.01 39.19,-120.99 39.19,-120.99 39.21,-121.01 39.21,-121.01 39.19))', 4326)), ` +
+        `1000, 600, 400, 40, 200` +
+      `);`
+    );
+    const equityArgs = {
+      p_workspace_id: context.workspaceBId,
+      p_min_lon: -121.3,
+      p_min_lat: 39.1,
+      p_max_lon: -120.0,
+      p_max_lat: 39.6,
+      p_project_id: null,
+      p_severities: ["fatal", "severe_injury"],
+      p_result_limit: 10,
+    };
+    const foreignEquity = await userA.rpc("safety_ksi_tract_burden", equityArgs);
+    expect(foreignEquity.error, "tenant A equity RPC error").toBeNull();
+    expect(foreignEquity.data, "tenant A equity rows").toEqual([]);
+
+    const ownEquity = await userB.rpc("safety_ksi_tract_burden", equityArgs);
+    expect(ownEquity.error, "tenant B equity RPC error").toBeNull();
+    expect(ownEquity.data).toEqual(expect.arrayContaining([
+      expect.objectContaining({ geoid: safetyEquityTractGeoid, ksi_crash_count: 2 }),
+    ]));
+
+    const anonymousEquity = await anon.rpc("safety_ksi_tract_burden", equityArgs);
+    expect(anonymousEquity.error?.message ?? "").toMatch(/permission denied|function/i);
+    expect(anonymousEquity.data).toBeNull();
   });
 
   it("rejects cross-workspace project inserts even when created_by is the caller", async () => {

@@ -4,6 +4,8 @@ These findings were confirmed in the fresh-account review but did not stop a pla
 
 Raw evidence stays local under `/home/nathaniel/.local/state/openplan/first-week-runs/2026-08-24T04-52-45-722Z/`. Screenshots contain tenant state and are not committed.
 
+The post-fix California setup check is under `/home/nathaniel/.local/state/openplan/first-week-runs/2026-08-24T06-31-21-739Z/` for the same reason.
+
 ## Daily reminders have no in-product enable control
 
 - Reproduce: create an account, finish the home-geography setup, open **My Work**, and read the deadline-reminder status.
@@ -19,6 +21,14 @@ Raw evidence stays local under `/home/nathaniel/.local/state/openplan/first-week
 - Evidence: `01-neutral-geography-setup/agent/evidence/f1.png` and `f1.snapshot.txt`.
 - Milestone decision: confusing, not blocking. The shared workflow remains usable and the product does not claim that Oregon law is configured.
 - Follow-up: replace “your jurisdiction” language with a plain statement that no state or local legal bundle is configured.
+
+## California setup leaves the federal interim stage-gate active
+
+- Reproduce: create a California workspace, save Fresno County as the home geography, and review the stage-gate setup card.
+- Observed: the workspace still shows the federal interim floor as active even though a California template is available.
+- Evidence: `01-first-day-setup/agent/evidence/f1.png` and `f1.snapshot.txt` in the post-fix run.
+- Milestone decision: confusing, not blocking. Projects and packets remain usable, and the active template is disclosed rather than silently described as California law.
+- Follow-up: bind the matching configured bundle during geography setup, while preserving the neutral federal floor when no jurisdiction bundle exists.
 
 ## Oregon land-use plans default to the California legal bundle
 

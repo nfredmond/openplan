@@ -1,4 +1,51 @@
-import type { SafetyKsiBounds, SafetyKsiConcentration } from "./client-types";
+import type {
+  SafetyKsiBounds,
+  SafetyKsiConcentration,
+  SafetyKsiEquityTract,
+} from "./client-types";
+
+function nullableFinite(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+/** Read the untyped tract-burden RPC without turning missing demographics into zero. */
+export function readSafetyKsiEquityTracts(rows: unknown): SafetyKsiEquityTract[] {
+  if (!Array.isArray(rows)) return [];
+  return rows.flatMap((candidate) => {
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return [];
+    const row = candidate as Record<string, unknown>;
+    const rank = Number(row.rank);
+    const geoid = typeof row.geoid === "string" ? row.geoid : null;
+    const ksiCrashCount = Number(row.ksi_crash_count);
+    const fatalCrashCount = Number(row.fatal_crash_count);
+    const seriousInjuryCrashCount = Number(row.serious_injury_crash_count);
+    if (
+      !Number.isInteger(rank) || rank < 1 || !geoid ||
+      ![ksiCrashCount, fatalCrashCount, seriousInjuryCrashCount].every(
+        (value) => Number.isInteger(value) && value >= 0
+      ) ||
+      fatalCrashCount + seriousInjuryCrashCount !== ksiCrashCount
+    ) return [];
+    return [{
+      rank,
+      geoid,
+      tractName: typeof row.tract_name === "string" ? row.tract_name : null,
+      ksiCrashCount,
+      fatalCrashCount,
+      seriousInjuryCrashCount,
+      population: nullableFinite(row.population),
+      ksiPer100k: nullableFinite(row.ksi_per_100k),
+      pctPoverty: nullableFinite(row.pct_poverty),
+      pctNonwhite: nullableFinite(row.pct_nonwhite),
+      pctZeroVehicle: nullableFinite(row.pct_zero_vehicle),
+      areaMedianPctPoverty: nullableFinite(row.area_median_pct_poverty),
+      areaMedianPctNonwhite: nullableFinite(row.area_median_pct_nonwhite),
+      areaMedianPctZeroVehicle: nullableFinite(row.area_median_pct_zero_vehicle),
+    }];
+  });
+}
 
 /** Build the union of valid acquisition extents without inventing a study area. */
 export function readSafetyKsiBounds(rows: unknown): SafetyKsiBounds | null {

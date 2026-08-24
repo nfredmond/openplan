@@ -171,6 +171,17 @@ function describeCasualty(value: number | null): string {
   return value === null ? "not reported" : value.toLocaleString();
 }
 
+function describeTractMetric(
+  label: string,
+  value: number | null,
+  areaMedian: number | null
+): string {
+  if (value === null) return `${label} not available`;
+  if (areaMedian === null) return `${label} ${value.toFixed(1)}%`;
+  const comparison = value > areaMedian ? "above" : value < areaMedian ? "below" : "at";
+  return `${label} ${value.toFixed(1)}% (${comparison} area median ${areaMedian.toFixed(1)}%)`;
+}
+
 /**
  * WHAT THE COLOURS ON THE MAP MEAN.
  *
@@ -1353,6 +1364,44 @@ export function SafetyWorkspace({
               <p className="text-muted-foreground">
                 No pair of stored fatal or serious-injury crash records fell within the 150-meter
                 screening radius. That is not a finding that the area is safe.
+              </p>
+            ) : null}
+            {Array.isArray(response?.ksiEquityTracts) && response.ksiEquityTracts.length > 0 ? (
+              <section className="rounded-lg border border-border/70 bg-muted/20 p-3">
+                <h2 className="text-sm font-semibold">Community burden screen</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The same mapped KSI records are grouped by Census tract and ranked by observed
+                  count. Demographics come from {response.ksiEquityDemographicSource.label} {response.ksiEquityDemographicSource.vintage} and are compared with medians for tracts intersecting the selected area.
+                  Counts per 100,000 residents are not adjusted for roadway exposure, travel, or
+                  time. This is screening context, not a causal, protected-class, or legal disparity finding.
+                </p>
+                <ol className="mt-2 space-y-2">
+                  {response.ksiEquityTracts.slice(0, 5).map((tract) => (
+                    <li key={tract.geoid} className="rounded-md border border-border/60 bg-background/60 p-2 text-xs">
+                      <p className="font-semibold">
+                        {tract.rank}. {tract.tractName ?? `Census tract ${tract.geoid}`} · {tract.ksiCrashCount.toLocaleString()} KSI crashes
+                      </p>
+                      <p className="text-muted-foreground">
+                        {tract.ksiPer100k === null
+                          ? "Resident-normalized rate not available"
+                          : `${tract.ksiPer100k.toFixed(1)} KSI crashes per 100,000 tract residents`} · {tract.fatalCrashCount.toLocaleString()} fatal · {tract.seriousInjuryCrashCount.toLocaleString()} serious injury
+                      </p>
+                      <p className="text-muted-foreground">
+                        {describeTractMetric("Poverty", tract.pctPoverty, tract.areaMedianPctPoverty)} · {describeTractMetric("Nonwhite population", tract.pctNonwhite, tract.areaMedianPctNonwhite)} · {describeTractMetric("Zero-vehicle households", tract.pctZeroVehicle, tract.areaMedianPctZeroVehicle)}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : response?.ksiEquityTracts === null ? (
+              <p className="text-muted-foreground">
+                OpenPlan could not compare mapped KSI records with community conditions. The crash
+                counts still loaded; this demographic comparison did not.
+              </p>
+            ) : response && Array.isArray(response.ksiEquityTracts) && response.ksiEquityTracts.length === 0 ? (
+              <p className="text-muted-foreground">
+                No loaded Census tract demographics overlap the mapped KSI records in this area, so
+                community burden is not determined here. The crash workflow remains available.
               </p>
             ) : null}
             {/* Counted and failed, which is not the same as a source that cannot

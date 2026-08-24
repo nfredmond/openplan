@@ -233,6 +233,23 @@ describe("SafetyWorkspace coverage disclosure", () => {
               radiusMeters: 150,
             },
           ],
+          ksiEquityTracts: [{
+            rank: 1,
+            geoid: "06019000100",
+            tractName: "Census Tract 1",
+            ksiCrashCount: 7,
+            fatalCrashCount: 2,
+            seriousInjuryCrashCount: 5,
+            population: 3500,
+            ksiPer100k: 200,
+            pctPoverty: 24,
+            pctNonwhite: 61,
+            pctZeroVehicle: 9,
+            areaMedianPctPoverty: 16,
+            areaMedianPctNonwhite: 48,
+            areaMedianPctZeroVehicle: 7,
+          }],
+          ksiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: "2023" },
         }),
       })) as unknown as typeof fetch,
     );
@@ -241,8 +258,11 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea();
 
     expect(await screen.findByRole("heading", { name: /Highest observed KSI concentrations/i })).toBeInTheDocument();
-    expect(screen.getByText(/7 KSI crashes/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/7 KSI crashes/i)).toHaveLength(2);
     expect(screen.getByRole("button", { name: /Show concentration 1 on map/i })).toBeInTheDocument();
+    expect(screen.getByText("Community burden screen")).toBeInTheDocument();
+    expect(screen.getByText(/Poverty 24.0% \(above area median 16.0%\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/not a causal, protected-class, or legal disparity finding/i)).toBeInTheDocument();
   });
 
   it("states that an empty map is not evidence that no crashes occurred", async () => {
