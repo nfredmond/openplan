@@ -66,6 +66,7 @@
  *   OPENPLAN_FIRST_WEEK_PASSWORD='…' \
  *   npm run first-week-discovery                        # every job
  *   ... npm run first-week-discovery -- --job 03-public-engagement
+ *   ... npm run first-week-discovery -- --resume first-week-runs/<stamp>
  *   ... npm run first-week-discovery -- --list
  *   npm run first-week-discovery -- --verify-only first-week-runs/<stamp>
  */
@@ -81,16 +82,26 @@ const RUNS_DIR = path.join(__dirname, 'first-week-runs');
 const PLAYWRIGHT_MCP = '@playwright/mcp@0.0.79';
 const DEFAULT_MODEL = 'sonnet';
 const DEFAULT_JOB_TIMEOUT_MS = 30 * 60 * 1000;
+const SERVER_PROBE_TIMEOUT_MS = 10 * 1000;
+const BLOCKED_STATUSES = new Set([
+  'blocked_quota',
+  'blocked_server',
+  'blocked_timeout',
+  'blocked_turn_limit',
+  'blocked_unfinished_report',
+]);
 
 function parseArgs(argv) {
-  const args = { jobs: [], list: false, verifyOnly: null, keepGoing: true };
+  const args = { jobs: [], list: false, verifyOnly: null, resume: null };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--list') args.list = true;
     else if (arg === '--job') args.jobs.push(argv[++i]);
     else if (arg === '--jobs') args.jobs.push(...String(argv[++i] || '').split(','));
     else if (arg === '--verify-only') args.verifyOnly = argv[++i];
+    else if (arg === '--resume') args.resume = argv[++i];
     else if (arg.startsWith('--job=')) args.jobs.push(arg.slice('--job='.length));
+    else if (arg.startsWith('--resume=')) args.resume = arg.slice('--resume='.length);
   }
   args.jobs = args.jobs.map((j) => String(j || '').trim()).filter(Boolean);
   return args;
@@ -121,7 +132,7 @@ function loadJobs() {
         file: name,
         id: meta.id,
         title: meta.title || meta.id,
-        account: meta.account === 'new' ? 'new' : 'existing',
+        account: ['new', 'fresh-run', 'run'].includes(meta.account) ? meta.account : 'existing',
         files: meta.files || 'none',
         maxTurns: Number(meta.maxTurns) > 0 ? Number(meta.maxTurns) : 90,
         body: match[2].trim(),
@@ -211,7 +222,7 @@ function buildPrompt(job, { baseUrl, email, password, agentDir, contract }) {
     '========== HOW TO REPORT ==========',
     contract,
     '',
-    'Start now. When you are finished, the last thing you do is write findings.json.',
+    'Start now. Create findings.json early, keep it current, and leave the final version on disk when you stop.',
   ].join('\n');
 }
 
@@ -313,6 +324,93 @@ function readJsonIfPresent(filePath) {
   }
 }
 
+function parseAgentSession(stdout) {
+  if (!stdout || typeof stdout !== 'string') return null;
+  try {
+    return JSON.parse(stdout);
+  } catch {
+    return null;
+  }
+}
+
+function agentResultText(session, processResult) {
+  return [session?.result, processResult?.stdout, processResult?.stderr]
+    .filter((value) => typeof value === 'string')
+    .join('\n');
+}
+
+/**
+ * Classify how a job ended separately from what the planner found. Claude can
+ * return exit 0 and subtype "success" for a subscription limit, so process
+ * status alone is not evidence that the job ran.
+ */
+function classifyJobExecution({ processResult = {}, session = null, reportPresent = false, serverAvailableAfter = true }) {
+  const resultText = agentResultText(session, processResult);
+  if (/session limit|usage limit|rate limit|quota/i.test(resultText)) {
+    return { status: 'blocked_quota', reason: 'The agent service quota was exhausted before the journey finished.' };
+  }
+  if (
+    !serverAvailableAfter ||
+    /ERR_CONNECTION_REFUSED|ECONNREFUSED|server (?:stopped|disconnected|unavailable)|site can.t be reached/i.test(resultText)
+  ) {
+    return { status: 'blocked_server', reason: 'The target OpenPlan server stopped answering during the journey.' };
+  }
+  if (processResult.timedOut || processResult.signal === 'SIGKILL') {
+    return { status: 'blocked_timeout', reason: 'The journey exceeded its wall-clock timeout.' };
+  }
+  if (session?.subtype === 'error_max_turns') {
+    return { status: 'blocked_turn_limit', reason: 'The agent used every allowed step before the journey finished.' };
+  }
+  if (!reportPresent && processResult.code === 0 && !session?.is_error) {
+    return { status: 'blocked_unfinished_report', reason: 'The agent stopped without leaving a findings report.' };
+  }
+  if (reportPresent && processResult.code === 0 && !session?.is_error) {
+    return { status: 'completed', reason: 'The agent completed and left a findings report.' };
+  }
+  return {
+    status: 'failed',
+    reason: `The agent process failed${processResult.code === undefined ? '' : ` with exit ${processResult.code}`}.`,
+  };
+}
+
+function readJobExecution(jobDir) {
+  const recorded = readJsonIfPresent(path.join(jobDir, 'execution.json'));
+  if (recorded?.status) return recorded;
+
+  const stdoutPath = path.join(jobDir, 'agent-stdout.json');
+  const stdout = fs.existsSync(stdoutPath) ? fs.readFileSync(stdoutPath, 'utf8') : '';
+  const session = parseAgentSession(stdout);
+  const reportPresent = readFindings(path.join(jobDir, 'agent')) !== null;
+  return classifyJobExecution({ processResult: { code: 0, stdout }, session, reportPresent });
+}
+
+function shouldResumeJob(jobDir) {
+  if (!fs.existsSync(jobDir)) return true;
+  return readJobExecution(jobDir).status !== 'completed';
+}
+
+/** Preserve every prior artifact. Resuming never erases the evidence for why a run stopped. */
+function archiveAttempt(jobDir, stamp) {
+  if (!fs.existsSync(jobDir)) return null;
+  const names = fs.readdirSync(jobDir).filter((name) => name !== 'attempts');
+  if (!names.length) return null;
+  const attemptDir = path.join(jobDir, 'attempts', stamp);
+  fs.mkdirSync(attemptDir, { recursive: true });
+  for (const name of names) fs.renameSync(path.join(jobDir, name), path.join(attemptDir, name));
+  return attemptDir;
+}
+
+async function serverIsAvailable(baseUrl) {
+  try {
+    const response = await fetch(`${baseUrl.replace(/\/$/, '')}/api/health`, {
+      signal: AbortSignal.timeout(SERVER_PROBE_TIMEOUT_MS),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Agents like to wrap JSON in prose. This pulls the object back out rather than
  * discarding an otherwise complete report over a code fence.
@@ -348,6 +446,7 @@ function renderJobMarkdown(job, verdict) {
   lines.push(`- Confirmed findings: **${verdict.confirmed.length}**`);
   lines.push(`- Discarded findings: **${verdict.discarded.length}**`);
   lines.push(`- Snapshots the browser recorded: ${verdict.browserDumps}`);
+  if (verdict.execution) lines.push(`- Run status: **${verdict.execution.status}**. ${verdict.execution.reason}`);
   if (verdict.ending) lines.push(`- The session ${verdict.ending}.`);
   if (verdict.whatIDid) lines.push('', `**What it did.** ${verdict.whatIDid}`);
   if (verdict.whatWouldHaveHelped) lines.push('', `**What would have helped.** ${verdict.whatWouldHaveHelped}`);
@@ -380,6 +479,9 @@ function verifyRun(runRoot, baseUrl) {
   const sections = [];
   let confirmed = 0;
   let discarded = 0;
+  let completed = 0;
+  let blocked = 0;
+  let failed = 0;
 
   for (const jobDir of jobDirs) {
     const dir = path.join(runRoot, jobDir);
@@ -388,14 +490,20 @@ function verifyRun(runRoot, baseUrl) {
     if (!fs.existsSync(agentDir)) continue;
 
     const meta = readJsonIfPresent(path.join(dir, 'job.json')) || { id: jobDir, title: jobDir };
-    const session = readJsonIfPresent(path.join(dir, 'agent-stdout.json')) || {};
+    const stdoutPath = path.join(dir, 'agent-stdout.json');
+    const session = parseAgentSession(fs.existsSync(stdoutPath) ? fs.readFileSync(stdoutPath, 'utf8') : '') || {};
+    const execution = readJobExecution(dir);
+    if (execution.status === 'completed') completed += 1;
+    else if (BLOCKED_STATUSES.has(execution.status)) blocked += 1;
+    else failed += 1;
     // How the session ENDED is part of the result. A job that hit its turn
     // limit and a job that finished having found nothing look identical in a
     // finding count, and they mean opposite things.
-    const ending =
-      session.subtype && session.subtype !== 'success'
+    const ending = !session.subtype
+      ? 'did not start an agent session'
+      : session.subtype !== 'success'
         ? `ended \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`
-        : `completed in ${session.num_turns ?? '?'} steps`;
+        : `returned \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`;
     const report = readFindings(agentDir);
 
     if (!report) {
@@ -403,10 +511,9 @@ function verifyRun(runRoot, baseUrl) {
         [
           `## ${meta.id} — ${meta.title}`,
           '',
-          `- **No report.** The agent ${ending} without writing findings.json, so this job produced nothing.`,
-          session.subtype === 'error_max_turns'
-            ? '- It ran out of steps. Raise `maxTurns` in the job file, or narrow the job.'
-            : `- See \`${jobDir}/agent-stdout.json\`.`,
+          `- Run status: **${execution.status}**. ${execution.reason}`,
+          `- The agent ${ending}. This journey is unfinished and may be resumed; it is not a no-findings result.`,
+          `- See \`${jobDir}/execution.json\` and \`${jobDir}/agent-stdout.json\`.`,
           '',
         ].join('\n'),
       );
@@ -417,6 +524,7 @@ function verifyRun(runRoot, baseUrl) {
     verdict.whatIDid = report.whatIDid;
     verdict.whatWouldHaveHelped = report.whatWouldHaveHelped;
     verdict.ending = ending;
+    verdict.execution = execution;
     confirmed += verdict.confirmed.length;
     discarded += verdict.discarded.length;
 
@@ -431,6 +539,9 @@ function verifyRun(runRoot, baseUrl) {
     `- Run directory: ${runRoot}`,
     `- Confirmed findings: **${confirmed}**`,
     `- Discarded findings: **${discarded}**`,
+    `- Completed jobs: **${completed}**`,
+    `- Blocked jobs: **${blocked}**`,
+    `- Failed jobs: **${failed}**`,
     '',
     'A confirmed finding means the screenshot and page snapshot support what the agent said.',
     'It does not mean the behaviour is wrong — that judgement is yours. A discarded finding',
@@ -440,7 +551,7 @@ function verifyRun(runRoot, baseUrl) {
   ].join('\n');
 
   fs.writeFileSync(path.join(runRoot, 'summary.md'), `${summary}\n`);
-  return { confirmed, discarded, summaryPath: path.join(runRoot, 'summary.md') };
+  return { confirmed, discarded, completed, blocked, failed, summaryPath: path.join(runRoot, 'summary.md') };
 }
 
 async function main() {
@@ -463,14 +574,20 @@ async function main() {
   // is deliberately no flag that lets it do that anywhere but a local instance.
   assertLocalTargetUrl(baseUrl, 'First-week discovery base URL');
 
+  if (args.verifyOnly && args.resume) {
+    console.error('--verify-only and --resume cannot be used together.');
+    process.exit(2);
+  }
+
   if (args.verifyOnly) {
     const runRoot = path.resolve(args.verifyOnly);
     const result = verifyRun(runRoot, baseUrl);
     console.log(`\n${result.confirmed} confirmed, ${result.discarded} discarded. ${result.summaryPath}`);
+    if (result.blocked || result.failed) process.exitCode = 1;
     return;
   }
 
-  const selected = args.jobs.length ? jobs.filter((job) => args.jobs.includes(job.id)) : jobs;
+  let selected = args.jobs.length ? jobs.filter((job) => args.jobs.includes(job.id)) : jobs;
   if (!selected.length) {
     console.error(`No job matched ${args.jobs.join(', ')}. Run with --list.`);
     process.exit(2);
@@ -488,8 +605,47 @@ async function main() {
   const model = (process.env.OPENPLAN_FIRST_WEEK_MODEL || DEFAULT_MODEL).trim();
   const timeoutMs = Number(process.env.OPENPLAN_FIRST_WEEK_TIMEOUT_MS) || DEFAULT_JOB_TIMEOUT_MS;
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const runRoot = path.join(RUNS_DIR, stamp);
+  const runRoot = args.resume ? path.resolve(args.resume) : path.join(RUNS_DIR, stamp);
   fs.mkdirSync(runRoot, { recursive: true });
+
+  const manifestPath = path.join(runRoot, 'run.json');
+  const existingManifest = readJsonIfPresent(manifestPath);
+  if (args.resume && !existingManifest) {
+    console.error(`${runRoot} has no run.json and cannot be resumed safely.`);
+    process.exit(2);
+  }
+  if (existingManifest && existingManifest.baseUrl !== baseUrl) {
+    console.error(`This run targeted ${existingManifest.baseUrl}; refusing to resume it against ${baseUrl}.`);
+    process.exit(2);
+  }
+  if (args.resume && !args.jobs.length) {
+    selected = jobs.filter((job) => existingManifest.jobs.includes(job.id));
+  }
+  const generatedFreshAccount = {
+    email: `first-week-${stamp.slice(0, 19).toLowerCase()}@openplan.test`,
+    password: 'FirstWeek!2026',
+  };
+  const manifest = existingManifest || {
+    createdAt: new Date().toISOString(),
+    baseUrl,
+    model,
+    jobs: selected.map((job) => job.id),
+    freshAccount: generatedFreshAccount,
+  };
+  const runHasFreshAccountCreator = jobs.some(
+    (job) => job.account === 'fresh-run' && Array.isArray(manifest.jobs) && manifest.jobs.includes(job.id),
+  );
+  if (
+    selected.some((job) => job.account === 'run') &&
+    !runHasFreshAccountCreator &&
+    (!existingEmail || !existingPassword)
+  ) {
+    console.error(
+      'A run-account job selected by itself needs OPENPLAN_FIRST_WEEK_EMAIL and OPENPLAN_FIRST_WEEK_PASSWORD, or a run manifest that includes the fresh-account setup job.',
+    );
+    process.exit(2);
+  }
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
   const contract = fs.readFileSync(path.join(JOBS_DIR, '_reporting-contract.md'), 'utf8');
 
@@ -499,15 +655,28 @@ async function main() {
 
   for (const job of selected) {
     const dir = path.join(runRoot, job.id);
+    if (args.resume && !shouldResumeJob(dir)) {
+      process.stdout.write(`✓ ${job.id} — already completed; keeping its evidence\n`);
+      continue;
+    }
+    if (args.resume) archiveAttempt(dir, stamp);
     const agentDir = path.join(dir, 'agent');
     const browserDir = path.join(dir, 'browser');
     fs.mkdirSync(path.join(agentDir, 'evidence'), { recursive: true });
     fs.mkdirSync(browserDir, { recursive: true });
     if (job.files === 'handover') writeHandoverFiles(path.join(agentDir, 'handover'));
 
-    const email =
-      job.account === 'new' ? `first-week-${stamp.slice(0, 19).toLowerCase()}@openplan.test` : existingEmail;
-    const password = job.account === 'new' ? 'FirstWeek!2026' : existingPassword;
+    const useRunAccount = job.account === 'fresh-run' || (job.account === 'run' && runHasFreshAccountCreator);
+    const email = useRunAccount
+      ? manifest.freshAccount.email
+      : job.account === 'new'
+        ? `first-week-${stamp.slice(0, 19).toLowerCase()}-${job.id}@openplan.test`
+        : existingEmail;
+    const password = useRunAccount
+      ? manifest.freshAccount.password
+      : job.account === 'new'
+        ? 'FirstWeek!2026'
+        : existingPassword;
 
     fs.writeFileSync(
       path.join(dir, 'job.json'),
@@ -518,20 +687,61 @@ async function main() {
     fs.writeFileSync(path.join(dir, 'prompt.txt'), prompt);
 
     process.stdout.write(`▶ ${job.id} — ${job.title}\n`);
+    if (!(await serverIsAvailable(baseUrl))) {
+      const execution = {
+        status: 'blocked_server',
+        reason: 'The target OpenPlan server did not answer the preflight health check.',
+        startedAt: new Date().toISOString(),
+        endedAt: new Date().toISOString(),
+      };
+      fs.writeFileSync(path.join(dir, 'execution.json'), `${JSON.stringify(execution, null, 2)}\n`);
+      process.stdout.write('  BLOCKED: target server is unavailable; safe to resume later\n');
+      continue;
+    }
+
+    const startedAt = new Date().toISOString();
     const result = await runAgent({ job, agentDir, browserDir, prompt, model, timeoutMs });
     fs.writeFileSync(path.join(dir, 'agent-stdout.json'), result.stdout);
     if (result.stderr) fs.writeFileSync(path.join(dir, 'agent-stderr.log'), result.stderr);
+    const session = parseAgentSession(result.stdout);
+    const execution = {
+      ...classifyJobExecution({
+        processResult: result,
+        session,
+        reportPresent: readFindings(agentDir) !== null,
+        serverAvailableAfter: await serverIsAvailable(baseUrl),
+      }),
+      startedAt,
+      endedAt: new Date().toISOString(),
+      exitCode: result.code,
+      signal: result.signal,
+      durationMs: result.durationMs,
+      agentSubtype: session?.subtype ?? null,
+      agentTurns: session?.num_turns ?? null,
+    };
+    fs.writeFileSync(path.join(dir, 'execution.json'), `${JSON.stringify(execution, null, 2)}\n`);
     process.stdout.write(
-      `  finished in ${Math.round(result.durationMs / 1000)}s (exit ${result.code}${result.signal ? `, ${result.signal}` : ''})\n`,
+      `  ${execution.status} in ${Math.round(result.durationMs / 1000)}s (exit ${result.code}${result.signal ? `, ${result.signal}` : ''})\n`,
     );
   }
 
   const result = verifyRun(runRoot, baseUrl);
   console.log(`\n${result.confirmed} confirmed, ${result.discarded} discarded.`);
   console.log(`Read: ${result.summaryPath}`);
+  if (result.blocked || result.failed) process.exitCode = 1;
 }
 
-module.exports = { loadJobs, parseArgs, verifyRun, writeHandoverFiles };
+module.exports = {
+  archiveAttempt,
+  classifyJobExecution,
+  loadJobs,
+  parseAgentSession,
+  parseArgs,
+  readJobExecution,
+  shouldResumeJob,
+  verifyRun,
+  writeHandoverFiles,
+};
 
 if (require.main === module) {
   main().catch((error) => {

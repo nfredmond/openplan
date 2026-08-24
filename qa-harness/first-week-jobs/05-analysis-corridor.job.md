@@ -1,7 +1,7 @@
 ---
 id: 05-analysis-corridor
 title: Run the analysis, then explain the answer to somebody who is not a modeller
-account: existing
+account: run
 files: none
 maxTurns: 200
 ---

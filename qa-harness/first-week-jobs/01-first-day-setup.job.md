@@ -1,7 +1,7 @@
 ---
 id: 01-first-day-setup
 title: Your first hour — get set up and work out what this thing is
-account: new
+account: fresh-run
 files: none
 maxTurns: 150
 ---
@@ -22,6 +22,8 @@ You have been given a web address and told to make yourself an account:
 2. Your agency is set up in it well enough that it is yours — its name is right,
    and anything the software insists on knowing before it will be useful has
    been answered.
+   Choose a real home geography in California. Check whether the legal or
+   compliance configuration shown afterward actually matches that geography.
 3. You can say, in your own words and without guessing, what the software is for
    and what the five or six main things it does are.
 4. You know where you would go tomorrow morning to start actual work, and why.

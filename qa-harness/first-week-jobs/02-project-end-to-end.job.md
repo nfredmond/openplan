@@ -1,7 +1,7 @@
 ---
 id: 02-project-end-to-end
 title: One project, from an empty screen to something you could show a board
-account: existing
+account: run
 files: handover
 maxTurns: 200
 ---

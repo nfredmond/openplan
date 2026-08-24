@@ -1,7 +1,7 @@
 ---
 id: 04-safety-case
 title: Work out where people are getting hurt, and make the case for fixing it
-account: existing
+account: run
 files: none
 maxTurns: 170
 ---

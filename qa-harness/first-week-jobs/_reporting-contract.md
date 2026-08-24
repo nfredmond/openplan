@@ -18,6 +18,10 @@ this exercise produces a false report.**
 Keep going after a dead end. One blocked path is not the end of the job; find
 another way to the same outcome, and if there is no other way, say so.
 
+Start from the address named in the job, then use only links and controls you
+can see. Do not type or construct a route to skip navigation. If the software
+does not expose a way to reach the next step, that is the finding.
+
 **Stay on the address you were given.** If it stops answering, wait, retry, and
 then report that as the finding and stop. Do not go looking for the software on
 another address or another port. There are other, unrelated programs running on
