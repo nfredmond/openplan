@@ -24,10 +24,9 @@
  *      reconciliation every reader uses — so a caller cannot be told "bound to X"
  *      by a path that never asked the registry.
  *
- * NOT AN ASSISTANT ACTION (yet). This is a deliberate omission, not an oversight:
- * registering it costs the eight files CLAUDE.md enumerates, all of them shared.
- * Until that lands, no `propose_` tool reaches this route and only a signed-in
- * owner/admin can call it.
+ * NOT AN ASSISTANT ACTION. Choosing the legal delivery process for an agency is
+ * consequential configuration. The route stays human-only and a refusal test
+ * prevents a future `propose_` action from reaching it silently.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -199,7 +198,12 @@ export async function PATCH(request: NextRequest) {
 
     const { data, error } = await createServiceRoleClient()
       .from("workspaces")
-      .update({ stage_gate_template_id: target.descriptor.templateId })
+      .update({
+        stage_gate_template_id: target.descriptor.templateId,
+        stage_gate_template_version: target.descriptor.templateVersion,
+        stage_gate_template_selection: "explicitly_requested",
+        stage_gate_bound_at: new Date().toISOString(),
+      })
       .eq("id", parsed.data.workspaceId)
       .select(BINDING_COLUMNS)
       .maybeSingle();

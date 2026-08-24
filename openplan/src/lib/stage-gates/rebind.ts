@@ -67,7 +67,7 @@ import {
  *   whose pack is sitting right there. The decisions route already selects it for
  *   exactly this reason.
  */
-export const STAGE_GATE_BINDING_WORKSPACE_COLUMNS = `stage_gate_template_id, home_subdivision_code, ${HOME_GEOGRAPHY_SCOPE_COLUMNS}`;
+export const STAGE_GATE_BINDING_WORKSPACE_COLUMNS = `stage_gate_template_id, stage_gate_template_version, stage_gate_template_selection, home_subdivision_code, ${HOME_GEOGRAPHY_SCOPE_COLUMNS}`;
 
 export type StageGateGateRef = {
   gateId: string;

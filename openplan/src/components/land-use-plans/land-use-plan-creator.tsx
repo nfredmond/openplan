@@ -6,11 +6,47 @@ import { useRouter } from "next/navigation";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS } from "@/lib/land-use-plans/registry";
+import {
+  SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS,
+  type JurisdictionPlanRecommendation,
+} from "@/lib/land-use-plans/registry";
 
-export function LandUsePlanCreator() {
+type RecommendationKind =
+  | JurisdictionPlanRecommendation["kind"]
+  | "workspace_jurisdiction_unreadable";
+
+function recommendationDetail(kind: RecommendationKind, jurisdictionLabel: string): string {
+  if (kind === "jurisdiction_matched") {
+    return `${jurisdictionLabel} was recommended from this workspace's home geography.`;
+  }
+  if (kind === "workspace_jurisdiction_unreadable") {
+    return "OpenPlan could not read this workspace's home jurisdiction, so it selected the neutral workflow instead of guessing which law applies.";
+  }
+  if (kind === "ambiguous_configured_bundles") {
+    return "More than one configured legal bundle matched this workspace. OpenPlan selected the neutral workflow instead of choosing one arbitrarily.";
+  }
+  if (kind === "no_configured_bundle") {
+    return "No jurisdiction-specific legal bundle is configured for this workspace's home geography. The neutral workflow is selected and its checklist does not state applicable law.";
+  }
+  return "This workspace has no home geography yet. The neutral workflow is selected until a jurisdiction can be matched.";
+}
+
+export function LandUsePlanCreator({
+  recommendedDescriptorId,
+  recommendationKind,
+}: {
+  recommendedDescriptorId: string;
+  recommendationKind: RecommendationKind;
+}) {
   const router = useRouter();
-  const [descriptorId, setDescriptorId] = useState(SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS[0].id);
+  const recommendedDescriptor =
+    SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find(
+      (item) => item.id === recommendedDescriptorId
+    ) ?? SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find((item) => !item.configured);
+  if (!recommendedDescriptor) {
+    throw new Error("Land Use Plans has no neutral legal workflow registered");
+  }
+  const [descriptorId, setDescriptorId] = useState(recommendedDescriptor.id);
   const descriptor = useMemo(
     () => SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find((item) => item.id === descriptorId)!,
     [descriptorId]
@@ -55,7 +91,13 @@ export function LandUsePlanCreator() {
     <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
       <h2 className="text-lg font-semibold">Start a land use plan</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        California has a sourced checklist. Everywhere else gets the same versioned workflow with local legal requirements plainly marked unconfigured.
+        Configured legal bundles appear as sourced checklists. The neutral workflow keeps the same version history while marking local legal requirements unconfigured.
+      </p>
+      <p className="mt-3 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+        {recommendationDetail(recommendationKind, recommendedDescriptor.jurisdictionLabel)}
+        {descriptorId !== recommendedDescriptor.id
+          ? ` You selected ${descriptor.jurisdictionLabel} instead.`
+          : ""}
       </p>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <label className="space-y-1 text-sm font-medium">
@@ -97,4 +139,3 @@ export function LandUsePlanCreator() {
     </section>
   );
 }
-

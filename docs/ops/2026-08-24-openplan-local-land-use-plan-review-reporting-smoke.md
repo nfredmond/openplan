@@ -2,7 +2,7 @@
 
 - App: http://localhost:3200
 - Supabase: http://127.0.0.1:54321
-- Plan: Local review journey 09-20-48
+- Plan: Local review journey 19-58-58
 
 ## Result
 - PASS: Local guard passed for local land-use-plan review-reporting smoke: app=http://localhost:3200, supabase=http://127.0.0.1:54321.
@@ -11,26 +11,26 @@
 - PASS: Anonymous map returned only the planner-selected designation field; the private source attribute never appeared.
 
 ## Durable journey IDs
-- userId: 2b8a4691-b6c6-4c1b-abff-b5d2c377cb87
-- workspaceId: 04b0b7b6-752a-49de-8ed4-2212a6047d08
-- documentId: 74b77d6e-12d0-4fad-a652-918debe74b4e
-- layerId: 0890ac17-5d2b-4298-b99b-c1a1a709705a
-- layerVersionId: d56ab8fa-47a0-4119-96e2-cc9e2802c08f
-- planId: ada29bd9-897d-4b2c-a2b0-11eaaba424e2
-- version1Id: f14eb7ea-31d5-4a1f-830b-d73029854e66
-- designation1Id: e2420b8e-5a58-4d2b-a3b4-503429de8609
-- version1Hash: 53753686c92a905781f76427ad80b4037e194889996a845d50e278bd9da083ab
-- campaignId: 4d8f091d-a16d-49fa-a30b-49cd99df4c4b
-- release1Id: 8753181e-1ec9-4095-902a-fb3a0c0ddbdc
-- release1Token: 6fc753040dfb52ee2c070660bd02dbf4361751c465c6d130
-- version2Id: 205e2ecc-cf7e-4edc-9dd9-be6431adc670
-- version2Hash: 06895c11ba7ca2118cb38d0d9c1c5e2f2f9f0c26d647f6e91eb7b100dba1c6de
-- designation2Id: fe7a1280-836c-438e-a73f-e7da84965b08
-- release2Id: 002a7dd0-4c89-47c9-af1e-7b62eb119bed
-- release2Token: 8001213c2923d245a3cee58b5541226a0faff79613e964e5
-- decisionId: 5695581c-05f0-4ada-9584-3cbe7b47c81f
-- packetReportId: 44dcaf30-c177-45a3-970e-51bf1c1bc973
-- implementationReportId: ac3112c2-f85a-4bce-9fd2-eaf9cf05eb92
+- userId: e2cb35c9-b7c0-4cba-aa0c-f6ef666492ee
+- workspaceId: cd708e96-6dd9-481c-82d0-9e6503f8bdb1
+- documentId: bb1e29c8-f7a1-40f0-bedb-028fba6581e0
+- layerId: d0b729a8-8595-4488-a989-6fb7dcef1289
+- layerVersionId: 26ddb373-f301-4e40-896f-f34293784ed1
+- planId: 6cf39a1e-f652-4ac1-aa7a-af52a7fda2af
+- version1Id: 5690ddf9-0a2e-4933-9434-814015503055
+- designation1Id: 9758b678-b884-4cd3-9433-0c5294d60796
+- version1Hash: c750b6e344da793389d4de2fd5d4f1f3f5c9b9f71714d27b17bd1728616bb6e3
+- campaignId: 73073625-6bfc-4b6a-87b9-d21aed8a1511
+- release1Id: 5e586164-3ee8-4aca-95bb-42cb462d63b9
+- release1Token: 544a1bd7551104d2eeca0a3563643d1e92880969a57a87ea
+- version2Id: 8871302d-5c68-462d-8771-99294098c9f0
+- version2Hash: 62dcf8f51371d62296131401cd71ca63b1edfbfeba75b6cac3e778130d0ced3c
+- designation2Id: c0d5c541-a77b-41c5-95a6-33acf07aad53
+- release2Id: 599a900c-2cf3-44fb-abc5-d2ed1fd6afa4
+- release2Token: 15650a03ae50faf7991b146eb496b89fbe09d55e3e760823
+- decisionId: 6ed8a11c-aa38-49c7-acbc-ce5ba0fee547
+- packetReportId: d0329ded-08eb-4d95-8d2b-df20385cd000
+- implementationReportId: 807c7824-84dd-4413-b42f-193baad9da38
 
 ## Screenshots
 - 2026-08-24-land-use-review-02-my-work-dated-links.png

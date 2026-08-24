@@ -21,14 +21,14 @@
 - Post-mutation expectation: 3 missions, 2 ready packages.
 
 ## Key IDs
-- QA user email: openplan-local-aerial-evidence-smoke-2026-08-24T18-23-45-798Z@example.invalid
-- QA user id: 6e1fb08e-5a53-4154-bb91-6b489ea8a47e
-- Workspace id: 041de885-a131-4eec-b5fc-08b962122768
-- Project id: c4dcc497-2910-49b1-8b95-17b191738b54
-- Baseline mission ids: 07cc4d6d-830e-4f01-b510-9b0768132865, ae3afa25-064e-4aec-902c-acfff712fcdf
-- Baseline package ids: 9480c39a-b6e1-42b8-a2bb-2d637c04c843
-- Proof mission id: 8519a113-c3a2-4ff5-aab3-1ce41fbc637e
-- Proof evidence package id: f2c7483d-7afc-43b6-9f4a-6099b67cc24e
+- QA user email: openplan-local-aerial-evidence-smoke-2026-08-24T20-09-46-445Z@example.invalid
+- QA user id: bfc17573-d727-4551-973f-f01a9df46946
+- Workspace id: 0de25c3d-4871-4a58-aa1b-9e04a13eed7c
+- Project id: e392c70d-4d95-4a51-af8b-8ed520dcd93f
+- Baseline mission ids: c7101d56-1441-4a66-b195-f7b6220cee7c, 155e6b21-6a35-4483-98ee-dd2d30c7110c
+- Baseline package ids: 188812c9-c695-4f22-933c-4d8b997d907d
+- Proof mission id: 97f5df70-84e8-4a8e-8d96-8ece1bc0ff63
+- Proof evidence package id: 878f7c60-be73-4402-b825-e487a992cbc7
 
 ## Boundary Notes
 - Mission creation used `POST /api/aerial/missions`; the AOI was attached with `PATCH /api/aerial/missions/[missionId]` because mission POST does not accept AOI geometry.
@@ -37,8 +37,8 @@
 - The project count is asserted before and after every aerial write. The previous version instead forbade the harness from calling project routes; asserting the count tests the product invariant rather than the harness discipline.
 
 ## Project Aerial Posture
-- Before `aerial_project_posture.updated_at`: 2026-08-24T18:23:52.066+00:00
-- After `aerial_project_posture.updated_at`: 2026-08-24T18:23:53.266+00:00
+- Before `aerial_project_posture.updated_at`: 2026-08-24T20:10:04.151+00:00
+- After `aerial_project_posture.updated_at`: 2026-08-24T20:10:05.844+00:00
 
 ```json
 {
@@ -70,8 +70,8 @@
 ```json
 {
   "featureCount": 1,
-  "missionId": "8519a113-c3a2-4ff5-aab3-1ce41fbc637e",
-  "projectId": "c4dcc497-2910-49b1-8b95-17b191738b54",
+  "missionId": "97f5df70-84e8-4a8e-8d96-8ece1bc0ff63",
+  "projectId": "e392c70d-4d95-4a51-af8b-8ed520dcd93f",
   "geometryType": "Polygon",
   "scope": "current authenticated workspace membership"
 }
@@ -79,7 +79,7 @@
 
 ## Pass/Fail Notes
 - PASS: Local guard passed for local Aerial evidence smoke: app=http://localhost:3200, supabase=http://127.0.0.1:54321.
-- PASS: Created one fresh QA auth user (openplan-local-aerial-evidence-smoke-2026-08-24T18-23-45-798Z@example.invalid); this run reads no pre-existing fixture data.
+- PASS: Created one fresh QA auth user (openplan-local-aerial-evidence-smoke-2026-08-24T20-09-46-445Z@example.invalid); this run reads no pre-existing fixture data.
 - PASS: Signed into the local app through the real sign-in form.
 - PASS: Created exactly one project in the auto-provisioned workspace and verified the session resolves to it.
 - PASS: Established a baseline of 2 missions and 1 ready package through the aerial routes, and verified the cached posture matched it exactly.

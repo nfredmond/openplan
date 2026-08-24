@@ -57,6 +57,7 @@ describe("POST /api/workspaces/bootstrap", () => {
         // floor, never one state's pack.
         stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
         stage_gate_template_version: "0.1.0",
+        stage_gate_template_selection: "interim_unconfigured_default",
       },
       error: null,
     });
@@ -179,6 +180,7 @@ describe("POST /api/workspaces/bootstrap", () => {
         stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
         stage_gate_template_version: "0.1.0",
         stage_gate_binding_source: "workspace_bootstrap_interim",
+        stage_gate_template_selection: "interim_unconfigured_default",
       })
     );
 
@@ -210,6 +212,7 @@ describe("POST /api/workspaces/bootstrap", () => {
         slug: "regional-planning-commission",
         stage_gate_template_id: "ca_stage_gates_v0_1",
         stage_gate_template_version: "0.1.0",
+        stage_gate_template_selection: "explicitly_requested",
       },
       error: null,
     });
@@ -225,6 +228,7 @@ describe("POST /api/workspaces/bootstrap", () => {
     expect(workspaceInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_selection: "explicitly_requested",
       })
     );
 

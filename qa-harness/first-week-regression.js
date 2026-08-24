@@ -166,17 +166,30 @@ function classifyResult(regression, error) {
 const GATING_OUTCOMES = new Set(['regressed', 'unrecorded-fix', 'wrong-failure']);
 
 async function signIn(page, { baseUrl, email, password }) {
-  await page.goto(`${baseUrl}/sign-in`, { waitUntil: 'domcontentloaded' });
+  // Wait for hydration before filling. At `domcontentloaded` the server-rendered
+  // fields can still be replaced by React, silently clearing both values before
+  // the click and leaving the harness on /sign-in with no visible error.
+  await page.goto(`${baseUrl}/sign-in`, { waitUntil: 'load' });
   await page.getByLabel('Work email').fill(email);
   await page.getByLabel('Password').fill(password);
-  // `waitUntil: 'commit'` because the default waits for the whole landing page
-  // to finish loading, and this signs in against a dev server that may be
-  // serving other work at the same time. Leaving /sign-in is the thing being
-  // waited for; each script then waits for what it actually needs.
-  await Promise.all([
-    page.waitForURL((url) => !url.pathname.startsWith('/sign-in'), { timeout: 90000, waitUntil: 'commit' }),
-    page.getByRole('button', { name: /^sign in$/i }).click(),
-  ]);
+  // Sign-in may finish as a client-side transition, which has no document
+  // `commit` event for Playwright to await. Click first, then wait on the state
+  // the harness actually needs: the browser has left the sign-in route.
+  await page.getByRole('button', { name: /^sign in$/i }).click();
+  try {
+    await page.waitForFunction(
+      () => !window.location.pathname.startsWith('/sign-in'),
+      undefined,
+      { timeout: 90000 },
+    );
+  } catch (error) {
+    const visibleState = (await page.locator('body').innerText().catch(() => 'unreadable page'))
+      .replace(email, '[account]')
+      .slice(-1_200);
+    throw new Error(`Sign-in did not leave /sign-in. Visible page state:\n${visibleState}`, {
+      cause: error,
+    });
+  }
 }
 
 async function main() {

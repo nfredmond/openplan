@@ -99,3 +99,25 @@ The final affected-journey rerun is under `/home/nathaniel/.local/state/openplan
 - Evidence: baseline `06-land-use-plan/agent/evidence/f1.png` and `f1.snapshot.txt` (discarded by the harness because the snapshot did not establish the submitted route).
 - Milestone decision: limitation, not a product blocker. Weakening the required date would let an exercise note masquerade as an operative legal record. The deterministic exercise smoke covers workflow mechanics with explicitly synthetic fixtures; the fresh journey correctly stopped rather than inventing evidence.
 - Follow-up: if product direction calls for a training sandbox, isolate it structurally from real plan records and public URLs. Do not add an “exercise” escape hatch to legal completion fields.
+
+## Resolution notes — v0.30.0
+
+The original observations above remain unchanged as the record of what the
+v0.29.0 fresh-account run found. The following items were closed on 2026-08-24:
+
+- **Oregon setup describes the federal floor as the jurisdiction template:**
+  resolved. The dashboard now says that the country-level federal floor matched
+  `US-OR`, that no Oregon-specific pack is registered, and that the displayed
+  gates do not state requirements unique to Oregon.
+- **California setup leaves the federal interim stage-gate active:** resolved.
+  Saving a California home geography now binds the registered California pack
+  in the same workspace update. Selection provenance distinguishes that
+  automatic match from a planner's explicit choice.
+- **Oregon land-use plans default to the California legal bundle:** resolved.
+  The creator now matches configured bundles from registry coverage and selects
+  **Local requirements not configured** when no unique match exists.
+
+Fresh local browser evidence for the closure remains outside the repository at
+`/home/nathaniel/.codex/scratch/openplan-v030-evidence/`. It covers California
+and Oregon at desktop and 390-by-844 widths; the Oregon journey also proves that
+an explicit stage-gate override survives a later geography change.

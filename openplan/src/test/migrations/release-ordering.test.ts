@@ -231,6 +231,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260824000003_project_estimated_cost_and_csv_provenance.sql",
     migrationsAtRelease: 218,
   },
+  // 0.30.0 — geography-matched legal setup with durable selection provenance,
+  // explicit-override preservation, and honest neutral fallbacks. The one
+  // additive migration leaves every pre-release workspace row unchanged.
+  {
+    tag: "0.30.0",
+    lastMigration: "20260824000004_workspace_stage_gate_template_selection.sql",
+    migrationsAtRelease: 219,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

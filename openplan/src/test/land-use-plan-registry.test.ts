@@ -6,6 +6,8 @@ import {
   descriptorIsOverdue,
   getJurisdictionPlanDescriptor,
   JURISDICTION_PLAN_DESCRIPTORS,
+  recommendJurisdictionPlanDescriptor,
+  SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS,
 } from "@/lib/land-use-plans/registry";
 
 describe("Land Use Plans jurisdiction registry", () => {
@@ -54,5 +56,49 @@ describe("Land Use Plans jurisdiction registry", () => {
   it("carries the map-is-not-zoning disclosure on the stored designation contract", () => {
     const migration = readFileSync(path.resolve(__dirname, "../../supabase/migrations/20260823000002_land_use_plans.sql"), "utf8");
     expect(migration).toContain("They are not zoning and do not change parcel entitlements.");
+  });
+
+  it("recommends the configured bundle only for its registered jurisdiction", () => {
+    expect(
+      recommendJurisdictionPlanDescriptor({ country: "US", subdivision: "CA" })
+    ).toMatchObject({
+      kind: "jurisdiction_matched",
+      descriptor: { id: "us-ca-general-plan" },
+    });
+
+    for (const jurisdiction of [
+      { country: "US", subdivision: "OR" },
+      { country: "NZ", subdivision: null },
+    ]) {
+      expect(recommendJurisdictionPlanDescriptor(jurisdiction)).toMatchObject({
+        kind: "no_configured_bundle",
+        descriptor: { id: "local-unconfigured" },
+      });
+    }
+
+    expect(recommendJurisdictionPlanDescriptor(null)).toMatchObject({
+      kind: "no_workspace_jurisdiction",
+      descriptor: { id: "local-unconfigured" },
+    });
+  });
+
+  it("uses the neutral workflow when configured registrations are ambiguous", () => {
+    const california = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find(
+      (descriptor) => descriptor.id === "us-ca-general-plan"
+    );
+    const neutral = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find(
+      (descriptor) => descriptor.id === "local-unconfigured"
+    );
+    if (!california || !neutral) throw new Error("Expected selectable registry entries");
+
+    const recommendation = recommendJurisdictionPlanDescriptor(
+      { country: "US", subdivision: "CA" },
+      [california, { ...california, id: "second-configured-pack" }, neutral]
+    );
+
+    expect(recommendation).toMatchObject({
+      kind: "ambiguous_configured_bundles",
+      descriptor: { id: "local-unconfigured" },
+    });
   });
 });

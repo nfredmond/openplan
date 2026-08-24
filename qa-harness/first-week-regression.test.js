@@ -112,5 +112,14 @@ check('the recorded regressions all load, so the suite is runnable', () => {
   }
 });
 
+check('the browser runner waits for the sign-in form to hydrate before filling it', () => {
+  const source = fs.readFileSync(path.join(__dirname, 'first-week-regression.js'), 'utf8');
+  const signInStart = source.indexOf('async function signIn');
+  const mainStart = source.indexOf('async function main', signInStart);
+  const signInSource = source.slice(signInStart, mainStart);
+  assert.match(signInSource, /page\.goto\([^\n]+waitUntil: 'load'/);
+  assert.doesNotMatch(signInSource, /waitUntil: 'domcontentloaded'/);
+});
+
 console.log(failures === 0 ? '\nOutcome rules hold in both directions.' : `\n${failures} check(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);

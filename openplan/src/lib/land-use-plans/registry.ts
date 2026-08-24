@@ -1,4 +1,5 @@
 import type { JurisdictionPlanDescriptor } from "./contracts";
+import type { HomeJurisdiction } from "@/lib/workspaces/home-geography";
 
 const CA_ARTICLE_5 =
   "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=5.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.";
@@ -55,6 +56,7 @@ const LOCAL_UNCONFIGURED: JurisdictionPlanDescriptor = {
 const CALIFORNIA: JurisdictionPlanDescriptor = {
   id: "us-ca-general-plan",
   jurisdictionLabel: "California",
+  jurisdictionCoverage: { country: "US", subdivision: "CA" },
   authorityScope: "Local planning agencies governed by the cited California statutes",
   configured: true,
   verifiedAt: "2026-08-23",
@@ -201,6 +203,66 @@ const NEUTRALITY_FIXTURES: JurisdictionPlanDescriptor[] = [
 export const JURISDICTION_PLAN_DESCRIPTORS = [CALIFORNIA, LOCAL_UNCONFIGURED, ...NEUTRALITY_FIXTURES] as const;
 
 export const SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS = [CALIFORNIA, LOCAL_UNCONFIGURED] as const;
+
+export type JurisdictionPlanRecommendation = {
+  descriptor: JurisdictionPlanDescriptor;
+  kind:
+    | "jurisdiction_matched"
+    | "no_workspace_jurisdiction"
+    | "no_configured_bundle"
+    | "ambiguous_configured_bundles";
+};
+
+function normalizedPart(value: string | null | undefined): string | null {
+  const normalized = value?.trim().toUpperCase();
+  return normalized || null;
+}
+
+/**
+ * Recommend a selectable legal bundle from the workspace's existing home
+ * jurisdiction. A neutral workflow is the answer whenever there is no unique
+ * configured match. Registration order never decides the result.
+ */
+export function recommendJurisdictionPlanDescriptor(
+  jurisdiction: HomeJurisdiction | null | undefined,
+  descriptors: readonly JurisdictionPlanDescriptor[] = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS
+): JurisdictionPlanRecommendation {
+  const neutral =
+    descriptors.find((descriptor) => descriptor.id === LOCAL_UNCONFIGURED.id) ??
+    LOCAL_UNCONFIGURED;
+  const country = normalizedPart(jurisdiction?.country);
+  const subdivision = normalizedPart(jurisdiction?.subdivision);
+
+  if (!country) {
+    return { descriptor: neutral, kind: "no_workspace_jurisdiction" };
+  }
+
+  const configured = descriptors.filter(
+    (descriptor) =>
+      descriptor.configured &&
+      normalizedPart(descriptor.jurisdictionCoverage?.country) === country
+  );
+  const subdivisionMatches = subdivision
+    ? configured.filter(
+        (descriptor) =>
+          normalizedPart(descriptor.jurisdictionCoverage?.subdivision) === subdivision
+      )
+    : [];
+  const candidates =
+    subdivisionMatches.length > 0
+      ? subdivisionMatches
+      : configured.filter(
+          (descriptor) => normalizedPart(descriptor.jurisdictionCoverage?.subdivision) === null
+        );
+
+  if (candidates.length === 1) {
+    return { descriptor: candidates[0], kind: "jurisdiction_matched" };
+  }
+  if (candidates.length > 1) {
+    return { descriptor: neutral, kind: "ambiguous_configured_bundles" };
+  }
+  return { descriptor: neutral, kind: "no_configured_bundle" };
+}
 
 export function getJurisdictionPlanDescriptor(id: string): JurisdictionPlanDescriptor | null {
   return JURISDICTION_PLAN_DESCRIPTORS.find((descriptor) => descriptor.id === id) ?? null;

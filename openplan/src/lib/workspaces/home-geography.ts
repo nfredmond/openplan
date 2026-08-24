@@ -113,6 +113,16 @@ export const HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES = HOME_GEOGRAPHY_COLUMN_NAMES.fil
 
 export const HOME_GEOGRAPHY_SCOPE_COLUMNS = HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES.join(", ");
 
+/** The smallest workspace projection that can resolve a legal jurisdiction. */
+export const HOME_JURISDICTION_COLUMN_NAMES = HOME_GEOGRAPHY_COLUMN_NAMES.filter(
+  (column): column is (typeof HOME_GEOGRAPHY_COLUMN_NAMES)[number] =>
+    column === "home_geography_source" ||
+    column === "home_country_code" ||
+    column === "home_subdivision_code"
+);
+
+export const HOME_JURISDICTION_COLUMNS = HOME_JURISDICTION_COLUMN_NAMES.join(", ");
+
 /**
  * The row that returns a workspace to "no stated geography".
  *

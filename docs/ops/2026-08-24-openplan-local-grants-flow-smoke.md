@@ -13,22 +13,22 @@
 - This timestamped workflow smoke intentionally creates fresh local proof records on each run. It is safe to rerun against local Supabase, but old local QA users/workspaces/records remain until the local database is reset or cleaned manually.
 
 ## Key IDs
-- QA user email: openplan-local-grants-flow-2026-08-24T18-22-35-332Z@natfordplanning.com
-- QA user id: fa17eb58-7cbd-4965-a99d-bf850db398f3
-- Workspace id: 9a3657da-ba51-44af-9261-71d4f18b2328
-- Project id: 47e8d476-4569-4e63-a70e-530a3138a719
-- Program id: 169844d4-da86-4efe-89dc-c1d1db50b9d6
-- Opportunity id: 4499e254-0cfa-487f-9512-83af645b2a08
-- Award id: 5ab5a9d5-29bf-4bda-bd99-2bfc95b85727
-- Invoice id: 55d882ba-20e6-4c93-8354-8385ede355da
-- Obligation milestone id: 97f2bc12-c3f1-46f8-872a-5c444cde2b51
-- Closeout milestone id: e0172536-342b-41ff-8030-3a7facc97861
+- QA user email: openplan-local-grants-flow-2026-08-24T20-01-55-163Z@natfordplanning.com
+- QA user id: c36dd6a7-9fba-4cd0-9efe-16ecd7d5cb64
+- Workspace id: cf5e6f53-f345-4028-8f6b-ea47c444b82a
+- Project id: 9b0217eb-d750-407c-90e7-bb2432df5ed4
+- Program id: 688481ad-914f-4073-83b3-d0faf9eff20b
+- Opportunity id: dbf829ae-36ee-4047-9e90-a232b47b66d4
+- Award id: a1e9b034-0c62-4437-8949-891acb1ef303
+- Invoice id: 563d6682-3288-47fc-8a17-fd2eb3eaae8a
+- Obligation milestone id: d53f4263-c7e6-41f0-ad03-687e36c496b6
+- Closeout milestone id: be09e887-bcb9-4780-bf74-ac9e15764991
 
 ## Pass/Fail Notes
 - PASS: Local guard passed for local Grants flow smoke: app=http://localhost:3200, supabase=http://127.0.0.1:54321.
-- PASS: Created QA auth user openplan-local-grants-flow-2026-08-24T18-22-35-332Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-local-grants-flow-2026-08-24T20-01-55-163Z@natfordplanning.com.
 - PASS: Signed into the local app successfully.
-- PASS: Created project workspace Local Grants Flow Smoke 182235.
+- PASS: Created project workspace Local Grants Flow Smoke 200155.
 - PASS: Saved a project funding profile with a known need and local match.
 - PASS: Created the funding program that owns the opportunity and award.
 - PASS: Created an awarded funding opportunity linked to the project and program.

@@ -21,6 +21,30 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.30.0 — 2026-08-24
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260824000004_workspace_stage_gate_template_selection.sql`
+(`workspace_stage_gate_template_selection`) records whether a workspace's
+stage-gate template was matched from geography, explicitly chosen by a planner,
+or applied as the disclosed interim default. Existing rows are left unchanged
+and retain legacy reconciliation behavior.
+
+Fresh-workspace legal setup now follows the place the planner selected. A
+California workspace automatically binds the registered California stage-gate
+pack and recommends the California land-use bundle. A workspace in a state
+without a configured bundle keeps the shared federal stage-gate floor and the
+neutral land-use workflow, with plain language that neither represents unique
+state or local requirements.
+
+Changing or clearing a workspace geography updates only automatically selected
+stage gates. A planner's explicit template choice survives later geography
+changes, and concurrent edits refuse with a review prompt instead of silently
+overwriting that choice. The first-week and dual-model browser harnesses now
+wait for hydrated sign-in and tab controls, so a client-side transition is not
+misreported as a product failure.
+
 ## 0.29.0 — 2026-08-24
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

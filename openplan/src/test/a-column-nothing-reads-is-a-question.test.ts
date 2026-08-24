@@ -172,14 +172,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
 
   // ---- UNBUILT and WRITE_ONLY, continued ----------------------------------
   {
-    column: "workspaces.stage_gate_bound_at",
-    category: "WRITE_ONLY",
-    reason:
-      "When a workspace was bound to a stage-gate template. Recorded by the binding write and read by " +
-      "nothing — so a workspace cannot tell an auditor when its delivery template was adopted, which " +
-      "is exactly the provenance a funder's stage-gate record is supposed to carry.",
-  },
-  {
     column: "workspaces.is_demo",
     category: "UNBUILT",
     reason:

@@ -28,6 +28,7 @@
 import {
   INTERIM_DEFAULT_RATIONALE,
   stageGateTemplateRegistry,
+  type StageGateJurisdiction,
   type StageGateJurisdictionQuery,
   type StageGateTemplateDescriptor,
   type StageGateTemplateRegistry,
@@ -116,6 +117,8 @@ export type StageGateTemplateBinding = {
   /** Flat code as persisted/returned today; `jurisdictionLabel` is the readable form. */
   jurisdiction: string;
   jurisdictionLabel: string;
+  /** Structured coverage declared by the template registration. */
+  templateJurisdiction: StageGateJurisdiction;
   bindingMode: StageGateBindingMode;
   templateSelection: StageGateTemplateSelection;
   /** Null unless `templateSelection` is `interim_unconfigured_default`. */
@@ -289,8 +292,35 @@ export function resolveWorkspaceStageGateBinding(
   // What this workspace's geography alone would bind it to.
   const geographyResolution = resolveStageGateTemplateForWorkspace(workspaceRow, undefined, options);
   const persistedTemplateId = readPersistedTemplateId(workspaceRow);
+  const persistedSelection = readWorkspaceStageGateTemplateSelection(workspaceRow);
 
   if (!persistedTemplateId) return geographyResolution;
+
+  // New rows record whether a person chose the template. That fact outranks a
+  // later geography match: a consultant may deliberately deliver under a
+  // different process, and changing the home geography must not rewrite it.
+  if (persistedSelection === "explicitly_requested") {
+    const entry = registry.get(persistedTemplateId);
+    if (!entry) {
+      return {
+        kind: "unknown_template",
+        requestedTemplateId: persistedTemplateId,
+        available: registry.list(),
+      };
+    }
+    const jurisdiction = normalizeJurisdictionQuery(
+      resolveJurisdiction(parseWorkspaceHomeGeography(workspaceRow))
+    );
+    return {
+      kind: "resolved",
+      binding: toBinding(entry.descriptor, {
+        bindingMode,
+        templateSelection: "explicitly_requested",
+        interimDefaultReason: null,
+        workspaceJurisdiction: jurisdiction,
+      }),
+    };
+  }
 
   // Stored and derived agree: keep the geography answer, which already carries
   // the honest selection — `jurisdiction_matched`, or the interim default plus
@@ -329,7 +359,11 @@ export function resolveWorkspaceStageGateBinding(
   // default changed diverges from today's default through no act of its own,
   // and calling that divergence "explicitly requested" would present gates
   // nobody chose as a deliberate selection.
-  if (KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS.has(persistedTemplateId)) {
+  if (
+    persistedSelection === "jurisdiction_matched" ||
+    persistedSelection === "interim_unconfigured_default" ||
+    (persistedSelection === null && KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS.has(persistedTemplateId))
+  ) {
     return {
       kind: "resolved",
       binding: toBinding(entry.descriptor, {
@@ -397,6 +431,19 @@ function readPersistedTemplateId(workspaceRow: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
 
+/** Null is intentional for rows created before selection provenance existed. */
+export function readWorkspaceStageGateTemplateSelection(
+  workspaceRow: unknown
+): StageGateTemplateSelection | null {
+  if (!workspaceRow || typeof workspaceRow !== "object") return null;
+  const value = (workspaceRow as Record<string, unknown>).stage_gate_template_selection;
+  return value === "explicitly_requested" ||
+    value === "jurisdiction_matched" ||
+    value === "interim_unconfigured_default"
+    ? value
+    : null;
+}
+
 /**
  * Throwing wrapper kept for the workspace-bootstrap, admin-provisioning, and
  * project-create routes, which already catch it and return 400. New callers
@@ -460,6 +507,18 @@ export function describeStageGateBinding(
   }
 
   if (binding.templateSelection === "jurisdiction_matched") {
+    const matchedCountryFloor =
+      Boolean(binding.workspaceJurisdiction?.subdivision) &&
+      !binding.templateJurisdiction.subdivision &&
+      binding.workspaceJurisdiction?.country === binding.templateJurisdiction.country;
+    if (matchedCountryFloor) {
+      return {
+        isJurisdictionAssumed: false,
+        headline: `Stage gates: ${binding.jurisdictionLabel}`,
+        detail: `OpenPlan matched the country-level ${binding.templateName} template for ${known}. No subdivision-specific stage-gate pack is registered for ${known}; these gates do not state requirements unique to that jurisdiction.`,
+        action: null,
+      };
+    }
     return {
       isJurisdictionAssumed: false,
       headline: `Stage gates: ${binding.jurisdictionLabel}`,
@@ -580,6 +639,7 @@ function toBinding(
     templateVersion: descriptor.templateVersion,
     jurisdiction: descriptor.jurisdictionCode,
     jurisdictionLabel: descriptor.jurisdiction.label,
+    templateJurisdiction: { ...descriptor.jurisdiction },
     bindingMode: provenance.bindingMode,
     templateSelection: provenance.templateSelection,
     interimDefaultReason: provenance.interimDefaultReason,

@@ -222,7 +222,6 @@ const membershipMaybeSingleMock = vi.fn();
 const workspaceSelectMaybeSingleMock = vi.fn();
 const serviceUpdateMock = vi.fn();
 const serviceUpdateMaybeSingleMock = vi.fn();
-const serviceUpdateEqMock = vi.fn(() => ({ error: null }) as { error: { message: string } | null });
 const resolvePlaceBoundaryMock = vi.fn();
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -247,18 +246,11 @@ vi.mock("@/lib/supabase/server", () => ({
     from: () => ({
       update: (row: unknown) => {
         serviceUpdateMock(row);
-        return {
-          // PATCH chains `.select().maybeSingle()` to read the row back; DELETE
-          // awaits the update directly because it has nothing to read back. One
-          // mock serves both: a promise that also carries the select chain.
-          eq: () => {
-            const chain = Promise.resolve(serviceUpdateEqMock()) as Promise<unknown> & {
-              select: () => { maybeSingle: typeof serviceUpdateMaybeSingleMock };
-            };
-            chain.select = () => ({ maybeSingle: serviceUpdateMaybeSingleMock });
-            return chain;
-          },
+        const chain = {
+          eq: vi.fn(() => chain),
+          select: vi.fn(() => ({ maybeSingle: serviceUpdateMaybeSingleMock })),
         };
+        return chain;
       },
     }),
   }),
@@ -311,11 +303,16 @@ describe("/api/workspaces/home-geography", () => {
     vi.clearAllMocks();
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
-    workspaceSelectMaybeSingleMock.mockResolvedValue({ data: geography(), error: null });
-    serviceUpdateMaybeSingleMock.mockResolvedValue({ data: geography(), error: null });
-    // clearAllMocks() resets calls but keeps implementations, so a test that
-    // stubs an error must not leak it into the next one.
-    serviceUpdateEqMock.mockReturnValue({ error: null });
+    workspaceSelectMaybeSingleMock.mockResolvedValue({
+      data: {
+        ...geography(),
+        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        stage_gate_template_selection: "interim_unconfigured_default",
+      },
+      error: null,
+    });
+    serviceUpdateMaybeSingleMock.mockResolvedValue({ data: { id: WORKSPACE_ID, ...geography() }, error: null });
     resolvePlaceBoundaryMock.mockResolvedValue({
       kind: "county",
       geoid: "39049",
@@ -421,6 +418,94 @@ describe("/api/workspaces/home-geography", () => {
     expect(written.home_min_lon).toBe(-83.2);
     expect(written.home_subdivision_code).toBe("OH");
     expect(written.home_geography_set_at).toBeTruthy();
+    expect(written).toMatchObject({
+      stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+      stage_gate_template_version: "0.1.0",
+      stage_gate_template_selection: "jurisdiction_matched",
+    });
+  });
+
+  it("atomically binds a fresh California workspace to the registered California pack", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({
+      kind: "county",
+      geoid: "06057",
+      label: "Nevada County, CA",
+      geojson: {
+        type: "Polygon",
+        coordinates: [[[-121.3, 39.0], [-120.0, 39.0], [-120.0, 39.6], [-121.3, 39.0]]],
+      },
+      bbox: { minLon: -121.3, minLat: 39.0, maxLon: -120.0, maxLat: 39.6 },
+    });
+
+    const res = await PATCH(
+      patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "06057" })
+    );
+
+    expect(res.status).toBe(200);
+    expect(serviceUpdateMock).toHaveBeenCalledTimes(1);
+    expect(serviceUpdateMock.mock.calls[0][0]).toMatchObject({
+      home_subdivision_code: "CA",
+      stage_gate_template_id: "ca_stage_gates_v0_1",
+      stage_gate_template_version: "0.1.0",
+      stage_gate_template_selection: "jurisdiction_matched",
+    });
+  });
+
+  it("preserves an explicit stage-gate choice when home geography changes", async () => {
+    workspaceSelectMaybeSingleMock.mockResolvedValue({
+      data: {
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        stage_gate_template_selection: "explicitly_requested",
+      },
+      error: null,
+    });
+
+    expect(
+      (await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" })))
+        .status
+    ).toBe(200);
+    const written = serviceUpdateMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(written.home_subdivision_code).toBe("OH");
+    expect(written).not.toHaveProperty("stage_gate_template_id");
+    expect(written).not.toHaveProperty("stage_gate_template_selection");
+  });
+
+  it("preserves a legacy binding whose selection provenance is unknown", async () => {
+    workspaceSelectMaybeSingleMock.mockResolvedValue({
+      data: {
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        stage_gate_template_selection: null,
+      },
+      error: null,
+    });
+
+    await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" }));
+    expect(serviceUpdateMock.mock.calls[0][0]).not.toHaveProperty(
+      "stage_gate_template_selection"
+    );
+  });
+
+  it("changes nothing when the current legal configuration cannot be read", async () => {
+    workspaceSelectMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "database unavailable" },
+    });
+
+    const res = await PATCH(
+      patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" })
+    );
+    expect(res.status).toBe(500);
+    expect(serviceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a stale automatic write when the selection changes concurrently", async () => {
+    serviceUpdateMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    const res = await PATCH(
+      patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" })
+    );
+    expect(res.status).toBe(409);
   });
 
   it("reports an unset workspace as null rather than a default place", async () => {
@@ -452,8 +537,14 @@ describe("/api/workspaces/home-geography", () => {
     const written = serviceUpdateMock.mock.calls[0][0] as Record<string, unknown>;
     // A partial clear would leave, say, a bbox with no source — which reads as
     // trustworthy and is not. Every column must be nulled.
-    expect(Object.keys(written).sort()).toEqual([...HOME_GEOGRAPHY_COLUMN_NAMES].sort());
-    expect(Object.values(written).every((value) => value === null)).toBe(true);
+    for (const column of HOME_GEOGRAPHY_COLUMN_NAMES) {
+      expect(written[column]).toBeNull();
+    }
+    expect(written).toMatchObject({
+      stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+      stage_gate_template_version: "0.1.0",
+      stage_gate_template_selection: "interim_unconfigured_default",
+    });
   });
 
   it("does not delete already-ingested census tracts when a geography is cleared", async () => {
@@ -462,6 +553,23 @@ describe("/api/workspaces/home-geography", () => {
     // destructive far outside this request's scope.
     await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }));
     expect(tractIngestMock).not.toHaveBeenCalled();
+  });
+
+  it("clears geography without changing an explicit legal-process choice", async () => {
+    workspaceSelectMaybeSingleMock.mockResolvedValue({
+      data: {
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        stage_gate_template_selection: "explicitly_requested",
+      },
+      error: null,
+    });
+
+    expect((await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }))).status).toBe(200);
+    const written = serviceUpdateMock.mock.calls[0][0] as Record<string, unknown>;
+    for (const column of HOME_GEOGRAPHY_COLUMN_NAMES) expect(written[column]).toBeNull();
+    expect(written).not.toHaveProperty("stage_gate_template_id");
+    expect(written).not.toHaveProperty("stage_gate_template_selection");
   });
 
   it("403s a plain member clearing — clearing is the same configuration action as setting", async () => {
@@ -492,7 +600,8 @@ describe("/api/workspaces/home-geography", () => {
 
     // The message PostgREST actually returns when the migration has not been
     // applied — `looksLikePendingSchema` recognizes it by "schema cache".
-    serviceUpdateEqMock.mockReturnValue({
+    serviceUpdateMaybeSingleMock.mockResolvedValue({
+      data: null,
       error: {
         message:
           "Could not find the 'home_geography_source' column of 'workspaces' in the schema cache",

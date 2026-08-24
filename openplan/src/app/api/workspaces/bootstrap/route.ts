@@ -27,6 +27,7 @@ type InsertWorkspaceResult = {
   slug: string;
   stage_gate_template_id: string;
   stage_gate_template_version: string;
+  stage_gate_template_selection: string;
 };
 
 function normalizeSlug(value: string): string {
@@ -151,9 +152,10 @@ export async function POST(request: NextRequest) {
           slug,
           stage_gate_template_id: stageGateBinding.templateId,
           stage_gate_template_version: stageGateBinding.templateVersion,
+          stage_gate_template_selection: stageGateBinding.templateSelection,
           stage_gate_binding_source: stageGateBinding.bindingMode,
         })
-        .select("id, slug, stage_gate_template_id, stage_gate_template_version")
+        .select("id, slug, stage_gate_template_id, stage_gate_template_version, stage_gate_template_selection")
         .single();
 
       if (!error && data) {

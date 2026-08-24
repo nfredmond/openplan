@@ -13,25 +13,25 @@
 - This timestamped workflow smoke intentionally creates fresh local proof records on each run. It is safe to rerun against local Supabase, but old local QA users/workspaces/records remain until the local database is reset or cleaned manually.
 
 ## Key IDs
-- QA user email: openplan-local-engagement-handoff-2026-08-24T18-21-56-863Z@natfordplanning.com
-- QA user id: cda05971-e173-43a5-9d23-f14b1b9be9fd
-- Workspace id: 37026ecb-6c41-4c98-af35-13e2cef7a56a
-- Project id: 97aff585-52dc-4ee1-968d-a1e9e5061243
-- Campaign id: 99d39339-de56-4d83-8ece-385dbe9506de
-- Category id: decc1109-1043-405a-a3ae-5142747786ac
-- Engagement item id: eddaef92-98ac-4abc-9ccc-067d06034665
-- Report id: 57c29b90-e0b6-4818-8012-a9c22440b5d4
-- Report section id: b049d136-70a8-4717-990d-4d08dd355b3b
-- Artifact id: b9af8ebd-41a4-42d2-97c7-ac77e82da9f5
-- Share token: rn3bnujdbpy1ailbt5k3uykpjymj
+- QA user email: openplan-local-engagement-handoff-2026-08-24T20-00-27-211Z@natfordplanning.com
+- QA user id: 9938047b-4996-4d89-a63b-d790b56819da
+- Workspace id: cb26a254-933d-4acc-972f-28e10a7d87ae
+- Project id: 299f49ad-b494-49d2-a639-8f026a9dcc9a
+- Campaign id: 53d642c0-a947-48a3-904c-e7e03be501b1
+- Category id: 582d4ccc-ea3b-4e8b-b35e-00e2abd2bb50
+- Engagement item id: f6ac4299-78e9-4944-98a9-628f57949818
+- Report id: 6d6305a4-3c9f-47a5-821b-b1827aa6b532
+- Report section id: c08f97c2-e357-4669-aec5-66f96c6ae288
+- Artifact id: 6e59a097-1aec-441f-995c-be4fd555f077
+- Share token: xwjy2n4r22fgn6yb380987hok9fe
 
 ## Pass/Fail Notes
 - PASS: Local guard passed for local Engagement report handoff smoke: app=http://localhost:3200, supabase=http://127.0.0.1:54321.
-- PASS: Created QA auth user openplan-local-engagement-handoff-2026-08-24T18-21-56-863Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-local-engagement-handoff-2026-08-24T20-00-27-211Z@natfordplanning.com.
 - PASS: Signed into the local app successfully.
-- PASS: Created project workspace Local Engagement Handoff Smoke 182156.
-- PASS: Created linked engagement campaign Local Public Feedback Campaign 182156.
-- PASS: Created moderation category School access 182156.
+- PASS: Created project workspace Local Engagement Handoff Smoke 200027.
+- PASS: Created linked engagement campaign Local Public Feedback Campaign 200027.
+- PASS: Created moderation category School access 200027.
 - PASS: Activated public engagement portal with a server-minted share token (28 chars).
 - PASS: Submitted public feedback through the share portal and received the public success state.
 - PASS: Verified the public item persisted as pending, categorized, and source_type=public.

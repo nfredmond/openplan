@@ -334,6 +334,7 @@ describe("a planner can reach the stage-gate template binding from the dashboard
     // registry then cannot find.
     expect(projection).toContain("stage_gate_template_id");
     expect(projection).toContain("home_subdivision_code");
+    expect(projection).toContain("stage_gate_template_selection");
     expect(projection).toBe(STAGE_GATE_BINDING_WORKSPACE_COLUMNS);
   });
 

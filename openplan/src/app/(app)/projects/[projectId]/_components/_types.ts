@@ -298,6 +298,11 @@ export type WorkspaceRow = {
   slug: string | null;
   stage_gate_template_id: string | null;
   stage_gate_template_version: string | null;
+  stage_gate_template_selection?:
+    | "explicitly_requested"
+    | "jurisdiction_matched"
+    | "interim_unconfigured_default"
+    | null;
   created_at: string;
   // Home-geography identity columns, carried so the stage-gate binding can say
   // whether the template above was matched to this workspace's jurisdiction or

@@ -270,6 +270,54 @@ describe("describeStageGateBinding for a workspace row", () => {
     expect(disclosure.action).toBeNull();
   });
 
+  it("preserves a recorded explicit choice even when geography recommends another pack", () => {
+    const binding = resolvedBinding(
+      workspaceRow({
+        ...homeGeography("CA"),
+        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+        stage_gate_template_selection: "explicitly_requested",
+      })
+    );
+
+    expect(binding.templateId).toBe("us_federal_aid_stage_gates_v0_1");
+    expect(binding.templateSelection).toBe("explicitly_requested");
+    expect(binding.workspaceJurisdiction).toEqual({ country: "US", subdivision: "CA" });
+  });
+
+  it("keeps explicit provenance when the chosen template also matches geography", () => {
+    const binding = resolvedBinding(
+      workspaceRow({
+        ...homeGeography("CA"),
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_selection: "explicitly_requested",
+      })
+    );
+
+    expect(binding.templateId).toBe("ca_stage_gates_v0_1");
+    expect(binding.templateSelection).toBe("explicitly_requested");
+  });
+
+  it("discloses when a country-level floor matches but no subdivision pack exists", () => {
+    const binding = resolvedBinding(
+      workspaceRow({
+        ...homeGeography("OR"),
+        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+        stage_gate_template_selection: "jurisdiction_matched",
+      })
+    );
+    const disclosure = describeStageGateBinding(binding);
+
+    expect(binding.templateJurisdiction).toEqual({
+      country: "US",
+      label: "United States — federal-aid floor",
+    });
+    expect(disclosure.isJurisdictionAssumed).toBe(false);
+    expect(disclosure.detail).toContain("country-level");
+    expect(disclosure.detail).toContain("No subdivision-specific stage-gate pack");
+    expect(disclosure.detail).toContain("do not state requirements unique to that jurisdiction");
+    expect(disclosure.detail).not.toContain("workspace's own jurisdiction");
+  });
+
   it("tells a workspace to rebind when a subdivision pack for its jurisdiction exists but is not bound", () => {
     const disclosure = describeStageGateBinding(
       resolvedBinding(workspaceRow(homeGeography("OH")), { registry: multiJurisdictionRegistry })

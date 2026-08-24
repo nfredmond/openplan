@@ -3,11 +3,19 @@ import { redirect } from "next/navigation";
 
 import { LandUsePlanCreator } from "@/components/land-use-plans/land-use-plan-creator";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import {
+  getJurisdictionPlanDescriptor,
+  recommendJurisdictionPlanDescriptor,
+} from "@/lib/land-use-plans/registry";
 import { createClient } from "@/lib/supabase/server";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
+import {
+  HOME_JURISDICTION_COLUMNS,
+  parseWorkspaceHomeGeography,
+  resolveJurisdiction,
+} from "@/lib/workspaces/home-geography";
 
 export const metadata = moduleMetadata("Land Use Plans");
 
@@ -18,12 +26,27 @@ export default async function LandUsePlansPage() {
   if (!auth.user) redirect("/sign-in");
   const { membership } = await loadCurrentWorkspaceMembership(supabase, auth.user.id);
   if (!membership) return <WorkspaceMembershipRequired moduleLabel="Land Use Plans" title="Land use plans need a team" description="Drafts, evidence, review, adoption, and implementation history belong to an agency team." />;
-  const plansResult = await supabase.from("land_use_plans")
-    .select("id, title, descriptor_id, plan_kind_key, authority_label, geography_label, current_working_version_id, current_adopted_version_id, updated_at, land_use_plan_versions!land_use_plan_versions_plan_id_workspace_id_fkey(id, version_number, state, content_hash)")
-    .eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false });
+  const [plansResult, jurisdictionResult] = await Promise.all([
+    supabase.from("land_use_plans")
+      .select("id, title, descriptor_id, plan_kind_key, authority_label, geography_label, current_working_version_id, current_adopted_version_id, updated_at, land_use_plan_versions!land_use_plan_versions_plan_id_workspace_id_fkey(id, version_number, state, content_hash)")
+      .eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
+    supabase.from("workspaces")
+      .select(HOME_JURISDICTION_COLUMNS)
+      .eq("id", membership.workspace_id)
+      .maybeSingle(),
+  ]);
   const reads = new ReadFailureLog();
   const unreadable = reads.check("land use plans", plansResult);
+  const jurisdictionUnreadable = reads.check(
+    "this workspace's home jurisdiction",
+    jurisdictionResult
+  );
   const plans = plansResult.data;
+  const recommendation = recommendJurisdictionPlanDescriptor(
+    jurisdictionUnreadable
+      ? null
+      : resolveJurisdiction(parseWorkspaceHomeGeography(jurisdictionResult.data))
+  );
 
   return (
     <main className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8">
@@ -35,7 +58,7 @@ export default async function LandUsePlansPage() {
       <div className="rounded-lg border border-blue-300 bg-blue-50 p-4 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/20 dark:text-blue-100">
         OpenPlan tracks requirements and evidence. It does not certify legal sufficiency, perform environmental review, or replace counsel and qualified planning review.
       </div>
-      {unreadable ? <div className="rounded-lg border border-destructive p-4 text-sm text-destructive">{reads.describe()} {reads.messages().join(" ")}</div> : null}
+      {reads.any ? <div className="rounded-lg border border-destructive p-4 text-sm text-destructive">{reads.describe()} {reads.messages().join(" ")}</div> : null}
       {!unreadable && plans?.length ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {plans.map((plan) => {
@@ -54,7 +77,12 @@ export default async function LandUsePlansPage() {
           })}
         </section>
       ) : !unreadable ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">No land use plans yet. The setup below creates the first working version and its requirements checklist.</p> : null}
-      <LandUsePlanCreator />
+      <LandUsePlanCreator
+        recommendedDescriptorId={recommendation.descriptor.id}
+        recommendationKind={
+          jurisdictionUnreadable ? "workspace_jurisdiction_unreadable" : recommendation.kind
+        }
+      />
     </main>
   );
 }

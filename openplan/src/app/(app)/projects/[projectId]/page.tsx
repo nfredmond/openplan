@@ -201,7 +201,7 @@ export default async function ProjectDetailPage({
   const workspaceRead = await supabase
     .from("workspaces")
     .select(
-      `${workspaceCoreColumns}, home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code`
+      `${workspaceCoreColumns}, stage_gate_template_selection, home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code`
     )
     .eq("id", project.workspace_id)
     .single();

@@ -13,17 +13,17 @@
 - This timestamped workflow smoke intentionally creates fresh local proof records on each run. It is safe to rerun against local Supabase, but old local QA users/workspaces/records remain until the local database is reset or cleaned manually.
 
 ## Key IDs
-- QA user email: openplan-local-rtp-release-smoke-2026-08-24T09-21-48-530Z@natfordplanning.com
-- QA user id: eb21108e-0049-4c5f-9a0a-a1d8597527ba
-- Workspace id: 485b767c-43f0-46ad-9027-fa3677f3e3a2
-- RTP cycle id: 44f7aeb8-9045-4f12-9138-f231e0a86be4
-- Report id: 08454fb6-ce08-4fca-bcb0-18d8a8801e59
+- QA user email: openplan-local-rtp-release-smoke-2026-08-24T19-59-56-733Z@natfordplanning.com
+- QA user id: 2d1844d2-4f24-4aa0-90bb-834fbde07524
+- Workspace id: 2385a4c4-5f1e-47d1-be1f-fc289055bf7f
+- RTP cycle id: 152a7251-43ea-4ecc-9e77-b16f0ec9e45a
+- Report id: abc2163c-4083-4b65-ac00-2a9b3ec2977c
 
 ## Pass/Fail Notes
 - PASS: Local guard passed for local RTP release-review smoke: app=http://localhost:3200, supabase=http://127.0.0.1:54321.
-- PASS: Created QA auth user openplan-local-rtp-release-smoke-2026-08-24T09-21-48-530Z@natfordplanning.com.
+- PASS: Created QA auth user openplan-local-rtp-release-smoke-2026-08-24T19-59-56-733Z@natfordplanning.com.
 - PASS: Signed into the local app successfully.
-- PASS: Bootstrapped workspace OpenPlan RTP Release Smoke 09-21-48.
+- PASS: Bootstrapped workspace OpenPlan RTP Release Smoke 19-59-56.
 - PASS: Created RTP cycle Nevada County RTP 2026-08-24.
 - PASS: Created RTP board-packet record from the local API.
 - PASS: Generated the first RTP packet artifact through the existing report generation route.

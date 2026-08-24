@@ -20,6 +20,12 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
 import {
+  readWorkspaceStageGateTemplateSelection,
+  resolveStageGateTemplateForWorkspace,
+  resolveStageGateTemplateBinding,
+  type StageGateTemplateSelection,
+} from "@/lib/stage-gates/template-loader";
+import {
   checkWorkspaceMembership,
   looksLikePendingSchema,
   type WorkspaceMembershipResult,
@@ -53,6 +59,8 @@ export const maxDuration = 60;
  * re-decided per route.
  */
 const HOME_GEOGRAPHY_WRITE_ACTION = "workspace.configure";
+const STAGE_GATE_CONFIGURATION_COLUMNS =
+  "stage_gate_template_id, stage_gate_template_version, stage_gate_template_selection";
 
 const clearHomeGeographySchema = z.object({
   workspaceId: z.string().uuid(),
@@ -83,6 +91,40 @@ function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok
     return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
   }
   return NextResponse.json({ error: "Failed to verify workspace membership" }, { status: 500 });
+}
+
+function automaticStageGateUpdate(
+  currentSelection: StageGateTemplateSelection | null,
+  workspaceWithGeography: unknown
+):
+  | { kind: "preserve" }
+  | {
+      kind: "update";
+      row: Record<string, unknown>;
+    }
+  | { kind: "ambiguous" }
+  | { kind: "unresolved" } {
+  if (currentSelection === null || currentSelection === "explicitly_requested") {
+    return { kind: "preserve" };
+  }
+
+  const resolution = resolveStageGateTemplateForWorkspace(workspaceWithGeography);
+  if (resolution.kind !== "resolved") return { kind: "unresolved" };
+  if (resolution.binding.interimDefaultReason === "ambiguous_jurisdiction_templates") {
+    return { kind: "ambiguous" };
+  }
+
+  const selection = resolution.binding.templateSelection;
+  if (selection === "explicitly_requested") return { kind: "unresolved" };
+  return {
+    kind: "update",
+    row: {
+      stage_gate_template_id: resolution.binding.templateId,
+      stage_gate_template_version: resolution.binding.templateVersion,
+      stage_gate_template_selection: selection,
+      stage_gate_bound_at: new Date().toISOString(),
+    },
+  };
 }
 
 /**
@@ -216,11 +258,63 @@ export async function PATCH(request: NextRequest) {
 
     const row = homeGeographyFromPlaceBoundary(boundary, { label: parsed.data.label ?? null });
 
-    const { data, error } = await createServiceRoleClient()
+    const currentRead = await supabase
       .from("workspaces")
-      .update(row)
+      .select(STAGE_GATE_CONFIGURATION_COLUMNS)
       .eq("id", parsed.data.workspaceId)
-      .select(HOME_GEOGRAPHY_COLUMNS)
+      .maybeSingle();
+    if (currentRead.error) {
+      if (looksLikePendingSchema(currentRead.error.message)) {
+        return NextResponse.json(
+          {
+            error: "Workspace legal configuration is not available yet",
+            hint: "Apply the latest Supabase migrations before setting a home geography.",
+          },
+          { status: 503 }
+        );
+      }
+      audit.error("home_geography_binding_read_failed", {
+        workspaceId: parsed.data.workspaceId,
+        error: currentRead.error,
+      });
+      return NextResponse.json(
+        { error: "Could not read the workspace's legal configuration, so nothing was changed" },
+        { status: 500 }
+      );
+    }
+
+    const currentSelection = readWorkspaceStageGateTemplateSelection(currentRead.data);
+    const bindingUpdate = automaticStageGateUpdate(currentSelection, row);
+    if (bindingUpdate.kind === "ambiguous") {
+      return NextResponse.json(
+        {
+          error: "More than one stage-gate template covers that jurisdiction",
+          hint: "Choose the workspace's stage-gate template before changing its home geography.",
+        },
+        { status: 409 }
+      );
+    }
+    if (bindingUpdate.kind === "unresolved") {
+      return NextResponse.json(
+        { error: "No usable stage-gate template could be resolved, so nothing was changed" },
+        { status: 409 }
+      );
+    }
+
+    const workspaceUpdate = {
+      ...row,
+      ...(bindingUpdate.kind === "update" ? bindingUpdate.row : {}),
+    };
+    let write = createServiceRoleClient()
+      .from("workspaces")
+      .update(workspaceUpdate)
+      .eq("id", parsed.data.workspaceId);
+    if (bindingUpdate.kind === "update" && currentSelection) {
+      write = write.eq("stage_gate_template_selection", currentSelection);
+    }
+
+    const { data, error } = await write
+      .select(`${HOME_GEOGRAPHY_COLUMNS}, ${STAGE_GATE_CONFIGURATION_COLUMNS}`)
       .maybeSingle();
 
     if (error) {
@@ -238,6 +332,15 @@ export async function PATCH(request: NextRequest) {
         error,
       });
       return NextResponse.json({ error: "Failed to set the home geography" }, { status: 500 });
+    }
+    if (!data) {
+      return NextResponse.json(
+        {
+          error: "The workspace's legal configuration changed while the geography was being saved",
+          hint: "Review the current stage-gate template and try again.",
+        },
+        { status: 409 }
+      );
     }
 
     // When the workspace's home geography is a US county, load that county's
@@ -357,10 +460,57 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { error } = await createServiceRoleClient()
+    const currentRead = await supabase
       .from("workspaces")
-      .update(clearedHomeGeographyRow())
+      .select(STAGE_GATE_CONFIGURATION_COLUMNS)
+      .eq("id", parsed.data.workspaceId)
+      .maybeSingle();
+    if (currentRead.error) {
+      if (looksLikePendingSchema(currentRead.error.message)) {
+        return NextResponse.json(
+          {
+            error: "Workspace legal configuration is not available yet",
+            hint: "Apply the latest Supabase migrations before clearing a home geography.",
+          },
+          { status: 503 }
+        );
+      }
+      audit.error("home_geography_clear_binding_read_failed", {
+        workspaceId: parsed.data.workspaceId,
+        error: currentRead.error,
+      });
+      return NextResponse.json(
+        { error: "Could not read the workspace's legal configuration, so nothing was changed" },
+        { status: 500 }
+      );
+    }
+
+    const currentSelection = readWorkspaceStageGateTemplateSelection(currentRead.data);
+    const resetBinding = resolveStageGateTemplateBinding();
+    const shouldResetBinding =
+      currentSelection === "jurisdiction_matched" ||
+      currentSelection === "interim_unconfigured_default";
+    const clearRow = {
+      ...clearedHomeGeographyRow(),
+      ...(shouldResetBinding
+        ? {
+            stage_gate_template_id: resetBinding.templateId,
+            stage_gate_template_version: resetBinding.templateVersion,
+            stage_gate_template_selection: "interim_unconfigured_default",
+            stage_gate_bound_at: new Date().toISOString(),
+          }
+        : {}),
+    };
+
+    let clearWrite = createServiceRoleClient()
+      .from("workspaces")
+      .update(clearRow)
       .eq("id", parsed.data.workspaceId);
+    if (shouldResetBinding) {
+      clearWrite = clearWrite.eq("stage_gate_template_selection", currentSelection);
+    }
+
+    const { data, error } = await clearWrite.select("id").maybeSingle();
 
     if (error) {
       if (looksLikePendingSchema(error.message)) {
@@ -377,6 +527,15 @@ export async function DELETE(request: NextRequest) {
         error,
       });
       return NextResponse.json({ error: "Failed to clear the home geography" }, { status: 500 });
+    }
+    if (!data) {
+      return NextResponse.json(
+        {
+          error: "The workspace's legal configuration changed while the geography was being cleared",
+          hint: "Review the current stage-gate template and try again.",
+        },
+        { status: 409 }
+      );
     }
 
     audit.info("home_geography_cleared", {

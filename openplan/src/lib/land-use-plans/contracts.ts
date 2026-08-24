@@ -155,6 +155,14 @@ export type ImplementationAction = {
 export type JurisdictionPlanDescriptor = {
   id: string;
   jurisdictionLabel: string;
+  /**
+   * ISO jurisdiction covered by a configured legal bundle. Omitted for the
+   * neutral workflow and descriptors that exist only to prove the shared model.
+   */
+  jurisdictionCoverage?: {
+    country: string;
+    subdivision?: string;
+  };
   authorityScope: string;
   configured: boolean;
   verifiedAt: string;
