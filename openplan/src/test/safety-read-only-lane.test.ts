@@ -269,6 +269,9 @@ describe("the Safety ingest lane reaches the read-only registry", () => {
       yearsCovered: [2024],
       truncated: false,
     });
+    const partiesSpy = probe.adapter.fetchParties
+      ? vi.spyOn(probe.adapter, "fetchParties").mockRejectedValue(new Error("party fetch must stay disabled here"))
+      : null;
 
     const result = await ingestCrashesForStudyArea({
       service: service as never,
@@ -276,6 +279,7 @@ describe("the Safety ingest lane reaches the read-only registry", () => {
       bbox: probe.bbox,
       years: [2024],
       enrichSeriousInjury: false,
+      includeParties: false,
     });
 
     expect(result.status).toBe("ready");
@@ -283,8 +287,10 @@ describe("the Safety ingest lane reaches the read-only registry", () => {
     expect(result.ingestId).not.toBeNull();
     expect(result.crashes).toBeNull();
     expect(service.upserts.flat()).toHaveLength(1);
+    expect(partiesSpy).not.toHaveBeenCalled();
 
     spy.mockRestore();
+    partiesSpy?.mockRestore();
   });
 });
 
@@ -402,6 +408,9 @@ describe("mayStore separates what a viewer may read from what they may store", (
       yearsCovered: [2024],
       truncated: false,
     });
+    const partiesSpy = probe.adapter.fetchParties
+      ? vi.spyOn(probe.adapter, "fetchParties").mockRejectedValue(new Error("party fetch must stay disabled here"))
+      : null;
 
     const result = await ingestCrashesForStudyArea({
       service: service as never,
@@ -410,12 +419,15 @@ describe("mayStore separates what a viewer may read from what they may store", (
       years: [2024],
       mayStore: true,
       enrichSeriousInjury: false,
+      includeParties: false,
     });
 
     expect(result.status).toBe("ready");
     expect(result.stored).toBe(true);
     expect(service.upserts.flat()).toHaveLength(1);
+    expect(partiesSpy).not.toHaveBeenCalled();
 
     spy.mockRestore();
+    partiesSpy?.mockRestore();
   });
 });
