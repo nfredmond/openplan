@@ -21,16 +21,25 @@ stable enough to promise smooth upgrades indefinitely.
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`
 before deploying the app. Migrations
-`20260824000001_safety_ksi_concentrations.sql` and
-`20260824000002_safety_ksi_tract_burden.sql` add tenant-isolated spatial
+`20260824000001_safety_ksi_concentrations.sql`,
+`20260824000002_safety_ksi_tract_burden.sql`, and
+`20260824000003_project_estimated_cost_and_csv_provenance.sql`
+(`project_estimated_cost_and_csv_provenance`) add tenant-isolated spatial
 screening for observed KSI concentrations (`safety_ksi_concentrations`) and
-Census-tract community context (`safety_ksi_tract_burden`).
+Census-tract community context (`safety_ksi_tract_burden`), plus a planning-level
+project cost with currency, price year, and a linked source document.
 
 Fresh-account testing closed three first-week dead ends: a corridor wizard now
 uses the geography submitted on the first click, report packets notice safety
 data added after generation, and safety work produces ranked KSI locations with
 plainly limited community context. A failed optional screening calculation can
 no longer erase crash counts from an otherwise readable packet.
+
+Project candidates can now be reviewed from a CSV attached to the project. A
+planner maps the file's columns, chooses one row, and applies its name,
+description, cost, currency, and source together. Project setup points corridor
+files to the existing Map-tab upload, and a generated PDF is downloadable from
+the report's main preview instead of only from the audit history.
 
 ## 0.28.0 — 2026-08-23
 

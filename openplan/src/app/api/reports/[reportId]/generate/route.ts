@@ -1624,7 +1624,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .eq("workspace_id", report.workspace_id)
         .eq("project_id", projectRow.id)
         .maybeSingle();
-      estimatedCostSourceTitle = sourceResult.error
+      const sourceFailure = classifyRouteReadFailure("the project cost source document", sourceResult);
+      estimatedCostSourceTitle = sourceFailure
         ? null
         : ((sourceResult.data as { title?: string | null } | null)?.title ?? null);
     }

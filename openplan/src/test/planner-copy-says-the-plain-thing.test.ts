@@ -192,7 +192,7 @@ function collectCopy(): string[] {
  * 0 is the assertion that it stays gone.
  */
 const BASELINE: Readonly<Record<string, number>> = {
-  artifact: 44,
+  artifact: 43,
   attribute: 4,
   basemap: 4,
   basis: 23,

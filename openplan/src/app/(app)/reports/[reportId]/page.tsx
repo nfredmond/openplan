@@ -1353,6 +1353,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
         scenarioSetLinks,
       }}
       navigationPreviewProps={{
+        reportId: report.id,
         projectId: project?.id ?? null,
         engagementCampaign,
         engagementPublicHref,

@@ -12,10 +12,7 @@ import {
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
-import {
-  buildAerialProjectPosture,
-  describeAerialProjectPosture,
-} from "@/lib/aerial/public";
+import { buildAerialProjectPosture, describeAerialProjectPosture } from "@/lib/aerial/public";
 import { loadAerialMissionsAndPackagesForProject, loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { buildProjectBudgetSnapshot, type DeliverableBudgetSummary } from "@/lib/projects/budget";
 import { loadProjectBudgetInputs, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
@@ -1377,20 +1374,7 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="funding" active={activeTab === "funding"}>
-          <ProjectEstimatedCostEditor
-            projectId={project.id}
-            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
-            value={{
-              amount: project.estimated_cost_amount,
-              currency: project.estimated_cost_currency,
-              basisYear: project.estimated_cost_basis_year,
-              sourceDocumentId: project.estimated_cost_source_document_id,
-              recordedAt: project.estimated_cost_recorded_at,
-            }}
-            sourceOptions={documentsLane.library.entries
-              .filter((entry) => entry.sourceId === "knowledge_base" && entry.projectId === project.id)
-              .map((entry) => ({ id: entry.id, title: entry.title }))}
-          />
+          <ProjectEstimatedCostEditor project={project} canWrite={!isReadOnlyWorkspaceRole(membership.role)} documents={documentsLane.library.entries} />
           <ProjectFundingPanel
             projectId={project.id}
             workspaceId={project.workspace_id}

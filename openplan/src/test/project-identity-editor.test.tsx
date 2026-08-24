@@ -190,6 +190,16 @@ describe("ProjectIdentityEditor", () => {
     });
   });
 
+  it("points a planner with a corridor file to this project's existing map upload", () => {
+    render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /set study area/i }));
+
+    expect(screen.getByRole("link", { name: /Upload it on this project's Map tab/i })).toHaveAttribute(
+      "href",
+      `/projects/${PROJECT.id}?tab=map#project-map-presence`,
+    );
+  });
+
   it("names the real fallback when no area is set, and never invents one", () => {
     const { rerender } = render(
       <ProjectIdentityEditor project={PROJECT} canWrite workspaceHomeLabel="Franklin County, Ohio" />

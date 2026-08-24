@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { FileOutput, Link2, ScrollText } from "lucide-react";
+import { Download, FileOutput, Link2, ScrollText } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { formatDateTime } from "@/lib/reports/catalog";
 import type { EngagementCampaignLinkRow, ReportArtifact } from "./_types";
 
 type Props = {
+  reportId: string;
   projectId: string | null;
   engagementCampaign: EngagementCampaignLinkRow | null;
   engagementPublicHref: string | null;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function ReportNavigationPreview({
+  reportId,
   projectId,
   engagementCampaign,
   engagementPublicHref,
@@ -78,7 +80,7 @@ export function ReportNavigationPreview({
         </MetaList>
       </article>
 
-      {latestHtml ? (
+      {latestHtml || latestArtifact ? (
         <article className="module-section-surface">
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -86,26 +88,37 @@ export function ReportNavigationPreview({
                 Preview
               </p>
               <h2 className="text-xl font-semibold tracking-tight">
-                Latest HTML artifact
+                Latest report preview
               </h2>
             </div>
-            {latestArtifact ? (
-              <StatusBadge tone="info">
-                {formatDateTime(latestArtifact.generated_at)}
-              </StatusBadge>
-            ) : null}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {latestArtifact ? (
+                <a
+                  className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold transition hover:bg-muted"
+                  href={`/api/reports/${reportId}/artifacts/${latestArtifact.id}/download`}
+                >
+                  <Download className="h-4 w-4" />
+                  Download {latestArtifact.artifact_kind.toUpperCase()}
+                </a>
+              ) : null}
+              {latestArtifact ? <StatusBadge tone="info">{formatDateTime(latestArtifact.generated_at)}</StatusBadge> : null}
+            </div>
           </div>
-          <div className="mt-5 overflow-hidden rounded-[0.5rem] border border-border/70 bg-white shadow-inner">
-            <iframe
-              title="Latest report artifact preview"
-              className="h-[900px] w-full"
-              // Scripts, forms, popups, and top navigation remain disabled.
-              // Same-origin is needed only so private frozen-image requests can
-              // carry the planner's session cookie to their authenticated route.
-              sandbox="allow-same-origin"
-              srcDoc={latestHtml}
-            />
-          </div>
+          {latestHtml ? (
+            <div className="mt-5 overflow-hidden rounded-[0.5rem] border border-border/70 bg-white shadow-inner">
+              <iframe
+                title="Latest report artifact preview"
+                className="h-[900px] w-full"
+                // Scripts, forms, popups, and top navigation remain disabled.
+                // Same-origin is needed only so private frozen-image requests can
+                // carry the planner's session cookie to their authenticated route.
+                sandbox="allow-same-origin"
+                srcDoc={latestHtml}
+              />
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">This file has no in-page preview. Download it to read the report.</p>
+          )}
         </article>
       ) : null}
     </>

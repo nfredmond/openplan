@@ -209,7 +209,7 @@ describe("a safety project's packet carries its crashes", () => {
       });
       expect(html).toContain("CAD");
       expect(html).toContain("1,200,000");
-      expect(html).toContain("Basis year 2026");
+      expect(html).toContain("Price year 2026");
       expect(html).toContain("Source: projects.csv");
       expect(html).toContain("separate from the project-management budget");
     });

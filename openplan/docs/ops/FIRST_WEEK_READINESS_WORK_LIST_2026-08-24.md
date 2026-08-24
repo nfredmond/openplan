@@ -8,6 +8,10 @@ The post-fix California setup check is under `/home/nathaniel/.local/state/openp
 
 The complete seven-job baseline is under `/home/nathaniel/.local/state/openplan/first-week-runs/2026-08-24T07-18-50-771Z/`. The harness verified all seven reports and recorded zero blocked or failed jobs.
 
+The first affected-journey rerun is under `/home/nathaniel/.local/state/openplan/first-week-runs/2026-08-24T08-22-15-277Z/`. It confirmed the earlier safety fixes and exposed the project-import, corridor-discoverability, and PDF-download blockers fixed after that run.
+
+The final affected-journey rerun is under `/home/nathaniel/.local/state/openplan/first-week-runs/2026-08-24T08-58-52-418Z/`. All three jobs completed with no blocked or failed run. The project journey used the reviewed CSV, project map upload, PDF preview, and PDF download from visible entry points.
+
 ## Daily reminders have no in-product enable control
 
 - Reproduce: create an account, finish the home-geography setup, open **My Work**, and read the deadline-reminder status.
@@ -48,13 +52,37 @@ The complete seven-job baseline is under `/home/nathaniel/.local/state/openplan/
 - Milestone decision: confusing, not blocking. The acquisition still carries source, requested period, retrieval time, counts, coverage, and completeness caveats; those facts support a qualified artifact.
 - Follow-up: extend source manifests with a source-published cutoff only when the source itself exposes one. Do not infer a cutoff from the acquisition date.
 
-## CSV intake is citable but not a bulk project importer
+## CSV intake reviews one candidate, not a whole portfolio
 
 - Reproduce: attach a multi-row project CSV in **Documents**, then open the project record.
-- Observed after the milestone fix: OpenPlan can search and cite each parsed row, and a planner can record one candidate's identity and sourced estimated cost. It does not map an entire file into many project records.
+- Observed after the milestone fix: the project Funding tab stores and indexes a CSV, lets the planner map its columns and review the rows, then applies one selected candidate's name, description, estimated cost, currency, and source together. It does not map an entire file into many project records.
 - Evidence: baseline `02-project-end-to-end/agent/evidence/f2.png` and `f2.snapshot.txt`; the post-fix rerun is recorded in the readiness report.
-- Milestone decision: non-blocking after deterministic CSV parsing and the sourced cost field shipped. Bulk import needs explicit column mapping, row review, and duplicate handling; silently guessing those is worse than manual entry.
-- Follow-up: design a reviewed CSV-to-project import using the parsed rows already in the Knowledge Base. Do not add a second upload path.
+- Milestone decision: non-blocking after the reviewed single-candidate path shipped. Bulk import still needs duplicate handling and a per-row create/skip decision; silently creating a portfolio is outside this milestone.
+- Follow-up: extend this reviewed surface if portfolio-scale import becomes a named planner outcome. Reuse the same Knowledge Base upload and project write path.
+
+## Ranked crash locations use coordinates, not inferred road names
+
+- Reproduce: open **Safety**, retrieve crash data, and review **Ranked KSI locations**.
+- Observed: each location shows exact latitude and longitude, crash and KSI counts, source, method, and rank. It does not name a nearby road or intersection.
+- Evidence: affected-journey rerun `04-safety-case/agent/evidence/f1.png` and `f1.snapshot.txt`.
+- Milestone decision: confusing, not blocking. Exact source coordinates are auditable and map correctly; inventing a street label without a named geocoder would weaken the evidence.
+- Follow-up: add an optional geocoding adapter whose provider, lookup date, and returned label are stored beside the coordinate. Keep the coordinate as the source fact.
+
+## The printable project map has no street background
+
+- Reproduce: attach a hand-drawn or uploaded study area and corridor to a project, generate a board packet, and read its project-geography drawing.
+- Observed: the packet draws the stored shapes, extent, orientation, and scale without streets, place labels, or aerial imagery. When the uploaded shape has no resolved place identity, the packet says so.
+- Evidence: final rerun `04-safety-case/agent/evidence/f2.png` and `f2.snapshot.txt`. The harness fixture was near longitude and latitude zero while the workspace was Mendocino County, so assigning it a Mendocino label would have been false.
+- Milestone decision: confusing, not blocking. The drawing is explicit about what it can establish, and the safety evidence names exact source coordinates. A decorative or mismatched street image would be worse than the disclosed gap.
+- Follow-up: research a reproducible, printable, open-data street-background renderer with frozen source/version metadata. Do not screenshot a live tenant map into the evidence packet.
+
+## An unset modeling-worker posture warns before the first run
+
+- Reproduce: leave `OPENPLAN_MODELING_WORKER` unset on a fresh local deployment and open **Overview**.
+- Observed: deployment configuration says the app cannot observe a poller with no heartbeat, warns that the first worker-backed run would wait for the reaper, and gives both supported operator configurations before the planner launches it.
+- Evidence: final rerun `01-first-day-setup/agent/evidence/f1.png` and `f1.snapshot.txt`.
+- Milestone decision: configuration limitation, not a product dead end. The warning is visible before launch and accurately names what the operator must set. This test deployment deliberately did not claim a worker that was not running.
+- Follow-up: add a worker heartbeat so an installed poller can prove liveness rather than relying on operator posture. Keep launch refusal when the deployment explicitly records the worker as absent.
 
 ## Corridor screening scores need a clearer precision posture
 

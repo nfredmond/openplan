@@ -704,10 +704,10 @@ function estimatedProjectCostMarkup(project: ProjectRecord): string {
     : project.estimated_cost_source_document_id
       ? " A source document is linked, but its title could not be read during generation."
       : " No source document is linked.";
-  const basis = project.estimated_cost_basis_year
-    ? ` Basis year ${esc(String(project.estimated_cost_basis_year))}.`
-    : " Basis year not recorded.";
-  return `<p><strong>Planning-level estimated project cost:</strong> ${esc(formatMoney(project.estimated_cost_amount, { precision: "whole", currency: project.estimated_cost_currency, currencyDisplay: "code" }))}.${basis}${source} This is separate from the project-management budget, funding need, and awards.</p>`;
+  const priceYear = project.estimated_cost_basis_year
+    ? ` Price year ${esc(String(project.estimated_cost_basis_year))}.`
+    : " Price year not entered.";
+  return `<p><strong>Planning-level estimated project cost:</strong> ${esc(formatMoney(project.estimated_cost_amount, { precision: "whole", currency: project.estimated_cost_currency, currencyDisplay: "code" }))}.${priceYear}${source} This is separate from the project-management budget, funding need, and awards.</p>`;
 }
 
 function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
