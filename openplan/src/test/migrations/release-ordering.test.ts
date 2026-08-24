@@ -206,6 +206,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260823000001_report_artifact_aerial_preview_mime.sql",
     migrationsAtRelease: 209,
   },
+  // 0.27.0 — complete land-use-plan authoring and administration, with frozen
+  // reviewed/adopted versions, exact map-version references, private tribal
+  // consultation, publication, and annual implementation reports.
+  {
+    tag: "0.27.0",
+    lastMigration: "20260823000006_land_use_plan_report_target.sql",
+    migrationsAtRelease: 214,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

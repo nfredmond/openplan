@@ -111,6 +111,13 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     icon: "rtp",
     paletteKeywords: "regional transportation plan rtp cycles",
   },
+  {
+    href: "/land-use-plans",
+    label: "Land Use Plans",
+    railGroup: "plans",
+    icon: "plans",
+    paletteKeywords: "general plan comprehensive plan specific plan land use elements policies adoption amendments",
+  },
   { href: "/plans", label: "Plans", railGroup: "plans", icon: "plans" },
   {
     href: "/programs",

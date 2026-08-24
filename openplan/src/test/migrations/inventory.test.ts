@@ -418,16 +418,16 @@ const EXPECTED = {
   // and to tablesWithPolicies. It is a deliberate locked table (see the
   // write-policy coverage guard's allowlist). 20260817000001 only replaces the
   // kb_search_chunks function's return columns — a function, not a relation.
-  policies: 646,
-  permissive: 400,
+  policies: 668,
+  permissive: 422,
   restrictive: 246,
-  permissiveWrites: 261,
-  expanded: 264,
-  tablesWithPolicies: 139,
-  relations: 161,
-  tables: 154,
+  permissiveWrites: 272,
+  expanded: 286,
+  tablesWithPolicies: 150,
+  relations: 172,
+  tables: 165,
   views: 7,
-  rlsEnabledTables: 154,
+  rlsEnabledTables: 165,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -560,6 +560,17 @@ describe("migration policy inventory", () => {
       "aerial_evidence_packages",
       "aerial_missions",
       "aerial_project_posture",
+      "land_use_plan_consultation_records",
+      "land_use_plan_content_nodes",
+      "land_use_plan_decisions",
+      "land_use_plan_designation_policy_links",
+      "land_use_plan_designations",
+      "land_use_plan_implementation_actions",
+      "land_use_plan_implementation_reports",
+      "land_use_plan_relationships",
+      "land_use_plan_review_events",
+      "land_use_plan_versions",
+      "land_use_plans",
       "modeling_claim_decisions",
       "modeling_source_manifests",
       "modeling_validation_results",

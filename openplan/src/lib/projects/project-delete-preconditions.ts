@@ -178,6 +178,7 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   // statement that this bike network or this parcel extract was uploaded FOR
   // this project, after which it reads as agency-wide data of unknown origin.
   { table: "workspace_gis_layers", column: "project_id", label: "map layers", severity: "evidence", behavior: "orphan", href: "/data-hub" },
+  { table: "land_use_plan_implementation_actions", column: "project_id", label: "land-use plan implementation actions", severity: "evidence", behavior: "orphan", href: "/land-use-plans" },
   { table: "project_corridors", column: "project_id", label: "corridors", severity: "evidence", behavior: "orphan", href: "/projects/{projectId}" },
   { table: "aerial_missions", column: "project_id", label: "aerial missions", severity: "evidence", behavior: "orphan", href: "/aerial" },
   { table: "aerial_evidence_packages", column: "project_id", label: "aerial evidence packages", severity: "evidence", behavior: "orphan", href: "/aerial" },

@@ -208,7 +208,7 @@ const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // of dividing — a figure the public oversight page subtracts from what came in,
 // so a fabricated row moves the amount the ordinance's own purposes appear to
 // have been given.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 261;
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 272;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

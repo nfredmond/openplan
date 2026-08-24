@@ -82,6 +82,7 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     ]);
     expect(items[1]).toEqual([
       "/rtp·Regional Plan (RTP)",
+      "/land-use-plans·Land Use Plans",
       "/plans·Plans",
       "/programs·Programming Cycles",
     ]);

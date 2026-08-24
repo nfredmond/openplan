@@ -166,6 +166,8 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
     "R1 — list-coupled, RECLASSIFIED 2026-08-22 on the component's OWN evidence. Its submit path carries the comment \"A refused dispatch still writes a row (dispatch_failed), so the list below has to be re-read either way\" — and that list is real: `AerialProcessingJobsPanel` renders directly beneath it on the mission page. A modal would cover the panel at exactly the moment a planner needs to see whether their dispatch landed, or failed. It also probes the worker for stored imagery on mount and reshapes itself around the answer, so the form is a reading of server state as much as a set of questions.",
   "src/app/(app)/models/_components/network-package-upload-form.tsx":
     "R1 — an upload bound to the model's network state, which the person is reading while they upload.",
+  "src/components/land-use-plans/land-use-plan-workbench.tsx":
+    "R3 — the plan workbench is a long-lived editing surface where content, maps, review history, decisions, and annual reporting are revised and compared over years.",
 };
 
 /**

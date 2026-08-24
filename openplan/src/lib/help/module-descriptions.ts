@@ -26,6 +26,8 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
     "Regional transportation plan cycles: project lists, horizon years, the financial picture, performance measures, public draft review, and the comment record.",
   "/plans":
     "The plan documents your agency maintains — chapters, sections, and the evidence behind them.",
+  "/land-use-plans":
+    "Land-use plan authoring from requirements and mapped designations through public review, adoption, publication, and annual implementation reporting.",
   "/programs":
     "Programming cycles and funding windows: which projects are programmed, in which cycle, with what money.",
   "/grants":

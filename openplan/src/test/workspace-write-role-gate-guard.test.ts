@@ -90,6 +90,7 @@ const RECOGNIZED_GATES = [
   "authorizeMeasureWrite",
   "loadModelAccess",
   "loadPlanAccess",
+  "loadLandUsePlanAccess",
   "loadProgramAccess",
   "loadProjectAccess",
   "loadScenarioSetAccess",
@@ -220,8 +221,11 @@ describe("every mutating workspace route authorizes by ROLE, not by row visibili
     // future `loadSomethingAccess` that only checks membership could be added to
     // the list above and silently reopen this whole class of bug.
     const sources = collectSourceFiles(path.join(process.cwd(), "src"));
+    // Require an invocation, not an import. An imported
+    // `canAccessWorkspaceAction` used to satisfy this assertion even after the
+    // helper's actual call was removed.
     const ROLE_CHECK =
-      /canAccessWorkspaceAction|isReadOnlyWorkspaceRole|normalizeWorkspaceRole|requireWorkspaceWriteAccess|role === "owner"/;
+      /(?:canAccessWorkspaceAction|isReadOnlyWorkspaceRole|normalizeWorkspaceRole|requireWorkspaceWriteAccess)\s*\(|role\s*===\s*["']owner["']/;
 
     const unproven: string[] = [];
     for (const gate of RECOGNIZED_GATES) {
@@ -236,7 +240,11 @@ describe("every mutating workspace route authorizes by ROLE, not by row visibili
       }
 
       for (const { file, source } of definingFiles) {
-        if (!ROLE_CHECK.test(source)) {
+        const executableSource = source.replace(
+          /(?:export\s+)?(?:async\s+)?function\s+[A-Za-z0-9_]+\s*\(/g,
+          "function-definition "
+        );
+        if (!ROLE_CHECK.test(executableSource)) {
           unproven.push(`${gate} → defined in ${file} without any role check`);
         }
       }

@@ -1,4 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer, queryCatalog } from "./helpers/live-catalog";
 import { loadPolicyInventory } from "./migrations/policy-inventory";
@@ -39,7 +41,29 @@ describe("migration inventory (offline)", () => {
     // Without this the live half could pass against an empty inventory.
     expect(schema.tables().length).toBeGreaterThan(110);
     expect(policies.all().length).toBeGreaterThan(500);
-    expect(policies.all().filter((policy) => policy.origin === "expanded").length).toBe(264);
+    expect(policies.all().filter((policy) => policy.origin === "expanded").length).toBe(286);
+  });
+
+  it("compacts writer policies for every Land Use Plans table", () => {
+    const migration = readFileSync(
+      path.resolve(__dirname, "../../supabase/migrations/20260823000003_land_use_plan_policy_compaction.sql"),
+      "utf8",
+    );
+    for (const table of [
+      "land_use_plans",
+      "land_use_plan_versions",
+      "land_use_plan_content_nodes",
+      "land_use_plan_relationships",
+      "land_use_plan_review_events",
+      "land_use_plan_designations",
+      "land_use_plan_designation_policy_links",
+      "land_use_plan_implementation_actions",
+      "land_use_plan_decisions",
+      "land_use_plan_implementation_reports",
+      "land_use_plan_consultation_records",
+    ]) {
+      expect(migration, `${table} must not retain the three-policy writer expansion`).toContain(`'${table}'`);
+    }
   });
 });
 

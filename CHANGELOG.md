@@ -21,6 +21,33 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.27.0 — 2026-08-23
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. This release adds and then hardens the land-use-plan
+schema in five additive migrations:
+
+- `land_use_plans` (`20260823000002`)
+- `land_use_plan_policy_compaction` (`20260823000003`)
+- `land_use_plan_workspace_cascade` (`20260823000004`)
+- `land_use_plan_append_only_cascade` (`20260823000005`)
+- `land_use_plan_report_target` (`20260823000006`)
+
+### Land-use plans can now be authored from setup through annual reporting
+
+A planner can start a California general plan, write and organize every
+applicable element, connect exact versions of mapped designations and delivery
+work, save review and consultation history, freeze the public draft, adopt the
+exact reviewed hash, publish the frozen plan, and produce annual implementation
+reports. Amendments fork a new working version; adopted content is never edited
+in place.
+
+California is the first configured legal source bundle. Other places can use
+the neutral workflow with an explicit notice that local legal requirements are
+not configured. OpenPlan tracks requirements and evidence but does not certify
+legal sufficiency. Confidential tribal-consultation notes and sensitive
+locations remain private and are excluded from publication.
+
 ## 0.26.0 — 2026-08-23
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

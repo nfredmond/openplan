@@ -686,6 +686,46 @@ const narrativeDraftsSource: MyWorkSource = {
     }),
 };
 
+const landUsePlanActionsSource: MyWorkSource = {
+  id: "land_use_plan_actions",
+  label: "Plan implementation",
+  readLabel: "land use plan implementation actions",
+  block: "deadlines",
+  table: "land_use_plan_implementation_actions",
+  select: "id, version_id, title, status, due_on, responsible_party, assignee_user_id, land_use_plan_versions!inner(plan_id, land_use_plans!inner(id, title, workspace_id))",
+  workspaceFilterColumn: "land_use_plan_versions.land_use_plans.workspace_id",
+  assigneeColumn: "assignee_user_id",
+  orderColumn: "due_on",
+  orderAscending: true,
+  staticFilters: [
+    { kind: "notNull", column: "due_on" },
+    { kind: "notIn", column: "status", values: ["completed", "deferred"] },
+  ],
+  toItems: (rows, { now }) => rows.map((row) => {
+    const version = embedded(row.land_use_plan_versions);
+    const plan = embedded(version?.land_use_plans);
+    const dueOn = asString(row.due_on);
+    const overdue = isDeadlinePast(dueOn, now);
+    const planId = asString(plan?.id);
+    return {
+      sourceId: "land_use_plan_actions",
+      block: "deadlines",
+      id: String(row.id),
+      title: asString(row.title) ?? "(untitled plan action)",
+      projectId: null,
+      projectName: asString(plan?.title),
+      dueOn,
+      isOverdue: overdue,
+      ...assigneeKey(row),
+      ownerLabel: asString(row.responsible_party),
+      badge: deadlineBadge("Plan action", overdue),
+      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · due ${formatWorkDeadlineDate(dueOn)}`,
+      href: planId ? `/land-use-plans/${planId}` : "/land-use-plans",
+      dedupKey: null,
+    } satisfies MyWorkItem;
+  }),
+};
+
 // ── 9. Grant decisions — the shared predicates, used verbatim ───────────────
 
 const grantDecisionsSource: MyWorkSource = {
@@ -867,6 +907,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   engagementModerationSource,
   failedModelRunsSource,
   narrativeDraftsSource,
+  landUsePlanActionsSource,
   grantDecisionsSource,
   awardObligationsSource,
   invoiceWindowsSource,

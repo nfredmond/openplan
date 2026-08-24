@@ -79,6 +79,10 @@ type SeedContext = {
   reportBId: string;
   engagementCampaignBId: string;
   engagementQuestionBId: string;
+  landUsePlanBId: string;
+  landUsePlanVersionBId: string;
+  landUsePlanNodeBId: string;
+  landUsePlanDesignationBId: string;
 };
 
 type ReadResult = {
@@ -1015,6 +1019,144 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       created_by: userBId,
     }),
   },
+  {
+    table: "land_use_plans",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, userBId, suffix }) => ({
+      id: landUsePlanBId,
+      workspace_id: workspaceBId,
+      title: `RLS land use plan ${suffix}`,
+      descriptor_id: "us-ca-general-plan",
+      plan_kind_key: "comprehensive",
+      authority_label: `RLS authority ${suffix}`,
+      geography_label: `RLS geography ${suffix}`,
+      created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_versions",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, userBId }) => ({
+      id: landUsePlanVersionBId,
+      workspace_id: workspaceBId,
+      plan_id: landUsePlanBId,
+      version_number: 1,
+      version_kind: "original",
+      state: "working",
+      applicable_requirement_keys: ["land_use"],
+      created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_content_nodes",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanVersionBId, landUsePlanNodeBId, userBId }) => ({
+      id: landUsePlanNodeBId,
+      workspace_id: workspaceBId,
+      version_id: landUsePlanVersionBId,
+      node_kind: "policy",
+      title: "RLS policy",
+      body: "RLS policy body",
+      created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_relationships",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, plan_id: landUsePlanBId,
+      version_id: landUsePlanVersionBId, related_plan_label: "RLS related plan",
+      relationship_kind: "overlapping", created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_review_events",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanVersionBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, version_id: landUsePlanVersionBId,
+      event_kind: "hearing", occurred_on: "2099-12-31", created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_designations",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanVersionBId, landUsePlanDesignationBId, gisLayerBId, gisLayerVersionBId, userBId }) => ({
+      id: landUsePlanDesignationBId, workspace_id: workspaceBId, version_id: landUsePlanVersionBId,
+      layer_id: gisLayerBId, layer_version_id: gisLayerVersionBId,
+      designation_set_label: "RLS designations", created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_designation_policy_links",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanVersionBId, landUsePlanDesignationBId, landUsePlanNodeBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, version_id: landUsePlanVersionBId,
+      designation_id: landUsePlanDesignationBId, policy_node_id: landUsePlanNodeBId, created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_implementation_actions",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanVersionBId, landUsePlanNodeBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, version_id: landUsePlanVersionBId,
+      content_node_id: landUsePlanNodeBId, title: "RLS implementation action",
+      status: "not_started", created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_decisions",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, kbDocumentBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, plan_id: landUsePlanBId,
+      version_id: landUsePlanVersionBId, version_content_hash: "a".repeat(64),
+      decision_kind: "adoption", decision_body: "RLS body", instrument_type: "RLS instrument",
+      instrument_identifier: "RLS-1", decided_on: "2099-12-31",
+      supporting_document_id: kbDocumentBId, created_by: userBId,
+    }),
+    seedSql: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, kbDocumentBId, userBId }) =>
+      `UPDATE public.land_use_plan_versions
+         SET state = 'public_review', content_hash = '${"a".repeat(64)}', frozen_snapshot = '{}'::jsonb,
+             frozen_at = '2099-12-31T00:00:00Z', frozen_by = '${userBId}'
+       WHERE id = '${landUsePlanVersionBId}';
+       INSERT INTO public.land_use_plan_decisions
+         (id, workspace_id, plan_id, version_id, version_content_hash, decision_kind,
+          decision_body, instrument_type, instrument_identifier, decided_on,
+          supporting_document_id, created_by)
+       VALUES (gen_random_uuid(), '${workspaceBId}', '${landUsePlanBId}', '${landUsePlanVersionBId}',
+          '${"a".repeat(64)}', 'adoption', 'RLS body', 'RLS instrument', 'RLS-1',
+          '2099-12-31', '${kbDocumentBId}', '${userBId}')`,
+  },
+  {
+    table: "land_use_plan_implementation_reports",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, reportBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, plan_id: landUsePlanBId,
+      adopted_version_id: landUsePlanVersionBId, reporting_period_start: "2099-01-01",
+      reporting_period_end: "2099-12-31", action_status_snapshot: [],
+      content_hash: "b".repeat(64), report_id: reportBId, generated_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_consultation_records",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, plan_id: landUsePlanBId,
+      version_id: landUsePlanVersionBId, status: "in_progress",
+      confidential_notes: "RLS private consultation note", contains_sensitive_locations: true,
+      created_by: userBId,
+    }),
+  },
 ];
 
 const INSERT_ORDER = [
@@ -1085,7 +1227,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(64);
+    expect(tables).toHaveLength(75);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1113,6 +1255,17 @@ describe("workspace RLS isolation inventory", () => {
       "gtfs_tract_service",
       "kb_document_chunks",
       "kb_documents",
+      "land_use_plan_consultation_records",
+      "land_use_plan_content_nodes",
+      "land_use_plan_decisions",
+      "land_use_plan_designation_policy_links",
+      "land_use_plan_designations",
+      "land_use_plan_implementation_actions",
+      "land_use_plan_implementation_reports",
+      "land_use_plan_relationships",
+      "land_use_plan_review_events",
+      "land_use_plan_versions",
+      "land_use_plans",
       "model_run_kpis",
       "model_runs",
       "modeling_claim_decisions",
@@ -1588,6 +1741,10 @@ liveDescribe("workspace RLS live isolation", () => {
       reportBId: randomUUID(),
       engagementCampaignBId: randomUUID(),
       engagementQuestionBId: randomUUID(),
+      landUsePlanBId: randomUUID(),
+      landUsePlanVersionBId: randomUUID(),
+      landUsePlanNodeBId: randomUUID(),
+      landUsePlanDesignationBId: randomUUID(),
     };
 
     await mustInsert(service, "workspaces", {

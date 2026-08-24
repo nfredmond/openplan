@@ -75,8 +75,12 @@ export function executeSql(container: string, statement: string): void {
 export function queryCatalog(container: string, query: string): string[] {
   const output = execFileSync(
     "docker",
-    ["exec", container, "psql", "-U", "postgres", "-d", "postgres", "-tAc", query],
-    { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 }
+    ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-tA"],
+    {
+      encoding: "utf8",
+      input: query,
+      maxBuffer: 32 * 1024 * 1024,
+    }
   );
   return output.split(/\r?\n/).filter((line) => line.trim().length > 0);
 }

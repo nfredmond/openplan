@@ -1,6 +1,8 @@
 # Land Use Plans module backlog
 
-Status: approved future module, not scheduled ahead of the active 0.26.0 milestone.
+Status: implemented for 0.27.0. California is the first configured bundle;
+Washington, Texas, and Navajo cases remain neutrality fixtures rather than
+configured legal bundles.
 
 Nathaniel approved this as a deliberate exception to OpenPlan's usual rule against adding modules
 on 2026-08-23. OpenPlan needs a plan-authoring and administration module for cities, counties,
@@ -44,7 +46,13 @@ though the two plan types were interchangeable would hide those differences.
 - OpenPlan remains useful without AI and without a jurisdiction-specific bundle. Missing local rules
   must be disclosed as unsupported, never replaced with generic requirements presented as law.
 
-## Decisions to research before implementation
+## Decisions researched for the first implementation
+
+The dated primary-source review is
+`openplan/docs/research/LAND_USE_PLAN_JURISDICTION_RESEARCH_2026-08-23.md`.
+It supports the California bundle's scoped requirements and the three neutral
+model fixtures; it does not claim complete legal configuration outside
+California.
 
 - The smallest shared plan model that can express general, comprehensive, specific, area, community,
   neighborhood, and tribal plans without flattening their differences.
@@ -53,6 +61,6 @@ though the two plan types were interchangeable would hide those differences.
 - Versioning and amendment semantics, including partial amendments and concurrent subordinate plans.
 - The first complete jurisdiction bundle and the evidence required to claim that bundle is complete.
 
-Do not begin schema or UI work from this brief alone. Start with a current review of primary legal
-and planning sources across several jurisdictions, then write and approve a staged implementation
-plan. The module is approved; its detailed product model is not yet settled.
+Future jurisdiction bundles still require a current primary-source review. Do
+not promote a neutrality fixture into a configured legal bundle merely because
+the shared model can represent it.
