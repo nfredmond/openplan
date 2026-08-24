@@ -165,6 +165,7 @@ describe("county onramp client helpers", () => {
                 nhbScalar: null,
               },
               artifactTargets: {
+                attemptDirectory: "/tmp/attempt",
                 scaffoldCsvPath: "/tmp/scaffold.csv",
                 reviewPacketMdPath: "/tmp/review.md",
                 manifestPath: "/tmp/manifest.json",

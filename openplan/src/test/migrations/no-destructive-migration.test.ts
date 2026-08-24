@@ -125,6 +125,13 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "backfills a deterministic feature hash only on already-finalized GIS versions whose new " +
       "feature_hash column is still NULL; geometry and source attributes are unchanged",
   },
+  {
+    file: "20260824000005_county_run_worker_lifecycle.sql",
+    kind: "update",
+    reason:
+      "renames the pre-existing submitted lifecycle value to queued before narrowing the CHECK; " +
+      "the job identity, payload, timestamps, and every other run field are preserved",
+  },
 ];
 
 /**

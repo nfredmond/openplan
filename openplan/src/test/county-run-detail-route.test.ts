@@ -66,10 +66,39 @@ describe("GET /api/county-runs/[countyRunId]", () => {
         run_name: "nevada-run",
         stage: "validated-screening",
         status_label: "bounded screening-ready",
-        enqueue_status: "submitted",
+        enqueue_status: "completed",
         last_enqueued_at: "2026-03-24T23:05:00Z",
         worker_job_id: "123e4567-e89b-12d3-a456-426614174999",
-        worker_payload_json: {},
+        worker_payload_json: {
+          jobId: "123e4567-e89b-12d3-a456-426614174999",
+          countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          workspaceId: "11111111-1111-4111-8111-111111111111",
+          runName: "nevada-run",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            calibrateToCounts: false,
+            overallDemandScalar: 0.369,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+          },
+          artifactTargets: {
+            attemptDirectory: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999",
+            scaffoldCsvPath: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999/validation-scaffold.csv",
+            reviewPacketMdPath: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999/validation-review-packet.md",
+            manifestPath: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999/manifest.json",
+          },
+          callback: {
+            manifestIngestUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest",
+            hasBearerToken: false,
+          },
+        },
         worker_url: "https://worker.example/jobs",
         worker_dispatch_error: null,
         requested_runtime_json: {
@@ -257,7 +286,7 @@ describe("GET /api/county-runs/[countyRunId]", () => {
     const payload = await response.json();
     expect(payload.stage).toBe("validated-screening");
     expect(payload.statusLabel).toBe("bounded screening-ready");
-    expect(payload.enqueueStatus).toBe("submitted");
+    expect(payload.enqueueStatus).toBe("completed");
     expect(payload.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
     expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.artifacts).toEqual([

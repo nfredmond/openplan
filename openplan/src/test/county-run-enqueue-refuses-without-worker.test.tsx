@@ -1,10 +1,11 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CountyRunDetailClient } from "@/components/county-runs/county-run-detail-client";
 import { CountyRunsPageClient } from "@/components/county-runs/county-runs-page-client";
 
 const enqueueMock = vi.fn();
+const cancelMock = vi.fn();
 const createCountyRunMock = vi.fn();
 const useCountyRunDetailMock = vi.fn();
 const useCountyRunsMock = vi.fn();
@@ -32,6 +33,7 @@ vi.mock("@/lib/hooks/use-county-onramp", () => ({
   useCountyRunDetail: (...args: unknown[]) => useCountyRunDetailMock(...args),
   useCountyRunMutations: () => ({
     enqueue: enqueueMock,
+    cancel: cancelMock,
     create: createCountyRunMock,
     loading: false,
     error: null,
@@ -62,6 +64,7 @@ function detailData(overrides: Record<string, unknown> = {}) {
 describe("county run handoff where no county onramp worker is configured", () => {
   beforeEach(() => {
     enqueueMock.mockReset();
+    cancelMock.mockReset();
     createCountyRunMock.mockReset();
     useCountyRunDetailMock.mockReset();
     useCountyRunsMock.mockReset();
@@ -114,9 +117,9 @@ describe("county run handoff where no county onramp worker is configured", () =>
     expect(enqueueMock).toHaveBeenCalledWith(COUNTY_RUN_ID);
   });
 
-  it("does not refuse a run that was really submitted to a worker", () => {
+  it("does not refuse a run that was really queued on a worker", () => {
     useCountyRunDetailMock.mockReturnValue({
-      data: detailData({ enqueueStatus: "submitted", workerUrl: "https://worker.example/jobs" }),
+      data: detailData({ enqueueStatus: "queued", workerUrl: "https://worker.example/jobs" }),
       loading: false,
       error: null,
       refresh: vi.fn(),
@@ -124,6 +127,25 @@ describe("county run handoff where no county onramp worker is configured", () =>
 
     render(<CountyRunDetailClient countyRunId={COUNTY_RUN_ID} />);
     expect(screen.queryByTestId("county-enqueue-refusal")).toBeNull();
+  });
+
+  it("gives a planner a confirmed cancel control for an active attempt", async () => {
+    const refresh = vi.fn();
+    cancelMock.mockResolvedValue(true);
+    useCountyRunDetailMock.mockReturnValue({
+      data: detailData({ enqueueStatus: "running", workerUrl: "https://worker.example/jobs" }),
+      loading: false,
+      error: null,
+      refresh,
+    });
+    render(<CountyRunDetailClient countyRunId={COUNTY_RUN_ID} />);
+    fireEvent.click(screen.getByRole("button", { name: "Cancel run" }));
+    expect(screen.getByRole("alertdialog")).toHaveTextContent(
+      /partial files will remain in the attempt directory/i
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Stop this run" }));
+
+    await waitFor(() => expect(cancelMock).toHaveBeenCalledWith(COUNTY_RUN_ID));
   });
 });
 
@@ -225,7 +247,7 @@ describe("county run launch control on a deployment with no worker", () => {
           geographyLabel: "Franklin County, Ohio",
           runName: "franklin-runtime",
           stage: "bootstrap-incomplete",
-          enqueueStatus: "submitted",
+          enqueueStatus: "queued",
           updatedAt: "2026-07-28T11:00:00Z",
         },
       ],

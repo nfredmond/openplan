@@ -3,7 +3,7 @@
 ## Status
 
 Accepted (2026-08-08) — scope decided and **approved by Nathaniel the same day**; implementation
-not started. The executable plan is `docs/plans/2026-08-08-mcp-server-implementation-plan.md`.
+is deferred in `docs/ROADMAP.md` until the existing modules are mature.
 
 Decides: **build an OpenPlan MCP _server_, read-only first, propose-with-approval second.**
 Refuses (with reasons, below): **OpenPlan as an MCP _client_**, sampling, MCP Apps, and any

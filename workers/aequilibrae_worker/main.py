@@ -5979,7 +5979,7 @@ def mark_stage_skipped(stage: dict, reason: str):
 
 
 # This worker owns exactly these stage names. Other workers (e.g. the
-# ActivitySim behavioral-preflight worker) poll the same model_run_stages table,
+# ActivitySim behavioral worker) poll the same model_run_stages table,
 # so the poll query is scoped by name — otherwise this worker would claim a
 # behavioral ActivitySim stage it has no code to run. A behavioral_demand run's
 # screening portion reuses these same names, so those stages are still claimed.

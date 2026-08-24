@@ -10,6 +10,7 @@ const countyRunEqMock = vi.fn();
 const countyRunMaybeSingleMock = vi.fn();
 const countyRunUpdateMock = vi.fn();
 const countyRunUpdateEqMock = vi.fn();
+const countyRunClaimMaybeSingleMock = vi.fn();
 const membershipMaybeSingleMock = vi.fn();
 const dispatchCountyOnrampJobMock = vi.fn();
 
@@ -78,8 +79,19 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     });
     countyRunEqMock.mockReturnValue({ maybeSingle: countyRunMaybeSingleMock });
     countyRunSelectMock.mockReturnValue({ eq: countyRunEqMock });
-    countyRunUpdateEqMock.mockResolvedValue({ error: null });
+    countyRunUpdateEqMock.mockReturnValue({
+      in: () => ({
+        select: () => ({ maybeSingle: countyRunClaimMaybeSingleMock }),
+      }),
+      eq: vi.fn().mockReturnValue({
+        select: () => ({ maybeSingle: countyRunClaimMaybeSingleMock }),
+      }),
+    });
     countyRunUpdateMock.mockReturnValue({ eq: countyRunUpdateEqMock });
+    countyRunClaimMaybeSingleMock.mockResolvedValue({
+      data: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
+      error: null,
+    });
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     fromMock.mockImplementation((table: string) => {
@@ -139,7 +151,7 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
   it("submits configured worker dispatches without leaking the callback bearer", async () => {
     vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
     vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_WORKER_URL", "https://worker.example/jobs");
-    dispatchCountyOnrampJobMock.mockResolvedValue({ deliveryMode: "submitted", workerUrl: "https://worker.example/jobs" });
+    dispatchCountyOnrampJobMock.mockResolvedValue({ deliveryMode: "queued", workerUrl: "https://worker.example/jobs" });
 
     const response = await postCountyRunEnqueue(request(), {
       params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
@@ -147,7 +159,7 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
 
     expect(response.status).toBe(200);
     const payload = await response.json();
-    expect(payload.status).toBe("submitted");
+    expect(payload.status).toBe("queued");
     expect(payload.workerUrl).toBe("https://worker.example/jobs");
     expect(payload.workerPayload.callback).toEqual({
       manifestIngestUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest",
@@ -162,7 +174,7 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     );
     expect(countyRunUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        enqueue_status: "submitted",
+        enqueue_status: "queued",
         worker_url: "https://worker.example/jobs",
         worker_payload_json: payload.workerPayload,
       })
@@ -200,6 +212,17 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     });
 
     expect(response.status).toBe(409);
+  });
+
+  it("does not dispatch when another request wins the active-attempt claim", async () => {
+    countyRunClaimMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const response = await postCountyRunEnqueue(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(409);
+    expect(dispatchCountyOnrampJobMock).not.toHaveBeenCalled();
   });
 
   it("returns 401 when unauthenticated", async () => {

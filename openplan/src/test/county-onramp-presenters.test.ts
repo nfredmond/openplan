@@ -104,8 +104,39 @@ describe("county onramp presenters", () => {
         run_name: "nevada-run",
         stage: "validated-screening",
         status_label: "bounded screening-ready",
-        enqueue_status: "submitted",
+        enqueue_status: "queued",
         last_enqueued_at: "2026-03-24T23:05:00Z",
+        worker_job_id: "123e4567-e89b-12d3-a456-426614174999",
+        worker_payload_json: {
+          jobId: "123e4567-e89b-12d3-a456-426614174999",
+          countyRunId: "123e4567-e89b-12d3-a456-426614174000",
+          workspaceId: "123e4567-e89b-12d3-a456-426614174001",
+          runName: "nevada-run",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            calibrateToCounts: false,
+            overallDemandScalar: 0.369,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+          },
+          artifactTargets: {
+            attemptDirectory: "data/screening-runs/123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174999",
+            scaffoldCsvPath: "data/screening-runs/123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174999/validation-scaffold.csv",
+            reviewPacketMdPath: "data/screening-runs/123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174999/validation-review-packet.md",
+            manifestPath: "data/screening-runs/123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174999/manifest.json",
+          },
+          callback: {
+            manifestIngestUrl: "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174000/manifest",
+            hasBearerToken: false,
+          },
+        },
         requested_runtime_json: {
           workspaceId: "123e4567-e89b-12d3-a456-426614174001",
           geographyType: "county_fips",
@@ -131,14 +162,56 @@ describe("county onramp presenters", () => {
     });
 
     expect(detail.geographyLabel).toBe("Nevada County, CA");
-    expect(detail.enqueueStatus).toBe("submitted");
+    expect(detail.enqueueStatus).toBe("queued");
     expect(detail.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
     expect(detail.manifest?.stage).toBe("validated-screening");
     expect(detail.workerPayload?.callback.manifestIngestUrl).toBe(
       "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174000/manifest"
     );
     expect(detail.workerPayload?.callback.hasBearerToken).toBe(false);
+    expect(detail.workerPayload?.artifactTargets.attemptDirectory).toContain(
+      "/123e4567-e89b-12d3-a456-426614174999"
+    );
     expect(detail.artifacts).toEqual([{ artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" }]);
     expect(detail.validationSummary).toEqual({ screening_gate: { status_label: "bounded screening-ready" } });
+  });
+
+  it("does not invent an unstored worker attempt", () => {
+    const detail = presentCountyRunDetail({
+      row: {
+        id: "123e4567-e89b-12d3-a456-426614174000",
+        workspace_id: "123e4567-e89b-12d3-a456-426614174001",
+        geography_type: "county_fips",
+        geography_id: "06057",
+        geography_label: "Nevada County, CA",
+        run_name: "nevada-run",
+        stage: "bootstrap-incomplete",
+        status_label: null,
+        enqueue_status: "not-enqueued",
+        requested_runtime_json: {
+          workspaceId: "123e4567-e89b-12d3-a456-426614174001",
+          geographyType: "county_fips",
+          geographyId: "06057",
+          geographyLabel: "Nevada County, CA",
+          runName: "nevada-run",
+          countyPrefix: "NEVADA",
+          runtimeOptions: {
+            keepProject: true,
+            force: true,
+            calibrateToCounts: false,
+            overallDemandScalar: null,
+            externalDemandScalar: null,
+            hbwScalar: null,
+            hboScalar: null,
+            nhbScalar: null,
+          },
+        },
+      },
+      artifacts: [],
+      origin: "https://openplan.example.com",
+    });
+
+    expect(detail.workerPayload).toBeNull();
+    expect(detail.workerJobId).toBeNull();
   });
 });

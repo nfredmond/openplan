@@ -12,7 +12,9 @@ const countyRunMaybeSingleMock = vi.fn();
 const countyRunUpdateMock = vi.fn();
 const countyRunUpdateEqMock = vi.fn();
 const countyRunUpdateSelectMock = vi.fn();
+const countyRunUpdateSelectEqMock = vi.fn();
 const countyRunUpdateSingleMock = vi.fn();
+const countyRunLifecycleMaybeSingleMock = vi.fn();
 const artifactDeleteMock = vi.fn();
 const artifactDeleteEqMock = vi.fn();
 const artifactInsertMock = vi.fn();
@@ -115,6 +117,37 @@ const manifest = {
   },
 } as const;
 
+const storedWorkerPayload = {
+  jobId: "123e4567-e89b-12d3-a456-426614174999",
+  countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  workspaceId: "11111111-1111-4111-8111-111111111111",
+  runName: "old-run",
+  geographyType: "county_fips",
+  geographyId: "06057",
+  geographyLabel: "Nevada County, CA",
+  countyPrefix: "NEVADA",
+  runtimeOptions: {
+    keepProject: true,
+    force: true,
+    calibrateToCounts: false,
+    overallDemandScalar: 0.369,
+    externalDemandScalar: null,
+    hbwScalar: null,
+    hboScalar: null,
+    nhbScalar: null,
+  },
+  artifactTargets: {
+    attemptDirectory: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999",
+    scaffoldCsvPath: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999/validation-scaffold.csv",
+    reviewPacketMdPath: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999/validation-review-packet.md",
+    manifestPath: "data/screening-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/123e4567-e89b-12d3-a456-426614174999/manifest.json",
+  },
+  callback: {
+    manifestIngestUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest",
+    hasBearerToken: true,
+  },
+} as const;
+
 describe("POST /api/county-runs/[countyRunId]/manifest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -137,8 +170,10 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         run_name: "old-run",
         stage: "bootstrap-incomplete",
         status_label: null,
-        enqueue_status: "not-enqueued",
+        enqueue_status: "queued",
         last_enqueued_at: null,
+        worker_job_id: "123e4567-e89b-12d3-a456-426614174999",
+        worker_payload_json: storedWorkerPayload,
         requested_runtime_json: {
           workspaceId: "11111111-1111-4111-8111-111111111111",
           geographyType: "county_fips",
@@ -174,10 +209,10 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         run_name: manifest.name,
         stage: "validated-screening",
         status_label: "bounded screening-ready",
-        enqueue_status: "submitted",
+        enqueue_status: "completed",
         last_enqueued_at: "2026-03-24T23:05:00Z",
         worker_job_id: "123e4567-e89b-12d3-a456-426614174999",
-        worker_payload_json: {},
+        worker_payload_json: storedWorkerPayload,
         worker_url: "https://worker.example/jobs",
         worker_dispatch_error: null,
         requested_runtime_json: {
@@ -202,8 +237,22 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       },
       error: null,
     });
-    countyRunUpdateSelectMock.mockReturnValue({ single: countyRunUpdateSingleMock });
-    countyRunUpdateEqMock.mockReturnValue({ select: countyRunUpdateSelectMock });
+    countyRunLifecycleMaybeSingleMock.mockResolvedValue({
+      data: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
+      error: null,
+    });
+    countyRunUpdateSelectEqMock.mockReturnValue({ maybeSingle: countyRunLifecycleMaybeSingleMock });
+    countyRunUpdateSelectMock.mockReturnValue({
+      single: countyRunUpdateSingleMock,
+      maybeSingle: countyRunLifecycleMaybeSingleMock,
+      eq: countyRunUpdateSelectEqMock,
+    });
+    countyRunUpdateEqMock.mockReturnValue({
+      select: countyRunUpdateSelectMock,
+      eq: vi.fn().mockReturnValue({
+        in: vi.fn().mockReturnValue({ select: countyRunUpdateSelectMock }),
+      }),
+    });
     countyRunUpdateMock.mockReturnValue({ eq: countyRunUpdateEqMock });
 
     artifactDeleteEqMock.mockResolvedValue({ error: null });
@@ -297,7 +346,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     const payload = await response.json();
     expect(payload.stage).toBe("validated-screening");
     expect(payload.statusLabel).toBe("bounded screening-ready");
-    expect(payload.enqueueStatus).toBe("submitted");
+    expect(payload.enqueueStatus).toBe("completed");
     expect(payload.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
     expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.manifest.stage).toBe("validated-screening");
@@ -344,10 +393,6 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
   });
 
   it("records worker failure callbacks", async () => {
-    countyRunUpdateMock.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
-
     const response = await postCountyRunManifest(
       jsonRequest({ status: "failed", error: { message: "Worker crashed" } }),
       {
@@ -372,9 +417,6 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
   it("accepts valid callback bearer failure updates through the service-role client", async () => {
     vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
     authGetUserMock.mockResolvedValue({ data: { user: null } });
-    countyRunUpdateMock.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
 
     const response = await postCountyRunManifest(
       bearerJsonRequest({ status: "failed", jobId: "123e4567-e89b-12d3-a456-426614174999", error: { message: "Worker crashed" } }),
@@ -392,6 +434,84 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         worker_dispatch_error: "Worker crashed",
       })
     );
+  });
+
+  it("requires a job id on every bearer-authenticated callback", async () => {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+
+    const response = await postCountyRunManifest(
+      bearerJsonRequest({ status: "failed", error: { message: "Worker crashed" } }),
+      { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(countyRunUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a stale callback before it can change the run or artifacts", async () => {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+
+    const response = await postCountyRunManifest(
+      bearerJsonRequest({
+        status: "completed",
+        jobId: "123e4567-e89b-12d3-a456-426614174998",
+        manifest,
+      }),
+      { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) }
+    );
+
+    expect(response.status).toBe(409);
+    expect(countyRunUpdateMock).not.toHaveBeenCalled();
+    expect(artifactDeleteMock).not.toHaveBeenCalled();
+    expect(artifactInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("records a running callback and heartbeat for the active job", async () => {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+
+    const response = await postCountyRunManifest(
+      bearerJsonRequest({ status: "running", jobId: "123e4567-e89b-12d3-a456-426614174999" }),
+      { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) }
+    );
+
+    expect(response.status).toBe(202);
+    expect(countyRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enqueue_status: "running",
+        worker_started_at: expect.any(String),
+        worker_heartbeat_at: expect.any(String),
+      })
+    );
+    expect(countyRunUpdateSelectEqMock).toHaveBeenCalledWith(
+      "worker_job_id",
+      "123e4567-e89b-12d3-a456-426614174999"
+    );
+  });
+
+  it("refuses a late success after cancellation before refreshing artifacts", async () => {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+    const current = await countyRunMaybeSingleMock();
+    countyRunMaybeSingleMock.mockResolvedValue({
+      ...current,
+      data: { ...current.data, enqueue_status: "cancelled" },
+    });
+
+    const response = await postCountyRunManifest(
+      bearerJsonRequest({
+        status: "completed",
+        jobId: "123e4567-e89b-12d3-a456-426614174999",
+        manifest,
+      }),
+      { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) }
+    );
+
+    expect(response.status).toBe(409);
+    expect(countyRunUpdateMock).not.toHaveBeenCalled();
+    expect(artifactDeleteMock).not.toHaveBeenCalled();
   });
 
   it("names a zero-row county run update as a refused write rather than a generic failure", async () => {
@@ -420,6 +540,27 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       })
     );
     expect(mockAudit.error).not.toHaveBeenCalledWith("county_run_update_failed", expect.anything());
+  });
+
+  it("refuses an authenticated success that loses the terminal-state race", async () => {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+    countyRunUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+    });
+
+    const response = await postCountyRunManifest(
+      bearerJsonRequest({
+        status: "completed",
+        jobId: "123e4567-e89b-12d3-a456-426614174999",
+        manifest,
+      }),
+      { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) },
+    );
+
+    expect(response.status).toBe(409);
+    expect(artifactDeleteMock).not.toHaveBeenCalled();
   });
 
   it("returns 400 for invalid payloads", async () => {
@@ -451,9 +592,6 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
     authGetUserMock.mockResolvedValue({ data: { user: null } });
     membershipMaybeSingleMock.mockResolvedValue({ data: null, error: null });
-    countyRunUpdateMock.mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
 
     const response = await postCountyRunManifest(
       bearerJsonRequest({

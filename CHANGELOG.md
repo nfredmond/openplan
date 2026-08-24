@@ -21,6 +21,37 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.31.0 — 2026-08-24
+
+**Migration and worker restart required.** Run
+`npm exec -- supabase migration up --linked`, rebuild the county modeling worker
+with `npm run modeling:up`, then deploy the app. Migration
+`20260824000005_county_run_worker_lifecycle.sql`
+(`county_run_worker_lifecycle`) records queued, running,
+cancelling, cancelled, completed, and failed attempts, plus worker heartbeat and
+cancellation timestamps.
+
+County-run retries now have separate artifact directories keyed by both the run
+and job. Worker callbacks must carry the currently stored job id; delayed
+callbacks from an older attempt are refused before run state or artifact
+custody changes. Setup failures now produce terminal callbacks, and a planner
+can cancel a queued or running attempt without imposing a runtime limit on
+legitimate work that takes hours or days. The assistant is explicitly refused
+from cancelling model runs.
+
+Operators who enable the county worker must set two different bearer tokens:
+`OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN` authenticates job, status, and cancel
+requests, while `OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN` authenticates
+job-bound callbacks. The local compose service reads the same `.env.local` as
+the app.
+
+Recovery no longer assumes a hosted or paid backup product. The new disposable
+restore drill backs up representative tenant and evidence records plus a real
+private Storage object, restores them into an isolated local stack, verifies
+hashes and relationships, and runs live RLS against the restored target. The
+upgrade rehearsal now carries evidence custody and Storage metadata across the
+previous-release-to-current migration path.
+
 ## 0.30.0 — 2026-08-24
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

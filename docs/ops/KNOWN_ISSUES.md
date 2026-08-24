@@ -1,56 +1,32 @@
-# OpenPlan Known Issues Register
+# OpenPlan known issues
 
-> **DATED RECORD — date not in filename.** This describes what was true on the day it was written.
-> It is kept because it records *why* decisions were made, which nothing else captures.
-> **Do not treat any factual claim here as current** — verify against the code, the
-> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
-> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
-> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
-> feature that already exists.
+**Reviewed:** 2026-08-24 against `4b089a75` plus the v0.31.0 changes.
+This is a quality-boundary register, not a development queue. Scheduling lives
+only in `docs/ROADMAP.md`.
 
+## Open watch items
 
-**Last updated:** 2026-07-28
-**Status:** Active quality register
-**Scope:** the free, open-source, self-serve OpenPlan product
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-08-24-001 | High | County and dual-demand outputs remain screening evidence. Current held-out count results do not support defensible corridor accuracy, and agreement between models is not accuracy. | Keep caveats, claim tiers, both model values, and negative studies intact. Do not average or change defaults without untouched evidence. | `CHANGELOG.md` 0.22–0.23; `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
+| KI-2026-08-24-002 | High | ActivitySim can execute, but the available stock behavioral coefficients were estimated for another region. A locally fitted population does not make those choices locally calibrated. | Name coefficient provenance and keep output below locally validated claim tiers. | `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
+| KI-2026-08-24-003 | Medium | Crash rates per modeled VMT lack a defensible denominator where the modeled road network does not cover the observed crash network. | Keep rates deferred; disclose source and road-coverage limits instead of treating unsupported roads as zero. | `docs/ROADMAP.md` |
+| KI-2026-08-24-004 | Medium | Recovery confidence expires if operators stop exercising it. The repository drill proves the local reference path, not every deployment's disks, credentials, or cutover. | Run `npm run ops:restore-drill` before relevant releases and at least quarterly; next reference review due 2026-11-24. | `openplan/docs/ops/BACKUP_AND_RESTORE.md` |
+| KI-2026-08-24-005 | Medium | The general AequilibraE/ActivitySim polling workers still expose liveness through run history rather than a direct durable heartbeat. The new county-onramp worker heartbeat does not close that separate lane. | Keep fresh-deployment copy honest; durable planner-facing worker health is a Next item. | `openplan/src/lib/models/worker-backed-launch.ts`; `docs/ROADMAP.md` |
 
-## Purpose
+## Closed in v0.31.0
 
-This register turns known product and operating caveats into explicit tracked items. It is not a
-backlog replacement: flagship flows should have zero open blockers, and non-blocking risks should
-have a severity, a disposition, and a source reference.
+| ID | Previous severity | Finding | Resolution evidence |
+|---|---|---|---|
+| KI-2026-08-24-006 | Blocker | County retries shared geography-wide artifact targets; a stale callback could change the active run or ingest another attempt's files. | Attempt directories include county-run and job ids; bearer callbacks require the stored job id and terminal/cancelling runs refuse late success. `county-onramp-worker.test.ts`; `county-run-manifest-route.test.ts` |
+| KI-2026-08-24-007 | High | Command construction could fail outside the worker failure boundary, leaving an accepted job with no terminal callback. | Command construction is inside the boundary; worker tests force it to throw and observe a failed callback. `workers/county_onramp_worker/tests/test_main.py` |
+| KI-2026-08-24-008 | High | The single-worker queue had no heartbeat or human cancellation path, so one stuck attempt could hold later work indefinitely. | Authenticated status/cancel endpoints, heartbeats, durable lifecycle timestamps, planner-only cancel UI, and assistant refusal. `20260824000005_county_run_worker_lifecycle.sql` |
+| KI-2026-08-24-009 | High | The recovery procedure depended on unverified hosted assumptions, fixed bucket names, and an overdue non-production drill. | Free isolated backup/restore drill passed database, evidence-custody, storage-byte hashes, relationships, and live RLS on 2026-08-24. `openplan/scripts/ops/disposable-restore-drill.sh` |
 
-The pre-2026-07 register tracked commercial-era items (billing canaries, buyer proof packets,
-supervised-sales boundaries) against a product posture that no longer exists; those rows were
-retired when the commercial-era docs were deleted on 2026-07-27. Git history preserves them.
+## Rules
 
-## Severity
-
-| Severity | Meaning |
-|---|---|
-| Blocker | Must stop a release or production mutation until resolved. |
-| High | Must be resolved before relying on the affected workflow. |
-| Medium | Operator/user caveat; acceptable only if disclosed and actively tracked. |
-| Low | Hygiene, future-proofing, or non-user-facing issue that should not be lost. |
-
-## Open Watch Items
-
-| ID | Severity | Area | Issue | Disposition | Source |
-|---|---|---|---|---|---|
-| KI-2026-05-01-002 | Medium | Modeling claims | Screening-grade county-run and behavioral-onramp evidence must not be described as calibrated or validated forecasting. | Keep all product and public language in screening-grade / human-review posture. The claim guards (`no-paid-tier-guard`, `public-page-claims-guardrails`, `safety-claim-boundaries`, run-mode caveat strings) enforce this on live surfaces. | `openplan/docs/ops/2026-04-16-caveat-gate-audit.md` |
-| KI-2026-05-01-003 | Medium | Recovery operations | Restore confidence depends on quarterly non-production restore drills. | Not a release blocker. Any operator running a production deployment should drill per the procedure; next drill for the reference deployment was due by 2026-08-01. | `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md` |
-| KI-2026-07-27-001 | Medium | Hosted availability | No hosted OpenPlan deployment currently exists (the previous Vercel deployment is offline). Public copy must say self-host until a hosted URL is real. | Hosted deploy is an operator action item; do not claim a hosted option ahead of it. | this register |
-
-## Closed
-
-| ID | Severity | Area | Issue | Resolution | Source |
-|---|---|---|---|---|---|
-| KI-2026-07-28-001 | Blocker | Workspace authorization | The read-only `viewer` tier (shipped 2026-07-28, `20260728000003`) was enforced only in the API route layer. Supabase's default privileges left `authenticated` holding INSERT/UPDATE/DELETE on every workspace table, and 192 write policies across 80 tables tested membership but never role — so a viewer with the public anon key and their own session JWT could write directly through PostgREST, past every route guard. Bounded: `workspace_members` carries only a SELECT policy, so a viewer could tamper with workspace content but could **not** promote themselves. | Closed 2026-07-28 by `20260728000006` / `20260728000007`: a shared `workspace_member_can_write()` predicate plus additive RESTRICTIVE INSERT/UPDATE/DELETE policies over all 80 tables. Verified live — a viewer session is refused insert/update/delete and still reads, and the same user promoted to member writes normally. `viewer-write-denial-guard.test.ts` fails the build if a new role-blind write policy lands on an ungated table; `rls-viewer-denial.test.ts` proves it against a real session under `npm run test:rls-live`. | `openplan/src/test/rls-viewer-denial.test.ts` |
-
-## Update Rules
-
-- Add a row when a test, smoke, review, or user report reveals a real caveat.
-- Promote to **Blocker** when the issue invalidates a release gate, risks user data, weakens
-  workspace isolation, or causes any surface to overclaim.
-- Close a row only when a linked commit or verified behavior demonstrates the issue is controlled.
-- Do not hide product boundaries by deleting watch items; close them only when the boundary is
-  replaced by working, verified behavior.
+- Add a row only from a test, browser journey, drill, primary-source review, or
+  user report.
+- A release blocker is data loss, tenant isolation failure, false consequential
+  output, or an unverified required migration/recovery path.
+- Close a finding only with linked evidence that could have failed.

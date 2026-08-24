@@ -80,8 +80,7 @@ real Census microdata to each zone's published totals — and that makes the
 output *more* dangerous rather than less, because a locally-fitted population
 lends the behaviour an authority it has not earned.
 
-This is prerequisite 3 in `~/.claude/plans/dual-model-corridor-comparison.md`
-and it remains the honesty bottleneck for the whole lane. Nothing produced
+This remains the honesty bottleneck for the dual-model lane. Nothing produced
 through this path may rise above screening grade. The three ways out, in
 increasing order of work, are unchanged: name it and let it set the claim tier
 (what the code does today); transfer the coefficients against stated local

@@ -10,6 +10,7 @@ import {
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
+import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: countyRun, error: countyRunError } = await supabase
       .from("county_runs")
-      .select("id, workspace_id, requested_runtime_json")
+      .select("id, workspace_id, requested_runtime_json, enqueue_status")
       .eq("id", parsedParams.data.countyRunId)
       .maybeSingle();
 
@@ -56,6 +57,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!countyRun) {
       return NextResponse.json({ error: "County run not found" }, { status: 404 });
+    }
+
+    if (["queued", "running", "cancelling"].includes(String(countyRun.enqueue_status))) {
+      return NextResponse.json({ error: "This county run already has an active worker attempt" }, { status: 409 });
     }
 
     // Dispatching a worker job and stamping enqueue state onto the run are
@@ -84,12 +89,44 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const sanitizedWorkerPayload = sanitizeCountyOnrampWorkerPayload(workerPayload);
     const workerUrl = process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL?.trim() || null;
 
+    // Claim the attempt BEFORE the network call. The worker sends a running
+    // callback as soon as it starts; storing the job id after dispatch created
+    // a race where that valid first callback looked stale. The state predicate
+    // also prevents two concurrent clicks from dispatching two active jobs.
+    const initialStatus = workerUrl ? "queued" : "prepared";
+    const { data: claimedAttempt, error: claimError } = await supabase
+      .from("county_runs")
+      .update({
+        enqueue_status: initialStatus,
+        last_enqueued_at: new Date().toISOString(),
+        worker_job_id: sanitizedWorkerPayload.jobId,
+        worker_payload_json: sanitizedWorkerPayload,
+        worker_url: workerUrl,
+        worker_dispatch_error: null,
+        worker_started_at: null,
+        worker_heartbeat_at: null,
+        cancellation_requested_at: null,
+        cancellation_requested_by: null,
+        cancelled_at: null,
+        worker_completed_at: null,
+      })
+      .eq("id", parsedParams.data.countyRunId)
+      .in("enqueue_status", ["not-enqueued", "prepared", "cancelled", "completed", "failed"])
+      .select("id")
+      .maybeSingle();
+    if (isWriteFailure(claimError)) {
+      return NextResponse.json({ error: "Failed to claim county worker attempt" }, { status: 500 });
+    }
+    if (writeMatchedNoRows({ data: claimedAttempt, error: claimError })) {
+      return NextResponse.json({ error: "This county run already has an active worker attempt" }, { status: 409 });
+    }
+
     let dispatchResult: CountyOnrampDispatchResult;
     try {
       dispatchResult = await dispatchCountyOnrampJob(workerPayload);
     } catch (dispatchError) {
       const dispatchMessage = dispatchError instanceof Error ? dispatchError.message : "County worker dispatch failed";
-      const { error: updateError } = await supabase
+      const { data: failedAttempt, error: updateError } = await supabase
         .from("county_runs")
         .update({
           enqueue_status: "failed",
@@ -98,16 +135,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
           worker_payload_json: sanitizedWorkerPayload,
           worker_url: workerUrl,
           worker_dispatch_error: dispatchMessage,
+          worker_started_at: null,
+          worker_heartbeat_at: null,
+          cancellation_requested_at: null,
+          cancellation_requested_by: null,
+          cancelled_at: null,
+          worker_completed_at: null,
         })
-        .eq("id", parsedParams.data.countyRunId);
+        .eq("id", parsedParams.data.countyRunId)
+        .eq("worker_job_id", sanitizedWorkerPayload.jobId)
+        .select("id")
+        .maybeSingle();
 
-      if (updateError) {
+      if (isWriteFailure(updateError)) {
         audit.error("county_run_enqueue_failure_update_failed", {
-          message: updateError.message,
-          code: updateError.code ?? null,
+          message: updateError?.message ?? "unknown",
+          code: updateError?.code ?? null,
           dispatchMessage,
         });
         return NextResponse.json({ error: "Failed to persist county enqueue failure state" }, { status: 500 });
+      }
+      if (writeMatchedNoRows({ data: failedAttempt, error: updateError })) {
+        audit.warn("county_run_enqueue_failure_overtaken", {
+          countyRunId: parsedParams.data.countyRunId,
+          jobId: sanitizedWorkerPayload.jobId,
+          dispatchMessage,
+        });
+        return NextResponse.json({ error: "This worker attempt is no longer active" }, { status: 409 });
       }
 
       audit.error("county_run_worker_dispatch_failed", {
@@ -128,25 +182,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const { error: updateError } = await supabase
-      .from("county_runs")
-      .update({
-        enqueue_status: dispatchResult.deliveryMode,
-        last_enqueued_at: new Date().toISOString(),
-        worker_job_id: sanitizedWorkerPayload.jobId,
-        worker_payload_json: sanitizedWorkerPayload,
-        worker_url: dispatchResult.workerUrl,
-        worker_dispatch_error: null,
-      })
-      .eq("id", parsedParams.data.countyRunId);
-
-    if (updateError) {
-      audit.error("county_run_enqueue_update_failed", {
-        message: updateError.message,
-        code: updateError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to persist county enqueue state" }, { status: 500 });
-    }
+    // The claim already persisted the state and payload. Do not write it again
+    // after dispatch: a fast running callback may already have advanced it.
 
     const response = enqueueCountyRunResponseSchema.parse({
       countyRunId: parsedParams.data.countyRunId,
@@ -156,7 +193,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       workerPayload: sanitizedWorkerPayload,
     });
 
-    audit.info(dispatchResult.deliveryMode === "submitted" ? "county_run_worker_submitted" : "county_run_enqueue_prepared", {
+    audit.info(dispatchResult.deliveryMode === "queued" ? "county_run_worker_queued" : "county_run_enqueue_prepared", {
       countyRunId: parsedParams.data.countyRunId,
       jobId: sanitizedWorkerPayload.jobId,
       workerUrl: dispatchResult.workerUrl,

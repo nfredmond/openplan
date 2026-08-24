@@ -183,12 +183,10 @@ this order has no race.)*
 1. **Read the release notes first.** `CHANGELOG.md` at the top of the
    repository says what each release changes and whether it added migrations —
    it is written for you, the operator.
-2. **Back up the database.** From your local clone:
-   `npm exec -- supabase db dump -f backup-$(date +%Y%m%d).sql --linked`
-   Success looks like: a `backup-….sql` file appears and is not empty. Do this
-   every time — the hosted free tier takes **no automatic backups**, and
-   OpenPlan's migrations are **forward-only**: there is no "undo migration"
-   command, so this file is the recovery plan.
+2. **Capture a complete recovery point.** Follow
+   `docs/ops/BACKUP_AND_RESTORE.md`. The database dump, Storage bytes, and their
+   hashes travel together. OpenPlan migrations are forward-only, so a verified
+   restore is the rollback path.
 3. **Pull the new code into your local clone only** (this does not touch your
    fork on GitHub, so nothing deploys yet):
    `git pull https://github.com/nfredmond/openplan.git main`
@@ -204,6 +202,5 @@ this order has no race.)*
 nothing is half-applied inside one migration. Running
 `npm exec -- supabase migration up --linked` again resumes from the failed one
 — transient network hiccups usually clear on the second run. If the same
-migration fails the same way twice, stop, do not sync the fork, and restore
-from the step-2 backup if the app is misbehaving:
-`psql "$DATABASE_URL" < backup-….sql` (or ask for help — see the README).
+migration fails the same way twice, stop, do not sync the fork, and follow the
+isolated restore procedure if the app is misbehaving.

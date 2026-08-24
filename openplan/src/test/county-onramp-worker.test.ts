@@ -38,7 +38,16 @@ describe("county onramp worker payload", () => {
     expect(payload.callback.manifestIngestUrl).toBe(
       "https://openplan.example.com/api/county-runs/123e4567-e89b-12d3-a456-426614174002/manifest"
     );
-    expect(payload.artifactTargets.manifestPath).toContain("nevada-county-runtime-connectorbias2-20260324.manifest.json");
+    expect(payload.artifactTargets).toEqual({
+      attemptDirectory:
+        "data/screening-runs/123e4567-e89b-12d3-a456-426614174002/123e4567-e89b-12d3-a456-426614174001",
+      scaffoldCsvPath:
+        "data/screening-runs/123e4567-e89b-12d3-a456-426614174002/123e4567-e89b-12d3-a456-426614174001/validation-scaffold.csv",
+      reviewPacketMdPath:
+        "data/screening-runs/123e4567-e89b-12d3-a456-426614174002/123e4567-e89b-12d3-a456-426614174001/validation-review-packet.md",
+      manifestPath:
+        "data/screening-runs/123e4567-e89b-12d3-a456-426614174002/123e4567-e89b-12d3-a456-426614174001/manifest.json",
+    });
   });
 
   it("keeps callback bearer credentials out of sanitized payloads", () => {
@@ -83,31 +92,33 @@ describe("county onramp worker payload", () => {
     });
 
     expect(payload.countyPrefix).toBe("PLACER");
-    expect(payload.artifactTargets.scaffoldCsvPath).toContain("pilot-placer-county/validation/placer_priority_count_scaffold_auto.csv");
+    expect(payload.artifactTargets.scaffoldCsvPath).toContain(
+      "/123e4567-e89b-12d3-a456-426614174011/validation-scaffold.csv"
+    );
   });
 
-  it("derives the artifact path from the county prefix, for every county alike", () => {
-    // There was a branch here that matched one FIPS code and returned a fixed
-    // path, ignoring the operator's prefix for that county only. Two counties,
-    // same explicit prefix, must differ in nothing but the prefix.
-    const forCounty = (geographyId: string, geographyLabel: string) =>
+  it("isolates two attempts for the same run", () => {
+    const forJob = (jobId: string) =>
       buildCountyOnrampWorkerPayload({
         origin: "https://openplan.example.com",
-        jobId: "123e4567-e89b-12d3-a456-426614174031",
+        jobId,
         countyRunId: "123e4567-e89b-12d3-a456-426614174032",
         input: {
           workspaceId: "123e4567-e89b-12d3-a456-426614174030",
           geographyType: "county_fips",
-          geographyId,
-          geographyLabel,
+          geographyId: "configured-geography-id",
+          geographyLabel: "Configured study area",
           runName: "run",
           countyPrefix: "OPERATOR_CHOICE",
           runtimeOptions: {},
         },
-      }).artifactTargets.scaffoldCsvPath;
+      }).artifactTargets;
 
-    expect(forCounty("06061", "Placer County, CA")).toBe(forCounty("48201", "Harris County, TX"));
-    expect(forCounty("06061", "Placer County, CA")).toContain("pilot-operator_choice-county");
+    const first = forJob("123e4567-e89b-12d3-a456-426614174031");
+    const second = forJob("123e4567-e89b-12d3-a456-426614174033");
+    expect(first.attemptDirectory).not.toBe(second.attemptDirectory);
+    expect(first.manifestPath.startsWith(`${first.attemptDirectory}/`)).toBe(true);
+    expect(second.manifestPath.startsWith(`${second.attemptDirectory}/`)).toBe(true);
   });
 
   describe("where the worker is told to post a finished run back", () => {

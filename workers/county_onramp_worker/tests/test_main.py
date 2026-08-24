@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 import sys
+import json
+import subprocess
 import tempfile
+import threading
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
 from unittest.mock import patch
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 dotenv_module = ModuleType("dotenv")
 dotenv_module.load_dotenv = lambda *args, **kwargs: None
@@ -45,10 +53,12 @@ class CountyOnrampWorkerTests(unittest.TestCase):
         self.root = Path(self.temp_dir.name)
 
     def tearDown(self) -> None:
+        with county_worker._jobs_lock:
+            county_worker._jobs.clear()
         self.temp_dir.cleanup()
 
     def _job(self) -> dict:
-        return {
+        job = {
             "jobId": "123e4567-e89b-12d3-a456-426614174001",
             "countyRunId": "123e4567-e89b-12d3-a456-426614174002",
             "workspaceId": "123e4567-e89b-12d3-a456-426614174003",
@@ -71,15 +81,24 @@ class CountyOnrampWorkerTests(unittest.TestCase):
                 "containerNetworkMode": None,
             },
             "artifactTargets": {
-                "scaffoldCsvPath": str(self.root / "validation" / "scaffold.csv"),
-                "reviewPacketMdPath": str(self.root / "validation" / "review.md"),
-                "manifestPath": str(self.root / "validation" / "manifest.json"),
+                "attemptDirectory": "",
+                "scaffoldCsvPath": "",
+                "reviewPacketMdPath": "",
+                "manifestPath": "",
             },
             "callback": {
                 "manifestIngestUrl": "https://openplan.example.com/api/county-runs/test/manifest",
                 "bearerToken": None,
             },
         }
+        attempt = self.root / "data" / "screening-runs" / job["countyRunId"] / job["jobId"]
+        job["artifactTargets"] = {
+            "attemptDirectory": str(attempt),
+            "scaffoldCsvPath": str(attempt / "validation-scaffold.csv"),
+            "reviewPacketMdPath": str(attempt / "validation-review-packet.md"),
+            "manifestPath": str(attempt / "manifest.json"),
+        }
+        return job
 
     def test_build_bootstrap_command_omits_container_flags_by_default(self) -> None:
         job = self._job()
@@ -148,15 +167,110 @@ class CountyOnrampWorkerTests(unittest.TestCase):
         """
         job = self._job()
         job["artifactTargets"] = {
-            "scaffoldCsvPath": "data/example-county/validation/scaffold.csv",
-            "reviewPacketMdPath": "docs/ops/example-run-validation-review-packet.md",
-            "manifestPath": "tmp/county-onramp/example-run.manifest.json",
+            "attemptDirectory": f"data/screening-runs/{job['countyRunId']}/{job['jobId']}",
+            "scaffoldCsvPath": f"data/screening-runs/{job['countyRunId']}/{job['jobId']}/scaffold.csv",
+            "reviewPacketMdPath": f"data/screening-runs/{job['countyRunId']}/{job['jobId']}/review.md",
+            "manifestPath": f"data/screening-runs/{job['countyRunId']}/{job['jobId']}/manifest.json",
         }
 
         with patch.object(county_worker, "REPO_ROOT", self.root):
             parsed = county_worker._parse_payload(job)
 
         self.assertEqual(parsed["artifactTargets"], job["artifactTargets"])
+
+    def _register_job(self, job: dict, *, status: str = "queued") -> None:
+        with county_worker._jobs_lock:
+            county_worker._jobs[job["jobId"]] = {
+                "jobId": job["jobId"],
+                "countyRunId": job["countyRunId"],
+                "job": job,
+                "status": status,
+                "acceptedAt": county_worker._utc_now(),
+                "updatedAt": county_worker._utc_now(),
+                "cancelEvent": threading.Event(),
+                "process": None,
+            }
+
+    def test_command_construction_failure_still_posts_a_failed_callback(self) -> None:
+        job = self._job()
+        self._register_job(job)
+        callbacks: list[dict] = []
+
+        with patch.object(
+            county_worker, "_build_bootstrap_command", side_effect=FileNotFoundError("missing bootstrap")
+        ), patch.object(
+            county_worker, "_post_callback", side_effect=lambda _job, payload: callbacks.append(payload)
+        ):
+            county_worker._run_job(job)
+
+        self.assertEqual(callbacks[-1]["status"], "failed")
+        self.assertEqual(callbacks[-1]["jobId"], job["jobId"])
+        self.assertEqual(county_worker._public_job_status(job["jobId"])["status"], "failed")
+
+    def test_cancelling_one_run_releases_the_single_worker_queue(self) -> None:
+        first = self._job()
+        second = self._job()
+        second["jobId"] = "123e4567-e89b-12d3-a456-426614174004"
+        second_attempt = self.root / "data" / "screening-runs" / second["countyRunId"] / second["jobId"]
+        second["artifactTargets"] = {
+            "attemptDirectory": str(second_attempt),
+            "scaffoldCsvPath": str(second_attempt / "validation-scaffold.csv"),
+            "reviewPacketMdPath": str(second_attempt / "validation-review-packet.md"),
+            "manifestPath": str(second_attempt / "manifest.json"),
+        }
+        self._register_job(first)
+        self._register_job(second)
+        callbacks: list[tuple[str, str]] = []
+        first_started = threading.Event()
+
+        def build(job: dict):
+            manifest_path = Path(job["artifactTargets"]["manifestPath"])
+            manifest_path.parent.mkdir(parents=True, exist_ok=True)
+            return ["worker-test", job["jobId"]], manifest_path
+
+        class FakeProcess:
+            def __init__(self, command, **_kwargs):
+                self.command = command
+                self.job_id = command[-1]
+                self.returncode = None
+                self.terminated = False
+
+            def communicate(self, timeout=None):
+                if self.job_id == first["jobId"]:
+                    first_started.set()
+                    if not self.terminated:
+                        raise subprocess.TimeoutExpired(self.command, timeout)
+                    self.returncode = -15
+                    return "", ""
+                Path(second["artifactTargets"]["manifestPath"]).write_text(json.dumps({"ok": True}))
+                self.returncode = 0
+                return "second complete", ""
+
+            def terminate(self):
+                self.terminated = True
+
+            def kill(self):
+                self.terminated = True
+
+        with patch.object(county_worker, "_build_bootstrap_command", side_effect=build), patch.object(
+            county_worker, "_post_callback", side_effect=lambda job, payload: callbacks.append((job["jobId"], payload["status"]))
+        ), patch.object(county_worker.subprocess, "Popen", FakeProcess):
+            with ThreadPoolExecutor(max_workers=1) as single_worker:
+                first_future = single_worker.submit(county_worker._run_job, first)
+                second_future = single_worker.submit(county_worker._run_job, second)
+                self.assertTrue(first_started.wait(timeout=2))
+                with county_worker._jobs_lock:
+                    county_worker._jobs[first["jobId"]]["status"] = "cancelling"
+                    county_worker._jobs[first["jobId"]]["cancelEvent"].set()
+                first_future.result(timeout=2)
+                second_future.result(timeout=2)
+
+        self.assertIn((first["jobId"], "cancelled"), callbacks)
+        self.assertIn((second["jobId"], "completed"), callbacks)
+        self.assertLess(
+            callbacks.index((first["jobId"], "cancelled")),
+            callbacks.index((second["jobId"], "completed")),
+        )
 
 
 class JobEndpointAuthorizationTests(unittest.TestCase):
@@ -182,6 +296,12 @@ class JobEndpointAuthorizationTests(unittest.TestCase):
         # even if the server somehow bound a wide interface (e.g. gunicorn).
         self.assertFalse(county_worker._authorize_job_request("", None, "203.0.113.9"))
         self.assertFalse(county_worker._authorize_job_request("", "Bearer anything", "203.0.113.9"))
+
+    def test_status_and_cancel_always_require_the_configured_bearer(self) -> None:
+        self.assertTrue(county_worker._authorize_control_request("s3cret", "Bearer s3cret"))
+        self.assertFalse(county_worker._authorize_control_request("s3cret", "Bearer wrong"))
+        self.assertFalse(county_worker._authorize_control_request("s3cret", None))
+        self.assertFalse(county_worker._authorize_control_request("", None))
 
     def test_startup_refuses_a_wide_bind_without_a_token(self) -> None:
         self.assertIsNotNone(county_worker._startup_bind_refusal("0.0.0.0", ""))

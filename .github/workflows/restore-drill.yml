@@ -1,0 +1,32 @@
+name: Restore Drill
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 13 1 */3 *"
+  pull_request:
+    paths:
+      - "openplan/scripts/ops/disposable-restore-drill.sh"
+      - "openplan/src/test/local-supabase-env.ts"
+      - "openplan/supabase/migrations/**"
+      - ".github/workflows/restore-drill.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  restore-drill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: openplan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: openplan/package-lock.json
+      - run: npm ci
+      - run: npm run ops:restore-drill

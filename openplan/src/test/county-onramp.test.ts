@@ -167,9 +167,13 @@ describe("county onramp primitives", () => {
       zoneResolutionCaveat: null,
     });
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
+    expect(getCountyRunStageLabel("bootstrap-incomplete")).toBe("Setup Incomplete");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");
     expect(getCountyRunStageTone("validation-scaffolded")).toBe("warning");
-    expect(getCountyRunAllowedClaim("bootstrap-incomplete")).toContain("in progress");
+    expect(getCountyRunAllowedClaim("bootstrap-incomplete")).toContain("not complete");
+    expect(getCountyRunCaveats("bootstrap-incomplete", null)).toEqual([
+      "County onboarding is not complete.",
+    ]);
     expect(getCountyRunCaveats("runtime-complete", null)).toContain("No local validation result yet.");
     expect(getCountyRunNextAction("validation-scaffolded")).toContain("rerun validation");
   });

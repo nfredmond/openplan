@@ -326,6 +326,12 @@ if (existsSync(envPath)) {
         "The worker will run the model and OpenPlan will refuse the result, because nothing proves the result came from your worker. Set it to any long random string — it is shared only between OpenPlan and the jobs it sends out, and nothing needs to be changed on the worker."
       );
     }
+    if (!countyEnv.get("OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN")) {
+      bad(
+        "OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN is not set, so worker control is unauthenticated",
+        "Set it to a different long random string. The local compose service reads the same .env.local; OpenPlan uses it for job, status, and cancellation requests."
+      );
+    }
   }
 }
 

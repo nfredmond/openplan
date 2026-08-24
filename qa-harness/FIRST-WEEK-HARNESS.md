@@ -51,7 +51,7 @@ npm install
 OPENPLAN_BASE_URL=http://localhost:3200 \
 OPENPLAN_FIRST_WEEK_EMAIL=you@example.test \
 OPENPLAN_FIRST_WEEK_PASSWORD='…' \
-  npm run first-week-discovery                              # all five jobs
+  npm run first-week-discovery                              # all seven jobs
 
 ... npm run first-week-discovery -- --job 03-public-engagement
 ... npm run first-week-discovery -- --list
@@ -66,11 +66,11 @@ no metered spend.
 
 **It is not free of your weekly limit, though.** Measured on 2026-08-14 with
 sonnet: a job runs 16–22 minutes and ~135 steps, and the CLI reports around
-$8.50 of API-equivalent usage for one. All five jobs is most of a working hour
+$8.50 of API-equivalent usage for one. All seven jobs is more than a working hour
 and a real bite out of a week's allowance. Run the whole set when something big
 has landed; run one job when you want to check one surface.
 
-### The five jobs
+### The seven jobs
 
 They live in `first-week-jobs/*.job.md` and they are written as **outcomes, not
 clicks** — "produce something you could show a board", never "click Reports then
@@ -81,10 +81,12 @@ otherwise see.
 | Job | The surface it walks into |
 |---|---|
 | `01-first-day-setup` | First run: sign up from nothing, work out what the software is for |
+| `01-neutral-geography-setup` | Set up a workspace where local legal bundles are not configured, without receiving California rules |
 | `02-project-end-to-end` | A project from an empty screen to a board-ready handout, with a folder of files from a predecessor |
 | `03-public-engagement` | Publish something residents can use, get a comment back, moderate it |
 | `04-safety-case` | Find where people are being hurt, and whether the numbers on screen can be trusted |
 | `05-analysis-corridor` | Run an analysis, know whether it worked, explain the answer without jargon |
+| `06-land-use-plan` | Author, review, adopt, publish, and report a land-use plan through visible entry points |
 
 Rewrite them freely. They are prose, and prose is the part a planner can edit.
 The `--- header ---` at the top of each carries only `id`, `title`,

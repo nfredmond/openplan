@@ -122,6 +122,25 @@ const REFUSED: RefusedModelingAction[] = [
       "The launch route refuses a succeeded run with a 400; do not add an action that routes around it.",
   },
   {
+    label: "cancelling or terminating a model run",
+    nameGroups: [
+      ["cancel", "model", "run"],
+      ["stop", "model", "run"],
+      ["terminate", "run"],
+      ["abort", "run"],
+    ],
+    provokes: [
+      "cancel_model_run",
+      "stop_model_run",
+      "terminate_run",
+      "abort_run",
+    ],
+    reason:
+      "A run may take days because OpenPlan does not trade accuracy for runtime. Ending it discards a planner's " +
+      "computation and releases the single-worker queue, so cancellation remains a human-only control. The assistant " +
+      "may explain stale heartbeats or propose investigation, but it may not terminate the attempt.",
+  },
+  {
     label: "selecting agreement corridors for a report or grant",
     nameGroups: [
       ["select", "agreement", "corridor"],

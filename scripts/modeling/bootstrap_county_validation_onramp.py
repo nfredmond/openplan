@@ -19,6 +19,13 @@ def parse_args() -> argparse.Namespace:
         description="Run a county screening build and immediately generate validation-onramp artifacts."
     )
     parser.add_argument("--name", required=True, help="Run name for the screening build")
+    parser.add_argument(
+        "--output-root",
+        help=(
+            "Directory that will own this screening run. The run itself is written to "
+            "<output-root>/<name>; worker callers use an attempt-specific root."
+        ),
+    )
     parser.add_argument("--county-fips", help="County FIPS code, e.g. 06061")
     parser.add_argument(
         "--boundary-geojson",
@@ -295,6 +302,8 @@ def main() -> int:
             "--name",
             args.name,
         ]
+        if args.output_root:
+            run_model_cmd.extend(["--output-root", args.output_root])
         if args.boundary_geojson:
             run_model_cmd.extend(["--boundary-geojson", args.boundary_geojson])
         else:
@@ -323,7 +332,12 @@ def main() -> int:
                 run_model_cmd.extend([flag, str(value)])
 
         run_cmd(run_model_cmd, repo_root)
-        run_dir = repo_root / "data" / "screening-runs" / args.name
+        output_root = (
+            Path(args.output_root).expanduser().resolve()
+            if args.output_root
+            else repo_root / "data" / "screening-runs"
+        )
+        run_dir = output_root / args.name
     scaffold_cmd = [
         sys.executable,
         "scripts/modeling/generate_validation_scaffold.py",

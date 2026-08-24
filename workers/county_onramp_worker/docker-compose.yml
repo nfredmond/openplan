@@ -1,6 +1,6 @@
 # OpenPlan's modeling worker, in one command. From the `openplan/` app folder:
 #
-#     npm run worker:up
+#     npm run modeling:up
 #
 # (or, from this directory, `docker compose up -d --build`.)
 #
@@ -43,6 +43,9 @@ services:
     # change does.
     volumes:
       - ../..:/app
+    env_file:
+      - path: ../../openplan/.env.local
+        required: false
     # Run as you, so the run outputs written into your checkout are yours to
     # delete without sudo. Override for a different account:
     #   OPENPLAN_WORKER_UID=$(id -u) OPENPLAN_WORKER_GID=$(id -g) docker compose up -d
@@ -63,8 +66,3 @@ services:
       # runs — each one saturates a core for minutes and downloads a road
       # network. Raise it only on a machine with cores to spare.
       OPENPLAN_COUNTY_ONRAMP_MAX_CONCURRENCY: "1"
-      # Optional, and empty is the right answer for a local install bound to
-      # loopback. It comes from a `.env` file in this directory, never from
-      # this file. Set it — on both sides — the moment the worker is reachable
-      # from anywhere but this machine. See DEPLOY.md.
-      OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN: "${OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN:-}"

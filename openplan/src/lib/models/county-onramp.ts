@@ -125,7 +125,16 @@ export const countyOnrampValidationSummarySchema = z
   })
   .passthrough();
 
-export const countyRunEnqueueStatusSchema = z.enum(["not-enqueued", "prepared", "submitted", "failed"]);
+export const countyRunEnqueueStatusSchema = z.enum([
+  "not-enqueued",
+  "prepared",
+  "queued",
+  "running",
+  "cancelling",
+  "cancelled",
+  "completed",
+  "failed",
+]);
 
 export type CountyRunEnqueueStatus = z.infer<typeof countyRunEnqueueStatusSchema>;
 
@@ -263,7 +272,7 @@ export function countyRunZoneResolutionCaveat(
 export function getCountyRunStageLabel(stage: CountyRunStage): string {
   switch (stage) {
     case "bootstrap-incomplete":
-      return "Running";
+      return "Setup Incomplete";
     case "runtime-complete":
       return "Runtime Complete";
     case "validation-scaffolded":
@@ -293,7 +302,7 @@ export function getCountyRunStageTone(stage: CountyRunStage): "neutral" | "info"
 export function getCountyRunAllowedClaim(stage: CountyRunStage): string {
   switch (stage) {
     case "bootstrap-incomplete":
-      return "County onboarding job is in progress.";
+      return "County onboarding is not complete.";
     case "runtime-complete":
       return "County runtime completed. Local validation has not yet been completed.";
     case "validation-scaffolded":
@@ -342,7 +351,7 @@ export function getCountyRunCaveats(
   if (stage === "runtime-complete") {
     return ["Screening-grade runtime output only.", "No local validation result yet."];
   }
-  return ["County onboarding job is still in progress."];
+  return ["County onboarding is not complete."];
 }
 
 /** Whether this run was fitted to published counts, read from its own record. */
@@ -377,8 +386,16 @@ export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): 
   switch (status) {
     case "prepared":
       return "Prepared — not sent";
-    case "submitted":
-      return "Sent to the worker";
+    case "queued":
+      return "Queued";
+    case "running":
+      return "Running";
+    case "cancelling":
+      return "Cancelling";
+    case "cancelled":
+      return "Cancelled";
+    case "completed":
+      return "Worker completed";
     case "failed":
       return "Send failed";
     case "not-enqueued":
@@ -390,7 +407,10 @@ export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): 
 export function getCountyRunEnqueueStatusTone(status: CountyRunEnqueueStatus): "neutral" | "info" | "danger" {
   switch (status) {
     case "prepared":
-    case "submitted":
+    case "queued":
+    case "running":
+    case "cancelling":
+    case "completed":
       return "info";
     case "failed":
       return "danger";
@@ -404,8 +424,16 @@ export function getCountyRunEnqueueHelpText(status: CountyRunEnqueueStatus): str
   switch (status) {
     case "prepared":
       return "The county setup handoff is prepared but has not been sent anywhere yet.";
-    case "submitted":
-      return "The county setup job was sent to the configured worker.";
+    case "queued":
+      return "The county setup job is waiting for the configured worker.";
+    case "running":
+      return "The worker is running this county setup job and reporting heartbeats.";
+    case "cancelling":
+      return "A planner asked the worker to stop this run.";
+    case "cancelled":
+      return "The worker stopped this attempt. Its partial files remain isolated from later attempts.";
+    case "completed":
+      return "The worker completed this attempt and OpenPlan accepted its manifest.";
     case "failed":
       return "The last attempt to send this county setup job failed and needs operator review.";
     case "not-enqueued":

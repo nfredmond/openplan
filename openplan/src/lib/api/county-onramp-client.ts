@@ -93,6 +93,17 @@ export async function enqueueCountyRun(
   return enqueueCountyRunResponseSchema.parse(await parseJson(response));
 }
 
+export async function cancelCountyRun(
+  countyRunId: string,
+  fetcher: typeof fetch = fetch
+): Promise<{ countyRunId: string; jobId: string; status: "cancelling"; requestedAt: string }> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/cancel`, {
+    method: "POST",
+    headers: { accept: "application/json" },
+  });
+  return parseJson(response);
+}
+
 export async function ingestCountyRunManifest(
   countyRunId: string,
   input: IngestCountyRunManifestRequest,

@@ -10,6 +10,7 @@ import type {
   IngestCountyRunManifestRequest,
 } from "@/lib/api/county-onramp";
 import {
+  cancelCountyRun,
   createCountyRun,
   enqueueCountyRun,
   getCountyRunDetail,
@@ -163,6 +164,20 @@ export function useCountyRunMutations() {
     }
   }, []);
 
+  const cancel = useCallback(async (countyRunId: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await cancelCountyRun(countyRunId);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to cancel county run");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const ingestManifest = useCallback(
     async (
       countyRunId: string,
@@ -188,6 +203,7 @@ export function useCountyRunMutations() {
     error,
     create,
     enqueue,
+    cancel,
     ingestManifest,
   };
 }

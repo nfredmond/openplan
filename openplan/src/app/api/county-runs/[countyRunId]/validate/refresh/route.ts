@@ -36,7 +36,7 @@ type CountyRunRow = {
   run_name: string;
   stage: "bootstrap-incomplete" | "runtime-complete" | "validation-scaffolded" | "validated-screening";
   status_label: string | null;
-  enqueue_status?: "not-enqueued" | "prepared" | "submitted" | "failed" | null;
+  enqueue_status?: "not-enqueued" | "prepared" | "queued" | "running" | "cancelling" | "cancelled" | "completed" | "failed" | null;
   last_enqueued_at?: string | null;
   requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;

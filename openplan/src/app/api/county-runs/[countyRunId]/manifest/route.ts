@@ -31,12 +31,17 @@ type CountyRunRow = {
   run_name: string;
   stage: "bootstrap-incomplete" | "runtime-complete" | "validation-scaffolded" | "validated-screening";
   status_label: string | null;
-  enqueue_status?: "not-enqueued" | "prepared" | "submitted" | "failed" | null;
+  enqueue_status?: "not-enqueued" | "prepared" | "queued" | "running" | "cancelling" | "cancelled" | "completed" | "failed" | null;
   last_enqueued_at?: string | null;
   worker_job_id?: string | null;
   worker_payload_json?: Record<string, unknown> | null;
   worker_url?: string | null;
   worker_dispatch_error?: string | null;
+  worker_started_at?: string | null;
+  worker_heartbeat_at?: string | null;
+  cancellation_requested_at?: string | null;
+  cancelled_at?: string | null;
+  worker_completed_at?: string | null;
   requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
@@ -99,7 +104,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: countyRun, error: countyRunError } = await supabase
       .from("county_runs")
-      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json")
+      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, worker_started_at, worker_heartbeat_at, cancellation_requested_at, cancelled_at, worker_completed_at, requested_runtime_json, manifest_json, validation_summary_json")
       .eq("id", parsedParams.data.countyRunId)
       .maybeSingle();
 
@@ -117,6 +122,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const existingRow = countyRun as CountyRunRow;
 
+    // A shared bearer proves which worker may call this route. The job id proves
+    // which attempt that worker is talking about. Both are required: a delayed
+    // callback from an earlier attempt must never replace the current run or its
+    // artifact inventory.
+    if (callbackBearerValid && !parsed.data.jobId) {
+      return NextResponse.json({ error: "Worker callbacks must include jobId" }, { status: 400 });
+    }
+    if (parsed.data.jobId && parsed.data.jobId !== existingRow.worker_job_id) {
+      audit.warn("county_run_stale_callback_refused", {
+        countyRunId: existingRow.id,
+        callbackJobId: parsed.data.jobId,
+        activeJobId: existingRow.worker_job_id ?? null,
+      });
+      return NextResponse.json({ error: "Callback jobId is not the active worker attempt" }, { status: 409 });
+    }
+
     // A signed-in caller must be allowed to WRITE this workspace, not merely to
     // see the run. The worker callback is exempt: it is the run's own producer,
     // authenticated by the shared bearer token above.
@@ -129,23 +150,93 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (!writeAccess.ok) return writeAccess.response;
     }
 
+    if (parsed.data.status === "running" || parsed.data.status === "heartbeat") {
+      if (!["queued", "running"].includes(existingRow.enqueue_status ?? "")) {
+        return NextResponse.json({ error: "This worker attempt is no longer active" }, { status: 409 });
+      }
+      const now = new Date().toISOString();
+      let statusUpdate = supabase
+        .from("county_runs")
+        .update({
+          enqueue_status: "running",
+          worker_heartbeat_at: now,
+          ...(parsed.data.status === "running" && !existingRow.worker_started_at
+            ? { worker_started_at: now }
+            : {}),
+        })
+        .eq("id", existingRow.id)
+        .select("id");
+      if (callbackBearerValid && parsed.data.jobId) {
+        statusUpdate = statusUpdate.eq("worker_job_id", parsed.data.jobId);
+      }
+      const { data: heartbeatRow, error: updateError } = await statusUpdate.maybeSingle();
+      if (isWriteFailure(updateError)) {
+        return NextResponse.json({ error: "Failed to record worker heartbeat" }, { status: 500 });
+      }
+      if (writeMatchedNoRows({ data: heartbeatRow, error: updateError })) {
+        return NextResponse.json({ error: "This worker attempt is no longer active" }, { status: 409 });
+      }
+      return NextResponse.json({ countyRunId: existingRow.id, status: parsed.data.status }, { status: 202 });
+    }
+
+    if (parsed.data.status === "cancelled") {
+      if (!["queued", "running", "cancelling"].includes(existingRow.enqueue_status ?? "")) {
+        return NextResponse.json({ error: "This worker attempt is no longer cancellable" }, { status: 409 });
+      }
+      const now = new Date().toISOString();
+      let cancelledUpdate = supabase
+        .from("county_runs")
+        .update({
+          enqueue_status: "cancelled",
+          status_label: "Cancelled by a planner",
+          cancelled_at: now,
+          worker_heartbeat_at: now,
+          worker_dispatch_error: null,
+        })
+        .eq("id", existingRow.id)
+        .select("id");
+      if (callbackBearerValid && parsed.data.jobId) {
+        cancelledUpdate = cancelledUpdate.eq("worker_job_id", parsed.data.jobId);
+      }
+      const { data: cancelledRow, error: updateError } = await cancelledUpdate.maybeSingle();
+      if (isWriteFailure(updateError)) {
+        return NextResponse.json({ error: "Failed to record county run cancellation" }, { status: 500 });
+      }
+      if (writeMatchedNoRows({ data: cancelledRow, error: updateError })) {
+        return NextResponse.json({ error: "This worker attempt is no longer active" }, { status: 409 });
+      }
+      return NextResponse.json({ countyRunId: existingRow.id, status: "cancelled" }, { status: 202 });
+    }
+
     if (parsed.data.status === "failed") {
+      if (["cancelling", "cancelled", "completed"].includes(existingRow.enqueue_status ?? "")) {
+        return NextResponse.json({ error: "This worker attempt no longer accepts failure callbacks" }, { status: 409 });
+      }
       const failureStatus = parsed.data.error?.message ?? "Worker failed";
-      const { error: updateError } = await supabase
+      let failureUpdate = supabase
         .from("county_runs")
         .update({
           status_label: failureStatus,
           enqueue_status: "failed",
           worker_dispatch_error: failureStatus,
+          worker_completed_at: new Date().toISOString(),
         })
-        .eq("id", existingRow.id);
+        .eq("id", existingRow.id)
+        .select("id");
+      if (callbackBearerValid && parsed.data.jobId) {
+        failureUpdate = failureUpdate.eq("worker_job_id", parsed.data.jobId);
+      }
+      const { data: failedRow, error: updateError } = await failureUpdate.maybeSingle();
 
-      if (updateError) {
+      if (isWriteFailure(updateError)) {
         audit.error("county_run_failure_update_failed", {
-          message: updateError.message,
-          code: updateError.code ?? null,
+          message: updateError?.message ?? "unknown",
+          code: updateError?.code ?? null,
         });
         return NextResponse.json({ error: "Failed to record county run failure" }, { status: 500 });
+      }
+      if (writeMatchedNoRows({ data: failedRow, error: updateError })) {
+        return NextResponse.json({ error: "This worker attempt is no longer active" }, { status: 409 });
       }
 
       audit.warn("county_run_worker_failed", {
@@ -167,6 +258,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Completed county run payload is missing a manifest" }, { status: 400 });
     }
 
+    if (["cancelling", "cancelled"].includes(existingRow.enqueue_status ?? "")) {
+      audit.warn("county_run_late_success_refused", {
+        countyRunId: existingRow.id,
+        jobId: parsed.data.jobId ?? null,
+        enqueueStatus: existingRow.enqueue_status ?? null,
+      });
+      return NextResponse.json({ error: "A cancelled worker attempt cannot complete" }, { status: 409 });
+    }
+
     const nextRecord = buildCountyRunRecord({
       workspaceId: existingRow.workspace_id,
       geographyId: existingRow.geography_id,
@@ -178,7 +278,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       manifest,
     });
 
-    const { data: updatedRows, error: updateError } = await supabase
+    let completedUpdate = supabase
       .from("county_runs")
       .update({
         geography_type: nextRecord.geography_type,
@@ -191,9 +291,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
         manifest_json: nextRecord.manifest_json,
         run_summary_json: nextRecord.run_summary_json,
         validation_summary_json: nextRecord.validation_summary_json,
+        enqueue_status: "completed",
+        worker_completed_at: new Date().toISOString(),
+        worker_heartbeat_at: new Date().toISOString(),
+        worker_dispatch_error: null,
       })
-      .eq("id", existingRow.id)
-      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json")
+      .eq("id", existingRow.id);
+    if (callbackBearerValid && parsed.data.jobId) {
+      completedUpdate = completedUpdate
+        .eq("worker_job_id", parsed.data.jobId)
+        .in("enqueue_status", ["queued", "running"]);
+    }
+    const { data: updatedRows, error: updateError } = await completedUpdate
+      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, worker_started_at, worker_heartbeat_at, cancellation_requested_at, cancelled_at, worker_completed_at, requested_runtime_json, manifest_json, validation_summary_json")
       .single();
 
     if (isWriteFailure(updateError)) {
@@ -210,6 +320,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // all. Either way the application had already established that this write
     // was permitted, so matching nothing is a defect and not a missing run.
     if (writeMatchedNoRows({ data: updatedRows, error: updateError })) {
+      if (callbackBearerValid) {
+        return NextResponse.json({ error: "This worker attempt is no longer active" }, { status: 409 });
+      }
       audit.error("county_run_update_matched_no_rows", {
         countyRunId: existingRow.id,
         workspaceId: existingRow.workspace_id,

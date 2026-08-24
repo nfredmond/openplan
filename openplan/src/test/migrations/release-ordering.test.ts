@@ -239,6 +239,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260824000004_workspace_stage_gate_template_selection.sql",
     migrationsAtRelease: 219,
   },
+  // 0.31.0 — attempt-isolated county-worker artifacts, job-bound callbacks,
+  // durable heartbeat/cancellation state, and a human-only cancellation path.
+  {
+    tag: "0.31.0",
+    lastMigration: "20260824000005_county_run_worker_lifecycle.sql",
+    migrationsAtRelease: 220,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

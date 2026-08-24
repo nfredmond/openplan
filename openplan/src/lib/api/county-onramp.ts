@@ -131,6 +131,11 @@ export const countyRunDetailResponseSchema = z.object({
   workerJobId: z.string().uuid().nullable().optional(),
   workerUrl: z.string().nullable().optional(),
   workerDispatchError: z.string().nullable().optional(),
+  workerStartedAt: z.string().nullable().optional(),
+  workerHeartbeatAt: z.string().nullable().optional(),
+  cancellationRequestedAt: z.string().nullable().optional(),
+  cancelledAt: z.string().nullable().optional(),
+  workerCompletedAt: z.string().nullable().optional(),
   manifest: countyOnrampManifestSchema.nullable(),
   artifacts: z.array(countyRunArtifactSchema),
   validationSummary: z.record(z.string(), z.unknown()).nullable().optional(),
@@ -139,7 +144,7 @@ export const countyRunDetailResponseSchema = z.object({
 
 export const enqueueCountyRunResponseSchema = z.object({
   countyRunId: z.string().uuid(),
-  status: z.enum(["prepared", "submitted"]),
+  status: z.enum(["prepared", "queued"]),
   workerJobId: z.string().uuid(),
   workerUrl: z.string().nullable(),
   workerPayload: sanitizedCountyOnrampWorkerPayloadSchema,
@@ -179,7 +184,7 @@ export const prepareCountyRunValidationResponseSchema = z.object({
 
 export const ingestCountyRunManifestRequestSchema = z.object({
   jobId: z.string().uuid().optional(),
-  status: z.enum(["completed", "failed"]).default("completed"),
+  status: z.enum(["running", "heartbeat", "completed", "failed", "cancelled"]).default("completed"),
   manifest: countyOnrampManifestSchema.optional(),
   error: z
     .object({

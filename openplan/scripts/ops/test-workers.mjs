@@ -44,9 +44,16 @@ function lanes() {
     .filter((entry) => entry.isDirectory())
     .map((entry) => {
       const dir = path.join(WORKERS_DIR, entry.name);
-      const suites = readdirSync(dir)
-        .filter((name) => name.startsWith("test_") && name.endsWith(".py"))
-        .sort();
+      const suiteFiles = (directory, relative = "") =>
+        readdirSync(directory, { withFileTypes: true }).flatMap((child) => {
+          if (child.name.startsWith(".") || child.name === "__pycache__") return [];
+          const childRelative = path.join(relative, child.name);
+          if (child.isDirectory()) return suiteFiles(path.join(directory, child.name), childRelative);
+          return child.isFile() && child.name.startsWith("test_") && child.name.endsWith(".py")
+            ? [childRelative]
+            : [];
+        });
+      const suites = suiteFiles(dir).sort();
       const interpreter =
         VENV_CANDIDATES.map((candidate) => path.join(dir, candidate)).find((candidate) =>
           existsSync(candidate)

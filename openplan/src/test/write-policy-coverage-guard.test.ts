@@ -216,7 +216,9 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
  * second copy of the codebase.
  */
 const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
-  "src/app/api/county-runs/[countyRunId]/enqueue/route.ts": 2,
+  // 2 -> 0 (2026-08-24): claiming an attempt and recording a dispatch failure
+  // both read back the exact job id and distinguish a race from a database
+  // failure. A second click or a fast callback may legitimately win that race.
   "src/app/api/county-runs/[countyRunId]/manifest/route.ts": 2,
   "src/app/api/county-runs/[countyRunId]/scaffold/route.ts": 1,
   "src/app/api/county-runs/[countyRunId]/validate/refresh/route.ts": 1,

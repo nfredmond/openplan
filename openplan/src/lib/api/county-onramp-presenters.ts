@@ -4,10 +4,7 @@ import {
   type CountyRunStage,
 } from "@/lib/models/county-onramp";
 import {
-  buildCountyOnrampWorkerPayloadFromStoredRequest,
   sanitizedCountyOnrampWorkerPayloadSchema,
-  sanitizeCountyOnrampWorkerPayload,
-  storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
 import type {
   CountyRunArtifact,
@@ -25,12 +22,17 @@ export type CountyRunRowLike = {
   run_name: string;
   stage: CountyRunStage;
   status_label: string | null;
-  enqueue_status?: "not-enqueued" | "prepared" | "submitted" | "failed" | null;
+  enqueue_status?: "not-enqueued" | "prepared" | "queued" | "running" | "cancelling" | "cancelled" | "completed" | "failed" | null;
   last_enqueued_at?: string | null;
   worker_job_id?: string | null;
   worker_payload_json?: Record<string, unknown> | null;
   worker_url?: string | null;
   worker_dispatch_error?: string | null;
+  worker_started_at?: string | null;
+  worker_heartbeat_at?: string | null;
+  cancellation_requested_at?: string | null;
+  cancelled_at?: string | null;
+  worker_completed_at?: string | null;
   requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
@@ -73,23 +75,13 @@ export function presentCountyRunDetail(params: {
   modelingEvidence?: CountyRunModelingEvidence | null;
   origin?: string;
 }): CountyRunDetailResponse {
-  const { row, artifacts, modelingEvidence, origin } = params;
+  const { row, artifacts, modelingEvidence } = params;
   const manifest = parseCountyOnrampManifest(row.manifest_json);
-  const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
   const storedWorkerPayload = sanitizedCountyOnrampWorkerPayloadSchema.safeParse(row.worker_payload_json);
-  const workerPayload =
-    storedWorkerPayload.success
-      ? storedWorkerPayload.data
-      : origin && storedRequest.success
-        ? sanitizeCountyOnrampWorkerPayload(
-            buildCountyOnrampWorkerPayloadFromStoredRequest({
-              origin,
-              jobId: crypto.randomUUID(),
-              countyRunId: row.id,
-              input: storedRequest.data,
-            })
-          )
-        : null;
+  // Attempt identity is stored state. Synthesizing a payload here used to show
+  // a new random job id and artifact directory on every detail-page refresh,
+  // even though no worker attempt existed.
+  const workerPayload = storedWorkerPayload.success ? storedWorkerPayload.data : null;
 
   return {
     id: row.id,
@@ -106,6 +98,11 @@ export function presentCountyRunDetail(params: {
     workerJobId: row.worker_job_id ?? workerPayload?.jobId ?? null,
     workerUrl: row.worker_url ?? null,
     workerDispatchError: row.worker_dispatch_error ?? null,
+    workerStartedAt: row.worker_started_at ?? null,
+    workerHeartbeatAt: row.worker_heartbeat_at ?? null,
+    cancellationRequestedAt: row.cancellation_requested_at ?? null,
+    cancelledAt: row.cancelled_at ?? null,
+    workerCompletedAt: row.worker_completed_at ?? null,
     manifest,
     artifacts: artifacts.map(presentCountyRunArtifact),
     validationSummary: row.validation_summary_json ?? null,

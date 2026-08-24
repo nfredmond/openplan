@@ -81,7 +81,7 @@ function appendUniqueRows(rows: CountyRunManifestProofRow[]): CountyRunManifestP
 export function getCountyRunNextAction(stage: CountyRunStage): string {
   switch (stage) {
     case "bootstrap-incomplete":
-      return "Wait for the county onboarding job to finish, then refresh status.";
+      return "Start or resume the county onboarding job, then review its completed artifacts.";
     case "runtime-complete":
       return "Review the generated scaffold and begin sourcing observed counts.";
     case "validation-scaffolded":

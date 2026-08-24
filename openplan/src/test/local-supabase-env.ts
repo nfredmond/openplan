@@ -43,7 +43,10 @@ export function parseLocalSupabaseEnv(output: string): LocalSupabaseEnv {
 }
 
 export function getLocalSupabaseEnv(): LocalSupabaseEnv {
-  const output = execFileSync("npm", ["exec", "--", "supabase", "status", "-o", "env"], {
+  const workdir = process.env.OPENPLAN_SUPABASE_WORKDIR?.trim();
+  const args = ["exec", "--", "supabase", "status", "-o", "env"];
+  if (workdir) args.push("--workdir", workdir);
+  const output = execFileSync("npm", args, {
     cwd: process.cwd(),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],

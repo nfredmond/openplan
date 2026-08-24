@@ -7,7 +7,7 @@ import type { CountyOnrampWorkerPayload } from "@/lib/api/county-onramp-worker";
  * `deliveryMode` is the whole point of this module, and the two values are NOT
  * degrees of the same thing:
  *
- *   "submitted" — an HTTP POST reached a configured worker, which will run the
+ *   "queued"    — an HTTP POST reached a configured worker, which will run the
  *                 bootstrap and call the manifest ingest endpoint back. The run
  *                 progresses on its own.
  *   "prepared"  — no worker URL is configured on this deployment, so no request
@@ -28,7 +28,7 @@ import type { CountyOnrampWorkerPayload } from "@/lib/api/county-onramp-worker";
  *   because that is the only branch that can produce one.
  */
 export type CountyOnrampDispatchResult = {
-  deliveryMode: "prepared" | "submitted";
+  deliveryMode: "prepared" | "queued";
   workerUrl: string | null;
 };
 
@@ -40,8 +40,18 @@ export async function dispatchCountyOnrampJob(
   if (!workerUrl) {
     return { deliveryMode: "prepared", workerUrl: null };
   }
+  if (!payload.callback.bearerToken) {
+    throw new Error(
+      "County worker dispatch refused: OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN is required when a worker URL is configured"
+    );
+  }
 
   const token = process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN?.trim();
+  if (!token) {
+    throw new Error(
+      "County worker dispatch refused: OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN is required when a worker URL is configured"
+    );
+  }
   const headers: Record<string, string> = {
     "content-type": "application/json",
     accept: "application/json",
@@ -65,5 +75,41 @@ export async function dispatchCountyOnrampJob(
     );
   }
 
-  return { deliveryMode: "submitted", workerUrl };
+  return { deliveryMode: "queued", workerUrl };
+}
+
+function workerJobUrl(workerUrl: string, jobId: string, suffix = ""): string {
+  const trimmed = workerUrl.replace(/\/+$/, "");
+  const jobsBase = trimmed.endsWith("/jobs") ? trimmed : `${trimmed}/jobs`;
+  return `${jobsBase}/${encodeURIComponent(jobId)}${suffix}`;
+}
+
+function workerHeaders(): Record<string, string> {
+  const token = process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN?.trim();
+  if (!token) {
+    throw new Error("County worker control refused: OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN is required");
+  }
+  return {
+    accept: "application/json",
+    authorization: `Bearer ${token}`,
+  };
+}
+
+export async function cancelCountyOnrampJob(params: {
+  workerUrl: string;
+  jobId: string;
+  fetcher?: typeof fetch;
+}): Promise<void> {
+  const response = await (params.fetcher ?? fetch)(workerJobUrl(params.workerUrl, params.jobId, "/cancel"), {
+    method: "POST",
+    headers: workerHeaders(),
+  });
+  if (!response.ok) {
+    const errorText = (await response.text().catch(() => "")).trim();
+    throw new Error(
+      errorText
+        ? `County worker cancellation failed (${response.status}): ${errorText}`
+        : `County worker cancellation failed (${response.status})`
+    );
+  }
 }

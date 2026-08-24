@@ -225,7 +225,7 @@ A Census API key is **free** and issued instantly at
 | `OPENPLAN_MODELING_QUEUE_DEPTH` | Optional operator bound on how many model runs one workspace may have waiting on the processing worker at once. **Unset means unlimited** and the counting query is never even run — the default, and the right setting for a self-hosted deployment. Set it only to protect compute you pay for; the refusal names you rather than offering anyone an upgrade. |
 | `CRON_SECRET` | Authorizes all three scheduled jobs (see "The scheduled jobs" below): the model-run reaper, the GTFS-ingest reaper, and the daily deadline-reminder sweep. **You must set this yourself, on Vercel too** — Vercel *sends* the header automatically on scheduled invocations once the variable exists, but it does not create the variable, and while it is unset every cron answers 401 on every run. Setting it is necessary but NOT sufficient off Vercel: a scheduler must actually call each path (the model pages' reconcile-on-read is the only rescue for stuck runs meanwhile, and deadline reminders simply do not fire). On another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. *(Corrected 2026-08-04: this row previously said Vercel "sets" it; 2026-08-17: named all three jobs, not only the reaper.)* |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
-| `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to the worker in `workers/county_onramp_worker/` — the service that actually produces a travel number. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted — and `/county-runs` says so *before* the first launch rather than after it, since the URL is the same test the dispatcher itself applies. Unlike the modeling worker there is nothing extra to declare: configuring the URL is the declaration. **`_CALLBACK_BEARER_TOKEN` is not optional once the URL is set**, and its absence is the expensive silent failure in this lane: the worker holds no browser session, so the manifest callback is refused with 401 *after* the model has run for minutes, and the run simply never appears. `_TOKEN` guards the opposite direction and may be left unset only where the worker is unreachable from beyond the machine. On one computer, `npm run modeling:up` starts the worker in Docker and `npm run doctor` reports on all three settings; see `workers/county_onramp_worker/DEPLOY.md`. |
+| `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to the worker in `workers/county_onramp_worker/` — the service that actually produces a travel number. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted. Both bearer tokens are required once the URL is set: `_TOKEN` authenticates job, status, and cancellation requests; `_CALLBACK_BEARER_TOKEN` authenticates worker callbacks, which must also carry the active job id. Use different random values. On one computer, `npm run modeling:up` starts the worker in Docker and reads the same `.env.local`; `npm run doctor` reports on all settings. See `workers/county_onramp_worker/DEPLOY.md`. |
 | `OPENPLAN_COUNTY_ONRAMP_CALLBACK_ORIGIN` | Optional. The address the WORKER should post a finished run back to, when that differs from the address a browser reaches OpenPlan at. Unset, the request origin is used — correct whenever the worker can use the same address. It cannot from inside a bridge-networked container, where `localhost` is the container: set `http://host.docker.internal:3000` there, or the deployment's public URL on a server. Same posture and same fallback as `OPENPLAN_KB_OCR_CALLBACK_URL`. Resolved once, in the payload builder, so the callback URL shown on a run page is the one the worker was handed. |
 | `OPENPLAN_AERIAL_PROCESSING_*` | Aerial Ops integration with an external processing platform. |
 | `OPENPLAN_RTP_EXTRACTION_MODEL` | Which Claude model transcribes an adopted plan document into staged figures and verbatim chapter text. Unset uses the strong default rather than the cheap one, on purpose: the job is copying figures out of a table, and a model that paraphrases a number is the whole failure mode. Every figure is checked against the words it quoted before it is staged, so a cheaper model does not produce wrong figures — it produces *fewer* figures, each dropped one a planner then types by hand. |
@@ -553,16 +553,13 @@ minutes, but the safe order costs nothing, so use it every time. `CHANGELOG.md`
 at the repository root is the per-release manifest — it leads with whether a
 release added migrations and anything else an operator must do.
 
-1. **Back up first.** Local Docker stack:
-   `docker exec supabase_db_openplan pg_dump -U postgres postgres > backup-$(date +%Y%m%d).sql`
-   Hosted Supabase project: `npm exec -- supabase db dump -f backup-$(date +%Y%m%d).sql --linked`.
-   Success looks like: a non-empty `.sql` file. The hosted **free tier takes no
-   automatic backups**, and there is no down-migration path (next point), so
-   this file is the entire rollback story.
+1. **Back up first.** Follow `docs/ops/BACKUP_AND_RESTORE.md`. A recovery point
+   includes a custom-format PostgreSQL dump, every Storage object byte, and
+   recorded SHA-256 hashes. A database-only file is not a complete backup.
 2. **Know what "rollback" means here.** Migrations are **forward-only** —
    Supabase has no down migrations and OpenPlan ships none. Recovering from a
-   bad upgrade means restoring the backup from step 1
-   (`psql "$DATABASE_URL" < backup-….sql`), not un-running a migration.
+   bad upgrade means restoring the verified recovery point from step 1 into an
+   isolated stack, not un-running a migration.
 3. **Pull the new code** into the checkout that runs your deployment (for a
    Vercel fork setup, pull into your local clone first and do not push yet —
    pushing is what triggers the deploy).

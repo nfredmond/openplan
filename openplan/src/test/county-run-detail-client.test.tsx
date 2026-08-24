@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CountyRunDetailClient } from "@/components/county-runs/county-run-detail-client";
@@ -235,5 +235,42 @@ describe("CountyRunDetailClient", () => {
     await waitFor(() => {
       expect(enqueueMock).toHaveBeenCalledWith("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     });
+  });
+
+  it("polls only while a worker attempt is active", () => {
+    vi.useFakeTimers();
+    const refresh = vi.fn();
+    const baseData = useCountyRunDetailMock().data;
+    useCountyRunDetailMock.mockReturnValue({
+      data: {
+        ...baseData,
+        stage: "bootstrap-incomplete",
+        enqueueStatus: "not-enqueued",
+      },
+      loading: false,
+      error: null,
+      refresh,
+    });
+
+    const view = render(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+    act(() => vi.advanceTimersByTime(5000));
+    expect(refresh).not.toHaveBeenCalled();
+    expect(screen.getAllByText("Setup Incomplete").length).toBeGreaterThan(0);
+
+    useCountyRunDetailMock.mockReturnValue({
+      data: {
+        ...baseData,
+        stage: "bootstrap-incomplete",
+        enqueueStatus: "running",
+      },
+      loading: false,
+      error: null,
+      refresh,
+    });
+    view.rerender(<CountyRunDetailClient countyRunId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" />);
+    act(() => vi.advanceTimersByTime(5000));
+    expect(refresh).toHaveBeenCalledOnce();
+    view.unmount();
+    vi.useRealTimers();
   });
 });

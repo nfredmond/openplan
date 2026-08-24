@@ -11,8 +11,9 @@ job description that nothing executes, and `/county-runs` says so before you
 click rather than after. That is a supported configuration. This document is
 about turning the other one on.
 
-A run takes roughly six minutes on an ordinary laptop, most of it spent
-downloading the road network.
+A small screening run can finish in minutes; a larger or more accurate run may
+take hours or days. There is no runtime cutoff. The planner can cancel a stuck
+attempt without silently shortening every legitimate run.
 
 ## On your own machine (the usual case)
 
@@ -25,20 +26,24 @@ npm run modeling:up
 The first run builds the image: several minutes, about a gigabyte of
 AequilibraE, GeoPandas and SpatiaLite. Later starts are instant.
 
-Then put three values in `openplan/.env.local` and restart `npm run dev`:
+Then put four values in `openplan/.env.local`, restart the worker, and restart
+`npm run dev`:
 
 ```bash
 OPENPLAN_COUNTY_ONRAMP_WORKER_URL=http://127.0.0.1:8686/jobs
+OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN=<a long random string>
 OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN=<any long random string>
 CENSUS_API_KEY=<free, from api.census.gov/data/key_signup.html>
 ```
 
-**All three matter, and two of them fail silently if you skip them.** Without
-the callback token the worker runs the whole model and OpenPlan refuses the
-result with a 401 — the run never appears. Without the Census key every run
-stops in its first second, which at least says so plainly.
+**All four matter.** Without the worker token OpenPlan refuses to dispatch,
+because status and cancellation would not be authenticated. Without the
+callback token the worker cannot report progress or a result. Without the
+Census key every run stops in its first second, which at least says so plainly.
 
-`npm run doctor` checks all three and says which is missing. `npm run
+The two bearer values must be different. The compose service reads this same
+`.env.local`, so the worker token reaches both sides without a second file.
+`npm run doctor` checks all four and says which is missing. `npm run
 modeling:logs` follows the worker's own output; `npm run modeling:down` stops
 it.
 
@@ -77,9 +82,10 @@ a payload field seems to have no effect:
 npm run modeling:up
 ```
 
-Runs land in `data/screening-runs/<run name>/` in your checkout, with
-downloads cached in `data/_screening_cache/`. Both are gitignored. They are
-large — a county is a few hundred megabytes.
+Each attempt lands in
+`data/screening-runs/<countyRunId>/<jobId>/` in your checkout, with downloads
+cached in `data/_screening_cache/`. Both are gitignored. A retry gets a new job
+directory, so two attempts for one geography cannot overwrite each other.
 
 ### Bridge-network alternative (if host networking is a problem)
 
@@ -141,7 +147,7 @@ needs the same shared storage mounted at the same path.
 | `PORT` | Listening port. Default `8080`; the local compose setup uses `8686`. |
 | `OPENPLAN_REPO_ROOT` | Where the checkout is. Default `/app`. Artifact paths in a job are resolved against it and **refused if they escape it**. |
 | `OPENPLAN_COUNTY_ONRAMP_PYTHON_BIN` | Interpreter for the model subprocess. Defaults to the one running the worker. |
-| `OPENPLAN_COUNTY_ONRAMP_MAX_CONCURRENCY` | Simultaneous runs. Default 1; each one saturates a core for minutes. |
+| `OPENPLAN_COUNTY_ONRAMP_MAX_CONCURRENCY` | Simultaneous runs. Default 1; each run is compute- and memory-intensive. |
 | `OPENPLAN_COUNTY_ONRAMP_CALLBACK_TIMEOUT_SECONDS` | Default 30. |
 | `CENSUS_API_KEY` | Required by every run. Read from the environment, or from `openplan/.env.local` when the checkout is mounted. |
 
@@ -151,8 +157,17 @@ configured on the worker.
 ## Endpoints
 
 - `POST /jobs` (and `POST /`) — accepts a job, returns `202` immediately, runs
-  it in the background and posts the manifest to the job's callback URL.
+  it in the background and posts status, heartbeat, and terminal callbacks.
+- `GET /jobs/<jobId>` — returns authenticated queued/running/terminal state and
+  timestamps for that attempt.
+- `POST /jobs/<jobId>/cancel` — requests cancellation. The OpenPlan app calls
+  this after a signed-in planner confirms; it is not an assistant action.
 - `GET /healthz` — what `npm run doctor` probes.
+
+Every non-loopback job/status/cancel request uses
+`OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN`. Every authenticated callback carries the
+job id OpenPlan currently stores. A callback from an older attempt is refused
+before run state or artifact custody can change.
 
 ## Running it without Docker
 

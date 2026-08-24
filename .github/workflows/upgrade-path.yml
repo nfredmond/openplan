@@ -99,13 +99,79 @@ jobs:
             VALUES ('00000000-0000-4000-8000-00000000000a', '00000000-0000-4000-8000-000000000001', 'owner');
           INSERT INTO projects (id, workspace_id, name)
             VALUES ('00000000-0000-4000-8000-00000000000b', '00000000-0000-4000-8000-00000000000a', 'Upgrade Probe Project');
+          INSERT INTO kb_documents (
+            id, workspace_id, project_id, uploaded_by, title, doc_kind, source_kind,
+            original_filename, content_type, byte_size, storage_ref, checksum, status
+          ) VALUES (
+            '00000000-0000-4000-8000-00000000000d',
+            '00000000-0000-4000-8000-00000000000a',
+            '00000000-0000-4000-8000-00000000000b',
+            '00000000-0000-4000-8000-000000000001',
+            'Upgrade evidence', 'prior_study', 'uploaded_txt', 'upgrade-evidence.txt',
+            'text/plain', 24,
+            'storage://kb-documents/00000000-0000-4000-8000-00000000000a/00000000-0000-4000-8000-00000000000d/upgrade-evidence.txt',
+            repeat('a', 64), 'ready'
+          );
+          INSERT INTO reports (id, workspace_id, project_id, title, report_type, status, created_by)
+            VALUES (
+              '00000000-0000-4000-8000-00000000000f',
+              '00000000-0000-4000-8000-00000000000a',
+              '00000000-0000-4000-8000-00000000000b',
+              'Upgrade Evidence Report', 'analysis_summary', 'generated',
+              '00000000-0000-4000-8000-000000000001'
+            );
+          INSERT INTO report_artifacts (id, report_id, artifact_kind, storage_path, generated_by, metadata_json)
+            VALUES (
+              '00000000-0000-4000-8000-000000000010',
+              '00000000-0000-4000-8000-00000000000f', 'html',
+              '00000000-0000-4000-8000-00000000000a/upgrade-evidence.html',
+              '00000000-0000-4000-8000-000000000001',
+              jsonb_build_object('evidenceCustody', jsonb_build_object('sha256', repeat('a', 64), 'documentId', '00000000-0000-4000-8000-00000000000d'))
+            );
+          INSERT INTO aerial_missions (id, workspace_id, project_id, title, status)
+            VALUES (
+              '00000000-0000-4000-8000-000000000011',
+              '00000000-0000-4000-8000-00000000000a',
+              '00000000-0000-4000-8000-00000000000b',
+              'Upgrade custody mission', 'complete'
+            );
+          INSERT INTO aerial_processing_jobs (
+            id, workspace_id, project_id, mission_id, request_id, status, preset_id, imagery_url, created_by
+          ) VALUES (
+            '00000000-0000-4000-8000-000000000012',
+            '00000000-0000-4000-8000-00000000000a',
+            '00000000-0000-4000-8000-00000000000b',
+            '00000000-0000-4000-8000-000000000011',
+            'upgrade-custody-request', 'succeeded', 'balanced', 'https://invalid.example/expired',
+            '00000000-0000-4000-8000-000000000001'
+          );
+          INSERT INTO aerial_artifact_custody (
+            id, workspace_id, mission_id, processing_job_id, kind, state,
+            storage_bucket, storage_path, byte_size, checksum_sha256, content_type,
+            source_host, source_expires_at, attempt_count, held_at
+          ) VALUES (
+            '00000000-0000-4000-8000-000000000013',
+            '00000000-0000-4000-8000-00000000000a',
+            '00000000-0000-4000-8000-000000000011',
+            '00000000-0000-4000-8000-000000000012',
+            'orthomosaic', 'held', 'aerial-artifacts',
+            '00000000-0000-4000-8000-00000000000a/upgrade-custody.tif',
+            24, repeat('b', 64), 'image/tiff', 'invalid.example', now() + interval '1 day', 1, now()
+          );
+          INSERT INTO storage.objects (id, bucket_id, name, owner, metadata)
+            VALUES (
+              '00000000-0000-4000-8000-000000000014', 'kb-documents',
+              '00000000-0000-4000-8000-00000000000a/00000000-0000-4000-8000-00000000000d/upgrade-evidence.txt',
+              '00000000-0000-4000-8000-000000000001',
+              jsonb_build_object('mimetype', 'text/plain', 'size', 24, 'sha256', repeat('a', 64))
+            );
           SQL
 
       - name: Record the seeded row counts
         run: |
           CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
           docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
-            "SELECT (SELECT count(*) FROM workspaces) || ':' || (SELECT count(*) FROM workspace_members) || ':' || (SELECT count(*) FROM projects)" \
+            "SELECT (SELECT count(*) FROM workspaces) || ':' || (SELECT count(*) FROM workspace_members) || ':' || (SELECT count(*) FROM projects) || ':' || (SELECT count(*) FROM kb_documents) || ':' || (SELECT count(*) FROM report_artifacts) || ':' || (SELECT count(*) FROM aerial_artifact_custody) || ':' || (SELECT count(*) FROM storage.objects)" \
             > /tmp/seed-counts.txt
           cat /tmp/seed-counts.txt
           # GUARD THE GUARD. Every assertion in this job compares the database
@@ -115,7 +181,7 @@ jobs:
           # anything about upgrade safety.
           SEEDED=$(cat /tmp/seed-counts.txt)
           case "$SEEDED" in
-            0:*|*:0:*|*:0)
+            0:*|*:0:*|*:0:*|*:0:*|*:0:*|*:0:*|*:0)
               echo "::error::The upgrade probe seeded no rows ($SEEDED), so it cannot prove an upgrade preserves data. Fix the seed step rather than trusting this job."
               exit 1
               ;;
@@ -134,13 +200,22 @@ jobs:
         run: |
           CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
           AFTER=$(docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
-            "SELECT (SELECT count(*) FROM workspaces) || ':' || (SELECT count(*) FROM workspace_members) || ':' || (SELECT count(*) FROM projects)")
+            "SELECT (SELECT count(*) FROM workspaces) || ':' || (SELECT count(*) FROM workspace_members) || ':' || (SELECT count(*) FROM projects) || ':' || (SELECT count(*) FROM kb_documents) || ':' || (SELECT count(*) FROM report_artifacts) || ':' || (SELECT count(*) FROM aerial_artifact_custody) || ':' || (SELECT count(*) FROM storage.objects)")
           BEFORE=$(cat /tmp/seed-counts.txt)
           echo "before=$BEFORE after=$AFTER"
           test "$BEFORE" = "$AFTER" || { echo "::error::Rows changed across the upgrade: $BEFORE -> $AFTER"; exit 1; }
           NAME=$(docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
             "SELECT name FROM projects WHERE id = '00000000-0000-4000-8000-00000000000b'")
           test "$NAME" = "Upgrade Probe Project" || { echo "::error::Seeded project content changed: '$NAME'"; exit 1; }
+          CUSTODY=$(docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
+            "SELECT k.checksum || ':' || (r.metadata_json #>> '{evidenceCustody,sha256}') || ':' || a.checksum_sha256 || ':' || (o.metadata->>'sha256')
+             FROM kb_documents k, report_artifacts r, aerial_artifact_custody a, storage.objects o
+             WHERE k.id='00000000-0000-4000-8000-00000000000d'
+               AND r.id='00000000-0000-4000-8000-000000000010'
+               AND a.id='00000000-0000-4000-8000-000000000013'
+               AND o.id='00000000-0000-4000-8000-000000000014'")
+          EXPECTED="$(printf 'a%.0s' {1..64}):$(printf 'a%.0s' {1..64}):$(printf 'b%.0s' {1..64}):$(printf 'a%.0s' {1..64})"
+          test "$CUSTODY" = "$EXPECTED" || { echo "::error::Evidence custody or storage metadata changed across the upgrade"; exit 1; }
 
       - name: Stop Supabase
         if: always()

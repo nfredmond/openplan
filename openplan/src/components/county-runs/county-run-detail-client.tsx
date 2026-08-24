@@ -17,6 +17,7 @@ import {
 } from "@/lib/ui/county-onramp";
 import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -30,15 +31,14 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // We own the polling loop (the hook's built-in interval is disabled with 0):
-  // poll every 5s while the run is non-terminal, stop when it settles, and pause
+  // poll every 5s while a worker attempt is active, stop when it settles, and pause
   // while the tab is hidden. `now` advances only inside the timer so there is no
   // setState during render or the effect body.
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 0);
   const [now, setNow] = useState(0);
   const stageIsTerminal = data?.stage === "validated-screening";
-  const shouldPoll = Boolean(data) && !stageIsTerminal;
-  const awaitingWorker =
-    data?.enqueueStatus === "submitted" && data?.stage === "bootstrap-incomplete";
+  const awaitingWorker = ["queued", "running", "cancelling"].includes(data?.enqueueStatus ?? "");
+  const shouldPoll = Boolean(data) && awaitingWorker && !stageIsTerminal;
   useEffect(() => {
     if (!shouldPoll) return;
     const id = window.setInterval(() => {
@@ -48,15 +48,17 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     }, 5000);
     return () => window.clearInterval(id);
   }, [shouldPoll, refresh]);
-  const enqueuedAtMs = data?.lastEnqueuedAt ? Date.parse(data.lastEnqueuedAt) : Number.NaN;
+  const livenessAt = data?.workerHeartbeatAt ?? data?.lastEnqueuedAt;
+  const enqueuedAtMs = livenessAt ? Date.parse(livenessAt) : Number.NaN;
   const runIsStuck =
     Boolean(awaitingWorker) &&
     now > 0 &&
     Number.isFinite(enqueuedAtMs) &&
     now - enqueuedAtMs > COUNTY_RUN_STUCK_THRESHOLD_MS;
-  const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
+  const { enqueue, cancel, loading: actionLoading, error: actionError } = useCountyRunMutations();
+  const { confirm, confirmDialog } = useConfirmDialog();
   const [enqueueState, setEnqueueState] = useState<{
-    status: "prepared" | "submitted";
+    status: "prepared" | "queued";
     manifestIngestUrl: string;
     manifestPath: string;
     hasBearerToken: boolean;
@@ -146,11 +148,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
    */
   const lastAttemptReachedNoWorker = enqueueStatus === "prepared" && data.workerUrl == null;
   const enqueueRefused = lastAttemptReachedNoWorker && !workerConfiguredSinceLastAttempt;
-  const canEnqueue = enqueueStatus !== "submitted" && !enqueueRefused;
+  const workerAttemptActive = ["queued", "running", "cancelling"].includes(enqueueStatus);
+  const canEnqueue = !workerAttemptActive && !enqueueRefused;
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
-    if (result?.status === "prepared" || result?.status === "submitted") {
+    if (result?.status === "prepared" || result?.status === "queued") {
       setEnqueueState({
         status: result.status,
         manifestIngestUrl: result.workerPayload.callback.manifestIngestUrl,
@@ -158,6 +161,19 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         hasBearerToken: result.workerPayload.callback.hasBearerToken,
       });
     }
+  };
+
+  const cancelRun = async () => {
+    if (!(await confirm({
+      headline: "Stop this model run?",
+      consequence:
+        "OpenPlan will ask the worker to stop this attempt. Its partial files will remain in the attempt directory, and you can start a new attempt later.",
+      confirmLabel: "Stop this run",
+      cancelLabel: "Keep it running",
+    }))) {
+      return;
+    }
+    if (await cancel(countyRunId)) await refresh();
   };
 
   return (
@@ -182,12 +198,21 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             Refresh
           </Button>
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
-            {enqueueStatus === "submitted"
-              ? "Sent to the worker"
+            {workerAttemptActive
+              ? enqueueStatus === "cancelling" ? "Cancellation requested" : "Worker attempt active"
               : enqueueRefused
                 ? "No worker to hand this to"
                 : "Prepare run handoff"}
           </Button>
+          {workerAttemptActive ? (
+            <Button
+              variant="destructive"
+              onClick={() => void cancelRun()}
+              disabled={actionLoading}
+            >
+              {enqueueStatus === "cancelling" ? "Retry cancellation" : "Cancel run"}
+            </Button>
+          ) : null}
           <Button asChild variant="outline">
             <Link href={safeBackHref}>Back to county runs</Link>
           </Button>
@@ -241,17 +266,22 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         ) : null}
         {awaitingWorker ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            Waiting for the modeling worker to pick up this run — auto-refreshing every few seconds
-            (paused when the tab is hidden).
+            {enqueueStatus === "queued"
+              ? "Waiting for the modeling worker to pick up this run"
+              : enqueueStatus === "running"
+                ? "The modeling worker is running this attempt"
+                : "Waiting for the worker to confirm cancellation"}
+            {data.workerHeartbeatAt ? `; last heartbeat ${new Date(data.workerHeartbeatAt).toLocaleString()}` : ""}.
+            Auto-refresh pauses while this tab is hidden.
           </p>
         ) : null}
         {runIsStuck ? (
           <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-300/80 bg-amber-50/70 px-4 py-2.5 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
             <span>
-              This run has been submitted for over 10 minutes with no worker progress. No worker has
-              picked this up — check that the modeling worker is running (see{" "}
-              <code>workers/aequilibrae_worker/DEPLOY.md</code>).
+              This run has gone over 10 minutes without a worker heartbeat. Check the modeling worker
+              log and use the cancel control if this attempt cannot continue (see{" "}
+              <code>workers/county_onramp_worker/DEPLOY.md</code>).
             </span>
           </div>
         ) : null}
@@ -260,8 +290,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         {enqueueState ? (
           <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
             <div className="font-medium text-foreground">
-              {enqueueState.status === "submitted"
-                ? "Setup handoff sent to the worker"
+              {enqueueState.status === "queued"
+                ? "Setup handoff queued on the worker"
                 : "Setup handoff prepared — nothing was sent"}
             </div>
             {enqueueState.status === "prepared" ? (
@@ -568,6 +598,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           </ul>
         </CardContent>
       </Card>
+      {confirmDialog}
     </section>
   );
 }

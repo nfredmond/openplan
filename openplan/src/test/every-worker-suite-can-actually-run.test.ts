@@ -92,9 +92,18 @@ function workerLanes(): WorkerLane[] {
     .filter((entry) => entry.isDirectory())
     .map((entry) => {
       const dir = path.join(WORKERS_DIR, entry.name);
-      const suites = readdirSync(dir)
-        .filter((name) => name.startsWith("test_") && name.endsWith(".py"))
-        .sort();
+      const suiteFiles = (directory: string, relative = ""): string[] =>
+        readdirSync(directory, { withFileTypes: true }).flatMap((child) => {
+          if (child.name.startsWith(".") || child.name === "__pycache__") return [];
+          const childRelative = path.join(relative, child.name);
+          if (child.isDirectory()) {
+            return suiteFiles(path.join(directory, child.name), childRelative);
+          }
+          return child.isFile() && child.name.startsWith("test_") && child.name.endsWith(".py")
+            ? [childRelative]
+            : [];
+        });
+      const suites = suiteFiles(dir).sort();
       const interpreter =
         VENV_CANDIDATES.map((candidate) => path.join(dir, candidate)).find((candidate) =>
           existsSync(candidate)
@@ -135,15 +144,17 @@ const describeWithVenv = AEQUILIBRAE_INTERPRETER ? describe : describe.skip;
  */
 function importFailuresFor(lane: WorkerLane & { interpreter: string }): string[] {
   const program = [
-    "import importlib, json, sys",
-    `names = ${JSON.stringify(lane.suites.map((suite) => suite.replace(/\.py$/, "")))}`,
+    "import importlib.util, json, sys",
+    `paths = ${JSON.stringify(lane.suites)}`,
     "sys.path.insert(0, '.')",
     "out = {}",
-    "for name in names:",
+    "for index, path in enumerate(paths):",
     "    try:",
-    "        importlib.import_module(name)",
+    "        spec = importlib.util.spec_from_file_location(f'openplan_worker_suite_{index}', path)",
+    "        module = importlib.util.module_from_spec(spec)",
+    "        spec.loader.exec_module(module)",
     "    except BaseException as exc:",
-    "        out[name] = f'{type(exc).__name__}: {exc}'",
+    "        out[path] = f'{type(exc).__name__}: {exc}'",
     "print(json.dumps(out))",
   ].join("\n");
 
@@ -169,7 +180,7 @@ function importFailuresFor(lane: WorkerLane & { interpreter: string }): string[]
   }
 
   return Object.entries(reported)
-    .map(([name, detail]) => `${name}.py: ${detail}`)
+    .map(([name, detail]) => `${name}: ${detail}`)
     .sort();
 }
 
@@ -235,6 +246,12 @@ describe("the python worker suites are discoverable", () => {
       "this repository has more than one worker with tests; a guard covering one of them is the " +
         "defect it was written to prevent, wearing its own clothes."
     ).toBeGreaterThanOrEqual(4);
+  });
+
+  it("includes suites below a worker's tests directory", () => {
+    const lanes = new Map(workerLanes().map((lane) => [lane.name, lane.suites]));
+    expect(lanes.get("county_onramp_worker")).toContain(path.join("tests", "test_main.py"));
+    expect(lanes.get("activitysim_worker")).toContain(path.join("tests", "test_runtime.py"));
   });
 
   it("keeps the pandas-dependent suites named, because they are why the interpreter matters", () => {

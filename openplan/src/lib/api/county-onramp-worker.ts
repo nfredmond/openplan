@@ -68,6 +68,7 @@ const countyOnrampWorkerPayloadBaseSchema = z.object({
     containerNetworkMode: z.string().min(1).optional(),
   }),
   artifactTargets: z.object({
+    attemptDirectory: z.string().min(1),
     scaffoldCsvPath: z.string().min(1),
     reviewPacketMdPath: z.string().min(1),
     manifestPath: z.string().min(1),
@@ -176,14 +177,9 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
   const origin = resolveCountyOnrampCallbackOrigin(params.origin);
   const callbackBearerToken = process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN?.trim();
   const countyPrefix = input.countyPrefix;
-  const runSlug = input.runName;
-  // Derived from the run's own county prefix, for every county. There used to
-  // be a branch here that matched one FIPS code and returned a fixed path — a
-  // runtime branch keyed to a place, which is the thing non-negotiable #0
-  // forbids. Its only effect was to ignore an operator-supplied prefix for that
-  // one county — with the derived prefix, which is the default, the general
-  // expression already produced the same path.
-  const artifactBase = `data/pilot-${countyPrefix.toLowerCase()}-county/validation`;
+  // Every accepted attempt owns one directory. A retry of the same county run
+  // must not overwrite or ingest the files from an earlier job.
+  const artifactBase = `data/screening-runs/${countyRunId}/${jobId}`;
 
   return countyOnrampWorkerPayloadSchema.parse({
     jobId,
@@ -197,9 +193,10 @@ export function buildCountyOnrampWorkerPayloadFromStoredRequest(params: {
     countyPrefix,
     runtimeOptions: input.runtimeOptions,
     artifactTargets: {
-      scaffoldCsvPath: `${artifactBase}/${countyPrefix.toLowerCase()}_priority_count_scaffold_auto.csv`,
-      reviewPacketMdPath: `docs/ops/${runSlug}-validation-review-packet.md`,
-      manifestPath: `tmp/county-onramp/${runSlug}.manifest.json`,
+      attemptDirectory: artifactBase,
+      scaffoldCsvPath: `${artifactBase}/validation-scaffold.csv`,
+      reviewPacketMdPath: `${artifactBase}/validation-review-packet.md`,
+      manifestPath: `${artifactBase}/manifest.json`,
     },
     callback: {
       manifestIngestUrl: `${origin}/api/county-runs/${countyRunId}/manifest`,

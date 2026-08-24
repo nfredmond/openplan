@@ -177,23 +177,22 @@ Actions:
 
 ## Backup And Restore
 
-OpenPlan's durable state lives in Supabase Postgres and Supabase Storage. Everything else
-(Vercel deployments, Mapbox, Anthropic, GitHub) is recoverable from upstream sources or rebuilt
-from `main`. Detailed operator commands live in
-`docs/ops/2026-05-01-openplan-backup-restore-procedure.md`. This section covers triage and
+OpenPlan's durable state lives in Supabase Postgres and Supabase Storage. Application code is
+rebuilt from `main`; operator-owned configuration is protected separately. Detailed free,
+self-hosted commands live in `docs/ops/BACKUP_AND_RESTORE.md`. This section covers triage and
 decision posture during an incident.
 
 Durable state surfaces (full inventory in the procedure doc):
 
 - Supabase Postgres: workspace, membership, project, evidence, report-metadata,
   modeling-metadata, public-data, and policy state.
-- Supabase Storage buckets: `gtfs-uploads`, `network-packages`, `report-artifacts`.
-- Vercel project environment variables, snapshotted offline; not part of Supabase backup.
+- Supabase Storage metadata plus every object byte, without assuming a fixed bucket list.
+- Deployment configuration and secrets, snapshotted offline; not part of the database backup.
 
 Recovery objective posture:
 
-- No RPO/RTO is promised by OpenPlan. Your recovery posture is whatever your Supabase tier and
-  drill discipline actually support — verify PITR availability before relying on it, and never
+- No RPO/RTO is promised by OpenPlan. Your recovery posture is whatever your backup cadence and
+  drill discipline actually support; never
   promise users a recovery window you have not drilled.
 
 When to consider a restore:
@@ -212,9 +211,9 @@ Do not restore for:
 Pre-restore checklist:
 
 1. Treat the incident as `SEV-1` and pause new sign-ups/invitations.
-2. Capture the current state before restoring: a fresh `supabase db dump` and storage manifest,
+2. Capture the current state before restoring: a fresh database dump and storage-byte archive,
    even if it is the broken state. Loss of forensic evidence is its own incident.
-3. Identify the target restore point: timestamp, backup id, or PITR moment.
+3. Identify the target restore point and verify its recorded hashes.
 4. Identify what data created after the restore point must be recovered separately (recent
    invitations, recent reports). Plan to replay these from logs if possible.
 5. Confirm with the deployment owner before proceeding. A restore is a written decision, not a
@@ -222,7 +221,7 @@ Pre-restore checklist:
 
 Restore-drill cadence:
 
-- Run a non-production restore drill quarterly into a staging Supabase project.
+- Run `npm run ops:restore-drill` quarterly; it uses disposable isolated local projects.
 - Log each drill with the dated filename pattern `YYYY-MM-DD-openplan-restore-drill-<slug>.md`:
   drill date, source backup id, target environment, time-to-restore, post-restore validation
   results, and any failure modes observed.

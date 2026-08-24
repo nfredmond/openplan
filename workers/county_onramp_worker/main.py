@@ -8,7 +8,10 @@ import os
 import shlex
 import subprocess
 import sys
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +37,47 @@ BOOTSTRAP_SCRIPT = REPO_ROOT / "scripts" / "modeling" / "bootstrap_county_valida
 PYTHON_BIN = os.getenv("OPENPLAN_COUNTY_ONRAMP_PYTHON_BIN", sys.executable)
 WORKER_TOKEN = (os.getenv("OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN") or "").strip()
 CALLBACK_TIMEOUT_SECONDS = float(os.getenv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_TIMEOUT_SECONDS", "30"))
+HEARTBEAT_SECONDS = max(1.0, float(os.getenv("OPENPLAN_COUNTY_ONRAMP_HEARTBEAT_SECONDS", "30")))
+CANCEL_GRACE_SECONDS = max(1.0, float(os.getenv("OPENPLAN_COUNTY_ONRAMP_CANCEL_GRACE_SECONDS", "15")))
+
+_jobs_lock = threading.Lock()
+_jobs: dict[str, dict[str, Any]] = {}
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _set_job_status(job_id: str, status: str, **fields: Any) -> None:
+    with _jobs_lock:
+        record = _jobs.get(job_id)
+        if record is None:
+            return
+        record.update({"status": status, "updatedAt": _utc_now(), **fields})
+
+
+def _public_job_status(job_id: str) -> dict[str, Any] | None:
+    with _jobs_lock:
+        record = _jobs.get(job_id)
+        if record is None:
+            return None
+        return {
+            key: record.get(key)
+            for key in (
+                "jobId",
+                "countyRunId",
+                "status",
+                "acceptedAt",
+                "startedAt",
+                "heartbeatAt",
+                "cancellationRequestedAt",
+                "cancelledAt",
+                "completedAt",
+                "failedAt",
+                "updatedAt",
+            )
+            if record.get(key) is not None
+        }
 
 
 def _parse_bearer_token(authorization_header: str | None) -> str | None:
@@ -79,6 +123,20 @@ def _authorize_job_request(
             return False
         return hmac.compare_digest(provided, configured_token)
     return _is_loopback_addr(remote_addr)
+
+
+def _authorize_control_request(
+    configured_token: str, authorization_header: str | None
+) -> bool:
+    """Status and cancellation always require the shared bearer.
+
+    Loopback limits who can reach a socket; it does not identify which local
+    process may stop a planner's run.
+    """
+    supplied_token = _parse_bearer_token(authorization_header)
+    return bool(configured_token) and supplied_token is not None and hmac.compare_digest(
+        supplied_token, configured_token
+    )
 
 
 def _startup_bind_refusal(host: str, configured_token: str) -> str | None:
@@ -145,17 +203,24 @@ def _require_artifact_targets(container: dict[str, Any]) -> dict[str, str]:
     if not isinstance(targets, dict):
         raise ValueError("Missing or invalid 'artifactTargets'")
     parsed = {
+        "attemptDirectory": _require_string(targets, "attemptDirectory"),
         "scaffoldCsvPath": _require_string(targets, "scaffoldCsvPath"),
         "reviewPacketMdPath": _require_string(targets, "reviewPacketMdPath"),
         "manifestPath": _require_string(targets, "manifestPath"),
     }
     # Reject an escaping path HERE, so a bad job is refused with 400 at submit
     # time rather than accepted, started, and reported as a failed run.
+    attempt_directory = _resolve_repo_path(parsed["attemptDirectory"])
+    expected_attempt = REPO_ROOT / "data" / "screening-runs" / _require_string(container, "countyRunId") / _require_string(container, "jobId")
+    if attempt_directory != expected_attempt.resolve():
+        raise ValueError("Invalid artifact target 'attemptDirectory': path does not name this countyRunId/jobId attempt")
     for key, value in parsed.items():
         try:
-            _resolve_repo_path(value)
+            resolved = _resolve_repo_path(value)
         except ValueError as exc:
             raise ValueError(f"Invalid artifact target '{key}': {exc}") from exc
+        if resolved != attempt_directory and attempt_directory not in resolved.parents:
+            raise ValueError(f"Invalid artifact target '{key}': path escapes the job attempt directory")
     return parsed
 
 
@@ -235,6 +300,8 @@ def _build_bootstrap_command(job: dict[str, Any]) -> tuple[list[str], Path]:
         str(BOOTSTRAP_SCRIPT),
         "--name",
         job["runName"],
+        "--output-root",
+        str(_resolve_repo_path(artifact_targets["attemptDirectory"])),
     ]
 
     # A county resolves its own boundary from its FIPS code through a cached
@@ -313,18 +380,68 @@ def _post_callback(job: dict[str, Any], payload: dict[str, Any]) -> None:
 
 
 def _run_job(job: dict[str, Any]) -> None:
-    command, manifest_path = _build_bootstrap_command(job)
-    logger.info("Starting county onramp job %s", job["jobId"])
-    logger.info("Bootstrap command: %s", " ".join(shlex.quote(part) for part in command))
-
+    job_id = job["jobId"]
+    with _jobs_lock:
+        record = _jobs[job_id]
+        cancel_event = record["cancelEvent"]
     try:
-        completed = subprocess.run(
+        # Command construction creates directories and may fail. It belongs in
+        # the same boundary as execution so an accepted job always attempts a
+        # terminal callback even when setup itself is broken.
+        command, manifest_path = _build_bootstrap_command(job)
+        if cancel_event.is_set():
+            cancelled_at = _utc_now()
+            _set_job_status(job_id, "cancelled", cancelledAt=cancelled_at)
+            _post_callback(job, {"jobId": job_id, "status": "cancelled"})
+            return
+
+        started_at = _utc_now()
+        _set_job_status(job_id, "running", startedAt=started_at, heartbeatAt=started_at)
+        _post_callback(job, {"jobId": job_id, "status": "running"})
+        logger.info("Starting county onramp job %s", job_id)
+        logger.info("Bootstrap command: %s", " ".join(shlex.quote(part) for part in command))
+
+        process = subprocess.Popen(
             command,
             cwd=str(REPO_ROOT),
-            check=True,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
         )
+        with _jobs_lock:
+            _jobs[job_id]["process"] = process
+
+        while True:
+            if cancel_event.is_set():
+                process.terminate()
+                try:
+                    stdout, stderr = process.communicate(timeout=CANCEL_GRACE_SECONDS)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    stdout, stderr = process.communicate()
+                cancelled_at = _utc_now()
+                _set_job_status(job_id, "cancelled", cancelledAt=cancelled_at)
+                _post_callback(job, {"jobId": job_id, "status": "cancelled"})
+                logger.info("Cancelled county onramp job %s", job_id)
+                return
+            try:
+                stdout, stderr = process.communicate(timeout=HEARTBEAT_SECONDS)
+                break
+            except subprocess.TimeoutExpired:
+                heartbeat_at = _utc_now()
+                _set_job_status(job_id, "running", heartbeatAt=heartbeat_at)
+                try:
+                    _post_callback(job, {"jobId": job_id, "status": "heartbeat"})
+                except Exception:
+                    logger.exception("Heartbeat callback failed for county onramp job %s", job_id)
+
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(
+                process.returncode,
+                command,
+                output=stdout,
+                stderr=stderr,
+            )
         manifest = json.loads(manifest_path.read_text())
         _post_callback(
           job,
@@ -334,13 +451,17 @@ def _run_job(job: dict[str, Any]) -> None:
               "manifest": manifest,
           },
         )
-        logger.info("Completed county onramp job %s", job["jobId"])
-        if completed.stdout.strip():
-            logger.info("Job %s stdout: %s", job["jobId"], completed.stdout.strip())
-        if completed.stderr.strip():
-            logger.warning("Job %s stderr: %s", job["jobId"], completed.stderr.strip())
+        completed_at = _utc_now()
+        _set_job_status(job_id, "completed", completedAt=completed_at)
+        logger.info("Completed county onramp job %s", job_id)
+        if stdout.strip():
+            logger.info("Job %s stdout: %s", job_id, stdout.strip())
+        if stderr.strip():
+            logger.warning("Job %s stderr: %s", job_id, stderr.strip())
     except Exception as exc:
-        logger.exception("County onramp job %s failed", job["jobId"])
+        failed_at = _utc_now()
+        _set_job_status(job_id, "failed", failedAt=failed_at)
+        logger.exception("County onramp job %s failed", job_id)
         details = None
         if isinstance(exc, subprocess.CalledProcessError):
             details = (exc.stderr or exc.stdout or "").strip()[:4000] or None
@@ -350,7 +471,7 @@ def _run_job(job: dict[str, Any]) -> None:
             _post_callback(
                 job,
                 {
-                    "jobId": job["jobId"],
+                    "jobId": job_id,
                     "status": "failed",
                     "error": {
                         "message": str(exc),
@@ -360,7 +481,11 @@ def _run_job(job: dict[str, Any]) -> None:
                 },
             )
         except Exception:
-            logger.exception("Callback failed for county onramp job %s", job["jobId"])
+            logger.exception("Callback failed for county onramp job %s", job_id)
+    finally:
+        with _jobs_lock:
+            if job_id in _jobs:
+                _jobs[job_id]["process"] = None
 
 
 @app.get("/healthz")
@@ -372,6 +497,34 @@ def healthz():
             "bootstrapScript": str(BOOTSTRAP_SCRIPT),
         }
     )
+
+
+@app.get("/jobs/<job_id>")
+def get_job(job_id: str):
+    if not _authorize_control_request(WORKER_TOKEN, request.headers.get("authorization")):
+        return jsonify({"error": "Unauthorized"}), 401
+    status = _public_job_status(job_id)
+    if status is None:
+        return jsonify({"error": "Job not found"}), 404
+    return jsonify(status), 200
+
+
+@app.post("/jobs/<job_id>/cancel")
+def cancel_job(job_id: str):
+    if not _authorize_control_request(WORKER_TOKEN, request.headers.get("authorization")):
+        return jsonify({"error": "Unauthorized"}), 401
+    with _jobs_lock:
+        record = _jobs.get(job_id)
+        if record is None:
+            return jsonify({"error": "Job not found"}), 404
+        if record["status"] in {"cancelled", "completed", "failed"}:
+            return jsonify({"error": f"Job is already {record['status']}"}), 409
+        requested_at = _utc_now()
+        record["cancellationRequestedAt"] = requested_at
+        record["updatedAt"] = requested_at
+        record["status"] = "cancelling"
+        record["cancelEvent"].set()
+    return jsonify({"accepted": True, "jobId": job_id, "status": "cancelling"}), 202
 
 
 @app.post("/")
@@ -388,6 +541,20 @@ def create_job():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
+    accepted_at = _utc_now()
+    with _jobs_lock:
+        if job["jobId"] in _jobs:
+            return jsonify({"error": "Job id already exists"}), 409
+        _jobs[job["jobId"]] = {
+            "jobId": job["jobId"],
+            "countyRunId": job["countyRunId"],
+            "job": job,
+            "status": "queued",
+            "acceptedAt": accepted_at,
+            "updatedAt": accepted_at,
+            "cancelEvent": threading.Event(),
+            "process": None,
+        }
     executor.submit(_run_job, job)
     return jsonify({"accepted": True, "jobId": job["jobId"]}), 202
 

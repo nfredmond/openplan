@@ -115,8 +115,8 @@ export function selectCalibratedHoldoutApe(kpis: readonly CeqaVmtKpiRowLike[]): 
  *     disjoint KPI names (`project_daily_vmt_screen`), so the KPI-namespace
  *     firewall already keeps it out — this list says the same thing at the run
  *     level rather than relying on a name mismatch;
- *   - `behavioral_demand` reaches preflight only, so its outputs are input
- *     validation, not travel;
+ *   - `behavioral_demand` can execute ActivitySim, but its borrowed regional
+ *     coefficients are not locally validated for a regulatory VMT finding;
  *   - `deterministic_corridor_v1` produces a corridor scorecard, not a study-area
  *     VMT aggregate.
  *
