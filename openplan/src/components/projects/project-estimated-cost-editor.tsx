@@ -140,6 +140,7 @@ export function ProjectEstimatedCostEditor({
       };
       if (!response.ok || !body.document) throw new Error(body.error ?? "Could not store the CSV.");
       if (body.warning) throw new Error(body.warning);
+      const document = body.document;
 
       setCsvPreview(preview);
       setNameColumn(suggestedColumn(preview.columns, [/^name$/i, /project.*name/i, /^title$/i]));
@@ -148,12 +149,12 @@ export function ProjectEstimatedCostEditor({
       setCostColumn(suggestedCost);
       setCurrencyColumn(suggestedColumn(preview.columns, [/currency/i]));
       if (suggestedCost) setCurrency(currencyFromHeader(preview.columns[Number(suggestedCost)] ?? ""));
-      setSourceDocumentId(body.document.id);
-      setAvailableSources((current) => current.some((option) => option.id === body.document?.id)
+      setSourceDocumentId(document.id);
+      setAvailableSources((current) => current.some((option) => option.id === document.id)
         ? current
-        : [...current, { id: body.document.id, title: body.document.title }]);
+        : [...current, { id: document.id, title: document.title }]);
       setSelectedCsv(null);
-      setMessage(`${body.document.title} is stored and indexed. Review one row before applying it.`);
+      setMessage(`${document.title} is stored and indexed. Review one row before applying it.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not read this CSV.");
     } finally {
@@ -182,7 +183,7 @@ export function ProjectEstimatedCostEditor({
   const currentSource = availableSources.find((option) => option.id === project.estimated_cost_source_document_id);
 
   return (
-    <article className="module-section-surface" aria-labelledby="estimated-project-cost-heading">
+    <article className="module-section-surface min-w-0 max-w-full" aria-labelledby="estimated-project-cost-heading">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Project identity</p>
@@ -212,26 +213,26 @@ export function ProjectEstimatedCostEditor({
 
       {canWrite ? (
         <>
-          <section className="mt-5 rounded-lg border bg-muted/20 p-4" aria-labelledby="csv-project-candidate-heading">
+          <section className="mt-5 min-w-0 rounded-lg border bg-muted/20 p-4" aria-labelledby="csv-project-candidate-heading">
             <h3 id="csv-project-candidate-heading" className="font-semibold">Bring in a project candidate from CSV</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               OpenPlan stores and indexes the file, then lets you review one row before it changes this project.
             </p>
             <label className="mt-3 grid max-w-md gap-1 text-sm">
               Project candidates CSV
-              <input className="rounded-md border bg-background px-3 py-2" type="file" accept=".csv,text/csv" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadCsv(file); }} />
+              <input className="max-w-full min-w-0 rounded-md border bg-background px-3 py-2" type="file" accept=".csv,text/csv" disabled={uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadCsv(file); }} />
             </label>
             {uploading ? <p className="mt-2 text-sm text-muted-foreground">Reading and storing the CSV…</p> : null}
 
             {csvPreview ? (
               <div className="mt-4 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {[
+                  {([
                     ["Project name column", nameColumn, setNameColumn, true],
                     ["Description column", summaryColumn, setSummaryColumn, false],
                     ["Estimated cost column", costColumn, setCostColumn, true],
                     ["Currency column", currencyColumn, setCurrencyColumn, false],
-                  ].map(([label, selected, setter, required]) => (
+                  ] as const).map(([label, selected, setter, required]) => (
                     <label className="grid gap-1 text-sm" key={String(label)}>
                       {label}{required ? " (required)" : " (optional)"}
                       <select className="rounded-md border bg-background px-3 py-2" value={String(selected)} onChange={(event) => (setter as (value: string) => void)(event.target.value)}>
@@ -252,7 +253,7 @@ export function ProjectEstimatedCostEditor({
             ) : null}
           </section>
 
-          <form className="mt-4 grid gap-3 md:grid-cols-4" onSubmit={(event) => { event.preventDefault(); void save({ amount: Number.parseFloat(amount), currency: currency.trim().toUpperCase(), basisYear: priceYear ? Number.parseInt(priceYear, 10) : null, sourceDocumentId: sourceDocumentId || null }); }}>
+          <form className="mt-4 grid min-w-0 gap-3 md:grid-cols-4" onSubmit={(event) => { event.preventDefault(); void save({ amount: Number.parseFloat(amount), currency: currency.trim().toUpperCase(), basisYear: priceYear ? Number.parseInt(priceYear, 10) : null, sourceDocumentId: sourceDocumentId || null }); }}>
             <label className="grid gap-1 text-sm">Amount<input className="rounded-md border bg-background px-3 py-2" inputMode="decimal" required min="0.01" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
             <label className="grid gap-1 text-sm">Currency<input className="rounded-md border bg-background px-3 py-2 uppercase" required minLength={3} maxLength={3} placeholder="USD" value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
             <label className="grid gap-1 text-sm">Price year (optional)<input className="rounded-md border bg-background px-3 py-2" type="number" min={1800} max={3000} value={priceYear} onChange={(event) => setPriceYear(event.target.value)} /></label>

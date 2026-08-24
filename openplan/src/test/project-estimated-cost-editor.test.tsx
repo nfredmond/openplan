@@ -13,7 +13,8 @@ describe("ProjectEstimatedCostEditor", () => {
   });
 
   it("labels project cost as distinct and sends the selected source", async () => {
-    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ project: { id: "p1" } }), { status: 200 }));
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      new Response(JSON.stringify({ project: { id: "p1" } }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
     render(
       <ProjectEstimatedCostEditor
@@ -36,6 +37,8 @@ describe("ProjectEstimatedCostEditor", () => {
     );
 
     expect(screen.getByText(/separate from the project-management budget/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Planning-level estimated project cost/i }).closest("article")).toHaveClass("min-w-0", "max-w-full");
+    expect(screen.getByLabelText(/Project candidates CSV/i)).toHaveClass("min-w-0", "max-w-full");
     fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "1200000" } });
     fireEvent.change(screen.getByLabelText("Currency"), { target: { value: "CAD" } });
     fireEvent.change(screen.getByLabelText(/Price year/i), { target: { value: "2026" } });
@@ -56,7 +59,7 @@ describe("ProjectEstimatedCostEditor", () => {
 
   it("stores a CSV, reviews one candidate, and applies its identity, cost, and source together", async () => {
     const documentId = "22222222-2222-4222-8222-222222222222";
-    const fetchMock = vi.fn(async (url: string) => url.startsWith("/api/knowledge-base/documents?")
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => String(input).startsWith("/api/knowledge-base/documents?")
       ? new Response(JSON.stringify({ document: { id: documentId, title: "projects.csv" } }), { status: 201 })
       : new Response(JSON.stringify({ project: { id: "33333333-3333-4333-8333-333333333333" } }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);

@@ -929,6 +929,7 @@ describe("ProjectDetailPage", () => {
     // It renders (no notFound), and the page scopes to the PROJECT's workspace.
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(workspaceEqMock).toHaveBeenCalledWith("id", "workspace-1");
+    expect(document.querySelector(".module-page")).toHaveClass("min-w-0", "grid-cols-[minmax(0,1fr)]");
   });
 
   it("asks the database for geometry_ref on model_run_kpis (the run-level filter's load-bearing column)", async () => {

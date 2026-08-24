@@ -2135,7 +2135,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         summary: report.summary ?? null,
         report_type: report.report_type,
       },
-      project: { ...projectRow, estimated_cost_source_title: estimatedCostSourceTitle },
+      project: projectRow,
       runs: linkedRuns as ReportSectionFactsRun[],
       citedModelRuns: citedModelRuns as ReportCitedModelRun[],
       citedCountyRuns: citedCountyRuns as ReportCitedCountyRun[],
@@ -2376,7 +2376,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.html`;
       const { error: uploadError } = await supabase.storage
         .from("report-artifacts")
-        .upload(storagePath, Buffer.from(exportHtml, "utf8"), { contentType: "text/html; charset=utf-8", upsert: false });
+        // Storage bucket allowlists compare the media type literally. Charset
+        // belongs on the download response, not in the stored object's type.
+        .upload(storagePath, Buffer.from(exportHtml, "utf8"), { contentType: "text/html", upsert: false });
       if (uploadError) {
         audit.error("report_html_upload_failed", { reportId: report.id, message: uploadError.message });
         return NextResponse.json({ error: "Failed to upload HTML artifact" }, { status: 500 });

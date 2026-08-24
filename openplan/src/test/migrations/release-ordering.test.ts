@@ -222,6 +222,15 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260823000007_land_use_plan_review_reporting.sql",
     migrationsAtRelease: 215,
   },
+  // 0.29.0 — fresh-account readiness closure: observed safety evidence,
+  // reviewed project CSV intake, board-readable map and PDF handoffs, and the
+  // resumable first-week harness that established the defects. Three additive
+  // migrations; no user data is replaced.
+  {
+    tag: "0.29.0",
+    lastMigration: "20260824000003_project_estimated_cost_and_csv_provenance.sql",
+    migrationsAtRelease: 218,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

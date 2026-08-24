@@ -1162,6 +1162,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(200);
+    const htmlUpload = storageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
+    expect(htmlUpload?.[2]).toEqual({ contentType: "text/html", upsert: false });
     expect(await response.json()).toMatchObject({
       reportId: "11111111-1111-4111-8111-111111111111",
       artifactId: "artifact-1",

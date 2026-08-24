@@ -1265,7 +1265,7 @@ export default async function ProjectDetailPage({
   // lists must partition all seven; `page-tabs-page-header-and-record-
   // creation.test.ts` fails if they ever stop doing so.
   return (
-    <section className="module-page">
+    <section className="module-page min-w-0 grid-cols-[minmax(0,1fr)]">
       <CartographicSurfaceWide />
       <div className="module-breadcrumb">
         <Link href="/projects" className="transition hover:text-foreground">

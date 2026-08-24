@@ -150,6 +150,8 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
     "R1 — list-coupled, RECLASSIFIED 2026-08-22 (it was on the debt list as a bounded create; that reading was wrong). On `receivables-lane.tsx` it sits between the client's existing invoices ABOVE it and the unbilled-hours ledger BELOW it — a section the page itself titles \"The ledger behind the lines\" — and its Pull unbilled time button draws from exactly that ledger. A modal hides both the hours the lines are made of and the invoices already sent to that client, which is what stops a duplicate. `time-entry-composer.tsx` writes into the same ledger and is exempt for the same reason.",
   "src/components/projects/project-spend-entry-form.tsx":
     "R1 — list-coupled. Spend is entered against the award's running total on the same screen.",
+  "src/components/projects/project-estimated-cost-editor.tsx":
+    "R2 — edits the project record this page already is. The POST in this file stores a source CSV before the existing-project PATCH; it does not turn the cost editor into a create flow.",
   "src/components/projects/project-rtp-linker.tsx":
     "R1 — list-coupled. It links a project into plan periods listed beside it.",
   "src/components/projects/stage-gate-decision-recorder.tsx":

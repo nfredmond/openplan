@@ -195,7 +195,7 @@ async function main() {
       page.getByRole('button', { name: /generate html packet/i }).click(),
     ]);
     await page.waitForLoadState('networkidle');
-    await page.getByText(/Latest HTML artifact/i).waitFor({ timeout: 30000 });
+    await page.getByText(/Latest report preview/i).waitFor({ timeout: 30000 });
 
     const iframe = page.locator('iframe[title="Latest report artifact preview"]');
     await iframe.waitFor({ timeout: 30000 });

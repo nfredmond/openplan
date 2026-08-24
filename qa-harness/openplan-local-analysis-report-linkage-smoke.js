@@ -386,7 +386,7 @@ async function main() {
     // ReportNavigationPreview inside "packet", so that is where you look.
     await page.goto(`${baseUrl}/reports/${ids.reportId}?tab=packet`, { waitUntil: 'networkidle' });
     const packetPanel = page.locator('[data-page-tab-panel="packet"][data-page-tab-panel-state="open"]');
-    await packetPanel.getByText(/Latest HTML artifact/i).waitFor({ timeout: 30000 });
+    await packetPanel.getByText(/Latest report preview/i).waitFor({ timeout: 30000 });
 
     const iframe = packetPanel.locator('iframe[title="Latest report artifact preview"]');
     await iframe.waitFor({ timeout: 30000 });

@@ -19,6 +19,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**No migrations.** Pull and deploy.
+
+## 0.29.0 — 2026-08-24
+
 **Migration required.** Run `npm exec -- supabase migration up --linked`
 before deploying the app. Migrations
 `20260824000001_safety_ksi_concentrations.sql`,
@@ -40,6 +44,11 @@ planner maps the file's columns, chooses one row, and applies its name,
 description, cost, currency, and source together. Project setup points corridor
 files to the existing Map-tab upload, and a generated PDF is downloadable from
 the report's main preview instead of only from the audit history.
+
+Report HTML now uploads with the storage bucket's registered MIME type, so the
+engagement-to-report handoff works on a fresh local deployment. The project
+cost editor also stays within a phone-width project page instead of forcing its
+card and file control off screen.
 
 ## 0.28.0 — 2026-08-23
 
