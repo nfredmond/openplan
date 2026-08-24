@@ -15,6 +15,10 @@ jobs:
         working-directory: ./openplan
     steps:
       - uses: actions/checkout@v6
+        with:
+          # The active-roadmap guard verifies the commit at which the queue was
+          # reviewed. A one-commit checkout makes that evidence unknowable.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -42,6 +46,10 @@ jobs:
         working-directory: ./openplan
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Shuffled order still runs the roadmap guard, so it needs the same
+          # history as the filename-order gate above.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v6
