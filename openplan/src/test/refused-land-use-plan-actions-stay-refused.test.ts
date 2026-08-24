@@ -38,6 +38,30 @@ const REFUSED = [
     provokers: ["publish_land_use_plan", "release_plan_packet"],
     reason: "Publication makes the frozen record public and must remain a deliberate human act after the privacy exclusions and exact hash are checked.",
   },
+  {
+    label: "publishing or withdrawing a review release",
+    groups: [["publish", "review", "release"], ["withdraw", "review", "release"]],
+    provokers: ["publish_plan_review_release", "withdraw_plan_review_release"],
+    reason: "A review release exposes an exact policy draft, and withdrawal changes public access to that record. Both require a human decision.",
+  },
+  {
+    label: "closing comment disposition",
+    groups: [["close", "comment", "disposition"]],
+    provokers: ["close_plan_comment_disposition"],
+    reason: "Closing disposition asserts that the moderation queue and public response record are complete.",
+  },
+  {
+    label: "selecting public map fields",
+    groups: [["select", "public", "map", "field"]],
+    provokers: ["select_public_map_fields"],
+    reason: "Choosing which source attributes become public is a privacy and policy decision even when geometry is already approved.",
+  },
+  {
+    label: "revising a reviewed plan",
+    groups: [["revise", "reviewed", "plan"]],
+    provokers: ["revise_reviewed_plan"],
+    reason: "A revision decides that the released draft no longer advances unchanged and creates the next legal working record.",
+  },
 ] as const;
 
 const REGISTERED = Object.keys(ACTION_METADATA);
@@ -67,4 +91,3 @@ describe("human-only Land Use Plans actions remain refused", () => {
     }
   });
 });
-

@@ -1,6 +1,8 @@
 # Land Use Plans module backlog
 
-Status: implemented for 0.27.0. California is the first configured bundle;
+Status: public review and reporting completed for 0.28.0. The limits of the
+initial 0.27.0 release are recorded in
+`docs/ops/2026-08-23-v027-land-use-plan-correction.md`. California is the first configured bundle;
 Washington, Texas, and Navajo cases remain neutrality fixtures rather than
 configured legal bundles.
 

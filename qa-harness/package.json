@@ -16,6 +16,7 @@
     "local-escape-hatch-audit": "node openplan-local-escape-hatch-audit.js",
     "local-map-reading-audit": "node openplan-local-map-reading-audit.js",
     "local-rtp-release-review-smoke": "node openplan-local-rtp-release-review-smoke.js",
+    "local-land-use-plan-review-reporting-smoke": "node openplan-local-land-use-plan-review-reporting-smoke.js",
     "local-grants-flow-smoke": "node openplan-local-grants-flow-smoke.js",
     "local-engagement-report-handoff-smoke": "node openplan-local-engagement-report-handoff-smoke.js",
     "local-analysis-report-linkage-smoke": "node openplan-local-analysis-report-linkage-smoke.js",

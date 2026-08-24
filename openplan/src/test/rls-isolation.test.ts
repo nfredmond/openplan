@@ -83,6 +83,7 @@ type SeedContext = {
   landUsePlanVersionBId: string;
   landUsePlanNodeBId: string;
   landUsePlanDesignationBId: string;
+  landUsePlanReleaseBId: string;
 };
 
 type ReadResult = {
@@ -977,10 +978,9 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       srs_name: "WGS 84",
       srs_basis: "geojson_rfc7946_default",
       declared_feature_count: 1,
-      feature_count: 1,
+      feature_count: 0,
       source_feature_count: 1,
-      ingest_status: "ready",
-      finalized_at: "2099-12-31T00:00:00Z",
+      ingest_status: "receiving",
       created_by: userBId,
     }),
   },
@@ -1091,6 +1091,14 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       layer_id: gisLayerBId, layer_version_id: gisLayerVersionBId,
       designation_set_label: "RLS designations", created_by: userBId,
     }),
+    seedSql: ({ workspaceBId, landUsePlanVersionBId, landUsePlanDesignationBId, gisLayerBId, gisLayerVersionBId, userBId }) =>
+      `UPDATE public.workspace_gis_layer_versions
+         SET feature_count = 1, ingest_status = 'ready', finalized_at = '2099-12-31T00:00:00Z'
+       WHERE id = '${gisLayerVersionBId}';
+       INSERT INTO public.land_use_plan_designations
+         (id, workspace_id, version_id, layer_id, layer_version_id, designation_set_label, created_by)
+       VALUES ('${landUsePlanDesignationBId}', '${workspaceBId}', '${landUsePlanVersionBId}',
+         '${gisLayerBId}', '${gisLayerVersionBId}', 'RLS designations', '${userBId}')`,
   },
   {
     table: "land_use_plan_designation_policy_links",
@@ -1112,6 +1120,39 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     }),
   },
   {
+    table: "land_use_plan_process_records",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, plan_id: landUsePlanBId,
+      version_id: landUsePlanVersionBId, descriptor_id: "us-ca-general-plan",
+      process_key: "hearing", status: "in_progress", due_on: "2099-12-30",
+      created_by: userBId,
+    }),
+  },
+  {
+    table: "land_use_plan_review_releases",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, landUsePlanReleaseBId, userBId }) => ({
+      id: landUsePlanReleaseBId, workspace_id: workspaceBId, plan_id: landUsePlanBId,
+      version_id: landUsePlanVersionBId, version_content_hash: "a".repeat(64), round_number: 1,
+      review_method: "external_process", review_open_on: "2099-01-01", review_close_on: "2099-12-01",
+      status: "open", created_by: userBId,
+    }),
+    seedSql: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, landUsePlanReleaseBId, kbDocumentBId, userBId }) =>
+      `UPDATE public.land_use_plan_versions
+         SET state = 'public_review', content_hash = '${"a".repeat(64)}', frozen_snapshot = '{}'::jsonb,
+             frozen_at = '2099-12-31T00:00:00Z', frozen_by = '${userBId}'
+       WHERE id = '${landUsePlanVersionBId}';
+       INSERT INTO public.land_use_plan_review_releases
+         (id, workspace_id, plan_id, version_id, version_content_hash, round_number,
+          review_method, review_open_on, review_close_on, external_review_document_id, status, created_by)
+       VALUES ('${landUsePlanReleaseBId}', '${workspaceBId}', '${landUsePlanBId}', '${landUsePlanVersionBId}',
+          '${"a".repeat(64)}', 1, 'external_process', '2099-01-01', '2099-12-01',
+          '${kbDocumentBId}', 'open', '${userBId}')`,
+  },
+  {
     table: "land_use_plan_decisions",
     select: "id,workspace_id",
     expectedMemberReadable: true,
@@ -1122,17 +1163,21 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       instrument_identifier: "RLS-1", decided_on: "2099-12-31",
       supporting_document_id: kbDocumentBId, created_by: userBId,
     }),
-    seedSql: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, kbDocumentBId, userBId }) =>
-      `UPDATE public.land_use_plan_versions
-         SET state = 'public_review', content_hash = '${"a".repeat(64)}', frozen_snapshot = '{}'::jsonb,
-             frozen_at = '2099-12-31T00:00:00Z', frozen_by = '${userBId}'
-       WHERE id = '${landUsePlanVersionBId}';
+    seedSql: ({ workspaceBId, landUsePlanBId, landUsePlanVersionBId, landUsePlanReleaseBId, kbDocumentBId, userBId }) =>
+      `UPDATE public.land_use_plan_review_releases
+         SET status = 'closed', outcome_snapshot = '{"method":"external_process","dispositionSummary":"RLS complete"}'::jsonb,
+             closed_at = '2099-12-31T00:00:00Z', closed_by = '${userBId}'
+       WHERE id = '${landUsePlanReleaseBId}';
        INSERT INTO public.land_use_plan_decisions
-         (id, workspace_id, plan_id, version_id, version_content_hash, decision_kind,
+         (id, workspace_id, plan_id, version_id, version_content_hash, review_release_id, adoption_manifest, decision_kind,
           decision_body, instrument_type, instrument_identifier, decided_on,
           supporting_document_id, created_by)
        VALUES (gen_random_uuid(), '${workspaceBId}', '${landUsePlanBId}', '${landUsePlanVersionBId}',
-          '${"a".repeat(64)}', 'adoption', 'RLS body', 'RLS instrument', 'RLS-1',
+          '${"a".repeat(64)}', '${landUsePlanReleaseBId}',
+          jsonb_build_object('planId','${landUsePlanBId}','versionId','${landUsePlanVersionBId}',
+            'versionContentHash','${"a".repeat(64)}','reviewReleaseId','${landUsePlanReleaseBId}',
+            'reviewOutcomeHash',(SELECT outcome_hash FROM public.land_use_plan_review_releases WHERE id='${landUsePlanReleaseBId}')),
+          'adoption', 'RLS body', 'RLS instrument', 'RLS-1',
           '2099-12-31', '${kbDocumentBId}', '${userBId}')`,
   },
   {
@@ -1227,7 +1272,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(75);
+    expect(tables).toHaveLength(77);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1262,8 +1307,10 @@ describe("workspace RLS isolation inventory", () => {
       "land_use_plan_designations",
       "land_use_plan_implementation_actions",
       "land_use_plan_implementation_reports",
+      "land_use_plan_process_records",
       "land_use_plan_relationships",
       "land_use_plan_review_events",
+      "land_use_plan_review_releases",
       "land_use_plan_versions",
       "land_use_plans",
       "model_run_kpis",
@@ -1745,6 +1792,7 @@ liveDescribe("workspace RLS live isolation", () => {
       landUsePlanVersionBId: randomUUID(),
       landUsePlanNodeBId: randomUUID(),
       landUsePlanDesignationBId: randomUUID(),
+      landUsePlanReleaseBId: randomUUID(),
     };
 
     await mustInsert(service, "workspaces", {

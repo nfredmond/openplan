@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { loadPublishedLandUsePlanPacket } from "@/lib/land-use-plans/public";
+import { PublicDesignationMap } from "@/components/land-use-plans/public-designation-map";
 
 export const metadata = {
   title: "Published land use plan",
@@ -9,7 +10,7 @@ export const metadata = {
 
 type FrozenNode = { id?: string; parent_node_id?: string | null; node_kind?: string; requirement_key?: string | null; title?: string; body?: string | null };
 type FrozenAction = { id?: string; title?: string; description?: string | null; responsible_party?: string | null; due_on?: string | null; status?: string };
-type FrozenDesignation = { id?: string; designation_set_label?: string; map_note?: string; layer_version_id?: string };
+type FrozenDesignation = { id?: string; designation_set_label?: string; map_note?: string; layer_version_id?: string; layer_version_evidence?: { bbox?: unknown; feature_hash?: string } | null };
 
 function records(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object") : [];
@@ -64,7 +65,7 @@ export default async function PublishedLandUsePlanPage({ params }: { params: Pro
         {sections.map((section, index) => <ContentBranch key={section.id ?? index} node={section} nodes={nodes}/>)}
       </section>
 
-      <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Mapped designations</h2><p className="mt-3 leading-relaxed">Future land-use designations express plan policy. They are not zoning and do not change parcel entitlements.</p>{designations.map((designation, index) => <div key={designation.id ?? index} className="mt-4 rounded-lg border p-4"><h3 className="font-semibold">{designation.designation_set_label ?? "Designation layer"}</h3><p className="mt-1 text-sm text-muted-foreground">Frozen GIS layer version {designation.layer_version_id ?? "unavailable"}</p>{designation.map_note ? <p className="mt-2">{designation.map_note}</p> : null}</div>)}</section>
+      <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Mapped designations</h2>{designations.map((designation, index) => <div key={designation.id ?? index} className="mt-4 rounded-lg border p-4"><h3 className="font-semibold">{designation.designation_set_label ?? "Designation layer"}</h3><p className="mt-1 break-all text-sm text-muted-foreground">Frozen GIS feature hash {designation.layer_version_evidence?.feature_hash ?? "unavailable"}</p>{designation.id ? <PublicDesignationMap endpoint={`/api/public/land-use-plans/${planId}/map/${designation.id}`} bbox={designation.layer_version_evidence?.bbox} label={designation.designation_set_label ?? "Mapped designations"}/> : null}{designation.map_note ? <p className="mt-2">{designation.map_note}</p> : null}</div>)}</section>
 
       <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Implementation program</h2>{actions.map((action, index) => <article key={action.id ?? index} className="mt-5"><h3 className="text-xl font-semibold">{action.title ?? "Implementation action"}</h3><p className="mt-2 leading-relaxed">{action.description || "No description provided."}</p><p className="mt-2 text-sm text-muted-foreground">{action.responsible_party || "No responsible party"} · {action.due_on || "No due date"} · {(action.status ?? "not_started").replaceAll("_", " ")}</p></article>)}</section>
 

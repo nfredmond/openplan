@@ -692,7 +692,7 @@ const landUsePlanActionsSource: MyWorkSource = {
   readLabel: "land use plan implementation actions",
   block: "deadlines",
   table: "land_use_plan_implementation_actions",
-  select: "id, version_id, title, status, due_on, responsible_party, assignee_user_id, land_use_plan_versions!inner(plan_id, land_use_plans!inner(id, title, workspace_id))",
+  select: "id, version_id, title, status, due_on, responsible_party, assignee_user_id, land_use_plan_versions!inner(plan_id, land_use_plans!land_use_plan_versions_plan_id_workspace_id_fkey!inner(id, title, workspace_id))",
   workspaceFilterColumn: "land_use_plan_versions.land_use_plans.workspace_id",
   assigneeColumn: "assignee_user_id",
   orderColumn: "due_on",
@@ -721,6 +721,77 @@ const landUsePlanActionsSource: MyWorkSource = {
       badge: deadlineBadge("Plan action", overdue),
       detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · due ${formatWorkDeadlineDate(dueOn)}`,
       href: planId ? `/land-use-plans/${planId}` : "/land-use-plans",
+      dedupKey: null,
+    } satisfies MyWorkItem;
+  }),
+};
+
+const landUsePlanProcessSource: MyWorkSource = {
+  id: "land_use_plan_process",
+  label: "Plan process",
+  readLabel: "land use plan process records",
+  block: "workspace_deadlines",
+  table: "land_use_plan_process_records",
+  select: "id, plan_id, process_key, status, due_on, land_use_plans!inner(id, title, workspace_id)",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "due_on",
+  orderAscending: true,
+  staticFilters: [
+    { kind: "notNull", column: "due_on" },
+    { kind: "notIn", column: "status", values: ["complete", "not_applicable"] },
+  ],
+  toItems: (rows, { now }) => rows.map((row) => {
+    const plan = embedded(row.land_use_plans);
+    const dueOn = asString(row.due_on);
+    const overdue = isDeadlinePast(dueOn, now);
+    return {
+      sourceId: "land_use_plan_process",
+      block: "workspace_deadlines",
+      id: String(row.id),
+      title: humanizeStatus(asString(row.process_key)) ?? "Plan process step",
+      projectId: null,
+      projectName: asString(plan?.title),
+      dueOn,
+      isOverdue: overdue,
+      ownerLabel: null,
+      badge: deadlineBadge("Plan process", overdue),
+      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · due ${formatWorkDeadlineDate(dueOn)}`,
+      href: asString(row.plan_id) ? `/land-use-plans/${row.plan_id}` : "/land-use-plans",
+      dedupKey: null,
+    } satisfies MyWorkItem;
+  }),
+};
+
+const landUsePlanReviewClosingSource: MyWorkSource = {
+  id: "land_use_plan_review_closing",
+  label: "Plan review closing",
+  readLabel: "open land use plan review releases",
+  block: "workspace_deadlines",
+  table: "land_use_plan_review_releases",
+  select: "id, plan_id, round_number, status, review_close_on, land_use_plans!inner(id, title, workspace_id)",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "review_close_on",
+  orderAscending: true,
+  staticFilters: [{ kind: "eq", column: "status", value: "open" }],
+  toItems: (rows, { now }) => rows.map((row) => {
+    const plan = embedded(row.land_use_plans);
+    const dueOn = asString(row.review_close_on);
+    const overdue = isDeadlinePast(dueOn, now);
+    return {
+      sourceId: "land_use_plan_review_closing",
+      block: "workspace_deadlines",
+      id: String(row.id),
+      title: `Close review round ${asNumber(row.round_number) ?? ""}`.trim(),
+      projectId: null,
+      projectName: asString(plan?.title),
+      dueOn,
+      isOverdue: overdue,
+      ownerLabel: null,
+      badge: deadlineBadge("Plan review", overdue),
+      detail: `Public review closes ${formatWorkDeadlineDate(dueOn)}`,
+      href: asString(row.plan_id) ? `/land-use-plans/${row.plan_id}` : "/land-use-plans",
       dedupKey: null,
     } satisfies MyWorkItem;
   }),
@@ -908,6 +979,8 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   failedModelRunsSource,
   narrativeDraftsSource,
   landUsePlanActionsSource,
+  landUsePlanProcessSource,
+  landUsePlanReviewClosingSource,
   grantDecisionsSource,
   awardObligationsSource,
   invoiceWindowsSource,

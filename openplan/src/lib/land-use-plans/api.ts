@@ -15,6 +15,7 @@ export type LandUsePlanAccess = {
     plan_kind_key: string;
     authority_label: string;
     geography_label: string;
+    geography_geojson: Record<string, unknown> | null;
     current_working_version_id: string | null;
     current_adopted_version_id: string | null;
   };
@@ -37,7 +38,7 @@ export async function loadLandUsePlanAccess(
 
   const { data: plan, error: planError } = await supabase
     .from("land_use_plans")
-    .select("id, workspace_id, title, descriptor_id, plan_kind_key, authority_label, geography_label, current_working_version_id, current_adopted_version_id")
+    .select("id, workspace_id, title, descriptor_id, plan_kind_key, authority_label, geography_label, geography_geojson, current_working_version_id, current_adopted_version_id")
     .eq("id", planId)
     .maybeSingle();
   if (planError) {
@@ -105,7 +106,7 @@ export async function buildFrozenSnapshot(
       .order("id", { ascending: true }),
     supabase
       .from("land_use_plan_designations")
-      .select("id, layer_id, layer_version_id, designation_set_label, legend_metadata, map_note, land_use_plan_designation_policy_links(policy_node_id)")
+      .select("id, layer_id, layer_version_id, designation_set_label, legend_metadata, public_field_keys, legend_field, map_note, land_use_plan_designation_policy_links(policy_node_id)")
       .eq("version_id", version.id)
       .order("id", { ascending: true }),
     supabase
@@ -115,6 +116,21 @@ export async function buildFrozenSnapshot(
       .order("id", { ascending: true }),
   ]);
   if (nodes.error || relationships.error || designations.error || actions.error) return null;
+
+  const layerVersionIds = (designations.data ?? []).map((designation) => designation.layer_version_id);
+  const layerVersions = layerVersionIds.length
+    ? await supabase
+        .from("workspace_gis_layer_versions")
+        .select("id, feature_hash, feature_hash_computed_at, feature_count, bbox, geometry_kinds")
+        .in("id", layerVersionIds)
+    : { data: [], error: null };
+  if (layerVersions.error) return null;
+  const layerVersionById = new Map((layerVersions.data ?? []).map((version) => [version.id, version]));
+  const frozenDesignations = (designations.data ?? []).map((designation) => ({
+    ...designation,
+    layer_version_evidence: layerVersionById.get(designation.layer_version_id) ?? null,
+  }));
+  if (frozenDesignations.some((designation) => !designation.layer_version_evidence?.feature_hash)) return null;
 
   const snapshot: FrozenPlanContent = {
     plan: {
@@ -134,7 +150,7 @@ export async function buildFrozenSnapshot(
     },
     nodes: nodes.data ?? [],
     relationships: relationships.data ?? [],
-    designations: designations.data ?? [],
+    designations: frozenDesignations,
     implementationActions: actions.data ?? [],
   };
   return { snapshot, hash: hashFrozenPlanContent(snapshot) };

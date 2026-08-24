@@ -11,6 +11,8 @@ const payloadSchema = z.object({
   layerVersionId: z.string().uuid(),
   designationSetLabel: z.string().trim().min(1).max(240),
   legendMetadata: z.record(z.string(), z.unknown()),
+  publicFieldKeys: z.array(z.string().trim().min(1).max(120)).max(20),
+  legendField: z.string().trim().min(1).max(120).nullable(),
   policyNodeIds: z.array(z.string().uuid()).max(500).default([]),
 }).strict();
 
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest, context: Context) {
 
   const { data: layerVersion, error: layerVersionError } = await loaded.access.supabase
     .from("workspace_gis_layer_versions")
-    .select("id, layer_id, workspace_id, ingest_status")
+    .select("id, layer_id, workspace_id, ingest_status, attribute_fields, feature_hash")
     .eq("id", parsed.data.layerVersionId)
     .eq("layer_id", parsed.data.layerId)
     .eq("workspace_id", loaded.access.plan.workspace_id)
@@ -40,6 +42,18 @@ export async function POST(request: NextRequest, context: Context) {
     .maybeSingle();
   if (layerVersionError) return NextResponse.json({ error: "Failed to verify the map layer version" }, { status: 500 });
   if (!layerVersion) return NextResponse.json({ error: "Select a ready version of a GIS layer in this workspace" }, { status: 400 });
+  if (!layerVersion.feature_hash) return NextResponse.json({ error: "The selected GIS version has no finalized feature hash" }, { status: 409 });
+  const availableFields = new Set(
+    (Array.isArray(layerVersion.attribute_fields) ? layerVersion.attribute_fields : [])
+      .flatMap((field) => field && typeof field === "object" && typeof (field as { name?: unknown }).name === "string" ? [(field as { name: string }).name] : []),
+  );
+  const selectedFields = [...new Set(parsed.data.publicFieldKeys)];
+  if (!selectedFields.every((field) => availableFields.has(field))) {
+    return NextResponse.json({ error: "Every public map field must exist on the selected GIS version" }, { status: 400 });
+  }
+  if (parsed.data.legendField && !selectedFields.includes(parsed.data.legendField)) {
+    return NextResponse.json({ error: "The legend field must be one of the selected public fields" }, { status: 400 });
+  }
 
   const policyIds = [...new Set(parsed.data.policyNodeIds)];
   if (policyIds.length) {
@@ -62,6 +76,8 @@ export async function POST(request: NextRequest, context: Context) {
     layer_version_id: parsed.data.layerVersionId,
     designation_set_label: parsed.data.designationSetLabel,
     legend_metadata: parsed.data.legendMetadata,
+    public_field_keys: selectedFields,
+    legend_field: parsed.data.legendField,
     created_by: loaded.access.userId,
   }).select("id").single();
   if (error) return NextResponse.json({ error: "Failed to attach mapped designations" }, { status: 500 });

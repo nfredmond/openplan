@@ -118,6 +118,13 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "widens only the report-artifacts bucket MIME allowlist with image/png; preserves every " +
       "existing type, is idempotent, and touches no tenant data",
   },
+  {
+    file: "20260823000007_land_use_plan_review_reporting.sql",
+    kind: "update",
+    reason:
+      "backfills a deterministic feature hash only on already-finalized GIS versions whose new " +
+      "feature_hash column is still NULL; geometry and source attributes are unchanged",
+  },
 ];
 
 /**

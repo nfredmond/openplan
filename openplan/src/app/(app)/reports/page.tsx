@@ -419,6 +419,10 @@ export default async function ReportsPage({
       const engagementCampaign = Array.isArray(report.engagement_campaigns)
         ? report.engagement_campaigns[0] ?? null
         : report.engagement_campaigns ?? null;
+      const landUsePlan = Array.isArray(report.land_use_plans)
+        ? report.land_use_plans[0] ?? null
+        : report.land_use_plans ?? null;
+      const targetLabel = rtpCycle ? `RTP cycle · ${rtpCycle.title}` : engagementCampaign ? `Campaign · ${engagementCampaign.title}` : landUsePlan ? `Land use plan · ${landUsePlan.title}` : project?.name ?? "No project";
       const comparisonSnapshotDigest = describeComparisonSnapshotAggregate(
         comparisonSnapshotAggregate
       );
@@ -451,6 +455,8 @@ export default async function ReportsPage({
         project,
         rtpCycle,
         engagementCampaign,
+        landUsePlan,
+        targetLabel,
         packetFreshness,
         evidenceChainSummary,
         scenarioSpineSummary,
@@ -1066,11 +1072,7 @@ export default async function ReportsPage({
                           {report.summary || "No summary provided."}
                         </p>
                         <p className="text-[0.73rem] text-muted-foreground">
-                          {report.rtpCycle
-                            ? `RTP Cycle · ${report.rtpCycle.title}`
-                            : report.engagementCampaign
-                              ? `Campaign · ${report.engagementCampaign.title}`
-                              : (report.project?.name ?? "No project")}
+                          {report.targetLabel}
                           {` · ${formatReportTypeLabel(report.report_type)}`}
                           {report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""}
                           {(report.latestArtifact?.generated_at ?? report.generated_at) ? ` · Generated ${formatDateTime(report.latestArtifact?.generated_at ?? report.generated_at)}` : ""}
@@ -1083,11 +1085,7 @@ export default async function ReportsPage({
 
                   <div className="module-record-meta">
                     <span className="module-record-chip">
-                      {report.rtpCycle
-                        ? `RTP Cycle ${report.rtpCycle.title}`
-                        : report.engagementCampaign
-                          ? `Campaign ${report.engagementCampaign.title}`
-                          : `Project ${report.project?.name ?? "Unknown project"}`}
+                      {report.targetLabel}
                     </span>
                     <span className="module-record-chip">Next step {releaseReviewSummary?.label ?? packetWorkStatus.label}</span>
                     <span className="module-record-chip">Action {actionLabel}</span>

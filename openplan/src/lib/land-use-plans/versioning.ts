@@ -52,3 +52,7 @@ export function adoptionHashMatches(
     frozenVersion.contentHash === requestedHash
   );
 }
+
+export function hashFrozenRecord(value: unknown): string {
+  return createHash("sha256").update(JSON.stringify(canonicalize(value))).digest("hex");
+}

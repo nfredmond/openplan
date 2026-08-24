@@ -208,7 +208,11 @@ const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // of dividing — a figure the public oversight page subtracts from what came in,
 // so a fabricated row moves the amount the ordinance's own purposes appear to
 // have been given.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 272;
+// 272 -> 274 (20260823000007): descriptor-keyed plan process records and
+// immutable review releases each add one role-aware FOR ALL policy. Neither
+// table enters tablesNeedingGate(), because workspace_member_can_write is
+// already present at the permissive layer.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 274;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

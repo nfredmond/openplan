@@ -14,6 +14,17 @@ was chosen, and — most usefully — *what would change the answer*.
 | **AequilibraE** | Trip-based demand + network assignment | Runs; produces the county number |
 | **ActivitySim** | Activity-based demand | Wired but preflight-only; see the dual-model plan |
 
+### Status addendum — 2026-08-23
+
+The ActivitySim row above records the 2026-08-15 review and is now stale.
+OpenPlan has since executed ActivitySim for a real study area and converted its
+trip list into the shared AequilibraE assignment and corridor-agreement path;
+the measured closure is documented in
+[`ACTIVITYSIM_RUNTIME_GAP.md`](ACTIVITYSIM_RUNTIME_GAP.md). Execution is no
+longer the blocker. The unresolved scientific limit is the borrowed regional
+behavioral coefficients: a successful run outside their estimation region does
+not by itself support a locally calibrated claim.
+
 ## What else was reviewed, and why it was not adopted
 
 **MATSim** — agent-based transport simulation with iterative replanning: agents

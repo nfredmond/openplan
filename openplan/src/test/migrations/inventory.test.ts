@@ -418,16 +418,19 @@ const EXPECTED = {
   // and to tablesWithPolicies. It is a deliberate locked table (see the
   // write-policy coverage guard's allowlist). 20260817000001 only replaces the
   // kb_search_chunks function's return columns — a function, not a relation.
-  policies: 668,
-  permissive: 422,
+  // 20260823000007 adds process records and review releases. Each table has
+  // one member SELECT and one writer ALL policy: +4 policies/permissive,
+  // +2 permissive writes/tables-with-policies, +2 relations/tables/RLS tables.
+  policies: 672,
+  permissive: 426,
   restrictive: 246,
-  permissiveWrites: 272,
+  permissiveWrites: 274,
   expanded: 286,
-  tablesWithPolicies: 150,
-  relations: 172,
-  tables: 165,
+  tablesWithPolicies: 152,
+  relations: 174,
+  tables: 167,
   views: 7,
-  rlsEnabledTables: 165,
+  rlsEnabledTables: 167,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -554,7 +557,7 @@ describe("migration policy inventory", () => {
     const all = inventory.all();
     const forAll = all.filter((p) => p.command === "ALL" && p.kind === "PERMISSIVE");
 
-    // Six live FOR ALL write grants. These are the policies an assertion that
+    // Live FOR ALL write grants. These are the policies an assertion that
     // counts the literal string "FOR DELETE" cannot see.
     expect(forAll.map((p) => p.table).sort()).toEqual([
       "aerial_evidence_packages",
@@ -567,8 +570,10 @@ describe("migration policy inventory", () => {
       "land_use_plan_designations",
       "land_use_plan_implementation_actions",
       "land_use_plan_implementation_reports",
+      "land_use_plan_process_records",
       "land_use_plan_relationships",
       "land_use_plan_review_events",
+      "land_use_plan_review_releases",
       "land_use_plan_versions",
       "land_use_plans",
       "modeling_claim_decisions",

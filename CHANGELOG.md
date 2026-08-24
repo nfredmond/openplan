@@ -21,6 +21,37 @@ stable enough to promise smooth upgrades indefinitely.
 
 **No migrations.** Pull and deploy.
 
+## 0.28.0 — 2026-08-23
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260823000007_land_use_plan_review_reporting.sql`
+(`land_use_plan_review_reporting`) adds immutable review
+releases and process records, freezes adoption manifests, finalizes GIS feature
+hashes, and gives land-use-plan reports their own target types.
+
+### Public review and reporting now complete the land-use-plan workflow
+
+A planner can release an exact frozen draft at a public link, use either an
+Engagement campaign or documented external process, freeze the comment outcome,
+revise and run another review round, adopt only the latest closed review hash,
+and publish a readable plan packet. Closed rounds remain public records. A
+mistaken release can be withdrawn without deleting its audit row.
+
+Review and adopted pages display the exact finalized designation-map version.
+Only fields the planner selected are public; dense views draw nothing and state
+the true intersecting-feature count instead of showing a misleading subset.
+The “future land use is not zoning” disclosure remains attached.
+
+Reports now name the land-use plan, render printable frozen plan content or an
+implementation-status snapshot, offer JSON provenance, and link back from the
+plan workbench. My Work lists dated incomplete process steps and review closing
+dates. Required descriptor steps must be completed for that exact version;
+optional steps do not lower completion.
+
+The [dated v0.27.0 correction](docs/ops/2026-08-23-v027-land-use-plan-correction.md)
+records why that release's end-to-end claim was premature.
+
 ## 0.27.0 — 2026-08-23
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

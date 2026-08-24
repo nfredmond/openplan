@@ -25,6 +25,23 @@ export type PublishedLandUsePlanPacket = {
   privacy: string;
 };
 
+export type PublicLandUsePlanReviewPacket = {
+  release: {
+    id: string;
+    roundNumber: number;
+    reviewOpenOn: string;
+    reviewCloseOn: string;
+    reviewMethod: string;
+    status: "open" | "closed";
+    outcomeHash: string | null;
+  };
+  plan: PublishedLandUsePlanPacket["plan"];
+  version: PublishedLandUsePlanPacket["version"];
+  descriptor: PublishedLandUsePlanPacket["descriptor"];
+  content: Record<string, unknown>;
+  privacy: string;
+};
+
 export async function loadPublishedLandUsePlanPacket(
   planId: string,
 ): Promise<{ ok: true; packet: PublishedLandUsePlanPacket } | { ok: false; reason: "not_found" | "read_failure" | "incomplete" }> {
@@ -67,6 +84,53 @@ export async function loadPublishedLandUsePlanPacket(
       descriptor: descriptor ? { terminology: descriptor.terminology, disclosure: descriptor.disclosure, sourceUrls: descriptor.sourceUrls, verifiedAt: descriptor.verifiedAt, reviewDueAt: descriptor.reviewDueAt } : null,
       content: version.frozen_snapshot as Record<string, unknown>,
       privacy: "Consultation records, confidential notes, and sensitive-location information are excluded from this packet.",
+    },
+  };
+}
+
+export async function loadPublicLandUsePlanReviewPacket(
+  shareToken: string,
+): Promise<{ ok: true; packet: PublicLandUsePlanReviewPacket } | { ok: false; reason: "not_found" | "read_failure" | "incomplete" }> {
+  const service = createServiceRoleClient();
+  const releaseResult = await service.from("land_use_plan_review_releases")
+    .select("id, plan_id, version_id, version_content_hash, round_number, review_open_on, review_close_on, review_method, status, outcome_hash")
+    .eq("share_token", shareToken).neq("status", "withdrawn").maybeSingle();
+  if (releaseResult.error) return { ok: false, reason: "read_failure" };
+  const release = releaseResult.data;
+  if (!release) return { ok: false, reason: "not_found" };
+
+  const [planResult, versionResult] = await Promise.all([
+    service.from("land_use_plans")
+      .select("id, title, descriptor_id, plan_kind_key, authority_label, geography_label")
+      .eq("id", release.plan_id).maybeSingle(),
+    service.from("land_use_plan_versions")
+      .select("id, plan_id, version_number, content_hash, frozen_snapshot, frozen_at")
+      .eq("id", release.version_id).eq("plan_id", release.plan_id).maybeSingle(),
+  ]);
+  if (planResult.error || versionResult.error) return { ok: false, reason: "read_failure" };
+  const plan = planResult.data;
+  const version = versionResult.data;
+  if (!plan || !version?.frozen_snapshot || version.content_hash !== release.version_content_hash) {
+    return { ok: false, reason: "incomplete" };
+  }
+  const descriptor = getJurisdictionPlanDescriptor(plan.descriptor_id);
+  return {
+    ok: true,
+    packet: {
+      release: {
+        id: release.id,
+        roundNumber: release.round_number,
+        reviewOpenOn: release.review_open_on,
+        reviewCloseOn: release.review_close_on,
+        reviewMethod: release.review_method,
+        status: release.status as "open" | "closed",
+        outcomeHash: release.outcome_hash,
+      },
+      plan: { id: plan.id, title: plan.title, planKindKey: plan.plan_kind_key, authorityLabel: plan.authority_label, geographyLabel: plan.geography_label },
+      version: { id: version.id, versionNumber: version.version_number, contentHash: version.content_hash, frozenAt: version.frozen_at },
+      descriptor: descriptor ? { terminology: descriptor.terminology, disclosure: descriptor.disclosure, sourceUrls: descriptor.sourceUrls, verifiedAt: descriptor.verifiedAt, reviewDueAt: descriptor.reviewDueAt } : null,
+      content: version.frozen_snapshot as Record<string, unknown>,
+      privacy: "Consultation records, confidential notes, and sensitive-location information are excluded from this review release.",
     },
   };
 }

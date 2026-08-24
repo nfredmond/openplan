@@ -1,5 +1,7 @@
 import type { ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
 
+export type ReportDetailRouteParams = { params: Promise<{ reportId: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> };
+
 export type ReportRow = {
   id: string;
   workspace_id: string;
@@ -8,6 +10,7 @@ export type ReportRow = {
   rtp_cycle_id: string | null;
   /** Optional: absent until the campaign-target migration is applied. */
   engagement_campaign_id?: string | null;
+  land_use_plan_id?: string | null;
   title: string;
   report_type: string;
   status: string;

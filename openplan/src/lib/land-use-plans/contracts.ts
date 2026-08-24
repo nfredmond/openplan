@@ -10,7 +10,7 @@ export const PLAN_VERSION_STATES = [
 
 export type PlanVersionState = (typeof PLAN_VERSION_STATES)[number];
 
-export const PLAN_VERSION_KINDS = ["original", "amendment"] as const;
+export const PLAN_VERSION_KINDS = ["original", "revision", "amendment"] as const;
 export type PlanVersionKind = (typeof PLAN_VERSION_KINDS)[number];
 
 export const PLAN_CONTENT_NODE_KINDS = [
@@ -110,7 +110,34 @@ export type PlanDesignationReference = {
   layerVersionId: string;
   designationSetLabel: string;
   legendMetadata: Record<string, unknown>;
+  publicFieldKeys: string[];
+  legendField: string | null;
   policyNodeIds: string[];
+};
+
+export type PlanProcessRecord = {
+  id: string;
+  versionId: string;
+  descriptorId: string;
+  processKey: string;
+  status: "not_started" | "in_progress" | "complete" | "not_applicable";
+  dueOn: string | null;
+  completedOn: string | null;
+  evidenceDocumentId: string | null;
+};
+
+export type PlanReviewRelease = {
+  id: string;
+  planId: string;
+  versionId: string;
+  versionContentHash: string;
+  roundNumber: number;
+  shareToken: string;
+  reviewMethod: "engagement_campaign" | "external_process";
+  reviewOpenOn: string;
+  reviewCloseOn: string;
+  status: "open" | "closed" | "withdrawn";
+  outcomeHash: string | null;
 };
 
 export type ImplementationAction = {
@@ -152,6 +179,8 @@ export type JurisdictionPlanDescriptor = {
     required: boolean;
     decisionBody?: string;
     deadline?: string;
+    reviewPrerequisite?: boolean;
+    adoptionPrerequisite?: boolean;
     sourceUrls: string[];
   }>;
   disclosure: string;

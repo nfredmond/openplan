@@ -54,7 +54,7 @@ export async function POST(request: NextRequest, context: Context) {
     project_id: null,
     land_use_plan_id: access.plan.id,
     title: parsed.data.title,
-    report_type: "board_packet",
+    report_type: "land_use_plan_implementation_report",
     status: "generated",
     summary: parsed.data.summary ?? `Implementation status for ${parsed.data.reportingPeriodStart} through ${parsed.data.reportingPeriodEnd}.`,
     created_by: access.userId,
@@ -66,7 +66,14 @@ export async function POST(request: NextRequest, context: Context) {
     report_id: report.id,
     artifact_kind: "html",
     generated_by: access.userId,
-    metadata_json: { kind: "land_use_plan_implementation_report", contentHash, snapshot },
+    metadata_json: {
+      kind: "land_use_plan_implementation_report",
+      landUsePlanId: access.plan.id,
+      contentHash,
+      snapshot,
+      summary: parsed.data.summary ?? null,
+      confidentialityExclusions: ["land_use_plan_consultation_records", "confidential_notes", "sensitive_location_flags"],
+    },
   });
   if (artifactError) {
     const cleanup = await access.supabase.from("reports").delete().eq("id", report.id).select("id");

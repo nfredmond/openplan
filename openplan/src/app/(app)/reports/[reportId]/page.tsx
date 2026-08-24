@@ -83,6 +83,7 @@ import type {
   ProjectRecordSnapshotKey,
   ReportArtifact,
   ScenarioSpineRow,
+  ReportDetailRouteParams,
 } from "./_components/_types";
 import { buildFundingPostureDriftItem } from "./_components/_funding-drift";
 import {
@@ -95,14 +96,9 @@ import {
   buildReportUnreadableByTab,
 } from "./_components/_read-failures";
 import { ReportStandardDetail } from "./_components/report-standard-detail";
+import { LandUsePlanReportPage } from "@/components/reports/land-use-plan-report-page";
 
-type RouteParams = {
-  params: Promise<{ reportId: string }>;
-  /** Optional so a caller that renders the page with no query string still type-checks. */
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-};
-
-export default async function ReportDetailPage({ params, searchParams }: RouteParams) {
+export default async function ReportDetailPage({ params, searchParams }: ReportDetailRouteParams) {
   const { reportId } = await params;
   const supabase = await createClient();
 
@@ -130,6 +126,8 @@ export default async function ReportDetailPage({ params, searchParams }: RoutePa
   if (!report) {
     notFound();
   }
+
+  if (report.land_use_plan_id) return <LandUsePlanReportPage report={report} />;
 
   /**
    * What this render could not read. Everything below is a side panel or a

@@ -56,30 +56,64 @@ export async function POST(request: NextRequest, context: Context) {
 
   if (payload.operation === "adopt") {
     if (version.state !== "public_review") return NextResponse.json({ error: "Only the frozen public-review version can be adopted" }, { status: 409 });
-    const [documentResult, eventsResult] = await Promise.all([
-      access.supabase.from("kb_documents").select("id").eq("id", payload.supportingDocumentId).eq("workspace_id", access.plan.workspace_id).eq("status", "ready").maybeSingle(),
-      access.supabase.from("land_use_plan_review_events").select("event_kind").eq("version_id", version.id).in("event_kind", ["hearing", "recommendation", "comment_response"]),
+    const [documentResult, processResult, releaseResult] = await Promise.all([
+      access.supabase.from("kb_documents").select("id, title").eq("id", payload.supportingDocumentId).eq("workspace_id", access.plan.workspace_id).eq("status", "ready").maybeSingle(),
+      access.supabase.from("land_use_plan_process_records").select("process_key, status, due_on, completed_on, evidence_document_id").eq("version_id", version.id),
+      access.supabase.from("land_use_plan_review_releases").select("id, version_id, version_content_hash, round_number, outcome_snapshot, outcome_hash, closed_at")
+        .eq("plan_id", access.plan.id).eq("status", "closed").order("round_number", { ascending: false }).limit(1).maybeSingle(),
     ]);
-    if (documentResult.error || eventsResult.error) return NextResponse.json({ error: "Failed to verify adoption evidence and review history" }, { status: 500 });
+    if (documentResult.error || processResult.error || releaseResult.error) return NextResponse.json({ error: "Failed to verify adoption evidence and review history" }, { status: 500 });
     const document = documentResult.data;
-    const events = eventsResult.data;
     if (!document) return NextResponse.json({ error: "Select a ready supporting document in this workspace" }, { status: 400 });
-    const eventKinds = new Set((events ?? []).map((event) => event.event_kind));
     const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
     if (!descriptor) return NextResponse.json({ error: "Plan descriptor is not installed" }, { status: 409 });
-    const reviewEventKinds = new Set(["hearing", "recommendation", "comment_response"]);
+    const processByKey = new Map((processResult.data ?? []).map((record) => [record.process_key, record]));
     const missing = descriptor.processSteps
-      .filter((step) => step.required && reviewEventKinds.has(step.key))
+      .filter((step) => step.required && step.adoptionPrerequisite)
       .map((step) => step.key)
-      .filter((kind) => !eventKinds.has(kind));
+      .filter((key) => processByKey.get(key)?.status !== "complete");
     if (missing.length) return NextResponse.json({ error: "Adoption review is incomplete", missing }, { status: 409 });
+    const release = releaseResult.data;
+    if (!release || release.version_id !== version.id || release.version_content_hash !== payload.versionContentHash || !release.outcome_hash) {
+      return NextResponse.json({ error: "Adoption requires the exact latest closed review release for this version" }, { status: 409 });
+    }
+
+    const adoptionManifest = {
+      planId: access.plan.id,
+      versionId: version.id,
+      versionContentHash: payload.versionContentHash,
+      reviewReleaseId: release.id,
+      reviewRound: release.round_number,
+      reviewOutcomeHash: release.outcome_hash,
+      commentDispositionSnapshot: release.outcome_snapshot,
+      processEvidence: (processResult.data ?? []).map((record) => ({
+        processKey: record.process_key,
+        status: record.status,
+        dueOn: record.due_on,
+        completedOn: record.completed_on,
+        evidenceDocumentId: record.evidence_document_id,
+      })),
+      decision: {
+        kind: payload.decisionKind,
+        body: payload.decisionBody,
+        instrumentType: payload.instrumentType,
+        instrumentIdentifier: payload.instrumentIdentifier,
+        vote: payload.vote ?? null,
+        decidedOn: payload.decidedOn,
+        effectiveOn: payload.effectiveOn ?? null,
+      },
+      supportingDocuments: [{ id: document.id, title: document.title }],
+      confidentialityExclusions: ["land_use_plan_consultation_records", "confidential_notes", "sensitive_location_flags"],
+    };
 
     const service = createServiceRoleClient();
-    const { data: decisionId, error } = await service.rpc("record_land_use_plan_adoption", {
+    const { data: decisionId, error } = await service.rpc("record_land_use_plan_adoption_v2", {
       p_workspace_id: access.plan.workspace_id,
       p_plan_id: access.plan.id,
       p_version_id: version.id,
       p_version_content_hash: payload.versionContentHash,
+      p_review_release_id: release.id,
+      p_adoption_manifest: adoptionManifest,
       p_decision_kind: payload.decisionKind,
       p_decision_body: payload.decisionBody,
       p_instrument_type: payload.instrumentType,
@@ -99,12 +133,17 @@ export async function POST(request: NextRequest, context: Context) {
   }
   if (version.published_report_id) return NextResponse.json({ reportId: version.published_report_id, alreadyPublished: true });
 
+  const { data: decision, error: decisionError } = await access.supabase.from("land_use_plan_decisions")
+    .select("id, review_release_id, adoption_manifest, adoption_manifest_hash")
+    .eq("version_id", version.id).order("decided_on", { ascending: false }).limit(1).maybeSingle();
+  if (decisionError || !decision?.adoption_manifest_hash) return NextResponse.json({ error: "The adoption manifest could not be verified for publication" }, { status: 409 });
+
   const { data: report, error: reportError } = await access.supabase.from("reports").insert({
     workspace_id: access.plan.workspace_id,
     project_id: null,
     land_use_plan_id: access.plan.id,
     title: payload.title,
-    report_type: "board_packet",
+    report_type: "land_use_plan_packet",
     status: "generated",
     summary: `Frozen adopted plan packet. Content hash ${payload.versionContentHash}.`,
     created_by: access.userId,
@@ -122,6 +161,9 @@ export async function POST(request: NextRequest, context: Context) {
       versionId: version.id,
       contentHash: payload.versionContentHash,
       frozenSnapshot: version.frozen_snapshot,
+      adoptionManifest: decision.adoption_manifest,
+      adoptionManifestHash: decision.adoption_manifest_hash,
+      reviewReleaseId: decision.review_release_id,
       confidentialityExclusions: ["land_use_plan_consultation_records"],
     },
   });

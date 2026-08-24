@@ -214,6 +214,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260823000006_land_use_plan_report_target.sql",
     migrationsAtRelease: 214,
   },
+  // 0.28.0 — immutable public-review releases, exact finalized GIS hashes,
+  // frozen adoption manifests, descriptor process records, and distinct
+  // readable plan-packet and implementation-report targets.
+  {
+    tag: "0.28.0",
+    lastMigration: "20260823000007_land_use_plan_review_reporting.sql",
+    migrationsAtRelease: 215,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

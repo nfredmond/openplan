@@ -27,20 +27,30 @@ export async function POST(request: NextRequest, context: Context) {
     return NextResponse.json({ error: "This plan already has a working version" }, { status: 409 });
   }
 
-  let baseQuery = access.supabase.from("land_use_plan_versions").select("id, version_number, applicable_requirement_keys").eq("plan_id", access.plan.id).neq("state", "working");
+  let baseQuery = access.supabase.from("land_use_plan_versions").select("id, version_number, state, applicable_requirement_keys").eq("plan_id", access.plan.id).neq("state", "working");
   if (parsed.data.baseVersionId) baseQuery = baseQuery.eq("id", parsed.data.baseVersionId);
   const { data: bases, error: baseError } = await baseQuery.order("version_number", { ascending: false }).limit(1);
   const base = bases?.[0];
   if (baseError || !base) return NextResponse.json({ error: "No frozen version is available to amend" }, { status: 409 });
+  const { data: openRelease, error: openReleaseError } = await access.supabase
+    .from("land_use_plan_review_releases")
+    .select("id")
+    .eq("version_id", base.id)
+    .eq("status", "open")
+    .limit(1)
+    .maybeSingle();
+  if (openReleaseError) return NextResponse.json({ error: "Failed to check the review release" }, { status: 500 });
+  if (openRelease) return NextResponse.json({ error: "Close or withdraw the open review release before revising this version" }, { status: 409 });
 
   const { data: allVersions, error: allVersionsError } = await access.supabase.from("land_use_plan_versions").select("version_number").eq("plan_id", access.plan.id).order("version_number", { ascending: false }).limit(1);
   if (allVersionsError) return NextResponse.json({ error: "Failed to determine the next version number" }, { status: 500 });
   const nextNumber = (allVersions?.[0]?.version_number ?? 0) + 1;
+  const versionKind = base.state === "adopted" ? "amendment" : "revision";
   const { data: version, error: versionError } = await access.supabase.from("land_use_plan_versions").insert({
     workspace_id: access.plan.workspace_id,
     plan_id: access.plan.id,
     version_number: nextNumber,
-    version_kind: "amendment",
+    version_kind: versionKind,
     state: "working",
     based_on_version_id: base.id,
     applicable_requirement_keys: base.applicable_requirement_keys,
@@ -58,10 +68,10 @@ export async function POST(request: NextRequest, context: Context) {
   const [nodesResult, relationshipsResult, designationsResult, actionsResult] = await Promise.all([
     access.supabase.from("land_use_plan_content_nodes").select("id, parent_node_id, node_kind, requirement_key, title, body, sort_order, evidence_document_id, evidence_url").eq("version_id", base.id).order("sort_order"),
     access.supabase.from("land_use_plan_relationships").select("related_plan_id, related_plan_label, relationship_kind, notes").eq("version_id", base.id),
-    access.supabase.from("land_use_plan_designations").select("id, layer_id, layer_version_id, designation_set_label, legend_metadata, land_use_plan_designation_policy_links(policy_node_id)").eq("version_id", base.id),
+    access.supabase.from("land_use_plan_designations").select("id, layer_id, layer_version_id, designation_set_label, legend_metadata, public_field_keys, legend_field, map_note, land_use_plan_designation_policy_links(policy_node_id)").eq("version_id", base.id),
     access.supabase.from("land_use_plan_implementation_actions").select("content_node_id, title, description, responsible_party, assignee_user_id, due_on, project_id, program_id, evidence_document_id").eq("version_id", base.id),
   ]);
-  if (nodesResult.error || relationshipsResult.error || designationsResult.error || actionsResult.error) return abandon("Failed to read the version being amended");
+  if (nodesResult.error || relationshipsResult.error || designationsResult.error || actionsResult.error) return abandon("Failed to read the version being revised");
 
   const nodeIdMap = new Map<string, string>();
   for (const node of nodesResult.data ?? []) nodeIdMap.set(node.id, randomUUID());
@@ -87,6 +97,7 @@ export async function POST(request: NextRequest, context: Context) {
       id: newDesignationId, workspace_id: access.plan.workspace_id, version_id: versionId,
       layer_id: designation.layer_id, layer_version_id: designation.layer_version_id,
       designation_set_label: designation.designation_set_label, legend_metadata: designation.legend_metadata,
+      public_field_keys: designation.public_field_keys, legend_field: designation.legend_field, map_note: designation.map_note,
       created_by: access.userId,
     });
     if (error) return abandon("Failed to copy mapped designations into the amendment");
@@ -110,5 +121,5 @@ export async function POST(request: NextRequest, context: Context) {
   const activateResult = await access.supabase.from("land_use_plans").update({ current_working_version_id: versionId }).eq("id", access.plan.id).select("id").maybeSingle();
   if (isWriteFailure(activateResult.error)) return abandon("Failed to activate the amendment");
   if (writeMatchedNoRows(activateResult)) return noRowsMatchedResponse({ subject: "land use plan", targetWasVerified: true });
-  return NextResponse.json({ versionId, versionNumber: nextNumber }, { status: 201 });
+  return NextResponse.json({ versionId, versionNumber: nextNumber, versionKind }, { status: 201 });
 }

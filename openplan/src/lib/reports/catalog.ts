@@ -631,6 +631,8 @@ export function titleize(value: string | null | undefined): string {
 }
 
 export function formatReportTypeLabel(reportType: string | null | undefined): string {
+  if (reportType === "land_use_plan_packet") return "Land Use Plan Packet";
+  if (reportType === "land_use_plan_implementation_report") return "Land Use Plan Implementation Report";
   return (
     REPORT_TYPE_OPTIONS.find((option) => option.value === reportType)?.label ??
     titleize(reportType)

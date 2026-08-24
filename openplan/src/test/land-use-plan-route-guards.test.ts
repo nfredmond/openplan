@@ -7,6 +7,7 @@ const WRITE_ROUTES = [
   "route.ts", "content/route.ts", "designations/route.ts", "implementation/route.ts",
   "reviews/route.ts", "relationships/route.ts", "freeze/route.ts", "versions/route.ts", "decisions/route.ts",
   "implementation-reports/route.ts",
+  "process/route.ts", "review-releases/route.ts",
 ];
 
 describe("Land Use Plans route boundaries", () => {

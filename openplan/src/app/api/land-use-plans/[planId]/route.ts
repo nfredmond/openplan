@@ -42,22 +42,25 @@ export async function GET(request: NextRequest, context: Context) {
   if (!activeVersion) return NextResponse.json({ error: "Plan has no version" }, { status: 409 });
 
   const versionId = activeVersion.id;
-  const [nodes, relationships, designations, actions, reviews, decisions, reports, consultations, layers, documents, campaigns, projects, programs] = await Promise.all([
+  const [nodes, relationships, designations, actions, reviews, decisions, reports, consultations, processRecords, reviewReleases, layers, layerVersions, documents, campaigns, projects, programs] = await Promise.all([
     access.supabase.from("land_use_plan_content_nodes").select("id, parent_node_id, node_kind, requirement_key, title, body, sort_order, evidence_document_id, evidence_url").eq("version_id", versionId).order("sort_order"),
     access.supabase.from("land_use_plan_relationships").select("id, related_plan_id, related_plan_label, relationship_kind, notes").eq("version_id", versionId),
-    access.supabase.from("land_use_plan_designations").select("id, layer_id, layer_version_id, designation_set_label, legend_metadata, map_note, land_use_plan_designation_policy_links(policy_node_id)").eq("version_id", versionId),
+    access.supabase.from("land_use_plan_designations").select("id, layer_id, layer_version_id, designation_set_label, legend_metadata, public_field_keys, legend_field, map_note, land_use_plan_designation_policy_links(policy_node_id)").eq("version_id", versionId),
     access.supabase.from("land_use_plan_implementation_actions").select("id, content_node_id, title, description, responsible_party, assignee_user_id, due_on, status, project_id, program_id, evidence_document_id").eq("version_id", versionId).order("due_on"),
     access.supabase.from("land_use_plan_review_events").select("id, event_kind, occurred_on, decision_body, engagement_campaign_id, evidence_document_id, notes, created_at").eq("version_id", versionId).order("occurred_on"),
-    access.supabase.from("land_use_plan_decisions").select("id, version_id, version_content_hash, decision_kind, decision_body, instrument_type, instrument_identifier, vote, decided_on, effective_on, supporting_document_id, created_at").eq("plan_id", access.plan.id).order("decided_on", { ascending: false }),
+    access.supabase.from("land_use_plan_decisions").select("id, version_id, version_content_hash, review_release_id, adoption_manifest_hash, decision_kind, decision_body, instrument_type, instrument_identifier, vote, decided_on, effective_on, supporting_document_id, created_at").eq("plan_id", access.plan.id).order("decided_on", { ascending: false }),
     access.supabase.from("land_use_plan_implementation_reports").select("id, adopted_version_id, reporting_period_start, reporting_period_end, summary, content_hash, report_id, generated_at").eq("plan_id", access.plan.id).order("reporting_period_end", { ascending: false }),
     access.supabase.from("land_use_plan_consultation_records").select("id, status, evidence_document_id, confidential_notes, contains_sensitive_locations, updated_at").eq("version_id", versionId),
+    access.supabase.from("land_use_plan_process_records").select("id, process_key, status, due_on, completed_on, evidence_document_id, notes").eq("version_id", versionId).order("due_on"),
+    access.supabase.from("land_use_plan_review_releases").select("id, version_id, version_content_hash, round_number, share_token, review_method, review_open_on, review_close_on, status, outcome_hash, closed_at, withdrawal_reason").eq("plan_id", access.plan.id).order("round_number", { ascending: false }),
     access.supabase.from("workspace_gis_layers").select("id, name, current_version_id").eq("workspace_id", access.plan.workspace_id).is("archived_at", null),
+    access.supabase.from("workspace_gis_layer_versions").select("id, attribute_fields, bbox, feature_count, feature_hash").eq("workspace_id", access.plan.workspace_id).eq("ingest_status", "ready"),
     access.supabase.from("kb_documents").select("id, title, status, citation_label").eq("workspace_id", access.plan.workspace_id).eq("status", "ready").order("title"),
     access.supabase.from("engagement_campaigns").select("id, title, status").eq("workspace_id", access.plan.workspace_id).order("title"),
     access.supabase.from("projects").select("id, name, status").eq("workspace_id", access.plan.workspace_id).order("name"),
     access.supabase.from("programs").select("id, title, status").eq("workspace_id", access.plan.workspace_id).order("title"),
   ]);
-  const results = { nodes, relationships, designations, actions, reviews, decisions, reports, consultations, layers, documents, campaigns, projects, programs };
+  const results = { nodes, relationships, designations, actions, reviews, decisions, reports, consultations, processRecords, reviewReleases, layers, layerVersions, documents, campaigns, projects, programs };
   const failed = Object.entries(results).find(([, result]) => result.error);
   if (failed) return NextResponse.json({ error: `Failed to load ${failed[0]}` }, { status: 500 });
 

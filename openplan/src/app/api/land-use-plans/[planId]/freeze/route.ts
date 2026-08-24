@@ -30,25 +30,28 @@ export async function POST(request: NextRequest, context: Context) {
     (step) => step.key === "tribal_consultation" && step.required,
   );
 
-  const [nodes, designations, actions, reviews, consultation] = await Promise.all([
+  const [nodes, designations, actions, processRecords, consultation] = await Promise.all([
     loaded.access.supabase.from("land_use_plan_content_nodes").select("requirement_key, body").eq("version_id", version.id).eq("node_kind", "section"),
     loaded.access.supabase.from("land_use_plan_designations").select("id").eq("version_id", version.id).limit(1),
     loaded.access.supabase.from("land_use_plan_implementation_actions").select("id").eq("version_id", version.id).limit(1),
-    loaded.access.supabase.from("land_use_plan_review_events").select("event_kind").eq("version_id", version.id).in("event_kind", ["internal_consistency", "environmental_review"]),
+    loaded.access.supabase.from("land_use_plan_process_records").select("process_key, status").eq("version_id", version.id),
     loaded.access.supabase.from("land_use_plan_consultation_records").select("status").eq("version_id", version.id).maybeSingle(),
   ]);
-  if (nodes.error || designations.error || actions.error || reviews.error || consultation.error) {
+  if (nodes.error || designations.error || actions.error || processRecords.error || consultation.error) {
     return NextResponse.json({ error: "Failed to check public-draft readiness" }, { status: 500 });
   }
   const bodies = new Map((nodes.data ?? []).map((node) => [node.requirement_key, node.body?.trim() ?? ""]));
   const missingRequirements = (version.applicable_requirement_keys ?? []).filter((key: string) => !bodies.get(key));
-  const eventKinds = new Set((reviews.data ?? []).map((event) => event.event_kind));
+  const processByKey = new Map((processRecords.data ?? []).map((record) => [record.process_key, record.status]));
+  const missingReviewSteps = descriptor.processSteps
+    .filter((step) => step.required && step.reviewPrerequisite)
+    .map((step) => step.key)
+    .filter((key) => processByKey.get(key) !== "complete");
   const blockers = [
     ...(missingRequirements.length ? [`Complete applicable sections: ${missingRequirements.join(", ")}`] : []),
     ...(!(designations.data ?? []).length ? ["Attach a versioned mapped-designation layer"] : []),
     ...(!(actions.data ?? []).length ? ["Add at least one implementation action"] : []),
-    ...(!eventKinds.has("internal_consistency") ? ["Record the internal-consistency review"] : []),
-    ...(!eventKinds.has("environmental_review") ? ["Record the environmental-review step"] : []),
+    ...(missingReviewSteps.length ? [`Complete review prerequisites: ${missingReviewSteps.join(", ")}`] : []),
     ...(requiresConsultation && !["complete", "not_applicable"].includes(consultation.data?.status ?? "")
       ? ["Complete or mark the private tribal-consultation record not applicable"]
       : []),
