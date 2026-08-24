@@ -57,18 +57,18 @@ import {
   parseStoredFundingSnapshot,
   parseStoredScenarioSpineSummary,
   reportStatusTone,
-  resolveReportPacketSourceUpdatedAt,
   titleize,
   type ReportFreshnessFilter,
   type ReportPostureFilter,
 } from "@/lib/reports/catalog";
-import {
-  PACKET_FRESHNESS_LABELS,
-} from "@/lib/reports/packet-labels";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import {
   describeReportSourceReviewPosture,
-  type ReportDriftSummary,
 } from "@/lib/reports/source-review-posture";
+import {
+  buildReportRegistryDriftSummary,
+  resolveTrackedReportSourceUpdatedAt,
+} from "@/lib/reports/report-registry-freshness";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { moduleMetadata } from "@/lib/ui/page-title";
@@ -104,108 +104,6 @@ type ModelingClaimDecisionOptionRow = {
   validation_summary_json: Record<string, unknown> | null;
   decided_at: string | null;
 };
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
-
-const REPORT_WRITEBACK_GRACE_MS = 15 * 60 * 1000;
-
-function hasMaterialReportWritebackAfterGeneration(
-  generatedAt: string | null | undefined,
-  updatedAt: string | null | undefined
-) {
-  if (!generatedAt || !updatedAt) {
-    return false;
-  }
-
-  const generatedMs = new Date(generatedAt).getTime();
-  const updatedMs = new Date(updatedAt).getTime();
-  if (!Number.isFinite(generatedMs) || !Number.isFinite(updatedMs)) {
-    return false;
-  }
-
-  return updatedMs - generatedMs > REPORT_WRITEBACK_GRACE_MS;
-}
-function isTimestampAfter(
-  value: string | null | undefined,
-  baseline: string | null | undefined
-) {
-  if (!value || !baseline) {
-    return false;
-  }
-
-  const valueMs = new Date(value).getTime();
-  const baselineMs = new Date(baseline).getTime();
-  return Number.isFinite(valueMs) && Number.isFinite(baselineMs) && valueMs > baselineMs;
-}
-
-function buildReportRegistryDriftSummary(input: {
-  packetFreshnessLabel: string;
-  generatedAt: string | null | undefined;
-  reportUpdatedAt: string | null | undefined;
-  rtpCycleUpdatedAt: string | null | undefined;
-}): ReportDriftSummary {
-  if (input.packetFreshnessLabel !== PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED) {
-    return { changedCount: 0, totalCount: 0, labels: [] };
-  }
-
-  const labels: string[] = [];
-  if (isTimestampAfter(input.rtpCycleUpdatedAt, input.generatedAt)) {
-    labels.push("RTP cycle");
-  }
-  if (
-    hasMaterialReportWritebackAfterGeneration(
-      input.generatedAt,
-      input.reportUpdatedAt
-    )
-  ) {
-    labels.push("Report metadata");
-  }
-
-  if (labels.length === 0) {
-    labels.push("Tracked source context");
-  }
-
-  return {
-    changedCount: labels.length,
-    totalCount: labels.length,
-    labels,
-  };
-}
-
-
-function resolveTrackedReportSourceUpdatedAt(input: {
-  generatedAt: string | null;
-  reportUpdatedAt: string | null;
-  cycleUpdatedAt: string | null;
-  artifactMetadata: Record<string, unknown> | null;
-}) {
-  const sourceContext = asRecord(input.artifactMetadata?.sourceContext);
-  const projectFundingSnapshot = asRecord(sourceContext?.projectFundingSnapshot);
-  const trackedSourceUpdatedAt = resolveReportPacketSourceUpdatedAt([
-    input.cycleUpdatedAt,
-    typeof sourceContext?.projectUpdatedAt === "string"
-      ? sourceContext.projectUpdatedAt
-      : null,
-    typeof sourceContext?.rtpCycleUpdatedAt === "string"
-      ? sourceContext.rtpCycleUpdatedAt
-      : null,
-    typeof projectFundingSnapshot?.latestSourceUpdatedAt === "string"
-      ? projectFundingSnapshot.latestSourceUpdatedAt
-      : null,
-  ]);
-
-  if (!trackedSourceUpdatedAt) {
-    return input.reportUpdatedAt;
-  }
-
-  return hasMaterialReportWritebackAfterGeneration(input.generatedAt, input.reportUpdatedAt)
-    ? resolveReportPacketSourceUpdatedAt([trackedSourceUpdatedAt, input.reportUpdatedAt])
-    : trackedSourceUpdatedAt;
-}
 
 function buildReportsFilterHref(filters: {
   freshness: ReportFreshnessFilter;
@@ -319,6 +217,28 @@ export default async function ReportsPage({
   const countyRunsData = countyRunsRead.data;
   const modelingClaimDecisionsData = modelingClaimDecisionsRead.data;
 
+  const projectIds = ((reportsData ?? []) as ReportRow[])
+    .map((report) => report.project_id)
+    .filter((id): id is string => typeof id === "string" && id.length > 0);
+  const safetyIngestRead = projectIds.length
+    ? await supabase
+        .from("safety_crash_ingests")
+        .select("project_id, created_at")
+        .eq("workspace_id", membership.workspace_id)
+        .in("project_id", projectIds)
+        .order("created_at", { ascending: false })
+    : { data: [], error: null };
+  const safetyIngestReadFailed = reads.check(
+    "project-linked crash evidence used for packet freshness",
+    safetyIngestRead,
+  );
+  const latestSafetyAtByProjectId = new Map<string, string>();
+  for (const row of (safetyIngestRead.data ?? []) as Array<{ project_id: string | null; created_at: string }>) {
+    if (row.project_id && !latestSafetyAtByProjectId.has(row.project_id)) {
+      latestSafetyAtByProjectId.set(row.project_id, row.created_at);
+    }
+  }
+
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
   const { data: artifactsData } = reportIds.length
     ? await supabase
@@ -384,7 +304,10 @@ export default async function ReportsPage({
         ? report.rtp_cycles[0] ?? null
         : report.rtp_cycles ?? null;
       const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
-      const packetFreshness = getReportPacketFreshness({
+      const safetyUpdatedAt = report.project_id
+        ? latestSafetyAtByProjectId.get(report.project_id) ?? null
+        : null;
+      const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
         generatedAt: packetGeneratedAt,
         updatedAt: resolveTrackedReportSourceUpdatedAt({
@@ -392,14 +315,24 @@ export default async function ReportsPage({
           reportUpdatedAt: report.updated_at,
           cycleUpdatedAt: rtpCycle?.updated_at ?? null,
           artifactMetadata: latestArtifact?.metadata_json ?? null,
+          safetyUpdatedAt,
         }),
       });
+      const packetFreshness =
+        safetyIngestReadFailed && report.project_id && computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
+          ? {
+              label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
+              tone: "warning" as const,
+              detail: "Project-linked crash evidence could not be checked, so this packet is not verified against every live source.",
+            }
+          : computedPacketFreshness;
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
       const sourceReviewDriftSummary = buildReportRegistryDriftSummary({
         packetFreshnessLabel: packetFreshness.label,
         generatedAt: packetGeneratedAt,
         reportUpdatedAt: report.updated_at,
         rtpCycleUpdatedAt: rtpCycle?.updated_at ?? null,
+        safetyUpdatedAt,
       });
       const evidenceChainDigest = describeEvidenceChainSummary(evidenceChainSummary);
       const sourceReviewPosture = describeReportSourceReviewPosture({

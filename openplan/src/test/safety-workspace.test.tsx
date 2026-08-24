@@ -215,6 +215,36 @@ describe("SafetyWorkspace coverage disclosure", () => {
     });
   });
 
+  it("ranks observed KSI concentrations so a planner can identify a location", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ...mockCrashResponse(),
+        json: async () => ({
+          ...(await mockCrashResponse().json()),
+          ksiConcentrations: [
+            {
+              rank: 1,
+              longitude: -123.21,
+              latitude: 39.15,
+              crashCount: 7,
+              fatalCrashCount: 2,
+              seriousInjuryCrashCount: 5,
+              radiusMeters: 150,
+            },
+          ],
+        }),
+      })) as unknown as typeof fetch,
+    );
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} />);
+    selectStudyArea();
+
+    expect(await screen.findByRole("heading", { name: /Highest observed KSI concentrations/i })).toBeInTheDocument();
+    expect(screen.getByText(/7 KSI crashes/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Show concentration 1 on map/i })).toBeInTheDocument();
+  });
+
   it("states that an empty map is not evidence that no crashes occurred", async () => {
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
     selectStudyArea();

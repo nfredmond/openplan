@@ -16,6 +16,8 @@ import {
   type CrashFilterSelection,
 } from "@/lib/safety/crash-filters";
 import { toStoredCrashProperties } from "@/lib/safety/crash-properties";
+import { readSafetyKsiConcentrations } from "@/lib/safety/ksi-concentrations";
+import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
 
 /**
  * Crash query for the Safety map and list.
@@ -191,6 +193,7 @@ export async function GET(request: NextRequest) {
             severityTotals: Object.fromEntries(
               CRASH_SEVERITY_BANDS.map((band) => [band, 0])
             ),
+            ksiConcentrations: [],
             truncated: false,
             limit,
           },
@@ -237,12 +240,24 @@ export async function GET(request: NextRequest) {
         band
       );
 
-    const [countResult, rowsResult, bandResults] = await Promise.all([
+    const [countResult, rowsResult, bandResults, concentrationResult] = await Promise.all([
       applyFilters(supabase.from("safety_crashes").select("id", { count: "exact", head: true })),
       applyFilters(supabase.from("safety_crashes").select(CRASH_QUERY_PROJECTION))
         .order("collision_date", { ascending: false, nullsFirst: false })
         .limit(limit),
       Promise.all(CRASH_SEVERITY_BANDS.map((band) => countBand(band))),
+      supabase.rpc("safety_ksi_concentrations", {
+        p_workspace_id: query.workspaceId,
+        p_min_lon: query.minLon,
+        p_min_lat: query.minLat,
+        p_max_lon: query.maxLon,
+        p_max_lat: query.maxLat,
+        p_project_id: query.projectId ?? null,
+        p_severities: [...CRASH_KSI_SEVERITIES],
+        p_radius_meters: 150,
+        p_min_points: 2,
+        p_result_limit: 10,
+      }),
     ]);
 
     if (rowsResult.error) {
@@ -290,6 +305,16 @@ export async function GET(request: NextRequest) {
       audit.warn("safety_crash_severity_totals_unavailable", {
         workspaceId: query.workspaceId,
         bands: CRASH_SEVERITY_BANDS.filter((_, index) => bandCounts[index] === null),
+      });
+    }
+
+    const ksiConcentrations = concentrationResult.error
+      ? null
+      : readSafetyKsiConcentrations(concentrationResult.data);
+    if (concentrationResult.error) {
+      audit.warn("safety_ksi_concentrations_unavailable", {
+        workspaceId: query.workspaceId,
+        error: concentrationResult.error.message,
       });
     }
 
@@ -341,6 +366,7 @@ export async function GET(request: NextRequest) {
          * them up is exactly the understatement this field exists to end.
          */
         severityTotals,
+        ksiConcentrations,
         truncated: features.length + undrawableCount < matchedCount,
         limit,
       },

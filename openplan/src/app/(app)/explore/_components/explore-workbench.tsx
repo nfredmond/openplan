@@ -365,13 +365,15 @@ export function ExploreWorkbench({
     [workspaceId, corridorGeojson]
   );
 
-  const runAnalysis = async () => {
-    if (!corridorGeojson || !workspaceId || !trimmedQueryText) {
-      setError("Workspace ID, corridor, and query are required.");
+  const runAnalysis = async (candidateQueryText?: string) => {
+    const queryForRun = candidateQueryText?.trim() || trimmedQueryText;
+    const blocked = describeRunAnalysisBlock({ workspaceId, queryText: queryForRun, corridorGeojson });
+    if (blocked) {
+      setError(blocked);
       return;
     }
 
-    if (isQueryTooLong) {
+    if (queryForRun.length > ANALYSIS_QUERY_MAX_CHARS) {
       setError(`Query must be ${ANALYSIS_QUERY_MAX_CHARS} characters or fewer.`);
       return;
     }
@@ -387,7 +389,7 @@ export function ExploreWorkbench({
         },
         body: JSON.stringify({
           workspaceId,
-          queryText: trimmedQueryText,
+          queryText: queryForRun,
           corridorGeojson,
           ...(selectedProjectId ? { projectId: selectedProjectId } : {}),
         }),
@@ -401,7 +403,7 @@ export function ExploreWorkbench({
       const payload = (await response.json()) as AnalysisResult;
       setAnalysisResult({
         ...payload,
-        title: buildRunTitle(trimmedQueryText),
+        title: buildRunTitle(queryForRun),
         createdAt: new Date().toISOString(),
       });
     } catch (submitError) {

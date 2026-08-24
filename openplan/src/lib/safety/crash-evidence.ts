@@ -316,6 +316,10 @@ export function buildSafetyCrashEvidence(
 export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION = [
   "id",
   "project_id",
+  "min_lon",
+  "min_lat",
+  "max_lon",
+  "max_lat",
   "status",
   "source_label",
   "attribution",

@@ -1905,6 +1905,50 @@ liveDescribe("workspace RLS live isolation", () => {
     }
   });
 
+  it("keeps severe-crash concentration rankings inside the caller's workspace", async () => {
+    await mustInsert(service, "safety_crashes", {
+      id: randomUUID(),
+      workspace_id: context.workspaceBId,
+      ingest_id: context.safetyCrashIngestBId,
+      source_id: "ccrs-ca",
+      external_id: `rls-ksi-${context.suffix}`,
+      severity: "fatal",
+      latitude: 39.2004,
+      longitude: -121.0004,
+    });
+    await service
+      .from("safety_crashes")
+      .update({ severity: "severe_injury" })
+      .eq("id", context.safetyCrashBId);
+
+    const args = {
+      p_workspace_id: context.workspaceBId,
+      p_min_lon: -121.3,
+      p_min_lat: 39.1,
+      p_max_lon: -120.0,
+      p_max_lat: 39.6,
+      p_project_id: null,
+      p_severities: ["fatal", "severe_injury"],
+      p_radius_meters: 150,
+      p_min_points: 2,
+      p_result_limit: 10,
+    };
+
+    const foreign = await userA.rpc("safety_ksi_concentrations", args);
+    expect(foreign.error, "tenant A concentration RPC error").toBeNull();
+    expect(foreign.data, "tenant A concentration rows").toEqual([]);
+
+    const own = await userB.rpc("safety_ksi_concentrations", args);
+    expect(own.error, "tenant B concentration RPC error").toBeNull();
+    expect(own.data).toEqual([
+      expect.objectContaining({ rank: 1, crash_count: 2, fatal_crash_count: 1, serious_injury_crash_count: 1 }),
+    ]);
+
+    const anonymous = await anon.rpc("safety_ksi_concentrations", args);
+    expect(anonymous.error?.message ?? "").toMatch(/permission denied|function/i);
+    expect(anonymous.data).toBeNull();
+  });
+
   it("rejects cross-workspace project inserts even when created_by is the caller", async () => {
     const { error } = await userA.from("projects").insert({
       id: randomUUID(),

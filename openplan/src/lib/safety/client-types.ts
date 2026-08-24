@@ -49,6 +49,25 @@ export type SafetyCrashFeature = GeoJSON.Feature<GeoJSON.Point, SafetyCrashPrope
 
 export type SafetyCrashCollection = GeoJSON.FeatureCollection<GeoJSON.Point, SafetyCrashProperties>;
 
+/** One ranked concentration of observed fatal/serious-injury crash records. */
+export type SafetyKsiConcentration = {
+  rank: number;
+  longitude: number;
+  latitude: number;
+  crashCount: number;
+  fatalCrashCount: number;
+  seriousInjuryCrashCount: number;
+  radiusMeters: number;
+};
+
+/** A validated bounding box assembled from one or more user-chosen crash acquisitions. */
+export type SafetyKsiBounds = {
+  minLon: number;
+  minLat: number;
+  maxLon: number;
+  maxLat: number;
+};
+
 /** The crash-query response, including the counts that keep the UI honest. */
 export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   /** How many features this response actually carries. */
@@ -90,6 +109,8 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   /** True when the map is showing a subset because of the cap. */
   truncated: boolean;
   limit: number;
+  /** Exact database-side clusters over the whole requested area, or null when unavailable. */
+  ksiConcentrations: SafetyKsiConcentration[] | null;
 };
 
 /** The latest ingest for a workspace, as rendered by the coverage banner. */

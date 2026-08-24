@@ -83,7 +83,7 @@ describe("ExploreStudyBriefControls", () => {
     fireEvent.change(screen.getByLabelText("Report style"), { target: { value: "ss4a" } });
     fireEvent.click(screen.getByRole("button", { name: "Run the analysis" }));
 
-    await waitFor(() => expect(props.onRunAnalysis).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(props.onRunAnalysis).toHaveBeenCalledWith("Evaluate corridor safety and access"));
     expect(props.onReportTemplateChange).toHaveBeenCalledWith("ss4a");
     expect(props.onQueryTextChange).toHaveBeenCalledWith("Evaluate corridor safety and access");
 

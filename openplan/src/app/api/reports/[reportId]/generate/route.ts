@@ -5,6 +5,12 @@ import {
   type SafetyCrashEvidence,
   type SafetyCrashEvidenceSupabaseLike,
 } from "@/lib/safety/crash-evidence";
+import {
+  readSafetyKsiBounds,
+  readSafetyKsiConcentrations,
+} from "@/lib/safety/ksi-concentrations";
+import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
+import type { SafetyKsiConcentration } from "@/lib/safety/client-types";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -2130,6 +2136,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
      * this section could not be read, and the section distinguishes the two.
      */
     let safetyEvidence: SafetyCrashEvidence[] | null = [];
+    let safetyKsiConcentrations: SafetyKsiConcentration[] | null = [];
     try {
       const { data: safetyIngestRows, error: safetyIngestError } = await supabase
         .from("safety_crash_ingests")
@@ -2140,6 +2147,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       if (safetyIngestError) {
         safetyEvidence = null;
+        safetyKsiConcentrations = null;
       } else {
         const ingests = (safetyIngestRows ?? [])
           .map((row) => readSafetyCrashEvidenceIngest(row as unknown as Record<string, unknown>))
@@ -2150,9 +2158,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
           ingests
         );
         safetyEvidence = [...evidenceByIngest.values()];
+        const concentrationBounds = readSafetyKsiBounds(safetyIngestRows);
+        if (concentrationBounds && ingests.length > 0) {
+          const concentrationResult = await supabase.rpc("safety_ksi_concentrations", {
+            p_workspace_id: report.workspace_id,
+            p_min_lon: concentrationBounds.minLon,
+            p_min_lat: concentrationBounds.minLat,
+            p_max_lon: concentrationBounds.maxLon,
+            p_max_lat: concentrationBounds.maxLat,
+            p_project_id: projectRow.id,
+            p_severities: [...CRASH_KSI_SEVERITIES],
+            p_radius_meters: 150,
+            p_min_points: 2,
+            p_result_limit: 10,
+          });
+          safetyKsiConcentrations = concentrationResult.error
+            ? null
+            : readSafetyKsiConcentrations(concentrationResult.data);
+        }
       }
     } catch {
       safetyEvidence = null;
+      safetyKsiConcentrations = null;
     }
 
     const reportHtmlInput = {
@@ -2165,6 +2192,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       runs: linkedRuns,
       sections: sectionsResult.data ?? [],
       safetyEvidence,
+      safetyKsiConcentrations,
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
         id: item.id,
         title: item.title,

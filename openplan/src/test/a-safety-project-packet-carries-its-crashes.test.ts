@@ -194,6 +194,25 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toMatch(/carried no coordinates/i);
     });
 
+    it("prints ranked project KSI concentrations with screening limits", () => {
+      const html = buildReportHtml({
+        ...packetData([evidence()]),
+        safetyKsiConcentrations: [{
+          rank: 1,
+          longitude: -121.061,
+          latitude: 39.219,
+          crashCount: 7,
+          fatalCrashCount: 2,
+          seriousInjuryCrashCount: 5,
+          radiusMeters: 150,
+        }],
+      });
+
+      expect(html).toContain("Highest observed KSI concentrations");
+      expect(html).toContain("7 KSI crashes");
+      expect(html).toContain("screening locations, not named intersections");
+    });
+
     it("says why a figure is absent instead of printing a zero", () => {
       const html = buildReportHtml(packetData([evidence({ ksi: null })]));
       expect(html).toMatch(/does not separate suspected serious injuries/i);

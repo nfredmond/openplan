@@ -234,6 +234,12 @@ const narrativeDraftsEqTargetIdMock = vi.fn(() => ({ eq: narrativeDraftsEqStatus
 const narrativeDraftsEqTargetKindMock = vi.fn(() => ({ eq: narrativeDraftsEqTargetIdMock }));
 const narrativeDraftsSelectMock = vi.fn(() => ({ eq: narrativeDraftsEqTargetKindMock }));
 
+const safetyIngestOrderMock = vi.fn();
+const safetyIngestEqProjectMock = vi.fn(() => ({ order: safetyIngestOrderMock }));
+const safetyIngestEqWorkspaceMock = vi.fn(() => ({ eq: safetyIngestEqProjectMock }));
+const safetyIngestSelectMock = vi.fn(() => ({ eq: safetyIngestEqWorkspaceMock }));
+const rpcMock = vi.fn();
+
 const artifactsSingleMock = vi.fn();
 const artifactsInsertSelectMock = vi.fn(() => ({ single: artifactsSingleMock }));
 type ArtifactInsertPayload = {
@@ -465,6 +471,10 @@ const fromMock = vi.fn((table: string) => {
     return {
       select: narrativeDraftsSelectMock,
     };
+  }
+
+  if (table === "safety_crash_ingests") {
+    return { select: safetyIngestSelectMock };
   }
 
   if (table === "report_artifacts") {
@@ -708,6 +718,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
     billingInvoicesOrderMock.mockResolvedValue({ data: [], error: null });
     billingInvoicesInMock.mockResolvedValue({ data: [], error: null });
     narrativeDraftsOrderMock.mockResolvedValue({ data: [], error: null });
+    safetyIngestOrderMock.mockResolvedValue({ data: [], error: null });
+    rpcMock.mockResolvedValue({ data: [], error: null });
 
     const runRowsById = new Map([
       [
@@ -898,6 +910,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+      rpc: rpcMock,
       storage: { from: storageFromMock },
     });
     createServiceRoleClientMock.mockReturnValue({
@@ -1197,6 +1210,82 @@ describe("POST /api/reports/[reportId]/generate", () => {
         rtp_basis_stale_marked_at: null,
       })
     );
+  });
+
+  it("carries project-linked KSI concentration ranks into the generated packet", async () => {
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [{
+        id: "section-safety",
+        section_key: "project_safety_evidence",
+        title: "Reported collisions",
+        enabled: true,
+        sort_order: 0,
+        config_json: {},
+      }],
+      error: null,
+    });
+    safetyIngestOrderMock.mockResolvedValueOnce({
+      data: [{
+        id: "ingest-1",
+        project_id: "44444444-4444-4444-8444-444444444444",
+        min_lon: -121.2,
+        min_lat: 39.1,
+        max_lon: -120.8,
+        max_lat: 39.5,
+        status: "ready",
+        source_label: "State crash source",
+        attribution: "State agency",
+        severity_completeness: "kabco_full",
+        crash_count: 7,
+        geocoded_count: 7,
+        truncated: false,
+        years_requested: [2024],
+        created_at: "2026-08-24T01:00:00.000Z",
+        dimension_coverage: null,
+        party_completeness: "not_retrieved",
+        party_count: null,
+        involvement_basis: null,
+      }],
+      error: null,
+    });
+    rpcMock.mockImplementation((name: string) => Promise.resolve(name === "safety_ksi_concentrations"
+      ? {
+          data: [{
+            rank: 1,
+            longitude: -121.061,
+            latitude: 39.219,
+            crash_count: 7,
+            fatal_crash_count: 2,
+            serious_injury_crash_count: 5,
+            radius_meters: 150,
+          }],
+          error: null,
+        }
+      : {
+          data: [
+            { ingest_id: "ingest-1", dimension: "severity", value: "fatal", record_count: 2 },
+            { ingest_id: "ingest-1", dimension: "severity", value: "severe_injury", record_count: 5 },
+          ],
+          error: null,
+        }));
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(200);
+    const inserted = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    expect(inserted?.metadata_json?.htmlContent).toContain("7 KSI crashes");
+    expect(rpcMock).toHaveBeenCalledWith("safety_ksi_concentrations", expect.objectContaining({
+      p_project_id: "44444444-4444-4444-8444-444444444444",
+      p_min_lon: -121.2,
+      p_max_lon: -120.8,
+    }));
   });
 
   it("renders cited model and county runs with honest engine, status, and screening framing", async () => {

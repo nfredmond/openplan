@@ -31,6 +31,7 @@ import {
   type PacketGeographyInput,
 } from "@/lib/reports/geography-figure";
 import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import type { SafetyKsiConcentration } from "@/lib/safety/client-types";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import {
@@ -171,6 +172,8 @@ export type ReportGenerationData = {
    * could not be read.
    */
   safetyEvidence?: readonly SafetyCrashEvidence[] | null;
+  /** Ranked project-linked KSI clusters, or null when the database read failed. */
+  safetyKsiConcentrations?: readonly SafetyKsiConcentration[] | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   dualDemandAgreementSnapshotsV1?: DualDemandAgreementSnapshotV1[];
@@ -888,7 +891,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
     return `<p>No crash data is attached to this project. That is not a statement that no collisions happened here — it is a statement that none have been retrieved into OpenPlan for this project.</p>`;
   }
 
-  return built.acquisitions
+  const acquisitionMarkup = built.acquisitions
     .map(
       (acquisition) => `<div class="packet-safety-acquisition">
       <h3>${esc(acquisition.sourceLabel)}</h3>
@@ -911,6 +914,19 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
     </div>`
     )
     .join("");
+
+  const concentrations = data.safetyKsiConcentrations;
+  const concentrationMarkup = concentrations === undefined
+    ? ""
+    : concentrations === null
+    ? `<h3>Highest observed KSI concentrations</h3><p>The project-linked severe-crash concentration ranking could not be read while this packet was generated. That is a failed calculation, not a finding that no concentration exists.</p>`
+    : concentrations.length > 0
+      ? `<h3>Highest observed KSI concentrations</h3>
+        <p>These ranks use every mapped fatal and serious-injury crash in the project-linked acquisitions. A concentration is two or more records within 150 meters. These are screening locations, not named intersections, corridors, rates, causal findings, or a High Injury Network.</p>
+        <ol>${concentrations.map((item) => `<li><strong>${esc(item.crashCount.toLocaleString())} KSI crashes</strong> (${esc(item.fatalCrashCount.toLocaleString())} fatal; ${esc(item.seriousInjuryCrashCount.toLocaleString())} serious injury) near ${esc(item.latitude.toFixed(5))}, ${esc(item.longitude.toFixed(5))}</li>`).join("")}</ol>`
+      : `<h3>Highest observed KSI concentrations</h3><p>No pair of mapped fatal or serious-injury crash records fell within the 150-meter screening radius. That is not a finding that the project area is safe.</p>`;
+
+  return acquisitionMarkup + concentrationMarkup;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {

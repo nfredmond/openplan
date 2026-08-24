@@ -162,6 +162,7 @@ export type WorkspaceOperationsReportRow = {
   generatedAt: string | null;
   updatedAt: string | null;
   metadataJson: Record<string, unknown> | null;
+  safetyUpdatedAt?: string | null;
 };
 
 export type WorkspaceOperationsProjectSourceRow = {
@@ -241,6 +242,7 @@ export type WorkspaceOperationsReportSourceRow = {
   generated_at: string | null;
   updated_at: string | null;
   metadata_json: Record<string, unknown> | null;
+  safety_updated_at?: string | null;
 };
 
 export type WorkspaceCommandQueueItem = {
@@ -608,6 +610,7 @@ function resolveReportSourceUpdatedAt(report: WorkspaceOperationsReportRow): str
     rtpCycleUpdatedAt,
     projectUpdatedAt,
     latestFundingSourceUpdatedAt,
+    report.safetyUpdatedAt ?? null,
   ]);
 
   if (!trackedSourceUpdatedAt) {
@@ -734,6 +737,7 @@ function mapWorkspaceOperationsReportRows(rows: WorkspaceOperationsReportSourceR
     generatedAt: report.generated_at,
     updatedAt: report.updated_at,
     metadataJson: report.metadata_json,
+    safetyUpdatedAt: report.safety_updated_at ?? null,
   }));
 }
 
@@ -909,6 +913,10 @@ type WorkspaceEngagementCampaignSourceRow = {
   updated_at: string | null;
 };
 type WorkspaceStatusOnlySourceRow = { id: string; status: string | null };
+type WorkspaceSafetyIngestSourceRow = WorkspaceStatusOnlySourceRow & {
+  project_id: string | null;
+  created_at: string | null;
+};
 type WorkspaceCountyRunSourceRow = { id: string; stage: string | null };
 
 export function buildWorkspaceOperationsSummaryFromSourceRows({
@@ -1061,7 +1069,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .eq("status", "approved"),
     supabase
       .from("safety_crash_ingests")
-      .select("id, status", { count: "exact" })
+      .select("id, status, project_id, created_at", { count: "exact" })
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false })
       .limit(WORKSPACE_MODULE_ROW_CAP),
@@ -1167,6 +1175,17 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
   );
 
   const reportSourceRows = reports.rows;
+  const safetyCrashIngests = readWorkspaceModuleRows<WorkspaceSafetyIngestSourceRow>(
+    "safety crash data pulls",
+    safetyCrashIngestsResult,
+    unreadable
+  );
+  const latestSafetyAtByProjectId = new Map<string, string>();
+  for (const ingest of safetyCrashIngests.rows) {
+    if (ingest.project_id && ingest.created_at && !latestSafetyAtByProjectId.has(ingest.project_id)) {
+      latestSafetyAtByProjectId.set(ingest.project_id, ingest.created_at);
+    }
+  }
   const reportIds = reportSourceRows.map((report) => report.id).filter((id): id is string => Boolean(id));
   const latestArtifactByReportId = new Map<string, { generated_at: string | null; metadata_json: Record<string, unknown> | null }>();
 
@@ -1210,6 +1229,9 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       ...report,
       generated_at: latestArtifact?.generated_at ?? report.generated_at,
       metadata_json: latestArtifact?.metadata_json ?? report.metadata_json,
+      safety_updated_at: report.project_id
+        ? latestSafetyAtByProjectId.get(report.project_id) ?? null
+        : null,
     };
   });
 
@@ -1250,11 +1272,6 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
         .eq("is_active", true)
         .eq("status", "published")
     : null;
-  const safetyCrashIngests = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
-    "safety crash data pulls",
-    safetyCrashIngestsResult,
-    unreadable
-  );
   const modelRuns = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
     "model runs",
     modelRunsResult,

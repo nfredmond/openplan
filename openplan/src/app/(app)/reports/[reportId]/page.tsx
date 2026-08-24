@@ -26,7 +26,6 @@ import {
   parseStoredEvidenceChainSummary,
   parseStoredFundingSnapshot,
   parseStoredScenarioSpineSummary,
-  titleize,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
@@ -74,7 +73,6 @@ import {
 import type {
   CurrentProjectRecordEntry,
   DriftItem,
-  DriftStatus,
   EngagementCampaignLinkRow,
   EngagementCategoryRow,
   EngagementItemRow,
@@ -86,6 +84,8 @@ import type {
   ReportDetailRouteParams,
 } from "./_components/_types";
 import { buildFundingPostureDriftItem } from "./_components/_funding-drift";
+import { buildEngagementDriftItem } from "./_components/_engagement-drift";
+import { buildProjectSafetyDriftItem, describeSafetyEvidenceReadFailure, loadLatestProjectSafetyIngest, type ReportSafetyFreshnessSupabaseLike } from "./_components/_safety-drift";
 import {
   checkLiveScenarioSpineReads,
   checkRtpFundingReads,
@@ -775,6 +775,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     issuesResult,
     decisionsResult,
     meetingsResult,
+    latestSafetyIngestResult,
   ] = await Promise.all([
     engagementCampaign
       ? supabase
@@ -874,6 +875,11 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
           .eq("project_id", report.project_id)
           .order("updated_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
+    loadLatestProjectSafetyIngest(
+      supabase as unknown as ReportSafetyFreshnessSupabaseLike,
+      report.workspace_id,
+      report.project_id
+    ),
   ]);
 
   /**
@@ -900,6 +906,14 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     decisions: decisionsResult,
     meetings: meetingsResult,
   });
+  const safetyEvidenceLiveReadFailure = reads.check(
+    "this project's linked crash evidence",
+    latestSafetyIngestResult,
+  );
+  const safetyEvidenceLiveReadFailureReason = describeSafetyEvidenceReadFailure(
+    safetyEvidenceLiveReadFailure,
+    latestSafetyIngestResult
+  );
 
   const liveEngagementCounts = engagementCampaign && !liveEngagementReadFailure
     ? summarizeEngagementItems(
@@ -1047,43 +1061,23 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   );
   const driftItems: DriftItem[] = [];
 
-  if (
-    engagementCampaign &&
-    liveEngagementCounts &&
-    (engagementCampaignSnapshot ||
-      engagementSnapshotCapturedAt ||
-      engagementSnapshotTotalItems !== null ||
-      engagementSnapshotReadyForHandoff !== null)
-  ) {
-    const snapshotStatus = engagementCampaignSnapshot?.status ?? null;
-    const snapshotUpdatedAt =
-      engagementCampaignSnapshot?.updatedAt ?? engagementSnapshotCapturedAt;
-    const liveReadyForHandoff =
-      liveEngagementCounts.moderationQueue.readyForHandoffCount;
-    const liveTotalItems = liveEngagementCounts.totalItems;
+  const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
+  const safetyDriftItem = buildProjectSafetyDriftItem({
+    readFailed: safetyEvidenceLiveReadFailure,
+    result: latestSafetyIngestResult,
+    packetGeneratedAt,
+  });
+  if (safetyDriftItem) driftItems.push(safetyDriftItem);
 
-    const status: DriftStatus =
-      engagementSnapshotTotalItems !== null &&
-      engagementSnapshotReadyForHandoff !== null &&
-      (engagementSnapshotTotalItems !== liveTotalItems ||
-        engagementSnapshotReadyForHandoff !== liveReadyForHandoff)
-        ? "count changed"
-        : snapshotStatus !== null && snapshotStatus !== engagementCampaign.status
-          ? "updated"
-          : snapshotUpdatedAt !== null &&
-              snapshotUpdatedAt !== engagementCampaign.updated_at
-            ? "updated"
-            : "unchanged";
-
-    driftItems.push({
-      key: "engagement",
-      label: "Engagement handoff",
-      status,
-      detail:
-        `Snapshot ${snapshotStatus ? `${titleize(snapshotStatus)} · ` : ""}${engagementSnapshotReadyForHandoff ?? 0} ready / ${engagementSnapshotTotalItems ?? 0} items · ${formatCompactDateTime(snapshotUpdatedAt)}. ` +
-        `Live ${titleize(engagementCampaign.status)} · ${liveReadyForHandoff} ready / ${liveTotalItems} items · ${formatCompactDateTime(engagementCampaign.updated_at)}.`,
-    });
-  }
+  const engagementDriftItem = buildEngagementDriftItem({
+    campaign: engagementCampaign,
+    snapshot: engagementCampaignSnapshot,
+    snapshotCapturedAt: engagementSnapshotCapturedAt,
+    snapshotTotalItems: engagementSnapshotTotalItems,
+    snapshotReadyForHandoff: engagementSnapshotReadyForHandoff,
+    liveCounts: liveEngagementCounts,
+  });
+  if (engagementDriftItem) driftItems.push(engagementDriftItem);
 
   if (scenarioSetLinks.length > 0 && !liveScenarioReadFailure) {
     const scenarioChanges = scenarioSetLinks
@@ -1253,7 +1247,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   const currentReportPacketFreshness = artifactsUnreadable
     ? PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE
     : latestArtifact?.generated_at ?? report.generated_at
-    ? driftedItems.length > 0 || stageGateLiveReadFailure
+    ? driftedItems.length > 0 || stageGateLiveReadFailure || safetyEvidenceLiveReadFailure
       ? {
           label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
           tone: "warning" as const,
@@ -1263,6 +1257,9 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
               : "Do not treat this packet as verified against live sources yet.",
             stageGateLiveReadFailure
               ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates — that is an unchecked source, not a finding that gates changed.`
+              : null,
+            safetyEvidenceLiveReadFailure
+              ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}), so this is an unchecked source rather than a finding that no newer crash acquisition exists.`
               : null,
           ]
             .filter((value): value is string => Boolean(value))

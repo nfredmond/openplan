@@ -1312,6 +1312,49 @@ export function SafetyWorkspace({
                 )}
               </div>
             )}
+            {Array.isArray(response?.ksiConcentrations) && response.ksiConcentrations.length > 0 ? (
+              <section className="rounded-lg border border-border/70 bg-muted/20 p-3">
+                <h2 className="text-sm font-semibold">Highest observed KSI concentrations</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Ranked from every stored fatal and serious-injury crash record in this study area,
+                  not only the dots the map can draw. A concentration is two or more records within
+                  150 meters. It is screening evidence, not an intersection, corridor, rate, causal
+                  finding, or High Injury Network.
+                </p>
+                <ol className="mt-2 space-y-2">
+                  {response.ksiConcentrations.map((concentration) => (
+                    <li key={`${concentration.rank}:${concentration.longitude}:${concentration.latitude}`} className="flex items-center justify-between gap-3 rounded-md border border-border/60 bg-background/60 p-2 text-xs">
+                      <div>
+                        <p className="font-semibold">
+                          {concentration.rank}. {concentration.crashCount.toLocaleString()} KSI crashes
+                        </p>
+                        <p className="text-muted-foreground">
+                          {concentration.fatalCrashCount.toLocaleString()} fatal · {concentration.seriousInjuryCrashCount.toLocaleString()} serious injury
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="shrink-0 font-semibold underline underline-offset-2"
+                        aria-label={`Show concentration ${concentration.rank} on map`}
+                        onClick={() => setMapFocus({ kind: "center", center: [concentration.longitude, concentration.latitude] })}
+                      >
+                        Show on map
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : response?.ksiConcentrations === null ? (
+              <p className="text-muted-foreground">
+                OpenPlan could not rank severe-crash concentrations for this area. The crash points
+                and totals above still loaded; this location ranking did not.
+              </p>
+            ) : response && Array.isArray(response.ksiConcentrations) && response.ksiConcentrations.length === 0 ? (
+              <p className="text-muted-foreground">
+                No pair of stored fatal or serious-injury crash records fell within the 150-meter
+                screening radius. That is not a finding that the area is safe.
+              </p>
+            ) : null}
             {/* Counted and failed, which is not the same as a source that cannot
                 express KSI (that gets the completeness caveat below). Said out
                 loud rather than left as a missing figure, because a missing

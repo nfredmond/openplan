@@ -45,7 +45,7 @@ type ExploreStudyBriefControlsProps = {
   onSelectedProjectIdChange?: (value: string) => void;
   onQueryTextChange: (value: string) => void;
   onReportTemplateChange: (value: ReportTemplate) => void;
-  onRunAnalysis: () => Promise<void> | void;
+  onRunAnalysis: (queryText?: string) => Promise<void> | void;
   onGenerateReport: () => Promise<void> | void;
   onDownloadPdfReport: () => Promise<void> | void;
 };
@@ -233,7 +233,7 @@ export function ExploreStudyBriefControls({
         // an area they had already set.
         return blockedNow;
       }
-      await onRunAnalysis();
+      await onRunAnalysis(values.queryText);
     },
   });
 

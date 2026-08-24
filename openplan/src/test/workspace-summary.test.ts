@@ -145,6 +145,30 @@ describe("workspace summary RTP funding review", () => {
     expect(summary.nextCommand?.moduleLabel).toBe("Grants");
   });
 
+  it("puts a packet back in the refresh queue when linked crash evidence is newer", () => {
+    const summary = buildWorkspaceOperationsSummary({
+      projects: [],
+      plans: [],
+      programs: [],
+      reports: [{
+        id: "report-safety-stale",
+        projectId: "project-1",
+        title: "Safety packet",
+        status: "generated",
+        latestArtifactKind: "html",
+        generatedAt: "2026-04-12T20:00:00.000Z",
+        updatedAt: "2026-04-12T20:00:00.000Z",
+        safetyUpdatedAt: "2026-04-13T09:00:00.000Z",
+        metadataJson: null,
+      }],
+      fundingOpportunities: [],
+    });
+
+    expect(summary.counts.reportRefreshRecommended).toBe(1);
+    expect(summary.counts.reportPacketCurrent).toBe(0);
+    expect(summary.nextCommand?.key).toBe("refresh-report-packets");
+  });
+
   it("keeps current RTP packets in a warning lane when the stored review loop is still open", () => {
     const summary = buildWorkspaceOperationsSummary({
       projects: [],

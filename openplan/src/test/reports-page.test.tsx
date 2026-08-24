@@ -42,6 +42,11 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+const safetyIngestOrderMock = vi.fn();
+const safetyIngestInMock = vi.fn(() => ({ order: safetyIngestOrderMock }));
+const safetyIngestEqMock = vi.fn(() => ({ in: safetyIngestInMock }));
+const safetyIngestSelectMock = vi.fn(() => ({ eq: safetyIngestEqMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "reports") {
     return { select: reportsSelectMock };
@@ -60,6 +65,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
+  }
+  if (table === "safety_crash_ingests") {
+    return { select: safetyIngestSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -296,10 +304,45 @@ describe("ReportsPage", () => {
       error: null,
     });
 
+    safetyIngestOrderMock.mockResolvedValue({ data: [], error: null });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+  });
+
+  it("shows project crash evidence added after generation as a packet refresh", async () => {
+    reportsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "report-1",
+          workspace_id: "workspace-1",
+          project_id: "project-1",
+          rtp_cycle_id: null,
+          title: "Safety evidence packet",
+          report_type: "project_status",
+          status: "generated",
+          summary: "Packet generated before the latest crash acquisition.",
+          generated_at: null,
+          latest_artifact_kind: "html",
+          created_at: "2026-03-28T18:00:00.000Z",
+          updated_at: "2026-03-28T19:00:00.000Z",
+          projects: { id: "project-1", name: "Downtown Mobility Plan" },
+          rtp_cycles: null,
+        },
+      ],
+      error: null,
+    });
+    safetyIngestOrderMock.mockResolvedValueOnce({
+      data: [{ project_id: "project-1", created_at: "2026-03-29T12:00:00.000Z" }],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Crash evidence/i).length).toBeGreaterThan(0);
   });
 
   it("keeps artifact-backed reports in regenerate posture when report generated_at is null", async () => {

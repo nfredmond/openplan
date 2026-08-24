@@ -135,6 +135,12 @@ const meetingsOrderMock = vi.fn();
 const meetingsEqProjectMock = vi.fn(() => ({ order: meetingsOrderMock }));
 const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqProjectMock }));
 
+const safetyIngestLimitMock = vi.fn();
+const safetyIngestOrderMock = vi.fn(() => ({ limit: safetyIngestLimitMock }));
+const safetyIngestEqProjectMock = vi.fn(() => ({ order: safetyIngestOrderMock }));
+const safetyIngestEqWorkspaceMock = vi.fn(() => ({ eq: safetyIngestEqProjectMock }));
+const safetyIngestSelectMock = vi.fn(() => ({ eq: safetyIngestEqWorkspaceMock }));
+
 const authGetUserMock = vi.fn();
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
@@ -228,6 +234,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "project_meetings") {
     return { select: meetingsSelectMock };
+  }
+  if (table === "safety_crash_ingests") {
+    return { select: safetyIngestSelectMock };
   }
   if (table === "aerial_artifact_custody") {
     const result = { data: [], error: null };
@@ -424,6 +433,8 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       data: [],
       error: null,
     });
+
+    safetyIngestLimitMock.mockResolvedValue({ data: [], error: null });
 
     artifactsOrderMock.mockResolvedValue({
       data: [
@@ -933,6 +944,20 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       "href",
       "/projects/project-1#project-governance"
     );
+  });
+
+  it("marks a generated packet stale when newer project crash evidence is attached", async () => {
+    safetyIngestLimitMock.mockResolvedValueOnce({
+      data: [{ id: "safety-ingest-new", created_at: "2026-03-29T12:00:00.000Z" }],
+      error: null,
+    });
+
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+    expect(screen.getByText("Crash evidence")).toBeInTheDocument();
+    expect(
+      screen.getByText(/newer project crash acquisition is not in this packet/i),
+    ).toBeInTheDocument();
   });
 
   it("shows the project records and scenario basis the packet was built from", async () => {
