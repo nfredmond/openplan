@@ -20,6 +20,11 @@ export type ProjectRow = {
   status: string;
   plan_type: string;
   delivery_phase: string;
+  estimated_cost_amount: number | string | null;
+  estimated_cost_currency: string | null;
+  estimated_cost_basis_year: number | null;
+  estimated_cost_source_document_id: string | null;
+  estimated_cost_recorded_at: string | null;
   created_at: string;
   updated_at: string;
   rtp_posture: ProjectRtpPosture | null;

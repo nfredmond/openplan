@@ -39,6 +39,19 @@ type UseExploreMapLayerEffectsParams = {
   setHoveredCrash: Dispatch<SetStateAction<HoveredCrash | null>>;
 };
 
+/**
+ * A layer-effect cleanup may run after the map-instance effect has already
+ * removed Mapbox and cleared the ref. Calling even `getLayer()` on that stale
+ * instance reaches Mapbox's destroyed style object and crashes the page being
+ * navigated to. Keep the identity check in one testable place.
+ */
+export function isCurrentExploreMap(
+  mapRef: Pick<RefObject<MapboxMap | null>, "current">,
+  map: MapboxMap
+): boolean {
+  return mapRef.current === map;
+}
+
 export function useExploreMapLayerEffects({
   mapRef,
   mapReady,
@@ -188,6 +201,9 @@ export function useExploreMapLayerEffects({
     map.on("mouseleave", "crash-points-core", handleCrashLeave);
 
     return () => {
+      if (!isCurrentExploreMap(mapRef, map)) {
+        return;
+      }
       if (!map.getLayer("crash-points-core")) {
         return;
       }
@@ -257,6 +273,9 @@ export function useExploreMapLayerEffects({
     map.on("mouseleave", "tract-fill", handleTractLeave);
 
     return () => {
+      if (!isCurrentExploreMap(mapRef, map)) {
+        return;
+      }
       if (!map.getLayer("tract-fill")) {
         return;
       }

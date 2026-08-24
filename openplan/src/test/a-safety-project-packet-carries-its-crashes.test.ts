@@ -194,6 +194,26 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toMatch(/carried no coordinates/i);
     });
 
+    it("prints the sourced project estimate without calling it the management budget", () => {
+      const base = packetData([evidence()]);
+      const html = buildReportHtml({
+        ...base,
+        project: {
+          ...base.project,
+          estimated_cost_amount: 1_200_000,
+          estimated_cost_currency: "CAD",
+          estimated_cost_basis_year: 2026,
+          estimated_cost_source_document_id: "doc-1",
+          estimated_cost_source_title: "projects.csv",
+        },
+      });
+      expect(html).toContain("CAD");
+      expect(html).toContain("1,200,000");
+      expect(html).toContain("Basis year 2026");
+      expect(html).toContain("Source: projects.csv");
+      expect(html).toContain("separate from the project-management budget");
+    });
+
     it("prints ranked project KSI concentrations with screening limits", () => {
       const html = buildReportHtml({
         ...packetData([evidence()]),

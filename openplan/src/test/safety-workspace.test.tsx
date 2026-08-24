@@ -259,6 +259,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     expect(await screen.findByRole("heading", { name: /Highest observed KSI concentrations/i })).toBeInTheDocument();
     expect(screen.getAllByText(/7 KSI crashes/i)).toHaveLength(2);
+    expect(screen.getByText("39.15000, -123.21000")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Show concentration 1 on map/i })).toBeInTheDocument();
     expect(screen.getByText("Community burden screen")).toBeInTheDocument();
     expect(screen.getByText(/Poverty 24.0% \(above area median 16.0%\)/i)).toBeInTheDocument();

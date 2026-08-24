@@ -83,6 +83,25 @@ function pagingClient(pages: Array<{ data: Row[] } | { error: unknown }>) {
   return { client, ranges, callCount: () => call };
 }
 
+/** Matches the real PostgREST transform: range depends on its receiver. */
+function receiverSensitivePagingClient() {
+  const builder = {
+    marker: "attached",
+    then: (resolve: (value: { data: unknown[]; error: null }) => unknown) =>
+      resolve({ data: [], error: null }),
+    order() {
+      return this;
+    },
+    range(this: { marker: string }, _from: number, _to: number) {
+      if (this.marker !== "attached") throw new Error("range lost its builder receiver");
+      return Promise.resolve({ data: [], error: null });
+    },
+  };
+  return {
+    rpc: () => builder,
+  } as unknown as SafetyCrashEvidenceSupabaseLike;
+}
+
 /**
  * Built by the module's OWN reader from a row shaped like the database's, rather
  * than cast past the type. A hand-written fixture that satisfies the compiler
@@ -104,6 +123,11 @@ const INGEST = readSafetyCrashEvidenceIngest({
 })!;
 
 describe("crash evidence counts are not capped at one page", () => {
+  it("keeps the PostgREST range method attached to its builder", async () => {
+    await expect(
+      loadSafetyCrashEvidence(receiverSensitivePagingClient(), "w1", [INGEST])
+    ).resolves.toBeInstanceOf(Map);
+  });
   it("keeps asking while pages come back full, and folds every row", async () => {
     // Page size is whatever the module requests; serve a FULL first page by
     // discovering the size from the range it asks for.

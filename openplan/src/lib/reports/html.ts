@@ -69,6 +69,11 @@ type ProjectRecord = {
   delivery_phase: string;
   created_at: string;
   updated_at: string;
+  estimated_cost_amount?: number | string | null;
+  estimated_cost_currency?: string | null;
+  estimated_cost_basis_year?: number | null;
+  estimated_cost_source_document_id?: string | null;
+  estimated_cost_source_title?: string | null;
 };
 
 type RunRecord = {
@@ -688,6 +693,21 @@ function fundingSnapshotMarkup(snapshot: ProjectFundingSnapshot | null): string 
     <p>${snapshot.unfundedAfterLikelyAmount > 0 ? `Uncovered after likely dollars: ${esc(formatCurrency(snapshot.unfundedAfterLikelyAmount))}` : snapshot.remainingFundingGap > 0 ? `Current committed gap: ${esc(formatCurrency(snapshot.remainingFundingGap))}` : "No remaining funding gap was recorded in this snapshot."}${snapshot.uninvoicedAwardAmount > 0 ? ` • Uninvoiced awards: ${esc(formatCurrency(snapshot.uninvoicedAwardAmount))}` : ""}</p>
     ${snapshot.latestSourceUpdatedAt ? `<p>Funding source records current through ${esc(formatDateTime(snapshot.latestSourceUpdatedAt))}.</p>` : ""}
   </div>`;
+}
+
+function estimatedProjectCostMarkup(project: ProjectRecord): string {
+  if (project.estimated_cost_amount == null || !project.estimated_cost_currency) {
+    return `<p><strong>Planning-level estimated project cost:</strong> Not recorded.</p>`;
+  }
+  const source = project.estimated_cost_source_title
+    ? ` Source: ${esc(project.estimated_cost_source_title)}.`
+    : project.estimated_cost_source_document_id
+      ? " A source document is linked, but its title could not be read during generation."
+      : " No source document is linked.";
+  const basis = project.estimated_cost_basis_year
+    ? ` Basis year ${esc(String(project.estimated_cost_basis_year))}.`
+    : " Basis year not recorded.";
+  return `<p><strong>Planning-level estimated project cost:</strong> ${esc(formatMoney(project.estimated_cost_amount, { precision: "whole", currency: project.estimated_cost_currency, currencyDisplay: "code" }))}.${basis}${source} This is separate from the project-management budget, funding need, and awards.</p>`;
 }
 
 function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
@@ -1696,6 +1716,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           <div><dt>Created</dt><dd>${esc(formatDateTime(data.report.created_at))}</dd></div>
           <div><dt>Linked Runs</dt><dd>${data.runs.length}</dd></div>
         </div>
+        ${estimatedProjectCostMarkup(data.project)}
       </header>
       ${projectGeographyMarkup(
         data,

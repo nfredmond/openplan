@@ -34,6 +34,7 @@ import { KB_EXTRACTION_SOURCES } from "@/lib/knowledge-base/types";
 
 const ORIGINAL_MIGRATION = "20260811000005_document_library_stored_kinds.sql";
 const WIDENING_MIGRATION = "20260811000010_kb_ocr_extraction_source.sql";
+const CSV_MIGRATION = "20260824000003_project_estimated_cost_and_csv_provenance.sql";
 
 /**
  * Blank every single-quoted SQL string literal, preserving length so offsets
@@ -87,24 +88,24 @@ describe("the extraction_source vocabulary is one vocabulary", () => {
     const files = migrationFiles();
     expect(files).toContain(ORIGINAL_MIGRATION);
     expect(files).toContain(WIDENING_MIGRATION);
+    expect(files).toContain(CSV_MIGRATION);
     expect(vocabularyIn(ORIGINAL_MIGRATION)).not.toBeNull();
     expect(vocabularyIn(WIDENING_MIGRATION)).not.toBeNull();
+    expect(vocabularyIn(CSV_MIGRATION)).not.toBeNull();
   });
 
   it("matches the widened CHECK, which is what the database enforces today", () => {
-    expect(vocabularyIn(WIDENING_MIGRATION)).toEqual([...KB_EXTRACTION_SOURCES].sort());
+    expect(vocabularyIn(CSV_MIGRATION)).toEqual([...KB_EXTRACTION_SOURCES].sort());
   });
 
   it("matches the original CHECK plus exactly the value the worker earned", () => {
     const original = vocabularyIn(ORIGINAL_MIGRATION);
-    expect(original).toEqual([...KB_EXTRACTION_SOURCES].filter((value) => value !== "ocr").sort());
-    // 'spreadsheet_parse' was named in 20260811000005's header as a FUTURE
-    // value. Nothing parses a spreadsheet, so it must not be in either CHECK or
-    // in TypeScript: schema describing a capability the product does not have
-    // is the defect that header refused, and it would be no less a defect one
-    // migration later.
-    expect(KB_EXTRACTION_SOURCES).not.toContain("spreadsheet_parse");
+    expect(original).toEqual(
+      [...KB_EXTRACTION_SOURCES].filter((value) => value !== "ocr" && value !== "spreadsheet_parse").sort()
+    );
+    // The OCR migration remains a dated record of the capability at that time.
     expect(vocabularyIn(WIDENING_MIGRATION)).not.toContain("spreadsheet_parse");
+    expect(KB_EXTRACTION_SOURCES).toContain("spreadsheet_parse");
   });
 
   it("keeps 'ocr' distinguishable from 'text_layer' — the reason it is not a boolean", () => {

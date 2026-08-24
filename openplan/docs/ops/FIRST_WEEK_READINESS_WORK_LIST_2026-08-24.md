@@ -6,6 +6,8 @@ Raw evidence stays local under `/home/nathaniel/.local/state/openplan/first-week
 
 The post-fix California setup check is under `/home/nathaniel/.local/state/openplan/first-week-runs/2026-08-24T06-31-21-739Z/` for the same reason.
 
+The complete seven-job baseline is under `/home/nathaniel/.local/state/openplan/first-week-runs/2026-08-24T07-18-50-771Z/`. The harness verified all seven reports and recorded zero blocked or failed jobs.
+
 ## Daily reminders have no in-product enable control
 
 - Reproduce: create an account, finish the home-geography setup, open **My Work**, and read the deadline-reminder status.
@@ -45,3 +47,27 @@ The post-fix California setup check is under `/home/nathaniel/.local/state/openp
 - Evidence: `04-safety-case/agent/evidence/f1.png` and `f1.snapshot.txt`.
 - Milestone decision: confusing, not blocking. The acquisition still carries source, requested period, retrieval time, counts, coverage, and completeness caveats; those facts support a qualified artifact.
 - Follow-up: extend source manifests with a source-published cutoff only when the source itself exposes one. Do not infer a cutoff from the acquisition date.
+
+## CSV intake is citable but not a bulk project importer
+
+- Reproduce: attach a multi-row project CSV in **Documents**, then open the project record.
+- Observed after the milestone fix: OpenPlan can search and cite each parsed row, and a planner can record one candidate's identity and sourced estimated cost. It does not map an entire file into many project records.
+- Evidence: baseline `02-project-end-to-end/agent/evidence/f2.png` and `f2.snapshot.txt`; the post-fix rerun is recorded in the readiness report.
+- Milestone decision: non-blocking after deterministic CSV parsing and the sourced cost field shipped. Bulk import needs explicit column mapping, row review, and duplicate handling; silently guessing those is worse than manual entry.
+- Follow-up: design a reviewed CSV-to-project import using the parsed rows already in the Knowledge Base. Do not add a second upload path.
+
+## Corridor screening scores need a clearer precision posture
+
+- Reproduce: complete **Corridor Analysis**, then compare the integer component scores with the source-check caveats below them.
+- Observed: the page reports whole-number scores while several inputs are screening proxies or unavailable. The caveats are visible, but the numeric presentation can still read as more precise than the inputs.
+- Evidence: baseline `05-analysis-corridor/agent/evidence/f3.png` and `f3.snapshot.txt` (the harness discarded the submitted finding because its snapshot URL did not match; the page snapshot and console trail remain local investigation evidence, not a confirmed harness finding).
+- Milestone decision: not a blocker. The result itself is readable, labels confidence, and names unavailable sources; changing the score contract requires a modeling-product decision, not a readiness patch.
+- Follow-up: research bands, ranges, or score suppression when required inputs are missing. Preserve the underlying arithmetic and claim-tier disclosures.
+
+## A blank workspace cannot truthfully simulate legal adoption
+
+- Reproduce: create a California land-use plan in a fresh account and attempt to mark a required legal process step complete without an actual completion date.
+- Observed: OpenPlan refuses the unsupported completion record, so a fresh-account agent with no real hearing, consultation, environmental-review, or adoption evidence cannot finish the legal lifecycle.
+- Evidence: baseline `06-land-use-plan/agent/evidence/f1.png` and `f1.snapshot.txt` (discarded by the harness because the snapshot did not establish the submitted route).
+- Milestone decision: limitation, not a product blocker. Weakening the required date would let an exercise note masquerade as an operative legal record. The deterministic exercise smoke covers workflow mechanics with explicitly synthetic fixtures; the fresh journey correctly stopped rather than inventing evidence.
+- Follow-up: if product direction calls for a training sandbox, isolate it structurally from real plan records and public URLs. Do not add an “exercise” escape hatch to legal completion fields.

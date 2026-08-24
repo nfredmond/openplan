@@ -6,7 +6,6 @@ import {
   DocumentParseError,
   extractDocument,
   extractedFromText,
-  isExtractableSourceKind,
   NoExtractableTextError,
   resolveSourceKind,
   resolveStoredSourceKind,
@@ -52,6 +51,7 @@ describe("resolveSourceKind", () => {
     ).toBe("uploaded_docx");
     expect(resolveSourceKind("text/plain", "x.txt")).toBe("uploaded_txt");
     expect(resolveSourceKind("text/markdown", "x.md")).toBe("uploaded_md");
+    expect(resolveSourceKind("text/csv", "costs.csv")).toBe("uploaded_spreadsheet");
   });
 
   it("strips content-type parameters", () => {
@@ -62,6 +62,7 @@ describe("resolveSourceKind", () => {
     expect(resolveSourceKind("application/octet-stream", "plan.pdf")).toBe("uploaded_pdf");
     expect(resolveSourceKind("application/octet-stream", "notes.md")).toBe("uploaded_md");
     expect(resolveSourceKind("", "report.docx")).toBe("uploaded_docx");
+    expect(resolveSourceKind("application/octet-stream", "costs.csv")).toBe("uploaded_spreadsheet");
   });
 
   it("returns null for non-extractable formats (they may still be storable)", () => {
@@ -76,10 +77,7 @@ describe("resolveStoredSourceKind", () => {
       kind: "uploaded_image",
       contentType: "image/png",
     });
-    expect(resolveStoredSourceKind("text/csv", "costs.csv")).toEqual({
-      kind: "uploaded_spreadsheet",
-      contentType: "text/csv",
-    });
+    expect(resolveStoredSourceKind("text/csv", "costs.csv")).toBeNull();
     expect(resolveStoredSourceKind("image/vnd.dwg", "site.dwg")).toEqual({
       kind: "uploaded_cad",
       contentType: "image/vnd.dwg",
@@ -115,17 +113,6 @@ describe("resolveStoredSourceKind", () => {
   });
 });
 
-describe("isExtractableSourceKind", () => {
-  it("splits the union exactly along the stored boundary", () => {
-    expect(isExtractableSourceKind("uploaded_pdf")).toBe(true);
-    expect(isExtractableSourceKind("pasted_text")).toBe(true);
-    expect(isExtractableSourceKind("uploaded_image")).toBe(false);
-    expect(isExtractableSourceKind("uploaded_spreadsheet")).toBe(false);
-    expect(isExtractableSourceKind("uploaded_cad")).toBe(false);
-    expect(isExtractableSourceKind("uploaded_other")).toBe(false);
-  });
-});
-
 describe("extractDocument — plain text", () => {
   it("extracts UTF-8 text as a single page", async () => {
     const result = await extractDocument(encode("Line one.\nLine two."), "uploaded_txt");
@@ -139,6 +126,17 @@ describe("extractDocument — plain text", () => {
     await expect(extractDocument(encode("   \n\n  "), "uploaded_txt")).rejects.toBeInstanceOf(
       NoExtractableTextError
     );
+  });
+});
+
+describe("extractDocument — CSV", () => {
+  it("parses quoted values into deterministic searchable rows", async () => {
+    const result = await extractDocument(
+      encode('project,cost,notes\n"Bridge, North",1200000,"Deck, rail"\n'),
+      "uploaded_spreadsheet"
+    );
+    expect(result.text).toContain("Row 1: project | cost | notes");
+    expect(result.text).toContain("Row 2: Bridge, North | 1200000 | Deck, rail");
   });
 });
 

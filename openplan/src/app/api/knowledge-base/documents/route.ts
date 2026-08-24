@@ -362,7 +362,11 @@ export async function POST(request: NextRequest) {
         extraction_error: extractionError,
         // Where the indexed text came from — nothing was indexed on failure,
         // so a failed row honestly records no source.
-        extraction_source: extractionError ? null : "text_layer",
+        extraction_source: extractionError
+          ? null
+          : sourceKind === "uploaded_spreadsheet"
+            ? "spreadsheet_parse"
+            : "text_layer",
       })
       .select(KB_DOCUMENT_COLUMNS)
       .single();

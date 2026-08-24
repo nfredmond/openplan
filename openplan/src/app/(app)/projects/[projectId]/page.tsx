@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
+import { ProjectEstimatedCostEditor } from "@/components/projects/project-estimated-cost-editor";
 import { buildStageGateRunOptions, type StageGateEvidenceRunRow } from "./_components/_helpers";
 import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
 import {
@@ -164,7 +165,7 @@ export default async function ProjectDetailPage({
   const projectResult = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     )
     .eq("id", projectId)
     .single();
@@ -1376,6 +1377,20 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="funding" active={activeTab === "funding"}>
+          <ProjectEstimatedCostEditor
+            projectId={project.id}
+            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            value={{
+              amount: project.estimated_cost_amount,
+              currency: project.estimated_cost_currency,
+              basisYear: project.estimated_cost_basis_year,
+              sourceDocumentId: project.estimated_cost_source_document_id,
+              recordedAt: project.estimated_cost_recorded_at,
+            }}
+            sourceOptions={documentsLane.library.entries
+              .filter((entry) => entry.sourceId === "knowledge_base" && entry.projectId === project.id)
+              .map((entry) => ({ id: entry.id, title: entry.title }))}
+          />
           <ProjectFundingPanel
             projectId={project.id}
             workspaceId={project.workspace_id}

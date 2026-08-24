@@ -55,6 +55,13 @@ export const runtime = "nodejs";
 
 const paramsSchema = z.object({ projectId: z.string().uuid() });
 
+const estimatedCostSchema = z.object({
+  amount: z.number().finite().positive().max(1_000_000_000_000_000),
+  currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Use a three-letter currency code."),
+  basisYear: z.number().int().min(1800).max(3000).nullable().optional(),
+  sourceDocumentId: z.string().uuid().nullable().optional(),
+});
+
 /**
  * Every field optional, at least one required. A PATCH that names no field is a
  * caller bug worth reporting rather than a no-op worth pretending succeeded.
@@ -70,6 +77,7 @@ const patchProjectSchema = z
     status: projectStatusSchema.optional(),
     planType: projectPlanTypeSchema.optional(),
     deliveryPhase: projectDeliveryPhaseSchema.optional(),
+    estimatedCost: z.union([estimatedCostSchema, z.null()]).optional(),
     /**
      * The area this project studies (20260728000009) — not its map marker,
      * which stays with `location/route.ts`.
@@ -173,6 +181,44 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
     if (payload.data.planType !== undefined) updates.plan_type = payload.data.planType;
     if (payload.data.deliveryPhase !== undefined) updates.delivery_phase = payload.data.deliveryPhase;
 
+    if (payload.data.estimatedCost !== undefined) {
+      if (payload.data.estimatedCost === null) {
+        Object.assign(updates, {
+          estimated_cost_amount: null,
+          estimated_cost_currency: null,
+          estimated_cost_basis_year: null,
+          estimated_cost_source_document_id: null,
+          estimated_cost_recorded_by: null,
+          estimated_cost_recorded_at: null,
+        });
+      } else {
+        const sourceDocumentId = payload.data.estimatedCost.sourceDocumentId ?? null;
+        if (sourceDocumentId) {
+          const sourceResult = await supabase
+            .from("kb_documents")
+            .select("id")
+            .eq("id", sourceDocumentId)
+            .eq("workspace_id", project.workspace_id)
+            .eq("project_id", project.id)
+            .single();
+          if (sourceResult.error || !sourceResult.data) {
+            return NextResponse.json(
+              { error: "Choose a source document attached to this project." },
+              { status: 400 }
+            );
+          }
+        }
+        Object.assign(updates, {
+          estimated_cost_amount: payload.data.estimatedCost.amount,
+          estimated_cost_currency: payload.data.estimatedCost.currency,
+          estimated_cost_basis_year: payload.data.estimatedCost.basisYear ?? null,
+          estimated_cost_source_document_id: sourceDocumentId,
+          estimated_cost_recorded_by: userId,
+          estimated_cost_recorded_at: new Date().toISOString(),
+        });
+      }
+    }
+
     if (payload.data.place !== undefined) {
       if (payload.data.place === null) {
         Object.assign(updates, clearedProjectPlace());
@@ -221,7 +267,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .from("projects")
       .update(updates)
       .eq("id", project.id)
-      .select(`id, name, summary, status, plan_type, delivery_phase, updated_at, ${PROJECT_PLACE_COLUMNS}`)
+      .select(`id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, updated_at, ${PROJECT_PLACE_COLUMNS}`)
       .single();
 
     if (isWriteFailure(error)) {

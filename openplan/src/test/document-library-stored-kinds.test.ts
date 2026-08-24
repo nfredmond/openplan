@@ -246,7 +246,7 @@ describe("POST /api/knowledge-base/documents — the stored branch", () => {
     expect(storageUploads[0][1]).toBe("image/png");
   });
 
-  it("stores a CSV as a spreadsheet under its canonical content type", async () => {
+  it("parses a CSV into citable chunks with explicit spreadsheet provenance", async () => {
     const res = await uploadPost(
       uploadRequest(
         `?workspaceId=${WORKSPACE_ID}&filename=cost-table.csv`,
@@ -260,11 +260,11 @@ describe("POST /api/knowledge-base/documents — the stored branch", () => {
     expect(documentInserts).toHaveLength(1);
     expect(documentInserts[0].rows).toMatchObject({
       source_kind: "uploaded_spreadsheet",
-      status: "stored",
-      extraction_source: "none",
+      status: "ready",
+      extraction_source: "spreadsheet_parse",
       content_type: "text/csv",
     });
-    expect(serviceInserts.filter((insert) => insert.table === "kb_document_chunks")).toEqual([]);
+    expect(serviceInserts.filter((insert) => insert.table === "kb_document_chunks")).toHaveLength(1);
   });
 
   it("refuses a mislabeled image — declared image/png, bytes not an image — storing nothing", async () => {

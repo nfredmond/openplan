@@ -17,12 +17,12 @@
  */
 
 import mammoth from "mammoth";
+import { parse as parseCsv } from "csv-parse/sync";
 import { extractText, getDocumentProxy } from "unpdf";
 import type {
   ExtractedDocument,
   ExtractedPage,
   KbExtractableSourceKind,
-  KbSourceKind,
   KbStoredSourceKind,
 } from "./types";
 
@@ -51,6 +51,7 @@ const CONTENT_TYPE_SOURCE_KIND: Record<string, KbExtractableSourceKind> = {
   "text/plain": "uploaded_txt",
   "text/markdown": "uploaded_md",
   "text/x-markdown": "uploaded_md",
+  "text/csv": "uploaded_spreadsheet",
 };
 
 /** Filename extension -> source kind, used only when the content type is generic. */
@@ -61,6 +62,7 @@ const EXTENSION_SOURCE_KIND: Record<string, KbExtractableSourceKind> = {
   text: "uploaded_txt",
   md: "uploaded_md",
   markdown: "uploaded_md",
+  csv: "uploaded_spreadsheet",
 };
 
 /**
@@ -79,18 +81,6 @@ export function resolveSourceKind(
 
   const ext = (filename ?? "").toLowerCase().split(".").pop() ?? "";
   return EXTENSION_SOURCE_KIND[ext] ?? null;
-}
-
-const STORED_SOURCE_KIND_SET: Record<KbStoredSourceKind, true> = {
-  uploaded_image: true,
-  uploaded_spreadsheet: true,
-  uploaded_cad: true,
-  uploaded_other: true,
-};
-
-/** Only extractable kinds get chunks; everything else is stored, never cited. */
-export function isExtractableSourceKind(kind: KbSourceKind): kind is KbExtractableSourceKind {
-  return !(kind in STORED_SOURCE_KIND_SET);
 }
 
 export type StoredResolution = {
@@ -118,7 +108,6 @@ const STORED_CONTENT_TYPE_RESOLUTION: Record<string, StoredResolution> = {
   "image/png": { kind: "uploaded_image", contentType: "image/png" },
   "image/tiff": { kind: "uploaded_image", contentType: "image/tiff" },
   // spreadsheets
-  "text/csv": { kind: "uploaded_spreadsheet", contentType: "text/csv" },
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
     kind: "uploaded_spreadsheet",
     contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -159,7 +148,6 @@ const STORED_EXTENSION_RESOLUTION: Record<string, StoredResolution> = {
   png: { kind: "uploaded_image", contentType: "image/png" },
   tif: { kind: "uploaded_image", contentType: "image/tiff" },
   tiff: { kind: "uploaded_image", contentType: "image/tiff" },
-  csv: { kind: "uploaded_spreadsheet", contentType: "text/csv" },
   xlsx: {
     kind: "uploaded_spreadsheet",
     contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -181,9 +169,9 @@ const STORED_EXTENSION_RESOLUTION: Record<string, StoredResolution> = {
 
 /**
  * Resolve a STORED source kind — asked only after `resolveSourceKind` returned
- * null, so an extractable format never lands here (a `.csv` DECLARED as
- * text/plain resolves extractable first and is indexed as the text its sender
- * said it was; a `.csv` declared as text/csv or sent generically is stored).
+ * null, so an extractable format never lands here. CSV is resolved by
+ * `resolveSourceKind` and deterministically indexed; binary spreadsheet
+ * formats remain stored and downloadable.
  * Returns null for genuinely unknown formats, which keeps them on the 415 path.
  */
 export function resolveStoredSourceKind(
@@ -282,12 +270,33 @@ function extractPlainText(bytes: Uint8Array): ExtractedDocument {
   return assembleExtracted([{ page: 1, text: decoded }], 1);
 }
 
+function extractCsv(bytes: Uint8Array): ExtractedDocument {
+  const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+  try {
+    const rows = parseCsv(decoded, {
+      bom: true,
+      relax_column_count: true,
+      skip_empty_lines: true,
+    }) as unknown[][];
+    const text = rows
+      .map((row, index) =>
+        `Row ${index + 1}: ${row.map((cell) => String(cell ?? "").trim()).join(" | ")}`
+      )
+      .join("\n");
+    return assembleExtracted([{ page: 1, text }], 1);
+  } catch (error) {
+    throw new DocumentParseError(
+      `Could not parse the CSV (${error instanceof Error ? error.message : "unknown error"}).`
+    );
+  }
+}
+
 /**
  * Extract a document's text by source kind. `pasted_text` is handled by the
  * caller (the text arrives directly, not as bytes), so it is rejected here.
- * Stored kinds are excluded by the parameter type on purpose: they have no
- * extractor BY DESIGN, and giving them one is a deliberate future capability
- * (OCR, spreadsheet parsing), never a fall-through.
+ * Binary stored formats are excluded by the parameter type. The source-kind
+ * vocabulary intentionally overlaps at `uploaded_spreadsheet`: CSV reaches
+ * this extractor, while XLS/XLSX/ODS resolve through the stored branch.
  */
 export async function extractDocument(
   bytes: Uint8Array,
@@ -301,6 +310,8 @@ export async function extractDocument(
     case "uploaded_txt":
     case "uploaded_md":
       return extractPlainText(bytes);
+    case "uploaded_spreadsheet":
+      return extractCsv(bytes);
     case "pasted_text":
       throw new DocumentParseError(
         "pasted_text has no bytes to extract; build an ExtractedDocument from the text directly."

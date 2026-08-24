@@ -12,13 +12,13 @@ export type KbExtractableSourceKind =
   | "uploaded_docx"
   | "uploaded_txt"
   | "uploaded_md"
+  | "uploaded_spreadsheet"
   | "pasted_text";
 
 /**
- * Source kinds OpenPlan STORES without attempting extraction. These become
- * `stored`: findable and downloadable, never citable — no chunks are ever
- * written for them, and the retrieval RPC filters on `status = 'ready'`, so a
- * stored file cannot enter grounding by accident.
+ * Source kinds that may be stored without extraction. `uploaded_spreadsheet`
+ * spans two byte formats deliberately: CSV is deterministically parsed and
+ * ready; binary XLS/XLSX/ODS files remain stored and uncitable.
  */
 export type KbStoredSourceKind =
   | "uploaded_image"
@@ -67,9 +67,8 @@ export type KbDocumentStatus =
  * `null` on a row means it predates 20260811000005 and the answer was not
  * recorded — "not known", never "none".
  *
- * `spreadsheet_parse` is deliberately absent: nothing parses a spreadsheet, and
- * a value here would be the schema describing a capability the product does not
- * have (20260811000005's own argument, kept).
+ * `spreadsheet_parse` means deterministic CSV parsing. Binary spreadsheet
+ * formats still use `none`; no cell values are inferred from them.
  *
  * THERE IS NO CONFIDENCE OR ACCURACY COMPANION TO THIS COLUMN, EVER. The
  * recogniser can emit per-word confidence figures and the worker deliberately
@@ -88,7 +87,13 @@ export type KbDocumentStatus =
  * the two ways a document's text can reach an extraction run. That is a
  * narrowing, not a second vocabulary, and it must stay a subset of this one.
  */
-export const KB_EXTRACTION_SOURCES = ["text_layer", "pasted", "ocr", "none"] as const;
+export const KB_EXTRACTION_SOURCES = [
+  "text_layer",
+  "pasted",
+  "ocr",
+  "spreadsheet_parse",
+  "none",
+] as const;
 
 export type KbExtractionSource = (typeof KB_EXTRACTION_SOURCES)[number];
 

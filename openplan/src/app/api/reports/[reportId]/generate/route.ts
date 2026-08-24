@@ -166,6 +166,10 @@ type PacketProjectRow = {
   delivery_phase: string;
   created_at: string;
   updated_at: string;
+  estimated_cost_amount?: number | string | null;
+  estimated_cost_currency?: string | null;
+  estimated_cost_basis_year?: number | null;
+  estimated_cost_source_document_id?: string | null;
   latitude?: unknown;
   longitude?: unknown;
 } & Partial<ProjectPlaceRow>;
@@ -1368,7 +1372,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // missing-column error, which the narrow re-query below recovers from —
         // the same shape the `report_runs` typed-evidence fallback uses.
         .select(
-          `id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, latitude, longitude, ${PROJECT_PLACE_COLUMNS}`
+          `id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, created_at, updated_at, latitude, longitude, ${PROJECT_PLACE_COLUMNS}`
         )
         .eq("id", report.project_id)
         .maybeSingle(),
@@ -1611,6 +1615,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // type — the same reason the workspace read above is cast. Guaranteed
     // non-null here; a failed or empty project read returned already.
     const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
+    let estimatedCostSourceTitle: string | null = null;
+    if (projectRow.estimated_cost_source_document_id) {
+      const sourceResult = await supabase
+        .from("kb_documents")
+        .select("id, title")
+        .eq("id", projectRow.estimated_cost_source_document_id)
+        .eq("workspace_id", report.workspace_id)
+        .eq("project_id", projectRow.id)
+        .maybeSingle();
+      estimatedCostSourceTitle = sourceResult.error
+        ? null
+        : ((sourceResult.data as { title?: string | null } | null)?.title ?? null);
+    }
 
     // Which stage-gate template the frozen snapshot is built on is a fact about
     // the WORKSPACE row (the binding of record reconciled against the
@@ -2117,7 +2134,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         summary: report.summary ?? null,
         report_type: report.report_type,
       },
-      project: projectRow,
+      project: { ...projectRow, estimated_cost_source_title: estimatedCostSourceTitle },
       runs: linkedRuns as ReportSectionFactsRun[],
       citedModelRuns: citedModelRuns as ReportCitedModelRun[],
       citedCountyRuns: citedCountyRuns as ReportCitedCountyRun[],
@@ -2226,7 +2243,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // interpolated from STAGE_GATE_BINDING_WORKSPACE_COLUMNS), which the
       // client's string-parser cannot type.
       workspace: workspaceResult.data as { id: string; name: string } | null,
-      project: projectRow,
+      project: { ...projectRow, estimated_cost_source_title: estimatedCostSourceTitle },
       runs: linkedRuns,
       sections: sectionsResult.data ?? [],
       safetyEvidence,

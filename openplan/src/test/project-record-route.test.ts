@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 
 const authGetUserMock = vi.fn();
 const fromMock = vi.fn();
+const projectUpdateMock = vi.fn();
 const loadProjectAccessMock = vi.fn();
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
@@ -46,7 +47,9 @@ function withCounts(counts: Record<string, number>, options: { failing?: string[
   fromMock.mockImplementation((table: string) => {
     if (table === "projects") {
       return {
-        update: () => ({
+        update: (updates: Record<string, unknown>) => {
+          projectUpdateMock(updates);
+          return ({
           eq: () => ({
             select: () => ({
               single: async () => ({
@@ -63,7 +66,8 @@ function withCounts(counts: Record<string, number>, options: { failing?: string[
               }),
             }),
           }),
-        }),
+          });
+        },
         delete: () => ({ eq: () => ({ select: async () => ({ data: [{ id: PROJECT_ID }], error: null }) }) }),
       };
     }
@@ -97,6 +101,54 @@ describe("project record route", () => {
       const response = await patchProject(patchRequest({ name: "Renamed" }), params);
       expect(response.status).toBe(200);
       await expect(response.json()).resolves.toMatchObject({ project: { id: PROJECT_ID } });
+    });
+
+    it("records an explicit-currency project estimate without conflating it with the budget", async () => {
+      const response = await patchProject(
+        patchRequest({
+          estimatedCost: { amount: 1_200_000, currency: "cad", basisYear: 2026 },
+        }),
+        params
+      );
+      expect(response.status).toBe(200);
+      expect(projectUpdateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          estimated_cost_amount: 1_200_000,
+          estimated_cost_currency: "CAD",
+          estimated_cost_basis_year: 2026,
+          estimated_cost_recorded_by: USER_ID,
+        })
+      );
+      expect(projectUpdateMock.mock.calls.at(-1)?.[0]).not.toHaveProperty("budget_amount");
+    });
+
+    it("refuses a cost source that is not attached to this project", async () => {
+      fromMock.mockImplementation((table: string) => {
+        if (table === "kb_documents") {
+          const chain = {
+            eq: () => chain,
+            single: async () => ({ data: null, error: { code: "PGRST116", message: "no rows" } }),
+          };
+          return { select: () => chain };
+        }
+        if (table === "projects") throw new Error("the project must not be updated");
+        throw new Error(`unexpected table ${table}`);
+      });
+
+      const response = await patchProject(
+        patchRequest({
+          estimatedCost: {
+            amount: 1_200_000,
+            currency: "USD",
+            sourceDocumentId: "44444444-4444-4444-8444-444444444444",
+          },
+        }),
+        params
+      );
+      expect(response.status).toBe(400);
+      await expect(response.json()).resolves.toMatchObject({
+        error: expect.stringContaining("attached to this project"),
+      });
     });
 
     it("gates on the project access matrix", async () => {

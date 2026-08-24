@@ -1342,6 +1342,9 @@ export function SafetyWorkspace({
                         <p className="text-muted-foreground">
                           {concentration.fatalCrashCount.toLocaleString()} fatal · {concentration.seriousInjuryCrashCount.toLocaleString()} serious injury
                         </p>
+                        <p className="font-mono text-muted-foreground">
+                          {concentration.latitude.toFixed(5)}, {concentration.longitude.toFixed(5)}
+                        </p>
                       </div>
                       <button
                         type="button"
@@ -1502,6 +1505,13 @@ export function SafetyWorkspace({
                       a real crash that cannot be plotted. */}
                   {entry.crashCount.toLocaleString()} crashes ingested,{" "}
                   {entry.geocodedCount.toLocaleString()} geocoded
+                </span>
+                <span className="text-muted-foreground">
+                  {entry.yearsRequested.length === 0
+                    ? "crash years not recorded"
+                    : entry.yearsRequested.length === 1
+                      ? `crash year ${entry.yearsRequested[0]}`
+                      : `crash years ${Math.min(...entry.yearsRequested)}–${Math.max(...entry.yearsRequested)}`}
                 </span>
                 {/*
                   WHERE THIS PULL LOOKED. A crash count with no stated area is a

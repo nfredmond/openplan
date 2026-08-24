@@ -2002,6 +2002,37 @@ liveDescribe("workspace RLS live isolation", () => {
     );
   });
 
+  it("isolates planning-level project cost writes", async () => {
+    const recordedAt = new Date().toISOString();
+    const foreign = await userA
+      .from("projects")
+      .update({
+        estimated_cost_amount: 123456,
+        estimated_cost_currency: "USD",
+        estimated_cost_recorded_by: context.userAId,
+        estimated_cost_recorded_at: recordedAt,
+      })
+      .eq("id", context.projectBId)
+      .select("id");
+    expect(foreign.error, "tenant A cost update error").toBeNull();
+    expect(foreign.data, "tenant A cost update rows").toEqual([]);
+
+    const own = await userB
+      .from("projects")
+      .update({
+        estimated_cost_amount: 123456,
+        estimated_cost_currency: "USD",
+        estimated_cost_recorded_by: context.userBId,
+        estimated_cost_recorded_at: recordedAt,
+      })
+      .eq("id", context.projectBId)
+      .select("id,estimated_cost_amount,estimated_cost_currency")
+      .single();
+    expect(own.error, "tenant B cost update error").toBeNull();
+    expect(Number(own.data?.estimated_cost_amount)).toBe(123456);
+    expect(own.data?.estimated_cost_currency).toBe("USD");
+  });
+
   /**
    * A CROSS-TENANT DENIAL OF SERVICE, removed in 20260805000006.
    *

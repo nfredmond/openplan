@@ -569,8 +569,7 @@ export async function loadSafetyCrashEvidence(
         query
       );
 
-      const range = ordered.range ?? query.range;
-      if (!range) {
+      if (!ordered.range && !query.range) {
         // Unreachable: `pending.range` was proven above, and `.order` returns
         // the same builder. Stated rather than asserted so a future client whose
         // `.order` drops `.range` fails as an unreadable count, not as a silent
@@ -578,7 +577,12 @@ export async function loadSafetyCrashEvidence(
         return Promise.resolve({ data: null, error: { message: "client cannot page this read" } });
       }
 
-      return range(from, toInclusive) as PromiseLike<{
+      // Keep the method attached to its builder. The real PostgREST transform
+      // reads `this.url`; detaching it worked in arrow-function mocks and then
+      // crashed every real project page that loaded linked safety evidence.
+      return (ordered.range
+        ? ordered.range(from, toInclusive)
+        : query.range!(from, toInclusive)) as PromiseLike<{
         data: EvidenceCountRow[] | null;
         error: { message: string } | null;
       }>;

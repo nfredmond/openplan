@@ -55,7 +55,8 @@ export function resolveKbDocumentMaxBytes(
 /**
  * The one sentence a stored document gets, everywhere it appears. Honest on
  * both edges: never "processing" (nothing is coming), and never "no text
- * layer" (a stored CSV has text — OpenPlan deliberately did not index it).
+ * layer". Binary spreadsheets and drawings remain stored; CSV is now parsed
+ * deterministically and never reaches this notice.
  */
 export const KB_STORED_DOCUMENT_NOTICE =
   "Stored. OpenPlan did not index text from this file, so it cannot be cited yet.";
