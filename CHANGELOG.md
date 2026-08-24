@@ -19,7 +19,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**No migrations.** Pull and deploy.
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migrations
+`20260824000001_safety_ksi_concentrations.sql` and
+`20260824000002_safety_ksi_tract_burden.sql` add tenant-isolated spatial
+screening for observed KSI concentrations (`safety_ksi_concentrations`) and
+Census-tract community context (`safety_ksi_tract_burden`).
+
+Fresh-account testing closed three first-week dead ends: a corridor wizard now
+uses the geography submitted on the first click, report packets notice safety
+data added after generation, and safety work produces ranked KSI locations with
+plainly limited community context. A failed optional screening calculation can
+no longer erase crash counts from an otherwise readable packet.
 
 ## 0.28.0 — 2026-08-23
 

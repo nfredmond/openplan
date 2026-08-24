@@ -2183,7 +2183,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
           p_min_points: 2,
           p_result_limit: 10,
         });
-        safetyKsiConcentrations = concentrationResult.error
+        const concentrationFailure = classifyRouteReadFailure(
+          "the packet's KSI concentration screen",
+          concentrationResult
+        );
+        safetyKsiConcentrations = concentrationFailure
           ? null
           : readSafetyKsiConcentrations(concentrationResult.data);
       }
@@ -2204,7 +2208,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
           p_severities: [...CRASH_KSI_SEVERITIES],
           p_result_limit: 10,
         });
-        safetyKsiEquityTracts = equityResult.error
+        const equityFailure = classifyRouteReadFailure(
+          "the packet's community burden screen",
+          equityResult
+        );
+        safetyKsiEquityTracts = equityFailure
           ? null
           : readSafetyKsiEquityTracts(equityResult.data);
       }

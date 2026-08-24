@@ -1327,8 +1327,8 @@ export function SafetyWorkspace({
               <section className="rounded-lg border border-border/70 bg-muted/20 p-3">
                 <h2 className="text-sm font-semibold">Highest observed KSI concentrations</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Ranked from every stored fatal and serious-injury crash record in this study area,
-                  not only the dots the map can draw. A concentration is two or more records within
+                  Ranked from every stored fatal and serious-injury crash in this selected area,
+                  not only the dots the map can draw. A concentration is two or more crashes within
                   150 meters. It is screening evidence, not an intersection, corridor, rate, causal
                   finding, or High Injury Network.
                 </p>
@@ -1362,7 +1362,7 @@ export function SafetyWorkspace({
               </p>
             ) : response && Array.isArray(response.ksiConcentrations) && response.ksiConcentrations.length === 0 ? (
               <p className="text-muted-foreground">
-                No pair of stored fatal or serious-injury crash records fell within the 150-meter
+                No pair of stored fatal or serious-injury crashes fell within the 150-meter
                 screening radius. That is not a finding that the area is safe.
               </p>
             ) : null}
@@ -1370,7 +1370,7 @@ export function SafetyWorkspace({
               <section className="rounded-lg border border-border/70 bg-muted/20 p-3">
                 <h2 className="text-sm font-semibold">Community burden screen</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  The same mapped KSI records are grouped by Census tract and ranked by observed
+                  The same mapped KSI crashes are grouped by Census tract and ranked by observed
                   count. Demographics come from {response.ksiEquityDemographicSource.label} {response.ksiEquityDemographicSource.vintage} and are compared with medians for tracts intersecting the selected area.
                   Counts per 100,000 residents are not adjusted for roadway exposure, travel, or
                   time. This is screening context, not a causal, protected-class, or legal disparity finding.
@@ -1395,12 +1395,12 @@ export function SafetyWorkspace({
               </section>
             ) : response?.ksiEquityTracts === null ? (
               <p className="text-muted-foreground">
-                OpenPlan could not compare mapped KSI records with community conditions. The crash
+                OpenPlan could not compare mapped KSI crashes with community conditions. The crash
                 counts still loaded; this demographic comparison did not.
               </p>
             ) : response && Array.isArray(response.ksiEquityTracts) && response.ksiEquityTracts.length === 0 ? (
               <p className="text-muted-foreground">
-                No loaded Census tract demographics overlap the mapped KSI records in this area, so
+                No loaded Census tract demographics overlap the mapped KSI crashes in this area, so
                 community burden is not determined here. The crash workflow remains available.
               </p>
             ) : null}

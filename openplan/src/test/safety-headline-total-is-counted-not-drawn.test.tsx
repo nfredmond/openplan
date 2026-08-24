@@ -163,6 +163,7 @@ function makeRecordingClient() {
 
   return {
     auth: { getUser: async () => ({ data: { user: { id: "user-1" } } }) },
+    rpc: async () => ({ data: [], error: null }),
     from: (table: string) => ({
       select: (projection: string, options?: { count?: string; head?: boolean }) =>
         build(table, projection, options),
