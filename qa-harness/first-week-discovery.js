@@ -56,29 +56,33 @@
  * loopback host by the same guard the mutating smokes use, and there is no flag
  * to turn that off.
  *
- * WHAT IT COSTS. One agent session per job against your Claude subscription; no
- * API key, no metered spend. Runs are sequential — one browser at a time, and
- * usage limits are real.
+ * WHAT IT COSTS. One agent session per job against the selected local CLI login;
+ * no API key or metered API spend. Runs are sequential, one browser at a time,
+ * and usage limits are real.
  *
  * USAGE
  *   OPENPLAN_BASE_URL=http://localhost:3200 \
  *   OPENPLAN_FIRST_WEEK_EMAIL=mapaudit@openplan.test \
  *   OPENPLAN_FIRST_WEEK_PASSWORD='…' \
  *   npm run first-week-discovery                        # every job
+ *   OPENPLAN_FIRST_WEEK_AGENT=codex npm run first-week-discovery
  *   ... npm run first-week-discovery -- --job 03-public-engagement
- *   ... npm run first-week-discovery -- --resume first-week-runs/<stamp>
+ *   ... npm run first-week-discovery -- --resume ~/.local/state/openplan/first-week-runs/<stamp>
  *   ... npm run first-week-discovery -- --list
  *   npm run first-week-discovery -- --verify-only first-week-runs/<stamp>
  */
 const { spawn } = require('child_process');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const { assertLocalTargetUrl } = require('./harness-env');
 const { verifyJobReport } = require('./first-week-evidence');
 
 const JOBS_DIR = path.join(__dirname, 'first-week-jobs');
-const RUNS_DIR = path.join(__dirname, 'first-week-runs');
+const RUNS_DIR = path.resolve(
+  process.env.OPENPLAN_FIRST_WEEK_RUNS_DIR || path.join(os.homedir(), '.local', 'state', 'openplan', 'first-week-runs'),
+);
 const PLAYWRIGHT_MCP = '@playwright/mcp@0.0.79';
 const DEFAULT_MODEL = 'sonnet';
 const DEFAULT_JOB_TIMEOUT_MS = 30 * 60 * 1000;
@@ -208,6 +212,7 @@ function buildPrompt(job, { baseUrl, email, password, agentDir, contract }) {
   return [
     'You are doing a real job in a real piece of software, using the browser you have been given.',
     'You have never seen this software before and there is no documentation. That is intentional.',
+    'Use the browser MCP server named browser for the product. Do not use web search, shell commands, or inspect source files.',
     '',
     `Your working directory is ${agentDir}. Write your evidence and your report there and nowhere else.`,
     `The job id you were given is: ${job.id}`,
@@ -251,7 +256,7 @@ function mcpConfig(browserDir) {
   };
 }
 
-function runAgent({ job, agentDir, browserDir, prompt, model, timeoutMs }) {
+function runClaudeAgent({ job, agentDir, browserDir, prompt, model, timeoutMs }) {
   const mcpPath = path.join(path.dirname(agentDir), 'mcp.json');
   fs.writeFileSync(mcpPath, `${JSON.stringify(mcpConfig(browserDir), null, 2)}\n`);
 
@@ -315,6 +320,125 @@ function runAgent({ job, agentDir, browserDir, prompt, model, timeoutMs }) {
   });
 }
 
+function codexMcpArgs(browserDir) {
+  return [
+    '-y',
+    PLAYWRIGHT_MCP,
+    '--browser',
+    'chrome',
+    '--headless',
+    '--isolated',
+    '--viewport-size',
+    '1440x900',
+    '--output-dir',
+    browserDir,
+  ];
+}
+
+function buildCodexArgs({ agentDir, browserDir }) {
+  return [
+    'exec',
+    '--ephemeral',
+    '--ignore-user-config',
+    '--ignore-rules',
+    '--skip-git-repo-check',
+    '--approve-for-me',
+    '--add-dir',
+    browserDir,
+    '-C',
+    agentDir,
+    '--json',
+    '-c',
+    'web_search="disabled"',
+    '-c',
+    'mcp_servers.browser.command="npx"',
+    '-c',
+    `mcp_servers.browser.args=${JSON.stringify(codexMcpArgs(browserDir))}`,
+    '-c',
+    'mcp_servers.browser.startup_timeout_sec=120',
+    '-',
+  ];
+}
+
+/**
+ * Codex needs the existing login but none of the user's instructions, memory,
+ * plugins, or project configuration. A blank HOME plus a one-run auth symlink
+ * produced a fresh-context probe; isolating CODEX_HOME alone did not.
+ */
+function runCodexAgent({ agentDir, browserDir, prompt, timeoutMs }) {
+  const isolatedHome = fs.mkdtempSync(path.join(os.tmpdir(), 'openplan-first-week-codex-'));
+  const isolatedCodexHome = path.join(isolatedHome, 'codex');
+  fs.mkdirSync(isolatedCodexHome, { recursive: true });
+  const sourceCodexHome = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
+  const sourceAuth = path.join(sourceCodexHome, 'auth.json');
+  const isolatedAuth = path.join(isolatedCodexHome, 'auth.json');
+  if (!fs.existsSync(sourceAuth)) throw new Error(`Codex auth is unavailable at ${sourceAuth}.`);
+  fs.symlinkSync(sourceAuth, isolatedAuth);
+
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const child = spawn('codex', buildCodexArgs({ agentDir, browserDir }), {
+      cwd: agentDir,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        HOME: isolatedHome,
+        CODEX_HOME: isolatedCodexHome,
+        NPM_CONFIG_CACHE: path.join(os.homedir(), '.npm'),
+      },
+      detached: true,
+    });
+
+    let stdout = '';
+    let stderr = '';
+    let timedOut = false;
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+      process.stderr.write(chunk);
+    });
+    child.stdin.end(prompt);
+
+    const timer = setTimeout(() => {
+      timedOut = true;
+      try {
+        process.kill(-child.pid, 'SIGKILL');
+      } catch {
+        child.kill('SIGKILL');
+      }
+    }, timeoutMs);
+
+    child.on('close', (code, signal) => {
+      clearTimeout(timer);
+      if (fs.existsSync(isolatedAuth)) fs.unlinkSync(isolatedAuth);
+      resolve({ code, signal, stdout, stderr, timedOut, durationMs: Date.now() - started, backend: 'codex' });
+    });
+  });
+}
+
+function runAgent(options) {
+  return options.backend === 'codex' ? runCodexAgent(options) : runClaudeAgent(options);
+}
+
+function codexContractViolation(stdout) {
+  if (!stdout || typeof stdout !== 'string') return null;
+  for (const line of stdout.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    let event;
+    try {
+      event = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const item = event?.item;
+    if (item?.type === 'command_execution') return 'Codex used a shell command during a browser-only journey.';
+    if (item?.type === 'web_search') return 'Codex used web search during a browser-only journey.';
+  }
+  return null;
+}
+
 function readJsonIfPresent(filePath) {
   if (!fs.existsSync(filePath)) return null;
   try {
@@ -322,6 +446,20 @@ function readJsonIfPresent(filePath) {
   } catch {
     return null;
   }
+}
+
+function normalizeFindingsReport(value) {
+  let report = value;
+  if (typeof report === 'string') {
+    try {
+      report = JSON.parse(report);
+    } catch {
+      return null;
+    }
+  }
+  if (!report || typeof report !== 'object' || Array.isArray(report)) return null;
+  if (!['yes', 'partly', 'no'].includes(report.outcomeReached) || !Array.isArray(report.findings)) return null;
+  return report;
 }
 
 function parseAgentSession(stdout) {
@@ -333,10 +471,25 @@ function parseAgentSession(stdout) {
   }
 }
 
-function agentResultText(session, processResult) {
-  return [session?.result, processResult?.stdout, processResult?.stderr]
-    .filter((value) => typeof value === 'string')
-    .join('\n');
+function terminalAgentText(session, processResult) {
+  if (session) {
+    return [session.result, processResult?.stderr]
+      .filter((value) => typeof value === 'string')
+      .join('\n');
+  }
+
+  const terminal = [];
+  for (const line of String(processResult?.stdout || '').split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const event = JSON.parse(line);
+      if (event.type === 'error' || event.type === 'turn.failed') terminal.push(JSON.stringify(event));
+    } catch {
+      /* A forced stop may leave one truncated JSONL line. */
+    }
+  }
+  if (typeof processResult?.stderr === 'string') terminal.push(processResult.stderr);
+  return terminal.join('\n');
 }
 
 /**
@@ -345,8 +498,8 @@ function agentResultText(session, processResult) {
  * status alone is not evidence that the job ran.
  */
 function classifyJobExecution({ processResult = {}, session = null, reportPresent = false, serverAvailableAfter = true }) {
-  const resultText = agentResultText(session, processResult);
-  if (/session limit|usage limit|rate limit|quota/i.test(resultText)) {
+  const resultText = terminalAgentText(session, processResult);
+  if (session?.api_error_status === 429 || /session limit|weekly limit|usage limit|rate limit|quota/i.test(resultText)) {
     return { status: 'blocked_quota', reason: 'The agent service quota was exhausted before the journey finished.' };
   }
   if (
@@ -375,13 +528,24 @@ function classifyJobExecution({ processResult = {}, session = null, reportPresen
 
 function readJobExecution(jobDir) {
   const recorded = readJsonIfPresent(path.join(jobDir, 'execution.json'));
-  if (recorded?.status) return recorded;
 
   const stdoutPath = path.join(jobDir, 'agent-stdout.json');
   const stdout = fs.existsSync(stdoutPath) ? fs.readFileSync(stdoutPath, 'utf8') : '';
   const session = parseAgentSession(stdout);
   const reportPresent = readFindings(path.join(jobDir, 'agent')) !== null;
-  return classifyJobExecution({ processResult: { code: 0, stdout }, session, reportPresent });
+  const inferred = classifyJobExecution({
+    processResult: { code: recorded?.exitCode ?? 0, signal: recorded?.signal ?? null, stdout },
+    session,
+    reportPresent,
+  });
+  if (
+    !recorded?.status ||
+    (recorded.status === 'failed' && inferred.status !== 'failed') ||
+    (recorded.status === 'blocked_quota' && inferred.status === 'completed')
+  ) {
+    return { ...recorded, ...inferred };
+  }
+  return recorded;
 }
 
 function shouldResumeJob(jobDir) {
@@ -416,7 +580,7 @@ async function serverIsAvailable(baseUrl) {
  * discarding an otherwise complete report over a code fence.
  */
 function readFindings(agentDir) {
-  const direct = readJsonIfPresent(path.join(agentDir, 'findings.json'));
+  const direct = normalizeFindingsReport(readJsonIfPresent(path.join(agentDir, 'findings.json')));
   if (direct) return direct;
 
   const searchDirs = [agentDir, path.join(agentDir, 'evidence')].filter((dir) => fs.existsSync(dir));
@@ -432,7 +596,8 @@ function readFindings(agentDir) {
     const end = text.lastIndexOf('}');
     if (start === -1 || end <= start) continue;
     try {
-      return JSON.parse(text.slice(start, end + 1));
+      const report = normalizeFindingsReport(JSON.parse(text.slice(start, end + 1)));
+      if (report) return report;
     } catch {
       /* keep looking */
     }
@@ -500,7 +665,9 @@ function verifyRun(runRoot, baseUrl) {
     // limit and a job that finished having found nothing look identical in a
     // finding count, and they mean opposite things.
     const ending = !session.subtype
-      ? 'did not start an agent session'
+      ? execution.backend
+        ? `ran through \`${execution.backend}\` with exit ${execution.exitCode ?? '?'}`
+        : 'did not start an agent session'
       : session.subtype !== 'success'
         ? `ended \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`
         : `returned \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`;
@@ -603,6 +770,11 @@ async function main() {
   }
 
   const model = (process.env.OPENPLAN_FIRST_WEEK_MODEL || DEFAULT_MODEL).trim();
+  const backend = (process.env.OPENPLAN_FIRST_WEEK_AGENT || 'claude').trim().toLowerCase();
+  if (!['claude', 'codex'].includes(backend)) {
+    console.error('OPENPLAN_FIRST_WEEK_AGENT must be claude or codex.');
+    process.exit(2);
+  }
   const timeoutMs = Number(process.env.OPENPLAN_FIRST_WEEK_TIMEOUT_MS) || DEFAULT_JOB_TIMEOUT_MS;
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const runRoot = args.resume ? path.resolve(args.resume) : path.join(RUNS_DIR, stamp);
@@ -629,6 +801,7 @@ async function main() {
     createdAt: new Date().toISOString(),
     baseUrl,
     model,
+    backend,
     jobs: selected.map((job) => job.id),
     freshAccount: generatedFreshAccount,
   };
@@ -650,7 +823,7 @@ async function main() {
   const contract = fs.readFileSync(path.join(JOBS_DIR, '_reporting-contract.md'), 'utf8');
 
   console.log(`First-week discovery against ${baseUrl}`);
-  console.log(`Model: ${model}. Jobs: ${selected.map((j) => j.id).join(', ')}`);
+  console.log(`Agent: ${backend}${backend === 'claude' ? ` (${model})` : ''}. Jobs: ${selected.map((j) => j.id).join(', ')}`);
   console.log(`Run directory: ${runRoot}\n`);
 
   for (const job of selected) {
@@ -680,7 +853,7 @@ async function main() {
 
     fs.writeFileSync(
       path.join(dir, 'job.json'),
-      `${JSON.stringify({ id: job.id, title: job.title, account: job.account, email, model }, null, 2)}\n`,
+      `${JSON.stringify({ id: job.id, title: job.title, account: job.account, email, model, backend }, null, 2)}\n`,
     );
 
     const prompt = buildPrompt(job, { baseUrl, email, password, agentDir, contract });
@@ -700,17 +873,20 @@ async function main() {
     }
 
     const startedAt = new Date().toISOString();
-    const result = await runAgent({ job, agentDir, browserDir, prompt, model, timeoutMs });
+    const result = await runAgent({ backend, job, agentDir, browserDir, prompt, model, timeoutMs });
     fs.writeFileSync(path.join(dir, 'agent-stdout.json'), result.stdout);
     if (result.stderr) fs.writeFileSync(path.join(dir, 'agent-stderr.log'), result.stderr);
     const session = parseAgentSession(result.stdout);
+    const contractViolation = backend === 'codex' ? codexContractViolation(result.stdout) : null;
     const execution = {
-      ...classifyJobExecution({
-        processResult: result,
-        session,
-        reportPresent: readFindings(agentDir) !== null,
-        serverAvailableAfter: await serverIsAvailable(baseUrl),
-      }),
+      ...(contractViolation
+        ? { status: 'failed_contract', reason: contractViolation }
+        : classifyJobExecution({
+            processResult: result,
+            session,
+            reportPresent: readFindings(agentDir) !== null,
+            serverAvailableAfter: await serverIsAvailable(baseUrl),
+          })),
       startedAt,
       endedAt: new Date().toISOString(),
       exitCode: result.code,
@@ -718,6 +894,7 @@ async function main() {
       durationMs: result.durationMs,
       agentSubtype: session?.subtype ?? null,
       agentTurns: session?.num_turns ?? null,
+      backend,
     };
     fs.writeFileSync(path.join(dir, 'execution.json'), `${JSON.stringify(execution, null, 2)}\n`);
     process.stdout.write(
@@ -733,11 +910,15 @@ async function main() {
 
 module.exports = {
   archiveAttempt,
+  buildCodexArgs,
   classifyJobExecution,
+  codexContractViolation,
   loadJobs,
   parseAgentSession,
   parseArgs,
+  readFindings,
   readJobExecution,
+  RUNS_DIR,
   shouldResumeJob,
   verifyRun,
   writeHandoverFiles,

@@ -11,9 +11,13 @@ const path = require('node:path');
 
 const {
   archiveAttempt,
+  buildCodexArgs,
   classifyJobExecution,
+  codexContractViolation,
   parseAgentSession,
   parseArgs,
+  readFindings,
+  RUNS_DIR,
   shouldResumeJob,
   verifyRun,
 } = require('./first-week-discovery');
@@ -58,6 +62,32 @@ check('the actual Claude quota shape is blocked, even though it says success and
   const session = parseAgentSession(stdout);
   const result = classifyJobExecution({ processResult: { code: 0, stdout }, session, reportPresent: false });
   assert.strictEqual(result.status, 'blocked_quota');
+});
+
+check('the weekly-limit 429 returned by the live run is blocked, even though Claude exits one', () => {
+  const stdout = JSON.stringify({
+    subtype: 'success',
+    is_error: true,
+    api_error_status: 429,
+    num_turns: 1,
+    result: "You've hit your weekly limit · resets 1pm (America/Los_Angeles)",
+  });
+  const session = parseAgentSession(stdout);
+  const result = classifyJobExecution({ processResult: { code: 1, stdout }, session, reportPresent: false });
+  assert.strictEqual(result.status, 'blocked_quota');
+});
+
+check('product page text that mentions a rate limit is not agent quota evidence', () => {
+  const stdout = JSON.stringify({
+    type: 'item.completed',
+    item: { type: 'mcp_tool_call', result: { text: 'Workspace AI rate limit protects operator spend.' } },
+  });
+  const result = classifyJobExecution({
+    processResult: { code: 0, stdout },
+    session: null,
+    reportPresent: true,
+  });
+  assert.strictEqual(result.status, 'completed');
 });
 
 check('server loss is blocked instead of becoming a no-report result', () => {
@@ -138,6 +168,59 @@ check('the summary counts a quota stop as blocked and names it as resumable', ()
   assert.doesNotMatch(summary, /No report/);
 });
 
+check('verification repairs a recorded generic failure when stdout proves the job hit quota', () => {
+  const runRoot = jobDir();
+  const dir = path.join(runRoot, '04-safety-case');
+  fs.mkdirSync(path.join(dir, 'agent'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'job.json'), JSON.stringify({ id: '04-safety-case', title: 'Safety case' }));
+  fs.writeFileSync(
+    path.join(dir, 'execution.json'),
+    JSON.stringify({ status: 'failed', reason: 'The agent process failed with exit 1.', exitCode: 1 }),
+  );
+  fs.writeFileSync(
+    path.join(dir, 'agent-stdout.json'),
+    JSON.stringify({
+      subtype: 'success',
+      is_error: true,
+      api_error_status: 429,
+      result: "You've hit your weekly limit · resets 1pm (America/Los_Angeles)",
+    }),
+  );
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.blocked, 1);
+  assert.strictEqual(result.failed, 0);
+  assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /blocked_quota/);
+});
+
+check('verification repairs a false recorded quota when only browser page text contains the phrase', () => {
+  const runRoot = jobDir();
+  const dir = path.join(runRoot, '03-public-engagement');
+  writeCompletedJob(dir);
+  fs.writeFileSync(
+    path.join(dir, 'execution.json'),
+    JSON.stringify({ status: 'blocked_quota', reason: 'quota', exitCode: 0, backend: 'codex' }),
+  );
+  fs.writeFileSync(
+    path.join(dir, 'agent-stdout.json'),
+    `${JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'AI rate limit' } })}\n`,
+  );
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.completed, 1);
+  assert.strictEqual(result.blocked, 0);
+});
+
+check('a one-layer JSON string is decoded, while a non-report string stays unfinished', () => {
+  const wrappedDir = jobDir();
+  fs.mkdirSync(wrappedDir, { recursive: true });
+  const report = { job: 'x', outcomeReached: 'partly', whatIDid: 'Worked.', findings: [] };
+  fs.writeFileSync(path.join(wrappedDir, 'findings.json'), JSON.stringify(JSON.stringify(report)));
+  assert.deepStrictEqual(readFindings(wrappedDir), report);
+
+  const invalidDir = jobDir();
+  fs.writeFileSync(path.join(invalidDir, 'findings.json'), JSON.stringify('not a report'));
+  assert.strictEqual(readFindings(invalidDir), null);
+});
+
 check('the command line accepts a resume directory', () => {
   assert.deepStrictEqual(parseArgs(['--resume', 'first-week-runs/a', '--job=04-safety-case']), {
     jobs: ['04-safety-case'],
@@ -145,6 +228,33 @@ check('the command line accepts a resume directory', () => {
     verifyOnly: null,
     resume: 'first-week-runs/a',
   });
+});
+
+check('new run directories live outside the repository', () => {
+  assert.ok(
+    !RUNS_DIR.startsWith(`${path.resolve(__dirname)}${path.sep}`),
+    `fresh agents would work inside the repository at ${RUNS_DIR}`,
+  );
+});
+
+check('the Codex fallback isolates user context and exposes the browser MCP', () => {
+  const args = buildCodexArgs({ agentDir: '/tmp/agent', browserDir: '/tmp/browser' });
+  assert.ok(args.includes('--ephemeral'));
+  assert.ok(args.includes('--ignore-user-config'));
+  assert.ok(args.includes('--ignore-rules'));
+  assert.ok(args.includes('--approve-for-me'));
+  assert.ok(!args.includes('--sandbox'), '--approve-for-me and --sandbox are mutually exclusive in this Codex CLI');
+  assert.ok(args.some((arg) => arg === 'mcp_servers.browser.command="npx"'));
+  assert.ok(args.some((arg) => arg.includes('@playwright/mcp@0.0.79')));
+});
+
+check('a Codex journey that uses shell or web search violates the fresh-browser contract', () => {
+  const command = JSON.stringify({ type: 'item.started', item: { type: 'command_execution', command: 'rg routes' } });
+  const search = JSON.stringify({ type: 'item.started', item: { type: 'web_search', query: 'OpenPlan routes' } });
+  const browser = JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', server: 'browser' } });
+  assert.match(codexContractViolation(command), /shell command/);
+  assert.match(codexContractViolation(search), /web search/);
+  assert.strictEqual(codexContractViolation(browser), null);
 });
 
 console.log(failures === 0 ? '\nInterruption states are durable and resumable.' : `\n${failures} check(s) failed.`);
