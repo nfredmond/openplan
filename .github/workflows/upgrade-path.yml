@@ -8,6 +8,16 @@ name: Upgrade Path
 
 on:
   workflow_dispatch:
+    inputs:
+      base_tag:
+        description: "Release tag to upgrade from; blank selects the newest release before HEAD"
+        required: false
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - "openplan/supabase/migrations/**"
+      - ".github/workflows/upgrade-path.yml"
   schedule:
     - cron: "47 10 * * *"
 
@@ -33,7 +43,30 @@ jobs:
       - name: Resolve previous release tag
         id: prev
         run: |
-          TAG=$(git -C .. describe --tags --abbrev=0)
+          REQUESTED_BASE="${{ inputs.base_tag }}"
+          if [ -n "$REQUESTED_BASE" ]; then
+            git -C .. show-ref --verify --quiet "refs/tags/$REQUESTED_BASE" || {
+              echo "::error::Requested base tag does not exist: $REQUESTED_BASE"
+              exit 1
+            }
+            TAG="$REQUESTED_BASE"
+          else
+            TAG=""
+            while IFS= read -r CANDIDATE; do
+              if [[ "$CANDIDATE" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                TAG="$CANDIDATE"
+                break
+              fi
+            done < <(git -C .. tag --merged "${GITHUB_SHA}^" --sort=-version:refname)
+          fi
+          if [ -z "$TAG" ]; then
+            echo "::error::No release tag before HEAD was found"
+            exit 1
+          fi
+          git -C .. merge-base --is-ancestor "$TAG^{commit}" "$GITHUB_SHA" || {
+            echo "::error::Base tag $TAG is not an ancestor of $GITHUB_SHA"
+            exit 1
+          }
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Rehearsing upgrade from $TAG to $GITHUB_SHA"
 

@@ -64,6 +64,9 @@ you are working in it:
 - The local Supabase config sets its auth site URL to `http://127.0.0.1:3000`, so the
   password-reset round-trip (`/forgot-password` → emailed link → `/auth/callback`) works from
   `127.0.0.1:3000` but not from `localhost:3000`. Ordinary sign-in works from either.
+- `npm run dev` first applies pending local migrations. After a `git pull`, starting OpenPlan is
+  enough to bring the running local database up to the checked-out code without deleting data.
+  A stopped Docker/Supabase stack blocks startup rather than letting the app run against old tables.
 
 ### Keeping an always-on local instance (optional)
 

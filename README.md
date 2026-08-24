@@ -280,6 +280,11 @@ Wait for it to print `Ready`, then open **http://localhost:3000** in your
 browser. Click **Create your free workspace** and make an account. The account
 lives only on this computer.
 
+Before Next.js starts, this command applies any migration files added since
+your last `git pull`. It only adds pending migrations to the local database; it
+does not reset the database or erase saved work. If Docker is not running, the
+command stops instead of starting OpenPlan against an outdated database.
+
 **To stop OpenPlan**, click the terminal window and press `Ctrl+C`. To start it
 again later, open a terminal, `cd` back into the `openplan/openplan` folder, and
 run `npm run dev`. Docker Desktop needs to be running first — the database lives

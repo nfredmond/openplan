@@ -5,7 +5,9 @@
   "license": "Apache-2.0",
   "packageManager": "npm@11.11.0",
   "scripts": {
+    "predev": "npm run db:sync",
     "dev": "next dev",
+    "db:sync": "npm exec -- supabase migration up --local --yes --output-format json",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
