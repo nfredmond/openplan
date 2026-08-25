@@ -88,6 +88,8 @@ type ProjectRtpLinkRow = {
 type PortfolioImportBatchRow = {
   id: string;
   source_sha256: string;
+  source_format: "csv" | "xls" | "xlsx" | "ods";
+  sheet_configurations_json: unknown;
   row_count: number;
   created_count: number;
   skipped_count: number;
@@ -252,7 +254,7 @@ export default async function ProjectsPage({
   const portfolioImportsResult = await supabase
     .from("project_portfolio_import_batches")
     .select(
-      "id, source_sha256, row_count, created_count, skipped_count, conflicted_count, invalid_count, previously_created_count, imported_at, source_document:kb_documents!project_portfolio_import_batches_source_document_id_fkey(title, original_filename)"
+      "id, source_sha256, source_format, sheet_configurations_json, row_count, created_count, skipped_count, conflicted_count, invalid_count, previously_created_count, imported_at, source_document:kb_documents!project_portfolio_import_batches_source_document_id_fkey(title, original_filename)"
     )
     .eq("workspace_id", workspaceId)
     .order("imported_at", { ascending: false })
@@ -269,6 +271,10 @@ export default async function ProjectsPage({
           sourceTitle: source?.title ?? null,
           sourceFilename: source?.original_filename ?? null,
           sourceHash: row.source_sha256,
+          sourceFormat: row.source_format,
+          sheetCount: Array.isArray(row.sheet_configurations_json)
+            ? row.sheet_configurations_json.length
+            : 0,
           rowCount: row.row_count,
           createdCount: row.created_count,
           skippedCount: row.skipped_count,

@@ -64,6 +64,56 @@ function rpcArgs(fixture: Fixture, sourceId: string, sourceHash: string, rows: u
   };
 }
 
+function workbookRow(input: {
+  worksheetIndex: number;
+  rowNumber?: number;
+  fingerprint: string;
+  name: string;
+  sourceId: string;
+  formula?: boolean;
+}) {
+  return {
+    worksheetIndex: input.worksheetIndex,
+    worksheetName: `Sheet ${input.worksheetIndex + 1}`,
+    headerRow: 1,
+    rowNumber: input.rowNumber ?? 2,
+    fingerprint: input.fingerprint,
+    name: input.name,
+    sourceId: input.sourceId,
+    description: "Reviewed workbook row",
+    sourceLocationText: "Unverified workbook location",
+    estimatedCost: { amount: "250", currency: "USD", priceYear: 2026 },
+    planType: "capital_program",
+    status: "draft",
+    deliveryPhase: "programming",
+    decision: "create",
+    state: input.formula ? "warning" : "clean",
+    canCreate: true,
+    confirmNameMatch: false,
+    confirmFormula: Boolean(input.formula),
+    formulaFields: input.formula ? ["estimatedCost"] : [],
+    errors: [],
+    warnings: input.formula ? [{ code: "formula_value" }] : [],
+  };
+}
+
+function workbookRpcArgs(fixture: Fixture, sourceId: string, sourceHash: string, rows: unknown[]) {
+  return {
+    p_workspace_id: fixture.workspaceA,
+    p_actor_id: fixture.ownerA,
+    p_source_document_id: sourceId,
+    p_original_workbook_document_id: null,
+    p_source_hash: sourceHash,
+    p_source_format: "csv",
+    p_preview_hash: "7".repeat(64),
+    p_sheet_configurations: [
+      { worksheetIndex: 0, worksheetName: "Sheet 1", headerRow: 1, mapping: { sourceId: 0, name: 1 }, defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming" } },
+      { worksheetIndex: 1, worksheetName: "Sheet 2", headerRow: 1, mapping: { sourceId: 0, name: 1 }, defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming" } },
+    ],
+    p_rows: rows,
+  };
+}
+
 async function insertCsvSource(
   service: SupabaseClient,
   workspaceId: string,
@@ -211,6 +261,15 @@ liveDescribe("reviewed portfolio import live authorization and transaction", () 
     );
     expect(called.error?.message ?? "").toMatch(/permission denied|function/i);
     expect(called.data).toBeNull();
+
+    const calledV2 = await owner.rpc(
+      "commit_project_portfolio_import_v2",
+      workbookRpcArgs(fixture, fixture.sourceA, fixture.sourceHashA, [
+        workbookRow({ worksheetIndex: 0, fingerprint: "8".repeat(64), name: "Denied", sourceId: "DENIED" }),
+      ])
+    );
+    expect(calledV2.error?.message ?? "").toMatch(/permission denied|function/i);
+    expect(calledV2.data).toBeNull();
   });
 
   it("rechecks viewer, cross-workspace actor, and project-scoped source refusals", async () => {
@@ -220,11 +279,27 @@ liveDescribe("reviewed portfolio import live authorization and transaction", () 
     });
     expect(viewerCall.error?.code).toBe("42501");
 
+    const viewerCallV2 = await service.rpc("commit_project_portfolio_import_v2", {
+      ...workbookRpcArgs(fixture, fixture.sourceA, fixture.sourceHashA, [
+        workbookRow({ worksheetIndex: 0, fingerprint: "1".repeat(64), name: "Viewer denied", sourceId: "VIEWER" }),
+      ]),
+      p_actor_id: fixture.viewerA,
+    });
+    expect(viewerCallV2.error?.code).toBe("42501");
+
     const outsiderCall = await service.rpc("commit_project_portfolio_import", {
       ...rpcArgs(fixture, fixture.sourceA, fixture.sourceHashA, [reviewedRow({})]),
       p_actor_id: fixture.outsiderB,
     });
     expect(outsiderCall.error?.code).toBe("42501");
+
+    const outsiderCallV2 = await service.rpc("commit_project_portfolio_import_v2", {
+      ...workbookRpcArgs(fixture, fixture.sourceA, fixture.sourceHashA, [
+        workbookRow({ worksheetIndex: 0, fingerprint: "2".repeat(64), name: "Outsider denied", sourceId: "OUTSIDER" }),
+      ]),
+      p_actor_id: fixture.outsiderB,
+    });
+    expect(outsiderCallV2.error?.code).toBe("42501");
 
     const parent = await service
       .from("projects")
@@ -243,6 +318,14 @@ liveDescribe("reviewed portfolio import live authorization and transaction", () 
       rpcArgs(fixture, projectSource, "d".repeat(64), [reviewedRow({ fingerprint: "e".repeat(64) })])
     );
     expect(scopedCall.error?.code).toBe("22023");
+
+    const scopedCallV2 = await service.rpc(
+      "commit_project_portfolio_import_v2",
+      workbookRpcArgs(fixture, projectSource, "d".repeat(64), [
+        workbookRow({ worksheetIndex: 0, fingerprint: "f".repeat(64), name: "Scoped denied", sourceId: "SCOPED" }),
+      ])
+    );
+    expect(scopedCallV2.error?.code).toBe("22023");
   });
 
   it("creates exact cost provenance atomically and leaves location as import provenance", async () => {
@@ -363,8 +446,8 @@ liveDescribe("reviewed portfolio import live authorization and transaction", () 
       service.rpc("commit_project_portfolio_import", raceArgs),
       service.rpc("commit_project_portfolio_import", raceArgs),
     ]);
-    expect(race.filter((result) => result.error === null)).toHaveLength(1);
-    expect(race.filter((result) => result.error?.code === "23505")).toHaveLength(1);
+    expect(race.filter((result) => result.error === null), JSON.stringify(race)).toHaveLength(1);
+    expect(race.filter((result) => result.error?.code === "23505"), JSON.stringify(race)).toHaveLength(1);
 
     const raceProjects = await service
       .from("project_portfolio_import_rows")
@@ -396,5 +479,106 @@ liveDescribe("reviewed portfolio import live authorization and transaction", () 
     expect(removeRow.error?.message ?? "").toContain("immutable");
     const removeSource = await service.from("kb_documents").delete().eq("id", fixture.sourceA);
     expect(removeSource.error?.code).toBe("23503");
+  });
+
+  it("atomically commits v2 sheet identity, rechecks formulas and cross-sheet IDs, and races per sheet row", async () => {
+    const sourceHash = "7".repeat(64);
+    const source = await insertCsvSource(service, fixture.workspaceA, sourceHash);
+    const twoSheets = [
+      workbookRow({ worksheetIndex: 0, fingerprint: "8".repeat(64), name: "Workbook north", sourceId: "WB-N", formula: true }),
+      workbookRow({ worksheetIndex: 1, fingerprint: "9".repeat(64), name: "Workbook south", sourceId: "WB-S" }),
+    ];
+    const committed = await service.rpc(
+      "commit_project_portfolio_import_v2",
+      workbookRpcArgs(fixture, source, sourceHash, twoSheets)
+    );
+    expect(committed.error).toBeNull();
+    expect(committed.data).toMatchObject({ created: 2 });
+
+    const provenance = await owner
+      .from("project_portfolio_import_rows")
+      .select("source_format,worksheet_index,worksheet_name,header_row,source_row_number,formula_warning_fields,source_location_text,created_project_id")
+      .eq("source_sha256", sourceHash)
+      .order("worksheet_index");
+    expect(provenance.error).toBeNull();
+    expect(provenance.data).toMatchObject([
+      { source_format: "csv", worksheet_index: 0, worksheet_name: "Sheet 1", header_row: 1, source_row_number: 2, formula_warning_fields: ["estimatedCost"], source_location_text: "Unverified workbook location" },
+      { source_format: "csv", worksheet_index: 1, worksheet_name: "Sheet 2", header_row: 1, source_row_number: 2, formula_warning_fields: [] },
+    ]);
+
+    const noFormulaConfirmation = {
+      ...workbookRow({ worksheetIndex: 0, rowNumber: 3, fingerprint: "a".repeat(64), name: "Unconfirmed formula", sourceId: "WB-F", formula: true }),
+      confirmFormula: false,
+    };
+    const formulaRefusal = await service.rpc(
+      "commit_project_portfolio_import_v2",
+      workbookRpcArgs(fixture, source, sourceHash, [noFormulaConfirmation])
+    );
+    expect(formulaRefusal.error?.code).toBe("22023");
+
+    const wrongSheetName = {
+      ...workbookRow({ worksheetIndex: 0, rowNumber: 6, fingerprint: "6".repeat(64), name: "Wrong sheet identity", sourceId: "WB-SHEET" }),
+      worksheetName: "Forged sheet name",
+    };
+    const sheetIdentityRefusal = await service.rpc(
+      "commit_project_portfolio_import_v2",
+      workbookRpcArgs(fixture, source, sourceHash, [wrongSheetName])
+    );
+    expect(sheetIdentityRefusal.error?.code).toBe("22023");
+
+    const duplicateRows = [
+      workbookRow({ worksheetIndex: 0, rowNumber: 4, fingerprint: "b".repeat(64), name: "Duplicate one", sourceId: "DUP" }),
+      workbookRow({ worksheetIndex: 1, rowNumber: 4, fingerprint: "c".repeat(64), name: "Duplicate two", sourceId: " dup " }),
+    ];
+    const duplicateRefusal = await service.rpc(
+      "commit_project_portfolio_import_v2",
+      workbookRpcArgs(fixture, source, sourceHash, duplicateRows)
+    );
+    expect(duplicateRefusal.error?.code).toBe("22023");
+
+    const rollbackHash = "3".repeat(64);
+    const rollbackSource = await insertCsvSource(service, fixture.workspaceA, rollbackHash);
+    const beforeRollbackProjects = await service
+      .from("projects").select("id", { count: "exact", head: true }).eq("workspace_id", fixture.workspaceA);
+    const beforeRollbackBatches = await service
+      .from("project_portfolio_import_batches").select("id", { count: "exact", head: true }).eq("workspace_id", fixture.workspaceA);
+    const malformedSecond = {
+      ...workbookRow({ worksheetIndex: 1, rowNumber: 5, fingerprint: "4".repeat(64), name: "Will become empty", sourceId: "ROLLBACK-2" }),
+      name: "",
+    };
+    const rollback = await service.rpc(
+      "commit_project_portfolio_import_v2",
+      workbookRpcArgs(fixture, rollbackSource, rollbackHash, [
+        workbookRow({ worksheetIndex: 0, rowNumber: 5, fingerprint: "5".repeat(64), name: "Must roll back", sourceId: "ROLLBACK-1" }),
+        malformedSecond,
+      ])
+    );
+    expect(rollback.error?.code).toBe("22023");
+    const afterRollbackProjects = await service
+      .from("projects").select("id", { count: "exact", head: true }).eq("workspace_id", fixture.workspaceA);
+    const afterRollbackBatches = await service
+      .from("project_portfolio_import_batches").select("id", { count: "exact", head: true }).eq("workspace_id", fixture.workspaceA);
+    expect(afterRollbackProjects.count).toBe(beforeRollbackProjects.count);
+    expect(afterRollbackBatches.count).toBe(beforeRollbackBatches.count);
+
+    const raceHash = "d".repeat(64);
+    const raceSource = await insertCsvSource(service, fixture.workspaceA, raceHash);
+    const raceArgs = workbookRpcArgs(fixture, raceSource, raceHash, [
+      workbookRow({ worksheetIndex: 0, fingerprint: "e".repeat(64), name: "Workbook race", sourceId: "RACE" }),
+    ]);
+    const race = await Promise.all([
+      service.rpc("commit_project_portfolio_import_v2", raceArgs),
+      service.rpc("commit_project_portfolio_import_v2", raceArgs),
+    ]);
+    expect(race.filter((result) => result.error === null), JSON.stringify(race)).toHaveLength(1);
+    expect(race.filter((result) => ["23505", "22023"].includes(result.error?.code ?? "")), JSON.stringify(race)).toHaveLength(1);
+    const raceRows = await service
+      .from("project_portfolio_import_rows")
+      .select("created_project_id")
+      .eq("workspace_id", fixture.workspaceA)
+      .eq("source_sha256", raceHash)
+      .eq("outcome", "created");
+    expect(raceRows.error).toBeNull();
+    expect(raceRows.data).toHaveLength(1);
   });
 });

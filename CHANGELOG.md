@@ -19,7 +19,26 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260825000002_direct_workbook_portfolio_import.sql`
+(`direct_workbook_portfolio_import`) backfills v0.33 CSV provenance as worksheet
+0/header row 1, adds per-sheet row identity, and adds the versioned atomic
+workbook-import transaction. The v0.33 CSV transaction remains available during
+rolling deploys.
+
+Projects now reads CSV, XLS, XLSX, and ODS sources directly. A planner can
+inspect all worksheets, select several, configure each header and mapping, copy
+setup only across exact normalized-header matches, and review one combined
+create-only batch in physical sheet and source-row order. No worksheet is
+selected automatically.
+
+Formula cells are never recalculated. OpenPlan uses a cached value only after
+individual row confirmation; missing or error results remain blocked. The
+10 MiB source and 2,000-row limits remain, selected sheets are limited to 256
+columns, and compressed XLSX/ODS sources are drained through archive expansion
+limits before parsing. Location text remains immutable import provenance and
+never sets project geography.
 
 ## 0.33.0 — 2026-08-25
 

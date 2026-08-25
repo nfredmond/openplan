@@ -1,7 +1,7 @@
 /**
  * Bulk project-list import is deliberately human-only.
  *
- * The CSV mapping decides which outside text becomes the agency's project
+ * Each CSV or workbook-sheet mapping decides which outside text becomes the agency's project
  * names, descriptions, costs, types, statuses, and phases. A plausible wrong
  * mapping can author an entire portfolio, and an approval card cannot make
  * 2,000 source rows reviewable. The shipped workflow therefore stores the
@@ -23,6 +23,9 @@ const NAME_GROUPS = [
   ["bulk", "create", "project"],
   ["bulk", "import", "portfolio"],
   ["create", "projects", "csv"],
+  ["import", "project", "workbook"],
+  ["import", "portfolio", "xlsx"],
+  ["multi", "sheet", "project", "import"],
 ] as const;
 
 const PROVOKERS = [
@@ -32,6 +35,9 @@ const PROVOKERS = [
   "bulk_create_projects",
   "bulk_import_portfolio",
   "create_projects_from_csv",
+  "import_project_workbook",
+  "import_portfolio_xlsx",
+  "multi_sheet_project_import",
 ] as const;
 
 function matches(kind: string, group: readonly string[]): boolean {

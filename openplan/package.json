@@ -1,6 +1,6 @@
 {
   "name": "openplan",
-  "version": "0.33.0",
+  "version": "0.34.0",
   "private": true,
   "license": "Apache-2.0",
   "packageManager": "npm@11.11.0",
@@ -64,6 +64,8 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "unpdf": "^1.6.2",
+    "xlsx": "file:vendor/sheetjs/xlsx-0.20.3.tgz",
+    "yauzl": "3.4.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -74,6 +76,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/yauzl": "3.4.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
