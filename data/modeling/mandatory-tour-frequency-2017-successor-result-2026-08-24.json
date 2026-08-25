@@ -1,0 +1,32 @@
+{
+  "component": "mandatory_tour_frequency",
+  "decision": "inconclusive",
+  "default_changed": false,
+  "evidence_hashes": {
+    "candidate_package_manifest_sha256": "ae3e10770116f100721f34c94c5c20d4c174b7d31ed938b28768b2b05de2ca9d",
+    "core_archive_sha256": "4f1917d9470fbf351c325ee9fe7d4cdbf71715775d0e0c974ca57861b4d8704d",
+    "evaluator_closure_sha256": "c233abfaf59e2226e599f69e727c2ac65990d144c275479a22e0c81573b7a600",
+    "opening_lock_sha256": "5f84e07a57e73d24ee9f444cb06ce5a2c7a2b52e464bdbed2261fe3528daf24d",
+    "opening_receipt_sha256": "598b3166ed04098ae15cef22f1d684e3fcf12b8ce08eb2cd468415d88eecd9d6",
+    "preregistration_sha256": "da4d21abd5335f85c6f35bc5780fe95500d51c1e22dc80e3bb738e09af293af9",
+    "replicate_archive_sha256": "730c3634c0adc6945ab60436b19924e221df516970560e46585fc5613148cc46"
+  },
+  "inconclusive_error_kind": "ProcessTerminatedAfterReceipt",
+  "inconclusive_reason": "The evaluation process terminated after the durable one-opening receipt and before it committed an aggregate result. The receipt contract forbids a second read, so no acceptance or rejection metrics can be reconstructed.",
+  "interruption_evidence": {
+    "direct_process_cause_determined": false,
+    "evaluator_process_present_at_resume": false,
+    "operating_system_observation": "The system journal recorded severe memory pressure and an OOM kill of Chrome near the interruption, but did not identify the evaluator as the killed process.",
+    "result_present_at_resume": false
+  },
+  "limits": [
+    "No substantive acceptance gate was evaluated to a durable aggregate result.",
+    "This result does not authorize registration of the mandatory_tour_frequency candidate.",
+    "It does not validate another ActivitySim component, destination or mode choice, scheduling, or local corridor accuracy.",
+    "The consumed 2017 opening may not be retried."
+  ],
+  "production_registration_authorized": false,
+  "recorded_at": "2026-08-25T03:14:49.303571Z",
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-2017-successor.v1.result",
+  "status": "evaluated_once_inconclusive"
+}

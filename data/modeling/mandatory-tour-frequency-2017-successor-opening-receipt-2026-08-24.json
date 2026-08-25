@@ -1,0 +1,13 @@
+{
+  "aggregate_result_path": "data/modeling/mandatory-tour-frequency-2017-successor-result-2026-08-24.json",
+  "component": "mandatory_tour_frequency",
+  "failure_consumes_receipt": true,
+  "opening_lock_sha256": "5f84e07a57e73d24ee9f444cb06ce5a2c7a2b52e464bdbed2261fe3528daf24d",
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-2017-successor.v1.opening-receipt",
+  "source_sha256": {
+    "core": "4f1917d9470fbf351c325ee9fe7d4cdbf71715775d0e0c974ca57861b4d8704d",
+    "replicates": "730c3634c0adc6945ab60436b19924e221df516970560e46585fc5613148cc46"
+  },
+  "status": "source_consumed_before_first_non_header_row_read",
+  "written_at": "2026-08-25T03:01:43.868617+00:00"
+}

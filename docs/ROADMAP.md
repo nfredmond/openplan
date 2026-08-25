@@ -16,6 +16,7 @@ paths:
 - docs/ops/V032_OPERATIONAL_HEALTH_PROOF_2026-08-24.md
 - docs/ops/2026-08-24-v032-browser-check.md
 - docs/product/CORRIDOR_SCORE_PRESENTATION_RESEARCH_2026-08-24.md
+- docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md
 - docs/product/LAND_USE_PLANS_CONTRACT.md
 - docs/ADRs/ADR-004-mcp-server-surface.md
 npm_commands:
@@ -47,11 +48,25 @@ The release evidence is recorded in
 `docs/ops/2026-08-24-v032-browser-check.md`, and the CI run attached to the
 v0.32 tag.
 
-## Now — sealed 2017 NHTS successor checkpoint
+## Completed — sealed 2017 NHTS successor checkpoint
 
-- Run the preregistered 2017 NHTS mandatory-tour successor study once its five
-  unresolved contracts are frozen. Preserve a negative or inconclusive result
-  without changing defaults.
+- The five unresolved contracts, official archives, candidate, evaluator, and
+  thresholds were frozen before outcome access. Mutation checks proved the
+  decision, safety-domain, replicate, leakage, and one-opening gates.
+- The durable receipt was written before source loading, but the evaluator
+  process terminated before committing aggregate metrics. The opening is
+  permanently consumed, so the result is inconclusive, no candidate is
+  registered, and no default changes.
+
+The preregistration and result are recorded in
+`docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_PREREGISTRATION_2026-08-24.md` and
+`docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md`.
+
+## Now — preserve the evidence boundary
+
+- Do not rerun or reconstruct the consumed 2017 exercise. A future successor
+  study requires a genuinely untouched source and a separately frozen,
+  streaming evaluator. No new feature lane is scheduled from this result.
 
 ## Later
 
