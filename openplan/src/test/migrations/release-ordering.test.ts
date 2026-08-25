@@ -246,6 +246,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260824000005_county_run_worker_lifecycle.sql",
     migrationsAtRelease: 220,
   },
+  // 0.32.0 — service-role modeling-worker health, workspace reminder
+  // preferences, exact crash-source cutoffs, and shared score suppression.
+  {
+    tag: "0.32.0",
+    lastMigration: "20260824000006_worker_health_reminder_preferences_and_crash_cutoff.sql",
+    migrationsAtRelease: 221,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

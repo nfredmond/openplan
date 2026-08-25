@@ -19,6 +19,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.32.0 — 2026-08-24
+
 **Migration and worker restart required.** Run
 `npm exec -- supabase migration up --linked`, restart both modeling workers,
 then deploy. Migration

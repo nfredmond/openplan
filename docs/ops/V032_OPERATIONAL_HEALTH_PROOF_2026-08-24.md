@@ -30,6 +30,9 @@ back before the passing run.
 | Reminder-preference assistant refusal | Temporarily registered `configure_workspace_reminder_preferences` | The executable refusal test named the new action and failed |
 | AequilibraE heartbeat kind | Emitted `wrong-kind` | The worker heartbeat suite rejected the payload |
 | ActivitySim runtime mode | Emitted `wrong-mode` | The worker heartbeat suite rejected the payload |
+| Deployment heartbeat wording | Restored the obsolete “poller with no heartbeat” copy | `deployment-health.test.ts` rejected the contradiction on both deployment surfaces |
+| Corridor cutoff disclosure | Removed the no-exact-cutoff note from both the source snapshot and narrative | `crash-published-cutoff.test.ts` failed both propagation assertions |
+| v0.32 migration high-water mark | Recorded 220 migrations instead of 221 | `release-ordering.test.ts` failed both the exact release count and latest-release split |
 
 ## Environment-backed checks
 
@@ -43,7 +46,20 @@ back before the passing run.
   and hashes, then ran live RLS against the restored target. It passed.
 - `npm run test:workers` discovered and passed all 47 Python worker suites,
   including both new heartbeat suites.
+- The final `npm run qa:gate` passed 1,094 app test files with 12,457 tests,
+  100 live RLS checks, the production dependency audit with zero
+  vulnerabilities, and the Next.js production build. Lint and the repository's
+  dead-code ratchet also passed.
 
-The populated previous-release upgrade rehearsal remains a CI release gate; its
-workflow now inserts and verifies representative v0.32 rows after applying the
-new migration.
+The populated previous-release upgrade rehearsal inserted and verified
+representative v0.32 rows after applying the new migration. CI, RLS isolation,
+and the upgrade rehearsal passed for the feature candidate; CI and RLS also
+passed for the final browser-found fix commit `92fb82e0`.
+
+## Browser evidence
+
+The desktop and 390-by-844 mobile journeys are recorded in
+`docs/ops/2026-08-24-v032-browser-check.md`. They used the local Supabase stack
+and the candidate source from the canonical package root. The browser pass found
+two planner-facing contradictions—the obsolete worker copy and an omitted crash
+cutoff disclosure—and both were fixed and mutation-guarded before release.

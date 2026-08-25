@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-24 against `4b089a75` plus the v0.31.0 changes.
+**Reviewed:** 2026-08-24 against v0.32.0 candidate `92fb82e0`.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -12,7 +12,12 @@ only in `docs/ROADMAP.md`.
 | KI-2026-08-24-002 | High | ActivitySim can execute, but the available stock behavioral coefficients were estimated for another region. A locally fitted population does not make those choices locally calibrated. | Name coefficient provenance and keep output below locally validated claim tiers. | `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-003 | Medium | Crash rates per modeled VMT lack a defensible denominator where the modeled road network does not cover the observed crash network. | Keep rates deferred; disclose source and road-coverage limits instead of treating unsupported roads as zero. | `docs/ROADMAP.md` |
 | KI-2026-08-24-004 | Medium | Recovery confidence expires if operators stop exercising it. The repository drill proves the local reference path, not every deployment's disks, credentials, or cutover. | Run `npm run ops:restore-drill` before relevant releases and at least quarterly; next reference review due 2026-11-24. | `openplan/docs/ops/BACKUP_AND_RESTORE.md` |
-| KI-2026-08-24-005 | Medium | The general AequilibraE/ActivitySim polling workers still expose liveness through run history rather than a direct durable heartbeat. The new county-onramp worker heartbeat does not close that separate lane. | Keep fresh-deployment copy honest; durable planner-facing worker health is a Next item. | `openplan/src/lib/models/worker-backed-launch.ts`; `docs/ROADMAP.md` |
+
+## Closed in v0.32.0
+
+| ID | Previous severity | Finding | Resolution evidence |
+|---|---|---|---|
+| KI-2026-08-24-005 | Medium | The general AequilibraE/ActivitySim polling workers exposed liveness only through run history rather than a direct durable heartbeat. | Both worker types emit independent service-role heartbeats; deployment and model-run surfaces reduce instances to explicit capability states and exact stale observations gate enqueue without terminating active work. `modeling-worker-health.test.ts`; `V032_OPERATIONAL_HEALTH_PROOF_2026-08-24.md` |
 
 ## Closed in v0.31.0
 
