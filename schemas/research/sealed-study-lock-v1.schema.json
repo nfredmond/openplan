@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.sealed-study.lock.v1",
+  "title": "OpenPlan sealed study lock v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "study_id",
+    "status",
+    "working_directory",
+    "scratch_directory",
+    "lease_path",
+    "receipt_path",
+    "candidate_result_path",
+    "aggregate_result_path",
+    "candidate_result_schema_version",
+    "evaluator",
+    "validator",
+    "sources",
+    "output_policy"
+  ],
+  "properties": {
+    "schema_version": { "const": "openplan.sealed-study.lock.v1" },
+    "study_id": { "type": "string", "minLength": 1 },
+    "status": { "const": "frozen_unopened" },
+    "working_directory": { "$ref": "#/$defs/path" },
+    "scratch_directory": { "$ref": "#/$defs/path" },
+    "lease_path": { "$ref": "#/$defs/path" },
+    "receipt_path": { "$ref": "#/$defs/path" },
+    "candidate_result_path": { "$ref": "#/$defs/path" },
+    "aggregate_result_path": { "$ref": "#/$defs/path" },
+    "candidate_result_schema_version": { "type": "string", "minLength": 1 },
+    "evaluator": { "$ref": "#/$defs/closure" },
+    "validator": { "$ref": "#/$defs/closure" },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "path", "sha256", "selected_members"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "path": { "$ref": "#/$defs/path" },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "selected_members": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "output_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximum_bytes", "prohibited_fields", "prohibited_array_fields"],
+      "properties": {
+        "maximum_bytes": { "const": 10485760 },
+        "prohibited_fields": { "$ref": "#/$defs/stringSet" },
+        "prohibited_array_fields": { "$ref": "#/$defs/stringSet" }
+      }
+    }
+  },
+  "$defs": {
+    "path": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "stringSet": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "files", "closure_sha256"],
+      "properties": {
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": { "$ref": "#/$defs/path" },
+              "sha256": { "$ref": "#/$defs/sha256" }
+            }
+          }
+        },
+        "closure_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

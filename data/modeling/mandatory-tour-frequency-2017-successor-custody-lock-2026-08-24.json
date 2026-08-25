@@ -1,0 +1,66 @@
+{
+  "files": [
+    {
+      "path": "scripts/modeling/mandatory_tour_frequency_2017_successor.py",
+      "sha256": "be319ab981fc9742a6ba4c31c565a2019625af8f9311e377607fe373f5aa7998"
+    },
+    {
+      "path": "scripts/modeling/us_nhts_diaries.py",
+      "sha256": "64ff0a975c7123df637108d5c5ac3045c3280ed0f5380e8790a235fb29816092"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_2017_successor.py",
+      "sha256": "657026ca14b518155528571da99f8c175ec88d9267d22ec7792412fa96da5fd2"
+    },
+    {
+      "path": "data/modeling/mandatory-tour-frequency-2017-successor-preregistration-2026-08-24.json",
+      "sha256": "da4d21abd5335f85c6f35bc5780fe95500d51c1e22dc80e3bb738e09af293af9"
+    },
+    {
+      "path": "data/modeling/mandatory-tour-frequency-2017-successor-opening-lock-2026-08-24.json",
+      "sha256": "5f84e07a57e73d24ee9f444cb06ce5a2c7a2b52e464bdbed2261fe3528daf24d"
+    },
+    {
+      "path": "data/modeling/mandatory-tour-frequency-2017-successor-opening-receipt-2026-08-24.json",
+      "sha256": "598b3166ed04098ae15cef22f1d684e3fcf12b8ce08eb2cd468415d88eecd9d6"
+    },
+    {
+      "path": "data/modeling/mandatory-tour-frequency-2017-successor-result-2026-08-24.json",
+      "sha256": "7fc98fffb17ef5bbd5ec368e3a68d03694fca892e1ea896179c29831bd1e9bd6"
+    },
+    {
+      "path": "docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_PREREGISTRATION_2026-08-24.md",
+      "sha256": "d63ec8ab422c79ce06b39ba67b3460bf57fbbe781ac609d14e3283cba3b92835"
+    },
+    {
+      "path": "docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md",
+      "sha256": "13ce669320c47882ebe3c5d900347a0c9fe791248a034a8d0fdfec3597894879"
+    },
+    {
+      "path": "data/modeling/activitysim-mandatory-tour-frequency-2017-successor/coefficient_package.json",
+      "sha256": "ae3e10770116f100721f34c94c5c20d4c174b7d31ed938b28768b2b05de2ca9d"
+    },
+    {
+      "path": "data/modeling/activitysim-mandatory-tour-frequency-2017-successor/mandatory_tour_frequency.csv",
+      "sha256": "cd41c4d441ea73aed50ff43d2e103138b8ff5a0fc4bd30472f6e76c3e2e82df7"
+    },
+    {
+      "path": "data/modeling/activitysim-mandatory-tour-frequency-2017-successor/mandatory_tour_frequency.yaml",
+      "sha256": "019d835f5fa6bc3512b90507c85ea69f4dc38761adcd14ef7ea9bda92dbfa829"
+    },
+    {
+      "path": "data/modeling/activitysim-mandatory-tour-frequency-2017-successor/mandatory_tour_frequency_coefficients.csv",
+      "sha256": "dd3139ec266d6d11a11655ae195e01ae7fc3f1f713c26f97b6c62499fc2288b8"
+    },
+    {
+      "path": "data/modeling/activitysim-mandatory-tour-frequency-2017-successor/mandatory_tour_frequency_model.json",
+      "sha256": "386e892dc80e90dd280cf44607876ea8a4053b9b0b311948feb55289b9568bd1"
+    }
+  ],
+  "limits": [
+    "This lock covers committed evaluator and evidence files only.",
+    "The guard never resolves, hashes, parses, or opens either consumed 2017 source archive."
+  ],
+  "schema_version": "openplan.mandatory-tour-frequency-2017-successor.custody-lock.v1",
+  "status": "closed_inconclusive_immutable"
+}

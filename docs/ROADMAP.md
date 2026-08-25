@@ -1,7 +1,7 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 92fb82e0
+reviewed_commit: 2609f93e
 current_release: v0.32.0
 review_by: 2026-09-07
 paths:
@@ -17,6 +17,7 @@ paths:
 - docs/ops/2026-08-24-v032-browser-check.md
 - docs/product/CORRIDOR_SCORE_PRESENTATION_RESEARCH_2026-08-24.md
 - docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md
+- docs/modeling/SEALED_STUDY_EXECUTION_PROTOCOL.md
 - docs/product/LAND_USE_PLANS_CONTRACT.md
 - docs/ADRs/ADR-004-mcp-server-surface.md
 npm_commands:
@@ -62,11 +63,15 @@ The preregistration and result are recorded in
 `docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_PREREGISTRATION_2026-08-24.md` and
 `docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md`.
 
-## Now — preserve the evidence boundary
+## Now — crash-safe sealed evidence execution
 
 - Do not rerun or reconstruct the consumed 2017 exercise. A future successor
   study requires a genuinely untouched source and a separately frozen,
-  streaming evaluator. No new feature lane is scheduled from this result.
+  streaming evaluator.
+- Standardize one-host leases, durable one-opening receipts, bounded-memory
+  ZIP-to-SQLite staging, aggregate-only validation, and interruption recovery
+  before another sealed study is attempted. No new feature lane is scheduled
+  from this result.
 
 ## Later
 
