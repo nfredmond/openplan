@@ -421,16 +421,19 @@ const EXPECTED = {
   // 20260823000007 adds process records and review releases. Each table has
   // one member SELECT and one writer ALL policy: +4 policies/permissive,
   // +2 permissive writes/tables-with-policies, +2 relations/tables/RLS tables.
-  policies: 672,
-  permissive: 426,
+  // 20260824000006 adds a service-role-only worker heartbeat table (+1
+  // relation/table/RLS table, no policy) and workspace reminder preferences
+  // (+3 permissive policies, +2 permissive writes, +1 table with policies).
+  policies: 675,
+  permissive: 429,
   restrictive: 246,
-  permissiveWrites: 274,
+  permissiveWrites: 276,
   expanded: 286,
-  tablesWithPolicies: 152,
-  relations: 174,
-  tables: 167,
+  tablesWithPolicies: 153,
+  relations: 176,
+  tables: 169,
   views: 7,
-  rlsEnabledTables: 167,
+  rlsEnabledTables: 169,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

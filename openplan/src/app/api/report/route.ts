@@ -18,6 +18,7 @@ import {
 } from "@/lib/data-sources/equity-designation/disclosure";
 import type { Justice40Determination, Justice40Status } from "@/lib/data-sources/equity-designation/types";
 import { formatMoney } from "@/lib/money/format";
+import { scoreValueForPresentation, scoreWithheldReason } from "@/lib/analysis/score-presentation";
 
 const REPORT_REQUEST_MAX_BODY_BYTES = BODY_LIMITS.documentJson;
 
@@ -426,11 +427,11 @@ function buildHtml(
 <!-- SCORES -->
 <h2>Corridor Scores</h2>
 <div class="scores-grid">
-  ${scoreCard(m.accessibilityScore, "Accessibility", "No accessibility score was recorded for this run.", censusScoreInputs.caveat)}
-  ${scoreCard(m.safetyScore, "Safety", unmeasuredCrashNote({ state: crashSnapshotForNote?.state, label: crashSnapshotForNote?.label }))}
-  ${scoreCard(m.equityScore, "Equity", "No equity screening score was recorded for this run.", censusScoreInputs.caveat)}
+  ${scoreCard(scoreValueForPresentation(m, "accessibilityScore"), "Accessibility", scoreWithheldReason(m, "accessibilityScore") ?? "Accessibility was withheld.", censusScoreInputs.caveat)}
+  ${scoreCard(scoreValueForPresentation(m, "safetyScore"), "Safety", scoreWithheldReason(m, "safetyScore") ?? unmeasuredCrashNote({ state: crashSnapshotForNote?.state, label: crashSnapshotForNote?.label }))}
+  ${scoreCard(scoreValueForPresentation(m, "equityScore"), "Equity", scoreWithheldReason(m, "equityScore") ?? "Equity was withheld.", censusScoreInputs.caveat)}
 </div>
-${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
+${scoreValueForPresentation(m, "overallScore") === null ? `<div class="flag"><strong>Overall composite withheld.</strong><br/>${esc(scoreWithheldReason(m, "overallScore") ?? "Required source evidence is unavailable.")}</div>` : scoreBar(scoreValueForPresentation(m, "overallScore") as number, "Overall Composite Score")}
 
 <h2>Funding Program Lens</h2>
 <div class="summary-box">

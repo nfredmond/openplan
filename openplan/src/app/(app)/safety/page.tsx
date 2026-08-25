@@ -189,7 +189,7 @@ export default async function SafetyPage({
     supabase
       .from("safety_crash_ingests")
       .select(
-        "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code"
+        "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,published_through,published_through_provenance,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code"
       )
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false })
@@ -220,6 +220,11 @@ export default async function SafetyPage({
         geocodedCount: Number(ingestRow.geocoded_count ?? 0),
         truncated: Boolean(ingestRow.truncated),
         yearsRequested: (ingestRow.years_requested as number[] | null) ?? [],
+        publishedThrough: (ingestRow.published_through as string | null) ?? null,
+        publishedThroughProvenance:
+          ingestRow.published_through_provenance && typeof ingestRow.published_through_provenance === "object"
+            ? ingestRow.published_through_provenance as Record<string, unknown>
+            : null,
         fetchError: (ingestRow.fetch_error as string | null) ?? null,
         createdAt: ingestRow.created_at as string,
       }
@@ -247,6 +252,11 @@ export default async function SafetyPage({
     crashCount: Number(row.crash_count ?? 0),
     geocodedCount: Number(row.geocoded_count ?? 0),
     yearsRequested: (row.years_requested as number[] | null) ?? [],
+    publishedThrough: (row.published_through as string | null) ?? null,
+    publishedThroughProvenance:
+      row.published_through_provenance && typeof row.published_through_provenance === "object"
+        ? row.published_through_provenance as Record<string, unknown>
+        : null,
     // A row with no extent recorded yields null, never a zero-size box: "we did
     // not record where" and "it covered nothing" are different statements.
     scope: readIngestScope(row),

@@ -65,6 +65,7 @@ function buildAnalysisResult(overrides: Partial<AnalysisResult> = {}): AnalysisR
       dataQuality: {
         censusAvailable: true,
         crashDataAvailable: true,
+        transitDataAvailable: true,
         lodesSource: "lodes-api",
         equitySource: "cejst-proxy-census",
         aiInterpretationSource: "ai",
@@ -120,6 +121,9 @@ function buildComparisonRun(overrides: Partial<Run> = {}): Run {
         activeOverlayContext: null,
       },
       dataQuality: {
+        censusAvailable: true,
+        crashDataAvailable: true,
+        transitDataAvailable: true,
         aiInterpretationSource: "fallback",
       },
     },

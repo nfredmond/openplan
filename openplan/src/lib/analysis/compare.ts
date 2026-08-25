@@ -2,6 +2,7 @@ import {
   resolveTransitMethod,
   transitComparabilityRefusal,
 } from "@/lib/data-sources/transit/method";
+import { scoreValueForPresentation, type HeadlineScoreKey } from "@/lib/analysis/score-presentation";
 
 export type MetricDelta = {
   key: string;
@@ -90,8 +91,13 @@ export function buildMetricDeltas(
   );
 
   return COMPARISON_METRICS.map(({ key, label }) => {
-    const current = asNumber(currentMetrics[key]);
-    const baseline = asNumber(baselineMetrics[key]);
+    const headline = ["overallScore", "accessibilityScore", "safetyScore", "equityScore"].includes(key);
+    const current = headline
+      ? scoreValueForPresentation(currentMetrics, key as HeadlineScoreKey)
+      : asNumber(currentMetrics[key]);
+    const baseline = headline
+      ? scoreValueForPresentation(baselineMetrics, key as HeadlineScoreKey)
+      : asNumber(baselineMetrics[key]);
     const incomparableReason =
       transitRefusal !== null && TRANSIT_SENSITIVE_METRIC_KEYS.has(key) ? transitRefusal : null;
 

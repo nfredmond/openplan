@@ -1,5 +1,26 @@
-import type { Map as MapboxMap } from "mapbox-gl";
+import type { ExpressionSpecification, Map as MapboxMap } from "mapbox-gl";
 import { buildTractMetricPaintExpression } from "./explore-tract-layer-state";
+
+export function buildAnalysisCorridorFillExpression(): ExpressionSpecification {
+  return [
+    "case",
+    ["==", ["typeof", ["get", "overallScore"]], "number"],
+    [
+      "interpolate",
+      ["linear"],
+      ["to-number", ["get", "overallScore"]],
+      0,
+      "#7f1d1d",
+      45,
+      "#be8e2f",
+      70,
+      "#0f766e",
+      100,
+      "#34d399",
+    ],
+    "#64748b",
+  ];
+}
 
 export function installAnalysisLayers(map: MapboxMap): void {
   if (!map.getSource("analysis-result")) {
@@ -45,19 +66,7 @@ export function installAnalysisLayers(map: MapboxMap): void {
       type: "fill",
       source: "analysis-result",
       paint: {
-        "fill-color": [
-          "interpolate",
-          ["linear"],
-          ["coalesce", ["to-number", ["get", "overallScore"]], 50],
-          0,
-          "#7f1d1d",
-          45,
-          "#be8e2f",
-          70,
-          "#0f766e",
-          100,
-          "#34d399",
-        ],
+        "fill-color": buildAnalysisCorridorFillExpression(),
         "fill-opacity": 0.22,
       },
       filter: ["all", ["==", ["geometry-type"], "Polygon"], ["==", ["get", "kind"], "analysis_corridor"]],

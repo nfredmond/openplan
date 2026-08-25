@@ -361,6 +361,7 @@ function fixtures() {
       { id: WORKSPACE_ONE, name: "Workspace one" },
       { id: WORKSPACE_TWO, name: "Workspace two" },
     ],
+    workspace_reminder_preferences: [] as Array<Record<string, unknown>>,
     work_notifications: [],
   };
 }
@@ -463,6 +464,24 @@ describe("the daily deadline sweep", () => {
     expect(result.notificationsCreated).toBe(9);
     expect(result.digestsComposed).toBe(3);
     expect(result.horizonDays).toBe(WORK_DEADLINE_HORIZON_DAYS);
+  });
+
+  it("filters each workspace by its own window and keeps in-app reminders when email is disabled", async () => {
+    const { db, tables } = makeDbWithFixtures();
+    tables.workspace_reminder_preferences.push({
+      workspace_id: WORKSPACE_ONE,
+      advance_days: 2,
+      email_digest_enabled: false,
+    });
+
+    const result = await run(db);
+
+    expect(db.notifications.some((row) => row.subject_id === "d-soon")).toBe(false);
+    expect(db.notifications.some((row) => row.subject_id === "d-overdue")).toBe(true);
+    expect(db.notifications.some((row) => row.subject_id === "fo-pending")).toBe(true);
+    expect(db.notifications.some((row) => row.subject_id === "d-other-workspace")).toBe(true);
+    expect(result.emailDigestsDisabled).toBe(2);
+    expect(db.outbox).toHaveLength(1);
   });
 
   it("refuses a recipient who is not a member of THAT workspace, though they are of another", async () => {

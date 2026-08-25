@@ -69,6 +69,11 @@ liveDescribe("viewer write denial (live)", () => {
       title: `Viewer probe report ${suffix}`,
       report_type: "project_status",
     });
+    await mustInsert("workspace_reminder_preferences", {
+      workspace_id: workspaceId,
+      advance_days: 7,
+      email_digest_enabled: true,
+    });
 
     const signIn = await viewer.auth.signInWithPassword({ email, password });
     if (signIn.error) throw new Error(`Failed to sign in viewer: ${signIn.error.message}`);
@@ -139,6 +144,30 @@ liveDescribe("viewer write denial (live)", () => {
 
     const { data: after } = await service.from("projects").select("name").eq("id", projectId).single();
     expect(after?.name).toBe(`Viewer probe ${suffix}`);
+  });
+
+  it("lets a viewer read reminder preferences but refuses changing them", async () => {
+    const { data: before, error: readError } = await viewer
+      .from("workspace_reminder_preferences")
+      .select("advance_days,email_digest_enabled")
+      .eq("workspace_id", workspaceId)
+      .single();
+    expect(readError).toBeNull();
+    expect(before?.advance_days).toBe(7);
+
+    const { data: changed } = await viewer
+      .from("workspace_reminder_preferences")
+      .update({ advance_days: 30, email_digest_enabled: false })
+      .eq("workspace_id", workspaceId)
+      .select("workspace_id");
+    expect(changed ?? []).toEqual([]);
+
+    const { data: after } = await service
+      .from("workspace_reminder_preferences")
+      .select("advance_days,email_digest_enabled")
+      .eq("workspace_id", workspaceId)
+      .single();
+    expect(after).toMatchObject({ advance_days: 7, email_digest_enabled: true });
   });
 
   /*

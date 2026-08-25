@@ -109,6 +109,8 @@ export interface CrashSummary {
   checkedSources: string[];
   /** Why the source could not answer, when it could not. */
   unavailableReason: string | null;
+  /** Exact source-published cutoff, when the adapter supplied one. */
+  publishedCutoff?: import("@/lib/safety/sources/types").CrashPublishedCutoff;
   /**
    * When more than one source contributed (a regional primary plus a national
    * backstop merged for the out-of-jurisdiction remainder), the sources in
@@ -327,6 +329,7 @@ export function summarizeCrashFetch(
     points,
     checkedSources: [adapter.id],
     unavailableReason: null,
+    publishedCutoff: fetched.publishedCutoff,
   };
 }
 
@@ -521,6 +524,12 @@ export function buildCrashSourceSnapshot(
     attribution: crashes.attribution,
     yearsQueried: crashes.yearsQueried,
     fetchedAt,
+    ...(crashes.publishedCutoff
+      ? {
+          publishedThrough: crashes.publishedCutoff.publishedThrough,
+          publishedThroughProvenance: crashes.publishedCutoff.provenance,
+        }
+      : { publishedThroughNote: "The source supplied no exact publication cutoff." }),
   };
 
   if (!crashes.observed) {

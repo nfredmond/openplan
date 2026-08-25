@@ -204,6 +204,19 @@ export type CrashFetchResult = {
    * them.
    */
   unmappedByDimension?: Partial<Record<CrashDimension, number>>;
+  /** Exact source-published data cutoff. Never inferred from returned rows or today's date. */
+  publishedCutoff?: CrashPublishedCutoff;
+};
+
+export type CrashPublishedCutoff = {
+  /** ISO calendar date through which the source says this dataset is published. */
+  publishedThrough: string;
+  provenance: {
+    basis: "source_metadata" | "authoritative_query";
+    sourceUrl: string;
+    label: string;
+    retrievedAt: string;
+  };
 };
 
 export type CrashFetchParams = {

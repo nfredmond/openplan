@@ -8,6 +8,10 @@ import {
   readCronHeartbeatAt,
 } from "@/lib/notifications/cron-heartbeat";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { loadWorkspaceContext } from "@/lib/workspaces/current";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { loadWorkspaceReminderPreference } from "@/lib/notifications/reminder-preferences";
+import { ReminderPreferencesPanel } from "@/components/my-work/reminder-preferences";
 
 /**
  * The reminder panel, above the work queue.
@@ -44,6 +48,10 @@ export default async function MyWorkLayout({ children }: { children: ReactNode }
   if (!user) return children;
 
   const inbox = await loadWorkNotifications(supabase, user.id);
+  const { membership } = await loadWorkspaceContext(supabase, user.id);
+  const reminderPreference = membership
+    ? await loadWorkspaceReminderPreference(supabase, membership.workspace_id)
+    : null;
 
   // Whether reminders are ACTUALLY running, read from the sweep's own heartbeat
   // rather than inferred from CRON_SECRET being set. Presence of the secret told
@@ -66,7 +74,17 @@ export default async function MyWorkLayout({ children }: { children: ReactNode }
   // flush against them.
   return (
     <div className="grid gap-6">
-      <WorkNotificationInboxPanel inbox={inbox} sweepFreshness={sweepFreshness} />
+      <WorkNotificationInboxPanel
+        inbox={inbox}
+        sweepFreshness={sweepFreshness}
+        advanceDays={reminderPreference?.preference.advanceDays ?? 7}
+      />
+      {reminderPreference ? (
+        <ReminderPreferencesPanel
+          preference={reminderPreference.preference}
+          canManage={canAccessWorkspaceAction("workspace.configure", membership?.role)}
+        />
+      ) : null}
       {children}
     </div>
   );

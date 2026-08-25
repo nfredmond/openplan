@@ -446,24 +446,14 @@ export function ExploreResultsBoard({
 
   const resultScoreTiles: ResultScoreTile[] = [];
 
-  // Accessibility, Equity and the composite are all built partly from ACS
-  // figures, and the scoring engine consumes the summarizer's PLACEHOLDER zeros
-  // rather than the nulled reported figures. A corridor whose ACS read returned
-  // nothing therefore still scores — Accessibility 5, Equity 0, Overall 3 — and
-  // "Equity 0" is the single most over-readable number on this board. The number
-  // is not withheld (that would deny a planner their own run); the sentence that
-  // bounds it travels with it. Fixing the arithmetic is a scoring change and
-  // belongs in `scoring.ts` as its own piece of work — see census-score-inputs.
   const censusScoreInputs = resolveCensusScoreInputCoverage(analysisResult.metrics);
+  const scorePresentation = analysisResult.metrics.scorePresentation;
 
   if (typeof analysisResult.metrics.overallScore === "number") {
     resultScoreTiles.push({
       label: "Overall",
       value: `${analysisResult.metrics.overallScore}`,
-      note: withCensusInputCaveat(
-        "Composite corridor score across the current analysis run.",
-        censusScoreInputs
-      ),
+      note: "OpenPlan screening composite. No qualitative score bands have been validated.",
       emphasis: true,
     });
   }
@@ -475,6 +465,10 @@ export function ExploreResultsBoard({
   // say that rather than print the null.
   const safetyTile = metricDisplay(analysisResult.metrics.safetyScore);
   const equityTile = metricDisplay(analysisResult.metrics.equityScore);
+  const crashSourceNote = unmeasuredCrashNote({
+    state: analysisResult.metrics.sourceSnapshots?.crashes?.state,
+    label: analysisResult.metrics.sourceSnapshots?.crashes?.label,
+  });
 
   resultScoreTiles.push(
     {
@@ -485,7 +479,7 @@ export function ExploreResultsBoard({
             "Transit reach, service availability, and jobs-access posture.",
             censusScoreInputs
           )
-        : "No accessibility score was recorded for this run.",
+        : scorePresentation?.accessibility.withheldReason ?? "Accessibility was withheld because required evidence is unavailable.",
       estimated: accessibilityEstimatedNote !== null,
       estimatedNote: accessibilityEstimatedNote ?? undefined,
     },
@@ -494,10 +488,8 @@ export function ExploreResultsBoard({
       value: safetyTile.value,
       note: safetyTile.measured
         ? "Crash-risk lane informed by the active safety source and filters."
-        : unmeasuredCrashNote({
-            state: analysisResult.metrics.sourceSnapshots?.crashes?.state,
-            label: analysisResult.metrics.sourceSnapshots?.crashes?.label,
-          }),
+        : [scorePresentation?.safety.withheldReason, crashSourceNote].filter(Boolean).join(" ")
+          || "Safety was withheld because crash evidence is unavailable.",
       estimated: safetyTile.measured && estimatedDomains.crashes,
       estimatedNote: safetyTile.measured && estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
     },
@@ -509,7 +501,7 @@ export function ExploreResultsBoard({
             "Corridor equity screening signal from the current demographic layer.",
             censusScoreInputs
           )
-        : "No equity screening score was recorded for this run.",
+        : scorePresentation?.equity.withheldReason ?? "Equity was withheld because required evidence is unavailable.",
     }
   );
 

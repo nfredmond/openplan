@@ -46,6 +46,7 @@ import {
   modelStatusTone,
 } from "@/lib/models/catalog";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 
 type RouteParams = Promise<{ modelId: string }>;
 
@@ -750,6 +751,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
    * read as absence.
    */
   const modelingWorkerDeclaration = resolveModelingWorkerDeclaration();
+  const modelingWorkerHealth = await loadModelingWorkerHealth(modelingWorkerDeclaration);
 
   return (
     <section className="module-page relative">
@@ -930,6 +932,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               modelRuns={modelRuns}
               schemaPending={modelRunsSchemaPending}
               modelingWorkerDeclaration={modelingWorkerDeclaration}
+              modelingWorkerHealth={modelingWorkerHealth}
               workspaceId={model.workspace_id}
               transitFeeds={transitFeedOptions}
             />

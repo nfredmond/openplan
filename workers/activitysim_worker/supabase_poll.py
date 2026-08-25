@@ -35,6 +35,7 @@ from typing import Any
 
 import requests
 from dotenv import load_dotenv
+from worker_heartbeat import WorkerHeartbeat
 
 _WORKER_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _WORKER_DIR.parents[1]
@@ -80,6 +81,8 @@ EVIDENCE_SCHEMA_VERSION = "openplan.behavioral_demand_preflight_evidence.v0"
 # Runtime modes in which a REAL ActivitySim command actually executed. On the
 # default ($0, RAM-light) infra none of these apply and the run stays a preflight.
 EXECUTED_RUNTIME_MODES = {"activitysim_cli", "activitysim_container_cli"}
+
+_WORKER_HEARTBEAT: WorkerHeartbeat | None = None
 
 
 def _activitysim_exec_config() -> dict:
@@ -746,6 +749,11 @@ def process_stage(stage: dict) -> None:
         return
     sb_patch_run(run_id, {"status": "running"})
 
+    if _WORKER_HEARTBEAT is not None:
+        _WORKER_HEARTBEAT.set_current_work(
+            {"runId": run_id, "stageId": stage_id, "stageName": stage_name}
+        )
+
     try:
         run = sb_get_run(run_id)
         handler = STAGE_DISPATCH.get(stage_name)
@@ -765,9 +773,27 @@ def process_stage(stage: dict) -> None:
             {"status": "failed", "error_message": error_msg[:2000], "completed_at": _utc_now()},
         )
         sb_patch_run(run_id, {"status": "failed"})
+    finally:
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(None)
 
 
 def poll_for_jobs() -> None:
+    global _WORKER_HEARTBEAT
+    exec_cfg = _activitysim_exec_config()
+    runtime_mode = "activitysim_container_cli" if (
+        exec_cfg.get("activitysim_container_image") or exec_cfg.get("activitysim_container_cli_template")
+    ) else "activitysim_cli" if (
+        exec_cfg.get("activitysim_cli") or exec_cfg.get("activitysim_cli_template")
+    ) else "preflight_only"
+    _WORKER_HEARTBEAT = WorkerHeartbeat(
+        supabase_url=SUPABASE_URL,
+        service_key=SUPABASE_KEY,
+        worker_kind="activitysim",
+        supported_stages=OWNED_STAGE_NAMES,
+        runtime_mode=runtime_mode,
+    )
+    _WORKER_HEARTBEAT.start()
     print(f"ActivitySim behavioral-preflight worker started at {time.strftime('%c')}")
     print(f"Polling {SUPABASE_URL} for queued stages (owned: {', '.join(OWNED_STAGE_NAMES)})...")
 

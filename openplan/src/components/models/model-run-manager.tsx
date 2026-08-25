@@ -51,6 +51,10 @@ import {
 } from "@/lib/models/charts/accuracy-scatter";
 import { describeElapsed, latestConvergence, summarizeRunProgress } from "@/lib/models/run-progress";
 import { useTheme } from "@/components/theme-provider";
+import {
+  evaluateWorkerHealthLaunchGate,
+  type ModelingWorkerHealth,
+} from "@/lib/models/worker-health";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -197,6 +201,7 @@ type ModelRunManagerProps = {
    * worker.
    */
   modelingWorkerDeclaration?: ModelingWorkerDeclaration;
+  modelingWorkerHealth?: ModelingWorkerHealth | null;
   /**
    * The workspace this model belongs to, so the launch control can list the
    * workspace's own ingested transit feeds and ask whether one of them serves
@@ -370,6 +375,7 @@ export function ModelRunManager({
   modelRuns,
   schemaPending,
   modelingWorkerDeclaration = "undeclared",
+  modelingWorkerHealth = null,
   workspaceId = null,
   transitFeeds = [],
 }: ModelRunManagerProps) {
@@ -420,6 +426,7 @@ export function ModelRunManager({
   const [acknowledgedWorkerEvidenceKey, setAcknowledgedWorkerEvidenceKey] = useState<string | null>(
     null
   );
+  const [acknowledgedHeartbeatKey, setAcknowledgedHeartbeatKey] = useState<string | null>(null);
 
   const selectedScenarioEntry = useMemo(
     () => scenarioEntries.find((entry) => entry.id === scenarioEntryId) ?? null,
@@ -544,6 +551,7 @@ export function ModelRunManager({
           // only when one was picked; an omitted field leaves the worker's own
           // feed precedence exactly as it has always been.
           transitFeedId: supportsTransitFeed && transitFeedId ? transitFeedId : undefined,
+          workerHealthAcknowledgement: acknowledgedHeartbeatKey ?? undefined,
         }),
       });
 
@@ -643,6 +651,12 @@ export function ModelRunManager({
   const workerAcknowledged =
     workerGate.acknowledgementKey !== null &&
     acknowledgedWorkerEvidenceKey === workerGate.acknowledgementKey;
+  const heartbeatGate = modelingWorkerHealth
+    ? evaluateWorkerHealthLaunchGate(engineKey, modelingWorkerHealth)
+    : { blocked: false, acknowledgementKey: null, reason: null, states: [] };
+  const heartbeatAcknowledged =
+    heartbeatGate.acknowledgementKey !== null &&
+    acknowledgedHeartbeatKey === heartbeatGate.acknowledgementKey;
 
   /**
    * Engine-independent, because the reroute notice needs it for `sketch_abm` —
@@ -664,6 +678,7 @@ export function ModelRunManager({
     isLaunching ||
     schemaPending ||
     selectedRunMode.availability === "prototype" ||
+    (heartbeatGate.blocked && !heartbeatAcknowledged) ||
     (workerRefusesLaunch && !workerAcknowledged);
 
   return (
@@ -1110,6 +1125,30 @@ export function ModelRunManager({
             </div>
           ) : null}
 
+          {heartbeatGate.states.length > 0 ? (
+            <div
+              data-testid="worker-heartbeat-health"
+              className={`rounded-[0.5rem] border px-4 py-3 text-sm ${heartbeatGate.blocked ? "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200" : "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200"}`}
+            >
+              <p className="font-semibold">Modeling worker health</p>
+              {heartbeatGate.states.map((state) => (
+                <p key={state.kind} className="mt-1" data-worker-kind={state.kind} data-worker-state={state.state}>
+                  {state.kind === "aequilibrae" ? "AequilibraE" : "ActivitySim"}: {state.reason}
+                </p>
+              ))}
+              {heartbeatGate.acknowledgementKey ? (
+                <label className="mt-3 flex items-start gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={heartbeatAcknowledged}
+                    onChange={(event) => setAcknowledgedHeartbeatKey(event.target.checked ? heartbeatGate.acknowledgementKey : null)}
+                  />
+                  <span>I understand this exact stale observation. Queue the run without treating heartbeat loss as proof that existing work stopped.</span>
+                </label>
+              ) : null}
+            </div>
+          ) : null}
+
           {/* The refusal. It fires BEFORE the enqueue, because after it there is
               nothing left to say that is not either a false success or a
               fifteen-minute-late failure. It names what was observed OR what
@@ -1184,7 +1223,9 @@ export function ModelRunManager({
 
           <Button type="button" onClick={() => void handleLaunch()} disabled={launchDisabled}>
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {workerRefusesLaunch && !workerAcknowledged
+            {heartbeatGate.blocked && !heartbeatAcknowledged
+              ? "Launch blocked — required worker health is not current"
+              : workerRefusesLaunch && !workerAcknowledged
               ? workerGate.reason === "deployment_declares_no_worker"
                 ? "Launch refused — this installation declares no modeling worker"
                 : workerGate.reason === "declared_worker_never_started"

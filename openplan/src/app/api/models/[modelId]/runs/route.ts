@@ -63,6 +63,9 @@ import {
   workerRunStageNames,
   type ModelRunDispatchOutcome,
 } from "@/lib/models/run-dispatch";
+import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
+import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
+import { evaluateWorkerHealthLaunchGate } from "@/lib/models/worker-health";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -124,6 +127,7 @@ const launchModelRunSchema = z.object({
    * worker's existing feed selection untouched. Ignored by every other engine,
    * whose runs never reach a transit skim. */
   transitFeedId: z.string().uuid().optional(),
+  workerHealthAcknowledgement: z.string().max(4000).optional(),
 });
 
 type RouteContext = {
@@ -428,6 +432,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const isAequilibraeRun = launchPayload.engineKey === "aequilibrae";
       const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
       const isSketchAbmRun = launchPayload.engineKey === "sketch_abm";
+
+      if (isAequilibraeRun || isBehavioralDemandRun) {
+        const health = await loadModelingWorkerHealth(resolveModelingWorkerDeclaration());
+        const healthGate = evaluateWorkerHealthLaunchGate(launchPayload.engineKey, health);
+        if (
+          healthGate.blocked &&
+          (healthGate.acknowledgementKey === null ||
+            parsed.data.workerHealthAcknowledgement !== healthGate.acknowledgementKey)
+        ) {
+          return NextResponse.json(
+            {
+              error: healthGate.reason ?? "Required modeling worker health is not current.",
+              workerHealth: health,
+              acknowledgementKey: healthGate.acknowledgementKey,
+            },
+            { status: 409 }
+          );
+        }
+      }
 
       // The ONE zone resolution this run is built at. Read once and used for
       // both the app's fetch and the stamp the worker resolves against, because

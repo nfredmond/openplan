@@ -21,6 +21,7 @@ const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadModelAccessMock = vi.fn();
+const loadModelingWorkerHealthMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const MODEL_RUN_ID = "44444444-4444-4444-8444-444444444444";
@@ -39,6 +40,10 @@ vi.mock("@/lib/observability/audit", () => ({
 
 vi.mock("@/lib/models/api", () => ({
   loadModelAccess: (...args: unknown[]) => loadModelAccessMock(...args),
+}));
+
+vi.mock("@/lib/models/worker-health-server", () => ({
+  loadModelingWorkerHealth: (...args: unknown[]) => loadModelingWorkerHealthMock(...args),
 }));
 
 import { POST as launchModelRun } from "@/app/api/models/[modelId]/runs/[modelRunId]/launch/route";
@@ -118,10 +123,15 @@ function installClient() {
   });
 }
 
-function launchRequest() {
+function launchRequest(workerHealthAcknowledgement?: string) {
   return new NextRequest(
     `http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}/launch`,
-    { method: "POST" }
+    {
+      method: "POST",
+      headers: workerHealthAcknowledgement
+        ? { "x-openplan-worker-health-ack": workerHealthAcknowledgement }
+        : undefined,
+    }
   );
 }
 
@@ -150,7 +160,64 @@ describe("POST /api/models/[modelId]/runs/[modelRunId]/launch — the stage read
       error: null,
     });
     stagesRead = { data: [], error: null };
+    loadModelingWorkerHealthMock.mockResolvedValue({
+      observedAt: "2026-08-24T20:00:00.000Z",
+      schemaAvailable: true,
+      aequilibrae: {
+        kind: "aequilibrae",
+        state: "fresh",
+        observationKey: "aequilibrae|fresh",
+        observedAt: "2026-08-24T20:00:00.000Z",
+        instanceCount: 1,
+        currentWork: [],
+        reason: "fresh",
+      },
+      activitysim: {
+        kind: "activitysim",
+        state: "unknown",
+        observationKey: "activitysim|unknown",
+        observedAt: null,
+        instanceCount: 0,
+        currentWork: [],
+        reason: "unknown",
+      },
+    });
     installClient();
+  });
+
+  it("requires the exact stale observation before relaunching", async () => {
+    const observationKey = "aequilibrae|worker-a|2026-08-24T19:55:00Z";
+    loadModelingWorkerHealthMock.mockResolvedValue({
+      observedAt: "2026-08-24T20:00:00.000Z",
+      schemaAvailable: true,
+      aequilibrae: {
+        kind: "aequilibrae",
+        state: "stale",
+        observationKey,
+        observedAt: "2026-08-24T19:55:00.000Z",
+        instanceCount: 1,
+        currentWork: [],
+        reason: "stale",
+      },
+      activitysim: {
+        kind: "activitysim",
+        state: "unknown",
+        observationKey: "activitysim|unknown",
+        observedAt: null,
+        instanceCount: 0,
+        currentWork: [],
+        reason: "unknown",
+      },
+    });
+
+    const refused = await launchModelRun(launchRequest(), routeContext);
+    expect(refused.status).toBe(409);
+    expect(await refused.json()).toMatchObject({ acknowledgementKey: observationKey });
+    expect(stageInsertHappened()).toBe(false);
+
+    const accepted = await launchModelRun(launchRequest(observationKey), routeContext);
+    expect(accepted.status).toBe(200);
+    expect(stageInsertHappened()).toBe(true);
   });
 
   it("refuses the relaunch when it cannot read the run's stages, and writes no duplicate set", async () => {

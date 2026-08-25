@@ -6,6 +6,7 @@ const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const fetchCensusForCorridorMock = vi.fn();
 const fetchLODESForCorridorMock = vi.fn();
+const loadModelingWorkerHealthMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -95,6 +96,10 @@ vi.mock("@/lib/data-sources/lodes", () => ({
   fetchLODESForCorridor: (...args: unknown[]) => fetchLODESForCorridorMock(...args),
 }));
 
+vi.mock("@/lib/models/worker-health-server", () => ({
+  loadModelingWorkerHealth: (...args: unknown[]) => loadModelingWorkerHealthMock(...args),
+}));
+
 import { POST as postModelRun } from "@/app/api/models/[modelId]/runs/route";
 
 /** Three-tract corridor fixture (real runABM runs over these zones). The
@@ -131,6 +136,25 @@ function launchRequest(body: Record<string, unknown>) {
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
+}
+
+function workerHealth(overrides: Record<string, unknown> = {}) {
+  const state = (kind: "aequilibrae" | "activitysim") => ({
+    kind,
+    state: "fresh",
+    observationKey: `${kind}|fresh`,
+    observedAt: "2026-08-24T20:00:00.000Z",
+    instanceCount: 1,
+    currentWork: [],
+    reason: `${kind} is fresh`,
+  });
+  return {
+    observedAt: "2026-08-24T20:00:00.000Z",
+    schemaAvailable: true,
+    aequilibrae: state("aequilibrae"),
+    activitysim: state("activitysim"),
+    ...overrides,
+  };
 }
 
 describe("/api/models/[modelId]/runs", () => {
@@ -194,6 +218,7 @@ describe("/api/models/[modelId]/runs", () => {
 
     fetchCensusForCorridorMock.mockResolvedValue(SKETCH_CENSUS_FIXTURE);
     fetchLODESForCorridorMock.mockResolvedValue({ totalJobs: 1800 });
+    loadModelingWorkerHealthMock.mockResolvedValue(workerHealth());
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -236,6 +261,54 @@ describe("/api/models/[modelId]/runs", () => {
       "ActivitySim Network Assignment",
       "Demand Model Agreement",
     ]);
+  });
+
+  it("blocks a stale required worker until that exact observation is acknowledged", async () => {
+    const stale = {
+      ...workerHealth().aequilibrae,
+      state: "stale",
+      observationKey: "aequilibrae|instance-a|2026-08-24T19:55:00Z",
+      reason: "AequilibraE has not reported within the last two minutes.",
+    };
+    loadModelingWorkerHealthMock.mockResolvedValue(workerHealth({ aequilibrae: stale }));
+
+    const refused = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+    const refusal = await refused.json();
+    expect(refused.status).toBe(409);
+    expect(refusal.acknowledgementKey).toBe(stale.observationKey);
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
+
+    const accepted = await postModelRun(
+      launchRequest({
+        engineKey: "aequilibrae",
+        workerHealthAcknowledgement: stale.observationKey,
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+    expect(accepted.status).toBe(201);
+  });
+
+  it("expires a stale acknowledgement when the observed heartbeat changes", async () => {
+    loadModelingWorkerHealthMock.mockResolvedValue(workerHealth({
+      activitysim: {
+        ...workerHealth().activitysim,
+        state: "stale",
+        observationKey: "activitysim|instance-b|newer-observation",
+        reason: "ActivitySim has not reported within the last two minutes.",
+      },
+    }));
+    const response = await postModelRun(
+      launchRequest({
+        engineKey: "behavioral_demand",
+        workerHealthAcknowledgement: "activitysim|instance-b|older-observation",
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+    expect(response.status).toBe(409);
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
   });
 
   it("runs the sketch activity model in-process and records screening KPIs", async () => {

@@ -40,6 +40,8 @@ import {
   workerRunStageNames,
 } from "@/lib/models/run-dispatch";
 import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
+import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
+import { evaluateWorkerHealthLaunchGate } from "@/lib/models/worker-health";
 import {
   prepareTransitFeedHandoff,
   transitFeedIdFromSnapshot,
@@ -167,6 +169,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
         {
           error:
             "This run's engine executes in-process and cannot be re-queued to the worker. Launch a new run from the model or scenario entry instead.",
+        },
+        { status: 409 }
+      );
+    }
+
+    const workerHealth = await loadModelingWorkerHealth(resolveModelingWorkerDeclaration());
+    const workerHealthGate = evaluateWorkerHealthLaunchGate(modelRun.engine_key, workerHealth);
+    const acknowledgement = request.headers.get("x-openplan-worker-health-ack");
+    if (
+      workerHealthGate.blocked &&
+      (workerHealthGate.acknowledgementKey === null || acknowledgement !== workerHealthGate.acknowledgementKey)
+    ) {
+      return NextResponse.json(
+        {
+          error: workerHealthGate.reason ?? "Required modeling worker health is not current.",
+          acknowledgementKey: workerHealthGate.acknowledgementKey,
+          workerHealth,
         },
         { status: 409 }
       );

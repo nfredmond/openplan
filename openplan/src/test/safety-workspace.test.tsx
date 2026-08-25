@@ -178,6 +178,28 @@ describe("SafetyWorkspace coverage disclosure", () => {
     expect(screen.getByText(/1,089 mappable/)).toBeInTheDocument();
   });
 
+  it("shows the exact source cutoff and its provenance when the source supplied both", async () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({
+      publishedThrough: "2023-12-31",
+      publishedThroughProvenance: {
+        sourceUrl: "https://www.nhtsa.gov/press-releases/final-fars",
+        label: "NHTSA final annual release",
+      },
+    })} />);
+
+    expect(screen.getByText(/published data runs through 2023-12-31/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "NHTSA final annual release" })).toHaveAttribute(
+      "href",
+      "https://www.nhtsa.gov/press-releases/final-fars"
+    );
+  });
+
+  it("does not infer a cutoff from the requested crash year", () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ yearsRequested: [2025] })} />);
+    expect(screen.getByText(/source supplied no exact publication cutoff/i)).toBeInTheDocument();
+    expect(screen.queryByText(/published data runs through 2025/)).not.toBeInTheDocument();
+  });
+
   it("computes the geocoded share from THIS extract, not from a constant", async () => {
     // The geocoded share is wildly local — 77.7% statewide and 99.6% in one
     // rural county of the same state, probed the same day — so a constant in

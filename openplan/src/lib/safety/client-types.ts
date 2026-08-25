@@ -175,6 +175,9 @@ export type SafetyIngestSummary = {
   partyCount?: number | null;
   /** `party_rows` or `crash_flags` — which basis the involvement flags rest on. */
   involvementBasis?: string | null;
+  /** Exact source-published cutoff, not inferred from requested or returned years. */
+  publishedThrough?: string | null;
+  publishedThroughProvenance?: Record<string, unknown> | null;
 };
 
 /**
@@ -205,6 +208,8 @@ export type SafetyLiveCrashRead = {
   /** The crash points themselves. They exist nowhere else. */
   collection: SafetyCrashCollection;
   retrievedAt: string;
+  publishedThrough?: string | null;
+  publishedThroughProvenance?: Record<string, unknown> | null;
   /**
    * The same per-dimension capability an acquisition records, for the source
    * this read came from. A live read stores nothing, but the SAME filter panel
@@ -236,6 +241,8 @@ export type SafetyIngestHistoryEntry = {
   /** Of those, how many carry coordinates and can therefore be mapped. */
   geocodedCount: number;
   yearsRequested: number[];
+  publishedThrough?: string | null;
+  publishedThroughProvenance?: Record<string, unknown> | null;
   /**
    * The area this pull covered, as recorded when it ran.
    *

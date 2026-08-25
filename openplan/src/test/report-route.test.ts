@@ -547,15 +547,12 @@ describe("POST /api/report", () => {
    * A score that EXISTS but was computed over an unread census is not a
    * measurement, and the PDF is where that matters most.
    *
-   * Nulling the census FIGURES did not null the SCORES. `computeAccessibility`
-   * and `computeEquity` read the summarizer's placeholder zeros, so a corridor
-   * whose ACS read returned nothing still exports "Accessibility 5 / Equity 0".
-   * A grant reviewer holding this page has no way to tell that Equity 0 from a
-   * measured one. Proven against what the route really persists in
-   * `corridor-lane-honesty.test.tsx`, which asserts the same
-   * `censusMeasuredUniverses.tracts: false` this fixture carries.
+   * The arithmetic remains stored, but planner-facing output must not let its
+   * placeholder-zero inputs escape as evidence. This fixture carries the same
+   * unread Census state the analysis route records and proves the report uses
+   * the shared presentation gate.
    */
-  it("says an Accessibility and Equity score was computed over an unread census", async () => {
+  it("withholds Accessibility, Equity, and the composite when Census was unread", async () => {
     runsSingleMock.mockResolvedValue({
       data: {
         id: runId,
@@ -572,6 +569,11 @@ describe("POST /api/report", () => {
           confidence: "low",
           tractCount: 0,
           censusMeasuredUniverses: { tracts: false, population: false },
+          dataQuality: {
+            censusAvailable: false,
+            transitDataAvailable: true,
+            crashDataAvailable: false,
+          },
           sourceSnapshots: {
             census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
             transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
@@ -586,13 +588,10 @@ describe("POST /api/report", () => {
     const response = await postReport(jsonRequest({ runId, format: "html" }));
     const html = await response.text();
 
-    const caveat = /computed as though every demographic input were zero/g;
-    // On the Accessibility card AND the Equity card — not once at the top where
-    // it is read as being about something else.
-    expect(html.match(caveat) ?? []).toHaveLength(2);
-    // And the numbers are still there: disclose, never withhold a planner's run.
-    expect(html).toContain(">5</div>");
-    expect(html).toContain(">0</div>");
+    expect(html).toContain("Overall composite withheld");
+    expect(html.match(/Not measured/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    expect(html).not.toContain(">5</div>");
+    expect(html).not.toContain(">0</div>");
   });
 
   /** The caveat must be absent when the census answered — an always-on warning teaches nothing. */

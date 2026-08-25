@@ -212,7 +212,9 @@ const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // immutable review releases each add one role-aware FOR ALL policy. Neither
 // table enters tablesNeedingGate(), because workspace_member_can_write is
 // already present at the permissive layer.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 274;
+// 20260824000006 adds owner/admin INSERT and UPDATE policies for reminder
+// preferences. They are role-aware at the permissive layer.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 276;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

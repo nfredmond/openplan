@@ -162,6 +162,19 @@ describe("the reminder panel", () => {
     expect(text).toContain("listed below");
   });
 
+  it("keeps stale scheduler health visible over old unread reminders and uses the configured window", async () => {
+    render(
+      <WorkNotificationInboxPanel
+        inbox={await inboxFrom(rows())}
+        sweepFreshness="stale"
+        advanceDays={14}
+      />
+    );
+    expect(screen.getByTestId("scheduler-health-warning").textContent).toContain("not run recently");
+    expect(document.body.textContent).toContain("due within 14 days");
+    expect(screen.getByText("Public review draft")).toBeTruthy();
+  });
+
   it("says a failed read could not be read, never that the inbox is empty", async () => {
     await renderPanel(await inboxFrom([], { message: "connection reset" }));
 

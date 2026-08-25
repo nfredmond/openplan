@@ -41,6 +41,7 @@ export type NotificationInboxProps = {
    * as "nothing is due"; only `healthy` lets the empty panel stay silent.
    */
   sweepFreshness: CronFreshness;
+  advanceDays?: number;
 };
 
 /**
@@ -69,7 +70,7 @@ const KIND_LABELS: Record<string, string> = {
   measure_claim_review_due: "Claim waiting",
 };
 
-export function WorkNotificationInboxPanel({ inbox, sweepFreshness }: NotificationInboxProps) {
+export function WorkNotificationInboxPanel({ inbox, sweepFreshness, advanceDays = 7 }: NotificationInboxProps) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -190,8 +191,15 @@ export function WorkNotificationInboxPanel({ inbox, sweepFreshness }: Notificati
           {busy === "all" ? "Marking…" : "Mark all read"}
         </Button>
       </div>
+      {sweepFreshness !== "healthy" ? (
+        <div className="module-alert" role="status" data-testid="scheduler-health-warning">
+          {sweepFreshness === "never"
+            ? "Daily deadline reminders have never recorded a run on this deployment. Existing reminders below may be old."
+            : "Daily deadline reminders have not run recently on this deployment. Existing reminders below may be out of date."}
+        </div>
+      ) : null}
       <p className="module-note">
-        What the daily check flagged for you — everything due within a week, and everything already
+        What the daily check flagged for you — everything due within {advanceDays} {advanceDays === 1 ? "day" : "days"}, and everything already
         overdue. Marking one read removes it from here; it does not change the record itself.
       </p>
       {inbox.truncated ? (

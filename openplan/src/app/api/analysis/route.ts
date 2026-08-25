@@ -27,6 +27,7 @@ import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
 import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
+import { presentableScoreMetrics, resolveScorePresentation } from "@/lib/analysis/score-presentation";
 import { classifyWalkBikeAccess } from "@/lib/accessibility/isochrone";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
@@ -118,6 +119,7 @@ function generateSummary(
   walkBikeAccess: ReturnType<typeof classifyWalkBikeAccess>
 ): string {
   const lines: string[] = [];
+  const scorePresentation = resolveScorePresentation(scores);
   // Every ACS figure below is read through the reported-figures boundary, never
   // off the summary directly. `null` there means NOT MEASURED, and an unmeasured
   // universe gets a sentence saying so instead of a sentence narrating its
@@ -214,10 +216,10 @@ function generateSummary(
   // the literal "Safety: null/100" into the deterministic summary, and that
   // sentence then became a CITABLE `s_<n>` fact for the grant narrative.
   lines.push(
-    `**Scores:** Accessibility: ${scores.accessibilityScore}/100, ` +
-      `Safety: ${scores.safetyScore === null ? "not scored (no crash source answered)" : `${scores.safetyScore}/100`}, ` +
-      `Equity: ${scores.equityScore}/100. ` +
-      `Overall: ${scores.overallScore}/100 (confidence: ${scores.confidence}).`
+    `**OpenPlan screening scores:** Accessibility: ${scorePresentation.accessibility.value === null ? scorePresentation.accessibility.withheldReason : `${scorePresentation.accessibility.value}/100`}, ` +
+      `Safety: ${scorePresentation.safety.value === null ? scorePresentation.safety.withheldReason : `${scorePresentation.safety.value}/100`}, ` +
+      `Equity: ${scorePresentation.equity.value === null ? scorePresentation.equity.withheldReason : `${scorePresentation.equity.value}/100`}. ` +
+      `Overall: ${scorePresentation.overall.value === null ? scorePresentation.overall.withheldReason : `${scorePresentation.overall.value}/100`} No low, medium, or high bands have been validated.`
   );
 
   return lines.join("\n");
@@ -444,6 +446,8 @@ export async function POST(request: NextRequest) {
 
       // Compute composite scores
       const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
+      const scorePresentation = resolveScorePresentation(scores);
+      const presentedScores = presentableScoreMetrics(scorePresentation);
       const walkBikeAccess = classifyWalkBikeAccess({
         pctWalk: census.pctWalk,
         pctBike: census.pctBike,
@@ -468,10 +472,10 @@ export async function POST(request: NextRequest) {
             properties: {
               kind: "analysis_corridor",
               runId,
-              overallScore: scores.overallScore,
-              accessibilityScore: scores.accessibilityScore,
-              safetyScore: scores.safetyScore,
-              equityScore: scores.equityScore,
+              overallScore: presentedScores.overallScore,
+              accessibilityScore: presentedScores.accessibilityScore,
+              safetyScore: presentedScores.safetyScore,
+              equityScore: presentedScores.equityScore,
             },
           },
           {
@@ -505,10 +509,13 @@ export async function POST(request: NextRequest) {
       // Build metrics object
       const metrics = {
         // Scores
-        accessibilityScore: scores.accessibilityScore,
-        safetyScore: scores.safetyScore,
-        equityScore: scores.equityScore,
-        overallScore: scores.overallScore,
+        ...presentedScores,
+        rawScores: {
+          accessibilityScore: scores.accessibilityScore,
+          safetyScore: scores.safetyScore,
+          equityScore: scores.equityScore,
+          overallScore: scores.overallScore,
+        },
         confidence,
 
         // Census demographics. null (not 0) whenever the ACS universe behind a

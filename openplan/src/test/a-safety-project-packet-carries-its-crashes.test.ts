@@ -55,6 +55,8 @@ function evidence(overrides: Partial<SafetyCrashEvidence> = {}): SafetyCrashEvid
     citationText: "Example crash source (2022, 2023).",
     caveats: ["Counts come from the source's own records."],
     narrativeCaveat: "Screening-grade: reported collisions, not a safety analysis.",
+    publishedThrough: null,
+    publishedThroughProvenance: null,
     // The overrides were once accepted and never applied, which made every case
     // below silently test the base object. A fixture helper that ignores its
     // argument is a vacuous test generator.
@@ -84,6 +86,23 @@ describe("a safety project's packet carries its crashes", () => {
     expect(ksi?.value).toBe(15);
     expect(acquisition.caveats.length).toBeGreaterThan(0);
     expect(acquisition.citation).toContain("Example crash source");
+  });
+
+  it("carries an exact publication cutoff and provenance into the rendered packet", () => {
+    const item = evidence({
+      publishedThrough: "2023-12-31",
+      publishedThroughProvenance: {
+        sourceUrl: "https://www.nhtsa.gov/final-annual-file",
+        label: "NHTSA final annual release",
+      },
+    });
+    const built = buildPacketSafetyEvidence([item]);
+    if (built.kind !== "present") throw new Error("expected present");
+    expect(built.acquisitions[0]).toMatchObject({
+      publishedThrough: "2023-12-31",
+      publishedThroughSourceUrl: "https://www.nhtsa.gov/final-annual-file",
+    });
+
   });
 
   it("prints no KSI figure when the source cannot separate serious injuries", () => {
@@ -192,6 +211,19 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("15"); // KSI
       // The caveat is IN the packet, not left on a screen nobody prints.
       expect(html).toMatch(/carried no coordinates/i);
+    });
+
+    it("prints the exact crash-source cutoff and its provenance", () => {
+      const html = buildReportHtml(packetData([evidence({
+        publishedThrough: "2023-12-31",
+        publishedThroughProvenance: {
+          sourceUrl: "https://www.nhtsa.gov/final-annual-file",
+          label: "NHTSA final annual release",
+        },
+      })]));
+      expect(html).toContain("Source publication cutoff: 2023-12-31");
+      expect(html).toContain("NHTSA final annual release");
+      expect(html).toContain("https://www.nhtsa.gov/final-annual-file");
     });
 
     it("prints the sourced project estimate without calling it the management budget", () => {

@@ -70,6 +70,19 @@ import {
 } from "@/lib/safety/crash-filters";
 import { CrashFilterPanel, type CrashFacetCounts } from "./crash-filter-panel";
 
+function CutoffProvenanceLink({
+  provenance,
+  short = false,
+}: {
+  provenance: Record<string, unknown> | null | undefined;
+  short?: boolean;
+}) {
+  const sourceUrl = typeof provenance?.sourceUrl === "string" ? provenance.sourceUrl : null;
+  const label = typeof provenance?.label === "string" ? provenance.label : "Source publication metadata";
+  if (!sourceUrl) return null;
+  return <> <a className="underline" href={sourceUrl} target="_blank" rel="noreferrer">{short ? "publication source" : label}</a>.</>;
+}
+
 /**
  * Keep only the LIVE crash points that match the current filters.
  *
@@ -607,6 +620,11 @@ export function SafetyWorkspace({
           truncated: Boolean(body.truncated),
           yearsRequested: years,
           yearsCovered: Array.isArray(body.yearsCovered) ? (body.yearsCovered as number[]) : [],
+          publishedThrough: typeof body.publishedThrough === "string" ? body.publishedThrough : null,
+          publishedThroughProvenance:
+            body.publishedThroughProvenance && typeof body.publishedThroughProvenance === "object"
+              ? body.publishedThroughProvenance as Record<string, unknown>
+              : null,
           collection,
           retrievedAt: new Date().toISOString(),
           // Carried even though a live read stores nothing: the SAME filter
@@ -638,6 +656,11 @@ export function SafetyWorkspace({
         geocodedCount: count(body.geocodedCount),
         truncated: Boolean(body.truncated),
         yearsRequested: years,
+        publishedThrough: typeof body.publishedThrough === "string" ? body.publishedThrough : null,
+        publishedThroughProvenance:
+          body.publishedThroughProvenance && typeof body.publishedThroughProvenance === "object"
+            ? body.publishedThroughProvenance as Record<string, unknown>
+            : null,
         fetchError: typeof body.error === "string" ? body.error : null,
         createdAt: new Date().toISOString(),
         // What the resolver actually consulted. Present only on a fresh
@@ -668,6 +691,8 @@ export function SafetyWorkspace({
           crashCount: summary.crashCount,
           geocodedCount: summary.geocodedCount,
           yearsRequested: years,
+          publishedThrough: summary.publishedThrough,
+          publishedThroughProvenance: summary.publishedThroughProvenance,
           /*
             The extent this pull just used. The server records it; this row is
             built client-side, so without it the acquisition a planner has THIS
@@ -1235,6 +1260,12 @@ export function SafetyWorkspace({
               {COVERAGE_STATE_COPY[liveRead.coverageState] ?? liveRead.coverageState}
             </p>
             <p className="text-muted-foreground">{SAFETY_LIVE_READ_CAVEAT}</p>
+            <p className="text-muted-foreground">
+              {liveRead.publishedThrough
+                ? `The source states that its published data runs through ${liveRead.publishedThrough}.`
+                : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}
+              <CutoffProvenanceLink provenance={liveRead.publishedThroughProvenance} />
+            </p>
             {liveRead.severityCompleteness === "fatal_only" && (
               <p className="text-muted-foreground">{SAFETY_FATAL_ONLY_CAVEAT}</p>
             )}
@@ -1272,6 +1303,12 @@ export function SafetyWorkspace({
             </div>
             <p className="text-muted-foreground">
               {COVERAGE_STATE_COPY[ingest.coverageState] ?? ingest.coverageState}
+            </p>
+            <p className="text-muted-foreground">
+              {ingest.publishedThrough
+                ? `The source states that its published data runs through ${ingest.publishedThrough}.`
+                : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}
+              <CutoffProvenanceLink provenance={ingest.publishedThroughProvenance} />
             </p>
             {/* Name what was consulted. A coverage gap that can list the sources
                 it checked is a far more useful — and more falsifiable — statement
@@ -1505,6 +1542,12 @@ export function SafetyWorkspace({
                       a real crash that cannot be plotted. */}
                   {entry.crashCount.toLocaleString()} crashes ingested,{" "}
                   {entry.geocodedCount.toLocaleString()} geocoded
+                </span>
+                <span className="text-muted-foreground">
+                  {entry.publishedThrough
+                    ? `source published through ${entry.publishedThrough}`
+                    : "source supplied no exact publication cutoff"}
+                  <CutoffProvenanceLink provenance={entry.publishedThroughProvenance} short />
                 </span>
                 <span className="text-muted-foreground">
                   {entry.yearsRequested.length === 0

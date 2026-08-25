@@ -45,6 +45,9 @@ export type PacketSafetyAcquisition = {
   /** Every disclosure this acquisition carries, rendered with the figures. */
   caveats: string[];
   citation: string;
+  publishedThrough: string | null;
+  publishedThroughSourceUrl: string | null;
+  publishedThroughSourceLabel: string | null;
 };
 
 export type PacketSafetyEvidence =
@@ -121,6 +124,16 @@ export function buildPacketSafetyEvidence(
       figures,
       caveats,
       citation: item.citationText,
+      publishedThrough: item.publishedThrough,
+      publishedThroughSourceUrl:
+        typeof item.publishedThroughProvenance?.sourceUrl === "string" &&
+        /^https?:\/\//i.test(item.publishedThroughProvenance.sourceUrl)
+          ? item.publishedThroughProvenance.sourceUrl
+          : null,
+      publishedThroughSourceLabel:
+        typeof item.publishedThroughProvenance?.label === "string"
+          ? item.publishedThroughProvenance.label
+          : null,
     };
   });
 

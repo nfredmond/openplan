@@ -1,5 +1,6 @@
 import { AlertTriangle, Info } from "lucide-react";
 import type { DeploymentCheck, DeploymentHealth } from "@/lib/config/deployment-health";
+import type { ModelingWorkerHealth } from "@/lib/models/worker-health";
 
 /**
  * Tells a workspace owner which capabilities this deployment currently cannot
@@ -15,10 +16,14 @@ import type { DeploymentCheck, DeploymentHealth } from "@/lib/config/deployment-
  * whoever operates it. So the consequence leads and the instruction follows,
  * rather than the panel telling a hosted tenant to go edit a server.
  */
-export function DeploymentHealthPanel({ health }: { health: DeploymentHealth }) {
-  if (health.problems.length === 0) return null;
+export function DeploymentHealthPanel({ health, workerHealth }: { health: DeploymentHealth; workerHealth?: ModelingWorkerHealth | null }) {
+  if (health.problems.length === 0 && !workerHealth) return null;
 
-  const blocked = health.status === "blocked";
+  const workerNeedsAttention = workerHealth
+    ? [workerHealth.aequilibrae, workerHealth.activitysim].some((worker) => worker.state !== "fresh")
+    : false;
+  const blocked = health.status === "blocked" || workerNeedsAttention;
+  const configProblems = health.problems.length > 0;
 
   return (
     <section
@@ -37,12 +42,18 @@ export function DeploymentHealthPanel({ health }: { health: DeploymentHealth }) 
         )}
         <div>
           <h2 className="text-sm font-semibold text-foreground">
-            {blocked
+            {configProblems && blocked
               ? "Some capabilities are switched off by configuration"
-              : "Some capabilities are limited by configuration"}
+              : configProblems
+                ? "Some capabilities are limited by configuration"
+                : workerNeedsAttention
+                  ? "Modeling worker health needs attention"
+                  : "Modeling workers are reporting"}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            These are settings of this OpenPlan deployment, not limits of your data or your area.
+            {configProblems
+              ? "These are settings of this OpenPlan deployment, not limits of your data or your area."
+              : "This is deployment-wide operating health, not a reading about any model run already underway."}
           </p>
         </div>
       </div>
@@ -52,6 +63,16 @@ export function DeploymentHealthPanel({ health }: { health: DeploymentHealth }) 
           <DeploymentHealthRow key={check.key} check={check} />
         ))}
       </ul>
+      {workerHealth ? (
+        <div className="mt-4 border-t border-border/70 pt-3" data-testid="deployment-worker-health">
+          <p className="text-sm font-medium">Modeling workers</p>
+          {[workerHealth.aequilibrae, workerHealth.activitysim].map((worker) => (
+            <p key={worker.kind} className="mt-1 text-xs text-muted-foreground" data-worker-state={worker.state}>
+              {worker.kind === "aequilibrae" ? "AequilibraE" : "ActivitySim"}: {worker.reason}
+            </p>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }

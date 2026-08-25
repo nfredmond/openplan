@@ -53,7 +53,9 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import {
   loadModelingWorkerFacts,
   readDeploymentEnvFacts,
+  resolveModelingWorkerDeclaration,
 } from "@/lib/config/deployment-health-facts";
+import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
@@ -229,6 +231,9 @@ export default async function DashboardPage({
           workspaceId
         ),
       })
+    : null;
+  const modelingWorkerHealth = canManageWorkspace
+    ? await loadModelingWorkerHealth(resolveModelingWorkerDeclaration())
     : null;
 
   // Computed unconditionally and rendered CONDITIONALLY: on an unreadable read
@@ -504,7 +509,7 @@ export default async function DashboardPage({
         </div>
       </GettingStartedCard>
 
-      {deploymentHealth ? <DeploymentHealthPanel health={deploymentHealth} /> : null}
+      {deploymentHealth ? <DeploymentHealthPanel health={deploymentHealth} workerHealth={modelingWorkerHealth} /> : null}
 
       {/* Workspace configuration: where this agency works, and who works here.
           Geography comes first because it is what the rest of the app reads —

@@ -94,6 +94,8 @@ export type SafetyCrashEvidenceIngest = {
   partyCount: number | null;
   /** 'party_rows' | 'crash_flags' | null — which basis the involvement flags rest on. */
   involvementBasis: string | null;
+  publishedThrough?: string | null;
+  publishedThroughProvenance?: Record<string, unknown> | null;
 };
 
 /**
@@ -155,6 +157,8 @@ export type SafetyCrashEvidence = {
    * have to re-derive which others apply.
    */
   narrativeCaveats: string[];
+  publishedThrough: string | null;
+  publishedThroughProvenance: Record<string, unknown> | null;
 };
 
 function zeroSeverityCounts(): Record<CrashSeverity, number> {
@@ -254,6 +258,12 @@ export function buildSafetyCrashEvidence(
     );
   }
 
+  caveats.push(
+    ingest.publishedThrough
+      ? `The source states that this dataset is published through ${ingest.publishedThrough}.`
+      : "The source supplied no exact publication cutoff. The requested years and latest returned crash are not used as substitutes."
+  );
+
   if (roleCounts === null) {
     caveats.push(
       // NOT "no pedestrians were involved". The distinction the whole module
@@ -293,6 +303,8 @@ export function buildSafetyCrashEvidence(
     reportedTotal: ingest.crashCount,
     mappedTotal: ingest.geocodedCount,
     dimensionCoverage: ingest.dimensionCoverage,
+    publishedThrough: ingest.publishedThrough ?? null,
+    publishedThroughProvenance: ingest.publishedThroughProvenance ?? null,
     citationText,
     caveats,
     narrativeCaveat: narrativeCaveats[0],
@@ -333,6 +345,8 @@ export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION = [
   "party_completeness",
   "party_count",
   "involvement_basis",
+  "published_through",
+  "published_through_provenance",
 ].join(", ");
 
 /** The name of the grouped-count RPC. One spelling, so a caller cannot typo it into a silent empty. */
@@ -374,6 +388,11 @@ export function readSafetyCrashEvidenceIngest(
     partyCompleteness: typeof row.party_completeness === "string" ? row.party_completeness : "not_supported",
     partyCount: typeof row.party_count === "number" ? row.party_count : null,
     involvementBasis: typeof row.involvement_basis === "string" ? row.involvement_basis : null,
+    publishedThrough: typeof row.published_through === "string" ? row.published_through : null,
+    publishedThroughProvenance:
+      row.published_through_provenance && typeof row.published_through_provenance === "object"
+        ? row.published_through_provenance as Record<string, unknown>
+        : null,
   };
 }
 

@@ -19,6 +19,7 @@ import {
 } from "@/lib/safety/sources/registry";
 import {
   FARS_SOURCE_ID,
+  FARS_PUBLISHED_CUTOFF,
   coversFarsGeography,
   farsAdapter,
   parseFarsResults,
@@ -475,6 +476,15 @@ describe("FARS national adapter", () => {
     expect(farsAdapter.severityCompleteness).toBe("fatal_only");
     expect(farsAdapter.coverageState).toBe("fars_fatal_only");
     expect(farsAdapter.persistable).toBe(false);
+  });
+
+  it("uses NHTSA's final annual FARS release as the exact publication cutoff", () => {
+    expect(FARS_PUBLISHED_CUTOFF.publishedThrough).toBe("2023-12-31");
+    expect(FARS_PUBLISHED_CUTOFF.provenance).toMatchObject({
+      basis: "source_metadata",
+      finalAnnualFile: true,
+    });
+    expect(FARS_PUBLISHED_CUTOFF.provenance.sourceUrl).toContain("nhtsa.gov/press-releases/");
   });
 
   it("unwraps both response envelopes the CrashAPI has shipped", () => {

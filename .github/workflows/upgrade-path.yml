@@ -217,6 +217,36 @@ jobs:
           EXPECTED="$(printf 'a%.0s' {1..64}):$(printf 'a%.0s' {1..64}):$(printf 'b%.0s' {1..64}):$(printf 'a%.0s' {1..64})"
           test "$CUSTODY" = "$EXPECTED" || { echo "::error::Evidence custody or storage metadata changed across the upgrade"; exit 1; }
 
+      - name: Exercise v0.32 operational rows on the upgraded database
+        run: |
+          CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          docker exec -i "$CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO workspace_reminder_preferences (workspace_id, advance_days, email_digest_enabled)
+          VALUES ('00000000-0000-4000-8000-00000000000a', 14, false);
+          INSERT INTO modeling_worker_heartbeats (
+            worker_kind, instance_id, supported_stages, runtime_mode, worker_version,
+            started_at, last_successful_heartbeat_at
+          ) VALUES (
+            'aequilibrae', 'upgrade-probe-worker',
+            ARRAY['AequilibraE Setup', 'Network Assignment', 'Artifact Extraction'],
+            'poll', 'upgrade-probe', now(), now()
+          );
+          INSERT INTO safety_crash_ingests (
+            id, workspace_id, min_lon, min_lat, max_lon, max_lat, source_id, source_label,
+            attribution, coverage_state, severity_completeness, status,
+            published_through, published_through_provenance
+          ) VALUES (
+            '00000000-0000-4000-8000-000000000015',
+            '00000000-0000-4000-8000-00000000000a', -121.3, 39.1, -120.0, 39.6,
+            'ccrs-ca', 'Upgrade rehearsal crash source', 'Upgrade rehearsal fixture',
+            'ccrs_ca_statewide', 'fatal_injury_only', 'ready',
+            '2023-12-31', jsonb_build_object('basis', 'upgrade_rehearsal_fixture', 'label', 'Exact cutoff fixture')
+          );
+          SQL
+          V032_ROWS=$(docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
+            "SELECT (SELECT count(*) FROM workspace_reminder_preferences WHERE advance_days = 14 AND NOT email_digest_enabled) || ':' || (SELECT count(*) FROM modeling_worker_heartbeats WHERE instance_id = 'upgrade-probe-worker') || ':' || (SELECT count(*) FROM safety_crash_ingests WHERE published_through = DATE '2023-12-31')")
+          test "$V032_ROWS" = "1:1:1" || { echo "::error::v0.32 operational rows failed on upgraded schema: $V032_ROWS"; exit 1; }
+
       - name: Stop Supabase
         if: always()
         run: npm exec -- supabase stop

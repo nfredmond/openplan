@@ -20,7 +20,7 @@ export type AnalysisResult = {
   title?: string;
   createdAt?: string | null;
   metrics: {
-    accessibilityScore: number;
+    accessibilityScore: number | null;
     /**
      * NULL when no crash source answered — see `computeSafety`. This was typed
      * `number`, which was simply untrue (the API response is cast, so TypeScript
@@ -29,8 +29,15 @@ export type AnalysisResult = {
      * Safety tile reading the literal string "null".
      */
     safetyScore: number | null;
-    equityScore: number;
-    overallScore?: number;
+    equityScore: number | null;
+    overallScore?: number | null;
+    scorePresentation?: {
+      accessibility: { value: number | null; eligible: boolean; withheldReason: string | null };
+      safety: { value: number | null; eligible: boolean; withheldReason: string | null };
+      equity: { value: number | null; eligible: boolean; withheldReason: string | null };
+      overall: { value: number | null; eligible: boolean; withheldReason: string | null };
+      banding: "not_validated";
+    };
     confidence?: string;
     totalTransitStops?: number;
     transitAccessTier?: string;
@@ -67,6 +74,7 @@ export type AnalysisResult = {
     dataQuality?: {
       censusAvailable?: boolean;
       crashDataAvailable?: boolean;
+      transitDataAvailable?: boolean;
       lodesSource?: string;
       equitySource?: string;
       aiInterpretationSource?: string;

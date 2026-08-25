@@ -66,6 +66,18 @@ const FARS_BASE = "https://crashviewer.nhtsa.dot.gov/CrashAPI/crashes/GetCrashes
  */
 export const FARS_EARLIEST_YEAR = 2010;
 
+/** Latest final annual FARS file explicitly announced by NHTSA. */
+export const FARS_PUBLISHED_CUTOFF = {
+  publishedThrough: "2023-12-31",
+  provenance: {
+    basis: "source_metadata",
+    sourceUrl: "https://www.nhtsa.gov/press-releases/nhtsa-estimates-39345-traffic-fatalities-2024",
+    label: "NHTSA release of final 2023 FARS data",
+    finalAnnualFile: true,
+    retrievedAt: "2026-08-24T00:00:00.000Z",
+  },
+} as const;
+
 const REQUEST_TIMEOUT_MS = 12_000;
 
 /**
@@ -317,6 +329,7 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
       new Set(records.map((record) => record.collisionYear).filter((y): y is number => typeof y === "number"))
     ).sort((a, b) => a - b),
     truncated: typeof params.maxRecords === "number" && geocodedTotal > params.maxRecords,
+    publishedCutoff: FARS_PUBLISHED_CUTOFF,
   };
 }
 

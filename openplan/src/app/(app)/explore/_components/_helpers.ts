@@ -223,7 +223,7 @@ export function buildThematicOverlayPaintExpression(metricKey: string | null | u
       ["linear"],
       ["coalesce", ["to-number", ["get", "medianIncome"]], 0],
       0,
-      "#7f1d1d",
+      "#64748b",
       45000,
       "#b45309",
       70000,
@@ -282,19 +282,24 @@ export function buildThematicOverlayPaintExpression(metricKey: string | null | u
 
   if (metricKey === "overallScore" || metricKey === "accessibilityScore" || metricKey === "safetyScore" || metricKey === "equityScore") {
     return [
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", metricKey]], 0],
-      0,
-      "#7f1d1d",
-      40,
-      "#b45309",
-      60,
-      "#f59e0b",
-      75,
-      "#10b981",
+      "case",
+      ["==", ["typeof", ["get", metricKey]], "number"],
+      [
+        "interpolate",
+        ["linear"],
+        ["to-number", ["get", metricKey]],
+        0,
+        "#7f1d1d",
+        40,
+        "#b45309",
+        60,
+        "#f59e0b",
+        75,
+        "#10b981",
       90,
       "#0ea5e9",
+      ],
+      "#64748b",
     ];
   }
 

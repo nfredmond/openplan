@@ -43,6 +43,16 @@ const REFUSED: ReadonlyArray<{ fragment: string; matchOnly?: string; reason: str
     reason:
       "Sending the digest directly, which is the same refusal reached by the other door: an agent that cannot run the sweep but can mail its output has the same capability with none of the idempotency.",
   },
+  {
+    fragment: "reminder_preferences",
+    reason:
+      "Changing the advance window or email opt-out changes when another person is interrupted. That is human attention policy, not a mechanical write the assistant may propose or approve for itself.",
+  },
+  {
+    fragment: "reminder_window",
+    reason:
+      "A second likely spelling of the same human-attention decision. The assistant may explain the current preference, but only an owner or admin changes it through My Work.",
+  },
 ];
 
 const REGISTERED_KINDS = Object.keys(ACTION_METADATA);
@@ -73,6 +83,8 @@ describe("the refused award-deadline actions are still refused", () => {
       "record_award_lapse_date",
       "run_work_deadline_sweep",
       "send_work_deadline_digest",
+      "configure_workspace_reminder_preferences",
+      "set_reminder_window",
       // Innocent bystanders that must match NOTHING: one registered today (its
       // pairing-is-content objection was argued and accepted), one that shares
       // the word "award" with the lapse matcher but authors no date.

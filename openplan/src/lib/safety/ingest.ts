@@ -164,6 +164,8 @@ export type IngestCrashesResult = {
   stored: boolean;
   truncated: boolean;
   yearsCovered: number[];
+  publishedThrough?: string;
+  publishedThroughProvenance?: Record<string, unknown>;
   /** How completely severity could be expressed after any KSI enrichment. */
   severityCompleteness: string;
   /** Injury crashes upgraded to KABCO A by the injured-person join. */
@@ -523,6 +525,8 @@ export async function ingestCrashesForStudyArea(
         stored: false,
         truncated: live.fetched.truncated,
         yearsCovered: live.fetched.yearsCovered,
+        publishedThrough: live.fetched.publishedCutoff?.publishedThrough,
+        publishedThroughProvenance: live.fetched.publishedCutoff?.provenance,
         severityCompleteness: live.adapter.severityCompleteness,
         seriousInjuryUpgrades: 0,
         // A live read stores nothing, so it stores no people either — and it
@@ -790,6 +794,8 @@ export async function ingestCrashesForStudyArea(
         // not be read is not a count of none.
         party_count: partyCount,
         involvement_basis: involvementBasis,
+        published_through: fetched.publishedCutoff?.publishedThrough ?? null,
+        published_through_provenance: fetched.publishedCutoff?.provenance ?? null,
       })
       .eq("id", ingestId);
 
@@ -806,6 +812,8 @@ export async function ingestCrashesForStudyArea(
       stored: true,
       truncated: fetched.truncated,
       yearsCovered: fetched.yearsCovered,
+      publishedThrough: fetched.publishedCutoff?.publishedThrough,
+      publishedThroughProvenance: fetched.publishedCutoff?.provenance,
       severityCompleteness,
       seriousInjuryUpgrades,
       partyCompleteness,

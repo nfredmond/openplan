@@ -43,6 +43,7 @@ import {
 // runtime (narrative-drafts imports compactModelRunKpiLine from here).
 import type { AcceptedSectionNarrative } from "@/lib/reports/narrative-drafts";
 import { formatMoney } from "@/lib/money/format";
+import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 
 /**
@@ -306,7 +307,8 @@ function runMarkup(run: RunRecord): string {
   const metrics = run.metrics ?? {};
   const gate = evaluateReportArtifactGate(run);
   const transparency = buildSourceTransparency(metrics, typeof run.ai_interpretation === "string" ? "ai" : "fallback");
-  const score = typeof metrics.overallScore === "number" ? `${metrics.overallScore}/100` : "N/A";
+  const presentedOverall = scoreValueForPresentation(metrics, "overallScore");
+  const score = presentedOverall === null ? "Withheld" : `${presentedOverall}/100`;
   const confidence = typeof metrics.confidence === "string" ? titleize(metrics.confidence) : "Unknown";
 
   return `<article class="run-card">
@@ -918,6 +920,9 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
       (acquisition) => `<div class="packet-safety-acquisition">
       <h3>${esc(acquisition.sourceLabel)}</h3>
       <p>Years requested: ${esc(acquisition.years)}</p>
+      <p>${acquisition.publishedThrough
+        ? `Source publication cutoff: ${esc(acquisition.publishedThrough)}${acquisition.publishedThroughSourceUrl ? ` — <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source publication metadata")}</a>` : ""}.`
+        : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}</p>
       <dl class="detail-grid">
         ${acquisition.figures
           .map(
@@ -1486,10 +1491,10 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
           .map((run) => {
             const metrics = run.metrics ?? {};
             const metricsRows = [
-              ["Overall score", typeof metrics.overallScore === "number" ? `${metrics.overallScore}/100` : "N/A"],
-              ["Accessibility", typeof metrics.accessibilityScore === "number" ? `${metrics.accessibilityScore}/100` : "N/A"],
-              ["Safety", typeof metrics.safetyScore === "number" ? `${metrics.safetyScore}/100` : "N/A"],
-              ["Equity", typeof metrics.equityScore === "number" ? `${metrics.equityScore}/100` : "N/A"],
+              ["Overall score", scoreValueForPresentation(metrics, "overallScore") === null ? "Withheld" : `${scoreValueForPresentation(metrics, "overallScore")}/100`],
+              ["Accessibility", scoreValueForPresentation(metrics, "accessibilityScore") === null ? "Withheld" : `${scoreValueForPresentation(metrics, "accessibilityScore")}/100`],
+              ["Safety", scoreValueForPresentation(metrics, "safetyScore") === null ? "Withheld" : `${scoreValueForPresentation(metrics, "safetyScore")}/100`],
+              ["Equity", scoreValueForPresentation(metrics, "equityScore") === null ? "Withheld" : `${scoreValueForPresentation(metrics, "equityScore")}/100`],
             ];
 
             return `<article class="metric-card">

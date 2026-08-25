@@ -14,6 +14,7 @@ import {
   getComparisonNarrativeLead,
   prioritizeMapComparisonRows,
 } from "@/app/(app)/explore/_components/_helpers";
+import { buildAnalysisCorridorFillExpression } from "@/app/(app)/explore/_components/explore-analysis-layer-install";
 import type { AnalysisContextResponse } from "@/app/(app)/explore/_components/_types";
 
 type LinkedDataset = AnalysisContextResponse["linkedDatasets"][number];
@@ -162,19 +163,24 @@ describe("explore map layer helpers", () => {
 
   it("builds thematic paint expressions for score and point overlay metrics", () => {
     expect(buildThematicOverlayPaintExpression("overallScore")).toEqual([
-      "interpolate",
-      ["linear"],
-      ["coalesce", ["to-number", ["get", "overallScore"]], 0],
-      0,
-      "#7f1d1d",
-      40,
-      "#b45309",
-      60,
-      "#f59e0b",
-      75,
-      "#10b981",
-      90,
-      "#0ea5e9",
+      "case",
+      ["==", ["typeof", ["get", "overallScore"]], "number"],
+      [
+        "interpolate",
+        ["linear"],
+        ["to-number", ["get", "overallScore"]],
+        0,
+        "#7f1d1d",
+        40,
+        "#b45309",
+        60,
+        "#f59e0b",
+        75,
+        "#10b981",
+        90,
+        "#0ea5e9",
+      ],
+      "#64748b",
     ]);
 
     expect(buildThematicOverlayPaintExpression(undefined)).toEqual([
@@ -210,5 +216,12 @@ describe("explore map layer helpers", () => {
       "#ec4899",
       "#334155",
     ]);
+  });
+
+  it("renders a corridor with a withheld composite in neutral gray, not as a score", () => {
+    const expression = buildAnalysisCorridorFillExpression();
+    expect(expression[0]).toBe("case");
+    expect(expression.at(-1)).toBe("#64748b");
+    expect(JSON.stringify(expression)).not.toContain('"coalesce"');
   });
 });

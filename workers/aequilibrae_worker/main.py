@@ -104,9 +104,12 @@ import count_validation
 import emissions
 import equity
 import model_credibility
+from worker_heartbeat import WorkerHeartbeat
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+_WORKER_HEARTBEAT: WorkerHeartbeat | None = None
 
 # Skim/assignment parallelism. AequilibraE defaults to every core, which
 # multiplies graph copies across multiprocessing workers — on shared/dev boxes
@@ -5474,7 +5477,15 @@ def process_stage(stage: dict) -> bool:
     reported as a lost claim instead of being executed twice.
     """
     with _STAGE_EXECUTION_LOCK:
-        return _claim_and_run_stage(stage)
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(
+                {"runId": stage["run_id"], "stageId": stage["id"], "stageName": stage["stage_name"]}
+            )
+        try:
+            return _claim_and_run_stage(stage)
+        finally:
+            if _WORKER_HEARTBEAT is not None:
+                _WORKER_HEARTBEAT.set_current_work(None)
 
 
 def _claim_and_run_stage(stage: dict) -> bool:
@@ -6554,6 +6565,7 @@ WORKER_MODES = ("poll", "push", "both")
 
 
 def run_worker(mode: str | None = None):
+    global _WORKER_HEARTBEAT
     resolved = (mode or os.getenv("AEQ_WORKER_MODE") or "poll").strip().lower()
     if resolved not in WORKER_MODES:
         raise SystemExit(
@@ -6566,6 +6578,15 @@ def run_worker(mode: str | None = None):
     # so an operator who set this variable expecting concurrency is wrong in the
     # same way, and silently ignoring it would leave them believing otherwise.
     resolve_max_concurrent_runs()
+
+    _WORKER_HEARTBEAT = WorkerHeartbeat(
+        supabase_url=SUPABASE_URL,
+        service_key=SUPABASE_KEY,
+        worker_kind="aequilibrae",
+        supported_stages=tuple(AEQ_STAGE_NAMES),
+        runtime_mode=resolved,
+    )
+    _WORKER_HEARTBEAT.start()
 
     if resolved == "poll":
         poll_for_jobs()

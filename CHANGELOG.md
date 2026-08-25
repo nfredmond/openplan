@@ -19,7 +19,29 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**No migrations.** Pull and deploy.
+**Migration and worker restart required.** Run
+`npm exec -- supabase migration up --linked`, restart both modeling workers,
+then deploy. Migration
+`20260824000006_worker_health_reminder_preferences_and_crash_cutoff.sql`
+(`worker_health_reminder_preferences_and_crash_cutoff`)
+adds service-role-only modeling-worker heartbeats, workspace reminder
+preferences, and optional exact crash-source publication cutoffs.
+
+Deployment and model-run pages now distinguish fresh, stale, absent,
+conflicting, and unknown worker capabilities. A stale observation requires a
+planner to acknowledge that exact observation before enqueue; it never stops
+or cancels work already underway.
+
+My Work now lets owners and admins choose a 1–30 day reminder window and turn
+off email digests. In-app reminders always stay on, and missing preference rows
+retain the existing seven-day behavior. Scheduler failures remain visible even
+when older unread reminders are present.
+
+Safety evidence records an exact source publication cutoff only when the source
+publishes one. Corridor scores with missing Census, transit, demographic, or
+crash evidence are withheld consistently from the interface, reports,
+comparisons, exports, and assistant facts. The underlying arithmetic remains
+stored for reproducibility; no unvalidated low/medium/high bands are shown.
 
 ## 0.31.0 — 2026-08-24
 

@@ -404,7 +404,7 @@ describe("POST /api/analysis with nothing measured", () => {
     // `computeSafety` really does return null here — the crash summary is
     // unobserved and scoring is not mocked — so this is the live path.
     expect(summary).not.toContain("null");
-    expect(summary).toContain("Safety: not scored (no crash source answered)");
+    expect(summary).toContain("Safety is withheld because crash evidence is unavailable.");
   });
 
   it("keeps the unmeasured demographics out of the model's citable fact list", async () => {
@@ -532,29 +532,18 @@ describe("the results board a planner actually sees, fed by what the API persist
     expect(screen.queryByText("Decision use: concept-level")).not.toBeInTheDocument();
   });
 
-  /**
-   * Nulling the FIGURES did not null the SCORES, and the scores are the biggest
-   * numbers on the page. Driving the real route with an empty ACS result really
-   * does produce Accessibility 5 / Equity 0 / Overall 3, because
-   * `computeAccessibility` and `computeEquity` consume the summarizer's
-   * placeholder zeros rather than the reported figures. Until that is fixed in
-   * the scoring engine — a separate change — every surface that shows one of
-   * those numbers must say what it was built from.
-   */
+  /** The arithmetic remains recorded, but unsupported scores cannot escape. */
   it("does not present a score built on an unread census as a measurement", async () => {
     const persisted = await runAnalysisWithNoCensusData();
-    // Guard the guard: these are the real values the route produced. If scoring
-    // is later fixed to return null here, this assertion fails and tells the
-    // next reader to retire the caveat rather than leaving it lying about.
-    expect(typeof persisted.metrics.equityScore).toBe("number");
-    expect(typeof persisted.metrics.accessibilityScore).toBe("number");
+    expect(persisted.metrics.equityScore).toBeNull();
+    expect(persisted.metrics.accessibilityScore).toBeNull();
+    expect(typeof (persisted.metrics.rawScores as Record<string, unknown>).equityScore).toBe("number");
+    expect(typeof (persisted.metrics.rawScores as Record<string, unknown>).accessibilityScore).toBe("number");
 
     renderBoard(boardResultFrom(persisted));
 
-    const caveat = /computed as though every demographic input were zero/;
-    // Accessibility, Equity and the composite each carry it — the composite most
-    // of all, because it is the number that gets quoted.
-    expect(screen.getAllByText(caveat).length).toBeGreaterThanOrEqual(3);
+    const caveat = /required demographic inputs are unavailable/;
+    expect(screen.getAllByText(caveat).length).toBeGreaterThanOrEqual(1);
 
     const equityTile = screen.getByText("Equity").closest("div")?.parentElement as HTMLElement;
     expect(within(equityTile).getByText(caveat)).toBeInTheDocument();

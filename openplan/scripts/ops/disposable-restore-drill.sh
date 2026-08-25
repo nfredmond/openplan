@@ -95,6 +95,27 @@ INSERT INTO workspaces (id, name, slug)
 VALUES ('00000000-0000-4000-8000-00000000000a', 'Restore Probe Workspace', 'restore-probe');
 INSERT INTO workspace_members (workspace_id, user_id, role)
 VALUES ('00000000-0000-4000-8000-00000000000a', '00000000-0000-4000-8000-000000000001', 'owner');
+INSERT INTO workspace_reminder_preferences (workspace_id, advance_days, email_digest_enabled)
+VALUES ('00000000-0000-4000-8000-00000000000a', 14, false);
+INSERT INTO modeling_worker_heartbeats (
+  worker_kind, instance_id, supported_stages, runtime_mode, worker_version,
+  started_at, last_successful_heartbeat_at
+) VALUES (
+  'aequilibrae', 'restore-probe-worker',
+  ARRAY['AequilibraE Setup', 'Network Assignment', 'Artifact Extraction'],
+  'poll', 'restore-probe', now(), now()
+);
+INSERT INTO safety_crash_ingests (
+  id, workspace_id, min_lon, min_lat, max_lon, max_lat, source_id, source_label,
+  attribution, coverage_state, severity_completeness, status,
+  published_through, published_through_provenance
+) VALUES (
+  '00000000-0000-4000-8000-000000000015',
+  '00000000-0000-4000-8000-00000000000a', -121.3, 39.1, -120.0, 39.6,
+  'ccrs-ca', 'Restore drill crash source', 'Restore drill fixture',
+  'ccrs_ca_statewide', 'fatal_injury_only', 'ready',
+  '2023-12-31', jsonb_build_object('basis', 'restore_drill_fixture', 'label', 'Exact cutoff fixture')
+);
 INSERT INTO projects (id, workspace_id, name)
 VALUES ('00000000-0000-4000-8000-00000000000b', '00000000-0000-4000-8000-00000000000a', 'Restore Probe Project');
 INSERT INTO kb_documents (
@@ -149,6 +170,9 @@ docker exec "$SOURCE_DB" pg_dump -U postgres -d postgres \
   --table=auth.users \
   --table=public.workspaces \
   --table=public.workspace_members \
+  --table=public.workspace_reminder_preferences \
+  --table=public.modeling_worker_heartbeats \
+  --table=public.safety_crash_ingests \
   --table=public.projects \
   --table=public.kb_documents \
   --table=public.kb_document_chunks \
@@ -212,6 +236,15 @@ RESTORED=$(docker exec "$TARGET_DB" psql -U postgres -d postgres -tA -v ON_ERROR
    JOIN report_artifacts r ON r.report_id = x.id
    WHERE w.id = '00000000-0000-4000-8000-00000000000a';")
 test "$RESTORED" = "1:true"
+
+RESTORED_V032=$(docker exec "$TARGET_DB" psql -U postgres -d postgres -tA -v ON_ERROR_STOP=1 -c \
+  "SELECT
+     (SELECT count(*) FROM workspace_reminder_preferences WHERE workspace_id = '00000000-0000-4000-8000-00000000000a' AND advance_days = 14 AND NOT email_digest_enabled)
+     || ':' ||
+     (SELECT count(*) FROM modeling_worker_heartbeats WHERE instance_id = 'restore-probe-worker')
+     || ':' ||
+     (SELECT count(*) FROM safety_crash_ingests WHERE id = '00000000-0000-4000-8000-000000000015' AND published_through = DATE '2023-12-31');")
+test "$RESTORED_V032" = "1:1:1"
 
 echo "[restore-drill] hashes and relationships restored; running live RLS against the target"
 OPENPLAN_SUPABASE_WORKDIR="$TARGET_ROOT" npm run test:rls-live >/dev/null

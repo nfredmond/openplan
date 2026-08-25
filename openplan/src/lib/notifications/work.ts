@@ -126,6 +126,11 @@ import {
 
 import { enqueueEmail } from "./engagement";
 import { formatMoney } from "@/lib/money/format";
+import {
+  DEFAULT_REMINDER_ADVANCE_DAYS,
+  parseReminderPreference,
+  type WorkspaceReminderPreference,
+} from "./reminder-preferences";
 
 /**
  * The `kind` vocabulary, matching the CHECK constraint as the migration corpus
@@ -234,6 +239,8 @@ export type WorkSweepResult = {
    * nobody established, and this one is reported instead.
    */
   workspaceNamesUnavailable: boolean;
+  reminderPreferencesUnavailable: boolean;
+  emailDigestsDisabled: number;
 };
 
 // ── the seven sources ───────────────────────────────────────────────────────
@@ -1104,6 +1111,7 @@ export const WORK_SWEEP_SOURCES: readonly SweepSource[] = [
 type SweepReadResult = { data: unknown; error: { message?: string | null } | null };
 
 type SweepQuery = PromiseLike<SweepReadResult> & {
+  eq(column: string, value: string): SweepQuery;
   neq(column: string, value: string): SweepQuery;
   not(column: string, operator: string, value: unknown): SweepQuery;
   lte(column: string, value: string): SweepQuery;
@@ -1254,7 +1262,7 @@ function digestBody(
   parts.push(
     appOrigin ? `See everything: ${appOrigin}/my-work` : "See everything on the My Work page in OpenPlan.",
     "",
-    "This is a once-a-day summary of deadlines recorded in OpenPlan. It is sent only when something is due within the week or already overdue."
+    `This is a once-a-day summary of deadlines recorded in OpenPlan. It is sent only when something is due within the next ${horizonDays} ${horizonDays === 1 ? "day" : "days"} or already overdue.`
   );
   return parts.join("\n");
 }
@@ -1271,7 +1279,28 @@ export async function sweepWorkDeadlines(
   options: SweepWorkDeadlinesOptions = {}
 ): Promise<WorkSweepResult> {
   const now = options.now ?? new Date();
-  const horizonDays = options.horizonDays ?? WORK_DEADLINE_HORIZON_DAYS;
+  let preferencesUnavailable = false;
+  const preferences = new Map<string, WorkspaceReminderPreference>();
+  if (options.horizonDays === undefined) {
+    try {
+      const read = await client
+        .from("workspace_reminder_preferences")
+        .select("workspace_id, advance_days, email_digest_enabled");
+      if (read.error) preferencesUnavailable = true;
+      else {
+        for (const row of (read.data ?? []) as Array<Record<string, unknown>>) {
+          const workspaceId = typeof row.workspace_id === "string" ? row.workspace_id : null;
+          if (workspaceId) preferences.set(workspaceId, parseReminderPreference(row, workspaceId));
+        }
+      }
+    } catch {
+      preferencesUnavailable = true;
+    }
+  }
+  const horizonDays = options.horizonDays ?? Math.max(
+    DEFAULT_REMINDER_ADVANCE_DAYS,
+    ...[...preferences.values()].map((preference) => preference.advanceDays)
+  );
   const limit = options.limitPerSource ?? WORK_SWEEP_SOURCE_LIMIT;
   const appOrigin = options.appOrigin ?? null;
   const loadRoster = options.loadRoster ?? loadWorkspaceRoster;
@@ -1292,9 +1321,15 @@ export async function sweepWorkDeadlines(
         : EMPTY_SWEEP_CONTEXT;
     outcome.contextUnavailable = context.unavailable;
     const produced = source.toCandidates(rows, now, context);
-    outcome.candidates = produced.length;
+    const filtered = produced.filter((candidate) => {
+      if (candidate.isOverdue) return true;
+      const preference = preferences.get(candidate.workspace_id);
+      const advanceDays = options.horizonDays ?? preference?.advanceDays ?? DEFAULT_REMINDER_ADVANCE_DAYS;
+      return new Date(candidate.due_on).getTime() <= now.getTime() + advanceDays * 86400000;
+    });
+    outcome.candidates = filtered.length;
     perSource[source.kind] = outcome;
-    candidates.push(...produced);
+    candidates.push(...filtered);
   }
 
   const result: WorkSweepResult = {
@@ -1311,6 +1346,8 @@ export async function sweepWorkDeadlines(
     workspacesWithoutRoster: [],
     writeError: null,
     workspaceNamesUnavailable: false,
+    reminderPreferencesUnavailable: preferencesUnavailable,
+    emailDigestsDisabled: 0,
   };
 
   if (candidates.length === 0) return result;
@@ -1395,8 +1432,17 @@ export async function sweepWorkDeadlines(
   }
 
   for (const [key, items] of byRecipient) {
-    result.digestsComposed += 1;
     const [workspaceId, recipientId] = key.split("::");
+    const preference = preferences.get(workspaceId) ?? {
+      workspaceId,
+      advanceDays: options.horizonDays ?? DEFAULT_REMINDER_ADVANCE_DAYS,
+      emailDigestEnabled: true,
+    };
+    if (!preference.emailDigestEnabled) {
+      result.emailDigestsDisabled += 1;
+      continue;
+    }
+    result.digestsComposed += 1;
     const member = rosters.get(workspaceId)?.find((candidate) => candidate.userId === recipientId);
     const email = member?.email ?? null;
     if (!email) {
@@ -1413,8 +1459,8 @@ export async function sweepWorkDeadlines(
     const outcome = await enqueueEmail(client as unknown as Parameters<typeof enqueueEmail>[0], {
       campaignId: null,
       to: email,
-      subject: digestSubject(overdue, items.length - overdue, horizonDays),
-      text: digestBody(items, workspaceNames.names.get(workspaceId) ?? null, horizonDays, appOrigin),
+      subject: digestSubject(overdue, items.length - overdue, preference.advanceDays),
+      text: digestBody(items, workspaceNames.names.get(workspaceId) ?? null, preference.advanceDays, appOrigin),
       template: "work_deadline_digest",
       payload: { workspaceId, recipientUserId: recipientId, itemCount: items.length, overdue },
     });

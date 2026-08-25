@@ -127,8 +127,8 @@ export function ExploreCurrentResultCard({
               </p>
               <p className="mt-2 text-sm text-slate-300/76">
                 {typeof analysisResult.metrics.overallScore === "number"
-                  ? "Composite corridor score for the currently loaded analysis result."
-                  : "Composite overall score is not available for this run, but the underlying domain scores are captured below."}
+                  ? "OpenPlan screening composite. No qualitative score bands have been validated."
+                  : analysisResult.metrics.scorePresentation?.overall.withheldReason ?? "Composite overall score is withheld because required source evidence is unavailable; supported component evidence remains below."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

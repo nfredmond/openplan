@@ -368,6 +368,7 @@ describe("assistant response builders", () => {
           safetyScore: 72,
           equityScore: 59,
           confidence: "medium",
+          dataQuality: { censusAvailable: true, transitDataAvailable: true, crashDataAvailable: true },
           // The transit provenance `/api/analysis` stamps on every run. Two runs
           // that cannot say how transit was measured are not subtractable on the
           // transit-sensitive metrics, so an ordinary comparison fixture has to
@@ -384,6 +385,7 @@ describe("assistant response builders", () => {
           accessibilityScore: 56,
           safetyScore: 61,
           equityScore: 55,
+          dataQuality: { censusAvailable: true, transitDataAvailable: true, crashDataAvailable: true },
           sourceSnapshots: { transit: { source: "osm-overpass", observed: true } },
         },
       },
@@ -395,6 +397,31 @@ describe("assistant response builders", () => {
     expect(response.summary).toContain("+13");
     expect(response.findings.join(" ")).toContain("Current run confidence");
     expect(response.evidence.join(" ")).toContain("Baseline run");
+  });
+
+  it("does not expose a score the shared presentation decision withheld", () => {
+    const context: RunAssistantContext = {
+      kind: "run",
+      workspace: { id: "11111111-1111-4111-8111-111111111111", name: "Test workspace", role: "member" },
+      run: {
+        id: "33333333-3333-4333-8333-333333333333",
+        title: "Unsupported corridor screen",
+        summary: "Source evidence is incomplete.",
+        createdAt: "2026-08-24T20:00:00.000Z",
+        queryText: "Screen the corridor",
+        metrics: {
+          overallScore: 99,
+          accessibilityScore: 98,
+          safetyScore: 97,
+          equityScore: 96,
+          dataQuality: { censusAvailable: false, transitDataAvailable: false, crashDataAvailable: false },
+        },
+      },
+      baselineRun: null,
+    };
+    const response = buildAssistantResponse(context, "run-brief");
+    expect(response.summary).toContain("overall N/A");
+    expect(response.summary).not.toMatch(/99|98|97|96/);
   });
 
   it("builds workspace responses that keep RTP funding-backed release review visible", () => {

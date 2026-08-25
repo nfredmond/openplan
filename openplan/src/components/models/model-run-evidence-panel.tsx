@@ -470,6 +470,7 @@ export function ModelRunEvidencePanel({
   const [isRelaunching, setIsRelaunching] = useState(false);
   const [isComparisonLoading, setIsComparisonLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [workerHealthAcknowledgement, setWorkerHealthAcknowledgement] = useState<string | null>(null);
   /**
    * WHETHER THE EVIDENCE READ ITSELF FAILED — which is not the same question as
    * "is `error` set". `error` also carries a failed RELAUNCH, and the empty
@@ -672,16 +673,25 @@ export function ModelRunEvidencePanel({
     try {
       const response = await fetch(`/api/models/${modelId}/runs/${modelRunId}/launch`, {
         method: "POST",
+        headers: workerHealthAcknowledgement
+          ? { "x-openplan-worker-health-ack": workerHealthAcknowledgement }
+          : undefined,
       });
       const payload = (await response.json()) as {
         error?: string;
         executionOutlook?: ModelRunExecutionOutlook;
         transitFeed?: { status?: string; reason?: string | null };
         zoneAttributes?: { status?: string; keyOrigin?: string; reason?: string | null };
+        acknowledgementKey?: string | null;
       };
       if (!response.ok) {
+        if (response.status === 409 && payload.acknowledgementKey) {
+          setWorkerHealthAcknowledgement(payload.acknowledgementKey);
+          throw new Error(`${payload.error ?? "Worker health is stale"} Review this exact observation, then press relaunch again to acknowledge it.`);
+        }
         throw new Error(payload.error || "Failed to relaunch worker run");
       }
+      setWorkerHealthAcknowledgement(null);
 
       // THE OTHER ANSWER THIS BUTTON OWES. "Bring the feed in again from the
       // Data Hub, then relaunch" is an instruction OpenPlan gives, and until
@@ -771,7 +781,9 @@ export function ModelRunEvidencePanel({
           {canRelaunch ? (
             <Button type="button" variant="outline" size="sm" onClick={() => void handleRelaunch()} disabled={isRelaunching}>
               {isRelaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-              {runStatus === "queued" ? "Reset queue" : "Relaunch worker run"}
+              {workerHealthAcknowledgement
+                ? "Acknowledge stale health and relaunch"
+                : runStatus === "queued" ? "Reset queue" : "Relaunch worker run"}
             </Button>
           ) : null}
         </div>

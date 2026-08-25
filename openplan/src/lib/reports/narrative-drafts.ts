@@ -23,6 +23,7 @@ import {
   type ReportCitedCountyRun,
   type ReportCitedModelRun,
 } from "@/lib/reports/html";
+import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import {
   buildNarrativeFactList,
   stripFactCitationTokens,
@@ -199,7 +200,9 @@ function legacyRunClaims(runs: ReportSectionFactsRun[]): string[] {
   return runs.map((run) => {
     const metrics = run.metrics ?? {};
     const score =
-      typeof metrics.overallScore === "number" ? `${metrics.overallScore}/100` : "not recorded";
+      scoreValueForPresentation(metrics, "overallScore") === null
+        ? "withheld because required source evidence is unavailable"
+        : `${scoreValueForPresentation(metrics, "overallScore")}/100`;
     const confidence =
       typeof metrics.confidence === "string" ? titleize(metrics.confidence) : "not recorded";
     const summary = run.summary_text?.trim()

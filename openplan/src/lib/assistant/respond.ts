@@ -35,6 +35,7 @@ import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summ
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { formatMoney } from "@/lib/money/format";
+import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 
 function asNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -232,7 +233,9 @@ function withResponseReadFailureDisclosure(
 }
 
 function metricLabel(metrics: Record<string, unknown>, key: string): string {
-  const value = asNumber(metrics[key]);
+  const value = ["overallScore", "accessibilityScore", "safetyScore", "equityScore"].includes(key)
+    ? scoreValueForPresentation(metrics, key as import("@/lib/analysis/score-presentation").HeadlineScoreKey)
+    : asNumber(metrics[key]);
   return value === null ? "N/A" : `${value}`;
 }
 

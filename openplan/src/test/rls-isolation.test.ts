@@ -464,6 +464,16 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     }),
   },
   {
+    table: "workspace_reminder_preferences",
+    select: "workspace_id,advance_days,email_digest_enabled",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId }) => ({
+      workspace_id: workspaceBId,
+      advance_days: 14,
+      email_digest_enabled: false,
+    }),
+  },
+  {
     table: "safety_crashes",
     select: "id,workspace_id",
     expectedMemberReadable: true,
@@ -1272,7 +1282,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(77);
+    expect(tables).toHaveLength(78);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1352,6 +1362,7 @@ describe("workspace RLS isolation inventory", () => {
       "workspace_gis_layers",
       "workspace_invitations",
       "workspace_members",
+      "workspace_reminder_preferences",
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
   });
@@ -1907,6 +1918,34 @@ liveDescribe("workspace RLS live isolation", () => {
         expect(result.rows, `${result.table} tenant B service-only rows`).toEqual([]);
       }
     }
+  });
+
+  it("keeps deployment-global modeling worker heartbeats service-role-only", async () => {
+    const instanceId = `rls-${context.suffix}`;
+    const seeded = await service.from("modeling_worker_heartbeats").insert({
+      worker_kind: "aequilibrae",
+      instance_id: instanceId,
+      supported_stages: ["AequilibraE Setup", "Network Assignment", "Artifact Extraction"],
+      runtime_mode: "poll",
+      worker_version: "rls-probe",
+      started_at: new Date().toISOString(),
+      last_successful_heartbeat_at: new Date().toISOString(),
+    });
+    expect(seeded.error).toBeNull();
+
+    for (const candidate of [anon, userA, userB]) {
+      const { data } = await candidate
+        .from("modeling_worker_heartbeats")
+        .select("instance_id")
+        .eq("instance_id", instanceId);
+      expect(data ?? []).toEqual([]);
+    }
+    const { data: serviceRows } = await service
+      .from("modeling_worker_heartbeats")
+      .select("instance_id")
+      .eq("instance_id", instanceId);
+    expect(serviceRows?.map((row) => row.instance_id)).toEqual([instanceId]);
+    await service.from("modeling_worker_heartbeats").delete().eq("instance_id", instanceId);
   });
 
   it("keeps severe-crash concentration rankings inside the caller's workspace", async () => {
