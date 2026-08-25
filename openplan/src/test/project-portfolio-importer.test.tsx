@@ -98,6 +98,7 @@ describe("ProjectPortfolioImporter", () => {
     fireEvent.click(screen.getAllByRole("button", { name: /Copy setup to exact-header matches/i })[0]);
     expect(await screen.findByRole("status")).toHaveTextContent("Headers did not match: Notes");
     expect(screen.getByLabelText("Project name for South")).toHaveValue("1");
+    fireEvent.change(screen.getByLabelText("Estimated cost for South"), { target: { value: "2" } });
 
     fireEvent.click(screen.getByRole("button", { name: "Preview selected worksheets" }));
     expect(await screen.findByText("Clean project")).toBeInTheDocument();
@@ -116,7 +117,10 @@ describe("ProjectPortfolioImporter", () => {
     const commit = requests.find((entry) => entry.body?.mode === "commit")?.body;
     const configurations = commit?.configurations as Array<Record<string, unknown>>;
     expect(configurations.map((config) => config.worksheetIndex)).toEqual([0, 1, 2]);
-    expect(configurations[1]).toMatchObject({ mapping: { name: 1, sourceId: 0 } });
+    expect(configurations[1]).toMatchObject({
+      mapping: { name: 1, sourceId: 0, estimatedCost: 2 },
+      defaults: { cost: { currency: "USD", scale: "ones", priceYear: new Date().getFullYear() } },
+    });
     expect((commit?.rowReviews as Array<Record<string, unknown>>)).toEqual(expect.arrayContaining([
       expect.objectContaining({ worksheetIndex: 0, rowNumber: 2, decision: "create" }),
       expect.objectContaining({ worksheetIndex: 1, rowNumber: 2, decision: "create", confirmFormula: true }),

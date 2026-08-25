@@ -1,8 +1,8 @@
 # v0.34.0 direct workbook portfolio import proof
 
 Date: 2026-08-25
-Candidate commits: `80270dad`, `0fcc8051`
-Release status: candidate; browser acceptance is still open
+Candidate commits: `80270dad`, `0fcc8051`, `22535359`
+Release status: candidate; browser acceptance complete, final checks and tag pending
 
 ## Boundary proved
 
@@ -65,6 +65,7 @@ for their intended reasons before the original text was restored:
 | Audit privacy | Added worksheet names to an audit call; the route guard found source content in logs |
 | Exact-header copy | Weakened header equality; the mismatched-sheet component test copied setup |
 | Formula UI confirmation | Forced the checkbox value false; the committed request lost confirmation |
+| Cost metadata request | Removed the automatic USD/units/current-year defaults when a cost column was mapped; the importer component test lost the exact defaults and failed. Before the fix, the real API refused the same two-sheet preview because both visible cost setups were absent from the request. |
 | Old-history compatibility | Removed the CSV fallback; the real Projects page crashed on v0.33-shaped history |
 | Schema accountability | Removed the three write-only provenance explanations; the unread-column guard named all three |
 | Migration review | Removed the guarded-backfill allowlist entry; the destructive-migration guard rejected the update |
@@ -99,16 +100,47 @@ place code, a jargon regression, and a nested tinted panel. Those findings were
 fixed in `0fcc8051`; the complete suite and gate above are from the restored
 post-fix state.
 
-## Open release gate: browser acceptance
+## Browser acceptance
 
-The edited checkout was served on port 3200 and positively identified as
-`/home/nathaniel/code/openplan/openplan` at `0fcc8051`. Both supported browser
-bindings then reported no available browser. The Browser and Look skills forbid
-substituting a headless or source-only check for visible evidence.
+Chrome served the edited checkout on port 3200. The repository identity check
+confirmed `/home/nathaniel/code/openplan/openplan`; the dev server correctly
+reported no stamped commit because it compiles the working tree directly.
 
-Before tagging v0.34.0, enter through sign-in in a real supported browser,
-complete a multi-sheet workbook import, confirm a cached formula row, open a
-created project, reload Projects to see durable history, and inspect desktop and
-390px layouts plus console and failed network responses. Record screenshots and
-the result here. Until then, the implementation is pushed but v0.34.0 is not a
-released version.
+The first real preview found a defect that the mocked component test had missed.
+Mapping a cost column displayed USD, units, and the current year, but did not put
+those defaults in the request, so the API rejected the configuration. The
+component now initializes and removes cost metadata with the cost mapping. The
+focused test failed when that initialization was deleted and passed after it
+was restored.
+
+After reloading the fixed tree, the desktop journey:
+
+- entered through sign-in and opened Projects from the workspace navigation;
+- uploaded the independent `portfolio-multi.xlsx` fixture through the product;
+- selected District alpha and District beta, using header rows 3 and 1;
+- mapped cached-formula and raw-numeric costs plus source-location provenance;
+- exercised the exact-header copy control and saw both nonmatching selected
+  sheets named instead of receiving copied setup;
+- reviewed four rows in physical sheet order, with the formula-error and
+  cross-sheet duplicate-ID rows blocked;
+- individually confirmed the cached formula and normalized-name warning;
+- created two projects in one transaction, opened the created Unicode-named
+  project, and reloaded Projects to confirm durable XLSX, two-sheet history and
+  both project links.
+
+At 390px, Chrome signed out and back in, opened Projects from the visible
+workspace list, read the durable import history, and opened the created project.
+The Projects and project-detail documents both measured 390px wide with no
+page-level horizontal overflow. A desktop reviewed-import screenshot and a
+390px signed-in workspace screenshot were captured in the browser session.
+
+The desktop Projects reload recorded 40 network responses with no failed or
+HTTP-error response and no new console problem. The 390px created-project reload
+recorded 66 network responses with no failures and an empty warning/error log.
+One earlier dashboard load logged Mapbox rebuilding a style before it finished
+loading; it did not recur on either release-check reload.
+
+After the browser-found cost-default fix, the full release gate was repeated:
+1,101 Vitest files passed with 2 environment-gated files skipped; all 9 live
+RLS files and 107 tests passed; lint, dead-code audit, production dependency
+audit, TypeScript, and the webpack production build passed.

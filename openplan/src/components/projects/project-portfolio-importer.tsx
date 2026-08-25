@@ -46,6 +46,11 @@ const defaultSetup = (worksheetIndex: number): SheetDraft => ({
   mapping: { name: 0 },
   defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming" },
 });
+const defaultCostMetadata = () => ({
+  currency: "USD",
+  scale: "ones" as const,
+  priceYear: new Date().getFullYear(),
+});
 
 function formatDateTime(value: string): string {
   const parsed = new Date(value);
@@ -192,9 +197,14 @@ export function ProjectPortfolioImporter({
   function changeMapping(index: number, key: MappingKey, raw: string) {
     updateDraft(index, (draft) => {
       const mapping = { ...draft.mapping };
+      const defaults: SheetDraft["defaults"] = { ...draft.defaults };
       if (raw === "") delete mapping[key];
       else mapping[key] = Number.parseInt(raw, 10);
-      return { ...draft, mapping };
+      if (key === "estimatedCost") {
+        if (raw === "") delete defaults.cost;
+        else defaults.cost ??= defaultCostMetadata();
+      }
+      return { ...draft, mapping, defaults };
     });
   }
   function updateCost(index: number, patch: Partial<{ currency: string; scale: PortfolioCostScale; priceYear: number }>) {
@@ -202,7 +212,7 @@ export function ProjectPortfolioImporter({
       ...draft,
       defaults: {
         ...draft.defaults,
-        cost: { currency: "USD", scale: "ones", priceYear: new Date().getFullYear(), ...draft.defaults.cost, ...patch },
+        cost: { ...defaultCostMetadata(), ...draft.defaults.cost, ...patch },
       },
     }));
   }
