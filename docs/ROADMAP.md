@@ -1,21 +1,15 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: edfe829b
-current_release: v0.32.0
+reviewed_commit: 3ee6dafa
+current_release: v0.33.0
 review_by: 2026-09-07
 paths:
-- workers/aequilibrae_worker/worker_heartbeat.py
-- workers/activitysim_worker/worker_heartbeat.py
-- openplan/src/lib/models/worker-health.ts
-- openplan/src/lib/notifications/reminder-preferences.ts
-- openplan/src/lib/safety/sources/types.ts
-- openplan/src/lib/analysis/score-presentation.ts
-- openplan/supabase/migrations/20260824000006_worker_health_reminder_preferences_and_crash_cutoff.sql
-- .github/workflows/upgrade-path.yml
-- docs/ops/V032_OPERATIONAL_HEALTH_PROOF_2026-08-24.md
-- docs/ops/2026-08-24-v032-browser-check.md
-- docs/product/CORRIDOR_SCORE_PRESENTATION_RESEARCH_2026-08-24.md
+- openplan/src/lib/projects/portfolio-import.ts
+- openplan/src/app/api/projects/import/route.ts
+- openplan/src/components/projects/project-portfolio-importer.tsx
+- openplan/supabase/migrations/20260825000001_reviewed_portfolio_import.sql
+- openplan/docs/ops/V033_REVIEWED_PORTFOLIO_IMPORT_PROOF_2026-08-25.md
 - docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md
 - docs/modeling/SEALED_STUDY_EXECUTION_PROTOCOL.md
 - docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md
@@ -78,14 +72,15 @@ The reusable runner, schemas, frozen 2017 hash guard, interruption recovery,
 bounded-memory proof, and protocol landed in `edfe829b`. The 2017 evidence files
 remain byte-for-byte unchanged.
 
-## Now: reviewed portfolio CSV import
+## Completed — v0.33 reviewed portfolio CSV import
 
 - Let a planner bring a multi-row project table into the existing Projects
   portfolio without re-entering every project.
 - Store the source before any project write, map only named fields, and require
   currency, cost scale, and price year when a cost column is mapped.
-- Preview every row as `create`, `skip`, or `blocked conflict`. Repeated source
-  IDs are conflicts; name matches are warnings and never update keys.
+- Default every valid row to `skip`, allow explicit `create`, and block repeated
+  source IDs. Name matches are warnings that require individual confirmation
+  and never update keys.
 - Create only the rows a human confirms. The first slice does not update or
   merge existing projects.
 - Preserve source hash, row number, mapped source ID, row fingerprint, mapping,
@@ -93,10 +88,13 @@ remain byte-for-byte unchanged.
 - Keep the write human-only and record the assistant-action refusal when it
   ships.
 
-The evidence and scope are recorded in
-`docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md`. Official
-agency examples are usually XLS or XLSX, so CSV is the first supported format,
-not the eventual format boundary.
+The scope research remains in
+`docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md`; the parser,
+atomic commit, source-custody, live-RLS, mutation, and desktop/mobile browser
+evidence landed in `3ee6dafa` and is recorded in
+`openplan/docs/ops/V033_REVIEWED_PORTFOLIO_IMPORT_PROOF_2026-08-25.md`. Official
+agency examples are usually XLS or XLSX, so CSV is the first parsed format, not
+the eventual format boundary.
 
 ## Later
 

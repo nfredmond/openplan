@@ -253,6 +253,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260824000006_worker_health_reminder_preferences_and_crash_cutoff.sql",
     migrationsAtRelease: 221,
   },
+  // 0.33.0 — stored-source, human-reviewed, create-only portfolio CSV import
+  // with immutable row provenance and one atomic service-role transaction.
+  {
+    tag: "0.33.0",
+    lastMigration: "20260825000001_reviewed_portfolio_import.sql",
+    migrationsAtRelease: 222,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
