@@ -1,7 +1,7 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 2609f93e
+reviewed_commit: edfe829b
 current_release: v0.32.0
 review_by: 2026-09-07
 paths:
@@ -18,6 +18,7 @@ paths:
 - docs/product/CORRIDOR_SCORE_PRESENTATION_RESEARCH_2026-08-24.md
 - docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md
 - docs/modeling/SEALED_STUDY_EXECUTION_PROTOCOL.md
+- docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md
 - docs/product/LAND_USE_PLANS_CONTRACT.md
 - docs/ADRs/ADR-004-mcp-server-surface.md
 npm_commands:
@@ -63,7 +64,7 @@ The preregistration and result are recorded in
 `docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_PREREGISTRATION_2026-08-24.md` and
 `docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md`.
 
-## Now — crash-safe sealed evidence execution
+## Completed: crash-safe sealed evidence execution
 
 - Do not rerun or reconstruct the consumed 2017 exercise. A future successor
   study requires a genuinely untouched source and a separately frozen,
@@ -73,10 +74,33 @@ The preregistration and result are recorded in
   before another sealed study is attempted. No new feature lane is scheduled
   from this result.
 
+The reusable runner, schemas, frozen 2017 hash guard, interruption recovery,
+bounded-memory proof, and protocol landed in `edfe829b`. The 2017 evidence files
+remain byte-for-byte unchanged.
+
+## Now: reviewed portfolio CSV import
+
+- Let a planner bring a multi-row project table into the existing Projects
+  portfolio without re-entering every project.
+- Store the source before any project write, map only named fields, and require
+  currency, cost scale, and price year when a cost column is mapped.
+- Preview every row as `create`, `skip`, or `blocked conflict`. Repeated source
+  IDs are conflicts; name matches are warnings and never update keys.
+- Create only the rows a human confirms. The first slice does not update or
+  merge existing projects.
+- Preserve source hash, row number, mapped source ID, row fingerprint, mapping,
+  actor, import time, and created project ID so a rerun cannot create copies.
+- Keep the write human-only and record the assistant-action refusal when it
+  ships.
+
+The evidence and scope are recorded in
+`docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md`. Official
+agency examples are usually XLS or XLSX, so CSV is the first supported format,
+not the eventual format boundary.
+
 ## Later
 
 - Additional jurisdiction-specific legal bundles.
-- Portfolio CSV import with provenance.
 - Provenance-carrying road-name geocoding.
 - Printable street backgrounds.
 
