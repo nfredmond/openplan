@@ -1,15 +1,18 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 3ee6dafa
+reviewed_commit: 0fcc8051
 current_release: v0.33.0
 review_by: 2026-09-07
 paths:
 - openplan/src/lib/projects/portfolio-import.ts
+- openplan/src/lib/projects/portfolio-workbook.ts
 - openplan/src/app/api/projects/import/route.ts
 - openplan/src/components/projects/project-portfolio-importer.tsx
 - openplan/supabase/migrations/20260825000001_reviewed_portfolio_import.sql
+- openplan/supabase/migrations/20260825000002_direct_workbook_portfolio_import.sql
 - openplan/docs/ops/V033_REVIEWED_PORTFOLIO_IMPORT_PROOF_2026-08-25.md
+- openplan/docs/ops/V034_DIRECT_WORKBOOK_PORTFOLIO_IMPORT_PROOF_2026-08-25.md
 - docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md
 - docs/modeling/SEALED_STUDY_EXECUTION_PROTOCOL.md
 - docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md
@@ -93,8 +96,29 @@ The scope research remains in
 atomic commit, source-custody, live-RLS, mutation, and desktop/mobile browser
 evidence landed in `3ee6dafa` and is recorded in
 `openplan/docs/ops/V033_REVIEWED_PORTFOLIO_IMPORT_PROOF_2026-08-25.md`. Official
-agency examples are usually XLS or XLSX, so CSV is the first parsed format, not
-the eventual format boundary.
+agency examples are usually XLS or XLSX, so CSV was deliberately the first
+parsed format rather than the final format boundary.
+
+## Candidate — v0.34 direct workbook portfolio import
+
+- Read stored CSV, XLS, XLSX, and ODS sources directly, with bounded archive
+  expansion before compressed workbooks reach the parser.
+- Inspect every worksheet without selecting one automatically. Keep each
+  selected sheet's header, mappings, defaults, and cost units independent.
+- Combine selected sheets in physical order, preserve typed cells, require
+  row-level confirmation for cached formulas and name matches, and block
+  formula errors and duplicate source IDs across the whole batch.
+- Commit through one versioned transaction that rechecks role, source scope,
+  hash, format, sheet identity, rows, and current duplicates while retaining
+  v0.33 CSV compatibility.
+- Preserve sheet-aware immutable row provenance without letting source location
+  text populate a project's map fields.
+
+Implementation, public-file parsing, mutation proof, full tests, workers, live
+RLS, build, and the populated upgrade rehearsal are recorded in
+`openplan/docs/ops/V034_DIRECT_WORKBOOK_PORTFOLIO_IMPORT_PROOF_2026-08-25.md`.
+The tag remains gated on the visible desktop and 390px browser journey because
+no supported browser binding was available in the implementation session.
 
 ## Later
 
