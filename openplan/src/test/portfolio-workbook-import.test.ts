@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 import { reviewPortfolioWorkbook, type PortfolioSheetConfiguration } from "@/lib/projects/portfolio-import";
 import {
   inspectPortfolioWorkbook,
-  PortfolioWorkbookError,
   validatePortfolioArchive,
 } from "@/lib/projects/portfolio-workbook";
 

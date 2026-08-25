@@ -132,6 +132,13 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "renames the pre-existing submitted lifecycle value to queued before narrowing the CHECK; " +
       "the job identity, payload, timestamps, and every other run field are preserved",
   },
+  {
+    file: "20260825000002_direct_workbook_portfolio_import.sql",
+    kind: "update",
+    reason:
+      "backfills every existing v0.33 CSV batch with the equivalent worksheet 0/header row 1 " +
+      "configuration before making that new provenance field required; no existing value is replaced",
+  },
 ];
 
 /**

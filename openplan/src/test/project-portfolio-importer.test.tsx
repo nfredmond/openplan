@@ -87,7 +87,7 @@ describe("ProjectPortfolioImporter", () => {
     fireEvent.click(screen.getByRole("button", { name: /Store source and inspect worksheets/i }));
 
     expect(await screen.findByText(/No worksheet is selected automatically/i)).toBeInTheDocument();
-    expect(screen.getByText(/Location text is provenance, not verified geography/i)).toBeInTheDocument();
+    expect(screen.getByText(/Location text stays with the import; it is not a verified project location/i)).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText("Select worksheet North"));
     fireEvent.click(screen.getByLabelText("Select worksheet South"));
     fireEvent.click(screen.getByLabelText("Select worksheet Notes"));

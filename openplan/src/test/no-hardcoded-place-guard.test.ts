@@ -108,6 +108,7 @@ const NON_PLACE_FIVE_DIGIT_CODES: readonly string[] = [
   "23514", // check_violation
   "23505", // unique_violation
   "23503", // foreign_key_violation
+  "22023", // invalid_parameter_value
 ];
 
 const FIPS_BRANCH =

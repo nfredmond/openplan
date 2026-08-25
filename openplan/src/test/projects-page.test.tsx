@@ -384,7 +384,7 @@ describe("ProjectsPage", () => {
     );
     expect(screen.getByRole("heading", { name: "Import project list" })).toBeInTheDocument();
     expect(screen.getByText(/up to 2,000 rows and 10 MiB/i)).toBeInTheDocument();
-    expect(screen.getByText(/Every valid row starts as skip/i)).toBeInTheDocument();
+    expect(screen.getByText(/Every row starts as skip/i)).toBeInTheDocument();
     expect(screen.getByText("Capital programme")).toBeInTheDocument();
     expect(screen.getByText(/Created 2; skipped 1; conflicted 1; invalid 0/i)).toBeInTheDocument();
   });

@@ -21,7 +21,7 @@ import type { PortfolioWorkbookInspection } from "@/lib/projects/portfolio-workb
 type StoredDocument = { id: string; title: string; original_filename?: string | null };
 export type PortfolioImportSummary = {
   id: string; sourceTitle: string | null; sourceFilename: string | null; sourceHash: string;
-  sourceFormat: "csv" | "xls" | "xlsx" | "ods"; sheetCount: number;
+  sourceFormat?: "csv" | "xls" | "xlsx" | "ods"; sheetCount?: number;
   rowCount: number; createdCount: number; skippedCount: number; conflictedCount: number;
   invalidCount: number; previouslyCreatedCount: number; importedAt: string;
 };
@@ -339,7 +339,7 @@ export function ProjectPortfolioImporter({
 
       {inspection ? <div className="space-y-4">
         <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm leading-relaxed">
-          <strong>Location text is provenance, not verified geography.</strong> It never sets a project place, study area, bounding box, coordinates, or geometry. Formula cells use only the workbook's cached value and require individual confirmation. OpenPlan never recalculates them.
+          <strong>Location text stays with the import; it is not a verified project location.</strong> It never sets the project&apos;s map area or coordinates. Formula cells use only the workbook&apos;s cached value and require individual confirmation. OpenPlan never recalculates them.
         </div>
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground"><span>{inspection.format.toUpperCase()}</span><span>{inspection.worksheets.length} worksheet{inspection.worksheets.length === 1 ? "" : "s"}</span><span>No worksheet is selected automatically.</span></div>
         {inspection.worksheets.map((sheet) => {
@@ -351,7 +351,7 @@ export function ProjectPortfolioImporter({
               <span className="text-xs text-muted-foreground">{sheet.visibility.replace("_", " ")} · {sheet.rowCount} rows · {sheet.columnCount} columns</span>
             </div>
             <div className="overflow-x-auto rounded border"><table className="min-w-max text-xs"><tbody>{sheet.sampleRows.map((row) => <tr key={row.rowNumber} className="border-b last:border-0"><th className="bg-muted/50 px-2 py-1 text-right font-mono">{row.rowNumber}</th>{row.cells.map((cell, index) => <td key={index} className="max-w-48 truncate border-l px-2 py-1" title={cell.formula ? "Cached formula value" : cell.display}>{cell.display || " "}{cell.formula ? " [formula]" : ""}</td>)}</tr>)}</tbody></table></div>
-            {draft ? <div className="space-y-4 rounded-md bg-muted/25 p-3">
+            {draft ? <div className="space-y-4 border-t pt-3">
               <div className="flex flex-wrap items-end gap-3">
                 <label className="grid gap-1 text-xs font-semibold">Header row<input aria-label={`Header row for ${sheet.name}`} type="number" min={1} max={Math.max(1, sheet.rowCount)} value={draft.headerRow} className="w-24 rounded border bg-background px-2 py-1.5" onChange={(event) => updateDraft(sheet.index, (current) => ({ ...current, headerRow: Number(event.target.value) }))} /></label>
                 <button type="button" className="inline-flex items-center gap-1 rounded border px-2 py-1.5 text-xs font-semibold" onClick={() => copySetup(draft)}><Copy className="h-3.5 w-3.5" />Copy setup to exact-header matches</button>
@@ -385,7 +385,36 @@ export function ProjectPortfolioImporter({
         {committed ? <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm">Created {committed.created}, skipped {committed.skipped}, conflicted {committed.conflicted}, invalid {committed.invalid}, already created {committed.previouslyCreated}.{committed.projectIds.length > 0 ? <div className="mt-2 flex flex-wrap gap-2">{committed.projectIds.map((projectId, index) => <a key={projectId} href={`/projects/${projectId}`} className="inline-flex items-center gap-1 font-semibold underline underline-offset-2"><Link2 className="h-3.5 w-3.5" />Open created project {index + 1}</a>)}</div> : null}</div> : null}
       </div> : null}
 
-      <div className="border-t pt-4"><h3 className="text-sm font-semibold">Recent imports</h3>{historyReadFailed ? <p className="mt-2 text-sm text-destructive">Import history could not be read. This is unavailable, not a finding that no imports exist.</p> : recentImports.length === 0 ? <p className="mt-2 text-sm text-muted-foreground">No reviewed portfolio imports have been completed yet.</p> : <div className="mt-3 grid gap-2 lg:grid-cols-2">{recentImports.map((entry) => <article key={entry.id} className="rounded-md border p-3 text-sm"><p className="font-semibold">{entry.sourceTitle || entry.sourceFilename || `Source ${entry.sourceHash.slice(0, 12)}…`}</p><p className="mt-1 text-xs text-muted-foreground">{formatDateTime(entry.importedAt)} · {entry.sourceFormat.toUpperCase()} · {entry.sheetCount} sheet{entry.sheetCount === 1 ? "" : "s"} · {entry.rowCount} rows · {entry.sourceHash.slice(0, 12)}…</p><p className="mt-2 text-xs">Created {entry.createdCount}; skipped {entry.skippedCount}; conflicted {entry.conflictedCount}; invalid {entry.invalidCount}; already created {entry.previouslyCreatedCount}.</p></article>)}</div>}</div>
+      <div className="border-t pt-4">
+        <h3 className="text-sm font-semibold">Recent imports</h3>
+        {historyReadFailed ? (
+          <p className="mt-2 text-sm text-destructive">
+            Import history could not be read. This is unavailable, not a finding that no imports exist.
+          </p>
+        ) : recentImports.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No reviewed portfolio imports have been completed yet.</p>
+        ) : (
+          <div className="mt-3 grid gap-2 lg:grid-cols-2">
+            {recentImports.map((entry) => {
+              const sheetCount = entry.sheetCount ?? 1;
+              return (
+                <article key={entry.id} className="rounded-md border p-3 text-sm">
+                  <p className="font-semibold">
+                    {entry.sourceTitle || entry.sourceFilename || `Source ${entry.sourceHash.slice(0, 12)}…`}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {formatDateTime(entry.importedAt)} · {(entry.sourceFormat ?? "csv").toUpperCase()} · {sheetCount} sheet
+                    {sheetCount === 1 ? "" : "s"} · {entry.rowCount} rows · {entry.sourceHash.slice(0, 12)}…
+                  </p>
+                  <p className="mt-2 text-xs">
+                    Created {entry.createdCount}; skipped {entry.skippedCount}; conflicted {entry.conflictedCount}; invalid {entry.invalidCount}; already created {entry.previouslyCreatedCount}.
+                  </p>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
