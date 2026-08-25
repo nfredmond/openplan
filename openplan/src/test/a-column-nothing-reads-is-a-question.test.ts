@@ -126,6 +126,26 @@ const UNREAD_COLUMNS: ReadonlyArray<{
       "The SQL an analysis actually ran — provenance for a result, stored and never shown. The one " +
       "thing that would let a reviewer reproduce a number by hand.",
   },
+  ...[
+    "project_portfolio_import_batches.defaults_json",
+    "project_portfolio_import_batches.imported_by",
+    "project_portfolio_import_batches.mapping_json",
+    "project_portfolio_import_batches.preview_sha256",
+    "project_portfolio_import_rows.actor_id",
+    "project_portfolio_import_rows.errors_json",
+    "project_portfolio_import_rows.mapped_source_id",
+    "project_portfolio_import_rows.resolved_delivery_phase",
+    "project_portfolio_import_rows.resolved_plan_type",
+    "project_portfolio_import_rows.resolved_status",
+    "project_portfolio_import_rows.source_location_text",
+    "project_portfolio_import_rows.warnings_json",
+  ].map((column) => ({
+    column,
+    category: "WRITE_ONLY" as const,
+    reason:
+      "Immutable reviewed-import provenance. The Projects page surfaces the batch counts and source hash; " +
+      "these row-level approval details remain preserved for a later audit without exposing source cells on the summary surface.",
+  })),
 
   // ---- UNBUILT: the schema implies a capability that does not exist --------
   {
@@ -151,6 +171,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
     ["lodes_od.h_geocode", "Grouped by the lodes_by_tract view to derive home-tract totals."],
     ["kb_document_chunks.content_tsv", "The full-text index the kb_search_chunks RPC searches. Maintained by a trigger, queried in SQL, never named in TypeScript."],
     ["analyses.is_public", "Read by the analyses row-level-security policy and by the share-token index, both in SQL. The application sets sharing through the token, not this flag."],
+    ["project_portfolio_import_rows.batch_id", "Read by the immutable-provenance trigger during a batch cascade and enforced by the row foreign key and batch-row index; TypeScript reads only batch summaries."],
   ].map(([column, reason]) => ({ column, category: "READ_IN_SQL" as const, reason })),
 
   // ---- More inert commercial-era schema -----------------------------------

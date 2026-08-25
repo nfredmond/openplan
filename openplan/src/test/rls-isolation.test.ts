@@ -67,6 +67,7 @@ type SeedContext = {
   gtfsFeedBId: string;
   gtfsFeedVersionBId: string;
   kbDocumentBId: string;
+  portfolioImportBatchBId: string;
   safetyCrashIngestBId: string;
   safetyCrashBId: string;
   gisLayerBId: string;
@@ -442,6 +443,49 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       workspace_id: workspaceBId,
       chunk_index: 0,
       content: `RLS knowledge base chunk ${suffix}`,
+    }),
+  },
+  {
+    table: "project_portfolio_import_batches",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, kbDocumentBId, portfolioImportBatchBId, userBId }) => ({
+      id: portfolioImportBatchBId,
+      workspace_id: workspaceBId,
+      source_document_id: kbDocumentBId,
+      source_sha256: "a".repeat(64),
+      preview_sha256: "b".repeat(64),
+      mapping_json: { name: 0 },
+      defaults_json: { planType: "rls_probe", status: "draft", deliveryPhase: "scoping" },
+      row_count: 1,
+      created_count: 0,
+      skipped_count: 1,
+      conflicted_count: 0,
+      invalid_count: 0,
+      previously_created_count: 0,
+      imported_by: userBId,
+    }),
+  },
+  {
+    table: "project_portfolio_import_rows",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, kbDocumentBId, portfolioImportBatchBId, userBId }) => ({
+      id: randomUUID(),
+      batch_id: portfolioImportBatchBId,
+      workspace_id: workspaceBId,
+      source_document_id: kbDocumentBId,
+      source_sha256: "a".repeat(64),
+      source_row_number: 2,
+      row_fingerprint: "c".repeat(64),
+      decision: "skip",
+      outcome: "skipped",
+      errors_json: [],
+      warnings_json: [],
+      resolved_plan_type: "rls_probe",
+      resolved_status: "draft",
+      resolved_delivery_phase: "scoping",
+      actor_id: userBId,
     }),
   },
   {
@@ -1282,7 +1326,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(78);
+    expect(tables).toHaveLength(80);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1336,6 +1380,8 @@ describe("workspace RLS isolation inventory", () => {
       "project_decisions",
       "project_funding_profiles",
       "project_milestones",
+      "project_portfolio_import_batches",
+      "project_portfolio_import_rows",
       "project_rtp_cycle_links",
       "projects",
       "report_artifacts",
@@ -1788,6 +1834,7 @@ liveDescribe("workspace RLS live isolation", () => {
       gtfsFeedBId: randomUUID(),
       gtfsFeedVersionBId: randomUUID(),
       kbDocumentBId: randomUUID(),
+      portfolioImportBatchBId: randomUUID(),
       safetyCrashIngestBId: randomUUID(),
       safetyCrashBId: randomUUID(),
       gisLayerBId: randomUUID(),

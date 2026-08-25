@@ -33,12 +33,12 @@
 export type ProjectDeleteBlockerSeverity = "blocking" | "evidence";
 
 /** How the row behaves if the project is deleted, straight from the FK definition. */
-export type ProjectDeleteCascadeBehavior = "cascade" | "orphan";
+export type ProjectDeleteCascadeBehavior = "cascade" | "orphan" | "restrict";
 
 export type ProjectDeleteRelation = {
   /** Table holding the reference. */
   table: string;
-  /** Column holding it — every one of these is `project_id` today, but naming it keeps the inventory checkable. */
+  /** Column holding it. Naming it keeps the inventory and count query checkable. */
   column: string;
   /** What a planner calls these records. */
   label: string;
@@ -163,6 +163,16 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   // we warned?" is a question that gets asked after a deadline is missed rather
   // than before.
   { table: "work_notifications", column: "project_id", label: "deadline reminders", severity: "evidence", behavior: "cascade", href: "/my-work" },
+  {
+    table: "project_portfolio_import_rows",
+    column: "created_project_id",
+    label: "portfolio import audit rows",
+    severity: "evidence",
+    behavior: "restrict",
+    href: "/projects#import-project-list",
+    describeLoss: (count) =>
+      `${pluralize(count, "portfolio import audit rows")} permanently identifies this project as the result of a reviewed source row. The immutable source history prevents deletion; mark the project complete instead.`,
+  },
 
   // Work that survives but loses its attribution.
   { table: "models", column: "project_id", label: "models", severity: "evidence", behavior: "orphan", href: "/models" },
@@ -206,12 +216,16 @@ function reasonFor(relation: ProjectDeleteRelation, count: number): string {
   if (relation.severity === "blocking") {
     return relation.behavior === "cascade"
       ? `${pluralize(count, relation.label)} would be destroyed. A funding commitment is a record of what was awarded; it is meant to outlive the project.`
-      : `${pluralize(count, relation.label)} would lose the project they were raised against, leaving a financial record that no longer names what it paid for.`;
+      : relation.behavior === "orphan"
+        ? `${pluralize(count, relation.label)} would lose the project they were raised against, leaving a financial record that no longer names what it paid for.`
+        : `${pluralize(count, relation.label)} prevents the project from being deleted.`;
   }
 
   return relation.behavior === "cascade"
     ? `${pluralize(count, relation.label)} would be deleted along with the project.`
-    : `${pluralize(count, relation.label)} would survive but stop being attributed to any project.`;
+    : relation.behavior === "orphan"
+      ? `${pluralize(count, relation.label)} would survive but stop being attributed to any project.`
+      : `${pluralize(count, relation.label)} prevents the project from being deleted.`;
 }
 
 /**

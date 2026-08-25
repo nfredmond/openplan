@@ -32,6 +32,7 @@ let membershipResponse: ReadResult;
 // "nothing depends on it, delete succeeds" so the happy path is unchanged.
 let extractionRefsResponse: ReadResult;
 let claimRefsResponse: ReadResult;
+let portfolioImportRefsResponse: ReadResult;
 let kbDeleteResponse: { error: null | { message: string; code?: string } };
 /** Ordered log of destructive ops, to prove the row is deleted before bytes. */
 const order: string[] = [];
@@ -101,10 +102,17 @@ vi.mock("@/lib/supabase/server", () => ({
       // The dependency pre-check reads that turn a RESTRICT foreign key into a
       // named refusal: rtp_extraction_runs (cited by an adopted plan) and
       // measure_claim_documents (attached to a measure claim).
-      if (table === "rtp_extraction_runs" || table === "measure_claim_documents") {
+      if (
+        table === "rtp_extraction_runs" ||
+        table === "measure_claim_documents" ||
+        table === "project_portfolio_import_batches"
+      ) {
         return {
           select: (columns: string) => {
             projections.push([table, columns]);
+            if (table === "project_portfolio_import_batches") {
+              return { or: async () => portfolioImportRefsResponse };
+            }
             return {
               eq: async () =>
                 table === "rtp_extraction_runs" ? extractionRefsResponse : claimRefsResponse,
@@ -153,6 +161,7 @@ beforeEach(() => {
   membershipResponse = { data: { role: "member" }, error: null };
   extractionRefsResponse = { data: [], error: null };
   claimRefsResponse = { data: [], error: null };
+  portfolioImportRefsResponse = { data: [], error: null };
   kbDeleteResponse = { error: null };
   projections.length = 0;
   executedDeletes.length = 0;
@@ -238,6 +247,19 @@ describe("DELETE /api/knowledge-base/documents/[documentId] — the role read ga
     expect(body.error).toContain("adopted-plan extraction");
     // "stating the cycle" — the migration's promise, verbatim intent.
     expect(body.error).toContain("2050 RTP");
+  });
+
+  it("names durable portfolio imports before the database RESTRICT refuses deletion", async () => {
+    portfolioImportRefsResponse = { data: [{ id: "batch-1" }, { id: "batch-2" }], error: null };
+
+    const res = await DELETE(request("DELETE"), context);
+
+    expect(res.status).toBe(409);
+    expect(executedDeletes).toEqual([]);
+    expect(storageRemovals).toEqual([]);
+    expect((await res.json()) as { error: string }).toMatchObject({
+      error: expect.stringContaining("2 durable project portfolio imports"),
+    });
   });
 
   it("refuses when a measure claim attaches the document", async () => {

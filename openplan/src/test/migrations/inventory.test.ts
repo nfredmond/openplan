@@ -424,16 +424,20 @@ const EXPECTED = {
   // 20260824000006 adds a service-role-only worker heartbeat table (+1
   // relation/table/RLS table, no policy) and workspace reminder preferences
   // (+3 permissive policies, +2 permissive writes, +1 table with policies).
-  policies: 675,
-  permissive: 429,
+  // 20260825000001 adds the reviewed portfolio-import batch and row ledgers.
+  // Each is member-readable through one SELECT policy and has no client write
+  // policy; the service-only RPC owns all writes. That is +2 permissive
+  // policies, +2 policy-bearing/RLS tables, and no permissive write.
+  policies: 677,
+  permissive: 431,
   restrictive: 246,
   permissiveWrites: 276,
   expanded: 286,
-  tablesWithPolicies: 153,
-  relations: 176,
-  tables: 169,
+  tablesWithPolicies: 155,
+  relations: 178,
+  tables: 171,
   views: 7,
-  rlsEnabledTables: 169,
+  rlsEnabledTables: 171,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

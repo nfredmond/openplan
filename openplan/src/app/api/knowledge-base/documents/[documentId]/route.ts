@@ -43,12 +43,21 @@ async function describeDependenciesBlockingDelete(
     .eq("kb_document_id", documentId);
   if (claimResult.error) return { message: null, failed: true };
 
+  const portfolioImportResult = await service
+    .from("project_portfolio_import_batches")
+    .select("id")
+    .or(
+      `source_document_id.eq.${documentId},original_workbook_document_id.eq.${documentId}`
+    );
+  if (portfolioImportResult.error) return { message: null, failed: true };
+
   const extractionRows = (extractionResult.data ?? []) as Array<{
     rtp_cycles: { title?: string | null } | { title?: string | null }[] | null;
   }>;
   const claimCount = (claimResult.data ?? []).length;
+  const portfolioImportCount = (portfolioImportResult.data ?? []).length;
 
-  if (extractionRows.length === 0 && claimCount === 0) {
+  if (extractionRows.length === 0 && claimCount === 0 && portfolioImportCount === 0) {
     return { message: null, failed: false };
   }
 
@@ -73,6 +82,11 @@ async function describeDependenciesBlockingDelete(
   }
   if (claimCount > 0) {
     parts.push(`${claimCount} measure claim${claimCount === 1 ? "" : "s"}`);
+  }
+  if (portfolioImportCount > 0) {
+    parts.push(
+      `${portfolioImportCount} durable project portfolio import${portfolioImportCount === 1 ? "" : "s"}`
+    );
   }
 
   return {

@@ -5,6 +5,9 @@ export const BODY_LIMITS = {
   smallJson: 16 * 1024,
   normalJson: 64 * 1024,
   documentJson: 256 * 1024,
+  // Portfolio CSV commits carry up to 2,000 compact row decisions. The CSV
+  // itself never rides in JSON; it is reloaded from the stored KB document.
+  portfolioImportJson: 1024 * 1024,
   networkGeoJson: 2 * 1024 * 1024,
   // Public engagement photo upload: 5 MB image payload (matches the
   // engagement-photos bucket file_size_limit) plus small headroom.

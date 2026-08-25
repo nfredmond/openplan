@@ -210,15 +210,20 @@ export async function POST(request: NextRequest) {
     const checksum = createHash("sha256").update(bodyRead.bytes).digest("hex");
     const service = createServiceRoleClient();
 
-    // Idempotent dedup: a byte-identical document already ingested in this
-    // workspace — parsed (`ready`) or kept (`stored`) — is returned as-is
-    // instead of re-ingesting. Failed rows are NOT deduped against: re-upload
-    // is the retry path.
-    const existingResult = await service
+    // Idempotent dedup: a byte-identical document already ingested at the SAME
+    // scope — workspace-wide, or attached to this exact project — is returned
+    // as-is. A project-only source cannot stand in for a workspace portfolio
+    // source, and a workspace document cannot silently become project-only.
+    // Failed rows are NOT deduped against: re-upload is the retry path.
+    let existingQuery = service
       .from("kb_documents")
       .select(KB_DOCUMENT_COLUMNS)
       .eq("workspace_id", query.data.workspaceId)
-      .eq("checksum", checksum)
+      .eq("checksum", checksum);
+    existingQuery = query.data.projectId
+      ? existingQuery.eq("project_id", query.data.projectId)
+      : existingQuery.is("project_id", null);
+    const existingResult = await existingQuery
       .in("status", ["ready", "stored"])
       .limit(1)
       .maybeSingle();

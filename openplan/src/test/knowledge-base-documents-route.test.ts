@@ -24,6 +24,8 @@ let kbListResponse: { data: unknown[]; error: null | { message: string } } = { d
 let dedupResponse: { data: unknown; error: null | { message: string } } = { data: null, error: null };
 /** Every `.in(column, values)` the dedup probe applied. */
 const dedupInCalls: Array<[string, unknown]> = [];
+const dedupEqCalls: Array<[string, unknown]> = [];
+const dedupIsCalls: Array<[string, unknown]> = [];
 /** Service-role writes the upload performed, in order. */
 const serviceInserts: Array<{ table: string; rows: unknown }> = [];
 
@@ -94,14 +96,18 @@ vi.mock("@/lib/supabase/server", () => ({
       // The dedup probe: kb_documents filtered by workspace + checksum, with
       // status narrowed by `.in` to the deduplicable outcomes (ready|stored).
       select: () => ({
-        eq: () => ({
-          eq: () => ({
-            in: (column: string, values: unknown) => {
-              dedupInCalls.push([column, values]);
-              return { limit: () => ({ maybeSingle: async () => dedupResponse }) };
-            },
-          }),
-        }),
+        eq: function eq(column: string, value: unknown) {
+          dedupEqCalls.push([column, value]);
+          return this;
+        },
+        is: function is(column: string, value: unknown) {
+          dedupIsCalls.push([column, value]);
+          return this;
+        },
+        in: function inFilter(column: string, values: unknown) {
+          dedupInCalls.push([column, values]);
+          return { limit: () => ({ maybeSingle: async () => dedupResponse }) };
+        },
       }),
       insert: (rows: unknown) => {
         serviceInserts.push({ table, rows });
@@ -185,6 +191,8 @@ describe("POST /api/knowledge-base/documents — the checksum dedup probe", () =
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
     dedupResponse = { data: null, error: null };
     dedupInCalls.length = 0;
+    dedupEqCalls.length = 0;
+    dedupIsCalls.length = 0;
     serviceInserts.length = 0;
     auditInfo.mockClear();
     auditWarn.mockClear();
@@ -204,6 +212,23 @@ describe("POST /api/knowledge-base/documents — the checksum dedup probe", () =
     // The probe dedupes against BOTH terminal keep-states — ready (parsed) and
     // stored (kept) — and nothing else: failed rows retry via re-upload.
     expect(dedupInCalls).toEqual([["status", ["ready", "stored"]]]);
+    expect(dedupIsCalls).toEqual([["project_id", null]]);
+    expect(dedupEqCalls).toContainEqual(["workspace_id", WORKSPACE_ID]);
+  });
+
+  it("deduplicates project documents only inside that exact project", async () => {
+    const projectId = "990e8400-e29b-41d4-a716-446655440000";
+    dedupResponse = { data: { id: "doc-project", title: "Project source" }, error: null };
+
+    const res = await POST(
+      uploadRequest(`?workspaceId=${WORKSPACE_ID}&projectId=${projectId}&filename=plan.txt`, {
+        "content-type": "text/plain",
+      })
+    );
+
+    expect(res.status).toBe(200);
+    expect(dedupEqCalls).toContainEqual(["project_id", projectId]);
+    expect(dedupIsCalls).toEqual([]);
   });
 
   it("logs the failure and still ingests when the probe fails", async () => {

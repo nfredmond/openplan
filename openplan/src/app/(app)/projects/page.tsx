@@ -4,6 +4,10 @@ import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
+import {
+  ProjectPortfolioImporter,
+  type PortfolioImportSummary,
+} from "@/components/projects/project-portfolio-importer";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import {
@@ -79,6 +83,22 @@ type ProjectRtpLinkRow = {
   id: string;
   project_id: string;
   portfolio_role: string;
+};
+
+type PortfolioImportBatchRow = {
+  id: string;
+  source_sha256: string;
+  row_count: number;
+  created_count: number;
+  skipped_count: number;
+  conflicted_count: number;
+  invalid_count: number;
+  previously_created_count: number;
+  imported_at: string;
+  source_document:
+    | { title: string | null; original_filename: string | null }
+    | Array<{ title: string | null; original_filename: string | null }>
+    | null;
 };
 
 function titleize(value: string | null | undefined): string {
@@ -228,6 +248,36 @@ export default async function ProjectsPage({
     .order("updated_at", { ascending: false });
   const projectsReadFailed = reads.check("your projects", projectsResult);
   const projectsData = projectsReadFailed ? [] : projectsResult.data;
+
+  const portfolioImportsResult = await supabase
+    .from("project_portfolio_import_batches")
+    .select(
+      "id, source_sha256, row_count, created_count, skipped_count, conflicted_count, invalid_count, previously_created_count, imported_at, source_document:kb_documents!project_portfolio_import_batches_source_document_id_fkey(title, original_filename)"
+    )
+    .eq("workspace_id", workspaceId)
+    .order("imported_at", { ascending: false })
+    .limit(6);
+  const importHistoryReadFailed = reads.check("recent project-list imports", portfolioImportsResult);
+  const recentImports: PortfolioImportSummary[] = importHistoryReadFailed
+    ? []
+    : ((portfolioImportsResult.data ?? []) as PortfolioImportBatchRow[]).map((row) => {
+        const source = Array.isArray(row.source_document)
+          ? row.source_document[0] ?? null
+          : row.source_document;
+        return {
+          id: row.id,
+          sourceTitle: source?.title ?? null,
+          sourceFilename: source?.original_filename ?? null,
+          sourceHash: row.source_sha256,
+          rowCount: row.row_count,
+          createdCount: row.created_count,
+          skippedCount: row.skipped_count,
+          conflictedCount: row.conflicted_count,
+          invalidCount: row.invalid_count,
+          previouslyCreatedCount: row.previously_created_count,
+          importedAt: row.imported_at,
+        };
+      });
 
   const projectIds = ((projectsData ?? []) as ProjectRow[]).map((project) => project.id);
   const projectReportsResult = projectIds.length
@@ -513,7 +563,7 @@ export default async function ProjectsPage({
   );
 
   return (
-    <section className="module-page">
+    <section className="module-page grid-cols-[minmax(0,1fr)]">
       {reads.any ? (
         <StateBlock
           tone="danger"
@@ -542,6 +592,12 @@ export default async function ProjectsPage({
           <div className="module-intro-actions">
             <a className="module-intro-action" href="#create-project">
               New project
+            </a>
+            <a
+              className="inline-flex min-h-11 items-center rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground no-underline transition-colors hover:bg-muted"
+              href="#import-project-list"
+            >
+              Import project list
             </a>
           </div>
 
@@ -628,6 +684,12 @@ export default async function ProjectsPage({
           </div>
         </article>
       </header>
+
+      <ProjectPortfolioImporter
+        workspaceId={workspaceId}
+        recentImports={recentImports}
+        historyReadFailed={importHistoryReadFailed}
+      />
 
       {/* ABOVE the cards, deliberately: the comparative view comes first, and
           the cards below keep everything they always said. Both are skipped

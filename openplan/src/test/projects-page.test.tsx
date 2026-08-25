@@ -31,6 +31,11 @@ const aerialMissionsSelectMock = vi.fn(() => ({ in: aerialMissionsInMock }));
 const aerialPackagesInMock = vi.fn();
 const aerialPackagesSelectMock = vi.fn(() => ({ in: aerialPackagesInMock }));
 
+const portfolioImportsLimitMock = vi.fn();
+const portfolioImportsOrderMock = vi.fn(() => ({ limit: portfolioImportsLimitMock }));
+const portfolioImportsEqMock = vi.fn(() => ({ order: portfolioImportsOrderMock }));
+const portfolioImportsSelectMock = vi.fn(() => ({ eq: portfolioImportsEqMock }));
+
 /**
  * The portfolio table's six batched lanes (2026-08-11) read five further
  * tables, plus a second, narrower projection of `projects` for the stated
@@ -85,6 +90,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "aerial_evidence_packages") {
     return { select: aerialPackagesSelectMock };
+  }
+  if (table === "project_portfolio_import_batches") {
+    return { select: portfolioImportsSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -233,6 +241,23 @@ describe("ProjectsPage", () => {
     projectRtpLinksInMock.mockResolvedValue({ data: [], error: null });
     aerialMissionsInMock.mockResolvedValue({ data: [], error: null });
     aerialPackagesInMock.mockResolvedValue({ data: [], error: null });
+    portfolioImportsLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "import-1",
+          source_sha256: "a".repeat(64),
+          row_count: 4,
+          created_count: 2,
+          skipped_count: 1,
+          conflicted_count: 1,
+          invalid_count: 0,
+          previously_created_count: 0,
+          imported_at: "2026-08-25T16:00:00.000Z",
+          source_document: { title: "Capital programme", original_filename: "projects.csv" },
+        },
+      ],
+      error: null,
+    });
 
     reportArtifactsOrderMock.mockResolvedValue({
       data: [
@@ -348,6 +373,32 @@ describe("ProjectsPage", () => {
 
     expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalledWith(expect.anything(), "user-1");
     expect(projectsEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
+  });
+
+  it("renders the real reviewed-import entry point, limits, geography warning, and durable summary", async () => {
+    await renderPage();
+
+    expect(screen.getByRole("link", { name: "Import project list" })).toHaveAttribute(
+      "href",
+      "#import-project-list"
+    );
+    expect(screen.getByRole("heading", { name: "Import project list" })).toBeInTheDocument();
+    expect(screen.getByText(/up to 2,000 rows and 10 MiB/i)).toBeInTheDocument();
+    expect(screen.getByText(/Every valid row starts as skip/i)).toBeInTheDocument();
+    expect(screen.getByText("Capital programme")).toBeInTheDocument();
+    expect(screen.getByText(/Created 2; skipped 1; conflicted 1; invalid 0/i)).toBeInTheDocument();
+  });
+
+  it("discloses an import-history read failure instead of saying there were no imports", async () => {
+    portfolioImportsLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for project_portfolio_import_batches" },
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/Import history could not be read/i)).toBeInTheDocument();
+    expect(screen.queryByText(/No reviewed portfolio imports are recorded yet/i)).toBeNull();
   });
 
   it("shows the supervised pilot workspace gate when no membership exists", async () => {

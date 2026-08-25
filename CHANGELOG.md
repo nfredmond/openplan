@@ -19,7 +19,22 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260825000001_reviewed_portfolio_import.sql`
+(`reviewed_portfolio_import`) adds immutable import batches and row outcomes,
+plus a service-role-only transaction that rechecks the planner's current role
+and source scope before creating projects.
+
+Projects now accepts a stored CSV of up to 2,000 rows and 10 MiB. The planner
+maps columns, reviews every row, and explicitly selects only the projects to
+create. Repeated source IDs and invalid rows stay blocked, name matches require
+individual confirmation, and a rerun cannot create the same source row twice.
+Location text remains source provenance and never becomes verified geography.
+
+CSV is the only parsed spreadsheet format in this release. An original XLS,
+XLSX, or ODS workbook can be retained beside the CSV, but OpenPlan does not
+parse it yet.
 
 ## 0.32.0 — 2026-08-24
 
