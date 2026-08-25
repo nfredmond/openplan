@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCrashSourceSnapshot } from "@/lib/data-sources/crashes";
+import { buildCrashSourceSnapshot, describeCrashSafety } from "@/lib/data-sources/crashes";
 import { buildSafetyCrashEvidence, readSafetyCrashEvidenceIngest } from "@/lib/safety/crash-evidence";
 
 const observed = {
@@ -43,12 +43,24 @@ describe("exact crash-source publication cutoffs", () => {
     expect(snapshot.publishedThrough).toBe("2024-12-31");
     expect(snapshot.publishedThroughProvenance).toMatchObject({ basis: "source_metadata" });
     expect(snapshot.publishedThroughNote).toBeUndefined();
+    expect(snapshot.note).toContain("Source publication cutoff: 2024-12-31");
+    expect(describeCrashSafety({ ...observed, publishedCutoff: {
+      publishedThrough: "2024-12-31",
+      provenance: {
+        basis: "source_metadata",
+        sourceUrl: "https://www.nhtsa.gov/example",
+        label: "2024 annual release",
+        retrievedAt: "2026-08-24T00:00:00.000Z",
+      },
+    } })).toContain("Source publication cutoff: 2024-12-31");
   });
 
   it("says the source supplied no exact cutoff instead of inferring one", () => {
     const snapshot = buildCrashSourceSnapshot(observed, "2026-08-24T20:00:00.000Z");
     expect(snapshot.publishedThrough).toBeUndefined();
     expect(snapshot.publishedThroughNote).toBe("The source supplied no exact publication cutoff.");
+    expect(snapshot.note).toContain("source supplied no exact publication cutoff");
+    expect(describeCrashSafety(observed)).toContain("source supplied no exact publication cutoff");
   });
 
   it("carries persisted cutoff metadata into Safety evidence and its caveats", () => {

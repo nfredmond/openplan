@@ -139,6 +139,12 @@ export interface CrashSummary {
   narrativeLine: string;
 }
 
+function publicationCutoffNote(crashes: Pick<CrashSummaryCore, "publishedCutoff">): string {
+  return crashes.publishedCutoff
+    ? ` Source publication cutoff: ${crashes.publishedCutoff.publishedThrough}; provenance is recorded with this run.`
+    : " The source supplied no exact publication cutoff; requested and returned years are not substitutes.";
+}
+
 /** A summary before its own disclosure is attached. */
 type CrashSummaryCore = Omit<CrashSummary, "sourceSnapshot" | "narrativeLine">;
 
@@ -518,6 +524,7 @@ export function buildCrashSourceSnapshot(
   crashes: CrashSummaryCore,
   fetchedAt: string
 ): Record<string, unknown> {
+  const cutoffNote = publicationCutoffNote(crashes);
   const shared = {
     state: crashes.source,
     label: crashes.sourceLabel,
@@ -596,7 +603,7 @@ export function buildCrashSourceSnapshot(
     ...(merged.length >= 2 ? { contributingSources: merged } : {}),
     ...(unavailable.length > 0 ? { unavailableBackstops: unavailable } : {}),
     unclassifiedCrashes: crashes.unclassifiedCrashes,
-    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}${unclassifiedNote}${mergeNote}${backstopGapNote}`,
+    note: `Observed crash records from ${crashes.sourceLabel}.${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${mergeNote}${backstopGapNote}`,
   };
 }
 
@@ -645,11 +652,12 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
     crashes.unclassifiedCrashes > 0
       ? ` ${crashes.unclassifiedCrashes} mapped crashes carry no casualty count from the source and are not classified by severity.`
       : "";
+  const cutoffNote = publicationCutoffNote(crashes);
 
   return (
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
     `${crashes.bicyclistFatalities} involving a bicyclist). ${densityLabel}: ` +
-    `${crashes.crashesPerSquareMile}/sq mi/yr.${unclassifiedNote}${mergeNote}${backstopGapNote}`
+    `${crashes.crashesPerSquareMile}/sq mi/yr.${cutoffNote}${unclassifiedNote}${mergeNote}${backstopGapNote}`
   );
 }
