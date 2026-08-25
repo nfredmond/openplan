@@ -1,0 +1,146 @@
+{
+  "alternatives": [
+    "work1",
+    "work2",
+    "school1",
+    "school2",
+    "work_and_school"
+  ],
+  "features": [
+    {
+      "name": "age_centered_decades",
+      "observed_2017": "(R_AGE_IMP - 40) / 10",
+      "observed_2022": "(R_AGE - 40) / 10",
+      "runtime": "(age - 40) / 10"
+    },
+    {
+      "name": "age_centered_decades_squared",
+      "observed_2017": "((R_AGE_IMP - 40) / 10) ** 2",
+      "observed_2022": "((R_AGE - 40) / 10) ** 2",
+      "runtime": "((age - 40) / 10) ** 2"
+    },
+    {
+      "name": "female",
+      "observed_2017": "R_SEX_IMP == 2",
+      "observed_2022": "R_SEX == 2",
+      "runtime": "female"
+    },
+    {
+      "name": "household_size_minus_one_clip_4",
+      "observed_2017": "min(HHSIZE, 5) - 1",
+      "observed_2022": "min(HHSIZE, 5) - 1",
+      "runtime": "@df.hhsize.clip(upper=5) - 1"
+    },
+    {
+      "name": "workers_clip_3",
+      "observed_2017": "min(WRKCOUNT, 3)",
+      "observed_2022": "min(WRKCOUNT, 3)",
+      "runtime": "@df.num_workers.clip(upper=3)"
+    }
+  ],
+  "learned_coefficients": {
+    "school1": {
+      "age_centered_decades": -0.19236921842140617,
+      "age_centered_decades_squared": 0.0919827101537113,
+      "female": -0.26790779545207394,
+      "household_size_minus_one_clip_4": -0.19676006059879034,
+      "workers_clip_3": -0.04283306908764413
+    },
+    "school2": {
+      "age_centered_decades": 0.8383160766608332,
+      "age_centered_decades_squared": 0.33184292626642187,
+      "female": 0.5388813308065581,
+      "household_size_minus_one_clip_4": 0.3865114970142384,
+      "workers_clip_3": -0.28485451758093217
+    },
+    "work2": {
+      "age_centered_decades": -0.033156535227091735,
+      "age_centered_decades_squared": 0.03862814531635523,
+      "female": -0.3999039551566306,
+      "household_size_minus_one_clip_4": 0.08015819715941787,
+      "workers_clip_3": -0.02155649681459773
+    },
+    "work_and_school": {
+      "age_centered_decades": 0.5814541713723869,
+      "age_centered_decades_squared": 0.08231128305747047,
+      "female": -0.7305309501739489,
+      "household_size_minus_one_clip_4": 0.0047932868900315015,
+      "workers_clip_3": 0.5318920336581265
+    }
+  },
+  "reference_alternative": "work1",
+  "reference_cells": "worker status crossed with fixed age band; student status absent",
+  "reference_probabilities": {
+    "not_worker__age_05_17": {
+      "school1": 0.9978027763001153,
+      "school2": 0.002196757875054281,
+      "work1": 1.5527494345851492e-07,
+      "work2": 1.5527494345851492e-07,
+      "work_and_school": 1.5527494345851492e-07
+    },
+    "not_worker__age_18_24": {
+      "school1": 0.9314165437669554,
+      "school2": 2.6503479639258015e-07,
+      "work1": 0.05694119407519894,
+      "work2": 2.6503479639258015e-07,
+      "work_and_school": 0.011641732088252912
+    },
+    "not_worker__age_25_44": {
+      "school1": 0.3095419753549857,
+      "school2": 0.013182409131409311,
+      "work1": 0.6669997255280835,
+      "work2": 0.010275422695254732,
+      "work_and_school": 4.6729026687093533e-07
+    },
+    "not_worker__age_45_64": {
+      "school1": 0.01713402579684111,
+      "school2": 3.628303026951678e-07,
+      "work1": 0.9828648857122508,
+      "work2": 3.628303026951678e-07,
+      "work_and_school": 3.628303026951678e-07
+    },
+    "not_worker__age_65_plus": {
+      "school1": 0.19038891775980446,
+      "school2": 2.48247718817166e-06,
+      "work1": 0.8096036348086311,
+      "work2": 2.48247718817166e-06,
+      "work_and_school": 2.48247718817166e-06
+    },
+    "worker__age_05_17": {
+      "school1": 0.42254914854259107,
+      "school2": 3.1889802930430254e-07,
+      "work1": 0.41363094061457,
+      "work2": 3.1889802930430254e-07,
+      "work_and_school": 0.16381927304678026
+    },
+    "worker__age_18_24": {
+      "school1": 0.0772593259849453,
+      "school2": 0.018953356411922802,
+      "work1": 0.8663617831102294,
+      "work2": 0.009379928125401588,
+      "work_and_school": 0.028045606367500923
+    },
+    "worker__age_25_44": {
+      "school1": 0.006096180378159148,
+      "school2": 1.6416940171344903e-08,
+      "work1": 0.9642963624841271,
+      "work2": 0.028484371985860756,
+      "work_and_school": 0.0011230687349127637
+    },
+    "worker__age_45_64": {
+      "school1": 0.00034319751384509506,
+      "school2": 1.8515814075529983e-08,
+      "work1": 0.976759058161218,
+      "work2": 0.022897707293308676,
+      "work_and_school": 1.8515814075529983e-08
+    },
+    "worker__age_65_plus": {
+      "school1": 1.281294426781571e-07,
+      "school2": 1.281294426781571e-07,
+      "work1": 0.9451071152447453,
+      "work2": 0.054892500366926604,
+      "work_and_school": 1.281294426781571e-07
+    }
+  },
+  "selected_regularization": 0.0003
+}

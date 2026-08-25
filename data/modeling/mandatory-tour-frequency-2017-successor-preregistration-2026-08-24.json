@@ -1,0 +1,1035 @@
+{
+  "candidate_contract": {
+    "files_sha256": {
+      "coefficient_package.json": "ae3e10770116f100721f34c94c5c20d4c174b7d31ed938b28768b2b05de2ca9d",
+      "mandatory_tour_frequency.csv": "cd41c4d441ea73aed50ff43d2e103138b8ff5a0fc4bd30472f6e76c3e2e82df7",
+      "mandatory_tour_frequency.yaml": "019d835f5fa6bc3512b90507c85ea69f4dc38761adcd14ef7ea9bda92dbfa829",
+      "mandatory_tour_frequency_coefficients.csv": "dd3139ec266d6d11a11655ae195e01ae7fc3f1f713c26f97b6c62499fc2288b8",
+      "mandatory_tour_frequency_model.json": "386e892dc80e90dd280cf44607876ea8a4053b9b0b311948feb55289b9568bd1"
+    },
+    "fit_source": "all nine consumed 2022 Census divisions",
+    "geographic_terms_absent": true,
+    "package_manifest_sha256": "ae3e10770116f100721f34c94c5c20d4c174b7d31ed938b28768b2b05de2ca9d",
+    "package_path": "data/modeling/activitysim-mandatory-tour-frequency-2017-successor",
+    "predictors": [
+      {
+        "name": "age_centered_decades",
+        "observed_2017": "(R_AGE_IMP - 40) / 10",
+        "observed_2022": "(R_AGE - 40) / 10",
+        "runtime": "(age - 40) / 10"
+      },
+      {
+        "name": "age_centered_decades_squared",
+        "observed_2017": "((R_AGE_IMP - 40) / 10) ** 2",
+        "observed_2022": "((R_AGE - 40) / 10) ** 2",
+        "runtime": "((age - 40) / 10) ** 2"
+      },
+      {
+        "name": "female",
+        "observed_2017": "R_SEX_IMP == 2",
+        "observed_2022": "R_SEX == 2",
+        "runtime": "female"
+      },
+      {
+        "name": "household_size_minus_one_clip_4",
+        "observed_2017": "min(HHSIZE, 5) - 1",
+        "observed_2022": "min(HHSIZE, 5) - 1",
+        "runtime": "@df.hhsize.clip(upper=5) - 1"
+      },
+      {
+        "name": "workers_clip_3",
+        "observed_2017": "min(WRKCOUNT, 3)",
+        "observed_2022": "min(WRKCOUNT, 3)",
+        "runtime": "@df.num_workers.clip(upper=3)"
+      }
+    ],
+    "reference_cells": "worker status crossed with age band",
+    "student_status_absent": true,
+    "vehicle_terms_absent": true
+  },
+  "component": "mandatory_tour_frequency",
+  "evaluation": {
+    "decision": {
+      "accepted": "every source, replicate, rare-cell, national, transfer-cell, and nine-division gate passes",
+      "inconclusive": "any source, replicate, rare-cell, reconstruction, or domain-adequacy prerequisite fails",
+      "rejected": "all prerequisites are valid and at least one substantive gate fails"
+    },
+    "division_labels": [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09"
+    ],
+    "division_safety_gates": {
+      "candidate_minus_reference_total_variation_maximum": 0.05,
+      "holm_family_alpha": 0.05,
+      "kish_effective_minimum": 20.0,
+      "tour_mean_absolute_error_two_sided_upper_maximum": 0.15,
+      "unweighted_supported_minimum": 30,
+      "weighted_reconstruction_coverage_lower_bound_minimum": 0.8
+    },
+    "holm_family_alpha": 0.05,
+    "national_gates": {
+      "candidate_choice_share_absolute_error_maximum": 0.05,
+      "candidate_minus_reference_log_loss_one_sided_upper": 0.0,
+      "candidate_total_variation_maximum": 0.05,
+      "rare_alternative_kish_effective_minimum": 5.0,
+      "rare_alternative_unweighted_minimum": 10,
+      "tour_mean_absolute_error_two_sided_upper_maximum": 0.1,
+      "weighted_reconstruction_coverage_lower_bound_minimum": 0.9,
+      "weighted_reconstruction_coverage_minimum": 0.95
+    },
+    "transfer_cell_gates": {
+      "holm_family_alpha": 0.05,
+      "kish_effective_minimum": 20.0,
+      "unweighted_minimum": 30
+    }
+  },
+  "freshness_attestation": {
+    "bounded_limit": "Repository and known-agent history cannot prove that no unrelated person or checkout ever inspected the outcome.",
+    "known_current_agent_work_inspected_2017_outcome_rows": false,
+    "known_prior_work": "Only published aggregate trip-rate references and header-only source inspection were found.",
+    "recorded_at": "2026-08-25T02:57:49.233578+00:00",
+    "repository_search_found_2017_mandatory_outcome_artifact": false
+  },
+  "inference": {
+    "design_degrees_of_freedom": 84,
+    "failed_replicate_rule": "any missing, nonfinite, or nonpositive denominator makes the study inconclusive",
+    "jackknife_factor": 0.8571428571428571,
+    "kish_effective_sample": "sum(w)^2 / sum(w^2)",
+    "one_sided_95_t_critical": 1.6631966790019561,
+    "replicate_count": 98,
+    "two_sided_95_t_critical": 1.9886096669757087
+  },
+  "outcome_adapter": {
+    "away_fields": [
+      "OUTOFTWN",
+      "OUTCNTRY"
+    ],
+    "end_home_required": true,
+    "home_codes": [
+      "01",
+      "02"
+    ],
+    "order_field": "TDTRPNUM",
+    "paper_diary_field_used": false,
+    "person_first_universe": true,
+    "school_code": "08",
+    "start_home_field": "FRSTHM17",
+    "supported_alternatives": [
+      "work1",
+      "work2",
+      "school1",
+      "school2",
+      "work_and_school"
+    ],
+    "unsupported_patterns_coerced": false,
+    "work_code": "03",
+    "work_related_code_not_work": "04"
+  },
+  "question": "Does one unchanged national mandatory-tour-frequency component transfer from consumed 2022 development outcomes to the complete 2017 NHTS source?",
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-2017-successor.v1",
+  "scope_limits": [
+    "A pass covers this one mandatory_tour_frequency component conditional on observed mandatory DAP only.",
+    "It does not validate another ActivitySim component, destination or mode choice, scheduling, or local corridor accuracy.",
+    "No result changes an OpenPlan default automatically."
+  ],
+  "sources": {
+    "acceptance_core": {
+      "archive_sha256": "4f1917d9470fbf351c325ee9fe7d4cdbf71715775d0e0c974ca57861b4d8704d",
+      "archive_size_bytes": 83726358,
+      "header_only_contract": {
+        "hhpub.csv": {
+          "archive_member": "hhpub.csv",
+          "columns": [
+            "HOUSEID",
+            "TRAVDAY",
+            "SAMPSTRAT",
+            "HOMEOWN",
+            "HHSIZE",
+            "HHVEHCNT",
+            "HHFAMINC",
+            "PC",
+            "SPHONE",
+            "TAB",
+            "WALK",
+            "BIKE",
+            "CAR",
+            "TAXI",
+            "BUS",
+            "TRAIN",
+            "PARA",
+            "PRICE",
+            "PLACE",
+            "WALK2SAVE",
+            "BIKE2SAVE",
+            "PTRANS",
+            "HHRELATD",
+            "DRVRCNT",
+            "CNTTDHH",
+            "HHSTATE",
+            "HHSTFIPS",
+            "NUMADLT",
+            "YOUNGCHILD",
+            "WRKCOUNT",
+            "TDAYDATE",
+            "HHRESP",
+            "LIF_CYC",
+            "MSACAT",
+            "MSASIZE",
+            "RAIL",
+            "URBAN",
+            "URBANSIZE",
+            "URBRUR",
+            "SCRESP",
+            "CENSUS_D",
+            "CENSUS_R",
+            "CDIVMSAR",
+            "HH_RACE",
+            "HH_HISP",
+            "HH_CBSA",
+            "RESP_CNT",
+            "WEBUSE17",
+            "SMPLSRCE",
+            "WTHHFIN",
+            "HBHUR",
+            "HTHTNRNT",
+            "HTPPOPDN",
+            "HTRESDN",
+            "HTEEMPDN",
+            "HBHTNRNT",
+            "HBPPOPDN",
+            "HBRESDN"
+          ],
+          "compressed_size_bytes": 5302259,
+          "crc32": "70d11a82",
+          "uncompressed_size_bytes": 38631137
+        },
+        "perpub.csv": {
+          "archive_member": "perpub.csv",
+          "columns": [
+            "HOUSEID",
+            "PERSONID",
+            "R_AGE",
+            "EDUC",
+            "R_HISP",
+            "R_RELAT",
+            "R_SEX",
+            "R_RACE",
+            "PRMACT",
+            "PAYPROF",
+            "GT1JBLWK",
+            "WRK_HOME",
+            "WKFTPT",
+            "WRKTRANS",
+            "LSTTRDAY17",
+            "OCCAT",
+            "SCHTYP",
+            "NWALKTRP",
+            "WALK4EX",
+            "NBIKETRP",
+            "BIKE4EX",
+            "BIKESHARE",
+            "PTUSED",
+            "MCUSED",
+            "CARSHARE",
+            "RIDESHARE",
+            "CARRODE",
+            "TIMETOWK",
+            "NOCONG",
+            "PUBTIME",
+            "WRKTIME",
+            "WKRMHM",
+            "FLEXTIME",
+            "WKFMHMXX",
+            "SCHTRN1",
+            "SCHTRN2",
+            "DELIVER",
+            "MEDCOND",
+            "MEDCOND6",
+            "HEALTH",
+            "PHYACT",
+            "VPACT",
+            "LPACT",
+            "BORNINUS",
+            "YRTOUS",
+            "YEARMILE",
+            "PROXY",
+            "WHOPROXY",
+            "USEPUBTR",
+            "SAMEPLC",
+            "W_NONE",
+            "W_CANE",
+            "W_WLKR",
+            "W_WHCANE",
+            "W_DOG",
+            "W_CRUTCH",
+            "W_SCOOTR",
+            "W_CHAIR",
+            "W_MTRCHR",
+            "WORKER",
+            "DIARY",
+            "OUTCNTRY",
+            "FRSTHM17",
+            "CNTTDTR",
+            "GCDWORK",
+            "WKSTFIPS",
+            "DRIVER",
+            "OUTOFTWN",
+            "DISTTOWK17",
+            "DISTTOSC17",
+            "R_AGE_IMP",
+            "R_SEX_IMP",
+            "ALT_16",
+            "ALT_23",
+            "ALT_45",
+            "WALK_DEF",
+            "WALK_GKQ",
+            "BIKE_DFR",
+            "BIKE_GKP",
+            "CONDTRAV",
+            "CONDRIDE",
+            "CONDNIGH",
+            "CONDRIVE",
+            "CONDPUB",
+            "CONDSPEC",
+            "CONDTAX",
+            "TRAVDAY",
+            "HOMEOWN",
+            "HHSIZE",
+            "HHVEHCNT",
+            "HHFAMINC",
+            "DRVRCNT",
+            "HHSTATE",
+            "HHSTFIPS",
+            "NUMADLT",
+            "WRKCOUNT",
+            "TDAYDATE",
+            "HHRESP",
+            "LIF_CYC",
+            "MSACAT",
+            "MSASIZE",
+            "RAIL",
+            "URBAN",
+            "URBANSIZE",
+            "URBRUR",
+            "CENSUS_D",
+            "CENSUS_R",
+            "CDIVMSAR",
+            "HH_RACE",
+            "HH_HISP",
+            "HH_CBSA",
+            "SMPLSRCE",
+            "WTPERFIN",
+            "HBHUR",
+            "HTHTNRNT",
+            "HTPPOPDN",
+            "HTRESDN",
+            "HTEEMPDN",
+            "HBHTNRNT",
+            "HBPPOPDN",
+            "HBRESDN"
+          ],
+          "compressed_size_bytes": 16209929,
+          "crc32": "1a648fac",
+          "uncompressed_size_bytes": 153098853
+        },
+        "trippub.csv": {
+          "archive_member": "trippub.csv",
+          "columns": [
+            "HOUSEID",
+            "PERSONID",
+            "TDTRPNUM",
+            "STRTTIME",
+            "ENDTIME",
+            "TRVLCMIN",
+            "TRPMILES",
+            "TRPTRANS",
+            "TRPACCMP",
+            "TRPHHACC",
+            "VEHID",
+            "TRWAITTM",
+            "NUMTRANS",
+            "TRACCTM",
+            "DROP_PRK",
+            "TREGRTM",
+            "WHODROVE",
+            "WHYFROM",
+            "LOOP_TRIP",
+            "TRPHHVEH",
+            "HHMEMDRV",
+            "HH_ONTD",
+            "NONHHCNT",
+            "NUMONTRP",
+            "PSGR_FLG",
+            "PUBTRANS",
+            "TRIPPURP",
+            "DWELTIME",
+            "TDWKND",
+            "VMT_MILE",
+            "DRVR_FLG",
+            "WHYTRP1S",
+            "ONTD_P1",
+            "ONTD_P2",
+            "ONTD_P3",
+            "ONTD_P4",
+            "ONTD_P5",
+            "ONTD_P6",
+            "ONTD_P7",
+            "ONTD_P8",
+            "ONTD_P9",
+            "ONTD_P10",
+            "ONTD_P11",
+            "ONTD_P12",
+            "ONTD_P13",
+            "TDCASEID",
+            "TRACC_WLK",
+            "TRACC_POV",
+            "TRACC_BUS",
+            "TRACC_CRL",
+            "TRACC_SUB",
+            "TRACC_OTH",
+            "TREGR_WLK",
+            "TREGR_POV",
+            "TREGR_BUS",
+            "TREGR_CRL",
+            "TREGR_SUB",
+            "TREGR_OTH",
+            "WHYTO",
+            "TRAVDAY",
+            "HOMEOWN",
+            "HHSIZE",
+            "HHVEHCNT",
+            "HHFAMINC",
+            "DRVRCNT",
+            "HHSTATE",
+            "HHSTFIPS",
+            "NUMADLT",
+            "WRKCOUNT",
+            "TDAYDATE",
+            "HHRESP",
+            "LIF_CYC",
+            "MSACAT",
+            "MSASIZE",
+            "RAIL",
+            "URBAN",
+            "URBANSIZE",
+            "URBRUR",
+            "GASPRICE",
+            "CENSUS_D",
+            "CENSUS_R",
+            "CDIVMSAR",
+            "HH_RACE",
+            "HH_HISP",
+            "HH_CBSA",
+            "SMPLSRCE",
+            "R_AGE",
+            "EDUC",
+            "R_SEX",
+            "PRMACT",
+            "PROXY",
+            "WORKER",
+            "DRIVER",
+            "WTTRDFIN",
+            "WHYTRP90",
+            "TRPMILAD",
+            "R_AGE_IMP",
+            "R_SEX_IMP",
+            "VEHTYPE",
+            "OBHUR",
+            "DBHUR",
+            "OTHTNRNT",
+            "OTPPOPDN",
+            "OTRESDN",
+            "OTEEMPDN",
+            "OBHTNRNT",
+            "OBPPOPDN",
+            "OBRESDN",
+            "DTHTNRNT",
+            "DTPPOPDN",
+            "DTRESDN",
+            "DTEEMPDN",
+            "DBHTNRNT",
+            "DBPPOPDN",
+            "DBRESDN"
+          ],
+          "compressed_size_bytes": 47062136,
+          "crc32": "de205d11",
+          "uncompressed_size_bytes": 546388721
+        }
+      },
+      "members": [
+        {
+          "compressed_size_bytes": 5302259,
+          "crc32": "70d11a82",
+          "name": "hhpub.csv",
+          "uncompressed_size_bytes": 38631137
+        },
+        {
+          "compressed_size_bytes": 16209929,
+          "crc32": "1a648fac",
+          "name": "perpub.csv",
+          "uncompressed_size_bytes": 153098853
+        },
+        {
+          "compressed_size_bytes": 47062136,
+          "crc32": "de205d11",
+          "name": "trippub.csv",
+          "uncompressed_size_bytes": 546388721
+        },
+        {
+          "compressed_size_bytes": 15135617,
+          "crc32": "9ea3b2e2",
+          "name": "vehpub.csv",
+          "uncompressed_size_bytes": 90856500
+        },
+        {
+          "compressed_size_bytes": 15765,
+          "crc32": "aa309466",
+          "name": "Citation.docx",
+          "uncompressed_size_bytes": 19375
+        }
+      ],
+      "non_header_rows_read": 0,
+      "official_url": "https://nhts.ornl.gov/media/2016/download/csv.zip",
+      "source_id": "us-fhwa-nhts-2017-core"
+    },
+    "acceptance_replicates": {
+      "archive_sha256": "730c3634c0adc6945ab60436b19924e221df516970560e46585fc5613148cc46",
+      "archive_size_bytes": 80811775,
+      "header_only_contract": {
+        "perwgt.csv": {
+          "archive_member": "perwgt.csv",
+          "columns": [
+            "HOUSEID",
+            "PERSONID",
+            "WTPERFIN",
+            "WTPERFIN1",
+            "WTPERFIN2",
+            "WTPERFIN3",
+            "WTPERFIN4",
+            "WTPERFIN5",
+            "WTPERFIN6",
+            "WTPERFIN7",
+            "WTPERFIN8",
+            "WTPERFIN9",
+            "WTPERFIN10",
+            "WTPERFIN11",
+            "WTPERFIN12",
+            "WTPERFIN13",
+            "WTPERFIN14",
+            "WTPERFIN15",
+            "WTPERFIN16",
+            "WTPERFIN17",
+            "WTPERFIN18",
+            "WTPERFIN19",
+            "WTPERFIN20",
+            "WTPERFIN21",
+            "WTPERFIN22",
+            "WTPERFIN23",
+            "WTPERFIN24",
+            "WTPERFIN25",
+            "WTPERFIN26",
+            "WTPERFIN27",
+            "WTPERFIN28",
+            "WTPERFIN29",
+            "WTPERFIN30",
+            "WTPERFIN31",
+            "WTPERFIN32",
+            "WTPERFIN33",
+            "WTPERFIN34",
+            "WTPERFIN35",
+            "WTPERFIN36",
+            "WTPERFIN37",
+            "WTPERFIN38",
+            "WTPERFIN39",
+            "WTPERFIN40",
+            "WTPERFIN41",
+            "WTPERFIN42",
+            "WTPERFIN43",
+            "WTPERFIN44",
+            "WTPERFIN45",
+            "WTPERFIN46",
+            "WTPERFIN47",
+            "WTPERFIN48",
+            "WTPERFIN49",
+            "WTPERFIN50",
+            "WTPERFIN51",
+            "WTPERFIN52",
+            "WTPERFIN53",
+            "WTPERFIN54",
+            "WTPERFIN55",
+            "WTPERFIN56",
+            "WTPERFIN57",
+            "WTPERFIN58",
+            "WTPERFIN59",
+            "WTPERFIN60",
+            "WTPERFIN61",
+            "WTPERFIN62",
+            "WTPERFIN63",
+            "WTPERFIN64",
+            "WTPERFIN65",
+            "WTPERFIN66",
+            "WTPERFIN67",
+            "WTPERFIN68",
+            "WTPERFIN69",
+            "WTPERFIN70",
+            "WTPERFIN71",
+            "WTPERFIN72",
+            "WTPERFIN73",
+            "WTPERFIN74",
+            "WTPERFIN75",
+            "WTPERFIN76",
+            "WTPERFIN77",
+            "WTPERFIN78",
+            "WTPERFIN79",
+            "WTPERFIN80",
+            "WTPERFIN81",
+            "WTPERFIN82",
+            "WTPERFIN83",
+            "WTPERFIN84",
+            "WTPERFIN85",
+            "WTPERFIN86",
+            "WTPERFIN87",
+            "WTPERFIN88",
+            "WTPERFIN89",
+            "WTPERFIN90",
+            "WTPERFIN91",
+            "WTPERFIN92",
+            "WTPERFIN93",
+            "WTPERFIN94",
+            "WTPERFIN95",
+            "WTPERFIN96",
+            "WTPERFIN97",
+            "WTPERFIN98",
+            "WTTRDFIN",
+            "WTTRDFIN1",
+            "WTTRDFIN2",
+            "WTTRDFIN3",
+            "WTTRDFIN4",
+            "WTTRDFIN5",
+            "WTTRDFIN6",
+            "WTTRDFIN7",
+            "WTTRDFIN8",
+            "WTTRDFIN9",
+            "WTTRDFIN10",
+            "WTTRDFIN11",
+            "WTTRDFIN12",
+            "WTTRDFIN13",
+            "WTTRDFIN14",
+            "WTTRDFIN15",
+            "WTTRDFIN16",
+            "WTTRDFIN17",
+            "WTTRDFIN18",
+            "WTTRDFIN19",
+            "WTTRDFIN20",
+            "WTTRDFIN21",
+            "WTTRDFIN22",
+            "WTTRDFIN23",
+            "WTTRDFIN24",
+            "WTTRDFIN25",
+            "WTTRDFIN26",
+            "WTTRDFIN27",
+            "WTTRDFIN28",
+            "WTTRDFIN29",
+            "WTTRDFIN30",
+            "WTTRDFIN31",
+            "WTTRDFIN32",
+            "WTTRDFIN33",
+            "WTTRDFIN34",
+            "WTTRDFIN35",
+            "WTTRDFIN36",
+            "WTTRDFIN37",
+            "WTTRDFIN38",
+            "WTTRDFIN39",
+            "WTTRDFIN40",
+            "WTTRDFIN41",
+            "WTTRDFIN42",
+            "WTTRDFIN43",
+            "WTTRDFIN44",
+            "WTTRDFIN45",
+            "WTTRDFIN46",
+            "WTTRDFIN47",
+            "WTTRDFIN48",
+            "WTTRDFIN49",
+            "WTTRDFIN50",
+            "WTTRDFIN51",
+            "WTTRDFIN52",
+            "WTTRDFIN53",
+            "WTTRDFIN54",
+            "WTTRDFIN55",
+            "WTTRDFIN56",
+            "WTTRDFIN57",
+            "WTTRDFIN58",
+            "WTTRDFIN59",
+            "WTTRDFIN60",
+            "WTTRDFIN61",
+            "WTTRDFIN62",
+            "WTTRDFIN63",
+            "WTTRDFIN64",
+            "WTTRDFIN65",
+            "WTTRDFIN66",
+            "WTTRDFIN67",
+            "WTTRDFIN68",
+            "WTTRDFIN69",
+            "WTTRDFIN70",
+            "WTTRDFIN71",
+            "WTTRDFIN72",
+            "WTTRDFIN73",
+            "WTTRDFIN74",
+            "WTTRDFIN75",
+            "WTTRDFIN76",
+            "WTTRDFIN77",
+            "WTTRDFIN78",
+            "WTTRDFIN79",
+            "WTTRDFIN80",
+            "WTTRDFIN81",
+            "WTTRDFIN82",
+            "WTTRDFIN83",
+            "WTTRDFIN84",
+            "WTTRDFIN85",
+            "WTTRDFIN86",
+            "WTTRDFIN87",
+            "WTTRDFIN88",
+            "WTTRDFIN89",
+            "WTTRDFIN90",
+            "WTTRDFIN91",
+            "WTTRDFIN92",
+            "WTTRDFIN93",
+            "WTTRDFIN94",
+            "WTTRDFIN95",
+            "WTTRDFIN96",
+            "WTTRDFIN97",
+            "WTTRDFIN98"
+          ],
+          "compressed_size_bytes": 64232790,
+          "crc32": "8590128c",
+          "uncompressed_size_bytes": 880244436
+        }
+      },
+      "members": [
+        {
+          "compressed_size_bytes": 16562834,
+          "crc32": "6e6add0b",
+          "name": "hhwgt.csv",
+          "uncompressed_size_bytes": 216482462
+        },
+        {
+          "compressed_size_bytes": 64232790,
+          "crc32": "8590128c",
+          "name": "perwgt.csv",
+          "uncompressed_size_bytes": 880244436
+        },
+        {
+          "compressed_size_bytes": 15765,
+          "crc32": "aa309466",
+          "name": "Citation.docx",
+          "uncompressed_size_bytes": 19375
+        }
+      ],
+      "non_header_rows_read": 0,
+      "official_url": "https://nhts.ornl.gov/media/2016/download/ReplicatesCSV.zip",
+      "source_id": "us-fhwa-nhts-2017-person-replicates"
+    },
+    "development": {
+      "all_nine_divisions_are_consumed_development": true,
+      "archive_sha256": "64530c396d5f164d2259a22f7042f27bee5147babcd367568ddbfafe6c8bf34c",
+      "development_summary": {
+        "by_division": {
+          "01": {
+            "records": 917,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 39,
+                "weekday_weight": 680589.145096
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 424,
+                "weekday_weight": 7584846.912101
+              },
+              "not_weekday_study_population": {
+                "records": 264,
+                "weekday_weight": 0.0
+              },
+              "supported_alternative": {
+                "records": 190,
+                "weekday_weight": 5607027.551494
+              }
+            },
+            "weekday_weight": 13872463.608691
+          },
+          "02": {
+            "records": 1955,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 111,
+                "weekday_weight": 4163202.286757
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 941,
+                "weekday_weight": 22082172.900639
+              },
+              "not_weekday_study_population": {
+                "records": 540,
+                "weekday_weight": 0.0
+              },
+              "out_of_support_mandatory_pattern": {
+                "records": 1,
+                "weekday_weight": 6703.203733
+              },
+              "supported_alternative": {
+                "records": 362,
+                "weekday_weight": 12370833.156506
+              }
+            },
+            "weekday_weight": 38622911.547635
+          },
+          "03": {
+            "records": 2746,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 185,
+                "weekday_weight": 5459870.03813
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 1276,
+                "weekday_weight": 23232818.325815
+              },
+              "not_weekday_study_population": {
+                "records": 769,
+                "weekday_weight": 0.0
+              },
+              "out_of_support_mandatory_pattern": {
+                "records": 1,
+                "weekday_weight": 29839.121457
+              },
+              "supported_alternative": {
+                "records": 515,
+                "weekday_weight": 14728241.543103
+              }
+            },
+            "weekday_weight": 43450769.028505
+          },
+          "04": {
+            "records": 1271,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 61,
+                "weekday_weight": 2537195.761456
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 577,
+                "weekday_weight": 10609620.765369
+              },
+              "not_weekday_study_population": {
+                "records": 359,
+                "weekday_weight": 0.0
+              },
+              "out_of_support_mandatory_pattern": {
+                "records": 1,
+                "weekday_weight": 10703.642637
+              },
+              "supported_alternative": {
+                "records": 273,
+                "weekday_weight": 6673380.262364
+              }
+            },
+            "weekday_weight": 19830900.431826
+          },
+          "07": {
+            "records": 1934,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 126,
+                "weekday_weight": 4330366.16989
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 918,
+                "weekday_weight": 23069628.560695
+              },
+              "not_weekday_study_population": {
+                "records": 579,
+                "weekday_weight": 0.0
+              },
+              "supported_alternative": {
+                "records": 311,
+                "weekday_weight": 10306214.641174
+              }
+            },
+            "weekday_weight": 37706209.371759
+          },
+          "09": {
+            "records": 2418,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 195,
+                "weekday_weight": 5911507.876231
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 1149,
+                "weekday_weight": 27991962.239812
+              },
+              "not_weekday_study_population": {
+                "records": 642,
+                "weekday_weight": 0.0
+              },
+              "supported_alternative": {
+                "records": 432,
+                "weekday_weight": 15414045.672201
+              }
+            },
+            "weekday_weight": 49317515.788244
+          }
+        },
+        "coverage_denominator": "complete weekday person-days with an observed mandatory pattern",
+        "design_weighted_supported_share": 0.999274778947,
+        "records": 11241,
+        "supported_alternatives": {
+          "school1": {
+            "records": 537,
+            "weekday_weight": 17986479.788266
+          },
+          "school2": {
+            "records": 10,
+            "weekday_weight": 525236.814364
+          },
+          "work1": {
+            "records": 1471,
+            "weekday_weight": 44823237.483171
+          },
+          "work2": {
+            "records": 56,
+            "weekday_weight": 1349539.607941
+          },
+          "work_and_school": {
+            "records": 9,
+            "weekday_weight": 415249.133099
+          }
+        },
+        "weekday_records": 8088
+      },
+      "formerly_acceptance_summary": {
+        "by_division": {
+          "05": {
+            "records": 3408,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 196,
+                "weekday_weight": 6431468.52705
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 1634,
+                "weekday_weight": 34478368.57714
+              },
+              "not_weekday_study_population": {
+                "records": 968,
+                "weekday_weight": 0.0
+              },
+              "out_of_support_mandatory_pattern": {
+                "records": 1,
+                "weekday_weight": 205103.69456
+              },
+              "supported_alternative": {
+                "records": 609,
+                "weekday_weight": 20363930.468318
+              }
+            },
+            "weekday_weight": 61478871.267068
+          },
+          "06": {
+            "records": 980,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 52,
+                "weekday_weight": 1735106.139577
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 452,
+                "weekday_weight": 9682933.48747
+              },
+              "not_weekday_study_population": {
+                "records": 281,
+                "weekday_weight": 0.0
+              },
+              "supported_alternative": {
+                "records": 195,
+                "weekday_weight": 6457276.760366
+              }
+            },
+            "weekday_weight": 17875316.387412
+          },
+          "08": {
+            "records": 1368,
+            "statuses": {
+              "incomplete_diary": {
+                "records": 88,
+                "weekday_weight": 2846793.068851
+              },
+              "no_observed_mandatory_pattern": {
+                "records": 629,
+                "weekday_weight": 12643490.001964
+              },
+              "not_weekday_study_population": {
+                "records": 409,
+                "weekday_weight": 0.0
+              },
+              "out_of_support_mandatory_pattern": {
+                "records": 2,
+                "weekday_weight": 21742.295193
+              },
+              "supported_alternative": {
+                "records": 240,
+                "weekday_weight": 7893942.202828
+              }
+            },
+            "weekday_weight": 23405967.568836
+          }
+        },
+        "coverage_denominator": "complete weekday person-days with an observed mandatory pattern",
+        "design_weighted_supported_share": 0.993507926865,
+        "records": 5756,
+        "supported_alternatives": {
+          "school1": {
+            "records": 281,
+            "weekday_weight": 9189126.196181
+          },
+          "school2": {
+            "records": 1,
+            "weekday_weight": 26345.488159
+          },
+          "work1": {
+            "records": 740,
+            "weekday_weight": 24926467.126463
+          },
+          "work2": {
+            "records": 17,
+            "weekday_weight": 440196.637108
+          },
+          "work_and_school": {
+            "records": 5,
+            "weekday_weight": 133013.9836
+          }
+        },
+        "weekday_records": 4098
+      },
+      "historical_acceptance_result_sha256": "1a139663438c6522104c852f1811839f17e32fa702bb2f95959cf26b6a3c9de4",
+      "source_id": "us-fhwa-nhts-2022-consumed",
+      "supported_records": 3127
+    },
+    "license_posture": "public-use; FHWA citation requested; raw redistribution not authorized by this study"
+  },
+  "status": "frozen_before_2017_outcome_access",
+  "weekday_estimand": {
+    "absolute_population_totals_used": false,
+    "domain": "TRAVDAY 02 through 06, including holidays",
+    "limitation": "This is a weekday domain under seven-day weights, not the 2022 nonholiday WTPERFIN5D estimand.",
+    "population": "combined national and add-on public-use sample",
+    "ratio_rule": "recompute every normalized estimate separately under each replicate",
+    "weight": "WTPERFIN and WTPERFIN1 through WTPERFIN98"
+  }
+}

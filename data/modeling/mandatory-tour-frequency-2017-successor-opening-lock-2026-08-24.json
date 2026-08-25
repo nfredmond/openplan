@@ -1,0 +1,41 @@
+{
+  "candidate_package_files_sha256": {
+    "coefficient_package.json": "ae3e10770116f100721f34c94c5c20d4c174b7d31ed938b28768b2b05de2ca9d",
+    "mandatory_tour_frequency.csv": "cd41c4d441ea73aed50ff43d2e103138b8ff5a0fc4bd30472f6e76c3e2e82df7",
+    "mandatory_tour_frequency.yaml": "019d835f5fa6bc3512b90507c85ea69f4dc38761adcd14ef7ea9bda92dbfa829",
+    "mandatory_tour_frequency_coefficients.csv": "dd3139ec266d6d11a11655ae195e01ae7fc3f1f713c26f97b6c62499fc2288b8",
+    "mandatory_tour_frequency_model.json": "386e892dc80e90dd280cf44607876ea8a4053b9b0b311948feb55289b9568bd1"
+  },
+  "candidate_package_path": "data/modeling/activitysim-mandatory-tour-frequency-2017-successor",
+  "component": "mandatory_tour_frequency",
+  "evaluator": {
+    "closure_sha256": "c233abfaf59e2226e599f69e727c2ac65990d144c275479a22e0c81573b7a600",
+    "files": [
+      {
+        "path": "scripts/modeling/mandatory_tour_frequency_2017_successor.py",
+        "sha256": "be319ab981fc9742a6ba4c31c565a2019625af8f9311e377607fe373f5aa7998"
+      },
+      {
+        "path": "scripts/modeling/us_nhts_diaries.py",
+        "sha256": "64ff0a975c7123df637108d5c5ac3045c3280ed0f5380e8790a235fb29816092"
+      }
+    ]
+  },
+  "one_shot_outputs": {
+    "person_level_output_allowed": false,
+    "receipt": "data/modeling/mandatory-tour-frequency-2017-successor-opening-receipt-2026-08-24.json",
+    "result": "data/modeling/mandatory-tour-frequency-2017-successor-result-2026-08-24.json"
+  },
+  "preregistration_path": "data/modeling/mandatory-tour-frequency-2017-successor-preregistration-2026-08-24.json",
+  "preregistration_sha256": "da4d21abd5335f85c6f35bc5780fe95500d51c1e22dc80e3bb738e09af293af9",
+  "schema_version": "openplan.activitysim-mandatory-tour-frequency-2017-successor.v1.opening-lock",
+  "source_paths": {
+    "core": "/tmp/openplan-nhts-2017.2Uoiz1/core.csv.zip",
+    "replicates": "/tmp/openplan-nhts-2017.2Uoiz1/replicates.csv.zip"
+  },
+  "source_sha256": {
+    "core": "4f1917d9470fbf351c325ee9fe7d4cdbf71715775d0e0c974ca57861b4d8704d",
+    "replicates": "730c3634c0adc6945ab60436b19924e221df516970560e46585fc5613148cc46"
+  },
+  "status": "one_opening_frozen_unopened"
+}
