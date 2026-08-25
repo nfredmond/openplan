@@ -82,13 +82,14 @@ export const MODELING_WORKER_TOKEN_ENV = "OPENPLAN_MODELING_WORKER_TOKEN";
 
 /**
  * What this deployment SAYS about the modeling worker — never what OpenPlan has
- * checked, because it cannot check.
+ * checked. Durable worker heartbeats are reduced separately because they are
+ * observations, while this remains the declaration and run-history fallback
+ * used across a deploy/migrate or older-worker window.
  *
- * The AequilibraE worker CAN be a poller: it reads queued runs out of Postgres,
- * and in that shape it exposes no URL to probe and writes no heartbeat. Every
- * other worker in the product is declared by its URL and token, and that
- * declaration is what lets those routes answer honestly BEFORE doing anything.
- * This is the same declaration for a worker configured with no URL to declare.
+ * The AequilibraE worker CAN be a poller: it reads queued runs out of Postgres
+ * and has no URL to probe. Current workers write durable heartbeats; older
+ * workers do not, so this declaration still covers a worker configured with no
+ * URL during the compatibility window.
  *
  * A deployment may now ALSO give the modeling worker a URL and token
  * (`MODELING_WORKER_URL_ENV`), in which case OpenPlan pushes each run to it and
@@ -241,13 +242,15 @@ function anthropicCheck(facts: DeploymentHealthFacts): DeploymentCheck {
 }
 
 /**
- * Worker liveness is DECLARED, INFERRED, or — where the deployment configures a
- * push endpoint — ANSWERED AT LAUNCH. It is never probed from here.
+ * This fallback describes worker posture as DECLARED, INFERRED, or — where the
+ * deployment configures a push endpoint — ANSWERED AT LAUNCH. Durable heartbeat
+ * observations are loaded and displayed separately; they do not belong in this
+ * configuration-only function.
  *
  * A polling AequilibraE worker reads queued runs out of the database and has no
- * endpoint to ping and no heartbeat column. There is therefore no way to ask "is
- * a worker running?" — only to be TOLD by whoever runs the deployment, and to
- * observe whether work is moving.
+ * endpoint to ping. A current worker writes a heartbeat, but an older worker or
+ * pending migration cannot. The declaration and run-history path therefore
+ * remains an explicit fallback rather than pretending silence proves absence.
  *
  * The third source is different in kind and is why the remedies below changed.
  * A deployment can configure a worker OpenPlan pushes to, and a push either is
@@ -298,7 +301,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       return {
         ...base,
         status: "fail",
-        detail: `${stalled} This deployment declares that an AequilibraE worker runs against it, so the configuration and the run history disagree. The worker polls and has no heartbeat, so the declaration cannot be verified from here — only the contradiction can be reported.`,
+        detail: `${stalled} This deployment declares that an AequilibraE worker runs against it, so the configuration and this run history disagree. Deployment heartbeat health is reported separately and does not prove that this particular run is still progressing.`,
         remedy: `Check that the worker process is running and pointed at THIS deployment's Supabase project, and read its logs (workers/aequilibrae_worker/DEPLOY.md). If the worker was retired, change the declaration so launches are refused before they are queued instead of after they are reaped. ${executionOptions}`,
       };
     }
@@ -422,7 +425,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       ...base,
       status: "pass",
       detail:
-        "This deployment declares that an AequilibraE worker runs against it. The worker polls and has no heartbeat, so whether one is running at this moment cannot be observed from here — this reports the declaration, not a live check. The launch controls trust it until a run contradicts it.",
+        "This deployment declares that an AequilibraE worker runs against it. This line reports that declaration and run-history fallback, not current health; compatible heartbeat observations are reported separately and take precedence at launch when available.",
       remedy: null,
     };
   }
@@ -475,7 +478,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     ...base,
     status: "warn",
     detail:
-      "No model runs are in flight, and nothing declares whether this deployment runs an AequilibraE worker. The worker is a poller with no heartbeat, so whether one is deployed cannot be observed until a run is queued — which means the first worker-backed run here is queued, waits, and is failed by the reaper before anything can warn the planner who launched it.",
+      "No model runs are in flight, and nothing declares whether this deployment runs an AequilibraE worker. Compatible heartbeat observations are reported separately; when none is available, OpenPlan keeps this declaration and run-history fallback instead of treating silence as proof that a worker is absent. That means a first worker-backed run can still queue and wait before abandoned-run history can warn the next planner.",
     remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" if you run the AequilibraE worker (workers/aequilibrae_worker/DEPLOY.md), or "absent" if you do not. Either answer lets the launch controls refuse or allow before a run is queued; unset, they can only infer from runs that have already been abandoned. ${executionOptions}`,
   };
 }

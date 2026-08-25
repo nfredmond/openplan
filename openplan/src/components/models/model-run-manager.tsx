@@ -1163,9 +1163,9 @@ export function ModelRunManager({
               className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
             >
               {/* The heading may claim no more than the rows underneath it do.
-                  Whether a worker PROCESS exists is unobservable from here — the
-                  worker polls and has no heartbeat — so an inference-based
-                  heading states the observation (nothing picked these runs up)
+                  An older worker or pending heartbeat migration may still leave
+                  process health unknown, so an inference-based heading states
+                  the observation (nothing picked these runs up)
                   rather than the conclusion (there is no worker). Where the
                   deployment has declared the answer itself, the heading may say
                   so, and attributes it: the deployment said this, OpenPlan did

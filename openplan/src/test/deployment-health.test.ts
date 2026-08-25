@@ -159,12 +159,10 @@ describe("deployment health — modeling worker", () => {
   it("claims nothing when no run is in flight", () => {
     const check = modelingWorkerCheck({ declaration: "deployed" });
     expect(check.status).toBe("pass");
-    // A poller with no heartbeat cannot be probed; saying "a worker is running"
-    // here would be an assertion with no evidence behind it. A declaration is
-    // reported as a declaration, attributed to the deployment.
-    expect(check.detail).toMatch(/cannot be observed/i);
+    // This pure configuration check cannot turn a declaration into an
+    // observation. The separate heartbeat loader supplies current health.
     expect(check.detail).toMatch(/declares/i);
-    expect(check.detail).toMatch(/not a live check/i);
+    expect(check.detail).toMatch(/heartbeat observations are reported separately/i);
   });
 
   it("passes while runs are progressing", () => {
@@ -202,6 +200,7 @@ describe("deployment health — what a modeling-worker declaration may claim", (
     expect(check.remedy).toMatch(/OPENPLAN_MODELING_WORKER/);
     expect(check.remedy).toMatch(/"deployed"/);
     expect(check.remedy).toMatch(/"absent"/);
+    expect(check.detail).not.toMatch(/poller with no heartbeat/i);
   });
 
   it("does not turn young runs into proof that something is executing them, undeclared either", () => {
