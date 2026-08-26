@@ -1,0 +1,122 @@
+# US planning capability matrix
+
+<!-- openplan-planning-capability-matrix
+review_date: 2026-08-25
+review_by: 2026-09-25
+current_release: v0.34.0
+capabilities:
+- long-range-transportation-and-regional-planning
+- land-use-comprehensive-and-community-planning
+- travel-demand-corridor-scenario-and-performance-analysis
+- transit-active-transportation-freight-and-safety-planning
+- environmental-review-climate-resilience-and-equity
+- community-engagement-title-vi-and-public-decisions
+- capital-programming-prioritization-grants-delivery-and-reimbursement
+- gis-data-stewardship-documents-reports-and-public-records
+- development-review-implementation-and-interdepartmental-handoff
+organizations:
+- local-and-county-government
+- regional-and-metropolitan-organizations
+- state-agencies
+- tribal-governments
+- transit-and-multimodal-providers
+- consultancies
+- nonprofits-community-groups-and-independent-planners
+geographies:
+- all-fifty-states-and-dc
+- us-territories-explicitly-assessed
+- california-gold-standard
+- metropolitan-suburban-rural-and-remote
+- tribal-border-island-mountain-and-coastal
+statuses:
+- proven
+- partial
+- missing
+- not-assessed
+-->
+
+This is the coverage ledger for the [v1 product contract](V1_PRODUCT_CONTRACT.md).
+It prevents a polished national average or one strong module from standing in
+for the whole product. The current inventory is deliberately conservative:
+documentation, code, or a green unit test is not enough to mark a cell
+`proven`.
+
+## Status rules
+
+- **Proven:** a representative planner reached the intended outcome from a
+  visible entry point, produced and reused the required artifact, and the
+  applicable evidence, accessibility, permission, geography, recovery, and
+  export checks can fail.
+- **Partial:** real reachable capability exists, but one or more required
+  journeys, geographies, artifacts, roles, or proof dimensions remain open.
+- **Missing:** the required capability or handoff does not exist.
+- **Not assessed:** current evidence is insufficient to distinguish partial
+  from missing. This fails the v1 gate just as `missing` does.
+
+Only `proven` passes v1. An evidence link and review date are required when a
+cell changes to `proven`; prose confidence is not evidence.
+
+## Practice coverage at v0.34.0
+
+| Core planning practice | Current status | Existing foundation | Principal proof gap |
+|---|---|---|---|
+| Long-range transportation and regional planning | Partial | RTP workflow, fiscal and performance surfaces, projects, reports | Full statutory journey, public draft/comment-response, cycle artifacts, nationwide legal/source depth |
+| Land-use, comprehensive, and community planning | Partial | Land Use Plans, exact-hash review/adoption, GIS designations | Nationwide jurisdiction bundles and full plan-production journeys beyond California |
+| Travel demand, corridor, scenario, and performance analysis | Partial | AequilibraE, ActivitySim, common assignment, agreement map | Independent nationwide validation; demand distribution, observation uncertainty, network and external-trip defects |
+| Transit, active transportation, freight, and safety planning | Partial | GTFS, accessibility, freight, project and safety foundations | End-to-end multimodal journeys; complete injury coverage and state-specific source proof |
+| Environmental review, climate, resilience, and equity | Not assessed | Environmental and equity-adjacent evidence exists | Coherent statutory workflows, nationwide applicability, public artifacts, and validation by use |
+| Community engagement, Title VI, and public decisions | Partial | Public maps, surveys, comments, translation boundaries | Campaign-to-decision journey, response record, exports, accessibility and multi-project proof |
+| Capital programming, prioritization, grants, delivery, and reimbursement | Partial | Portfolio, grants, LAPM reimbursement, reports | One traceable project/funding spine through authorization, obligation, delivery, amendment, and closeout |
+| GIS, data stewardship, documents, reports, and public records | Partial | Imports, evidence custody, reports, provenance | GeoPackage and full external round-trip, records lifecycle, cross-module source reuse |
+| Development review, implementation, and interdepartmental handoff | Not assessed | Project and land-use primitives may be reusable | Product home, workflow definition, responsibility/approval handoffs, and artifacts |
+
+## Organization coverage at v0.34.0
+
+| Organization context | Current status | Principal proof gap |
+|---|---|---|
+| Local and county governments | Partial | Small-town through major-city journeys, departments, statutory variance, deployment |
+| Regional and metropolitan organizations | Partial | Complete RTP/MTP, programming, modeling, public review, and partner handoff |
+| State agencies | Not assessed | Statewide scale, governance, multimodal programs, records, and distributed teams |
+| Tribal governments | Not assessed | Sovereignty-aware sources, boundaries, governance, rural connectivity, and data control |
+| Transit and multimodal providers | Partial | Service planning through capital/operations decision journey and GTFS round-trip |
+| Consultancies | Partial | Multi-client separation, deliverable review, records transfer, and client acceptance |
+| Non-profits, community groups, and independent planners | Not assessed | Accessible self-service workflows, limited-capacity operations, and durable handoff |
+
+## Geography coverage at v0.34.0
+
+No state is yet `proven` against the complete v1 contract. California has the
+deepest configured legal and data support and is still `partial`. The other
+forty-nine states and the District of Columbia have national foundations but
+have not been assessed journey-by-journey, so they are `not assessed` rather
+than optimistically marked partial. Territories are also `not assessed`.
+
+The state ledger must be generated from maintained registry data, not a
+hardcoded Markdown list. It must cover state and territory sources, laws,
+agencies, identifiers, limitations, model strata, journeys, and artifacts. A
+future aggregate view may summarize it, but the release gate must read the
+underlying cells and fail on any non-proven required geography.
+
+California proof must separately cover statewide, major metropolitan,
+suburban, rural, mountain, coastal, border, and tribal contexts. Nationwide
+proof must add the archetypes that California cannot represent.
+
+## Cross-cutting proof dimensions
+
+Every practice-by-organization-by-geography journey also needs evidence for:
+
+- visible entry and completion without Nathaniel;
+- role and approval boundaries, including adoption and money;
+- source provenance, observation uncertainty, claim tier, and limitations;
+- cross-module context and artifact reuse without re-entry;
+- interoperable import and export with custody preserved;
+- keyboard, screen-reader, responsive, print, and public accessibility;
+- long-job resumption, failure recovery, backup, restore, and upgrade;
+- free, self-hosted operation without required paid infrastructure.
+
+## How this becomes executable
+
+The recurring product-direction check preserves the matrix's required practice,
+organization, geography, and status vocabularies. Program work must replace
+this initial narrative inventory with data-backed cells and evidence references.
+The v1 release gate then requires every applicable cell to be `proven`; it may
+not infer completion from this document or from a national score.

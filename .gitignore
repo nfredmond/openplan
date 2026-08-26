@@ -108,9 +108,10 @@ docs/ops/*-test-output/
 # Local Python venv (dir in the main checkout; symlink in worktrees) — never track
 workers/aequilibrae_worker/.venv311
 
-# Agent-session working files — local to this machine, never in the public repo.
-# CLAUDE.md is deliberately local-only (owner's call, 2026-08-03): it is a
-# working document between the owner and his agents, not project documentation.
+# Agent-session working files are local to this machine. Root AGENTS.md and
+# CLAUDE.md became tracked eight-line shims on 2026-08-25 so every clone reaches
+# the shared public operating manual; detailed personal instructions remain in
+# each harness's ignored global file.
 # These patterns are deliberately UNANCHORED: they match at every directory
 # depth, because owner tooling config is local-only wherever it lives (the
 # 2026-08-03 sweep missed the nested openplan/.mcp.json exactly because only
@@ -119,6 +120,8 @@ workers/aequilibrae_worker/.venv311
 # `git add -f` and record why.
 CLAUDE.md
 AGENTS.md
+!/CLAUDE.md
+!/AGENTS.md
 .playwright-mcp/
 .mcp.json
 opencode.json

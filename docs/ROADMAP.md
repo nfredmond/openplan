@@ -1,279 +1,310 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 391eed25
+reviewed_commit: cb445c4b
 current_release: v0.34.0
-review_by: 2026-09-22
+review_by: 2026-09-25
 paths:
+- AGENTS.md
+- CLAUDE.md
+- docs/product/V1_PRODUCT_CONTRACT.md
+- docs/product/AGENT_OPERATING_RULES.md
+- docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
+- docs/reviews/product-direction/2026-08-25-v1-direction.md
+- openplan/scripts/ops/product-direction-review.mjs
+- openplan/src/test/product-direction-review-guard.test.ts
 - openplan/src/lib/safety/sources/registry.ts
-- openplan/src/lib/safety/sources/fars.ts
 - openplan/src/lib/auth/role-matrix.ts
-- openplan/src/lib/export/csv.ts
-- openplan/src/lib/grants/programs/registry.ts
-- openplan/src/lib/stage-gates/template-registry.ts
-- openplan/src/lib/land-use-plans/registry.ts
 - openplan/src/lib/runtime/action-metadata.ts
 - docs/ops/KNOWN_ISSUES.md
-- openplan/docs/ops/BACKUP_AND_RESTORE.md
 - docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md
+- docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
+- docs/modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md
+- openplan/docs/ops/BACKUP_AND_RESTORE.md
 - docs/ADRs/ADR-004-mcp-server-surface.md
 - qa-harness/FIRST-WEEK-HARNESS.md
 npm_commands:
+- product:direction:check
+- product:direction:packet
 - ops:restore-drill
 - test:workers
 - test:rls-live
 - qa:gate
 -->
 
-This is OpenPlan's only active development queue. Dated records, research,
-release evidence, ADRs, and archived plans explain past decisions; they are not
-queues. `CHANGELOG.md` records what shipped. Reconcile this file against the
-repository by the review date above.
+This is OpenPlan's only active development queue. The binding destination is
+[`docs/product/V1_PRODUCT_CONTRACT.md`](product/V1_PRODUCT_CONTRACT.md). Dated
+records, research, ADRs, archived plans, and independent reviews are evidence,
+not competing queues. `CHANGELOG.md` records what shipped.
 
-Rewritten 2026-08-25 after reviewing the repository, live product, releases,
-first-week evidence, agent histories, memories, and documentation at v0.34.0.
-The previous roadmap described safe release mechanics but not the finished
-product. This roadmap starts with the product destination.
+Nathaniel expanded the v1 contract on 2026-08-25 after comparing independent
+Claude and Codex reviews. The four-to-six-release proposals in those reviews are
+superseded. There is no deadline and no promised number of releases before v1.
 
-## The v1 product contract
+## Destination
 
-**A planning team anywhere in the United States can install and operate
-OpenPlan without Nathaniel, carry source material through analysis and public
-process to a defensible decision artifact, and know exactly what the evidence
-does and does not support.**
+OpenPlan v1 is the ultimate free and open-source operating system for US
+planning practice. It must serve every type of planner's core work, work in all
+fifty states and the District of Columbia, make California the gold-standard
+implementation, operate coherently as one product, and include a fully working,
+scientifically validated nationwide travel demand model.
 
-Five tests make that contract falsifiable:
+Worldwide use remains the architectural destination. US data and law stay
+behind adapters and registries.
 
-1. **Self-service.** A new operator can install, configure, back up, restore,
-   and upgrade the system without founder help or paid infrastructure.
-2. **One product.** Projects and plans are the spine. Analysis, engagement,
-   funding, documents, and reports reuse their context instead of behaving like
-   separate applications.
-3. **Any place.** Every workflow works with a user-selected US geography today.
-   A limited data or legal source identifies its boundary where the result is
-   read. Country-specific concepts remain behind adapters and registries.
-4. **End-to-end outcomes.** A journey is complete only when the planner reaches
-   the intended outcome and obtains a usable artifact. A script finishing with
-   `partly` is not evidence that the outcome works.
-5. **Defensible handoff.** Every consequential figure and decision carries its
-   source, retrieval date, claim tier, known limits, responsible human, and
-   frozen evidence where required. Missing evidence fails closed.
+Runtime and calendar time do not reduce scope. A model run may take days. The
+program may take the rest of the decade. v1 is cut when the evidence says this
+contract is true, not when a version sequence looks long enough.
 
-The release-engineering gate remains mandatory: worker integrity, restore and
-upgrade rehearsals, mutation evidence, live RLS, production build, and CI on
-one candidate commit.
+## How "do what's next" works
 
-## The product at v1
+Before selecting a major lane, an agent must:
 
-A planner starts with a project or statutory plan, not a module. The work then
-flows through one shared record:
+1. Run `npm run product:direction:check` from `openplan/`.
+2. Read the v1 contract, this roadmap, the latest direction review, current
+   release and CI, live product journeys, known issues, and relevant research.
+3. Reassess the product from the full planner and agency coverage map. Past
+   agent decisions and these instructions are evidence, not untouchable law.
+4. Identify the highest-leverage unproven user outcome, including a simple idea
+   outside the current module map that prior agents may have missed.
+5. Check whether the capability already exists here, in Nathaniel's other
+   projects, or in a suitable free/open-source library.
+6. Choose the smallest architectural chunk that materially advances the v1
+   contract, start it, and land it with executable evidence.
 
-```text
-source data and documents
-          ↓
-project or plan record + selected geography
-          ↓
-analysis ↔ engagement ↔ funding and delivery
-          ↓
-review, approval, and frozen evidence
-          ↓
-report, packet, GIS/workbook export, or adopted decision
-```
+If the direction review has expired, a materially stronger model is available,
+or a milestone just closed, generate a fresh packet with
+`npm run product:direction:packet` and obtain independent fresh-context reviews
+before committing the next major direction. Preserve their disagreements.
 
-Top-level navigation should reflect jobs a planner recognizes. A surface either
-participates in a proven workflow or leaves the top level. Existing capabilities
-remain available; v1 does not require deleting useful specialist tools.
+## Current truth at v0.34.0
 
-## Evidence at the starting line
+Strong foundations already exist:
 
-Measured at v0.34.0:
+- connected planning, engagement, safety, funding, land-use, aerial, document,
+  report, and dual-demand-model capabilities;
+- claim tiers, provenance, exact evidence hashes, human approval boundaries,
+  agent refusals, sealed-study custody, and honest negative results;
+- local/self-hosted workers, live RLS proof, backup and restore rehearsal,
+  upgrade CI, interruption recovery, and a large mutation-backed test surface.
 
-- 60 planner-facing pages, 256 API routes, 223 migrations, and 5 Python workers.
-- 12,515 passing unit tests, 107 live RLS tests, 47 passing worker suites, a
-  production build, restore drill, and upgrade-path CI.
-- 12 registered assistant actions and executable refusals for unsafe write
-  shapes.
-- All seven automated first-week jobs can finish, but the latest evidence still
-  records partly reached outcomes. The safety journey lacks street identity for
-  KSI locations, and the printable packet lacks a usable street background.
-- Live review found 20 authenticated destinations arranged as module groups,
-  duplicate local and global navigation, repeated primary actions, large card
-  grids, and owner diagnostics mixed into the planner's first screen.
-- FARS is explicitly fatal-only. The live safety workspace, corridor evidence,
-  and exports disclose that serious-injury data is unavailable rather than
-  silently treating injuries as zero. Broader injury coverage is valuable, but
-  the claimed missing disclosure is not a current defect.
+The v1 contract is not yet true:
 
-The main v1 gap is coherence and completed user outcomes, not missing breadth.
+- live navigation still exposes a collection of modules more than one planning
+  operating system;
+- the automated first-week jobs can finish while their intended outcomes remain
+  only partly reached;
+- planner-type, agency-type, state, legal-source, data-source, artifact, and
+  accessibility coverage is not yet maintained as one proof matrix;
+- external GIS/workbook handoff and named team approvals remain incomplete;
+- no independent stranger has installed and operated the product;
+- the model is screening-grade, not nationwide validated. The often-repeated
+  43.3% figure is the selection metric from the roughly 30% holdout drawn from a
+  57-station, one-county dataset, not national or independent accuracy evidence.
+  OpenPlan's true nationwide error is unknown, rank agreement in measured
+  examples is weak, and most minor links are unloaded. Observation uncertainty
+  has not yet been separated rigorously from structural model error.
 
-## Twelve v1 acceptance journeys
+That last point is a model-science question, not permission to fit observations
+exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and
+location-matching uncertainty. v1 needs an uncertainty-aware gate that can
+distinguish bad observations from bad model structure without letting either
+hide the other.
 
-Each journey starts from visible navigation in a fresh or documented state,
-uses real application behavior, and ends with an outcome verdict: `reached`,
-`partly reached`, `blocked`, or `failed`. Only `reached` passes the v1 gate.
+## Immediate checkpoint: v0.35 foundation
 
-1. **Install and first day:** install locally, create a workspace, invite a
-   colleague, configure a source, run a backup, restore it, and see what needs
-   attention.
-2. **Neutral geography:** select a place outside California and see honest data,
-   legal, and source coverage at every result boundary.
-3. **Project intake to decision packet:** import or create projects, resolve
-   conflicts, prioritize one, carry it through review, and export a usable
-   packet with street/place identity.
-4. **Engagement:** build, preview, publish, moderate, analyze, export, and close a
-   campaign without re-entering project or geography context.
-5. **Safety:** move from crashes to KSI locations, countermeasures, cost, grant
-   evidence, and a printable map-backed packet.
-6. **Corridor analysis:** select a corridor, combine counts, safety, equity,
-   engagement, and model evidence, then export a GIS-readable package.
-7. **Dual demand model:** run AequilibraE and ActivitySim on the same network,
-   inspect agreement and divergence without averaging, and produce a grounded
-   report artifact.
-8. **RTP:** build the project list, fiscal constraint, measures, required
-   elements, public draft, comments and responses, and adoption record.
-9. **Land-use plan:** configure the applicable legal bundle, review exact
-   evidence, map designations, publish review, and record human adoption.
-10. **Grant to reimbursement:** match a defensible project to a program, prepare
-    an application, manage award and obligations, then invoice the funder.
-11. **Aerial evidence:** plan a flight, upload imagery, run the local worker,
-    review the orthophoto, select evidence, and freeze it into a report.
-12. **Team and recovery:** exercise roles and approvals, My Work, audit history,
-    worker interruption/recovery, backup, restore, and upgrade.
+The next release establishes the machinery the full v1 program depends on.
 
-## v0.35: make it feel like one product
+### One product
 
-This is the first release because live review showed that OpenPlan's capable
-modules still make the planner assemble the workflow mentally.
+- Make Projects and Plans the durable context spine across analysis,
+  engagement, safety, funding, documents, aerial evidence, and reports.
+- Remove duplicate authenticated navigation and repeated primary actions.
+- Present Models, Scenarios, and Validation as stages of one guided model job
+  while preserving specialist URLs.
+- Separate operator setup/health from the planner's daily overview.
+- Close first-week continuity defects: active workspace, reminders and tasks,
+  intake handoff, corridor entry, road identity, and printable street context.
+- Make `partly reached` fail the outcome gate even when automation completes.
 
-- Make Projects and Plans the durable context spine. Preserve active workspace,
-  project, plan, geography, and reporting period across module transitions.
-- Replace the duplicated secondary navigation on authenticated pages with one
-  consistent orientation pattern.
-- Present Models, Scenarios, and Model Validation as stages of one guided model
-  workspace while preserving stable URLs and specialist entry points.
-- Reduce above-the-fold setup prose, repeated hero actions, and card grids.
-  Prefer a clear next action, compact status, and progressive detail.
-- Move operator diagnostics and environment setup out of the planner's daily
-  overview while keeping them easy for the operator to reach.
-- Fix first-week continuity defects: active-workspace loss, reminder and task
-  discoverability, project intake handoff, corridor entry, road-name identity,
-  and printable street context.
-- Change the first-week gate so completed automation cannot pass when the
-  intended outcome is only partly reached.
+### Strategic and validation foundation
 
-**Done when:** a fresh user completes the project, engagement, safety, and
-corridor journeys without choosing between duplicate controls or re-entering
-known context, and every journey records `reached`.
+- Maintain the v1 planner/organization/state/capability proof matrix and make
+  missing or unassessed core cells fail the direction review.
+- Complete the primary-source study of traffic-count uncertainty and current
+  OpenPlan observation handling.
+- Pre-register the nationwide model-validation program before trying candidates:
+  claimed uses, station quality classes, observation uncertainty, temporal
+  alignment, matching rules, geographic strata, metrics, holdout custody, and
+  acceptance logic.
+- Treat the current 30% screening threshold as provisional. Replace or retain it
+  only from primary-source, use-specific research before the new holdouts are
+  opened. Never change a gate after seeing its holdout outcome.
+- Fix the public `metadataBase` warning and prove configured public URLs.
 
-## v0.36: prove the any-place promise
+**Done when:** the project, engagement, safety, and corridor journeys reach
+their actual outcomes without lost context; the strategic review expires and
+fails mechanically; and the nationwide validation design can separate model,
+observation, and matching uncertainty before any calibration candidate is run.
 
-- Audit all top-level workflows with one California geography and at least one
-  neutral geography outside every configured legal bundle.
-- Put coverage boundaries beside the affected map, table, figure, and export.
-  Do not rely on a setup page or distant caveat.
-- Research open, stable, and legally usable serious-injury sources. Extend the
-  crash-source registry when evidence supports an adapter; retain explicit
-  fatal-only behavior where it does not.
-- Add an optional geocoding adapter for road and place identity with provenance
-  and a clear unavailable state. No silent commercial dependency.
-- Give printable maps a legible street background that works through the local,
-  free-first deployment path.
-- Add first-week journeys that fail on a hardcoded jurisdiction, silent empty
-  result, or undisclosed coverage ceiling.
+## Mandatory v1 program A: nationwide validated modeling
 
-**Done when:** the neutral-geography journey reaches a defensible artifact, and
-mutations removing coverage disclosure or inserting a fixed place fail.
+This program may span many releases. It is a v1 blocker, not post-v1 research.
 
-## v0.37: complete the inbound and outbound loop
+### Establish trustworthy observations
 
-- Export GeoPackage for study areas, corridors, crash locations, modeled links,
-  engagement pins, and land-use designations so both ArcGIS and QGIS can use the
-  work.
-- Export XLSX that mirrors portfolio workbook import and preserves explicit row
-  decisions and provenance.
-- Produce a per-project evidence bundle with a machine-readable manifest of
-  source, retrieval date, claim tier, custody hash, and known limits.
-- Make imported documents and frozen artifacts discoverable from the project or
-  plan that uses them.
+- Grade count stations by raw versus factored estimate, duration, season,
+  direction, year, equipment, imputation, and location-match confidence.
+- Align model and observation periods or carry the mismatch uncertainty.
+- Use repeated counts to estimate day-to-day and seasonal variability where the
+  source supports it.
+- Keep suspect observations visible as excluded or low-confidence evidence;
+  never silently discard them after seeing model residuals.
+- Report validation with and without low-confidence observations, under a
+  preregistered rule.
 
-**Done when:** a planner can round-trip a portfolio, open a corridor package in
-QGIS, and identify the evidence behind each consequential attribute without
-opening OpenPlan.
+### Repair model structure, not appearance
 
-## v0.38: make teams and approvals real
+- Diagnose trip generation, distribution, destination and mode choice,
+  external/through travel, network construction, centroid loading, road-class
+  coverage, time-of-day, and transit against independent evidence.
+- Replace unlabelled ActivitySim example coefficients with locally estimated,
+  hierarchically transferable, or explicitly bounded coefficient sets.
+- Route FAF and other defensible external-flow sources over the real network;
+  do not substitute straight lines or one scalar per region.
+- Load areas rather than a few centroid paths where evidence shows the current
+  structure leaves roads unseen.
+- Preserve resumability, evidence custody, and hours-to-days worker execution.
 
-- Extend the role matrix to every consequential write surface. A new uncovered
-  surface must fail an executable guard.
-- Record named human approval and time for adoption, public release, stage-gate
-  decisions, funding obligations, and other consequential actions, beside the
-  existing exact-hash evidence.
-- Make My Work the shared inbox for assignments, reviews, approvals, worker
-  exceptions, and incomplete journey handoffs.
-- Remove remaining routes that infer the active workspace when the user has
-  already selected one.
+### Validate every place and use
 
-**Done when:** analyst, approver, and viewer roles complete the team journey;
-unauthorized controls are absent; and the final record identifies the human who
-approved the exact artifact.
+- Pre-register development, selection, and untouched holdout geography before
+  outcome access.
+- Require each state and geographic archetype to pass its applicable use gate.
+  A nationwide median cannot hide a failure.
+- Give California deeper sub-state proof across its full agency and geographic
+  range.
+- Validate planning uses separately: corridor comparison, RTP/scenario work,
+  grants, transit, and any stronger forecast claim. A lower claim tier cannot be
+  relabelled upward.
+- Keep AequilibraE and ActivitySim results separate. Agreement remains
+  sensitivity evidence, not accuracy, unless untouched evidence proves more.
+- Show measured, modeled, unloaded, unavailable, and out-of-network states in
+  every live and exported result.
 
-## v0.39: finish the evidence loop
+**Done when:** both methods run nationwide and every state plus required
+archetype passes preregistered untouched holdout gates for every published use;
+California passes its deeper suite; no model value appears without observation,
+coverage, provenance, and uncertainty state.
 
-- Show per-link model state wherever a volume appears: modeled, unloaded, or
-  outside the network. Never render an unloaded link as a measured zero.
-- Carry measured model limits and source provenance into corridor, report, GIS,
-  and grant artifacts.
-- Make the complete common-network AequilibraE and ActivitySim comparison
-  reachable as one journey. Preserve divergence and never average the methods.
-- Connect engagement observations to safety evidence as corroboration without
-  converting resident reports into crash facts.
-- Prefer relative with-project and without-project comparisons where they are
-  more defensible than absolute screening volumes.
+## Mandatory v1 program B: every state in substance
 
-**Done when:** the dual-model and corridor journeys reach frozen, grounded
-artifacts and no surface can display a modeled value without its evidence state.
+- Maintain a state-by-state registry of crash and serious-injury data, traffic
+  counts, transit, freight, demographics, equity, hazards, funding programs,
+  statutory planning rules, environmental requirements, and responsible source
+  agencies.
+- Research and connect stable authoritative sources. Missing sources are gaps to
+  solve before v1, while interim releases continue to disclose them honestly.
+- Prove every core journey in every state and DC without changing call sites.
+- Add an explicit US-territory matrix and preserve a route to worldwide bundles.
+- Make California the complete reference bundle and prove every California
+  geography from authoritative registry data.
 
-## v0.40: run the stranger test
+**Done when:** every state/DC cell required by a core journey is proven and no
+planner learns a coverage limit only after relying on a result.
 
-- Run all twelve acceptance journeys against one release candidate. Zero
-  `partly reached`, `blocked`, or `failed` outcomes.
-- Have a person who is not Nathaniel install OpenPlan on a clean computer from
-  the public documentation and complete the project journey without help.
-- Complete keyboard, screen-reader, responsive-layout, contrast, and print
-  checks on every step used by the twelve journeys.
-- Rehearse backup, restore, migration, worker interruption, and rollback on the
-  same candidate commit.
-- Pass `qa:gate`, live RLS, all worker suites, mutation samples, production
-  build, and CI. Resolve every undisclosed Blocker or High known issue.
+## Mandatory v1 program C: every planner's core work
 
-**Done when:** the stranger and automated evidence agree that the v1 contract
-is true. Then tag v1.0.0; do not reserve another capability release by habit.
+- Maintain coverage across transportation, land use, comprehensive planning,
+  transit, active transportation, freight, safety, environmental review,
+  climate and resilience, equity, engagement, capital programming, grants,
+  delivery, reimbursement, development review, GIS/data, documents, reports,
+  implementation, and public records.
+- Evaluate cities, counties, regional agencies, state agencies, tribes, transit
+  providers, consultancies, non-profits, and independent planners.
+- Deepen and connect an existing module when it has a coherent home.
+- Add a new module when the direction review proves a core need has no coherent
+  owner and existing OpenPlan code or a suitable open-source library cannot
+  supply it. Record why before building.
+- Expand end-to-end journeys whenever the capability map finds a core planner
+  job not represented by the current suite.
 
-## Deliberately after v1
+**Done when:** every core capability and organization cell is proven by a real
+journey and artifact, with no `partial`, `missing`, or `not assessed` result.
 
-- A nationwide fitted scalar or another attempt to hide the model's residual.
-  Held-out evidence, not a better-looking aggregate, must justify any default.
-- Crash rates per modeled VMT until road coverage supports the denominator.
-- Additional legal bundles without researched jurisdiction evidence.
-- New planning modules. Deepen and connect what exists.
-- The MCP server and Buzz control surface from ADR-004. Nathaniel still wants
-  this. Raise it at the v1 milestone; the base product must remain complete
-  without Buzz, and the server remains read-then-propose with human approval.
+## Mandatory v1 program D: interoperability and evidence handoff
+
+- Export GeoPackage for geographic outputs and XLSX for portfolio round-trip.
+- Produce per-project and per-plan evidence bundles with machine-readable source,
+  retrieval, tier, custody, uncertainty, and known-limit manifests.
+- Make source documents and frozen artifacts discoverable from every dependent
+  result.
+- Support public, governing-body, GIS, spreadsheet, document-management, and
+  archival handoffs without losing evidence.
+
+**Done when:** an outside planner can inspect and reuse an artifact in standard
+agency tools without opening OpenPlan or guessing its provenance.
+
+## Mandatory v1 program E: teams, operations, and human control
+
+- Extend roles to every consequential write and record named approval of exact
+  artifacts.
+- Make My Work the common assignment, review, approval, exception, and recovery
+  inbox.
+- Prove analyst, manager, approver, viewer, public participant, and agent
+  principals across the full journey suite.
+- Make local and self-host deployment, source setup, worker operation, backup,
+  restore, upgrade, rollback, and recovery self-service.
+- Complete keyboard, screen-reader, responsive, contrast, localization, print,
+  and low-bandwidth evidence for every core journey.
+
+**Done when:** a real team and an independent operator can run and recover the
+whole system without Nathaniel and without weakening human control.
+
+## Mandatory v1 program F: agentic planning control
+
+The base product must remain fully usable without an agent. Once the underlying
+workflows are proven, the MCP/Buzz direction from ADR-004 returns as pre-v1 work
+because the ultimate planning operating system should be controllable with the
+same discipline as a codebase.
+
+- Build the MCP server as read then propose; do not build a client that bypasses
+  the product's approval boundary.
+- Derive writes from the action registry, exact executed-payload hashes,
+  distinct agent authorship, claim tiers, audit records, and human approval.
+- Let agents inspect the whole planning record, explain gaps, draft grounded
+  work, and propose safe transitions without silently publishing, adopting,
+  spending, or fabricating facts.
+- Preserve full non-agent functionality and free/self-hosted operation.
+
+**Done when:** a planner can direct a grounded agent across proven workflows,
+review every proposed consequence, and reproduce the result without the agent.
+
+## V1 proof campaign
+
+On one candidate commit:
+
+- every capability, planner type, organization type, state/DC, geographic
+  archetype, artifact, accessibility, and operational cell is proven;
+- every nationwide and California model holdout gate passes;
+- every end-to-end journey reaches its intended outcome from visible UI entry;
+- an independent person installs and operates OpenPlan without help;
+- independent fresh-context product reviews find no unresolved core omission;
+- live RLS, all workers, mutation samples, restore, upgrade, dependency audit,
+  build, and CI pass.
+
+Only then tag v1.0.0.
 
 ## Permanent refusals
 
 - No paid tier, payment step, or required paid infrastructure.
-- No averaged output from the two demand models.
-- No invented data, silent coverage limits, or unsupported zeros.
+- No averaged demand-model result or national average that hides local failure.
+- No exact-fit objective that overfits noisy observations.
+- No invented data, silent coverage limits, unsupported zeros, or promoted claim
+  tiers.
 - No agent-authored consequential facts or direct-to-public agent action.
-- No long-running model work inside a serverless request.
-- No geography or country-specific assumption in core types or call sites.
-
-## Standing constraints
-
-`CLAUDE.md` and `AGENTS.md` carry the binding product and evidence rules. Two
-matter especially when implementing this roadmap:
-
-- Accuracy beats runtime. A run may take hours or days; wall-clock cost is not
-  grounds to discard a measurable accuracy gain.
-- A green check is evidence only after a relevant mutation proves it could have
-  failed for the right reason.
+- No serverless long-running model execution.
+- No hardcoded place, jurisdiction, country assumption, or literal state/county
+  roster in core code.
+- No scope reduction justified only by time, work size, runtime, or an agent's
+  preference for a nearer v1.

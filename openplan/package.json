@@ -26,7 +26,7 @@
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
     "ops:log-prod-health-evidence": "node scripts/ops/log-prod-health-evidence.mjs",
     "ops:check-public-demo-preflight": "node scripts/ops/check-public-demo-preflight.mjs",
-    "qa:gate": "npm run lint && npm run deadcode && npm test && node scripts/ops/rls-gate.mjs && npm audit --omit=dev --audit-level=moderate && npm run build",
+    "qa:gate": "npm run product:direction:check && npm run lint && npm run deadcode && npm test && node scripts/ops/rls-gate.mjs && npm audit --omit=dev --audit-level=moderate && npm run build",
     "qa:gate:log": "mkdir -p ../docs/ops/2026-03-01-test-output && (npm run qa:gate) | tee ../docs/ops/2026-03-01-test-output/2026-03-01-clean-gate.log",
     "ops:check-local-supabase-status": "node scripts/ops/check-local-supabase-status.mjs",
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
@@ -37,7 +37,9 @@
     "qa:first-week-regression": "npm --prefix ../qa-harness run first-week-regression",
     "doctor": "node scripts/doctor.mjs",
     "deadcode": "knip --no-progress",
-    "test:workers": "node scripts/ops/test-workers.mjs"
+    "test:workers": "node scripts/ops/test-workers.mjs",
+    "product:direction:check": "node scripts/ops/product-direction-review.mjs --check",
+    "product:direction:packet": "node scripts/ops/product-direction-review.mjs --packet"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",

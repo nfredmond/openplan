@@ -5,6 +5,29 @@
 **Roadmap:** [`docs/ROADMAP.md`](../ROADMAP.md)<br>
 **Independent comparison:** [Claude's report](../ops/2026-08-25-v1-review-and-roadmap.md)
 
+> **Post-review direction, 25 August 2026:** Nathaniel rejected the smaller v1
+> premise below. The binding target is now the [ultimate US planning operating
+> system](../product/V1_PRODUCT_CONTRACT.md): core work for every type of
+> planner, all fifty states and DC, California as the gold standard, and both
+> travel models independently validated nationwide. The
+> [decision record](product-direction/2026-08-25-v1-direction.md), [capability
+> matrix](../product/US_PLANNING_CAPABILITY_MATRIX.md), and current roadmap
+> supersede this report's six-release scope and post-v1 deferrals. The original
+> conclusions remain below so the independent review and disagreement are not
+> rewritten after the fact.
+>
+> The repeated 43.3% model figure is also corrected by the later
+> [traffic-count uncertainty research](../modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md):
+> it was measured on the roughly 30% calibration-selection holdout drawn from a
+> 57-station, one-county dataset, not nationwide or independent accuracy
+> evidence. The current nationwide error remains unknown.
+>
+> The project instruction twins were also reduced from roughly 4,800 words each
+> to eight-line harness shims. Their current shared rules now live in the tracked
+> [agent operating manual](../product/AGENT_OPERATING_RULES.md), eliminating
+> closed prerequisites, volatile counts, stale backlog pointers, and duplicated
+> history while keeping the rules that still prevent observed failures.
+
 ## Executive verdict
 
 OpenPlan is capability-rich, evidence-strong, and operationally serious. It is
@@ -441,6 +464,28 @@ focused test fail for that missing reference, restoring the path, and observing
 the test pass. Links and local assets were checked, the HTML report was served
 locally and inspected in a browser, and final GitHub checks were read after the
 push.
+
+After Nathaniel set the larger v1 direction, the new recurring direction guard
+was separately proved with four mutations: a comment-only change survived; a
+missing binding decision failed for that decision; a removed planning
+capability failed for that capability; and a changed packet heading failed the
+packet test. A broken validation-research reference also failed closed on the
+exact expected path. All mutations were restored.
+
+The updated code and initial direction mechanism passed `npm run qa:gate`:
+1,102 test files and 12,517 tests passed, 107 live RLS tests passed, npm audit
+found no vulnerabilities, and the production build generated 124 static pages.
+The build still reports the known `metadataBase` warning now scheduled in the
+immediate roadmap checkpoint. After the instruction cleanup and final reference
+updates, the direction and active-roadmap focused tests passed again.
+
+The HTML companion was then inspected in Chrome at desktop and 390 by 844. All
+five tabs are visible at the narrow width, the intended tables scroll inside
+their containers without page-level overflow, and no console warning or error
+was observed. The direction guard can enforce freshness, required vocabulary,
+and mechanical references; it cannot determine whether a reviewer told the
+truth or whether a coverage cell deserves `proven`. Real journeys and
+independent review remain necessary.
 
 ## What remains uncertain
 

@@ -107,6 +107,8 @@
     }
     @media (max-width: 650px) {
       header { padding-top: 32px; }
+      nav { gap: 2px; justify-content: space-between; overflow-x: hidden; padding: 7px 8px; }
+      .tab { padding: 7px 8px; font-size: .77rem; }
       main { padding: 30px 16px 60px; }
       .section-head, .verdict { grid-template-columns: 1fr; }
       .metrics { grid-template-columns: repeat(2, 1fr); }
@@ -131,8 +133,8 @@
   <div class="topline"></div>
   <header>
     <p class="eyebrow">Independent product and codebase review</p>
-    <h1>OpenPlan has the pieces. v1 makes them one product.</h1>
-    <p class="lede">A repository-wide, history-aware review of what is real, what still breaks a planner's outcome, and the shortest defensible route from v0.34 to v1.</p>
+    <h1>OpenPlan v1 aims at the ultimate planning operating system.</h1>
+    <p class="lede">A repository-wide review, the independent Claude comparison, Nathaniel's product decision, and the evidence program required to serve every kind of planner across the United States.</p>
     <div class="header-meta">
       <span><strong>Baseline</strong> v0.34.0 · 391eed25</span>
       <span><strong>Reviewed</strong> 25 August 2026</span>
@@ -151,19 +153,22 @@
 
   <main>
     <section class="view" id="verdict" role="tabpanel" aria-labelledby="tab-verdict">
+      <div class="warning">
+        <strong>Direction set after the independent review:</strong> Nathaniel rejected a smaller screening-product v1. The binding contract now requires all core US planning practice, all fifty states and DC, California as the gold standard, and independently validated AequilibraE and ActivitySim results nationwide. The original Codex findings remain useful evidence; their six-release limit and post-v1 deferrals are superseded.
+      </div>
       <div class="section-head">
-        <h2>Capability-rich. Evidence-strong. Not yet coherent.</h2>
-        <p class="quiet">The gap to v1 is not another module. It is joining the existing work around the planner's project and proving the intended outcome, not merely the script.</p>
+        <h2>Capability-rich. Evidence-strong. Still far from the full v1 contract.</h2>
+        <p class="quiet">Coherence remains the immediate release. The destination is broader: every core planning job, every state, defensible nationwide modeling, and a product a stranger can operate without its founder.</p>
       </div>
       <div class="verdict">
         <div>
           <p class="eyebrow">The v1 contract</p>
-          <blockquote>A planning team anywhere in the United States can operate OpenPlan without Nathaniel, carry source material through analysis and public process to a defensible decision artifact, and know exactly what the evidence supports.</blockquote>
+          <blockquote>The ultimate free and open-source operating system for planning practice in the United States—powerful for any planner, coherent as one product, self-service, and defensible under review.</blockquote>
         </div>
         <div class="signal">
-          <div><b>12</b><span>outcome journeys in the v1 gate</span></div>
-          <div><b>0</b><span>new planning modules before v1</span></div>
-          <div><b>1</b><span>shared project or plan spine</span></div>
+          <div><b>50+DC</b><span>must work in substance, not merely degrade honestly</span></div>
+          <div><b>2</b><span>demand methods, independently preserved and validated</span></div>
+          <div><b>All</b><span>core planning practices must be proven, not assumed</span></div>
         </div>
       </div>
       <div class="warning">
@@ -174,7 +179,7 @@
         <div class="metric"><b>34</b><span>changelog releases</span></div>
         <div class="metric"><b>60</b><span>planner pages</span></div>
         <div class="metric"><b>256</b><span>API routes</span></div>
-        <div class="metric"><b>12,515</b><span>passing unit tests</span></div>
+        <div class="metric"><b>12,517</b><span>passing unit tests after the direction guard</span></div>
         <div class="metric"><b>47</b><span>passing worker suites</span></div>
       </div>
       <h3>Why coherence comes first</h3>
@@ -184,6 +189,9 @@
         <div class="num">3</div><div class="item"><h3>External handoff and team responsibility remain incomplete</h3><p>GIS/workbook round-trip, evidence manifests, role coverage, named approval, and one cross-module inbox are necessary for agency work.</p></div>
       </div>
       <div class="source-links">
+        <a href="../product/V1_PRODUCT_CONTRACT.md">Read the binding v1 contract</a>
+        <a href="../product/US_PLANNING_CAPABILITY_MATRIX.md">Open the capability matrix</a>
+        <a href="../product/AGENT_OPERATING_RULES.md">Read the agent operating manual</a>
         <a href="OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md">Read the detailed Markdown report</a>
         <a href="../ROADMAP.md">Open the canonical roadmap</a>
         <button class="print" type="button" onclick="window.print()">Print full report</button>
@@ -238,31 +246,32 @@
 
     <section class="view" id="roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
       <div class="section-head">
-        <h2>Six releases, each with a user outcome</h2>
-        <p class="quiet">Version numbers are sequencing labels. The proof box, not the feature list, decides whether a release is done.</p>
+        <h2>A v1 program, not a six-release countdown</h2>
+        <p class="quiet">There is no calendar deadline and no maximum number of pre-v1 releases. Each lane ends in evidence that can fail; national averages never conceal a failing place or practice.</p>
       </div>
       <div class="timeline">
-        <article class="release"><div class="release-id">v0.35</div><div><h3>Make it one product</h3><p>Project and plan context, one orientation pattern, guided model stages, fewer repeated actions, planner and operator separation, first-week continuity fixes.</p></div><div class="proof"><strong>Proof:</strong> project, engagement, safety, and corridor outcomes all reached without lost context.</div></article>
-        <article class="release"><div class="release-id">v0.36</div><div><h3>Prove any-place behavior</h3><p>California and neutral geography, point-of-use source boundaries, researched injury adapters, optional provenance-aware geocoder, printable street background.</p></div><div class="proof"><strong>Proof:</strong> neutral-place artifact plus disclosure and hardcoding mutations.</div></article>
-        <article class="release"><div class="release-id">v0.37</div><div><h3>Complete the round-trip</h3><p>GeoPackage, XLSX, evidence manifest, and project-linked documents and frozen artifacts.</p></div><div class="proof"><strong>Proof:</strong> open the corridor in QGIS and round-trip the portfolio workbook.</div></article>
-        <article class="release"><div class="release-id">v0.38</div><div><h3>Make teams and approvals real</h3><p>Complete role coverage, named exact-artifact approvals, My Work as the common inbox, consistent active-workspace context.</p></div><div class="proof"><strong>Proof:</strong> analyst, approver, and viewer complete one governed journey.</div></article>
-        <article class="release"><div class="release-id">v0.39</div><div><h3>Finish the evidence loop</h3><p>Per-link model state, full dual-model journey, corridor and export provenance, engagement and safety corroboration.</p></div><div class="proof"><strong>Proof:</strong> frozen common-network comparison with no averaged result.</div></article>
-        <article class="release"><div class="release-id">v0.40</div><div><h3>Run the stranger test</h3><p>Twelve reached outcomes, independent clean-computer install, accessibility and print checks, recovery and complete release gates.</p></div><div class="proof"><strong>Proof:</strong> stranger and automation agree the v1 contract is true.</div></article>
-        <article class="release"><div class="release-id">v1.0.0</div><div><h3>Tag the proven candidate</h3><p>Do not insert another capability release by habit. The tag records a product contract that has already been demonstrated.</p></div><div class="proof"><strong>Then revisit:</strong> the deferred MCP/Buzz server, never a client that bypasses human control.</div></article>
+        <article class="release"><div class="release-id">Now</div><div><h3>Make it one product and establish honest baselines</h3><p>Carry project and plan context through real workflows; fix partly reached journeys; publish the first observation-quality and nationwide validation protocol before opening new holdouts.</p></div><div class="proof"><strong>Proof:</strong> four planning outcomes reach their intended result, and validation distinguishes model error from count uncertainty.</div></article>
+        <article class="release"><div class="release-id">A</div><div><h3>Validate the dual travel model nationwide</h3><p>Fix distribution, external travel, network loading, unloaded links, coefficients, transit, and observation error. Preserve the two methods separately and run resumable jobs for as long as accuracy requires.</p></div><div class="proof"><strong>Proof:</strong> preregistered untouched holdouts pass by state, use, and geographic archetype; no national average rescues a failing stratum.</div></article>
+        <article class="release"><div class="release-id">B</div><div><h3>Make every state work in substance</h3><p>Maintain source, law, agency, geography, limitation, journey, and artifact cells for all states and DC, plus explicit territory assessment.</p></div><div class="proof"><strong>Proof:</strong> every applicable underlying cell is proven; California separately passes the gold-standard suite.</div></article>
+        <article class="release"><div class="release-id">C</div><div><h3>Complete every planner's core work</h3><p>Deepen and connect transportation, land use, environmental, engagement, programming, delivery, records, and development-review practice. Add a module only when a fresh review proves no coherent existing home.</p></div><div class="proof"><strong>Proof:</strong> every practice-by-organization journey produces a usable, approved artifact.</div></article>
+        <article class="release"><div class="release-id">D</div><div><h3>Complete interoperability and evidence custody</h3><p>Round-trip work through agency GIS, workbooks, documents, public packets, reports, and records while retaining provenance and limitations.</p></div><div class="proof"><strong>Proof:</strong> independent tools reopen and reuse the artifacts without reconstructing the evidence.</div></article>
+        <article class="release"><div class="release-id">E</div><div><h3>Prove teams, operations, and human control</h3><p>Complete roles, exact-artifact approval, My Work, accessibility, long-job recovery, backup, restore, upgrade, and free self-hosting.</p></div><div class="proof"><strong>Proof:</strong> analysts, approvers, viewers, operators, and public users complete governed journeys through failure and recovery.</div></article>
+        <article class="release"><div class="release-id">F</div><div><h3>Add agentic control after the base workflows are real</h3><p>Build the deferred MCP server as a read-to-propose control surface over complete workflows. OpenPlan remains fully functional without it and consequential acts remain human-approved.</p></div><div class="proof"><strong>Proof:</strong> the agent cannot impersonate, invent, promote a claim, or bypass the exact executed-payload approval.</div></article>
+        <article class="release"><div class="release-id">v1</div><div><h3>Run the national proof campaign</h3><p>Every required cell is proven on one candidate commit, an independent person operates the system unaided, and fresh adversarial reviews find no unresolved core omission.</p></div><div class="proof"><strong>Only then:</strong> tag v1.0.0. A date, effort estimate, or attractive aggregate cannot substitute for the contract.</div></article>
       </div>
-      <div class="warning"><strong>After v1:</strong> nationwide scalar research, crash rates per modeled VMT, unresearched legal bundles, new modules, and the Buzz control surface. The two demand methods are never averaged.</div>
-      <div class="source-links"><a href="../ROADMAP.md">Read full scope and permanent refusals</a></div>
+      <div class="warning"><strong>The 43.3% correction:</strong> it was measured on the roughly 30% model-selection holdout drawn from a 57-station, one-county dataset, not an independent national acceptance set. Nationwide accuracy is unknown. Exact fitting to noisy observations is also wrong; the new protocol must grade model error against measured observation uncertainty and the intended planning use.</div>
+      <div class="source-links"><a href="../ROADMAP.md">Read the canonical roadmap</a><a href="../product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md">Open the recurring direction review</a><a href="../modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md">Read the traffic-count uncertainty research</a></div>
     </section>
 
     <section class="view" id="evidence" role="tabpanel" aria-labelledby="tab-evidence" hidden>
       <div class="section-head">
         <h2>What was proved, and what was not</h2>
-        <p class="quiet">A green suite matters only if the check can fail. The final roadmap guard was exercised with a deliberate bad path before its passing run.</p>
+        <p class="quiet">A green suite matters only if the check can fail. The new direction guard was exercised against missing decisions, planning capabilities, source paths, and packet content before its passing run.</p>
       </div>
       <h3>Verification snapshot</h3>
       <ul class="checklist">
-        <li>12,515 Vitest tests passed; 77 skipped</li>
-        <li>1,101 test files passed; 2 skipped</li>
+        <li>12,517 Vitest tests passed; 77 skipped</li>
+        <li>1,102 test files passed; 2 skipped</li>
         <li>107 live RLS tests passed</li>
         <li>47 worker suites passed across 5 workers</li>
         <li>npm audit found 0 vulnerabilities</li>
@@ -288,33 +297,34 @@
         <div class="num">?</div><div class="item"><h3>No stranger install yet</h3><p>Agent success cannot settle self-service. v0.40 requires a person who is not Nathaniel.</p></div>
         <div class="num">?</div><div class="item"><h3>No visual mobile pass</h3><p>The mobile DOM was reachable, but screenshot capture timed out. Accessibility and responsive checks remain explicit work.</p></div>
         <div class="num">?</div><div class="item"><h3>No state injury-source survey</h3><p>Primary-source research must precede any new crash adapter. This report does not guess coverage.</p></div>
+        <div class="num">!</div><div class="item"><h3>The strategic guard cannot judge truth</h3><p>It enforces freshness, required scope vocabulary, and references. Real journeys and independent reviewers must still decide whether a matrix cell is genuinely proven.</p></div>
       </div>
       <div class="source-links"><a href="OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md#verification">Detailed verification record</a></div>
     </section>
 
     <section class="view" id="compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
       <div class="section-head">
-        <h2>Two independent reviews, one important disagreement</h2>
-        <p class="quiet">Claude's report remains unchanged. Agreement is useful evidence; disagreement is preserved rather than blended away.</p>
+        <h2>Two independent reviews, followed by one clear product decision</h2>
+        <p class="quiet">The original conclusions are preserved as evidence. Nathaniel used their agreement and disagreement, then deliberately set a larger v1 than either proposed.</p>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Question</th><th>Claude</th><th>Codex</th></tr></thead>
+          <thead><tr><th>Question</th><th>Claude</th><th>Codex</th><th>Binding direction</th></tr></thead>
           <tbody>
-            <tr><td>Core diagnosis</td><td>Strong discipline, no product destination</td><td>Strong evidence system, but not yet one coherent product</td></tr>
-            <tr><td>v1 contract</td><td>Install, seven first-week jobs, defend every number</td><td>Self-service team, one product, any place, twelve outcomes, defensible handoff</td></tr>
-            <tr><td>First priority</td><td>Serious injuries outside California</td><td>Product coherence and partly reached outcomes</td></tr>
-            <tr><td>Safety fact</td><td>Fatal-only limit absent at ranking</td><td>Disclosure exists before live results and downstream; expand sources only after research</td></tr>
-            <tr><td>Export</td><td>GeoPackage, XLSX, evidence bundle</td><td>Agreed</td></tr>
-            <tr><td>Governance</td><td>Roles and named approvals</td><td>Agreed; use My Work as the common inbox</td></tr>
-            <tr><td>Modeling</td><td>Per-link disclosure, defer scalar</td><td>Agreed; also prove the full dual-model journey</td></tr>
-            <tr><td>Acceptance</td><td>Seven jobs, zero blocked or failed</td><td>Twelve jobs; only reached passes, completed-plus-partly fails</td></tr>
+            <tr><td>Core diagnosis</td><td>Strong discipline, no product destination</td><td>Strong evidence system, but not yet one coherent product</td><td>Define the destination and make coverage executable</td></tr>
+            <tr><td>v1 contract</td><td>Install, seven first-week jobs, defend every number</td><td>Self-service team, one product, any place, twelve outcomes</td><td>Ultimate US planning OS: every core practice, every state, California gold</td></tr>
+            <tr><td>First priority</td><td>Serious injuries outside California</td><td>Product coherence and partly reached outcomes</td><td>Coherence now, then all mandatory programs; no six-release ceiling</td></tr>
+            <tr><td>Safety fact</td><td>Fatal-only limit absent at ranking</td><td>Disclosure exists before live results and downstream</td><td>Keep disclosure and build researched nationwide injury coverage</td></tr>
+            <tr><td>Modeling</td><td>Per-link disclosure; honest screening model</td><td>Full unaveraged dual-model journey</td><td>Both methods scientifically validated nationwide for every claimed use</td></tr>
+            <tr><td>Agentic control</td><td>Later product question</td><td>Deferred until after v1</td><td>Pre-v1 after the underlying workflows are proven; base product remains independent</td></tr>
+            <tr><td>Acceptance</td><td>Seven jobs, zero blocked or failed</td><td>Twelve jobs; only reached passes</td><td>All required capability, organization, geography, artifact, and operations cells proven</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="warning"><strong>Recommendation:</strong> use the Codex priority order because it includes the live 20-destination UI review and the latest first-week outcome evidence. Retain Claude's export, governance, and model-disclosure findings, which independently converged.</div>
+      <div class="warning"><strong>Current recommendation:</strong> use the binding product contract and capability matrix. Preserve both independent reports for challenge and evidence, but do not let either quietly narrow v1 back to a screening product.</div>
       <div class="source-links">
-        <a href="../ops/2026-08-25-v1-review-and-roadmap.md">Open Claude's unchanged report</a>
+        <a href="product-direction/2026-08-25-v1-direction.md">Open the synthesis and owner decision</a>
+        <a href="../ops/2026-08-25-v1-review-and-roadmap.md">Open Claude's report with correction note</a>
         <a href="OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md#claude-and-codex-comparison">Open detailed comparison</a>
       </div>
     </section>

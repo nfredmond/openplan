@@ -1,5 +1,14 @@
 # OpenPlan full review and v1 roadmap, 2026-08-25
 
+> **Correction added 2026-08-25 after source verification:** this report's
+> 43.3% figure is the metric from the roughly 30% model-selection holdout drawn
+> from a 57-station, one-county dataset, not independent nationwide accuracy
+> evidence. The national error remains unknown.
+> Nathaniel also expanded the v1 contract after comparing this report with the
+> Codex review. The current decision is recorded in
+> `docs/reviews/product-direction/2026-08-25-v1-direction.md`; the original
+> analysis below remains unchanged as comparison evidence.
+
 Reviewed at `391eed25` (v0.34.0), clean synced `main`. This covers the whole
 repository, the 2,412-commit history, all 34 releases, every agent memory and
 plan file, the Claude and Codex session records, and the documentation set. It

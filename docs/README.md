@@ -5,10 +5,22 @@ this directory holds everything that is not application code. Start here:
 
 ## If you want to know what is being built
 
-- **`ROADMAP.md`** — the only active development queue, and the definition of v1.0. Rewritten
-  2026-08-25 from a full-repository review.
+- **`product/V1_PRODUCT_CONTRACT.md`** — the binding definition of v1: the ultimate free planning
+  operating system for all US planning practice, all states, with California as the gold standard.
+- **`product/AGENT_OPERATING_RULES.md`** — the tracked shared operating manual used by the slim
+  local `AGENTS.md` and `CLAUDE.md` harness shims.
+- **`ROADMAP.md`** — the only active development queue derived from that contract.
+- `product/US_PLANNING_CAPABILITY_MATRIX.md` — the conservative coverage ledger; only `proven`
+  cells pass v1.
+- `product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md` — the recurring fresh-context review and the
+  commands that make an expired strategic review fail the release gate.
+- `reviews/product-direction/2026-08-25-v1-direction.md` — Nathaniel's decision after comparing
+  the independent Claude and Codex reviews.
+- `modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md` — why a count is not exact
+  truth, why that cannot excuse model defects, and the proposed nationwide acceptance design.
 - `reviews/OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md` — the independent Codex product and codebase
-  review, with a companion interactive HTML report and the comparison to Claude's review.
+  review, with a companion interactive HTML report; its original smaller v1 recommendation is
+  preserved as comparison evidence and explicitly superseded by the product contract.
 - `ops/KNOWN_ISSUES.md` — the active quality register: what OpenPlan does not claim, and why.
 - `../CHANGELOG.md` — what shipped, in operator language, leading with required migrations.
 
