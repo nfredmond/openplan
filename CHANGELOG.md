@@ -19,6 +19,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.34.0 — 2026-08-25
+
 **Migration required.** Run `npm exec -- supabase migration up --linked`
 before deploying the app. Migration
 `20260825000002_direct_workbook_portfolio_import.sql`

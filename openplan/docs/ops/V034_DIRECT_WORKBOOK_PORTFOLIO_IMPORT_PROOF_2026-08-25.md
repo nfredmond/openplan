@@ -1,8 +1,8 @@
 # v0.34.0 direct workbook portfolio import proof
 
 Date: 2026-08-25
-Candidate commits: `80270dad`, `0fcc8051`, `22535359`
-Release status: candidate; browser acceptance complete, final checks and tag pending
+Implementation commits: `80270dad`, `0fcc8051`, `22535359`, `ed3b8061`
+Release status: released as `v0.34.0`
 
 ## Boundary proved
 
@@ -93,6 +93,9 @@ container and the restored function definition was inspected afterward.
 - `qa:gate`: lint, dead-code audit, the full Vitest suite, live RLS, production
   dependency audit (zero vulnerabilities), TypeScript, and webpack build passed.
 - The populated GitHub upgrade rehearsal from v0.33 to `80270dad` passed.
+- GitHub CI and RLS Isolation passed on the browser-found fix commit:
+  [CI 32912387555](https://github.com/nfredmond/openplan/actions/runs/32912387555)
+  and [RLS 32912387549](https://github.com/nfredmond/openplan/actions/runs/32912387549).
 
 The first complete suite exposed an old-history crash, three unexplained
 provenance columns, an unreviewed migration backfill, a SQLSTATE mistaken for a

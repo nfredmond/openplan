@@ -260,6 +260,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260825000001_reviewed_portfolio_import.sql",
     migrationsAtRelease: 222,
   },
+  // 0.34.0 — direct CSV/XLS/XLSX/ODS multi-sheet portfolio import with
+  // bounded archive validation and sheet-aware immutable provenance.
+  {
+    tag: "0.34.0",
+    lastMigration: "20260825000002_direct_workbook_portfolio_import.sql",
+    migrationsAtRelease: 223,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

@@ -1,8 +1,8 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 0fcc8051
-current_release: v0.33.0
+reviewed_commit: ed3b8061
+current_release: v0.34.0
 review_by: 2026-09-07
 paths:
 - openplan/src/lib/projects/portfolio-import.ts
@@ -99,7 +99,7 @@ evidence landed in `3ee6dafa` and is recorded in
 agency examples are usually XLS or XLSX, so CSV was deliberately the first
 parsed format rather than the final format boundary.
 
-## Candidate — v0.34 direct workbook portfolio import
+## Completed — v0.34 direct workbook portfolio import
 
 - Read stored CSV, XLS, XLSX, and ODS sources directly, with bounded archive
   expansion before compressed workbooks reach the parser.
@@ -117,8 +117,9 @@ parsed format rather than the final format boundary.
 Implementation, public-file parsing, mutation proof, full tests, workers, live
 RLS, build, and the populated upgrade rehearsal are recorded in
 `openplan/docs/ops/V034_DIRECT_WORKBOOK_PORTFOLIO_IMPORT_PROOF_2026-08-25.md`.
-The tag remains gated on the visible desktop and 390px browser journey because
-no supported browser binding was available in the implementation session.
+The real Chrome journey found and closed a missing cost-metadata request seam,
+then passed desktop and 390px sign-in, import, created-project, durable-history,
+console, request-failure, and horizontal-overflow checks.
 
 ## Later
 
