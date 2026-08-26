@@ -47,8 +47,8 @@ Three clauses, each with a test that can fail:
 
 1. **Anywhere in the United States.** No module is silently
    California-only. Every module either has national data or states its exact
-   coverage limit at the point of use — on the map, in the panel, in the
-   export — not in a caveat paragraph a reader may not reach.
+   coverage limit where the number is read, on the map, in the panel, in the
+   export, rather than in a caveat paragraph a reader may never reach.
 2. **A real piece of work, end to end.** All seven `qa-harness/first-week-jobs`
    journeys complete from a fresh account, driven by an agent with no
    product knowledge, using only visible navigation, and each ends in an
@@ -59,7 +59,7 @@ Three clauses, each with a test that can fail:
 
 Plus the release-engineering gate already defined and already nearly met:
 worker integrity, a passing restore drill, a populated upgrade rehearsal,
-mutation evidence, live RLS, production build, and CI — all against one
+mutation evidence, live RLS, production build, and CI, all against one
 candidate commit.
 
 **What v1.0 does not mean.** It does not mean the travel model reproduces
@@ -87,7 +87,7 @@ number is read.**
 
 ---
 
-## v0.35 — Serious injuries outside California
+## v0.35, serious injuries outside California
 
 **The problem.** `openplan/src/lib/safety/sources/registry.ts` registers two
 crash adapters: CCRS, which separates fatal from injury crashes inside
@@ -101,13 +101,13 @@ This is the sharpest live conflict with product non-negotiable #1.
 
 **The work.**
 - Extend the crash-source adapter tier so a state DOT crash feed registers the
-  way the WA/CO/OR traffic-count publishers already do — a descriptor, not a
-  call-site edit.
+  way the WA, CO, and OR traffic-count publishers already do. A descriptor, not
+  a call-site edit.
 - Research which state crash APIs are open and keyless, then register the ones
   that are. Do not guess the list; the CCRS record shows how fast these die.
 - Where no injury source is registered, state the severity ceiling **on the
   safety map and in the ranked-locations panel**, before the ranking, in plain
-  words: "fatal crashes only — this state's injury data is not connected."
+  words: "fatal crashes only. This state's injury data is not connected."
 - Carry the ceiling into the safety packet, the grant evidence, and the export.
 
 **Done when.** A fresh workspace in a state with no registered injury source
@@ -116,7 +116,7 @@ that disclosure fails a test.
 
 ---
 
-## v0.36 — Get the work back out
+## v0.36, get the work back out
 
 **The problem.** OpenPlan reads CSV, XLS, XLSX, ODS, GTFS, GeoJSON, shapefiles
 and drone imagery. It writes CSV, GeoJSON and PDF. Agencies live in ArcGIS and
@@ -128,7 +128,7 @@ was.
 **The work.**
 - GeoPackage export for the geographic outputs: study areas, corridors, crash
   points, modeled links with volumes, engagement pins, land-use designations.
-  One format, not four — GeoPackage opens in both ArcGIS and QGIS.
+  One format, not four, because GeoPackage opens in both ArcGIS and QGIS.
 - XLSX export mirroring the workbook import, so a portfolio round-trips.
 - A per-project evidence bundle: every artifact plus a manifest carrying source,
   retrieval date, claim tier, and known limits for each figure.
@@ -139,11 +139,12 @@ source and claim tier of every attribute without opening OpenPlan.
 
 ---
 
-## v0.37 — One agency, many people
+## v0.37, one agency, many people
 
 **The problem.** `WORKSPACE_ACTION_ROLE_MATRIX` covers 23 actions across eight
-modules. Everything else — safety, grants, projects, RTP, land-use plans,
-aerial, documents, measures, data hub — authorizes writes by bare membership
+modules. Everything else, meaning safety, grants, projects, RTP, land-use
+plans, aerial, documents, measures, and the data hub, authorizes writes by bare
+membership
 plus a read-only viewer gate. For a single planner that is invisible. For the
 actual customer, an agency where an analyst drafts and a director approves, it
 means there is no answer to "who may adopt this plan, obligate this money, or
@@ -167,15 +168,16 @@ control at all, and the adoption record names the approver.
 
 ---
 
-## v0.38 — The model says what it knows, where it is read
+## v0.38, the model says what it knows, where it is read
 
 **The problem.** The measured position is in
 `docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md`: the screening model puts
-roughly **1.7× too much traffic** on counted roads, about 1.10× of that is
-explained by concentration and **~1.6× has no identified cause after seven
+roughly **1.7 times too much traffic** on counted roads, about 1.10 times of that
+is explained by concentration and **roughly 1.6 times has no identified cause
+after seven
 measured investigations**. Separately, **77–85% of links inside a study area
-carry no assigned traffic at all** — 96–100% of residential and local streets —
-because a centroid connector loads a path, not an area. Held-out median APE is
+carry no assigned traffic at all**, including 96 to 100% of residential and
+local streets, because a centroid connector loads a path rather than an area. Held-out median APE is
 43.3% against a 30% gate.
 
 None of that is a defect to fix before 1.0; it is the resolution of a screening
@@ -184,17 +186,17 @@ reading a corridor volume is not told which of those two situations they are
 in.** A road with no modeled traffic and a road the model over-assigns look the
 same on screen.
 
-**The work — presentation, not calibration.**
+**The work. Presentation, not calibration.**
 - Per-link coverage state on the corridor map and in every artifact that quotes
   a volume: modeled, unloaded, or outside the network. An unloaded link never
   renders a number.
 - The over-assignment bracket travels with the volume, in the panel and the
   export, not only in a caveat block.
-- Promote relative framing — with-project versus without-project on the same
-  network — over absolute volumes wherever the product can, because that is the
+- Promote relative framing, with-project versus without-project on the same
+  network, over absolute volumes wherever the product can, because that is the
   comparison the model is actually good at and it is what a corridor decision
   needs.
-- **Engagement × Safety** (his backlog item 2): cluster resident map comments
+- **Engagement by Safety** (his backlog item 2): cluster resident map comments
   against crash locations. It touches no model volumes, so it is not blocked by
   any of the above, and it is near-ready SS4A evidence.
 
@@ -203,7 +205,7 @@ coverage state, and a mutation that drops the coverage state fails a test.
 
 ---
 
-## v1.0 — The stranger test
+## v1.0, the stranger test
 
 - The full release gate against one candidate commit: `qa:gate`,
   `test:rls-live`, `test:workers`, `ops:restore-drill`, upgrade rehearsal,
@@ -225,10 +227,10 @@ coverage state, and a mutation that drops the coverage state fails a test.
 Stated so they stop costing sessions. Each is wanted; none is a release
 blocker.
 
-- **Chasing the ~1.6×.** Seven measured investigations have ruled out zone size,
+- **Chasing the unexplained 1.6 times.** Seven measured investigations have ruled out zone size,
   tertiary under-assignment, missing local travel, and count-seeding, and sized
   concentration and boundary disposition. It is a post-1.0 research lane. The
-  product's answer at 1.0 is disclosure, not a fitted scalar — and a nationwide
+  product's answer at 1.0 is disclosure, not a fitted scalar, and a nationwide
   scalar sweep would publish the same failure everywhere with a better-looking
   number attached.
 - **Averaging the two models.** Permanently rejected. Agreement is
@@ -238,7 +240,7 @@ blocker.
   a denominator. Deferring it is the honest call, not a delay.
 - **MCP server and Buzz agentic control.** ADR-004 stands: build the server
   (read → propose), refuse the client. Implementation waits for module
-  maturity. **Nathaniel asked to be reminded he still wants this — raise it at
+  maturity. **Nathaniel asked to be reminded he still wants this, so raise it at
   every roadmap milestone.** Meanwhile every new write capability keeps earning
   a registry entry or a recorded refusal, which is what keeps it cheap.
 - **New modules.** Non-negotiable #2. Land Use Plans was an explicit,
@@ -256,5 +258,5 @@ often collide with a plausible-looking plan:
 
 - Nothing is hardcoded, and the architecture must not assume the United States.
 - Accuracy beats runtime. A run may take hours or days. "It would be slow" is
-  never a reason not to try something — say what it costs in wall-clock and let
+  never a reason not to try something. Say what it costs in wall-clock and let
   Nathaniel decide.
