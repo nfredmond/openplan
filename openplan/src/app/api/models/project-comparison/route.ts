@@ -14,6 +14,13 @@ import {
   parseGuidedBuildAssumption,
   usesGuidedWorkerNetwork,
 } from "@/lib/models/project-comparison";
+import {
+  collectGuidedRunEvidence,
+  latestGuidedRuns,
+  type GuidedRunJob,
+  type GuidedRunRow,
+  type ModelRunArtifactRow,
+} from "@/lib/models/guided-model-evidence";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 
@@ -300,24 +307,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const guidedRuns = (guidedRunsResult.data ?? []) as Array<{
-      id: string;
-      model_id: string;
-      scenario_entry_id: string | null;
-      status: string;
-      assumption_snapshot_json: Record<string, unknown> | null;
-    }>;
+    const guidedRuns = (guidedRunsResult.data ?? []) as GuidedRunRow[];
+    if (!baselineEntryId || !buildEntryId) {
+      return NextResponse.json(
+        { error: "Comparison scenarios exist, but their identities could not be verified" },
+        { status: 500 },
+      );
+    }
     const orderedRunJobs = [
       { method: "aequilibrae", scenario: "baseline", modelId: modelIds.aequilibrae, scenarioEntryId: baselineEntryId },
       { method: "aequilibrae", scenario: "build", modelId: modelIds.aequilibrae, scenarioEntryId: buildEntryId },
       { method: "activitysim", scenario: "baseline", modelId: modelIds.activitysim, scenarioEntryId: baselineEntryId },
       { method: "activitysim", scenario: "build", modelId: modelIds.activitysim, scenarioEntryId: buildEntryId },
-    ] as const;
-    const nextRun = orderedRunJobs.find((job) => {
-      const latest = guidedRuns.find(
-        (run) => run.model_id === job.modelId && run.scenario_entry_id === job.scenarioEntryId,
+    ] as const satisfies readonly GuidedRunJob[];
+    const guidedRunIds = guidedRuns.map((run) => run.id);
+    const artifactsResult = guidedRunIds.length > 0
+      ? await supabase
+          .from("model_run_artifacts")
+          .select("run_id, artifact_type, file_url, file_size_bytes, content_hash")
+          .in("run_id", guidedRunIds)
+          .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
+      : { data: [], error: null };
+    if (artifactsResult.error) {
+      audit.error("guided_output_artifacts_read_failed", { message: artifactsResult.error.message });
+      return NextResponse.json(
+        { error: "Comparison is set up, but its output evidence could not be verified" },
+        { status: 500 },
       );
-      if (latest?.status !== "succeeded") return true;
+    }
+    const artifacts = (artifactsResult.data ?? []) as ModelRunArtifactRow[];
+    const currentEvidence = collectGuidedRunEvidence(orderedRunJobs, guidedRuns, artifacts);
+    const evidenceByJob = new Map(
+      currentEvidence.map((item) => [`${item.method}:${item.scenario}`, item]),
+    );
+    const latestByJob = latestGuidedRuns(orderedRunJobs, guidedRuns);
+    const nextRun = orderedRunJobs.find((job) => {
+      const latest = latestByJob.get(`${job.method}:${job.scenario}`);
+      if (latest?.status !== "succeeded" || !evidenceByJob.has(`${job.method}:${job.scenario}`)) return true;
       if (job.scenario === "baseline") return false;
       const snapshot = parseGuidedBuildAssumption(latest.assumption_snapshot_json);
       return !buildAssumption || !snapshot ||
@@ -326,6 +352,16 @@ export async function POST(request: NextRequest) {
     }) ?? null;
 
     const buildAssumptionRequired = nextRun?.scenario === "build" && !buildAssumption;
+    const activitysimPreflightRuns = orderedRunJobs
+      .filter((job) => job.method === "activitysim")
+      .map((job) => ({ job, run: latestByJob.get(`${job.method}:${job.scenario}`) }))
+      .filter(({ job, run }) => run?.status === "succeeded" && !evidenceByJob.has(`${job.method}:${job.scenario}`))
+      .map(({ job, run }) => ({ runId: run!.id, scenario: job.scenario, status: "preflight_succeeded" as const }));
+    const needsActivitySimRuntime = Boolean(
+      !buildAssumptionRequired &&
+      nextRun?.method === "activitysim" &&
+      activitysimPreflightRuns.some((item) => item.scenario === nextRun.scenario),
+    );
 
     audit.info("project_comparison_ready_for_inputs", {
       workspaceId: project.workspace_id,
@@ -339,6 +375,8 @@ export async function POST(request: NextRequest) {
       {
         state: buildAssumptionRequired
           ? "needs_build_assumption"
+          : needsActivitySimRuntime
+            ? "needs_activitysim_runtime"
           : nextRun
             ? "ready_for_run"
             : "ready_for_validation",
@@ -350,6 +388,14 @@ export async function POST(request: NextRequest) {
         nextRun: buildAssumptionRequired ? null : nextRun,
         buildAssumptionRequired,
         buildAssumption,
+        verifiedOutputs: currentEvidence.map((item) => ({
+          runId: item.runId,
+          method: item.method,
+          scenario: item.scenario,
+          artifactType: item.artifactType,
+          artifactSha256: item.artifactSha256,
+        })),
+        activitysimPreflightRuns,
       },
       { status: createdScenarioSet ? 201 : 200 },
     );

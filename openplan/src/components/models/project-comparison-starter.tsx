@@ -13,7 +13,7 @@ import { withPlanningContext } from "@/lib/projects/planning-context";
 
 type StartResponse = {
   error?: string;
-  state?: "needs_build_assumption" | "ready_for_run" | "ready_for_validation";
+  state?: "needs_build_assumption" | "needs_activitysim_runtime" | "ready_for_run" | "ready_for_validation";
   scenarioSetId?: string;
   networkBasis?: string;
   buildAssumptionRequired?: boolean;
@@ -37,6 +37,7 @@ export function ProjectComparisonStarter({
   const router = useRouter();
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [runtimeNotice, setRuntimeNotice] = useState<string | null>(null);
   const [needsBuildAssumption, setNeedsBuildAssumption] = useState(false);
   const [autoTripChangePct, setAutoTripChangePct] = useState("");
   const [assumptionBasis, setAssumptionBasis] = useState("");
@@ -44,6 +45,7 @@ export function ProjectComparisonStarter({
 
   async function startComparison(saveBuildAssumption = false) {
     setError(null);
+    setRuntimeNotice(null);
     setIsStarting(true);
     try {
       const parsedChange = Number(autoTripChangePct);
@@ -73,6 +75,13 @@ export function ProjectComparisonStarter({
 
       if (payload.state === "needs_build_assumption" || payload.buildAssumptionRequired) {
         setNeedsBuildAssumption(true);
+        return;
+      }
+
+      if (payload.state === "needs_activitysim_runtime") {
+        setRuntimeNotice(
+          "ActivitySim preflight succeeded, but it produced no assigned link volumes. Configure an ActivitySim execution runtime, then run this scenario again. Preflight alone does not complete the ActivitySim step.",
+        );
         return;
       }
 
@@ -188,6 +197,7 @@ export function ProjectComparisonStarter({
         </ul>
       </div>
       {error ? <p className="mt-3 text-sm text-red-700 dark:text-red-300" role="alert">{error}</p> : null}
+      {runtimeNotice ? <p className="mt-3 text-sm text-amber-800 dark:text-amber-200" role="status">{runtimeNotice}</p> : null}
     </section>
   );
 }

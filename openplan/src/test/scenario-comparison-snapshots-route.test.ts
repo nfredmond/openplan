@@ -38,6 +38,10 @@ const comparisonSnapshotInsertMock = vi.fn(() => ({ select: comparisonSnapshotIn
 
 const comparisonDeltaInsertSelectMock = vi.fn();
 const comparisonDeltaInsertMock = vi.fn(() => ({ select: comparisonDeltaInsertSelectMock }));
+const guidedModelsResultMock = vi.fn().mockResolvedValue({ data: [], error: null });
+const guidedModelsEqProjectMock = vi.fn(() => guidedModelsResultMock());
+const guidedModelsEqSetMock = vi.fn(() => ({ eq: guidedModelsEqProjectMock }));
+const guidedModelsSelectMock = vi.fn(() => ({ eq: guidedModelsEqSetMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -76,6 +80,10 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "scenario_comparison_indicator_deltas") {
     return { insert: comparisonDeltaInsertMock };
+  }
+
+  if (table === "models") {
+    return { select: guidedModelsSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);

@@ -434,6 +434,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
       const isSketchAbmRun = launchPayload.engineKey === "sketch_abm";
 
+      if ((isAequilibraeRun || isBehavioralDemandRun) && access.model.project_id) {
+        const readinessResult = await supabase.rpc("project_modeling_study_area_readiness", {
+          p_project_id: access.model.project_id,
+        });
+        if (readinessResult.error) {
+          audit.error("project_study_area_readiness_failed", {
+            modelId: access.model.id,
+            projectId: access.model.project_id,
+            message: readinessResult.error.message,
+            code: readinessResult.error.code ?? null,
+          });
+          return NextResponse.json(
+            {
+              error: "The project study area could not be checked against loaded Census tracts.",
+              repairState: "study_area_read_failed",
+            },
+            { status: 503 },
+          );
+        }
+        const readiness = (readinessResult.data as Array<{
+          state: string;
+          tract_count: number | string;
+          detail: string;
+        }> | null)?.[0] ?? null;
+        if (!readiness || readiness.state !== "ready") {
+          return NextResponse.json(
+            {
+              error: readiness?.detail ?? "The project study area is not ready for modeling.",
+              repairState: readiness?.state ?? "study_area_read_failed",
+              tractCount: Number(readiness?.tract_count ?? 0),
+            },
+            { status: readiness?.state === "project_not_found" ? 404 : 409 },
+          );
+        }
+      }
+
       if (isAequilibraeRun || isBehavioralDemandRun) {
         const health = await loadModelingWorkerHealth(resolveModelingWorkerDeclaration());
         const healthGate = evaluateWorkerHealthLaunchGate(launchPayload.engineKey, health);

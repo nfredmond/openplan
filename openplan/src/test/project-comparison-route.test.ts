@@ -23,6 +23,7 @@ function fakeClient(role: string | null = "member") {
     scenario_entries: [],
     models: [],
     model_runs: [],
+    model_run_artifacts: [],
   };
   let id = 0;
 
@@ -128,6 +129,18 @@ describe("project comparison starter route", () => {
       status: "succeeded",
       created_at: "2026-08-26T00:00:00Z",
     });
+    const statusOnly = await POST(request());
+    expect(await statusOnly.json()).toMatchObject({
+      state: "ready_for_run",
+      nextRun: { method: "aequilibrae", scenario: "baseline" },
+    });
+    fake.tables.model_run_artifacts.push({
+      run_id: "run-baseline-aeq",
+      artifact_type: "link_volumes",
+      file_url: "storage://run-artifacts/run-baseline-aeq.csv",
+      file_size_bytes: 100,
+      content_hash: "a".repeat(64),
+    });
     const afterBaseline = await POST(request());
     expect(await afterBaseline.json()).toMatchObject({
       state: "needs_build_assumption",
@@ -169,10 +182,84 @@ describe("project comparison starter route", () => {
         assumption_snapshot_json: { guidedProjectChange: { kind: "assigned_auto_trip_change_pct", autoTripChangePct: -8, basis: "Reviewed local study" } },
       },
     );
+    fake.tables.model_run_artifacts.push(
+      {
+        run_id: "baseline",
+        artifact_type: "link_volumes",
+        file_url: "storage://run-artifacts/baseline.csv",
+        file_size_bytes: 100,
+        content_hash: "a".repeat(64),
+      },
+      {
+        run_id: "old-build",
+        artifact_type: "link_volumes",
+        file_url: "storage://run-artifacts/old-build.csv",
+        file_size_bytes: 100,
+        content_hash: "b".repeat(64),
+      },
+    );
 
     const response = await POST(request({ autoTripChangePct: -12, basis: "Updated board-reviewed study" }));
     expect(await response.json()).toMatchObject({
       nextRun: { method: "aequilibrae", scenario: "build" },
+    });
+  });
+
+  it("shows successful ActivitySim preflight separately and requires all four verified outputs", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    await POST(request({ autoTripChangePct: -8, basis: "Reviewed local study" }));
+    const aeq = fake.tables.models.find((row) => row.model_family === "travel_demand");
+    const asim = fake.tables.models.find((row) => row.model_family === "activity_based_model");
+    const baseline = fake.tables.scenario_entries.find((row) => row.entry_type === "baseline");
+    const build = fake.tables.scenario_entries.find((row) => row.entry_type === "alternative");
+    const assumption = { guidedProjectChange: { kind: "assigned_auto_trip_change_pct", autoTripChangePct: -8, basis: "Reviewed local study" } };
+    fake.tables.model_runs.push(
+      { id: "aeq-base", model_id: aeq?.id, scenario_entry_id: baseline?.id, status: "succeeded", assumption_snapshot_json: {} },
+      { id: "aeq-build", model_id: aeq?.id, scenario_entry_id: build?.id, status: "succeeded", assumption_snapshot_json: assumption },
+      { id: "asim-base", model_id: asim?.id, scenario_entry_id: baseline?.id, status: "succeeded", assumption_snapshot_json: {} },
+    );
+    fake.tables.model_run_artifacts.push(
+      { run_id: "aeq-base", artifact_type: "link_volumes", file_url: "storage://run-artifacts/aeq-base.csv", file_size_bytes: 10, content_hash: "a".repeat(64) },
+      { run_id: "aeq-build", artifact_type: "link_volumes", file_url: "storage://run-artifacts/aeq-build.csv", file_size_bytes: 10, content_hash: "b".repeat(64) },
+    );
+
+    const preflight = await POST(request());
+    expect(await preflight.json()).toMatchObject({
+      state: "needs_activitysim_runtime",
+      nextRun: { method: "activitysim", scenario: "baseline" },
+      activitysimPreflightRuns: [{ runId: "asim-base", scenario: "baseline", status: "preflight_succeeded" }],
+    });
+
+    fake.tables.model_run_artifacts.push({
+      run_id: "asim-base",
+      artifact_type: "activitysim_link_volumes",
+      file_url: "storage://run-artifacts/asim-base.csv",
+      file_size_bytes: 10,
+      content_hash: "c".repeat(64),
+    });
+    fake.tables.model_runs.push({
+      id: "asim-build",
+      model_id: asim?.id,
+      scenario_entry_id: build?.id,
+      status: "succeeded",
+      assumption_snapshot_json: assumption,
+    });
+    fake.tables.model_run_artifacts.push({
+      run_id: "asim-build",
+      artifact_type: "activitysim_link_volumes",
+      file_url: "storage://run-artifacts/asim-build.csv",
+      file_size_bytes: 10,
+      content_hash: "d".repeat(64),
+    });
+
+    const ready = await POST(request());
+    expect(await ready.json()).toMatchObject({
+      state: "ready_for_validation",
+      nextRun: null,
+      verifiedOutputs: expect.arrayContaining([
+        expect.objectContaining({ method: "activitysim", scenario: "build", artifactSha256: "d".repeat(64) }),
+      ]),
     });
   });
 

@@ -888,6 +888,7 @@ def write_model_run_modeling_evidence(
     validation: dict | None,
     calibration: dict | None = None,
     independent_validation: dict | None = None,
+    track: str = "assignment",
 ) -> None:
     """Write the shared modeling claim-grade spine for THIS model run — the same
     tables the county lane populates (modeling_validation_results +
@@ -992,11 +993,13 @@ def write_model_run_modeling_evidence(
             )
         upsert_headers = dict(HEADERS)
         upsert_headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
+        if track not in {"assignment", "behavioral_demand"}:
+            raise ValueError(f"unsupported modeling evidence track: {track}")
         requests.post(
             f"{SUPABASE_URL}/rest/v1/modeling_claim_decisions?on_conflict=model_run_id,track",
             headers=upsert_headers,
             json={
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
+                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
                 "claim_status": claim_status, "status_reason": reason,
                 "validation_summary_json": {
                     **(validation or {}),
@@ -1009,7 +1012,7 @@ def write_model_run_modeling_evidence(
         )
         # Refresh the per-metric validation rows for this run/track.
         requests.delete(
-            f"{SUPABASE_URL}/rest/v1/modeling_validation_results?model_run_id=eq.{run_id}&track=eq.assignment",
+            f"{SUPABASE_URL}/rest/v1/modeling_validation_results?model_run_id=eq.{run_id}&track=eq.{track}",
             headers=HEADERS, timeout=20,
         )
         if validation and matched > 0:
@@ -1021,7 +1024,7 @@ def write_model_run_modeling_evidence(
                 intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
             )
             rows = [{
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
+                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
                 "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",
                 "threshold_comparator": "lte", "status": status, "blocks_claim_grade": True,
                 "detail": detail,
@@ -1032,7 +1035,7 @@ def write_model_run_modeling_evidence(
                     "spearman_rho": (validation or {}).get("spearman_rho"),
                 },
             }, {
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
+                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
                 "metric_key": "count_stations_matched", "metric_label": "Matched count stations",
                 "threshold_comparator": "gte", "status": "pass" if matched >= 3 else "fail",
                 "blocks_claim_grade": True,
@@ -5696,6 +5699,20 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         "trip_based_od_adjustments_reused": False,
                     },
                 })
+                activitysim_validation = _run_count_validation(
+                    os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
+                    volume_path,
+                    state.get("setup", {}).get("bbox"),
+                    counts_path=result.get("counts_path") or first_assignment.get("counts_path"),
+                    intrazonal_share_pct=None,
+                    zone_count=(result.get("network") or {}).get("zones"),
+                )
+                write_model_run_modeling_evidence(
+                    run_id,
+                    (sb_get_run(run_id) or {}).get("workspace_id"),
+                    activitysim_validation,
+                    track="behavioral_demand",
+                )
                 sb_patch_stage(stage_id, {
                     "status": "succeeded",
                     "completed_at": datetime.now(timezone.utc).isoformat(),

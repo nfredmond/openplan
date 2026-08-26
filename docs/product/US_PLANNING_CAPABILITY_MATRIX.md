@@ -3,7 +3,7 @@
 <!-- openplan-planning-capability-matrix
 review_date: 2026-08-25
 review_by: 2026-09-25
-current_release: v0.36.0
+current_release: v0.36.1
 capabilities:
 - long-range-transportation-and-regional-planning
 - land-use-comprehensive-and-community-planning
@@ -62,7 +62,7 @@ accessibility, or operations cell disappears or the review expires.
 Only `proven` passes v1. An evidence link and review date are required when a
 cell changes to `proven`; prose confidence is not evidence.
 
-## Practice coverage at v0.36.0
+## Practice coverage at v0.36.1
 
 | Core planning practice | Current status | Existing foundation | Principal proof gap |
 |---|---|---|---|
@@ -76,7 +76,7 @@ cell changes to `proven`; prose confidence is not evidence.
 | GIS, data stewardship, documents, reports, and public records | Partial | Imports, project GeoPackage handoff, literal-value XLSX portfolio round-trip, frozen project evidence bundles, evidence custody, reports, provenance | Per-plan bundles, broader GIS output coverage, records lifecycle, and complete cross-module source reuse |
 | Development review, implementation, and interdepartmental handoff | Not assessed | Project and land-use primitives may be reusable | Product home, workflow definition, responsibility/approval handoffs, and artifacts |
 
-## Organization coverage at v0.36.0
+## Organization coverage at v0.36.1
 
 | Organization context | Current status | Principal proof gap |
 |---|---|---|
@@ -88,7 +88,7 @@ cell changes to `proven`; prose confidence is not evidence.
 | Consultancies | Partial | Multi-client separation, deliverable review, records transfer, and client acceptance |
 | Non-profits, community groups, and independent planners | Not assessed | Accessible self-service workflows, limited-capacity operations, and durable handoff |
 
-## Geography coverage at v0.36.0
+## Geography coverage at v0.36.1
 
 No state is yet `proven` against the complete v1 contract. California has the
 deepest configured legal and data support and is still `partial`. The other

@@ -7,6 +7,7 @@ const authGetUserMock = vi.fn();
 const fetchCensusForCorridorMock = vi.fn();
 const fetchLODESForCorridorMock = vi.fn();
 const loadModelingWorkerHealthMock = vi.fn();
+const rpcMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -219,11 +220,88 @@ describe("/api/models/[modelId]/runs", () => {
     fetchCensusForCorridorMock.mockResolvedValue(SKETCH_CENSUS_FIXTURE);
     fetchLODESForCorridorMock.mockResolvedValue({ totalJobs: 1800 });
     loadModelingWorkerHealthMock.mockResolvedValue(workerHealth());
+    rpcMock.mockResolvedValue({
+      data: [{ state: "ready", tract_count: 3, detail: "3 usable tracts intersect." }],
+      error: null,
+    });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+      rpc: rpcMock,
     });
+  });
+
+  it("blocks a project worker run when its stored study area has no usable tracts", async () => {
+    modelMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: MODEL_ID,
+        workspace_id: WORKSPACE_ID,
+        project_id: "44444444-4444-4444-8444-444444444444",
+        scenario_set_id: null,
+        title: "Project model",
+        model_family: "travel_demand",
+        config_json: {
+          runTemplate: {
+            queryText: "Evaluate the project area",
+            corridorGeojson: {
+              type: "Polygon",
+              coordinates: [[[-121.5, 39.1], [-121.4, 39.1], [-121.4, 39.2], [-121.5, 39.1]]],
+            },
+          },
+        },
+      },
+      error: null,
+    });
+    rpcMock.mockResolvedValueOnce({
+      data: [{ state: "no_tracts", tract_count: 0, detail: "Load tract coverage or repair the area." }],
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) },
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ repairState: "no_tracts", tractCount: 0 });
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
+    expect(rpcMock).toHaveBeenCalledWith("project_modeling_study_area_readiness", {
+      p_project_id: "44444444-4444-4444-8444-444444444444",
+    });
+  });
+
+  it("fails closed when the project tract-readiness read fails", async () => {
+    modelMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: MODEL_ID,
+        workspace_id: WORKSPACE_ID,
+        project_id: "44444444-4444-4444-8444-444444444444",
+        scenario_set_id: null,
+        title: "Project model",
+        model_family: "travel_demand",
+        config_json: {
+          runTemplate: {
+            queryText: "Evaluate the project area",
+            corridorGeojson: {
+              type: "Polygon",
+              coordinates: [[[-121.5, 39.1], [-121.4, 39.1], [-121.4, 39.2], [-121.5, 39.1]]],
+            },
+          },
+        },
+      },
+      error: null,
+    });
+    rpcMock.mockResolvedValueOnce({ data: null, error: { message: "tract table unavailable", code: "42P01" } });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "behavioral_demand" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) },
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ repairState: "study_area_read_failed" });
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
   });
 
   it("enqueues behavioral demand as an async ActivitySim preflight (not a forecast)", async () => {

@@ -159,4 +159,33 @@ describe("project comparison guidance", () => {
       }),
     );
   });
+
+  it("reports successful ActivitySim preflight without routing as though assignment finished", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        state: "needs_activitysim_runtime",
+        scenarioSetId: "scenario-1",
+        networkBasis: "worker_osm_snapshot",
+        nextRun: {
+          method: "activitysim",
+          scenario: "baseline",
+          modelId: "model-asim",
+          scenarioEntryId: "entry-baseline",
+        },
+      }),
+    }));
+
+    render(
+      <ProjectComparisonStarter
+        projectId="11111111-1111-4111-8111-111111111111"
+        projectName="Main Street"
+        facts={{ ...EMPTY, scenarioSetCount: 1, modelCount: 2 }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Continue guided comparison" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(/preflight succeeded.*no assigned link volumes/i);
+    expect(navigation.push).not.toHaveBeenCalled();
+  });
 });

@@ -39,6 +39,7 @@ const REVIEW_DIR = resolve(REPO_ROOT, "docs/reviews/product-direction");
 const REVIEW_MARKER = "openplan-product-direction-review";
 const CONTRACT_MARKER = "openplan-v1-product-contract";
 const MATRIX_MARKER = "openplan-planning-capability-matrix";
+const ROADMAP_MARKER = "openplan-active-roadmap";
 const MAX_REVIEW_DAYS = 31;
 
 const REQUIRED_PERSPECTIVES = [
@@ -213,6 +214,12 @@ function runCheck() {
   const contractBlock = markerBlock(contract, CONTRACT_MARKER, relative(CONTRACT_PATH));
   if (field(contractBlock, "current_release") !== release) {
     fail(`contract release does not match package release ${release}`);
+  }
+
+  const roadmap = readFileSync(ROADMAP_PATH, "utf8");
+  const roadmapBlock = markerBlock(roadmap, ROADMAP_MARKER, relative(ROADMAP_PATH));
+  if (field(roadmapBlock, "current_release") !== release) {
+    fail(`roadmap release does not match package release ${release}`);
   }
 
   const matrix = readFileSync(MATRIX_PATH, "utf8");

@@ -19,6 +19,28 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.36.1 — 2026-08-26
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260826000003_model_truth_correction.sql` (`model_truth_correction`) adds immutable links from a guided
+comparison snapshot to its exact four model runs and output hashes, plus a
+project study-area readiness check against usable Census tracts.
+
+Guided modeling no longer treats a successful status or ActivitySim preflight
+as assigned-volume evidence. Completion requires verified baseline and build
+link-volume artifacts from AequilibraE and ActivitySim, current build
+assumptions, and claim decisions attached to those exact project runs.
+Unrelated county validation and generic, stale, archived, wrong-project, or
+unbound comparison snapshots cannot complete the sequence.
+
+Project model launches now stop with an explicit repair state when the stored
+project geometry is missing, invalid, outside every usable Census tract, or
+cannot be read. OpenPlan does not infer replacement geography. ActivitySim
+assignment checks are recorded as behavioral-demand evidence, separately from
+the AequilibraE assignment decision. The direction check now also refuses a
+roadmap whose recorded current release differs from the application version.
+
 ## 0.36.0 — 2026-08-26
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-24 against v0.32.0 candidate `92fb82e0`.
+**Reviewed:** 2026-08-26 against v0.36.1.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -18,6 +18,12 @@ only in `docs/ROADMAP.md`.
 | ID | Previous severity | Finding | Resolution evidence |
 |---|---|---|---|
 | KI-2026-08-24-005 | Medium | The general AequilibraE/ActivitySim polling workers exposed liveness only through run history rather than a direct durable heartbeat. | Both worker types emit independent service-role heartbeats; deployment and model-run surfaces reduce instances to explicit capability states and exact stale observations gate enqueue without terminating active work. `modeling-worker-health.test.ts`; `V032_OPERATIONAL_HEALTH_PROOF_2026-08-24.md` |
+
+## Closed in v0.36.1
+
+| ID | Previous severity | Finding | Resolution evidence |
+|---|---|---|---|
+| KI-2026-08-26-001 | Blocker | ActivitySim preflight, unrelated county evidence, and unbound comparison snapshots could make a guided project comparison appear complete without four assigned link-volume outputs. | Guided completion now requires exact project-scoped baseline/build artifacts from both methods, artifact hashes bound to the snapshot, current build assumptions, and per-run claim decisions. `analysis-sequence-facts.test.ts`; `project-comparison-route.test.ts`; `scenario-comparison-snapshots-route.test.ts` |
 
 ## Closed in v0.31.0
 

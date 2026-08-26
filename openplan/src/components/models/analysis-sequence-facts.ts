@@ -5,12 +5,25 @@ import {
   parseWorkspaceHomeGeography,
   placeOfRecordFromHomeGeography,
 } from "@/lib/workspaces/home-geography";
-import { isPassingCountyRunGateStatus } from "@/lib/models/county-onramp";
+import {
+  PROJECT_PLACE_COLUMNS,
+  placeOfRecordFromProject,
+  type ProjectPlaceRow,
+} from "@/lib/projects/project-place";
 import {
   GUIDED_PROJECT_COMPARISON_MODELS,
   isGuidedProjectComparisonModel,
+  parseGuidedBuildAssumption,
   usesGuidedWorkerNetwork,
 } from "@/lib/models/project-comparison";
+import {
+  collectGuidedRunEvidence,
+  snapshotHasExactGuidedEvidence,
+  type GuidedRunJob,
+  type GuidedRunRow,
+  type ModelRunArtifactRow,
+  type ScenarioComparisonModelRunLinkRow,
+} from "@/lib/models/guided-model-evidence";
 import type { AnalysisSequenceFacts, AnalysisStepId } from "@/components/models/analysis-sequence";
 
 /**
@@ -51,23 +64,27 @@ export async function loadAnalysisSequenceFacts(
   workspaceId: string,
   projectId?: string | null
 ): Promise<AnalysisSequenceFacts> {
-  const scenarioSetsQuery = supabase.from("scenario_sets").select("id").eq("workspace_id", workspaceId);
-  const modelsQuery = supabase.from("models").select("id, model_family, config_json").eq("workspace_id", workspaceId);
-  const [workspaceResult, packagesResult, scenarioSetsResult, modelsResult, countyRunsResult] =
+  const scenarioSetsQuery = supabase.from("scenario_sets").select("id, baseline_entry_id").eq("workspace_id", workspaceId);
+  const modelsQuery = supabase.from("models").select("id, scenario_set_id, model_family, config_json").eq("workspace_id", workspaceId);
+  const geographyQuery = projectId
+    ? supabase.from("projects").select(PROJECT_PLACE_COLUMNS).eq("id", projectId).eq("workspace_id", workspaceId).maybeSingle()
+    : supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", workspaceId).maybeSingle();
+  const [geographyResult, packagesResult, scenarioSetsResult, modelsResult] =
     await Promise.all([
-      supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", workspaceId).maybeSingle(),
+      geographyQuery,
       supabase.from("network_packages").select("id").eq("workspace_id", workspaceId),
       projectId ? scenarioSetsQuery.eq("project_id", projectId) : scenarioSetsQuery,
       projectId ? modelsQuery.eq("project_id", projectId) : modelsQuery,
-      supabase.from("county_runs").select("stage, status_label, run_summary_json").eq("workspace_id", workspaceId),
     ]);
 
   const unreadable: AnalysisStepId[] = [];
 
-  const home = failed(workspaceResult)
+  const home = failed(geographyResult)
     ? null
-    : placeOfRecordFromHomeGeography(parseWorkspaceHomeGeography(workspaceResult.data));
-  if (failed(workspaceResult)) unreadable.push("area");
+    : projectId
+      ? placeOfRecordFromProject(geographyResult.data as unknown as Partial<ProjectPlaceRow>)
+      : placeOfRecordFromHomeGeography(parseWorkspaceHomeGeography(geographyResult.data));
+  if (failed(geographyResult)) unreadable.push("area");
 
   // A boundary that was drawn or uploaded may carry no name. It is still an
   // area, and reporting "nothing chosen yet" over the top of a drawn boundary
@@ -83,11 +100,13 @@ export async function loadAnalysisSequenceFacts(
   const packageIds = ((packagesResult.data ?? []) as Array<{ id: string }>).map((row) => row.id);
   const modelRows = (modelsResult.data ?? []) as Array<{
     id: string;
+    scenario_set_id: string | null;
     model_family: string;
     config_json?: unknown;
   }>;
   const modelIds = modelRows.map((row) => row.id);
-  const scenarioSetIds = ((scenarioSetsResult.data ?? []) as Array<{ id: string }>).map((row) => row.id);
+  const scenarioSetRows = (scenarioSetsResult.data ?? []) as Array<{ id: string; baseline_entry_id: string | null }>;
+  const scenarioSetIds = scenarioSetRows.map((row) => row.id);
 
   // Networks are counted by VERSION, not by package: a package with no version
   // in it is a name, and nothing can be run against a name. The count therefore
@@ -98,18 +117,21 @@ export async function loadAnalysisSequenceFacts(
   if (failed(versionsResult)) unreadable.push("network");
 
   const runsResult = modelIds.length
-    ? await supabase.from("model_runs").select("id, model_id, scenario_entry_id, status").in("model_id", modelIds)
+    ? await supabase.from("model_runs").select("id, model_id, scenario_entry_id, status, assumption_snapshot_json, created_at").in("model_id", modelIds).order("created_at", { ascending: false })
     : { data: [] as Array<{ id: string; model_id: string; scenario_entry_id: string | null; status: string }>, error: null };
+  const entriesResult = scenarioSetIds.length
+    ? await supabase.from("scenario_entries").select("id, scenario_set_id, entry_type, assumptions_json").in("scenario_set_id", scenarioSetIds)
+    : { data: [], error: null };
   const comparisonPacketsResult = scenarioSetIds.length
     ? await supabase
         .from("scenario_comparison_snapshots")
-        .select("id, status")
+        .select("id, scenario_set_id, status")
         .in("scenario_set_id", scenarioSetIds)
     : { data: [] as Array<{ id: string; status: string }>, error: null };
   // With no models there is nothing to have run, and the empty array is the
   // right answer rather than an unread one — so only a real failure is recorded.
   if (failed(runsResult)) unreadable.push("run", "activitysim_run");
-  if (failed(countyRunsResult)) unreadable.push("check");
+  if (failed(entriesResult)) unreadable.push("comparison");
   if (failed(comparisonPacketsResult)) unreadable.push("packet");
 
   const modelFamilyById = new Map(modelRows.map((row) => [row.id, row.model_family]));
@@ -124,53 +146,123 @@ export async function loadAnalysisSequenceFacts(
   )
     ? 1
     : 0;
-  const runRows = (runsResult.data ?? []) as Array<{
-    id: string;
-    model_id: string;
-    scenario_entry_id: string | null;
-    status: string;
-  }>;
+  const runRows = (runsResult.data ?? []) as GuidedRunRow[];
   const guidedProjectComparison = managedNetworkBasisCount > 0;
-  const successfulScenarioCount = (family: string) => new Set(
-    runRows
-      .filter((row) =>
-        modelFamilyById.get(row.model_id) === family &&
-        row.status === "succeeded" &&
-        row.scenario_entry_id
-      )
-      .map((row) => row.scenario_entry_id as string)
-  ).size;
+  const entries = (entriesResult.data ?? []) as Array<{
+    id: string;
+    scenario_set_id: string;
+    entry_type: string;
+    assumptions_json?: unknown;
+  }>;
+  const guidedJobs: GuidedRunJob[] = [];
+  for (const scenarioSet of scenarioSetRows) {
+    const baselineId = scenarioSet.baseline_entry_id ?? entries.find(
+      (entry) => entry.scenario_set_id === scenarioSet.id && entry.entry_type === "baseline",
+    )?.id;
+    const buildId = entries.find(
+      (entry) => entry.scenario_set_id === scenarioSet.id && entry.entry_type !== "baseline",
+    )?.id;
+    const aeq = modelRows.find((model) =>
+      model.scenario_set_id === scenarioSet.id && isGuidedProjectComparisonModel(model.config_json, "aequilibrae"),
+    );
+    const asim = modelRows.find((model) =>
+      model.scenario_set_id === scenarioSet.id && isGuidedProjectComparisonModel(model.config_json, "activitysim"),
+    );
+    if (!baselineId || !buildId || !aeq || !asim) continue;
+    guidedJobs.push(
+      { method: "aequilibrae", scenario: "baseline", modelId: aeq.id, scenarioEntryId: baselineId },
+      { method: "aequilibrae", scenario: "build", modelId: aeq.id, scenarioEntryId: buildId },
+      { method: "activitysim", scenario: "baseline", modelId: asim.id, scenarioEntryId: baselineId },
+      { method: "activitysim", scenario: "build", modelId: asim.id, scenarioEntryId: buildId },
+    );
+  }
+  const runIds = runRows.map((run) => run.id);
+  const artifactsResult = runIds.length
+    ? await supabase.from("model_run_artifacts")
+        .select("run_id, artifact_type, file_url, file_size_bytes, content_hash")
+        .in("run_id", runIds)
+        .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
+    : { data: [], error: null };
+  if (failed(artifactsResult)) unreadable.push("run", "activitysim_run");
+  const guidedEvidence = collectGuidedRunEvidence(
+    guidedJobs,
+    runRows,
+    (artifactsResult.data ?? []) as ModelRunArtifactRow[],
+  );
   const aequilibraeRunCount = guidedProjectComparison
-    ? successfulScenarioCount("travel_demand")
+    ? guidedEvidence.filter((item) => item.method === "aequilibrae").length
     : runRows.filter((row) => modelFamilyById.get(row.model_id) === "travel_demand").length;
   const activitySimRunCount = guidedProjectComparison
-    ? successfulScenarioCount("activity_based_model")
+    ? guidedEvidence.filter((item) => item.method === "activitysim").length
     : runRows.filter((row) => modelFamilyById.get(row.model_id) === "activity_based_model").length;
 
-  const countyRows = (countyRunsResult.data ?? []) as Array<{
-    stage: string | null;
-    status_label: string | null;
-    run_summary_json: { intrazonal_trip_share?: unknown } | null;
-  }>;
+  const evidenceRunIds = guidedEvidence.map((item) => item.runId);
+  const claimDecisionsResult = evidenceRunIds.length
+    ? await supabase.from("modeling_claim_decisions")
+        .select("model_run_id, track, claim_status")
+        .in("model_run_id", evidenceRunIds)
+    : { data: [], error: null };
+  if (failed(claimDecisionsResult)) unreadable.push("check");
+  const expectedTrackByRun = new Map(
+    guidedEvidence.map((item) => [item.runId, item.method === "aequilibrae" ? "assignment" : "behavioral_demand"]),
+  );
+  const checkedRunCount = ((claimDecisionsResult.data ?? []) as Array<{
+    model_run_id: string;
+    track: string;
+    claim_status: string;
+  }>).filter(
+    (decision) =>
+      expectedTrackByRun.get(decision.model_run_id) === decision.track &&
+      decision.claim_status !== "prototype_only",
+  ).length;
 
-  // The SAME test `/models/[id]` applies before it will let a number out:
-  // reaching the validated-screening stage says the checking ran, not that it
-  // passed, and a run whose zones are too coarse for a road-by-road comparison
-  // did not establish anything whatever its recorded gate says.
-  const checkedRunCount = countyRows.filter((row) => {
-    const share = row.run_summary_json?.intrazonal_trip_share;
-    return (
-      row.stage === "validated-screening" &&
-      isPassingCountyRunGateStatus(row.status_label, typeof share === "number" ? share : null)
-    );
-  }).length;
+  const readySnapshots = ((comparisonPacketsResult.data ?? []) as Array<{
+    id: string;
+    scenario_set_id: string;
+    status: string;
+  }>).filter((snapshot) => snapshot.status === "ready");
+  const snapshotLinksResult = readySnapshots.length
+    ? await supabase.from("scenario_comparison_model_run_links")
+        .select("comparison_snapshot_id, model_run_id, method, scenario_role, artifact_type, artifact_sha256")
+        .in("comparison_snapshot_id", readySnapshots.map((snapshot) => snapshot.id))
+    : { data: [], error: null };
+  if (failed(snapshotLinksResult)) unreadable.push("packet");
+  const snapshotLinks = (snapshotLinksResult.data ?? []) as ScenarioComparisonModelRunLinkRow[];
+  const comparisonPacketCount = guidedProjectComparison
+    ? readySnapshots.filter((snapshot) => {
+        const setJobs = guidedJobs.filter((job) => {
+          const model = modelRows.find((row) => row.id === job.modelId);
+          return model?.scenario_set_id === snapshot.scenario_set_id;
+        });
+        const setEvidence = collectGuidedRunEvidence(
+          setJobs,
+          runRows,
+          (artifactsResult.data ?? []) as ModelRunArtifactRow[],
+        );
+        const buildEntry = entries.find(
+          (entry) => entry.scenario_set_id === snapshot.scenario_set_id && entry.entry_type !== "baseline",
+        );
+        const currentBuildAssumption = parseGuidedBuildAssumption(buildEntry?.assumptions_json);
+        const buildEvidenceIsCurrent = Boolean(
+          currentBuildAssumption &&
+          setEvidence.filter((item) => item.scenario === "build").every((item) => {
+            const run = runRows.find((candidate) => candidate.id === item.runId);
+            const recorded = parseGuidedBuildAssumption(run?.assumption_snapshot_json);
+            return recorded?.autoTripChangePct === currentBuildAssumption.autoTripChangePct &&
+              recorded.basis === currentBuildAssumption.basis;
+          }),
+        );
+        return buildEvidenceIsCurrent &&
+          snapshotHasExactGuidedEvidence(snapshot.id, snapshotLinks, setEvidence);
+      }).length
+    : readySnapshots.length;
 
   return {
     areaLabel,
     networkCount: ((versionsResult.data ?? []) as Array<{ id: string }>).length,
     managedNetworkBasisCount,
     guidedProjectComparison,
-    scenarioSetCount: ((scenarioSetsResult.data ?? []) as Array<{ id: string }>).length,
+    scenarioSetCount: scenarioSetRows.length,
     modelCount: modelIds.length,
     aequilibraeModelCount,
     activitySimModelCount,
@@ -178,7 +270,7 @@ export async function loadAnalysisSequenceFacts(
     aequilibraeRunCount,
     activitySimRunCount,
     checkedRunCount,
-    comparisonPacketCount: ((comparisonPacketsResult.data ?? []) as Array<{ id: string }>).length,
+    comparisonPacketCount,
     unreadable: Array.from(new Set(unreadable)),
   };
 }

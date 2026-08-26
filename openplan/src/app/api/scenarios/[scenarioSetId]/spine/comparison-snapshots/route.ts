@@ -16,6 +16,16 @@ import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/li
 import { SCENARIO_COMPARISON_SNAPSHOT_STATUSES } from "@/lib/scenarios/catalog";
 import { buildScenarioComparisonSourceContext } from "@/lib/scenarios/comparison-source-context";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import {
+  collectGuidedRunEvidence,
+  type GuidedRunJob,
+  type GuidedRunRow,
+  type ModelRunArtifactRow,
+} from "@/lib/models/guided-model-evidence";
+import {
+  isGuidedProjectComparisonModel,
+  parseGuidedBuildAssumption,
+} from "@/lib/models/project-comparison";
 
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
@@ -306,6 +316,82 @@ export async function POST(request: NextRequest, context: RouteContext) {
       sourceContext,
     };
 
+    const guidedModelsResult = await supabase
+      .from("models")
+      .select("id, config_json")
+      .eq("scenario_set_id", access.scenarioSet.id)
+      .eq("project_id", access.scenarioSet.project_id);
+    if (guidedModelsResult.error) {
+      return NextResponse.json({ error: "Failed to verify guided comparison models" }, { status: 500 });
+    }
+    const guidedModels = (guidedModelsResult.data ?? []) as Array<{ id: string; config_json: unknown }>;
+    const aequilibraeModel = guidedModels.find((model) =>
+      isGuidedProjectComparisonModel(model.config_json, "aequilibrae"),
+    );
+    const activitysimModel = guidedModels.find((model) =>
+      isGuidedProjectComparisonModel(model.config_json, "activitysim"),
+    );
+    const isGuidedReadyRequest = parsed.data.status === "ready" && Boolean(aequilibraeModel && activitysimModel);
+    let guidedEvidence: ReturnType<typeof collectGuidedRunEvidence> = [];
+    if (isGuidedReadyRequest && aequilibraeModel && activitysimModel) {
+      const jobs = [
+        { method: "aequilibrae", scenario: "baseline", modelId: aequilibraeModel.id, scenarioEntryId: parsed.data.baselineEntryId },
+        { method: "aequilibrae", scenario: "build", modelId: aequilibraeModel.id, scenarioEntryId: parsed.data.candidateEntryId },
+        { method: "activitysim", scenario: "baseline", modelId: activitysimModel.id, scenarioEntryId: parsed.data.baselineEntryId },
+        { method: "activitysim", scenario: "build", modelId: activitysimModel.id, scenarioEntryId: parsed.data.candidateEntryId },
+      ] as const satisfies readonly GuidedRunJob[];
+      const runsResult = await supabase
+        .from("model_runs")
+        .select("id, model_id, scenario_entry_id, status, assumption_snapshot_json")
+        .in("model_id", [aequilibraeModel.id, activitysimModel.id])
+        .in("scenario_entry_id", [parsed.data.baselineEntryId, parsed.data.candidateEntryId])
+        .order("created_at", { ascending: false });
+      if (runsResult.error) {
+        return NextResponse.json({ error: "Failed to verify guided comparison runs" }, { status: 500 });
+      }
+      const runs = (runsResult.data ?? []) as GuidedRunRow[];
+      const runIds = runs.map((run) => run.id);
+      const artifactsResult = runIds.length
+        ? await supabase
+            .from("model_run_artifacts")
+            .select("run_id, artifact_type, file_url, file_size_bytes, content_hash")
+            .in("run_id", runIds)
+            .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
+        : { data: [], error: null };
+      if (artifactsResult.error) {
+        return NextResponse.json({ error: "Failed to verify guided output artifacts" }, { status: 500 });
+      }
+      guidedEvidence = collectGuidedRunEvidence(
+        jobs,
+        runs,
+        (artifactsResult.data ?? []) as ModelRunArtifactRow[],
+      );
+      const buildAssumption = parseGuidedBuildAssumption(candidateEntryResult.entry.assumptions_json);
+      const currentBuildRuns = guidedEvidence
+        .filter((item) => item.scenario === "build")
+        .map((item) => runs.find((run) => run.id === item.runId));
+      const buildEvidenceIsCurrent = Boolean(
+        buildAssumption &&
+        currentBuildRuns.length === 2 &&
+        currentBuildRuns.every((run) => {
+          const snapshot = parseGuidedBuildAssumption(run?.assumption_snapshot_json);
+          return snapshot?.autoTripChangePct === buildAssumption.autoTripChangePct &&
+            snapshot.basis === buildAssumption.basis;
+        }),
+      );
+      if (guidedEvidence.length !== 4 || !buildEvidenceIsCurrent) {
+        return NextResponse.json(
+          {
+            error: "A ready guided comparison requires current baseline and build output artifacts from both methods.",
+            repairState: guidedEvidence.some((item) => item.method === "activitysim")
+              ? "needs_model_outputs"
+              : "needs_activitysim_runtime",
+          },
+          { status: 409 },
+        );
+      }
+    }
+
     const { data: comparisonSnapshot, error: insertError } = await supabase
       .from("scenario_comparison_snapshots")
       .insert({
@@ -319,7 +405,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         narrative: parsed.data.narrative?.trim() || null,
         caveats_json: parsed.data.caveats ?? [],
         metadata_json: metadataJson,
-        status: parsed.data.status ?? "draft",
+        status: isGuidedReadyRequest ? "draft" : parsed.data.status ?? "draft",
         created_by: user.id,
       })
       .select(
@@ -389,6 +475,46 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
 
       comparisonIndicatorDeltas = (insertedDeltas ?? []) as Array<Record<string, unknown>>;
+    }
+
+    if (isGuidedReadyRequest) {
+      const linksResult = await supabase.from("scenario_comparison_model_run_links").insert(
+        guidedEvidence.map((item) => ({
+          workspace_id: access.scenarioSet.workspace_id,
+          comparison_snapshot_id: comparisonSnapshot.id,
+          model_run_id: item.runId,
+          method: item.method,
+          scenario_role: item.scenario,
+          artifact_type: item.artifactType,
+          artifact_sha256: item.artifactSha256,
+          created_by: user.id,
+        })),
+      );
+      if (linksResult.error) {
+        audit.error("guided_comparison_links_insert_failed", {
+          scenarioSetId: access.scenarioSet.id,
+          comparisonSnapshotId: comparisonSnapshot.id,
+          message: linksResult.error.message,
+        });
+        return NextResponse.json(
+          { error: "The snapshot was retained as a draft because its exact model outputs could not be bound." },
+          { status: 500 },
+        );
+      }
+      const readyResult = await supabase
+        .from("scenario_comparison_snapshots")
+        .update({ status: "ready" })
+        .eq("id", comparisonSnapshot.id)
+        .eq("status", "draft")
+        .select("id")
+        .maybeSingle();
+      if (readyResult.error || !readyResult.data) {
+        return NextResponse.json(
+          { error: "The exact model outputs were bound, but the comparison remains a draft." },
+          { status: 500 },
+        );
+      }
+      comparisonSnapshot.status = "ready";
     }
 
     const staleWriteback = await markScenarioLinkedReportsBasisStale({

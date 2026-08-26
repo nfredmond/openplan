@@ -282,6 +282,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260826000002_project_evidence_bundles.sql",
     migrationsAtRelease: 227,
   },
+  // 0.36.1 corrects guided model truth: exact output custody, project-scoped
+  // validation, and usable-tract readiness before worker enqueue.
+  {
+    tag: "0.36.1",
+    lastMigration: "20260826000003_model_truth_correction.sql",
+    migrationsAtRelease: 228,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
