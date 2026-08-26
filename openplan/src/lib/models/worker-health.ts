@@ -1,4 +1,5 @@
 import type { ModelingWorkerDeclaration } from "@/lib/config/deployment-health";
+import type { ModelRunExecutionOutlook } from "@/lib/models/run-dispatch";
 
 export const WORKER_HEARTBEAT_STALE_AFTER_MS = 2 * 60 * 1000;
 
@@ -17,7 +18,7 @@ export type ModelingWorkerHeartbeatRow = {
 
 export type WorkerCapabilityState = {
   kind: ModelingWorkerKind;
-  state: "fresh" | "stale" | "absent" | "conflicting" | "unknown";
+  state: "fresh" | "stale" | "absent" | "conflicting" | "unverified" | "unknown";
   observationKey: string;
   observedAt: string | null;
   instanceCount: number;
@@ -99,8 +100,19 @@ function reduceKind(args: {
 
   if (capabilityRows.some((row) => !row.worker_version || row.worker_version === "unrecorded")) {
     return {
-      ...unknown(kind, "A current heartbeat came from a worker whose version cannot be verified.", keyFor(kind, capabilityRows)),
+      kind,
+      state: "unverified",
+      observationKey: keyFor(kind, capabilityRows),
+      observedAt: capabilityRows
+        .map((row) => row.last_successful_heartbeat_at)
+        .filter((value): value is string => Boolean(value))
+        .sort()
+        .at(-1) ?? null,
       instanceCount: capabilityRows.length,
+      currentWork: capabilityRows
+        .map((row) => row.current_work)
+        .filter((work): work is Record<string, unknown> => Boolean(work)),
+      reason: "A current heartbeat came from a worker whose version cannot be verified.",
     };
   }
 
@@ -186,4 +198,35 @@ export function evaluateWorkerHealthLaunchGate(
     };
   }
   return { blocked: false, acknowledgementKey: null, reason: null, states };
+}
+
+/**
+ * Reconcile a queue dispatch answer with the newer heartbeat observation shown
+ * beside it. A current heartbeat proves a worker exists; it does not prove that
+ * worker will claim this run or that an unversioned worker is compatible.
+ */
+export function reconcileModelRunExecutionOutlook(args: {
+  engineKey: string;
+  health: ModelingWorkerHealth | null;
+  outlook: ModelRunExecutionOutlook | null;
+}): ModelRunExecutionOutlook | null {
+  const { outlook, health } = args;
+  if (!outlook || !health || outlook.state !== "unknown") return outlook;
+  const states = args.engineKey === "behavioral_demand"
+    ? [health.aequilibrae, health.activitysim]
+    : args.engineKey === "aequilibrae"
+      ? [health.aequilibrae]
+      : [];
+  if (states.length === 0 || !states.every((state) => state.state === "fresh" || state.state === "unverified")) {
+    return outlook;
+  }
+
+  const unverified = states.filter((state) => state.state === "unverified");
+  return {
+    state: "waiting_for_poller",
+    headline: "A current modeling-worker heartbeat was observed; this run is waiting to be claimed.",
+    detail: unverified.length > 0
+      ? "The worker version cannot be verified, so compatibility remains unknown. Watch the run stages: a claimed stage proves pickup, while a failed or abandoned state remains visible."
+      : "The required workers reported within the last two minutes. A heartbeat proves they are checking this installation, not that this particular run has been claimed; the run stages show when pickup happens.",
+  };
 }

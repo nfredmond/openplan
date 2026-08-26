@@ -69,6 +69,7 @@ import {
   type CrashFilterSelection,
 } from "@/lib/safety/crash-filters";
 import { CrashFilterPanel, type CrashFacetCounts } from "./crash-filter-panel";
+import { SafetyPrintableStreetContext } from "./safety-printable-street-context";
 
 function CutoffProvenanceLink({
   provenance,
@@ -306,6 +307,8 @@ type SafetyWorkspaceProps = {
   projects?: SafetyProjectOption[];
   /** Recent acquisitions, newest first, with their project links. */
   ingestHistory?: SafetyIngestHistoryEntry[];
+  /** Existing reports for the active project that can receive this pull. */
+  projectReports?: Array<{ id: string; title: string }>;
   /**
    * The map backgrounds this deployment offers, resolved on the server by
    * `resolvePublicBasemapConfig` — the same registry and the same operator
@@ -350,6 +353,7 @@ export function SafetyWorkspace({
   openedForProject = null,
   projects = [],
   ingestHistory = [],
+  projectReports = [],
   basemapChoices = [],
   defaultBasemapId = null,
 }: SafetyWorkspaceProps) {
@@ -361,20 +365,13 @@ export function SafetyWorkspace({
   const [ingest, setIngest] = useState<SafetyIngestSummary | null>(latestIngest);
   const [history, setHistory] = useState<SafetyIngestHistoryEntry[]>(ingestHistory);
   // Optional project the NEXT acquisition is attached to. "" = unattached.
-  //
-  // The project this page was OPENED for wins, because naming it in the URL is a
-  // statement and the last acquisition's project is only a habit — the same
-  // order of precedence the study area itself follows. Failing that, the most
-  // recent acquisition's project (when it is still offered): a re-acquisition
-  // that silently dropped the project link would strand project-scoped crash
-  // counts on the older data. Either way it is visible in the selector below, so
-  // clearing it stays a one-click choice.
+  // A project named in the URL is context; a prior acquisition is history and
+  // must never silently reattach a new, possibly different study area.
   const [projectId, setProjectId] = useState(() => {
     const offered = (candidate: string) =>
       Boolean(candidate) && projects.some((project) => project.id === candidate);
     if (openedForProject && offered(openedForProject.id)) return openedForProject.id;
-    const lastProjectId = ingestHistory[0]?.projectId ?? "";
-    return offered(lastProjectId) ? lastProjectId : "";
+    return "";
   });
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
   /**
@@ -395,7 +392,20 @@ export function SafetyWorkspace({
   const [selectedCrashId, setSelectedCrashId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ingesting, setIngesting] = useState(false);
+  const [ingestElapsedSeconds, setIngestElapsedSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!ingesting) {
+      setIngestElapsedSeconds(0);
+      return;
+    }
+    const startedAt = Date.now();
+    const timer = window.setInterval(
+      () => setIngestElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000)),
+      1_000,
+    );
+    return () => window.clearInterval(timer);
+  }, [ingesting]);
   // Which background the map is drawn on. The picker renders nothing when the
   // deployment offers fewer than two, and this still resolves to something the
   // map can load — a map with no background is a grey rectangle.
@@ -550,6 +560,16 @@ export function SafetyWorkspace({
         maxLon: String(bbox.maxLon),
         maxLat: String(bbox.maxLat),
       });
+      if (projectId) params.set("projectId", projectId);
+      // The coverage banner describes one acquisition, so every point and
+      // every exact count beside it must come from that same acquisition.
+      // Without this id, overlapping county and project pulls were added
+      // together while the banner named only the newest pull.
+      if (ingest?.id) params.set("ingestId", ingest.id);
+      // PlaceBoundaryResponse is produced only by the registered US Census
+      // resolver. Drawn or uploaded geometry carries no country assertion, so
+      // it does not activate the US-only road adapter.
+      if (place) params.set("roadContextCountry", "US");
       // Serialized from the same declaration the route parses back, so a facet
       // cannot be sent under a name the route does not read.
       for (const [key, value] of crashFilterSearchParams(filters)) params.set(key, value);
@@ -565,7 +585,7 @@ export function SafetyWorkspace({
     } finally {
       setLoading(false);
     }
-  }, [workspaceId, filters, bbox]);
+  }, [workspaceId, filters, bbox, projectId, place, ingest?.id]);
 
   useEffect(() => {
     void loadCrashes();
@@ -1132,11 +1152,16 @@ export function SafetyWorkspace({
                 after the retrieval attaches nothing. */}
             <div className="module-intro-actions mt-3">
               {projects.length > 0 && (
-                <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs">
-                  <span className="text-muted-foreground">Attach to project (optional)</span>
+                <form action="/safety" method="get" className="min-w-0 flex-1">
+                  <label className="flex min-w-0 flex-col gap-1 text-xs">
+                  <span className="text-muted-foreground">Project context (optional)</span>
                   <select
+                    name="projectId"
                     value={projectId}
-                    onChange={(event) => setProjectId(event.target.value)}
+                    onChange={(event) => {
+                      setProjectId(event.target.value);
+                      event.currentTarget.form?.requestSubmit();
+                    }}
                     disabled={ingesting}
                     className="rounded-md border px-2 py-2 text-sm"
                     aria-label="Project for this crash import"
@@ -1148,7 +1173,8 @@ export function SafetyWorkspace({
                       </option>
                     ))}
                   </select>
-                </label>
+                  </label>
+                </form>
               )}
               <button
                 type="button"
@@ -1159,6 +1185,12 @@ export function SafetyWorkspace({
                 {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
               </button>
             </div>
+            {ingesting ? (
+              <p className="mt-2 text-xs text-muted-foreground" role="status" aria-live="polite">
+                The source is still working ({ingestElapsedSeconds}s elapsed). Large areas can take
+                a minute or two; keep this page open. OpenPlan will show a source error if the request fails.
+              </p>
+            ) : null}
           </header>
 
           {/* `overflow-y-auto` only from `lg`: on a phone this column is part of
@@ -1382,6 +1414,16 @@ export function SafetyWorkspace({
                         <p className="font-mono text-muted-foreground">
                           {concentration.latitude.toFixed(5)}, {concentration.longitude.toFixed(5)}
                         </p>
+                        {concentration.roadIdentity?.status === "matched" ? (
+                          <p className="text-muted-foreground">
+                            Nearest named road: <strong className="text-foreground">{concentration.roadIdentity.name}</strong>
+                            {` · ${concentration.roadIdentity.matchQuality} match, ${concentration.roadIdentity.distanceMeters} m · ${concentration.roadIdentity.sourceLabel} ${concentration.roadIdentity.vintage}`}
+                          </p>
+                        ) : (
+                          <p className="text-muted-foreground">
+                            Road identity unavailable. The coordinates above remain the source location.
+                          </p>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -1443,6 +1485,36 @@ export function SafetyWorkspace({
                 No loaded Census tract demographics overlap the mapped KSI crashes in this area, so
                 community burden is not determined here. The crash workflow remains available.
               </p>
+            ) : null}
+            {response ? (
+              <SafetyPrintableStreetContext
+                projectName={openedForProject?.name ?? null}
+                place={place}
+                crashes={visibleFeatures}
+                roads={response.roadContext ?? null}
+                coverageLimit={response.roadContextCoverageLimit ?? "Road context coverage was not reported."}
+              />
+            ) : null}
+            {projectId && ingest?.id && projectReports.length > 0 ? (
+              <section className="rounded-lg border border-primary/25 bg-primary/5 p-3 text-xs">
+                <h2 className="text-sm font-semibold">Carry this Safety analysis into a report</h2>
+                <p className="mt-1 text-muted-foreground">
+                  Choose the exact crash acquisition in the report, save that evidence selection,
+                  then generate the PDF. OpenPlan will freeze its counts, concentrations, road
+                  matches, source, years, filters, and limits into the report.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {projectReports.map((report) => (
+                    <Link
+                      key={report.id}
+                      href={`/reports/${report.id}?projectId=${encodeURIComponent(projectId)}&safetyIngestId=${encodeURIComponent(ingest.id)}#report-controls`}
+                      className="rounded-md border border-primary/30 bg-background px-3 py-2 font-semibold text-primary"
+                    >
+                      Add to {report.title}
+                    </Link>
+                  ))}
+                </div>
+              </section>
             ) : null}
             {/* Counted and failed, which is not the same as a source that cannot
                 express KSI (that gets the completeness caveat below). Said out

@@ -55,6 +55,38 @@ describe("ReportCreator", () => {
     vi.unstubAllGlobals();
   });
 
+  it("preselects the project carried in planning context", () => {
+    render(
+      <ReportCreator
+        projects={[
+          { id: "project-1", workspace_id: "workspace-1", name: "Downtown Mobility Plan" },
+          { id: "project-2", workspace_id: "workspace-1", name: "Transit Access Plan" },
+        ]}
+        runs={[]}
+        initialProjectId="project-2"
+      />
+    );
+
+    openFlow();
+    expect(screen.getByLabelText("Project")).toHaveValue("project-2");
+  });
+
+  it("does not trust an initial project outside the available workspace list", () => {
+    render(
+      <ReportCreator
+        projects={[
+          { id: "project-1", workspace_id: "workspace-1", name: "Downtown Mobility Plan" },
+          { id: "project-2", workspace_id: "workspace-1", name: "Transit Access Plan" },
+        ]}
+        runs={[]}
+        initialProjectId="cross-workspace-project"
+      />
+    );
+
+    openFlow();
+    expect(screen.getByLabelText("Project")).toHaveValue("project-1");
+  });
+
   it("surfaces existing stale report guidance for the selected project", () => {
     render(
       <ReportCreator
@@ -173,7 +205,7 @@ describe("ReportCreator", () => {
     // A blank title submits the promised suggested default, never an empty
     // string the API would 400 on.
     expect(body.title).toBe("Downtown Mobility Plan Project Status");
-    expect(pushMock).toHaveBeenCalledWith("/reports/report-123");
+    expect(pushMock).toHaveBeenCalledWith("/reports/report-123?projectId=project-1");
     expect(refreshMock).toHaveBeenCalled();
   });
 

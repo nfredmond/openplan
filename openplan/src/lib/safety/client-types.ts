@@ -58,6 +58,7 @@ export type SafetyKsiConcentration = {
   fatalCrashCount: number;
   seriousInjuryCrashCount: number;
   radiusMeters: number;
+  roadIdentity?: import("./road-context").SafetyRoadIdentity;
 };
 
 /** A validated bounding box assembled from one or more user-chosen crash acquisitions. */
@@ -129,6 +130,9 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   limit: number;
   /** Exact database-side clusters over the whole requested area, or null when unavailable. */
   ksiConcentrations: SafetyKsiConcentration[] | null;
+  /** Frozen named roads used for identity matching and local printable context. */
+  roadContext?: import("./road-context").SafetyRoadContextFeature[] | null;
+  roadContextCoverageLimit?: string;
   /** US Census tract context for mapped KSI records; empty where no adapter data exists. */
   ksiEquityTracts: SafetyKsiEquityTract[] | null;
   ksiEquityDemographicSource: { label: string; vintage: string };

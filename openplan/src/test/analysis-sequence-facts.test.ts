@@ -178,6 +178,92 @@ describe("counting the work that has actually been done", () => {
     expect(resolveAnalysisSequence(facts).find((step) => step.id === "network")?.state).toBe("next");
   });
 
+  it("accepts the explicit managed worker basis without pretending a snapshot is loaded", async () => {
+    const tables = withCountyRuns([PASSING]);
+    tables.network_package_versions = { rows: [] };
+    tables.models = {
+      rows: [
+        {
+          id: "model-aeq",
+          model_family: "travel_demand",
+          config_json: {
+            guidedProjectComparison: "openplan.project_comparison.v1",
+            method: "aequilibrae",
+            networkBasis: {
+              kind: "worker_osm_snapshot",
+              source: "OpenStreetMap",
+              identity: "network_state_digest",
+              comparisonRule: "exact_digest_match",
+            },
+          },
+        },
+        {
+          id: "model-asim",
+          model_family: "activity_based_model",
+          config_json: {
+            guidedProjectComparison: "openplan.project_comparison.v1",
+            method: "activitysim",
+            networkBasis: {
+              kind: "worker_osm_snapshot",
+              source: "OpenStreetMap",
+              identity: "network_state_digest",
+              comparisonRule: "exact_digest_match",
+            },
+          },
+        },
+      ],
+    };
+
+    const { facts, recorded } = await load(tables);
+    const network = resolveAnalysisSequence(facts).find((step) => step.id === "network");
+    expect(recorded.selects.models).toContain("config_json");
+    expect(facts.networkCount).toBe(0);
+    expect(facts.managedNetworkBasisCount).toBe(1);
+    expect(network?.state).toBe("done");
+    expect(network?.standing).toContain("exact snapshot and digest remain unavailable until launch succeeds");
+  });
+
+  it("does not accept a managed basis when either method lacks the exact comparison rule", async () => {
+    const tables = withCountyRuns([PASSING]);
+    tables.network_package_versions = { rows: [] };
+    tables.models = {
+      rows: [
+        {
+          id: "model-aeq",
+          model_family: "travel_demand",
+          config_json: {
+            guidedProjectComparison: "openplan.project_comparison.v1",
+            method: "aequilibrae",
+            networkBasis: {
+              kind: "worker_osm_snapshot",
+              source: "OpenStreetMap",
+              identity: "network_state_digest",
+              comparisonRule: "exact_digest_match",
+            },
+          },
+        },
+        {
+          id: "model-asim",
+          model_family: "activity_based_model",
+          config_json: {
+            guidedProjectComparison: "openplan.project_comparison.v1",
+            method: "activitysim",
+            networkBasis: {
+              kind: "worker_osm_snapshot",
+              source: "OpenStreetMap",
+              identity: "network_state_digest",
+              comparisonRule: "trust_latest",
+            },
+          },
+        },
+      ],
+    };
+
+    const { facts } = await load(tables);
+    expect(facts.managedNetworkBasisCount).toBe(0);
+    expect(resolveAnalysisSequence(facts).find((step) => step.id === "network")?.state).toBe("next");
+  });
+
   it("calls a drawn boundary with no name an area all the same", async () => {
     const tables = withCountyRuns([PASSING]);
     tables.workspaces = {
@@ -192,5 +278,29 @@ describe("counting the work that has actually been done", () => {
     const { facts } = await load(tables);
     expect(facts.areaLabel).toBe("the boundary on file");
     expect(resolveAnalysisSequence(facts).find((step) => step.id === "area")?.state).toBe("done");
+  });
+
+  it("requires separate AequilibraE and ActivitySim records, not merely two models", async () => {
+    const oneMethod = withCountyRuns([PASSING]);
+    oneMethod.models = {
+      rows: [
+        { id: "model-1", model_family: "travel_demand" },
+        { id: "model-2", model_family: "travel_demand" },
+      ],
+    };
+    const oneMethodFacts = (await load(oneMethod)).facts;
+    expect(oneMethodFacts.aequilibraeModelCount).toBe(2);
+    expect(oneMethodFacts.activitySimModelCount).toBe(0);
+    expect(resolveAnalysisSequence(oneMethodFacts).find((step) => step.id === "model")?.state).not.toBe("done");
+
+    const bothMethods = withCountyRuns([PASSING]);
+    bothMethods.models = {
+      rows: [
+        { id: "model-1", model_family: "travel_demand" },
+        { id: "model-2", model_family: "activity_based_model" },
+      ],
+    };
+    const bothMethodFacts = (await load(bothMethods)).facts;
+    expect(resolveAnalysisSequence(bothMethodFacts).find((step) => step.id === "model")?.state).toBe("done");
   });
 });

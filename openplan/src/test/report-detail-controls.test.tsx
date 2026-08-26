@@ -52,6 +52,33 @@ describe("ReportDetailControls", () => {
     vi.unstubAllGlobals();
   });
 
+  it("preselects the exact Safety acquisition carried from the workbench and saves it", async () => {
+    const fetchMock = vi.fn(async (_input: unknown, _init?: { body?: unknown }) => ({ ok: true, json: async () => ({}) }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <ReportDetailControls
+        report={{ id: "report-1", title: "Safety packet", summary: null, status: "draft", hasGeneratedArtifact: false }}
+        safetyIngestOptions={[{
+          id: "55555555-5555-4555-8555-555555555555",
+          sourceLabel: "State crash source",
+          createdAt: "2026-08-26T08:00:00.000Z",
+          crashCount: 390,
+          geocodedCount: 390,
+        }]}
+        initialSafetyIngestId="55555555-5555-4555-8555-555555555555"
+      />
+    );
+    expect(screen.getByLabelText("Crash evidence")).toHaveValue(
+      "55555555-5555-4555-8555-555555555555",
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Save metadata/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
+      safetyIngestSelections: [{ ingestId: "55555555-5555-4555-8555-555555555555" }],
+    });
+    vi.unstubAllGlobals();
+  });
+
   it("shows verified agreement evidence but leaves every named corridor unselected by default", () => {
     render(
       <ReportDetailControls
@@ -133,6 +160,22 @@ describe("ReportDetailControls", () => {
       label: "Changed source context",
       headline: "2 source areas need review",
       changedSourceText: "Project records and Stage gates",
+    });
+
+    expect(
+      describeReportSourceReviewPosture({
+        hasGeneratedArtifact: true,
+        evidenceSummary: {
+          headline: "0 linked runs · 0 scenario sets · 0 project records",
+          detail: "Not linked engagement · 0/0 handoff-ready · In progress governance",
+          hasEvidence: false,
+        },
+        driftSummary: { changedCount: 0, totalCount: 0, labels: [] },
+      })
+    ).toMatchObject({
+      state: "missing",
+      label: "Empty evidence chain",
+      headline: "No evidence is linked yet",
     });
 
     expect(

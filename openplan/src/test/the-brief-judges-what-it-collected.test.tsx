@@ -94,7 +94,7 @@ describe("the brief judges what it collected", () => {
     await waitFor(() => expect(seen.length).toBeGreaterThan(0));
     // The evaluator saw the typed question, not the empty prop.
     expect(seen.at(-1)).toBe(typed);
-    await waitFor(() => expect(onRunAnalysis).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(onRunAnalysis).toHaveBeenCalledWith(typed, ""));
   });
 
   it("still refuses, and says why, when the collected values really cannot run", async () => {

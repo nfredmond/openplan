@@ -19,7 +19,63 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+Release-candidate migrations pending the v0.35.0 tag:
+`20260825000003_safety_road_context_cache.sql`,
+`20260825000004_safety_road_context_scope_guard.sql`, and
+`20260826000001_safety_exact_acquisition_screens.sql`
+(`safety_exact_acquisition_screens`).
+
+## 0.35.0 — 2026-08-26
+
+**Migration required.** Migrations
+`20260825000003_safety_road_context_cache.sql` (`safety_road_context_cache`),
+`20260825000004_safety_road_context_scope_guard.sql`
+(`safety_road_context_scope_guard`) add the service-authored,
+workspace-readable road geometry cache used for named Safety concentrations and
+tile-free printable street context, plus its cross-workspace scope guard.
+`20260826000001_safety_exact_acquisition_screens.sql`
+(`safety_exact_acquisition_screens`) adds exact-acquisition concentration and
+tract screens so overlapping crash pulls are never summed silently.
+
+OpenPlan now keeps one authenticated navigation rail and one page-specific
+primary action. Workspace geography, stage gates, integration keys, team
+administration, and deployment health live together on Workspace setup &
+health; Overview is the daily attention and next-action page.
+
+Project context now travels through Corridor Analysis, Travel modeling,
+Scenarios, Model Validation, Safety, Engagement, Reports, Documents, Grants,
+and Aerial Imagery. Creators preselect only a project confirmed inside the
+active workspace, invalid or foreign IDs are rejected visibly, and project
+readiness links open the exact project-scoped workflow.
+
+Travel modeling is presented as one baseline-versus-build job. A project-scoped
+starter creates an empty baseline, build scenario, AequilibraE record, and
+separate ActivitySim record without inventing assumptions or results. Both
+methods require separate baseline and build jobs. Before a build job, the
+planner must enter a non-zero assigned-auto-trip change and name its basis;
+changing it makes the previous build result stale. Missing
+networks, workers, runs, observed-count checks, unloaded links, comparison
+packets, traffic, VMT, and value conclusions remain explicit. Specialist URLs
+remain available through the command palette and Help.
+
+Safety can now match KSI concentrations to cached, versioned Census TIGER/Line
+road geometry, disclose match quality or unavailable identity, and render a
+printable local street-context figure without a paid tile service. National
+FARS retrieval uses NHTSA's bounded annual CSV archives and filters the requested
+area locally; configured state sources continue to retain their own coverage
+limits. Generated project packets carry the named-road context and retain the
+imported document that supplied a planning-level cost estimate. A packet whose
+supported evidence counts are all zero is labeled an empty draft shell, not
+evidence-backed or release-ready. Safety totals now describe one exact crash
+acquisition, and planners explicitly select that acquisition before a report
+freezes it into a generated packet.
+
+The v1 capability matrix now has a machine-readable, review-expiring registry,
+and the product-direction check fails if a required proof dimension disappears
+or becomes stale. The nationwide validation program is preregistered in a
+frozen, hashed record before candidate calibration. Configured public
+application origins now generate absolute canonical and social URLs; an
+unconfigured self-host omits unsupported URLs instead of advertising localhost.
 
 ## 0.34.0 — 2026-08-25
 

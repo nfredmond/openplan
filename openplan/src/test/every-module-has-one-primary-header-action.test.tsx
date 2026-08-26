@@ -292,8 +292,8 @@ const MODULES: ModuleUnderTest[] = [
   },
   {
     module: "/models",
-    label: "New model",
-    reaches: "create-model",
+    label: "Start project comparison",
+    reaches: "choose-project-comparison",
     render: () => ModelsPage({ searchParams: emptyParams() }),
   },
   {

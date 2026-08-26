@@ -17,6 +17,7 @@ import {
 import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/reports/dual-demand-agreement";
 import type { AerialOrthoCatalog } from "@/lib/aerial/ortho-map-layers";
 import type { ReportAerialOrthoSelection } from "@/lib/reports/aerial-ortho-evidence";
+import type { ReportSafetyIngestSelection } from "@/lib/reports/safety-evidence-selection";
 
 /** A succeeded worker model run the report may cite as typed evidence. */
 export type ReportModelRunOption = {
@@ -24,6 +25,14 @@ export type ReportModelRunOption = {
   title: string;
   engineKey: string;
   status: string;
+};
+
+export type ReportSafetyIngestOption = {
+  id: string;
+  sourceLabel: string;
+  createdAt: string;
+  crashCount: number;
+  geocodedCount: number;
 };
 
 function sameSelections(left: AgreementCorridorSelection[], right: AgreementCorridorSelection[]) {
@@ -69,6 +78,9 @@ export function ReportDetailControls({
   agreementCorridorSelections = [],
   aerialOrthoCatalog,
   aerialOrthoSelections = [],
+  safetyIngestOptions = [],
+  safetyIngestSelections = [],
+  initialSafetyIngestId = null,
 }: {
   report: {
     id: string;
@@ -86,6 +98,7 @@ export function ReportDetailControls({
     headline: string;
     detail: string;
     blockedGateDetail?: string | null;
+    hasEvidence?: boolean;
   } | null;
   fundingSummary?: {
     headline: string;
@@ -103,6 +116,9 @@ export function ReportDetailControls({
   agreementCorridorSelections?: AgreementCorridorSelection[];
   aerialOrthoCatalog?: AerialOrthoCatalog;
   aerialOrthoSelections?: ReportAerialOrthoSelection[];
+  safetyIngestOptions?: ReportSafetyIngestOption[];
+  safetyIngestSelections?: ReportSafetyIngestSelection[];
+  initialSafetyIngestId?: string | null;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(report.title);
@@ -113,6 +129,12 @@ export function ReportDetailControls({
     useState<AgreementCorridorSelection[]>(agreementCorridorSelections);
   const [selectedAerialCustodyId, setSelectedAerialCustodyId] = useState<string | null>(
     aerialOrthoSelections[0]?.custodyId ?? null,
+  );
+  const requestedSafetyIngestId = safetyIngestOptions.some(
+    (option) => option.id === initialSafetyIngestId,
+  ) ? initialSafetyIngestId : null;
+  const [selectedSafetyIngestId, setSelectedSafetyIngestId] = useState<string | null>(
+    requestedSafetyIngestId ?? safetyIngestSelections[0]?.ingestId ?? null,
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -148,6 +170,8 @@ export function ReportDetailControls({
       );
       const aerialOrthoSelectionChanged =
         selectedAerialCustodyId !== (aerialOrthoSelections[0]?.custodyId ?? null);
+      const safetySelectionChanged =
+        selectedSafetyIngestId !== (safetyIngestSelections[0]?.ingestId ?? null);
 
       const response = await fetch(`/api/reports/${report.id}`, {
         method: "PATCH",
@@ -164,6 +188,9 @@ export function ReportDetailControls({
             : {}),
           ...(aerialOrthoSelectionChanged
             ? { aerialOrthoSelections: selectedAerialCustodyId ? [{ custodyId: selectedAerialCustodyId }] : [] }
+            : {}),
+          ...(safetySelectionChanged
+            ? { safetyIngestSelections: selectedSafetyIngestId ? [{ ingestId: selectedSafetyIngestId }] : [] }
             : {}),
         }),
       });
@@ -301,6 +328,32 @@ export function ReportDetailControls({
               : ""}
           </p>
         </div>
+
+        {/* Cited model runs */}
+        {safetyIngestOptions.length > 0 ? (
+          <div className="space-y-2" data-testid="report-safety-evidence-selection">
+            <label htmlFor="report-safety-ingest" className="text-[0.82rem] font-semibold">
+              Crash evidence
+            </label>
+            <select
+              id="report-safety-ingest"
+              value={selectedSafetyIngestId ?? ""}
+              onChange={(event) => setSelectedSafetyIngestId(event.target.value || null)}
+              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm"
+            >
+              <option value="">Do not include crash evidence</option>
+              {safetyIngestOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.sourceLabel} · {option.crashCount.toLocaleString()} reported · {new Date(option.createdAt).toLocaleDateString()}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              This is an explicit evidence choice. Save it before generating; the report
+              freezes only this acquisition and discloses its mappable count and limits.
+            </p>
+          </div>
+        ) : null}
 
         {/* Cited model runs */}
         {modelRunOptions.length > 0 ? (

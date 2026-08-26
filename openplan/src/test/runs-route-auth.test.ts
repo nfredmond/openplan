@@ -15,6 +15,7 @@ const runsGetLimitMock = vi.fn();
 const runsGetOrderMock = vi.fn(() => ({ limit: runsGetLimitMock }));
 const runsGetEqMock = vi.fn(() => ({ order: runsGetOrderMock }));
 const runsGetSelectMock = vi.fn(() => ({ eq: runsGetEqMock }));
+const runsGetProjectionMock = vi.fn();
 
 const runsDeleteLookupMaybeSingleMock = vi.fn();
 const runsDeleteLookupEqMock = vi.fn(() => ({ maybeSingle: runsDeleteLookupMaybeSingleMock }));
@@ -41,6 +42,7 @@ const fromMock = vi.fn((table: string) => {
     return {
       select: (fields: string) => {
         if (fields.includes("title") || fields.includes("summary_text")) {
+          runsGetProjectionMock(fields);
           return runsGetSelectMock();
         }
         return runsDeleteLookupSelectMock();
@@ -220,6 +222,15 @@ describe("/api/runs auth + membership guards", () => {
     expect(response.status).toBe(200);
     expect(runsGetEqMock).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
     expect(runsGetEqMock).not.toHaveBeenCalledWith("id", WORKSPACE_ID);
+  });
+
+  it("GET carries the saved project attribution needed to restore planning context", async () => {
+    const response = await getRuns(
+      new NextRequest(`http://localhost/api/runs?workspaceId=${WORKSPACE_ID}`)
+    );
+
+    expect(response.status).toBe(200);
+    expect(runsGetProjectionMock).toHaveBeenCalledWith(expect.stringContaining("project_id"));
   });
 
   it("GET uses a caller-provided limit when supplied", async () => {

@@ -1,0 +1,98 @@
+{
+  "artifactId": "openplan.nationwide_model_validation_preregistration.v1",
+  "status": "frozen-blocking",
+  "frozenAt": "2026-08-25T20:40:00-07:00",
+  "purpose": "Precommit the nationwide AequilibraE and ActivitySim validation design before any new calibration candidate can inspect or influence an acceptance holdout.",
+  "claimUnderTest": "planning-grade nationwide baseline-versus-build comparison, with each model reported separately",
+  "permanentRules": [
+    "AequilibraE and ActivitySim use the same selected geography, network version, scenario definitions, observation boundary, vehicle units, direction basis, day basis, and base year.",
+    "The two model outputs and their disagreement are retained and never averaged.",
+    "Missing coverage, ambiguous matching, unavailable source evidence, or incompatible units produce inconclusive evidence rather than zero, pass, or fail.",
+    "No state or required geographic archetype can be rescued by a national aggregate.",
+    "No result may change model defaults or acceptance thresholds after an acceptance holdout has been opened."
+  ],
+  "observationEligibility": {
+    "decisiveGrades": ["A", "B"],
+    "diagnosticGrades": ["C"],
+    "excludedAsInconclusive": ["D"],
+    "requiredFields": [
+      "immutable source artifact hash",
+      "source agency and original record id",
+      "location and direction basis",
+      "vehicle definition and units",
+      "observation dates and model base year",
+      "direct or derived method",
+      "QA and adjustment-factor provenance",
+      "source-supported observation interval",
+      "assignment-independent match audit"
+    ]
+  },
+  "splitDesign": {
+    "unit": "geographically blocked observation groups, keeping correlated stations and duplicate source lineages together",
+    "partitions": [
+      "development and instrument debugging",
+      "calibration-selection holdout",
+      "sealed acceptance holdout"
+    ],
+    "acceptanceHoldoutCustody": "The acceptance partition remains unopened until dataset hashes, observation intervals, matching rules, model settings, metrics, and use-specific thresholds are frozen in a successor artifact.",
+    "currentThirtyPercentHoldout": "diagnostic model-selection evidence only; it is consumed by calibration choice and is not independent accuracy evidence"
+  },
+  "requiredGeography": {
+    "jurisdictions": "all fifty states and the District of Columbia, assessed individually",
+    "territories": "explicitly assessed and never assigned state defaults",
+    "archetypes": [
+      "major metropolitan",
+      "suburban",
+      "small urban",
+      "rural",
+      "remote",
+      "tribal",
+      "border",
+      "island",
+      "mountain",
+      "coastal"
+    ],
+    "californiaAdditionalStrata": [
+      "statewide",
+      "major metropolitan",
+      "suburban",
+      "rural",
+      "mountain",
+      "coastal",
+      "border",
+      "tribal"
+    ]
+  },
+  "reportedMetrics": [
+    "matched and eligible observation coverage",
+    "unloaded-link and out-of-network coverage",
+    "raw signed residual",
+    "raw absolute percent error distribution",
+    "observation-interval excess error distribution",
+    "percent RMSE",
+    "GEH with its time basis",
+    "Spearman rank correlation",
+    "screenline, cutline, and cordon residuals",
+    "results by observation grade, facility class, geography, source method, and vintage",
+    "AequilibraE versus ActivitySim disagreement without averaging"
+  ],
+  "acceptanceDecision": {
+    "currentOutcome": "inconclusive",
+    "reason": "Nationwide decisive datasets, immutable dataset hashes, observation intervals, independent geographic acceptance partitions, and use-specific acceptance thresholds are not yet frozen.",
+    "candidateExecutionGate": "No new nationwide calibration candidate may run and no sealed acceptance data may be opened until a successor preregistration fills those fields and is frozen and hashed first.",
+    "continuityDiagnosticOnly": {
+      "minimumMatchedStations": 3,
+      "medianApeMaximumPercent": 30,
+      "criticalFacilityApeMaximumPercent": 50,
+      "meaning": "existing bounded-screening diagnostic only; never a nationwide acceptance gate"
+    },
+    "v1PassRule": "Every state and required archetype must pass the later frozen use-specific gate for both methods separately, with adequate decisive observation coverage and no unresolved instrument or custody failure. Otherwise the applicable cell remains open."
+  },
+  "amendmentRule": "A successor may add datasets, hashes, intervals, and acceptance thresholds only before the affected sealed holdout is opened. It must cite the evidence for each change, receive a new artifact id and hash, and preserve this file byte for byte.",
+  "basis": [
+    "docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md",
+    "docs/product/V1_PRODUCT_CONTRACT.md",
+    "workers/aequilibrae_worker/count_validation.py",
+    "workers/aequilibrae_worker/calibration.py"
+  ]
+}

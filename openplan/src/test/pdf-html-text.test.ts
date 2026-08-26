@@ -70,6 +70,15 @@ describe("htmlToPdfBlocks", () => {
     expect(texts(blocks)).toEqual(["The screening-grade figure is not calibrated."]);
   });
 
+  it("keeps CSS-separated labels and values apart in the built-in PDF tier", () => {
+    const blocks = htmlToPdfBlocks(`
+      <div><span>Reported collisions</span><strong>390</strong></div>
+      <div><dt>Project</dt><dd>Example Corridor</dd></div>
+    `);
+
+    expect(texts(blocks)).toEqual(["Reported collisions 390", "Project Example Corridor"]);
+  });
+
   it("decodes the entities the HTML builders emit", () => {
     const blocks = htmlToPdfBlocks(`<p>Grass Valley &amp; Nevada City &mdash; &quot;core&quot; &lt;corridor&gt;</p>`);
     expect(texts(blocks)).toEqual(['Grass Valley & Nevada City — "core" <corridor>']);

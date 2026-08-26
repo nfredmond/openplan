@@ -4,8 +4,9 @@ import {
   CORRIDOR_ANALYSIS_DOES_NOT_ANSWER,
   CORRIDOR_ANALYSIS_TRAFFIC_HREF,
 } from "@/lib/analysis/what-this-answers";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 
-export function ExploreEmptyResultBoard() {
+export function ExploreEmptyResultBoard({ projectId = null }: { projectId?: string | null }) {
   return (
     <section className="analysis-studio-surface analysis-studio-surface--empty">
       <div className="analysis-studio-heading">
@@ -20,7 +21,7 @@ export function ExploreEmptyResultBoard() {
         */}
         <p className="analysis-studio-description">
           {CORRIDOR_ANALYSIS_ANSWERS} {CORRIDOR_ANALYSIS_DOES_NOT_ANSWER}{" "}
-          <Link href={CORRIDOR_ANALYSIS_TRAFFIC_HREF} className="underline underline-offset-2">
+          <Link href={withPlanningContext(CORRIDOR_ANALYSIS_TRAFFIC_HREF, projectId)} className="underline underline-offset-2">
             Run a travel model
           </Link>
           .

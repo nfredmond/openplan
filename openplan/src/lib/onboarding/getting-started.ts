@@ -21,9 +21,9 @@
  * tribal transportation department, and a two-person consultancy will read.
  */
 export const NEW_WORKSPACE_GETTING_STARTED_STEPS: readonly string[] = [
-  "Confirm the workspace owner and add at least one other admin.",
+  "Confirm the workspace owner; add another admin if more than one person will manage it.",
   "Set your workspace's home geography so analyses start in your area.",
-  "Invite the teammates who will review and approve work.",
+  "If you have a team, invite the people who will review and approve work. A solo workspace is complete without this.",
   "Draw or upload a corridor, then run your first corridor analysis.",
   "Read the source transparency panel and check what was measured and what was not.",
   "Export a report and confirm the run metadata and disclosures read the way you need.",

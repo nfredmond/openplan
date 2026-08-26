@@ -16,12 +16,12 @@ import {
   KnowledgeBaseWorkspace,
   type KnowledgeBaseProjectOption,
 } from "@/components/knowledge-base/knowledge-base-workspace";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import { resolvePlanningContext } from "@/lib/projects/planning-context";
 
 import { moduleMetadata } from "@/lib/ui/page-title";
 
 export const metadata = moduleMetadata("Documents");
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function KnowledgeBasePage({
   searchParams,
@@ -74,19 +74,23 @@ export default async function KnowledgeBasePage({
   const projects = (projectsResult.data ?? []) as KnowledgeBaseProjectOption[];
 
   // ?projectId= is the deep-link entry from a project's control room. It is
-  // honored only when it names one of THIS workspace's projects — a foreign or
-  // malformed id silently falls back to the unfiltered view rather than
-  // presenting an empty list as "this project has no documents".
+  // honored only when it names one of this workspace's projects. Rejected
+  // context stays visible instead of turning into an unexplained empty list.
   const rawParams = (await searchParams) ?? {};
   const requestedProjectId = Array.isArray(rawParams.projectId)
     ? rawParams.projectId[0]
     : rawParams.projectId;
+  const planningContext = resolvePlanningContext(
+    requestedProjectId?.trim() || null,
+    requestedProjectId
+      ? projects.find((project) => project.id === requestedProjectId.trim()) ?? null
+      : null,
+    requestedProjectId && projectsResult.error
+      ? projectsResult.error
+      : null
+  );
   const initialProjectId =
-    requestedProjectId &&
-    UUID_PATTERN.test(requestedProjectId) &&
-    projects.some((project) => project.id === requestedProjectId)
-      ? requestedProjectId
-      : null;
+    planningContext.status === "active" ? planningContext.project.id : null;
 
   // Same cap as the list route, from the same constant: the screen tells the
   // planner when the cap binds, and two numbers would eventually disagree.
@@ -120,7 +124,9 @@ export default async function KnowledgeBasePage({
   ) as Partial<Record<DocumentLibrarySourceId, string>>;
 
   return (
-    <KnowledgeBaseWorkspace
+    <>
+      <PlanningContextStrip context={planningContext} className="mb-4" />
+      <KnowledgeBaseWorkspace
       workspaceId={workspaceId}
       initialDocuments={(documentsResult.data ?? []) as KbDocumentRow[]}
       projects={projects}
@@ -140,6 +146,7 @@ export default async function KnowledgeBasePage({
         sourceLabels,
         readFailureSummary: library.reads.describe(),
       }}
-    />
+      />
+    </>
   );
 }

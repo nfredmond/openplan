@@ -559,7 +559,7 @@ export function ProjectIdentityEditor({
             <p className="text-sm text-muted-foreground">
               Have a corridor file for the project map?{" "}
               <Link className="font-medium text-foreground underline underline-offset-4" href={`/projects/${project.id}?tab=map#project-map-presence`}>
-                Upload it on this project&apos;s Map tab.
+                Upload it on this project&apos;s Evidence tab.
               </Link>
             </p>
 

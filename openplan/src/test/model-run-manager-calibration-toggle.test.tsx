@@ -64,6 +64,28 @@ describe("ModelRunManager per-run calibration toggle", () => {
     expect(screen.getByRole("checkbox", { name: CALIBRATION_LABEL })).toBeInTheDocument();
   });
 
+  it("opens a guided method record on its own engine and saved baseline", () => {
+    render(
+      <ModelRunManager
+        modelId={MODEL_ID}
+        modelTitle="Davis build comparison"
+        defaultQueryText="Compare baseline and build"
+        defaultCorridorText='{"type":"Polygon","coordinates":[[[-121.8,38.5],[-121.7,38.5],[-121.7,38.6],[-121.8,38.5]]]}'
+        scenarioEntries={[
+          { id: "baseline-1", label: "No-build baseline", entryType: "baseline", status: "draft", assumptionCount: 0 },
+          { id: "build-1", label: "Build scenario", entryType: "alternative", status: "draft", assumptionCount: 0 },
+        ]}
+        modelRuns={[]}
+        schemaPending={false}
+        initialEngineKey="behavioral_demand"
+        initialScenarioEntryId="baseline-1"
+      />,
+    );
+
+    expect(screen.getByLabelText(/Run mode/i)).toHaveValue("behavioral_demand");
+    expect(screen.getByRole("combobox", { name: /^Scenario entry \(optional\)$/i })).toHaveValue("baseline-1");
+  });
+
   it("sends calibrate:true in the launch payload when checked", async () => {
     const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ modelRunId: "r", status: "queued" }) }));
     vi.stubGlobal("fetch", fetchMock);

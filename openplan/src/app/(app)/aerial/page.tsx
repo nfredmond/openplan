@@ -21,6 +21,11 @@ import { AerialMissionLauncher, type AerialMissionLauncherProject } from "@/comp
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import {
+  resolvePlanningContext,
+  withPlanningContext,
+} from "@/lib/projects/planning-context";
 
 export const metadata = moduleMetadata("Aerial Imagery");
 
@@ -116,6 +121,13 @@ export default async function AerialIndexPage({
     : false;
 
   const focusProject = (projectResult.data ?? null) as { id: string; name: string | null } | null;
+  const planningContext = resolvePlanningContext(
+    requestedProjectId,
+    focusProject,
+    requestedProjectId && projectUnreadable
+      ? projectResult.error ?? { message: "Project context could not be read." }
+      : null
+  );
   const focusLabel = focusProject ? focusProject.name?.trim() || "the project this page was opened for" : null;
 
   // The picker's page size, not a place or a policy: when a workspace has more
@@ -248,7 +260,10 @@ export default async function AerialIndexPage({
       header: "Mission",
       cell: (row) => (
         <Link
-          href={`/aerial/missions/${row.id}`}
+          href={withPlanningContext(
+            `/aerial/missions/${row.id}`,
+            planningContext.status === "active" ? planningContext.project.id : null
+          )}
           className="text-foreground hover:underline"
         >
           {row.title}
@@ -386,6 +401,7 @@ export default async function AerialIndexPage({
       header={header}
       worksurface={
         <>
+        <PlanningContextStrip context={planningContext} className="mb-4" />
         <WorksurfaceSection
           id="aerial-missions-list"
           label="Missions"

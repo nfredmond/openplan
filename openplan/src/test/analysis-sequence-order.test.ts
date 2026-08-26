@@ -57,7 +57,10 @@ const COMPLETE: AnalysisSequenceFacts = {
   scenarioSetCount: 3,
   modelCount: 1,
   runCount: 4,
+  aequilibraeRunCount: 2,
+  activitySimRunCount: 2,
   checkedRunCount: 1,
+  comparisonPacketCount: 1,
   unreadable: [],
 };
 
@@ -73,26 +76,29 @@ function factsSatisfying(n: number): AnalysisSequenceFacts {
     scenarioSetCount: has(2) ? 1 : 0,
     modelCount: has(3) ? 1 : 0,
     runCount: has(4) ? 1 : 0,
-    checkedRunCount: has(5) ? 1 : 0,
+    aequilibraeRunCount: has(4) ? 1 : 0,
+    activitySimRunCount: has(5) ? 1 : 0,
+    checkedRunCount: has(6) ? 1 : 0,
+    comparisonPacketCount: has(7) ? 1 : 0,
     unreadable: [],
   };
 }
 
 describe("the analysis sequence states one order", () => {
-  it("names seven steps, ending at the claim boundary", () => {
+  it("names nine steps, ending at the claim boundary", () => {
     expect(ANALYSIS_STEPS.map((step) => step.id)).toEqual([...ANALYSIS_STEP_IDS]);
-    expect(ANALYSIS_STEPS).toHaveLength(7);
+    expect(ANALYSIS_STEPS).toHaveLength(9);
     expect(ANALYSIS_STEPS[ANALYSIS_STEPS.length - 1].id).toBe(CLAIM_STEP_ID);
   });
 
   it("marks exactly one step as the next thing to do, at every point in the walk", () => {
-    // Six prefixes: nothing done, through every task done. The seventh step is
+    // Eight prefixes: nothing done, through every task done. The ninth step is
     // never done, so there is always exactly one `next`.
-    for (let done = 0; done <= 6; done += 1) {
+    for (let done = 0; done <= 8; done += 1) {
       const steps = resolveAnalysisSequence(factsSatisfying(done));
       const nexts = steps.filter((step) => step.state === "next");
       expect(nexts, `with ${done} step(s) satisfied`).toHaveLength(1);
-      expect(nexts[0].id).toBe(ANALYSIS_STEP_IDS[Math.min(done, 6)]);
+      expect(nexts[0].id).toBe(ANALYSIS_STEP_IDS[Math.min(done, 8)]);
 
       // Everything before the next step is done; everything after is waiting.
       steps.slice(0, done).forEach((step) => expect(step.state).toBe("done"));
@@ -103,7 +109,7 @@ describe("the analysis sequence states one order", () => {
   it("tells a waiting step what it is waiting on, by name", () => {
     const steps = resolveAnalysisSequence(EMPTY);
     const waiting = steps.filter((step) => step.state === "waiting");
-    expect(waiting).toHaveLength(6);
+    expect(waiting).toHaveLength(8);
     for (const step of waiting) {
       expect(step.waitingOn).toBe(ANALYSIS_STEPS[0].title);
     }
@@ -131,6 +137,22 @@ describe("the analysis sequence states one order", () => {
       const steps = resolveAnalysisSequence({ ...COMPLETE, unreadable: [id as AnalysisStepId] });
       expect(steps.find((step) => step.id === id)?.state).toBe("unknown");
     }
+  });
+
+  it("does not advance a guided comparison after only one ActivitySim scenario", () => {
+    const steps = resolveAnalysisSequence({
+      ...COMPLETE,
+      guidedProjectComparison: true,
+      aequilibraeRunCount: 2,
+      activitySimRunCount: 1,
+      checkedRunCount: 0,
+      comparisonPacketCount: 0,
+    });
+    expect(steps.find((step) => step.id === "activitysim_run")).toMatchObject({
+      state: "next",
+      standing: "1/2 successful ActivitySim scenario jobs are on file.",
+    });
+    expect(steps.find((step) => step.id === "check")?.state).toBe("waiting");
   });
 });
 

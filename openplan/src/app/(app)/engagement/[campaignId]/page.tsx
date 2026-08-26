@@ -83,6 +83,7 @@ import {
 import { buildDailyIntake } from "@/lib/engagement/participation-dashboard";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 type CampaignRow = {
   id: string;
@@ -146,8 +147,7 @@ export default async function EngagementCampaignDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { campaignId } = await params;
-  const query = searchParams ? await searchParams : {};
-  const requestedTab = query[PAGE_TAB_QUERY_KEY];
+  const query = searchParams ? await searchParams : {}; const requestedTab = query[PAGE_TAB_QUERY_KEY];
   const supabase = await createClient();
   const {
     data: { user },
@@ -163,9 +163,7 @@ export default async function EngagementCampaignDetailPage({
     .eq("id", campaignId)
     .maybeSingle();
 
-  // A FAILED READ IS NOT A MISSING CAMPAIGN. These were one branch, so a
-  // database error rendered the 404 page — telling a moderator the campaign
-  // they are looking for does not exist when OpenPlan had simply failed to
+  // A failed read used to render a 404, telling a moderator the campaign did not exist when OpenPlan had failed to
   // look. On this page that is expensive: the next move is to re-create a
   // campaign whose share token is already published and whose comments are
   // still being collected. "Could not be read" and "not there" are different
@@ -634,17 +632,14 @@ export default async function EngagementCampaignDetailPage({
     crashCorroborationUnreadable: crashCorroboration.unreadable,
   });
 
-  // "Live" is the campaign's own status, not a guess from whether a share slug
-  // exists: a campaign can carry a token it has not been switched on with.
   const activeTab = resolvePageTab(
     campaignTabs,
     requestedTab,
     campaign.status === "draft" ? "setup" : "responses",
   );
-
   return (
     <section className="module-page">
-      <CartographicSurfaceWide />
+      <CartographicSurfaceWide /><PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" />
       <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/engagement" className="transition hover:text-foreground">
           Engagement

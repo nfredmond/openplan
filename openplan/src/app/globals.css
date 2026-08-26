@@ -54,6 +54,28 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+@media print {
+  body:has(.safety-print-sheet) * {
+    visibility: hidden;
+  }
+
+  body:has(.safety-print-sheet) .safety-print-sheet,
+  body:has(.safety-print-sheet) .safety-print-sheet * {
+    visibility: visible;
+  }
+
+  body:has(.safety-print-sheet) .safety-print-sheet {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    color: #111827;
+  }
+
+  body:has(.safety-print-sheet) .safety-print-sheet button {
+    display: none;
+  }
+}
+
 :root {
   --radius: 0.875rem;
 
@@ -3213,12 +3235,6 @@
     }
   }
 
-  /* Sidebar block (used by AppSecondaryNav) */
-  .openplan-rail-block {
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(255, 255, 255, 0.025);
-    padding: 0.85rem 0.9rem;
-  }
 }
 
 

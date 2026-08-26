@@ -104,6 +104,7 @@ function buildHookProps(overrides: Partial<Parameters<typeof useExploreRunHistor
     analysisResult: buildAnalysisResult(),
     setAnalysisResult: vi.fn(),
     setQueryText: vi.fn(),
+    setSelectedProjectId: vi.fn(),
     setCorridorGeojson: vi.fn(),
     setError: vi.fn(),
     setTractMetric: vi.fn(),
@@ -142,7 +143,7 @@ describe("useExploreRunHistory", () => {
 
   it("loads a pinned baseline as current and clears the baseline state", () => {
     const props = buildHookProps();
-    const baselineRun = buildRun();
+    const baselineRun = buildRun({ project_id: "project-baseline" });
     const { result } = renderHook(() => useExploreRunHistory(props));
 
     act(() => result.current.compareRun(baselineRun));
@@ -152,6 +153,7 @@ describe("useExploreRunHistory", () => {
 
     expect(result.current.comparisonRun).toBeNull();
     expect(props.setQueryText).toHaveBeenCalledWith("Baseline query");
+    expect(props.setSelectedProjectId).toHaveBeenCalledWith("project-baseline");
     expect(props.setCorridorGeojson).toHaveBeenCalledWith(corridorGeojson);
     expect(props.setTractMetric).toHaveBeenCalledWith("poverty");
     expect(props.setShowCrashes).toHaveBeenCalledWith(false);
@@ -161,6 +163,7 @@ describe("useExploreRunHistory", () => {
     expect(props.setAnalysisResult).toHaveBeenCalledWith(
       expect.objectContaining({
         runId: "run-baseline",
+        projectId: "project-baseline",
         title: "Baseline access check",
         aiInterpretationSource: "fallback",
       })
@@ -191,6 +194,48 @@ describe("useExploreRunHistory", () => {
         aiInterpretation: "Stored narrative with 12,000 trips. More prose.",
       })
     );
+  });
+
+  it("does not erase a deep-linked run while its history read is still in flight", async () => {
+    navigationMocks.searchParams = new URLSearchParams("projectId=project-1&runId=run-baseline");
+    let releaseFetch!: (value: unknown) => void;
+    const pendingFetch = new Promise((resolve) => { releaseFetch = resolve; });
+    vi.stubGlobal("fetch", vi.fn(() => pendingFetch));
+    const props = buildHookProps({ analysisResult: null });
+
+    renderHook(() => useExploreRunHistory(props));
+    await act(async () => Promise.resolve());
+    expect(navigationMocks.replace).not.toHaveBeenCalled();
+
+    releaseFetch({ ok: true, json: async () => ({ runs: [buildRun()] }) });
+    await waitFor(() => expect(props.setAnalysisResult).toHaveBeenCalled());
+    vi.unstubAllGlobals();
+  });
+
+  it("restores a deep-linked run's saved project into state and the URL", async () => {
+    navigationMocks.searchParams = new URLSearchParams("runId=run-baseline");
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ runs: [buildRun({ project_id: "project-saved" })] }),
+    })));
+    const setSelectedProjectId = vi.fn();
+    const props = buildHookProps({ analysisResult: null, setSelectedProjectId });
+
+    const { rerender } = renderHook((hookProps) => useExploreRunHistory(hookProps), {
+      initialProps: props,
+    });
+    await waitFor(() => expect(setSelectedProjectId).toHaveBeenCalledWith("project-saved"));
+    const restored = vi.mocked(props.setAnalysisResult).mock.calls.at(-1)?.[0] as AnalysisResult;
+    navigationMocks.searchParams = new URLSearchParams("runId=run-baseline");
+    rerender({ ...props, analysisResult: restored });
+
+    await waitFor(() =>
+      expect(navigationMocks.replace).toHaveBeenCalledWith(
+        "/explore?runId=run-baseline&projectId=project-saved",
+        { scroll: false },
+      ),
+    );
+    vi.unstubAllGlobals();
   });
 });
 

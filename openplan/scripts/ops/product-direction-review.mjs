@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,9 +19,21 @@ const MATRIX_PATH = resolve(
   REPO_ROOT,
   "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
 );
+const CAPABILITY_REGISTRY_PATH = resolve(
+  REPO_ROOT,
+  "docs/product/US_PLANNING_CAPABILITY_REGISTRY.json",
+);
 const VALIDATION_RESEARCH_PATH = resolve(
   REPO_ROOT,
   "docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md",
+);
+const VALIDATION_PREREGISTRATION_PATH = resolve(
+  REPO_ROOT,
+  "docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json",
+);
+const VALIDATION_PREREGISTRATION_HASH_PATH = resolve(
+  REPO_ROOT,
+  "docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256",
 );
 const REVIEW_DIR = resolve(REPO_ROOT, "docs/reviews/product-direction");
 const REVIEW_MARKER = "openplan-product-direction-review";
@@ -84,6 +97,47 @@ const REQUIRED_GEOGRAPHIES = [
 ];
 
 const REQUIRED_STATUSES = ["proven", "partial", "missing", "not-assessed"];
+const REQUIRED_REGISTRY_DIMENSIONS = [
+  "planner",
+  "organization",
+  "state",
+  "capability",
+  "artifact",
+  "accessibility",
+  "operations",
+];
+const REQUIRED_PLANNERS = [
+  "transportation-planner",
+  "land-use-planner",
+  "environmental-and-resilience-planner",
+  "community-engagement-and-title-vi-planner",
+  "capital-programming-and-grants-planner",
+  "gis-data-and-records-planner",
+  "development-review-and-implementation-planner",
+];
+const REQUIRED_ARTIFACTS = [
+  "project-record",
+  "scenario-comparison",
+  "model-validation-record",
+  "safety-evidence",
+  "public-engagement-record",
+  "report-and-print-export",
+  "adopted-plan",
+  "grant-application",
+  "delivery-and-reimbursement-record",
+  "interoperable-geospatial-exchange",
+];
+const REQUIRED_ACCESSIBILITY = ["keyboard", "screen-reader", "responsive", "print", "public-artifact"];
+const REQUIRED_OPERATIONS = [
+  "free-self-hosted-install",
+  "backup-and-restore",
+  "upgrade",
+  "long-job-resumption",
+  "worker-health-and-recovery",
+];
+const REQUIRED_STATES_AND_TERRITORIES = (
+  "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY AS GU MP PR VI"
+).split(" ").map((code) => `US-${code}`);
 
 function fail(message) {
   throw new Error(`Product-direction review check failed: ${message}`);
@@ -143,9 +197,12 @@ function runCheck() {
   for (const path of [
     CONTRACT_PATH,
     MATRIX_PATH,
+    CAPABILITY_REGISTRY_PATH,
     ROADMAP_PATH,
     PROTOCOL_PATH,
     VALIDATION_RESEARCH_PATH,
+    VALIDATION_PREREGISTRATION_PATH,
+    VALIDATION_PREREGISTRATION_HASH_PATH,
     REVIEW_DIR,
   ]) {
     if (!existsSync(path)) fail(`required path does not exist: ${relative(path)}`);
@@ -175,6 +232,43 @@ function runCheck() {
   assertContainsAll(list(matrixBlock, "geographies"), REQUIRED_GEOGRAPHIES, "geographies");
   assertContainsAll(list(matrixBlock, "statuses"), REQUIRED_STATUSES, "statuses");
 
+  const registry = JSON.parse(readFileSync(CAPABILITY_REGISTRY_PATH, "utf8"));
+  if (registry.currentRelease !== release) {
+    fail(`capability registry release does not match package release ${release}`);
+  }
+  if (!registry.dimensions || typeof registry.dimensions !== "object") {
+    fail("capability registry has no dimensions object");
+  }
+  assertContainsAll(Object.keys(registry.dimensions), REQUIRED_REGISTRY_DIMENSIONS, "registry dimensions");
+  assertContainsAll(registry.statuses ?? [], REQUIRED_STATUSES, "registry statuses");
+  const registryReviewDate = dateValue(registry.reviewedAt, "registry reviewedAt");
+  const registryReviewBy = dateValue(registry.reviewBy, "registry reviewBy");
+  const registryReviewSpan = Math.round((registryReviewBy - registryReviewDate) / 86_400_000);
+  if (registryReviewSpan < 1 || registryReviewSpan > MAX_REVIEW_DAYS) {
+    fail(`capability registry review interval is ${registryReviewSpan} days; expected 1-${MAX_REVIEW_DAYS}`);
+  }
+  const requiredMembers = {
+    planner: REQUIRED_PLANNERS,
+    organization: REQUIRED_ORGANIZATIONS,
+    state: REQUIRED_STATES_AND_TERRITORIES,
+    capability: REQUIRED_CAPABILITIES,
+    artifact: REQUIRED_ARTIFACTS,
+    accessibility: REQUIRED_ACCESSIBILITY,
+    operations: REQUIRED_OPERATIONS,
+  };
+  for (const dimension of REQUIRED_REGISTRY_DIMENSIONS) {
+    const cells = registry.dimensions[dimension];
+    if (!Array.isArray(cells) || cells.length === 0) fail(`registry dimension ${dimension} has no cells`);
+    const ids = cells.map((cell) => cell?.id);
+    if (new Set(ids).size !== ids.length) fail(`registry dimension ${dimension} has duplicate cell ids`);
+    assertContainsAll(ids, requiredMembers[dimension], `registry ${dimension} cells`);
+    for (const cell of cells) {
+      if (!REQUIRED_STATUSES.includes(cell?.status)) {
+        fail(`registry ${dimension}/${cell?.id ?? "unknown"} has invalid status ${cell?.status}`);
+      }
+    }
+  }
+
   const reviewPath = latestReviewPath();
   const review = readFileSync(reviewPath, "utf8");
   const block = markerBlock(review, REVIEW_MARKER, relative(reviewPath));
@@ -191,6 +285,34 @@ function runCheck() {
   if (reviewByText < todayText) fail(`latest review expired on ${reviewByText}`);
   if (matrixReviewByText < todayText) {
     fail(`capability matrix review expired on ${matrixReviewByText}`);
+  }
+  if (registry.reviewBy < todayText) {
+    fail(`capability registry review expired on ${registry.reviewBy}`);
+  }
+  if (release.startsWith("v1.")) {
+    const openCells = REQUIRED_REGISTRY_DIMENSIONS.flatMap((dimension) =>
+      registry.dimensions[dimension]
+        .filter((cell) => cell.status !== "proven")
+        .map((cell) => `${dimension}/${cell.id}`)
+    );
+    if (openCells.length > 0) fail(`v1 has open capability cells: ${openCells.join(", ")}`);
+  }
+
+  const preregistrationBytes = readFileSync(VALIDATION_PREREGISTRATION_PATH);
+  const preregistration = JSON.parse(preregistrationBytes.toString("utf8"));
+  const recordedHash = readFileSync(VALIDATION_PREREGISTRATION_HASH_PATH, "utf8").trim().split(/\s+/)[0];
+  const actualHash = createHash("sha256").update(preregistrationBytes).digest("hex");
+  if (recordedHash !== actualHash) {
+    fail("nationwide validation preregistration hash does not match the frozen artifact");
+  }
+  if (preregistration.status !== "frozen-blocking") {
+    fail("nationwide validation preregistration is not frozen-blocking");
+  }
+  if (preregistration.acceptanceDecision?.currentOutcome !== "inconclusive") {
+    fail("unconfigured nationwide acceptance evidence must remain inconclusive");
+  }
+  if (!/diagnostic/i.test(preregistration.splitDesign?.currentThirtyPercentHoldout ?? "")) {
+    fail("the current 30 percent holdout is not labeled diagnostic-only");
   }
   if (field(block, "current_release") !== release) {
     fail(`latest review release does not match package release ${release}`);
@@ -230,6 +352,7 @@ function runCheck() {
   const contractPaths = {
     review_protocol: PROTOCOL_PATH,
     validation_research: VALIDATION_RESEARCH_PATH,
+    validation_preregistration: VALIDATION_PREREGISTRATION_PATH,
     roadmap: ROADMAP_PATH,
   };
   for (const [name, expectedPath] of Object.entries(contractPaths)) {

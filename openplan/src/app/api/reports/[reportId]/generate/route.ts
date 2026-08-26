@@ -12,6 +12,15 @@ import {
 } from "@/lib/safety/ksi-concentrations";
 import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
+import {
+  matchSafetyRoadIdentity,
+  readCachedUsRoadContext,
+  type SafetyRoadContextFeature,
+} from "@/lib/safety/road-context";
+import { loadUsTigerRoadContext, roadContextForFrozenPacket } from "@/lib/safety/us-road-context-adapter";
+import { resolveCrashSources } from "@/lib/safety/sources/registry";
+import { readReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
+import type { StudyAreaBbox } from "@/lib/models/study-area";
 import { ACS_YEAR } from "@/lib/data-sources/census";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -1617,12 +1626,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
     let estimatedCostSourceTitle: string | null = null;
     if (projectRow.estimated_cost_source_document_id) {
+      // The recorded FK is the source of this estimate. Portfolio imports are
+      // deliberately workspace-level documents because one file can create
+      // many projects; requiring kb_documents.project_id here made every such
+      // source unreadable even though the project carried its exact id.
       const sourceResult = await supabase
         .from("kb_documents")
         .select("id, title")
         .eq("id", projectRow.estimated_cost_source_document_id)
         .eq("workspace_id", report.workspace_id)
-        .eq("project_id", projectRow.id)
         .maybeSingle();
       const sourceFailure = classifyRouteReadFailure("the project cost source document", sourceResult);
       estimatedCostSourceTitle = sourceFailure
@@ -2021,7 +2033,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       )
     );
 
-    const evidenceChainSummary = buildEvidenceChainSummary({
+    let evidenceChainSummary = buildEvidenceChainSummary({
       linkedRunCount: linkedRuns.length,
       scenarioSetLinks,
       projectRecordsSnapshot,
@@ -2155,17 +2167,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
      * than throw: a packet that cannot be generated is worse than one that says
      * this section could not be read, and the section distinguishes the two.
      */
+    const selectedSafetyIngestIds = readReportSafetyIngestSelections(report.metadata_json)
+      .map(({ ingestId }) => ingestId);
     let safetyEvidence: SafetyCrashEvidence[] | null = [];
     let safetyKsiConcentrations: SafetyKsiConcentration[] | null = [];
     let safetyKsiEquityTracts: SafetyKsiEquityTract[] | null = [];
     let safetyIngestRowsForConcentrations: unknown[] = [];
+    let safetyConcentrationBounds: StudyAreaBbox | null = null;
     try {
-      const { data: safetyIngestRows, error: safetyIngestError } = await supabase
-        .from("safety_crash_ingests")
-        .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
-        .eq("workspace_id", report.workspace_id)
-        .eq("project_id", projectRow.id)
-        .order("created_at", { ascending: false });
+      const safetyIngestResult = selectedSafetyIngestIds.length > 0
+        ? await supabase
+            .from("safety_crash_ingests")
+            .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
+            .eq("workspace_id", report.workspace_id)
+            .eq("project_id", projectRow.id)
+            .in("id", selectedSafetyIngestIds)
+            .order("created_at", { ascending: false })
+        : { data: [], error: null };
+      const { data: safetyIngestRows, error: safetyIngestError } = safetyIngestResult;
 
       if (safetyIngestError) {
         safetyEvidence = null;
@@ -2188,8 +2207,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     try {
       const concentrationBounds = readSafetyKsiBounds(safetyIngestRowsForConcentrations);
+      safetyConcentrationBounds = concentrationBounds;
       if (concentrationBounds && safetyIngestRowsForConcentrations.length > 0) {
-        const concentrationResult = await supabase.rpc("safety_ksi_concentrations", {
+        const concentrationResult = await supabase.rpc("safety_ksi_concentrations_for_ingests", {
           p_workspace_id: report.workspace_id,
           p_min_lon: concentrationBounds.minLon,
           p_min_lat: concentrationBounds.minLat,
@@ -2200,6 +2220,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           p_radius_meters: 150,
           p_min_points: 2,
           p_result_limit: 10,
+          p_ingest_ids: selectedSafetyIngestIds,
         });
         const concentrationFailure = classifyRouteReadFailure(
           "the packet's KSI concentration screen",
@@ -2216,7 +2237,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     try {
       const equityBounds = readSafetyKsiBounds(safetyIngestRowsForConcentrations);
       if (equityBounds && safetyIngestRowsForConcentrations.length > 0) {
-        const equityResult = await supabase.rpc("safety_ksi_tract_burden", {
+        const equityResult = await supabase.rpc("safety_ksi_tract_burden_for_ingests", {
           p_workspace_id: report.workspace_id,
           p_min_lon: equityBounds.minLon,
           p_min_lat: equityBounds.minLat,
@@ -2225,6 +2246,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           p_project_id: projectRow.id,
           p_severities: [...CRASH_KSI_SEVERITIES],
           p_result_limit: 10,
+          p_ingest_ids: selectedSafetyIngestIds,
         });
         const equityFailure = classifyRouteReadFailure(
           "the packet's community burden screen",
@@ -2238,6 +2260,84 @@ export async function POST(request: NextRequest, context: RouteContext) {
       safetyKsiEquityTracts = null;
     }
 
+    let safetyRoadContext: SafetyRoadContextFeature[] | null = [];
+    try {
+      const roadContextResult = await supabase
+        .from("safety_road_context_features")
+        .select("id, road_name, geometry_geojson, source_id, source_vintage")
+        .eq("workspace_id", report.workspace_id)
+        .eq("project_id", projectRow.id)
+        .limit(2000);
+      const roadContextFailure = classifyRouteReadFailure(
+        "the packet's cached road context",
+        roadContextResult
+      );
+      safetyRoadContext = roadContextFailure
+        ? null
+        : readCachedUsRoadContext((roadContextResult.data ?? []).map((row) => ({
+            id: row.id,
+            name: row.road_name,
+            geometry_geojson: row.geometry_geojson,
+            source: row.source_id,
+            vintage: row.source_vintage,
+          })));
+    } catch {
+      safetyRoadContext = null;
+    }
+    if (
+      safetyRoadContext
+      && safetyRoadContext.length === 0
+      && safetyKsiConcentrations
+      && safetyKsiConcentrations.length > 0
+      // Uploaded project geometry can predate the project's ISO country stamp.
+      // The crash-source registry already resolved this exact acquisition area;
+      // use that source evidence instead of guessing from coordinates or
+      // silently inheriting the workspace's country for a cross-border project.
+      && safetyConcentrationBounds
+      && resolveCrashSources(safetyConcentrationBounds, "read_only").kind === "resolved"
+    ) {
+      const tigerContext = await loadUsTigerRoadContext(safetyKsiConcentrations);
+      if (tigerContext.roads.length > 0) {
+        try {
+          const serviceSupabase = createServiceRoleClient();
+          const { error: cacheError } = await serviceSupabase
+            .from("safety_road_context_features")
+            .upsert(
+              tigerContext.roads.map((road) => ({
+                workspace_id: report.workspace_id,
+                project_id: projectRow.id,
+                country_code: "US",
+                source_id: road.sourceId,
+                source_label: road.sourceLabel,
+                source_vintage: road.vintage,
+                source_feature_id: road.id,
+                road_name: road.name,
+                geometry_geojson: road.geometry,
+              })),
+              { onConflict: "workspace_id,project_id,source_id,source_vintage,source_feature_id" },
+            );
+          safetyRoadContext = roadContextForFrozenPacket(tigerContext.roads, cacheError);
+        } catch {
+          // A packet may use only road geometry that was frozen successfully.
+          safetyRoadContext = [];
+        }
+      }
+    }
+    if (safetyKsiConcentrations) {
+      safetyKsiConcentrations = safetyKsiConcentrations.map((concentration) => ({
+        ...concentration,
+        roadIdentity: matchSafetyRoadIdentity(
+          concentration.longitude,
+          concentration.latitude,
+          safetyRoadContext ?? []
+        ),
+      }));
+    }
+    evidenceChainSummary = {
+      ...evidenceChainSummary,
+      safetyAcquisitionCount: safetyEvidence?.length ?? 0,
+    };
+
     const reportHtmlInput = {
       report,
       // Cast: the projection is a template literal (binding columns
@@ -2249,6 +2349,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       sections: sectionsResult.data ?? [],
       safetyEvidence,
       safetyKsiConcentrations,
+      safetyRoadContext,
       safetyKsiEquityTracts,
       safetyKsiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
       deliverables: (deliverablesResult.data ?? []).map((item) => ({

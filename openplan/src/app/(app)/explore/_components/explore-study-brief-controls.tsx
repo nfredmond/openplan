@@ -45,7 +45,7 @@ type ExploreStudyBriefControlsProps = {
   onSelectedProjectIdChange?: (value: string) => void;
   onQueryTextChange: (value: string) => void;
   onReportTemplateChange: (value: ReportTemplate) => void;
-  onRunAnalysis: (queryText?: string) => Promise<void> | void;
+  onRunAnalysis: (queryText?: string, projectId?: string) => Promise<void> | void;
   onGenerateReport: () => Promise<void> | void;
   onDownloadPdfReport: () => Promise<void> | void;
 };
@@ -176,7 +176,7 @@ export function ExploreStudyBriefControls({
               </select>
             </GuidedFlowRow>
             <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 p-3 text-sm">
-              <p className="font-semibold">Ready to run</p>
+              <p className="font-semibold">{isSubmitting ? "Analysis running" : "Ready to run"}</p>
               <p className="mt-1 text-muted-foreground">
                 Asking: “{String(flow.values.queryText).trim() || "—"}”
               </p>
@@ -184,14 +184,16 @@ export function ExploreStudyBriefControls({
                 Report style: {TEMPLATE_LABEL[flow.values.reportTemplate]}
               </p>
               <p className="mt-1 text-muted-foreground">
-                This uses the corridor you drew on the map. It takes a moment.
+                {isSubmitting
+                  ? "OpenPlan is collecting the corridor evidence now. Keep this window open; the result will replace this setup when it finishes."
+                  : "This uses the corridor you drew on the map. It usually takes about a minute."}
               </p>
             </div>
           </>
         ),
       },
     ],
-    [projects]
+    [isSubmitting, projects]
   );
 
   const flow = useGuidedFlow<BriefValues>({
@@ -233,7 +235,7 @@ export function ExploreStudyBriefControls({
         // an area they had already set.
         return blockedNow;
       }
-      await onRunAnalysis(values.queryText);
+      await onRunAnalysis(values.queryText, values.projectId);
     },
   });
 

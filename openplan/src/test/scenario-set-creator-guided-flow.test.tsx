@@ -84,6 +84,24 @@ describe("the scenario set creator", () => {
     expect(body.projectId).toBe(PROJECTS[0].id);
   });
 
+  it("preselects the project carried in planning context", () => {
+    render(<ScenarioSetCreator projects={PROJECTS} initialProjectId={PROJECTS[1].id} />);
+    fireEvent.click(screen.getByTestId("scenario-set-creator-open"));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "A set" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+
+    expect(screen.getByLabelText("Project")).toHaveValue(PROJECTS[1].id);
+  });
+
+  it("does not trust an initial project outside the available workspace list", () => {
+    render(<ScenarioSetCreator projects={PROJECTS} initialProjectId="cross-workspace-project" />);
+    fireEvent.click(screen.getByTestId("scenario-set-creator-open"));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "A set" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+
+    expect(screen.getByLabelText("Project")).toHaveValue(PROJECTS[0].id);
+  });
+
   it("says a failed project read is a failed read, and offers no create button", () => {
     render(<ScenarioSetCreator projects={[]} projectsUnreadable />);
 

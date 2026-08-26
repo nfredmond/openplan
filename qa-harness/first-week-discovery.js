@@ -146,10 +146,12 @@ function loadJobs() {
 }
 
 /**
- * The folder "your predecessor left you". Nothing here names a real place: the
- * geometry sits at 0°N 0°E for the same reason `fixtures/provision.js` puts it
- * there — an anchor that is obviously nowhere can never be mistaken for
- * somewhere once it reaches a screenshot.
+ * The folder "your predecessor left you". The project remains explicitly
+ * synthetic, but its geometry sits near Ukiah inside the required Mendocino
+ * setup geography. A 0°N 0°E placeholder was safe while this fixture only
+ * proved upload and packet creation; it became an invalid test input once the
+ * same project had to reach Census tracts and a runnable OSM network in the
+ * first-week modeling journey.
  */
 function writeHandoverFiles(dir) {
   fs.mkdirSync(dir, { recursive: true });
@@ -158,14 +160,17 @@ function writeHandoverFiles(dir) {
     features: [
       {
         type: 'Feature',
-        properties: { name: 'Example Corridor', jurisdiction: 'Example County' },
+        properties: {
+          name: 'Synthetic QA Corridor — not an adopted alignment',
+          jurisdiction: 'Mendocino County test fixture',
+        },
         geometry: {
           type: 'LineString',
           coordinates: [
-            [0, 0],
-            [0.01, 0.004],
-            [0.02, 0.006],
-            [0.031, 0.012],
+            [-123.2176, 39.1326],
+            [-123.2148, 39.1437],
+            [-123.2107, 39.1548],
+            [-123.2071, 39.1661],
           ],
         },
       },
@@ -176,16 +181,16 @@ function writeHandoverFiles(dir) {
     features: [
       {
         type: 'Feature',
-        properties: { name: 'Example Study Area' },
+        properties: { name: 'Synthetic QA study area near Ukiah — not an adopted boundary' },
         geometry: {
           type: 'Polygon',
           coordinates: [
             [
-              [-0.01, -0.01],
-              [0.04, -0.01],
-              [0.04, 0.03],
-              [-0.01, 0.03],
-              [-0.01, -0.01],
+              [-123.235, 39.12],
+              [-123.19, 39.12],
+              [-123.19, 39.18],
+              [-123.235, 39.18],
+              [-123.235, 39.12],
             ],
           ],
         },

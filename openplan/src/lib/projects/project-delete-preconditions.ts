@@ -108,6 +108,7 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   // Work products destroyed outright by the cascade.
   { table: "reports", column: "project_id", label: "reports", severity: "evidence", behavior: "cascade", href: "/reports" },
   { table: "scenario_sets", column: "project_id", label: "scenario sets", severity: "evidence", behavior: "cascade", href: "/scenarios" },
+  { table: "safety_road_context_features", column: "project_id", label: "cached Safety road context", severity: "evidence", behavior: "cascade", href: "/safety" },
   { table: "project_bca_screenings", column: "project_id", label: "BCA screenings", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_spend_entries", column: "project_id", label: "spend entries", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_funding_profiles", column: "project_id", label: "funding profile", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },

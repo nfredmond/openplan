@@ -41,6 +41,7 @@ import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { buildReportGenerationReadiness } from "@/lib/reports/generation-readiness";
 import { loadReportDualDemandAgreementPanel } from "@/lib/reports/dual-demand-agreement";
 import { loadReportAerialOrthoCatalog, readReportAerialOrthoSelections } from "@/lib/reports/aerial-ortho-evidence-server";
+import { loadReportSafetyIngestOptions, readReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
 import { buildTypedRunCitations, loadCiteableModelRuns, loadReportRunCitationLinks, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
@@ -97,10 +98,10 @@ import {
 } from "./_components/_read-failures";
 import { ReportStandardDetail } from "./_components/report-standard-detail";
 import { LandUsePlanReportPage } from "@/components/reports/land-use-plan-report-page";
+import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 export default async function ReportDetailPage({ params, searchParams }: ReportDetailRouteParams) {
-  const { reportId } = await params;
-  const supabase = await createClient();
+  const { reportId } = await params; const query = searchParams ? await searchParams : {}; const supabase = await createClient();
 
   const {
     data: { user },
@@ -382,29 +383,25 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   const citedModelRunIdsInOrder = typedRunCitations.filter((citation) => citation.kind === "model").map((citation) => citation.runId);
   const agreementPanel = project ? await loadReportDualDemandAgreementPanel({ supabase, modelRunIds: citedModelRunIdsInOrder, workspaceId: report.workspace_id, projectId: project.id, reportMetadata: report.metadata_json }) : { evidence: [], selections: [] };
   const aerialOrthoCatalog = project ? await loadReportAerialOrthoCatalog({ supabase, workspaceId: report.workspace_id, projectId: project.id }) : { state: "absent" as const, layers: [], notes: [] };
+  const safetyIngestOptionsResult = project
+    ? await loadReportSafetyIngestOptions(supabase, report.workspace_id, project.id)
+    : { data: [], error: null };
+  reads.check("this project's selectable crash evidence", safetyIngestOptionsResult);
+  const safetyIngestOptions = safetyIngestOptionsResult.data ?? [];
+  const requestedSafetyIngestId = Array.isArray(query.safetyIngestId)
+    ? query.safetyIngestId[0] ?? null
+    : query.safetyIngestId ?? null;
 
   const latestArtifact = ((artifacts ?? []) as ReportArtifact[])[0] ?? null;
   const latestHtml = asHtmlContent(latestArtifact?.metadata_json);
   const runAudit = asRunAudit(latestArtifact?.metadata_json);
   const sourceContext = asSourceContext(latestArtifact?.metadata_json);
-  const aerialEvidenceSourceContext = parseReportAerialEvidenceSourceContext(
-    sourceContext?.aerialEvidenceSourceContext
-  );
-  const storedEvidenceChainSummary = parseStoredEvidenceChainSummary(
-    latestArtifact?.metadata_json ?? null
-  );
-  const storedScenarioSpineSummary = parseStoredScenarioSpineSummary(
-    latestArtifact?.metadata_json ?? null
-  );
-  const storedFundingSnapshot = parseStoredFundingSnapshot(
-    latestArtifact?.metadata_json ?? null
-  );
-  const currentReportComparisonAggregate = parseStoredComparisonSnapshotAggregate(
-    latestArtifact?.metadata_json ?? null
-  );
-  const currentReportComparisonDigest = describeComparisonSnapshotAggregate(
-    currentReportComparisonAggregate
-  );
+  const aerialEvidenceSourceContext = parseReportAerialEvidenceSourceContext(sourceContext?.aerialEvidenceSourceContext);
+  const storedEvidenceChainSummary = parseStoredEvidenceChainSummary(latestArtifact?.metadata_json ?? null);
+  const storedScenarioSpineSummary = parseStoredScenarioSpineSummary(latestArtifact?.metadata_json ?? null);
+  const storedFundingSnapshot = parseStoredFundingSnapshot(latestArtifact?.metadata_json ?? null);
+  const currentReportComparisonAggregate = parseStoredComparisonSnapshotAggregate(latestArtifact?.metadata_json ?? null);
+  const currentReportComparisonDigest = describeComparisonSnapshotAggregate(currentReportComparisonAggregate);
   const liveFundingSnapshot = project
     ? buildProjectFundingSnapshot({
         ...projectFundingRows,
@@ -985,13 +982,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     });
   }
   const currentStageGateSummary: ProjectStageGateSummary | null = stageGateBoard?.summary ?? null;
-  // Set only when the live board could not be CHECKED, which is not the same
-  // as this report having no gate board to compare (`null` above). Two ways to
-  // fail, one honest outcome: the workspace's template binding could not be
-  // resolved (so the loader was never called — rendering the registry default
-  // would compare the snapshot against another template's gate vocabulary), or
-  // the decision log itself failed to load. The drift check below withholds
-  // its verdict in either case and the packet-freshness line names the gap, so
+  // An unreadable live board is not the same as no gate board (`null` above). The workspace binding may be unresolved, or
+  // the decision log may fail. The drift check below withholds its verdict, so
   // an outage cannot be read here as "nothing changed".
   const stageGateLiveReadFailure =
     stageGateSnapshot && report.project_id && stageGateBindingUnavailableReason
@@ -1292,12 +1284,11 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   });
 
   const narrativeDraftPanelProps = await loadAiNarrativeDraftPanelInputs(supabase, report, sectionList);
-
   return (
     <>
-    <ReportReadFailureDisclosure reads={reads} />
+    <PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" /><ReportReadFailureDisclosure reads={reads} />
     <ReportStandardDetail
-      searchParams={searchParams ? await searchParams : {}}
+      searchParams={query}
       unreadableByTab={buildReportUnreadableByTab({ artifactsUnreadable, sectionsUnreadable, projectRecordsUnreadable: projectRecordReadFailures.size > 0 })}
       report={report}
       project={project}
@@ -1320,6 +1311,9 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
       citedModelRunIds={citedModelRunIdsInOrder}
       agreementEvidence={agreementPanel.evidence} agreementCorridorSelections={agreementPanel.selections}
       aerialOrthoCatalog={aerialOrthoCatalog} aerialOrthoSelections={readReportAerialOrthoSelections(report.metadata_json)}
+      safetyIngestOptions={safetyIngestOptions}
+      safetyIngestSelections={readReportSafetyIngestSelections(report.metadata_json)}
+      initialSafetyIngestId={requestedSafetyIngestId}
       narrativeDraftPanelProps={narrativeDraftPanelProps}
       compositionAuditProps={{
         reportId: report.id,

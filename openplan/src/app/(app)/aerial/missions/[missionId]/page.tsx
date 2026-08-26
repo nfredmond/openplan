@@ -48,6 +48,8 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
 
 type PackageRow = {
   id: string;
@@ -86,10 +88,12 @@ function formatDateTime(value: string | null): string {
 
 type AerialMissionDetailPageProps = {
   params: Promise<{ missionId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function AerialMissionDetailPage({ params }: AerialMissionDetailPageProps) {
+export default async function AerialMissionDetailPage({ params, searchParams }: AerialMissionDetailPageProps) {
   const { missionId } = await params;
+  const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -155,6 +159,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   }
 
   const project = Array.isArray(mission.projects) ? mission.projects[0] : mission.projects;
+  const planningContext = resolvePlanningContext(query.projectId, project);
   // Cached project posture now lives in the aerial-owned aerial_project_posture
   // table (not a column on projects).
   const { posture: projectAerialPosture, updatedAt: projectAerialPostureUpdatedAt } = mission.project_id
@@ -541,6 +546,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   return (
     <>
       <CartographicSurfaceWide />
+      <PlanningContextStrip context={planningContext} className="mb-4" />
       <Worksurface
       ariaLabel={`Aerial mission ${mission.title}`}
       header={header}
@@ -565,7 +571,12 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
           >
             <div className="flex flex-wrap items-center gap-2">
               <Button asChild>
-                <Link href={`/aerial/missions/${mission.id}/edit`}>
+                <Link
+                  href={withPlanningContext(
+                    `/aerial/missions/${mission.id}/edit`,
+                    planningContext.status === "active" ? planningContext.project.id : null
+                  )}
+                >
                   <Hexagon className="h-4 w-4" />
                   {hasAoi ? "Edit AOI" : "Draw AOI"}
                 </Link>

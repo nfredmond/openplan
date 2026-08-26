@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { ReactElement } from "react";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 
 /**
@@ -20,6 +21,13 @@ const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn(() => {
   throw new Error("the knowledge-base page must never create a service-role client");
 });
+
+function knowledgeWorkspaceElement(element: Awaited<ReturnType<typeof KnowledgeBasePage>>) {
+  const children = (Array.isArray(element.props.children)
+    ? element.props.children
+    : [element.props.children]) as ReactElement[];
+  return children.find((child) => child?.type === KnowledgeBaseWorkspace);
+}
 const loadDocumentLibraryMock = vi.fn();
 const loadMembershipMock = vi.fn();
 
@@ -112,8 +120,9 @@ describe("/knowledge-base page wiring", () => {
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
 
     // …and the result reaches the component, labels included.
-    expect(element.type).toBe(KnowledgeBaseWorkspace);
-    const props = element.props as Record<string, unknown>;
+    const workspaceElement = knowledgeWorkspaceElement(element);
+    expect(workspaceElement?.type).toBe(KnowledgeBaseWorkspace);
+    const props = workspaceElement?.props as Record<string, unknown>;
     const library = props.library as {
       perSource: Record<string, unknown>;
       limitPerSource: number;
@@ -141,7 +150,7 @@ describe("/knowledge-base page wiring", () => {
     loadDocumentLibraryMock.mockResolvedValue({ ...libraryResult(), reads });
 
     const element = await KnowledgeBasePage({ searchParams: Promise.resolve({}) });
-    const library = (element.props as Record<string, unknown>).library as {
+    const library = (knowledgeWorkspaceElement(element)?.props as Record<string, unknown>).library as {
       readFailureSummary: string | null;
     };
     expect(library.readFailureSummary).toMatch(/could not read report files/);

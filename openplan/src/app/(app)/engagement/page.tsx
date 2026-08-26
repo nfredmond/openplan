@@ -28,6 +28,11 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import {
+  resolvePlanningContext,
+  withPlanningContext,
+} from "@/lib/projects/planning-context";
 
 export const metadata = moduleMetadata("Engagement");
 
@@ -308,6 +313,17 @@ export default async function EngagementPage({
         .find((project) => project.id === projectFilterId)
         ?.name?.trim() || null
     : null;
+  const planningContext = resolvePlanningContext(
+    projectFilterId,
+    projectFilterId
+      ? ((projectsData ?? []) as Array<{ id: string; name: string }>).find(
+          (project) => project.id === projectFilterId
+        ) ?? null
+      : null,
+    projectFilterId && projectsUnreadable
+      ? projectsResult.error ?? { message: "Project context could not be read." }
+      : null
+  );
 
   // Named in the reader's terms so the empty state can say what it is filtered
   // TO, not merely that it is filtered.
@@ -325,6 +341,7 @@ export default async function EngagementPage({
 
   return (
     <section className="module-page">
+      <PlanningContextStrip context={planningContext} className="mb-4" />
       {/*
         Named before anything else on the page, because every count and every
         empty state below is only as true as the reads that fed it. Membership-
@@ -442,7 +459,10 @@ export default async function EngagementPage({
 
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <div id="create-campaign">
-          <EngagementCampaignCreator projects={(projectsData ?? []) as Array<{ id: string; name: string }>} />
+          <EngagementCampaignCreator
+            projects={(projectsData ?? []) as Array<{ id: string; name: string }>}
+            initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
+          />
         </div>
 
         <article className="module-section-surface">
@@ -524,7 +544,10 @@ export default async function EngagementPage({
               {campaigns.map((campaign) => (
                 <CartographicSelectionLink
                   key={campaign.id}
-                  href={`/engagement/${campaign.id}`}
+                  href={withPlanningContext(
+                    `/engagement/${campaign.id}`,
+                    planningContext.status === "active" ? planningContext.project.id : null
+                  )}
                   className="module-record-row is-interactive group block"
                   selection={{
                     kind: "mission",

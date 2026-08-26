@@ -1,7 +1,5 @@
 "use client";
 
-import { AppSecondaryNav } from "@/components/nav/app-secondary-nav";
-
 import { useCartographicMapReading } from "./cartographic-context";
 
 type CartographicOverviewSurfaceProps = {
@@ -61,7 +59,6 @@ export function CartographicOverviewSurface({
       */
       aria-hidden={mapReading || undefined}
     >
-      <AppSecondaryNav />
       {heading ? (
         <header className="op-cart-surface__hd">
           {heading.kicker ? <div className="op-cart-surface__kicker">{heading.kicker}</div> : null}

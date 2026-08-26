@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -246,6 +247,17 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("separate from the project-management budget");
     });
 
+    it("reads an imported cost source by its recorded id and workspace, without requiring a one-project attachment", () => {
+      const route = readFileSync("src/app/api/reports/[reportId]/generate/route.ts", "utf8");
+      const sourceRead = route.slice(
+        route.indexOf("The recorded FK is the source of this estimate"),
+        route.indexOf("const sourceFailure", route.indexOf("The recorded FK is the source of this estimate")),
+      );
+      expect(sourceRead).toContain('.eq("id", projectRow.estimated_cost_source_document_id)');
+      expect(sourceRead).toContain('.eq("workspace_id", report.workspace_id)');
+      expect(sourceRead).not.toContain('.eq("project_id", projectRow.id)');
+    });
+
     it("prints ranked project KSI concentrations with screening limits", () => {
       const html = buildReportHtml({
         ...packetData([evidence()]),
@@ -257,12 +269,42 @@ describe("a safety project's packet carries its crashes", () => {
           fatalCrashCount: 2,
           seriousInjuryCrashCount: 5,
           radiusMeters: 150,
+          roadIdentity: {
+            status: "matched",
+            name: "State Route 49",
+            sourceId: "us-census-tiger-line-cache",
+            sourceLabel: "U.S. Census TIGER/Line roads",
+            vintage: "2025",
+            matchQuality: "high",
+            distanceMeters: 9,
+          },
+        }],
+        safetyRoadContext: [{
+          id: "road-1",
+          name: "State Route 49",
+          geometry: {
+            type: "LineString",
+            coordinates: [[-121.061, 39.218], [-121.061, 39.222]],
+          },
+          sourceId: "us-census-tiger-line-cache",
+          sourceLabel: "U.S. Census TIGER/Line roads",
+          vintage: "2025",
         }],
       });
 
       expect(html).toContain("Highest observed KSI concentrations");
       expect(html).toContain("7 KSI crashes");
       expect(html).toContain("screening locations, not named intersections");
+      expect(html).toContain("Nearest named road: <strong>State Route 49</strong>");
+      expect(html).toContain("Printable street context");
+      expect(html).toContain("Local street context");
+      expect(html).toContain("no paid or live tile service was used");
+    });
+
+    it("uses registered crash-source coverage when an imported project's ISO stamp is absent", () => {
+      const route = readFileSync("src/app/api/reports/[reportId]/generate/route.ts", "utf8");
+      expect(route).toContain('resolveCrashSources(safetyConcentrationBounds, "read_only").kind === "resolved"');
+      expect(route).not.toContain('projectRow.place_country_code === "US"');
     });
 
     it("prints tract-level community context with its non-causal limit", () => {

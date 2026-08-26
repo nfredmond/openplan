@@ -1,8 +1,8 @@
 /**
  * The single source of truth for the authenticated (app) navigation surface.
  *
- * Four navs and the auth proxy all consume this registry — the cartographic
- * rail, the command palette, the contextual secondary nav, and the top nav —
+ * The authenticated navigation and auth proxy consume this registry. The
+ * cartographic rail and command palette stay aligned with the protected routes,
  * so a module cannot appear in one and drift out of another, and a routable
  * surface cannot exist without a sign-in gate in front of it.
  *
@@ -69,6 +69,13 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     // "command center" kept so the old name for the dashboard's cross-domain
     // queue still lands here from the palette.
     paletteKeywords: "home dashboard overview command center operations cross-domain",
+  },
+  {
+    href: "/workspace",
+    label: "Workspace setup & health",
+    railGroup: "workspace",
+    icon: "admin",
+    paletteKeywords: "settings configuration geography team keys integrations deployment health stage gates",
   },
   {
     // Second in the group, directly under Overview: the workspace's own state
@@ -158,10 +165,10 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
   },
   {
     href: "/models",
-    label: "Models",
+    label: "Travel modeling",
     railGroup: "analysis",
     icon: "models",
-    paletteKeywords: "travel demand model run any place",
+    paletteKeywords: "travel demand model run baseline build aequilibrae activitysim any place",
   },
   {
     href: "/scenarios",
@@ -169,6 +176,7 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     railGroup: "analysis",
     icon: "scenarios",
     paletteKeywords: "baseline comparison",
+    railHidden: true,
   },
   {
     href: "/explore",
@@ -185,6 +193,7 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     icon: "county",
     paletteKeywords:
       "county validation county runs counts calibration onboarding screening",
+    railHidden: true,
   },
   {
     href: "/safety",
@@ -273,45 +282,9 @@ export function buildPaletteCommands(): AppNavPaletteCommand[] {
   }));
 }
 
-export type AppNavSection = {
-  title: string;
-  items: Array<{ href: string; label: string }>;
-};
-
-/**
- * The contextual section for a pathname: the registry group the current page
- * belongs to, with every member of that group in registry order. The secondary
- * nav renders this directly, so it can never carry a grouping the rail and the
- * palette do not — the registry's groups ARE the only grouping.
- *
- * Longest-prefix match, with the same `===` / `startsWith(href + "/")` test
- * the navs use for active-state, so `/rtp/some-cycle` still resolves to the
- * Plans & Programming group. Unregistered paths return null and the secondary
- * nav renders nothing.
- */
-export function findNavSection(pathname: string): AppNavSection | null {
-  let matched: AppNavEntry | undefined;
-  for (const entry of APP_NAV_ENTRIES) {
-    const hit = pathname === entry.href || pathname.startsWith(`${entry.href}/`);
-    if (hit && (!matched || entry.href.length > matched.href.length)) {
-      matched = entry;
-    }
-  }
-  if (!matched) return null;
-  const group = matched.railGroup;
-  return {
-    title: RAIL_GROUP_TITLES[group],
-    items: APP_NAV_ENTRIES.filter((entry) => entry.railGroup === group).map(
-      ({ href, label }) => ({ href, label }),
-    ),
-  };
-}
-
 /**
  * Route prefixes the auth proxy puts behind sign-in: every registered surface,
- * plus three carried-forward prefixes — "/workspace" (no page route exists
- * under it today; kept from the old proxy list so any future workspace-scoped
- * page is born protected), "/billing" (survives only as a redirect stub into
+ * plus two carried-forward prefixes — "/billing" (survives only as a redirect stub into
  * /invoicing, so the stub redirects through sign-in like its target), and
  * "/command-center" (survives only as a redirect stub into /dashboard, kept
  * protected for the same reason).
@@ -319,7 +292,6 @@ export function findNavSection(pathname: string): AppNavSection | null {
 export function protectedRoutePrefixes(): string[] {
   return [
     ...APP_NAV_ENTRIES.map((entry) => entry.href),
-    "/workspace",
     "/billing",
     "/command-center",
   ];

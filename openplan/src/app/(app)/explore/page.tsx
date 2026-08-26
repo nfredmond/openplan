@@ -4,6 +4,8 @@ import { placeOfRecordFromProject } from "@/lib/projects/project-place";
 import { studyAreaPrefillFrom } from "@/lib/models/study-area";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { ExploreWorkbench } from "./_components/explore-workbench";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import { resolvePlanningContext } from "@/lib/projects/planning-context";
 
 import { moduleMetadata } from "@/lib/ui/page-title";
 
@@ -121,6 +123,13 @@ export default async function ExplorePage({
     : false;
 
   const projectRow = (projectResult.data ?? null) as ProjectPlaceRowWithIdentity | null;
+  const planningContext = resolvePlanningContext(
+    requestedProjectId,
+    projectRow,
+    projectUnreadable || projectSchemaPending
+      ? projectResult.error ?? { message: "Project context could not be read." }
+      : null
+  );
   const projectPlace = projectRow ? placeOfRecordFromProject(projectRow) : null;
 
   // Whether that place can actually seed a study area — the same test
@@ -159,7 +168,9 @@ export default async function ExplorePage({
             : null;
 
   return (
-    <ExploreWorkbench
+    <>
+      <PlanningContextStrip context={planningContext} className="mb-4" />
+      <ExploreWorkbench
       // Only a place that can seed an area is passed down. `resolveStudyArea`
       // would fall through to the workspace home on its own, so this is not
       // load-bearing for correctness — it keeps the boundary between "a
@@ -169,6 +180,7 @@ export default async function ExplorePage({
       projectPlace={projectAreaUsable ? projectPlace : null}
       openedForProject={projectRow ? { id: projectRow.id, name: projectRow.name } : null}
       projectAreaNotice={projectAreaNotice}
-    />
+      />
+    </>
   );
 }

@@ -59,7 +59,7 @@ export function RtpRegistryOverview({
           <div className="module-summary-card">
             <p className="module-summary-label">Cycles</p>
             <p className="module-summary-value">{cycleCount}</p>
-            <p className="module-summary-detail">Plan updates tracked in this workspace.</p>
+            <p className="module-summary-detail">Plan updates tracked here.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Draft / review</p>

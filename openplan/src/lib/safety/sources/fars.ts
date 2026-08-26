@@ -21,9 +21,10 @@
  * discovering the mismatch as a constraint violation mid-write.
  *
  * FIELD NOTES — read this before "fixing" the tolerant parsing below.
- *   - The CrashAPI has shipped at least two response envelopes in the wild:
- *     `{ Results: [ {...} ] }` and `{ Results: [ [ {...} ] ] }`. Both are
- *     handled; the doubly-nested form was observed in production.
+ *   - The CrashAPI location endpoint accepts state and county, not a bounding
+ *     box. OpenPlan therefore reads NHTSA's immutable annual national CSV and
+ *     applies the requested bbox locally. This is slower on a cold cache, but
+ *     it works for arbitrary project geometry without guessing a county.
  *   - Column casing is NOT stable across CrashAPI endpoints (ST_CASE vs
  *     StCase, LONGITUD vs Longitude). Every field is looked up through a
  *     case-insensitive, separator-insensitive key map instead of one guessed
@@ -36,15 +37,14 @@
  *     that returns nothing usable is skipped rather than treated as an outage.
  *     Only an ALL-years failure is reported as `source_unavailable`.
  *
- * NETWORK NOTE (2026-07): crashviewer.nhtsa.dot.gov answers 403 from the
- * development network this adapter was written on — an Akamai edge block on a
- * consumer CGNAT range, not a datacenter block. That says nothing about whether
- * the API works from production, so this adapter is written to succeed if it
- * can and to report unavailability honestly if it cannot. Do not delete it on
- * the strength of a local 403.
+ * NETWORK NOTE (2026-08): crashviewer.nhtsa.dot.gov answers 403 from this
+ * development network. The official static annual files remain reachable and
+ * are the supported retrieval path here. A missing or malformed archive is
+ * source-unavailable, never zero crashes.
  */
 
-import { fetchJsonWithRetry } from "@/lib/data-sources/http";
+import { parse as parseCsv } from "csv-parse/sync";
+import JSZip from "jszip";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 import { CRASH_LEVEL_ONLY_DIMENSION_SUPPORT } from "@/lib/safety/vocabulary";
 import {
@@ -57,7 +57,7 @@ import {
 
 export const FARS_SOURCE_ID = "fars-national";
 
-const FARS_BASE = "https://crashviewer.nhtsa.dot.gov/CrashAPI/crashes/GetCrashesByLocation";
+const FARS_DOWNLOAD_BASE = "https://static.nhtsa.gov/nhtsa/downloads/FARS";
 
 /**
  * The CrashAPI's documented lower bound for the location query. FARS itself
@@ -66,19 +66,22 @@ const FARS_BASE = "https://crashviewer.nhtsa.dot.gov/CrashAPI/crashes/GetCrashes
  */
 export const FARS_EARLIEST_YEAR = 2010;
 
-/** Latest final annual FARS file explicitly announced by NHTSA. */
+/** Latest annual FARS file explicitly released by NHTSA. */
 export const FARS_PUBLISHED_CUTOFF = {
-  publishedThrough: "2023-12-31",
+  publishedThrough: "2024-12-31",
   provenance: {
     basis: "source_metadata",
-    sourceUrl: "https://www.nhtsa.gov/press-releases/nhtsa-estimates-39345-traffic-fatalities-2024",
-    label: "NHTSA release of final 2023 FARS data",
+    sourceUrl: "https://static.nhtsa.gov/nhtsa/downloads/FARS/2024/FARS2024%20Release%20Notes.txt",
+    label: "NHTSA first release of the 2024 FARS annual file",
     finalAnnualFile: true,
-    retrievedAt: "2026-08-24T00:00:00.000Z",
+    retrievedAt: "2026-08-25T00:00:00.000Z",
   },
 } as const;
 
-const REQUEST_TIMEOUT_MS = 12_000;
+const REQUEST_TIMEOUT_MS = 20_000;
+const MAX_ARCHIVE_BYTES = 48 * 1024 * 1024;
+const MAX_ACCIDENT_CSV_BYTES = 36 * 1024 * 1024;
+const LATEST_PUBLISHED_YEAR = Number(FARS_PUBLISHED_CUTOFF.publishedThrough.slice(0, 4));
 
 /**
  * Coarse envelopes for the FARS reporting geography. Purely a rejection filter
@@ -112,8 +115,6 @@ function overlaps(a: StudyAreaBbox, b: StudyAreaBbox): boolean {
 export function coversFarsGeography(bbox: StudyAreaBbox): boolean {
   return FARS_ENVELOPES.some((envelope) => overlaps(bbox, envelope));
 }
-
-type FarsResponse = { Results?: unknown };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -205,28 +206,19 @@ export function toFarsCollisionDate(value: unknown): string | null {
   return null;
 }
 
-/** Unwrap both observed envelope shapes. Returns null when unrecognizable. */
-export function parseFarsResults(payload: unknown): Record<string, unknown>[] | null {
-  const results = isRecord(payload) ? (payload as FarsResponse).Results : undefined;
-  if (!Array.isArray(results)) return null;
-  if (results.length === 0) return [];
-
-  const first = results[0];
-  if (Array.isArray(first)) return first.filter(isRecord);
-  return results.filter(isRecord);
+function toFarsCollisionDateFromParts(fields: Map<string, unknown>, fallbackYear: number): string | null {
+  const year = toCount(pick(fields, "YEAR", "CaseYear")) || fallbackYear;
+  const month = toCount(pick(fields, "MONTH"));
+  const day = toCount(pick(fields, "DAY"));
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+    ? date.toISOString().slice(0, 10)
+    : null;
 }
 
-function buildYearUrl(bbox: StudyAreaBbox, year: number): string {
-  const params = new URLSearchParams({
-    fromCaseYear: String(year),
-    toCaseYear: String(year),
-    minLat: String(bbox.minLat),
-    maxLat: String(bbox.maxLat),
-    minLong: String(bbox.minLon),
-    maxLong: String(bbox.maxLon),
-    format: "json",
-  });
-  return `${FARS_BASE}?${params.toString()}`;
+export function farsAnnualArchiveUrl(year: number): string {
+  return `${FARS_DOWNLOAD_BASE}/${year}/National/FARS${year}NationalCSV.zip`;
 }
 
 export function toFarsCrashRecord(row: Record<string, unknown>, year: number): CrashRecord | null {
@@ -242,7 +234,9 @@ export function toFarsCrashRecord(row: Record<string, unknown>, year: number): C
   // only through the matched/geocoded totals.
   if (latitude === null || longitude === null || caseId === undefined) return null;
 
-  const collisionDate = toFarsCollisionDate(pick(fields, "CRASH_DT", "CrashDate", "CRASHDATE", "DATE"));
+  const collisionDate =
+    toFarsCollisionDate(pick(fields, "CRASH_DT", "CrashDate", "CRASHDATE", "DATE")) ??
+    toFarsCollisionDateFromParts(fields, caseYear);
   const killedCount = Math.max(1, toCount(pick(fields, "FATALS", "TOTALFATALS")));
   const stateFips = toStateFips(pick(fields, "STATE", "STATECODE", "STATEFIPS"));
 
@@ -278,9 +272,84 @@ export function toFarsCrashRecord(row: Record<string, unknown>, year: number): C
   };
 }
 
+function withinBbox(record: CrashRecord, bbox: StudyAreaBbox): boolean {
+  return (
+    record.longitude >= bbox.minLon &&
+    record.longitude <= bbox.maxLon &&
+    record.latitude >= bbox.minLat &&
+    record.latitude <= bbox.maxLat
+  );
+}
+
+/** Parse and spatially filter the official annual accident table. */
+export function parseFarsAnnualCsv(
+  csv: string,
+  year: number,
+  bbox: StudyAreaBbox
+): { matchedTotal: number; records: CrashRecord[] } {
+  const rows = parseCsv(csv, {
+    bom: true,
+    columns: true,
+    relax_column_count: true,
+    skip_empty_lines: true,
+  }) as unknown[];
+  const records: CrashRecord[] = [];
+
+  for (const row of rows) {
+    if (!isRecord(row)) continue;
+    const record = toFarsCrashRecord(row, year);
+    if (record && withinBbox(record, bbox)) records.push(record);
+  }
+
+  return { matchedTotal: records.length, records };
+}
+
+async function fetchWithTimeout(url: string, signal?: AbortSignal): Promise<Response | null> {
+  const controller = new AbortController();
+  const onAbort = () => controller.abort(signal?.reason);
+  signal?.addEventListener("abort", onAbort, { once: true });
+  const timeout = setTimeout(() => controller.abort("FARS annual archive timed out"), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, { cache: "force-cache", signal: controller.signal });
+    return response.ok ? response : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener("abort", onAbort);
+  }
+}
+
+async function fetchFarsAnnualCsv(year: number, signal?: AbortSignal): Promise<string | null> {
+  const response = await fetchWithTimeout(farsAnnualArchiveUrl(year), signal);
+  if (!response) return null;
+
+  const declaredBytes = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declaredBytes) && declaredBytes > MAX_ARCHIVE_BYTES) return null;
+
+  const archiveBytes = await response.arrayBuffer();
+  if (archiveBytes.byteLength > MAX_ARCHIVE_BYTES) return null;
+
+  try {
+    const archive = await JSZip.loadAsync(archiveBytes);
+    const accidentEntry = Object.values(archive.files).find(
+      (entry) => !entry.dir && /(?:^|\/)accident\.csv$/i.test(entry.name)
+    );
+    if (!accidentEntry) return null;
+
+    const csv = await accidentEntry.async("string");
+    return Buffer.byteLength(csv, "utf8") <= MAX_ACCIDENT_CSV_BYTES ? csv : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashFetchResult> {
   const years = Array.from(new Set(params.years))
-    .filter((year) => Number.isFinite(year) && year >= FARS_EARLIEST_YEAR)
+    .filter(
+      (year) => Number.isFinite(year) && year >= FARS_EARLIEST_YEAR && year <= LATEST_PUBLISHED_YEAR
+    )
     .sort((a, b) => b - a);
 
   const records: CrashRecord[] = [];
@@ -289,24 +358,14 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
   let geocodedTotal = 0;
 
   for (const year of years) {
-    const payload = await fetchJsonWithRetry<FarsResponse>(
-      buildYearUrl(params.bbox, year),
-      params.signal ? { signal: params.signal } : undefined,
-      { timeoutMs: REQUEST_TIMEOUT_MS, retries: 1 }
-    );
-
-    const rows = parseFarsResults(payload);
-    // A year that failed or answered in an unknown shape is not a year with no
-    // fatalities. Skip it so it cannot dilute the density denominator, and let
-    // the all-years check below decide whether the source is down.
-    if (rows === null) continue;
+    const csv = await fetchFarsAnnualCsv(year, params.signal);
+    if (csv === null) continue;
+    const parsed = parseFarsAnnualCsv(csv, year, params.bbox);
 
     yearsAnswered.push(year);
-    matchedTotal += rows.length;
+    matchedTotal += parsed.matchedTotal;
 
-    for (const row of rows) {
-      const record = toFarsCrashRecord(row, year);
-      if (!record) continue;
+    for (const record of parsed.records) {
       geocodedTotal += 1;
       if (records.length < (params.maxRecords ?? Number.POSITIVE_INFINITY)) {
         records.push(record);
@@ -317,7 +376,7 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
   if (years.length > 0 && yearsAnswered.length === 0) {
     throw new CrashSourceUnavailableError(
       FARS_SOURCE_ID,
-      "NHTSA CrashAPI returned no usable response for any requested year"
+      "NHTSA annual FARS files returned no usable response for any published requested year"
     );
   }
 

@@ -61,6 +61,7 @@ import { useExploreStudyArea } from "./use-explore-study-area";
 import { useExploreMapInstance } from "./use-explore-map-instance";
 import { useExploreMapLayerEffects } from "./use-explore-map-layer-effects";
 import { useExploreRunHistory } from "./use-explore-run-history";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 
 /**
  * Everything Analysis Studio does once the page is on screen.
@@ -365,8 +366,9 @@ export function ExploreWorkbench({
     [workspaceId, corridorGeojson]
   );
 
-  const runAnalysis = async (candidateQueryText?: string) => {
+  const runAnalysis = async (candidateQueryText?: string, candidateProjectId?: string) => {
     const queryForRun = candidateQueryText?.trim() || trimmedQueryText;
+    const projectForRun = candidateProjectId === undefined ? selectedProjectId : candidateProjectId;
     const blocked = describeRunAnalysisBlock({ workspaceId, queryText: queryForRun, corridorGeojson });
     if (blocked) {
       setError(blocked);
@@ -391,7 +393,7 @@ export function ExploreWorkbench({
           workspaceId,
           queryText: queryForRun,
           corridorGeojson,
-          ...(selectedProjectId ? { projectId: selectedProjectId } : {}),
+          ...(projectForRun ? { projectId: projectForRun } : {}),
         }),
       });
 
@@ -403,6 +405,7 @@ export function ExploreWorkbench({
       const payload = (await response.json()) as AnalysisResult;
       setAnalysisResult({
         ...payload,
+        projectId: projectForRun || null,
         title: buildRunTitle(queryForRun),
         createdAt: new Date().toISOString(),
       });
@@ -459,6 +462,7 @@ export function ExploreWorkbench({
     analysisResult,
     setAnalysisResult,
     setQueryText,
+    setSelectedProjectId,
     setCorridorGeojson,
     setError,
     setTractMetric,
@@ -794,8 +798,11 @@ export function ExploreWorkbench({
             This is a separate tool from Models, Scenarios and Model Validation. Those three are one
             job in a set order; this page is a map for looking at one corridor, and it keeps its own
             history.{" "}
-            <Link href="/models" className="underline underline-offset-2 hover:text-white">
-              See how the modeling work fits together
+            <Link
+              href={`${openedForProject ? withPlanningContext("/models", openedForProject.id) : "/models"}#${openedForProject ? "project-comparison-starter" : "choose-project-comparison"}`}
+              className="underline underline-offset-2 hover:text-white"
+            >
+              Start the project build comparison
             </Link>
             .
           </p>
@@ -1125,6 +1132,7 @@ export function ExploreWorkbench({
           currentMapViewState={currentMapViewState}
           onClearComparison={clearComparison}
           onError={setError}
+          projectId={selectedProjectId || null}
         />
 
         <ExploreRunHistoryPanel

@@ -47,7 +47,9 @@ export const ANALYSIS_STEP_IDS = [
   "comparison",
   "model",
   "run",
+  "activitysim_run",
   "check",
+  "packet",
   "claim",
 ] as const;
 
@@ -90,38 +92,52 @@ export const ANALYSIS_STEPS: readonly AnalysisStep[] = [
   },
   {
     id: "network",
-    title: "Bring in a road network",
-    what: "Upload the streets and highways for that area. Travel times and distances are read off this, so nothing can be run until it is here.",
+    title: "Use one shared road network",
+    what: "Use a versioned package or let the workers build a labeled OpenStreetMap snapshot at launch. OpenPlan saves its exact digest and refuses the comparison if the methods did not share it.",
     href: "/models#network-packages",
-    hrefLabel: "Upload a network",
+    hrefLabel: "Choose the shared network",
   },
   {
     id: "comparison",
-    title: "Say what you are comparing",
-    what: "A scenario set holds the alternatives you want to weigh against each other — today, a build option, a no-build option. Results are filed against these.",
+    title: "Set one baseline and one build scenario",
+    what: "A scenario set holds the no-build baseline and the build option. Each side needs its own saved entry before either result can be compared.",
     href: "/scenarios",
     hrefLabel: "Set up a comparison",
   },
   {
     id: "model",
-    title: "Describe the model",
-    what: "Write down which model this is, what it assumes, and which project and scenario set it serves. Nobody can review a number whose method is not written down.",
+    title: "Describe both methods",
+    what: "Create separate AequilibraE and ActivitySim models for this project and scenario set. Keep each method's assumptions and limits distinct.",
     href: "/models#create-model",
     hrefLabel: "Describe a model",
   },
   {
     id: "run",
-    title: "Run it",
-    what: "Open the model and start a run. OpenPlan keeps an exact copy of what went in, so a number can always be tied back to the run that produced it.",
+    title: "Run AequilibraE",
+    what: "Run the assignment method against the shared network and saved scenarios. Worker absence, a failed run, or unloaded links must remain visible.",
     href: "/models",
-    hrefLabel: "Open a model and run it",
+    hrefLabel: "Open the AequilibraE model",
+  },
+  {
+    id: "activitysim_run",
+    title: "Run ActivitySim separately",
+    what: "Run the activity-based method as its own job. Do not average it with AequilibraE or hide disagreement between the two methods.",
+    href: "/models",
+    hrefLabel: "Open the ActivitySim model",
   },
   {
     id: "check",
-    title: "Check it against traffic counts you already have",
-    what: "Compare the run against counts collected in the field. Until that comparison clears, nothing here has been measured against the real world.",
+    title: "Validate each result against observed counts",
+    what: "Compare each method with field counts and keep every missing link, failed check, and unavailable source visible. A completed worker job is not a passed validation.",
     href: "/county-runs",
     hrefLabel: "Check a run",
+  },
+  {
+    id: "packet",
+    title: "Save the unaveraged comparison report",
+    what: "Put baseline and build results from both methods side by side in plain language. Preserve disagreements and every uncertainty; never replace them with one averaged number.",
+    href: "/scenarios",
+    hrefLabel: "Save and review the comparison",
   },
   {
     id: "claim",
@@ -152,11 +168,20 @@ export const CLAIM_STEP_ID: AnalysisStepId = "claim";
 export type AnalysisSequenceFacts = {
   readonly areaLabel: string | null;
   readonly networkCount: number;
+  /** A registered managed basis; its exact snapshot remains unavailable until launch succeeds. */
+  readonly managedNetworkBasisCount?: number;
+  /** Both guided method records use the managed comparison contract. */
+  readonly guidedProjectComparison?: boolean;
   readonly scenarioSetCount: number;
   readonly modelCount: number;
+  readonly aequilibraeModelCount?: number;
+  readonly activitySimModelCount?: number;
   readonly runCount: number;
+  readonly aequilibraeRunCount?: number;
+  readonly activitySimRunCount?: number;
   /** A county run that reached validated-screening AND cleared its gate. */
   readonly checkedRunCount: number;
+  readonly comparisonPacketCount?: number;
   readonly unreadable: readonly AnalysisStepId[];
 };
 
@@ -175,15 +200,25 @@ function factFor(step: AnalysisStepId, facts: AnalysisSequenceFacts): boolean | 
     case "area":
       return Boolean(facts.areaLabel);
     case "network":
-      return facts.networkCount > 0;
+      return facts.networkCount > 0 || (facts.managedNetworkBasisCount ?? 0) > 0;
     case "comparison":
       return facts.scenarioSetCount > 0;
     case "model":
-      return facts.modelCount > 0;
+      return typeof facts.aequilibraeModelCount === "number" && typeof facts.activitySimModelCount === "number"
+        ? facts.aequilibraeModelCount > 0 && facts.activitySimModelCount > 0
+        : facts.modelCount > 0;
     case "run":
-      return facts.runCount > 0;
+      return facts.guidedProjectComparison
+        ? (facts.aequilibraeRunCount ?? 0) >= 2
+        : (facts.aequilibraeRunCount ?? facts.runCount) > 0;
+    case "activitysim_run":
+      return facts.guidedProjectComparison
+        ? (facts.activitySimRunCount ?? 0) >= 2
+        : (facts.activitySimRunCount ?? 0) > 0;
     case "check":
       return facts.checkedRunCount > 0;
+    case "packet":
+      return (facts.comparisonPacketCount ?? 0) > 0;
     case "claim":
       // Not a task and never "done". What it says is true whatever else is.
       return false;
@@ -207,19 +242,47 @@ function standingFor(
     case "area":
       return done ? `Set to ${facts.areaLabel}.` : "Nothing chosen yet.";
     case "network":
-      return done ? `${plural(facts.networkCount, "network here", "networks here")}.` : "None here yet.";
+      return done
+        ? (facts.managedNetworkBasisCount ?? 0) > 0
+          ? "Worker-managed OpenStreetMap basis registered. Its exact snapshot and digest remain unavailable until launch succeeds."
+          : `${plural(facts.networkCount, "network here", "networks here")}.`
+        : "No shared road network is selected yet.";
     case "comparison":
       return done
         ? `${plural(facts.scenarioSetCount, "scenario set", "scenario sets")}.`
         : "None here yet.";
     case "model":
-      return done ? `${plural(facts.modelCount, "model", "models")} described.` : "None described yet.";
+      return done
+        ? typeof facts.aequilibraeModelCount === "number" && typeof facts.activitySimModelCount === "number"
+          ? "Separate AequilibraE and ActivitySim method records are on file."
+          : `${plural(facts.modelCount, "model", "models")} described.`
+        : facts.modelCount > 0
+          ? "One method is described, but the separate AequilibraE and ActivitySim records are not both on file."
+          : "None described yet.";
     case "run":
-      return done ? `${plural(facts.runCount, "run", "runs")} finished or under way.` : "Nothing has been run yet.";
+      return done
+        ? facts.guidedProjectComparison
+          ? "The AequilibraE baseline and build runs both succeeded."
+          : `${plural(facts.aequilibraeRunCount ?? facts.runCount, "AequilibraE run", "AequilibraE runs")} finished or under way.`
+        : facts.guidedProjectComparison
+          ? `${facts.aequilibraeRunCount ?? 0}/2 successful AequilibraE scenario runs are on file.`
+          : "No AequilibraE run is on file yet.";
+    case "activitysim_run":
+      return done
+        ? facts.guidedProjectComparison
+          ? "The separate ActivitySim baseline and build jobs both succeeded."
+          : `${plural(facts.activitySimRunCount ?? 0, "ActivitySim run", "ActivitySim runs")} finished or under way.`
+        : facts.guidedProjectComparison
+          ? `${facts.activitySimRunCount ?? 0}/2 successful ActivitySim scenario jobs are on file.`
+          : "No ActivitySim run is on file yet.";
     case "check":
       return done
         ? `${plural(facts.checkedRunCount, "run has", "runs have")} been checked against field counts.`
         : "Nothing has been checked against field counts yet.";
+    case "packet":
+      return done
+        ? `${plural(facts.comparisonPacketCount ?? 0, "saved comparison report", "saved comparison reports")}.`
+        : "No unaveraged comparison report is on file yet.";
     case "claim":
       return facts.checkedRunCount > 0
         ? "A checked run is on file. It is still a screening result, and the sentence above is still what it supports."

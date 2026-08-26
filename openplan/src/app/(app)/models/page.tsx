@@ -6,8 +6,10 @@ import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { NetworkPackagesPanel } from "@/app/(app)/models/_components/network-packages-panel";
 import { ModelCreator } from "@/components/models/model-creator";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
 import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
+import { ProjectComparisonStarter } from "@/components/models/project-comparison-starter";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -25,6 +27,7 @@ import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
 
 export const metadata = moduleMetadata("Models");
 
@@ -344,6 +347,15 @@ export default async function ModelsPage({
         .find((project) => project.id === activeFilters.projectId)
         ?.name?.trim() || null
     : null;
+  const planningContext = resolvePlanningContext(
+    activeFilters.projectId,
+    activeFilters.projectId
+      ? ((projectsData ?? []) as Array<{ id: string; name: string | null }>).find(
+          (project) => project.id === activeFilters.projectId,
+        )
+      : null,
+    projectsError,
+  );
 
   // Named in the reader's terms so the empty state can say what it is filtered
   // TO, not merely that it is filtered.
@@ -371,11 +383,61 @@ export default async function ModelsPage({
 
   // The order of the analysis work, said the same way on every page in the
   // group. This page is where a model gets described — step four of seven.
-  const sequenceFacts = await loadAnalysisSequenceFacts(supabase, membership.workspace_id);
+  const sequenceFacts = await loadAnalysisSequenceFacts(
+    supabase,
+    membership.workspace_id,
+    planningContext.status === "active" ? planningContext.project.id : null
+  );
 
   return (
     <section className="module-page">
-      <AnalysisSequenceStrip facts={sequenceFacts} currentStepId="model" />
+      <PlanningContextStrip context={planningContext} />
+      {planningContext.status === "active" ? (
+        <ProjectComparisonStarter
+          projectId={planningContext.project.id}
+          projectName={planningContext.project.name}
+          facts={sequenceFacts}
+        />
+      ) : (
+        <section
+          id="choose-project-comparison"
+          className="mb-6 border-l-4 border-sky-500 bg-sky-50/70 px-5 py-4 dark:bg-sky-950/20"
+          data-testid="project-comparison-project-picker"
+        >
+          <h2 className="text-lg font-semibold text-foreground">Start with the project you are comparing</h2>
+          <p className="mt-2 max-w-[44rem] text-sm leading-6 text-muted-foreground">
+            Choose one project. OpenPlan will keep it selected while it sets up the no-build baseline,
+            build scenario, shared worker-built road network, and separate AequilibraE and ActivitySim runs.
+          </p>
+          {projectsReadFailed ? (
+            <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">
+              Projects could not be read, so no project can be selected without guessing.
+            </p>
+          ) : (projectsData ?? []).length > 0 ? (
+            <form action="/models" method="get" className="mt-4 flex max-w-xl flex-wrap items-end gap-3">
+              <label className="min-w-64 flex-1 text-sm font-medium text-foreground">
+                Project
+                <select name="projectId" required defaultValue="" className="module-select mt-1 w-full">
+                  <option value="" disabled>Select a project</option>
+                  {(projectsData ?? []).map((project) => (
+                    <option key={project.id} value={project.id}>{project.name ?? "Untitled project"}</option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit" className="module-intro-action">Start project comparison</button>
+            </form>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">
+              No projects are available yet. Create the project first so its place and cost stay attached to the comparison.
+            </p>
+          )}
+        </section>
+      )}
+      <AnalysisSequenceStrip
+        facts={sequenceFacts}
+        currentStepId="model"
+        projectId={planningContext.status === "active" ? planningContext.project.id : null}
+      />
 
       <header className="module-header-grid">
         <article className="module-intro-card">
@@ -431,8 +493,11 @@ export default async function ModelsPage({
               section order puts the form. The full creator stays where it is —
               this jumps to it. */}
           <div className="module-intro-actions">
-            <a className="module-intro-action" href="#create-model">
-              New model
+            <a
+              className="module-intro-action"
+              href={planningContext.status === "active" ? "#project-comparison-starter" : "#choose-project-comparison"}
+            >
+              {planningContext.status === "active" ? "Continue project comparison" : "Start project comparison"}
             </a>
           </div>
 
@@ -490,10 +555,14 @@ export default async function ModelsPage({
             <div className="module-operator-item">Use filters to see which models are ready to review and which still need work.</div>
           </div>
           <Link
-            href="/county-runs"
+            href={
+              planningContext.status === "active"
+                ? withPlanningContext("/county-runs", planningContext.project.id)
+                : "/county-runs"
+            }
             className="module-operator-inline-link mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-200 hover:text-emerald-100"
           >
-            Stage a county-level onramp run
+            Specialist: county validation setup
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </article>
@@ -506,6 +575,7 @@ export default async function ModelsPage({
           scenarioSets={scenarioSetsData ?? []}
           projectsReadFailed={projectsReadFailed}
           scenarioSetsReadFailed={scenarioSetsReadFailed}
+          initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
         />
         </div>
 
@@ -590,7 +660,11 @@ export default async function ModelsPage({
               {models.map((model) => (
                 <CartographicSelectionLink
                   key={model.id}
-                  href={`/models/${model.id}`}
+                  href={
+                    planningContext.status === "active"
+                      ? withPlanningContext(`/models/${model.id}`, planningContext.project.id)
+                      : `/models/${model.id}`
+                  }
                   className="module-record-row is-interactive group block"
                   selection={{
                     kind: "run",

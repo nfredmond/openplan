@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
 import { __clearFetchJsonResponseCacheForTests } from "@/lib/data-sources/http";
+import { farsArchiveResponse } from "@/test/support/fars-archive";
 
 // Reno, NV: lon ~-119.8 sits INSIDE the coarse California rectangle
 // (-124.6..-114) but is entirely out of state — the exact shape that used to
@@ -30,19 +31,17 @@ function farsRecord(stCase: number, stateFips: number, lat: number, lon: number)
   return {
     ST_CASE: stCase,
     STATE: stateFips,
-    CaseYear: 2025,
+    YEAR: 2024,
     LATITUDE: lat,
     LONGITUD: lon,
     FATALS: 1,
-    CRASH_DT: "2025-03-01",
     PEDS: 0,
-    BICYCLISTS: 0,
   };
 }
 
 /**
  * Route the stubbed fetch. `ccrsRecords` is what CCRS returns for its year query;
- * `farsRecords` is what FARS returns for case year 2025 (empty for other years).
+ * `farsRecords` is what the 2024 FARS annual file returns (empty for other years).
  */
 function stubFetch(opts: {
   ccrsRecords: Array<Record<string, unknown>>;
@@ -53,9 +52,9 @@ function stubFetch(opts: {
 }) {
   const fetchMock = vi.fn(async (input: unknown) => {
     const url = String(input);
-    if (url.includes("crashviewer.nhtsa")) {
-      if (opts.farsFails) return jsonResponse({ nope: true }); // unrecognized → FARS throws
-      return jsonResponse({ Results: url.includes("fromCaseYear=2025") ? opts.farsRecords : [] });
+    if (url.includes("static.nhtsa.gov")) {
+      if (opts.farsFails) return new Response("", { status: 403 });
+      return farsArchiveResponse(url.includes("FARS2024NationalCSV.zip") ? opts.farsRecords : []);
     }
     if (opts.ccrsFails) return jsonResponse({ nope: true }); // unrecognized → CCRS throws
     if (url.includes("package_show")) return jsonResponse(CCRS_PACKAGE_BODY);

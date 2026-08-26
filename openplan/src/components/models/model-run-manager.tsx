@@ -53,6 +53,7 @@ import { describeElapsed, latestConvergence, summarizeRunProgress } from "@/lib/
 import { useTheme } from "@/components/theme-provider";
 import {
   evaluateWorkerHealthLaunchGate,
+  reconcileModelRunExecutionOutlook,
   type ModelingWorkerHealth,
 } from "@/lib/models/worker-health";
 
@@ -219,6 +220,15 @@ type ModelRunManagerProps = {
    * that has not loaded look identical, and the first is a fact.
    */
   transitFeeds?: TransitFeedOption[];
+  /**
+   * The method this model record represents. Guided project comparisons use
+   * this to open on AequilibraE or ActivitySim instead of the unrelated
+   * deterministic corridor screen. Other model records retain that historical
+   * default.
+   */
+  initialEngineKey?: ManagedRunModeKey;
+  /** The scenario this model opens ready to run; normally the saved baseline. */
+  initialScenarioEntryId?: string;
 };
 
 function fmtDateTime(value: string | null | undefined) {
@@ -378,6 +388,8 @@ export function ModelRunManager({
   modelingWorkerHealth = null,
   workspaceId = null,
   transitFeeds = [],
+  initialEngineKey = "deterministic_corridor_v1",
+  initialScenarioEntryId = "",
 }: ModelRunManagerProps) {
   const router = useRouter();
   const [title, setTitle] = useState(`${modelTitle} run`);
@@ -387,9 +399,9 @@ export function ModelRunManager({
   // sensible screening label; the operator can edit it.
   const [queryText, setQueryText] = useState(defaultQueryText || `Screening run — ${modelTitle}`);
   const [corridorText, setCorridorText] = useState(defaultCorridorText);
-  const [scenarioEntryId, setScenarioEntryId] = useState("");
+  const [scenarioEntryId, setScenarioEntryId] = useState(initialScenarioEntryId);
   const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);
-  const [engineKey, setEngineKey] = useState<ManagedRunModeKey>("deterministic_corridor_v1");
+  const [engineKey, setEngineKey] = useState<ManagedRunModeKey>(initialEngineKey);
   const [zoneGeography, setZoneGeography] = useState<"tract" | "block_group">("tract");
   // Per-run count-calibration opt-in (aequilibrae / behavioral_demand). Default
   // off — OpenPlan ships an uncalibrated screening model.
@@ -413,6 +425,10 @@ export function ModelRunManager({
   // look at it — were rendered identically as "queued", and the planner learned
   // which one it had been fifteen minutes later from the reaper, or never.
   const [executionOutlook, setExecutionOutlook] = useState<ModelRunExecutionOutlook | null>(null);
+  const displayedExecutionOutlook = useMemo(
+    () => reconcileModelRunExecutionOutlook({ engineKey, health: modelingWorkerHealth, outlook: executionOutlook }),
+    [engineKey, executionOutlook, modelingWorkerHealth],
+  );
   // Set only by the planner, and only from the refusal below. The app cannot
   // observe a worker being started — it can only be told — so the person who
   // did it is the one who clears the refusal.
@@ -1077,7 +1093,7 @@ export function ModelRunManager({
                       checking this installation for runs", which is plainly
                       false about a run a pushed worker has already accepted. It still renders when no outlook exists,
                       which is the pre-push behaviour, unchanged. */}
-                  {executionOutlook
+                  {displayedExecutionOutlook
                     ? null
                     : describeWorkerQueueRisk(modelingWorkerDeclaration, workerAbsenceEvidence)}
                 </p>
@@ -1090,26 +1106,26 @@ export function ModelRunManager({
               it, a poller might, or nothing on the deployment ever would. The
               copy lives in run-dispatch.ts so each sentence can be tested for
               what it claims without rendering anything. */}
-          {executionOutlook ? (
+          {displayedExecutionOutlook ? (
             <div
               data-testid="model-run-execution-outlook"
-              data-outlook-state={executionOutlook.state}
+              data-outlook-state={displayedExecutionOutlook.state}
               className={
-                executionOutlook.state === "accepted"
+                displayedExecutionOutlook.state === "accepted"
                   ? "rounded-[0.5rem] border border-emerald-300/80 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
-                  : executionOutlook.state === "unattended"
+                  : displayedExecutionOutlook.state === "unattended"
                     ? "rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
-                    : executionOutlook.state === "waiting_for_poller"
+                    : displayedExecutionOutlook.state === "waiting_for_poller"
                       ? "rounded-[0.5rem] border border-sky-300/80 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200"
                       : "rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
               }
             >
-              <p className="font-semibold">{executionOutlook.headline}</p>
-              <p className="mt-2">{executionOutlook.detail}</p>
+              <p className="font-semibold">{displayedExecutionOutlook.headline}</p>
+              <p className="mt-2">{displayedExecutionOutlook.detail}</p>
               {/* Run history is evidence the dispatch result cannot see, so it
                   is added rather than replaced — a worker that accepted this run
                   does not explain the ones nothing ever started. */}
-              {workerAbsenceEvidence && executionOutlook.state !== "accepted" ? (
+              {workerAbsenceEvidence && displayedExecutionOutlook.state !== "accepted" ? (
                 <p className="mt-2">{workerAbsenceEvidence}</p>
               ) : null}
             </div>

@@ -3,7 +3,7 @@
 <!-- openplan-planning-capability-matrix
 review_date: 2026-08-25
 review_by: 2026-09-25
-current_release: v0.34.0
+current_release: v0.35.0
 capabilities:
 - long-range-transportation-and-regional-planning
 - land-use-comprehensive-and-community-planning
@@ -41,6 +41,12 @@ for the whole product. The current inventory is deliberately conservative:
 documentation, code, or a green unit test is not enough to mark a cell
 `proven`.
 
+The executable source of this inventory is
+[`US_PLANNING_CAPABILITY_REGISTRY.json`](US_PLANNING_CAPABILITY_REGISTRY.json).
+This page explains the current gaps; the direction check reads the registry and
+fails when a required planner, organization, state, capability, artifact,
+accessibility, or operations cell disappears or the review expires.
+
 ## Status rules
 
 - **Proven:** a representative planner reached the intended outcome from a
@@ -56,7 +62,7 @@ documentation, code, or a green unit test is not enough to mark a cell
 Only `proven` passes v1. An evidence link and review date are required when a
 cell changes to `proven`; prose confidence is not evidence.
 
-## Practice coverage at v0.34.0
+## Practice coverage at v0.35.0
 
 | Core planning practice | Current status | Existing foundation | Principal proof gap |
 |---|---|---|---|
@@ -70,7 +76,7 @@ cell changes to `proven`; prose confidence is not evidence.
 | GIS, data stewardship, documents, reports, and public records | Partial | Imports, evidence custody, reports, provenance | GeoPackage and full external round-trip, records lifecycle, cross-module source reuse |
 | Development review, implementation, and interdepartmental handoff | Not assessed | Project and land-use primitives may be reusable | Product home, workflow definition, responsibility/approval handoffs, and artifacts |
 
-## Organization coverage at v0.34.0
+## Organization coverage at v0.35.0
 
 | Organization context | Current status | Principal proof gap |
 |---|---|---|
@@ -82,7 +88,7 @@ cell changes to `proven`; prose confidence is not evidence.
 | Consultancies | Partial | Multi-client separation, deliverable review, records transfer, and client acceptance |
 | Non-profits, community groups, and independent planners | Not assessed | Accessible self-service workflows, limited-capacity operations, and durable handoff |
 
-## Geography coverage at v0.34.0
+## Geography coverage at v0.35.0
 
 No state is yet `proven` against the complete v1 contract. California has the
 deepest configured legal and data support and is still `partial`. The other
@@ -90,8 +96,8 @@ forty-nine states and the District of Columbia have national foundations but
 have not been assessed journey-by-journey, so they are `not assessed` rather
 than optimistically marked partial. Territories are also `not assessed`.
 
-The state ledger must be generated from maintained registry data, not a
-hardcoded Markdown list. It must cover state and territory sources, laws,
+The state ledger is now maintained in the machine-readable registry, not a
+hardcoded Markdown list. It must grow to cover state and territory sources, laws,
 agencies, identifiers, limitations, model strata, journeys, and artifacts. A
 future aggregate view may summarize it, but the release gate must read the
 underlying cells and fail on any non-proven required geography.

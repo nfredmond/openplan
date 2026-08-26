@@ -26,10 +26,12 @@ const jetBrainsMono = JetBrains_Mono({
   variable: "--font-mono-sys",
 });
 
+const siteOrigin = resolveSiteOrigin();
+const rootCanonicalUrl = siteOrigin?.toString() ?? null;
+const rootSocialImageUrl = siteOrigin ? new URL(OPENPLAN_OG_IMAGE_PATH, siteOrigin).toString() : null;
+
 export const metadata: Metadata = {
-  // Undefined when unconfigured, so Next infers THIS deployment's origin rather
-  // than inheriting a hardcoded one. See resolveSiteOrigin.
-  metadataBase: resolveSiteOrigin(),
+  metadataBase: siteOrigin,
   applicationName: OPENPLAN_SITE_NAME,
   title: {
     default: "OpenPlan | Free, open-source planning software",
@@ -40,32 +42,34 @@ export const metadata: Metadata = {
   creator: OPENPLAN_SITE_NAME,
   publisher: OPENPLAN_SITE_NAME,
   category: "civic planning software",
-  alternates: {
-    canonical: "/",
-  },
+  ...(rootCanonicalUrl ? { alternates: { canonical: rootCanonicalUrl } } : {}),
   openGraph: {
     title: "OpenPlan | Free, open-source planning software",
     description:
       "Inspectable planning software for maps, engagement, project records, and delivery packets. Every number carries its provenance.",
-    url: "/",
+    ...(rootCanonicalUrl ? { url: rootCanonicalUrl } : {}),
     siteName: OPENPLAN_SITE_NAME,
     type: "website",
     locale: "en_US",
-    images: [
-      {
-        url: OPENPLAN_OG_IMAGE_PATH,
-        width: 1200,
-        height: 630,
-        alt: "OpenPlan: free, open-source planning software for agencies, tribes, counties, cities, and consultants.",
-      },
-    ],
+    ...(rootSocialImageUrl
+      ? {
+          images: [
+            {
+              url: rootSocialImageUrl,
+              width: 1200,
+              height: 630,
+              alt: "OpenPlan: free, open-source planning software for agencies, tribes, counties, cities, and consultants.",
+            },
+          ],
+        }
+      : {}),
   },
   twitter: {
     card: "summary_large_image",
     title: "OpenPlan | Free, open-source planning software",
     description:
       "An Apache-2.0 planning workbench for agencies, tribes, counties, cities, non-profits, and consultants. Free, with no paid tier.",
-    images: [OPENPLAN_OG_IMAGE_PATH],
+    ...(rootSocialImageUrl ? { images: [rootSocialImageUrl] } : {}),
   },
   robots: {
     index: true,

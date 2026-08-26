@@ -23,17 +23,25 @@ const FOUNDER_DEPLOYMENT = "https://openplan-natford.vercel.app";
 
 describe("site origin resolution", () => {
   const ORIGINAL = process.env.NEXT_PUBLIC_SITE_URL;
+  const ORIGINAL_VERCEL_PRODUCTION = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const ORIGINAL_VERCEL_URL = process.env.VERCEL_URL;
 
   beforeEach(() => {
     delete process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    delete process.env.VERCEL_URL;
   });
 
   afterEach(() => {
     if (ORIGINAL === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
     else process.env.NEXT_PUBLIC_SITE_URL = ORIGINAL;
+    if (ORIGINAL_VERCEL_PRODUCTION === undefined) delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    else process.env.VERCEL_PROJECT_PRODUCTION_URL = ORIGINAL_VERCEL_PRODUCTION;
+    if (ORIGINAL_VERCEL_URL === undefined) delete process.env.VERCEL_URL;
+    else process.env.VERCEL_URL = ORIGINAL_VERCEL_URL;
   });
 
-  it("is undefined when unconfigured, so the platform supplies THIS deployment's origin", () => {
+  it("is undefined when a self-hosted deployment has not configured its public origin", () => {
     expect(resolveSiteOrigin()).toBeUndefined();
   });
 
@@ -51,6 +59,11 @@ describe("site origin resolution", () => {
     expect(resolveSiteOrigin()?.origin).toBe("https://plan.nevadacountyca.gov");
   });
 
+  it("uses Vercel's production host when no public alias is configured", () => {
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "openplan-agency.vercel.app";
+    expect(resolveSiteOrigin()?.origin).toBe("https://openplan-agency.vercel.app");
+  });
+
   it("returns undefined for a malformed value rather than making it canonical", () => {
     process.env.NEXT_PUBLIC_SITE_URL = "http://";
     expect(resolveSiteOrigin()).toBeUndefined();
@@ -63,18 +76,49 @@ describe("site origin resolution", () => {
 });
 
 describe("OpenPlan public metadata", () => {
-  it("keeps page metadata path-relative so it resolves against whatever origin serves it", () => {
+  const ORIGINAL = process.env.NEXT_PUBLIC_SITE_URL;
+  const ORIGINAL_VERCEL_PRODUCTION = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  const ORIGINAL_VERCEL_URL = process.env.VERCEL_URL;
+
+  afterEach(() => {
+    if (ORIGINAL === undefined) delete process.env.NEXT_PUBLIC_SITE_URL;
+    else process.env.NEXT_PUBLIC_SITE_URL = ORIGINAL;
+    if (ORIGINAL_VERCEL_PRODUCTION === undefined) delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    else process.env.VERCEL_PROJECT_PRODUCTION_URL = ORIGINAL_VERCEL_PRODUCTION;
+    if (ORIGINAL_VERCEL_URL === undefined) delete process.env.VERCEL_URL;
+    else process.env.VERCEL_URL = ORIGINAL_VERCEL_URL;
+  });
+
+  it("generates absolute canonical and social URLs from the configured public application URL", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "https://plan.nevadacountyca.gov";
     const metadata = buildOpenPlanPublicMetadata({
       title: "OpenPlan Examples",
       description: "Inspectable planning workflows and proof packets.",
       path: "/examples",
     });
 
-    expect(metadata.alternates?.canonical).toBe("/examples");
-    expect(metadata.openGraph?.url).toBe("/examples");
+    expect(metadata.alternates?.canonical).toBe("https://plan.nevadacountyca.gov/examples");
+    expect(metadata.openGraph?.url).toBe("https://plan.nevadacountyca.gov/examples");
     expect(metadata.openGraph?.siteName).toBe(OPENPLAN_SITE_NAME);
     expect(metadata.openGraph?.images).toEqual([
-      expect.objectContaining({ url: OPENPLAN_OG_IMAGE_PATH }),
+      expect.objectContaining({ url: `https://plan.nevadacountyca.gov${OPENPLAN_OG_IMAGE_PATH}` }),
     ]);
+    expect(metadata.twitter?.images).toEqual([`https://plan.nevadacountyca.gov${OPENPLAN_OG_IMAGE_PATH}`]);
+  });
+
+  it("omits unsupported URLs instead of emitting relative values that Next resolves to localhost", () => {
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+    delete process.env.VERCEL_URL;
+    const metadata = buildOpenPlanPublicMetadata({
+      title: "OpenPlan Examples",
+      description: "Inspectable planning workflows and proof packets.",
+      path: "/examples",
+    });
+
+    expect(metadata.alternates).toBeUndefined();
+    expect(metadata.openGraph?.url).toBeUndefined();
+    expect(metadata.openGraph?.images).toBeUndefined();
+    expect(metadata.twitter?.images).toBeUndefined();
   });
 });

@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { DecisionUseDisclosure } from "@/lib/analysis/decision-use";
 import type { AnalysisResult } from "./_types";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 import type {
   MapViewSummaryItem,
   ResultScoreTile,
@@ -35,6 +36,7 @@ type ExploreCurrentResultCardProps = {
   comparisonViewDifferenceCount: number;
   onExportMetrics: () => void;
   onExportGeojson: () => void;
+  projectId?: string | null;
 };
 
 export function ExploreCurrentResultCard({
@@ -54,6 +56,7 @@ export function ExploreCurrentResultCard({
   comparisonViewDifferenceCount,
   onExportMetrics,
   onExportGeojson,
+  projectId = null,
 }: ExploreCurrentResultCardProps) {
   return (
     <Card
@@ -190,13 +193,46 @@ export function ExploreCurrentResultCard({
             <p className="mt-2 text-xs leading-5 text-slate-200/85">
               {CORRIDOR_ANALYSIS_DOES_NOT_ANSWER}{" "}
               <Link
-                href={CORRIDOR_ANALYSIS_TRAFFIC_HREF}
+                href={withPlanningContext(CORRIDOR_ANALYSIS_TRAFFIC_HREF, projectId)}
                 className="underline underline-offset-2"
               >
                 Run a travel model
               </Link>
               .
             </p>
+            {projectId ? (
+              <div className="mt-4 border-t border-amber-200/15 pt-4" data-testid="project-effect-answer">
+                <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-amber-200/80">
+                  Answer to the project question
+                </p>
+                <dl className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <dt className="text-xs font-semibold text-slate-100">Traffic after the build</dt>
+                    <dd className="mt-1 text-xs leading-5 text-slate-300/85">
+                      Not measured by this run. These are current conditions, not a project forecast.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold text-slate-100">Change in miles driven</dt>
+                    <dd className="mt-1 text-xs leading-5 text-slate-300/85">
+                      Not measured by this run. No checked baseline-versus-build result is attached.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold text-slate-100">Whether benefits justify cost</dt>
+                    <dd className="mt-1 text-xs leading-5 text-slate-300/85">
+                      Cannot be determined from a current-conditions screen. Do not treat the scores below as project benefits.
+                    </dd>
+                  </div>
+                </dl>
+                <Link
+                  href={withPlanningContext(CORRIDOR_ANALYSIS_TRAFFIC_HREF, projectId)}
+                  className="mt-3 inline-flex text-xs font-semibold text-amber-100 underline underline-offset-2"
+                >
+                  Start the guided baseline-versus-build setup
+                </Link>
+              </div>
+            ) : null}
           </div>
         </div>
 

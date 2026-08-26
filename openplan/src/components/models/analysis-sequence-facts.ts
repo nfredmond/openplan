@@ -6,6 +6,11 @@ import {
   placeOfRecordFromHomeGeography,
 } from "@/lib/workspaces/home-geography";
 import { isPassingCountyRunGateStatus } from "@/lib/models/county-onramp";
+import {
+  GUIDED_PROJECT_COMPARISON_MODELS,
+  isGuidedProjectComparisonModel,
+  usesGuidedWorkerNetwork,
+} from "@/lib/models/project-comparison";
 import type { AnalysisSequenceFacts, AnalysisStepId } from "@/components/models/analysis-sequence";
 
 /**
@@ -43,14 +48,17 @@ function failed(result: ReadResult): boolean {
 
 export async function loadAnalysisSequenceFacts(
   supabase: SupabaseClient,
-  workspaceId: string
+  workspaceId: string,
+  projectId?: string | null
 ): Promise<AnalysisSequenceFacts> {
+  const scenarioSetsQuery = supabase.from("scenario_sets").select("id").eq("workspace_id", workspaceId);
+  const modelsQuery = supabase.from("models").select("id, model_family, config_json").eq("workspace_id", workspaceId);
   const [workspaceResult, packagesResult, scenarioSetsResult, modelsResult, countyRunsResult] =
     await Promise.all([
       supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", workspaceId).maybeSingle(),
       supabase.from("network_packages").select("id").eq("workspace_id", workspaceId),
-      supabase.from("scenario_sets").select("id").eq("workspace_id", workspaceId),
-      supabase.from("models").select("id").eq("workspace_id", workspaceId),
+      projectId ? scenarioSetsQuery.eq("project_id", projectId) : scenarioSetsQuery,
+      projectId ? modelsQuery.eq("project_id", projectId) : modelsQuery,
       supabase.from("county_runs").select("stage, status_label, run_summary_json").eq("workspace_id", workspaceId),
     ]);
 
@@ -73,7 +81,13 @@ export async function loadAnalysisSequenceFacts(
   if (failed(modelsResult)) unreadable.push("model");
 
   const packageIds = ((packagesResult.data ?? []) as Array<{ id: string }>).map((row) => row.id);
-  const modelIds = ((modelsResult.data ?? []) as Array<{ id: string }>).map((row) => row.id);
+  const modelRows = (modelsResult.data ?? []) as Array<{
+    id: string;
+    model_family: string;
+    config_json?: unknown;
+  }>;
+  const modelIds = modelRows.map((row) => row.id);
+  const scenarioSetIds = ((scenarioSetsResult.data ?? []) as Array<{ id: string }>).map((row) => row.id);
 
   // Networks are counted by VERSION, not by package: a package with no version
   // in it is a name, and nothing can be run against a name. The count therefore
@@ -84,12 +98,54 @@ export async function loadAnalysisSequenceFacts(
   if (failed(versionsResult)) unreadable.push("network");
 
   const runsResult = modelIds.length
-    ? await supabase.from("model_runs").select("id").in("model_id", modelIds)
-    : { data: [] as Array<{ id: string }>, error: null };
+    ? await supabase.from("model_runs").select("id, model_id, scenario_entry_id, status").in("model_id", modelIds)
+    : { data: [] as Array<{ id: string; model_id: string; scenario_entry_id: string | null; status: string }>, error: null };
+  const comparisonPacketsResult = scenarioSetIds.length
+    ? await supabase
+        .from("scenario_comparison_snapshots")
+        .select("id, status")
+        .in("scenario_set_id", scenarioSetIds)
+    : { data: [] as Array<{ id: string; status: string }>, error: null };
   // With no models there is nothing to have run, and the empty array is the
   // right answer rather than an unread one — so only a real failure is recorded.
-  if (failed(runsResult)) unreadable.push("run");
+  if (failed(runsResult)) unreadable.push("run", "activitysim_run");
   if (failed(countyRunsResult)) unreadable.push("check");
+  if (failed(comparisonPacketsResult)) unreadable.push("packet");
+
+  const modelFamilyById = new Map(modelRows.map((row) => [row.id, row.model_family]));
+  const aequilibraeModelCount = modelRows.filter((row) => row.model_family === "travel_demand").length;
+  const activitySimModelCount = modelRows.filter((row) => row.model_family === "activity_based_model").length;
+  const managedNetworkBasisCount = GUIDED_PROJECT_COMPARISON_MODELS.every((definition) =>
+    modelRows.some(
+      (row) =>
+        isGuidedProjectComparisonModel(row.config_json, definition.method) &&
+        usesGuidedWorkerNetwork(row.config_json),
+    ),
+  )
+    ? 1
+    : 0;
+  const runRows = (runsResult.data ?? []) as Array<{
+    id: string;
+    model_id: string;
+    scenario_entry_id: string | null;
+    status: string;
+  }>;
+  const guidedProjectComparison = managedNetworkBasisCount > 0;
+  const successfulScenarioCount = (family: string) => new Set(
+    runRows
+      .filter((row) =>
+        modelFamilyById.get(row.model_id) === family &&
+        row.status === "succeeded" &&
+        row.scenario_entry_id
+      )
+      .map((row) => row.scenario_entry_id as string)
+  ).size;
+  const aequilibraeRunCount = guidedProjectComparison
+    ? successfulScenarioCount("travel_demand")
+    : runRows.filter((row) => modelFamilyById.get(row.model_id) === "travel_demand").length;
+  const activitySimRunCount = guidedProjectComparison
+    ? successfulScenarioCount("activity_based_model")
+    : runRows.filter((row) => modelFamilyById.get(row.model_id) === "activity_based_model").length;
 
   const countyRows = (countyRunsResult.data ?? []) as Array<{
     stage: string | null;
@@ -112,10 +168,17 @@ export async function loadAnalysisSequenceFacts(
   return {
     areaLabel,
     networkCount: ((versionsResult.data ?? []) as Array<{ id: string }>).length,
+    managedNetworkBasisCount,
+    guidedProjectComparison,
     scenarioSetCount: ((scenarioSetsResult.data ?? []) as Array<{ id: string }>).length,
     modelCount: modelIds.length,
-    runCount: ((runsResult.data ?? []) as Array<{ id: string }>).length,
+    aequilibraeModelCount,
+    activitySimModelCount,
+    runCount: runRows.length,
+    aequilibraeRunCount,
+    activitySimRunCount,
     checkedRunCount,
+    comparisonPacketCount: ((comparisonPacketsResult.data ?? []) as Array<{ id: string }>).length,
     unreadable: Array.from(new Set(unreadable)),
   };
 }

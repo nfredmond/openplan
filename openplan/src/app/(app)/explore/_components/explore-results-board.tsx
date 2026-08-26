@@ -79,6 +79,7 @@ type ExploreResultsBoardProps = {
   currentMapViewState: MapViewState;
   onClearComparison: () => void;
   onError: (message: string) => void;
+  projectId?: string | null;
 };
 
 export function ExploreResultsBoard({
@@ -88,6 +89,7 @@ export function ExploreResultsBoard({
   currentMapViewState,
   onClearComparison,
   onError,
+  projectId = null,
 }: ExploreResultsBoardProps) {
   const comparisonDeltas = useMemo(() => {
     if (!analysisResult || !comparisonRun?.metrics) {
@@ -361,7 +363,7 @@ export function ExploreResultsBoard({
   }, [analysisResult, sourceSnapshots, transitMethod]);
 
   if (!analysisResult) {
-    return <ExploreEmptyResultBoard />;
+    return <ExploreEmptyResultBoard projectId={projectId} />;
   }
 
   const exportMetrics = () => {
@@ -610,6 +612,7 @@ export function ExploreResultsBoard({
           comparisonViewDifferenceCount={comparisonViewDifferenceCount}
           onExportMetrics={exportMetrics}
           onExportGeojson={exportGeojson}
+          projectId={projectId}
         />
 
         {comparisonRun?.metrics ? (

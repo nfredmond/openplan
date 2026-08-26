@@ -4,6 +4,7 @@ import { ArrowRight, FolderKanban, GitCompareArrows, ShieldCheck } from "lucide-
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ScenarioSetCreator } from "@/components/scenarios/scenario-set-creator";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
 import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -15,6 +16,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
 
 export const metadata = moduleMetadata("Scenarios");
 
@@ -173,6 +175,15 @@ export default async function ScenariosPage({
         .find((project) => project.id === projectFilterId)
         ?.name?.trim() || null
     : null;
+  const planningContext = resolvePlanningContext(
+    projectFilterId,
+    projectFilterId
+      ? ((projectsData ?? []) as Array<{ id: string; name: string | null }>).find(
+          (project) => project.id === projectFilterId,
+        )
+      : null,
+    projectsError,
+  );
 
   // The status tabs count within the project scope but BEFORE the status filter.
   // Counting the fully filtered list made every unselected tab read "(0)" the
@@ -203,11 +214,20 @@ export default async function ScenariosPage({
 
   // The order of the analysis work, said the same way on every page in the
   // group. This page is step three of seven.
-  const sequenceFacts = await loadAnalysisSequenceFacts(supabase, membership.workspace_id);
+  const sequenceFacts = await loadAnalysisSequenceFacts(
+    supabase,
+    membership.workspace_id,
+    planningContext.status === "active" ? planningContext.project.id : null
+  );
 
   return (
     <section className="module-page">
-      <AnalysisSequenceStrip facts={sequenceFacts} currentStepId="comparison" />
+      <PlanningContextStrip context={planningContext} />
+      <AnalysisSequenceStrip
+        facts={sequenceFacts}
+        currentStepId="comparison"
+        projectId={planningContext.status === "active" ? planningContext.project.id : null}
+      />
 
       {/* Internal page, so the database's own message stays on it — inside the
           notice's operator disclosure, where the person who can act on it will
@@ -325,7 +345,11 @@ export default async function ScenariosPage({
             uses. An empty picker after a failed read would tell the planner this
             workspace has no projects. */}
         <div id="create-scenario-set">
-          <ScenarioSetCreator projects={projectsData ?? []} projectsUnreadable={projectsUnreadable} />
+          <ScenarioSetCreator
+            projects={projectsData ?? []}
+            projectsUnreadable={projectsUnreadable}
+            initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
+          />
         </div>
 
         <article className="module-section-surface">
@@ -404,7 +428,11 @@ title="Your scenario sets could not be read"
               {scenarioSets.map((scenarioSet) => (
                 <CartographicSelectionLink
                   key={scenarioSet.id}
-                  href={`/scenarios/${scenarioSet.id}`}
+                  href={
+                    planningContext.status === "active"
+                      ? withPlanningContext(`/scenarios/${scenarioSet.id}`, planningContext.project.id)
+                      : `/scenarios/${scenarioSet.id}`
+                  }
                   className="module-record-row is-interactive group block"
                   selection={{
                     kind: "run",

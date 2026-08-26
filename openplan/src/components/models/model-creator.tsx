@@ -13,6 +13,7 @@ import {
   type GuidedFlowStep,
 } from "@/components/ui/guided-flow";
 import { MODEL_FAMILY_OPTIONS, MODEL_STATUS_OPTIONS } from "@/lib/models/catalog";
+import { selectInitialPlanningProjectId } from "@/lib/projects/planning-context";
 
 type ProjectOption = {
   id: string;
@@ -82,15 +83,18 @@ const INITIAL_VALUES: ModelCreatorValues = {
 export function ModelCreator({
   projects,
   scenarioSets,
+  initialProjectId = null,
   projectsReadFailed = false,
   scenarioSetsReadFailed = false,
 }: {
   projects: ProjectOption[];
   scenarioSets: ScenarioSetOption[];
+  initialProjectId?: string | null;
   projectsReadFailed?: boolean;
   scenarioSetsReadFailed?: boolean;
 }) {
   const router = useRouter();
+  const validInitialProjectId = selectInitialPlanningProjectId(projects, initialProjectId, "none");
 
   const steps = useMemo<GuidedFlowStep<ModelCreatorValues>[]>(
     () => [
@@ -270,7 +274,7 @@ export function ModelCreator({
     id: "create-model",
     title: "New model record",
     submitLabel: "Create the model record",
-    initialValues: INITIAL_VALUES,
+    initialValues: { ...INITIAL_VALUES, projectId: validInitialProjectId },
     steps,
     onSubmit: async (values) => {
       // Unchanged from the inline form, deliberately: same route, same keys,

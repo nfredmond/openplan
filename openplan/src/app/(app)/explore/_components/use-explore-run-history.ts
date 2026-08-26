@@ -16,6 +16,7 @@ type UseExploreRunHistoryParams = {
   analysisResult: AnalysisResult | null;
   setAnalysisResult: Dispatch<SetStateAction<AnalysisResult | null>>;
   setQueryText: Dispatch<SetStateAction<string>>;
+  setSelectedProjectId: Dispatch<SetStateAction<string>>;
   setCorridorGeojson: Dispatch<SetStateAction<CorridorGeometry | null>>;
   setError: Dispatch<SetStateAction<string>>;
   setTractMetric: Dispatch<SetStateAction<TractMetric>>;
@@ -38,6 +39,7 @@ export function useExploreRunHistory({
   analysisResult,
   setAnalysisResult,
   setQueryText,
+  setSelectedProjectId,
   setCorridorGeojson,
   setError,
   setTractMetric,
@@ -51,11 +53,15 @@ export function useExploreRunHistory({
   const router = useRouter();
   const searchParams = useSearchParams();
   const runDeepLinkAppliedRef = useRef(false);
+  const [isApplyingRunDeepLink, setIsApplyingRunDeepLink] = useState(
+    () => Boolean(searchParams.get("runId") || searchParams.get("baselineRunId")),
+  );
   const [comparisonRun, setComparisonRun] = useState<Run | null>(null);
 
   const loadRun = useCallback(
     (run: Run) => {
       setQueryText(run.query_text);
+      setSelectedProjectId(run.project_id ?? "");
 
       if (run.corridor_geojson) {
         setCorridorGeojson(run.corridor_geojson as CorridorGeometry);
@@ -83,6 +89,7 @@ export function useExploreRunHistory({
 
       setAnalysisResult({
         runId: run.id,
+        projectId: run.project_id ?? null,
         title: run.title,
         createdAt: run.created_at,
         metrics: runMetrics,
@@ -103,6 +110,7 @@ export function useExploreRunHistory({
       setCrashUserFilter,
       setError,
       setQueryText,
+      setSelectedProjectId,
       setShowCrashes,
       setShowTracts,
       setTractMetric,
@@ -119,6 +127,7 @@ export function useExploreRunHistory({
 
     if (!requestedRunId && !requestedBaselineRunId) {
       runDeepLinkAppliedRef.current = true;
+      setIsApplyingRunDeepLink(false);
       return;
     }
 
@@ -154,6 +163,8 @@ export function useExploreRunHistory({
         }
       } catch (deepLinkError) {
         setError(deepLinkError instanceof Error ? deepLinkError.message : "Failed to open the scenario-linked review.");
+      } finally {
+        setIsApplyingRunDeepLink(false);
       }
     };
 
@@ -189,9 +200,15 @@ export function useExploreRunHistory({
   }, [setError]);
 
   useEffect(() => {
+    // Do not erase a requested run before the asynchronous history read has a
+    // chance to restore it. Both effects run after the same initial render;
+    // the old URL-sync effect deleted runId while the read was still in flight.
+    if (isApplyingRunDeepLink) return;
+
     const nextParams = new URLSearchParams(searchParams.toString());
     const currentRunId = analysisResult?.runId ?? null;
     const baselineRunId = comparisonRun?.id ?? null;
+    const currentProjectId = analysisResult?.projectId ?? null;
 
     if (currentRunId) {
       nextParams.set("runId", currentRunId);
@@ -205,16 +222,29 @@ export function useExploreRunHistory({
       nextParams.delete("baselineRunId");
     }
 
+    // Once a saved run is loaded, its database attribution becomes the URL
+    // context. Before any run is loaded, leave an explicitly opened projectId
+    // alone so entering Explore from a project does not clear itself.
+    if (analysisResult) {
+      if (currentProjectId) nextParams.set("projectId", currentProjectId);
+      else nextParams.delete("projectId");
+    }
+
     const currentRunParam = searchParams.get("runId");
     const currentBaselineParam = searchParams.get("baselineRunId");
+    const currentProjectParam = searchParams.get("projectId");
 
-    if (currentRunParam === currentRunId && currentBaselineParam === baselineRunId) {
+    if (
+      currentRunParam === currentRunId &&
+      currentBaselineParam === baselineRunId &&
+      (!analysisResult || currentProjectParam === currentProjectId)
+    ) {
       return;
     }
 
     const nextQuery = nextParams.toString();
     router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
-  }, [analysisResult?.runId, comparisonRun?.id, pathname, router, searchParams]);
+  }, [analysisResult, comparisonRun?.id, isApplyingRunDeepLink, pathname, router, searchParams]);
 
   return {
     comparisonRun,

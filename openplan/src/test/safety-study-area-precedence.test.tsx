@@ -195,6 +195,7 @@ function mountSupabase({
       }
       if (table === "safety_crash_ingests")
         return respondWith(ingestsResult ?? { data: ingests, error: null });
+      if (table === "reports") return respondWith({ data: [], error: null });
       throw new Error(`Unexpected table: ${table}`);
     },
   });

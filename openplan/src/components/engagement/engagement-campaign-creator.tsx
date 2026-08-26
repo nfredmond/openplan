@@ -32,12 +32,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 import { FilePlus2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StateBlock } from "@/components/ui/state-block";
 import { GuidedFlow, GuidedFlowRow, useGuidedFlow } from "@/components/ui/guided-flow";
+import { selectInitialPlanningProjectId } from "@/lib/projects/planning-context";
 import { ENGAGEMENT_TYPES, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { CAMPAIGN_TEMPLATES, getCampaignTemplate } from "@/lib/engagement/campaign-templates";
 
@@ -75,8 +77,15 @@ const INITIAL_VALUES: CampaignFlowValues = {
   summary: "",
 };
 
-export function EngagementCampaignCreator({ projects }: { projects: ProjectOption[] }) {
+export function EngagementCampaignCreator({
+  projects,
+  initialProjectId,
+}: {
+  projects: ProjectOption[];
+  initialProjectId?: string | null;
+}) {
   const router = useRouter();
+  const selectedInitialProjectId = selectInitialPlanningProjectId(projects, initialProjectId, "none");
   // A campaign that WAS created but whose starter content was not. It belongs
   // on the page, not in the sheet: the sheet is gone by the time it matters.
   const [partialTemplateNotice, setPartialTemplateNotice] = useState<string | null>(null);
@@ -85,7 +94,7 @@ export function EngagementCampaignCreator({ projects }: { projects: ProjectOptio
     id: "engagement-campaign-creator",
     title: "New campaign",
     submitLabel: "Create campaign",
-    initialValues: INITIAL_VALUES,
+    initialValues: { ...INITIAL_VALUES, projectId: selectedInitialProjectId },
     steps: [
       {
         id: "template",
@@ -255,7 +264,12 @@ export function EngagementCampaignCreator({ projects }: { projects: ProjectOptio
       router.refresh();
       // `created=1` lets the campaign console surface its create-success state:
       // where the public link will live and that submissions land in moderation.
-      router.push(`/engagement/${payload.campaignId}?created=1`);
+      router.push(
+        withPlanningContext(
+          `/engagement/${payload.campaignId}?created=1`,
+          values.projectId || null
+        )
+      );
     },
   });
 

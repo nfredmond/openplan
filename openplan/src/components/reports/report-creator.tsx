@@ -35,6 +35,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 import { AlertTriangle, Check, FilePlus2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ import {
   defaultReportTitle,
   type ReportType,
 } from "@/lib/reports/catalog";
+import { selectInitialPlanningProjectId } from "@/lib/projects/planning-context";
 import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
@@ -187,27 +189,31 @@ export function ReportCreator({
   runs,
   modelingCountyRuns = [],
   reportGuidanceByProject = {},
+  initialProjectId,
 }: {
   projects: ProjectOption[];
   runs: RunOption[];
   modelingCountyRuns?: ModelingCountyRunOption[];
   reportGuidanceByProject?: Record<string, ProjectReportGuidance>;
+  initialProjectId?: string | null;
 }) {
   const router = useRouter();
+  const selectedInitialProjectId = selectInitialPlanningProjectId(projects, initialProjectId, "first");
+  const initialProject = projects.find((project) => project.id === selectedInitialProjectId) ?? null;
 
   const initialValues = useMemo<ReportFlowValues>(
     () => ({
-      projectId: projects[0]?.id ?? "",
+      projectId: initialProject?.id ?? "",
       reportType: "project_status",
       title: "",
       summary: "",
       modelingCountyRunId: pickDefaultModelingCountyRunId(
-        projects[0]?.workspace_id ?? null,
+        initialProject?.workspace_id ?? null,
         modelingCountyRuns
       ),
       runIds: [],
     }),
-    [projects, modelingCountyRuns]
+    [initialProject, modelingCountyRuns]
   );
 
   function projectFor(values: ReportFlowValues) {
@@ -541,7 +547,7 @@ export function ReportCreator({
 
       // After the await, so the sheet closes before the page moves under it.
       router.refresh();
-      router.push(`/reports/${payload.reportId}`);
+      router.push(withPlanningContext(`/reports/${payload.reportId}`, values.projectId));
     },
   });
 

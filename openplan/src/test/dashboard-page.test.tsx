@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -152,49 +152,6 @@ vi.mock("@/components/runs/RunHistory", () => ({
 
 vi.mock("@/components/workspaces/workspace-membership-required", () => ({
   WorkspaceMembershipRequired: () => <div data-testid="workspace-membership-required" />,
-}));
-
-// Reachability guard. The workspace home geography had a schema, an API, and
-// four readers before it had any way to be SET — see
-// src/test/workspace-geography-panel.test.tsx. Recording the props here means a
-// future refactor cannot quietly unmount the setter and re-dark that spine.
-vi.mock("@/components/workspaces/workspace-geography-panel", () => ({
-  WorkspaceGeographyPanel: ({ workspaceId, canManage }: { workspaceId: string; canManage: boolean }) => (
-    <div
-      data-testid="workspace-geography-panel"
-      data-workspace-id={workspaceId}
-      data-can-manage={String(canManage)}
-    />
-  ),
-}));
-
-vi.mock("@/components/workspaces/workspace-team-panel", () => ({
-  WorkspaceTeamPanel: ({ workspaceId, canManage }: { workspaceId: string; canManage: boolean }) => (
-    <div
-      data-testid="workspace-team-panel"
-      data-workspace-id={workspaceId}
-      data-can-manage={String(canManage)}
-    />
-  ),
-}));
-
-vi.mock("@/components/workspaces/workspace-integration-keys-panel", () => ({
-  WorkspaceIntegrationKeysPanel: ({
-    workspaceId,
-    canManage,
-    providerIds,
-  }: {
-    workspaceId: string;
-    canManage: boolean;
-    providerIds?: string[];
-  }) => (
-    <div
-      data-testid="workspace-integration-keys-panel"
-      data-workspace-id={workspaceId}
-      data-can-manage={String(canManage)}
-      data-provider-ids={providerIds ? providerIds.join(",") : "all"}
-    />
-  ),
 }));
 
 import DashboardPage from "@/app/(app)/dashboard/page";
@@ -639,62 +596,6 @@ describe("DashboardPage", () => {
     );
   });
 
-  it("mounts a home-geography setter so the geography spine is reachable", async () => {
-    await renderPage();
-
-    const panel = screen.getByTestId("workspace-geography-panel");
-    expect(panel).toHaveAttribute("data-workspace-id", "workspace-1");
-    expect(panel).toHaveAttribute("data-can-manage", "true");
-  });
-
-  it("mounts the integration-keys setup panel so keys can actually be configured", async () => {
-    // Default state resolves no AI key, so the panel is mounted twice: the
-    // Anthropic row hoisted into the checklist's AI step, and the remaining
-    // providers in the config row. Every mount carries the workspace binding.
-    await renderPage();
-
-    const panels = screen.getAllByTestId("workspace-integration-keys-panel");
-    expect(panels.length).toBeGreaterThan(0);
-    for (const panel of panels) {
-      expect(panel).toHaveAttribute("data-workspace-id", "workspace-1");
-      expect(panel).toHaveAttribute("data-can-manage", "true");
-    }
-  });
-
-  it("tells an owner which capabilities configuration has switched off", async () => {
-    // The test environment sets no Mapbox token, so maps are unavailable — the
-    // panel must say so rather than leaving blank maps unexplained.
-    await renderPage();
-
-    expect(screen.getByLabelText(/deployment configuration/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/settings of this OpenPlan deployment, not limits of your data or your area/i)
-    ).toBeInTheDocument();
-  });
-
-  it("does not offer geography or team management to a plain member", async () => {
-    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
-      membership: { workspace_id: "workspace-1", role: "member" },
-      workspace: {
-        id: "workspace-1",
-        name: "OpenPlan QA",
-        plan: "pilot",
-        created_at: "2026-04-01T18:00:00.000Z",
-      },
-    });
-
-    await renderPage();
-
-    // The panel is still rendered — a member must be able to SEE the workspace's
-    // geography, because an unset one changes every map they look at — but the
-    // write affordance is withheld here and refused by the API.
-    expect(screen.getByTestId("workspace-geography-panel")).toHaveAttribute("data-can-manage", "false");
-    expect(screen.getByTestId("workspace-team-panel")).toHaveAttribute("data-can-manage", "false");
-    expect(screen.getByTestId("workspace-integration-keys-panel")).toHaveAttribute("data-can-manage", "false");
-    // Deployment configuration is operator information a member cannot act on.
-    expect(screen.queryByLabelText(/deployment configuration/i)).not.toBeInTheDocument();
-  });
-
   /**
    * First run: a workspace with exactly two rows — one `workspaces` row and one
    * `workspace_members` row — which is what sign-up leaves behind. Everything
@@ -730,13 +631,7 @@ describe("DashboardPage", () => {
       await renderPage();
     }
 
-    function firstRunHero(): HTMLElement {
-      const hero = screen.getByRole("heading", { name: /Set up OpenPlan QA/ }).closest("div");
-      expect(hero).not.toBeNull();
-      return hero as HTMLElement;
-    }
-
-    it("shows the geography step and hoists its setter when no place is set", async () => {
+    it("shows the geography step and links to workspace setup when no place is set", async () => {
       await renderFirstRun();
 
       // The geography step is outstanding and says so. (Emphasis sits on the
@@ -744,17 +639,16 @@ describe("DashboardPage", () => {
       expect(screen.getByText("Tell OpenPlan where you work")).toBeInTheDocument();
       expect(screen.getByText("Start here")).toBeInTheDocument();
       expect(
-        screen.getByText(/Not set\. Choose the county, city, CDP, or metro area you plan for, below\./)
+        screen.getByText(/Not set\. Choose it in Workspace setup & health\./)
       ).toBeInTheDocument();
       expect(
         screen.getByText(/Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting/)
       ).toBeInTheDocument();
 
-      // The setter itself sits inside the first-run hero, next to the step that
-      // asks for it — and is mounted EXACTLY once, because it self-fetches.
-      const panels = screen.getAllByTestId("workspace-geography-panel");
-      expect(panels).toHaveLength(1);
-      expect(within(firstRunHero()).getByTestId("workspace-geography-panel")).toBe(panels[0]);
+      expect(screen.getByRole("link", { name: "Open where-you-work setting" })).toHaveAttribute(
+        "href",
+        "/workspace",
+      );
     });
 
     it("reads only the home-geography identity columns, never the stored boundary polygon", async () => {
@@ -768,7 +662,7 @@ describe("DashboardPage", () => {
       expect(columns).not.toContain("home_geometry_geojson");
     });
 
-    it("marks the geography step done with the resolved label and returns the panel to the config row", async () => {
+    it("marks the geography step done with the resolved label", async () => {
       hasAnthropicAccessMock.mockReturnValue(true);
       await renderFirstRun({ homeGeographyRow: SET_HOME_GEOGRAPHY_ROW });
 
@@ -777,10 +671,6 @@ describe("DashboardPage", () => {
       expect(screen.getByText("Set to Example County, Example State.")).toBeInTheDocument();
       expect(screen.queryByText("Start here")).not.toBeInTheDocument();
 
-      // Still exactly one mount, and no longer inside the hero.
-      const panels = screen.getAllByTestId("workspace-geography-panel");
-      expect(panels).toHaveLength(1);
-      expect(within(firstRunHero()).queryByTestId("workspace-geography-panel")).toBeNull();
     });
 
     it("does not claim a geography is set when the row carries no resolvable source", async () => {
@@ -794,7 +684,7 @@ describe("DashboardPage", () => {
       expect(screen.queryByText(/^Set to /)).not.toBeInTheDocument();
     });
 
-    it("leads with the AI step and hoists the Anthropic key row while no key resolves", async () => {
+    it("leads with the AI step and links to integration setup while no key resolves", async () => {
       await renderFirstRun();
 
       const step = screen.getByText("Turn on your AI assistant").closest("li");
@@ -805,22 +695,13 @@ describe("DashboardPage", () => {
         /Without a key, the Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation are unavailable/
       );
 
-      // The Anthropic key row is hoisted into the hero, filtered to that one
-      // provider; the main panel below keeps the rest, so each provider row is
-      // mounted exactly once.
-      const hoisted = within(firstRunHero()).getAllByTestId("workspace-integration-keys-panel");
-      expect(hoisted).toHaveLength(1);
-      expect(hoisted[0]).toHaveAttribute("data-provider-ids", "anthropic");
-
-      const panels = screen.getAllByTestId("workspace-integration-keys-panel");
-      expect(panels).toHaveLength(2);
-      const main = panels.find((panel) => panel !== hoisted[0]);
-      expect(main).toBeDefined();
-      expect(main!.getAttribute("data-provider-ids")).not.toBe("all");
-      expect(main!.getAttribute("data-provider-ids")).not.toContain("anthropic");
+      expect(screen.getByRole("link", { name: "Open integration setup" })).toHaveAttribute(
+        "href",
+        "/workspace#workspace-integrations",
+      );
     });
 
-    it("marks the AI step done when a key resolves, with one unfiltered keys panel", async () => {
+    it("marks the AI step done when a key resolves", async () => {
       hasAnthropicAccessMock.mockReturnValue(true);
       await renderFirstRun();
 
@@ -830,10 +711,6 @@ describe("DashboardPage", () => {
         screen.getByText("On — an AI key is available to this workspace.")
       ).toBeInTheDocument();
 
-      const panels = screen.getAllByTestId("workspace-integration-keys-panel");
-      expect(panels).toHaveLength(1);
-      expect(panels[0]).toHaveAttribute("data-provider-ids", "all");
-      expect(within(firstRunHero()).queryByTestId("workspace-integration-keys-panel")).toBeNull();
     });
 
     it("points the screening step at Corridor Analysis and reports that no runs exist", async () => {
@@ -850,7 +727,7 @@ describe("DashboardPage", () => {
       expect(screen.getByText("Invite your team")).toBeInTheDocument();
       expect(screen.getByRole("link", { name: /Open the team panel/ })).toHaveAttribute(
         "href",
-        "#workspace-team"
+        "/workspace#workspace-team"
       );
       // The page cannot read who else is in the workspace (workspace_members
       // RLS is own-row only), so the step must not carry a completion claim.

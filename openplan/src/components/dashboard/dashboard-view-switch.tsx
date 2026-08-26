@@ -72,7 +72,7 @@ export function DashboardViewSwitch({
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
             {view === "insights"
               ? "The same workspace read as figures. Nothing here is a forecast."
-              : "Setup, records and the command board — the operator reading."}
+              : "Current work, recent changes, and the command board."}
           </p>
         </div>
         <div

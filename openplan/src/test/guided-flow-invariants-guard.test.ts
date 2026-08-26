@@ -131,6 +131,33 @@ function stepsSource(expression: ts.Expression, source: ts.SourceFile): ts.Node 
   return resolved;
 }
 
+/** Read literal keys through object spreads such as `{ ...DEFAULTS, projectId }`. */
+function initialValueKeysFor(
+  expression: ts.Expression,
+  source: ts.SourceFile,
+  seen = new Set<string>()
+): string[] {
+  const resolved = stepsSource(expression, source);
+  if (!ts.isObjectLiteralExpression(resolved)) return [];
+
+  return resolved.properties.flatMap((member) => {
+    if (
+      ts.isPropertyAssignment(member) &&
+      (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name))
+    ) {
+      return [member.name.text];
+    }
+    if (ts.isShorthandPropertyAssignment(member)) return [member.name.text];
+    if (ts.isSpreadAssignment(member)) {
+      const marker = member.expression.getText(source);
+      if (seen.has(marker)) return [];
+      seen.add(marker);
+      return initialValueKeysFor(member.expression, source, seen);
+    }
+    return [];
+  });
+}
+
 function literalString(expression: ts.Expression | null): string | null {
   if (!expression) return null;
   if (ts.isStringLiteral(expression) || ts.isNoSubstitutionTemplateLiteral(expression)) {
@@ -172,20 +199,7 @@ function readFlows(file: (typeof PARSED)[number]): Flow[] {
     // Same three spellings as `steps`, and the same reason for handling all
     // three: a shape this cannot read makes the "no answer the flow cannot
     // hold" check pass by seeing nothing.
-    const initialObject = initial ? stepsSource(initial, file.source) : null;
-    const initialValueKeys =
-      initialObject && ts.isObjectLiteralExpression(initialObject as ts.Expression)
-        ? (initialObject as ts.ObjectLiteralExpression).properties
-            .map((member) =>
-              ts.isPropertyAssignment(member) &&
-              (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name))
-                ? member.name.text
-                : ts.isShorthandPropertyAssignment(member)
-                  ? member.name.text
-                  : null
-            )
-            .filter((key): key is string => key !== null)
-        : [];
+    const initialValueKeys = initial ? initialValueKeysFor(initial, file.source) : [];
 
     // Only THIS flow's steps. A file may build several flows (the record
     // composers build one per record type), and reading the whole file for

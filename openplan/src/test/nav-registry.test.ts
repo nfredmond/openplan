@@ -7,7 +7,6 @@ import {
   APP_NAV_ENTRIES,
   buildPaletteCommands,
   buildRailGroups,
-  findNavSection,
   navLabel,
   protectedRoutePrefixes,
 } from "@/components/nav/nav-registry";
@@ -72,6 +71,7 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     );
     expect(items[0]).toEqual([
       "/dashboard·Overview",
+      "/workspace·Workspace setup & health",
       // Position 2 in the Workspace group, above Projects: the personal work
       // queue is the one surface that comes to the planner rather than being
       // gone into (design memo 2026-08-11).
@@ -91,10 +91,8 @@ describe("nav registry — the single source for every nav and the auth proxy", 
       "/invoicing·Invoices & Reimbursements",
     ]);
     expect(items[3]).toEqual([
-      "/models·Models",
-      "/scenarios·Scenarios",
+      "/models·Travel modeling",
       "/explore·Corridor Analysis",
-      "/county-runs·Model Validation",
       "/safety·Safety",
     ]);
     expect(items[4]).toEqual(["/engagement·Engagement"]);
@@ -182,41 +180,14 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     expect(navLabel("/not-a-registered-surface")).toBe("/not-a-registered-surface");
   });
 
-  /**
-   * The secondary nav has NO grouping of its own — findNavSection() is what it
-   * renders, and this test pins that derivation to the registry so a second,
-   * conflicting grouping (which is exactly what the old hand-written
-   * sectionMap became) cannot come back.
-   */
-  it("derives a contextual section from the registry for every registered surface", () => {
-    for (const entry of APP_NAV_ENTRIES) {
-      const groupTitle = buildPaletteCommands().find(
-        (command) => command.href === entry.href,
-      )?.group;
-      const expectedItems = APP_NAV_ENTRIES.filter(
-        (candidate) => candidate.railGroup === entry.railGroup,
-      ).map(({ href, label }) => ({ href, label }));
+  it("keeps specialist modeling pages in the palette but off the compact rail", () => {
+    const railHrefs = buildRailGroups().flatMap((group) => group.items.map((item) => item.href));
+    const paletteHrefs = buildPaletteCommands().map((command) => command.href);
 
-      for (const pathname of [entry.href, `${entry.href}/deep/child-page`]) {
-        const section = findNavSection(pathname);
-        expect(section, `${pathname} resolves to no section`).not.toBeNull();
-        expect(
-          section?.title,
-          `${pathname} resolved to section "${section?.title}", not its registry group title`,
-        ).toBe(groupTitle);
-        expect(
-          section?.items,
-          `${pathname} did not list its whole registry group in registry order`,
-        ).toEqual(expectedItems);
-      }
-    }
-  });
-
-  it("returns no section for unregistered paths", () => {
-    expect(findNavSection("/not-a-registered-surface")).toBeNull();
-    expect(findNavSection("/")).toBeNull();
-    // The redirect stubs are protected routes but not nav destinations.
-    expect(findNavSection("/command-center")).toBeNull();
-    expect(findNavSection("/billing")).toBeNull();
+    expect(railHrefs).toContain("/models");
+    expect(railHrefs).not.toContain("/scenarios");
+    expect(railHrefs).not.toContain("/county-runs");
+    expect(paletteHrefs).toContain("/scenarios");
+    expect(paletteHrefs).toContain("/county-runs");
   });
 });

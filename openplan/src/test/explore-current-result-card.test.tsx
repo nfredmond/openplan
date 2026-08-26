@@ -167,4 +167,21 @@ describe("ExploreCurrentResultCard", () => {
     expect(onExportMetrics).toHaveBeenCalledTimes(1);
     expect(onExportGeojson).toHaveBeenCalledTimes(1);
   });
+
+  it("answers a project-effect question without presenting current conditions as a forecast", () => {
+    render(<ExploreCurrentResultCard {...buildProps({ projectId: "project-1" })} />);
+
+    expect(screen.getByText("Answer to the project question")).toBeInTheDocument();
+    expect(screen.getByText(/not measured by this run\. these are current conditions/i)).toBeInTheDocument();
+    expect(screen.getByText(/cannot be determined from a current-conditions screen/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /start the guided baseline-versus-build setup/i })).toHaveAttribute(
+      "href",
+      "/models?projectId=project-1",
+    );
+  });
+
+  it("does not offer a project comparison when the run is not attached to a project", () => {
+    render(<ExploreCurrentResultCard {...buildProps({ projectId: null })} />);
+    expect(screen.queryByTestId("project-effect-answer")).not.toBeInTheDocument();
+  });
 });

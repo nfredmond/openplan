@@ -44,6 +44,39 @@ describe("EngagementCampaignCreator create-success surfacing", () => {
     vi.unstubAllGlobals();
   });
 
+  it("preselects the project carried in planning context", () => {
+    render(
+      <EngagementCampaignCreator
+        projects={[
+          { id: "project-1", name: "Downtown Mobility Plan" },
+          { id: "project-2", name: "Transit Access Plan" },
+        ]}
+        initialProjectId="project-2"
+      />
+    );
+
+    openFlow();
+    next();
+    fireEvent.change(screen.getByLabelText(/^Title$/), { target: { value: "Listening" } });
+    next();
+    expect(screen.getByLabelText("Linked project (optional)")).toHaveValue("project-2");
+  });
+
+  it("does not trust an initial project outside the available workspace list", () => {
+    render(
+      <EngagementCampaignCreator
+        projects={[{ id: "project-1", name: "Downtown Mobility Plan" }]}
+        initialProjectId="cross-workspace-project"
+      />
+    );
+
+    openFlow();
+    next();
+    fireEvent.change(screen.getByLabelText(/^Title$/), { target: { value: "Listening" } });
+    next();
+    expect(screen.getByLabelText("Linked project (optional)")).toHaveValue("");
+  });
+
   it("lands the new campaign console with the created flag so the public-link explainer shows", async () => {
     fetchMock.mockResolvedValue({
       ok: true,

@@ -75,12 +75,18 @@ import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { formatMoney } from "@/lib/money/format";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import {
+  resolvePlanningContext,
+  withPlanningContext,
+} from "@/lib/projects/planning-context";
 
 export const metadata = moduleMetadata("Reports");
 
 type ReportsPageSearchParams = Promise<{
   freshness?: string;
   posture?: string;
+  projectId?: string;
 }>;
 
 type ReportArtifactRow = {
@@ -109,6 +115,7 @@ type ModelingClaimDecisionOptionRow = {
 function buildReportsFilterHref(filters: {
   freshness: ReportFreshnessFilter;
   posture: ReportPostureFilter;
+  projectId?: string | null;
 }) {
   const params = new URLSearchParams();
   if (filters.freshness !== "all") {
@@ -116,6 +123,9 @@ function buildReportsFilterHref(filters: {
   }
   if (filters.posture !== "all") {
     params.set("posture", filters.posture);
+  }
+  if (filters.projectId) {
+    params.set("projectId", filters.projectId);
   }
 
   const query = params.toString();
@@ -130,6 +140,7 @@ export default async function ReportsPage({
   const filters = await searchParams;
   const selectedFreshnessFilter = normalizeReportFreshnessFilter(filters.freshness);
   const selectedPostureFilter = normalizeReportPostureFilter(filters.posture);
+  const projectFilterId = filters.projectId?.trim() || null;
   const supabase = await createClient();
   const {
     data: { user },
@@ -207,7 +218,7 @@ export default async function ReportsPage({
    */
   const reads = new ReadFailureLog();
   const reportsReadFailed = reads.check("this workspace's reports", reportsRead);
-  reads.check("this workspace's projects", projectsRead);
+  const projectsReadFailed = reads.check("this workspace's projects", projectsRead);
   reads.check("model runs available as evidence", runsRead);
   reads.check("county runs available as evidence", countyRunsRead);
   reads.check("recorded modeling claim decisions", modelingClaimDecisionsRead);
@@ -217,6 +228,17 @@ export default async function ReportsPage({
   const runsData = runsRead.data;
   const countyRunsData = countyRunsRead.data;
   const modelingClaimDecisionsData = modelingClaimDecisionsRead.data;
+  const planningContext = resolvePlanningContext(
+    projectFilterId,
+    projectFilterId
+      ? ((projectsData ?? []) as Array<{ id: string; name: string }>).find(
+          (project) => project.id === projectFilterId
+        ) ?? null
+      : null,
+    projectFilterId && projectsReadFailed
+      ? projectsRead.error ?? { message: "Project context could not be read." }
+      : null
+  );
 
   const projectIds = ((reportsData ?? []) as ReportRow[])
     .map((report) => report.project_id)
@@ -281,6 +303,7 @@ export default async function ReportsPage({
   );
 
   const reports = ((reportsData ?? []) as ReportRow[])
+    .filter((report) => (projectFilterId ? report.project_id === projectFilterId : true))
     .map((report) => {
       const latestArtifact = latestArtifactByReportId.get(report.id) ?? null;
       const evidenceChainSummary = parseStoredEvidenceChainSummary(
@@ -446,7 +469,7 @@ export default async function ReportsPage({
     (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT && report.storedRtpFundingReview?.needsAttention
   ).length;
   const evidenceBackedCount = reports.filter(
-    (report) => Boolean(report.evidenceChainDigest)
+    (report) => report.evidenceChainDigest?.hasEvidence === true
   ).length;
   const blockedGovernanceCount = reports.filter(
     (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
@@ -584,6 +607,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: "all",
         posture: selectedPostureFilter,
+        projectId: projectFilterId,
       }),
     },
     {
@@ -593,6 +617,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: "refresh",
         posture: selectedPostureFilter,
+        projectId: projectFilterId,
       }),
     },
     {
@@ -602,6 +627,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: "missing",
         posture: selectedPostureFilter,
+        projectId: projectFilterId,
       }),
     },
     {
@@ -611,6 +637,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: "current",
         posture: selectedPostureFilter,
+        projectId: projectFilterId,
       }),
     },
   ];
@@ -628,6 +655,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: selectedFreshnessFilter,
         posture: "all",
+        projectId: projectFilterId,
       }),
     },
     {
@@ -637,6 +665,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: selectedFreshnessFilter,
         posture: "evidence-backed",
+        projectId: projectFilterId,
       }),
     },
     {
@@ -646,6 +675,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: selectedFreshnessFilter,
         posture: "comparison-backed",
+        projectId: projectFilterId,
       }),
     },
     {
@@ -655,6 +685,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: selectedFreshnessFilter,
         posture: "governance-hold",
+        projectId: projectFilterId,
       }),
     },
     {
@@ -664,6 +695,7 @@ export default async function ReportsPage({
       href: buildReportsFilterHref({
         freshness: selectedFreshnessFilter,
         posture: "no-evidence",
+        projectId: projectFilterId,
       }),
     },
   ];
@@ -732,6 +764,7 @@ export default async function ReportsPage({
 
   return (
     <section className="module-page">
+      <PlanningContextStrip context={planningContext} className="mb-4" />
       {/* Internal, membership-gated: the database's own words stay on the page,
           inside the notice's operator disclosure. The public surfaces omit them
           entirely. */}
@@ -762,7 +795,7 @@ export default async function ReportsPage({
             <div className="module-summary-card">
               <p className="module-summary-label">Total reports</p>
               <p className="module-summary-value">{reports.length}</p>
-              <p className="module-summary-detail">Reports in this workspace.</p>
+              <p className="module-summary-detail">Reports available here.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Generated</p>
@@ -843,6 +876,7 @@ export default async function ReportsPage({
         <div id="create-report" className="space-y-6">
           <ReportCreator
             projects={projectsData ?? []}
+            initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
             runs={runsData ?? []}
             modelingCountyRuns={modelingCountyRuns}
             reportGuidanceByProject={reportGuidanceByProject}
@@ -980,7 +1014,10 @@ export default async function ReportsPage({
                 return (
                 <CartographicSelectionLink
                   key={report.id}
-                  href={getReportNavigationHref(report.id, report.packetFreshness.label)}
+                  href={withPlanningContext(
+                    getReportNavigationHref(report.id, report.packetFreshness.label),
+                    planningContext.status === "active" ? planningContext.project.id : null
+                  )}
                   className="module-record-row is-interactive group block"
                   selection={{
                     kind: "report",

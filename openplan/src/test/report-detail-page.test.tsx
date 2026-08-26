@@ -139,7 +139,19 @@ const safetyIngestLimitMock = vi.fn();
 const safetyIngestOrderMock = vi.fn(() => ({ limit: safetyIngestLimitMock }));
 const safetyIngestEqProjectMock = vi.fn(() => ({ order: safetyIngestOrderMock }));
 const safetyIngestEqWorkspaceMock = vi.fn(() => ({ eq: safetyIngestEqProjectMock }));
-const safetyIngestSelectMock = vi.fn(() => ({ eq: safetyIngestEqWorkspaceMock }));
+const safetyIngestOptionsLimitMock = vi.fn();
+const safetyIngestOptionsChain: {
+  eq: ReturnType<typeof vi.fn>;
+  order: ReturnType<typeof vi.fn>;
+} = {
+  eq: vi.fn(() => safetyIngestOptionsChain),
+  order: vi.fn(() => ({ limit: safetyIngestOptionsLimitMock })),
+};
+const safetyIngestSelectMock = vi.fn((columns: string) =>
+  columns.includes("source_label")
+    ? safetyIngestOptionsChain
+    : { eq: safetyIngestEqWorkspaceMock }
+);
 
 const authGetUserMock = vi.fn();
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
@@ -435,6 +447,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     });
 
     safetyIngestLimitMock.mockResolvedValue({ data: [], error: null });
+    safetyIngestOptionsLimitMock.mockResolvedValue({ data: [], error: null });
 
     artifactsOrderMock.mockResolvedValue({
       data: [

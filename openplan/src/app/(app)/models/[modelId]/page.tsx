@@ -23,6 +23,7 @@ import {
   shortDigest,
 } from "@/lib/models/digest-display";
 import { placeOfRecordFromProject } from "@/lib/projects/project-place";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 import {
   HOME_GEOGRAPHY_COLUMNS,
   parseWorkspaceHomeGeography,
@@ -47,6 +48,8 @@ import {
 } from "@/lib/models/catalog";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
+import { isGuidedProjectComparisonModel } from "@/lib/models/project-comparison";
+import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 type RouteParams = Promise<{ modelId: string }>;
 
@@ -121,8 +124,15 @@ type NetworkBasisVersionRow = {
   package: { id: string; name: string } | Array<{ id: string; name: string }> | null;
 };
 
-export default async function ModelDetailPage({ params }: { params: RouteParams }) {
+export default async function ModelDetailPage({
+  params,
+  searchParams,
+}: {
+  params: RouteParams;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { modelId } = await params;
+  const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -730,6 +740,17 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
   const defaultCorridorText = studyArea.geometry
     ? JSON.stringify(studyArea.geometry, null, 2)
     : "";
+  const guidedEngineKey = isGuidedProjectComparisonModel(model.config_json, "aequilibrae")
+    ? "aequilibrae"
+    : isGuidedProjectComparisonModel(model.config_json, "activitysim")
+      ? "behavioral_demand"
+      : "deterministic_corridor_v1";
+  const requestedScenarioEntryId = Array.isArray(query.scenarioEntryId)
+    ? query.scenarioEntryId[0] ?? ""
+    : query.scenarioEntryId ?? "";
+  const initialScenarioEntryId = scenarioEntryOptions.some((entry) => entry.id === requestedScenarioEntryId)
+    ? requestedScenarioEntryId
+    : scenarioEntryOptions.find((entry) => entry.entryType === "baseline")?.id ?? "";
 
   /**
    * What this deployment DECLARES about the AequilibraE worker.
@@ -759,7 +780,11 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       <div className="module-page-backdrop" />
 
       <div className="space-y-6">
-        <Link href="/models" className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground">
+        <PlanningContextStripForProject requestedProjectId={query.projectId} project={primaryProjectResult.data} error={primaryProjectResult.error} />
+        <Link
+          href={model.project_id ? `${withPlanningContext("/models", model.project_id)}#project-comparison-starter` : "/models"}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back to Models
         </Link>
@@ -922,6 +947,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
           />
 
           <div className="space-y-6">
+            <div id="run-model">
             <ModelRunManager
               modelId={model.id}
               modelTitle={model.title}
@@ -935,7 +961,10 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               modelingWorkerHealth={modelingWorkerHealth}
               workspaceId={model.workspace_id}
               transitFeeds={transitFeedOptions}
+              initialEngineKey={guidedEngineKey}
+              initialScenarioEntryId={initialScenarioEntryId}
             />
+            </div>
 
             <article className="module-section-surface">
               <div className="module-section-header">

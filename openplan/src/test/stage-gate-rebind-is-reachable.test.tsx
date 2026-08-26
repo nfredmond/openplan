@@ -14,10 +14,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  *
  * So this suite refuses two shortcuts that would make it prove nothing:
  *
- *   1. IT DOES NOT MOCK THE PANEL. The dashboard's own suite mocks every
- *      workspace panel, which is right for testing the dashboard and useless for
+ *   1. IT DOES NOT MOCK THE PANEL. The setup page's own suite mocks every
+ *      workspace panel, which is right for testing the page and useless for
  *      proving the picker exists. Here the real `WorkspaceStageGatePanel`
- *      renders inside the real `DashboardPage`.
+ *      renders inside the real `WorkspacePage`.
  *   2. IT DOES NOT HAND-WRITE THE CHOICES. `buildStageGateRebindChoices` is
  *      driven from a workspace ROW through the real reconciliation and the real
  *      registry. A stage-gate action already shipped once with an offer
@@ -162,8 +162,28 @@ vi.mock("@/components/workspaces/workspace-team-panel", () => ({
 vi.mock("@/components/workspaces/workspace-integration-keys-panel", () => ({
   WorkspaceIntegrationKeysPanel: () => <div />,
 }));
+vi.mock("@/components/dashboard/build-identity-line", () => ({
+  BuildIdentityLine: () => <div />,
+}));
+vi.mock("@/components/dashboard/deployment-health-panel", () => ({
+  DeploymentHealthPanel: () => <div />,
+}));
+vi.mock("@/lib/config/deployment-health", () => ({
+  evaluateDeploymentHealth: () => ({ status: "ready", problems: [] }),
+}));
+vi.mock("@/lib/config/deployment-health-facts", () => ({
+  readDeploymentEnvFacts: () => ({}),
+  resolveModelingWorkerDeclaration: () => "declared",
+  loadModelingWorkerFacts: async () => ({ declared: true }),
+}));
+vi.mock("@/lib/models/worker-health-server", () => ({
+  loadModelingWorkerHealth: async () => ({
+    aequilibrae: { kind: "aequilibrae", state: "fresh", reason: "fresh" },
+    activitysim: { kind: "activitysim", state: "fresh", reason: "fresh" },
+  }),
+}));
 
-import DashboardPage from "@/app/(app)/dashboard/page";
+import WorkspacePage from "@/app/(app)/workspace/page";
 import { WorkspaceStageGatePanel } from "@/components/workspaces/workspace-stage-gate-panel";
 import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 import {
@@ -260,8 +280,8 @@ function emptyWorkspaceSummary() {
   });
 }
 
-async function renderDashboard() {
-  render(await DashboardPage({}));
+async function renderWorkspace() {
+  render(await WorkspacePage());
 }
 
 beforeEach(() => {
@@ -281,7 +301,7 @@ beforeEach(() => {
   });
 });
 
-describe("a planner can reach the stage-gate template binding from the dashboard", () => {
+describe("a planner can reach the stage-gate template binding from workspace setup", () => {
   it("mounts the real panel, and its disclosure is the one describeStageGateBinding produces", async () => {
     // A California workspace BOUND to the California pack: stored id and
     // geography agree, so this is the non-alarming path and the panel must not
@@ -297,7 +317,7 @@ describe("a planner can reach the stage-gate template binding from the dashboard
       error: null,
     });
 
-    await renderDashboard();
+    await renderWorkspace();
 
     const panel = screen.getByRole("region", { name: "Stage-gate template" });
 
@@ -322,7 +342,7 @@ describe("a planner can reach the stage-gate template binding from the dashboard
   });
 
   it("asks the database for the columns the binding is resolved from", async () => {
-    await renderDashboard();
+    await renderWorkspace();
 
     const projection = workspacesSelectedColumns.find((columns) =>
       columns.includes("home_country_code")
@@ -338,11 +358,11 @@ describe("a planner can reach the stage-gate template binding from the dashboard
     expect(projection).toBe(STAGE_GATE_BINDING_WORKSPACE_COLUMNS);
   });
 
-  it("says loudly, on the dashboard, when the bound template was assumed rather than chosen", async () => {
+  it("says loudly, on workspace setup, when the bound template was assumed rather than chosen", async () => {
     // A workspace that has stated no geography holds the migration's DEFAULT.
     // Nobody chose it, and the gate names it renders belong to another
     // jurisdiction — the one case a planner must not read as settled.
-    await renderDashboard();
+    await renderWorkspace();
 
     const panel = screen.getByRole("region", { name: "Stage-gate template" });
     const resolution = resolveWorkspaceStageGateBinding(signupWorkspaceRow());
@@ -375,7 +395,7 @@ describe("a planner can reach the stage-gate template binding from the dashboard
       error: { message: "column workspaces.stage_gate_template_id does not exist" },
     });
 
-    await renderDashboard();
+    await renderWorkspace();
 
     const panel = screen.getByRole("region", { name: "Stage-gate template" });
     expect(within(panel).getByText(/could not read which stage-gate template/i)).toBeInTheDocument();
@@ -393,7 +413,7 @@ describe("a planner can reach the stage-gate template binding from the dashboard
     // And no control: every gate list in the review step is a diff against the
     // current binding, which is precisely what could not be read.
     expect(within(panel).queryByRole("radio")).toBeNull();
-    // The dashboard is an internal page, so an operator may see the reason.
+    // Workspace setup is an internal page, so an operator may see the reason.
     expect(
       within(panel).getByText(/column workspaces.stage_gate_template_id does not exist/i)
     ).toBeInTheDocument();
@@ -404,7 +424,7 @@ describe("a planner can reach the stage-gate template binding from the dashboard
     // the US federal-aid floor both built in, an owner sees a real alternative;
     // if the registry ever shrinks to one pack again, the panel must say there
     // is nothing else rather than render an empty picker.
-    await renderDashboard();
+    await renderWorkspace();
 
     const panel = screen.getByRole("region", { name: "Stage-gate template" });
     if (stageGateTemplateRegistry.list().length === 1) {

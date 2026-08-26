@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "currentRelease": "v0.35.0",
+  "reviewedAt": "2026-08-25",
+  "reviewBy": "2026-09-25",
+  "statuses": ["proven", "partial", "missing", "not-assessed"],
+  "interimReleasePolicy": "Open cells block v1.0.0 but remain visible without blocking honest pre-v1 releases.",
+  "dimensions": {
+    "planner": [
+      { "id": "transportation-planner", "status": "partial" },
+      { "id": "land-use-planner", "status": "partial" },
+      { "id": "environmental-and-resilience-planner", "status": "not-assessed" },
+      { "id": "community-engagement-and-title-vi-planner", "status": "partial" },
+      { "id": "capital-programming-and-grants-planner", "status": "partial" },
+      { "id": "gis-data-and-records-planner", "status": "partial" },
+      { "id": "development-review-and-implementation-planner", "status": "not-assessed" }
+    ],
+    "organization": [
+      { "id": "local-and-county-government", "status": "partial" },
+      { "id": "regional-and-metropolitan-organizations", "status": "partial" },
+      { "id": "state-agencies", "status": "not-assessed" },
+      { "id": "tribal-governments", "status": "not-assessed" },
+      { "id": "transit-and-multimodal-providers", "status": "partial" },
+      { "id": "consultancies", "status": "partial" },
+      { "id": "nonprofits-community-groups-and-independent-planners", "status": "not-assessed" }
+    ],
+    "state": [
+      { "id": "US-AL", "status": "not-assessed" }, { "id": "US-AK", "status": "not-assessed" },
+      { "id": "US-AZ", "status": "not-assessed" }, { "id": "US-AR", "status": "not-assessed" },
+      { "id": "US-CA", "status": "partial" }, { "id": "US-CO", "status": "not-assessed" },
+      { "id": "US-CT", "status": "not-assessed" }, { "id": "US-DE", "status": "not-assessed" },
+      { "id": "US-DC", "status": "not-assessed" }, { "id": "US-FL", "status": "not-assessed" },
+      { "id": "US-GA", "status": "not-assessed" }, { "id": "US-HI", "status": "not-assessed" },
+      { "id": "US-ID", "status": "not-assessed" }, { "id": "US-IL", "status": "not-assessed" },
+      { "id": "US-IN", "status": "not-assessed" }, { "id": "US-IA", "status": "not-assessed" },
+      { "id": "US-KS", "status": "not-assessed" }, { "id": "US-KY", "status": "not-assessed" },
+      { "id": "US-LA", "status": "not-assessed" }, { "id": "US-ME", "status": "not-assessed" },
+      { "id": "US-MD", "status": "not-assessed" }, { "id": "US-MA", "status": "not-assessed" },
+      { "id": "US-MI", "status": "not-assessed" }, { "id": "US-MN", "status": "not-assessed" },
+      { "id": "US-MS", "status": "not-assessed" }, { "id": "US-MO", "status": "not-assessed" },
+      { "id": "US-MT", "status": "not-assessed" }, { "id": "US-NE", "status": "not-assessed" },
+      { "id": "US-NV", "status": "not-assessed" }, { "id": "US-NH", "status": "not-assessed" },
+      { "id": "US-NJ", "status": "not-assessed" }, { "id": "US-NM", "status": "not-assessed" },
+      { "id": "US-NY", "status": "not-assessed" }, { "id": "US-NC", "status": "not-assessed" },
+      { "id": "US-ND", "status": "not-assessed" }, { "id": "US-OH", "status": "not-assessed" },
+      { "id": "US-OK", "status": "not-assessed" }, { "id": "US-OR", "status": "not-assessed" },
+      { "id": "US-PA", "status": "not-assessed" }, { "id": "US-RI", "status": "not-assessed" },
+      { "id": "US-SC", "status": "not-assessed" }, { "id": "US-SD", "status": "not-assessed" },
+      { "id": "US-TN", "status": "not-assessed" }, { "id": "US-TX", "status": "not-assessed" },
+      { "id": "US-UT", "status": "not-assessed" }, { "id": "US-VT", "status": "not-assessed" },
+      { "id": "US-VA", "status": "not-assessed" }, { "id": "US-WA", "status": "not-assessed" },
+      { "id": "US-WV", "status": "not-assessed" }, { "id": "US-WI", "status": "not-assessed" },
+      { "id": "US-WY", "status": "not-assessed" }, { "id": "US-AS", "status": "not-assessed" },
+      { "id": "US-GU", "status": "not-assessed" }, { "id": "US-MP", "status": "not-assessed" },
+      { "id": "US-PR", "status": "not-assessed" }, { "id": "US-VI", "status": "not-assessed" }
+    ],
+    "capability": [
+      { "id": "long-range-transportation-and-regional-planning", "status": "partial" },
+      { "id": "land-use-comprehensive-and-community-planning", "status": "partial" },
+      { "id": "travel-demand-corridor-scenario-and-performance-analysis", "status": "partial" },
+      { "id": "transit-active-transportation-freight-and-safety-planning", "status": "partial" },
+      { "id": "environmental-review-climate-resilience-and-equity", "status": "not-assessed" },
+      { "id": "community-engagement-title-vi-and-public-decisions", "status": "partial" },
+      { "id": "capital-programming-prioritization-grants-delivery-and-reimbursement", "status": "partial" },
+      { "id": "gis-data-stewardship-documents-reports-and-public-records", "status": "partial" },
+      { "id": "development-review-implementation-and-interdepartmental-handoff", "status": "not-assessed" }
+    ],
+    "artifact": [
+      { "id": "project-record", "status": "partial" },
+      { "id": "scenario-comparison", "status": "partial" },
+      { "id": "model-validation-record", "status": "partial" },
+      { "id": "safety-evidence", "status": "partial" },
+      { "id": "public-engagement-record", "status": "partial" },
+      { "id": "report-and-print-export", "status": "partial" },
+      { "id": "adopted-plan", "status": "partial" },
+      { "id": "grant-application", "status": "partial" },
+      { "id": "delivery-and-reimbursement-record", "status": "partial" },
+      { "id": "interoperable-geospatial-exchange", "status": "missing" }
+    ],
+    "accessibility": [
+      { "id": "keyboard", "status": "partial" },
+      { "id": "screen-reader", "status": "partial" },
+      { "id": "responsive", "status": "partial" },
+      { "id": "print", "status": "partial" },
+      { "id": "public-artifact", "status": "partial" }
+    ],
+    "operations": [
+      { "id": "free-self-hosted-install", "status": "partial" },
+      { "id": "backup-and-restore", "status": "partial" },
+      { "id": "upgrade", "status": "partial" },
+      { "id": "long-job-resumption", "status": "partial" },
+      { "id": "worker-health-and-recovery", "status": "partial" }
+    ]
+  },
+  "evidence": [
+    "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+    "docs/product/V1_PRODUCT_CONTRACT.md",
+    "docs/reviews/product-direction/2026-08-25-v1-direction.md"
+  ]
+}

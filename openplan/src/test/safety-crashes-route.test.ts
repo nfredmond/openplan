@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { readFileSync } from "node:fs";
 
 const getUserMock = vi.fn();
 const membershipMaybeSingleMock = vi.fn();
@@ -21,8 +22,16 @@ vi.mock("@/lib/supabase/server", () => ({
         };
       }
       if (table === "safety_crash_ingests") {
+        const scoped = {
+          eq: projectIngestListMock,
+          is: projectIngestListMock,
+        };
+        const lookup = {
+          eq: () => lookup,
+          order: () => ({ limit: () => scoped }),
+        };
         return {
-          select: () => ({ eq: () => ({ eq: projectIngestListMock }) }),
+          select: () => lookup,
         };
       }
       return {
@@ -57,7 +66,16 @@ describe("POST /api/safety/crashes/ingest guards", () => {
     vi.clearAllMocks();
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
-    projectMaybeSingleMock.mockResolvedValue({ data: { id: PROJECT_ID }, error: null });
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_min_lon: BBOX.minLon,
+        place_min_lat: BBOX.minLat,
+        place_max_lon: BBOX.maxLon,
+        place_max_lat: BBOX.maxLat,
+      },
+      error: null,
+    });
     ingestMock.mockResolvedValue({
       ingestId: "ingest-1",
       status: "ready",
@@ -245,6 +263,38 @@ describe("POST /api/safety/crashes/ingest guards", () => {
     expect(ingestMock).not.toHaveBeenCalled();
   });
 
+  it("409 when a linked acquisition does not use the project's stored study area", async () => {
+    const res = await POST(
+      ingestRequest({
+        workspaceId: WORKSPACE_ID,
+        bbox: { minLon: -121.2, minLat: 39.2, maxLon: -121.0, maxLat: 39.4 },
+        years: [2025],
+        projectId: PROJECT_ID,
+      })
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({ error: expect.stringMatching(/does not match/i) });
+    expect(ingestMock).not.toHaveBeenCalled();
+  });
+
+  it("409 when a linked project has no stored study area", async () => {
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_min_lon: null,
+        place_min_lat: null,
+        place_max_lon: null,
+        place_max_lat: null,
+      },
+      error: null,
+    });
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID })
+    );
+    expect(res.status).toBe(409);
+    expect(ingestMock).not.toHaveBeenCalled();
+  });
+
   it("500 when the linked-project lookup fails", async () => {
     projectMaybeSingleMock.mockResolvedValue({ data: null, error: { message: "boom" } });
     const res = await POST(
@@ -287,6 +337,13 @@ describe("GET /api/safety/crashes project filter", () => {
     projectIngestListMock.mockResolvedValue({ data: null, error: { message: "boom" } });
     const res = await GET(crashQuery(`&projectId=${PROJECT_ID}`));
     expect(res.status).toBe(500);
+  });
+
+  it("pins rows and spatial screens to one exact acquisition", () => {
+    const source = readFileSync("src/app/api/safety/crashes/route.ts", "utf8");
+    expect(source).toContain('q = q.eq("ingest_id", activeIngestId)');
+    expect(source).toContain('rpc("safety_ksi_concentrations_for_ingests"');
+    expect(source).toContain("p_ingest_ids: [activeIngestId]");
   });
 });
 

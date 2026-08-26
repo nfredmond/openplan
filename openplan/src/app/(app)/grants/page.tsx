@@ -100,6 +100,8 @@ import {
 } from "@/lib/grants/page-helpers";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import { resolvePlanningContext } from "@/lib/projects/planning-context";
 
 export const metadata = moduleMetadata("Grants");
 
@@ -141,7 +143,9 @@ export default async function GrantsPage({
   const selectedStatus = normalizeStatusFilter(filters.status);
   const selectedDecision = normalizeDecisionFilter(filters.decision);
   const selectedKind = normalizeKindFilter(filters.kind);
-  const activeFocusedProjectId = normalizeFocusedProjectId(filters.focusProjectId);
+  const activeFocusedProjectId = normalizeFocusedProjectId(
+    filters.projectId ?? filters.focusProjectId
+  );
   const activeFocusedOpportunityId = normalizeFocusedOpportunityId(filters.focusOpportunityId);
   const activeFocusedInvoiceId = normalizeFocusedInvoiceId(filters.focusInvoiceId);
   const activeRelinkedInvoiceId = normalizeRelinkedInvoiceId(filters.relinkedInvoiceId);
@@ -296,7 +300,7 @@ export default async function GrantsPage({
   if (fundingAwardsRead.error && !looksLikePendingColumn(fundingAwardsRead.error.message)) {
     reads.check("this workspace's funding awards", fundingAwardsRead);
   }
-  reads.check("this workspace's projects", projectsRead);
+  const projectsReadFailed = reads.check("this workspace's projects", projectsRead);
   reads.check("this workspace's programs", programsRead);
   reads.check("reimbursement invoices", fundingInvoicesRead);
   reads.check("project funding profiles", projectFundingProfilesRead);
@@ -328,6 +332,15 @@ export default async function GrantsPage({
     reimbursementProfileResolution.kind === "resolved" ? reimbursementProfileResolution.binding : null;
 
   const projectOptions = (projectsData ?? []) as ProjectOption[];
+  const planningContext = resolvePlanningContext(
+    activeFocusedProjectId,
+    activeFocusedProjectId
+      ? projectOptions.find((project) => project.id === activeFocusedProjectId) ?? null
+      : null,
+    activeFocusedProjectId && projectsReadFailed
+      ? projectsRead.error ?? { message: "Project context could not be read." }
+      : null
+  );
   const programOptions = (programsData ?? []) as ProgramOption[];
   const projectIdsWithVisibleFundingOpportunities = Array.from(
     new Set(
@@ -797,6 +810,7 @@ export default async function GrantsPage({
 
   return (
     <section className="module-page">
+      <PlanningContextStrip context={planningContext} className="mb-4" />
       {/* This is an internal, membership-gated page, so the database's own words
           belong on it — behind the notice's operator disclosure, not inside the
           sentence a planner reads. */}

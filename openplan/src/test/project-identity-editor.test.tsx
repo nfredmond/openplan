@@ -194,7 +194,7 @@ describe("ProjectIdentityEditor", () => {
     render(<ProjectIdentityEditor project={PROJECT} canWrite />);
     fireEvent.click(screen.getByRole("button", { name: /set study area/i }));
 
-    expect(screen.getByRole("link", { name: /Upload it on this project's Map tab/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Upload it on this project's Evidence tab/i })).toHaveAttribute(
       "href",
       `/projects/${PROJECT.id}?tab=map#project-map-presence`,
     );

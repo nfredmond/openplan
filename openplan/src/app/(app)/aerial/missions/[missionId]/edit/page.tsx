@@ -10,13 +10,17 @@ import { buildMissionAoiSeedSources, type AoiSeedSource } from "@/lib/aerial/aoi
 import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
 
 type EditMissionAoiPageProps = {
   params: Promise<{ missionId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function EditMissionAoiPage({ params }: EditMissionAoiPageProps) {
+export default async function EditMissionAoiPage({ params, searchParams }: EditMissionAoiPageProps) {
   const { missionId } = await params;
+  const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -63,6 +67,8 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
   // instead of silently offering none.
   let seedSources: AoiSeedSource[] = [];
   let seedLoadFailed = false;
+  let planningProject: { id: string; name: string | null } | null = null;
+  let planningProjectError: { message?: string | null } | null = null;
   if (mission.project_id) {
     const [projectResult, corridorsResult] = await Promise.all([
       supabase
@@ -81,6 +87,8 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
 
     seedLoadFailed = Boolean(projectResult.error || corridorsResult.error);
     const project = projectResult.data;
+    planningProject = project;
+    planningProjectError = projectResult.error;
     const corridors = corridorsResult.data;
 
     seedSources = buildMissionAoiSeedSources({
@@ -90,10 +98,19 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
     });
   }
 
+  const planningContext = resolvePlanningContext(
+    query.projectId,
+    planningProject,
+    planningProjectError
+  );
+
   const header = (
     <div className="flex flex-col gap-3">
       <Link
-        href={`/aerial/missions/${mission.id}`}
+        href={withPlanningContext(
+          `/aerial/missions/${mission.id}`,
+          planningContext.status === "active" ? planningContext.project.id : null
+        )}
         className="inline-flex items-center gap-1.5 text-[0.75rem] font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-3 w-3" />
@@ -114,6 +131,8 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
   );
 
   return (
+    <>
+    <PlanningContextStrip context={planningContext} className="mb-4" />
     <Worksurface
       ariaLabel={`Edit AOI for aerial mission ${mission.title}`}
       header={header}
@@ -148,5 +167,6 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
         </WorksurfaceSection>
       }
     />
+    </>
   );
 }

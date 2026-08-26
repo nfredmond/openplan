@@ -53,4 +53,4 @@ export const CORRIDOR_ANALYSIS_TRAFFIC_HREF = "/models";
  * product.
  */
 export const TRAVEL_MODEL_WHAT_IT_TAKES =
-  "This is where a traffic or miles-driven estimate comes from, and it is the longer route: it needs a road network file for your area, scenarios to compare, and a run to validate against real counts. It is expert work rather than a quick screening — worth knowing before you start rather than partway through.";
+  "This is where a traffic or miles-driven estimate comes from, and it is the longer route. Before you start, choose a project: OpenPlan sets up its no-build and build scenarios, then the workers build one shared road network and run AequilibraE and ActivitySim separately. You still review the assumptions, failed links, disagreements, and checks against real counts before using the answer.";

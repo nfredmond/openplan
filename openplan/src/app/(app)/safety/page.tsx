@@ -14,6 +14,8 @@ import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { StateBlock } from "@/components/ui/state-block";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
+import { resolvePlanningContext } from "@/lib/projects/planning-context";
 import type {
   SafetyIngestHistoryEntry,
   SafetyIngestSummary,
@@ -147,6 +149,13 @@ export default async function SafetyPage({
       : false;
 
   const projectRow = (projectResult.data ?? null) as ProjectPlaceRowWithIdentity | null;
+  const planningContext = resolvePlanningContext(
+    requestedProjectId,
+    projectRow,
+    requestedProjectId && (projectUnreadable || projectSchemaPending)
+      ? projectResult.error ?? { message: "Project context could not be read." }
+      : null
+  );
 
   // Precedence lives in `resolveStudyArea`, stated once for the whole app: the
   // project's own area outranks the workspace home, and nothing here can invent
@@ -185,7 +194,7 @@ export default async function SafetyPage({
   // Named results, not `{ data }`: a crash-ingest read that failed must not
   // render as "no crash data has been imported", which on this page reads as a
   // statement about the agency's safety record rather than about the query.
-  const [ingestsResult, projectsResult] = await Promise.all([
+  const [ingestsResult, projectsResult, reportsResult] = await Promise.all([
     supabase
       .from("safety_crash_ingests")
       .select(
@@ -200,14 +209,32 @@ export default async function SafetyPage({
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(200),
+    requestedProjectId
+      ? supabase
+          .from("reports")
+          .select("id, title")
+          .eq("workspace_id", workspaceId)
+          .eq("project_id", requestedProjectId)
+          .order("updated_at", { ascending: false })
+          .limit(20)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   const ingestsReadFailed = reads.check("this workspace's crash imports", ingestsResult);
   reads.check("this workspace's projects", projectsResult);
+  reads.check("this project's reports", reportsResult);
   const ingestRows = ingestsResult.data;
   const projectRows = projectsResult.data;
 
-  const ingestRow = (ingestRows ?? [])[0] ?? null;
+  // The banner and map both describe ONE acquisition. Pick the newest row in
+  // the current context rather than the newest row anywhere in the workspace:
+  // a project pull must not label a county map, and an unattached county pull
+  // must not label a project map.
+  const ingestRow = ((ingestRows ?? []) as Array<Record<string, unknown>>).find((row) =>
+    requestedProjectId
+      ? row.project_id === requestedProjectId
+      : row.project_id === null
+  ) ?? null;
   const latestIngest: SafetyIngestSummary | null = ingestRow
     ? {
         id: ingestRow.id as string,
@@ -297,6 +324,7 @@ export default async function SafetyPage({
       cannot have a map that fills it.
     */
     <section className="module-page flex h-full min-h-0 flex-col gap-4">
+      <PlanningContextStrip context={planningContext} />
       {reads.any ? (
         <StateBlock
           tone="danger"
@@ -337,6 +365,7 @@ export default async function SafetyPage({
         openedForProject={projectRow ? { id: projectRow.id, name: projectRow.name } : null}
         projects={projects}
         ingestHistory={ingestHistory}
+        projectReports={(reportsResult.data ?? []) as Array<{ id: string; title: string }>}
         basemapChoices={basemaps.choices}
         defaultBasemapId={basemaps.defaultId}
       />

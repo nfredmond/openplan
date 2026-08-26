@@ -177,6 +177,8 @@ export type FirstRunChecklistProps = {
    * source recorded no display name, and that is still set.
    */
   homeGeographyIsSet: boolean;
+  /** True when the home-place read failed, which must never be restated as unset. */
+  homeGeographyUnreadable?: boolean;
   /** The place name the resolver recorded, when it recorded one. Never a fallback. */
   homeGeographyLabel: string | null;
   /** True once this workspace has at least one saved analysis run. */
@@ -226,6 +228,7 @@ export type FirstRunChecklistProps = {
 export function FirstRunChecklist({
   aiKeyConfigured,
   homeGeographyIsSet,
+  homeGeographyUnreadable = false,
   homeGeographyLabel,
   hasRuns,
   runsUnreadable = false,
@@ -252,7 +255,7 @@ export function FirstRunChecklist({
   // very beginning), then geography, then the intent-driven engagement step.
   // Emphasis never gates anything — every step stays usable regardless.
   const emphasizeAiKey = !aiKeyConfigured;
-  const emphasizeGeography = aiKeyConfigured && !homeGeographyIsSet;
+  const emphasizeGeography = aiKeyConfigured && !homeGeographyIsSet && !homeGeographyUnreadable;
   const emphasizeEngagement =
     showEngagementStep &&
     aiKeyConfigured &&
@@ -267,17 +270,19 @@ export function FirstRunChecklist({
     : canManageWorkspace
       ? aiKeyControlIsHere
         ? "Not on yet. Paste your workspace's Anthropic API key below."
-        : "Not on yet. Add an Anthropic key in the Integration keys panel on this page."
+        : "Not on yet. Add an Anthropic key in Workspace setup & health."
       : "Not on yet. A workspace owner or admin can add the key.";
 
-  const geographyState = homeGeographyIsSet
+  const geographyState = homeGeographyUnreadable
+    ? "Could not check where this agency works just now. That failed read is not the same as this setting being empty."
+    : homeGeographyIsSet
     ? homeGeographyLabel
       ? `Set to ${homeGeographyLabel}.`
       : "Set. The source recorded no place name for it."
     : canManageWorkspace
       ? geographyPickerIsHere
         ? "Not set. Choose the county, city, CDP, or metro area you plan for, below."
-        : "Not set. Choose it in the workspace geography panel on this page."
+        : "Not set. Choose it in Workspace setup & health."
       : "Not set. A workspace owner or admin can set it.";
 
   return (
@@ -299,6 +304,11 @@ export function FirstRunChecklist({
             ? "The Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation all run on this key. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
             : "Without a key, the Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation are unavailable — everything else in OpenPlan still works. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
         }
+        action={
+          !aiKeyConfigured && canManageWorkspace && !aiKeyControlIsHere
+            ? { href: "/workspace#workspace-integrations", label: "Open integration setup" }
+            : undefined
+        }
       >
         {aiKeyConfigured ? null : aiKeyControl}
       </FirstRunStep>
@@ -307,13 +317,18 @@ export function FirstRunChecklist({
         index={geographyIndex}
         icon={MapPin}
         title="Tell OpenPlan where you work"
-        status={homeGeographyIsSet ? "done" : "todo"}
+        status={homeGeographyUnreadable ? "optional" : homeGeographyIsSet ? "done" : "todo"}
         emphasis={emphasizeGeography}
         state={geographyState}
         unlocks={
           homeGeographyIsSet
             ? "Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting."
             : "Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting. Until it is set, maps open on a neutral continental view, no jurisdiction-specific stage-gate rules are bound, and equity layers stay empty."
+        }
+        action={
+          !homeGeographyIsSet && canManageWorkspace && !geographyPickerIsHere
+            ? { href: "/workspace", label: "Open where-you-work setting" }
+            : undefined
         }
       >
         {children}
@@ -372,7 +387,7 @@ export function FirstRunChecklist({
           status="optional"
           state="A workspace works fine alone, and teammates can join at any time."
           unlocks="Everyone you invite works in this same workspace — the same projects, runs, engagement campaigns, and packets — with the role you give them. Invitations are links you send yourself; OpenPlan does not email them."
-          action={{ href: "#workspace-team", label: "Open the team panel" }}
+          action={{ href: "/workspace#workspace-team", label: "Open the team panel" }}
         />
       ) : null}
     </ol>

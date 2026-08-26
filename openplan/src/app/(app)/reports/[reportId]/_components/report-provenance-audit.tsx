@@ -107,8 +107,12 @@ export function ReportProvenanceAudit({
         </p>
         {runAudit.length === 0 ? (
           <EmptyState
-            title="No audit data yet"
-            description="Generate the report to capture linked-run transparency notes and artifact gate decisions."
+            title={runs.length === 0 ? "No linked model run" : "Linked-run audit unavailable"}
+            description={
+              runs.length === 0
+                ? "This packet does not cite a model run, so there is no run gate to list. Its project, safety, engagement, and other source provenance remains below."
+                : "The linked run has no transparency gate record to display. Regenerating cannot manufacture one; review the source record before relying on it."
+            }
             compact
           />
         ) : (

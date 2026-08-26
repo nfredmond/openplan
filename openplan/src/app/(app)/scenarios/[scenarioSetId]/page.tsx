@@ -34,6 +34,7 @@ import {
   titleizeScenarioValue,
 } from "@/lib/scenarios/catalog";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 type ScenarioSetRow = {
   id: string;
@@ -129,10 +130,13 @@ function classifyModelRunsRead(
 
 export default async function ScenarioSetDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ scenarioSetId: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { scenarioSetId } = await params;
+  const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -569,10 +573,10 @@ export default async function ScenarioSetDetailPage({
   // work rather than about this render.
   const comparisonEvidenceUnreadable =
     entriesUnreadable || attachedRunsUnreadable || attachedModelRunsUnreadable;
-
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
+      <PlanningContextStripForProject requestedProjectId={query.projectId} project={projectResult.data} error={projectResult.error} className="mb-4" />
       <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/scenarios" className="transition hover:text-foreground">
           Scenarios

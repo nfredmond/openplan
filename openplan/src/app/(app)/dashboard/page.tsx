@@ -5,22 +5,13 @@ import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
 import { DashboardOperatorGuidance } from "@/components/dashboard/dashboard-operator-guidance";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { BuildIdentityLine } from "@/components/dashboard/build-identity-line";
-import { DeploymentHealthPanel } from "@/components/dashboard/deployment-health-panel";
 import { FirstRunChecklist } from "@/components/onboarding/first-run-checklist";
 import { GettingStartedCard } from "@/components/onboarding/getting-started-card";
 import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
-import { WorkspaceGeographyPanel } from "@/components/workspaces/workspace-geography-panel";
-import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace-integration-keys-panel";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { WorkspaceStageGatePanel } from "@/components/workspaces/workspace-stage-gate-panel";
-import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
-import {
-  buildStageGateRebindChoices,
-  STAGE_GATE_BINDING_WORKSPACE_COLUMNS,
-} from "@/lib/stage-gates/rebind";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import {
@@ -46,25 +37,19 @@ import {
   loadRecentActionExecutionsForWorkspace,
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
-import { evaluateDeploymentHealth } from "@/lib/config/deployment-health";
 import { hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
-import { INTEGRATION_PROVIDERS } from "@/lib/integrations/providers";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
-import {
-  loadModelingWorkerFacts,
-  readDeploymentEnvFacts,
-  resolveModelingWorkerDeclaration,
-} from "@/lib/config/deployment-health-facts";
-import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
 import {
   homeGeographyLabel,
+  HOME_GEOGRAPHY_SCOPE_COLUMNS,
   parseWorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 
 export const metadata = moduleMetadata("Overview");
 
@@ -149,7 +134,7 @@ export default async function DashboardPage({
         // unaffected.
         supabase
           .from("workspaces")
-          .select(STAGE_GATE_BINDING_WORKSPACE_COLUMNS)
+          .select(HOME_GEOGRAPHY_SCOPE_COLUMNS)
           .eq("id", workspaceId)
           .maybeSingle(),
         // The recent-actions audit feed, absorbed from the retired Command
@@ -199,42 +184,12 @@ export default async function DashboardPage({
   // be stated at all.
   const runsRead = chartRows.runs;
   const runsData = runsRead.rows;
-  const homeGeography = parseWorkspaceHomeGeography(homeGeographyResult.data);
+  const reads = new ReadFailureLog();
+  const homeGeographyUnreadable = reads.check("where your agency works", homeGeographyResult);
+  const homeGeography = homeGeographyUnreadable
+    ? null
+    : parseWorkspaceHomeGeography(homeGeographyResult.data);
   const homeGeographyIsSet = homeGeography !== null;
-
-  // Which stage-gate template this workspace delivers under, and what changing
-  // it would mean — resolved from the row on the server so the panel renders the
-  // same reconciliation the project boards and the decisions route perform,
-  // rather than a second answer computed in the browser.
-  //
-  // THE READ ERROR IS HANDED IN, and that is the whole point. A failed read
-  // leaves `data` null, and a null row resolves to the interim default with the
-  // reason `no_workspace_jurisdiction`, whose disclosure states "This workspace
-  // has not stated where it works" and tells the planner to set a home geography
-  // they may already have set. That is a claim about the agency, and a query
-  // that failed cannot make it. With the error in hand the panel says the
-  // binding could not be read instead — a different fact, stated as itself.
-  const stageGateReadError =
-    "error" in homeGeographyResult ? homeGeographyResult.error : null;
-  const stageGateChoices = buildStageGateRebindChoices(homeGeographyResult.data, {
-    readError: stageGateReadError,
-  });
-
-  // What this deployment cannot currently do, and why. Only owners and admins
-  // see it — it is operator information, and a member cannot act on it. Silent
-  // when everything is configured.
-  const deploymentHealth = canManageWorkspace
-    ? evaluateDeploymentHealth({
-        ...readDeploymentEnvFacts(),
-        modelingWorker: await loadModelingWorkerFacts(
-          supabase as unknown as Parameters<typeof loadModelingWorkerFacts>[0],
-          workspaceId
-        ),
-      })
-    : null;
-  const modelingWorkerHealth = canManageWorkspace
-    ? await loadModelingWorkerHealth(resolveModelingWorkerDeclaration())
-    : null;
 
   // Computed unconditionally and rendered CONDITIONALLY: on an unreadable read
   // these are all zeros, and `runKpiCards`/`runInsightTiles` refuse to state
@@ -418,41 +373,14 @@ export default async function DashboardPage({
     operationsSummary.counts.programs === 0 &&
     operationsSummary.counts.reports === 0;
 
-  // While the checklist's first step is outstanding, its control moves up next
-  // to it — the geography setter is what the step asks for, and it was
-  // previously buried mid-page where a first-run user never reached it. It is
-  // still mounted EXACTLY ONCE either way: the panel self-fetches, so a second
-  // mount would mean a second request and a second answer. The checklist
-  // renders whenever the geography is unset, so the hoist no longer depends on
-  // the workspace being empty.
-  //
-  // WHEN IT IS HOISTED IT LOSES ITS OWN FRAME. Inside the checklist the panel
-  // is already inside two boxes (the get-started card, then the step), and a
-  // third border around it put /dashboard at four levels of nesting — measured
-  // in Chrome at 1600x900 on 2026-08-13, the only route in this lane over the
-  // limit of three. `embedded` removes the frame; it does not replace it with a
-  // tint, which would read as a box to a person and vanish from the audit.
-  const hoistGeographyPanel = !homeGeographyIsSet;
-  const geographyPanel = (
-    <WorkspaceGeographyPanel
-      workspaceId={workspaceId}
-      canManage={canManageWorkspace}
-      embedded={hoistGeographyPanel}
-    />
-  );
-
-  // Same hoisting rule for the AI key: while no Anthropic key resolves, the
-  // integration-keys panel's Anthropic row moves up into the checklist's first
-  // step, and the main panel below renders the remaining providers. Each
-  // provider row is mounted exactly once either way. Members cannot manage
-  // keys (the panel renders nothing for them), so nothing is hoisted for them.
-  const hoistAiKeyRow = !aiKeyConfigured && canManageWorkspace;
-  const nonAiProviderIds = INTEGRATION_PROVIDERS.map((provider) => provider.id).filter(
-    (id) => id !== "anthropic"
-  );
-
   const overviewView = (
     <>
+      {reads.any ? (
+        <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive" role="alert">
+          <p>{reads.describe()}</p>
+          <p className="mt-1 text-xs">{reads.messages().join(" · ")}</p>
+        </div>
+      ) : null}
       {/* The getting-started checklist. GettingStartedCard decides whether it
           is on screen: always while the home geography is unset, otherwise
           until this user dismisses it — and once dismissed, a permanent
@@ -478,6 +406,7 @@ export default async function DashboardPage({
           <FirstRunChecklist
             aiKeyConfigured={aiKeyConfigured}
             homeGeographyIsSet={homeGeographyIsSet}
+            homeGeographyUnreadable={homeGeographyUnreadable}
             homeGeographyLabel={homeGeographyLabel(homeGeography)}
             hasRuns={kpis.totalRuns > 0}
             runsUnreadable={runsRead.failed}
@@ -486,19 +415,7 @@ export default async function DashboardPage({
             engagementCampaignCount={
               operationsSummary.moduleObservations?.engagement.campaigns ?? null
             }
-            aiKeyControl={
-              hoistAiKeyRow ? (
-                <WorkspaceIntegrationKeysPanel
-                  workspaceId={workspaceId}
-                  canManage={canManageWorkspace}
-                  providerIds={["anthropic"]}
-                  embedded
-                />
-              ) : null
-            }
-          >
-            {hoistGeographyPanel ? geographyPanel : null}
-          </FirstRunChecklist>
+          />
           <p className="mt-4 text-xs text-muted-foreground">
             New to OpenPlan? The{" "}
             <Link href="/help" className="font-semibold underline underline-offset-4 hover:text-foreground">
@@ -508,53 +425,6 @@ export default async function DashboardPage({
           </p>
         </div>
       </GettingStartedCard>
-
-      {deploymentHealth ? <DeploymentHealthPanel health={deploymentHealth} workerHealth={modelingWorkerHealth} /> : null}
-
-      {/* Workspace configuration: where this agency works, and who works here.
-          Geography comes first because it is what the rest of the app reads —
-          maps, jurisdiction rules, equity data, and study-area defaults are all
-          downstream of it; while it is outstanding on a first run it sits in the
-          checklist above instead, and this row holds the team alone. The
-          two-column layout only applies to owners and admins with both panels
-          here: one panel in a two-column grid leaves a lone half-width card. */}
-      <div className={canManageWorkspace && !hoistGeographyPanel ? "grid gap-6 xl:grid-cols-2" : undefined}>
-        {hoistGeographyPanel ? null : geographyPanel}
-
-        {/* Anchored so the checklist's team step can point at the control
-            rather than at another page. */}
-        <div id="workspace-team">
-          <WorkspaceTeamPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
-        </div>
-      </div>
-
-      {/* Which delivery process this workspace's gate boards follow. It sits
-          directly under the geography because it is downstream of it: the
-          registry binds a template from the workspace's own jurisdiction when
-          one is registered, and until a geography is set every workspace holds
-          an explicitly-labeled interim default nobody chose. Unlike the team and
-          key panels this renders for every member — an assumed template changes
-          the gate names and evidence ids they read on every project board, and a
-          member who cannot change it still has to know not to file them as their
-          agency's own requirements. */}
-      <WorkspaceStageGatePanel
-        workspaceId={workspaceId}
-        canManage={canManageWorkspace}
-        choices={stageGateChoices}
-      />
-
-      {/* Integration keys take their own full-width row rather than a third
-          slot in the pair above: three items in a two-column grid leave a lone
-          half-width card, and this panel's per-provider rows want the width.
-          Like the team panel, it renders nothing for a member — key management
-          is operator/owner work — so the row collapses cleanly for them.
-          While the Anthropic row is hoisted into the checklist's AI step, this
-          panel renders the remaining providers only. */}
-      <WorkspaceIntegrationKeysPanel
-        workspaceId={workspaceId}
-        canManage={canManageWorkspace}
-        providerIds={hoistAiKeyRow ? nonAiProviderIds : undefined}
-      />
 
       <header className="module-header-grid">
         <DashboardWorkspaceIntro

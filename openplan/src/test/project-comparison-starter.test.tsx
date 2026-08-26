@@ -1,0 +1,162 @@
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { ProjectComparisonStarter } from "@/components/models/project-comparison-starter";
+import { summarizeProjectComparison } from "@/lib/models/project-comparison";
+
+const navigation = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
+
+const EMPTY = {
+  areaLabel: "Mendocino County",
+  networkCount: 0,
+  scenarioSetCount: 0,
+  modelCount: 0,
+  aequilibraeModelCount: 0,
+  activitySimModelCount: 0,
+  runCount: 0,
+  aequilibraeRunCount: 0,
+  activitySimRunCount: 0,
+  checkedRunCount: 0,
+  comparisonPacketCount: 0,
+  unreadable: [],
+} as const;
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.clearAllMocks();
+});
+
+describe("project comparison guidance", () => {
+  it("does not turn missing evidence into a traffic, VMT, or value claim", () => {
+    const summary = summarizeProjectComparison(EMPTY);
+    expect(summary.state).toBe("not_started");
+    expect(summary.firstMissingStep).toBe("network");
+    expect(summary.trafficAnswer).toMatch(/^Unavailable/);
+    expect(summary.vmtAnswer).toMatch(/^Unavailable/);
+    expect(summary.valueAnswer).toMatch(/Not supportable/);
+    expect(summary.uncertainties).toContain("No shared road-network basis is registered.");
+  });
+
+  it("keeps a failed fact read unknown instead of calling it absent", () => {
+    const summary = summarizeProjectComparison({ ...EMPTY, unreadable: ["run"] });
+    expect(summary.state).toBe("unknown");
+    expect(summary.trafficAnswer).toMatch(/could not be read/);
+    expect(summary.uncertainties).toEqual(["The run record could not be read."]);
+  });
+
+  it("treats a registered managed basis as ready while disclosing the snapshot is not a result", () => {
+    const summary = summarizeProjectComparison({
+      ...EMPTY,
+      managedNetworkBasisCount: 1,
+      scenarioSetCount: 1,
+      modelCount: 2,
+      aequilibraeModelCount: 1,
+      activitySimModelCount: 1,
+    });
+    expect(summary.state).toBe("runs_missing");
+    expect(summary.firstMissingStep).toBe("run");
+    expect(summary.uncertainties).not.toContain("No shared road-network basis is registered.");
+    expect(summary.trafficAnswer).toMatch(/^Unavailable/);
+  });
+
+  it("starts one project-scoped scaffold and sends the planner to the first real missing input", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        scenarioSetId: "scenario-1",
+        networkBasis: "worker_osm_snapshot",
+        nextRun: {
+          method: "aequilibrae",
+          scenario: "baseline",
+          modelId: "model-aeq",
+          scenarioEntryId: "entry-baseline",
+        },
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ProjectComparisonStarter
+        projectId="11111111-1111-4111-8111-111111111111"
+        projectName="Main Street"
+        facts={EMPTY}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Begin guided comparison" }));
+    await waitFor(() => expect(navigation.push).toHaveBeenCalled());
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/models/project-comparison",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ projectId: "11111111-1111-4111-8111-111111111111" }),
+      }),
+    );
+    expect(navigation.push).toHaveBeenCalledWith(
+      "/models/model-aeq?projectId=11111111-1111-4111-8111-111111111111&scenarioEntryId=entry-baseline#run-model",
+    );
+  });
+
+  it("requires a sourced, non-zero build change before routing to a build run", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: "needs_build_assumption",
+          scenarioSetId: "scenario-1",
+          networkBasis: "worker_osm_snapshot",
+          buildAssumptionRequired: true,
+          nextRun: null,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: "ready_for_run",
+          scenarioSetId: "scenario-1",
+          networkBasis: "worker_osm_snapshot",
+          nextRun: {
+            method: "aequilibrae",
+            scenario: "build",
+            modelId: "model-aeq",
+            scenarioEntryId: "entry-build",
+          },
+        }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ProjectComparisonStarter
+        projectId="11111111-1111-4111-8111-111111111111"
+        projectName="Main Street"
+        facts={{ ...EMPTY, scenarioSetCount: 1, modelCount: 2 }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Continue guided comparison" }));
+    expect(await screen.findByTestId("guided-build-assumption")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Daily auto-trip change (%)"), { target: { value: "-8" } });
+    fireEvent.change(screen.getByLabelText("What that change is based on"), {
+      target: { value: "Local corridor mode-shift study, 2025" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save assumption and continue" }));
+
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith(
+      "/models/model-aeq?projectId=11111111-1111-4111-8111-111111111111&scenarioEntryId=entry-build#run-model",
+    ));
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/api/models/project-comparison",
+      expect.objectContaining({
+        body: JSON.stringify({
+          projectId: "11111111-1111-4111-8111-111111111111",
+          buildAssumption: {
+            autoTripChangePct: -8,
+            basis: "Local corridor mode-shift study, 2025",
+          },
+        }),
+      }),
+    );
+  });
+});

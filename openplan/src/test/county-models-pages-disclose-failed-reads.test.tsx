@@ -307,7 +307,7 @@ describe("/models when a read fails", () => {
     expect(screen.queryByTestId("model-creator-projects-unreadable")).toBeNull();
     expect(screen.queryByTestId("model-creator-scenario-sets-unreadable")).toBeNull();
     // The options that did load are offered.
-    expect(screen.getByRole("option", { name: "Corridor study" })).toBeInTheDocument();
+    expect(screen.getAllByRole("option", { name: "Corridor study" }).length).toBeGreaterThan(0);
     expect(screen.getByRole("option", { name: "2050 baseline" })).toBeInTheDocument();
   });
 });

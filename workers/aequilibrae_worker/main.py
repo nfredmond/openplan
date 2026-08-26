@@ -75,6 +75,7 @@ import convergence
 import link_vmt
 import select_link
 import calibration
+import scenario_adjustment
 from assignment_progress import stream_assignment_progress
 from assignment_settings import (
     AssignmentSettingsError,
@@ -3812,6 +3813,22 @@ def stage_assignment(
             _clear_stale_auto_od()
     else:
         _clear_stale_auto_od()
+
+    # The guided build lane may carry one explicit planner-entered screening
+    # adjustment. It changes internal assigned-auto demand only; external
+    # gateway counts remain observed inputs. Missing or malformed evidence is
+    # exactly no adjustment, never an inferred project benefit.
+    guided_adjustment = scenario_adjustment.resolve_assigned_auto_trip_adjustment(run_row)
+    if guided_adjustment is not None:
+        od_array = scenario_adjustment.apply_assigned_auto_trip_adjustment(
+            od_array, guided_adjustment
+        )
+        log += (
+            "Guided build assumption: assigned daily auto trips "
+            f"{guided_adjustment['auto_trip_change_pct']:+.1f}% versus no-build "
+            f"(planner basis: {guided_adjustment['basis'][:300]}). This is a "
+            "screening input, not a calibrated forecast. External gateway demand unchanged.\n"
+        )
 
     # --- Assemble the full assignment demand matrix over internal + cordon
     # zones. Internal auto demand (od_array = auto_float from mode choice, or the

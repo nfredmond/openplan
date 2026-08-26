@@ -61,6 +61,7 @@ export const CCRS_SOURCE_ID = "ccrs-ca";
 
 const CKAN_BASE = "https://data.ca.gov/api/3/action";
 const CCRS_PACKAGE_ID = "ccrs";
+const CCRS_DATASET_URL = "https://lab.data.ca.gov/dataset/ccrs";
 
 /** CCRS begins in 2016; requesting earlier years would silently return nothing. */
 export const CCRS_EARLIEST_YEAR = 2016;
@@ -82,7 +83,7 @@ const PACKAGE_CACHE_TTL_MS = 60 * 60 * 1000;
  */
 const CA_BOUNDS = { minLon: -124.6, maxLon: -114.0, minLat: 32.4, maxLat: 42.1 };
 
-type CkanResource = { id?: unknown; name?: unknown };
+type CkanResource = { id?: unknown; name?: unknown; last_modified?: unknown };
 type CkanPackageShow = { result?: { resources?: CkanResource[] } };
 type CkanSqlResponse = { result?: { records?: Array<Record<string, unknown>> } };
 
@@ -179,7 +180,10 @@ function sqlLiteral(value: string): string {
  * Resolve `Crashes_<year>` → DataStore resource id from the live package
  * manifest. Cached briefly because an ingest asks for several years at once.
  */
-export async function fetchCcrsResourceIds(signal?: AbortSignal): Promise<Map<number, string>> {
+async function fetchCcrsManifest(signal?: AbortSignal): Promise<{
+  byYear: Map<number, string>;
+  updatedByYear: Map<number, string>;
+}> {
   const payload = await fetchJsonWithRetry<CkanPackageShow>(
     `${CKAN_BASE}/package_show?id=${CCRS_PACKAGE_ID}`,
     signal ? { signal } : undefined,
@@ -200,12 +204,18 @@ export async function fetchCcrsResourceIds(signal?: AbortSignal): Promise<Map<nu
   }
 
   const byYear = new Map<number, string>();
+  const updatedByYear = new Map<number, string>();
   for (const resource of payload?.result?.resources ?? []) {
     const name = typeof resource?.name === "string" ? resource.name : "";
     const id = typeof resource?.id === "string" ? resource.id : "";
     const match = /^Crashes_(\d{4})$/.exec(name);
     if (match && id) {
-      byYear.set(Number.parseInt(match[1], 10), id);
+      const year = Number.parseInt(match[1], 10);
+      byYear.set(year, id);
+      const lastModified = typeof resource.last_modified === "string"
+        ? /^(\d{4}-\d{2}-\d{2})/.exec(resource.last_modified.trim())?.[1] ?? null
+        : null;
+      if (lastModified) updatedByYear.set(year, lastModified);
     }
   }
 
@@ -219,7 +229,11 @@ export async function fetchCcrsResourceIds(signal?: AbortSignal): Promise<Map<nu
     );
   }
 
-  return byYear;
+  return { byYear, updatedByYear };
+}
+
+export async function fetchCcrsResourceIds(signal?: AbortSignal): Promise<Map<number, string>> {
+  return (await fetchCcrsManifest(signal)).byYear;
 }
 
 async function runSql<T = Record<string, unknown>>(sql: string, signal?: AbortSignal): Promise<T[]> {
@@ -425,7 +439,8 @@ async function fetchYearRecords(
 
 export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashFetchResult> {
   const maxRecords = params.maxRecords ?? DEFAULT_MAX_RECORDS;
-  const resourceIds = await fetchCcrsResourceIds(params.signal);
+  const manifest = await fetchCcrsManifest(params.signal);
+  const resourceIds = manifest.byYear;
 
   // Clamp to years CCRS actually holds rather than reporting empty results for
   // years that never existed in the system.
@@ -483,6 +498,25 @@ export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashF
     ).sort((a, b) => a - b),
     truncated,
     unmappedByDimension,
+    // Every requested yearly crash table is refreshed independently. The
+    // oldest exact `last_modified` date is the common publication cutoff we
+    // can defend across the combined extract; a newer package timestamp would
+    // overstate the older table. If even one selected table omits metadata, the
+    // cutoff stays unavailable rather than being inferred from another year.
+    publishedCutoff:
+      years.length > 0 && years.every((year) => manifest.updatedByYear.has(year))
+        ? {
+            publishedThrough: years
+              .map((year) => manifest.updatedByYear.get(year) as string)
+              .sort()[0],
+            provenance: {
+              basis: "source_metadata",
+              sourceUrl: CCRS_DATASET_URL,
+              label: "CCRS yearly crash-resource last-modified metadata",
+              retrievedAt: new Date().toISOString(),
+            },
+          }
+        : undefined,
   };
 }
 

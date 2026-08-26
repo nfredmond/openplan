@@ -9,6 +9,7 @@ import { normalizeMapViewState, summarizeMapViewState } from "@/lib/analysis/map
 
 export type Run = {
   id: string;
+  project_id?: string | null;
   title: string;
   query_text: string;
   created_at: string;
@@ -160,7 +161,10 @@ export function RunHistory({
 
   useEffect(() => {
     void fetchRuns();
-  }, [fetchRuns]);
+    // A successful Explore run is saved after this component's first read.
+    // Refreshing when the active id changes makes that new row visible without
+    // requiring a page reload; the id is stable, so this does not poll.
+  }, [currentRunId, fetchRuns]);
 
   const deleteRun = async (id: string) => {
     if (deletingRunId) {

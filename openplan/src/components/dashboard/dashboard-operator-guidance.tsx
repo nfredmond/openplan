@@ -59,12 +59,12 @@ export function DashboardOperatorGuidance({
           <div className="module-operator-item">{grantModelingOperatorDetail}</div>
         ) : null}
         <div className="module-operator-item">
-          Projects is where a piece of work lives. Analysis Studio is where you study a corridor.
+          Projects is where a piece of work lives. Corridor Analysis is where you study a corridor.
         </div>
         <div className="module-operator-item">
           {firstRunAt
             ? `Your first result took ${timeToFirstResultFormatted}.`
-            : "No corridor studies yet. Analysis Studio will run your first one in a few minutes."}
+            : "No corridor studies yet. Corridor Analysis will run your first one in a few minutes."}
         </div>
       </div>
     </article>

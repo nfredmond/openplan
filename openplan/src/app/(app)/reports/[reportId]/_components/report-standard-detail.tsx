@@ -4,7 +4,7 @@ import { ScrollText } from "lucide-react";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { ReportDetailControls } from "@/components/reports/report-detail-controls";
+import { ReportDetailControls, type ReportSafetyIngestOption } from "@/components/reports/report-detail-controls";
 import { ReportNarrativeDraftPanel } from "@/components/reports/report-narrative-draft-panel";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -100,6 +100,9 @@ type ReportStandardDetailProps = {
   agreementCorridorSelections?: AgreementCorridorSelection[];
   aerialOrthoCatalog?: AerialOrthoCatalog;
   aerialOrthoSelections?: ReportAerialOrthoSelection[];
+  safetyIngestOptions?: ReportSafetyIngestOption[];
+  safetyIngestSelections?: Array<{ ingestId: string }>;
+  initialSafetyIngestId?: string | null;
   latestArtifact: ReportArtifact | null;
   fundingSnapshot: ProjectFundingSnapshot | null;
   operationsSummary: WorkspaceOperationsSummary;
@@ -134,6 +137,9 @@ export function ReportStandardDetail({
   agreementCorridorSelections = [],
   aerialOrthoCatalog,
   aerialOrthoSelections = [],
+  safetyIngestOptions = [],
+  safetyIngestSelections = [],
+  initialSafetyIngestId = null,
   latestArtifact,
   fundingSnapshot,
   operationsSummary,
@@ -355,6 +361,9 @@ export function ReportStandardDetail({
             agreementCorridorSelections={agreementCorridorSelections}
             aerialOrthoCatalog={aerialOrthoCatalog}
             aerialOrthoSelections={aerialOrthoSelections}
+            safetyIngestOptions={safetyIngestOptions}
+            safetyIngestSelections={safetyIngestSelections}
+            initialSafetyIngestId={initialSafetyIngestId}
           />
         </div>
       </header>

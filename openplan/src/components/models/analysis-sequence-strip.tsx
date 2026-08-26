@@ -6,6 +6,7 @@ import {
   type AnalysisStepState,
 } from "@/components/models/analysis-sequence";
 import { SCREENING_GRADE_HELP_HREF } from "@/lib/help/screening-grade";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 
 /**
  * THE ANALYSIS SEQUENCE, ON EVERY PAGE IN THE GROUP.
@@ -43,22 +44,25 @@ const STATE_TONE: Record<AnalysisStepState, string> = {
 export function AnalysisSequenceStrip({
   facts,
   currentStepId,
+  projectId = null,
 }: {
   facts: AnalysisSequenceFacts;
   /** The step this page IS. Marked so the reader can place themselves. */
   currentStepId?: string;
+  projectId?: string | null;
 }) {
   const steps = resolveAnalysisSequence(facts);
 
   return (
     <section className="mb-6" data-testid="analysis-sequence">
       <h2 className="text-[1.35rem] font-semibold leading-tight tracking-tight text-foreground">
-        Models, Scenarios and Model Validation are one job, in this order
+        Travel modeling is one guided job, in this order
       </h2>
       <p className="mt-2 max-w-[36rem] text-[1.0625rem] leading-[1.65] text-muted-foreground">
-        You can work out of order, and sometimes you will have to. This is what each page is for
-        and what it needs from the one before it. Corridor Analysis is not part of this — it is a
-        separate map tool for looking at one corridor, and it keeps its own history.
+        Use one project, one network, a baseline and build scenario, then run AequilibraE and
+        ActivitySim separately. Validate each result and save the comparison without averaging
+        disagreement away. Corridor Analysis is not part of this sequence; it remains a separate
+        map screening tool.
       </p>
 
       <ol className="mt-5 max-w-[36rem] space-y-5 border-l border-border/60 pl-5">
@@ -84,9 +88,12 @@ export function AnalysisSequenceStrip({
                     What that lets you say, and what it does not
                   </Link>
                 </p>
-              ) : step.href && step.state !== "done" ? (
+              ) : step.href && step.state === "next" ? (
                 <p className="mt-1 text-[1.0625rem] leading-[1.65]">
-                  <Link href={step.href} className="underline underline-offset-2 hover:text-foreground">
+                  <Link
+                    href={projectId ? withPlanningContext(step.href, projectId) : step.href}
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
                     {step.hrefLabel}
                   </Link>
                 </p>

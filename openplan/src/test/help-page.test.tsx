@@ -74,9 +74,9 @@ describe("HelpPage", () => {
     expect(
       screen.getByText(/usage is billed by the\s+provider, not by OpenPlan/)
     ).toBeInTheDocument();
-    // And the path to fix it: the dashboard checklist step.
+    // And the path to fix it: the dedicated workspace setup page.
     const hrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href"));
-    expect(hrefs).toContain("/dashboard#workspace-ai-key");
+    expect(hrefs).toContain("/workspace#workspace-ai-key");
   });
 
   it("tells planners plainly which fixes belong to whoever operates the deployment", () => {

@@ -81,7 +81,7 @@ export function ModelRunEngagementPanel({ modelId, modelRunId }: Props) {
           ) : error ? (
             <p className="text-xs text-red-600 dark:text-red-300">{error}</p>
           ) : reason === "no_corridor_geometry" ? (
-            <p className="text-xs text-muted-foreground">This run has no corridor geometry to join against.</p>
+            <p className="text-xs text-muted-foreground">This run has no corridor line to join against.</p>
           ) : !summary || summary.total === 0 ? (
             <p className="text-xs text-muted-foreground">No approved public comments fall within this corridor.</p>
           ) : (

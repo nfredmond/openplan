@@ -17,6 +17,8 @@ export type CorridorGeometry = Polygon | MultiPolygon;
 
 export type AnalysisResult = {
   runId: string;
+  /** Exact project attribution restored from the saved run, never browser-local inference. */
+  projectId?: string | null;
   title?: string;
   createdAt?: string | null;
   metrics: {

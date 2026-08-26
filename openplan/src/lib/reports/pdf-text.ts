@@ -36,6 +36,18 @@ const BLOCK_TAGS = new Set([
 /** Dropped entirely, contents included. */
 const DISCARDED_TAGS = new Set(["head", "script", "style", "title", "meta", "link", "svg", "noscript"]);
 
+/**
+ * Inline tags whose opening edge separates adjacent visible values.
+ *
+ * Report cards commonly render label/value pairs as
+ * `<span>Reported collisions</span><strong>390</strong>`. Browsers supply the
+ * visual separation through layout CSS, but the built-in PDF tier strips CSS.
+ * Adding a boundary only when the buffered text does not already end in
+ * whitespace preserves ordinary prose such as `The <strong>source</strong>.`
+ * while preventing labels and values from becoming a different word.
+ */
+const INLINE_TEXT_BOUNDARY_TAGS = new Set(["a", "dd", "dt", "em", "span", "strong"]);
+
 const ENTITIES: Record<string, string> = {
   amp: "&",
   lt: "<",
@@ -194,6 +206,9 @@ export function htmlToPdfBlocks(html: string): PdfBlock[] {
 
     if (!BLOCK_TAGS.has(tag)) {
       // Inline formatting (strong/em/span/a) carries no structure of its own.
+      if (!isClosing && INLINE_TEXT_BOUNDARY_TAGS.has(tag) && /\S$/.test(buffer)) {
+        buffer += " ";
+      }
       continue;
     }
 

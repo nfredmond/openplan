@@ -140,6 +140,14 @@ function blockedContext(): ReportAerialEvidenceSourceContext {
 }
 
 describe("ReportProvenanceAudit aerial evidence display", () => {
+  it("does not call a freshly generated source packet unaudited merely because it cites no model run", () => {
+    render(<ReportProvenanceAudit {...baseProps(null)} />);
+
+    expect(screen.getByText("No linked model run")).toBeInTheDocument();
+    expect(screen.getByText(/project, safety, engagement, and other source provenance remains below/i)).toBeInTheDocument();
+    expect(screen.queryByText("No audit data yet")).not.toBeInTheDocument();
+  });
+
   it("surfaces an absent aerial provenance state when the packet has source context but no aerial context", () => {
     render(<ReportProvenanceAudit {...baseProps(null)} />);
 

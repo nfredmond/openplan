@@ -62,7 +62,9 @@ describe("the analysis sequence strip", () => {
     );
     expect(states.filter((label) => label === "Do this next")).toHaveLength(1);
     expect(states[0]).toBe("Do this next");
-    expect(within(strip).getAllByText(/Waiting for/)).toHaveLength(6);
+    expect(within(strip).getAllByText(/Waiting for/)).toHaveLength(8);
+    expect(within(screen.getByTestId("analysis-step-area")).getByRole("link")).toHaveTextContent("Pick the area");
+    expect(within(screen.getByTestId("analysis-step-check")).queryByRole("link")).toBeNull();
   });
 
   it("marks the page the reader is on", () => {

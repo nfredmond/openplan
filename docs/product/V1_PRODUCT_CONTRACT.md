@@ -2,11 +2,12 @@
 
 <!-- openplan-v1-product-contract
 decided: 2026-08-25
-current_release: v0.34.0
+current_release: v0.35.0
 direction_review: docs/reviews/product-direction/2026-08-25-v1-direction.md
 review_protocol: docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 capability_matrix: docs/product/US_PLANNING_CAPABILITY_MATRIX.md
 validation_research: docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
+validation_preregistration: docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json
 roadmap: docs/ROADMAP.md
 -->
 
@@ -146,6 +147,15 @@ It requires two separate bands: a source-supported observation interval and a
 preregistered, use-specific model acceptance tolerance. A modeled value inside
 an observation interval is indistinguishable at that observation's precision;
 it is not thereby proven correct.
+
+The first frozen protocol artifact and its detached SHA-256 digest are
+[`NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json`](../modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
+and
+[`NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256`](../modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256).
+It blocks new nationwide calibration candidates until decisive datasets,
+dataset hashes, independent geographic partitions, observation intervals, and
+use-specific thresholds are frozen in a successor. The existing 30 percent
+selection holdout remains diagnostic only.
 
 ## One coherent operating system
 

@@ -32,6 +32,9 @@ import {
 } from "@/lib/reports/geography-figure";
 import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
+import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
+import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import {
@@ -180,6 +183,7 @@ export type ReportGenerationData = {
   safetyEvidence?: readonly SafetyCrashEvidence[] | null;
   /** Ranked project-linked KSI clusters, or null when the database read failed. */
   safetyKsiConcentrations?: readonly SafetyKsiConcentration[] | null;
+  safetyRoadContext?: readonly SafetyRoadContextFeature[] | null;
   safetyKsiEquityTracts?: readonly SafetyKsiEquityTract[] | null;
   safetyKsiEquityDemographicSource?: { label: string; vintage: string };
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
@@ -950,7 +954,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
     : concentrations.length > 0
       ? `<h3>Highest observed KSI concentrations</h3>
         <p>These ranks use every mapped fatal and serious-injury crash in the project-linked acquisitions. A concentration is two or more records within 150 meters. These are screening locations, not named intersections, corridors, rates, causal findings, or a High Injury Network.</p>
-        <ol>${concentrations.map((item) => `<li><strong>${esc(item.crashCount.toLocaleString())} KSI crashes</strong> (${esc(item.fatalCrashCount.toLocaleString())} fatal; ${esc(item.seriousInjuryCrashCount.toLocaleString())} serious injury) near ${esc(item.latitude.toFixed(5))}, ${esc(item.longitude.toFixed(5))}</li>`).join("")}</ol>`
+        <ol>${concentrations.map((item) => `<li><strong>${esc(item.crashCount.toLocaleString())} KSI crashes</strong> (${esc(item.fatalCrashCount.toLocaleString())} fatal; ${esc(item.seriousInjuryCrashCount.toLocaleString())} serious injury) near ${esc(item.latitude.toFixed(5))}, ${esc(item.longitude.toFixed(5))}. ${item.roadIdentity?.status === "matched" ? `Nearest named road: <strong>${esc(item.roadIdentity.name)}</strong>; ${esc(item.roadIdentity.matchQuality)} match at ${esc(item.roadIdentity.distanceMeters.toLocaleString())} m; ${esc(item.roadIdentity.sourceLabel)} ${esc(item.roadIdentity.vintage)}.` : "Road identity unavailable; the coordinates remain the source location."}</li>`).join("")}</ol>`
       : `<h3>Highest observed KSI concentrations</h3><p>No pair of mapped fatal or serious-injury crash records fell within the 150-meter screening radius. That is not a finding that the project area is safe.</p>`;
 
   const equityTracts = data.safetyKsiEquityTracts;
@@ -965,7 +969,27 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
           <p>Mapped KSI records are grouped by Census tract and ranked by observed count. Demographics come from ${esc(equitySource?.label ?? "the loaded demographic source")} ${esc(equitySource?.vintage ?? "vintage not recorded")}. Counts per 100,000 residents are not adjusted for roadway exposure, travel, or time. This is screening context, not a causal, protected-class, or legal disparity finding.</p>
           <ol>${equityTracts.slice(0, 5).map((tract) => `<li><strong>${esc(tract.tractName ?? `Census tract ${tract.geoid}`)}: ${esc(tract.ksiCrashCount.toLocaleString())} KSI crashes</strong>; poverty ${tract.pctPoverty === null ? "not available" : `${esc(tract.pctPoverty.toFixed(1))}%`}${tract.areaMedianPctPoverty === null ? "" : ` vs area median ${esc(tract.areaMedianPctPoverty.toFixed(1))}%`}; nonwhite population ${tract.pctNonwhite === null ? "not available" : `${esc(tract.pctNonwhite.toFixed(1))}%`}; zero-vehicle households ${tract.pctZeroVehicle === null ? "not available" : `${esc(tract.pctZeroVehicle.toFixed(1))}%`}.</li>`).join("")}</ol>`;
 
-  return acquisitionMarkup + concentrationMarkup + equityMarkup;
+  const roadContext = data.safetyRoadContext;
+  const parsedProjectGeometry = corridorGeojsonSchema.safeParse(data.geography?.studyArea?.geometry);
+  const streetContextSvg = concentrations && roadContext
+    ? renderSafetyStreetContextSvg({
+        roads: roadContext,
+        crashLocations: concentrations.map(
+          (item) => [item.longitude, item.latitude] as [number, number]
+        ),
+        projectGeometry: parsedProjectGeometry.success ? parsedProjectGeometry.data : null,
+      })
+    : null;
+  const roadSources = roadContext
+    ? Array.from(new Set(roadContext.map((road) => `${road.sourceLabel} ${road.vintage}`)))
+    : [];
+  const streetContextMarkup = roadContext === null
+    ? `<h3>Printable street context</h3><p>Cached road evidence could not be read. Road identity and street context are unavailable, not absent.</p>`
+    : streetContextSvg
+      ? `<h3>Printable street context</h3>${streetContextSvg}<p><strong>Road source:</strong> ${roadSources.length > 0 ? roadSources.map(esc).join("; ") : "Road identity unavailable"}. Red points are ranked KSI concentration centers; the dashed green line is the project area when available. North arrow and scale are derived from the frozen vector extent. Coverage is limited to cached named TIGER/Line or OpenStreetMap roads attached to this project; no paid or live tile service was used.</p>`
+      : `<h3>Printable street context</h3><p>No project-linked crash location and registered cached road geometry were available to draw. Road identity is unavailable; coordinates above remain the source locations.</p>`;
+
+  return acquisitionMarkup + concentrationMarkup + streetContextMarkup + equityMarkup;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
@@ -1097,6 +1121,7 @@ function evidenceChainMarkup(summary: EvidenceChainSummary): string {
       <div><span class="metric-label">Governance counts</span><strong>${summary.stageGatePassCount} pass • ${summary.stageGateHoldCount} hold</strong></div>
       <div><span class="metric-label">Modeling evidence</span><strong>${summary.modelingEvidenceCount ?? 0}</strong></div>
       <div><span class="metric-label">Modeling claim posture</span><strong>${esc(summary.modelingEvidenceClaimLabel ?? "Not linked")}</strong></div>
+      <div><span class="metric-label">Crash acquisitions</span><strong>${summary.safetyAcquisitionCount ?? 0}</strong></div>
     </div>
     ${
       summary.scenarioSharedSpinePendingCount > 0
@@ -1513,9 +1538,20 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
   }
 
   if (sectionKey === "methods_assumptions" || sectionKey === "assumptions_provenance" || sectionKey === "appendix_references") {
+    const hasEvidence =
+      data.runs.length > 0 ||
+      data.scenarioSetLinks.length > 0 ||
+      data.modelingEvidence.length > 0 ||
+      (data.safetyEvidence?.length ?? 0) > 0 ||
+      (data.engagement?.counts.totalItems ?? 0) > 0 ||
+      Object.values(data.projectRecordsSnapshot).some((entry) => entry.count > 0) ||
+      data.stageGateSnapshot.passCount > 0 ||
+      data.stageGateSnapshot.holdCount > 0;
     return `<div class="warning-box">
       <strong>Auditability posture</strong>
-      <p>This report is a structured packet assembled from current OpenPlan project records, linked analysis runs, and scenario basis context. Reviewers should treat it as evidence-backed output, not freeform narrative copy.</p>
+      <p>${hasEvidence
+        ? "This report is a structured packet assembled from current OpenPlan evidence. Reviewers should treat its cited records as evidence-backed output, not freeform narrative copy."
+        : "This report has a structured evidence-chain record, but every supported evidence count is zero. It is a draft shell, not evidence-backed or release-ready output."}</p>
       <p>Generated on ${esc(formatDateTime(new Date().toISOString()))}. Project last updated ${esc(formatDateTime(data.project.updated_at))}. Review run-level transparency notes before external release.</p>
       ${data.scenarioSetLinks.length > 0 ? `<p>Scenario basis at generation: ${data.scenarioSetLinks.length} linked set${data.scenarioSetLinks.length === 1 ? "" : "s"} • ${scenarioSpineAggregate.pendingCount > 0 ? `${scenarioSpineAggregate.pendingCount} shared-spine pending` : `${scenarioSpineAggregate.assumptionSetCount} assumption set${scenarioSpineAggregate.assumptionSetCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.dataPackageCount} data package${scenarioSpineAggregate.dataPackageCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.indicatorSnapshotCount} indicator snapshot${scenarioSpineAggregate.indicatorSnapshotCount === 1 ? "" : "s"}`}</p>` : ""}
       ${(scenarioSpineAggregate.latestAssumptionSetUpdatedAt || scenarioSpineAggregate.latestDataPackageUpdatedAt || scenarioSpineAggregate.latestIndicatorSnapshotAt) ? `<p>Latest scenario spine timing: ${scenarioSpineAggregate.latestAssumptionSetUpdatedAt ? `assumptions ${esc(formatDateTime(scenarioSpineAggregate.latestAssumptionSetUpdatedAt))}` : "assumptions unavailable"}${scenarioSpineAggregate.latestDataPackageUpdatedAt ? ` • packages ${esc(formatDateTime(scenarioSpineAggregate.latestDataPackageUpdatedAt))}` : ""}${scenarioSpineAggregate.latestIndicatorSnapshotAt ? ` • indicators ${esc(formatDateTime(scenarioSpineAggregate.latestIndicatorSnapshotAt))}` : ""}</p>` : ""}
@@ -1698,6 +1734,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
     modelingEvidenceClaimStatuses: data.modelingEvidence
       .map((item) => item.evidence?.claimDecision?.claimStatus ?? null)
       .filter((status): status is NonNullable<typeof status> => Boolean(status)),
+    safetyAcquisitionCount: data.safetyEvidence?.length ?? 0,
   });
 
   return `<!doctype html>

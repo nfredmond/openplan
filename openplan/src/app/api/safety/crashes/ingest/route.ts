@@ -16,6 +16,32 @@ export const maxDuration = 60;
 
 /** Hard ceiling regardless of what the caller asks for. */
 const MAX_RECORDS_CEILING = 50_000;
+const PROJECT_BBOX_TOLERANCE = 1e-6;
+
+type ProjectStudyAreaBounds = {
+  place_min_lon: number | null;
+  place_min_lat: number | null;
+  place_max_lon: number | null;
+  place_max_lat: number | null;
+};
+
+function bboxMatchesProjectStudyArea(
+  bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number },
+  project: ProjectStudyAreaBounds,
+): boolean {
+  const expected = [
+    project.place_min_lon,
+    project.place_min_lat,
+    project.place_max_lon,
+    project.place_max_lat,
+  ];
+  if (!expected.every((value): value is number => typeof value === "number" && Number.isFinite(value))) {
+    return false;
+  }
+  return [bbox.minLon, bbox.minLat, bbox.maxLon, bbox.maxLat].every(
+    (value, index) => Math.abs(value - expected[index]) <= PROJECT_BBOX_TOLERANCE,
+  );
+}
 
 const ingestSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -122,7 +148,7 @@ export async function POST(request: NextRequest) {
     if (parsed.data.projectId) {
       const { data: project, error: projectError } = await supabase
         .from("projects")
-        .select("id")
+        .select("id, place_min_lon, place_min_lat, place_max_lon, place_max_lat")
         .eq("id", parsed.data.projectId)
         .eq("workspace_id", parsed.data.workspaceId)
         .maybeSingle();
@@ -131,6 +157,15 @@ export async function POST(request: NextRequest) {
       }
       if (!project) {
         return NextResponse.json({ error: "Linked project not found" }, { status: 404 });
+      }
+      if (!bboxMatchesProjectStudyArea(bbox, project as ProjectStudyAreaBounds)) {
+        return NextResponse.json(
+          {
+            error:
+              "This crash study area does not match the linked project's stored study area. Open Safety from that project, or clear the project context before retrieving crashes.",
+          },
+          { status: 409 },
+        );
       }
     }
 

@@ -124,6 +124,33 @@ describe("getReportPacketFreshness", () => {
       headline: "2 linked runs · 1 scenario set · 6 project records",
       detail: "Active engagement · 4/9 handoff-ready · Hold present governance",
       blockedGateDetail: "Blocked gate: G02 · Agreements, Procurement, and Civil Rights Setup",
+      hasEvidence: true,
+    });
+  });
+
+  it("does not call an all-zero chain evidence-backed, but counts frozen safety acquisitions", () => {
+    const empty = {
+      linkedRunCount: 0,
+      scenarioSetLinkCount: 0,
+      scenarioAssumptionSetCount: 0,
+      scenarioDataPackageCount: 0,
+      scenarioIndicatorSnapshotCount: 0,
+      scenarioSharedSpinePendingCount: 0,
+      projectRecordGroupCount: 0,
+      totalProjectRecordCount: 0,
+      engagementLabel: "Not linked",
+      engagementItemCount: 0,
+      engagementReadyForHandoffCount: 0,
+      stageGateLabel: "In progress",
+      stageGatePassCount: 0,
+      stageGateHoldCount: 0,
+      stageGateBlockedGateLabel: null,
+      modelingEvidenceCount: 0,
+    };
+    expect(describeEvidenceChainSummary(empty)).toMatchObject({ hasEvidence: false });
+    expect(describeEvidenceChainSummary({ ...empty, safetyAcquisitionCount: 2 })).toMatchObject({
+      hasEvidence: true,
+      detail: expect.stringContaining("2 crash acquisitions"),
     });
   });
 

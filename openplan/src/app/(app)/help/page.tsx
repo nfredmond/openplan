@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BookOpen, ExternalLink, Gauge, LifeBuoy, Wrench } from "lucide-react";
 
-import { buildRailGroups } from "@/components/nav/nav-registry";
+import { APP_NAV_ENTRIES, buildRailGroups } from "@/components/nav/nav-registry";
 import { MODULE_DESCRIPTIONS } from "@/lib/help/module-descriptions";
 import {
   describePublishedErrorEnvelope,
@@ -50,6 +50,7 @@ const OPERATOR_DOCS = [
 
 export default function HelpPage() {
   const groups = buildRailGroups();
+  const specialistPages = APP_NAV_ENTRIES.filter((entry) => entry.railHidden);
 
   return (
     <section className="module-page">
@@ -156,7 +157,7 @@ export default function HelpPage() {
         </p>
       </article>
 
-      {/* Which features run on an AI key. The list mirrors the dashboard
+      {/* Which features run on an AI key. The list mirrors the workspace setup
           checklist's "Turn on your AI assistant" step — two different accounts
           of the same boundary would be two things to keep true. */}
       <article className="mt-6 module-section-surface">
@@ -181,10 +182,10 @@ export default function HelpPage() {
           Everything else works without a key, and pages say plainly when an AI feature is
           unavailable rather than sitting silent. A workspace owner or admin adds the key on the{" "}
           <Link
-            href="/dashboard#workspace-ai-key"
+            href="/workspace#workspace-ai-key"
             className="font-semibold underline underline-offset-4 hover:text-foreground"
           >
-            Overview page&apos;s setup checklist
+            Workspace setup &amp; health page
           </Link>{" "}
           or its Integration keys panel; a deployment-wide key set by whoever operates this
           deployment works too.
@@ -227,6 +228,26 @@ export default function HelpPage() {
               </ul>
             </div>
           ))}
+          {specialistPages.length > 0 ? (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Specialist modeling pages
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                These pages are part of Travel modeling and remain available from the command palette without adding a second rail.
+              </p>
+              <ul className="mt-2 divide-y divide-border/60">
+                {specialistPages.map((item) => (
+                  <li key={item.href} className="py-3">
+                    <Link href={item.href} className="text-sm font-semibold text-foreground hover:underline">
+                      {item.label}
+                    </Link>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{MODULE_DESCRIPTIONS[item.href]}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </article>
 

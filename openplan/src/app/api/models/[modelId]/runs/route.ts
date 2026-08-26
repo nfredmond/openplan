@@ -66,6 +66,7 @@ import {
 import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
 import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { evaluateWorkerHealthLaunchGate } from "@/lib/models/worker-health";
+import { parseGuidedBuildAssumption } from "@/lib/models/project-comparison";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -557,6 +558,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // The feed-version selection, or the recorded absence of one. Stamped
         // only for the engines that reach a transit skim; see above.
         ...(transitFeed ? { transitFeed } : {}),
+        // A guided build comparison may carry one planner-supplied screening
+        // adjustment. Stamp the validated value into the immutable worker
+        // handoff; never derive it from a project description or model title.
+        ...((isAequilibraeRun || isBehavioralDemandRun) &&
+        parseGuidedBuildAssumption(launchPayload.assumptionSnapshot)
+          ? { scenarioAdjustment: parseGuidedBuildAssumption(launchPayload.assumptionSnapshot) }
+          : {}),
       };
 
       // Operator run-cap check for the synchronous in-process branches only —

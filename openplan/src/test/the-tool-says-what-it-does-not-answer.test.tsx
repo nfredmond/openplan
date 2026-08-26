@@ -55,6 +55,14 @@ describe("the tool says what it does not answer", () => {
     expect(link.getAttribute("href")).toBe(CORRIDOR_ANALYSIS_TRAFFIC_HREF);
   });
 
+  it("carries the exact project into the modeling path", () => {
+    render(<ExploreEmptyResultBoard projectId="project-7" />);
+    expect(screen.getByRole("link", { name: /run a travel model/i })).toHaveAttribute(
+      "href",
+      "/models?projectId=project-7",
+    );
+  });
+
   it("promises nothing about the accuracy of the thing it points at", () => {
     // The model lane's estimate is screening-grade and known to run low. This
     // sentence is a direction, not an endorsement — the run carries its own
@@ -74,7 +82,7 @@ describe("the tool says what it does not answer", () => {
    * defend. What they should have known is the SHAPE of the job, on arrival.
    */
   it("says what the route it points at actually involves", () => {
-    expect(TRAVEL_MODEL_WHAT_IT_TAKES).toMatch(/road network/i);
+    expect(TRAVEL_MODEL_WHAT_IT_TAKES).toMatch(/shared road network/i);
     expect(TRAVEL_MODEL_WHAT_IT_TAKES).toMatch(/longer route|expert work/i);
     // Before you start, not partway through — the tester's actual complaint.
     expect(TRAVEL_MODEL_WHAT_IT_TAKES).toMatch(/before you start/i);

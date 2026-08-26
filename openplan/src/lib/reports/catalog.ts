@@ -60,6 +60,7 @@ export type ReportEvidenceChainDigest = {
   headline: string;
   detail: string;
   blockedGateDetail: string | null;
+  hasEvidence: boolean;
 };
 
 export type ReportScenarioSpineSummary = {
@@ -871,6 +872,7 @@ export function parseStoredEvidenceChainSummary(
     stageGatePassCount: asNullableNumber(summary.stageGatePassCount) ?? 0,
     stageGateHoldCount: asNullableNumber(summary.stageGateHoldCount) ?? 0,
     stageGateBlockedGateLabel: asNullableString(summary.stageGateBlockedGateLabel),
+    safetyAcquisitionCount: asNullableNumber(summary.safetyAcquisitionCount) ?? 0,
   };
 }
 
@@ -1072,12 +1074,25 @@ export function describeEvidenceChainSummary(
     typeof summary.modelingEvidenceCount === "number" && summary.modelingEvidenceCount > 0
       ? `${summary.modelingEvidenceCount} modeling evidence · ${summary.modelingEvidenceClaimLabel ?? "No claim decision"}`
       : null;
+  const safetyEvidenceLabel = (summary.safetyAcquisitionCount ?? 0) > 0
+    ? `${summary.safetyAcquisitionCount} crash acquisition${summary.safetyAcquisitionCount === 1 ? "" : "s"}`
+    : null;
+  const hasEvidence =
+    summary.linkedRunCount > 0 ||
+    summary.scenarioSetLinkCount > 0 ||
+    summary.totalProjectRecordCount > 0 ||
+    summary.engagementItemCount > 0 ||
+    summary.stageGatePassCount > 0 ||
+    summary.stageGateHoldCount > 0 ||
+    (summary.modelingEvidenceCount ?? 0) > 0 ||
+    (summary.safetyAcquisitionCount ?? 0) > 0;
 
   return {
     headline: `${linkedRunLabel} · ${scenarioLabel} · ${projectRecordLabel}`,
     detail: [
       scenarioSpineLabel,
       modelingEvidenceLabel,
+      safetyEvidenceLabel,
       `${summary.engagementLabel} engagement`,
       `${summary.engagementReadyForHandoffCount}/${summary.engagementItemCount} handoff-ready`,
       `${summary.stageGateLabel} governance`,
@@ -1087,6 +1102,7 @@ export function describeEvidenceChainSummary(
     blockedGateDetail: summary.stageGateBlockedGateLabel
       ? `Blocked gate: ${summary.stageGateBlockedGateLabel}`
       : null,
+    hasEvidence,
   };
 }
 

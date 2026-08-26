@@ -267,6 +267,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260825000002_direct_workbook_portfolio_import.sql",
     migrationsAtRelease: 223,
   },
+  // 0.35.0 — workspace-scoped named-road cache and the trigger that prevents
+  // a service writer from crossing project/workspace boundaries.
+  {
+    tag: "0.35.0",
+    lastMigration: "20260825000004_safety_road_context_scope_guard.sql",
+    migrationsAtRelease: 225,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

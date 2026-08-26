@@ -83,7 +83,7 @@ describe("ExploreStudyBriefControls", () => {
     fireEvent.change(screen.getByLabelText("Report style"), { target: { value: "ss4a" } });
     fireEvent.click(screen.getByRole("button", { name: "Run the analysis" }));
 
-    await waitFor(() => expect(props.onRunAnalysis).toHaveBeenCalledWith("Evaluate corridor safety and access"));
+    await waitFor(() => expect(props.onRunAnalysis).toHaveBeenCalledWith("Evaluate corridor safety and access", ""));
     expect(props.onReportTemplateChange).toHaveBeenCalledWith("ss4a");
     expect(props.onQueryTextChange).toHaveBeenCalledWith("Evaluate corridor safety and access");
 
@@ -103,5 +103,34 @@ describe("ExploreStudyBriefControls", () => {
     expect(screen.queryByRole("button", { name: "ATP Report" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "PDF" })).not.toBeInTheDocument();
     expect(screen.getByText("Workspace ID, corridor, and query are required.")).toBeInTheDocument();
+  });
+
+  it("replaces the ready state with visible progress while the run is in flight", () => {
+    renderControls({ isSubmitting: true });
+
+    openTheBrief();
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+
+    expect(screen.getByText("Analysis running")).toBeInTheDocument();
+    expect(screen.queryByText(/usually takes about a minute/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/collecting the corridor evidence now/i)).toBeInTheDocument();
+  });
+
+  it("launches with the project selected inside the sheet on the first click", async () => {
+    const props = renderControls({
+      projects: [{ id: "project-1", name: "Main Street" }],
+      selectedProjectId: "",
+    });
+
+    openTheBrief();
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    fireEvent.change(screen.getByLabelText("Project"), { target: { value: "project-1" } });
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Run the analysis" }));
+
+    await waitFor(() =>
+      expect(props.onRunAnalysis).toHaveBeenCalledWith("Evaluate corridor safety and access", "project-1"),
+    );
   });
 });

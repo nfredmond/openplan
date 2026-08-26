@@ -9,6 +9,7 @@ import { resolveEstimatedDomains } from "@/lib/analysis/estimated-source";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { __clearFetchJsonResponseCacheForTests } from "@/lib/data-sources/http";
 import { deriveCcrsSeverity } from "@/lib/safety/sources/ccrs";
+import { farsArchiveResponse } from "@/test/support/fars-archive";
 
 const NEVADA_COUNTY_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
 const DETROIT_BBOX = { minLon: -83.2, minLat: 42.2, maxLon: -83.0, maxLat: 42.4 };
@@ -165,31 +166,12 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
   it("falls through to FARS for a US study area outside any state adapter", async () => {
     const fetchMock = vi.fn(async (input: unknown) => {
       const url = String(input);
-      if (!url.includes("fromCaseYear=2023")) return jsonResponse({ Results: [] });
-      return jsonResponse({
-        Results: [
-          [
-            {
-              ST_CASE: 261234,
-              CaseYear: 2023,
-              CRASH_DT: "2023-06-04T00:00:00",
-              LATITUDE: 42.331,
-              LONGITUD: -83.045,
-              FATALS: 2,
-              PEDS: 1,
-              BICYCLISTS: 0,
-            },
-            {
-              // Unknown-coordinate sentinels: must never be plotted.
-              ST_CASE: 261235,
-              CaseYear: 2023,
-              LATITUDE: 77.7777,
-              LONGITUD: 777.7777,
-              FATALS: 1,
-            },
-          ],
-        ],
-      });
+      if (!url.includes("FARS2024NationalCSV.zip")) return farsArchiveResponse([]);
+      return farsArchiveResponse([
+        { ST_CASE: 261234, YEAR: 2024, LATITUDE: 42.331, LONGITUD: -83.045, FATALS: 2, PEDS: 1 },
+        // Unknown-coordinate sentinels must never be plotted.
+        { ST_CASE: 261235, YEAR: 2024, LATITUDE: 77.7777, LONGITUD: 777.7777, FATALS: 1 },
+      ]);
     });
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
@@ -203,10 +185,13 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
     // Fatal-only census: injury counts are unavailable, not zero.
     expect(result.totalInjuryCrashes).toBeNull();
     expect(result.crashDensityBasis).toBe("fatal_only");
-    expect(result.reportedTotal).toBe(2);
+    expect(result.reportedTotal).toBe(1);
     expect(result.mappedTotal).toBe(1);
     expect(result.points).toHaveLength(1);
     expect(result.points[0]?.properties.severityBucket).toBe("fatal");
+    const farsUrls = fetchMock.mock.calls.map((call) => String(call[0]));
+    expect(farsUrls).toHaveLength(3);
+    expect(farsUrls.some((url) => url.includes("FARS2025NationalCSV.zip"))).toBe(false);
   });
 
   it("reports FARS unavailable when every requested year fails", async () => {

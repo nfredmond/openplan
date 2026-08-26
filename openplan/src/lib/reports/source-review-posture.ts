@@ -20,6 +20,7 @@ export type ReportEvidenceSummary = {
   headline: string;
   detail: string;
   blockedGateDetail?: string | null;
+  hasEvidence?: boolean;
 } | null;
 
 export type ReportSourceReviewPosture = {
@@ -63,6 +64,17 @@ export function describeReportSourceReviewPosture({
       headline: "No evidence chain captured",
       detail:
         "This packet does not expose a structured evidence-chain snapshot yet. Regenerate it before citing the packet externally or using it for grant triage.",
+      changedSourceText,
+    };
+  }
+
+  if (evidenceSummary.hasEvidence === false) {
+    return {
+      state: "missing",
+      label: "Empty evidence chain",
+      headline: "No evidence is linked yet",
+      detail:
+        "The packet captured an evidence-chain record, but every supported evidence count is zero. Link project, safety, engagement, scenario, or model evidence before calling it evidence-backed or release-ready.",
       changedSourceText,
     };
   }

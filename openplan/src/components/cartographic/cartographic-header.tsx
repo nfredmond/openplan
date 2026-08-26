@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import type { WorkspaceOption } from "@/lib/workspaces/current";
 import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 import { CommandPalette } from "./command-palette";
@@ -13,25 +12,14 @@ type CartographicHeaderProps = {
   workspaceName: string;
   workspaces?: WorkspaceOption[];
   currentWorkspaceId?: string | null;
-  onNewRun?: () => void;
 };
 
 export function CartographicHeader({
   workspaceName,
   workspaces = [],
   currentWorkspaceId = null,
-  onNewRun,
 }: CartographicHeaderProps) {
-  const router = useRouter();
   const [paletteOpen, setPaletteOpen] = useState(false);
-
-  function handleNewRun() {
-    if (onNewRun) {
-      onNewRun();
-      return;
-    }
-    router.push("/explore");
-  }
 
   return (
     <>
@@ -65,25 +53,11 @@ export function CartographicHeader({
           <span className="op-cart-kbd">⌘K</span>
         </button>
 
-        {/*
-          Appearance and the primary action travel together as ONE right-hand
-          group, so the header reads as three things — who you are, what you are
-          looking for, what you can do — rather than four competing items. The
-          search sits in the middle column and stays centred in the window
-          whatever the workspace name's length.
-
-          Appearance is here and not in the 60px rail because "prominent" and
-          "hidden behind a hover-expand" are not compatible. Light/dark is the
-          setting a planner reaches for most — bright room, projector, board
-          presentation — and it used to be an unlabelled 14px glyph.
-        */}
+        {/* Appearance stays in the header because it affects every page. Work
+            creation belongs to the page that owns the record, where its one
+            primary action can name what will be created. */}
         <div className="op-cart-hdr__actions">
           <ThemeControls className="op-cart-appearance" />
-
-          <button type="button" className="op-cart-btn op-cart-btn--primary" onClick={handleNewRun}>
-            <Plus size={14} strokeWidth={2} />
-            New analysis
-          </button>
         </div>
       </header>
 

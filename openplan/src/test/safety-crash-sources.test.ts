@@ -22,7 +22,7 @@ import {
   FARS_PUBLISHED_CUTOFF,
   coversFarsGeography,
   farsAdapter,
-  parseFarsResults,
+  parseFarsAnnualCsv,
   toFarsCollisionDate,
   toFarsCoordinate,
 } from "@/lib/safety/sources/fars";
@@ -219,8 +219,8 @@ describe("CCRS fetch", () => {
   const PACKAGE_BODY = {
     result: {
       resources: [
-        { id: "res-2025", name: "Crashes_2025" },
-        { id: "res-2024", name: "Crashes_2024" },
+        { id: "res-2025", name: "Crashes_2025", last_modified: "2026-08-26T02:05:52.118229" },
+        { id: "res-2024", name: "Crashes_2024", last_modified: "2026-08-25T02:10:36.031508" },
         { id: "ivp-2025", name: "InjuredWitnessPassengers_2025" },
       ],
     },
@@ -279,6 +279,48 @@ describe("CCRS fetch", () => {
       longitude: -121.061591,
     });
     expect(result.yearsCovered).toEqual([2025]);
+    expect(result.publishedCutoff).toMatchObject({
+      publishedThrough: "2026-08-26",
+      provenance: {
+        basis: "source_metadata",
+        sourceUrl: "https://lab.data.ca.gov/dataset/ccrs",
+      },
+    });
+  });
+
+  it("uses the oldest exact yearly resource update as a combined publication cutoff", async () => {
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("package_show")) return jsonResponse(PACKAGE_BODY);
+      if (url.includes("count(*)")) return jsonResponse({ result: { records: [{ n: "0" }] } });
+      return jsonResponse({ result: { records: [] } });
+    });
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+
+    const result = await fetchCcrsCrashes({ bbox: NEVADA_COUNTY_BBOX, years: [2024, 2025] });
+    expect(result.publishedCutoff?.publishedThrough).toBe("2026-08-25");
+  });
+
+  it("leaves the cutoff unavailable when any requested yearly table lacks source metadata", async () => {
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("package_show")) {
+        return jsonResponse({
+          result: {
+            resources: [
+              { id: "res-2025", name: "Crashes_2025", last_modified: "2026-08-26T02:05:52.118229" },
+              { id: "res-2024", name: "Crashes_2024" },
+            ],
+          },
+        });
+      }
+      if (url.includes("count(*)")) return jsonResponse({ result: { records: [{ n: "0" }] } });
+      return jsonResponse({ result: { records: [] } });
+    });
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+
+    const result = await fetchCcrsCrashes({ bbox: NEVADA_COUNTY_BBOX, years: [2024, 2025] });
+    expect(result.publishedCutoff).toBeUndefined();
   });
 
   it("drops rows without usable coordinates rather than storing them half-formed", async () => {
@@ -479,21 +521,26 @@ describe("FARS national adapter", () => {
   });
 
   it("uses NHTSA's final annual FARS release as the exact publication cutoff", () => {
-    expect(FARS_PUBLISHED_CUTOFF.publishedThrough).toBe("2023-12-31");
+    expect(FARS_PUBLISHED_CUTOFF.publishedThrough).toBe("2024-12-31");
     expect(FARS_PUBLISHED_CUTOFF.provenance).toMatchObject({
       basis: "source_metadata",
       finalAnnualFile: true,
     });
-    expect(FARS_PUBLISHED_CUTOFF.provenance.sourceUrl).toContain("nhtsa.gov/press-releases/");
+    expect(FARS_PUBLISHED_CUTOFF.provenance.sourceUrl).toContain("FARS2024%20Release%20Notes.txt");
   });
 
-  it("unwraps both response envelopes the CrashAPI has shipped", () => {
-    expect(parseFarsResults({ Results: [{ ST_CASE: 1 }] })).toHaveLength(1);
-    expect(parseFarsResults({ Results: [[{ ST_CASE: 1 }, { ST_CASE: 2 }]] })).toHaveLength(2);
-    expect(parseFarsResults({ Results: [] })).toEqual([]);
-    // An unrecognized shape is not an empty result set.
-    expect(parseFarsResults({ status: "ok" })).toBeNull();
-    expect(parseFarsResults(null)).toBeNull();
+  it("filters the official annual accident table to the exact requested bbox", () => {
+    const csv = [
+      "STATE,ST_CASE,PEDS,YEAR,LATITUDE,LONGITUD,FATALS",
+      "26,261234,1,2024,42.331,-83.045,2",
+      "26,261235,0,2024,43.100,-83.045,1",
+      "26,261236,0,2024,77.7777,777.7777,1",
+    ].join("\n");
+    const parsed = parseFarsAnnualCsv(csv, 2024, DETROIT_BBOX);
+
+    expect(parsed.matchedTotal).toBe(1);
+    expect(parsed.records).toHaveLength(1);
+    expect(parsed.records[0]?.externalId).toBe("2024-261234");
   });
 
   it("rejects the FARS unknown-coordinate sentinels rather than plotting the Arctic", () => {
@@ -515,5 +562,14 @@ describe("FARS national adapter", () => {
     for (const value of ["", "sometime", null, undefined, 20230604]) {
       expect(toFarsCollisionDate(value)).toBeNull();
     }
+  });
+
+  it("builds the annual-file collision date from validated year, month, and day columns", () => {
+    const parsed = parseFarsAnnualCsv(
+      "ST_CASE,YEAR,MONTH,DAY,LATITUDE,LONGITUD,FATALS\n261234,2024,6,4,42.331,-83.045,1",
+      2024,
+      DETROIT_BBOX
+    );
+    expect(parsed.records[0]?.collisionDate).toBe("2024-06-04");
   });
 });

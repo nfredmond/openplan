@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   evaluateWorkerHealthLaunchGate,
+  reconcileModelRunExecutionOutlook,
   reduceModelingWorkerHealth,
   WORKER_HEARTBEAT_STALE_AFTER_MS,
   type ModelingWorkerHeartbeatRow,
@@ -90,7 +91,7 @@ describe("deployment-global modeling worker health", () => {
     expect(gate.acknowledgementKey).toBeNull();
   });
 
-  it("degrades pending schema and unversioned workers to explicit unknown", () => {
+  it("keeps pending schema unknown and labels a current unversioned worker separately", () => {
     const pending = reduceModelingWorkerHealth({
       rows: [],
       now: NOW,
@@ -103,7 +104,29 @@ describe("deployment-global modeling worker health", () => {
       declaration: "deployed",
     });
     expect(pending.aequilibrae.state).toBe("unknown");
-    expect(old.aequilibrae.state).toBe("unknown");
+    expect(old.aequilibrae.state).toBe("unverified");
+    expect(old.aequilibrae.observedAt).not.toBeNull();
+  });
+
+  it("does not let an undeclared dispatch contradict a current unversioned heartbeat", () => {
+    const health = reduceModelingWorkerHealth({
+      rows: [row("aequilibrae", 30_000, { worker_version: "unrecorded" })],
+      now: NOW,
+      declaration: "undeclared",
+    });
+    const reconciled = reconcileModelRunExecutionOutlook({
+      engineKey: "aequilibrae",
+      health,
+      outlook: {
+        state: "unknown",
+        headline: "OpenPlan cannot tell whether anything will execute this run.",
+        detail: "No declaration is configured.",
+      },
+    });
+    expect(reconciled?.state).toBe("waiting_for_poller");
+    expect(reconciled?.headline).toMatch(/current modeling-worker heartbeat/i);
+    expect(reconciled?.detail).toMatch(/version cannot be verified/i);
+    expect(reconciled?.detail).not.toMatch(/will (finish|succeed|complete)/i);
   });
 
   it("does not let a retired incompatible instance poison a current worker", () => {

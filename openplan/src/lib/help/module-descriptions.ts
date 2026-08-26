@@ -13,7 +13,9 @@
  */
 export const MODULE_DESCRIPTIONS: Record<string, string> = {
   "/dashboard":
-    "Your workspace home. It shows what is configured, what is waiting on you across every module, your run history, and — for owners and admins — what this deployment is currently able to do.",
+    "Your workspace home. It ranks what needs attention, what changed, and the next piece of planning work to open.",
+  "/workspace":
+    "Workspace setup and deployment health: home geography, stage gates, integration keys, team administration, and whether the services behind OpenPlan are available.",
   "/my-work":
     "Everything with a date on it, in one queue: what is assigned to you, what nobody has picked up, which projects are held at a stage gate, and the grant, obligation and invoice deadlines the workspace is carrying.",
   "/projects":

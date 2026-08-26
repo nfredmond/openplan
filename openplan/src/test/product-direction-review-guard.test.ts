@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -26,6 +26,21 @@ describe("the recurring product-direction review", () => {
     expect(run("--check")).toMatch(
       /Product direction is current through \d{4}-\d{2}-\d{2}/,
     );
+  });
+
+  it("checks the machine-readable proof registry and frozen validation protocol", () => {
+    const source = run("--check");
+    const registry = JSON.parse(
+      readFileSync(
+        resolve(APP_ROOT, "../docs/product/US_PLANNING_CAPABILITY_REGISTRY.json"),
+        "utf8",
+      ),
+    );
+    expect(Object.keys(registry.dimensions)).toEqual(
+      expect.arrayContaining(["planner", "organization", "state", "capability", "artifact", "accessibility", "operations"]),
+    );
+    expect(registry.dimensions.state).toHaveLength(56);
+    expect(source).toContain("Product direction is current");
   });
 
   it("builds a fresh-context packet from the live repository state", () => {

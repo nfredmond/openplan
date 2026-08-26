@@ -178,6 +178,46 @@ describe("SafetyWorkspace coverage disclosure", () => {
     expect(screen.getByText(/1,089 mappable/)).toBeInTheDocument();
   });
 
+  it("shows that a long retrieval is still active instead of looking hung", async () => {
+    const neverFinishes = new Promise<Response>(() => undefined);
+    vi.stubGlobal("fetch", vi.fn((url: unknown, init?: RequestInit) =>
+      init?.method === "POST" || String(url).includes("/ingest")
+        ? neverFinishes
+        : Promise.resolve(mockCrashResponse())
+    ) as unknown as typeof fetch);
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea();
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(/source is still working/i);
+    expect(screen.getByRole("status")).toHaveTextContent(/minute or two/i);
+  });
+
+  it("carries the exact project and US place registry context into crash reads", async () => {
+    const fetchMock = routedFetch();
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+    render(
+      <SafetyWorkspace
+        workspaceId="ws-1"
+        latestIngest={null}
+        openedForProject={{ id: "project-2", name: "Elm Street" }}
+        projects={[
+          { id: "project-1", name: "Main Street", status: "active" },
+          { id: "project-2", name: "Elm Street", status: "active" },
+        ]}
+      />
+    );
+    selectStudyArea();
+
+    await waitFor(() => {
+      const requestUrl = fetchMock.mock.calls
+        .map(([url]) => String(url))
+        .find((url) => url.startsWith("/api/safety/crashes?"));
+      expect(requestUrl).toContain("projectId=project-2");
+      expect(requestUrl).toContain("roadContextCountry=US");
+    });
+  });
+
   it("shows the exact source cutoff and its provenance when the source supplied both", async () => {
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({
       publishedThrough: "2023-12-31",

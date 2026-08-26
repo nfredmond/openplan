@@ -51,6 +51,9 @@ const countyRunsSelectMock = vi.fn(() => ({ in: countyRunsInMock, eq: countyRuns
 const aerialCustodyMaybeSingleMock = vi.fn();
 const aerialCustodyEqMock = vi.fn(() => ({ eq: aerialCustodyEqMock, maybeSingle: aerialCustodyMaybeSingleMock }));
 const aerialCustodySelectMock = vi.fn(() => ({ eq: aerialCustodyEqMock }));
+const safetyIngestInMock = vi.fn();
+const safetyIngestEqMock = vi.fn(() => ({ eq: safetyIngestEqMock, in: safetyIngestInMock }));
+const safetyIngestSelectMock = vi.fn(() => ({ eq: safetyIngestEqMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -113,6 +116,7 @@ const fromMock = vi.fn((table: string) => {
   }
 
   if (table === "aerial_artifact_custody") return { select: aerialCustodySelectMock };
+  if (table === "safety_crash_ingests") return { select: safetyIngestSelectMock };
 
   if (table === "report_artifacts") {
     return {
@@ -167,6 +171,7 @@ describe("/api/reports/[reportId]", () => {
             corridor: "Central Avenue",
           }],
           aerialOrthoSelections: [{ custodyId: "99999999-9999-4999-8999-999999999999" }],
+          safetyIngestSelections: [{ ingestId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }],
         },
       },
       error: null,
@@ -234,6 +239,7 @@ describe("/api/reports/[reportId]", () => {
         corridor: "Central Avenue",
       }],
       aerialOrthoSelections: [{ custodyId: "99999999-9999-4999-8999-999999999999" }],
+      safetyIngestSelections: [{ ingestId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }],
     });
     expect(await response.json()).toMatchObject({
       report: {
@@ -287,6 +293,31 @@ describe("/api/reports/[reportId]", () => {
     );
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: expect.stringMatching(/another project/i) });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH refuses crash evidence outside the report project", async () => {
+    safetyIngestInMock.mockResolvedValueOnce({ data: [], error: null });
+    const response = await patchReportDetail(
+      new NextRequest("http://localhost/api/reports/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }],
+        }),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: expect.stringMatching(/not attached/i) });
+    expect(safetyIngestEqMock).toHaveBeenCalledWith(
+      "workspace_id",
+      "33333333-3333-4333-8333-333333333333",
+    );
+    expect(safetyIngestEqMock).toHaveBeenCalledWith(
+      "project_id",
+      "44444444-4444-4444-8444-444444444444",
+    );
     expect(reportUpdateMock).not.toHaveBeenCalled();
   });
 

@@ -19,6 +19,23 @@ vi.mock("next/link", () => ({
  * workspace that already has runs.
  */
 describe("FirstRunChecklist", () => {
+  it("does not call a failed home-place read an empty setting", () => {
+    render(
+      <FirstRunChecklist
+        aiKeyConfigured
+        homeGeographyIsSet={false}
+        homeGeographyUnreadable
+        homeGeographyLabel={null}
+        hasRuns
+        canManageWorkspace
+      />
+    );
+
+    expect(screen.getByText(/Could not check where this agency works/)).toBeInTheDocument();
+    expect(screen.queryByText(/Not set\./)).not.toBeInTheDocument();
+    expect(screen.getAllByText("Optional").length).toBeGreaterThan(0);
+  });
+
   it("treats a geography with no recorded place name as set, without inventing one", () => {
     render(
       <FirstRunChecklist
@@ -36,7 +53,7 @@ describe("FirstRunChecklist", () => {
     expect(screen.queryByText("Start here")).not.toBeInTheDocument();
   });
 
-  it("points at the geography panel elsewhere on the page when the picker is not mounted here", () => {
+  it("points at workspace setup when the picker is not mounted here", () => {
     render(
       <FirstRunChecklist
         aiKeyConfigured={false}
@@ -48,8 +65,12 @@ describe("FirstRunChecklist", () => {
     );
 
     expect(
-      screen.getByText("Not set. Choose it in the workspace geography panel on this page.")
+      screen.getByText("Not set. Choose it in Workspace setup & health.")
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open where-you-work setting" })).toHaveAttribute(
+      "href",
+      "/workspace",
+    );
   });
 
   it("mounts the supplied geography setter under the step that asks for it", () => {

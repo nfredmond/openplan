@@ -108,6 +108,8 @@ const GUIDED_FLOW_IMPORT = "@/components/ui/guided-flow";
  * which is the whole difference between this and a convention.
  */
 const NOT_A_GUIDED_FLOW: Record<string, string> = {
+  "src/components/safety/safety-workspace.tsx":
+    "R1 — the project selector changes the crash map and its exact evidence context in place; hiding it in a sheet would separate the choice from the map and acquisition it controls.",
   /*
     MOVED 2026-08-14, not deleted. The `<form>` used to live inside
     `public-engagement-portal.tsx` as `SubmissionForm`, which made it the SECOND

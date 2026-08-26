@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: cb445c4b
-current_release: v0.34.0
+current_release: v0.35.0
 review_by: 2026-09-25
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.34.0
+## Current truth at v0.35.0
 
 Strong foundations already exist:
 
@@ -87,15 +87,19 @@ Strong foundations already exist:
   agent refusals, sealed-study custody, and honest negative results;
 - local/self-hosted workers, live RLS proof, backup and restore rehearsal,
   upgrade CI, interruption recovery, and a large mutation-backed test surface.
+- one authenticated rail, project-scoped workflow links, a guided
+  baseline-versus-build modeling record, named-road Safety context, and an
+  expiring machine-readable v1 coverage registry.
 
 The v1 contract is not yet true:
 
-- live navigation still exposes a collection of modules more than one planning
-  operating system;
-- the automated first-week jobs can finish while their intended outcomes remain
-  only partly reached;
-- planner-type, agency-type, state, legal-source, data-source, artifact, and
-  accessibility coverage is not yet maintained as one proof matrix;
+- the unified shell and project context do not yet make every cross-module
+  planning job complete or every specialist workflow approachable to a novice;
+- the first-week gate covers only four required outcomes and must expand with
+  the planner and organization matrix;
+- the proof registry exposes many `partial`, `missing`, and `not-assessed`
+  cells; those open cells block v1 even though they do not block this interim
+  release;
 - external GIS/workbook handoff and named team approvals remain incomplete;
 - no independent stranger has installed and operated the product;
 - the model is screening-grade, not nationwide validated. The often-repeated
@@ -111,9 +115,11 @@ location-matching uncertainty. v1 needs an uncertainty-aware gate that can
 distinguish bad observations from bad model structure without letting either
 hide the other.
 
-## Immediate checkpoint: v0.35 foundation
+## Completed checkpoint: v0.35 foundation
 
-The next release establishes the machinery the full v1 program depends on.
+This release established the machinery the full v1 program depends on. The
+open cells below the checkpoint remain v1 work, not claims that v0.35 solved
+the full contract.
 
 ### One product
 

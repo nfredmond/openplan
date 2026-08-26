@@ -533,6 +533,29 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     }),
   },
   {
+    // Service-authored road evidence still carries agency and project scope.
+    // The database trigger guards the pairing; this fixture proves the SELECT
+    // policy also refuses the frozen road line to every other tenant.
+    table: "safety_road_context_features",
+    select: "id,workspace_id,project_id,road_name",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, projectBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      project_id: projectBId,
+      country_code: "US",
+      source_id: "us-census-tiger-line-cache",
+      source_label: "U.S. Census TIGER/Line roads",
+      source_vintage: "2025",
+      source_feature_id: `rls-road-${suffix}`,
+      road_name: `RLS road ${suffix}`,
+      geometry_geojson: {
+        type: "LineString",
+        coordinates: [[-121.1, 39.2], [-121.0, 39.3]],
+      },
+    }),
+  },
+  {
     /*
       THE PEOPLE IN THE CRASHES — the most person-level rows in the schema, and
       unprobed from the day they shipped (2026-08-12) until this was written.
@@ -1326,7 +1349,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(80);
+    expect(tables).toHaveLength(81);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1396,6 +1419,7 @@ describe("workspace RLS isolation inventory", () => {
       "safety_crash_ingests",
       "safety_crash_parties",
       "safety_crashes",
+      "safety_road_context_features",
       "scenario_sets",
       "stage_gate_decisions",
       "subscriptions",

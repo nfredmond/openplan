@@ -24,6 +24,7 @@ export type EvidenceChainSummary = {
   stageGateBlockedGateLabel: string | null;
   modelingEvidenceCount?: number;
   modelingEvidenceClaimLabel?: string;
+  safetyAcquisitionCount?: number;
 };
 
 export function buildEvidenceChainSummary(input: {
@@ -44,6 +45,7 @@ export function buildEvidenceChainSummary(input: {
   stageGateSnapshot: ProjectStageGateSnapshot;
   modelingEvidenceCount?: number | null;
   modelingEvidenceClaimStatuses?: ModelingClaimStatus[] | null;
+  safetyAcquisitionCount?: number | null;
 }): EvidenceChainSummary {
   const projectRecordCounts = [
     input.projectRecordsSnapshot.deliverables.count,
@@ -116,5 +118,6 @@ export function buildEvidenceChainSummary(input: {
       : null,
     modelingEvidenceCount,
     modelingEvidenceClaimLabel,
+    safetyAcquisitionCount: input.safetyAcquisitionCount ?? 0,
   };
 }

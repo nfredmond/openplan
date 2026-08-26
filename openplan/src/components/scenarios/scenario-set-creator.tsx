@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/ui/state-block";
+import { selectInitialPlanningProjectId } from "@/lib/projects/planning-context";
 import {
   GuidedFlow,
   GuidedFlowRow,
@@ -58,11 +59,14 @@ type ScenarioSetValues = {
 export function ScenarioSetCreator({
   projects,
   projectsUnreadable = false,
+  initialProjectId = null,
 }: {
   projects: ProjectOption[];
   projectsUnreadable?: boolean;
+  initialProjectId?: string | null;
 }) {
   const router = useRouter();
+  const validInitialProjectId = selectInitialPlanningProjectId(projects, initialProjectId, "first");
 
   const steps = useMemo<GuidedFlowStep<ScenarioSetValues>[]>(
     () => [
@@ -147,7 +151,7 @@ export function ScenarioSetCreator({
     title: "New scenario set",
     submitLabel: "Create the scenario set",
     initialValues: {
-      projectId: projects[0]?.id ?? "",
+      projectId: validInitialProjectId,
       title: "",
       summary: "",
       planningQuestion: "",

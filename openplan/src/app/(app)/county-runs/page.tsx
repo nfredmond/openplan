@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { CountyRunsPageClient } from "@/components/county-runs/county-runs-page-client";
+import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
 import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
 import { isCountyOnrampWorkerConfigured } from "@/lib/config/deployment-health-facts";
@@ -17,6 +18,7 @@ import { resolveStudyArea } from "@/lib/models/study-area";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { StateBlock } from "@/components/ui/state-block";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { resolvePlanningContext } from "@/lib/projects/planning-context";
 
 export const metadata = moduleMetadata("Model Validation");
 
@@ -129,6 +131,13 @@ export default async function CountyRunsPage({
       : false;
 
   const projectRow = (projectResult.data ?? null) as ProjectPlaceRowWithIdentity | null;
+  const planningContext = resolvePlanningContext(
+    requestedProjectId,
+    projectRow,
+    requestedProjectId && (projectSchemaPending || projectUnreadable)
+      ? projectResult.error ?? { message: "Project context could not be read" }
+      : null,
+  );
 
   // Precedence lives in `resolveStudyArea`, stated once for the whole app: the
   // project's own area outranks the workspace home, and nothing here can invent
@@ -179,11 +188,20 @@ export default async function CountyRunsPage({
   // The order of the analysis work, said the same way on every page in the
   // group. This page is step six of seven — the one that checks a run against
   // counts collected in the field.
-  const sequenceFacts = await loadAnalysisSequenceFacts(supabase, workspaceId);
+  const sequenceFacts = await loadAnalysisSequenceFacts(
+    supabase,
+    workspaceId,
+    planningContext.status === "active" ? planningContext.project.id : null
+  );
 
   return (
     <>
-      <AnalysisSequenceStrip facts={sequenceFacts} currentStepId="check" />
+      <PlanningContextStrip context={planningContext} />
+      <AnalysisSequenceStrip
+        facts={sequenceFacts}
+        currentStepId="check"
+        projectId={planningContext.status === "active" ? planningContext.project.id : null}
+      />
 
       {reads.any || projectAreaNotice ? (
         <div className="mb-4 grid gap-4">

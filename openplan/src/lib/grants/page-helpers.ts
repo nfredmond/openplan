@@ -15,6 +15,7 @@ export type GrantsPageSearchParams = Promise<{
   status?: string;
   decision?: string;
   kind?: string;
+  projectId?: string;
   focusProjectId?: string;
   focusOpportunityId?: string;
   focusInvoiceId?: string;

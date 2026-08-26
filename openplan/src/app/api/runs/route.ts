@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from("runs")
       .select(
-        "id, workspace_id, title, query_text, corridor_geojson, metrics, result_geojson, summary_text, ai_interpretation, created_at"
+        "id, workspace_id, project_id, title, query_text, corridor_geojson, metrics, result_geojson, summary_text, ai_interpretation, created_at"
       )
       .eq("workspace_id", parsed.data)
       .order("created_at", { ascending: false })

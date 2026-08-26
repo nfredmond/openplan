@@ -428,16 +428,20 @@ const EXPECTED = {
   // Each is member-readable through one SELECT policy and has no client write
   // policy; the service-only RPC owns all writes. That is +2 permissive
   // policies, +2 policy-bearing/RLS tables, and no permissive write.
-  policies: 677,
-  permissive: 431,
+  // 20260825000003 adds one service-authored Safety road-context cache. It is
+  // workspace-readable through one SELECT policy, while authenticated clients
+  // have no write grant or policy: +1 permissive policy, policy-bearing table,
+  // relation, table, and RLS table; no permissive write.
+  policies: 678,
+  permissive: 432,
   restrictive: 246,
   permissiveWrites: 276,
   expanded: 286,
-  tablesWithPolicies: 155,
-  relations: 178,
-  tables: 171,
+  tablesWithPolicies: 156,
+  relations: 179,
+  tables: 172,
   views: 7,
-  rlsEnabledTables: 171,
+  rlsEnabledTables: 172,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

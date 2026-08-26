@@ -235,7 +235,10 @@ const narrativeDraftsEqTargetKindMock = vi.fn(() => ({ eq: narrativeDraftsEqTarg
 const narrativeDraftsSelectMock = vi.fn(() => ({ eq: narrativeDraftsEqTargetKindMock }));
 
 const safetyIngestOrderMock = vi.fn();
-const safetyIngestEqProjectMock = vi.fn(() => ({ order: safetyIngestOrderMock }));
+const safetyIngestEqProjectMock = vi.fn(() => ({
+  order: safetyIngestOrderMock,
+  in: vi.fn(() => ({ order: safetyIngestOrderMock })),
+}));
 const safetyIngestEqWorkspaceMock = vi.fn(() => ({ eq: safetyIngestEqProjectMock }));
 const safetyIngestSelectMock = vi.fn(() => ({ eq: safetyIngestEqWorkspaceMock }));
 const rpcMock = vi.fn();
@@ -1215,6 +1218,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
   });
 
   it("carries project-linked KSI concentration ranks into the generated packet", async () => {
+    reportNamesCountyRun({
+      metadata_json: { safetyIngestSelections: [{ ingestId: "ingest-1" }] },
+    });
     sectionsOrderMock.mockResolvedValueOnce({
       data: [{
         id: "section-safety",
@@ -1251,7 +1257,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
     rpcMock.mockImplementation((name: string) => Promise.resolve(
-      name === "safety_ksi_concentrations" ? {
+      name === "safety_ksi_concentrations_for_ingests" ? {
           data: [{
             rank: 1,
             longitude: -121.061,
@@ -1263,7 +1269,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
           }],
           error: null,
         }
-      : name === "safety_ksi_tract_burden" ? {
+      : name === "safety_ksi_tract_burden_for_ingests" ? {
           data: [{
             rank: 1,
             geoid: "06019000100",
@@ -1309,14 +1315,18 @@ describe("POST /api/reports/[reportId]/generate", () => {
       safetyKsiEquityReadStatus: "readable",
       safetyAcquisitionCount: 1,
     }));
-    expect(rpcMock).toHaveBeenCalledWith("safety_ksi_concentrations", expect.objectContaining({
+    expect(rpcMock).toHaveBeenCalledWith("safety_ksi_concentrations_for_ingests", expect.objectContaining({
       p_project_id: "44444444-4444-4444-8444-444444444444",
+      p_ingest_ids: ["ingest-1"],
       p_min_lon: -121.2,
       p_max_lon: -120.8,
     }));
   });
 
   it("keeps crash counts when the optional concentration calculation throws", async () => {
+    reportNamesCountyRun({
+      metadata_json: { safetyIngestSelections: [{ ingestId: "ingest-1" }] },
+    });
     sectionsOrderMock.mockResolvedValueOnce({
       data: [{
         id: "section-safety",
@@ -1353,7 +1363,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
     rpcMock.mockImplementation((name: string) => {
-      if (name === "safety_ksi_concentrations") {
+      if (name === "safety_ksi_concentrations_for_ingests") {
         return Promise.reject(new Error("concentration timeout"));
       }
       return Promise.resolve({

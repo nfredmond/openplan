@@ -18,6 +18,10 @@ import {
   writeReportAerialOrthoSelections,
 } from "@/lib/reports/aerial-ortho-evidence";
 import { verifySelectedReportAerialOrtho } from "@/lib/reports/aerial-ortho-evidence-server";
+import {
+  readReportSafetyIngestSelections,
+  writeReportSafetyIngestSelections,
+} from "@/lib/reports/safety-evidence-selection";
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
@@ -43,6 +47,10 @@ const patchReportSchema = z
       .optional(),
     aerialOrthoSelections: z
       .array(z.object({ custodyId: z.string().uuid() }))
+      .max(1)
+      .optional(),
+    safetyIngestSelections: z
+      .array(z.object({ ingestId: z.string().uuid() }))
       .max(1)
       .optional(),
     countyRunIds: z.array(z.string().uuid()).max(20).optional(),
@@ -300,6 +308,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         report: access.report,
         agreementCorridorSelections: readAgreementCorridorSelections(access.report.metadata_json),
         aerialOrthoSelections: readReportAerialOrthoSelections(access.report.metadata_json),
+        safetyIngestSelections: readReportSafetyIngestSelections(access.report.metadata_json),
         project,
         sections: sections ?? [],
         runs,
@@ -500,6 +509,30 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    const finalSafetyIngestSelections = parsed.data.safetyIngestSelections
+      ? readReportSafetyIngestSelections({ safetyIngestSelections: parsed.data.safetyIngestSelections })
+      : readReportSafetyIngestSelections(access.report.metadata_json);
+    if (parsed.data.safetyIngestSelections && finalSafetyIngestSelections.length > 0) {
+      if (!access.report.project_id) {
+        return NextResponse.json({ error: "Crash evidence requires a project report" }, { status: 400 });
+      }
+      const { data: ingestRows, error: ingestError } = await access.supabase
+        .from("safety_crash_ingests")
+        .select("id")
+        .eq("workspace_id", access.report.workspace_id)
+        .eq("project_id", access.report.project_id)
+        .in("id", finalSafetyIngestSelections.map(({ ingestId }) => ingestId));
+      if (ingestError) {
+        return NextResponse.json({ error: "Failed to verify crash evidence" }, { status: 500 });
+      }
+      if ((ingestRows ?? []).length !== finalSafetyIngestSelections.length) {
+        return NextResponse.json(
+          { error: "The selected crash acquisition is not attached to this report's project" },
+          { status: 400 },
+        );
+      }
+    }
+
     const reportUpdate: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) {
       reportUpdate.title = parsed.data.title;
@@ -531,6 +564,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (parsed.data.aerialOrthoSelections) {
       nextReportMetadata = writeReportAerialOrthoSelections(nextReportMetadata, finalAerialOrthoSelections);
+    }
+    if (parsed.data.safetyIngestSelections) {
+      nextReportMetadata = writeReportSafetyIngestSelections(nextReportMetadata, finalSafetyIngestSelections);
     }
     if (nextReportMetadata !== access.report.metadata_json) reportUpdate.metadata_json = nextReportMetadata;
 
@@ -703,6 +739,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         reportId: access.report.id,
         agreementCorridorSelections: finalAgreementSelections,
         aerialOrthoSelections: finalAerialOrthoSelections,
+        safetyIngestSelections: finalSafetyIngestSelections,
       },
       { status: 200 },
     );

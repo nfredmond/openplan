@@ -106,6 +106,13 @@ function makeRecordingClient() {
     // Resolved LAZILY, after the filters have been recorded, so a test can fail
     // exactly the band it names.
     const result = () => {
+      if (entry.table === "safety_crash_ingests") {
+        return {
+          data: [{ id: "11111111-1111-4111-8111-111111111111", project_id: null }],
+          count: null,
+          error: null,
+        };
+      }
       if (!entry.head) return { data: [], count: null, error: null };
       const selectsFailingBand =
         failingBand !== null &&
@@ -150,6 +157,7 @@ function makeRecordingClient() {
         entry.calls.push({ op: "or", filter });
         return builder;
       },
+      is: () => builder,
       // Not filters, and deliberately NOT recorded: ordering and the display cap
       // belong to the map, and requiring the count queries to carry them would
       // be asserting the opposite of what this file is about.

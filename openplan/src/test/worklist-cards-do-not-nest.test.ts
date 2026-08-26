@@ -385,51 +385,25 @@ describe("a worklist card does not contain another card", () => {
   });
 });
 
-/**
- * The two self-framing panels the dashboard hoists into the first-run
- * checklist. Each draws its own border and radius, which is right when it sits
- * on the page and is the fourth frame when it sits inside a checklist step.
- */
-const HOISTED_PANELS = ["WorkspaceGeographyPanel", "WorkspaceIntegrationKeysPanel"];
+/** Shared setup belongs on its own page, not inside the Overview checklist. */
+const SETUP_PANELS = ["WorkspaceGeographyPanel", "WorkspaceIntegrationKeysPanel"];
 
-describe("a panel mounted inside a checklist step drops its own frame", () => {
-  it("passes embedded wherever a self-framing panel is mounted into the checklist", () => {
-    const source = stripSourceComments(
+describe("workspace setup stays out of the Overview card stack", () => {
+  it("mounts self-framing setup panels on /workspace and not inside /dashboard", () => {
+    const dashboard = stripSourceComments(
       readFileSync(path.join(APP_ROOT, "src/app/(app)/dashboard/page.tsx"), "utf8")
     );
+    const workspace = stripSourceComments(
+      readFileSync(path.join(APP_ROOT, "src/app/(app)/workspace/page.tsx"), "utf8")
+    );
 
-    const missing: string[] = [];
-    for (const panel of HOISTED_PANELS) {
-      // Every mount of the panel on this page, with its full attribute list.
-      const mounts = [...source.matchAll(new RegExp(`<${panel}\\b([\\s\\S]*?)/>`, "g"))];
-      expect(mounts.length, `${panel} is no longer mounted on the dashboard`).toBeGreaterThan(0);
-      const hoisted = mounts.filter((mount) => /embedded/.test(mount[1]));
-      if (hoisted.length === 0) missing.push(panel);
-    }
-
-    expect(
-      missing,
-      "A self-framing panel is hoisted into the first-run checklist without " +
-        "`embedded`, so it draws a border inside the step card, inside the " +
-        "get-started card, inside the page shell — four frames. /dashboard " +
-        "measured exactly that in Chrome on 2026-08-13 before this was fixed."
-    ).toEqual([]);
-
-    // And the panels must still HONOUR the prop: a component that accepts
-    // `embedded` and frames itself anyway would pass the check above.
-    for (const panel of HOISTED_PANELS) {
-      const file = path.join(
-        APP_ROOT,
-        "src/components/workspaces",
-        panel === "WorkspaceGeographyPanel"
-          ? "workspace-geography-panel.tsx"
-          : "workspace-integration-keys-panel.tsx"
+    for (const panel of SETUP_PANELS) {
+      expect(dashboard, `${panel} must not be nested into the Overview checklist`).not.toMatch(
+        new RegExp(`<${panel}\\b`)
       );
-      const panelSource = stripSourceComments(readFileSync(file, "utf8"));
-      expect(
-        panelSource,
-        `${panel} must make its own border conditional on embedded, not merely accept the prop.`
-      ).toMatch(/embedded \? undefined : "rounded-xl border/);
+      expect(workspace, `${panel} must remain reachable on the setup page`).toMatch(
+        new RegExp(`<${panel}\\b`)
+      );
     }
   });
 });
