@@ -1,5 +1,6 @@
-import { Map as MapIcon } from "lucide-react";
+import { Download, Map as MapIcon } from "lucide-react";
 import { ProjectMapPresence } from "@/components/projects/project-map-presence";
+import { Button } from "@/components/ui/button";
 import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record";
 
 /**
@@ -47,6 +48,20 @@ export function ProjectMapPresencePanel({
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-muted/25 px-4 py-3">
+        <p className="max-w-2xl text-sm text-muted-foreground">
+          Take the stored project area, site marker, and corridors into QGIS or another GIS. The
+          package includes an EPSG:4326 manifest that names any missing or invalid map shapes. Linked
+          datasets, documents, and analysis evidence are not included yet.
+        </p>
+        <Button asChild variant="outline" size="sm">
+          <a href={`/api/projects/${projectId}/export/geopackage`} download>
+            <Download aria-hidden="true" />
+            Download GeoPackage
+          </a>
+        </Button>
       </div>
 
       {corridorsPending ? (

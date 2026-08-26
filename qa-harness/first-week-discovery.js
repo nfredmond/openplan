@@ -639,7 +639,7 @@ function renderJobMarkdown(job, verdict) {
   const lines = [`## ${job.id} — ${job.title}`, ''];
   lines.push(`- Outcome reached: **${verdict.outcomeReached ?? 'not stated'}**`);
   lines.push(`- Outcome gate: **${verdict.outcome.status}**. ${verdict.outcome.reason}`);
-  lines.push(`- Confirmed findings: **${verdict.confirmed.length}**`);
+  lines.push(`- Evidence-complete claims awaiting product judgment: **${verdict.confirmed.length}**`);
   lines.push(`- Discarded findings: **${verdict.discarded.length}**`);
   lines.push(`- Snapshots the browser recorded: ${verdict.browserDumps}`);
   if (verdict.execution) lines.push(`- Run status: **${verdict.execution.status}**. ${verdict.execution.reason}`);
@@ -648,7 +648,7 @@ function renderJobMarkdown(job, verdict) {
   if (verdict.whatWouldHaveHelped) lines.push('', `**What would have helped.** ${verdict.whatWouldHaveHelped}`);
 
   if (verdict.confirmed.length) {
-    lines.push('', '### Confirmed — evidence checked out', '');
+    lines.push('', '### Evidence complete — manual product judgment still required', '');
     for (const f of verdict.confirmed) {
       lines.push(`- **[${f.severity}] ${f.title}**`);
       lines.push(`  - ${f.url}`);
@@ -752,7 +752,7 @@ function verifyRun(runRoot, baseUrl) {
     '',
     `- Target: ${baseUrl}`,
     `- Run directory: ${runRoot}`,
-    `- Confirmed findings: **${confirmed}**`,
+    `- Evidence-complete claims awaiting product judgment: **${confirmed}**`,
     `- Discarded findings: **${discarded}**`,
     `- Completed jobs: **${completed}**`,
     `- Blocked jobs: **${blocked}**`,
@@ -766,9 +766,11 @@ function verifyRun(runRoot, baseUrl) {
     'The outcome gate passes only when every selected journey completes and reports that',
     'the planner reached the intended outcome. A completed agent session is not enough.',
     '',
-    'A confirmed finding means the screenshot and page snapshot support what the agent said.',
-    'It does not mean the behaviour is wrong — that judgement is yours. A discarded finding',
-    'was contradicted by its own evidence or had none, and is not a work item.',
+    'An evidence-complete claim means the named screenshot and page snapshot passed mechanical',
+    'checks, including exact and same-line missing-text contradictions. It does not prove the',
+    'narrative is correct: a person must compare the claim with',
+    'the evidence before making it a work item. A discarded claim was contradicted by an exact',
+    'check or had incomplete evidence.',
     '',
     ...sections,
   ].join('\n');
@@ -817,7 +819,9 @@ async function main() {
   if (args.verifyOnly) {
     const runRoot = path.resolve(args.verifyOnly);
     const result = verifyRun(runRoot, baseUrl);
-    console.log(`\n${result.confirmed} confirmed, ${result.discarded} discarded. ${result.summaryPath}`);
+    console.log(
+      `\n${result.confirmed} evidence-complete claims awaiting judgment, ${result.discarded} discarded. ${result.summaryPath}`,
+    );
     if (!result.outcomeGatePassed) process.exitCode = 1;
     return;
   }
@@ -971,7 +975,7 @@ async function main() {
   }
 
   const result = verifyRun(runRoot, baseUrl);
-  console.log(`\n${result.confirmed} confirmed, ${result.discarded} discarded.`);
+  console.log(`\n${result.confirmed} evidence-complete claims awaiting judgment, ${result.discarded} discarded.`);
   console.log(`Read: ${result.summaryPath}`);
   if (!result.outcomeGatePassed) process.exitCode = 1;
 }

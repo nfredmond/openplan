@@ -267,12 +267,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260825000002_direct_workbook_portfolio_import.sql",
     migrationsAtRelease: 223,
   },
-  // 0.35.0 — workspace-scoped named-road cache and the trigger that prevents
-  // a service writer from crossing project/workspace boundaries.
+  // 0.35.0 — workspace-scoped named-road cache, its cross-workspace guard, and
+  // exact-acquisition Safety screens. The release commit contained all three;
+  // the original ledger entry incorrectly stopped one migration early.
   {
     tag: "0.35.0",
-    lastMigration: "20260825000004_safety_road_context_scope_guard.sql",
-    migrationsAtRelease: 225,
+    lastMigration: "20260826000001_safety_exact_acquisition_screens.sql",
+    migrationsAtRelease: 226,
   },
 ];
 

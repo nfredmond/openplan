@@ -216,6 +216,17 @@ check('"I could not find X" when X is in the page tree — discarded as contradi
   assert.ok(verdict.reasons.some((r) => /did-not-scroll/.test(r)), verdict.reasons.join(' | '));
 });
 
+check('a paraphrased missing field is discarded when its terms appear together in the evidence', () => {
+  const snapshot = pageSnapshot({
+    extra: [
+      '- paragraph: Planning-level estimated project cost: USD 4,200,000. Price year 2026. Source: projects.csv.',
+    ],
+  });
+  const verdict = run(baseFinding({ absentText: ['Cost source'] }), { snapshot, dumpText: snapshot });
+  assert.strictEqual(verdict.status, 'discarded');
+  assert.ok(verdict.reasons.some((r) => /terms appear together/.test(r)), verdict.reasons.join(' | '));
+});
+
 /**
  * The mirror case, and note what the fixture had to change to get here. The
  * first draft of this test used "Funding" as the absent thing and was

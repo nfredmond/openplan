@@ -65,13 +65,13 @@
  *      honest findings, and the symptom is every finding failing on this reason
  *      alone.
  *
- * WHAT THIS CANNOT DO, stated plainly so a confirmed finding is not over-read:
+ * WHAT THIS CANNOT DO, stated plainly so an evidence-complete claim is not over-read:
  *   - It is a carelessness defence, not a forgery defence. An agent that set
  *     out to deceive could copy a real dump next to a false narrative. Nothing
  *     here would notice, and nothing short of recording the session would.
- *   - "Confirmed" means SELF-SUPPORTING, not "is a real defect". The screenshot
- *     proves the page looked like that; whether that is wrong is judgement, and
- *     judgement stays with the reader.
+ *   - The internal `confirmed` status is retained for artifact compatibility.
+ *     It means SELF-SUPPORTING, not "is a real defect". Whether the recorded
+ *     page state is wrong remains a judgement for the reader.
  *   - Check 5 only fires on text the agent thought to name. An agent that
  *     reports "the page was confusing" makes no falsifiable claim and this file
  *     has nothing to grip.
@@ -120,6 +120,29 @@ function normalizedLines(text) {
     .split(/\r?\n/)
     .map(normalizeSnapshotLine)
     .filter((line) => line.length > 0);
+}
+
+const ABSENCE_STOP_WORDS = new Set(['a', 'an', 'and', 'for', 'of', 'on', 'the', 'to']);
+
+function meaningfulWords(text) {
+  return String(text || '')
+    .toLowerCase()
+    .match(/[a-z0-9]+/g)
+    ?.filter((word) => !ABSENCE_STOP_WORDS.has(word)) || [];
+}
+
+/**
+ * Catch a paraphrased missing-label claim only when every meaningful word is
+ * present on one accessible-tree line. Keeping the words on one line avoids
+ * treating unrelated mentions elsewhere on a large page as a contradiction.
+ */
+function lineCarriesAllWords(lines, phrase) {
+  const expected = [...new Set(meaningfulWords(phrase))];
+  if (expected.length < 2) return false;
+  return lines.some((line) => {
+    const present = new Set(meaningfulWords(line));
+    return expected.every((word) => present.has(word));
+  });
 }
 
 /**
@@ -196,7 +219,8 @@ function verifyFinding(finding, { runDir, baseUrl, dumps = [] }) {
     }
   }
 
-  const haystack = normalizedLines(snapshotText).join('\n');
+  const snapshotLines = normalizedLines(snapshotText);
+  const haystack = snapshotLines.join('\n');
 
   // 3. the snapshot places the agent at the URL it names, ON THE INSTANCE THAT
   //    WAS BEING TESTED
@@ -232,6 +256,10 @@ function verifyFinding(finding, { runDir, baseUrl, dumps = [] }) {
     if (haystack.toLowerCase().includes(normalizeSnapshotLine(missing).toLowerCase())) {
       discards.push(
         `Reported ${JSON.stringify(missing)} as missing, but it IS in the page tree. Contradicted by its own evidence — this is the did-not-scroll failure.`,
+      );
+    } else if (lineCarriesAllWords(snapshotLines, missing)) {
+      discards.push(
+        `Reported ${JSON.stringify(missing)} as missing, but all of those terms appear together in the page tree. The claim is a paraphrase contradicted by its own evidence.`,
       );
     }
   }

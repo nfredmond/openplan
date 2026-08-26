@@ -19,11 +19,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Release-candidate migrations pending the v0.35.0 tag:
-`20260825000003_safety_road_context_cache.sql`,
-`20260825000004_safety_road_context_scope_guard.sql`, and
-`20260826000001_safety_exact_acquisition_screens.sql`
-(`safety_exact_acquisition_screens`).
+Projects can now download their stored study area, site marker, and cartographic
+corridors as a standard GeoPackage for QGIS and other GIS tools. The file carries
+an EPSG:4326 manifest that explicitly identifies missing or invalid geometry;
+OpenPlan does not repair or invent geometry during export. Linked datasets,
+documents, analysis evidence, and spreadsheet round-trip are not included yet.
 
 ## 0.35.0 — 2026-08-26
 

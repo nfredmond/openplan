@@ -75,7 +75,7 @@
       { "id": "adopted-plan", "status": "partial" },
       { "id": "grant-application", "status": "partial" },
       { "id": "delivery-and-reimbursement-record", "status": "partial" },
-      { "id": "interoperable-geospatial-exchange", "status": "missing" }
+      { "id": "interoperable-geospatial-exchange", "status": "partial" }
     ],
     "accessibility": [
       { "id": "keyboard", "status": "partial" },

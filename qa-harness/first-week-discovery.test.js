@@ -222,6 +222,11 @@ check('the summary passes its outcome gate when every completed journey reached 
   assert.strictEqual(result.reached, 2);
   assert.strictEqual(result.outcomeGatePassed, true);
   assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /Outcome gate: \*\*PASSED\*\*/);
+  assert.match(
+    fs.readFileSync(result.summaryPath, 'utf8'),
+    /Evidence-complete claims awaiting product judgment/,
+  );
+  assert.doesNotMatch(fs.readFileSync(result.summaryPath, 'utf8'), /Confirmed findings/);
 });
 
 check('a selected job missing from disk is inconclusive instead of disappearing from the gate', () => {

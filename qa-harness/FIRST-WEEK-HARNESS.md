@@ -53,7 +53,7 @@ npm install
 OPENPLAN_BASE_URL=http://localhost:3200 \
 OPENPLAN_FIRST_WEEK_EMAIL=you@example.test \
 OPENPLAN_FIRST_WEEK_PASSWORD='…' \
-  npm run first-week-discovery                              # all seven jobs
+  npm run first-week-discovery                              # all eight jobs
 
 ... npm run first-week-discovery -- --job 03-public-engagement
 ... npm run first-week-discovery -- --list
@@ -68,11 +68,11 @@ no metered spend.
 
 **It is not free of your weekly limit, though.** Measured on 2026-08-14 with
 sonnet: a job runs 16–22 minutes and ~135 steps, and the CLI reports around
-$8.50 of API-equivalent usage for one. All seven jobs is more than a working hour
+$8.50 of API-equivalent usage for one. All eight jobs is more than a working hour
 and a real bite out of a week's allowance. Run the whole set when something big
 has landed; run one job when you want to check one surface.
 
-### The seven jobs
+### The eight jobs
 
 They live in `first-week-jobs/*.job.md` and they are written as **outcomes, not
 clicks** — "produce something you could show a board", never "click Reports then
@@ -89,6 +89,7 @@ otherwise see.
 | `04-safety-case` | Find where people are being hurt, and whether the numbers on screen can be trusted |
 | `05-analysis-corridor` | Run an analysis, know whether it worked, explain the answer without jargon |
 | `06-land-use-plan` | Author, review, adopt, publish, and report a land-use plan through visible entry points |
+| `07-project-gis-handoff` | Download one project's standard GIS handoff with its CRS and coverage limits visible |
 
 Rewrite them freely. They are prose, and prose is the part a planner can edit.
 The `--- header ---` at the top of each carries only `id`, `title`,
@@ -277,7 +278,7 @@ Failures write a full-page screenshot to
 ## The loop this is meant to close
 
 1. Run discovery. It takes an hour and produces `summary.md`.
-2. Read the confirmed findings. Decide which are real — that part is yours.
+2. Read the evidence-complete claims and compare each one with its snapshot. Decide which are real — that part is yours.
 3. Fix them.
 4. Write a regression for each one you fixed, naming the run it came from.
 5. Run the regression layer whenever you like; it is cheap.
@@ -295,6 +296,9 @@ anything, and a green run starts meaning nothing at all.
 - **It never tests a shapefile.** The handover folder is GeoJSON and CSV because
   those are what the product's upload controls accept. A planner with a `.shp`
   from a consultant is a real and untested case.
+- **The GIS handoff journey cannot open QGIS.** It proves a planner can reach and
+  download the artifact and read its stated coverage. The deterministic check
+  must independently open the file with a GeoPackage implementation.
 - **Sonnet by default.** A weaker model reports more noise and a stronger one
   costs more usage. The discard count in each summary is the honest read on
   which way to move.
