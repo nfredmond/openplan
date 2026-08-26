@@ -111,7 +111,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...props }: ComponentPropsWithoutRef<"a"> & { href: string }) => (
+  default: ({ href, children, prefetch: _prefetch, ...props }: ComponentPropsWithoutRef<"a"> & { href: string; prefetch?: boolean }) => (
     <a href={href} {...props}>
       {children}
     </a>

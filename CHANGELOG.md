@@ -23,7 +23,17 @@ Projects can now download their stored study area, site marker, and cartographic
 corridors as a standard GeoPackage for QGIS and other GIS tools. The file carries
 an EPSG:4326 manifest that explicitly identifies missing or invalid geometry;
 OpenPlan does not repair or invent geometry during export. Linked datasets,
-documents, analysis evidence, and spreadsheet round-trip are not included yet.
+documents, and analysis evidence are not included yet.
+
+The Projects page can also download the active workspace's portfolio as an XLSX
+workbook that mirrors the reviewed create-only importer. Project type, status,
+delivery phase, cost currency, and price year travel per row; literal text is
+never emitted as a spreadsheet formula. A planner still selects the Projects
+worksheet and reviews every row, while the exact OpenPlan headers prefill the
+column mapping. Place identity, cost provenance, and timestamps remain visible
+reference columns; location text does not silently create geography. Exports
+fail rather than truncate more than 2,000 rows or invent a missing cost price
+year. No migration is required for this slice.
 
 ## 0.35.0 — 2026-08-26
 

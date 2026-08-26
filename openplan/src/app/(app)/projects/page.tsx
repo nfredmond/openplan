@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
+import { ArrowRight, Download, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
@@ -605,6 +605,14 @@ export default async function ProjectsPage({
             >
               Import project list
             </a>
+            <Link
+              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground no-underline transition-colors hover:bg-muted"
+              href="/api/projects/export/workbook"
+              prefetch={false}
+            >
+              <Download className="h-4 w-4" />
+              Download project workbook
+            </Link>
           </div>
 
           <div className="module-summary-grid cols-3">

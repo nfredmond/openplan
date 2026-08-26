@@ -33,6 +33,11 @@ export type PortfolioImportMapping = {
   sourceId?: number;
   description?: number;
   estimatedCost?: number;
+  costCurrency?: number;
+  costPriceYear?: number;
+  planType?: number;
+  status?: number;
+  deliveryPhase?: number;
   sourceLocation?: number;
 };
 
@@ -658,7 +663,9 @@ function mappedCost(
   cell: PortfolioCell | undefined,
   defaults: PortfolioImportDefaults,
   errors: PortfolioWorkbookIssue[],
-  formulaFields: string[]
+  formulaFields: string[],
+  mappedCurrency?: PortfolioCell,
+  mappedPriceYear?: PortfolioCell
 ): PortfolioImportRow["estimatedCost"] {
   const value = cell ?? {
     type: "blank" as const,
@@ -668,6 +675,13 @@ function mappedCost(
     formulaHash: null,
     formulaResult: "none" as const,
   };
+  const currencyText = mappedCurrency === undefined
+    ? defaults.cost!.currency
+    : mappedCellText(mappedCurrency, "costCurrency", errors, formulaFields).trim();
+  const priceYearText = mappedPriceYear === undefined
+    ? String(defaults.cost!.priceYear)
+    : mappedCellText(mappedPriceYear, "costPriceYear", errors, formulaFields).trim();
+
   if (value.formula) {
     formulaFields.push("estimatedCost");
     if (value.formulaResult === "missing") {
@@ -678,6 +692,12 @@ function mappedCost(
       errors.push(workbookIssue("formula_error", "estimatedCost uses a formula whose cached result is an error."));
       return null;
     }
+  }
+  if (value.type === "blank" || value.value === null || value.value === "") {
+    if ((mappedCurrency !== undefined && currencyText) || (mappedPriceYear !== undefined && priceYearText)) {
+      errors.push(workbookIssue("invalid_cost", "Cost currency and price year cannot be supplied without an estimated cost."));
+    }
+    return null;
   }
   const raw = value.type === "number"
     ? decimalFromNumber(Number(value.value))
@@ -696,10 +716,23 @@ function mappedCost(
     );
     return null;
   }
+  if (!/^[A-Z]{3}$/.test(currencyText)) {
+    errors.push(workbookIssue("invalid_cost", "Cost currency must be an explicit three-letter uppercase code."));
+    return null;
+  }
+  if (!/^\d{4}$/.test(priceYearText)) {
+    errors.push(workbookIssue("invalid_cost", "Cost price year must be one whole year from 1800 through 3000."));
+    return null;
+  }
+  const priceYear = Number(priceYearText);
+  if (!Number.isInteger(priceYear) || priceYear < 1800 || priceYear > 3000) {
+    errors.push(workbookIssue("invalid_cost", "Cost price year must be one whole year from 1800 through 3000."));
+    return null;
+  }
   return {
     amount: scaled,
-    currency: defaults.cost!.currency,
-    priceYear: defaults.cost!.priceYear,
+    currency: currencyText,
+    priceYear,
   };
 }
 
@@ -813,9 +846,18 @@ export async function reviewPortfolioWorkbook(input: {
       const sourceId = trimOrNull(sourceIdRaw);
       const description = trimOrNull(descriptionRaw);
       const sourceLocationText = trimOrNull(locationRaw);
-      const planType = rowReview?.planType?.trim() || configuration.defaults.planType.trim();
-      const status = rowReview?.status ?? configuration.defaults.status;
-      const deliveryPhase = rowReview?.deliveryPhase ?? configuration.defaults.deliveryPhase;
+      const mappedPlanType = configuration.mapping.planType === undefined
+        ? configuration.defaults.planType
+        : mappedCellText(get("planType"), "planType", errors, formulaFields);
+      const mappedStatus = configuration.mapping.status === undefined
+        ? configuration.defaults.status
+        : mappedCellText(get("status"), "status", errors, formulaFields);
+      const mappedDeliveryPhase = configuration.mapping.deliveryPhase === undefined
+        ? configuration.defaults.deliveryPhase
+        : mappedCellText(get("deliveryPhase"), "deliveryPhase", errors, formulaFields);
+      const planType = rowReview?.planType?.trim() || mappedPlanType.trim();
+      const status = (rowReview?.status ?? mappedStatus.trim()) as ProjectStatus;
+      const deliveryPhase = (rowReview?.deliveryPhase ?? mappedDeliveryPhase.trim()) as ProjectDeliveryPhase;
       if (!projectNameSchema.safeParse(name).success) errors.push(workbookIssue("invalid_name", "Project name is required and may contain at most 120 characters."));
       if (description !== null && !projectSummarySchema.safeParse(description).success) errors.push(workbookIssue("description_too_long", "Description may contain at most 2,000 characters."));
       if (sourceId !== null && sourceId.length > 200) errors.push(workbookIssue("source_id_too_long", "Source ID may contain at most 200 characters."));
@@ -825,7 +867,14 @@ export async function reviewPortfolioWorkbook(input: {
       if (!projectDeliveryPhaseSchema.safeParse(deliveryPhase).success) errors.push(workbookIssue("invalid_delivery_phase", "Choose a supported OpenPlan delivery phase."));
       const estimatedCost = configuration.mapping.estimatedCost === undefined
         ? null
-        : mappedCost(get("estimatedCost"), configuration.defaults, errors, formulaFields);
+        : mappedCost(
+            get("estimatedCost"),
+            configuration.defaults,
+            errors,
+            formulaFields,
+            get("costCurrency"),
+            get("costPriceYear")
+          );
       if (formulaFields.length > 0 && errors.every((entry) => !entry.code.startsWith("formula_"))) {
         warnings.push(workbookIssue("formula_value", `Mapped formula fields use cached workbook values: ${formulaFields.join(", ")}.`));
       }

@@ -27,6 +27,11 @@ const mappingSchema = z.object({
   sourceId: z.number().int().nonnegative().optional(),
   description: z.number().int().nonnegative().optional(),
   estimatedCost: z.number().int().nonnegative().optional(),
+  costCurrency: z.number().int().nonnegative().optional(),
+  costPriceYear: z.number().int().nonnegative().optional(),
+  planType: z.number().int().nonnegative().optional(),
+  status: z.number().int().nonnegative().optional(),
+  deliveryPhase: z.number().int().nonnegative().optional(),
   sourceLocation: z.number().int().nonnegative().optional(),
 }).strict();
 const defaultsSchema = z.object({
@@ -74,6 +79,12 @@ const requestSchema = z.object({
   for (const config of value.configurations ?? []) {
     if (config.mapping.estimatedCost !== undefined && !config.defaults.cost) {
       context.addIssue({ code: "custom", message: "Every mapped cost needs currency, scale, and price year." });
+    }
+    if (
+      config.mapping.estimatedCost === undefined &&
+      (config.mapping.costCurrency !== undefined || config.mapping.costPriceYear !== undefined)
+    ) {
+      context.addIssue({ code: "custom", message: "Cost currency and price-year columns require a mapped estimated-cost column." });
     }
   }
 });

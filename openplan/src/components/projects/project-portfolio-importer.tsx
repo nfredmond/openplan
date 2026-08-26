@@ -17,6 +17,9 @@ import type {
   PortfolioWorkbookRowReview,
 } from "@/lib/projects/portfolio-import";
 import type { PortfolioWorkbookInspection } from "@/lib/projects/portfolio-workbook";
+import {
+  mappingForOpenPlanRoundTripHeaders,
+} from "@/lib/projects/portfolio-round-trip-contract";
 
 type StoredDocument = { id: string; title: string; original_filename?: string | null };
 export type PortfolioImportSummary = {
@@ -40,12 +43,24 @@ type MappingKey = keyof PortfolioImportMapping;
 type SheetDraft = PortfolioSheetConfiguration;
 
 const SOURCE_MAX_BYTES = 10 * 1024 * 1024;
-const defaultSetup = (worksheetIndex: number): SheetDraft => ({
-  worksheetIndex,
-  headerRow: 1,
-  mapping: { name: 0 },
-  defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming" },
-});
+function defaultSetup(inspection: PortfolioWorkbookInspection, worksheetIndex: number): SheetDraft {
+  const headers = inspection.worksheets
+    .find((sheet) => sheet.index === worksheetIndex)
+    ?.sampleRows.find((row) => row.rowNumber === 1)
+    ?.cells.map((cell) => cell.display.trim()) ?? [];
+  const roundTripMapping = mappingForOpenPlanRoundTripHeaders(headers);
+  return {
+    worksheetIndex,
+    headerRow: 1,
+    mapping: roundTripMapping ?? { name: 0 },
+    defaults: {
+      planType: "capital_program",
+      status: "draft",
+      deliveryPhase: "programming",
+      ...(roundTripMapping ? { cost: defaultCostMetadata() } : {}),
+    },
+  };
+}
 const defaultCostMetadata = () => ({
   currency: "USD",
   scale: "ones" as const,
@@ -180,9 +195,10 @@ export function ProjectPortfolioImporter({
   }
 
   function toggleSheet(index: number, selected: boolean) {
+    if (!inspection) return;
     setDrafts((current) => {
       const next = { ...current };
-      if (selected) next[index] = defaultSetup(index);
+      if (selected) next[index] = defaultSetup(inspection, index);
       else delete next[index];
       return next;
     });
@@ -367,7 +383,10 @@ export function ProjectPortfolioImporter({
                 <button type="button" className="inline-flex items-center gap-1 rounded border px-2 py-1.5 text-xs font-semibold" onClick={() => copySetup(draft)}><Copy className="h-3.5 w-3.5" />Copy setup to exact-header matches</button>
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">{([
-                ["name", "Project name", true], ["sourceId", "Source ID", false], ["description", "Description", false], ["estimatedCost", "Estimated cost", false], ["sourceLocation", "Source-location text", false],
+                ["name", "Project name", true], ["sourceId", "Source ID", false], ["description", "Description", false],
+                ["estimatedCost", "Estimated cost", false], ["costCurrency", "Cost currency", false], ["costPriceYear", "Cost price year", false],
+                ["planType", "Project type", false], ["status", "Status", false], ["deliveryPhase", "Delivery phase", false],
+                ["sourceLocation", "Source-location text", false],
               ] as const).map(([key, label, required]) => <label key={key} className="grid gap-1 text-xs font-semibold">{label}{required ? " (required)" : ""}<select aria-label={`${label} for ${sheet.name}`} className="min-w-0 rounded border bg-background px-2 py-1.5 font-normal" value={draft.mapping[key] ?? ""} onChange={(event) => changeMapping(sheet.index, key, event.target.value)}>{!required ? <option value="">Not mapped</option> : null}{headers.map((header, index) => <option key={`${index}-${header}`} value={index}>{index + 1}. {header || "Unnamed column"}</option>)}</select></label>)}</div>
               <div className="grid gap-3 md:grid-cols-3">
                 <label className="grid gap-1 text-xs font-semibold">Project type<input className="rounded border bg-background px-2 py-1.5" maxLength={80} value={draft.defaults.planType} onChange={(event) => updateDraft(sheet.index, (current) => ({ ...current, defaults: { ...current.defaults, planType: event.target.value } }))} /></label>

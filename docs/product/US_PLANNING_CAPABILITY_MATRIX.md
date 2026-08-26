@@ -73,7 +73,7 @@ cell changes to `proven`; prose confidence is not evidence.
 | Environmental review, climate, resilience, and equity | Not assessed | Environmental and equity-adjacent evidence exists | Coherent statutory workflows, nationwide applicability, public artifacts, and validation by use |
 | Community engagement, Title VI, and public decisions | Partial | Public maps, surveys, comments, translation boundaries | Campaign-to-decision journey, response record, exports, accessibility and multi-project proof |
 | Capital programming, prioritization, grants, delivery, and reimbursement | Partial | Portfolio, grants, LAPM reimbursement, reports | One traceable project/funding spine through authorization, obligation, delivery, amendment, and closeout |
-| GIS, data stewardship, documents, reports, and public records | Partial | Imports, project GeoPackage handoff, evidence custody, reports, provenance | Full project/evidence bundle and external round-trip, XLSX export, records lifecycle, cross-module source reuse |
+| GIS, data stewardship, documents, reports, and public records | Partial | Imports, project GeoPackage handoff, literal-value XLSX portfolio round-trip, evidence custody, reports, provenance | Full project/evidence bundle, broader GIS output coverage, records lifecycle, cross-module source reuse |
 | Development review, implementation, and interdepartmental handoff | Not assessed | Project and land-use primitives may be reusable | Product home, workflow definition, responsibility/approval handoffs, and artifacts |
 
 ## Organization coverage at v0.35.0

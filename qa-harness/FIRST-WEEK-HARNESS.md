@@ -68,11 +68,11 @@ no metered spend.
 
 **It is not free of your weekly limit, though.** Measured on 2026-08-14 with
 sonnet: a job runs 16–22 minutes and ~135 steps, and the CLI reports around
-$8.50 of API-equivalent usage for one. All eight jobs is more than a working hour
+$8.50 of API-equivalent usage for one. All nine jobs is more than a working hour
 and a real bite out of a week's allowance. Run the whole set when something big
 has landed; run one job when you want to check one surface.
 
-### The eight jobs
+### The nine jobs
 
 They live in `first-week-jobs/*.job.md` and they are written as **outcomes, not
 clicks** — "produce something you could show a board", never "click Reports then
@@ -90,6 +90,7 @@ otherwise see.
 | `05-analysis-corridor` | Run an analysis, know whether it worked, explain the answer without jargon |
 | `06-land-use-plan` | Author, review, adopt, publish, and report a land-use plan through visible entry points |
 | `07-project-gis-handoff` | Download one project's standard GIS handoff with its CRS and coverage limits visible |
+| `08-project-portfolio-round-trip` | Download the workspace portfolio and bring the same XLSX back through the reviewed create-only importer |
 
 Rewrite them freely. They are prose, and prose is the part a planner can edit.
 The `--- header ---` at the top of each carries only `id`, `title`,
@@ -299,6 +300,10 @@ anything, and a green run starts meaning nothing at all.
 - **The GIS handoff journey cannot open QGIS.** It proves a planner can reach and
   download the artifact and read its stated coverage. The deterministic check
   must independently open the file with a GeoPackage implementation.
+- **The portfolio round-trip is intentionally create-only.** The journey stops
+  after review and does not duplicate the current workspace's projects. A
+  workspace over 2,000 projects, or one with a cost estimate missing its price
+  year, receives an explicit refusal rather than a partial or invented export.
 - **Sonnet by default.** A weaker model reports more noise and a stronger one
   costs more usage. The discard count in each summary is the honest read on
   which way to move.

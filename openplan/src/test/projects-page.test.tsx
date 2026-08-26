@@ -105,7 +105,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...props }: ComponentPropsWithoutRef<"a"> & { href: string }) => (
+  default: ({ href, children, prefetch: _prefetch, ...props }: ComponentPropsWithoutRef<"a"> & { href: string; prefetch?: boolean }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -381,6 +381,10 @@ describe("ProjectsPage", () => {
     expect(screen.getByRole("link", { name: "Import project list" })).toHaveAttribute(
       "href",
       "#import-project-list"
+    );
+    expect(screen.getByRole("link", { name: "Download project workbook" })).toHaveAttribute(
+      "href",
+      "/api/projects/export/workbook"
     );
     expect(screen.getByRole("heading", { name: "Import project list" })).toBeInTheDocument();
     expect(screen.getByText(/up to 2,000 rows and 10 MiB/i)).toBeInTheDocument();
