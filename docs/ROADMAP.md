@@ -125,7 +125,9 @@ The next release establishes the machinery the full v1 program depends on.
 - Separate operator setup/health from the planner's daily overview.
 - Close first-week continuity defects: active workspace, reminders and tasks,
   intake handoff, corridor entry, road identity, and printable street context.
-- Make `partly reached` fail the outcome gate even when automation completes.
+- Keep the first-week outcome gate fail-closed: only a completed journey with
+  `outcomeReached: "yes"` passes; retry and preserve `partly`, `no`, and
+  inconclusive attempts.
 
 ### Strategic and validation foundation
 

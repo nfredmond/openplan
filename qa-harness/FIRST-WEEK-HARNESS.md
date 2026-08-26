@@ -18,9 +18,11 @@ them is the whole design.
 | Finds | Things nobody thought of | Only things somebody already thought of |
 | Deterministic | No — that is the point | Yes |
 | Cost | One agent session per job — measured at 16–22 min and ~135 steps each | Seconds |
-| Is it a gate? | **No.** It produces a work-list | Yes, it can be |
+| Is it a gate? | Findings do not gate; selected journey outcomes do | Yes, it can be |
 
-Discovery finds it once. Regression keeps it fixed.
+Discovery finds it once. Regression keeps it fixed. Discovery also has an
+outcome gate: every selected journey must finish and report `outcomeReached:
+"yes"`. A finished agent session with `"partly"` or `"no"` fails that gate.
 
 ---
 
@@ -171,6 +173,17 @@ the snapshot are of the same moment. A finding arrived citing `f4.png` next to
 `f3.snapshot.txt`, and both were real, so it passed. The snapshot still has to
 carry the URL the finding is filed against, so the pair cannot be from two
 different pages — but they can be from two different visits to one page.
+
+### The outcome gate
+
+Execution and outcome are separate. `completed` means the agent stopped cleanly
+and left a report. It does not mean the planner finished the job.
+
+The discovery command and `--verify-only` exit nonzero unless every selected
+journey both completed and reported `outcomeReached: "yes"`. `"partly"` and
+`"no"` fail. Quota exhaustion, server loss, timeouts, and unfinished reports
+are inconclusive and also fail closed. A resumed run keeps reached journeys and
+retries failed or inconclusive ones, archiving every prior attempt first.
 
 ### Reading a run
 

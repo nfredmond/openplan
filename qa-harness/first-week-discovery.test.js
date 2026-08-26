@@ -8,11 +8,13 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const {
   archiveAttempt,
   buildCodexArgs,
   classifyJobExecution,
+  classifyJobOutcome,
   codexContractViolation,
   parseAgentSession,
   parseArgs,
@@ -127,7 +129,18 @@ check('a clean agent exit with a report is completed', () => {
   assert.strictEqual(result.status, 'completed');
 });
 
-check('resume skips a completed job and retries a blocked job', () => {
+check('only a completed journey that reached its outcome passes the outcome gate', () => {
+  const execution = { status: 'completed' };
+  assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'passed');
+  assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'partly' } }).status, 'failed');
+  assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'no' } }).status, 'failed');
+  assert.strictEqual(
+    classifyJobOutcome({ execution: { status: 'blocked_quota' }, report: { outcomeReached: 'yes' } }).status,
+    'inconclusive',
+  );
+});
+
+check('resume skips a reached outcome and retries blocked or partly reached jobs', () => {
   const completed = jobDir();
   writeCompletedJob(completed);
   assert.strictEqual(shouldResumeJob(completed), false);
@@ -135,6 +148,14 @@ check('resume skips a completed job and retries a blocked job', () => {
   const blocked = jobDir();
   fs.writeFileSync(path.join(blocked, 'execution.json'), JSON.stringify({ status: 'blocked_quota' }));
   assert.strictEqual(shouldResumeJob(blocked), true);
+
+  const partly = jobDir();
+  writeCompletedJob(partly);
+  fs.writeFileSync(
+    path.join(partly, 'agent', 'findings.json'),
+    JSON.stringify({ outcomeReached: 'partly', findings: [] }),
+  );
+  assert.strictEqual(shouldResumeJob(partly), true);
 });
 
 check('resuming archives the old attempt without deleting any evidence', () => {
@@ -162,10 +183,86 @@ check('the summary counts a quota stop as blocked and names it as resumable', ()
   const result = verifyRun(runRoot, 'http://localhost:3200');
   assert.strictEqual(result.blocked, 1);
   assert.strictEqual(result.completed, 0);
+  assert.strictEqual(result.inconclusive, 1);
+  assert.strictEqual(result.outcomeGatePassed, false);
   const summary = fs.readFileSync(result.summaryPath, 'utf8');
   assert.match(summary, /Run status: \*\*blocked_quota\*\*/);
   assert.match(summary, /unfinished and may be resumed/);
   assert.doesNotMatch(summary, /No report/);
+});
+
+check('the summary fails its outcome gate when a completed journey is only partly reached', () => {
+  const runRoot = jobDir();
+  const reachedDir = path.join(runRoot, '01-first-day-setup');
+  const partlyDir = path.join(runRoot, '02-project-end-to-end');
+  writeCompletedJob(reachedDir);
+  writeCompletedJob(partlyDir);
+  fs.writeFileSync(
+    path.join(partlyDir, 'agent', 'findings.json'),
+    JSON.stringify({ outcomeReached: 'partly', findings: [] }),
+  );
+
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.completed, 2);
+  assert.strictEqual(result.reached, 1);
+  assert.strictEqual(result.partlyReached, 1);
+  assert.strictEqual(result.notReached, 0);
+  assert.strictEqual(result.outcomeGatePassed, false);
+  const summary = fs.readFileSync(result.summaryPath, 'utf8');
+  assert.match(summary, /Planner outcomes partly reached: \*\*1\*\*/);
+  assert.match(summary, /Outcome gate: \*\*FAILED\*\*/);
+});
+
+check('the summary passes its outcome gate when every completed journey reached its outcome', () => {
+  const runRoot = jobDir();
+  writeCompletedJob(path.join(runRoot, '01-first-day-setup'));
+  writeCompletedJob(path.join(runRoot, '02-project-end-to-end'));
+
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.reached, 2);
+  assert.strictEqual(result.outcomeGatePassed, true);
+  assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /Outcome gate: \*\*PASSED\*\*/);
+});
+
+check('a selected job missing from disk is inconclusive instead of disappearing from the gate', () => {
+  const runRoot = jobDir();
+  fs.writeFileSync(
+    path.join(runRoot, 'run.json'),
+    JSON.stringify({ jobs: ['01-first-day-setup', '02-project-end-to-end'] }),
+  );
+  writeCompletedJob(path.join(runRoot, '01-first-day-setup'));
+
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.reached, 1);
+  assert.strictEqual(result.inconclusive, 1);
+  assert.strictEqual(result.outcomeGatePassed, false);
+});
+
+check('verify-only exits nonzero for partly reached outcomes and zero when all are reached', () => {
+  const runRoot = jobDir();
+  const dir = path.join(runRoot, '02-project-end-to-end');
+  writeCompletedJob(dir);
+  fs.writeFileSync(
+    path.join(dir, 'agent', 'findings.json'),
+    JSON.stringify({ outcomeReached: 'partly', findings: [] }),
+  );
+  const env = { ...process.env, OPENPLAN_BASE_URL: 'http://localhost:3200' };
+
+  const failed = spawnSync(process.execPath, [path.join(__dirname, 'first-week-discovery.js'), '--verify-only', runRoot], {
+    env,
+    encoding: 'utf8',
+  });
+  assert.strictEqual(failed.status, 1, failed.stderr || failed.stdout);
+
+  fs.writeFileSync(
+    path.join(dir, 'agent', 'findings.json'),
+    JSON.stringify({ outcomeReached: 'yes', findings: [] }),
+  );
+  const passed = spawnSync(process.execPath, [path.join(__dirname, 'first-week-discovery.js'), '--verify-only', runRoot], {
+    env,
+    encoding: 'utf8',
+  });
+  assert.strictEqual(passed.status, 0, passed.stderr || passed.stdout);
 });
 
 check('verification repairs a recorded generic failure when stdout proves the job hit quota', () => {

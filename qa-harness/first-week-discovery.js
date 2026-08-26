@@ -37,10 +37,11 @@
  *
  * WHY A SCRIPT CANNOT DO THIS JOB. A deterministic script only ever tests what
  * somebody already thought of; it cannot be confused, and confusion is the thing
- * being measured. That is also why this layer is not a gate and does not fail
- * the build — it produces a work-list, and work-lists are read by people. The
- * things it confirms get turned into `first-week-regressions/`, which IS
- * deterministic, and which is what keeps a fixed problem fixed.
+ * being measured. Discovery findings therefore produce a work-list rather than
+ * failing the build. The separate outcome gate does fail when the planner did
+ * not finish the selected job. Confirmed defects become
+ * `first-week-regressions/`, which is deterministic and keeps a fixed problem
+ * fixed.
  *
  * EVIDENCE OR IT DID NOT HAPPEN. An agent driving a browser will report "I
  * couldn't find the funding tab" when it simply did not scroll. Every finding
@@ -548,9 +549,33 @@ function readJobExecution(jobDir) {
   return recorded;
 }
 
+function classifyJobOutcome({ execution, report }) {
+  if (execution.status !== 'completed') {
+    return {
+      status: 'inconclusive',
+      reason: `The journey execution ended ${execution.status}, so it cannot prove the planner outcome.`,
+    };
+  }
+  if (!report) {
+    return { status: 'inconclusive', reason: 'The completed execution has no valid findings report.' };
+  }
+  if (report.outcomeReached === 'yes') {
+    return { status: 'passed', reason: 'The completed journey reports that the planner reached the intended outcome.' };
+  }
+  return {
+    status: 'failed',
+    reason:
+      report.outcomeReached === 'partly'
+        ? 'The planner reached the intended outcome only partly.'
+        : 'The planner did not reach the intended outcome.',
+  };
+}
+
 function shouldResumeJob(jobDir) {
   if (!fs.existsSync(jobDir)) return true;
-  return readJobExecution(jobDir).status !== 'completed';
+  const execution = readJobExecution(jobDir);
+  const report = readFindings(path.join(jobDir, 'agent'));
+  return classifyJobOutcome({ execution, report }).status !== 'passed';
 }
 
 /** Preserve every prior artifact. Resuming never erases the evidence for why a run stopped. */
@@ -608,6 +633,7 @@ function readFindings(agentDir) {
 function renderJobMarkdown(job, verdict) {
   const lines = [`## ${job.id} — ${job.title}`, ''];
   lines.push(`- Outcome reached: **${verdict.outcomeReached ?? 'not stated'}**`);
+  lines.push(`- Outcome gate: **${verdict.outcome.status}**. ${verdict.outcome.reason}`);
   lines.push(`- Confirmed findings: **${verdict.confirmed.length}**`);
   lines.push(`- Discarded findings: **${verdict.discarded.length}**`);
   lines.push(`- Snapshots the browser recorded: ${verdict.browserDumps}`);
@@ -635,11 +661,15 @@ function renderJobMarkdown(job, verdict) {
 }
 
 function verifyRun(runRoot, baseUrl) {
-  const jobDirs = fs
+  const discoveredJobDirs = fs
     .readdirSync(runRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
     .sort();
+  const manifest = readJsonIfPresent(path.join(runRoot, 'run.json'));
+  const jobDirs = Array.isArray(manifest?.jobs)
+    ? [...new Set(manifest.jobs.filter((job) => typeof job === 'string' && job.trim()))]
+    : discoveredJobDirs;
 
   const sections = [];
   let confirmed = 0;
@@ -647,12 +677,15 @@ function verifyRun(runRoot, baseUrl) {
   let completed = 0;
   let blocked = 0;
   let failed = 0;
+  let reached = 0;
+  let partlyReached = 0;
+  let notReached = 0;
+  let inconclusive = 0;
 
   for (const jobDir of jobDirs) {
     const dir = path.join(runRoot, jobDir);
     const agentDir = path.join(dir, 'agent');
     const browserDir = path.join(dir, 'browser');
-    if (!fs.existsSync(agentDir)) continue;
 
     const meta = readJsonIfPresent(path.join(dir, 'job.json')) || { id: jobDir, title: jobDir };
     const stdoutPath = path.join(dir, 'agent-stdout.json');
@@ -672,6 +705,11 @@ function verifyRun(runRoot, baseUrl) {
         ? `ended \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`
         : `returned \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`;
     const report = readFindings(agentDir);
+    const outcome = classifyJobOutcome({ execution, report });
+    if (outcome.status === 'inconclusive') inconclusive += 1;
+    else if (report.outcomeReached === 'yes') reached += 1;
+    else if (report.outcomeReached === 'partly') partlyReached += 1;
+    else notReached += 1;
 
     if (!report) {
       sections.push(
@@ -679,6 +717,7 @@ function verifyRun(runRoot, baseUrl) {
           `## ${meta.id} — ${meta.title}`,
           '',
           `- Run status: **${execution.status}**. ${execution.reason}`,
+          `- Outcome gate: **${outcome.status}**. ${outcome.reason}`,
           `- The agent ${ending}. This journey is unfinished and may be resumed; it is not a no-findings result.`,
           `- See \`${jobDir}/execution.json\` and \`${jobDir}/agent-stdout.json\`.`,
           '',
@@ -692,12 +731,16 @@ function verifyRun(runRoot, baseUrl) {
     verdict.whatWouldHaveHelped = report.whatWouldHaveHelped;
     verdict.ending = ending;
     verdict.execution = execution;
+    verdict.outcome = outcome;
     confirmed += verdict.confirmed.length;
     discarded += verdict.discarded.length;
 
     fs.writeFileSync(path.join(dir, 'verdict.json'), `${JSON.stringify(verdict, null, 2)}\n`);
     sections.push(renderJobMarkdown(meta, verdict));
   }
+
+  const evaluated = reached + partlyReached + notReached + inconclusive;
+  const outcomeGatePassed = evaluated > 0 && reached === evaluated;
 
   const summary = [
     '# First-week harness — discovery run',
@@ -709,6 +752,14 @@ function verifyRun(runRoot, baseUrl) {
     `- Completed jobs: **${completed}**`,
     `- Blocked jobs: **${blocked}**`,
     `- Failed jobs: **${failed}**`,
+    `- Planner outcomes reached: **${reached}**`,
+    `- Planner outcomes partly reached: **${partlyReached}**`,
+    `- Planner outcomes not reached: **${notReached}**`,
+    `- Outcome evidence inconclusive: **${inconclusive}**`,
+    `- Outcome gate: **${outcomeGatePassed ? 'PASSED' : 'FAILED'}**`,
+    '',
+    'The outcome gate passes only when every selected journey completes and reports that',
+    'the planner reached the intended outcome. A completed agent session is not enough.',
     '',
     'A confirmed finding means the screenshot and page snapshot support what the agent said.',
     'It does not mean the behaviour is wrong — that judgement is yours. A discarded finding',
@@ -718,7 +769,19 @@ function verifyRun(runRoot, baseUrl) {
   ].join('\n');
 
   fs.writeFileSync(path.join(runRoot, 'summary.md'), `${summary}\n`);
-  return { confirmed, discarded, completed, blocked, failed, summaryPath: path.join(runRoot, 'summary.md') };
+  return {
+    confirmed,
+    discarded,
+    completed,
+    blocked,
+    failed,
+    reached,
+    partlyReached,
+    notReached,
+    inconclusive,
+    outcomeGatePassed,
+    summaryPath: path.join(runRoot, 'summary.md'),
+  };
 }
 
 async function main() {
@@ -750,7 +813,7 @@ async function main() {
     const runRoot = path.resolve(args.verifyOnly);
     const result = verifyRun(runRoot, baseUrl);
     console.log(`\n${result.confirmed} confirmed, ${result.discarded} discarded. ${result.summaryPath}`);
-    if (result.blocked || result.failed) process.exitCode = 1;
+    if (!result.outcomeGatePassed) process.exitCode = 1;
     return;
   }
 
@@ -905,13 +968,14 @@ async function main() {
   const result = verifyRun(runRoot, baseUrl);
   console.log(`\n${result.confirmed} confirmed, ${result.discarded} discarded.`);
   console.log(`Read: ${result.summaryPath}`);
-  if (result.blocked || result.failed) process.exitCode = 1;
+  if (!result.outcomeGatePassed) process.exitCode = 1;
 }
 
 module.exports = {
   archiveAttempt,
   buildCodexArgs,
   classifyJobExecution,
+  classifyJobOutcome,
   codexContractViolation,
   loadJobs,
   parseAgentSession,
