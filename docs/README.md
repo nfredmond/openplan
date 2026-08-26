@@ -7,6 +7,8 @@ this directory holds everything that is not application code. Start here:
 
 - **`ROADMAP.md`** — the only active development queue, and the definition of v1.0. Rewritten
   2026-08-25 from a full-repository review.
+- `reviews/OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md` — the independent Codex product and codebase
+  review, with a companion interactive HTML report and the comparison to Claude's review.
 - `ops/KNOWN_ISSUES.md` — the active quality register: what OpenPlan does not claim, and why.
 - `../CHANGELOG.md` — what shipped, in operator language, leading with required migrations.
 
@@ -27,6 +29,7 @@ this directory holds everything that is not application code. Start here:
   evidence, county-onramp contracts, LAPM/stage-gate provenance, and current-era shipped
   handoffs.
 - `ops/KNOWN_ISSUES.md` — the active quality register.
+- `archive/plans/` — superseded plans retained as dated historical evidence.
 
 ## What is deliberately NOT here
 

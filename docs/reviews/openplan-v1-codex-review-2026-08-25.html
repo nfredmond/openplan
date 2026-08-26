@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenPlan v1 review · Codex · 25 August 2026</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23185a43'/%3E%3Cpath d='M17 45V19h14c11 0 17 5 17 13s-6 13-17 13zm10-8h4c5 0 7-2 7-5s-2-5-7-5h-4z' fill='white'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #5b6b64;
+      --paper: #f7f7f2;
+      --panel: #ffffff;
+      --line: #d9dfd9;
+      --green: #185a43;
+      --green-soft: #dcece3;
+      --gold: #b76b16;
+      --gold-soft: #f7ead7;
+      --red: #a23c33;
+      --navy: #163852;
+      --shadow: 0 18px 45px rgb(23 33 29 / 8%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--paper); line-height: 1.55; }
+    a { color: var(--green); text-underline-offset: 3px; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .topline { height: 7px; background: linear-gradient(90deg, var(--green) 0 58%, var(--gold) 58% 77%, var(--navy) 77%); }
+    header { padding: 44px max(24px, calc((100vw - 1180px) / 2)); background: #eef2ec; border-bottom: 1px solid var(--line); }
+    .eyebrow { margin: 0 0 10px; color: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { max-width: 850px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.25rem, 5vw, 4.6rem); line-height: .98; letter-spacing: -.035em; }
+    .lede { max-width: 820px; margin: 24px 0 0; font-size: clamp(1.05rem, 2vw, 1.35rem); color: #34433c; }
+    .header-meta { display: flex; flex-wrap: wrap; gap: 9px 18px; margin-top: 25px; color: var(--muted); font-size: .9rem; }
+    .header-meta strong { color: var(--ink); }
+    nav { position: sticky; top: 0; z-index: 10; display: flex; gap: 5px; overflow-x: auto; padding: 10px max(16px, calc((100vw - 1180px) / 2)); background: rgb(247 247 242 / 95%); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+    .tab { flex: 0 0 auto; border: 0; border-radius: 999px; padding: 9px 14px; color: var(--muted); background: transparent; font: inherit; font-size: .88rem; font-weight: 700; cursor: pointer; }
+    .tab:hover, .tab:focus-visible { background: #e9eee8; outline: none; }
+    .tab[aria-selected="true"] { color: white; background: var(--green); }
+    main { max-width: 1180px; margin: 0 auto; padding: 42px 24px 80px; }
+    .view[hidden] { display: none; }
+    .section-head { display: grid; grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr); gap: 30px; align-items: end; margin-bottom: 30px; }
+    h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.8rem, 3vw, 2.8rem); line-height: 1.08; letter-spacing: -.02em; }
+    h3 { margin: 0 0 9px; font-size: 1.06rem; }
+    p { margin: 0 0 1em; }
+    .quiet { color: var(--muted); }
+    .verdict { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); gap: 1px; overflow: hidden; margin: 28px 0 42px; background: var(--line); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+    .verdict > div { padding: clamp(25px, 4vw, 46px); background: var(--panel); }
+    .verdict blockquote { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(1.35rem, 2.7vw, 2.15rem); line-height: 1.25; }
+    .signal { display: grid; gap: 17px; }
+    .signal b { display: block; color: var(--green); font-size: 2.15rem; line-height: 1; }
+    .signal span { color: var(--muted); font-size: .87rem; }
+    .warning { margin: 24px 0; padding: 20px 22px; border-left: 5px solid var(--gold); background: var(--gold-soft); }
+    .warning strong { color: #74410b; }
+    .metrics { display: grid; grid-template-columns: repeat(6, 1fr); margin: 28px 0 44px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--panel); }
+    .metric { padding: 22px 17px; border-right: 1px solid var(--line); }
+    .metric:last-child { border-right: 0; }
+    .metric b { display: block; color: var(--green); font-size: 1.55rem; font-variant-numeric: tabular-nums; }
+    .metric span { color: var(--muted); font-size: .78rem; }
+    .flow { display: grid; grid-template-columns: 1fr 42px 1.2fr 42px 1.2fr 42px 1fr; align-items: stretch; margin: 32px 0 46px; }
+    .flow-step { display: grid; place-items: center; min-height: 120px; padding: 18px; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+    .flow-step b { display: block; margin-bottom: 4px; color: var(--green); }
+    .arrow { display: grid; place-items: center; color: var(--gold); font-size: 1.5rem; font-weight: 900; }
+    .five-tests { counter-reset: test; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin: 25px 0 50px; }
+    .test { min-height: 185px; padding: 22px; border-top: 4px solid var(--green); background: var(--panel); box-shadow: 0 8px 24px rgb(23 33 29 / 6%); }
+    .test::before { counter-increment: test; content: "0" counter(test); display: block; margin-bottom: 28px; color: var(--gold); font-weight: 900; }
+    .journeys { columns: 2; column-gap: 42px; margin: 24px 0 45px; padding: 0; list-style: none; counter-reset: journey; }
+    .journeys li { break-inside: avoid; position: relative; min-height: 64px; padding: 0 0 20px 48px; }
+    .journeys li::before { counter-increment: journey; content: counter(journey); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 31px; height: 31px; color: white; background: var(--green); border-radius: 50%; font-weight: 800; font-size: .82rem; }
+    .timeline { position: relative; margin: 30px 0 45px 17px; padding-left: 46px; }
+    .timeline::before { content: ""; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+    .release { position: relative; display: grid; grid-template-columns: 115px 1fr 260px; gap: 24px; padding: 0 0 34px; }
+    .release::before { content: ""; position: absolute; left: -47px; top: 6px; width: 12px; height: 12px; background: var(--green); border: 5px solid var(--paper); border-radius: 50%; box-shadow: 0 0 0 2px var(--green); }
+    .release-id { color: var(--green); font-size: 1.2rem; font-weight: 900; }
+    .release p { color: var(--muted); }
+    .proof { align-self: start; padding: 12px 15px; border-left: 3px solid var(--gold); background: var(--gold-soft); font-size: .83rem; }
+    .shots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin: 28px 0 48px; }
+    figure { margin: 0; overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+    figure img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; border-bottom: 1px solid var(--line); }
+    figcaption { padding: 16px 18px; color: var(--muted); font-size: .86rem; }
+    figcaption strong { display: block; margin-bottom: 3px; color: var(--ink); }
+    .table-wrap { overflow-x: auto; margin: 24px 0 45px; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); font-size: .9rem; }
+    th, td { padding: 13px 15px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); background: #eef2ec; font-size: .76rem; letter-spacing: .045em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    .ranked { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 0 20px; margin: 28px 0 48px; }
+    .ranked .num { color: var(--gold); font-family: Georgia, serif; font-size: 2.5rem; line-height: 1; border-top: 1px solid var(--line); padding-top: 20px; }
+    .ranked .item { border-top: 1px solid var(--line); padding: 20px 0 24px; }
+    .ranked .item p { color: var(--muted); }
+    .checklist { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 30px; padding: 0; list-style: none; }
+    .checklist li { position: relative; padding: 11px 0 11px 35px; border-bottom: 1px solid var(--line); }
+    .checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 900; }
+    .source-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 35px; }
+    .source-links a, .print { display: inline-block; padding: 9px 13px; color: var(--green); background: var(--green-soft); border: 0; border-radius: 8px; font: inherit; font-size: .84rem; font-weight: 750; text-decoration: none; cursor: pointer; }
+    .print { color: #74410b; background: var(--gold-soft); }
+    footer { max-width: 1180px; margin: 0 auto; padding: 0 24px 45px; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 900px) {
+      .metrics { grid-template-columns: repeat(3, 1fr); }
+      .metric:nth-child(3) { border-right: 0; }
+      .metric:nth-child(-n+3) { border-bottom: 1px solid var(--line); }
+      .five-tests { grid-template-columns: repeat(2, 1fr); }
+      .flow { grid-template-columns: 1fr; gap: 8px; }
+      .arrow { transform: rotate(90deg); }
+      .release { grid-template-columns: 90px 1fr; }
+      .proof { grid-column: 2; }
+    }
+    @media (max-width: 650px) {
+      header { padding-top: 32px; }
+      main { padding: 30px 16px 60px; }
+      .section-head, .verdict { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .metric { border-bottom: 1px solid var(--line); }
+      .metric:nth-child(2n) { border-right: 0; }
+      .five-tests, .shots, .checklist { grid-template-columns: 1fr; }
+      .journeys { columns: 1; }
+      .release { grid-template-columns: 1fr; gap: 4px; }
+      .proof { grid-column: 1; }
+    }
+    @media print {
+      body { background: white; }
+      nav, .print { display: none; }
+      .view[hidden] { display: block; }
+      .view { break-before: page; }
+      .view:first-child { break-before: auto; }
+      .verdict, figure { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topline"></div>
+  <header>
+    <p class="eyebrow">Independent product and codebase review</p>
+    <h1>OpenPlan has the pieces. v1 makes them one product.</h1>
+    <p class="lede">A repository-wide, history-aware review of what is real, what still breaks a planner's outcome, and the shortest defensible route from v0.34 to v1.</p>
+    <div class="header-meta">
+      <span><strong>Baseline</strong> v0.34.0 · 391eed25</span>
+      <span><strong>Reviewed</strong> 25 August 2026</span>
+      <span><strong>Author</strong> Codex</span>
+      <span><strong>Method</strong> inventory-wide, risk-based deep review, live browser walk</span>
+    </div>
+  </header>
+
+  <nav aria-label="Report sections" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" aria-controls="verdict" id="tab-verdict">Verdict</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="product" id="tab-product">Product</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="roadmap" id="tab-roadmap">Roadmap</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="evidence" id="tab-evidence">Evidence</button>
+    <button class="tab" role="tab" aria-selected="false" aria-controls="compare" id="tab-compare">Compare</button>
+  </nav>
+
+  <main>
+    <section class="view" id="verdict" role="tabpanel" aria-labelledby="tab-verdict">
+      <div class="section-head">
+        <h2>Capability-rich. Evidence-strong. Not yet coherent.</h2>
+        <p class="quiet">The gap to v1 is not another module. It is joining the existing work around the planner's project and proving the intended outcome, not merely the script.</p>
+      </div>
+      <div class="verdict">
+        <div>
+          <p class="eyebrow">The v1 contract</p>
+          <blockquote>A planning team anywhere in the United States can operate OpenPlan without Nathaniel, carry source material through analysis and public process to a defensible decision artifact, and know exactly what the evidence supports.</blockquote>
+        </div>
+        <div class="signal">
+          <div><b>12</b><span>outcome journeys in the v1 gate</span></div>
+          <div><b>0</b><span>new planning modules before v1</span></div>
+          <div><b>1</b><span>shared project or plan spine</span></div>
+        </div>
+      </div>
+      <div class="warning">
+        <strong>Material correction:</strong> the parallel Claude report says OpenPlan hides the national FARS fatal-only limit at the safety ranking. Current source review found explicit fatal-only disclosure before live results and in downstream corridor evidence. Broader injury data is useful any-place research, but missing disclosure is not the first live defect.
+      </div>
+      <div class="metrics" aria-label="Repository snapshot">
+        <div class="metric"><b>2,412</b><span>main commits before review</span></div>
+        <div class="metric"><b>34</b><span>changelog releases</span></div>
+        <div class="metric"><b>60</b><span>planner pages</span></div>
+        <div class="metric"><b>256</b><span>API routes</span></div>
+        <div class="metric"><b>12,515</b><span>passing unit tests</span></div>
+        <div class="metric"><b>47</b><span>passing worker suites</span></div>
+      </div>
+      <h3>Why coherence comes first</h3>
+      <div class="ranked">
+        <div class="num">1</div><div class="item"><h3>The interface exposes modules, not one planning job</h3><p>Twenty signed-in destinations, duplicate navigation, repeated primary actions, and lost context make the user assemble a connected system mentally.</p></div>
+        <div class="num">2</div><div class="item"><h3>Completed automation still records partly reached outcomes</h3><p>The latest first-week evidence reaches the end of scripts while safety locations remain coordinates and the printable packet lacks street context.</p></div>
+        <div class="num">3</div><div class="item"><h3>External handoff and team responsibility remain incomplete</h3><p>GIS/workbook round-trip, evidence manifests, role coverage, named approval, and one cross-module inbox are necessary for agency work.</p></div>
+      </div>
+      <div class="source-links">
+        <a href="OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md">Read the detailed Markdown report</a>
+        <a href="../ROADMAP.md">Open the canonical roadmap</a>
+        <button class="print" type="button" onclick="window.print()">Print full report</button>
+      </div>
+    </section>
+
+    <section class="view" id="product" role="tabpanel" aria-labelledby="tab-product" hidden>
+      <div class="section-head">
+        <h2>Organize around the work</h2>
+        <p class="quiet">Specialist depth remains. The common path stops asking a planner to restart in each module.</p>
+      </div>
+      <div class="flow" aria-label="OpenPlan v1 product flow">
+        <div class="flow-step"><span><b>1 · Bring evidence in</b>Sources, documents, workbooks, GIS, imagery</span></div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="flow-step"><span><b>2 · Anchor the work</b>Project or plan, selected place, reporting period</span></div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="flow-step"><span><b>3 · Do the planning</b>Analysis, engagement, safety, funding, delivery</span></div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="flow-step"><span><b>4 · Defend the result</b>Review, approval, frozen artifact, export</span></div>
+      </div>
+      <h3>Five tests for the contract</h3>
+      <div class="five-tests">
+        <div class="test"><h3>Self-service</h3><p class="quiet">Install, operate, recover, and upgrade without founder help or paid infrastructure.</p></div>
+        <div class="test"><h3>One product</h3><p class="quiet">Projects and plans retain context across every module transition.</p></div>
+        <div class="test"><h3>Any place</h3><p class="quiet">US-wide today, with country-specific systems kept behind adapters.</p></div>
+        <div class="test"><h3>Outcomes</h3><p class="quiet">Only <em>reached</em> passes. Completed-plus-partly fails.</p></div>
+        <div class="test"><h3>Defensible handoff</h3><p class="quiet">Source, tier, limits, responsible human, and frozen evidence travel with the result.</p></div>
+      </div>
+      <h3>What the live review found</h3>
+      <div class="shots">
+        <figure><img src="assets/dashboard-desktop.png" alt="OpenPlan authenticated overview with a global rail and repeated horizontal module navigation"><figcaption><strong>Overview</strong>Global and local navigation repeat each other; setup diagnostics crowd out daily work.</figcaption></figure>
+        <figure><img src="assets/models-desktop.png" alt="OpenPlan models page showing model workflow content"><figcaption><strong>Models</strong>Models, Scenarios, and Validation are stages of one job but remain separate top-level destinations.</figcaption></figure>
+        <figure><img src="assets/engagement-desktop.png" alt="OpenPlan engagement page with repeated campaign creation controls"><figcaption><strong>Engagement</strong>The same creation action appears twice above the fold in a card-heavy layout.</figcaption></figure>
+        <figure><img src="assets/reports-desktop.png" alt="OpenPlan reports page with repeated report creation controls"><figcaption><strong>Reports</strong>The report should complete a project or plan, not require the user to reconstruct its context.</figcaption></figure>
+      </div>
+      <h3>Twelve acceptance journeys</h3>
+      <ol class="journeys">
+        <li><strong>Install and first day</strong><br><span class="quiet">Workspace, colleague, source, backup, restore, attention.</span></li>
+        <li><strong>Neutral geography</strong><br><span class="quiet">A place outside California with honest boundaries.</span></li>
+        <li><strong>Project to packet</strong><br><span class="quiet">Import, resolve, prioritize, review, export.</span></li>
+        <li><strong>Engagement</strong><br><span class="quiet">Build, preview, publish, moderate, analyze, close.</span></li>
+        <li><strong>Safety</strong><br><span class="quiet">Crashes, KSI, countermeasures, grant evidence, map packet.</span></li>
+        <li><strong>Corridor</strong><br><span class="quiet">Counts, safety, equity, engagement, model, GIS package.</span></li>
+        <li><strong>Dual demand model</strong><br><span class="quiet">Common network, agreement, divergence, grounded artifact.</span></li>
+        <li><strong>RTP</strong><br><span class="quiet">Fiscal constraint, measures, draft, comments, adoption.</span></li>
+        <li><strong>Land-use plan</strong><br><span class="quiet">Legal bundle, exact review evidence, designations, adoption.</span></li>
+        <li><strong>Grant to reimbursement</strong><br><span class="quiet">Match, apply, award, obligate, invoice the funder.</span></li>
+        <li><strong>Aerial evidence</strong><br><span class="quiet">Flight, imagery, worker, orthophoto, frozen report evidence.</span></li>
+        <li><strong>Team and recovery</strong><br><span class="quiet">Roles, approvals, inbox, interruption, restore, upgrade.</span></li>
+      </ol>
+    </section>
+
+    <section class="view" id="roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
+      <div class="section-head">
+        <h2>Six releases, each with a user outcome</h2>
+        <p class="quiet">Version numbers are sequencing labels. The proof box, not the feature list, decides whether a release is done.</p>
+      </div>
+      <div class="timeline">
+        <article class="release"><div class="release-id">v0.35</div><div><h3>Make it one product</h3><p>Project and plan context, one orientation pattern, guided model stages, fewer repeated actions, planner and operator separation, first-week continuity fixes.</p></div><div class="proof"><strong>Proof:</strong> project, engagement, safety, and corridor outcomes all reached without lost context.</div></article>
+        <article class="release"><div class="release-id">v0.36</div><div><h3>Prove any-place behavior</h3><p>California and neutral geography, point-of-use source boundaries, researched injury adapters, optional provenance-aware geocoder, printable street background.</p></div><div class="proof"><strong>Proof:</strong> neutral-place artifact plus disclosure and hardcoding mutations.</div></article>
+        <article class="release"><div class="release-id">v0.37</div><div><h3>Complete the round-trip</h3><p>GeoPackage, XLSX, evidence manifest, and project-linked documents and frozen artifacts.</p></div><div class="proof"><strong>Proof:</strong> open the corridor in QGIS and round-trip the portfolio workbook.</div></article>
+        <article class="release"><div class="release-id">v0.38</div><div><h3>Make teams and approvals real</h3><p>Complete role coverage, named exact-artifact approvals, My Work as the common inbox, consistent active-workspace context.</p></div><div class="proof"><strong>Proof:</strong> analyst, approver, and viewer complete one governed journey.</div></article>
+        <article class="release"><div class="release-id">v0.39</div><div><h3>Finish the evidence loop</h3><p>Per-link model state, full dual-model journey, corridor and export provenance, engagement and safety corroboration.</p></div><div class="proof"><strong>Proof:</strong> frozen common-network comparison with no averaged result.</div></article>
+        <article class="release"><div class="release-id">v0.40</div><div><h3>Run the stranger test</h3><p>Twelve reached outcomes, independent clean-computer install, accessibility and print checks, recovery and complete release gates.</p></div><div class="proof"><strong>Proof:</strong> stranger and automation agree the v1 contract is true.</div></article>
+        <article class="release"><div class="release-id">v1.0.0</div><div><h3>Tag the proven candidate</h3><p>Do not insert another capability release by habit. The tag records a product contract that has already been demonstrated.</p></div><div class="proof"><strong>Then revisit:</strong> the deferred MCP/Buzz server, never a client that bypasses human control.</div></article>
+      </div>
+      <div class="warning"><strong>After v1:</strong> nationwide scalar research, crash rates per modeled VMT, unresearched legal bundles, new modules, and the Buzz control surface. The two demand methods are never averaged.</div>
+      <div class="source-links"><a href="../ROADMAP.md">Read full scope and permanent refusals</a></div>
+    </section>
+
+    <section class="view" id="evidence" role="tabpanel" aria-labelledby="tab-evidence" hidden>
+      <div class="section-head">
+        <h2>What was proved, and what was not</h2>
+        <p class="quiet">A green suite matters only if the check can fail. The final roadmap guard was exercised with a deliberate bad path before its passing run.</p>
+      </div>
+      <h3>Verification snapshot</h3>
+      <ul class="checklist">
+        <li>12,515 Vitest tests passed; 77 skipped</li>
+        <li>1,101 test files passed; 2 skipped</li>
+        <li>107 live RLS tests passed</li>
+        <li>47 worker suites passed across 5 workers</li>
+        <li>npm audit found 0 vulnerabilities</li>
+        <li>Production build completed with 124 static pages</li>
+        <li>GitHub CI passed at the comparison baseline</li>
+        <li>All 20 authenticated destinations visited through visible navigation</li>
+      </ul>
+      <h3 style="margin-top: 42px">Repository pressure points</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pressure</th><th>Evidence</th><th>Response</th></tr></thead>
+          <tbody>
+            <tr><td>High-change concentration</td><td>Assistant seams at 152 to 208 KB; report generation route 111 KB</td><td>Extract only at proven shared seams; no cosmetic rewrite</td></tr>
+            <tr><td>Untyped database reads</td><td>223 migrations; projection strings fail at runtime</td><td>Focused projection assertions on every touched path</td></tr>
+            <tr><td>Dead-code warnings</td><td>476 unused exports and 2 duplicates, gate still green</td><td>Shrink-only review; do not bulk-delete unwired capability</td></tr>
+            <tr><td>Disk footprint</td><td>76 GB checkout, mostly ignored model runs and caches</td><td>Safe operator inventory and pruning; preserve evidence by default</td></tr>
+            <tr><td>Public metadata</td><td>Build warns `metadataBase` is unset</td><td>Fix in v0.35 and assert configured public URLs</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Honest limits</h3>
+      <div class="ranked">
+        <div class="num">?</div><div class="item"><h3>No stranger install yet</h3><p>Agent success cannot settle self-service. v0.40 requires a person who is not Nathaniel.</p></div>
+        <div class="num">?</div><div class="item"><h3>No visual mobile pass</h3><p>The mobile DOM was reachable, but screenshot capture timed out. Accessibility and responsive checks remain explicit work.</p></div>
+        <div class="num">?</div><div class="item"><h3>No state injury-source survey</h3><p>Primary-source research must precede any new crash adapter. This report does not guess coverage.</p></div>
+      </div>
+      <div class="source-links"><a href="OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md#verification">Detailed verification record</a></div>
+    </section>
+
+    <section class="view" id="compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+      <div class="section-head">
+        <h2>Two independent reviews, one important disagreement</h2>
+        <p class="quiet">Claude's report remains unchanged. Agreement is useful evidence; disagreement is preserved rather than blended away.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Question</th><th>Claude</th><th>Codex</th></tr></thead>
+          <tbody>
+            <tr><td>Core diagnosis</td><td>Strong discipline, no product destination</td><td>Strong evidence system, but not yet one coherent product</td></tr>
+            <tr><td>v1 contract</td><td>Install, seven first-week jobs, defend every number</td><td>Self-service team, one product, any place, twelve outcomes, defensible handoff</td></tr>
+            <tr><td>First priority</td><td>Serious injuries outside California</td><td>Product coherence and partly reached outcomes</td></tr>
+            <tr><td>Safety fact</td><td>Fatal-only limit absent at ranking</td><td>Disclosure exists before live results and downstream; expand sources only after research</td></tr>
+            <tr><td>Export</td><td>GeoPackage, XLSX, evidence bundle</td><td>Agreed</td></tr>
+            <tr><td>Governance</td><td>Roles and named approvals</td><td>Agreed; use My Work as the common inbox</td></tr>
+            <tr><td>Modeling</td><td>Per-link disclosure, defer scalar</td><td>Agreed; also prove the full dual-model journey</td></tr>
+            <tr><td>Acceptance</td><td>Seven jobs, zero blocked or failed</td><td>Twelve jobs; only reached passes, completed-plus-partly fails</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="warning"><strong>Recommendation:</strong> use the Codex priority order because it includes the live 20-destination UI review and the latest first-week outcome evidence. Retain Claude's export, governance, and model-disclosure findings, which independently converged.</div>
+      <div class="source-links">
+        <a href="../ops/2026-08-25-v1-review-and-roadmap.md">Open Claude's unchanged report</a>
+        <a href="OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md#claude-and-codex-comparison">Open detailed comparison</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Prepared from the v0.34.0 repository, live local product, Git and GitHub history, current documentation, first-week evidence, and indexed Claude and Codex histories. No consumed sealed source was reopened.</p>
+  </footer>
+
+  <script>
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+    const views = [...document.querySelectorAll('[role="tabpanel"]')];
+    function showTab(tab, updateHash = true) {
+      tabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
+      views.forEach((view) => { view.hidden = view.id !== tab.getAttribute('aria-controls'); });
+      if (updateHash) history.replaceState(null, '', `#${tab.getAttribute('aria-controls')}`);
+      tab.focus({ preventScroll: true });
+      window.scrollTo({ top: document.querySelector('nav').offsetTop, behavior: 'smooth' });
+    }
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => showTab(tab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let next = index;
+        if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = tabs.length - 1;
+        showTab(tabs[next]);
+      });
+    });
+    const requested = location.hash.slice(1);
+    const initial = tabs.find((tab) => tab.getAttribute('aria-controls') === requested);
+    if (initial) showTab(initial, false);
+  </script>
+</body>
+</html>

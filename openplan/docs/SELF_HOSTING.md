@@ -249,7 +249,7 @@ billing-shaped reason, that is a bug — please report it.
 
 ## 3. Deploy the web app
 
-This is the step that turns OpenPlan from something on your laptop into a web address your
+This is the step that turns OpenPlan from something on your computer into a web address your
 colleagues can use.
 
 **Vercel** is a hosting company. It watches your copy of the OpenPlan code on GitHub and, whenever

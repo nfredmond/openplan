@@ -165,7 +165,7 @@ which feature is unavailable rather than failing quietly.
 |---|---|
 | Build fails immediately on Vercel | Root Directory is not set to `openplan` (step 5) |
 | Site loads, maps blank | Mapbox token missing or not a `pk.` public token |
-| Site loads, everything else errors | The Supabase values are the LOCAL ones (`127.0.0.1`). A deployed site cannot reach your laptop — use the hosted project's keys from step 2. |
+| Site loads, everything else errors | The Supabase values are the LOCAL ones (`127.0.0.1`). A deployed site cannot reach your computer — use the hosted project's keys from step 2. |
 | "could not be read" on many surfaces | Step 3 did not finish. Re-run `migration up --linked`. |
 | Confirmation email link is rejected | Step 6's Supabase redirect URL is not set |
 | `Must specify one of --local, --linked` | The two dashes: `npm exec -- supabase …` |

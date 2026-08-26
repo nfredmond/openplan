@@ -311,17 +311,20 @@ The first time, this builds a container: **several minutes**, and about a
 gigabyte of traffic-modelling software. It prints a lot and then goes quiet.
 Later starts take a second.
 
-Then open `.env.local` again and add these two lines:
+Then open `.env.local` again and add these three lines. Use different long,
+random values for the two tokens:
 
 ```bash
 OPENPLAN_COUNTY_ONRAMP_WORKER_URL=http://127.0.0.1:8686/jobs
-OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN=pick-any-long-random-string
+OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN=pick-one-long-random-string
+OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN=pick-a-different-long-random-string
 ```
 
-The second one is a password OpenPlan makes up to recognise its own results
-coming back. Any long jumble of letters will do; nobody ever types it again.
-**Do not skip it** — without it the model runs for six minutes and OpenPlan
-turns the answer away at the door, with nothing on screen to say why.
+The worker token authenticates requests from OpenPlan. The callback token
+authenticates results coming back. Any long jumble of letters will do; nobody
+ever types either one again. **Do not skip either token**: a missing or reused
+token makes the worker fail closed rather than accepting an unauthenticated job
+or result.
 
 You also need `CENSUS_API_KEY` from step 4. Every travel model starts from how
 many people live where, and that comes from the US Census Bureau.
@@ -336,10 +339,12 @@ npm run doctor
 It should say **the modeling worker answered**. If it does not, it will say
 which of the three settings is missing.
 
-**A county takes about six minutes**, most of it spent downloading the road
-network. Go to **County runs**, search for a county, name the run, and launch
-it. Results land in `data/screening-runs/` inside the OpenPlan folder — a few
-hundred megabytes per county.
+**A county run may take hours and is allowed to take days.** Runtime depends on
+the study area, source downloads, and model settings; OpenPlan does not trade a
+measurable accuracy gain for a shorter promise. Go to **County runs**, search
+for a county, name the run, and launch it. Results land in
+`data/screening-runs/` inside the OpenPlan folder, often using a few hundred
+megabytes per county.
 
 `npm run modeling:logs` shows what the modeller is doing. `npm run
 modeling:down` stops it.
@@ -374,9 +379,11 @@ npm run build
 npm run qa:gate   # lint + tests + dependency audit + production build
 ```
 
-To demo publicly from a laptop, see `docs/ops/2026-07-17-v1-demo-runbook.md`.
+For a team deployment, continue with `openplan/docs/FIRST_DEPLOYMENT.md`.
 
-Command note: package scripts are invoked with `npm run …` in current operator docs because `package-lock.json` is canonical and npm is the most reliable baseline on this host. The app pins `packageManager` to npm, while `npm run qa:gate` explicitly pins `pnpm@10.33.0` and disables Corepack strict package-manager enforcement for the production audit lane. Legacy proof logs may still cite bare `pnpm` commands.
+Command note: package scripts use `npm run …`; `package-lock.json` is canonical.
+The release gate runs `npm audit --omit=dev --audit-level=moderate`. Dated proof
+logs may still cite older package-manager commands.
 
 ## License boundary
 

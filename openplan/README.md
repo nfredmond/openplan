@@ -87,8 +87,7 @@ npm run qa:gate   # lint + tests + dependency audit + build — the pre-ship gat
 ```
 
 Package commands use npm because `package-lock.json` is canonical for installs and CI. The release
-gate still runs `COREPACK_ENABLE_STRICT=0 corepack pnpm@10.33.0 audit --prod --audit-level=moderate`
-through `npm run qa:gate`, so keep `pnpm-lock.yaml` current when dependencies change.
+gate runs `npm audit --omit=dev --audit-level=moderate` through `npm run qa:gate`.
 
 ## Claim discipline
 
