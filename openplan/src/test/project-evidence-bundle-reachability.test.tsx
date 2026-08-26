@@ -145,6 +145,7 @@ describe("project evidence bundle reachability", () => {
 
     fireEvent.click(prepare);
     expect(await screen.findByRole("dialog", { name: "Review project evidence bundle" })).toBeVisible();
+    expect(fetch).toHaveBeenCalledTimes(2);
     expect(screen.getByText("Project record")).toBeVisible();
     expect(screen.getByText("Reports")).toBeVisible();
     expect(screen.getByText("Aerial deliverables")).toBeVisible();
@@ -157,7 +158,15 @@ describe("project evidence bundle reachability", () => {
     expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
 
     fireEvent.click(screen.getByText(/I reviewed this exact selection/));
-    await waitFor(() => expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeEnabled());
+    const freeze = screen.getByRole("button", { name: "Freeze evidence bundle" });
+    await waitFor(() => expect(freeze).toBeEnabled());
+
+    freeze.focus();
+    fireEvent.keyDown(freeze, { key: "Tab" });
+    expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
+
+    fireEvent.keyDown(screen.getByRole("button", { name: "Close" }), { key: "Tab", shiftKey: true });
+    expect(freeze).toHaveFocus();
   });
 
   it("lets a viewer inspect the selection but presents no enabled create control", async () => {

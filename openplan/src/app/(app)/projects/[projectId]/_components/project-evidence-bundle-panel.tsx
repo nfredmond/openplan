@@ -265,7 +265,7 @@ export function ProjectEvidenceBundlePanel({ projectId, canGenerate }: { project
   const [error, setError] = useState<string | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<InventoryResponse | null> => {
     setLoading(true);
     setError(null);
     try {
@@ -278,8 +278,10 @@ export function ProjectEvidenceBundlePanel({ projectId, canGenerate }: { project
         throw new Error(payload && "error" in payload ? payload.error : "Evidence candidates could not be loaded.");
       }
       setInventory(payload);
+      return payload;
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Evidence candidates could not be loaded.");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -305,7 +307,10 @@ export function ProjectEvidenceBundlePanel({ projectId, canGenerate }: { project
         </div>
         <button
           type="button"
-          onClick={() => setReviewOpen(true)}
+          onClick={async () => {
+            const currentInventory = await load();
+            if (currentInventory) setReviewOpen(true);
+          }}
           disabled={loading || !inventory}
           className="inline-flex items-center gap-2 rounded-[0.4rem] bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
