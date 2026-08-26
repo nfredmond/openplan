@@ -1,23 +1,23 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: ed3b8061
+reviewed_commit: 391eed25
 current_release: v0.34.0
-review_by: 2026-09-07
+review_by: 2026-09-22
 paths:
-- openplan/src/lib/projects/portfolio-import.ts
-- openplan/src/lib/projects/portfolio-workbook.ts
-- openplan/src/app/api/projects/import/route.ts
-- openplan/src/components/projects/project-portfolio-importer.tsx
-- openplan/supabase/migrations/20260825000001_reviewed_portfolio_import.sql
-- openplan/supabase/migrations/20260825000002_direct_workbook_portfolio_import.sql
-- openplan/docs/ops/V033_REVIEWED_PORTFOLIO_IMPORT_PROOF_2026-08-25.md
-- openplan/docs/ops/V034_DIRECT_WORKBOOK_PORTFOLIO_IMPORT_PROOF_2026-08-25.md
-- docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md
-- docs/modeling/SEALED_STUDY_EXECUTION_PROTOCOL.md
-- docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md
-- docs/product/LAND_USE_PLANS_CONTRACT.md
+- openplan/src/lib/safety/sources/registry.ts
+- openplan/src/lib/safety/sources/fars.ts
+- openplan/src/lib/auth/role-matrix.ts
+- openplan/src/lib/export/csv.ts
+- openplan/src/lib/grants/programs/registry.ts
+- openplan/src/lib/stage-gates/template-registry.ts
+- openplan/src/lib/land-use-plans/registry.ts
+- openplan/src/lib/runtime/action-metadata.ts
+- docs/ops/KNOWN_ISSUES.md
+- openplan/docs/ops/BACKUP_AND_RESTORE.md
+- docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md
 - docs/ADRs/ADR-004-mcp-server-surface.md
+- qa-harness/FIRST-WEEK-HARNESS.md
 npm_commands:
 - ops:restore-drill
 - test:workers
@@ -26,125 +26,235 @@ npm_commands:
 -->
 
 This is OpenPlan's only active development queue. Dated records under
-`docs/ops/`, research results, release evidence, and ADRs remain evidence; they
-are not queues. Reconcile this file against the repository by the review date
-above. Work advances when its evidence gate passes, not on a calendar promise.
+`docs/ops/`, research results, release evidence, and ADRs are evidence, not
+queues. `CHANGELOG.md` is the record of what shipped; this file is only about
+what has not. Reconcile this file against the repository by the review date
+above.
 
-## Completed — v0.32 operational health and evidence honesty
+Rewritten 2026-08-25 from a full-repository review at `391eed25`. The previous
+version was a rolling record of the last three releases with a three-item
+"Later" list; it described process, not a destination. This one states what
+v1.0 means and what stands between here and there.
 
-- Surface fresh, stale, absent, conflicting, and unknown AequilibraE and
-  ActivitySim worker capabilities without treating liveness loss as run failure.
-- Let owners and admins configure a 1–30 day reminder window and email digests,
-  while keeping in-app reminders and scheduler-health warnings mandatory.
-- Carry exact crash-source publication cutoffs only when the source supplies one.
-- Withhold corridor component and composite scores whose required evidence is
-  unavailable across the interface, reports, exports, comparisons, and assistant
-  facts; retain supported component evidence and the stored arithmetic.
-- Refuse assistant changes to reminder preferences and model-run cancellation.
+---
 
-The release evidence is recorded in
-`docs/ops/V032_OPERATIONAL_HEALTH_PROOF_2026-08-24.md`,
-`docs/ops/2026-08-24-v032-browser-check.md`, and the CI run attached to the
-v0.32 tag.
+## What v1.0 means
 
-## Completed — sealed 2017 NHTS successor checkpoint
+**An agency anywhere in the United States can install OpenPlan, carry a real
+piece of statutory planning work end to end, and defend every number in it.**
 
-- The five unresolved contracts, official archives, candidate, evaluator, and
-  thresholds were frozen before outcome access. Mutation checks proved the
-  decision, safety-domain, replicate, leakage, and one-opening gates.
-- The durable receipt was written before source loading, but the evaluator
-  process terminated before committing aggregate metrics. The opening is
-  permanently consumed, so the result is inconclusive, no candidate is
-  registered, and no default changes.
+Three clauses, each with a test that can fail:
 
-The preregistration and result are recorded in
-`docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_PREREGISTRATION_2026-08-24.md` and
-`docs/modeling/MANDATORY_TOUR_2017_SUCCESSOR_RESULT_2026-08-24.md`.
+1. **Anywhere in the United States.** No module is silently
+   California-only. Every module either has national data or states its exact
+   coverage limit at the point of use — on the map, in the panel, in the
+   export — not in a caveat paragraph a reader may not reach.
+2. **A real piece of work, end to end.** All seven `qa-harness/first-week-jobs`
+   journeys complete from a fresh account, driven by an agent with no
+   product knowledge, using only visible navigation, and each ends in an
+   artifact a planner could hand to a governing body.
+3. **Defend every number.** Every figure in an exported artifact traces to a
+   named source with a claim tier, and a figure whose evidence is unavailable
+   is withheld rather than estimated.
 
-## Completed: crash-safe sealed evidence execution
+Plus the release-engineering gate already defined and already nearly met:
+worker integrity, a passing restore drill, a populated upgrade rehearsal,
+mutation evidence, live RLS, production build, and CI — all against one
+candidate commit.
 
-- Do not rerun or reconstruct the consumed 2017 exercise. A future successor
-  study requires a genuinely untouched source and a separately frozen,
-  streaming evaluator.
-- Standardize one-host leases, durable one-opening receipts, bounded-memory
-  ZIP-to-SQLite staging, aggregate-only validation, and interruption recovery
-  before another sealed study is attempted. No new feature lane is scheduled
-  from this result.
+**What v1.0 does not mean.** It does not mean the travel model reproduces
+observed traffic counts. It does not mean every state's law is configured. It
+does not mean agentic control exists. Those are stated below as post-1.0 work
+so they stop being re-litigated at every checkpoint.
 
-The reusable runner, schemas, frozen 2017 hash guard, interruption recovery,
-bounded-memory proof, and protocol landed in `edfe829b`. The 2017 evidence files
-remain byte-for-byte unchanged.
+---
 
-## Completed — v0.33 reviewed portfolio CSV import
+## Where the product stands (measured 2026-08-25)
 
-- Let a planner bring a multi-row project table into the existing Projects
-  portfolio without re-entering every project.
-- Store the source before any project write, map only named fields, and require
-  currency, cost scale, and price year when a cost column is mapped.
-- Default every valid row to `skip`, allow explicit `create`, and block repeated
-  source IDs. Name matches are warnings that require individual confirmation
-  and never update keys.
-- Create only the rows a human confirms. The first slice does not update or
-  merge existing projects.
-- Preserve source hash, row number, mapped source ID, row fingerprint, mapping,
-  actor, import time, and created project ID so a rerun cannot create copies.
-- Keep the write human-only and record the assistant-action refusal when it
-  ships.
+- 60 planner-facing pages across 19 navigable surfaces, 256 API routes,
+  223 migrations, 5 Python workers.
+- 12,400 unit tests, live RLS proof, 42 worker suites, restore drill and
+  upgrade-path CI all green at `391eed25`.
+- Zero API routes without a caller. 12 registered assistant actions and 14
+  executable refusal families covering 60 refused capabilities.
+- The 26-finding 2026-08-16 security and correctness review is fully closed,
+  including both criticals and the two remote-code-execution install paths.
 
-The scope research remains in
-`docs/product/PORTFOLIO_SPREADSHEET_IMPORT_RESEARCH_2026-08-24.md`; the parser,
-atomic commit, source-custody, live-RLS, mutation, and desktop/mobile browser
-evidence landed in `3ee6dafa` and is recorded in
-`openplan/docs/ops/V033_REVIEWED_PORTFOLIO_IMPORT_PROOF_2026-08-25.md`. Official
-agency examples are usually XLS or XLSX, so CSV was deliberately the first
-parsed format rather than the final format boundary.
+The product is broad and the engineering discipline is unusually strong. The
+gap to 1.0 is not capability; it is **coverage outside California, getting
+work back out of the system, and telling the truth about the model where the
+number is read.**
 
-## Completed — v0.34 direct workbook portfolio import
+---
 
-- Read stored CSV, XLS, XLSX, and ODS sources directly, with bounded archive
-  expansion before compressed workbooks reach the parser.
-- Inspect every worksheet without selecting one automatically. Keep each
-  selected sheet's header, mappings, defaults, and cost units independent.
-- Combine selected sheets in physical order, preserve typed cells, require
-  row-level confirmation for cached formulas and name matches, and block
-  formula errors and duplicate source IDs across the whole batch.
-- Commit through one versioned transaction that rechecks role, source scope,
-  hash, format, sheet identity, rows, and current duplicates while retaining
-  v0.33 CSV compatibility.
-- Preserve sheet-aware immutable row provenance without letting source location
-  text populate a project's map fields.
+## v0.35 — Serious injuries outside California
 
-Implementation, public-file parsing, mutation proof, full tests, workers, live
-RLS, build, and the populated upgrade rehearsal are recorded in
-`openplan/docs/ops/V034_DIRECT_WORKBOOK_PORTFOLIO_IMPORT_PROOF_2026-08-25.md`.
-The real Chrome journey found and closed a missing cost-metadata request seam,
-then passed desktop and 390px sign-in, import, created-project, durable-history,
-console, request-failure, and horizontal-overflow checks.
+**The problem.** `openplan/src/lib/safety/sources/registry.ts` registers two
+crash adapters: CCRS, which separates fatal from injury crashes inside
+California, and FARS, the national **fatality-only** backstop. Outside
+California the Safety module ranks "KSI" locations from fatalities alone. SS4A
+and HSIP both score on killed *and seriously injured*, so the module's central
+output is missing half its definition for 49 states, and the interface does not
+say so where the ranking is read.
 
-## Later
+This is the sharpest live conflict with product non-negotiable #1.
 
-- Additional jurisdiction-specific legal bundles.
-- Provenance-carrying road-name geocoding.
-- Printable street backgrounds.
+**The work.**
+- Extend the crash-source adapter tier so a state DOT crash feed registers the
+  way the WA/CO/OR traffic-count publishers already do — a descriptor, not a
+  call-site edit.
+- Research which state crash APIs are open and keyless, then register the ones
+  that are. Do not guess the list; the CCRS record shows how fast these die.
+- Where no injury source is registered, state the severity ceiling **on the
+  safety map and in the ranked-locations panel**, before the ranking, in plain
+  words: "fatal crashes only — this state's injury data is not connected."
+- Carry the ceiling into the safety packet, the grant evidence, and the export.
 
-These move forward only when a planner outcome or new evidence justifies them.
-No new module is scheduled.
+**Done when.** A fresh workspace in a state with no registered injury source
+ranks locations only after saying what it cannot see, and a mutation removing
+that disclosure fails a test.
 
-## Rejected
+---
 
-- Averaging AequilibraE and ActivitySim. Agreement is sensitivity evidence, not
-  accuracy, and both values retain their provenance.
-- Changing a model default to rescue a failed or inconclusive study.
-- Runtime cutoffs for long model runs. Explicit cancellation handles stuck work
-  without trading away accuracy.
-- Treating unsupported road coverage as zero.
+## v0.36 — Get the work back out
 
-## Deferred
+**The problem.** OpenPlan reads CSV, XLS, XLSX, ODS, GTFS, GeoJSON, shapefiles
+and drone imagery. It writes CSV, GeoJSON and PDF. Agencies live in ArcGIS and
+QGIS; a corridor analysis a planner cannot open in their own GIS with its
+provenance attached is an analysis they will not stake a grant on. The v0.33/34
+importer made the inbound path excellent and left the outbound path where it
+was.
 
-- Crash rates per modeled VMT, until modeled road coverage supports a defensible
-  denominator.
-- MCP and Buzz control surfaces. ADR-004 preserves the accepted server-only
-  architecture, but implementation waits until the existing modules are mature.
-- The `1.0` release. It requires worker integrity, a successful restore drill,
-  populated upgrade rehearsal, all seven fresh-account journeys, mutation
-  evidence, live RLS, build, and CI against one candidate commit.
+**The work.**
+- GeoPackage export for the geographic outputs: study areas, corridors, crash
+  points, modeled links with volumes, engagement pins, land-use designations.
+  One format, not four — GeoPackage opens in both ArcGIS and QGIS.
+- XLSX export mirroring the workbook import, so a portfolio round-trips.
+- A per-project evidence bundle: every artifact plus a manifest carrying source,
+  retrieval date, claim tier, and known limits for each figure.
+- Provenance travels in the attribute table, not a sidecar readme.
+
+**Done when.** A planner exports a corridor, opens it in QGIS, and reads the
+source and claim tier of every attribute without opening OpenPlan.
+
+---
+
+## v0.37 — One agency, many people
+
+**The problem.** `WORKSPACE_ACTION_ROLE_MATRIX` covers 23 actions across eight
+modules. Everything else — safety, grants, projects, RTP, land-use plans,
+aerial, documents, measures, data hub — authorizes writes by bare membership
+plus a read-only viewer gate. For a single planner that is invisible. For the
+actual customer, an agency where an analyst drafts and a director approves, it
+means there is no answer to "who may adopt this plan, obligate this money, or
+publish this to residents."
+
+The consequential actions themselves already exist and are already human-only.
+What is missing is *which* human.
+
+**The work.**
+- Extend the role matrix to every module that writes. A new module without a
+  matrix entry should be a build error, the way a new role already is.
+- Named approval for the consequential actions that exist today: plan adoption,
+  stage-gate decisions, publishing to residents, obligating funds, releasing an
+  RTP for public review. Record who approved and when, beside the existing
+  exact-hash records.
+- Make My Work the approval inbox. The review queue landed in `f1ce80fb`;
+  approvals are the missing half. This is item 4 of his endorsed backlog.
+
+**Done when.** A `member` cannot adopt a plan, a `viewer` cannot reach the
+control at all, and the adoption record names the approver.
+
+---
+
+## v0.38 — The model says what it knows, where it is read
+
+**The problem.** The measured position is in
+`docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md`: the screening model puts
+roughly **1.7× too much traffic** on counted roads, about 1.10× of that is
+explained by concentration and **~1.6× has no identified cause after seven
+measured investigations**. Separately, **77–85% of links inside a study area
+carry no assigned traffic at all** — 96–100% of residential and local streets —
+because a centroid connector loads a path, not an area. Held-out median APE is
+43.3% against a 30% gate.
+
+None of that is a defect to fix before 1.0; it is the resolution of a screening
+model, and chasing it has already consumed weeks. **The defect is that a planner
+reading a corridor volume is not told which of those two situations they are
+in.** A road with no modeled traffic and a road the model over-assigns look the
+same on screen.
+
+**The work — presentation, not calibration.**
+- Per-link coverage state on the corridor map and in every artifact that quotes
+  a volume: modeled, unloaded, or outside the network. An unloaded link never
+  renders a number.
+- The over-assignment bracket travels with the volume, in the panel and the
+  export, not only in a caveat block.
+- Promote relative framing — with-project versus without-project on the same
+  network — over absolute volumes wherever the product can, because that is the
+  comparison the model is actually good at and it is what a corridor decision
+  needs.
+- **Engagement × Safety** (his backlog item 2): cluster resident map comments
+  against crash locations. It touches no model volumes, so it is not blocked by
+  any of the above, and it is near-ready SS4A evidence.
+
+**Done when.** No surface in OpenPlan can display a modeled volume without its
+coverage state, and a mutation that drops the coverage state fails a test.
+
+---
+
+## v1.0 — The stranger test
+
+- The full release gate against one candidate commit: `qa:gate`,
+  `test:rls-live`, `test:workers`, `ops:restore-drill`, upgrade rehearsal,
+  mutation evidence, CI.
+- All seven first-week journeys complete with zero blocked or failed jobs.
+- **One person who is not Nathaniel installs OpenPlan from `README.md` on a
+  clean machine and completes the project journey without help.** Self-service
+  is non-negotiable #4 and it has never been tested by a stranger. Agents
+  driving a browser are not the same evidence.
+- Documentation consolidated: dated evidence archived by period, one navigable
+  index, and the agent instruction files reconciled against the tree.
+- `docs/ops/KNOWN_ISSUES.md` carries no open item rated Blocker or High whose boundary
+  is not disclosed inside the product.
+
+---
+
+## Deliberately not in v1.0
+
+Stated so they stop costing sessions. Each is wanted; none is a release
+blocker.
+
+- **Chasing the ~1.6×.** Seven measured investigations have ruled out zone size,
+  tertiary under-assignment, missing local travel, and count-seeding, and sized
+  concentration and boundary disposition. It is a post-1.0 research lane. The
+  product's answer at 1.0 is disclosure, not a fitted scalar — and a nationwide
+  scalar sweep would publish the same failure everywhere with a better-looking
+  number attached.
+- **Averaging the two models.** Permanently rejected. Agreement is
+  methodological sensitivity, and the pre-registered holdout proved it does not
+  predict accuracy.
+- **Crash rates per modeled VMT.** Blocked until modeled road coverage supports
+  a denominator. Deferring it is the honest call, not a delay.
+- **MCP server and Buzz agentic control.** ADR-004 stands: build the server
+  (read → propose), refuse the client. Implementation waits for module
+  maturity. **Nathaniel asked to be reminded he still wants this — raise it at
+  every roadmap milestone.** Meanwhile every new write capability keeps earning
+  a registry entry or a recorded refusal, which is what keeps it cheap.
+- **New modules.** Non-negotiable #2. Land Use Plans was an explicit,
+  one-time exception.
+- **Additional jurisdiction legal bundles beyond what research justifies.**
+  Neutral degradation is the correct behavior; adding bundles is data work that
+  should follow a real user, not precede one.
+
+---
+
+## Standing constraints that outrank this file
+
+Product non-negotiables live in `CLAUDE.md` / `AGENTS.md`. The two that most
+often collide with a plausible-looking plan:
+
+- Nothing is hardcoded, and the architecture must not assume the United States.
+- Accuracy beats runtime. A run may take hours or days. "It would be slow" is
+  never a reason not to try something — say what it costs in wall-clock and let
+  Nathaniel decide.

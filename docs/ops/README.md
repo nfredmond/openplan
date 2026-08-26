@@ -13,6 +13,21 @@ Current sources of truth:
 - `docs/ops/KNOWN_ISSUES.md` — current quality boundaries and recovery cadence.
 - `docs/ADRs/` — durable architecture decisions.
 
+## By period, as of 2026-08-25
+
+| Period | Count | What it covers |
+|---|---|---|
+| 2026-03 | 60 | Modeling architecture, engine and network specs, zone/corridor/connector contracts, the county-onramp contracts, LAPM and stage-gate provenance, the Nevada and Placer validation era. |
+| 2026-04 | 1 | County containment rerun. |
+| 2026-05 | 3 | Caveat-gate and KPI SQL proofs, county-run manifest proof UI. |
+| 2026-07 | 17 | Grants/BCA/TDM screening, grants.gov live sync, the modeling 1.1 arc, wave hardening, the first local browser walks. |
+| 2026-08 | 18 | Local smoke records per module, the v0.27 land-use correction, v0.31/v0.32 browser and mutation proofs, operational health proof. |
+
+Files here are cited by path from shipped code and from `COMMENT ON POLICY`
+statements in applied migrations, so they are not moved into subdirectories. A
+migration is history; rewriting one to chase a moved file would falsify a
+shipped record.
+
 ## Evidence groups
 
 - Modeling architecture and specifications: the March 2026 engine, network,

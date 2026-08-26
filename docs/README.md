@@ -3,6 +3,13 @@
 OpenPlan is free, open-source, self-serve planning software. The Next.js app lives in `openplan/`;
 this directory holds everything that is not application code. Start here:
 
+## If you want to know what is being built
+
+- **`ROADMAP.md`** — the only active development queue, and the definition of v1.0. Rewritten
+  2026-08-25 from a full-repository review.
+- `ops/KNOWN_ISSUES.md` — the active quality register: what OpenPlan does not claim, and why.
+- `../CHANGELOG.md` — what shipped, in operator language, leading with required migrations.
+
 ## If you want to run OpenPlan
 
 - **`../openplan/docs/SELF_HOSTING.md`** — the deployment guide: local development and
