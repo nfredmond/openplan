@@ -3,7 +3,7 @@
 <!-- openplan-planning-capability-matrix
 review_date: 2026-08-25
 review_by: 2026-09-25
-current_release: v0.35.0
+current_release: v0.36.0
 capabilities:
 - long-range-transportation-and-regional-planning
 - land-use-comprehensive-and-community-planning
@@ -62,7 +62,7 @@ accessibility, or operations cell disappears or the review expires.
 Only `proven` passes v1. An evidence link and review date are required when a
 cell changes to `proven`; prose confidence is not evidence.
 
-## Practice coverage at v0.35.0
+## Practice coverage at v0.36.0
 
 | Core planning practice | Current status | Existing foundation | Principal proof gap |
 |---|---|---|---|
@@ -73,10 +73,10 @@ cell changes to `proven`; prose confidence is not evidence.
 | Environmental review, climate, resilience, and equity | Not assessed | Environmental and equity-adjacent evidence exists | Coherent statutory workflows, nationwide applicability, public artifacts, and validation by use |
 | Community engagement, Title VI, and public decisions | Partial | Public maps, surveys, comments, translation boundaries | Campaign-to-decision journey, response record, exports, accessibility and multi-project proof |
 | Capital programming, prioritization, grants, delivery, and reimbursement | Partial | Portfolio, grants, LAPM reimbursement, reports | One traceable project/funding spine through authorization, obligation, delivery, amendment, and closeout |
-| GIS, data stewardship, documents, reports, and public records | Partial | Imports, project GeoPackage handoff, literal-value XLSX portfolio round-trip, evidence custody, reports, provenance | Full project/evidence bundle, broader GIS output coverage, records lifecycle, cross-module source reuse |
+| GIS, data stewardship, documents, reports, and public records | Partial | Imports, project GeoPackage handoff, literal-value XLSX portfolio round-trip, frozen project evidence bundles, evidence custody, reports, provenance | Per-plan bundles, broader GIS output coverage, records lifecycle, and complete cross-module source reuse |
 | Development review, implementation, and interdepartmental handoff | Not assessed | Project and land-use primitives may be reusable | Product home, workflow definition, responsibility/approval handoffs, and artifacts |
 
-## Organization coverage at v0.35.0
+## Organization coverage at v0.36.0
 
 | Organization context | Current status | Principal proof gap |
 |---|---|---|
@@ -88,7 +88,7 @@ cell changes to `proven`; prose confidence is not evidence.
 | Consultancies | Partial | Multi-client separation, deliverable review, records transfer, and client acceptance |
 | Non-profits, community groups, and independent planners | Not assessed | Accessible self-service workflows, limited-capacity operations, and durable handoff |
 
-## Geography coverage at v0.35.0
+## Geography coverage at v0.36.0
 
 No state is yet `proven` against the complete v1 contract. California has the
 deepest configured legal and data support and is still `partial`. The other

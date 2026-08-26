@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import {
-  buildClientInvoiceHtml,
-  type ClientInvoicePdfClient,
-  type ClientInvoicePdfEngagement,
-  type ClientInvoicePdfInvoice,
-  type ClientInvoicePdfLineItem,
-} from "@/lib/invoicing/invoice-pdf";
-import { buildEngagementBilledSummary, type EngagementBilledSummary } from "@/lib/invoicing/receivables";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { renderReportPdf } from "@/lib/reports/pdf";
+import { resolveInvoicePdfBytes } from "@/lib/project-evidence-bundles/bytes";
 import { createClient } from "@/lib/supabase/server";
 
 const CLIENT_INVOICE_SELECT =
@@ -23,15 +15,6 @@ const paramsSchema = z.object({
 type RouteContext = {
   params: Promise<{ invoiceId: string }>;
 };
-
-/** The invoice number as a safe download filename: `invoice-inv-001.pdf`. */
-function invoicePdfFilename(invoiceNumber: string): string {
-  const slug = invoiceNumber
-    .replace(/[^a-z0-9]+/gi, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase();
-  return `invoice-${slug || "document"}.pdf`;
-}
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("invoicing.client_invoices.pdf", request);
@@ -62,14 +45,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .eq("id", parsedParams.data.invoiceId)
       .single();
 
-    const invoice = invoiceData as
-      | (ClientInvoicePdfInvoice & {
-          id: string;
-          workspace_id: string;
-          client_id: string;
-          engagement_id: string | null;
-        })
-      | null;
+    const invoice = invoiceData as { id: string; workspace_id: string } | null;
 
     if (invoiceError || !invoice) {
       audit.warn("invoice_not_found", {
@@ -100,101 +76,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace role cannot read invoicing records" }, { status: 403 });
     }
 
-    const [workspaceResult, clientResult, lineItemsResult] = await Promise.all([
-      supabase.from("workspaces").select("id, name").eq("id", invoice.workspace_id).single(),
-      supabase
-        .from("invoicing_clients")
-        .select("name, billing_address, contact_name, contact_email")
-        .eq("id", invoice.client_id)
-        .single(),
-      supabase
-        .from("client_invoice_line_items")
-        .select("description, quantity, unit_label, unit_amount, amount, position")
-        .eq("invoice_id", invoice.id)
-        .order("position", { ascending: true }),
-    ]);
-
-    // Issuer, bill-to and the line set are the document's substance — a PDF
-    // silently missing any of them would be a wrong document, not a degraded
-    // one, so any of these read failures refuses.
-    if (workspaceResult.error || clientResult.error || lineItemsResult.error) {
-      audit.error("invoice_document_assembly_failed", {
-        invoiceId: invoice.id,
-        workspaceError: workspaceResult.error?.message ?? null,
-        clientError: clientResult.error?.message ?? null,
-        lineItemsError: lineItemsResult.error?.message ?? null,
-      });
-      return NextResponse.json({ error: "Failed to assemble the invoice document" }, { status: 500 });
-    }
-
-    let engagement: ClientInvoicePdfEngagement = null;
-    let engagementBilled: EngagementBilledSummary | null = null;
-
-    if (invoice.engagement_id) {
-      const { data: engagementData, error: engagementError } = await supabase
-        .from("invoicing_engagements")
-        .select("id, title, reference_code, not_to_exceed_amount")
-        .eq("id", invoice.engagement_id)
-        .single();
-
-      if (engagementError || !engagementData) {
-        audit.error("invoice_engagement_read_failed", {
-          invoiceId: invoice.id,
-          engagementId: invoice.engagement_id,
-          message: engagementError?.message ?? null,
-        });
-        return NextResponse.json({ error: "Failed to assemble the invoice document" }, { status: 500 });
-      }
-
-      const engagementRow = engagementData as {
-        id: string;
-        title: string;
-        reference_code: string | null;
-        not_to_exceed_amount: number | string | null;
-      };
-      engagement = engagementRow;
-
-      if (engagementRow.not_to_exceed_amount !== null) {
-        // The billed position is context, not substance: a failed read drops
-        // the context line and is audited, rather than blocking the document.
-        const { data: engagementInvoices, error: engagementInvoicesError } = await supabase
-          .from("client_invoices")
-          .select("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount")
-          .eq("engagement_id", engagementRow.id);
-
-        if (engagementInvoicesError) {
-          audit.warn("nte_position_read_failed", {
-            invoiceId: invoice.id,
-            engagementId: engagementRow.id,
-            message: engagementInvoicesError.message,
-          });
-        } else {
-          engagementBilled = buildEngagementBilledSummary(
-            engagementRow,
-            (engagementInvoices ?? []) as Parameters<typeof buildEngagementBilledSummary>[1]
-          );
-        }
-      }
-    }
-
-    const workspaceRow = workspaceResult.data as { id: string; name: string | null };
-
-    const html = buildClientInvoiceHtml({
-      workspace: { name: workspaceRow.name },
-      client: clientResult.data as ClientInvoicePdfClient,
-      invoice,
-      lineItems: (lineItemsResult.data ?? []) as ClientInvoicePdfLineItem[],
-      engagement,
-      engagementBilled,
-    });
-
-    // Generated on demand, never stored: the invoice row and its lines stay
-    // the single source of truth, and every download reflects them as-is.
-    const rendered = await renderReportPdf(html, {
-      title: `Invoice ${invoice.invoice_number}`,
-      generatedAt: invoice.invoice_date ?? null,
-      footerLabel: "OpenPlan client invoice",
-    });
+    // Bundle freezing and individual downloads intentionally render through
+    // the same tenant-scoped byte resolver.
+    const rendered = await resolveInvoicePdfBytes(supabase, invoice.id);
 
     if (rendered.engine === "builtin") {
       audit.warn("client_invoice_pdf_builtin_typesetter_used", {
@@ -220,7 +104,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       status: 200,
       headers: {
         "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="${invoicePdfFilename(invoice.invoice_number)}"`,
+        "content-disposition": `attachment; filename="${rendered.filename}"`,
         "x-openplan-pdf-engine": rendered.engine,
       },
     });

@@ -4,7 +4,7 @@
 review_date: 2026-08-25
 review_by: 2026-09-25
 reviewed_commit: cb445c4b
-current_release: v0.35.0
+current_release: v0.36.0
 independent_contexts: 2
 trigger: full-codebase-v1-review-and-owner-decision
 perspectives:

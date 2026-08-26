@@ -137,7 +137,7 @@ describe("portfolio XLSX round-trip", () => {
     expect(mappingForOpenPlanRoundTripHeaders([...PORTFOLIO_ROUND_TRIP_HEADERS])).toEqual(
       PORTFOLIO_ROUND_TRIP_MAPPING
     );
-    const staleHeaders = [...PORTFOLIO_ROUND_TRIP_HEADERS];
+    const staleHeaders: string[] = [...PORTFOLIO_ROUND_TRIP_HEADERS];
     staleHeaders[7] = "Project status";
     expect(mappingForOpenPlanRoundTripHeaders(staleHeaders)).toBeNull();
     expect(mappingForOpenPlanRoundTripHeaders([...PORTFOLIO_ROUND_TRIP_HEADERS, "Extra column"])).toBeNull();

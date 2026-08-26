@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { AERIAL_IMAGERY_BUCKET, sanitizeImageryFilename } from "@/lib/aerial/imagery";
+import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 
 /**
  * Download one mission photo from OpenPlan's own storage.
@@ -117,14 +118,16 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 
   const storagePath = typeof imagery.storage_path === "string" ? imagery.storage_path : "";
   const expectedPrefix = `${mission.workspace_id}/${mission.id}/${imagery.id}/`;
+  const ref = resolveTenantScopedStorageTarget(storagePath, {
+    bucket: AERIAL_IMAGERY_BUCKET,
+    objectPathPrefix: expectedPrefix,
+  });
 
   // The upload route derives every path from ids OpenPlan owns, so a row whose
   // object lives outside its own prefix — or in another bucket — is not
   // something this route will sign for.
   if (
-    imagery.storage_bucket !== AERIAL_IMAGERY_BUCKET ||
-    !storagePath.startsWith(expectedPrefix) ||
-    storagePath.includes("..")
+    !ref || imagery.storage_bucket !== ref.bucket
   ) {
     audit.warn("aerial_imagery_storage_ref_out_of_scope", {
       imageryId: imagery.id,
@@ -137,8 +140,8 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   const filename = sanitizeImageryFilename(imagery.original_filename);
 
   const { data: signed, error: signError } = await service.storage
-    .from(imagery.storage_bucket)
-    .createSignedUrl(storagePath, AERIAL_IMAGERY_SIGNED_URL_TTL_SECONDS, { download: filename });
+    .from(ref.bucket)
+    .createSignedUrl(ref.objectPath, AERIAL_IMAGERY_SIGNED_URL_TTL_SECONDS, { download: filename });
 
   if (signError || !signed?.signedUrl) {
     audit.error("aerial_imagery_sign_failed", {

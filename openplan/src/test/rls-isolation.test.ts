@@ -489,6 +489,23 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     }),
   },
   {
+    table: "project_evidence_bundles",
+    select: "id,workspace_id,project_id,status",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, projectBId, userBId }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      project_id: projectBId,
+      project_revision: "2026-08-26T00:00:00Z",
+      selection_json: [],
+      selected_count: 0,
+      generated_by: userBId,
+      status: "failed",
+      failure_code: "rls_probe",
+      completed_at: "2026-08-26T00:00:00Z",
+    }),
+  },
+  {
     // Safety crash ingest — must be inserted before safety_crashes (FK).
     table: "safety_crash_ingests",
     select: "id,workspace_id",
@@ -1349,7 +1366,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(81);
+    expect(tables).toHaveLength(82);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1401,6 +1418,7 @@ describe("workspace RLS isolation inventory", () => {
       "programs",
       "project_corridors",
       "project_decisions",
+      "project_evidence_bundles",
       "project_funding_profiles",
       "project_milestones",
       "project_portfolio_import_batches",

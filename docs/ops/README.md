@@ -13,7 +13,7 @@ Current sources of truth:
 - `docs/ops/KNOWN_ISSUES.md` — current quality boundaries and recovery cadence.
 - `docs/ADRs/` — durable architecture decisions.
 
-## By period, as of 2026-08-25
+## By period, as of 2026-08-26
 
 | Period | Count | What it covers |
 |---|---|---|
@@ -21,7 +21,7 @@ Current sources of truth:
 | 2026-04 | 1 | County containment rerun. |
 | 2026-05 | 3 | Caveat-gate and KPI SQL proofs, county-run manifest proof UI. |
 | 2026-07 | 17 | Grants/BCA/TDM screening, grants.gov live sync, the modeling 1.1 arc, wave hardening, the first local browser walks. |
-| 2026-08 | 19 | Local smoke records per module, the v0.27 land-use correction, v0.31/v0.32 browser and mutation proofs, operational health proof, and the independent Claude v1 review. |
+| 2026-08 | 21 | Local smoke records per module, the v0.27 land-use correction, v0.31/v0.32 browser and mutation proofs, the v0.36 workbook and evidence-bundle proofs, operational health proof, and the independent Claude v1 review. |
 
 Files here are cited by path from shipped code and from `COMMENT ON POLICY`
 statements in applied migrations, so they are not moved into subdirectories. A

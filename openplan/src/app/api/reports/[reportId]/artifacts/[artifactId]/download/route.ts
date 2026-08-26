@@ -4,7 +4,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadReportAccess } from "@/lib/reports/api";
-import { parseStorageRef, storageRefAllowed } from "@/lib/models/artifact-source";
+import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 
 /**
  * Download a generated report artifact.
@@ -123,33 +123,17 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     // `report_artifacts` INSERT is member-writable (its RLS checks only
     // report -> workspace membership), so `storage_path` is caller-influenced
     // data and every dereference is bound to THIS report's own prefix.
-    const scope = {
+    const extension = artifact.artifact_kind === "pdf" ? "pdf" : "html";
+    const ref = resolveTenantScopedStorageTarget(storagePath, {
       bucket: ARTIFACT_BUCKET,
       objectPathPrefix: `${report.workspace_id}/${report.id}/`,
-    } as const;
+      extension: `.${extension}`,
+    });
 
-    // Rows written by the generate route carry a bare object path; a
-    // `storage://bucket/path` ref is accepted too so the two conventions in the
-    // codebase cannot diverge into a hole.
-    const ref = parseStorageRef(storagePath) ?? {
-      bucket: ARTIFACT_BUCKET,
-      objectPath: storagePath,
-    };
-
-    if (ref.objectPath.startsWith("/") || !storageRefAllowed(ref, scope)) {
+    if (!ref) {
       audit.warn("report_artifact_ref_out_of_scope", {
         artifactId: artifact.id,
         reportId: report.id,
-        bucket: ref.bucket,
-      });
-      return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
-    }
-
-    const extension = artifact.artifact_kind === "pdf" ? "pdf" : "html";
-    if (!ref.objectPath.toLowerCase().endsWith(`.${extension}`)) {
-      audit.warn("report_artifact_kind_mismatch", {
-        artifactId: artifact.id,
-        artifactKind: artifact.artifact_kind,
       });
       return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
     }

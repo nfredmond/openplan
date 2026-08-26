@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { unlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -9,7 +11,7 @@ const fromMock = vi.fn();
 const countyRunSelectMock = vi.fn();
 const countyRunEqMock = vi.fn();
 const countyRunMaybeSingleMock = vi.fn();
-const scaffoldPath = "/tmp/openplan-scaffold-route-test.csv";
+const scaffoldPath = path.join(tmpdir(), "openplan-scaffold-route-test.csv");
 
 const mockAudit = {
   info: vi.fn(),

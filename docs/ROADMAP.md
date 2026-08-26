@@ -243,8 +243,9 @@ journey and artifact, with no `partial`, `missing`, or `not assessed` result.
 ## Mandatory v1 program D: interoperability and evidence handoff
 
 - Export GeoPackage for geographic outputs and XLSX for portfolio round-trip.
-- Produce per-project and per-plan evidence bundles with machine-readable source,
-  retrieval, tier, custody, uncertainty, and known-limit manifests.
+- Keep the shipped per-project frozen evidence bundles current, and add per-plan
+  bundles with the same machine-readable source, retrieval, tier, custody,
+  uncertainty, and known-limit manifests.
 - Make source documents and frozen artifacts discoverable from every dependent
   result.
 - Support public, governing-body, GIS, spreadsheet, document-management, and

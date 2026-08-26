@@ -19,11 +19,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.36.0 — 2026-08-26
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260826000002_project_evidence_bundles.sql`
+(`project_evidence_bundles`) adds immutable project evidence-bundle records,
+tenant and project scope guards, and the private
+`project-evidence-bundles` Storage bucket.
+
 Projects can now download their stored study area, site marker, and cartographic
 corridors as a standard GeoPackage for QGIS and other GIS tools. The file carries
 an EPSG:4326 manifest that explicitly identifies missing or invalid geometry;
-OpenPlan does not repair or invent geometry during export. Linked datasets,
-documents, and analysis evidence are not included yet.
+OpenPlan does not repair or invent geometry during export.
 
 The Projects page can also download the active workspace's portfolio as an XLSX
 workbook that mirrors the reviewed create-only importer. Project type, status,
@@ -34,6 +42,21 @@ column mapping. Place identity, cost provenance, and timestamps remain visible
 reference columns; location text does not silently create geography. Exports
 fail rather than truncate more than 2,000 rows or invent a missing cost price
 year. No migration is required for this slice.
+
+The project's Evidence and documents surface now lets a planner review and
+freeze an immutable ZIP handoff. Every bundle carries a canonical manifest,
+SHA-256 inventory, project record, current GeoPackage, linked-data provenance,
+and linked model source, validation, and claim records. Selected documents use
+the same tenant-scoped byte readers as their individual downloads. A stale
+project or file revision, missing bytes, path-scope violation, checksum mismatch,
+or size violation refuses the entire artifact; viewers may review and download
+ready bundles but cannot create one. The synchronous limit is 200 selected
+files, 50 MiB per file, and 100 MiB total. Larger known records remain visible
+as reference-only evidence.
+
+This is a retained evidence snapshot, not approval, publication, or backup.
+Per-plan bundles and GeoPackage layers for crash points, model links,
+engagement pins, and land-use designations remain open interoperability work.
 
 ## 0.35.0 — 2026-08-26
 

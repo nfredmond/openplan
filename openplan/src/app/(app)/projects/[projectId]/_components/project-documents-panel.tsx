@@ -11,6 +11,7 @@ import {
   type DocumentSourceOutcome,
 } from "@/lib/document-library/types";
 import { fmtDateTime } from "./_helpers";
+import { ProjectEvidenceBundlePanel } from "./project-evidence-bundle-panel";
 
 /**
  * The project's slice of the Document Library: every file OpenPlan holds or
@@ -33,6 +34,7 @@ import { fmtDateTime } from "./_helpers";
 type ProjectDocumentsPanelProps = {
   library: DocumentLibraryResult;
   projectId: string;
+  canGenerateEvidenceBundle: boolean;
 };
 
 /** The library's badge tones, mapped onto the app-wide StatusBadge vocabulary. */
@@ -120,7 +122,7 @@ function sourceGroupBlock({ source, outcome, entries }: SourceGroup) {
   );
 }
 
-export function ProjectDocumentsPanel({ library, projectId }: ProjectDocumentsPanelProps) {
+export function ProjectDocumentsPanel({ library, projectId, canGenerateEvidenceBundle }: ProjectDocumentsPanelProps) {
   // Canonical source order comes from the library, not this panel. A source is
   // shown when it contributed files OR when its read could not answer — a
   // failed source hidden from the shelf is the read-failure-as-absence defect
@@ -154,6 +156,10 @@ export function ProjectDocumentsPanel({ library, projectId }: ProjectDocumentsPa
         >
           Open in the document library
         </Link>
+      </div>
+
+      <div className="mt-5">
+        <ProjectEvidenceBundlePanel projectId={projectId} canGenerate={canGenerateEvidenceBundle} />
       </div>
 
       {groups.length === 0 ? (

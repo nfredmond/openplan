@@ -1457,7 +1457,7 @@ export default async function ProjectDetailPage({
             projectPlaceLabel={project.place_label ?? null}
           />
 
-          <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} />
+          <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} canGenerateEvidenceBundle={canAccessWorkspaceAction("programs.write", membership.role)} />
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>

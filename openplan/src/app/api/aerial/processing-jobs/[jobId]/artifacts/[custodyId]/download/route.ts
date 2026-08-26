@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { AERIAL_ARTIFACT_BUCKET } from "@/lib/aerial/artifact-custody";
+import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 
 /**
  * Download an aerial artifact OpenPlan holds in its own custody.
@@ -187,14 +188,16 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 
   const storagePath = typeof custody.storage_path === "string" ? custody.storage_path : "";
   const expectedPrefix = `${job.workspace_id}/${job.mission_id}/${job.id}/`;
+  const ref = resolveTenantScopedStorageTarget(storagePath, {
+    bucket: AERIAL_ARTIFACT_BUCKET,
+    objectPathPrefix: expectedPrefix,
+  });
 
   // The engine derives every path from ids OpenPlan owns, so a held row whose
   // object lives outside this job's own prefix — or in another bucket — is not
   // something this route will sign for.
   if (
-    custody.storage_bucket !== AERIAL_ARTIFACT_BUCKET ||
-    !storagePath.startsWith(expectedPrefix) ||
-    storagePath.includes("..")
+    !ref || custody.storage_bucket !== ref.bucket
   ) {
     audit.warn("custody_storage_ref_out_of_scope", {
       custodyId: custody.id,
@@ -210,8 +213,8 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   const filename = storagePath.split("/").pop() || `${custody.kind}.bin`;
 
   const { data: signed, error: signError } = await service.storage
-    .from(custody.storage_bucket)
-    .createSignedUrl(storagePath, AERIAL_ARTIFACT_SIGNED_URL_TTL_SECONDS, {
+    .from(ref.bucket)
+    .createSignedUrl(ref.objectPath, AERIAL_ARTIFACT_SIGNED_URL_TTL_SECONDS, {
       download: filename,
     });
 

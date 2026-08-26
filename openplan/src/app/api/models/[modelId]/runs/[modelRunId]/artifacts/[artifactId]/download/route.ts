@@ -9,9 +9,9 @@ import {
   parseStorageRef,
   resolveContainedLocalPath,
   resolveRunWorkDir,
-  storageRefAllowed,
   workerLocalRoot,
 } from "@/lib/models/artifact-source";
+import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 
 // Matches ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS — short-lived links minted
 // per-request for an already-authorized reader; never a stored public URL.
@@ -122,7 +122,8 @@ export async function GET(req: NextRequest, context: RouteContext): Promise<Next
 
   const storageRef = parseStorageRef(fileUrl);
   if (storageRef) {
-    if (!storageRefAllowed(storageRef, runScope)) {
+    const target = resolveTenantScopedStorageTarget(fileUrl, runScope);
+    if (!target) {
       audit.warn("model_run_artifact_ref_out_of_scope", {
         artifactId: artifact.id,
         bucket: storageRef.bucket,
@@ -132,8 +133,8 @@ export async function GET(req: NextRequest, context: RouteContext): Promise<Next
 
     const service = createServiceRoleClient();
     const { data, error } = await service.storage
-      .from(storageRef.bucket)
-      .createSignedUrl(storageRef.objectPath, RUN_ARTIFACT_SIGNED_URL_TTL_SECONDS);
+      .from(target.bucket)
+      .createSignedUrl(target.objectPath, RUN_ARTIFACT_SIGNED_URL_TTL_SECONDS);
 
     if (error || !data?.signedUrl) {
       audit.error("model_run_artifact_sign_failed", {

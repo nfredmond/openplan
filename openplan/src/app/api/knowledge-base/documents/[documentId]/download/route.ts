@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { parseStorageRef, storageRefAllowed } from "@/lib/models/artifact-source";
+import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 import {
   KB_DOCUMENTS_BUCKET,
   looksLikePendingSchema,
@@ -107,23 +107,14 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     // is written only by OpenPlan's own routes today, but the confinement is
     // what makes that an invariant rather than a habit — a ref pointing
     // anywhere else is refused before it can reach the signer.
-    const scope = {
+    const ref = resolveTenantScopedStorageTarget(storageRefRaw, {
       bucket: KB_DOCUMENTS_BUCKET,
       objectPathPrefix: `${document.workspace_id}/${document.id}/`,
-    } as const;
+    });
 
-    // Rows are written as `storage://kb-documents/<ws>/<doc>/<file>`; a bare
-    // object path is accepted too so the two conventions in the codebase
-    // cannot diverge into a hole.
-    const ref = parseStorageRef(storageRefRaw) ?? {
-      bucket: KB_DOCUMENTS_BUCKET,
-      objectPath: storageRefRaw,
-    };
-
-    if (ref.objectPath.startsWith("/") || !storageRefAllowed(ref, scope)) {
+    if (!ref) {
       audit.warn("kb_document_ref_out_of_scope", {
         documentId: document.id,
-        bucket: ref.bucket,
       });
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }

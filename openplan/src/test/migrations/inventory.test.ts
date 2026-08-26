@@ -432,16 +432,20 @@ const EXPECTED = {
   // workspace-readable through one SELECT policy, while authenticated clients
   // have no write grant or policy: +1 permissive policy, policy-bearing table,
   // relation, table, and RLS table; no permissive write.
-  policies: 678,
-  permissive: 432,
+  // 20260826000002 adds the immutable project evidence-bundle ledger. One
+  // member SELECT, one writer INSERT, and one preparing-to-terminal UPDATE
+  // policy add three permissive policies, two permissive writes, and one
+  // policy-bearing/RLS relation. Private storage remains service-role-only.
+  policies: 681,
+  permissive: 435,
   restrictive: 246,
-  permissiveWrites: 276,
+  permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 156,
-  relations: 179,
-  tables: 172,
+  tablesWithPolicies: 157,
+  relations: 180,
+  tables: 173,
   views: 7,
-  rlsEnabledTables: 172,
+  rlsEnabledTables: 173,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

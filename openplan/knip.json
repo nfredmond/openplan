@@ -4,13 +4,13 @@
     "src/app/**/{page,layout,route,error,loading,not-found,global-error}.tsx",
     "src/app/**/{page,layout,route,error,loading,not-found,global-error}.ts",
     "src/test/**/*.{test,spec}.{ts,tsx}",
-    "scripts/**/*.mjs",
+    "scripts/**/*.{mjs,mts}",
     "supabase/**"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
     "src/**/*.css",
-    "scripts/**/*.mjs"
+    "scripts/**/*.{mjs,mts}"
   ],
   "ignoreIssues": {
     "src/components/ui/**": [
@@ -25,6 +25,7 @@
     "src/lib/api/county-geographies.ts": ["files"]
   },
   "ignoreDependencies": ["next-themes", "sonner", "supabase"],
+  "ignoreBinaries": ["sha256sum", "jq", "ogrinfo"],
   "rules": {
     "files": "error",
     "dependencies": "error",

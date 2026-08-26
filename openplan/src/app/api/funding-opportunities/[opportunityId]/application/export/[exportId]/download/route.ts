@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
-import { parseStorageRef, storageRefAllowed } from "@/lib/models/artifact-source";
+import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 import {
   APPLICATION_PENDING_SCHEMA_ERROR,
   looksLikePendingAssemblySchema,
@@ -110,20 +110,13 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   }
 
   const storagePath = typeof exportRow.storage_path === "string" ? exportRow.storage_path.trim() : "";
-  const scope = {
+  const ref = resolveTenantScopedStorageTarget(storagePath, {
     bucket: EXPORT_BUCKET,
     objectPathPrefix: `${opportunity.workspace_id}/${opportunity.id}/`,
-  } as const;
-  const ref = storagePath
-    ? parseStorageRef(storagePath) ?? { bucket: EXPORT_BUCKET, objectPath: storagePath }
-    : null;
+    extension: ".pdf",
+  });
 
-  if (
-    !ref ||
-    ref.objectPath.startsWith("/") ||
-    !storageRefAllowed(ref, scope) ||
-    !ref.objectPath.toLowerCase().endsWith(".pdf")
-  ) {
+  if (!ref) {
     audit.warn("application_export_ref_out_of_scope", {
       exportId: exportRow.id,
       opportunityId: opportunity.id,

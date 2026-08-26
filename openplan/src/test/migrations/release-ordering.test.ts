@@ -275,6 +275,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260826000001_safety_exact_acquisition_screens.sql",
     migrationsAtRelease: 226,
   },
+  // 0.36.0 — retained, immutable project evidence bundles complete the
+  // GeoPackage and workbook interoperability release.
+  {
+    tag: "0.36.0",
+    lastMigration: "20260826000002_project_evidence_bundles.sql",
+    migrationsAtRelease: 227,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

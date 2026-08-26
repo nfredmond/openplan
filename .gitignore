@@ -16,6 +16,9 @@ openplan/.artifacts/
 # Supabase CLI local temp metadata
 openplan/supabase/.temp/
 
+# Repository-local fallback when the system /tmp quota is exhausted.
+/.tmp/
+
 # Root-level node_modules. `openplan/.gitignore` covers the app's own copy, but the
 # monorepo root had no rule, so vitest's cache file (.vite/vitest/**/results.json)
 # was committed and re-dirtied the tree after every test run.
