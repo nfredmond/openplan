@@ -686,6 +686,45 @@ const narrativeDraftsSource: MyWorkSource = {
     }),
 };
 
+const decisionPackageReviewsSource: MyWorkSource = {
+  id: "decision_package_reviews",
+  label: "Decision packages",
+  readLabel: "decision packages",
+  block: "needs_review",
+  table: "project_decision_package_my_work",
+  select:
+    "id, workspace_id, project_id, bundle_id, bundle_sha256, submitted_by, assigned_approver_id, replaces_submission_id, note, submitted_at, stale_for_current_use, decision, reason, decided_at, project_name, queue_state",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "submitted_at",
+  orderAscending: true,
+  staticFilters: [],
+  toItems: (rows) => rows.map((row) => {
+    const returned = asString(row.queue_state) === "returned";
+    const stale = row.stale_for_current_use === true;
+    return {
+      sourceId: "decision_package_reviews",
+      block: "needs_review",
+      id: String(row.id),
+      title: returned ? "Replace returned decision package" : "Review submitted decision package",
+      projectId: asString(row.project_id),
+      projectName: asString(row.project_name),
+      dueOn: null,
+      isOverdue: false,
+      ownerLabel: null,
+      badge: returned
+        ? { label: "Returned", tone: "warning" }
+        : { label: "Approval pending", tone: "info" },
+      detail: [
+        stale ? "Historical package is stale for current use" : null,
+        returned ? asString(row.reason) : `Bundle ${asString(row.bundle_sha256)?.slice(0, 12) ?? "hash unavailable"}…`,
+      ].filter(Boolean).join(" · ") || null,
+      href: projectHref(asString(row.project_id), "project-decision-packages"),
+      dedupKey: null,
+    } satisfies MyWorkItem;
+  }),
+};
+
 const landUsePlanActionsSource: MyWorkSource = {
   id: "land_use_plan_actions",
   label: "Plan implementation",
@@ -978,6 +1017,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   engagementModerationSource,
   failedModelRunsSource,
   narrativeDraftsSource,
+  decisionPackageReviewsSource,
   landUsePlanActionsSource,
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,

@@ -109,6 +109,10 @@ describe("project evidence candidate inventory", () => {
       "report_artifacts:a",
     ]);
     expect(inventory.candidates.find((item) => item.id === "report_artifacts:b")?.defaultSelected).toBe(false);
+    expect(inventory.candidates.find((item) => item.id === "report_artifacts:a")?.evidenceDescriptor?.support).toEqual({
+      status: "not_a_numeric_claim",
+      reason: null,
+    });
     expect(inventory.candidates.find((item) => item.id === "invoice_pdfs:invoice-1")).toMatchObject({
       defaultSelected: false,
       retrievalState: "rendered_on_freeze",
@@ -119,7 +123,9 @@ describe("project evidence candidate inventory", () => {
       retrievalState: "reference_only",
       exclusionReason: "OpenPlan does not hold bytes for this deliverable.",
     });
-    const libraryCalls = fake.calls.filter((call) => call.table !== "project_evidence_bundles");
+    const libraryCalls = fake.calls.filter((call) =>
+      call.table !== "project_evidence_bundles" && call.table !== "plans"
+    );
     expect(libraryCalls).toHaveLength(7);
     expect(libraryCalls.every((call) => call.limit === 501)).toBe(true);
     expect(libraryCalls.every((call) => call.filters.some(([column, value]) => column.endsWith("project_id") && value === PROJECT.id))).toBe(true);

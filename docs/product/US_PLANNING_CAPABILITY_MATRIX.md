@@ -3,7 +3,7 @@
 <!-- openplan-planning-capability-matrix
 review_date: 2026-08-25
 review_by: 2026-09-25
-current_release: v0.36.1
+current_release: v0.37.0
 capabilities:
 - long-range-transportation-and-regional-planning
 - land-use-comprehensive-and-community-planning
@@ -62,7 +62,7 @@ accessibility, or operations cell disappears or the review expires.
 Only `proven` passes v1. An evidence link and review date are required when a
 cell changes to `proven`; prose confidence is not evidence.
 
-## Practice coverage at v0.36.1
+## Practice coverage at v0.37.0
 
 | Core planning practice | Current status | Existing foundation | Principal proof gap |
 |---|---|---|---|
@@ -71,12 +71,12 @@ cell changes to `proven`; prose confidence is not evidence.
 | Travel demand, corridor, scenario, and performance analysis | Partial | AequilibraE, ActivitySim, common assignment, agreement map | Independent nationwide validation; demand distribution, observation uncertainty, network and external-trip defects |
 | Transit, active transportation, freight, and safety planning | Partial | GTFS, accessibility, freight, project and safety foundations | End-to-end multimodal journeys; complete injury coverage and state-specific source proof |
 | Environmental review, climate, resilience, and equity | Not assessed | Environmental and equity-adjacent evidence exists | Coherent statutory workflows, nationwide applicability, public artifacts, and validation by use |
-| Community engagement, Title VI, and public decisions | Partial | Public maps, surveys, comments, translation boundaries | Campaign-to-decision journey, response record, exports, accessibility and multi-project proof |
+| Community engagement, Title VI, and public decisions | Partial | Public maps, surveys, comments, translation boundaries, exact-hash agency package review | Campaign-to-decision journey, response record, statutory decision proof, accessibility and multi-project proof |
 | Capital programming, prioritization, grants, delivery, and reimbursement | Partial | Portfolio, grants, LAPM reimbursement, reports | One traceable project/funding spine through authorization, obligation, delivery, amendment, and closeout |
-| GIS, data stewardship, documents, reports, and public records | Partial | Imports, project GeoPackage handoff, literal-value XLSX portfolio round-trip, frozen project evidence bundles, evidence custody, reports, provenance | Per-plan bundles, broader GIS output coverage, records lifecycle, and complete cross-module source reuse |
-| Development review, implementation, and interdepartmental handoff | Not assessed | Project and land-use primitives may be reusable | Product home, workflow definition, responsibility/approval handoffs, and artifacts |
+| GIS, data stewardship, documents, reports, and public records | Partial | Imports, v2 project GeoPackage handoff, literal-value XLSX portfolio round-trip, frozen governed evidence bundles, evidence custody, reports, provenance | Broader designation/model-link GIS geometry, records lifecycle, and complete cross-module source reuse |
+| Development review, implementation, and interdepartmental handoff | Not assessed | Project/land-use primitives and immutable submit/return/approve custody | Product home, full development-review workflow, statutory responsibility, and jurisdiction proof |
 
-## Organization coverage at v0.36.1
+## Organization coverage at v0.37.0
 
 | Organization context | Current status | Principal proof gap |
 |---|---|---|
@@ -88,7 +88,7 @@ cell changes to `proven`; prose confidence is not evidence.
 | Consultancies | Partial | Multi-client separation, deliverable review, records transfer, and client acceptance |
 | Non-profits, community groups, and independent planners | Not assessed | Accessible self-service workflows, limited-capacity operations, and durable handoff |
 
-## Geography coverage at v0.36.1
+## Geography coverage at v0.37.0
 
 No state is yet `proven` against the complete v1 contract. California has the
 deepest configured legal and data support and is still `partial`. The other

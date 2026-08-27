@@ -12,6 +12,7 @@ import {
 } from "@/lib/document-library/types";
 import { fmtDateTime } from "./_helpers";
 import { ProjectEvidenceBundlePanel } from "./project-evidence-bundle-panel";
+import { ProjectDecisionPackagePanel } from "./project-decision-package-panel";
 
 /**
  * The project's slice of the Document Library: every file OpenPlan holds or
@@ -160,6 +161,7 @@ export function ProjectDocumentsPanel({ library, projectId, canGenerateEvidenceB
 
       <div className="mt-5">
         <ProjectEvidenceBundlePanel projectId={projectId} canGenerate={canGenerateEvidenceBundle} />
+        <ProjectDecisionPackagePanel projectId={projectId} />
       </div>
 
       {groups.length === 0 ? (

@@ -3,7 +3,7 @@ id: 09-project-evidence-bundle
 title: Freeze and hand off one project's evidence outside OpenPlan
 account: run
 files: handover
-maxTurns: 180
+maxTurns: 240
 ---
 
 You are a planner handing one active project's evidence to a colleague who must

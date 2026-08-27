@@ -52,6 +52,7 @@ export const WORKSPACE_ACTIONS = [
   "invoices.write",
   "stage_gates.decisions.read",
   "stage_gates.decisions.write",
+  "decision_packages.approve",
 ] as const;
 
 export type WorkspaceAction = (typeof WORKSPACE_ACTIONS)[number];
@@ -80,6 +81,7 @@ export const WORKSPACE_ACTION_ROLE_MATRIX: Record<WorkspaceAction, readonly Work
   "invoices.write": ["owner", "admin"],
   "stage_gates.decisions.read": ["owner", "admin", "member", "viewer"],
   "stage_gates.decisions.write": ["owner", "admin", "member"],
+  "decision_packages.approve": ["owner", "admin"],
 };
 
 export function normalizeWorkspaceRole(role: string | null | undefined): WorkspaceRole | null {

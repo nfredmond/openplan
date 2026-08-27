@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import JSZip from "jszip";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
+import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
 import {
   PROJECT_EVIDENCE_CANDIDATE_LIMIT,
   PROJECT_EVIDENCE_FILE_BYTE_LIMIT,
@@ -9,8 +10,8 @@ import {
   PROJECT_EVIDENCE_TOTAL_BYTE_LIMIT,
   isSha256,
   type ProjectEvidenceCandidate,
-  type ProjectEvidenceManifestEntryV1,
-  type ProjectEvidenceManifestV1,
+  type ProjectEvidenceManifestEntryV2,
+  type ProjectEvidenceManifestV2,
   type ProjectEvidenceRetrievalState,
   type ProjectEvidenceCustodyState,
 } from "./contracts";
@@ -50,6 +51,7 @@ export type GeneratedProjectEvidenceFile = {
   retrievalState: ProjectEvidenceRetrievalState;
   custodyState: ProjectEvidenceCustodyState;
   knownLimits: string[];
+  evidenceDescriptor?: EvidenceDescriptorV1;
 };
 
 export type BuildProjectEvidenceBundleInput = {
@@ -64,11 +66,12 @@ export type BuildProjectEvidenceBundleInput = {
   generatedFiles: GeneratedProjectEvidenceFile[];
   inventoryTruncated: boolean;
   knownLimits: string[];
+  selectedLinkedPlan?: { id: string; revisionToken: string } | null;
 };
 
 export type BuiltProjectEvidenceBundle = {
   bytes: Buffer;
-  manifest: ProjectEvidenceManifestV1;
+  manifest: ProjectEvidenceManifestV2;
   manifestSha256: string;
   checksumsSha256: string;
 };
@@ -103,7 +106,7 @@ function manifestEntryFromCandidate(
   candidate: ProjectEvidenceCandidate,
   selected: ResolvedProjectEvidenceFile | undefined,
   generatedAt: string
-): ProjectEvidenceManifestEntryV1 {
+): ProjectEvidenceManifestEntryV2 {
   const referenceOnly = candidate.retrievalState === "reference_only" || !candidate.selectable;
   const included = Boolean(selected);
   const reason = included
@@ -111,6 +114,18 @@ function manifestEntryFromCandidate(
     : candidate.exclusionReason ??
       (referenceOnly ? "The file is recorded as reference-only evidence." : "The planner did not select this file.");
 
+  const evidence = candidate.evidenceDescriptor ?? buildEvidenceDescriptor({
+    identity: { sourceId: candidate.sourceId, recordId: candidate.recordId },
+    source: { kind: candidate.sourceKind, label: candidate.sourceLabel, citation: candidate.citation },
+    asOfDate: candidate.sourceVintage,
+    retrievedAt: included ? generatedAt : null,
+    evidenceStatus: candidate.owningModule === "travel_modeling" ? "modeled" : "reference",
+    claimTier: candidate.claimTier,
+    uncertainty: candidate.uncertainty,
+    limits: candidate.knownLimits,
+    revisionToken: candidate.revisionToken,
+    checksumSha256: selected ? sha256(selected.bytes) : candidate.recordedChecksumSha256,
+  });
   return {
     path: selected
       ? confineEvidenceBundlePath(
@@ -146,13 +161,15 @@ function manifestEntryFromCandidate(
       reason,
     },
     revisionToken: candidate.revisionToken,
+    evidence,
   };
 }
 
 function manifestEntryFromGenerated(
   file: GeneratedProjectEvidenceFile,
   generatedAt: string
-): ProjectEvidenceManifestEntryV1 {
+): ProjectEvidenceManifestEntryV2 {
+  const checksumSha256 = sha256(file.bytes);
   return {
     path: confineEvidenceBundlePath(file.path),
     owningModule: file.owningModule,
@@ -168,12 +185,24 @@ function manifestEntryFromGenerated(
     retrieval: { state: file.retrievalState, retrievedAt: generatedAt },
     claimTier: null,
     custody: { state: file.custodyState },
-    checksumSha256: sha256(file.bytes),
+    checksumSha256,
     byteSize: file.bytes.length,
     uncertainty: [],
     knownLimits: [...file.knownLimits],
     inclusion: { status: "included", reason: null },
     revisionToken: null,
+    evidence: file.evidenceDescriptor ?? buildEvidenceDescriptor({
+      identity: { sourceId: file.sourceId, recordId: file.recordId, path: file.path },
+      source: { kind: "openplan_record", label: file.title, citation: null },
+      asOfDate: generatedAt,
+      retrievedAt: generatedAt,
+      evidenceStatus: file.sourceId === "modeling_evidence" ? "modeled" : "administrative",
+      claimTier: null,
+      uncertainty: [],
+      limits: file.knownLimits,
+      revisionToken: null,
+      checksumSha256,
+    }),
   };
 }
 
@@ -211,7 +240,7 @@ function assertSelectedFiles(input: BuildProjectEvidenceBundleInput): void {
   }
 }
 
-function stableManifestJson(manifest: ProjectEvidenceManifestV1): string {
+function stableManifestJson(manifest: ProjectEvidenceManifestV2): string {
   return `${canonicalizeActionPayload(manifest)}\n`;
 }
 
@@ -254,14 +283,20 @@ export async function buildProjectEvidenceBundle(
   });
 
   const includedCount = entries.filter((entry) => entry.inclusion.status === "included").length;
-  const manifest: ProjectEvidenceManifestV1 = {
+  const reportPdfEntries = entries.filter((entry) =>
+    entry.originalRecord.sourceId === "report_artifacts" &&
+    entry.contentType === "application/pdf" &&
+    entry.inclusion.status === "included" &&
+    entry.checksumSha256,
+  );
+  const manifest: ProjectEvidenceManifestV2 = {
     schemaVersion: PROJECT_EVIDENCE_MANIFEST_VERSION,
     bundleId: input.bundleId,
     workspaceId: input.workspaceId,
     projectId: input.projectId,
     projectRevision: input.projectRevision,
     generatedAt,
-    generatedBy: input.generatedBy,
+    generatedBy: "openplan_authenticated_planner",
     purpose: "retained_evidence_snapshot",
     approvalOrPublication: false,
     limits: {
@@ -280,6 +315,14 @@ export async function buildProjectEvidenceBundle(
     },
     knownLimits: [...input.knownLimits],
     entries,
+    selectedLinkedPlan: input.selectedLinkedPlan ?? null,
+    currentBoardOrReportPdf: reportPdfEntries.length === 1
+      ? {
+          recordId: reportPdfEntries[0].originalRecord.recordId,
+          checksumSha256: reportPdfEntries[0].checksumSha256 as string,
+        }
+      : null,
+    layerStatusTable: "openplan_layer_status",
   };
 
   const manifestJson = stableManifestJson(manifest);

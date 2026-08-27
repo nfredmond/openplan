@@ -17,6 +17,11 @@ import { SCENARIO_COMPARISON_SNAPSHOT_STATUSES } from "@/lib/scenarios/catalog";
 import { buildScenarioComparisonSourceContext } from "@/lib/scenarios/comparison-source-context";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
+  isWriteFailure,
+  noRowsMatchedResponse,
+  writeMatchedNoRows,
+} from "@/lib/http/write-outcome";
+import {
   collectGuidedRunEvidence,
   type GuidedRunJob,
   type GuidedRunRow,
@@ -508,11 +513,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .eq("status", "draft")
         .select("id")
         .maybeSingle();
-      if (readyResult.error || !readyResult.data) {
+      if (isWriteFailure(readyResult.error)) {
+        audit.error("guided_comparison_ready_update_failed", {
+          scenarioSetId: access.scenarioSet.id,
+          comparisonSnapshotId: comparisonSnapshot.id,
+          message: readyResult.error?.message ?? null,
+        });
         return NextResponse.json(
           { error: "The exact model outputs were bound, but the comparison remains a draft." },
           { status: 500 },
         );
+      }
+      if (writeMatchedNoRows(readyResult)) {
+        audit.error("guided_comparison_ready_update_matched_no_rows", {
+          scenarioSetId: access.scenarioSet.id,
+          comparisonSnapshotId: comparisonSnapshot.id,
+        });
+        return noRowsMatchedResponse({ subject: "comparison snapshot", targetWasVerified: true });
       }
       comparisonSnapshot.status = "ready";
     }

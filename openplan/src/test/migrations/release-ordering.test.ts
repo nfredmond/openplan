@@ -289,6 +289,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260826000003_model_truth_correction.sql",
     migrationsAtRelease: 228,
   },
+  // 0.37.0 adds exact-hash, append-only agency package submissions and
+  // decisions, then hardens creator/submission segregation and live RLS
+  // visibility for a different assigned owner/admin approver.
+  {
+    tag: "0.37.0",
+    lastMigration: "20260826000007_scenario_model_link_cascade_delete.sql",
+    migrationsAtRelease: 232,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

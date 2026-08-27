@@ -1,10 +1,14 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { CORRIDOR_COLUMNS, type ProjectCorridorRow } from "@/lib/cartographic/project-corridor-record";
+import { buildEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
 import {
   buildProjectGeoPackage,
+  type ProjectGeoPackageCrash,
+  type ProjectGeoPackageEngagementGeometry,
   type ProjectGeoPackageProject,
 } from "@/lib/projects/project-geopackage";
 import { ProjectEvidenceBundleError, type GeneratedProjectEvidenceFile } from "./archive";
@@ -28,6 +32,25 @@ function rows(value: unknown): Record<string, unknown>[] {
 
 function ids(items: Record<string, unknown>[]): string[] {
   return items.flatMap((item) => (typeof item.id === "string" ? [item.id] : []));
+}
+
+const PERSONAL_IDENTIFIER_KEYS = new Set([
+  "created_by", "createdBy", "updated_by", "updatedBy", "requested_by", "requestedBy",
+  "linked_by", "linkedBy", "generated_by", "generatedBy", "submitted_by", "submittedBy",
+  "decided_by", "decidedBy", "frozen_by", "frozenBy", "approved_by", "approvedBy",
+  "assigned_approver_id", "assignedApproverId", "assignee_user_id", "assigneeUserId",
+  "user_id", "userId",
+]);
+
+/** External handoffs retain record custody without exporting internal user identifiers. */
+function withoutPersonalIdentifiers(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(withoutPersonalIdentifiers);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => !PERSONAL_IDENTIFIER_KEYS.has(key))
+      .map(([key, item]) => [key, withoutPersonalIdentifiers(item)]),
+  );
 }
 
 async function evidenceRows(
@@ -111,10 +134,11 @@ async function evidenceRows(
 export async function loadProjectEvidenceGeneratedFiles(
   supabaseValue: unknown,
   project: ProjectScope,
-  generatedAt: Date
+  generatedAt: Date,
+  selectedPlan?: Record<string, unknown> | null,
 ): Promise<{ files: GeneratedProjectEvidenceFile[]; projectRecord: Record<string, unknown> }> {
   const client = supabaseValue as SupabaseClient;
-  const [projectRead, corridorRead, datasetRead, modelRead, countyRunRead] = await Promise.all([
+  const [projectRead, corridorRead, datasetRead, modelRead, countyRunRead, crashIngestRead, campaignRead] = await Promise.all([
     client
       .from("projects")
       .select("*")
@@ -151,6 +175,17 @@ export async function loadProjectEvidenceGeneratedFiles(
       .eq("workspace_id", project.workspace_id)
       .eq("project_id", project.id)
       .order("created_at", { ascending: true }),
+    client.from("safety_crash_ingests")
+      .select("id")
+      .eq("workspace_id", project.workspace_id)
+      .eq("project_id", project.id)
+      .eq("status", "ready")
+      .order("created_at", { ascending: true }),
+    client.from("engagement_campaigns")
+      .select("id")
+      .eq("workspace_id", project.workspace_id)
+      .eq("project_id", project.id)
+      .order("created_at", { ascending: true }),
   ]);
 
   if (projectRead.error || !projectRead.data) {
@@ -164,6 +199,8 @@ export async function loadProjectEvidenceGeneratedFiles(
     ["linked dataset provenance", datasetRead.error],
     ["project models", modelRead.error],
     ["project county runs", countyRunRead.error],
+    ["project crash acquisitions", crashIngestRead.error],
+    ["project engagement campaigns", campaignRead.error],
   ] as const;
   const failed = requiredReads.find(([, error]) => error);
   if (failed) {
@@ -173,6 +210,7 @@ export async function loadProjectEvidenceGeneratedFiles(
   const models = rows(modelRead.data);
   const modelIds = ids(models);
   let modelRuns: Record<string, unknown>[] = [];
+  let modelArtifacts: Record<string, unknown>[] = [];
   if (modelIds.length > 0) {
     const modelRunsRead = await client
       .from("model_runs")
@@ -186,33 +224,145 @@ export async function loadProjectEvidenceGeneratedFiles(
       throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked model runs could not be read.");
     }
     modelRuns = rows(modelRunsRead.data);
+    const runIds = ids(modelRuns);
+    if (runIds.length > 0) {
+      const artifactsRead = await client.from("model_run_artifacts")
+        .select("id, run_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
+        .in("run_id", runIds)
+        .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
+        .order("created_at", { ascending: true });
+      if (artifactsRead.error) {
+        throw new ProjectEvidenceBundleError("missing_evidence", "Project model link artifacts could not be read.");
+      }
+      modelArtifacts = rows(artifactsRead.data);
+    }
   }
   const countyRuns = rows(countyRunRead.data);
   const modelingEvidence = await evidenceRows(client, project.workspace_id, ids(modelRuns), ids(countyRuns));
+  const crashIngestIds = ids(rows(crashIngestRead.data));
+  let crashes: ProjectGeoPackageCrash[] = [];
+  if (crashIngestIds.length > 0) {
+    const crashRead = await client.from("safety_crashes")
+      .select("id, longitude, latitude, severity, source_id, collision_date")
+      .eq("workspace_id", project.workspace_id)
+      .in("ingest_id", crashIngestIds)
+      .in("severity", ["fatal", "severe_injury"])
+      .order("collision_date", { ascending: true });
+    if (crashRead.error) throw new ProjectEvidenceBundleError("missing_evidence", "Project crash/KSI geometry could not be read.");
+    crashes = rows(crashRead.data).flatMap((row) =>
+      typeof row.longitude === "number" && typeof row.latitude === "number"
+        ? [{
+            id: String(row.id),
+            longitude: row.longitude,
+            latitude: row.latitude,
+            severity: String(row.severity),
+            sourceId: String(row.source_id),
+            collisionDate: typeof row.collision_date === "string" ? row.collision_date : null,
+          }]
+        : [],
+    );
+  }
+  const campaignIds = ids(rows(campaignRead.data));
+  let engagementGeometries: ProjectGeoPackageEngagementGeometry[] = [];
+  if (campaignIds.length > 0) {
+    const engagementRead = await client.from("engagement_items")
+      .select("id, campaign_id, geometry, longitude, latitude, source_type, created_at")
+      .in("campaign_id", campaignIds)
+      .eq("status", "approved")
+      .order("created_at", { ascending: true });
+    if (engagementRead.error) throw new ProjectEvidenceBundleError("missing_evidence", "Publishable engagement geometry could not be read.");
+    engagementGeometries = rows(engagementRead.data).map((row) => ({
+      id: String(row.id),
+      geometry: row.geometry,
+      longitude: typeof row.longitude === "number" ? row.longitude : null,
+      latitude: typeof row.latitude === "number" ? row.latitude : null,
+      sourceType: typeof row.source_type === "string" ? row.source_type : "unknown",
+      createdAt: typeof row.created_at === "string" ? row.created_at : generatedAt.toISOString(),
+    }));
+  }
 
-  const projectRecord = projectRead.data as Record<string, unknown>;
+  const projectRecord = withoutPersonalIdentifiers(projectRead.data) as Record<string, unknown>;
   const gpkg = buildProjectGeoPackage({
     project: projectRecord as unknown as ProjectGeoPackageProject,
     corridors: (corridorRead.data ?? []) as ProjectCorridorRow[],
     generatedAt,
+    crashes,
+    engagementGeometries,
   });
   const linkedData = {
     schemaVersion: "project_linked_data_provenance.v1",
     projectId: project.id,
     generatedAt: generatedAt.toISOString(),
-    links: rows(datasetRead.data),
+    links: withoutPersonalIdentifiers(rows(datasetRead.data)),
   };
+  const claimsByTarget = new Map(
+    modelingEvidence.claims.map((claim) => [
+      `${String(claim.model_run_id ?? "")}:${String(claim.county_run_id ?? "")}:${String(claim.track ?? "")}`,
+      claim,
+    ]),
+  );
+  const claimDecisions = modelingEvidence.claims.map((claim) => ({
+    ...withoutPersonalIdentifiers(claim) as Record<string, unknown>,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { table: "modeling_claim_decisions", id: claim.id },
+      source: {
+        kind: "modeling_claim_decision",
+        label: `Modeling claim decision: ${String(claim.track ?? "unknown track")}`,
+        citation: typeof claim.status_reason === "string" ? claim.status_reason : null,
+      },
+      asOfDate: typeof claim.decided_at === "string" ? claim.decided_at : null,
+      retrievedAt: generatedAt.toISOString(),
+      evidenceStatus: "modeled",
+      claimTier: typeof claim.claim_status === "string" ? claim.claim_status : null,
+      uncertainty: Array.isArray(claim.reasons_json) ? claim.reasons_json.map(String) : [],
+      limits: ["The recorded tier applies only to this exact run and track."],
+      revisionToken: typeof claim.updated_at === "string" ? claim.updated_at : typeof claim.decided_at === "string" ? claim.decided_at : null,
+      checksumSha256: null,
+      numericClaim: true,
+    }),
+  }));
+  const validationResults = modelingEvidence.validation.map((validation) => {
+    const claim = claimsByTarget.get(
+      `${String(validation.model_run_id ?? "")}:${String(validation.county_run_id ?? "")}:${String(validation.track ?? "")}`,
+    );
+    return {
+      ...withoutPersonalIdentifiers(validation) as Record<string, unknown>,
+      evidenceDescriptor: buildEvidenceDescriptor({
+        identity: { table: "modeling_validation_results", id: validation.id },
+        source: {
+          kind: "modeling_validation_result",
+          label: typeof validation.metric_label === "string" ? validation.metric_label : "Modeling validation result",
+          citation: typeof validation.source_manifest_id === "string" ? validation.source_manifest_id : null,
+        },
+        asOfDate: typeof validation.evaluated_at === "string" ? validation.evaluated_at : null,
+        retrievedAt: generatedAt.toISOString(),
+        evidenceStatus: "modeled",
+        claimTier: typeof claim?.claim_status === "string" ? claim.claim_status : null,
+        uncertainty: [],
+        limits: typeof validation.detail === "string" ? [validation.detail] : [],
+        revisionToken: typeof validation.created_at === "string" ? validation.created_at : null,
+        checksumSha256: null,
+        numericClaim: true,
+      }),
+    };
+  });
   const modeling = {
     schemaVersion: "project_modeling_evidence.v1",
     projectId: project.id,
     generatedAt: generatedAt.toISOString(),
-    models,
-    modelRuns,
-    countyRuns,
-    sourceManifests: modelingEvidence.sources,
-    validationResults: modelingEvidence.validation,
-    claimDecisions: modelingEvidence.claims,
+    models: withoutPersonalIdentifiers(models),
+    modelRuns: withoutPersonalIdentifiers(modelRuns),
+    modelArtifacts: withoutPersonalIdentifiers(modelArtifacts),
+    countyRuns: withoutPersonalIdentifiers(countyRuns),
+    sourceManifests: withoutPersonalIdentifiers(modelingEvidence.sources),
+    validationResults,
+    claimDecisions,
   };
+  const modelingRevisionToken = createHash("sha256")
+    .update(canonicalizeActionPayload(modeling))
+    .digest("hex");
+  const hasUnsupportedModelingClaim = [...claimDecisions, ...validationResults]
+    .some((record) => record.evidenceDescriptor.support.status === "unsupported");
 
   return {
     projectRecord,
@@ -241,6 +391,18 @@ export async function loadProjectEvidenceGeneratedFiles(
         custodyState: "rendered_on_freeze",
         knownLimits: gpkg.summary.coverageLimits,
       },
+      ...(selectedPlan ? [{
+        path: "project/linked-plan.json",
+        recordId: String(selectedPlan.id),
+        title: "Selected linked plan record",
+        sourceId: "linked_data" as const,
+        owningModule: "plans",
+        bytes: jsonBytes(withoutPersonalIdentifiers(selectedPlan)),
+        contentType: "application/json",
+        retrievalState: "available" as const,
+        custodyState: "openplan_stored" as const,
+        knownLimits: ["This is the selected OpenPlan plan record, not an adopted-plan PDF."],
+      }] : []),
       {
         path: "linked-data/provenance.json",
         recordId: project.id,
@@ -267,6 +429,22 @@ export async function loadProjectEvidenceGeneratedFiles(
           "Claim tiers remain attached to their original decisions. This bundle does not promote or reconcile them.",
           "AequilibraE and ActivitySim evidence remains separate and is never averaged.",
         ],
+        evidenceDescriptor: buildEvidenceDescriptor({
+          identity: { projectId: project.id, recordId: project.id, revisionToken: modelingRevisionToken },
+          source: { kind: "project_modeling_evidence", label: "Project-linked modeling evidence", citation: null },
+          asOfDate: generatedAt.toISOString(),
+          retrievedAt: generatedAt.toISOString(),
+          evidenceStatus: "modeled",
+          claimTier: hasUnsupportedModelingClaim ? null : "per_claim_in_payload",
+          uncertainty: [],
+          limits: [
+            "Each validation result and claim decision carries its own descriptor and exact run/track scope.",
+            "AequilibraE and ActivitySim evidence remains separate and is never averaged.",
+          ],
+          revisionToken: modelingRevisionToken,
+          checksumSha256: null,
+          numericClaim: true,
+        }),
       },
     ],
   };

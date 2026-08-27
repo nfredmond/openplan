@@ -22,6 +22,8 @@ const paramsSchema = z.object({ projectId: z.string().uuid() });
 const bodySchema = z.object({
   projectRevision: z.string().datetime({ offset: true }),
   confirmed: z.literal(true),
+  selectedPlanId: z.string().uuid(),
+  selectedPlanRevisionToken: z.string().regex(/^[0-9a-f]{64}$/),
   selected: z.array(
     z.object({
       candidateId: z.string().min(1).max(200),
@@ -120,6 +122,26 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       return NextResponse.json({ error: "The project GeoPackage must remain selected." }, { status: 400 });
     }
     const selectableFiles = selected.filter((candidate) => candidate.sourceId !== "project_geopackage");
+    const selectedReportPdfs = selectableFiles.filter(
+      (candidate) => candidate.sourceId === "report_artifacts" && candidate.contentType === "application/pdf",
+    );
+    if (selectedReportPdfs.length !== 1) {
+      return NextResponse.json({ error: "Select exactly one current board or report PDF." }, { status: 400 });
+    }
+    const selectedPlanInventory = inventory.linkedPlans.find(
+      (plan) => plan.id === body.data.selectedPlanId && plan.revisionToken === body.data.selectedPlanRevisionToken,
+    );
+    if (!selectedPlanInventory) {
+      return NextResponse.json({ error: "Select one current linked plan record." }, { status: 409 });
+    }
+    const selectedPlanRead = await caller.from("plans").select("*")
+      .eq("id", selectedPlanInventory.id)
+      .eq("workspace_id", access.project.workspace_id)
+      .eq("project_id", access.project.id)
+      .maybeSingle();
+    if (selectedPlanRead.error || !selectedPlanRead.data || selectedPlanRead.data.updated_at !== selectedPlanInventory.updatedAt) {
+      return NextResponse.json({ error: "The selected linked plan changed after review." }, { status: 409 });
+    }
     if (selectableFiles.length > inventory.limits.selectedFileLimit) {
       throw new ProjectEvidenceBundleError("selected_file_limit", "Too many evidence files were selected.");
     }
@@ -149,7 +171,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
 
     const service = createServiceRoleClient();
     const generatedAt = new Date();
-    const generated = await loadProjectEvidenceGeneratedFiles(caller, access.project, generatedAt);
+    const generated = await loadProjectEvidenceGeneratedFiles(caller, access.project, generatedAt, selectedPlanRead.data);
     const resolved = [];
     let resolvedBytes = 0;
     for (const candidate of selectableFiles) {
@@ -177,8 +199,12 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       inventoryTruncated: inventory.inventoryTruncated,
       knownLimits: [
         "This bundle is a retained evidence snapshot, not a backup, approval, adoption, or publication.",
-        "Per-plan evidence bundles and GeoPackage layers for crash points, modeled links, engagement pins, and land-use designations remain outside this release.",
+        "The GeoPackage layer-status table distinguishes included, unavailable, reference-only, and not-selected evidence. Model link files remain separate bundle artifacts rather than inferred GeoPackage geometry.",
       ],
+      selectedLinkedPlan: {
+        id: selectedPlanInventory.id,
+        revisionToken: selectedPlanInventory.revisionToken,
+      },
     });
 
     const upload = await service.storage.from(BUNDLE_BUCKET).upload(storagePath, built.bytes, {

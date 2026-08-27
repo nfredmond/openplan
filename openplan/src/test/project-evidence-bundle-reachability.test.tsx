@@ -112,12 +112,20 @@ const INVENTORY = {
       generatedAt: REVISION,
       byteCount: 4096,
       manifestSha256: "d".repeat(64),
+      bundleSha256: "e".repeat(64),
       selectedCount: 2,
       status: "ready",
       failureCode: null,
       downloadHref: `/api/projects/${PROJECT_ID}/evidence-bundles/66666666-6666-4666-8666-666666666666/download`,
     },
   ],
+  linkedPlans: [{
+    id: "77777777-7777-4777-8777-777777777777",
+    title: "Downtown mobility plan",
+    status: "active",
+    updatedAt: REVISION,
+    revisionToken: "f".repeat(64),
+  }],
   readFailed: false,
   failureMessage: null,
 };
@@ -157,6 +165,10 @@ describe("project evidence bundle reachability", () => {
     expect(screen.getByText("OpenPlan does not hold bytes for this deliverable.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
 
+    fireEvent.change(screen.getByLabelText("Linked plan"), {
+      target: { value: INVENTORY.linkedPlans[0].id },
+    });
+
     fireEvent.click(screen.getByText(/I reviewed this exact selection/));
     const freeze = screen.getByRole("button", { name: "Freeze evidence bundle" });
     await waitFor(() => expect(freeze).toBeEnabled());
@@ -175,5 +187,28 @@ describe("project evidence bundle reachability", () => {
     expect(await screen.findByText(/Viewers can review candidates and download ready bundles/)).toBeVisible();
     expect(screen.queryByText(/I reviewed this exact selection/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
+  });
+
+  it("links missing governed-package prerequisites back to the scoped Plans and Reports workflows", async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ...INVENTORY,
+        linkedPlans: [],
+        candidates: INVENTORY.candidates.filter((candidate) => candidate.sourceId !== "report_artifacts"),
+      }),
+    } as Response);
+
+    render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
+    fireEvent.click(await screen.findByRole("button", { name: "Prepare evidence bundle" }));
+
+    expect(await screen.findByRole("link", { name: "Open Plans for this project." })).toHaveAttribute(
+      "href",
+      `/plans?projectId=${PROJECT_ID}`,
+    );
+    expect(screen.getByRole("link", { name: "Open Reports for this project." })).toHaveAttribute(
+      "href",
+      `/reports?projectId=${PROJECT_ID}`,
+    );
   });
 });

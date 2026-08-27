@@ -19,6 +19,52 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.37.0 — 2026-08-26
+
+**Migrations required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migrations
+`20260826000004_governed_decision_packages.sql`
+(`governed_decision_packages`),
+`20260826000005_decision_package_creator_submission.sql`
+(`decision_package_creator_submission`),
+`20260826000006_decision_package_approver_membership_visibility.sql`
+(`decision_package_approver_membership_visibility`), and
+`20260826000007_scenario_model_link_cascade_delete.sql`
+(`scenario_model_link_cascade_delete`) add append-only package
+submissions and decisions, exact ready-bundle hash checks, assigned-approver
+authority, My Work review queues, and the live-RLS role lookup needed to assign
+a different owner or admin.
+
+The final migration also preserves direct immutability for exact guided-model
+run links while allowing their containing scenario, project, or workspace to
+perform its declared parent cascade. The earlier trigger refused both paths and
+could block normal tenant cleanup.
+
+Project evidence bundles now use the backward-compatible
+`project_evidence_manifest.v2` contract. A governed package binds one project,
+one selected linked-plan revision, and exactly one current board/report PDF to
+the frozen ZIP. Every manifest entry carries the shared evidence descriptor:
+source, dates, observed/modeled status, claim tier, uncertainty, limits,
+revision, checksum, and stable evidence ID. Known report and model numeric
+artifacts without adequate point-of-use provenance make the package
+unapprovable.
+
+The GeoPackage includes project-scoped observed crash/KSI points and approved
+engagement geometry without comment text or personal identifiers. Its
+`openplan_layer_status` table carries the same evidence descriptor and labels
+each expected layer `included`, `unavailable`, `reference_only`, or
+`not_selected`; absent data never reads as zero. Exact AequilibraE and
+ActivitySim link artifacts remain separate bundle files, and land-use GIS stays
+reference-only unless an exact version is selected rather than inferred.
+
+Members may prepare and submit a ready package. Its assigned approver must be a
+different owner/admin from both creator and submitter. That person approves or
+returns it from My Work; a return requires a reason and a new-hash replacement.
+The immutable receipt preserves the original bundle SHA-256. Approval does not
+publish the package, assert statutory adoption, or validate a model. A later
+project revision preserves historical custody while marking the package stale
+for current use.
+
 ## 0.36.1 — 2026-08-26
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

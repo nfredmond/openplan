@@ -58,6 +58,7 @@ export const MY_WORK_SOURCE_IDS = [
   "engagement_moderation",
   "failed_model_runs",
   "narrative_drafts",
+  "decision_package_reviews",
   "land_use_plan_actions",
   "land_use_plan_process",
   "land_use_plan_review_closing",

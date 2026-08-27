@@ -108,6 +108,7 @@ export function buildProjectTabs(flags: ProjectTabReadFlags): PageTabDefinition<
         "project-location-latitude",
         "project-location-longitude",
         "project-documents",
+        "project-decision-packages",
       ],
       anchorPrefixes: ["corridor-"],
       unreadable: unreadableLanes([

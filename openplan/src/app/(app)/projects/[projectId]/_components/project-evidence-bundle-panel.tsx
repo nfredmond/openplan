@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Archive, Download, Loader2, ShieldAlert } from "lucide-react";
 import { ModalDialog } from "@/components/ui/modal-dialog";
@@ -7,6 +8,8 @@ import type {
   ProjectEvidenceCandidate,
   ProjectEvidenceCandidateInventory,
 } from "@/lib/project-evidence-bundles/contracts";
+
+export const PROJECT_EVIDENCE_BUNDLE_CREATED_EVENT = "openplan:project-evidence-bundle-created";
 
 type InventoryResponse = ProjectEvidenceCandidateInventory & {
   readFailed: boolean;
@@ -55,16 +58,24 @@ function BundleReviewDialog({
     () => new Set(inventory.candidates.filter((candidate) => candidate.defaultSelected).map((candidate) => candidate.id))
   );
   const [confirmed, setConfirmed] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState("");
   const [progress, setProgress] = useState<"idle" | "freezing">("idle");
   const [error, setError] = useState<string | null>(null);
   const [downloadHref, setDownloadHref] = useState<string | null>(null);
 
   const selectedCandidates = inventory.candidates.filter((candidate) => selected.has(candidate.id));
   const selectedFileCount = selectedCandidates.filter((candidate) => !candidate.required).length;
+  const selectedReportPdfCount = selectedCandidates.filter(
+    (candidate) => candidate.sourceId === "report_artifacts" && candidate.contentType === "application/pdf",
+  ).length;
+  const linkedPlans = inventory.linkedPlans ?? [];
+  const selectedPlan = linkedPlans.find((plan) => plan.id === selectedPlanId) ?? null;
   const knownSelectedBytes = selectedCandidates.reduce((sum, candidate) => sum + (candidate.byteSize ?? 0), 0);
   const canSubmit =
     canGenerate &&
     confirmed &&
+    Boolean(selectedPlan) &&
+    selectedReportPdfCount === 1 &&
     !inventory.readFailed &&
     selectedFileCount <= inventory.limits.selectedFileLimit &&
     knownSelectedBytes <= inventory.limits.totalSelectedFileBytes &&
@@ -81,6 +92,8 @@ function BundleReviewDialog({
         body: JSON.stringify({
           projectRevision: inventory.projectRevision,
           confirmed: true,
+          selectedPlanId: selectedPlan?.id,
+          selectedPlanRevisionToken: selectedPlan?.revisionToken,
           selected: selectedCandidates.map((candidate) => ({
             candidateId: candidate.id,
             revisionToken: candidate.revisionToken,
@@ -140,7 +153,7 @@ function BundleReviewDialog({
           ) : null}
           {inventory.inventoryTruncated ? (
             <div role="status" className="mb-4 rounded-[0.45rem] border border-amber-400/50 bg-amber-400/10 p-3 text-sm">
-              Review stops at {inventory.limits.reviewCandidateLimit} candidates. Later records remain outside this bundle and the manifest records the limit.
+              Review stops at {inventory.limits.reviewCandidateLimit} candidates. Later items remain outside this bundle and the manifest states the limit.
             </div>
           ) : null}
           <div className="mb-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
@@ -149,6 +162,40 @@ function BundleReviewDialog({
             <span>{inventory.limits.selectedFileLimit} optional-file limit</span>
             <span>{formatBytes(inventory.limits.totalSelectedFileBytes)} total limit</span>
           </div>
+
+          <label className="mb-5 block text-sm font-medium">
+            Linked plan
+            <select
+              value={selectedPlanId}
+              onChange={(event) => {
+                setSelectedPlanId(event.target.value);
+                setConfirmed(false);
+              }}
+              className="mt-1 block w-full rounded-[0.4rem] border border-border bg-background px-3 py-2"
+            >
+              <option value="">Select the exact plan for this handoff</option>
+              {linkedPlans.map((plan) => (
+                <option key={plan.id} value={plan.id}>{plan.title} · {plan.status}</option>
+              ))}
+            </select>
+            {linkedPlans.length === 0 ? (
+              <span className="mt-1 block text-xs text-amber-700 dark:text-amber-200">
+                This project has no linked plan. Link one before freezing a governed package.{" "}
+                <Link className="font-medium underline underline-offset-2" href={`/plans?projectId=${projectId}`}>
+                  Open Plans for this project.
+                </Link>
+              </span>
+            ) : null}
+          </label>
+
+          {selectedReportPdfCount !== 1 ? (
+            <p role="status" className="mb-4 rounded-[0.4rem] border border-amber-400/50 bg-amber-400/10 p-3 text-sm">
+              Select exactly one current PDF from Reports. Selected now: {selectedReportPdfCount}.{" "}
+              <Link className="font-medium underline underline-offset-2" href={`/reports?projectId=${projectId}`}>
+                Open Reports for this project.
+              </Link>
+            </p>
+          ) : null}
 
           <div className="space-y-6">
             {grouped.map(([label, candidates]) => (
@@ -198,6 +245,11 @@ function BundleReviewDialog({
                         {candidate.knownLimits.map((limit) => (
                           <span key={limit} className="mt-1 block text-xs text-muted-foreground">{limit}</span>
                         ))}
+                        {candidate.evidenceDescriptor ? (
+                          <span className="mt-1 block text-xs text-muted-foreground">
+                            Evidence {candidate.evidenceDescriptor.stableEvidenceId.slice(0, 12)} · {candidate.evidenceDescriptor.evidenceStatus} · {candidate.evidenceDescriptor.support.status}
+                          </span>
+                        ) : null}
                       </span>
                     </label>
                   );
@@ -346,7 +398,10 @@ export function ProjectEvidenceBundlePanel({ projectId, canGenerate }: { project
           canGenerate={canGenerate}
           projectId={projectId}
           onClose={() => setReviewOpen(false)}
-          onCreated={() => void load()}
+          onCreated={() => {
+            void load();
+            window.dispatchEvent(new Event(PROJECT_EVIDENCE_BUNDLE_CREATED_EVENT));
+          }}
         />
       ) : null}
     </div>

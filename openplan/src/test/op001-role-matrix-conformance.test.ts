@@ -26,6 +26,7 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
         { action: "invoices.write", allowedRoles: ["owner", "admin"] },
         { action: "stage_gates.decisions.read", allowedRoles: ["owner", "admin", "member", "viewer"] },
         { action: "stage_gates.decisions.write", allowedRoles: ["owner", "admin", "member"] },
+        { action: "decision_packages.approve", allowedRoles: ["owner", "admin"] },
       ])
     );
 

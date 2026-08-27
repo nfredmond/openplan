@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: cb445c4b
-current_release: v0.36.1
+current_release: v0.37.0
 review_by: 2026-09-25
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.36.1
+## Current truth at v0.37.0
 
 Strong foundations already exist:
 
@@ -100,8 +100,9 @@ The v1 contract is not yet true:
 - the proof registry exposes many `partial`, `missing`, and `not-assessed`
   cells; those open cells block v1 even though they do not block this interim
   release;
-- project GIS, workbook, and immutable evidence-bundle handoff now exists, but
-  the broader layer package and named, exact-artifact team approval remain incomplete;
+- project GIS, workbook, immutable v2 evidence handoff, and named exact-hash
+  submit/return/approve custody now exist; wider designation/model-link geometry,
+  statutory decision proof, and stranger reuse remain incomplete;
 - no independent stranger has installed and operated the product;
 - the model is screening-grade, not nationwide validated. The often-repeated
   43.3% figure is the selection metric from the roughly 30% holdout drawn from a

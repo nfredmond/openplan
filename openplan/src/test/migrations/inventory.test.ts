@@ -436,16 +436,20 @@ const EXPECTED = {
   // member SELECT, one writer INSERT, and one preparing-to-terminal UPDATE
   // policy add three permissive policies, two permissive writes, and one
   // policy-bearing/RLS relation. Private storage remains service-role-only.
-  policies: 681,
-  permissive: 435,
+  // 20260826000003 adds the exact guided-model run-link table with member read
+  // and writer insert policies. 20260826000004 adds two governed-package
+  // tables with member read plus role-aware insert policies, and one My Work
+  // view. The correction migrations replace functions without adding schema.
+  policies: 687,
+  permissive: 441,
   restrictive: 246,
-  permissiveWrites: 278,
+  permissiveWrites: 281,
   expanded: 286,
-  tablesWithPolicies: 157,
-  relations: 180,
-  tables: 173,
-  views: 7,
-  rlsEnabledTables: 173,
+  tablesWithPolicies: 160,
+  relations: 184,
+  tables: 176,
+  views: 8,
+  rlsEnabledTables: 176,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -795,6 +799,7 @@ describe("migration schema inventory", () => {
       "gtfs_stops_map",
       "lodes_by_tract",
       "project_bca_screenings_latest",
+      "project_decision_package_my_work",
       "scenario_comparison_summary",
       "vmt_significance_screenings_latest",
     ]);

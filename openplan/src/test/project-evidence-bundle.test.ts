@@ -149,8 +149,11 @@ describe("project evidence archive", () => {
       expect(sha256(bytes), archivePath).toBe(expected);
     }
     const manifest = JSON.parse(await zip.file("manifest.json")!.async("string"));
-    expect(manifest.schemaVersion).toBe("project_evidence_manifest.v1");
+    expect(manifest.schemaVersion).toBe("project_evidence_manifest.v2");
     expect(manifest.approvalOrPublication).toBe(false);
+    expect(manifest.generatedBy).toBe("openplan_authenticated_planner");
+    expect(manifest.layerStatusTable).toBe("openplan_layer_status");
+    expect(manifest.entries.every((entry: { evidence?: unknown }) => entry.evidence)).toBe(true);
     expect(manifest.entries.map((entry: { path: string | null }) => entry.path)).toEqual([
       "files/knowledge_base/44444444-4444-4444-8444-444444444444-Existing-conditions.pdf",
       "project/project.gpkg",

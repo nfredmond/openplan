@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "currentRelease": "v0.36.1",
+  "currentRelease": "v0.37.0",
   "reviewedAt": "2026-08-25",
   "reviewBy": "2026-09-25",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
@@ -97,6 +97,7 @@
     "docs/product/V1_PRODUCT_CONTRACT.md",
     "docs/reviews/product-direction/2026-08-25-v1-direction.md",
     "docs/ops/2026-08-26-v0.36-portfolio-workbook-round-trip-proof.md",
-    "docs/ops/2026-08-26-v0.36-project-evidence-bundle-proof.md"
+    "docs/ops/2026-08-26-v0.36-project-evidence-bundle-proof.md",
+    "docs/ops/2026-08-26-v0.37-governed-decision-handoff-proof.md"
   ]
 }

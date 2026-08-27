@@ -1,7 +1,10 @@
 import Database from "better-sqlite3";
+import { createHash } from "node:crypto";
 import { isCorridorLineGeoJson, type CorridorLineGeoJson } from "@/lib/cartographic/corridor-line-geojson";
 import type { ProjectCorridorRow } from "@/lib/cartographic/project-corridor-record";
+import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
 import type { ProjectPlaceRow } from "@/lib/projects/project-place";
+import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 
 const GPKG_APPLICATION_ID = 0x47504b47;
 const GPKG_USER_VERSION = 10400;
@@ -38,6 +41,33 @@ type ProjectGeoPackageSummary = {
 export type ProjectGeoPackage = {
   bytes: Buffer;
   summary: ProjectGeoPackageSummary;
+};
+
+export type OpenPlanLayerStatus = {
+  layerKey: string;
+  status: "included" | "unavailable" | "reference_only" | "not_selected";
+  recordCount: number | null;
+  evidenceId: string | null;
+  evidenceDescriptor?: EvidenceDescriptorV1;
+  detail: string;
+};
+
+export type ProjectGeoPackageCrash = {
+  id: string;
+  longitude: number;
+  latitude: number;
+  severity: string;
+  sourceId: string;
+  collisionDate: string | null;
+};
+
+export type ProjectGeoPackageEngagementGeometry = {
+  id: string;
+  geometry: unknown;
+  longitude: number | null;
+  latitude: number | null;
+  sourceType: string;
+  createdAt: string;
 };
 
 function isPosition(value: unknown): value is Position {
@@ -298,6 +328,9 @@ export function buildProjectGeoPackage(input: {
   project: ProjectGeoPackageProject;
   corridors: ProjectCorridorRow[];
   generatedAt?: Date;
+  layerStatuses?: OpenPlanLayerStatus[];
+  crashes?: ProjectGeoPackageCrash[];
+  engagementGeometries?: ProjectGeoPackageEngagementGeometry[];
 }): ProjectGeoPackage {
   const generatedAt = (input.generatedAt ?? new Date()).toISOString();
   const area = parseAreaGeometry(input.project.place_geometry_geojson);
@@ -312,8 +345,27 @@ export function buildProjectGeoPackage(input: {
       isCorridorLineGeoJson(corridor.geometry_geojson)
   );
   const omittedCorridorCount = input.corridors.length - validCorridors.length;
+  const crashes = (input.crashes ?? []).filter((crash) => isPosition([crash.longitude, crash.latitude]));
+  const engagementGeometries = (input.engagementGeometries ?? []).flatMap((item) => {
+    const geometry = item.geometry && typeof item.geometry === "object"
+      ? item.geometry as { type?: unknown; coordinates?: unknown }
+      : null;
+    if (geometry?.type === "Point" && isPosition(geometry.coordinates)) {
+      return [{ item, wkb: pointWkb(geometry.coordinates) }];
+    }
+    if (geometry?.type === "LineString" && Array.isArray(geometry.coordinates) && geometry.coordinates.length >= 2 && geometry.coordinates.every(isPosition)) {
+      return [{ item, wkb: lineStringWkb(geometry.coordinates) }];
+    }
+    if (geometry?.type === "Polygon" && isPolygonCoordinates(geometry.coordinates)) {
+      return [{ item, wkb: polygonWkb(geometry.coordinates) }];
+    }
+    if (isPosition([item.longitude, item.latitude])) {
+      return [{ item, wkb: pointWkb([item.longitude as number, item.latitude as number]) }];
+    }
+    return [];
+  });
   const coverageLimits = [
-    "Only stored project area, location, and cartographic corridors are included; linked datasets, documents, and analysis evidence are not included",
+    "Stored project geometry, supplied crash/KSI observations, and approved engagement geometry are included when available; every other expected layer is disclosed in openplan_layer_status",
     ...(area ? [] : [coverageLabel(false, hasRecordedArea, "Project area")]),
     ...(location ? [] : [coverageLabel(false, hasRecordedLocation, "Project location")]),
     ...(omittedCorridorCount > 0
@@ -380,6 +432,49 @@ export function buildProjectGeoPackage(input: {
           los_grade TEXT,
           updated_at DATETIME NOT NULL
         );
+
+        CREATE TABLE openplan_layer_status (
+          fid INTEGER PRIMARY KEY,
+          layer_key TEXT NOT NULL UNIQUE,
+          status TEXT NOT NULL CHECK (status IN ('included', 'unavailable', 'reference_only', 'not_selected')),
+          record_count INTEGER,
+          stable_evidence_id TEXT,
+          evidence_schema_version TEXT NOT NULL,
+          source_kind TEXT,
+          source_label TEXT NOT NULL,
+          source_citation TEXT,
+          as_of_date TEXT,
+          retrieved_at TEXT,
+          evidence_status TEXT NOT NULL,
+          claim_tier TEXT,
+          uncertainty_json TEXT NOT NULL,
+          limits_json TEXT NOT NULL,
+          revision_token TEXT,
+          checksum_sha256 TEXT,
+          support_status TEXT NOT NULL,
+          support_reason TEXT,
+          detail TEXT NOT NULL,
+          generated_at DATETIME NOT NULL
+        );
+
+        CREATE TABLE safety_crash_ksi (
+          fid INTEGER PRIMARY KEY,
+          geom POINT,
+          crash_id TEXT NOT NULL,
+          severity TEXT NOT NULL,
+          source_id TEXT NOT NULL,
+          collision_date TEXT,
+          evidence_status TEXT NOT NULL DEFAULT 'observed'
+        );
+
+        CREATE TABLE engagement_geometry (
+          fid INTEGER PRIMARY KEY,
+          geom GEOMETRY,
+          engagement_item_id TEXT NOT NULL,
+          source_type TEXT NOT NULL,
+          created_at DATETIME NOT NULL,
+          moderation_status TEXT NOT NULL DEFAULT 'approved'
+        );
       `);
 
       const areaBounds = area ? boundsOfPositions(areaPositions(area)) : null;
@@ -393,6 +488,28 @@ export function buildProjectGeoPackage(input: {
         dataType: "attributes",
         identifier: "OpenPlan project export manifest",
         description: "Contents, coordinate reference system, and explicit geometry coverage limits",
+        generatedAt,
+      });
+      registerContents(db, {
+        table: "safety_crash_ksi",
+        dataType: "features",
+        identifier: "Observed project crash and KSI points",
+        description: "Approved project-scoped observed collision points; empty is disclosed in openplan_layer_status",
+        generatedAt,
+        bounds: crashes.length ? boundsOfPositions(crashes.map((crash) => [crash.longitude, crash.latitude])) : null,
+      });
+      registerContents(db, {
+        table: "engagement_geometry",
+        dataType: "features",
+        identifier: "Publishable approved engagement geometry",
+        description: "Geometry only. Comment text, submitter identity, moderation notes, and private records are excluded.",
+        generatedAt,
+      });
+      registerContents(db, {
+        table: "openplan_layer_status",
+        dataType: "attributes",
+        identifier: "OpenPlan layer availability and selection status",
+        description: "Explicitly distinguishes included, unavailable, reference-only, and not-selected evidence so absence never reads as zero",
         generatedAt,
       });
       registerContents(db, {
@@ -422,6 +539,8 @@ export function buildProjectGeoPackage(input: {
       registerGeometry(db, "project_area", "GEOMETRY");
       registerGeometry(db, "project_location", "POINT");
       registerGeometry(db, "project_corridors", "LINESTRING");
+      registerGeometry(db, "safety_crash_ksi", "POINT");
+      registerGeometry(db, "engagement_geometry", "GEOMETRY");
 
       db.prepare(`
         INSERT INTO project_info
@@ -499,6 +618,125 @@ export function buildProjectGeoPackage(input: {
           corridor.corridor_type,
           corridor.los_grade,
           corridor.updated_at
+        );
+      }
+      const insertCrash = db.prepare(`
+        INSERT INTO safety_crash_ksi
+          (geom, crash_id, severity, source_id, collision_date)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      for (const crash of crashes) {
+        insertCrash.run(
+          geoPackageGeometry(pointWkb([crash.longitude, crash.latitude])),
+          crash.id,
+          crash.severity,
+          crash.sourceId,
+          crash.collisionDate,
+        );
+      }
+      const insertEngagement = db.prepare(`
+        INSERT INTO engagement_geometry
+          (geom, engagement_item_id, source_type, created_at)
+        VALUES (?, ?, ?, ?)
+      `);
+      for (const feature of engagementGeometries) {
+        insertEngagement.run(
+          geoPackageGeometry(feature.wkb),
+          feature.item.id,
+          feature.item.sourceType,
+          feature.item.createdAt,
+        );
+      }
+
+      const layerStatuses: OpenPlanLayerStatus[] = input.layerStatuses ?? [
+        {
+          layerKey: "project_area",
+          status: area ? "included" : "unavailable",
+          recordCount: area ? 1 : 0,
+          evidenceId: null,
+          detail: coverageLabel(Boolean(area), hasRecordedArea, "Project area"),
+        },
+        {
+          layerKey: "project_location",
+          status: location ? "included" : "unavailable",
+          recordCount: location ? 1 : 0,
+          evidenceId: null,
+          detail: coverageLabel(Boolean(location), hasRecordedLocation, "Project location"),
+        },
+        {
+          layerKey: "project_corridors",
+          status: validCorridors.length > 0 ? "included" : "unavailable",
+          recordCount: validCorridors.length,
+          evidenceId: null,
+          detail: validCorridors.length > 0 ? "Stored valid project corridors included." : "No valid project corridor is stored.",
+        },
+        { layerKey: "crash_ksi", status: crashes.length > 0 ? "included" : "unavailable", recordCount: crashes.length, evidenceId: null, detail: crashes.length > 0 ? "Observed project-scoped crash/KSI points included." : "No project-scoped crash/KSI layer was supplied to this export." },
+        { layerKey: "aequilibrae_links", status: "not_selected", recordCount: null, evidenceId: null, detail: "No AequilibraE link layer was selected for this export." },
+        { layerKey: "activitysim_links", status: "not_selected", recordCount: null, evidenceId: null, detail: "No ActivitySim link layer was selected for this export." },
+        { layerKey: "engagement_geometry", status: engagementGeometries.length > 0 ? "included" : "unavailable", recordCount: engagementGeometries.length, evidenceId: null, detail: engagementGeometries.length > 0 ? "Approved geometry included without comment text or personal identifiers." : "No publishable engagement geometry was supplied to this export." },
+        { layerKey: "land_use_designations", status: "reference_only", recordCount: null, evidenceId: null, detail: "Land-use designation records remain reference-only unless their exact GIS version is packaged." },
+      ];
+      const describedLayerStatuses = layerStatuses.map((layer) => {
+        const modeled = layer.layerKey === "aequilibrae_links" || layer.layerKey === "activitysim_links";
+        const observed = layer.layerKey === "crash_ksi" || layer.layerKey === "engagement_geometry";
+        const revisionToken = createHash("sha256").update(canonicalizeActionPayload({
+          projectId: input.project.id,
+          projectRevision: input.project.updated_at,
+          layerKey: layer.layerKey,
+          status: layer.status,
+          recordCount: layer.recordCount,
+          detail: layer.detail,
+        })).digest("hex");
+        const evidenceDescriptor = layer.evidenceDescriptor ?? buildEvidenceDescriptor({
+          identity: { projectId: input.project.id, layerKey: layer.layerKey, revisionToken },
+          source: {
+            kind: modeled ? "model_run_artifact" : observed ? "project_observation" : "project_record",
+            label: `GeoPackage layer status: ${layer.layerKey}`,
+            citation: null,
+          },
+          asOfDate: observed ? generatedAt : input.project.updated_at,
+          retrievedAt: layer.status === "included" ? generatedAt : null,
+          evidenceStatus: modeled ? "modeled" : observed ? "observed" : layer.status === "reference_only" ? "reference" : "administrative",
+          claimTier: layer.recordCount === null ? null : observed ? "observed_screening" : "administrative_record",
+          uncertainty: [],
+          limits: [layer.detail],
+          revisionToken,
+          checksumSha256: null,
+          numericClaim: layer.recordCount !== null,
+        });
+        return { ...layer, evidenceDescriptor };
+      });
+      const insertLayerStatus = db.prepare(`
+        INSERT INTO openplan_layer_status
+          (layer_key, status, record_count, stable_evidence_id, evidence_schema_version,
+           source_kind, source_label, source_citation, as_of_date, retrieved_at,
+           evidence_status, claim_tier, uncertainty_json, limits_json, revision_token,
+           checksum_sha256, support_status, support_reason, detail, generated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const layer of describedLayerStatuses) {
+        const evidence = layer.evidenceDescriptor;
+        insertLayerStatus.run(
+          layer.layerKey,
+          layer.status,
+          layer.recordCount,
+          layer.evidenceId ?? evidence.stableEvidenceId,
+          evidence.schemaVersion,
+          evidence.source.kind,
+          evidence.source.label,
+          evidence.source.citation,
+          evidence.asOfDate,
+          evidence.retrievedAt,
+          evidence.evidenceStatus,
+          evidence.claimTier,
+          JSON.stringify(evidence.uncertainty),
+          JSON.stringify(evidence.limits),
+          evidence.revisionToken,
+          evidence.checksumSha256,
+          evidence.support.status,
+          evidence.support.reason,
+          layer.detail,
+          generatedAt,
         );
       }
     })();

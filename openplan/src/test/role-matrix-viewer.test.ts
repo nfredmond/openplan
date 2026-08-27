@@ -40,6 +40,7 @@ const ACTION_CLASSIFICATION: Record<WorkspaceAction, "read" | "write"> = {
   "invoices.write": "write",
   "stage_gates.decisions.read": "read",
   "stage_gates.decisions.write": "write",
+  "decision_packages.approve": "write",
 };
 
 describe("viewer role in the workspace action matrix", () => {
@@ -75,7 +76,7 @@ describe("viewer role in the workspace action matrix", () => {
       expect(allowed).toContain("admin");
       // member lost nothing: the only member-excluded actions predate viewer.
       if (!allowed.includes("member")) {
-        expect(["workspace.configure", "invoices.write"]).toContain(action);
+        expect(["workspace.configure", "invoices.write", "decision_packages.approve"]).toContain(action);
       }
     }
   });

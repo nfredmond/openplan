@@ -1,6 +1,7 @@
 import { DOCUMENT_LIBRARY_SOURCES } from "@/lib/document-library/sources";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { parseStorageRef, workerLocalRoot } from "@/lib/models/artifact-source";
+import { buildEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
 import {
   PROJECT_EVIDENCE_CANDIDATE_LIMIT,
   PROJECT_EVIDENCE_FILE_BYTE_LIMIT,
@@ -50,7 +51,7 @@ const SELECTS: Record<EvidenceDescriptor["id"], string> = {
   aerial_artifact_custody:
     "id, processing_job_id, kind, ordinal, state, storage_bucket, storage_path, byte_size, checksum_sha256, content_type, source_expires_at, failure_code, failure_detail, created_at, held_at, aerial_missions!inner(title), aerial_processing_jobs!inner(project_id)",
   model_run_artifacts:
-    "id, run_id, artifact_type, file_url, file_size_bytes, created_at, model_runs!inner(workspace_id, model_id, run_title, models!inner(project_id, title))",
+    "id, run_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at, model_runs!inner(workspace_id, model_id, run_title, completed_at, models!inner(project_id, title), modeling_claim_decisions(track, claim_status, status_reason, decided_at))",
 };
 
 function record(value: unknown): Record<string, unknown> | null {
@@ -94,7 +95,28 @@ function candidate(
       : {}),
     id: projectEvidenceCandidateId(value.sourceId, value.recordId),
   };
-  return { ...withId, revisionToken: projectEvidenceRevisionToken(withId) };
+  const revisionToken = projectEvidenceRevisionToken(withId);
+  return {
+    ...withId,
+    revisionToken,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { sourceId: value.sourceId, recordId: value.recordId },
+      source: { kind: value.sourceKind, label: value.sourceLabel, citation: value.citation },
+      asOfDate: value.sourceVintage ?? value.updatedAt ?? value.createdAt,
+      retrievedAt: null,
+      evidenceStatus: value.owningModule === "travel_modeling" ? "modeled" : "reference",
+      claimTier: value.claimTier,
+      uncertainty: value.uncertainty,
+      limits: value.knownLimits,
+      revisionToken,
+      checksumSha256: value.recordedChecksumSha256,
+      // A report file is a container for claims, not itself a numeric claim.
+      // The report HTML/PDF carries point-of-use descriptors for the numbers
+      // it renders. Treating every PDF as one numeric claim made ordinary
+      // board packets unsupported even when they contained no modeled number.
+      numericClaim: value.owningModule === "travel_modeling",
+    }),
+  };
 }
 
 function kbCandidate(row: Record<string, unknown>, projectId: string): ProjectEvidenceCandidate {
@@ -294,6 +316,12 @@ function custodyCandidate(row: Record<string, unknown>, projectId: string): Proj
 
 function modelCandidate(row: Record<string, unknown>, projectId: string): ProjectEvidenceCandidate {
   const run = record(row.model_runs);
+  const artifactType = text(row.artifact_type);
+  const expectedTrack = artifactType === "activitysim_link_volumes" ? "behavioral_demand" : "assignment";
+  const claims = Array.isArray(run?.modeling_claim_decisions)
+    ? run.modeling_claim_decisions.flatMap((value) => record(value) ? [record(value) as Record<string, unknown>] : [])
+    : [];
+  const claim = claims.find((value) => text(value.track) === expectedTrack) ?? null;
   const fileUrl = text(row.file_url);
   const storage = fileUrl ? parseStorageRef(fileUrl) : null;
   const remote = Boolean(fileUrl?.startsWith("http://") || fileUrl?.startsWith("https://"));
@@ -310,14 +338,14 @@ function modelCandidate(row: Record<string, unknown>, projectId: string): Projec
     originalFilename: storage?.objectPath.split("/").pop() ?? fileUrl?.split("/").pop() ?? null,
     contentType: null,
     byteSize: numberValue(row.file_size_bytes),
-    recordedChecksumSha256: null,
+    recordedChecksumSha256: text(row.content_hash),
     createdAt: text(row.created_at),
     updatedAt: null,
-    sourceKind: text(row.artifact_type),
-    sourceVintage: null,
+    sourceKind: artifactType,
+    sourceVintage: text(claim?.decided_at) ?? text(run?.completed_at),
     citation: text(record(run?.models)?.title),
     retrievalState: available ? "available" : "reference_only",
-    claimTier: null,
+    claimTier: text(claim?.claim_status),
     custodyState: storage
       ? "openplan_stored"
       : local
@@ -326,8 +354,12 @@ function modelCandidate(row: Record<string, unknown>, projectId: string): Projec
           : "external_reference"
         : "external_reference",
     uncertainty: [],
-    knownLimits: remote ? ["Remote artifact URLs are never followed by evidence bundle generation."] : [],
-    defaultSelected: false,
+    knownLimits: [
+      ...(remote ? ["Remote artifact URLs are never followed by evidence bundle generation."] : []),
+      ...(!claim ? [`No ${expectedTrack} claim decision is attached to this run.`] : []),
+      ...(text(claim?.status_reason) ? [text(claim?.status_reason) as string] : []),
+    ],
+    defaultSelected: available && ["link_volumes", "activitysim_link_volumes"].includes(artifactType ?? ""),
     required: false,
     selectable: available,
     exclusionReason: available ? null : "The artifact bytes are not held where this OpenPlan app can read them.",
@@ -372,7 +404,7 @@ async function readPriorBundles(
   try {
     const result = await client
       .from("project_evidence_bundles")
-      .select("id, status, byte_count, manifest_sha256, selected_count, failure_code, generated_at")
+      .select("id, status, byte_count, manifest_sha256, bundle_sha256, selected_count, failure_code, generated_at")
       .eq("workspace_id", project.workspace_id)
       .eq("project_id", project.id)
       .order("generated_at", { ascending: false })
@@ -385,6 +417,7 @@ async function readPriorBundles(
         generatedAt: text(row.generated_at) ?? "",
         byteCount: numberValue(row.byte_count),
         manifestSha256: text(row.manifest_sha256),
+        bundleSha256: text(row.bundle_sha256),
         selectedCount: numberValue(row.selected_count) ?? 0,
         status,
         failureCode: text(row.failure_code),
@@ -451,9 +484,15 @@ export async function loadProjectEvidenceCandidateInventory(
   project: ProjectIdentity
 ): Promise<ProjectEvidenceCandidateInventory & { readFailed: boolean; failureMessage: string | null }> {
   const client = supabase as ReadClient;
-  const [sourceResults, prior] = await Promise.all([
+  const [sourceResults, prior, linkedPlansRead] = await Promise.all([
     Promise.all(DOCUMENT_LIBRARY_SOURCES.map((source) => readSource(client, source, project))),
     readPriorBundles(client, project),
+    client.from("plans")
+      .select("id, title, status, updated_at")
+      .eq("workspace_id", project.workspace_id)
+      .eq("project_id", project.id)
+      .order("updated_at", { ascending: false })
+      .limit(50),
   ]);
 
   const sourceOutcomes: ProjectEvidenceCandidateInventory["sourceOutcomes"] = {};
@@ -476,6 +515,52 @@ export async function loadProjectEvidenceCandidateInventory(
   if (prior.error && !looksLikePendingSchema(prior.error.message)) {
     failures.push(`Prior evidence bundles: ${prior.error.message ?? "read failed"}`);
   }
+  if (linkedPlansRead.error && !looksLikePendingSchema(linkedPlansRead.error.message)) {
+    failures.push(`Linked plans: ${linkedPlansRead.error.message ?? "read failed"}`);
+  }
+
+  const linkedPlans = linkedPlansRead.error
+    ? []
+    : ((linkedPlansRead.data ?? []) as Record<string, unknown>[]).flatMap((row) => {
+        const id = text(row.id);
+        const title = text(row.title);
+        const updatedAt = text(row.updated_at);
+        if (!id || !title || !updatedAt) return [];
+        return [{
+          id,
+          title,
+          status: text(row.status) ?? "unknown",
+          updatedAt,
+          revisionToken: projectEvidenceRevisionToken({
+            id: `linked_plan:${id}`,
+            sourceId: "project_geopackage",
+            sourceLabel: "Linked plan",
+            owningModule: "plans",
+            recordId: id,
+            parentRecordId: project.id,
+            projectId: project.id,
+            title,
+            originalFilename: null,
+            contentType: "application/json",
+            byteSize: null,
+            recordedChecksumSha256: null,
+            createdAt: null,
+            updatedAt,
+            sourceKind: "linked_plan_record",
+            sourceVintage: updatedAt,
+            citation: null,
+            retrievalState: "available",
+            claimTier: null,
+            custodyState: "openplan_stored",
+            uncertainty: [],
+            knownLimits: [],
+            defaultSelected: false,
+            required: true,
+            selectable: true,
+            exclusionReason: null,
+          }),
+        }];
+      });
 
   const withDefaults = markLatestReports(all);
   const inventoryTruncated = hitSourceLimit || withDefaults.length > PROJECT_EVIDENCE_CANDIDATE_LIMIT;
@@ -494,6 +579,7 @@ export async function loadProjectEvidenceCandidateInventory(
       totalSelectedFileBytes: PROJECT_EVIDENCE_TOTAL_BYTE_LIMIT,
     },
     priorBundles: prior.error && looksLikePendingSchema(prior.error.message) ? [] : prior.bundles,
+    linkedPlans,
     readFailed: failures.length > 0,
     failureMessage: failures.length > 0 ? failures.join("; ") : null,
   };

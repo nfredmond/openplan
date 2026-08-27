@@ -59,7 +59,12 @@ type SeedContext = {
   workspaceBId: string;
   userAId: string;
   userBId: string;
+  userCId: string;
   projectBId: string;
+  evidenceBundleBId: string;
+  decisionSubmissionBId: string;
+  decisionDecisionBId: string;
+  scenarioSetBId: string;
   rtpCycleBId: string;
   rtpHorizonBandBId: string;
   countyRunBId: string;
@@ -492,17 +497,52 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "project_evidence_bundles",
     select: "id,workspace_id,project_id,status",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, projectBId, userBId }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, projectBId, evidenceBundleBId, userBId }) => ({
+      id: evidenceBundleBId,
       workspace_id: workspaceBId,
       project_id: projectBId,
       project_revision: "2026-08-26T00:00:00Z",
       selection_json: [],
       selected_count: 0,
       generated_by: userBId,
-      status: "failed",
-      failure_code: "rls_probe",
+      status: "ready",
+      manifest_json: { schemaVersion: "project_evidence_manifest.v2" },
+      manifest_sha256: "a".repeat(64),
+      checksums_sha256: "b".repeat(64),
+      bundle_sha256: "c".repeat(64),
+      storage_bucket: "project-evidence-bundles",
+      storage_path: `${workspaceBId}/${projectBId}/${evidenceBundleBId}.zip`,
+      byte_count: 1,
       completed_at: "2026-08-26T00:00:00Z",
+    }),
+  },
+  {
+    table: "project_decision_package_submissions",
+    select: "id,workspace_id,project_id,bundle_sha256",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, projectBId, evidenceBundleBId, decisionSubmissionBId, userBId, userCId }) => ({
+      id: decisionSubmissionBId,
+      workspace_id: workspaceBId,
+      project_id: projectBId,
+      bundle_id: evidenceBundleBId,
+      bundle_sha256: "c".repeat(64),
+      submitted_by: userBId,
+      assigned_approver_id: userCId,
+    }),
+  },
+  {
+    table: "project_decision_package_decisions",
+    select: "id,workspace_id,project_id,bundle_sha256",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, projectBId, evidenceBundleBId, decisionSubmissionBId, decisionDecisionBId, userCId }) => ({
+      id: decisionDecisionBId,
+      workspace_id: workspaceBId,
+      project_id: projectBId,
+      submission_id: decisionSubmissionBId,
+      bundle_id: evidenceBundleBId,
+      bundle_sha256: "c".repeat(64),
+      decision: "approved",
+      decided_by: userCId,
     }),
   },
   {
@@ -821,12 +861,46 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "scenario_sets",
     select: "id,workspace_id",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, projectBId, suffix }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, projectBId, scenarioSetBId, suffix }) => ({
+      id: scenarioSetBId,
       workspace_id: workspaceBId,
       project_id: projectBId,
       title: `RLS scenario ${suffix}`,
     }),
+  },
+  {
+    table: "scenario_comparison_model_run_links",
+    select: "id,workspace_id,model_run_id,artifact_sha256",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, modelRunBId, userBId }) => ({
+      id: randomUUID(), workspace_id: workspaceBId, model_run_id: modelRunBId,
+      artifact_sha256: "d".repeat(64), created_by: userBId,
+    }),
+    seedSql: ({ workspaceBId, scenarioSetBId, modelRunBId, userBId, suffix }) => `
+      SET session_replication_role = replica;
+      WITH baseline AS (
+        INSERT INTO public.scenario_entries (id, scenario_set_id, slug, label, entry_type, sort_order)
+        VALUES (gen_random_uuid(), '${scenarioSetBId}', 'rls-baseline-${suffix}', 'RLS baseline', 'baseline', 0)
+        RETURNING id
+      ), candidate AS (
+        INSERT INTO public.scenario_entries (id, scenario_set_id, slug, label, entry_type, sort_order)
+        VALUES (gen_random_uuid(), '${scenarioSetBId}', 'rls-build-${suffix}', 'RLS build', 'alternative', 1)
+        RETURNING id
+      ), snapshot AS (
+        INSERT INTO public.scenario_comparison_snapshots
+          (id, scenario_set_id, baseline_entry_id, candidate_entry_id, label, status, created_by)
+        SELECT gen_random_uuid(), '${scenarioSetBId}', baseline.id, candidate.id, 'RLS comparison', 'ready', '${userBId}'
+        FROM baseline, candidate
+        RETURNING id
+      )
+      INSERT INTO public.scenario_comparison_model_run_links
+        (workspace_id, comparison_snapshot_id, model_run_id, method, scenario_role,
+         artifact_type, artifact_sha256, created_by)
+      SELECT '${workspaceBId}', snapshot.id, '${modelRunBId}', 'aequilibrae', 'baseline',
+             'link_volumes', repeat('d', 64), '${userBId}'
+      FROM snapshot;
+      SET session_replication_role = origin;
+    `,
   },
   {
     table: "stage_gate_decisions",
@@ -1366,7 +1440,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(82);
+    expect(tables).toHaveLength(85);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1417,6 +1491,8 @@ describe("workspace RLS isolation inventory", () => {
       "plans",
       "programs",
       "project_corridors",
+      "project_decision_package_decisions",
+      "project_decision_package_submissions",
       "project_decisions",
       "project_evidence_bundles",
       "project_funding_profiles",
@@ -1438,6 +1514,7 @@ describe("workspace RLS isolation inventory", () => {
       "safety_crash_parties",
       "safety_crashes",
       "safety_road_context_features",
+      "scenario_comparison_model_run_links",
       "scenario_sets",
       "stage_gate_decisions",
       "subscriptions",
@@ -1846,14 +1923,19 @@ liveDescribe("workspace RLS live isolation", () => {
     const suffix = randomUUID().replace(/-/g, "").slice(0, 10);
     const emailA = `rls-a-${suffix}@example.test`;
     const emailB = `rls-b-${suffix}@example.test`;
+    const emailC = `rls-c-${suffix}@example.test`;
     const createdA = await service.auth.admin.createUser({ email: emailA, password, email_confirm: true });
     const createdB = await service.auth.admin.createUser({ email: emailB, password, email_confirm: true });
+    const createdC = await service.auth.admin.createUser({ email: emailC, password, email_confirm: true });
 
     if (createdA.error || !createdA.data.user) {
       throw new Error(`Failed to create RLS user A: ${createdA.error?.message ?? "missing user"}`);
     }
     if (createdB.error || !createdB.data.user) {
       throw new Error(`Failed to create RLS user B: ${createdB.error?.message ?? "missing user"}`);
+    }
+    if (createdC.error || !createdC.data.user) {
+      throw new Error(`Failed to create RLS user C: ${createdC.error?.message ?? "missing user"}`);
     }
 
     const signInA = await userA.auth.signInWithPassword({ email: emailA, password });
@@ -1868,7 +1950,12 @@ liveDescribe("workspace RLS live isolation", () => {
       workspaceBId: randomUUID(),
       userAId: createdA.data.user.id,
       userBId: createdB.data.user.id,
+      userCId: createdC.data.user.id,
       projectBId: randomUUID(),
+      evidenceBundleBId: randomUUID(),
+      decisionSubmissionBId: randomUUID(),
+      decisionDecisionBId: randomUUID(),
+      scenarioSetBId: randomUUID(),
       rtpCycleBId: randomUUID(),
       rtpHorizonBandBId: randomUUID(),
       countyRunBId: randomUUID(),
@@ -1914,6 +2001,11 @@ liveDescribe("workspace RLS live isolation", () => {
       role: "owner",
     });
     await mustInsert(service, "workspace_members", probeByTable("workspace_members").build(context));
+    await mustInsert(service, "workspace_members", {
+      workspace_id: context.workspaceBId,
+      user_id: context.userCId,
+      role: "admin",
+    });
 
     for (const table of INSERT_ORDER) {
       const probe = probeByTable(table);
@@ -1944,7 +2036,7 @@ liveDescribe("workspace RLS live isolation", () => {
     // old shape (2026-08-03 review). The slug-LIKE cleanup it used matched
     // nothing at all: fixture slugs are `rls-a-<suffix>` with no trailing
     // segment, so `rls-%-<suffix>-%` was a dead pattern.
-    for (const userId of [context.userAId, context.userBId]) {
+    for (const userId of [context.userAId, context.userBId, context.userCId]) {
       const { data: memberships } = await service
         .from("workspace_members")
         .select("workspace_id")

@@ -48,6 +48,7 @@ import type { AcceptedSectionNarrative } from "@/lib/reports/narrative-drafts";
 import { formatMoney } from "@/lib/money/format";
 import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
+import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
 
 /**
  * The disclosure label rendered over every included AI narrative block.
@@ -174,6 +175,7 @@ export type ReportGenerationData = {
   };
   stageGateSnapshot: ProjectStageGateSnapshot;
   modelingEvidence: ReportModelingEvidence[];
+  evidenceDescriptors?: EvidenceDescriptorV1[];
   /**
    * The crash evidence attached to this project, or null when the read FAILED.
    * Optional so existing callers keep working — but `undefined` and `null` mean
@@ -210,6 +212,40 @@ export type ReportGenerationData = {
    */
   acceptedNarratives?: AcceptedSectionNarrative[];
 };
+
+function reportEvidenceDescriptorMarkup(data: ReportGenerationData): string {
+  const modelingDescriptors = data.modelingEvidence.map((item) => {
+    const source = item.evidence?.sourceManifests[0] ?? null;
+    return buildEvidenceDescriptor({
+      identity: { kind: "report_modeling_evidence", countyRunId: item.countyRunId },
+      source: {
+        kind: source?.sourceKind ?? null,
+        label: source?.sourceLabel ?? item.runName ?? "Modeling evidence",
+        citation: source?.citationText ?? null,
+      },
+      asOfDate: source?.sourceVintage ?? item.updatedAt,
+      retrievedAt: item.updatedAt,
+      evidenceStatus: "modeled",
+      claimTier: item.evidence?.claimDecision?.claimStatus ?? null,
+      uncertainty: item.evidence?.claimDecision?.reasons ?? [],
+      limits: item.evidence?.reportLanguage ? [item.evidence.reportLanguage] : [],
+      revisionToken: item.updatedAt,
+      checksumSha256: null,
+      numericClaim: true,
+    });
+  });
+  const descriptors = [...(data.evidenceDescriptors ?? []), ...modelingDescriptors];
+  if (descriptors.length === 0) return "";
+  return `<section aria-labelledby="evidence-descriptor-title">
+    <h2 class="section-title" id="evidence-descriptor-title">Point-of-use evidence register</h2>
+    <p>Each consequential claim keeps the same source, date, claim tier, uncertainty, revision, and support verdict used by the project handoff.</p>
+    <ul>${descriptors.map((descriptor) => `<li>
+      <strong>${esc(descriptor.source.label)}</strong> · ${esc(descriptor.evidenceStatus)} · ${esc(descriptor.claimTier ?? "claim tier not recorded")} · ${esc(descriptor.support.status)}
+      <br /><span class="muted">Evidence ${esc(descriptor.stableEvidenceId)} · as of ${esc(descriptor.asOfDate ?? "not recorded")} · ${esc(descriptor.source.citation ?? "citation not recorded")}</span>
+      ${descriptor.support.reason ? `<br /><span class="muted">${esc(descriptor.support.reason)}</span>` : ""}
+    </li>`).join("")}</ul>
+  </section>`;
+}
 
 /**
  * The slice of report data the engagement markup reads. Narrowed so the
@@ -1766,6 +1802,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
       )}
       ${evidenceChainMarkup(evidenceChainSummary)}
       ${modelingEvidenceMarkup(data.modelingEvidence)}
+      ${reportEvidenceDescriptorMarkup(data)}
       ${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}
       ${aerialOrthoMarkup(data.aerialOrthoPreview)}
       ${stageGateProvenanceMarkup(data)}

@@ -83,7 +83,7 @@ const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
   deadlines: ["deliverables", "milestones", "submittals"],
   undated: ["issues"],
   blocked_projects: ["stage_gate_holds"],
-  needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts"],
+  needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews"],
   workspace_deadlines: ["grant_decisions", "award_obligations", "invoice_windows"],
 };
 
@@ -97,6 +97,7 @@ const NEEDS_REVIEW_SOURCE_LABELS: Record<string, string> = {
   engagement_moderation: "comments to moderate",
   failed_model_runs: "failed model runs",
   narrative_drafts: "narrative drafts awaiting review",
+  decision_package_reviews: "decision packages awaiting review or replacement",
 };
 
 /** The person-scoped sources — the ones the scope toggles actually move. */

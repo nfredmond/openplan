@@ -42,6 +42,8 @@ const PROJECT_ID = "33333333-3333-4333-8333-333333333333";
 const PROJECT_REVISION = "2026-08-26T18:00:00.000Z";
 const GPKG_TOKEN = "a".repeat(64);
 const REPORT_TOKEN = "b".repeat(64);
+const PLAN_ID = "77777777-7777-4777-8777-777777777777";
+const PLAN_TOKEN = "f".repeat(64);
 
 function candidate(overrides: Partial<ProjectEvidenceCandidate>): ProjectEvidenceCandidate {
   return {
@@ -120,6 +122,17 @@ function fakeClient() {
     client: {
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }) },
       from(table: string) {
+        if (table === "plans") {
+          const chain = {
+            select: () => chain,
+            eq: () => chain,
+            maybeSingle: async () => ({
+              data: { id: PLAN_ID, workspace_id: WORKSPACE_ID, project_id: PROJECT_ID, title: "Mobility plan", status: "active", updated_at: PROJECT_REVISION },
+              error: null,
+            }),
+          };
+          return chain;
+        }
         if (table !== "project_evidence_bundles") throw new Error(`Unexpected table ${table}`);
         return {
           insert: vi.fn(async (value: unknown) => {
@@ -137,20 +150,23 @@ function fakeClient() {
 }
 
 function request(
-  body: unknown = {
+  body?: unknown,
+  headers?: Record<string, string>
+) {
+  const base = {
     projectRevision: PROJECT_REVISION,
     confirmed: true,
+    selectedPlanId: PLAN_ID,
+    selectedPlanRevisionToken: PLAN_TOKEN,
     selected: [
       { candidateId: GPKG.id, revisionToken: GPKG_TOKEN },
       { candidateId: REPORT.id, revisionToken: REPORT_TOKEN },
     ],
-  },
-  headers?: Record<string, string>
-) {
+  };
   return new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/evidence-bundles`, {
     method: "POST",
     headers: { "content-type": "application/json", ...headers },
-    body: JSON.stringify(body),
+    body: JSON.stringify(body && typeof body === "object" ? { ...base, ...body } : base),
   });
 }
 
@@ -177,6 +193,7 @@ beforeEach(() => {
       totalSelectedFileBytes: 100 * 1024 * 1024,
     },
     priorBundles: [],
+    linkedPlans: [{ id: PLAN_ID, title: "Mobility plan", status: "active", updatedAt: PROJECT_REVISION, revisionToken: PLAN_TOKEN }],
     readFailed: false,
     failureMessage: null,
   });
@@ -189,7 +206,7 @@ beforeEach(() => {
   });
   buildBundleMock.mockResolvedValue({
     bytes: Buffer.from("zip"),
-    manifest: { schemaVersion: "project_evidence_manifest.v1" },
+    manifest: { schemaVersion: "project_evidence_manifest.v2" },
     manifestSha256: "c".repeat(64),
     checksumsSha256: "d".repeat(64),
   });

@@ -1,8 +1,10 @@
 import { createHash } from "node:crypto";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import type { DocumentLibrarySourceId } from "@/lib/document-library/types";
+import type { EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
 
-export const PROJECT_EVIDENCE_MANIFEST_VERSION = "project_evidence_manifest.v1" as const;
+export const PROJECT_EVIDENCE_MANIFEST_V1_VERSION = "project_evidence_manifest.v1" as const;
+export const PROJECT_EVIDENCE_MANIFEST_VERSION = "project_evidence_manifest.v2" as const;
 export const PROJECT_EVIDENCE_CANDIDATE_LIMIT = 500;
 export const PROJECT_EVIDENCE_SELECTED_FILE_LIMIT = 200;
 export const PROJECT_EVIDENCE_FILE_BYTE_LIMIT = 50 * 1024 * 1024;
@@ -53,6 +55,7 @@ export type ProjectEvidenceCandidate = {
   selectable: boolean;
   exclusionReason: string | null;
   revisionToken: string;
+  evidenceDescriptor?: EvidenceDescriptorV1;
 };
 
 export type ProjectEvidenceManifestEntryV1 = {
@@ -91,7 +94,7 @@ export type ProjectEvidenceManifestEntryV1 = {
 };
 
 export type ProjectEvidenceManifestV1 = {
-  schemaVersion: typeof PROJECT_EVIDENCE_MANIFEST_VERSION;
+  schemaVersion: typeof PROJECT_EVIDENCE_MANIFEST_V1_VERSION;
   bundleId: string;
   workspaceId: string;
   projectId: string;
@@ -117,11 +120,26 @@ export type ProjectEvidenceManifestV1 = {
   entries: ProjectEvidenceManifestEntryV1[];
 };
 
+export type ProjectEvidenceManifestEntryV2 = ProjectEvidenceManifestEntryV1 & {
+  evidence: EvidenceDescriptorV1;
+};
+
+export type ProjectEvidenceManifestV2 = Omit<ProjectEvidenceManifestV1, "schemaVersion" | "entries"> & {
+  schemaVersion: typeof PROJECT_EVIDENCE_MANIFEST_VERSION;
+  entries: ProjectEvidenceManifestEntryV2[];
+  selectedLinkedPlan: { id: string; revisionToken: string } | null;
+  currentBoardOrReportPdf: { recordId: string; checksumSha256: string } | null;
+  layerStatusTable: "openplan_layer_status";
+};
+
+export type ProjectEvidenceManifest = ProjectEvidenceManifestV1 | ProjectEvidenceManifestV2;
+
 export type ProjectEvidencePriorBundle = {
   id: string;
   generatedAt: string;
   byteCount: number | null;
   manifestSha256: string | null;
+  bundleSha256: string | null;
   selectedCount: number;
   status: "preparing" | "ready" | "failed";
   failureCode: string | null;
@@ -141,6 +159,13 @@ export type ProjectEvidenceCandidateInventory = {
     totalSelectedFileBytes: number;
   };
   priorBundles: ProjectEvidencePriorBundle[];
+  linkedPlans: Array<{
+    id: string;
+    title: string;
+    status: string;
+    updatedAt: string;
+    revisionToken: string;
+  }>;
 };
 
 export function projectEvidenceRevisionToken(

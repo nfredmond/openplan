@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-26 against v0.36.1.
+**Reviewed:** 2026-08-26 against v0.37.0.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -12,6 +12,8 @@ only in `docs/ROADMAP.md`.
 | KI-2026-08-24-002 | High | ActivitySim can execute, but the available stock behavioral coefficients were estimated for another region. A locally fitted population does not make those choices locally calibrated. | Name coefficient provenance and keep output below locally validated claim tiers. | `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-003 | Medium | Crash rates per modeled VMT lack a defensible denominator where the modeled road network does not cover the observed crash network. | Keep rates deferred; disclose source and road-coverage limits instead of treating unsupported roads as zero. | `docs/ROADMAP.md` |
 | KI-2026-08-24-004 | Medium | Recovery confidence expires if operators stop exercising it. The repository drill proves the local reference path, not every deployment's disks, credentials, or cutover. | Run `npm run ops:restore-drill` before relevant releases and at least quarterly; next reference review due 2026-11-24. | `openplan/docs/ops/BACKUP_AND_RESTORE.md` |
+| KI-2026-08-26-006 | Medium | Corridor Analysis GeoJSON downloads do not identify the exact included layers or coordinate reference system at the point of export. | Add explicit layer inventory and CRS metadata to the download handoff; do not infer either from the filename. | First-week GIS run `2026-08-27T00-52-51-591Z` |
+| KI-2026-08-26-007 | Low | The workbook importer previews only the first 12 rows of a 24-row “Read me” sheet, hiding the mapping table below the fold. | Make preview truncation explicit and provide a way to inspect all mapping rows before selection. | First-week workbook run `2026-08-27T01-10-21-544Z` |
 
 ## Closed in v0.32.0
 
@@ -24,6 +26,15 @@ only in `docs/ROADMAP.md`.
 | ID | Previous severity | Finding | Resolution evidence |
 |---|---|---|---|
 | KI-2026-08-26-001 | Blocker | ActivitySim preflight, unrelated county evidence, and unbound comparison snapshots could make a guided project comparison appear complete without four assigned link-volume outputs. | Guided completion now requires exact project-scoped baseline/build artifacts from both methods, artifact hashes bound to the snapshot, current build assumptions, and per-run claim decisions. `analysis-sequence-facts.test.ts`; `project-comparison-route.test.ts`; `scenario-comparison-snapshots-route.test.ts` |
+
+## Closed in v0.37.0
+
+| ID | Previous severity | Finding | Resolution evidence |
+|---|---|---|---|
+| KI-2026-08-26-002 | High | The append-only exact-run link trigger also refused a parent scenario/workspace cascade, so tenant teardown could not remove the otherwise contained child row. | Direct changes remain refused, while migration `20260826000007_scenario_model_link_cascade_delete.sql` permits only a nested foreign-key cascade. The complete live isolation suite deletes its real fixture and passes. `rls-isolation.test.ts` |
+| KI-2026-08-26-003 | High | A normal current report PDF was classified as an unsupported numeric claim, blocking an otherwise approvable package. | Inventory classification now reserves numeric provenance enforcement for consequential numeric evidence, with focused regression coverage and the governed browser journey. `project-evidence-candidate-inventory.test.ts` |
+| KI-2026-08-26-004 | Medium | The decision-package panel did not refresh after a bundle was frozen in the adjacent evidence panel. | Both panels now share a project-scoped bundle-change event; the visible freeze-to-submit journey proves the refreshed state. `project-evidence-bundle-panel.tsx`; `project-decision-package-panel.tsx` |
+| KI-2026-08-26-005 | High | Missing linked-plan and current-report prerequisites were named but offered no route to repair them. | The review dialog now links directly to project-scoped Plans and Reports, with focused reachability coverage. `project-evidence-bundle-reachability.test.tsx` |
 
 ## Closed in v0.31.0
 
