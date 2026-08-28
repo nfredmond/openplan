@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -145,6 +147,75 @@ def test_output_is_refused_until_all_frozen_inputs_pass():
         raise AssertionError("premature model-output access was accepted")
 
 
+def test_study_and_worker_share_the_frozen_file_gate():
+    item = observation()
+    match = {
+        "observation_id": item["observation_id"],
+        "status": "matched",
+        "selected_link_ids": ["a"],
+        "direction_aggregation": "one_direction",
+    }
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        package_path = root / "package.json"
+        audit_path = root / "audit.json"
+        bundle_path = root / "bundle.json"
+        basis_path = root / "basis.json"
+        output_path = root / "volumes.csv"
+        profile_path = root / "profile.json"
+
+        package_path.write_text(core.canonical_json({"observations": [item]}))
+        package_sha = hashlib.sha256(package_path.read_bytes()).hexdigest()
+        frozen_audit = audit(item, match)
+        frozen_audit["observation_package_sha256"] = package_sha
+        audit_path.write_text(core.canonical_json(frozen_audit))
+        audit_sha = hashlib.sha256(audit_path.read_bytes()).hexdigest()
+        profile_path.write_text(json.dumps({"class_pce": 1}))
+        profile_sha = hashlib.sha256(profile_path.read_bytes()).hexdigest()
+        output_path.write_text("link_id,PCE_tot\na,100\n")
+        frozen_basis = basis(item)
+        frozen_basis["model_output_artifact"]["sha256"] = hashlib.sha256(output_path.read_bytes()).hexdigest()
+        basis_path.write_text(core.canonical_json(frozen_basis))
+        bundle = {
+            "schema": "openplan.validation-input-bundle.v2",
+            "model_output_bytes_read": False,
+            "readiness_inputs": {
+                "observation_package": {"path": package_path.name, "sha256": package_sha},
+                "pre_volume_match_audit": {"path": audit_path.name, "sha256": audit_sha},
+                "assignment_profile": {"path": profile_path.name, "sha256": profile_sha},
+            },
+        }
+        bundle_path.write_text(core.canonical_json(bundle))
+
+        result = core.assess_frozen_instrument_files(
+            observation_package_path=package_path,
+            pre_volume_match_audit_path=audit_path,
+            validation_input_bundle_path=bundle_path,
+            comparison_basis_path=basis_path,
+            model_output_path=output_path,
+            assessment_id="assessment",
+            readiness_root=root,
+        )
+        assert result["observation_results"][0]["modeled_value"] == 100
+
+        profile_path.write_text(json.dumps({"class_pce": 0.9}))
+        output_path.write_text("not,a,valid,model,output\n")
+        try:
+            core.assess_frozen_instrument_files(
+                observation_package_path=package_path,
+                pre_volume_match_audit_path=audit_path,
+                validation_input_bundle_path=bundle_path,
+                comparison_basis_path=basis_path,
+                model_output_path=output_path,
+                assessment_id="assessment",
+                readiness_root=root,
+            )
+        except core.ContractError as exc:
+            assert "frozen readiness artifact changed" in str(exc)
+        else:
+            raise AssertionError("changed readiness bytes reached the model output")
+
+
 def test_assignment_blind_guard_allows_custody_flags_but_rejects_values():
     matcher.assert_assignment_blind({
         "frozen_before_model_volume": True,
@@ -156,6 +227,16 @@ def test_assignment_blind_guard_allows_custody_flags_but_rejects_values():
         pass
     else:
         raise AssertionError("modeled value leaked into assignment-blind artifact")
+
+
+def test_assignment_blind_match_bytes_do_not_depend_on_model_output_values():
+    item = observation()
+    links = [link("a", [[-121.01, 39], [-120.99, 39]], direction=1)]
+    before = matcher.canonical_json_bytes(matcher.match_observation(item, links, search_distance_meters=2000))
+    arbitrary_model_outputs = {"a": 0.0, "other": 999999.0}
+    assert arbitrary_model_outputs  # output bytes can change, but never enter the matcher API
+    after = matcher.canonical_json_bytes(matcher.match_observation(item, links, search_distance_meters=2000))
+    assert after == before
 
 
 def test_rules_v5_retains_zero_negative_unloaded_and_missing_output_rows():

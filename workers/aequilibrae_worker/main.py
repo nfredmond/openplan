@@ -26,7 +26,6 @@ TWO WAYS TO START IT, ONE WAY IT RUNS (AEQ_WORKER_MODE):
 """
 import os
 import sys
-import csv
 import time
 import uuid
 import json
@@ -4586,51 +4585,21 @@ def assess_rules_v5_validation_instrument(
     comparison_basis_path: str,
     link_volumes_csv: str,
     assessment_id: str,
+    readiness_root: str | None = None,
 ) -> dict:
     """Use the same rules-v5 evaluator as the controlled development study.
 
     The normal local worker accepts only a caller-frozen v2 package, audit,
     bundle, and basis. It verifies every input before opening link-volume bytes.
     """
-    frozen = {}
-    for name, path in (
-        ("package", observation_package_path),
-        ("audit", pre_volume_match_audit_path),
-        ("bundle", validation_input_bundle_path),
-        ("basis", comparison_basis_path),
-    ):
-        with open(path) as handle:
-            frozen[name] = json.load(handle)
-    if frozen["bundle"].get("schema") != "openplan.validation-input-bundle.v2":
-        raise RuntimeError("rules-v5 worker requires a v2 validation input bundle")
-    if frozen["bundle"].get("model_output_bytes_read") is not False:
-        raise RuntimeError("rules-v5 worker refused premature model-output access")
-    readiness = frozen["bundle"].get("readiness_inputs") or {}
-    for key, path in (
-        ("observation_package", observation_package_path),
-        ("pre_volume_match_audit", pre_volume_match_audit_path),
-    ):
-        expected = (readiness.get(key) or {}).get("sha256")
-        with open(path, "rb") as handle:
-            actual = hashlib.sha256(handle.read()).hexdigest()
-        if expected != actual:
-            raise RuntimeError(f"rules-v5 frozen {key} bytes changed")
-    # This is deliberately the first model-output read in the function.
-    with open(link_volumes_csv, newline="") as handle:
-        rows = list(csv.DictReader(handle))
-    fields = rows[0].keys() if rows else []
-    volume_field = next((field for field in ("PCE_tot", "demand_tot", "volume", "loaded_volume") if field in fields), None)
-    if volume_field is None:
-        raise RuntimeError("rules-v5 model output has no supported volume field")
-    volumes = {str(row["link_id"]): float(row[volume_field]) for row in rows}
-    with open(validation_input_bundle_path, "rb") as handle:
-        bundle_sha256 = hashlib.sha256(handle.read()).hexdigest()
-    with open(pre_volume_match_audit_path, "rb") as handle:
-        match_audit_sha256 = hashlib.sha256(handle.read()).hexdigest()
-    return model_validation_core_v5.assess_validation(
-        frozen["package"]["observations"], frozen["audit"], frozen["basis"], volumes,
-        assessment_id=assessment_id, input_bundle_sha256=bundle_sha256,
-        match_audit_sha256=match_audit_sha256,
+    return model_validation_core_v5.assess_frozen_instrument_files(
+        observation_package_path=observation_package_path,
+        pre_volume_match_audit_path=pre_volume_match_audit_path,
+        validation_input_bundle_path=validation_input_bundle_path,
+        comparison_basis_path=comparison_basis_path,
+        model_output_path=link_volumes_csv,
+        assessment_id=assessment_id,
+        readiness_root=readiness_root or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
     )
 
 

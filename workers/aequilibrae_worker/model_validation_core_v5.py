@@ -6,12 +6,15 @@ frozen when it is called; it never selects a link from modeled values.
 """
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
 import json
 import math
 import statistics
 from collections import Counter
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 
@@ -251,6 +254,111 @@ def assess_validation(
         "reasons": reasons,
         "validation_evidence_write": "pending",
     }
+
+
+def assess_frozen_instrument_files(
+    *,
+    observation_package_path: str | Path,
+    pre_volume_match_audit_path: str | Path,
+    validation_input_bundle_path: str | Path,
+    comparison_basis_path: str | Path,
+    model_output_path: str | Path,
+    assessment_id: str,
+    readiness_root: str | Path,
+    created_at: str | None = None,
+) -> dict[str, Any]:
+    """Assess exact frozen files after every assignment-blind input passes.
+
+    The controlled study runner and the normal local worker both call this
+    boundary. Model-output bytes are not opened until the package, match audit,
+    input bundle, comparison basis, and every bundle readiness artifact have
+    passed their exact-hash checks.
+    """
+    package_path = Path(observation_package_path)
+    audit_path = Path(pre_volume_match_audit_path)
+    bundle_path = Path(validation_input_bundle_path)
+    basis_path = Path(comparison_basis_path)
+    output_path = Path(model_output_path)
+    root = Path(readiness_root)
+
+    def load_json(path: Path, label: str) -> dict[str, Any]:
+        with path.open(encoding="utf-8") as handle:
+            value = json.load(handle)
+        if not isinstance(value, dict):
+            raise ContractError(f"{label} must be a JSON object")
+        return value
+
+    package = load_json(package_path, "observation package")
+    audit = load_json(audit_path, "pre-volume match audit")
+    bundle = load_json(bundle_path, "validation input bundle")
+    basis = load_json(basis_path, "comparison basis")
+    if bundle.get("schema") != "openplan.validation-input-bundle.v2":
+        raise ContractError("rules-v5 requires a v2 validation input bundle")
+    if bundle.get("model_output_bytes_read") is not False:
+        raise ContractError("assignment output was opened before all readiness gates")
+
+    readiness = bundle.get("readiness_inputs")
+    if not isinstance(readiness, Mapping):
+        raise ContractError("validation input bundle omitted readiness inputs")
+
+    def records(value: Any) -> list[Mapping[str, Any]]:
+        if isinstance(value, Mapping) and "path" in value and "sha256" in value:
+            return [value]
+        if isinstance(value, Mapping):
+            return [item for child in value.values() for item in records(child)]
+        if isinstance(value, list):
+            return [item for child in value for item in records(child)]
+        return []
+
+    readiness_records = records(readiness)
+    if not readiness_records:
+        raise ContractError("validation input bundle has no exact readiness artifacts")
+    for record in readiness_records:
+        expected = record.get("sha256")
+        relative = record.get("path")
+        if not _hash(expected) or not isinstance(relative, str) or not relative:
+            raise ContractError("readiness artifact omitted its exact path or hash")
+        candidate = Path(relative)
+        resolved = candidate if candidate.is_absolute() else root / candidate
+        try:
+            payload = resolved.read_bytes()
+        except OSError as exc:
+            raise ContractError(f"readiness artifact is unavailable: {relative}") from exc
+        if hashlib.sha256(payload).hexdigest() != expected:
+            raise ContractError(f"frozen readiness artifact changed: {relative}")
+
+    expected_package = (readiness.get("observation_package") or {}).get("sha256")
+    expected_audit = (readiness.get("pre_volume_match_audit") or {}).get("sha256")
+    if hashlib.sha256(package_path.read_bytes()).hexdigest() != expected_package:
+        raise ContractError("frozen observation package bytes changed")
+    if hashlib.sha256(audit_path.read_bytes()).hexdigest() != expected_audit:
+        raise ContractError("frozen pre-volume match audit bytes changed")
+    validate_inputs(package.get("observations") or [], audit, basis)
+
+    # This is deliberately the first model-output read in the function.
+    output_bytes = output_path.read_bytes()
+    output_sha256 = hashlib.sha256(output_bytes).hexdigest()
+    if output_sha256 != (basis.get("model_output_artifact") or {}).get("sha256"):
+        raise ContractError("model-output bytes differ from the frozen comparison basis")
+    reader = csv.DictReader(io.StringIO(output_bytes.decode("utf-8")))
+    fields = reader.fieldnames or []
+    volume_field = next(
+        (field for field in ("PCE_tot", "demand_tot", "volume", "loaded_volume") if field in fields),
+        None,
+    )
+    if volume_field is None or "link_id" not in fields:
+        raise ContractError("rules-v5 model output has no supported link-volume fields")
+    volumes = {str(row["link_id"]): float(row[volume_field]) for row in reader}
+    return assess_validation(
+        package["observations"],
+        audit,
+        basis,
+        volumes,
+        assessment_id=assessment_id,
+        input_bundle_sha256=hashlib.sha256(bundle_path.read_bytes()).hexdigest(),
+        match_audit_sha256=hashlib.sha256(audit_path.read_bytes()).hexdigest(),
+        created_at=created_at,
+    )
 
 
 def compare_methods(assessments: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import sys
 from collections import Counter
@@ -67,11 +66,20 @@ def old_instrument(geography_id: str) -> Path:
     return ROOT / OLD_ROOT / "instruments" / geography_id
 
 
-def source_artifacts(old_package: Mapping[str, Any], source_ids: list[str]) -> list[dict[str, Any]]:
+def source_artifacts(
+    old_package: Mapping[str, Any],
+    source_ids: list[str],
+    *,
+    instrument_dir: Path,
+) -> list[dict[str, Any]]:
     records = []
     for attempt in old_package.get("source_attempts") or []:
         if attempt.get("source_id") in source_ids:
-            records.extend(dict(item) for item in attempt.get("artifacts") or [])
+            for item in attempt.get("artifacts") or []:
+                source_path = instrument_dir / str(item.get("path") or "")
+                if not source_path.is_file():
+                    raise StudyRefused(f"Frozen source artifact is unavailable: {source_path}")
+                records.append(instrument.artifact_record(source_path, relative_to=ROOT))
     return records
 
 
@@ -155,7 +163,11 @@ def build_packages(registry_path: Path, registry: Mapping[str, Any], output_root
             "network_path": network_path,
             "package_path": package_path,
             "audit_path": audit_path,
-            "source_artifacts": source_artifacts(old_package, source_ids),
+            "source_artifacts": source_artifacts(
+                old_package,
+                source_ids,
+                instrument_dir=old_dir,
+            ),
         })
     return ready
 
@@ -180,16 +192,6 @@ def freeze_all_inputs(registry_path: Path, registry: Mapping[str, Any], rows: li
     bundles = [row[f"{method}_bundle"] for row in rows for method in METHODS]
     if len(bundles) != expected or not all(load(path).get("model_output_bytes_read") is False for path in bundles):
         raise StudyRefused("Every geography and method must freeze readiness before output bytes open")
-
-
-def read_volumes(path: Path) -> dict[str, float]:
-    with path.open(newline="") as handle:
-        reader = csv.DictReader(handle)
-        fields = reader.fieldnames or []
-        field = next((name for name in ("PCE_tot", "demand_tot", "volume", "loaded_volume") if name in fields), None)
-        if field is None or "link_id" not in fields:
-            raise StudyRefused(f"Unreadable model output contract: {path}")
-        return {str(row["link_id"]): float(row[field]) for row in reader}
 
 
 def build_basis(
@@ -273,12 +275,15 @@ def assess_all(registry: Mapping[str, Any], rows: list[dict[str, Any]], output_r
             result_dir = output_root / "results" / row["geography_id"] / method
             basis_path = result_dir / "comparison-basis-v2.json"
             write_json(basis_path, basis)
-            volumes = read_volumes(output_path)
-            assessment = rules.assess_validation(
-                package["observations"], audit, basis, volumes,
+            assessment = rules.assess_frozen_instrument_files(
+                observation_package_path=row["package_path"],
+                pre_volume_match_audit_path=row["audit_path"],
+                validation_input_bundle_path=row[f"{method}_bundle"],
+                comparison_basis_path=basis_path,
+                model_output_path=output_path,
                 assessment_id=f"v041:{row['geography_id']}:{method}:assessment-v2",
-                input_bundle_sha256=instrument.sha256_file(row[f"{method}_bundle"]),
-                match_audit_sha256=instrument.sha256_file(row["audit_path"]), created_at=created_at,
+                readiness_root=ROOT,
+                created_at=created_at,
             )
             assessment["release"] = dict(release)
             assessment_path = result_dir / "assessment-v2.json"
