@@ -504,7 +504,7 @@ def write_report(path: Path, result: Mapping[str, Any]) -> None:
             lines.append(f"| {county['geography_id']} | {source} | {status} |")
     lines.extend([
         "", "## Bound artifacts", "",
-        "Every method result binds the release Git SHA and version plus the exact preregistration, network, observation package, match audit, model output, comparison basis, and assessment hashes in `study-result.json`.",
+        "Every method result binds the release-source Git SHA and version plus the exact preregistration, network, observation package, match audit, validation input bundle, model output, comparison basis, and assessment hashes in `study-result.json`.",
     ])
     path.write_text("\n".join(lines) + "\n")
 
