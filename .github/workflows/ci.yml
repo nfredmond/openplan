@@ -109,7 +109,10 @@ jobs:
       # verified in a clean venv with exactly this list. 44 of 45 suites run;
       # the one explicit exclusion below imports aequilibrae.
       - name: Install test deps
-        run: pip install "numpy<2.1" pandas scipy shapely requests python-dotenv geopandas openmatrix
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-mod-spatialite
+          pip install "numpy<2.1" pandas scipy shapely requests python-dotenv geopandas openmatrix
 
       # `|| exit 1`, not `|| break`: break leaves the loop with status 0, which
       # would turn a failing suite into a green job. The floor catches a broken
