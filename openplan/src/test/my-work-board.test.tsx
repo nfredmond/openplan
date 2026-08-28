@@ -10,6 +10,10 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 import { MyWorkBoard } from "@/components/my-work/my-work-board";
 import { DEPARTED_ASSIGNEE_SENTENCE } from "@/lib/workspaces/roster";
 import type { MyWorkScope } from "@/lib/my-work/types";
@@ -41,6 +45,7 @@ async function renderBoard(
     failures?: Record<string, string>;
     isViewer?: boolean;
     empty?: boolean;
+    otherWorkspaceDecisionPackageWork?: Array<{ workspaceId: string; workspaceName: string }>;
   } = {}
 ) {
   const { result } = await loadSeededMyWork({
@@ -59,6 +64,7 @@ async function renderBoard(
       roster={options.roster ?? ROSTER}
       departedIncludedInUnassigned={result.departedIncludedInUnassigned}
       isViewer={options.isViewer ?? false}
+      otherWorkspaceDecisionPackageWork={options.otherWorkspaceDecisionPackageWork}
     />
   );
   return result;
@@ -81,6 +87,18 @@ function blockNamed(heading: string) {
 }
 
 describe("my work — the board", () => {
+  it("names and links directly to decision-package work in another workspace", async () => {
+    await renderBoard({
+      otherWorkspaceDecisionPackageWork: [{
+        workspaceId: "bbbbbbbb-0000-4000-8000-000000000002",
+        workspaceName: "Review workspace",
+      }],
+    });
+
+    expect(screen.getByText("Decision-package work is waiting in another workspace.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Open Review workspace" })).toBeVisible();
+  });
+
   it("leads with what is overdue, and says so in words rather than in colour", async () => {
     await renderBoard();
     const dated = blockNamed("Dated work");

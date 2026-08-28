@@ -13,7 +13,7 @@ import { withPlanningContext } from "@/lib/projects/planning-context";
 
 type StartResponse = {
   error?: string;
-  state?: "needs_build_assumption" | "needs_activitysim_runtime" | "ready_for_run" | "ready_for_validation";
+  state?: "needs_build_assumption" | "needs_activitysim_runtime" | "needs_activitysim_output" | "needs_shared_network_rerun" | "ready_for_run" | "ready_for_validation";
   scenarioSetId?: string;
   networkBasis?: string;
   buildAssumptionRequired?: boolean;
@@ -85,6 +85,20 @@ export function ProjectComparisonStarter({
         return;
       }
 
+      if (payload.state === "needs_activitysim_output") {
+        setRuntimeNotice(
+          "The ActivitySim job finished, but OpenPlan could not verify assigned link-volume output from its behavioral-demand engine and succeeded assignment stage. Review that run's artifacts before trying again.",
+        );
+        return;
+      }
+
+      if (payload.state === "needs_shared_network_rerun") {
+        setRuntimeNotice(
+          "The four outputs do not name the same assignment profile, network settings, and solver-visible network state. They cannot be compared; rerun the guided sequence on one unchanged network basis.",
+        );
+        return;
+      }
+
       if (payload.nextRun) {
         const href = new URL(withPlanningContext(`/models/${payload.nextRun.modelId}`, projectId), window.location.origin);
         href.searchParams.set("scenarioEntryId", payload.nextRun.scenarioEntryId);
@@ -103,10 +117,13 @@ export function ProjectComparisonStarter({
   return (
     <section id="project-comparison-starter" className="mb-6 border-l-4 border-sky-500 bg-sky-50/70 px-5 py-4 dark:bg-sky-950/20" data-testid="project-comparison-starter">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-[44rem]">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="min-w-0 max-w-[44rem]">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold text-foreground">Project build comparison</h2>
-            <StatusBadge tone={summary.state === "packet_ready" ? "success" : summary.state === "unknown" ? "warning" : "neutral"}>
+            <StatusBadge
+              tone={summary.state === "packet_ready" ? "success" : summary.state === "unknown" ? "warning" : "neutral"}
+              className="min-w-0 max-w-full shrink whitespace-normal break-words text-left leading-4"
+            >
               {summary.label}
             </StatusBadge>
           </div>

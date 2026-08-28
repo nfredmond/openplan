@@ -29,10 +29,13 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    `sha256sum -c checksums.sha256`, `jq . manifest.json`, and `ogrinfo` on the
    `.gpkg`. If this browser-only journey cannot expose the downloaded path or
    launch those local tools, say exactly which validation was not possible and
-   do not claim it passed; deterministic artifact validation belongs to the
-   repository checks.
+   do not claim it passed. That is a harness capability limit, not an OpenPlan
+   product finding. Deterministic artifact validation is a separate required
+   repository gate.
 
 The outcome is an immutable, downloaded project evidence ZIP whose reviewed
 selection and limits are visible in OpenPlan and whose contents are usable by a
-recipient outside it. A candidate review without a ready download, or a ZIP
-whose checksum and manifest were not inspected, does not reach the full outcome.
+recipient outside it. This discovery job reaches its visible outcome when the
+reviewed bundle is ready and downloaded. The release still requires the separate
+repository verifier to inspect every checksum, the manifest, and every GeoPackage
+layer; this browser-only agent must never claim those checks ran when they did not.

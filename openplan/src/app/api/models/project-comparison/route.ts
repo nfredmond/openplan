@@ -16,10 +16,15 @@ import {
 } from "@/lib/models/project-comparison";
 import {
   collectGuidedRunEvidence,
+  guidedEvidenceSharesExactNetwork,
+  guidedRunJobKey,
   latestGuidedRuns,
+  verifiedActivitySimPreflight,
   type GuidedRunJob,
   type GuidedRunRow,
   type ModelRunArtifactRow,
+  type ModelRunKpiRow,
+  type ModelRunStageRow,
 } from "@/lib/models/guided-model-evidence";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
@@ -296,10 +301,11 @@ export async function POST(request: NextRequest) {
 
     const guidedRunsResult = await supabase
       .from("model_runs")
-      .select("id, model_id, scenario_entry_id, status, assumption_snapshot_json")
+      .select("id, model_id, scenario_entry_id, engine_key, status, assumption_snapshot_json, created_at")
       .in("model_id", [modelIds.aequilibrae, modelIds.activitysim])
       .in("scenario_entry_id", [baselineEntryId, buildEntryId])
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
     if (guidedRunsResult.error) {
       return NextResponse.json(
         { error: "Comparison is set up, but its run state could not be read" },
@@ -314,19 +320,22 @@ export async function POST(request: NextRequest) {
         { status: 500 },
       );
     }
+    const baselineAssumptions = entries.find((entry) => entry.entry_type === "baseline")?.assumptions_json ?? {};
     const orderedRunJobs = [
-      { method: "aequilibrae", scenario: "baseline", modelId: modelIds.aequilibrae, scenarioEntryId: baselineEntryId },
-      { method: "aequilibrae", scenario: "build", modelId: modelIds.aequilibrae, scenarioEntryId: buildEntryId },
-      { method: "activitysim", scenario: "baseline", modelId: modelIds.activitysim, scenarioEntryId: baselineEntryId },
-      { method: "activitysim", scenario: "build", modelId: modelIds.activitysim, scenarioEntryId: buildEntryId },
+      { method: "aequilibrae", scenario: "baseline", modelId: modelIds.aequilibrae, scenarioEntryId: baselineEntryId, assumptionsJson: baselineAssumptions },
+      { method: "aequilibrae", scenario: "build", modelId: modelIds.aequilibrae, scenarioEntryId: buildEntryId, assumptionsJson: buildAssumptions },
+      { method: "activitysim", scenario: "baseline", modelId: modelIds.activitysim, scenarioEntryId: baselineEntryId, assumptionsJson: baselineAssumptions },
+      { method: "activitysim", scenario: "build", modelId: modelIds.activitysim, scenarioEntryId: buildEntryId, assumptionsJson: buildAssumptions },
     ] as const satisfies readonly GuidedRunJob[];
     const guidedRunIds = guidedRuns.map((run) => run.id);
     const artifactsResult = guidedRunIds.length > 0
       ? await supabase
           .from("model_run_artifacts")
-          .select("run_id, artifact_type, file_url, file_size_bytes, content_hash")
+          .select("id, run_id, stage_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
           .in("run_id", guidedRunIds)
-          .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
+          .in("artifact_type", ["link_volumes", "activitysim_link_volumes", "evidence_packet"])
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
       : { data: [], error: null };
     if (artifactsResult.error) {
       audit.error("guided_output_artifacts_read_failed", { message: artifactsResult.error.message });
@@ -336,32 +345,66 @@ export async function POST(request: NextRequest) {
       );
     }
     const artifacts = (artifactsResult.data ?? []) as ModelRunArtifactRow[];
-    const currentEvidence = collectGuidedRunEvidence(orderedRunJobs, guidedRuns, artifacts);
+    const stagesResult = guidedRunIds.length > 0
+      ? await supabase
+          .from("model_run_stages")
+          .select("id, run_id, stage_name, status")
+          .in("run_id", guidedRunIds)
+          .in("stage_name", ["Artifact Extraction", "ActivitySim Bundle & Preflight", "ActivitySim Network Assignment"])
+      : { data: [], error: null };
+    if (stagesResult.error) {
+      return NextResponse.json({ error: "Comparison is set up, but its run stages could not be verified" }, { status: 500 });
+    }
+    const kpisResult = guidedRunIds.length > 0
+      ? await supabase
+          .from("model_run_kpis")
+          .select("id, run_id, kpi_name, breakdown_json, created_at")
+          .in("run_id", guidedRunIds)
+          .eq("kpi_name", "activitysim_runtime_mode")
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+      : { data: [], error: null };
+    if (kpisResult.error) {
+      return NextResponse.json({ error: "Comparison is set up, but its ActivitySim runtime evidence could not be verified" }, { status: 500 });
+    }
+    const stages = (stagesResult.data ?? []) as ModelRunStageRow[];
+    const kpis = (kpisResult.data ?? []) as ModelRunKpiRow[];
+    const currentEvidence = collectGuidedRunEvidence(orderedRunJobs, guidedRuns, artifacts, stages);
     const evidenceByJob = new Map(
       currentEvidence.map((item) => [`${item.method}:${item.scenario}`, item]),
     );
     const latestByJob = latestGuidedRuns(orderedRunJobs, guidedRuns);
     const nextRun = orderedRunJobs.find((job) => {
-      const latest = latestByJob.get(`${job.method}:${job.scenario}`);
+      const latest = latestByJob.get(guidedRunJobKey(job));
       if (latest?.status !== "succeeded" || !evidenceByJob.has(`${job.method}:${job.scenario}`)) return true;
-      if (job.scenario === "baseline") return false;
-      const snapshot = parseGuidedBuildAssumption(latest.assumption_snapshot_json);
-      return !buildAssumption || !snapshot ||
-        snapshot.autoTripChangePct !== buildAssumption.autoTripChangePct ||
-        snapshot.basis !== buildAssumption.basis;
+      return false;
     }) ?? null;
 
     const buildAssumptionRequired = nextRun?.scenario === "build" && !buildAssumption;
-    const activitysimPreflightRuns = orderedRunJobs
+    const activitysimMissingOutputRuns = orderedRunJobs
       .filter((job) => job.method === "activitysim")
-      .map((job) => ({ job, run: latestByJob.get(`${job.method}:${job.scenario}`) }))
+      .map((job) => ({ job, run: latestByJob.get(guidedRunJobKey(job)) }))
       .filter(({ job, run }) => run?.status === "succeeded" && !evidenceByJob.has(`${job.method}:${job.scenario}`))
-      .map(({ job, run }) => ({ runId: run!.id, scenario: job.scenario, status: "preflight_succeeded" as const }));
+      .map(({ job, run }) => ({
+        runId: run!.id,
+        scenario: job.scenario,
+        runtimeMode: verifiedActivitySimPreflight({ run: run!, artifacts, stages, kpis }),
+      }));
+    const activitysimPreflightRuns = activitysimMissingOutputRuns
+      .filter((item) => item.runtimeMode === "preflight_only")
+      .map((item) => ({ runId: item.runId, scenario: item.scenario, status: "preflight_succeeded" as const }));
     const needsActivitySimRuntime = Boolean(
       !buildAssumptionRequired &&
       nextRun?.method === "activitysim" &&
       activitysimPreflightRuns.some((item) => item.scenario === nextRun.scenario),
     );
+    const needsActivitySimOutput = Boolean(
+      !buildAssumptionRequired &&
+      nextRun?.method === "activitysim" &&
+      activitysimMissingOutputRuns.some((item) => item.scenario === nextRun.scenario) &&
+      !needsActivitySimRuntime,
+    );
+    const sharedNetworkMismatch = currentEvidence.length === 4 && !guidedEvidenceSharesExactNetwork(currentEvidence);
 
     audit.info("project_comparison_ready_for_inputs", {
       workspaceId: project.workspace_id,
@@ -377,6 +420,10 @@ export async function POST(request: NextRequest) {
           ? "needs_build_assumption"
           : needsActivitySimRuntime
             ? "needs_activitysim_runtime"
+          : needsActivitySimOutput
+            ? "needs_activitysim_output"
+          : sharedNetworkMismatch
+            ? "needs_shared_network_rerun"
           : nextRun
             ? "ready_for_run"
             : "ready_for_validation",
@@ -393,7 +440,11 @@ export async function POST(request: NextRequest) {
           method: item.method,
           scenario: item.scenario,
           artifactType: item.artifactType,
+          artifactId: item.artifactId,
           artifactSha256: item.artifactSha256,
+          assignmentProfileSha256: item.assignmentProfileSha256,
+          networkSettingsSha256: item.networkSettingsSha256,
+          networkStateSha256: item.networkStateSha256,
         })),
         activitysimPreflightRuns,
       },

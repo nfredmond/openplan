@@ -5,6 +5,57 @@ import { useRouter } from "next/navigation";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import type { WorkspaceOption } from "@/lib/workspaces/current";
 
+async function postActiveWorkspace(workspaceId: string): Promise<void> {
+  const res = await fetch("/api/workspaces/active", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ workspaceId }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? "Could not switch workspace");
+  }
+}
+
+/** Direct switch used where OpenPlan knows which workspace contains waiting work. */
+export function WorkspaceSwitchButton({
+  workspaceId,
+  workspaceName,
+}: {
+  workspaceId: string;
+  workspaceName: string;
+}) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        disabled={pending}
+        className="inline-flex items-center gap-1.5 rounded-[0.4rem] border border-border bg-background px-2.5 py-1.5 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60"
+        onClick={async () => {
+          setPending(true);
+          setError(null);
+          try {
+            await postActiveWorkspace(workspaceId);
+            router.refresh();
+          } catch (switchError) {
+            setError(switchError instanceof Error ? switchError.message : "Could not switch workspace");
+          } finally {
+            setPending(false);
+          }
+        }}
+      >
+        {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+        Open {workspaceName}
+      </button>
+      {error ? <span className="text-sm text-destructive" role="alert">{error}</span> : null}
+    </span>
+  );
+}
+
 /**
  * Switch the active workspace.
  *
@@ -44,15 +95,7 @@ export function WorkspaceSwitcher({
     setPendingId(workspaceId);
     setError(null);
     try {
-      const res = await fetch("/api/workspaces/active", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ workspaceId }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? "Could not switch workspace");
-      }
+      await postActiveWorkspace(workspaceId);
       setOpen(false);
       // The selection lives in a server cookie; refresh so every server
       // component re-resolves against the new active workspace.

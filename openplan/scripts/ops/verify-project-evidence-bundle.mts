@@ -160,6 +160,7 @@ const built = await buildProjectEvidenceBundle({
       retrievalState: "available",
       custodyState: "openplan_stored",
       knownLimits: [],
+      revisionToken: projectEvidenceRevisionToken(candidate),
     },
     {
       path: "project/linked-plan.json",
@@ -172,6 +173,7 @@ const built = await buildProjectEvidenceBundle({
       retrievalState: "available",
       custodyState: "openplan_stored",
       knownLimits: ["Verifier fixture; not an adopted-plan PDF."],
+      revisionToken: planRevisionToken,
     },
     {
       path: "project/project.gpkg",
@@ -184,6 +186,7 @@ const built = await buildProjectEvidenceBundle({
       retrievalState: "rendered_on_freeze",
       custodyState: "rendered_on_freeze",
       knownLimits: geoPackage.summary.coverageLimits,
+      revisionToken: projectEvidenceRevisionToken(candidate),
     },
   ],
   inventoryTruncated: false,
@@ -211,7 +214,7 @@ execFileSync(
     `
       .schemaVersion == "project_evidence_manifest.v2"
       and .approvalOrPublication == false
-      and .generatedBy == "openplan_authenticated_planner"
+      and .generatedBy == "44444444-4444-4444-8444-444444444444"
       and .selectedLinkedPlan.id == "${planId}"
       and .selectedLinkedPlan.revisionToken == "${planRevisionToken}"
       and (.currentBoardOrReportPdf.checksumSha256 | test("^[0-9a-f]{64}$"))

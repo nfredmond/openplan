@@ -170,6 +170,12 @@ export type MyWorkSourceOutcome = {
   failed: boolean;
 };
 
+/** A caller-specific decision-package obligation waiting outside the active workspace. */
+export type OtherWorkspaceDecisionPackageWork = {
+  workspaceId: string;
+  workspaceName: string;
+};
+
 export type MyWorkResult = {
   scope: MyWorkScope;
   /** Every item, in block order, each block already sorted. */

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -22,6 +23,42 @@ const submitSchema = z.object({
   replacesSubmissionId: z.string().uuid().nullable().optional(),
   note: z.string().trim().max(2000).nullable().optional(),
 });
+
+type StoredDecisionBundle = {
+  bundle_sha256: string;
+  storage_bucket: string | null;
+  storage_path: string | null;
+  byte_count: number | null;
+};
+
+function assistantAttempt(request: NextRequest): boolean {
+  return Boolean(
+    request.headers.get("x-openplan-assistant-execution-source") ||
+    request.headers.get("x-openplan-assistant-approval-id") ||
+    request.headers.get("x-openplan-assistant-input-hash")
+  );
+}
+
+async function verifyStoredBundle(bundle: StoredDecisionBundle): Promise<string | null> {
+  if (
+    bundle.storage_bucket !== "project-evidence-bundles" ||
+    !bundle.storage_path ||
+    bundle.byte_count === null
+  ) {
+    return "The frozen bundle has no verifiable stored ZIP.";
+  }
+  const service = createServiceRoleClient();
+  const downloaded = await service.storage.from(bundle.storage_bucket).download(bundle.storage_path);
+  if (downloaded.error || !downloaded.data) {
+    return "The stored bundle ZIP could not be read for exact-hash verification.";
+  }
+  const bytes = Buffer.from(await downloaded.data.arrayBuffer());
+  const actualSha256 = createHash("sha256").update(bytes).digest("hex");
+  if (bytes.length !== bundle.byte_count || actualSha256 !== bundle.bundle_sha256) {
+    return "The stored bundle ZIP bytes no longer match the retained size and SHA-256.";
+  }
+  return null;
+}
 
 async function access(projectId: string) {
   const client = await createClient();
@@ -96,6 +133,16 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
   const audit = createApiAuditLogger("projects.decision_packages.submit", request);
   const parsed = paramsSchema.safeParse(await context.params);
   if (!parsed.success) return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
+  if (assistantAttempt(request)) {
+    audit.warn("project_decision_package_submission_assistant_refused", { projectId: parsed.data.projectId });
+    return NextResponse.json(
+      {
+        error: "human_review_required",
+        detail: "An assistant cannot submit an agency decision package. A planner must choose the human approver and submit the exact frozen bundle.",
+      },
+      { status: 403 },
+    );
+  }
   const bodyRead = await readJsonWithLimit(request, BODY_LIMITS.normalJson);
   if (!bodyRead.ok) return bodyRead.response;
   const body = submitSchema.safeParse(bodyRead.data);
@@ -106,7 +153,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     return NextResponse.json({ error: "Viewers cannot submit decision packages." }, { status: 403 });
   }
   const bundle = await checked.client.from("project_evidence_bundles")
-    .select("id, bundle_sha256, project_revision, manifest_json, status")
+    .select("id, bundle_sha256, project_revision, manifest_json, status, storage_bucket, storage_path, byte_count")
     .eq("id", body.data.bundleId).eq("workspace_id", checked.project.workspace_id)
     .eq("project_id", checked.project.id).maybeSingle();
   if (bundle.error) return NextResponse.json({ error: "Bundle could not be verified" }, { status: 503 });
@@ -122,6 +169,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     inventory,
   );
   if (freshnessError) return NextResponse.json({ error: freshnessError }, { status: 409 });
+  const storageError = await verifyStoredBundle(bundle.data);
+  if (storageError) return NextResponse.json({ error: storageError }, { status: 409 });
   const insert = await checked.client.from("project_decision_package_submissions").insert({
     workspace_id: checked.project.workspace_id,
     project_id: checked.project.id,

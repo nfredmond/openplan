@@ -35,9 +35,10 @@ const WORKSPACE_ID = "aaaaaaaa-0000-4000-8000-000000000001";
 
 const createClientMock = vi.fn(async () => RLS_CLIENT);
 const createServiceRoleClientMock = vi.fn(() => SERVICE_CLIENT);
-const loadMembershipMock = vi.fn();
+const loadWorkspaceContextMock = vi.fn();
 const loadRosterMock = vi.fn();
 const loadMyWorkMock = vi.fn();
+const loadOtherWorkspaceDecisionPackageWorkMock = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...(args as [])),
@@ -45,7 +46,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 vi.mock("@/lib/workspaces/current", () => ({
-  loadCurrentWorkspaceMembership: (...args: unknown[]) => loadMembershipMock(...args),
+  loadWorkspaceContext: (...args: unknown[]) => loadWorkspaceContextMock(...args),
 }));
 
 vi.mock("@/lib/projects/assignee-roster", () => ({
@@ -54,6 +55,8 @@ vi.mock("@/lib/projects/assignee-roster", () => ({
 
 vi.mock("@/lib/my-work/query", () => ({
   loadMyWork: (...args: unknown[]) => loadMyWorkMock(...args),
+  loadOtherWorkspaceDecisionPackageWork: (...args: unknown[]) =>
+    loadOtherWorkspaceDecisionPackageWorkMock(...args),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -82,11 +85,19 @@ beforeEach(() => {
   vi.clearAllMocks();
   createClientMock.mockResolvedValue(RLS_CLIENT);
   createServiceRoleClientMock.mockReturnValue(SERVICE_CLIENT);
-  loadMembershipMock.mockResolvedValue({
+  loadWorkspaceContextMock.mockResolvedValue({
     membership: { workspace_id: WORKSPACE_ID, role: "member" },
+    options: [
+      { id: WORKSPACE_ID, name: "Current workspace" },
+      { id: "bbbbbbbb-0000-4000-8000-000000000002", name: "Review workspace" },
+    ],
   });
   loadRosterMock.mockResolvedValue({ ok: true, members: [] });
   loadMyWorkMock.mockResolvedValue(emptyResult());
+  loadOtherWorkspaceDecisionPackageWorkMock.mockResolvedValue({
+    workspaces: [],
+    reads: new ReadFailureLog(),
+  });
 });
 
 async function renderPage(scope?: string) {
@@ -104,6 +115,13 @@ describe("/my-work page wiring", () => {
     expect(loadMyWorkMock.mock.calls[0][1]).toMatchObject({
       workspaceId: WORKSPACE_ID,
       userId: USER_ID(),
+    });
+    expect(loadOtherWorkspaceDecisionPackageWorkMock).toHaveBeenCalledWith(RLS_CLIENT, {
+      currentWorkspaceId: WORKSPACE_ID,
+      workspaces: [
+        { id: WORKSPACE_ID, name: "Current workspace" },
+        { id: "bbbbbbbb-0000-4000-8000-000000000002", name: "Review workspace" },
+      ],
     });
 
     expect(loadRosterMock).toHaveBeenCalledTimes(1);
@@ -137,11 +155,29 @@ describe("/my-work page wiring", () => {
     expect(element.props.isViewer).toBe(false);
 
     // VARY THE BINDING on the role too.
-    loadMembershipMock.mockResolvedValue({
+    loadWorkspaceContextMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "viewer" },
+      options: [{ id: WORKSPACE_ID, name: "Current workspace" }],
     });
     const viewerElement = await renderPage();
     expect(viewerElement.props.isViewer).toBe(true);
+  });
+
+  it("hands cross-workspace decision-package obligations to the visible board", async () => {
+    loadOtherWorkspaceDecisionPackageWorkMock.mockResolvedValue({
+      workspaces: [{
+        workspaceId: "bbbbbbbb-0000-4000-8000-000000000002",
+        workspaceName: "Review workspace",
+      }],
+      reads: new ReadFailureLog(),
+    });
+
+    const element = await renderPage();
+
+    expect(element.props.otherWorkspaceDecisionPackageWork).toEqual([{
+      workspaceId: "bbbbbbbb-0000-4000-8000-000000000002",
+      workspaceName: "Review workspace",
+    }]);
   });
 
   it("discloses the roster failure and the queue's failures in one sentence", async () => {
@@ -169,13 +205,29 @@ describe("/my-work page wiring", () => {
     expect(summary.match(/This page could not read/g)).toHaveLength(1);
   });
 
+  it("discloses a failed cross-workspace decision-package probe in the same visible summary", async () => {
+    const crossWorkspaceReads = new ReadFailureLog();
+    crossWorkspaceReads.check("decision packages in Review workspace", {
+      error: { message: "permission denied" },
+    });
+    loadOtherWorkspaceDecisionPackageWorkMock.mockResolvedValue({
+      workspaces: [],
+      reads: crossWorkspaceReads,
+    });
+
+    const element = await renderPage();
+
+    expect(element.props.readFailureSummary).toContain("decision packages in Review workspace");
+  });
+
   it("asks for a workspace instead of an empty queue when the caller has none", async () => {
-    loadMembershipMock.mockResolvedValue({ membership: null });
+    loadWorkspaceContextMock.mockResolvedValue({ membership: null, options: [] });
 
     const element = await renderPage();
 
     expect(element.type).toBe(WorkspaceMembershipRequired);
     expect(loadMyWorkMock).not.toHaveBeenCalled();
+    expect(loadOtherWorkspaceDecisionPackageWorkMock).not.toHaveBeenCalled();
     // And no service-role client is created for a caller with no workspace.
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
   });

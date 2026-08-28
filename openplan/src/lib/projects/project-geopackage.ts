@@ -70,6 +70,54 @@ export type ProjectGeoPackageEngagementGeometry = {
   createdAt: string;
 };
 
+export type ProjectGeoPackageFeatureAttribute = string | number | boolean | null;
+
+export type ProjectGeoPackageModelLinkFeature = {
+  id: string;
+  geometry: unknown;
+  attributes: Readonly<Record<string, ProjectGeoPackageFeatureAttribute>>;
+};
+
+export type ProjectGeoPackageLandUseFeature = {
+  id: string;
+  geometry: unknown;
+  attributes: Readonly<Record<string, ProjectGeoPackageFeatureAttribute>>;
+};
+
+/**
+ * Supplying this object means the caller examined the named source. Omitting
+ * it means OpenPlan did not examine that source for this export. The builder
+ * derives availability from the exact features it can write, never from a
+ * caller-provided count.
+ */
+export type ProjectGeoPackageSuppliedFeatureLayer<TFeature> = {
+  features: readonly TFeature[];
+  evidenceId?: string | null;
+  evidenceDescriptor?: EvidenceDescriptorV1;
+  detail: string;
+};
+
+export type ProjectGeoPackageModelLayers = {
+  aequilibrae?: ProjectGeoPackageSuppliedFeatureLayer<ProjectGeoPackageModelLinkFeature>;
+  activitysim?: ProjectGeoPackageSuppliedFeatureLayer<ProjectGeoPackageModelLinkFeature>;
+};
+
+type ParsedFeatureGeometry = {
+  wkb: Buffer;
+  positions: Position[];
+};
+
+type PreparedSuppliedFeature<TFeature extends { id: string; attributes: Readonly<Record<string, ProjectGeoPackageFeatureAttribute>> }> = {
+  feature: TFeature;
+  geometry: ParsedFeatureGeometry;
+};
+
+type PreparedSuppliedLayer<TFeature extends { id: string; attributes: Readonly<Record<string, ProjectGeoPackageFeatureAttribute>> }> = {
+  supplied: ProjectGeoPackageSuppliedFeatureLayer<TFeature> | undefined;
+  features: PreparedSuppliedFeature<TFeature>[];
+  omittedCount: number;
+};
+
 function isPosition(value: unknown): value is Position {
   if (!Array.isArray(value) || value.length < 2) return false;
   const [longitude, latitude] = value;
@@ -94,6 +142,25 @@ function isClosedRing(value: unknown): value is Position[] {
 
 function isPolygonCoordinates(value: unknown): value is PolygonCoordinates {
   return Array.isArray(value) && value.length > 0 && value.every(isClosedRing);
+}
+
+function geometryValue(value: unknown): { type?: unknown; coordinates?: unknown } | null {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as { type?: unknown; coordinates?: unknown; geometry?: unknown };
+  if (candidate.type === "Feature") return geometryValue(candidate.geometry);
+  return candidate;
+}
+
+function hasExactAttributes(
+  value: Readonly<Record<string, ProjectGeoPackageFeatureAttribute>>,
+): boolean {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return Object.values(value).every((attribute) =>
+    attribute === null ||
+    typeof attribute === "string" ||
+    typeof attribute === "boolean" ||
+    (typeof attribute === "number" && Number.isFinite(attribute))
+  );
 }
 
 /**
@@ -173,6 +240,81 @@ function multiPolygonWkb(polygons: PolygonCoordinates[]): Buffer {
     offset += child.length;
   }
   return buffer;
+}
+
+function parseModelLinkGeometry(value: unknown): ParsedFeatureGeometry | null {
+  const geometry = geometryValue(value);
+  if (
+    geometry?.type !== "LineString" ||
+    !Array.isArray(geometry.coordinates) ||
+    geometry.coordinates.length < 2 ||
+    !geometry.coordinates.every(isPosition)
+  ) {
+    return null;
+  }
+  return {
+    wkb: lineStringWkb(geometry.coordinates),
+    positions: [...geometry.coordinates],
+  };
+}
+
+function parseLandUseGeometry(value: unknown): ParsedFeatureGeometry | null {
+  const geometry = geometryValue(value);
+  if (geometry?.type === "Point" && isPosition(geometry.coordinates)) {
+    return { wkb: pointWkb(geometry.coordinates), positions: [geometry.coordinates] };
+  }
+  if (
+    geometry?.type === "LineString" &&
+    Array.isArray(geometry.coordinates) &&
+    geometry.coordinates.length >= 2 &&
+    geometry.coordinates.every(isPosition)
+  ) {
+    return {
+      wkb: lineStringWkb(geometry.coordinates),
+      positions: [...geometry.coordinates],
+    };
+  }
+  if (geometry?.type === "Polygon" && isPolygonCoordinates(geometry.coordinates)) {
+    return {
+      wkb: polygonWkb(geometry.coordinates),
+      positions: geometry.coordinates.flatMap((ring) => ring),
+    };
+  }
+  if (
+    geometry?.type === "MultiPolygon" &&
+    Array.isArray(geometry.coordinates) &&
+    geometry.coordinates.length > 0 &&
+    geometry.coordinates.every(isPolygonCoordinates)
+  ) {
+    return {
+      wkb: multiPolygonWkb(geometry.coordinates),
+      positions: geometry.coordinates.flatMap((polygon) => polygon.flatMap((ring) => ring)),
+    };
+  }
+  return null;
+}
+
+function prepareSuppliedLayer<
+  TFeature extends {
+    id: string;
+    geometry: unknown;
+    attributes: Readonly<Record<string, ProjectGeoPackageFeatureAttribute>>;
+  },
+>(
+  supplied: ProjectGeoPackageSuppliedFeatureLayer<TFeature> | undefined,
+  parseGeometry: (value: unknown) => ParsedFeatureGeometry | null,
+): PreparedSuppliedLayer<TFeature> {
+  if (!supplied) return { supplied: undefined, features: [], omittedCount: 0 };
+  const features = supplied.features.flatMap((feature) => {
+    const geometry = parseGeometry(feature.geometry);
+    if (!feature.id.trim() || !hasExactAttributes(feature.attributes) || !geometry) return [];
+    return [{ feature, geometry }];
+  });
+  return {
+    supplied,
+    features,
+    omittedCount: supplied.features.length - features.length,
+  };
 }
 
 function geoPackageGeometry(wkb: Buffer): Buffer {
@@ -317,12 +459,76 @@ function coverageLabel(present: boolean, recorded: boolean, noun: string): strin
   return recorded ? `${noun} recorded but invalid; omitted` : `${noun} not recorded`;
 }
 
+function sourceDetailPrefix(detail: string): string {
+  const trimmed = detail.trim();
+  if (!trimmed) return "";
+  return /[.!?]$/.test(trimmed) ? `${trimmed} ` : `${trimmed}. `;
+}
+
+function suppliedLayerStatus<
+  TFeature extends { id: string; attributes: Readonly<Record<string, ProjectGeoPackageFeatureAttribute>> },
+>(options: {
+  layerKey: string;
+  featureNoun: string;
+  layer: PreparedSuppliedLayer<TFeature>;
+}): OpenPlanLayerStatus {
+  const { layer } = options;
+  if (!layer.supplied) {
+    return {
+      layerKey: options.layerKey,
+      status: "unavailable",
+      recordCount: null,
+      evidenceId: null,
+      detail: `No ${options.featureNoun} source was examined for this export.`,
+    };
+  }
+
+  const prefix = sourceDetailPrefix(layer.supplied.detail);
+  const omitted = layer.omittedCount > 0
+    ? ` ${layer.omittedCount} supplied feature${layer.omittedCount === 1 ? " was" : "s were"} malformed or used an unsupported geometry and ${layer.omittedCount === 1 ? "was" : "were"} omitted.`
+    : "";
+  if (layer.features.length === 0) {
+    return {
+      layerKey: options.layerKey,
+      status: "unavailable",
+      recordCount: null,
+      evidenceId: layer.supplied.evidenceId ?? null,
+      evidenceDescriptor: layer.supplied.evidenceDescriptor,
+      detail: `${prefix}The source was examined, but no exact qualifying ${options.featureNoun} geometry was supplied.${omitted}`,
+    };
+  }
+  return {
+    layerKey: options.layerKey,
+    status: "included",
+    recordCount: layer.features.length,
+    evidenceId: layer.supplied.evidenceId ?? null,
+    evidenceDescriptor: layer.supplied.evidenceDescriptor,
+    detail: `${prefix}${layer.features.length} exact ${options.featureNoun} feature${layer.features.length === 1 ? "" : "s"} included.${omitted}`,
+  };
+}
+
+function normalizeLayerStatus(layer: OpenPlanLayerStatus): OpenPlanLayerStatus {
+  if (layer.status === "unavailable") return { ...layer, recordCount: null };
+  if (layer.status === "reference_only" || layer.status === "not_selected") {
+    return { ...layer, recordCount: null };
+  }
+  if (!Number.isInteger(layer.recordCount) || (layer.recordCount ?? 0) <= 0) {
+    return {
+      ...layer,
+      status: "unavailable",
+      recordCount: null,
+      detail: `${layer.detail} The layer had no positive written-feature count, so OpenPlan treated it as unavailable.`,
+    };
+  }
+  return layer;
+}
+
 /**
  * Build a standards-readable GeoPackage without a tile service or remote API.
  *
- * The package is a handoff, not a new source of truth: it carries only the
- * project's stored marker, area, and corridors, plus a manifest that makes
- * absent or invalid geometry visible to the recipient.
+ * The package is a handoff, not a new source of truth. It carries the project's
+ * stored geometry and only exact supplied evidence geometry. The layer-status
+ * table makes unexamined, absent, and invalid geometry visible to the recipient.
  */
 export function buildProjectGeoPackage(input: {
   project: ProjectGeoPackageProject;
@@ -331,6 +537,8 @@ export function buildProjectGeoPackage(input: {
   layerStatuses?: OpenPlanLayerStatus[];
   crashes?: ProjectGeoPackageCrash[];
   engagementGeometries?: ProjectGeoPackageEngagementGeometry[];
+  modelLayers?: ProjectGeoPackageModelLayers;
+  landUseDesignations?: ProjectGeoPackageSuppliedFeatureLayer<ProjectGeoPackageLandUseFeature>;
 }): ProjectGeoPackage {
   const generatedAt = (input.generatedAt ?? new Date()).toISOString();
   const area = parseAreaGeometry(input.project.place_geometry_geojson);
@@ -346,6 +554,18 @@ export function buildProjectGeoPackage(input: {
   );
   const omittedCorridorCount = input.corridors.length - validCorridors.length;
   const crashes = (input.crashes ?? []).filter((crash) => isPosition([crash.longitude, crash.latitude]));
+  const aequilibraeLinks = prepareSuppliedLayer(
+    input.modelLayers?.aequilibrae,
+    parseModelLinkGeometry,
+  );
+  const activitysimLinks = prepareSuppliedLayer(
+    input.modelLayers?.activitysim,
+    parseModelLinkGeometry,
+  );
+  const landUseDesignations = prepareSuppliedLayer(
+    input.landUseDesignations,
+    parseLandUseGeometry,
+  );
   const engagementGeometries = (input.engagementGeometries ?? []).flatMap((item) => {
     const geometry = item.geometry && typeof item.geometry === "object"
       ? item.geometry as { type?: unknown; coordinates?: unknown }
@@ -365,11 +585,20 @@ export function buildProjectGeoPackage(input: {
     return [];
   });
   const coverageLimits = [
-    "Stored project geometry, supplied crash/KSI observations, and approved engagement geometry are included when available; every other expected layer is disclosed in openplan_layer_status",
+    "Stored project geometry and exact supplied crash/KSI, model-link, land-use, and approved engagement geometry are included when available; every expected layer is disclosed in openplan_layer_status",
     ...(area ? [] : [coverageLabel(false, hasRecordedArea, "Project area")]),
     ...(location ? [] : [coverageLabel(false, hasRecordedLocation, "Project location")]),
     ...(omittedCorridorCount > 0
       ? [`${omittedCorridorCount} corridor${omittedCorridorCount === 1 ? " was" : "s were"} recorded but invalid; omitted`]
+      : []),
+    ...(aequilibraeLinks.omittedCount > 0
+      ? [`${aequilibraeLinks.omittedCount} supplied AequilibraE link feature${aequilibraeLinks.omittedCount === 1 ? " was" : "s were"} malformed or unsupported; omitted`]
+      : []),
+    ...(activitysimLinks.omittedCount > 0
+      ? [`${activitysimLinks.omittedCount} supplied ActivitySim link feature${activitysimLinks.omittedCount === 1 ? " was" : "s were"} malformed or unsupported; omitted`]
+      : []),
+    ...(landUseDesignations.omittedCount > 0
+      ? [`${landUseDesignations.omittedCount} supplied land-use designation feature${landUseDesignations.omittedCount === 1 ? " was" : "s were"} malformed or unsupported; omitted`]
       : []),
   ];
 
@@ -475,12 +704,42 @@ export function buildProjectGeoPackage(input: {
           created_at DATETIME NOT NULL,
           moderation_status TEXT NOT NULL DEFAULT 'approved'
         );
+
+        CREATE TABLE aequilibrae_links (
+          fid INTEGER PRIMARY KEY,
+          geom LINESTRING,
+          feature_id TEXT NOT NULL,
+          attributes_json TEXT NOT NULL
+        );
+
+        CREATE TABLE activitysim_links (
+          fid INTEGER PRIMARY KEY,
+          geom LINESTRING,
+          feature_id TEXT NOT NULL,
+          attributes_json TEXT NOT NULL
+        );
+
+        CREATE TABLE land_use_designations (
+          fid INTEGER PRIMARY KEY,
+          geom GEOMETRY,
+          feature_id TEXT NOT NULL,
+          attributes_json TEXT NOT NULL
+        );
       `);
 
       const areaBounds = area ? boundsOfPositions(areaPositions(area)) : null;
       const locationBounds = location ? boundsOfPositions([location]) : null;
       const corridorBounds = mergeBounds(
         validCorridors.map((corridor) => boundsOfPositions(corridor.geometry_geojson.coordinates))
+      );
+      const aequilibraeBounds = mergeBounds(
+        aequilibraeLinks.features.map((feature) => boundsOfPositions(feature.geometry.positions))
+      );
+      const activitysimBounds = mergeBounds(
+        activitysimLinks.features.map((feature) => boundsOfPositions(feature.geometry.positions))
+      );
+      const landUseBounds = mergeBounds(
+        landUseDesignations.features.map((feature) => boundsOfPositions(feature.geometry.positions))
       );
 
       registerContents(db, {
@@ -504,6 +763,30 @@ export function buildProjectGeoPackage(input: {
         identifier: "Publishable approved engagement geometry",
         description: "Geometry only. Comment text, submitter identity, moderation notes, and private records are excluded.",
         generatedAt,
+      });
+      registerContents(db, {
+        table: "aequilibrae_links",
+        dataType: "features",
+        identifier: "Supplied AequilibraE link results",
+        description: "Exact supplied AequilibraE link geometries and attributes; never combined with ActivitySim",
+        generatedAt,
+        bounds: aequilibraeBounds,
+      });
+      registerContents(db, {
+        table: "activitysim_links",
+        dataType: "features",
+        identifier: "Supplied ActivitySim link results",
+        description: "Exact supplied ActivitySim link geometries and attributes; never combined with AequilibraE",
+        generatedAt,
+        bounds: activitysimBounds,
+      });
+      registerContents(db, {
+        table: "land_use_designations",
+        dataType: "features",
+        identifier: "Supplied land-use designations",
+        description: "Exact supplied land-use designation geometries and attributes",
+        generatedAt,
+        bounds: landUseBounds,
       });
       registerContents(db, {
         table: "openplan_layer_status",
@@ -541,6 +824,9 @@ export function buildProjectGeoPackage(input: {
       registerGeometry(db, "project_corridors", "LINESTRING");
       registerGeometry(db, "safety_crash_ksi", "POINT");
       registerGeometry(db, "engagement_geometry", "GEOMETRY");
+      registerGeometry(db, "aequilibrae_links", "LINESTRING");
+      registerGeometry(db, "activitysim_links", "LINESTRING");
+      registerGeometry(db, "land_use_designations", "GEOMETRY");
 
       db.prepare(`
         INSERT INTO project_info
@@ -648,37 +934,128 @@ export function buildProjectGeoPackage(input: {
         );
       }
 
-      const layerStatuses: OpenPlanLayerStatus[] = input.layerStatuses ?? [
+      const insertAequilibraeLink = db.prepare(`
+        INSERT INTO aequilibrae_links (geom, feature_id, attributes_json)
+        VALUES (?, ?, ?)
+      `);
+      for (const feature of aequilibraeLinks.features) {
+        insertAequilibraeLink.run(
+          geoPackageGeometry(feature.geometry.wkb),
+          feature.feature.id,
+          canonicalizeActionPayload(feature.feature.attributes),
+        );
+      }
+
+      const insertActivitysimLink = db.prepare(`
+        INSERT INTO activitysim_links (geom, feature_id, attributes_json)
+        VALUES (?, ?, ?)
+      `);
+      for (const feature of activitysimLinks.features) {
+        insertActivitysimLink.run(
+          geoPackageGeometry(feature.geometry.wkb),
+          feature.feature.id,
+          canonicalizeActionPayload(feature.feature.attributes),
+        );
+      }
+
+      const insertLandUseDesignation = db.prepare(`
+        INSERT INTO land_use_designations (geom, feature_id, attributes_json)
+        VALUES (?, ?, ?)
+      `);
+      for (const feature of landUseDesignations.features) {
+        insertLandUseDesignation.run(
+          geoPackageGeometry(feature.geometry.wkb),
+          feature.feature.id,
+          canonicalizeActionPayload(feature.feature.attributes),
+        );
+      }
+
+      const managedLayerStatuses: OpenPlanLayerStatus[] = [
         {
           layerKey: "project_area",
           status: area ? "included" : "unavailable",
-          recordCount: area ? 1 : 0,
+          recordCount: area ? 1 : null,
           evidenceId: null,
           detail: coverageLabel(Boolean(area), hasRecordedArea, "Project area"),
         },
         {
           layerKey: "project_location",
           status: location ? "included" : "unavailable",
-          recordCount: location ? 1 : 0,
+          recordCount: location ? 1 : null,
           evidenceId: null,
           detail: coverageLabel(Boolean(location), hasRecordedLocation, "Project location"),
         },
         {
           layerKey: "project_corridors",
           status: validCorridors.length > 0 ? "included" : "unavailable",
-          recordCount: validCorridors.length,
+          recordCount: validCorridors.length > 0 ? validCorridors.length : null,
           evidenceId: null,
           detail: validCorridors.length > 0 ? "Stored valid project corridors included." : "No valid project corridor is stored.",
         },
-        { layerKey: "crash_ksi", status: crashes.length > 0 ? "included" : "unavailable", recordCount: crashes.length, evidenceId: null, detail: crashes.length > 0 ? "Observed project-scoped crash/KSI points included." : "No project-scoped crash/KSI layer was supplied to this export." },
-        { layerKey: "aequilibrae_links", status: "not_selected", recordCount: null, evidenceId: null, detail: "No AequilibraE link layer was selected for this export." },
-        { layerKey: "activitysim_links", status: "not_selected", recordCount: null, evidenceId: null, detail: "No ActivitySim link layer was selected for this export." },
-        { layerKey: "engagement_geometry", status: engagementGeometries.length > 0 ? "included" : "unavailable", recordCount: engagementGeometries.length, evidenceId: null, detail: engagementGeometries.length > 0 ? "Approved geometry included without comment text or personal identifiers." : "No publishable engagement geometry was supplied to this export." },
-        { layerKey: "land_use_designations", status: "reference_only", recordCount: null, evidenceId: null, detail: "Land-use designation records remain reference-only unless their exact GIS version is packaged." },
+        {
+          layerKey: "crash_ksi",
+          status: crashes.length > 0 ? "included" : "unavailable",
+          recordCount: crashes.length > 0 ? crashes.length : null,
+          evidenceId: null,
+          detail: crashes.length > 0
+            ? "Observed project-scoped crash/KSI points included."
+            : input.crashes
+              ? "The project crash/KSI source was examined, but no exact qualifying point was supplied."
+              : "No project crash/KSI source was examined for this export.",
+        },
+        suppliedLayerStatus({
+          layerKey: "aequilibrae_links",
+          featureNoun: "AequilibraE link",
+          layer: aequilibraeLinks,
+        }),
+        suppliedLayerStatus({
+          layerKey: "activitysim_links",
+          featureNoun: "ActivitySim link",
+          layer: activitysimLinks,
+        }),
+        {
+          layerKey: "engagement_geometry",
+          status: engagementGeometries.length > 0 ? "included" : "unavailable",
+          recordCount: engagementGeometries.length > 0 ? engagementGeometries.length : null,
+          evidenceId: null,
+          detail: engagementGeometries.length > 0
+            ? "Approved publishable geometry included without comment text or personal identifiers."
+            : input.engagementGeometries
+              ? "The publishable engagement source was examined, but no exact qualifying geometry was supplied."
+              : "No publishable engagement source was examined for this export.",
+        },
+        suppliedLayerStatus({
+          layerKey: "land_use_designations",
+          featureNoun: "land-use designation",
+          layer: landUseDesignations,
+        }),
       ];
+      const statusesByLayer = new Map<string, OpenPlanLayerStatus>();
+      for (const layer of input.layerStatuses ?? []) {
+        statusesByLayer.set(layer.layerKey, normalizeLayerStatus(layer));
+      }
+      for (const layer of managedLayerStatuses) {
+        statusesByLayer.set(layer.layerKey, normalizeLayerStatus(layer));
+      }
+      const layerStatuses = [...statusesByLayer.values()];
+      const revisionMaterial: Record<string, unknown> = {
+        project_area: area,
+        project_location: location,
+        project_corridors: validCorridors.map((corridor) => ({
+          id: corridor.id,
+          geometry: corridor.geometry_geojson,
+          updatedAt: corridor.updated_at,
+        })),
+        crash_ksi: crashes,
+        aequilibrae_links: aequilibraeLinks.features.map((feature) => feature.feature),
+        activitysim_links: activitysimLinks.features.map((feature) => feature.feature),
+        engagement_geometry: engagementGeometries.map((feature) => feature.item),
+        land_use_designations: landUseDesignations.features.map((feature) => feature.feature),
+      };
       const describedLayerStatuses = layerStatuses.map((layer) => {
         const modeled = layer.layerKey === "aequilibrae_links" || layer.layerKey === "activitysim_links";
         const observed = layer.layerKey === "crash_ksi" || layer.layerKey === "engagement_geometry";
+        const reference = layer.layerKey === "land_use_designations";
         const revisionToken = createHash("sha256").update(canonicalizeActionPayload({
           projectId: input.project.id,
           projectRevision: input.project.updated_at,
@@ -686,18 +1063,31 @@ export function buildProjectGeoPackage(input: {
           status: layer.status,
           recordCount: layer.recordCount,
           detail: layer.detail,
+          records: revisionMaterial[layer.layerKey] ?? null,
         })).digest("hex");
         const evidenceDescriptor = layer.evidenceDescriptor ?? buildEvidenceDescriptor({
           identity: { projectId: input.project.id, layerKey: layer.layerKey, revisionToken },
           source: {
-            kind: modeled ? "model_run_artifact" : observed ? "project_observation" : "project_record",
+            kind: modeled
+              ? "model_run_artifact"
+              : observed
+                ? "project_observation"
+                : reference
+                  ? "land_use_designation"
+                  : "project_record",
             label: `GeoPackage layer status: ${layer.layerKey}`,
             citation: null,
           },
           asOfDate: observed ? generatedAt : input.project.updated_at,
           retrievedAt: layer.status === "included" ? generatedAt : null,
-          evidenceStatus: modeled ? "modeled" : observed ? "observed" : layer.status === "reference_only" ? "reference" : "administrative",
-          claimTier: layer.recordCount === null ? null : observed ? "observed_screening" : "administrative_record",
+          evidenceStatus: modeled ? "modeled" : observed ? "observed" : reference ? "reference" : "administrative",
+          claimTier: layer.recordCount === null
+            ? null
+            : modeled
+              ? "model_output_record"
+              : observed
+                ? "observed_screening"
+                : "administrative_record",
           uncertainty: [],
           limits: [layer.detail],
           revisionToken,

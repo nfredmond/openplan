@@ -12,10 +12,12 @@ import {
   type MyWorkResult,
   type MyWorkScope,
   type MyWorkSourceId,
+  type OtherWorkspaceDecisionPackageWork,
 } from "@/lib/my-work/types";
 import { FAILED_RUN_QUEUE_WINDOW_DAYS } from "@/lib/my-work/sources";
 import { formatWorkDeadlineDate } from "@/lib/work/deadlines";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
+import { WorkspaceSwitchButton } from "@/components/workspaces/workspace-switcher";
 
 /**
  * The personal work queue, rendered.
@@ -57,6 +59,8 @@ export type MyWorkBoardProps = {
    * leaving them looking at a blank panel wondering what they did wrong.
    */
   isViewer: boolean;
+  /** Caller-specific package work that is waiting behind another active workspace. */
+  otherWorkspaceDecisionPackageWork?: OtherWorkspaceDecisionPackageWork[];
 };
 
 const BLOCK_HEADINGS: Record<MyWorkBlockId, string> = {
@@ -148,6 +152,7 @@ export function MyWorkBoard({
   roster,
   departedIncludedInUnassigned,
   isViewer,
+  otherWorkspaceDecisionPackageWork = [],
 }: MyWorkBoardProps) {
   const blocks = groupMyWorkItemsByBlock(items);
 
@@ -189,6 +194,23 @@ export function MyWorkBoard({
           <p className="module-alert" role="status">
             {readFailureSummary}
           </p>
+        ) : null}
+        {otherWorkspaceDecisionPackageWork.length > 0 ? (
+          <div className="module-alert" role="status">
+            <p className="font-medium">Decision-package work is waiting in another workspace.</p>
+            <p className="mt-1">
+              My Work stays scoped to the active workspace. Open the workspace below to review or replace its exact package.
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {otherWorkspaceDecisionPackageWork.map((workspace) => (
+                <WorkspaceSwitchButton
+                  key={workspace.workspaceId}
+                  workspaceId={workspace.workspaceId}
+                  workspaceName={workspace.workspaceName}
+                />
+              ))}
+            </div>
+          </div>
         ) : null}
         {/* The planner learns that assignment is unavailable and who can make it
             available. The migration number is the operator's business and waits

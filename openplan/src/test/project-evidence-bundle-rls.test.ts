@@ -133,8 +133,21 @@ liveDescribe("project evidence bundle live authorization and immutability", () =
     expect(crossCreate.error?.message ?? "").toMatch(/row-level security|project workspace/i);
   });
 
-  it("permits one preparing-to-terminal transition, then blocks update and direct deletion", async () => {
-    const finalized = await owner
+  it("denies authenticated finalization and permits one service-authored terminal transition", async () => {
+    const refusedFinalize = await owner
+      .from("project_evidence_bundles")
+      .update({ status: "failed", failure_code: "rls_test", completed_at: new Date().toISOString() })
+      .eq("id", bundleId);
+    expect(refusedFinalize.error?.message ?? "").toMatch(/permission denied|row-level security/i);
+
+    const stillPreparing = await service
+      .from("project_evidence_bundles")
+      .select("status")
+      .eq("id", bundleId)
+      .single();
+    expect(stillPreparing.data?.status).toBe("preparing");
+
+    const finalized = await service
       .from("project_evidence_bundles")
       .update({ status: "failed", failure_code: "rls_test", completed_at: new Date().toISOString() })
       .eq("id", bundleId);
@@ -145,8 +158,7 @@ liveDescribe("project evidence bundle live authorization and immutability", () =
       .update({ failure_code: "rewritten" })
       .eq("id", bundleId)
       .select("failure_code");
-    expect(rewritten.error).toBeNull();
-    expect(rewritten.data).toEqual([]);
+    expect(rewritten.error?.message ?? "").toMatch(/permission denied|row-level security/i);
     const unchanged = await service
       .from("project_evidence_bundles")
       .select("failure_code")

@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
+const { createHash } = require('node:crypto');
 const { chromium } = require('playwright');
 const {
   buildBrowserContextOptions,
@@ -20,6 +21,12 @@ const {
 const baseUrl = process.env.OPENPLAN_BASE_URL || 'http://localhost:3200';
 const datePart = new Date().toISOString().slice(0, 10);
 const outputDir = getOutputDir(datePart);
+const accountHandoffPath = process.env.OPENPLAN_GOVERNED_HANDOFF_ACCOUNTS_OUT
+  || path.join(process.env.XDG_STATE_HOME || path.join(require('node:os').homedir(), '.local', 'state'), 'openplan', 'first-week-governed-accounts.json');
+
+function sha256File(filePath) {
+  return createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
 
 function expectStatus(result, expected, label) {
   if (result.status !== expected) {
@@ -52,10 +59,22 @@ async function visibleProjectEntry(page, projectName) {
   await page.locator('p:visible').filter({ hasText: /^Frozen project handoff$/ }).waitFor({ timeout: 20_000 });
 }
 
-async function visibleMyWorkEntry(page, title) {
+async function visibleMyWorkEntry(page, title, options = {}) {
   await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'networkidle' });
   await page.getByRole('link', { name: 'My Work', exact: true }).click();
   await page.waitForURL(/\/my-work/, { timeout: 20_000 });
+  if (options.otherWorkspaceName) {
+    await page.getByText('Decision-package work is waiting in another workspace.', { exact: true })
+      .waitFor({ timeout: 20_000 });
+    const workspaceButton = page.getByRole('button', {
+      name: `Open ${options.otherWorkspaceName}`,
+      exact: true,
+    });
+    await workspaceButton.waitFor({ timeout: 20_000 });
+    await workspaceButton.scrollIntoViewIfNeeded();
+    if (options.onOtherWorkspaceNotice) await options.onOtherWorkspaceNotice();
+    await workspaceButton.click();
+  }
   const link = page.getByRole('link', { name: title, exact: true }).first();
   await link.waitFor({ timeout: 20_000 });
   await link.click();
@@ -227,7 +246,20 @@ async function main() {
     await creatorPage.getByText('Pending assigned approver.', { exact: true }).waitFor({ timeout: 20_000 });
     await screenshot(creatorPage, 'governed-handoff-02-submitted-desktop');
 
-    await visibleMyWorkEntry(approverPage, 'Review submitted decision package');
+    // Invitation acceptance helpfully selected the shared workspace in this
+    // browser. Remove only that selection cookie to prove the fresh-computer
+    // case: auth remains intact, My Work opens in the approver's own workspace,
+    // discovers the exact assigned package through caller RLS, and offers the
+    // direct membership-checked switch rather than looking empty.
+    await approverContext.clearCookies({ name: 'openplan_active_workspace' });
+    const creatorWorkspaceName = creatorIdentity.email.split('@')[0].toLowerCase();
+    await visibleMyWorkEntry(approverPage, 'Review submitted decision package', {
+      otherWorkspaceName: creatorWorkspaceName,
+      onOtherWorkspaceNotice: () => screenshot(
+        approverPage,
+        'governed-handoff-02a-cross-workspace-notice-desktop',
+      ),
+    });
     await approverPage.getByLabel('Return reason').fill('Clarify the board packet limits before approval.');
     await approverPage.getByRole('button', { name: 'Return with reason', exact: true }).click();
     await approverPage.getByText(/returned.*Clarify the board packet limits/i).waitFor({ timeout: 20_000 });
@@ -241,9 +273,14 @@ async function main() {
 
     await visibleMyWorkEntry(approverPage, 'Review submitted decision package');
     await approverPage.getByRole('button', { name: 'Approve exact bundle', exact: true }).click();
-    const approvedReceipt = approverPage.locator('#project-decision-packages p').filter({ hasText: /approved · receipt /i }).last();
-    await approvedReceipt.waitFor({ timeout: 20_000 });
-    await approvedReceipt.scrollIntoViewIfNeeded();
+    const approvedDecision = approverPage.locator('#project-decision-packages [data-decision="approved"]').last();
+    await approvedDecision.waitFor({ timeout: 20_000 });
+    await approvedDecision.scrollIntoViewIfNeeded();
+    const approvedSubmission = approvedDecision.locator('..');
+    const approvedBundleSha256 = await approvedSubmission.getAttribute('data-submission-bundle-sha');
+    const approvedReceiptSha256 = (await approvedDecision.locator('code').textContent())?.trim() || null;
+    assertOk(/^[0-9a-f]{64}$/.test(approvedBundleSha256 || ''), 'Approved submission did not expose its full bundle SHA-256.');
+    assertOk(/^[0-9a-f]{64}$/.test(approvedReceiptSha256 || ''), 'Approved decision did not expose its full receipt SHA-256.');
     await screenshot(approverPage, 'governed-handoff-04-approved-desktop');
 
     await approverPage.setViewportSize({ width: 390, height: 844 });
@@ -252,7 +289,7 @@ async function main() {
     await approverPage.waitForURL(/\/projects\/[0-9a-f-]+\?tab=evidence/, { timeout: 30_000 });
     await approverPage.reload({ waitUntil: 'networkidle' });
     await approverPage.locator('p:visible').filter({ hasText: /^Agency decision handoff$/ }).waitFor({ timeout: 20_000 });
-    const mobileApprovedReceipt = approverPage.locator('#project-decision-packages p').filter({ hasText: /approved · receipt /i }).last();
+    const mobileApprovedReceipt = approverPage.locator('#project-decision-packages [data-decision="approved"]').last();
     await mobileApprovedReceipt.waitFor({ timeout: 20_000 });
     await mobileApprovedReceipt.scrollIntoViewIfNeeded();
     assertOk(await mobileApprovedReceipt.isVisible(), 'Approved receipt is not visible at 390px.');
@@ -265,14 +302,16 @@ async function main() {
     await approverPage.emulateMedia({ media: 'screen' });
 
     const bundleDownloadEvent = approverPage.waitForEvent('download');
-    await approverPage.locator('#project-decision-packages a[href*="/evidence-bundles/"]').first().click();
+    const approvedBundleCard = approverPage.locator(`#project-decision-packages [data-bundle-sha="${approvedBundleSha256}"]`);
+    await approvedBundleCard.locator('a[href*="/evidence-bundles/"]').click();
     const bundleDownload = await bundleDownloadEvent;
     const bundlePath = path.join(outputDir, `${datePart}-governed-approved-bundle.zip`);
     await bundleDownload.saveAs(bundlePath);
     artifacts.push(path.relative(path.resolve(__dirname, '..'), bundlePath));
 
     const receiptDownloadEvent = approverPage.waitForEvent('download');
-    await approverPage.getByRole('link', { name: 'Download receipt', exact: true }).last().click();
+    await approverPage.locator('#project-decision-packages [data-decision="approved"]').last()
+      .getByRole('link', { name: 'Download receipt', exact: true }).click();
     const receiptDownload = await receiptDownloadEvent;
     const receiptPath = path.join(outputDir, `${datePart}-governed-approval-receipt.json`);
     await receiptDownload.saveAs(receiptPath);
@@ -312,11 +351,26 @@ async function main() {
     }
     assertOk(privateTextHits.trim() === '', `Private or personal text entered the bundle: ${privateTextHits}`);
     const receiptJson = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+    assertOk(receiptJson.decision === 'approved', `Downloaded receipt was ${receiptJson.decision || 'missing a decision'}, not approved.`);
     assertOk(receiptJson.approvalOrPublication === false, 'Receipt incorrectly asserts approval or publication.');
     assertOk(receiptJson.statutoryAdoption === false, 'Receipt incorrectly asserts statutory adoption.');
     assertOk(receiptJson.modelValidation === false, 'Receipt incorrectly asserts model validation.');
     assertOk(/^[0-9a-f]{64}$/.test(receiptJson.bundleSha256), 'Receipt does not carry an exact bundle SHA-256.');
+    assertOk(receiptJson.bundleSha256 === approvedBundleSha256, 'Receipt names a different bundle than the visibly approved submission.');
+    assertOk(sha256File(bundlePath) === approvedBundleSha256, 'Downloaded ZIP bytes do not match the visibly approved bundle SHA-256.');
+    assertOk(sha256File(receiptPath) === approvedReceiptSha256, 'Downloaded receipt bytes do not reproduce the visible receipt SHA-256.');
     assertOk(consoleProblems.length === 0, `Browser console reported: ${consoleProblems.join(' | ')}`);
+
+    fs.mkdirSync(path.dirname(accountHandoffPath), { recursive: true });
+    fs.writeFileSync(accountHandoffPath, `${JSON.stringify({
+      schemaVersion: 'openplan.first_week_governed_accounts.v1',
+      baseUrl,
+      projectId: ids.projectId,
+      workspaceId: ids.workspaceId,
+      creator: { email: creatorIdentity.email, password: creatorIdentity.password },
+      approver: { email: approverIdentity.email, password: approverIdentity.password },
+    }, null, 2)}\n`, { mode: 0o600 });
+    fs.chmodSync(accountHandoffPath, 0o600);
 
     const reportPath = path.join(path.resolve(__dirname, '..'), `docs/ops/${datePart}-governed-decision-handoff-browser-proof.md`);
     fs.writeFileSync(reportPath, [
@@ -326,14 +380,15 @@ async function main() {
       `- Project: ${projectName} (${ids.projectId})`,
       '- outcomeReached: "yes"',
       '- Desktop and 390px paths passed through Projects, Evidence, My Work, return, replacement, approval, bundle download, and receipt download.',
-      '- The approved downloaded ZIP passed sha256sum, jq, and ogrinfo. The receipt retained false publication, adoption, and model-validation flags.',
+      '- The visible approved bundle SHA-256 matched the downloaded ZIP bytes, and the visible receipt SHA-256 matched the exact downloaded receipt bytes.',
+      '- The approved downloaded ZIP passed sha256sum, jq, and ogrinfo. The receipt named that exact bundle hash and retained false publication, adoption, and model-validation flags.',
       '- Browser console and uncaught page errors: none.',
       '',
       '## Artifacts',
       ...artifacts.map((artifact) => `- ${artifact}`),
       '',
     ].join('\n'));
-    console.log(JSON.stringify({ outcomeReached: 'yes', reportPath, artifacts, ids }, null, 2));
+    console.log(JSON.stringify({ outcomeReached: 'yes', reportPath, accountHandoffPath, artifacts, ids }, null, 2));
   } catch (error) {
     const detail = consoleProblems.length > 0 ? ` Browser console: ${consoleProblems.join(' | ')}` : '';
     throw new Error(`${error instanceof Error ? error.message : String(error)}${detail}`);

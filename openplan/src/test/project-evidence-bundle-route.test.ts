@@ -149,6 +149,27 @@ function fakeClient() {
   };
 }
 
+function fakeService(upload: ReturnType<typeof vi.fn>, remove = vi.fn()) {
+  const updates: unknown[] = [];
+  const filters: unknown[] = [];
+  return {
+    updates,
+    filters,
+    client: {
+      storage: { from: () => ({ upload, remove }) },
+      from(table: string) {
+        if (table !== "project_evidence_bundles") throw new Error(`Unexpected service table ${table}`);
+        return {
+          update: vi.fn((value: unknown) => {
+            updates.push(value);
+            return thenableUpdate(filters);
+          }),
+        };
+      },
+    },
+  };
+}
+
 function request(
   body?: unknown,
   headers?: Record<string, string>
@@ -280,7 +301,8 @@ describe("POST /api/projects/[projectId]/evidence-bundles", () => {
     const fake = fakeClient();
     createClientMock.mockResolvedValue(fake.client);
     const upload = vi.fn();
-    createServiceRoleClientMock.mockReturnValue({ storage: { from: () => ({ upload, remove: vi.fn() }) } });
+    const service = fakeService(upload);
+    createServiceRoleClientMock.mockReturnValue(service.client);
     resolveBytesMock.mockRejectedValue(
       new ProjectEvidenceBundleError("missing_evidence", "The selected report disappeared.")
     );
@@ -288,7 +310,8 @@ describe("POST /api/projects/[projectId]/evidence-bundles", () => {
     const response = await POST(request(), context);
     expect(response.status).toBe(422);
     expect(upload).not.toHaveBeenCalled();
-    expect(fake.updates).toContainEqual(
+    expect(fake.updates).toEqual([]);
+    expect(service.updates).toContainEqual(
       expect.objectContaining({ status: "failed", failure_code: "missing_evidence" })
     );
   });
@@ -297,7 +320,8 @@ describe("POST /api/projects/[projectId]/evidence-bundles", () => {
     const fake = fakeClient();
     createClientMock.mockResolvedValue(fake.client);
     const upload = vi.fn().mockResolvedValue({ error: null });
-    createServiceRoleClientMock.mockReturnValue({ storage: { from: () => ({ upload, remove: vi.fn() }) } });
+    const service = fakeService(upload);
+    createServiceRoleClientMock.mockReturnValue(service.client);
 
     const response = await POST(request(), context);
     expect(response.status).toBe(201);
@@ -316,7 +340,8 @@ describe("POST /api/projects/[projectId]/evidence-bundles", () => {
       Buffer.from("zip"),
       { contentType: "application/zip", upsert: false }
     );
-    expect(fake.updates).toContainEqual(
+    expect(fake.updates).toEqual([]);
+    expect(service.updates).toContainEqual(
       expect.objectContaining({
         status: "ready",
         storage_bucket: "project-evidence-bundles",

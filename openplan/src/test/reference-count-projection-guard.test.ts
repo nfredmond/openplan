@@ -268,12 +268,16 @@ describe("reference count projections", () => {
     // 2026-08-06 with the transit map layer — the view exists because
     // supabase-js cannot read a PostGIS geometry, and its projection is asserted
     // by name in `transit-map-layer.test.ts` instead of here.
+    // `project_decision_package_my_work` is a security-invoker caller queue;
+    // its exact projection and workspace isolation are covered by the My Work
+    // unit tests and `decision-package-rls-live.test.ts`.
     expect(
       [...new Set(selectSites.filter((site) => site.table && schema.isView(site.table)).map((site) => site.table))].sort()
     ).toEqual([
       "census_tracts_map",
       "gtfs_stops_map",
       "project_bca_screenings_latest",
+      "project_decision_package_my_work",
       "scenario_comparison_summary",
     ]);
 

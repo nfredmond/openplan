@@ -61,6 +61,9 @@ type SeedContext = {
   userBId: string;
   userCId: string;
   projectBId: string;
+  projectBRevision: string;
+  planBId: string;
+  reportArtifactBId: string;
   evidenceBundleBId: string;
   decisionSubmissionBId: string;
   decisionDecisionBId: string;
@@ -91,6 +94,95 @@ type SeedContext = {
   landUsePlanDesignationBId: string;
   landUsePlanReleaseBId: string;
 };
+
+const RLS_BUNDLE_CHECKSUM = "c".repeat(64);
+const RLS_ENTRY_REVISION = "d".repeat(64);
+
+function rlsEvidenceDescriptor(options: {
+  idSeed: string;
+  label: string;
+  checksum: string;
+  retrievedAt: string;
+}) {
+  return {
+    schemaVersion: "openplan.evidence_descriptor.v1",
+    stableEvidenceId: options.idSeed.repeat(64).slice(0, 64),
+    source: { kind: "rls_fixture", label: options.label, citation: null },
+    asOfDate: options.retrievedAt,
+    retrievedAt: options.retrievedAt,
+    evidenceStatus: "administrative",
+    claimTier: null,
+    uncertainty: [],
+    limits: [],
+    revisionToken: RLS_ENTRY_REVISION,
+    checksumSha256: options.checksum,
+    support: { status: "not_a_numeric_claim", reason: null },
+  };
+}
+
+function rlsDecisionManifest(context: SeedContext) {
+  const retrievedAt = "2026-08-27T00:00:00.000Z";
+  const planChecksum = "e".repeat(64);
+  const pdfChecksum = "f".repeat(64);
+  const includedEntry = (options: {
+    path: string;
+    sourceId: string;
+    recordId: string;
+    contentType: string;
+    checksum: string;
+    label: string;
+    idSeed: string;
+  }) => ({
+    path: options.path,
+    originalRecord: { sourceId: options.sourceId, recordId: options.recordId, parentRecordId: null },
+    contentType: options.contentType,
+    inclusion: { status: "included", reason: null },
+    retrieval: { state: "available", retrievedAt },
+    revisionToken: RLS_ENTRY_REVISION,
+    checksumSha256: options.checksum,
+    byteSize: 1,
+    evidence: rlsEvidenceDescriptor({
+      idSeed: options.idSeed,
+      label: options.label,
+      checksum: options.checksum,
+      retrievedAt,
+    }),
+  });
+  return {
+    schemaVersion: "project_evidence_manifest.v2",
+    bundleId: context.evidenceBundleBId,
+    workspaceId: context.workspaceBId,
+    projectId: context.projectBId,
+    projectRevision: context.projectBRevision,
+    generatedAt: retrievedAt,
+    purpose: "retained_evidence_snapshot",
+    approvalOrPublication: false,
+    layerStatusTable: "openplan_layer_status",
+    inventory: { inventoryTruncated: false },
+    selectedLinkedPlan: { id: context.planBId, revisionToken: RLS_ENTRY_REVISION },
+    currentBoardOrReportPdf: { recordId: context.reportArtifactBId, checksumSha256: pdfChecksum },
+    entries: [
+      includedEntry({
+        path: "project/linked-plan.json",
+        sourceId: "linked_data",
+        recordId: context.planBId,
+        contentType: "application/json",
+        checksum: planChecksum,
+        label: "RLS linked plan",
+        idSeed: "1",
+      }),
+      includedEntry({
+        path: `files/report_artifacts/${context.reportArtifactBId}-rls.pdf`,
+        sourceId: "report_artifacts",
+        recordId: context.reportArtifactBId,
+        contentType: "application/pdf",
+        checksum: pdfChecksum,
+        label: "RLS report PDF",
+        idSeed: "2",
+      }),
+    ],
+  };
+}
 
 type ReadResult = {
   table: string;
@@ -497,23 +589,23 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "project_evidence_bundles",
     select: "id,workspace_id,project_id,status",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, projectBId, evidenceBundleBId, userBId }) => ({
-      id: evidenceBundleBId,
-      workspace_id: workspaceBId,
-      project_id: projectBId,
-      project_revision: "2026-08-26T00:00:00Z",
+    build: (context) => ({
+      id: context.evidenceBundleBId,
+      workspace_id: context.workspaceBId,
+      project_id: context.projectBId,
+      project_revision: context.projectBRevision,
       selection_json: [],
       selected_count: 0,
-      generated_by: userBId,
+      generated_by: context.userBId,
       status: "ready",
-      manifest_json: { schemaVersion: "project_evidence_manifest.v2" },
+      manifest_json: rlsDecisionManifest(context),
       manifest_sha256: "a".repeat(64),
       checksums_sha256: "b".repeat(64),
-      bundle_sha256: "c".repeat(64),
+      bundle_sha256: RLS_BUNDLE_CHECKSUM,
       storage_bucket: "project-evidence-bundles",
-      storage_path: `${workspaceBId}/${projectBId}/${evidenceBundleBId}.zip`,
+      storage_path: `${context.workspaceBId}/${context.projectBId}/${context.evidenceBundleBId}.zip`,
       byte_count: 1,
-      completed_at: "2026-08-26T00:00:00Z",
+      completed_at: new Date().toISOString(),
     }),
   },
   {
@@ -525,7 +617,7 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       workspace_id: workspaceBId,
       project_id: projectBId,
       bundle_id: evidenceBundleBId,
-      bundle_sha256: "c".repeat(64),
+      bundle_sha256: RLS_BUNDLE_CHECKSUM,
       submitted_by: userBId,
       assigned_approver_id: userCId,
     }),
@@ -540,7 +632,7 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       project_id: projectBId,
       submission_id: decisionSubmissionBId,
       bundle_id: evidenceBundleBId,
-      bundle_sha256: "c".repeat(64),
+      bundle_sha256: RLS_BUNDLE_CHECKSUM,
       decision: "approved",
       decided_by: userCId,
     }),
@@ -700,9 +792,10 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "plans",
     select: "id,workspace_id",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, suffix }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, projectBId, planBId, suffix }) => ({
+      id: planBId,
       workspace_id: workspaceBId,
+      project_id: projectBId,
       title: `RLS plan ${suffix}`,
       plan_type: "corridor",
     }),
@@ -1041,10 +1134,12 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     select: "id,report_id",
     expectedMemberReadable: true,
     scope: { column: "report_id", value: (context) => context.reportBId },
-    build: ({ reportBId }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, reportBId, reportArtifactBId }) => ({
+      id: reportArtifactBId,
       report_id: reportBId,
-      artifact_kind: "html",
+      artifact_kind: "pdf",
+      storage_path: `${workspaceBId}/${reportBId}/${reportArtifactBId}.pdf`,
+      metadata_json: { checksumSha256: "f".repeat(64) },
     }),
   },
   {
@@ -1391,8 +1486,14 @@ const INSERT_ORDER = [
         "model_runs",
         "modeling_source_manifests",
         "workspace_members",
+        "project_evidence_bundles",
+        "project_decision_package_submissions",
+        "project_decision_package_decisions",
       ].includes(table) && source.indexOf(table) === index
   ),
+  "project_evidence_bundles",
+  "project_decision_package_submissions",
+  "project_decision_package_decisions",
 ] as const;
 
 const liveDescribe = LIVE_RLS ? describe : describe.skip;
@@ -1910,6 +2011,7 @@ liveDescribe("workspace RLS live isolation", () => {
   let userB: SupabaseClient;
   let context: SeedContext;
   let safetyEquityTractGeoid = "";
+  let bundleObjectCreated = false;
 
   const password = "OpenPlanRls!2026";
 
@@ -1952,6 +2054,9 @@ liveDescribe("workspace RLS live isolation", () => {
       userBId: createdB.data.user.id,
       userCId: createdC.data.user.id,
       projectBId: randomUUID(),
+      projectBRevision: "",
+      planBId: randomUUID(),
+      reportArtifactBId: randomUUID(),
       evidenceBundleBId: randomUUID(),
       decisionSubmissionBId: randomUUID(),
       decisionDecisionBId: randomUUID(),
@@ -2008,6 +2113,23 @@ liveDescribe("workspace RLS live isolation", () => {
     });
 
     for (const table of INSERT_ORDER) {
+      if (table === "project_evidence_bundles") {
+        const revisionRead = await service
+          .from("projects")
+          .select("updated_at")
+          .eq("id", context.projectBId)
+          .single();
+        if (revisionRead.error || !revisionRead.data?.updated_at) {
+          throw new Error(`Failed to read the RLS project revision: ${revisionRead.error?.message ?? "missing revision"}`);
+        }
+        context.projectBRevision = revisionRead.data.updated_at as string;
+        const objectPath = `${context.workspaceBId}/${context.projectBId}/${context.evidenceBundleBId}.zip`;
+        const objectUpload = await service.storage
+          .from("project-evidence-bundles")
+          .upload(objectPath, Buffer.from("x"), { contentType: "application/zip", upsert: false });
+        if (objectUpload.error) throw new Error(`Failed to upload the RLS bundle fixture: ${objectUpload.error.message}`);
+        bundleObjectCreated = true;
+      }
       const probe = probeByTable(table);
       if (probe.seedSql) {
         executeSql(resolveLocalDbContainer(), probe.seedSql(context));
@@ -2022,6 +2144,12 @@ liveDescribe("workspace RLS live isolation", () => {
 
     await userA?.auth.signOut();
     await userB?.auth.signOut();
+
+    if (bundleObjectCreated) {
+      const objectPath = `${context.workspaceBId}/${context.projectBId}/${context.evidenceBundleBId}.zip`;
+      const removedObject = await service.storage.from("project-evidence-bundles").remove([objectPath]);
+      if (removedObject.error) throw new Error(`Failed to remove the RLS bundle fixture: ${removedObject.error.message}`);
+    }
 
     await service.from("workspaces").delete().in("id", [context.workspaceAId, context.workspaceBId]);
     if (safetyEquityTractGeoid) {

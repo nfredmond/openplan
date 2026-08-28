@@ -139,6 +139,9 @@ beforeEach(() => {
     ok: true,
     json: async () => INVENTORY,
   }));
+  Object.assign(navigator, {
+    clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
+  });
 });
 
 describe("project evidence bundle reachability", () => {
@@ -150,6 +153,13 @@ describe("project evidence bundle reachability", () => {
       "href",
       INVENTORY.priorBundles[0].downloadHref
     );
+    expect(screen.getByText(INVENTORY.priorBundles[0].manifestSha256)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Copy manifest SHA-256" }));
+    await waitFor(() => {
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        INVENTORY.priorBundles[0].manifestSha256,
+      );
+    });
 
     fireEvent.click(prepare);
     expect(await screen.findByRole("dialog", { name: "Review project evidence bundle" })).toBeVisible();
@@ -164,10 +174,8 @@ describe("project evidence bundle reachability", () => {
     expect(screen.getByRole("checkbox", { name: "Include Orthomosaic" })).toBeDisabled();
     expect(screen.getByText("OpenPlan does not hold bytes for this deliverable.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
-
-    fireEvent.change(screen.getByLabelText("Linked plan"), {
-      target: { value: INVENTORY.linkedPlans[0].id },
-    });
+    expect(screen.getByLabelText("Linked plan")).toHaveValue(INVENTORY.linkedPlans[0].id);
+    expect(screen.getByText("Confirm that you reviewed this exact selection.")).toBeVisible();
 
     fireEvent.click(screen.getByText(/I reviewed this exact selection/));
     const freeze = screen.getByRole("button", { name: "Freeze evidence bundle" });

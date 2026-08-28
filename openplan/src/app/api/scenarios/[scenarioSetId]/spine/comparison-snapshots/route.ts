@@ -23,13 +23,20 @@ import {
 } from "@/lib/http/write-outcome";
 import {
   collectGuidedRunEvidence,
+  guidedEvidenceSharesExactNetwork,
+  guidedRunJobKey,
+  latestGuidedRuns,
+  verifiedActivitySimPreflight,
   type GuidedRunJob,
   type GuidedRunRow,
   type ModelRunArtifactRow,
+  type ModelRunKpiRow,
+  type ModelRunStageRow,
 } from "@/lib/models/guided-model-evidence";
 import {
+  hasGuidedProjectComparisonIntent,
   isGuidedProjectComparisonModel,
-  parseGuidedBuildAssumption,
+  usesGuidedWorkerNetwork,
 } from "@/lib/models/project-comparison";
 
 const paramsSchema = z.object({
@@ -336,21 +343,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const activitysimModel = guidedModels.find((model) =>
       isGuidedProjectComparisonModel(model.config_json, "activitysim"),
     );
-    const isGuidedReadyRequest = parsed.data.status === "ready" && Boolean(aequilibraeModel && activitysimModel);
+    const guidedIntent = guidedModels.some((model) => hasGuidedProjectComparisonIntent(model.config_json));
+    const isGuidedReadyRequest = parsed.data.status === "ready" && guidedIntent;
     let guidedEvidence: ReturnType<typeof collectGuidedRunEvidence> = [];
+    if (
+      isGuidedReadyRequest &&
+      (!aequilibraeModel || !activitysimModel ||
+        !usesGuidedWorkerNetwork(aequilibraeModel.config_json) ||
+        !usesGuidedWorkerNetwork(activitysimModel.config_json))
+    ) {
+      return NextResponse.json(
+        { error: "The guided model contract is incomplete or corrupt and cannot be treated as a generic ready snapshot.", repairState: "guided_contract_invalid" },
+        { status: 409 },
+      );
+    }
     if (isGuidedReadyRequest && aequilibraeModel && activitysimModel) {
       const jobs = [
-        { method: "aequilibrae", scenario: "baseline", modelId: aequilibraeModel.id, scenarioEntryId: parsed.data.baselineEntryId },
-        { method: "aequilibrae", scenario: "build", modelId: aequilibraeModel.id, scenarioEntryId: parsed.data.candidateEntryId },
-        { method: "activitysim", scenario: "baseline", modelId: activitysimModel.id, scenarioEntryId: parsed.data.baselineEntryId },
-        { method: "activitysim", scenario: "build", modelId: activitysimModel.id, scenarioEntryId: parsed.data.candidateEntryId },
+        { method: "aequilibrae", scenario: "baseline", modelId: aequilibraeModel.id, scenarioEntryId: parsed.data.baselineEntryId, assumptionsJson: (baselineEntryResult.entry.assumptions_json as Record<string, unknown> | null) ?? {} },
+        { method: "aequilibrae", scenario: "build", modelId: aequilibraeModel.id, scenarioEntryId: parsed.data.candidateEntryId, assumptionsJson: (candidateEntryResult.entry.assumptions_json as Record<string, unknown> | null) ?? {} },
+        { method: "activitysim", scenario: "baseline", modelId: activitysimModel.id, scenarioEntryId: parsed.data.baselineEntryId, assumptionsJson: (baselineEntryResult.entry.assumptions_json as Record<string, unknown> | null) ?? {} },
+        { method: "activitysim", scenario: "build", modelId: activitysimModel.id, scenarioEntryId: parsed.data.candidateEntryId, assumptionsJson: (candidateEntryResult.entry.assumptions_json as Record<string, unknown> | null) ?? {} },
       ] as const satisfies readonly GuidedRunJob[];
       const runsResult = await supabase
         .from("model_runs")
-        .select("id, model_id, scenario_entry_id, status, assumption_snapshot_json")
+        .select("id, model_id, scenario_entry_id, engine_key, status, assumption_snapshot_json, created_at")
         .in("model_id", [aequilibraeModel.id, activitysimModel.id])
         .in("scenario_entry_id", [parsed.data.baselineEntryId, parsed.data.candidateEntryId])
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
       if (runsResult.error) {
         return NextResponse.json({ error: "Failed to verify guided comparison runs" }, { status: 500 });
       }
@@ -359,39 +379,75 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const artifactsResult = runIds.length
         ? await supabase
             .from("model_run_artifacts")
-            .select("run_id, artifact_type, file_url, file_size_bytes, content_hash")
+            .select("id, run_id, stage_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
             .in("run_id", runIds)
-            .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
+            .in("artifact_type", ["link_volumes", "activitysim_link_volumes", "evidence_packet"])
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false })
         : { data: [], error: null };
       if (artifactsResult.error) {
         return NextResponse.json({ error: "Failed to verify guided output artifacts" }, { status: 500 });
       }
-      guidedEvidence = collectGuidedRunEvidence(
-        jobs,
-        runs,
-        (artifactsResult.data ?? []) as ModelRunArtifactRow[],
-      );
-      const buildAssumption = parseGuidedBuildAssumption(candidateEntryResult.entry.assumptions_json);
-      const currentBuildRuns = guidedEvidence
-        .filter((item) => item.scenario === "build")
-        .map((item) => runs.find((run) => run.id === item.runId));
-      const buildEvidenceIsCurrent = Boolean(
-        buildAssumption &&
-        currentBuildRuns.length === 2 &&
-        currentBuildRuns.every((run) => {
-          const snapshot = parseGuidedBuildAssumption(run?.assumption_snapshot_json);
-          return snapshot?.autoTripChangePct === buildAssumption.autoTripChangePct &&
-            snapshot.basis === buildAssumption.basis;
-        }),
-      );
-      if (guidedEvidence.length !== 4 || !buildEvidenceIsCurrent) {
+      const stagesResult = runIds.length
+        ? await supabase.from("model_run_stages")
+            .select("id, run_id, stage_name, status")
+            .in("run_id", runIds)
+            .in("stage_name", ["Artifact Extraction", "ActivitySim Bundle & Preflight", "ActivitySim Network Assignment"])
+        : { data: [], error: null };
+      const kpisResult = runIds.length
+        ? await supabase.from("model_run_kpis")
+            .select("id, run_id, kpi_name, breakdown_json, created_at")
+            .in("run_id", runIds)
+            .eq("kpi_name", "activitysim_runtime_mode")
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false })
+        : { data: [], error: null };
+      if (stagesResult.error || kpisResult.error) {
+        return NextResponse.json({ error: "Failed to verify guided run stages and runtime evidence" }, { status: 500 });
+      }
+      const artifacts = (artifactsResult.data ?? []) as ModelRunArtifactRow[];
+      const stages = (stagesResult.data ?? []) as ModelRunStageRow[];
+      const kpis = (kpisResult.data ?? []) as ModelRunKpiRow[];
+      guidedEvidence = collectGuidedRunEvidence(jobs, runs, artifacts, stages);
+      const latest = latestGuidedRuns(jobs, runs);
+      const missingActivitySim = jobs
+        .filter((job) => job.method === "activitysim")
+        .map((job) => latest.get(guidedRunJobKey(job)))
+        .find((run) => run?.status === "succeeded" && !guidedEvidence.some((item) => item.runId === run.id));
+      const activitySimMode = missingActivitySim
+        ? verifiedActivitySimPreflight({ run: missingActivitySim, artifacts, stages, kpis })
+        : null;
+      if (!guidedEvidenceSharesExactNetwork(guidedEvidence)) {
         return NextResponse.json(
           {
             error: "A ready guided comparison requires current baseline and build output artifacts from both methods.",
-            repairState: guidedEvidence.some((item) => item.method === "activitysim")
-              ? "needs_model_outputs"
-              : "needs_activitysim_runtime",
+            repairState: guidedEvidence.length === 4
+              ? "needs_shared_network_rerun"
+              : activitySimMode === "preflight_only"
+                ? "needs_activitysim_runtime"
+                : missingActivitySim
+                  ? "needs_activitysim_output"
+                  : "needs_model_outputs",
           },
+          { status: 409 },
+        );
+      }
+      const decisionsResult = await supabase.from("modeling_claim_decisions")
+        .select("model_run_id, track, claim_status")
+        .in("model_run_id", guidedEvidence.map((item) => item.runId));
+      if (decisionsResult.error) {
+        return NextResponse.json({ error: "Failed to verify guided validation decisions" }, { status: 500 });
+      }
+      const decisions = (decisionsResult.data ?? []) as Array<{ model_run_id: string; track: string; claim_status: string }>;
+      const decidedRunIds = new Set(decisions
+        .filter((decision) => guidedEvidence.some((item) =>
+          item.runId === decision.model_run_id &&
+          decision.track === (item.method === "aequilibrae" ? "assignment" : "behavioral_demand"),
+        ))
+        .map((decision) => decision.model_run_id));
+      if (decidedRunIds.size !== 4) {
+        return NextResponse.json(
+          { error: "A ready guided comparison requires a track-matched validation decision for each exact output.", repairState: "needs_validation_decisions" },
           { status: 409 },
         );
       }
@@ -488,10 +544,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
           workspace_id: access.scenarioSet.workspace_id,
           comparison_snapshot_id: comparisonSnapshot.id,
           model_run_id: item.runId,
+          model_run_artifact_id: item.artifactId,
           method: item.method,
           scenario_role: item.scenario,
           artifact_type: item.artifactType,
           artifact_sha256: item.artifactSha256,
+          assignment_profile_sha256: item.assignmentProfileSha256,
+          network_settings_sha256: item.networkSettingsSha256,
+          network_state_sha256: item.networkStateSha256,
+          scenario_assumptions_json: item.scenarioAssumptionsJson,
           created_by: user.id,
         })),
       );

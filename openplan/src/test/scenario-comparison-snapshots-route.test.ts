@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -42,6 +43,27 @@ const guidedModelsResultMock = vi.fn().mockResolvedValue({ data: [], error: null
 const guidedModelsEqProjectMock = vi.fn(() => guidedModelsResultMock());
 const guidedModelsEqSetMock = vi.fn(() => ({ eq: guidedModelsEqProjectMock }));
 const guidedModelsSelectMock = vi.fn(() => ({ eq: guidedModelsEqSetMock }));
+const guidedRunsResultMock = vi.fn();
+const guidedArtifactsResultMock = vi.fn();
+const guidedStagesResultMock = vi.fn();
+const guidedKpisResultMock = vi.fn();
+const guidedDecisionsResultMock = vi.fn();
+const guidedLinksInsertMock = vi.fn();
+const comparisonSnapshotReadyMaybeSingleMock = vi.fn();
+const comparisonSnapshotReadySelectMock = vi.fn(() => ({ maybeSingle: comparisonSnapshotReadyMaybeSingleMock }));
+const comparisonSnapshotReadyEqStatusMock = vi.fn(() => ({ select: comparisonSnapshotReadySelectMock }));
+const comparisonSnapshotReadyEqIdMock = vi.fn(() => ({ eq: comparisonSnapshotReadyEqStatusMock }));
+const comparisonSnapshotUpdateMock = vi.fn(() => ({ eq: comparisonSnapshotReadyEqIdMock }));
+
+function orderedResult(mock: () => unknown) {
+  const chain = {
+    in: () => chain,
+    eq: () => chain,
+    order: () => chain,
+    then: (resolve: (value: unknown) => unknown) => Promise.resolve(mock()).then(resolve),
+  };
+  return chain;
+}
 
 const mockAudit = {
   info: vi.fn(),
@@ -75,7 +97,7 @@ const fromMock = vi.fn((table: string) => {
   }
 
   if (table === "scenario_comparison_snapshots") {
-    return { insert: comparisonSnapshotInsertMock };
+    return { insert: comparisonSnapshotInsertMock, update: comparisonSnapshotUpdateMock };
   }
 
   if (table === "scenario_comparison_indicator_deltas") {
@@ -84,6 +106,30 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "models") {
     return { select: guidedModelsSelectMock };
+  }
+
+  if (table === "model_runs") {
+    return { select: () => orderedResult(guidedRunsResultMock) };
+  }
+
+  if (table === "model_run_artifacts") {
+    return { select: () => orderedResult(guidedArtifactsResultMock) };
+  }
+
+  if (table === "model_run_stages") {
+    return { select: () => orderedResult(guidedStagesResultMock) };
+  }
+
+  if (table === "model_run_kpis") {
+    return { select: () => orderedResult(guidedKpisResultMock) };
+  }
+
+  if (table === "modeling_claim_decisions") {
+    return { select: () => orderedResult(guidedDecisionsResultMock) };
+  }
+
+  if (table === "scenario_comparison_model_run_links") {
+    return { insert: guidedLinksInsertMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -147,6 +193,10 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     });
 
     runsCountGteMock.mockResolvedValue({ count: 0, error: null });
+    guidedModelsResultMock.mockResolvedValue({ data: [], error: null });
+    guidedLinksInsertMock.mockResolvedValue({ data: null, error: null });
+    guidedDecisionsResultMock.mockReturnValue({ data: [], error: null });
+    comparisonSnapshotReadyMaybeSingleMock.mockResolvedValue({ data: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }, error: null });
 
     entryMaybeSingleMock
       .mockResolvedValueOnce({
@@ -301,6 +351,171 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
         staleReportCount: 1,
       })
     );
+  });
+
+  it("binds a ready guided snapshot to the exact four artifacts, network digests, and scenario assumptions", async () => {
+    const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
+    const profilePayload = '{"engine":"aequilibrae"}';
+    const settingsPayload = '{"capacity":"shared"}';
+    const profileHash = digest(profilePayload);
+    const settingsHash = digest(settingsPayload);
+    const networkState = { network_settings_digest: settingsHash, osm_snapshot: "shared" };
+    const statePayload = `{"network_settings_digest":${JSON.stringify(settingsHash)},"osm_snapshot":"shared"}`;
+    const stateHash = digest(statePayload);
+    const config = (method: string) => ({
+      guidedProjectComparison: "openplan.project_comparison.v1",
+      method,
+      networkBasis: {
+        kind: "worker_osm_snapshot",
+        source: "OpenStreetMap",
+        identity: "network_state_digest",
+        comparisonRule: "exact_digest_match",
+      },
+    });
+    guidedModelsResultMock.mockResolvedValue({
+      data: [
+        { id: "model-aeq", config_json: config("aequilibrae") },
+        { id: "model-asim", config_json: config("activitysim") },
+      ],
+      error: null,
+    });
+    const baselineAssumptions = {
+      horizonYear: 2045,
+      network_source: "County public network",
+      hidden_raw_key: "do-not-leak",
+    };
+    const buildAssumptions = {
+      projectPackage: "Protected bike network",
+      internalSolverKey: "do-not-leak",
+    };
+    const runs = [
+      ["run-aeq-base", "model-aeq", "55555555-5555-4555-8555-555555555555", "aequilibrae", baselineAssumptions],
+      ["run-aeq-build", "model-aeq", "77777777-7777-4777-8777-777777777777", "aequilibrae", buildAssumptions],
+      ["run-asim-base", "model-asim", "55555555-5555-4555-8555-555555555555", "behavioral_demand", baselineAssumptions],
+      ["run-asim-build", "model-asim", "77777777-7777-4777-8777-777777777777", "behavioral_demand", buildAssumptions],
+    ].map(([id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json]) => ({
+      id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json, status: "succeeded",
+    }));
+    const metadata = {
+      assignment_profile: JSON.parse(profilePayload),
+      assignment_profile_payload_json: profilePayload,
+      assignment_profile_digest: profileHash,
+      network_settings: JSON.parse(settingsPayload),
+      network_settings_payload_json: settingsPayload,
+      network_settings_digest: settingsHash,
+      network_state_record: networkState,
+      network_state_digest: stateHash,
+    };
+    guidedRunsResultMock.mockReturnValue({ data: runs, error: null });
+    guidedArtifactsResultMock.mockReturnValue({
+      data: runs.map((run, index) => ({
+        id: `artifact-${index}`,
+        run_id: run.id,
+        stage_id: `stage-${index}`,
+        artifact_type: run.model_id === "model-aeq" ? "link_volumes" : "activitysim_link_volumes",
+        file_url: `storage://run-artifacts/${run.id}.csv`,
+        file_size_bytes: 100,
+        content_hash: `${index + 1}`.repeat(64),
+        metadata_json: metadata,
+        created_at: `2026-08-27T00:00:0${index}Z`,
+      })),
+      error: null,
+    });
+    guidedStagesResultMock.mockReturnValue({
+      data: runs.map((run, index) => ({
+        id: `stage-${index}`,
+        run_id: run.id,
+        stage_name: run.model_id === "model-aeq" ? "Artifact Extraction" : "ActivitySim Network Assignment",
+        status: "succeeded",
+      })),
+      error: null,
+    });
+    guidedKpisResultMock.mockReturnValue({ data: [], error: null });
+    guidedDecisionsResultMock.mockReturnValue({
+      data: runs.map((run) => ({
+        model_run_id: run.id,
+        track: run.model_id === "model-aeq" ? "assignment" : "behavioral_demand",
+        claim_status: "screening_grade",
+      })),
+      error: null,
+    });
+
+    const response = await postComparisonSnapshot(
+      new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          baselineEntryId: "55555555-5555-4555-8555-555555555555",
+          candidateEntryId: "77777777-7777-4777-8777-777777777777",
+          label: "Exact guided comparison",
+          status: "ready",
+        }),
+      }),
+      { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+
+    expect(response.status).toBe(201);
+    expect(guidedLinksInsertMock).toHaveBeenCalledWith(expect.arrayContaining([
+      expect.objectContaining({
+        model_run_id: "run-asim-build",
+        model_run_artifact_id: "artifact-3",
+        assignment_profile_sha256: profileHash,
+        network_settings_sha256: settingsHash,
+        network_state_sha256: stateHash,
+        scenario_assumptions_json: buildAssumptions,
+      }),
+    ]));
+    expect(comparisonSnapshotUpdateMock).toHaveBeenCalledWith({ status: "ready" });
+
+    comparisonSnapshotInsertMock.mockClear();
+    guidedLinksInsertMock.mockClear();
+    guidedDecisionsResultMock.mockReturnValue({
+      data: runs.slice(0, 3).map((run) => ({
+        model_run_id: run.id,
+        track: run.model_id === "model-aeq" ? "assignment" : "behavioral_demand",
+        claim_status: "screening_grade",
+      })),
+      error: null,
+    });
+    entryMaybeSingleMock
+      .mockResolvedValueOnce({
+        data: {
+          id: "55555555-5555-4555-8555-555555555555",
+          scenario_set_id: "11111111-1111-4111-8111-111111111111",
+          entry_type: "baseline",
+          label: "Existing conditions",
+          assumptions_json: baselineAssumptions,
+          attached_run_id: "baseline-run",
+        },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          id: "77777777-7777-4777-8777-777777777777",
+          scenario_set_id: "11111111-1111-4111-8111-111111111111",
+          entry_type: "alternative",
+          label: "Protected bike package",
+          assumptions_json: buildAssumptions,
+          attached_run_id: "candidate-run",
+        },
+        error: null,
+      });
+    const incomplete = await postComparisonSnapshot(
+      new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          baselineEntryId: "55555555-5555-4555-8555-555555555555",
+          candidateEntryId: "77777777-7777-4777-8777-777777777777",
+          label: "Incomplete guided validation",
+          status: "ready",
+        }),
+      }),
+      { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+    expect(incomplete.status).toBe(409);
+    expect(await incomplete.json()).toMatchObject({ repairState: "needs_validation_decisions" });
+    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
   });
 
   it("accepts a real buildTripGenComparisonPayload body through the real route schema and persists the split caveats", async () => {

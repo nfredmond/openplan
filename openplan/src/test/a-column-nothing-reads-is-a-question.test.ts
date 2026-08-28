@@ -175,6 +175,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
     ["kb_document_chunks.content_tsv", "The full-text index the kb_search_chunks RPC searches. Maintained by a trigger, queried in SQL, never named in TypeScript."],
     ["analyses.is_public", "Read by the analyses row-level-security policy and by the share-token index, both in SQL. The application sets sharing through the token, not this flag."],
     ["project_portfolio_import_rows.batch_id", "Read by the immutable-provenance trigger during a batch cascade and enforced by the row foreign key and batch-row index; TypeScript reads only batch summaries."],
+    ["project_decision_package_decisions.receipt_json", "The database trigger still writes the legacy structured receipt and the equality constraint compares it with the parsed canonical receipt text. The application returns and verifies the exact canonical text bytes instead of reading this compatibility column."],
   ].map(([column, reason]) => ({ column, category: "READ_IN_SQL" as const, reason })),
 
   // ---- More inert commercial-era schema -----------------------------------

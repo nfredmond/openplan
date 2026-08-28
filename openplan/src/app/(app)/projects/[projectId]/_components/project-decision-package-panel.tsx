@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Download, Loader2, Send } from "lucide-react";
+import { Check, CheckCircle2, Copy, Download, Loader2, Send } from "lucide-react";
 import { PROJECT_EVIDENCE_BUNDLE_CREATED_EVENT } from "./project-evidence-bundle-panel";
 
 type Bundle = {
@@ -53,6 +53,29 @@ async function readDecisionPackageData(projectId: string, signal?: AbortSignal):
     };
   }
   return { data: payload, error: null };
+}
+
+function HashValue({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="mt-2 grid min-w-0 gap-2 text-xs text-muted-foreground sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
+      <span className="shrink-0 font-medium text-foreground">{label}</span>
+      <code className="min-w-0 break-all leading-relaxed">{value}</code>
+      <button
+        type="button"
+        className="inline-flex shrink-0 items-center gap-1 justify-self-start rounded-[0.3rem] border border-border px-2 py-1 text-foreground hover:bg-muted sm:justify-self-auto"
+        aria-label={`Copy ${label.toLowerCase()}`}
+        onClick={async () => {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1_500);
+        }}
+      >
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
 }
 
 export function ProjectDecisionPackagePanel({ projectId }: { projectId: string }) {
@@ -165,13 +188,14 @@ export function ProjectDecisionPackagePanel({ projectId }: { projectId: string }
           (approver) => approver.user_id !== data.currentUserId && approver.user_id !== bundle.generated_by,
         );
         return (
-          <div key={bundle.id} className="mt-4 rounded-[0.45rem] border border-border bg-background p-3 text-sm">
+          <div key={bundle.id} data-bundle-sha={bundle.bundle_sha256} className="mt-4 rounded-[0.45rem] border border-border bg-background p-3 text-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span>Bundle {bundle.bundle_sha256.slice(0, 16)}… · {new Date(bundle.generated_at).toLocaleString()}</span>
+              <span>Bundle frozen {new Date(bundle.generated_at).toLocaleString()}</span>
               <a href={`/api/projects/${projectId}/evidence-bundles/${bundle.id}/download`} className="inline-flex items-center gap-1 underline decoration-dotted underline-offset-2">
                 <Download className="h-4 w-4" /> Download
               </a>
             </div>
+            <HashValue label="Bundle SHA-256" value={bundle.bundle_sha256} />
             {bundle.staleForCurrentUse ? <p className="mt-2 text-amber-700 dark:text-amber-200">Historical custody preserved. This bundle is stale for current use; freeze a new one. {bundle.freshnessError}</p> : null}
             {bundle.readinessError ? <p className="mt-2 text-amber-700 dark:text-amber-200">Not approvable: {bundle.readinessError}</p> : null}
             {!bundle.readinessError && !bundle.staleForCurrentUse && bundleSubmissions.length === 0 && returnedToReplace?.bundle_id !== bundle.id ? (
@@ -200,12 +224,16 @@ export function ProjectDecisionPackagePanel({ projectId }: { projectId: string }
         const decision = decisionsBySubmission.get(submission.id);
         const assignedHere = submission.assigned_approver_id === data.currentUserId;
         return (
-          <div key={submission.id} className="mt-3 rounded-[0.45rem] border border-border bg-background p-3 text-sm">
-            <p>Submission {submission.id.slice(0, 8)}… · bundle {submission.bundle_sha256.slice(0, 16)}…</p>
+          <div key={submission.id} data-submission-bundle-sha={submission.bundle_sha256} className="mt-3 rounded-[0.45rem] border border-border bg-background p-3 text-sm">
+            <p>Submission {submission.id.slice(0, 8)}…</p>
+            <HashValue label="Bundle SHA-256" value={submission.bundle_sha256} />
             {decision ? (
-              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                <p><CheckCircle2 className="mr-1 inline h-4 w-4" /> {decision.decision} · receipt {decision.receipt_sha256.slice(0, 16)}…{decision.reason ? ` · ${decision.reason}` : ""}</p>
-                <a href={`/api/projects/${projectId}/decision-packages/${submission.id}/decision`} className="underline decoration-dotted underline-offset-2">Download receipt</a>
+              <div className="mt-2" data-decision={decision.decision}>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <p><CheckCircle2 className="mr-1 inline h-4 w-4" /> {decision.decision}{decision.reason ? ` · ${decision.reason}` : ""}</p>
+                  <a href={`/api/projects/${projectId}/decision-packages/${submission.id}/decision`} className="underline decoration-dotted underline-offset-2">Download receipt</a>
+                </div>
+                <HashValue label="Receipt SHA-256" value={decision.receipt_sha256} />
               </div>
             ) : assignedHere && data.canApprove ? (
               <div className="mt-3 space-y-2">

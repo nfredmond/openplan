@@ -143,6 +143,7 @@ describe("the analysis sequence states one order", () => {
     const steps = resolveAnalysisSequence({
       ...COMPLETE,
       guidedProjectComparison: true,
+      managedNetworkBasisCount: 1,
       aequilibraeRunCount: 2,
       activitySimRunCount: 1,
       checkedRunCount: 0,

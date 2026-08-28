@@ -16,6 +16,7 @@ const {
   classifyJobExecution,
   classifyJobOutcome,
   codexContractViolation,
+  loadJobs,
   parseAgentSession,
   parseArgs,
   readFindings,
@@ -330,6 +331,17 @@ check('the command line accepts a resume directory', () => {
     verifyOnly: null,
     resume: 'first-week-runs/a',
   });
+});
+
+check('the governed handoff job declares its second identity and the archive-reader seam stays explicit', () => {
+  const jobs = loadJobs();
+  const governed = jobs.find((job) => job.id === '10-governed-decision-handoff');
+  const bundle = jobs.find((job) => job.id === '09-project-evidence-bundle');
+  assert.strictEqual(governed?.requiresApprover, true);
+  assert.match(governed?.body || '', /\{\{APPROVER_EMAIL\}\}/);
+  assert.match(governed?.body || '', /two distinct people/i);
+  assert.match(bundle?.body || '', /harness capability limit,[\s\S]*not an OpenPlan[\s\S]*product finding/i);
+  assert.match(bundle?.body || '', /separate required[\s\S]*repository gate/i);
 });
 
 check('new run directories live outside the repository', () => {

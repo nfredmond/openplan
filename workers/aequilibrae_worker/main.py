@@ -923,7 +923,8 @@ def write_model_run_modeling_evidence(
         # used for a failed gate and for a coverage gap, so nothing here can
         # promote anything — only the reason changes, and only to a truer one.
         zone_block = (validation or {}).get("zone_resolution") or {}
-        if zone_block.get("supports_link_level_validation") is False:
+        zone_support = zone_block.get("supports_link_level_validation")
+        if zone_support is False:
             zone_note = zone_block.get("note") or (
                 "At this zone resolution a large share of travel never reaches a link."
             )
@@ -950,6 +951,13 @@ def write_model_run_modeling_evidence(
                 "and remain usable; a finer zone system is what would let a link-level comparison "
                 "support a claim. This banding is OpenPlan's own screening heuristic, not an "
                 "adopted standard."
+            )
+        elif validation and matched > 0 and zone_support is not True:
+            claim_status, reason = "prototype_only", (
+                f"The observed-count check ran ({matched} stations, median APE {median_ape}%), "
+                "but no screening claim is recorded because the share of travel that never "
+                "reaches a link was not measured. The check remains part of this run's evidence; "
+                "an unmeasured zone-resolution qualification cannot establish a passing tier."
             )
         elif calibration:
             independent = model_credibility.summarize_independent_validation(
@@ -1019,10 +1027,17 @@ def write_model_run_modeling_evidence(
             # Same zone qualification the claim decision above applied, so the
             # metric row and the claim beside it cannot tell a planner two
             # different stories about one comparison.
-            status, detail = count_validation.metric_status_for_gate(
-                median_ape, max_ape, matched,
-                intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
-            )
+            if zone_support is None:
+                status, detail = "warn", (
+                    f"Median APE {median_ape}% across {matched} station(s), but the share of "
+                    "travel that never reaches a link was not measured, so this comparison "
+                    "does not establish screening grade."
+                )
+            else:
+                status, detail = count_validation.metric_status_for_gate(
+                    median_ape, max_ape, matched,
+                    intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
+                )
             rows = [{
                 "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
                 "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",

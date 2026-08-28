@@ -432,18 +432,18 @@ const EXPECTED = {
   // workspace-readable through one SELECT policy, while authenticated clients
   // have no write grant or policy: +1 permissive policy, policy-bearing table,
   // relation, table, and RLS table; no permissive write.
-  // 20260826000002 adds the immutable project evidence-bundle ledger. One
-  // member SELECT, one writer INSERT, and one preparing-to-terminal UPDATE
-  // policy add three permissive policies, two permissive writes, and one
-  // policy-bearing/RLS relation. Private storage remains service-role-only.
+  // 20260826000002 adds the immutable project evidence-bundle ledger. The
+  // v0.37 correction retains member SELECT and writer INSERT but removes the
+  // authenticated preparing-to-terminal UPDATE: service-owned finalization is
+  // now the only terminal transition. Private storage remains service-only.
   // 20260826000003 adds the exact guided-model run-link table with member read
   // and writer insert policies. 20260826000004 adds two governed-package
   // tables with member read plus role-aware insert policies, and one My Work
   // view. The correction migrations replace functions without adding schema.
-  policies: 687,
-  permissive: 441,
+  policies: 686,
+  permissive: 440,
   restrictive: 246,
-  permissiveWrites: 281,
+  permissiveWrites: 280,
   expanded: 286,
   tablesWithPolicies: 160,
   relations: 184,

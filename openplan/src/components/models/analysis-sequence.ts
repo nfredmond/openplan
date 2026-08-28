@@ -179,8 +179,12 @@ export type AnalysisSequenceFacts = {
   readonly runCount: number;
   readonly aequilibraeRunCount?: number;
   readonly activitySimRunCount?: number;
-  /** A county run that reached validated-screening AND cleared its gate. */
+  /** Exact track-matched validation decisions on the current output runs, including prototype-only decisions. */
   readonly checkedRunCount: number;
+  /** Exact track-matched decisions whose claim status is stronger than prototype-only. */
+  readonly nonPrototypeCheckedRunCount?: number;
+  /** Guided scenario sets for which all four exact outputs have track-matched decisions. */
+  readonly guidedComparisonCheckedCount?: number;
   readonly comparisonPacketCount?: number;
   readonly unreadable: readonly AnalysisStepId[];
 };
@@ -200,7 +204,9 @@ function factFor(step: AnalysisStepId, facts: AnalysisSequenceFacts): boolean | 
     case "area":
       return Boolean(facts.areaLabel);
     case "network":
-      return facts.networkCount > 0 || (facts.managedNetworkBasisCount ?? 0) > 0;
+      return facts.guidedProjectComparison
+        ? (facts.managedNetworkBasisCount ?? 0) > 0
+        : facts.networkCount > 0 || (facts.managedNetworkBasisCount ?? 0) > 0;
     case "comparison":
       return facts.scenarioSetCount > 0;
     case "model":
@@ -216,7 +222,9 @@ function factFor(step: AnalysisStepId, facts: AnalysisSequenceFacts): boolean | 
         ? (facts.activitySimRunCount ?? 0) >= 2
         : (facts.activitySimRunCount ?? 0) > 0;
     case "check":
-      return facts.checkedRunCount > 0;
+      return facts.guidedProjectComparison
+        ? (facts.guidedComparisonCheckedCount ?? 0) > 0
+        : facts.checkedRunCount > 0;
     case "packet":
       return (facts.comparisonPacketCount ?? 0) > 0;
     case "claim":
@@ -277,8 +285,12 @@ function standingFor(
           : "No ActivitySim run is on file yet.";
     case "check":
       return done
-        ? `${plural(facts.checkedRunCount, "run has", "runs have")} been checked against field counts.`
-        : "Nothing has been checked against field counts yet.";
+        ? facts.guidedProjectComparison
+          ? `${facts.checkedRunCount}/4 exact guided outputs have checks on file; ${facts.nonPrototypeCheckedRunCount ?? 0}/4 have non-prototype passes.`
+          : `${plural(facts.checkedRunCount, "run has", "runs have")} a field-count decision on file.`
+        : facts.guidedProjectComparison && facts.checkedRunCount > 0
+          ? `${facts.checkedRunCount}/4 exact guided outputs have checks on file; ${facts.nonPrototypeCheckedRunCount ?? 0}/4 have non-prototype passes. All four need a track-matched decision.`
+          : "Nothing has been checked against field counts yet.";
     case "packet":
       return done
         ? `${plural(facts.comparisonPacketCount ?? 0, "saved comparison report", "saved comparison reports")}.`

@@ -38,6 +38,23 @@ describe("project comparison guidance", () => {
     expect(summary.uncertainties).toContain("No shared road-network basis is registered.");
   });
 
+  it("lets the long not-started status wrap inside a narrow comparison panel", () => {
+    render(
+      <ProjectComparisonStarter
+        projectId="11111111-1111-4111-8111-111111111111"
+        projectName="Main Street"
+        facts={EMPTY}
+      />,
+    );
+
+    expect(screen.getByText("Baseline-versus-build comparison not started")).toHaveClass(
+      "min-w-0",
+      "max-w-full",
+      "shrink",
+      "whitespace-normal",
+    );
+  });
+
   it("keeps a failed fact read unknown instead of calling it absent", () => {
     const summary = summarizeProjectComparison({ ...EMPTY, unreadable: ["run"] });
     expect(summary.state).toBe("unknown");
@@ -186,6 +203,37 @@ describe("project comparison guidance", () => {
     fireEvent.click(screen.getByRole("button", { name: "Continue guided comparison" }));
 
     expect(await screen.findByRole("status")).toHaveTextContent(/preflight succeeded.*no assigned link volumes/i);
+    expect(navigation.push).not.toHaveBeenCalled();
+  });
+
+  it("reports a missing ActivitySim assignment artifact separately from unavailable runtime", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        state: "needs_activitysim_output",
+        scenarioSetId: "scenario-1",
+        networkBasis: "worker_osm_snapshot",
+        nextRun: {
+          method: "activitysim",
+          scenario: "baseline",
+          modelId: "model-asim",
+          scenarioEntryId: "entry-baseline",
+        },
+      }),
+    }));
+
+    render(
+      <ProjectComparisonStarter
+        projectId="11111111-1111-4111-8111-111111111111"
+        projectName="Main Street"
+        facts={{ ...EMPTY, scenarioSetCount: 1, modelCount: 2 }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Continue guided comparison" }));
+
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent(/job finished.*could not verify assigned link-volume output/i);
+    expect(status).not.toHaveTextContent(/configure an ActivitySim execution runtime/i);
     expect(navigation.push).not.toHaveBeenCalled();
   });
 });

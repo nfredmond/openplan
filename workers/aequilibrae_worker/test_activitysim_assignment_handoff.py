@@ -409,16 +409,32 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
                 ),
             }
 
+        activitysim_validation = {
+            "stations_matched": 0,
+            "coverage": {
+                "covered": False,
+                "status": "source_unavailable",
+            },
+        }
         completion = mock.Mock(status_code=200)
         completion.json.return_value = []
         with (
             mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
             mock.patch.object(main, "sb_claim_stage", return_value=True),
-            mock.patch.object(main, "sb_patch_stage"),
+            mock.patch.object(main, "sb_patch_stage") as patch_stage,
             mock.patch.object(main, "sb_patch_run"),
             mock.patch.object(main, "sb_post_artifact") as post_artifact,
             mock.patch.object(main, "activitysim_assignment_package", return_value="/activitysim/package"),
             mock.patch.object(main, "stage_assignment", side_effect=assignment),
+            mock.patch.object(
+                main, "_run_count_validation", return_value=activitysim_validation
+            ) as validate,
+            mock.patch.object(
+                main,
+                "sb_get_run",
+                return_value={"workspace_id": "workspace-1"},
+            ),
+            mock.patch.object(main, "write_model_run_modeling_evidence") as write_evidence,
             mock.patch.object(main.requests, "get", return_value=completion),
         ):
             assert main.process_stage(
@@ -453,6 +469,14 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         assert payload["metadata_json"]["trip_based_od_adjustments_reused"] is False
         assert payload["metadata_json"]["network_settings_digest"] == accepted_digest
         assert payload["metadata_json"]["assignment_profile_digest"] == profile_digest
+        assert validate.call_count == 1
+        write_evidence.assert_called_once_with(
+            run_id,
+            "workspace-1",
+            activitysim_validation,
+            track="behavioral_demand",
+        )
+        assert patch_stage.call_args.args[1]["status"] == "succeeded"
 
 
 def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():

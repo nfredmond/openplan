@@ -1,4 +1,5 @@
-import type { EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
+import { parseEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
+import { isSha256 } from "./contracts";
 import type { ProjectEvidenceCandidateInventory } from "./contracts";
 
 type ManifestV2 = {
@@ -12,7 +13,9 @@ type ManifestV2 = {
     checksumSha256?: string | null;
     revisionToken?: string | null;
     inclusion?: { status?: string };
-    evidence?: EvidenceDescriptorV1;
+    evidence?: unknown;
+    retrieval?: { state?: string; retrievedAt?: string | null };
+    byteSize?: number | null;
   }>;
 };
 
@@ -31,6 +34,47 @@ const CANDIDATE_SOURCE_IDS = new Set([
   "model_run_artifacts",
 ]);
 
+function readableTimestamp(value: unknown): value is string {
+  return typeof value === "string" && Number.isFinite(Date.parse(value));
+}
+
+function entryProblem(entry: NonNullable<ManifestV2["entries"]>[number]): string | null {
+  const sourceId = entry.originalRecord?.sourceId;
+  const recordId = entry.originalRecord?.recordId;
+  const inclusion = entry.inclusion?.status;
+  const descriptor = parseEvidenceDescriptor(entry.evidence);
+  if (!sourceId || !recordId || !["included", "excluded", "reference_only"].includes(inclusion ?? "")) {
+    return "Every package entry needs a complete source identity and inclusion verdict.";
+  }
+  if (!descriptor) return "Every package entry needs a valid point-of-use evidence descriptor.";
+  if (inclusion !== "included") {
+    if (entry.path !== null) return "Excluded and reference-only entries may not claim a frozen file path.";
+    return null;
+  }
+  if (typeof entry.path !== "string" || !entry.path.trim()) {
+    return "Every included package entry needs one frozen file path.";
+  }
+  if (!isSha256(entry.checksumSha256)) {
+    return "Every included package entry needs the SHA-256 of its frozen bytes.";
+  }
+  if (!readableTimestamp(entry.retrieval?.retrievedAt)) {
+    return "Every included package entry needs its exact retrieval timestamp.";
+  }
+  if (descriptor.checksumSha256 !== entry.checksumSha256 || descriptor.retrievedAt !== entry.retrieval.retrievedAt) {
+    return "Every included point-of-use descriptor must bind to the exact frozen bytes and retrieval time.";
+  }
+  if (typeof entry.revisionToken !== "string" || !entry.revisionToken.trim()) {
+    return "Every included package entry needs a source revision token.";
+  }
+  if (descriptor.revisionToken !== entry.revisionToken) {
+    return "Every included point-of-use descriptor must bind to the exact source revision.";
+  }
+  if (typeof entry.byteSize !== "number" || !Number.isSafeInteger(entry.byteSize) || entry.byteSize < 0) {
+    return "Every included package entry needs its exact non-negative byte count.";
+  }
+  return null;
+}
+
 /** Explain the first condition that prevents human review of this exact bundle. */
 export function decisionPackageReadiness(manifest: unknown): string | null {
   if (!manifest || typeof manifest !== "object") return "The bundle has no readable manifest.";
@@ -43,8 +87,10 @@ export function decisionPackageReadiness(manifest: unknown): string | null {
     return "Include exactly one current board or report PDF before submitting the package.";
   }
   const entries = value.entries ?? [];
-  if (entries.length === 0 || entries.some((entry) => !entry.evidence?.support?.status)) {
-    return "Every package entry needs a point-of-use evidence descriptor.";
+  if (entries.length === 0) return "The bundle has no evidence entries.";
+  for (const entry of entries) {
+    const problem = entryProblem(entry);
+    if (problem) return problem;
   }
   const selectedPlanEntry = entries.find((entry) =>
     entry.path === "project/linked-plan.json"
@@ -59,7 +105,7 @@ export function decisionPackageReadiness(manifest: unknown): string | null {
       && entry.inclusion?.status === "included",
   );
   if (reportEntries.length !== 1) return "The current board or report PDF is not bound to one exact frozen file.";
-  const unsupported = entries.filter((entry) => entry.evidence?.support.status === "unsupported");
+  const unsupported = entries.filter((entry) => parseEvidenceDescriptor(entry.evidence)?.support.status === "unsupported");
   if (unsupported.length > 0) return "A numeric claim lacks adequate point-of-use provenance.";
   return null;
 }

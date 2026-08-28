@@ -12,6 +12,10 @@ import {
   type ProjectGeoPackageProject,
 } from "@/lib/projects/project-geopackage";
 import { ProjectEvidenceBundleError, type GeneratedProjectEvidenceFile } from "./archive";
+import {
+  isPublicProjectEngagementCampaign,
+  isPublishableProjectEngagementGeometry,
+} from "./engagement-export-privacy";
 
 type ProjectScope = { id: string; workspace_id: string; updated_at?: string | null };
 
@@ -24,6 +28,10 @@ type DynamicQuery = PromiseLike<DynamicReadResult> & {
 
 function jsonBytes(value: unknown): Buffer {
   return Buffer.from(`${canonicalizeActionPayload(value)}\n`, "utf8");
+}
+
+function sourceRevision(value: unknown): string {
+  return createHash("sha256").update(canonicalizeActionPayload(value)).digest("hex");
 }
 
 function rows(value: unknown): Record<string, unknown>[] {
@@ -182,7 +190,7 @@ export async function loadProjectEvidenceGeneratedFiles(
       .eq("status", "ready")
       .order("created_at", { ascending: true }),
     client.from("engagement_campaigns")
-      .select("id")
+      .select("id, status, share_token, allow_public_submissions, submissions_closed_at, updated_at")
       .eq("workspace_id", project.workspace_id)
       .eq("project_id", project.id)
       .order("created_at", { ascending: true }),
@@ -262,23 +270,25 @@ export async function loadProjectEvidenceGeneratedFiles(
         : [],
     );
   }
-  const campaignIds = ids(rows(campaignRead.data));
+  const campaignIds = ids(rows(campaignRead.data).filter(isPublicProjectEngagementCampaign));
   let engagementGeometries: ProjectGeoPackageEngagementGeometry[] = [];
   if (campaignIds.length > 0) {
     const engagementRead = await client.from("engagement_items")
-      .select("id, campaign_id, geometry, longitude, latitude, source_type, created_at")
+      .select("id, campaign_id, category_id, title, body, submitted_by, status, source_type, metadata_json, moderation_notes, geometry, longitude, latitude, created_at, updated_at")
       .in("campaign_id", campaignIds)
       .eq("status", "approved")
       .order("created_at", { ascending: true });
     if (engagementRead.error) throw new ProjectEvidenceBundleError("missing_evidence", "Publishable engagement geometry could not be read.");
-    engagementGeometries = rows(engagementRead.data).map((row) => ({
-      id: String(row.id),
-      geometry: row.geometry,
-      longitude: typeof row.longitude === "number" ? row.longitude : null,
-      latitude: typeof row.latitude === "number" ? row.latitude : null,
-      sourceType: typeof row.source_type === "string" ? row.source_type : "unknown",
-      createdAt: typeof row.created_at === "string" ? row.created_at : generatedAt.toISOString(),
-    }));
+    engagementGeometries = rows(engagementRead.data)
+      .filter(isPublishableProjectEngagementGeometry)
+      .map((row) => ({
+        id: String(row.id),
+        geometry: row.geometry,
+        longitude: typeof row.longitude === "number" ? row.longitude : null,
+        latitude: typeof row.latitude === "number" ? row.latitude : null,
+        sourceType: typeof row.source_type === "string" ? row.source_type : "unknown",
+        createdAt: typeof row.created_at === "string" ? row.created_at : generatedAt.toISOString(),
+      }));
   }
 
   const projectRecord = withoutPersonalIdentifiers(projectRead.data) as Record<string, unknown>;
@@ -358,11 +368,29 @@ export async function loadProjectEvidenceGeneratedFiles(
     validationResults,
     claimDecisions,
   };
-  const modelingRevisionToken = createHash("sha256")
-    .update(canonicalizeActionPayload(modeling))
-    .digest("hex");
+  const modelingRevisionToken = sourceRevision({
+    models: withoutPersonalIdentifiers(models),
+    modelRuns: withoutPersonalIdentifiers(modelRuns),
+    modelArtifacts: withoutPersonalIdentifiers(modelArtifacts),
+    countyRuns: withoutPersonalIdentifiers(countyRuns),
+    sourceManifests: withoutPersonalIdentifiers(modelingEvidence.sources),
+    validationResults: withoutPersonalIdentifiers(modelingEvidence.validation),
+    claimDecisions: withoutPersonalIdentifiers(modelingEvidence.claims),
+  });
   const hasUnsupportedModelingClaim = [...claimDecisions, ...validationResults]
     .some((record) => record.evidenceDescriptor.support.status === "unsupported");
+  const hasNumericModelingClaim = claimDecisions.length > 0 || validationResults.length > 0;
+  const projectRevisionToken = sourceRevision(projectRecord);
+  const geoPackageRevisionToken = sourceRevision({
+    project: projectRecord,
+    corridors: corridorRead.data ?? [],
+    crashes,
+    engagementGeometries,
+  });
+  const linkedDataRevisionToken = sourceRevision(linkedData.links);
+  const linkedPlanRevisionToken = selectedPlan
+    ? sourceRevision(withoutPersonalIdentifiers(selectedPlan))
+    : null;
 
   return {
     projectRecord,
@@ -378,6 +406,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         retrievalState: "available",
         custodyState: "openplan_stored",
         knownLimits: [],
+        revisionToken: projectRevisionToken,
       },
       {
         path: "project/project.gpkg",
@@ -390,6 +419,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         retrievalState: "rendered_on_freeze",
         custodyState: "rendered_on_freeze",
         knownLimits: gpkg.summary.coverageLimits,
+        revisionToken: geoPackageRevisionToken,
       },
       ...(selectedPlan ? [{
         path: "project/linked-plan.json",
@@ -402,6 +432,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         retrievalState: "available" as const,
         custodyState: "openplan_stored" as const,
         knownLimits: ["This is the selected OpenPlan plan record, not an adopted-plan PDF."],
+        revisionToken: linkedPlanRevisionToken as string,
       }] : []),
       {
         path: "linked-data/provenance.json",
@@ -414,6 +445,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         retrievalState: "available",
         custodyState: "openplan_stored",
         knownLimits: [],
+        revisionToken: linkedDataRevisionToken,
       },
       {
         path: "modeling/evidence.json",
@@ -425,6 +457,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         contentType: "application/json",
         retrievalState: "available",
         custodyState: "openplan_stored",
+        revisionToken: modelingRevisionToken,
         knownLimits: [
           "Claim tiers remain attached to their original decisions. This bundle does not promote or reconcile them.",
           "AequilibraE and ActivitySim evidence remains separate and is never averaged.",
@@ -435,7 +468,7 @@ export async function loadProjectEvidenceGeneratedFiles(
           asOfDate: generatedAt.toISOString(),
           retrievedAt: generatedAt.toISOString(),
           evidenceStatus: "modeled",
-          claimTier: hasUnsupportedModelingClaim ? null : "per_claim_in_payload",
+          claimTier: !hasNumericModelingClaim || hasUnsupportedModelingClaim ? null : "per_claim_in_payload",
           uncertainty: [],
           limits: [
             "Each validation result and claim decision carries its own descriptor and exact run/track scope.",
@@ -443,7 +476,7 @@ export async function loadProjectEvidenceGeneratedFiles(
           ],
           revisionToken: modelingRevisionToken,
           checksumSha256: null,
-          numericClaim: true,
+          numericClaim: hasNumericModelingClaim,
         }),
       },
     ],

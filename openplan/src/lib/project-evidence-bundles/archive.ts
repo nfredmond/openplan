@@ -51,6 +51,8 @@ export type GeneratedProjectEvidenceFile = {
   retrievalState: ProjectEvidenceRetrievalState;
   custodyState: ProjectEvidenceCustodyState;
   knownLimits: string[];
+  /** Hash of the source records, excluding the freeze timestamp and rendered bytes. */
+  revisionToken: string;
   evidenceDescriptor?: EvidenceDescriptorV1;
 };
 
@@ -114,7 +116,8 @@ function manifestEntryFromCandidate(
     : candidate.exclusionReason ??
       (referenceOnly ? "The file is recorded as reference-only evidence." : "The planner did not select this file.");
 
-  const evidence = candidate.evidenceDescriptor ?? buildEvidenceDescriptor({
+  const checksumSha256 = selected ? sha256(selected.bytes) : candidate.recordedChecksumSha256;
+  const baseEvidence = candidate.evidenceDescriptor ?? buildEvidenceDescriptor({
     identity: { sourceId: candidate.sourceId, recordId: candidate.recordId },
     source: { kind: candidate.sourceKind, label: candidate.sourceLabel, citation: candidate.citation },
     asOfDate: candidate.sourceVintage,
@@ -124,8 +127,14 @@ function manifestEntryFromCandidate(
     uncertainty: candidate.uncertainty,
     limits: candidate.knownLimits,
     revisionToken: candidate.revisionToken,
-    checksumSha256: selected ? sha256(selected.bytes) : candidate.recordedChecksumSha256,
+    checksumSha256,
   });
+  const evidence = {
+    ...baseEvidence,
+    revisionToken: candidate.revisionToken,
+    checksumSha256,
+    ...(included ? { retrievedAt: generatedAt } : {}),
+  };
   return {
     path: selected
       ? confineEvidenceBundlePath(
@@ -152,7 +161,7 @@ function manifestEntryFromCandidate(
     },
     claimTier: candidate.claimTier,
     custody: { state: candidate.custodyState },
-    checksumSha256: selected ? sha256(selected.bytes) : candidate.recordedChecksumSha256,
+    checksumSha256,
     byteSize: selected ? selected.bytes.length : candidate.byteSize,
     uncertainty: [...candidate.uncertainty],
     knownLimits: [...candidate.knownLimits],
@@ -190,19 +199,24 @@ function manifestEntryFromGenerated(
     uncertainty: [],
     knownLimits: [...file.knownLimits],
     inclusion: { status: "included", reason: null },
-    revisionToken: null,
-    evidence: file.evidenceDescriptor ?? buildEvidenceDescriptor({
-      identity: { sourceId: file.sourceId, recordId: file.recordId, path: file.path },
-      source: { kind: "openplan_record", label: file.title, citation: null },
-      asOfDate: generatedAt,
+    revisionToken: file.revisionToken,
+    evidence: {
+      ...(file.evidenceDescriptor ?? buildEvidenceDescriptor({
+        identity: { sourceId: file.sourceId, recordId: file.recordId, path: file.path },
+        source: { kind: "openplan_record", label: file.title, citation: null },
+        asOfDate: generatedAt,
+        retrievedAt: generatedAt,
+        evidenceStatus: file.sourceId === "modeling_evidence" ? "modeled" : "administrative",
+        claimTier: null,
+        uncertainty: [],
+        limits: file.knownLimits,
+        revisionToken: file.revisionToken,
+        checksumSha256,
+      })),
       retrievedAt: generatedAt,
-      evidenceStatus: file.sourceId === "modeling_evidence" ? "modeled" : "administrative",
-      claimTier: null,
-      uncertainty: [],
-      limits: file.knownLimits,
-      revisionToken: null,
+      revisionToken: file.revisionToken,
       checksumSha256,
-    }),
+    },
   };
 }
 
@@ -296,7 +310,7 @@ export async function buildProjectEvidenceBundle(
     projectId: input.projectId,
     projectRevision: input.projectRevision,
     generatedAt,
-    generatedBy: "openplan_authenticated_planner",
+    generatedBy: input.generatedBy,
     purpose: "retained_evidence_snapshot",
     approvalOrPublication: false,
     limits: {

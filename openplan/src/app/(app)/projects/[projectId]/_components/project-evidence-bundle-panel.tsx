@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
-import { Archive, Download, Loader2, ShieldAlert } from "lucide-react";
+import { Archive, Check, Copy, Download, Loader2, ShieldAlert } from "lucide-react";
 import { ModalDialog } from "@/components/ui/modal-dialog";
 import type {
   ProjectEvidenceCandidate,
@@ -26,6 +26,29 @@ function formatBytes(bytes: number | null): string {
 function formatDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function ManifestHash({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="mt-2 grid min-w-0 gap-2 text-xs text-muted-foreground sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
+      <span className="shrink-0 font-medium text-foreground">Manifest SHA-256</span>
+      <code className="min-w-0 break-all leading-relaxed">{value}</code>
+      <button
+        type="button"
+        className="inline-flex shrink-0 items-center gap-1 justify-self-start rounded-[0.3rem] border border-border px-2 py-1 text-foreground hover:bg-muted sm:justify-self-auto"
+        aria-label="Copy manifest SHA-256"
+        onClick={async () => {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1_500);
+        }}
+      >
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
 }
 
 function sourceGroups(candidates: ProjectEvidenceCandidate[]) {
@@ -58,7 +81,9 @@ function BundleReviewDialog({
     () => new Set(inventory.candidates.filter((candidate) => candidate.defaultSelected).map((candidate) => candidate.id))
   );
   const [confirmed, setConfirmed] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [selectedPlanId, setSelectedPlanId] = useState(
+    () => inventory.linkedPlans.length === 1 ? inventory.linkedPlans[0].id : "",
+  );
   const [progress, setProgress] = useState<"idle" | "freezing">("idle");
   const [error, setError] = useState<string | null>(null);
   const [downloadHref, setDownloadHref] = useState<string | null>(null);
@@ -70,12 +95,33 @@ function BundleReviewDialog({
   ).length;
   const linkedPlans = inventory.linkedPlans ?? [];
   const selectedPlan = linkedPlans.find((plan) => plan.id === selectedPlanId) ?? null;
+  const unsupportedSelectedCount = selectedCandidates.filter(
+    (candidate) => candidate.evidenceDescriptor?.support.status === "unsupported",
+  ).length;
   const knownSelectedBytes = selectedCandidates.reduce((sum, candidate) => sum + (candidate.byteSize ?? 0), 0);
+  const blockingReasons = [
+    ...(!selectedPlan ? ["Select the linked plan this handoff is for."] : []),
+    ...(selectedReportPdfCount !== 1
+      ? [`Select exactly one current report PDF; ${selectedReportPdfCount} ${selectedReportPdfCount === 1 ? "is" : "are"} selected.`]
+      : []),
+    ...(unsupportedSelectedCount > 0
+      ? [`Remove or correct ${unsupportedSelectedCount} selected item${unsupportedSelectedCount === 1 ? "" : "s"} with unsupported numeric evidence.`]
+      : []),
+    ...(inventory.readFailed ? ["Wait until every evidence source can be read."] : []),
+    ...(selectedFileCount > inventory.limits.selectedFileLimit
+      ? [`Reduce the optional selection to ${inventory.limits.selectedFileLimit} files.`]
+      : []),
+    ...(knownSelectedBytes > inventory.limits.totalSelectedFileBytes
+      ? [`Reduce the known selected size below ${formatBytes(inventory.limits.totalSelectedFileBytes)}.`]
+      : []),
+    ...(!confirmed ? ["Confirm that you reviewed this exact selection."] : []),
+  ];
   const canSubmit =
     canGenerate &&
     confirmed &&
     Boolean(selectedPlan) &&
     selectedReportPdfCount === 1 &&
+    unsupportedSelectedCount === 0 &&
     !inventory.readFailed &&
     selectedFileCount <= inventory.limits.selectedFileLimit &&
     knownSelectedBytes <= inventory.limits.totalSelectedFileBytes &&
@@ -278,6 +324,14 @@ function BundleReviewDialog({
             </label>
           )}
           {error ? <p role="alert" className="mb-3 text-sm text-destructive">{error}</p> : null}
+          {canGenerate && blockingReasons.length > 0 && progress === "idle" ? (
+            <div role="status" className="mb-3 rounded-[0.4rem] border border-amber-400/50 bg-amber-400/10 px-3 py-2 text-sm">
+              <p className="font-medium">Before OpenPlan can freeze this bundle:</p>
+              <ul className="mt-1 list-disc space-y-1 pl-5">
+                {blockingReasons.map((reason) => <li key={reason}>{reason}</li>)}
+              </ul>
+            </div>
+          ) : null}
           {downloadHref ? (
             <a
               href={downloadHref}
@@ -375,14 +429,16 @@ export function ProjectEvidenceBundlePanel({ projectId, canGenerate }: { project
         <div className="mt-4 space-y-2">
           <p className="module-section-label">Prior bundles</p>
           {inventory.priorBundles.map((bundle) => (
-            <div key={bundle.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[0.4rem] border border-border bg-background px-3 py-2 text-sm">
-              <span>
-                {formatDate(bundle.generatedAt)} · {formatBytes(bundle.byteCount)} · {bundle.selectedCount} optional selected · {bundle.status}
-                {bundle.manifestSha256 ? ` · manifest ${bundle.manifestSha256.slice(0, 12)}…` : ""}
-                {bundle.failureCode ? ` · ${bundle.failureCode}` : ""}
-              </span>
+            <div key={bundle.id} className="flex min-w-0 flex-col items-stretch gap-2 rounded-[0.4rem] border border-border bg-background px-3 py-2 text-sm sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <p>
+                  {formatDate(bundle.generatedAt)} · {formatBytes(bundle.byteCount)} · {bundle.selectedCount} optional selected · {bundle.status}
+                  {bundle.failureCode ? ` · ${bundle.failureCode}` : ""}
+                </p>
+                {bundle.manifestSha256 ? <ManifestHash value={bundle.manifestSha256} /> : null}
+              </div>
               {bundle.downloadHref ? (
-                <a href={bundle.downloadHref} className="inline-flex items-center gap-1 underline decoration-dotted underline-offset-2">
+                <a href={bundle.downloadHref} className="inline-flex self-start items-center gap-1 underline decoration-dotted underline-offset-2">
                   <Download className="h-4 w-4" /> Download
                 </a>
               ) : null}

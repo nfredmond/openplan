@@ -103,6 +103,7 @@ function input(overrides: Partial<BuildProjectEvidenceBundleInput> = {}): BuildP
         retrievalState: "available",
         custodyState: "openplan_stored",
         knownLimits: [],
+        revisionToken: "7".repeat(64),
       },
       {
         path: "project/project.gpkg",
@@ -115,6 +116,7 @@ function input(overrides: Partial<BuildProjectEvidenceBundleInput> = {}): BuildP
         retrievalState: "rendered_on_freeze",
         custodyState: "rendered_on_freeze",
         knownLimits: ["Crash points are not included."],
+        revisionToken: "8".repeat(64),
       },
     ],
     inventoryTruncated: false,
@@ -151,9 +153,12 @@ describe("project evidence archive", () => {
     const manifest = JSON.parse(await zip.file("manifest.json")!.async("string"));
     expect(manifest.schemaVersion).toBe("project_evidence_manifest.v2");
     expect(manifest.approvalOrPublication).toBe(false);
-    expect(manifest.generatedBy).toBe("openplan_authenticated_planner");
+    expect(manifest.generatedBy).toBe(USER_ID);
     expect(manifest.layerStatusTable).toBe("openplan_layer_status");
     expect(manifest.entries.every((entry: { evidence?: unknown }) => entry.evidence)).toBe(true);
+    expect(manifest.entries.every((entry: { revisionToken: string | null; evidence: { revisionToken: string | null } }) =>
+      entry.evidence.revisionToken === entry.revisionToken
+    )).toBe(true);
     expect(manifest.entries.map((entry: { path: string | null }) => entry.path)).toEqual([
       "files/knowledge_base/44444444-4444-4444-8444-444444444444-Existing-conditions.pdf",
       "project/project.gpkg",
@@ -168,6 +173,10 @@ describe("project evidence archive", () => {
       checksumSha256: sha256(Buffer.from("evidence")),
       uncertainty: ["Page OCR was not checked for this binary handoff."],
       knownLimits: ["Citation metadata is unavailable."],
+      evidence: {
+        retrievedAt: GENERATED_AT.toISOString(),
+        checksumSha256: sha256(Buffer.from("evidence")),
+      },
     });
     expect(manifest.entries[3]).toMatchObject({
       path: null,
@@ -176,6 +185,29 @@ describe("project evidence archive", () => {
       inclusion: { status: "excluded", reason: "The planner did not select this file." },
       retrieval: { state: "rendered_on_freeze", retrievedAt: null },
     });
+  });
+
+  it("rebinds supplied descriptors to each exact manifest source revision", async () => {
+    const baseline = await buildProjectEvidenceBundle(input());
+    const candidateDescriptor = baseline.manifest.entries[0].evidence;
+    const generatedDescriptor = baseline.manifest.entries.find((entry) => entry.path === "project/project.json")!.evidence;
+    const altered = input();
+    const selectedCandidate = {
+      ...altered.candidates[0],
+      evidenceDescriptor: { ...candidateDescriptor, revisionToken: "9".repeat(64) },
+    };
+    altered.candidates[0] = selectedCandidate;
+    altered.selectedFiles[0] = { ...altered.selectedFiles[0], candidate: selectedCandidate };
+    altered.generatedFiles[0] = {
+      ...altered.generatedFiles[0],
+      evidenceDescriptor: { ...generatedDescriptor, revisionToken: "9".repeat(64) },
+    };
+
+    const rebuilt = await buildProjectEvidenceBundle(altered);
+    const candidateEntry = rebuilt.manifest.entries[0];
+    const generatedEntry = rebuilt.manifest.entries.find((entry) => entry.path === "project/project.json")!;
+    expect(candidateEntry.evidence.revisionToken).toBe(candidateEntry.revisionToken);
+    expect(generatedEntry.evidence.revisionToken).toBe(generatedEntry.revisionToken);
   });
 
   it.each(["../outside", "/absolute", "a//b", "a/./b", "a/../b", "a\\b", "a\0b"])(

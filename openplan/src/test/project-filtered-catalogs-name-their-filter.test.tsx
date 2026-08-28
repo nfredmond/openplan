@@ -293,6 +293,18 @@ describe("models catalog opened for one project", () => {
     render(await ModelsPage({ searchParams: Promise.resolve(filters) }));
   }
 
+  it("confines the model page to one shrinkable mobile grid track", async () => {
+    setTable("models", { data: [], error: null });
+    setTable("projects", { data: [projectRow()], error: null });
+
+    await renderModels({ projectId: PROJECT_ID });
+
+    expect(document.querySelector(".module-page")).toHaveClass(
+      "min-w-0",
+      "grid-cols-[minmax(0,1fr)]",
+    );
+  });
+
   it("keeps every active filter when a status tab is chosen", async () => {
     setTable("models", { data: [modelRow({ project_id: PROJECT_ID })], error: null });
     setTable("projects", { data: [projectRow()], error: null });

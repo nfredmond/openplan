@@ -3,8 +3,26 @@ import {
   decisionPackageFreshness,
   decisionPackageReadiness,
 } from "@/lib/project-evidence-bundles/decision-package-readiness";
+import { buildEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
 
 const HASH = "a".repeat(64);
+const RETRIEVED_AT = "2026-08-26T18:00:00.000Z";
+
+function descriptor(recordId: string, numericClaim = false) {
+  return buildEvidenceDescriptor({
+    identity: { recordId },
+    source: { kind: "openplan_record", label: recordId, citation: null },
+    asOfDate: RETRIEVED_AT,
+    retrievedAt: RETRIEVED_AT,
+    evidenceStatus: numericClaim ? "modeled" : "administrative",
+    claimTier: numericClaim ? "screening" : null,
+    uncertainty: [],
+    limits: [],
+    revisionToken: HASH,
+    checksumSha256: HASH,
+    numericClaim,
+  });
+}
 
 function manifest(overrides: Record<string, unknown> = {}) {
   return {
@@ -17,7 +35,11 @@ function manifest(overrides: Record<string, unknown> = {}) {
         path: "project/linked-plan.json",
         originalRecord: { sourceId: "linked_data", recordId: "plan-1" },
         inclusion: { status: "included" },
-        evidence: { support: { status: "supported" } },
+        checksumSha256: HASH,
+        byteSize: 10,
+        revisionToken: HASH,
+        retrieval: { state: "available", retrievedAt: RETRIEVED_AT },
+        evidence: descriptor("plan-1"),
       },
       {
         path: "files/report.pdf",
@@ -25,7 +47,9 @@ function manifest(overrides: Record<string, unknown> = {}) {
         checksumSha256: HASH,
         revisionToken: HASH,
         inclusion: { status: "included" },
-        evidence: { support: { status: "supported" } },
+        byteSize: 10,
+        retrieval: { state: "available", retrievedAt: RETRIEVED_AT },
+        evidence: descriptor("pdf-1"),
       },
     ],
     ...overrides,
@@ -55,19 +79,46 @@ describe("decision package approval readiness", () => {
     expect(decisionPackageReadiness(manifest({
       entries: [
         ...manifest().entries,
-        { path: "modeling/claim.json", evidence: { support: { status: "unsupported" } } },
+        {
+          path: "modeling/claim.json",
+          originalRecord: { sourceId: "modeling_evidence", recordId: "claim-1" },
+          checksumSha256: HASH,
+          byteSize: 10,
+          revisionToken: HASH,
+          retrieval: { state: "available", retrievedAt: RETRIEVED_AT },
+          inclusion: { status: "included" },
+          evidence: {
+            ...descriptor("claim-1", true),
+            claimTier: null,
+            support: { status: "unsupported", reason: "No validated claim tier is recorded." },
+          },
+        },
       ],
     }))).toMatch(/numeric claim lacks adequate point-of-use provenance/i);
   });
 
   it("requires descriptors and exact plan/PDF entry bindings", () => {
-    expect(decisionPackageReadiness(manifest({ entries: [{ path: "project/linked-plan.json" }] }))).toMatch(/descriptor/i);
+    expect(decisionPackageReadiness(manifest({
+      entries: [{ ...manifest().entries[0], evidence: undefined }],
+    }))).toMatch(/descriptor/i);
     expect(decisionPackageReadiness(manifest({
       entries: manifest().entries.filter((entry: { path?: string }) => entry.path !== "project/linked-plan.json"),
     }))).toMatch(/linked plan.*bound/i);
     expect(decisionPackageReadiness(manifest({
-      entries: manifest().entries.map((entry: { checksumSha256?: string }) => entry.checksumSha256 ? { ...entry, checksumSha256: "b".repeat(64) } : entry),
+      entries: manifest().entries.map((entry: { checksumSha256?: string; evidence?: Record<string, unknown> }) => entry.checksumSha256
+        ? { ...entry, checksumSha256: "b".repeat(64), evidence: { ...entry.evidence, checksumSha256: "b".repeat(64) } }
+        : entry),
     }))).toMatch(/PDF.*bound/i);
+  });
+
+  it("requires each descriptor to bind the exact manifest source revision", () => {
+    expect(decisionPackageReadiness(manifest({
+      entries: manifest().entries.map((entry: { path?: string; evidence?: Record<string, unknown> }) =>
+        entry.path === "project/linked-plan.json"
+          ? { ...entry, evidence: { ...entry.evidence, revisionToken: "b".repeat(64) } }
+          : entry
+      ),
+    }))).toMatch(/exact source revision/i);
   });
 
   it("marks exact custody stale when the project, plan, or source inventory changes", () => {

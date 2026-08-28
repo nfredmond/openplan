@@ -71,6 +71,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
 
   let bundleId: string | null = null;
   let caller: Awaited<ReturnType<typeof createClient>> | null = null;
+  const service = createServiceRoleClient();
   let storagePath: string | null = null;
   try {
     caller = await createClient();
@@ -169,7 +170,6 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       return NextResponse.json({ error: "Failed to retain the evidence review" }, { status: 500 });
     }
 
-    const service = createServiceRoleClient();
     const generatedAt = new Date();
     const generated = await loadProjectEvidenceGeneratedFiles(caller, access.project, generatedAt, selectedPlanRead.data);
     const resolved = [];
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     }
 
     const completedAt = new Date().toISOString();
-    const finalize = await caller
+    const finalize = await service
       .from("project_evidence_bundles")
       .update({
         status: "ready",
@@ -256,8 +256,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     );
   } catch (error) {
     const failureCode = error instanceof ProjectEvidenceBundleError ? error.code : "generation_failed";
-    if (bundleId && caller) {
-      const failed = await caller
+    if (bundleId) {
+      const failed = await service
         .from("project_evidence_bundles")
         .update({ status: "failed", failure_code: failureCode, completed_at: new Date().toISOString() })
         .eq("id", bundleId)

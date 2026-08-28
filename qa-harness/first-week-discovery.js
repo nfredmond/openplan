@@ -138,6 +138,7 @@ function loadJobs() {
         id: meta.id,
         title: meta.title || meta.id,
         account: ['new', 'fresh-run', 'run'].includes(meta.account) ? meta.account : 'existing',
+        requiresApprover: meta.approver === 'true',
         files: meta.files || 'none',
         maxTurns: Number(meta.maxTurns) > 0 ? Number(meta.maxTurns) : 90,
         body: match[2].trim(),
@@ -209,11 +210,13 @@ function writeHandoverFiles(dir) {
   fs.writeFileSync(path.join(dir, 'projects.csv'), `${projects}\n`);
 }
 
-function buildPrompt(job, { baseUrl, email, password, agentDir, contract }) {
+function buildPrompt(job, { baseUrl, email, password, approverEmail, approverPassword, agentDir, contract }) {
   const body = job.body
     .replace(/\{\{BASE_URL\}\}/g, baseUrl)
     .replace(/\{\{EMAIL\}\}/g, email)
-    .replace(/\{\{PASSWORD\}\}/g, password);
+    .replace(/\{\{PASSWORD\}\}/g, password)
+    .replace(/\{\{APPROVER_EMAIL\}\}/g, approverEmail || '')
+    .replace(/\{\{APPROVER_PASSWORD\}\}/g, approverPassword || '');
 
   return [
     'You are doing a real job in a real piece of software, using the browser you have been given.',
@@ -834,9 +837,25 @@ async function main() {
 
   const existingEmail = (process.env.OPENPLAN_FIRST_WEEK_EMAIL || '').trim();
   const existingPassword = (process.env.OPENPLAN_FIRST_WEEK_PASSWORD || '').trim();
+  const governedAccountsPath = path.resolve(
+    process.env.OPENPLAN_FIRST_WEEK_GOVERNED_ACCOUNTS
+      || path.join(process.env.XDG_STATE_HOME || path.join(os.homedir(), '.local', 'state'), 'openplan', 'first-week-governed-accounts.json'),
+  );
+  const governedAccounts = readJsonIfPresent(governedAccountsPath);
+  const governedCreator = governedAccounts?.schemaVersion === 'openplan.first_week_governed_accounts.v1'
+    ? governedAccounts.creator
+    : null;
+  const configuredApproverEmail = (process.env.OPENPLAN_FIRST_WEEK_APPROVER_EMAIL || governedAccounts?.approver?.email || '').trim();
+  const configuredApproverPassword = (process.env.OPENPLAN_FIRST_WEEK_APPROVER_PASSWORD || governedAccounts?.approver?.password || '').trim();
   if (selected.some((job) => job.account === 'existing') && (!existingEmail || !existingPassword)) {
     console.error(
       'OPENPLAN_FIRST_WEEK_EMAIL and OPENPLAN_FIRST_WEEK_PASSWORD are required for jobs that start signed in.',
+    );
+    process.exit(2);
+  }
+  if (selected.some((job) => job.requiresApprover) && (!configuredApproverEmail || !configuredApproverPassword)) {
+    console.error(
+      'This job needs OPENPLAN_FIRST_WEEK_APPROVER_EMAIL and OPENPLAN_FIRST_WEEK_APPROVER_PASSWORD, or the local governed-account handoff written by the deterministic smoke.',
     );
     process.exit(2);
   }
@@ -883,10 +902,11 @@ async function main() {
   if (
     selected.some((job) => job.account === 'run') &&
     !runHasFreshAccountCreator &&
-    (!existingEmail || !existingPassword)
+    (!existingEmail || !existingPassword) &&
+    !(governedCreator?.email && governedCreator?.password)
   ) {
     console.error(
-      'A run-account job selected by itself needs OPENPLAN_FIRST_WEEK_EMAIL and OPENPLAN_FIRST_WEEK_PASSWORD, or a run manifest that includes the fresh-account setup job.',
+      'A run-account job selected by itself needs OPENPLAN_FIRST_WEEK_EMAIL and OPENPLAN_FIRST_WEEK_PASSWORD, the local governed-account handoff, or a run manifest that includes the fresh-account setup job.',
     );
     process.exit(2);
   }
@@ -912,12 +932,22 @@ async function main() {
     if (job.files === 'handover') writeHandoverFiles(path.join(agentDir, 'handover'));
 
     const useRunAccount = job.account === 'fresh-run' || (job.account === 'run' && runHasFreshAccountCreator);
-    const email = useRunAccount
+    const governedPrimary = job.account === 'run'
+      && governedCreator?.email
+      && governedCreator?.password
+      && (job.requiresApprover || (!useRunAccount && (!existingEmail || !existingPassword)))
+      ? governedCreator
+      : null;
+    const email = governedPrimary
+      ? governedPrimary.email
+      : useRunAccount
       ? manifest.freshAccount.email
       : job.account === 'new'
         ? `first-week-${stamp.slice(0, 19).toLowerCase()}-${job.id}@openplan.test`
         : existingEmail;
-    const password = useRunAccount
+    const password = governedPrimary
+      ? governedPrimary.password
+      : useRunAccount
       ? manifest.freshAccount.password
       : job.account === 'new'
         ? 'FirstWeek!2026'
@@ -925,10 +955,18 @@ async function main() {
 
     fs.writeFileSync(
       path.join(dir, 'job.json'),
-      `${JSON.stringify({ id: job.id, title: job.title, account: job.account, email, model, backend }, null, 2)}\n`,
+      `${JSON.stringify({ id: job.id, title: job.title, account: job.account, email, approverEmail: job.requiresApprover ? configuredApproverEmail : null, model, backend }, null, 2)}\n`,
     );
 
-    const prompt = buildPrompt(job, { baseUrl, email, password, agentDir, contract });
+    const prompt = buildPrompt(job, {
+      baseUrl,
+      email,
+      password,
+      approverEmail: job.requiresApprover ? configuredApproverEmail : null,
+      approverPassword: job.requiresApprover ? configuredApproverPassword : null,
+      agentDir,
+      contract,
+    });
     fs.writeFileSync(path.join(dir, 'prompt.txt'), prompt);
 
     process.stdout.write(`▶ ${job.id} — ${job.title}\n`);

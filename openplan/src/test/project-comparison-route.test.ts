@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -8,12 +9,31 @@ vi.mock("@/lib/supabase/server", () => ({ createClient: () => createClientMock()
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => createApiAuditLoggerMock() }));
 
 import { POST } from "@/app/api/models/project-comparison/route";
+import { sortedCompactJson } from "@/lib/models/demand-agreement-artifact";
 
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 
 type Row = Record<string, unknown>;
+
+const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
+const PROFILE_PAYLOAD = '{"engine":"aequilibrae"}';
+const SETTINGS_PAYLOAD = '{"capacity":"shared"}';
+const PROFILE_HASH = digest(PROFILE_PAYLOAD);
+const SETTINGS_HASH = digest(SETTINGS_PAYLOAD);
+const NETWORK_STATE = { network_settings_digest: SETTINGS_HASH, osm_snapshot: "shared" };
+const STATE_HASH = digest(sortedCompactJson(NETWORK_STATE));
+const IDENTITY_METADATA = {
+  assignment_profile: JSON.parse(PROFILE_PAYLOAD),
+  assignment_profile_payload_json: PROFILE_PAYLOAD,
+  assignment_profile_digest: PROFILE_HASH,
+  network_settings: JSON.parse(SETTINGS_PAYLOAD),
+  network_settings_payload_json: SETTINGS_PAYLOAD,
+  network_settings_digest: SETTINGS_HASH,
+  network_state_record: NETWORK_STATE,
+  network_state_digest: STATE_HASH,
+};
 
 function fakeClient(role: string | null = "member") {
   const tables: Record<string, Row[]> = {
@@ -24,6 +44,8 @@ function fakeClient(role: string | null = "member") {
     models: [],
     model_runs: [],
     model_run_artifacts: [],
+    model_run_stages: [],
+    model_run_kpis: [],
   };
   let id = 0;
 
@@ -82,6 +104,61 @@ function fakeClient(role: string | null = "member") {
   };
 }
 
+function addOutput(
+  fake: ReturnType<typeof fakeClient>,
+  runId: string,
+  method: "aequilibrae" | "activitysim",
+  hash: string,
+) {
+  const artifactId = `artifact-${runId}`;
+  const stageId = `stage-${runId}`;
+  fake.tables.model_run_stages.push({
+    id: stageId,
+    run_id: runId,
+    stage_name: method === "aequilibrae" ? "Artifact Extraction" : "ActivitySim Network Assignment",
+    status: "succeeded",
+  });
+  fake.tables.model_run_artifacts.push({
+    id: artifactId,
+    run_id: runId,
+    stage_id: stageId,
+    artifact_type: method === "aequilibrae" ? "link_volumes" : "activitysim_link_volumes",
+    file_url: `storage://run-artifacts/${runId}.csv`,
+    file_size_bytes: 100,
+    content_hash: hash,
+    metadata_json: IDENTITY_METADATA,
+    created_at: "2026-08-27T00:00:00Z",
+  });
+}
+
+function addPreflight(fake: ReturnType<typeof fakeClient>, runId: string, mode: "preflight_only" | "executed") {
+  const stageId = `preflight-stage-${runId}`;
+  fake.tables.model_run_stages.push({
+    id: stageId,
+    run_id: runId,
+    stage_name: "ActivitySim Bundle & Preflight",
+    status: "succeeded",
+  });
+  fake.tables.model_run_artifacts.push({
+    id: `preflight-artifact-${runId}`,
+    run_id: runId,
+    stage_id: stageId,
+    artifact_type: "evidence_packet",
+    file_url: `storage://run-artifacts/${runId}-preflight.json`,
+    file_size_bytes: 100,
+    content_hash: "f".repeat(64),
+    metadata_json: { kind: "behavioral_demand_preflight_evidence" },
+    created_at: "2026-08-27T00:00:00Z",
+  });
+  fake.tables.model_run_kpis.push({
+    id: `runtime-${runId}`,
+    run_id: runId,
+    kpi_name: "activitysim_runtime_mode",
+    breakdown_json: { mode },
+    created_at: "2026-08-27T00:00:00Z",
+  });
+}
+
 function request(buildAssumption?: { autoTripChangePct: number; basis: string }) {
   return new NextRequest("http://localhost/api/models/project-comparison", {
     method: "POST",
@@ -126,7 +203,9 @@ describe("project comparison starter route", () => {
       id: "run-baseline-aeq",
       model_id: aequilibrae?.id,
       scenario_entry_id: baseline?.id,
+      engine_key: "aequilibrae",
       status: "succeeded",
+      assumption_snapshot_json: {},
       created_at: "2026-08-26T00:00:00Z",
     });
     const statusOnly = await POST(request());
@@ -134,13 +213,7 @@ describe("project comparison starter route", () => {
       state: "ready_for_run",
       nextRun: { method: "aequilibrae", scenario: "baseline" },
     });
-    fake.tables.model_run_artifacts.push({
-      run_id: "run-baseline-aeq",
-      artifact_type: "link_volumes",
-      file_url: "storage://run-artifacts/run-baseline-aeq.csv",
-      file_size_bytes: 100,
-      content_hash: "a".repeat(64),
-    });
+    addOutput(fake, "run-baseline-aeq", "aequilibrae", "a".repeat(64));
     const afterBaseline = await POST(request());
     expect(await afterBaseline.json()).toMatchObject({
       state: "needs_build_assumption",
@@ -173,31 +246,17 @@ describe("project comparison starter route", () => {
     const baseline = fake.tables.scenario_entries.find((row) => row.entry_type === "baseline");
     const build = fake.tables.scenario_entries.find((row) => row.entry_type === "alternative");
     fake.tables.model_runs.push(
-      { id: "baseline", model_id: aeq?.id, scenario_entry_id: baseline?.id, status: "succeeded", assumption_snapshot_json: {} },
+      { id: "baseline", model_id: aeq?.id, scenario_entry_id: baseline?.id, engine_key: "aequilibrae", status: "succeeded", assumption_snapshot_json: {} },
       {
         id: "old-build",
         model_id: aeq?.id,
         scenario_entry_id: build?.id,
-        status: "succeeded",
+        engine_key: "aequilibrae", status: "succeeded",
         assumption_snapshot_json: { guidedProjectChange: { kind: "assigned_auto_trip_change_pct", autoTripChangePct: -8, basis: "Reviewed local study" } },
       },
     );
-    fake.tables.model_run_artifacts.push(
-      {
-        run_id: "baseline",
-        artifact_type: "link_volumes",
-        file_url: "storage://run-artifacts/baseline.csv",
-        file_size_bytes: 100,
-        content_hash: "a".repeat(64),
-      },
-      {
-        run_id: "old-build",
-        artifact_type: "link_volumes",
-        file_url: "storage://run-artifacts/old-build.csv",
-        file_size_bytes: 100,
-        content_hash: "b".repeat(64),
-      },
-    );
+    addOutput(fake, "baseline", "aequilibrae", "a".repeat(64));
+    addOutput(fake, "old-build", "aequilibrae", "b".repeat(64));
 
     const response = await POST(request({ autoTripChangePct: -12, basis: "Updated board-reviewed study" }));
     expect(await response.json()).toMatchObject({
@@ -215,14 +274,13 @@ describe("project comparison starter route", () => {
     const build = fake.tables.scenario_entries.find((row) => row.entry_type === "alternative");
     const assumption = { guidedProjectChange: { kind: "assigned_auto_trip_change_pct", autoTripChangePct: -8, basis: "Reviewed local study" } };
     fake.tables.model_runs.push(
-      { id: "aeq-base", model_id: aeq?.id, scenario_entry_id: baseline?.id, status: "succeeded", assumption_snapshot_json: {} },
-      { id: "aeq-build", model_id: aeq?.id, scenario_entry_id: build?.id, status: "succeeded", assumption_snapshot_json: assumption },
-      { id: "asim-base", model_id: asim?.id, scenario_entry_id: baseline?.id, status: "succeeded", assumption_snapshot_json: {} },
+      { id: "aeq-base", model_id: aeq?.id, scenario_entry_id: baseline?.id, engine_key: "aequilibrae", status: "succeeded", assumption_snapshot_json: {} },
+      { id: "aeq-build", model_id: aeq?.id, scenario_entry_id: build?.id, engine_key: "aequilibrae", status: "succeeded", assumption_snapshot_json: assumption },
+      { id: "asim-base", model_id: asim?.id, scenario_entry_id: baseline?.id, engine_key: "behavioral_demand", status: "succeeded", assumption_snapshot_json: {} },
     );
-    fake.tables.model_run_artifacts.push(
-      { run_id: "aeq-base", artifact_type: "link_volumes", file_url: "storage://run-artifacts/aeq-base.csv", file_size_bytes: 10, content_hash: "a".repeat(64) },
-      { run_id: "aeq-build", artifact_type: "link_volumes", file_url: "storage://run-artifacts/aeq-build.csv", file_size_bytes: 10, content_hash: "b".repeat(64) },
-    );
+    addOutput(fake, "aeq-base", "aequilibrae", "a".repeat(64));
+    addOutput(fake, "aeq-build", "aequilibrae", "b".repeat(64));
+    addPreflight(fake, "asim-base", "preflight_only");
 
     const preflight = await POST(request());
     expect(await preflight.json()).toMatchObject({
@@ -231,27 +289,16 @@ describe("project comparison starter route", () => {
       activitysimPreflightRuns: [{ runId: "asim-base", scenario: "baseline", status: "preflight_succeeded" }],
     });
 
-    fake.tables.model_run_artifacts.push({
-      run_id: "asim-base",
-      artifact_type: "activitysim_link_volumes",
-      file_url: "storage://run-artifacts/asim-base.csv",
-      file_size_bytes: 10,
-      content_hash: "c".repeat(64),
-    });
+    addOutput(fake, "asim-base", "activitysim", "c".repeat(64));
     fake.tables.model_runs.push({
       id: "asim-build",
       model_id: asim?.id,
       scenario_entry_id: build?.id,
+      engine_key: "behavioral_demand",
       status: "succeeded",
       assumption_snapshot_json: assumption,
     });
-    fake.tables.model_run_artifacts.push({
-      run_id: "asim-build",
-      artifact_type: "activitysim_link_volumes",
-      file_url: "storage://run-artifacts/asim-build.csv",
-      file_size_bytes: 10,
-      content_hash: "d".repeat(64),
-    });
+    addOutput(fake, "asim-build", "activitysim", "d".repeat(64));
 
     const ready = await POST(request());
     expect(await ready.json()).toMatchObject({
@@ -260,6 +307,47 @@ describe("project comparison starter route", () => {
       verifiedOutputs: expect.arrayContaining([
         expect.objectContaining({ method: "activitysim", scenario: "build", artifactSha256: "d".repeat(64) }),
       ]),
+    });
+
+    const changedState = { network_settings_digest: SETTINGS_HASH, osm_snapshot: "changed" };
+    const activitySimBuildArtifact = fake.tables.model_run_artifacts.find((row) => row.id === "artifact-asim-build");
+    if (activitySimBuildArtifact) {
+      activitySimBuildArtifact.metadata_json = {
+        ...IDENTITY_METADATA,
+        network_state_record: changedState,
+        network_state_digest: digest(sortedCompactJson(changedState)),
+      };
+    }
+    const mismatched = await POST(request());
+    expect(await mismatched.json()).toMatchObject({
+      state: "needs_shared_network_rerun",
+      nextRun: null,
+    });
+  });
+
+  it("calls a succeeded ActivitySim run with verified executed preflight but no assignment artifact a missing output", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    await POST(request({ autoTripChangePct: -8, basis: "Reviewed local study" }));
+    const aeq = fake.tables.models.find((row) => row.model_family === "travel_demand");
+    const asim = fake.tables.models.find((row) => row.model_family === "activity_based_model");
+    const baseline = fake.tables.scenario_entries.find((row) => row.entry_type === "baseline");
+    const build = fake.tables.scenario_entries.find((row) => row.entry_type === "alternative");
+    const assumption = { guidedProjectChange: { kind: "assigned_auto_trip_change_pct", autoTripChangePct: -8, basis: "Reviewed local study" } };
+    fake.tables.model_runs.push(
+      { id: "aeq-base", model_id: aeq?.id, scenario_entry_id: baseline?.id, engine_key: "aequilibrae", status: "succeeded", assumption_snapshot_json: {} },
+      { id: "aeq-build", model_id: aeq?.id, scenario_entry_id: build?.id, engine_key: "aequilibrae", status: "succeeded", assumption_snapshot_json: assumption },
+      { id: "asim-base", model_id: asim?.id, scenario_entry_id: baseline?.id, engine_key: "behavioral_demand", status: "succeeded", assumption_snapshot_json: {} },
+    );
+    addOutput(fake, "aeq-base", "aequilibrae", "a".repeat(64));
+    addOutput(fake, "aeq-build", "aequilibrae", "b".repeat(64));
+    addPreflight(fake, "asim-base", "executed");
+
+    const response = await POST(request());
+    expect(await response.json()).toMatchObject({
+      state: "needs_activitysim_output",
+      nextRun: { method: "activitysim", scenario: "baseline" },
+      activitysimPreflightRuns: [],
     });
   });
 

@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import tempfile
+from unittest import mock
 
 os.environ.setdefault("SUPABASE_URL", "http://worker-import-only.invalid")
 os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "import-only-not-a-key")
@@ -225,6 +226,84 @@ def test_claim_spine_requires_separate_passing_validation_for_calibrated_tier():
     assert "separate untouched" in decision["status_reason"]
 
 
+def test_behavioral_demand_claim_spine_records_unmeasured_and_unavailable_checks():
+    posted = []
+    deleted = []
+
+    class Response:
+        status_code = 200
+
+    unmeasured = {
+        "stations_matched": 4,
+        "median_ape": 18.0,
+        "max_ape": 35.0,
+        "screening_gate": "bounded screening-ready",
+        "zone_resolution": {
+            "measured": False,
+            "intrazonal_share_pct": None,
+            "supports_link_level_validation": None,
+        },
+    }
+    unavailable = {
+        "stations_matched": 0,
+        "screening_gate": None,
+        "coverage": {
+            "covered": False,
+            "status": "source_unavailable",
+            "reason": "The observed-count source was unavailable.",
+        },
+    }
+
+    with (
+        mock.patch.object(
+            main.requests,
+            "post",
+            side_effect=lambda url, **kwargs: (
+                posted.append((url, kwargs.get("json"))) or Response()
+            ),
+        ),
+        mock.patch.object(
+            main.requests,
+            "delete",
+            side_effect=lambda url, **_kwargs: (deleted.append(url) or Response()),
+        ),
+    ):
+        main.write_model_run_modeling_evidence(
+            "run-unmeasured",
+            "workspace-1",
+            unmeasured,
+            track="behavioral_demand",
+        )
+        main.write_model_run_modeling_evidence(
+            "run-unavailable",
+            "workspace-1",
+            unavailable,
+            track="behavioral_demand",
+        )
+
+    decisions = [payload for url, payload in posted if "modeling_claim_decisions" in url]
+    assert len(decisions) == 2, decisions
+    assert all(decision["track"] == "behavioral_demand" for decision in decisions)
+    assert all(decision["claim_status"] == "prototype_only" for decision in decisions)
+    assert "not measured" in decisions[0]["status_reason"]
+    assert decisions[0]["validation_summary_json"]["median_ape"] == 18.0
+    assert decisions[1]["validation_summary_json"]["coverage"]["status"] == (
+        "source_unavailable"
+    )
+
+    validation_rows = [
+        payload for url, payload in posted if "modeling_validation_results" in url
+    ]
+    assert len(validation_rows) == 1, validation_rows
+    assert all(row["track"] == "behavioral_demand" for row in validation_rows[0])
+    median_row = next(
+        row for row in validation_rows[0] if row["metric_key"] == "count_median_ape"
+    )
+    assert median_row["status"] == "warn", median_row
+    assert "not measured" in median_row["detail"]
+    assert all("track=eq.behavioral_demand" in url for url in deleted), deleted
+
+
 def test_artifact_driver_wires_every_credibility_block_and_independent_result():
     with open(main.__file__) as handle:
         tree = ast.parse(handle.read())
@@ -277,6 +356,7 @@ if __name__ == "__main__":
         test_gateway_basis_never_infers_measured_from_source_presence,
         test_claim_spine_refuses_selection_holdout_promotion,
         test_claim_spine_requires_separate_passing_validation_for_calibrated_tier,
+        test_behavioral_demand_claim_spine_records_unmeasured_and_unavailable_checks,
         test_artifact_driver_wires_every_credibility_block_and_independent_result,
     ]
     try:

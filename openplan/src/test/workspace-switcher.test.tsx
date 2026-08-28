@@ -6,7 +6,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: refreshMock, push: vi.fn() }),
 }));
 
-import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
+import { WorkspaceSwitchButton, WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 
 const TWO = [
   { id: "ws-1", name: "Nevada County" },
@@ -93,5 +93,28 @@ describe("WorkspaceSwitcher", () => {
     });
 
     expect(calls.length).toBe(0);
+  });
+
+  it("opens a known workspace directly from a waiting-work notice", async () => {
+    const calls = mockFetch({ ok: true, body: { workspaceId: "ws-2" } });
+
+    render(<WorkspaceSwitchButton workspaceId="ws-2" workspaceName="Foothills MPO" />);
+    fireEvent.click(screen.getByRole("button", { name: "Open Foothills MPO" }));
+
+    await waitFor(() => expect(calls).toEqual([{
+      url: "/api/workspaces/active",
+      body: { workspaceId: "ws-2" },
+    }]));
+    expect(refreshMock).toHaveBeenCalled();
+  });
+
+  it("keeps a direct waiting-work switch failure visible", async () => {
+    mockFetch({ ok: false, status: 404, body: { error: "Workspace not found" } });
+
+    render(<WorkspaceSwitchButton workspaceId="ws-2" workspaceName="Foothills MPO" />);
+    fireEvent.click(screen.getByRole("button", { name: "Open Foothills MPO" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Workspace not found");
+    expect(refreshMock).not.toHaveBeenCalled();
   });
 });

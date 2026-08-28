@@ -75,7 +75,10 @@ describe("project GeoPackage", () => {
       expect(db.pragma("integrity_check", { simple: true })).toBe("ok");
       expect(db.prepare("SELECT table_name, data_type, srs_id FROM gpkg_contents ORDER BY table_name").all())
         .toEqual([
+          { table_name: "activitysim_links", data_type: "features", srs_id: 4326 },
+          { table_name: "aequilibrae_links", data_type: "features", srs_id: 4326 },
           { table_name: "engagement_geometry", data_type: "features", srs_id: 4326 },
+          { table_name: "land_use_designations", data_type: "features", srs_id: 4326 },
           { table_name: "openplan_layer_status", data_type: "attributes", srs_id: null },
           { table_name: "project_area", data_type: "features", srs_id: 4326 },
           { table_name: "project_corridors", data_type: "features", srs_id: 4326 },
@@ -87,14 +90,16 @@ describe("project GeoPackage", () => {
         .toEqual(expect.arrayContaining([
           { layer_key: "project_area", status: "included" },
           { layer_key: "crash_ksi", status: "unavailable" },
-          { layer_key: "aequilibrae_links", status: "not_selected" },
-          { layer_key: "land_use_designations", status: "reference_only" },
+          { layer_key: "aequilibrae_links", status: "unavailable" },
+          { layer_key: "land_use_designations", status: "unavailable" },
         ]));
       expect(db.prepare("SELECT count(*) FROM openplan_layer_status WHERE stable_evidence_id IS NOT NULL AND evidence_schema_version = 'openplan.evidence_descriptor.v1'").pluck().get()).toBe(8);
       expect(db.prepare("SELECT support_status, claim_tier FROM openplan_layer_status WHERE layer_key = 'project_area'").get())
         .toEqual({ support_status: "supported", claim_tier: "administrative_record" });
       expect(db.prepare("SELECT count(*) AS count FROM project_area").get()).toEqual({ count: 1 });
       expect(db.prepare("SELECT count(*) AS count FROM project_location").get()).toEqual({ count: 1 });
+      expect(db.prepare("SELECT count(*) FROM openplan_layer_status WHERE status = 'unavailable' AND record_count IS NOT NULL").pluck().get()).toBe(0);
+      expect(db.prepare("SELECT count(*) FROM openplan_layer_status WHERE status = 'included' AND record_count <= 0").pluck().get()).toBe(0);
       expect(db.prepare("SELECT corridor_name FROM project_corridors").all()).toEqual([
         { corridor_name: "Main Street" },
       ]);
@@ -108,7 +113,7 @@ describe("project GeoPackage", () => {
         .toEqual({
           corridor_count: 1,
           omitted_corridor_count: 1,
-          coverage_limits: "Stored project geometry, supplied crash/KSI observations, and approved engagement geometry are included when available; every other expected layer is disclosed in openplan_layer_status; 1 corridor was recorded but invalid; omitted",
+          coverage_limits: "Stored project geometry and exact supplied crash/KSI, model-link, land-use, and approved engagement geometry are included when available; every expected layer is disclosed in openplan_layer_status; 1 corridor was recorded but invalid; omitted",
         });
       const geometry = db.prepare("SELECT geom FROM project_area").pluck().get() as Buffer;
       expect(geometry.subarray(0, 2).toString("ascii")).toBe("GP");
@@ -122,7 +127,7 @@ describe("project GeoPackage", () => {
       corridorCount: 1,
       omittedCorridorCount: 1,
       coverageLimits: [
-        "Stored project geometry, supplied crash/KSI observations, and approved engagement geometry are included when available; every other expected layer is disclosed in openplan_layer_status",
+        "Stored project geometry and exact supplied crash/KSI, model-link, land-use, and approved engagement geometry are included when available; every expected layer is disclosed in openplan_layer_status",
         "1 corridor was recorded but invalid; omitted",
       ],
     });
@@ -147,6 +152,10 @@ describe("project GeoPackage", () => {
           project_area_coverage: "Project area recorded but invalid; omitted",
           project_location_coverage: "Project location not recorded",
         });
+      expect(db.prepare("SELECT status, record_count FROM openplan_layer_status WHERE layer_key = 'project_area'").get())
+        .toEqual({ status: "unavailable", record_count: null });
+      expect(db.prepare("SELECT status, record_count FROM openplan_layer_status WHERE layer_key = 'project_location'").get())
+        .toEqual({ status: "unavailable", record_count: null });
     } finally {
       db.close();
     }

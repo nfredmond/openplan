@@ -214,10 +214,12 @@ const EXPECTED_RESTRICTIVE_POLICIES = 246;
 // already present at the permissive layer.
 // 20260824000006 adds owner/admin INSERT and UPDATE policies for reminder
 // preferences. They are role-aware at the permissive layer. The v0.36 evidence
-// bundle table adds role-aware INSERT and UPDATE policies. The exact guided-run
-// link table and the two governed-package tables add three more role-aware
-// INSERT policies, so no restrictive gate is needed.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 281;
+// bundle table originally added role-aware INSERT and UPDATE policies; the
+// v0.37 correction removes the caller UPDATE because only the service may
+// finalize a bundle. The exact guided-run link table and the two governed-
+// package tables add three role-aware INSERT policies, so no restrictive gate
+// is needed.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 280;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

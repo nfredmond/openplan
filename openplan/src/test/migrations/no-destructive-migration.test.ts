@@ -139,6 +139,14 @@ const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: st
       "backfills every existing v0.33 CSV batch with the equivalent worksheet 0/header row 1 " +
       "configuration before making that new provenance field required; no existing value is replaced",
   },
+  {
+    file: "20260827000002_governed_decision_enforcement.sql",
+    kind: "update",
+    reason:
+      "controlled append-only receipt backfill: copies each immutable legacy receipt_json value " +
+      "into receipt_canonical_json before the exact-text hash and NOT NULL constraints; no " +
+      "historical receipt field is replaced",
+  },
 ];
 
 /**

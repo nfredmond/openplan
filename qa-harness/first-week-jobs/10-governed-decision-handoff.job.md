@@ -2,6 +2,7 @@
 id: 10-governed-decision-handoff
 title: Freeze, return, replace, and approve one exact agency package
 account: run
+approver: true
 files: none
 maxTurns: 220
 ---
@@ -11,6 +12,9 @@ authorized person to review. The approver must be a different person from the
 person who creates and submits the bundle.
 
 Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
+When the job tells you to act as the assigned approver, sign out and sign in
+with {{APPROVER_EMAIL}} / {{APPROVER_PASSWORD}}. These are two distinct people;
+do not approve while still signed in as the preparer.
 
 **What you need to have done:**
 

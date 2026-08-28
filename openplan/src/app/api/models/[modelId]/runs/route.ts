@@ -437,6 +437,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if ((isAequilibraeRun || isBehavioralDemandRun) && access.model.project_id) {
         const readinessResult = await supabase.rpc("project_modeling_study_area_readiness", {
           p_project_id: access.model.project_id,
+          p_run_geometry: launchPayload.corridorGeojson,
         });
         if (readinessResult.error) {
           audit.error("project_study_area_readiness_failed", {
@@ -447,7 +448,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           });
           return NextResponse.json(
             {
-              error: "The project study area could not be checked against loaded Census tracts.",
+              error: "The exact launched project study area could not be checked against loaded Census tracts.",
               repairState: "study_area_read_failed",
             },
             { status: 503 },

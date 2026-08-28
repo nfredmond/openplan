@@ -254,7 +254,7 @@ describe("/api/models/[modelId]/runs", () => {
       error: null,
     });
     rpcMock.mockResolvedValueOnce({
-      data: [{ state: "no_tracts", tract_count: 0, detail: "Load tract coverage or repair the area." }],
+      data: [{ state: "tract_coverage_not_loaded", tract_count: 0, detail: "Load tract coverage or repair the area." }],
       error: null,
     });
 
@@ -264,10 +264,14 @@ describe("/api/models/[modelId]/runs", () => {
     );
 
     expect(response.status).toBe(409);
-    expect(await response.json()).toMatchObject({ repairState: "no_tracts", tractCount: 0 });
+    expect(await response.json()).toMatchObject({ repairState: "tract_coverage_not_loaded", tractCount: 0 });
     expect(modelRunInsertMock).not.toHaveBeenCalled();
     expect(rpcMock).toHaveBeenCalledWith("project_modeling_study_area_readiness", {
       p_project_id: "44444444-4444-4444-8444-444444444444",
+      p_run_geometry: {
+        type: "Polygon",
+        coordinates: [[[-121.5, 39.1], [-121.4, 39.1], [-121.4, 39.2], [-121.5, 39.1]]],
+      },
     });
   });
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { loadMyWork, MY_WORK_DEFAULT_LIMIT_PER_SOURCE, MY_WORK_MAX_LIMIT_PER_SOURCE } from "@/lib/my-work/query";
+import {
+  loadMyWork,
+  loadOtherWorkspaceDecisionPackageWork,
+  MY_WORK_DEFAULT_LIMIT_PER_SOURCE,
+  MY_WORK_MAX_LIMIT_PER_SOURCE,
+} from "@/lib/my-work/query";
 import { FAILED_RUN_QUEUE_WINDOW_DAYS, MY_WORK_SOURCES } from "@/lib/my-work/sources";
 import { MY_WORK_SOURCE_IDS, groupMyWorkItemsByBlock } from "@/lib/my-work/types";
 import {
@@ -39,6 +44,72 @@ import {
  */
 
 // ── The tests ───────────────────────────────────────────────────────────────
+
+describe("my work — decision packages in another workspace", () => {
+  function clientWithRows(rowsByWorkspace: Record<string, unknown[]>, failingWorkspace?: string) {
+    return {
+      from(table: string) {
+        expect(table).toBe("project_decision_package_my_work");
+        return {
+          select(columns: string) {
+            expect(columns).toBe("id");
+            return {
+              eq(column: string, workspaceId: string) {
+                expect(column).toBe("workspace_id");
+                return {
+                  limit(count: number) {
+                    expect(count).toBe(1);
+                    return Promise.resolve({
+                      data: rowsByWorkspace[workspaceId]?.slice(0, count) ?? [],
+                      error: workspaceId === failingWorkspace ? { message: "permission denied" } : null,
+                    });
+                  },
+                };
+              },
+            };
+          },
+        };
+      },
+    };
+  }
+
+  it("reports only other workspaces where the caller-specific view has work", async () => {
+    const result = await loadOtherWorkspaceDecisionPackageWork(
+      clientWithRows({
+        current: [{ id: "current-submission-must-not-be-probed" }],
+        other: [{ id: "submission-1" }],
+        empty: [],
+      }),
+      {
+        currentWorkspaceId: "current",
+        workspaces: [
+          { id: "current", name: "Current" },
+          { id: "other", name: "Review workspace" },
+          { id: "empty", name: "Empty workspace" },
+        ],
+      },
+    );
+
+    expect(result.workspaces).toEqual([{ workspaceId: "other", workspaceName: "Review workspace" }]);
+    expect(result.reads.describe()).toBeNull();
+  });
+
+  it("discloses a failed cross-workspace read instead of claiming there is no work", async () => {
+    const result = await loadOtherWorkspaceDecisionPackageWork(
+      clientWithRows({}, "other"),
+      {
+        currentWorkspaceId: "current",
+        workspaces: [
+          { id: "current", name: "Current" },
+          { id: "other", name: "Review workspace" },
+        ],
+      },
+    );
+
+    expect(result.workspaces).toEqual([]);
+    expect(result.reads.describe()).toContain("decision packages in Review workspace");
+  });
+});
 
 describe("my work — the union read", () => {
   it("defaults to what is assigned to the caller, overdue first then soonest", async () => {

@@ -290,12 +290,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     migrationsAtRelease: 228,
   },
   // 0.37.0 adds exact-hash, append-only agency package submissions and
-  // decisions, then hardens creator/submission segregation and live RLS
-  // visibility for a different assigned owner/admin approver.
+  // decisions, then completes direct-database enforcement, exact four-run
+  // model custody, and dependent-source freshness before release.
   {
     tag: "0.37.0",
-    lastMigration: "20260826000007_scenario_model_link_cascade_delete.sql",
-    migrationsAtRelease: 232,
+    lastMigration: "20260827000003_evidence_dependency_freshness.sql",
+    migrationsAtRelease: 235,
   },
 ];
 

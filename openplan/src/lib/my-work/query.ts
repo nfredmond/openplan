@@ -42,6 +42,7 @@ import {
   MY_WORK_BLOCK_IDS,
   type MyWorkBlockId,
   type MyWorkItem,
+  type OtherWorkspaceDecisionPackageWork,
   type MyWorkResult,
   type MyWorkScope,
   type MyWorkSourceId,
@@ -94,6 +95,64 @@ type WorkQuery = PromiseLike<WorkReadResult> & {
 type WorkReadClient = {
   from(table: string): { select(columns: string): WorkQuery };
 };
+
+export type OtherWorkspaceDecisionPackageWorkResult = {
+  workspaces: OtherWorkspaceDecisionPackageWork[];
+  reads: ReadFailureLog;
+};
+
+/**
+ * Find decision-package obligations hidden only because another workspace is
+ * active. The security-invoker view already limits rows to packages assigned
+ * to this caller (or returned to this caller), and this read uses the same RLS
+ * client as the queue. One-row limits answer only whether work exists; they do
+ * not turn My Work into an unbounded cross-workspace export.
+ */
+export async function loadOtherWorkspaceDecisionPackageWork(
+  supabase: unknown,
+  options: {
+    currentWorkspaceId: string;
+    workspaces: ReadonlyArray<{ id: string; name: string }>;
+  },
+): Promise<OtherWorkspaceDecisionPackageWorkResult> {
+  const client = supabase as WorkReadClient;
+  const reads = new ReadFailureLog();
+  const otherWorkspaces = options.workspaces.filter(
+    (workspace) => workspace.id !== options.currentWorkspaceId,
+  );
+  const results = await Promise.all(
+    otherWorkspaces.map(async (workspace) => {
+      try {
+        return {
+          workspace,
+          result: await client
+            .from("project_decision_package_my_work")
+            .select("id")
+            .eq("workspace_id", workspace.id)
+            .limit(1),
+        };
+      } catch (error) {
+        return {
+          workspace,
+          result: {
+            data: null,
+            error: { message: error instanceof Error ? error.message : "read threw" },
+          },
+        };
+      }
+    }),
+  );
+
+  const workspaces: OtherWorkspaceDecisionPackageWork[] = [];
+  for (const { workspace, result } of results) {
+    const failed = reads.check(`decision packages in ${workspace.name}`, result);
+    if (!failed && Array.isArray(result.data) && result.data.length > 0) {
+      workspaces.push({ workspaceId: workspace.id, workspaceName: workspace.name });
+    }
+  }
+
+  return { workspaces, reads };
+}
 
 export type LoadMyWorkOptions = {
   workspaceId: string;

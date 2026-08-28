@@ -107,7 +107,9 @@ export function summarizeProjectComparison(facts: AnalysisSequenceFacts): Projec
   const hasBothMethodRecords = hasExplicitMethodCounts
     ? (facts.aequilibraeModelCount ?? 0) > 0 && (facts.activitySimModelCount ?? 0) > 0
     : facts.modelCount >= 2;
-  const hasSharedNetworkBasis = facts.networkCount > 0 || (facts.managedNetworkBasisCount ?? 0) > 0;
+  const hasSharedNetworkBasis = facts.guidedProjectComparison
+    ? (facts.managedNetworkBasisCount ?? 0) > 0
+    : facts.networkCount > 0 || (facts.managedNetworkBasisCount ?? 0) > 0;
 
   const missing: Array<{ step: AnalysisStepId; message: string }> = [
     !hasSharedNetworkBasis
@@ -125,8 +127,8 @@ export function summarizeProjectComparison(facts: AnalysisSequenceFacts): Projec
     (facts.activitySimRunCount ?? 0) < (facts.guidedProjectComparison ? 2 : 1)
       ? { step: "activitysim_run", message: facts.guidedProjectComparison ? "Both separate ActivitySim baseline and build jobs have not succeeded." : "No separate ActivitySim run is on file." }
       : null,
-    facts.checkedRunCount < 1
-      ? { step: "check", message: "No run has passed the observed-count screening gate." }
+    (facts.guidedProjectComparison ? (facts.guidedComparisonCheckedCount ?? 0) < 1 : facts.checkedRunCount < 1)
+      ? { step: "check", message: facts.guidedProjectComparison ? "All four exact outputs do not yet have track-matched validation decisions." : "No run has a recorded observed-count screening decision." }
       : null,
     (facts.comparisonPacketCount ?? 0) < 1
       ? { step: "packet", message: "No unaveraged baseline-versus-build comparison report is saved." }
@@ -153,7 +155,7 @@ export function summarizeProjectComparison(facts: AnalysisSequenceFacts): Projec
       : (facts.aequilibraeRunCount ?? 0) < (facts.guidedProjectComparison ? 2 : 1) ||
           (facts.activitySimRunCount ?? 0) < (facts.guidedProjectComparison ? 2 : 1)
         ? "runs_missing"
-        : facts.checkedRunCount < 1
+        : (facts.guidedProjectComparison ? (facts.guidedComparisonCheckedCount ?? 0) < 1 : facts.checkedRunCount < 1)
           ? "validation_missing"
           : "runs_missing";
 
@@ -172,6 +174,21 @@ export function isGuidedProjectComparisonModel(config: unknown, method: "aequili
   if (!config || typeof config !== "object" || Array.isArray(config)) return false;
   const record = config as Record<string, unknown>;
   return record.guidedProjectComparison === GUIDED_PROJECT_COMPARISON_VERSION && record.method === method;
+}
+
+/**
+ * Detect a guided record even when a later edit damaged one part of its
+ * contract. Once a record declares guided intent, readers must fail closed;
+ * they may not silently reinterpret its generic run or snapshot rows as truth.
+ */
+export function hasGuidedProjectComparisonIntent(config: unknown): boolean {
+  if (!config || typeof config !== "object" || Array.isArray(config)) return false;
+  const record = config as Record<string, unknown>;
+  const basis = record.networkBasis;
+  return record.guidedProjectComparison === GUIDED_PROJECT_COMPARISON_VERSION ||
+    ((record.method === "aequilibrae" || record.method === "activitysim") &&
+      Boolean(basis && typeof basis === "object" && !Array.isArray(basis) &&
+        (basis as Record<string, unknown>).kind === GUIDED_WORKER_NETWORK_BASIS.kind));
 }
 
 export function usesGuidedWorkerNetwork(config: unknown): boolean {

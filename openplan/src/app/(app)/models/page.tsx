@@ -390,7 +390,7 @@ export default async function ModelsPage({
   );
 
   return (
-    <section className="module-page">
+    <section className="module-page min-w-0 grid-cols-[minmax(0,1fr)]">
       <PlanningContextStrip context={planningContext} />
       {planningContext.status === "active" ? (
         <ProjectComparisonStarter

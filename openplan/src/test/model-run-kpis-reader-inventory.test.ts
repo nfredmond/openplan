@@ -79,6 +79,19 @@ function classifyCall(call: KpiCall): string | null {
     return "rtp-public-evidence-read-by-run-ids";
   }
 
+  if (
+    [
+      "src/app/api/models/project-comparison/route.ts",
+      "src/app/api/scenarios/[scenarioSetId]/spine/comparison-snapshots/route.ts",
+    ].includes(call.filePath) &&
+    chain.includes('.in("run_id"') &&
+    chain.includes('.eq("kpi_name", "activitysim_runtime_mode")')
+  ) {
+    // Both comparison surfaces verify the persisted runtime mode across the
+    // exact guided-run set before presenting ActivitySim as runnable evidence.
+    return "activitysim-runtime-evidence-read-by-run-ids";
+  }
+
   if (chain.includes(".select(") && hasRunIdFilter(chain)) {
     return "model-run-read-by-run-id";
   }
@@ -184,6 +197,14 @@ describe("model_run_kpis reader inventory", () => {
       expect.objectContaining({
         filePath: "src/app/api/models/[modelId]/runs/route.ts",
         classification: "ite-trip-gen-run-kpi-writer",
+      }),
+      expect.objectContaining({
+        filePath: "src/app/api/models/project-comparison/route.ts",
+        classification: "activitysim-runtime-evidence-read-by-run-ids",
+      }),
+      expect.objectContaining({
+        filePath: "src/app/api/scenarios/[scenarioSetId]/spine/comparison-snapshots/route.ts",
+        classification: "activitysim-runtime-evidence-read-by-run-ids",
       }),
       // The Planner Agent's get_model_run_results chat tool: a run_id-scoped
       // SELECT through the user-session client (RLS applies), after the tool has

@@ -2,13 +2,13 @@ import { redirect } from "next/navigation";
 
 import { MyWorkBoard } from "@/components/my-work/my-work-board";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
-import { loadMyWork } from "@/lib/my-work/query";
+import { loadMyWork, loadOtherWorkspaceDecisionPackageWork } from "@/lib/my-work/query";
 import { normalizeMyWorkScope } from "@/lib/my-work/types";
 import { loadProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
-import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { loadWorkspaceContext } from "@/lib/workspaces/current";
 
 export const metadata = moduleMetadata("My Work");
 
@@ -49,7 +49,7 @@ export default async function MyWorkPage({
     redirect("/sign-in");
   }
 
-  const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
+  const { membership, options: workspaceOptions } = await loadWorkspaceContext(supabase, user.id);
   if (!membership) {
     return (
       <WorkspaceMembershipRequired
@@ -79,10 +79,17 @@ export default async function MyWorkPage({
     scope,
     roster,
   });
+  const otherDecisionPackageWork = await loadOtherWorkspaceDecisionPackageWork(supabase, {
+    currentWorkspaceId: workspaceId,
+    workspaces: workspaceOptions,
+  });
 
   // See the header: one sentence, not two. `ReadFailureLog` has no merge, and
   // replaying is honest — the labels and messages are the queue's own.
   for (const failure of work.reads.all) {
+    reads.check(failure.label, { error: { message: failure.message } });
+  }
+  for (const failure of otherDecisionPackageWork.reads.all) {
     reads.check(failure.label, { error: { message: failure.message } });
   }
 
@@ -96,6 +103,7 @@ export default async function MyWorkPage({
       roster={roster}
       departedIncludedInUnassigned={work.departedIncludedInUnassigned}
       isViewer={membership.role === "viewer"}
+      otherWorkspaceDecisionPackageWork={otherDecisionPackageWork.workspaces}
     />
   );
 }
