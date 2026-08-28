@@ -67,6 +67,7 @@ import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health
 import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { evaluateWorkerHealthLaunchGate } from "@/lib/models/worker-health";
 import { parseGuidedBuildAssumption } from "@/lib/models/project-comparison";
+import { buildObservedCountGeographySnapshot } from "@/lib/models/observed-count-geography";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -433,6 +434,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const isAequilibraeRun = launchPayload.engineKey === "aequilibrae";
       const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
       const isSketchAbmRun = launchPayload.engineKey === "sketch_abm";
+      let projectCountryCode: string | null = null;
+
+      if ((isAequilibraeRun || isBehavioralDemandRun) && access.model.project_id) {
+        try {
+          const projectCountryResult = await supabase
+            .from("projects")
+            .select("place_country_code")
+            .eq("id", access.model.project_id)
+            .maybeSingle();
+          if (projectCountryResult.error) {
+            audit.warn("modeling_observed_count_project_country_unavailable", {
+              modelId: access.model.id,
+              projectId: access.model.project_id,
+              message: projectCountryResult.error.message,
+            });
+          } else {
+            projectCountryCode = projectCountryResult.data?.place_country_code ?? null;
+          }
+        } catch (error) {
+          audit.warn("modeling_observed_count_project_country_unavailable", {
+            modelId: access.model.id,
+            projectId: access.model.project_id,
+            message: error instanceof Error ? error.message : "Project country lookup failed.",
+          });
+        }
+      }
 
       if ((isAequilibraeRun || isBehavioralDemandRun) && access.model.project_id) {
         const readinessResult = await supabase.rpc("project_modeling_study_area_readiness", {
@@ -549,6 +576,37 @@ export async function POST(request: NextRequest, context: RouteContext) {
             })
           : null;
 
+      // Resolve the exact polygon through the existing Census geography spine
+      // once, at launch.  Every intersected subdivision is frozen in the input
+      // snapshot; the worker never chooses a state from a bbox or silently
+      // narrows a border/multistate run to the first hit.
+      const observedCountGeography =
+        (isAequilibraeRun || isBehavioralDemandRun) && launchPayload.corridorGeojson
+          ? await (async () => {
+              try {
+                const result = await supabase.rpc("resolve_modeling_observed_count_geography", {
+                  p_run_geometry: launchPayload.corridorGeojson,
+                });
+                const row = (Array.isArray(result.data) ? result.data[0] : result.data) as
+                  | Record<string, unknown>
+                  | null;
+                return buildObservedCountGeographySnapshot({
+                  geometry: launchPayload.corridorGeojson,
+                  projectCountryCode,
+                  resolverRow: row,
+                  resolverError: result.error?.message ?? null,
+                });
+              } catch (error) {
+                return buildObservedCountGeographySnapshot({
+                  geometry: launchPayload.corridorGeojson,
+                  projectCountryCode,
+                  resolverError:
+                    error instanceof Error ? error.message : "Subdivision resolution failed.",
+                });
+              }
+            })()
+          : null;
+
       if (transitFeed && transitFeed.status !== "selected" && transitFeed.status !== "not_selected") {
         // The planner named a feed and it did not travel. Not a launch failure —
         // the worker still models transit from its own selection — but it is the
@@ -595,6 +653,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // The feed-version selection, or the recorded absence of one. Stamped
         // only for the engines that reach a transit skim; see above.
         ...(transitFeed ? { transitFeed } : {}),
+        ...(observedCountGeography ? { observedCountGeography } : {}),
         // A guided build comparison may carry one planner-supplied screening
         // adjustment. Stamp the validated value into the immutable worker
         // handoff; never derive it from a project description or model title.

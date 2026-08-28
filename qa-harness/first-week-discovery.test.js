@@ -13,9 +13,12 @@ const { spawnSync } = require('node:child_process');
 const {
   archiveAttempt,
   buildCodexArgs,
+  buildJobManifest,
+  buildNewRunManifest,
   classifyJobExecution,
   classifyJobOutcome,
   codexContractViolation,
+  currentBuildIdentity,
   loadJobs,
   parseAgentSession,
   parseArgs,
@@ -342,6 +345,43 @@ check('the governed handoff job declares its second identity and the archive-rea
   assert.match(governed?.body || '', /two distinct people/i);
   assert.match(bundle?.body || '', /harness capability limit,[\s\S]*not an OpenPlan[\s\S]*product finding/i);
   assert.match(bundle?.body || '', /separate required[\s\S]*repository gate/i);
+});
+
+check('the model-validation job treats an honest inconclusive assessment as a reached outcome', () => {
+  const validation = loadJobs().find((job) => job.id === '11-model-validation-evidence');
+  assert.ok(validation);
+  assert.match(validation.body, /An honest `inconclusive` outcome fully satisfies this job/);
+  assert.match(validation.body, /validation evidence write failed/);
+  assert.match(validation.body, /ActivitySim[\s\S]*separate[\s\S]*AequilibraE/i);
+  assert.match(validation.body, /visible navigation/i);
+});
+
+check('new first-week manifests can bind the exact checkout and app version', () => {
+  const identity = currentBuildIdentity();
+  const appPackage = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openplan', 'package.json'), 'utf8'));
+  assert.match(identity.gitSha, /^[0-9a-f]{40}$/);
+  assert.strictEqual(identity.appVersion, appPackage.version);
+
+  const job = { id: '11-model-validation-evidence', title: 'Validation', account: 'run' };
+  const runManifest = buildNewRunManifest({
+    createdAt: '2026-08-28T00:00:00.000Z',
+    baseUrl: 'http://localhost:3200',
+    model: 'sonnet',
+    backend: 'claude',
+    jobs: [job.id],
+    freshAccount: { email: 'planner@example.test', password: 'test-only' },
+    build: identity,
+  });
+  const jobManifest = buildJobManifest({
+    job,
+    email: 'planner@example.test',
+    approverEmail: null,
+    model: 'sonnet',
+    backend: 'claude',
+    build: identity,
+  });
+  assert.deepStrictEqual(runManifest.build, identity);
+  assert.deepStrictEqual(jobManifest.build, identity);
 });
 
 check('new run directories live outside the repository', () => {

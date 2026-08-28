@@ -136,6 +136,8 @@ export type ModelRunArtifact = {
   artifact_type: string;
   file_url: string;
   file_size_bytes: number | null;
+  content_hash?: string | null;
+  metadata_json?: Record<string, unknown> | null;
 };
 
 type ManagedModelRun = {
@@ -1718,8 +1720,98 @@ function ModelRunStagingAndArtifacts({
     return null;
   }
 
+  const assessmentArtifact = artifacts.find((artifact) => artifact.artifact_type === "model_validation_assessment");
+  const assessment = assessmentArtifact?.metadata_json ?? null;
+  const scientificOutcome =
+    typeof assessment?.scientific_outcome === "string" ? assessment.scientific_outcome : null;
+  const assessmentReasons = Array.isArray(assessment?.reasons)
+    ? assessment.reasons.filter((reason): reason is string => typeof reason === "string")
+    : [];
+  const coverage =
+    assessment?.coverage && typeof assessment.coverage === "object" && !Array.isArray(assessment.coverage)
+      ? (assessment.coverage as Record<string, unknown>)
+      : null;
+  const exactInputs =
+    assessment?.exact_inputs && typeof assessment.exact_inputs === "object" && !Array.isArray(assessment.exact_inputs)
+      ? (assessment.exact_inputs as Record<string, unknown>)
+      : null;
+  const evidenceWriteFailed = run.claimDecision?.reason?.toLowerCase().includes("validation evidence write failed") ?? false;
+
   return (
     <div className="mt-4 border-t pt-4">
+      {assessment ? (
+        <section
+          aria-label="Scientific model validation assessment"
+          className="mb-4 rounded-[0.75rem] border border-border/70 bg-background/80 p-4"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Rules v{String(assessment.rules_version ?? "unknown")} · scientific validation
+              </p>
+              <h4 className="mt-1 font-semibold text-foreground">Observed-count comparability assessment</h4>
+            </div>
+            <StatusBadge
+              tone={scientificOutcome === "pass" ? "success" : scientificOutcome === "fail" ? "danger" : "warning"}
+            >
+              {scientificOutcome ?? "inconclusive"}
+            </StatusBadge>
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {scientificOutcome === "pass"
+              ? "The decisive observations were comparable to this exact model output under the frozen rule."
+              : scientificOutcome === "fail"
+                ? "Comparable decisive observations did not meet the exact frozen rule. The negative result is retained."
+                : "OpenPlan could not establish that the observations and model output represent the same quantity. No validation claim is allowed."}
+          </p>
+          {assessmentReasons.length > 0 ? (
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+              {assessmentReasons.map((reason) => <li key={reason}>{reason}</li>)}
+            </ul>
+          ) : null}
+          <dl className="mt-4 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <dt className="font-semibold text-foreground">Planning use</dt>
+              <dd className="mt-1 break-words text-muted-foreground">{String(assessment.planning_use ?? "unknown")}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">Partition</dt>
+              <dd className="mt-1 break-words text-muted-foreground">
+                {typeof assessment.partition === "string" ? assessment.partition : JSON.stringify(assessment.partition ?? "unknown")}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">Coverage</dt>
+              <dd className="mt-1 break-words text-muted-foreground">
+                {coverage
+                  ? Object.entries(coverage).map(([key, value]) => `${key}: ${String(value)}`).join(" · ")
+                  : "unknown"}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">Exact hashes</dt>
+              <dd className="mt-1 break-all text-muted-foreground">
+                Basis {String(exactInputs?.comparison_basis_sha256 ?? "unknown").slice(0, 12)}… · model {String(exactInputs?.model_output_sha256 ?? "unknown").slice(0, 12)}…
+              </dd>
+            </div>
+          </dl>
+          {run.engine_key === "behavioral_demand" ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              AequilibraE assignment and ActivitySim behavioral-demand evidence remain separate; neither method is averaged into the other.
+            </p>
+          ) : null}
+        </section>
+      ) : evidenceWriteFailed ? (
+        <section aria-label="Scientific model validation assessment" className="mb-4 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h4 className="font-semibold text-foreground">Validation evidence write failed</h4>
+            <StatusBadge tone="danger">scientifically unchecked</StatusBadge>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The computation may still be available, but its source material and result were not placed in immutable custody. It cannot support a validation claim.
+          </p>
+        </section>
+      ) : null}
       {stages?.length > 0 ? <RunProgressBar stages={stages} /> : null}
       {(stages?.length > 0 || artifacts?.length > 0) ? (
         <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">

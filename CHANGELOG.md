@@ -19,6 +19,51 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.38.0 — 2026-08-28
+
+**Migrations required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migrations
+`20260828000001_model_validation_assessment_custody.sql`
+(`model_validation_assessment_custody`) and
+`20260828000002_validation_custody_fail_closed.sql`
+(`validation_custody_fail_closed`) add append-only rules-v4 validation custody,
+exact artifact and hash binding, member-scoped reads, service-only transactional
+recording, immutable bound artifacts, and exact-polygon subdivision resolution.
+The second migration makes every metadata comparison fail closed when a field is
+missing and applies that correction to databases that received the first
+migration during release verification.
+
+Observed traffic and model output now have separate versioned contracts for the
+observation, comparison basis, and assessment. The shared rules-v4 core refuses
+scientific claims until year/day/period, direction/carriageway, and vehicle/PCE
+bases are proven comparable. It preserves raw residuals and APE, uses intervals
+only when a source or preregistered authority supplies them, limits decisive
+metrics to Grade A/B evidence, retains Grade C diagnostics and Grade D/unloaded
+coverage, resolves duplicate lineage once, and keeps build forecasts
+inconclusive against base-year counts. Rules 1–3 rows remain unchanged and are
+identified as legacy point-count diagnostics.
+
+The source registry now asks for every state and national adapter intersecting
+the exact project polygon. It distinguishes unsupported, unresolved, source
+unavailable, and supported-but-empty states. A complete 2024 FHWA TMAS adapter
+preserves exact archive bytes and hashes; HPMS keeps unsupported method, QA, and
+uncertainty fields unknown. Caltrans adjacent-section values remain separate
+unless route/LRS evidence selects a side.
+
+Planners can inspect scientific outcome, basis mismatches, coverage, grade,
+partition, planning use, and hashes on the model Validation surface and in
+cited reports, assistant context, and project evidence bundles. The exact input
+bundle, comparison basis, and assessment are downloadable artifacts. A custody
+failure remains visible as `validation evidence write failed` and the
+calculation is scientifically unchecked.
+
+First-week job 11 covers the visible signed-in baseline assessment and evidence
+download journey. The seven-county California development instrument readiness
+study honestly stopped at zero ready counties: existing method pairs share the
+network, but not the observation package, and their match audits were not frozen
+before modeled volumes. No model outputs were opened, no method was selected or
+averaged, and California and nationwide validation remain partial.
+
 ## 0.37.0 — 2026-08-27
 
 **Migrations required.** Run `npm exec -- supabase migration up --linked`

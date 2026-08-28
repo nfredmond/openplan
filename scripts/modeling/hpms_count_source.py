@@ -544,3 +544,96 @@ def records_geojson(result: HPMSFetchResult) -> dict[str, Any]:
             }
         )
     return {"type": "FeatureCollection", "features": features}
+
+
+def record_to_observation_v1(
+    record: count_sources.ObservedCountRecord,
+    *,
+    source_snapshot_sha256: str,
+    source_url: str,
+    downloaded_at: str,
+) -> dict[str, Any]:
+    """Expose only HPMS-supported facts through the rules-v4 contract.
+
+    HPMS supplies AADT, section geometry, directionality, facility class, route
+    identifiers, and vintage. It does not supply the count duration, equipment
+    QA, adjustment precision, or observation interval used here, so those fields
+    remain explicit unknowns and the record cannot exceed Grade C.
+    """
+    if len(source_snapshot_sha256) != 64:
+        raise ValueError("HPMS source snapshot requires an exact SHA-256")
+    section_id = record["section_id"]
+    duplicate_of = record["provenance"].get("duplicate_of") or "unknown"
+    excluded = record["exclusion_status"] == "excluded"
+    year_text = str(record["provenance"].get("source_year") or record["vintage"] or "")
+    year: int | str = int(year_text) if year_text.isdigit() else "unknown"
+    return {
+        "schema": "openplan.observed-traffic-observation.v1",
+        "observation_id": section_id,
+        "source": {
+            "dataset_id": record["source_dataset_id"],
+            "publisher": "Federal Highway Administration",
+            "source_url": source_url,
+            "downloaded_at": downloaded_at,
+            "artifact_sha256": source_snapshot_sha256,
+            "member_path": "Socrata GeoJSON query response",
+            "member_sha256": source_snapshot_sha256,
+        },
+        "route_lrs": {
+            "route_identifiers": record["route_identifiers"],
+            "section_limits": record["section_limits"],
+        },
+        "geometry": {
+            "type": "Point",
+            "coordinates": [record["longitude"], record["latitude"]],
+            "source_shape_id": record["provenance"].get("source_shape_id") or "unknown",
+        },
+        "direction_lane_carriageway": {
+            "basis": record["directionality"] or "unknown",
+            "direction": record["directionality"] or "unknown",
+            "lane": "unknown",
+            "carriageway": "unknown",
+        },
+        "vehicle_basis": {
+            "unit": "vehicles",
+            "vehicle_definition": "annual average daily traffic",
+            "conversion": "unknown",
+        },
+        "time_basis": {
+            "year": year,
+            "start_date": record["measurement_date"] or "unknown",
+            "end_date": "unknown",
+            "day_basis": "annual_average_daily_traffic",
+            "observation_period": {"label": "daily", "hours": list(range(24))},
+            "frozen_year_adjustment": "unknown",
+        },
+        "measurement": {
+            "method": "unknown",
+            "duration": {"start": "unknown", "end": "unknown", "complete_hours": "unknown"},
+            "factors": "unknown",
+        },
+        "qa": {"status": "unknown", "flags": "unknown", "source_fields": "unknown"},
+        "estimate": {
+            "center": record["observed_volume"] if record["observed_volume"] is not None else "unknown",
+            "source_supported_bounds": "unknown",
+        },
+        "evidence_grade": "D" if record["observed_volume"] is None else "C",
+        "match_audit": {
+            "status": "excluded" if excluded else "unresolved",
+            "frozen_at": "unknown",
+            "frozen_before_model_volume": "unknown",
+            "geometry": "unknown",
+            "route": "unknown",
+            "direction": "unknown",
+            "facility": "unknown",
+            "candidate_link_ids": "unknown",
+            "selected_link_id": "unknown",
+            "reason": record["exclusion_reason"] or "Network match has not been frozen.",
+        },
+        "duplicate_lineage": {
+            "lineage_id": duplicate_of if duplicate_of != "unknown" else section_id,
+            "canonical_observation_id": duplicate_of if duplicate_of != "unknown" else section_id,
+            "duplicate_of": duplicate_of,
+            "resolution": "source duplicate excluded" if duplicate_of != "unknown" else "unique source section",
+        },
+    }

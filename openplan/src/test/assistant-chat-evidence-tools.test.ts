@@ -265,6 +265,24 @@ function modelRunFixture() {
         evaluated_at: "2026-08-01T01:00:00Z",
       },
     ],
+    modeling_validation_assessments: [
+      {
+        id: "assessment-1",
+        model_run_id: RUN_ID,
+        track: "assignment",
+        comparison_basis_sha256: "a".repeat(64),
+        validation_rules_version: 4,
+        partition_json: { kind: "unpartitioned", id: "unknown" },
+        planning_use: "unknown",
+        scientific_outcome: "inconclusive",
+        reasons_json: ["Same-basis day and vehicle units were not established."],
+        model_output_artifact_id: "output-1",
+        validation_input_bundle_artifact_id: "input-1",
+        comparison_basis_artifact_id: "basis-1",
+        model_validation_assessment_artifact_id: "assessment-artifact-1",
+        created_at: "2026-08-01T01:00:00Z",
+      },
+    ],
     modeling_claim_decisions: [
       {
         model_run_id: RUN_ID,
@@ -327,9 +345,17 @@ describe("get_model_run_results", () => {
     expect(zone.caveat).toBe(LINK_VALIDATION_NOT_SUPPORTED_CAVEAT);
 
     // Validation detail sentence verbatim.
-    const validation = result.validation as { results: Array<{ detail: string; status: string }> };
+    const validation = result.validation as {
+      results: Array<{ detail: string; status: string }>;
+      scientificAssessments: Array<{ outcome: string; reasons: string[]; comparisonBasisSha256: string }>;
+    };
     expect(validation.results[0].detail).toBe("Median APE 42.5% exceeds the 30% claim-grade threshold.");
     expect(validation.results[0].status).toBe("warn");
+    expect(validation.scientificAssessments[0]).toMatchObject({
+      outcome: "inconclusive",
+      reasons: ["Same-basis day and vehicle units were not established."],
+      comparisonBasisSha256: "a".repeat(64),
+    });
 
     // Claim tier + its stored reason.
     const claim = result.claim as { tier: string; label: string; reason: string };

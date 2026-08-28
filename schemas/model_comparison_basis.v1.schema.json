@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.model-comparison-basis.v1",
+  "title": "OpenPlan model comparison basis v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "basis_id", "model_run_id", "model_output_artifact", "model_base_year", "day_basis", "assignment_period", "vehicle_basis", "direction_basis", "planning_use", "scenario", "engine", "coefficient_package", "population_vintage", "assignment_profile", "network_settings", "network_state_hashes", "acceptance_rule", "frozen_at"],
+  "properties": {
+    "schema": { "const": "openplan.model-comparison-basis.v1" },
+    "basis_id": { "type": "string", "minLength": 1 },
+    "model_run_id": { "type": "string", "minLength": 1 },
+    "model_output_artifact": { "type": "object", "additionalProperties": false, "required": ["artifact_id", "artifact_type", "sha256"], "properties": { "artifact_id": { "type": "string", "minLength": 1 }, "artifact_type": { "type": "string", "minLength": 1 }, "sha256": { "$ref": "#/$defs/sha256" } } },
+    "model_base_year": { "$ref": "#/$defs/yearOrUnknown" },
+    "day_basis": { "$ref": "#/$defs/knownOrUnknown" },
+    "assignment_period": { "oneOf": [{ "const": "unknown" }, { "type": "object", "required": ["label", "hours"], "properties": { "label": { "type": "string" }, "hours": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 23 } } } }] },
+    "vehicle_basis": { "oneOf": [{ "const": "unknown" }, { "type": "object", "required": ["unit", "vehicle_pce_conversion"], "properties": { "unit": { "enum": ["vehicles", "pce", "unknown"] }, "vehicle_pce_conversion": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] } } }] },
+    "direction_basis": { "oneOf": [{ "const": "unknown" }, { "type": "object", "required": ["basis"], "properties": { "basis": { "$ref": "#/$defs/knownOrUnknown" } } }] },
+    "planning_use": { "$ref": "#/$defs/knownOrUnknown" },
+    "scenario": { "oneOf": [{ "const": "unknown" }, { "type": "object", "required": ["scenario_id", "role"], "properties": { "scenario_id": { "type": "string" }, "role": { "enum": ["baseline", "build", "unknown"] } } }] },
+    "engine": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] },
+    "coefficient_package": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] },
+    "population_vintage": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] },
+    "assignment_profile": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] },
+    "network_settings": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] },
+    "network_state_hashes": { "oneOf": [{ "const": "unknown" }, { "type": "object", "minProperties": 1, "additionalProperties": { "$ref": "#/$defs/sha256" } }] },
+    "acceptance_rule": { "oneOf": [{ "const": "unknown" }, { "type": "object", "required": ["status", "preregistration_sha256", "minimum_decisive_observations", "maximum_median_raw_ape", "maximum_median_interval_excess"] }] },
+    "frozen_at": { "$ref": "#/$defs/knownOrUnknown" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "yearOrUnknown": { "oneOf": [{ "type": "integer", "minimum": 1900, "maximum": 2200 }, { "const": "unknown" }] },
+    "knownOrUnknown": { "type": ["string", "number", "boolean"], "minLength": 1 }
+  }
+}

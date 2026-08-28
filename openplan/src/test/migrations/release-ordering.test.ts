@@ -297,6 +297,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260827000003_evidence_dependency_freshness.sql",
     migrationsAtRelease: 235,
   },
+  // 0.38.0 adds append-only rules-v4 model-validation custody, exact-polygon
+  // geography resolution, and a fail-closed metadata correction.
+  {
+    tag: "0.38.0",
+    lastMigration: "20260828000002_validation_custody_fail_closed.sql",
+    migrationsAtRelease: 237,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

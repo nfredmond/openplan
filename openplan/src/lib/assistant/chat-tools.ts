@@ -780,6 +780,17 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
         if (validationError) throw new Error(validationError.message ?? "modeling_validation_results query failed");
         const validationRows = (validationData ?? []) as Array<Record<string, unknown>>;
 
+        const { data: assessmentData, error: assessmentError } = await supabase
+          .from("modeling_validation_assessments")
+          .select(
+            "id, track, comparison_basis_sha256, validation_rules_version, partition_json, planning_use, scientific_outcome, reasons_json, model_output_artifact_id, validation_input_bundle_artifact_id, comparison_basis_artifact_id, model_validation_assessment_artifact_id, created_at"
+          )
+          .eq("model_run_id", input.modelRunId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (assessmentError) throw new Error(assessmentError.message ?? "modeling_validation_assessments query failed");
+        const assessmentRows = (assessmentData ?? []) as Array<Record<string, unknown>>;
+
         const claimByRun = await loadModelRunClaimStatuses({
           supabase: supabase as unknown as ModelingEvidenceSupabaseLike,
           modelRunIds: [input.modelRunId],
@@ -838,6 +849,27 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
                 ? "No validation results are recorded against this run."
                 : "Validation details are the stored sentences, verbatim.",
             results: projectValidationRows(validationRows),
+            scientificAssessments: assessmentRows.map((row) => ({
+              id: row.id,
+              track: row.track,
+              rulesVersion: row.validation_rules_version,
+              outcome: row.scientific_outcome,
+              planningUse: row.planning_use,
+              partition: row.partition_json,
+              reasons: Array.isArray(row.reasons_json) ? row.reasons_json.map(String) : [],
+              comparisonBasisSha256: row.comparison_basis_sha256,
+              exactArtifacts: {
+                modelOutput: row.model_output_artifact_id,
+                validationInputBundle: row.validation_input_bundle_artifact_id,
+                comparisonBasis: row.comparison_basis_artifact_id,
+                assessment: row.model_validation_assessment_artifact_id,
+              },
+              createdAt: isoOrNull(row.created_at),
+            })),
+            scientificNote:
+              assessmentRows.length === 0
+                ? "No rules-v4 scientific assessment is in immutable custody. Legacy point-count diagnostics do not establish same-basis comparability."
+                : "Quote the scientific outcome and reasons exactly. A fail or inconclusive assessment is retained evidence, not a missing result.",
           },
           claim: claim
             ? { tier: claim.status, label: modelingClaimStatusLabel(claim.status), reason: claim.reason }

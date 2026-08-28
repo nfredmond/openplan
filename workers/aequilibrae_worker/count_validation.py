@@ -43,37 +43,11 @@ DEFAULT_READY_CRITICAL_APE = 50.0
 # set, or an operator's own CSV, without any of them being named here.
 # ---------------------------------------------------------------------------
 
-# Registered observed-count regions -> rough bounds (min_lon, min_lat, max_lon,
-# max_lat). Each key MUST exist in scripts/modeling/count_sources.py::
-# COUNT_SOURCES; `test_count_coverage.py` fails if the two drift apart. Adding a
-# state is a registry entry in both places, never a change to a call site.
-#
-# Bbox detection is coarse: a study bbox straddling a state line resolves to the
-# first registered region it intersects. Where the fetched counts do not match
-# the network, calibration finds nothing and the run stays screening-grade.
-COUNT_REGION_BOUNDS: dict[str, tuple[float, float, float, float]] = {
-    "CA": (-124.6, 32.4, -114.0, 42.1),
-    "OR": (-124.57, 41.99, -116.46, 46.29),
-    "WA": (-124.85, 45.54, -116.92, 49.0),
-    "CO": (-109.06, 36.99, -102.04, 41.0),
-}
-
-
 def bboxes_intersect(a: Sequence[float], b: Sequence[float]) -> bool:
     """True when two (min_lon, min_lat, max_lon, max_lat) boxes overlap."""
     if not a or not b or len(a) != 4 or len(b) != 4:
         return False
     return not (a[0] > b[2] or a[2] < b[0] or a[1] > b[3] or a[3] < b[1])
-
-
-def region_for_bbox(bbox: Sequence[float] | None) -> str | None:
-    """Registered count-source region whose bounds intersect the study bbox."""
-    if not bbox or len(bbox) != 4:
-        return None
-    for region, bounds in COUNT_REGION_BOUNDS.items():
-        if bboxes_intersect(bounds, bbox):
-            return region
-    return None
 
 
 def station_set_extent(stations: Iterable[dict[str, Any]]) -> tuple[float, float, float, float] | None:
@@ -111,19 +85,17 @@ def describe_count_coverage(
 
     `covered` False means the run must NOT be reported as a failed validation:
     nothing relevant was ever compared. `reason` names the specific gap, and
-    `registered_regions` tells the operator which states can auto-ingest counts
-    today, so "not covered" is actionable rather than a dead end.
+    Source applicability is frozen separately in the run snapshot. This helper
+    judges only whether the supplied count set overlaps the study area.
     """
-    registered = sorted(COUNT_REGION_BOUNDS)
-    region = region_for_bbox(study_bbox)
     extent = station_set_extent(stations)
 
     if not stations:
         return {
             "covered": False,
             "status": "no_count_set",
-            "region": region,
-            "registered_regions": registered,
+            "region": None,
+            "registered_regions": [],
             "reason": (
                 "No observed-count set was available for this run, so link volumes were not "
                 "compared against published counts. This is not a validation failure."
@@ -135,8 +107,8 @@ def describe_count_coverage(
         return {
             "covered": True,
             "status": "unknown_study_area",
-            "region": region,
-            "registered_regions": registered,
+            "region": None,
+            "registered_regions": [],
             "reason": None,
         }
 
@@ -145,8 +117,8 @@ def describe_count_coverage(
         return {
             "covered": True,
             "status": "count_set_without_geography",
-            "region": region,
-            "registered_regions": registered,
+            "region": None,
+            "registered_regions": [],
             "reason": None,
         }
 
@@ -154,30 +126,22 @@ def describe_count_coverage(
         return {
             "covered": True,
             "status": "covered",
-            "region": region,
-            "registered_regions": registered,
+            "region": None,
+            "registered_regions": [],
             "reason": None,
         }
 
     detail = (
-        f"No observed-count source is registered for this study area. Counts can be "
-        f"auto-ingested today for: {', '.join(registered)}. The available count set covers a "
-        f"different area entirely, so it was NOT used — validating against another "
-        f"jurisdiction's stations would produce a meaningless fit."
+        "The supplied count set covers a different area, so it was not used. "
+        "Adapter applicability is recorded in the exact run snapshot; this is a "
+        "coverage gap, not a validation failure."
     )
-    if region:
-        detail = (
-            f"The available count set does not cover this study area, so it was NOT used — "
-            f"validating against another area's stations would produce a meaningless fit. "
-            f"{region} is a registered count-source region; enable count auto-ingest to fetch "
-            f"local counts for this run."
-        )
 
     return {
         "covered": False,
         "status": "out_of_area",
-        "region": region,
-        "registered_regions": registered,
+        "region": None,
+        "registered_regions": [],
         "reason": detail,
     }
 
@@ -483,11 +447,17 @@ def compute_spearman_rho(observed: Sequence[float], modeled: Sequence[float]) ->
 #:
 #: Bump this whenever a change alters what a station's error MEANS -- not for a
 #: new field, a new metric, or a bug fix that leaves the comparison intact.
-VALIDATION_RULES_VERSION = 3
+VALIDATION_RULES_VERSION = 4
 
 #: What changed at each revision, in the words a planner reads. Version 1 is
 #: implicit: any summary without a version predates the stamp.
 VALIDATION_RULES_CHANGELOG = {
+    4: (
+        "Observed and modeled values must now prove the same base year, day, period, direction, "
+        "carriageway, and vehicle units before they can support a scientific outcome. Grade C is "
+        "diagnostic, Grade D is excluded from pass/fail, and daily/24 or generic K-factor GEH no "
+        "longer enters a claim decision. Older point-count rows remain ungraded legacy diagnostics."
+    ),
     3: (
         "A count whose own description names a frontage road, an interchange connection or a "
         "ramp is no longer graded against the mainline beside it, and a count on a highway is "

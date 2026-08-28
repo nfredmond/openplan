@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.observed-traffic-observation.v1",
+  "title": "OpenPlan observed traffic observation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "observation_id", "source", "route_lrs", "geometry",
+    "direction_lane_carriageway", "vehicle_basis", "time_basis",
+    "measurement", "qa", "estimate", "evidence_grade", "match_audit",
+    "duplicate_lineage"
+  ],
+  "properties": {
+    "schema": { "const": "openplan.observed-traffic-observation.v1" },
+    "observation_id": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object", "additionalProperties": true,
+      "required": ["dataset_id", "publisher", "source_url", "downloaded_at", "artifact_sha256", "member_path", "member_sha256"],
+      "properties": {
+        "dataset_id": { "type": "string", "minLength": 1 },
+        "publisher": { "type": "string", "minLength": 1 },
+        "source_url": { "type": "string", "minLength": 1 },
+        "downloaded_at": { "type": "string", "minLength": 1 },
+        "artifact_sha256": { "$ref": "#/$defs/sha256" },
+        "member_path": { "type": "string", "minLength": 1 },
+        "member_sha256": { "oneOf": [{ "$ref": "#/$defs/sha256" }, { "const": "unknown" }] }
+      }
+    },
+    "route_lrs": { "$ref": "#/$defs/explicitObject" },
+    "geometry": { "$ref": "#/$defs/explicitObject" },
+    "direction_lane_carriageway": {
+      "type": "object", "additionalProperties": true,
+      "required": ["basis", "direction", "lane", "carriageway"],
+      "properties": {
+        "basis": { "type": "string", "minLength": 1 },
+        "direction": { "$ref": "#/$defs/knownOrUnknown" },
+        "lane": { "$ref": "#/$defs/knownOrUnknown" },
+        "carriageway": { "$ref": "#/$defs/knownOrUnknown" }
+      }
+    },
+    "vehicle_basis": {
+      "type": "object", "additionalProperties": true,
+      "required": ["unit", "vehicle_definition", "conversion"],
+      "properties": {
+        "unit": { "enum": ["vehicles", "pce", "unknown"] },
+        "vehicle_definition": { "$ref": "#/$defs/knownOrUnknown" },
+        "conversion": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] }
+      }
+    },
+    "time_basis": {
+      "type": "object", "additionalProperties": true,
+      "required": ["year", "start_date", "end_date", "day_basis", "observation_period", "frozen_year_adjustment"],
+      "properties": {
+        "year": { "oneOf": [{ "type": "integer", "minimum": 1900, "maximum": 2200 }, { "const": "unknown" }] },
+        "start_date": { "$ref": "#/$defs/knownOrUnknown" },
+        "end_date": { "$ref": "#/$defs/knownOrUnknown" },
+        "day_basis": { "$ref": "#/$defs/knownOrUnknown" },
+        "observation_period": { "oneOf": [{ "const": "unknown" }, { "type": "object", "required": ["label", "hours"], "properties": { "label": { "type": "string" }, "hours": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 23 } } } }] },
+        "frozen_year_adjustment": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] }
+      }
+    },
+    "measurement": {
+      "type": "object", "additionalProperties": true,
+      "required": ["method", "duration", "factors"],
+      "properties": {
+        "method": { "enum": ["direct", "source_derived", "derived", "unknown"] },
+        "duration": { "type": "object", "required": ["start", "end", "complete_hours"], "properties": { "start": { "$ref": "#/$defs/knownOrUnknown" }, "end": { "$ref": "#/$defs/knownOrUnknown" }, "complete_hours": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "const": "unknown" }] } } },
+        "factors": { "oneOf": [{ "const": "unknown" }, { "type": "array" }, { "type": "object" }] }
+      }
+    },
+    "qa": {
+      "type": "object", "additionalProperties": true,
+      "required": ["status", "flags", "source_fields"],
+      "properties": {
+        "status": { "enum": ["accepted", "suspect", "rejected", "unknown"] },
+        "flags": { "oneOf": [{ "const": "unknown" }, { "type": "array" }] },
+        "source_fields": { "oneOf": [{ "const": "unknown" }, { "type": "object" }] }
+      }
+    },
+    "estimate": {
+      "type": "object", "additionalProperties": false,
+      "required": ["center", "source_supported_bounds"],
+      "properties": {
+        "center": { "oneOf": [{ "type": "number" }, { "const": "unknown" }] },
+        "source_supported_bounds": {
+          "oneOf": [
+            { "const": "unknown" },
+            { "type": "object", "additionalProperties": false, "required": ["lower", "upper", "method", "authority", "artifact_sha256"], "properties": { "lower": { "type": "number" }, "upper": { "type": "number" }, "method": { "type": "string", "minLength": 1 }, "authority": { "type": "string", "minLength": 1 }, "artifact_sha256": { "$ref": "#/$defs/sha256" } } }
+          ]
+        }
+      }
+    },
+    "evidence_grade": { "enum": ["A", "B", "C", "D"] },
+    "match_audit": {
+      "type": "object", "additionalProperties": true,
+      "required": ["status", "frozen_at", "frozen_before_model_volume", "geometry", "route", "direction", "facility", "candidate_link_ids", "selected_link_id", "reason"],
+      "properties": {
+        "status": { "enum": ["matched", "ambiguous", "excluded", "unloaded", "unresolved", "unsupported", "source_unavailable", "supported_but_empty", "duplicate"] },
+        "frozen_at": { "$ref": "#/$defs/knownOrUnknown" },
+        "frozen_before_model_volume": { "oneOf": [{ "type": "boolean" }, { "const": "unknown" }] },
+        "geometry": { "$ref": "#/$defs/knownOrUnknown" },
+        "route": { "$ref": "#/$defs/knownOrUnknown" },
+        "direction": { "$ref": "#/$defs/knownOrUnknown" },
+        "facility": { "$ref": "#/$defs/knownOrUnknown" },
+        "candidate_link_ids": { "oneOf": [{ "const": "unknown" }, { "type": "array" }] },
+        "selected_link_id": { "oneOf": [{ "type": ["string", "integer"] }, { "const": "unknown" }] },
+        "reason": { "$ref": "#/$defs/knownOrUnknown" }
+      }
+    },
+    "duplicate_lineage": {
+      "type": "object", "additionalProperties": true,
+      "required": ["lineage_id", "canonical_observation_id", "duplicate_of", "resolution"],
+      "properties": {
+        "lineage_id": { "$ref": "#/$defs/knownOrUnknown" },
+        "canonical_observation_id": { "type": "string", "minLength": 1 },
+        "duplicate_of": { "oneOf": [{ "type": "string" }, { "const": "unknown" }] },
+        "resolution": { "$ref": "#/$defs/knownOrUnknown" }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "knownOrUnknown": { "oneOf": [{ "type": ["string", "number", "boolean"], "minLength": 1 }, { "const": "unknown" }] },
+    "explicitObject": { "type": "object", "minProperties": 1 }
+  }
+}

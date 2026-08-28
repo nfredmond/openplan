@@ -110,6 +110,15 @@ export type ReportCitedModelRun = {
   claimStatus?: ModelingClaimStatus | null;
   /** True when the claim-tier read FAILED — distinct from `claimStatus: null`. */
   claimReadFailed?: boolean;
+  validationAssessment?: {
+    outcome: "pass" | "fail" | "inconclusive";
+    reasons: string[];
+    partition: Record<string, unknown>;
+    planningUse: string;
+    rulesVersion: number;
+    comparisonBasisSha256: string;
+  } | null;
+  validationAssessmentReadFailed?: boolean;
 };
 
 /** A county validation run cited by the report (report_runs.county_run_id). */
@@ -448,6 +457,12 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
   // artifact an agency hands a funder. The public plan page has disclosed all
   // three beside every citation since the RTP lane settled it.
   const claimTierLine = citedModelRunClaimTierLine(run);
+  const assessment = run.validationAssessment;
+  const assessmentLine = run.validationAssessmentReadFailed
+    ? "Scientific validation assessment could not be read; do not treat that lookup failure as an absent assessment."
+    : assessment
+      ? `Observed-count assessment: ${assessment.outcome} (rules v${assessment.rulesVersion}; planning use ${assessment.planningUse}; partition ${JSON.stringify(assessment.partition)}; comparison-basis SHA-256 ${assessment.comparisonBasisSha256}).${assessment.reasons.length > 0 ? ` ${assessment.reasons.slice(0, 3).join(" ")}` : ""}`
+      : "No rules-v4 observed-count comparability assessment is attached; older point-count diagnostics do not establish same-basis validation.";
 
   return `<article class="run-card">
     <div class="run-head">
@@ -459,6 +474,7 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     </div>
     ${kpiLine ? `<p>${esc(kpiLine)}</p>` : `<p class="empty">No KPI summary is recorded for this run.</p>`}
     ${claimTierLine ? `<p class="meta">${esc(claimTierLine)}</p>` : ""}
+    <p class="meta">${esc(assessmentLine)}</p>
     <p class="meta">${esc(runMode.caveatSummary)}</p>
   </article>`;
 }

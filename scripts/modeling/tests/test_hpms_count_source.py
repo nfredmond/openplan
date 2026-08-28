@@ -16,6 +16,11 @@ import count_sources  # noqa: E402
 import hpms_count_source as hpms  # noqa: E402
 from build_expanded_aadt_counts import load_points  # noqa: E402
 
+WORKER_DIR = Path(__file__).resolve().parents[3] / "workers" / "aequilibrae_worker"
+if str(WORKER_DIR) not in sys.path:
+    sys.path.insert(0, str(WORKER_DIR))
+import model_validation_core as validation_core  # noqa: E402
+
 
 def feature(**overrides):
     properties = {
@@ -85,12 +90,11 @@ class DescriptorTests(unittest.TestCase):
             descriptor["priority"],
         )
 
-    def test_state_sources_precede_one_national_fallback(self):
+    def test_registry_returns_tmas_then_all_states_then_hpms(self):
         selected = count_sources.observed_count_sources_for_regions(["WA", "CA", "WA", "ZZ"])
-        self.assertEqual([source_id for source_id, _ in selected][-1], count_sources.HPMS_SOURCE_ID)
         self.assertEqual(
-            {source_id for source_id, _ in selected[:-1]},
-            {"us-state-ca", "us-state-wa"},
+            [source_id for source_id, _ in selected],
+            [count_sources.TMAS_SOURCE_ID, "us-state-ca", "us-state-wa", count_sources.HPMS_SOURCE_ID],
         )
 
 
@@ -173,6 +177,20 @@ class NormalizationTests(unittest.TestCase):
         del broken["properties"]["aadt_d"]
         with self.assertRaisesRegex(hpms.HPMSSchemaDriftError, "aadt_d"):
             hpms.normalize_hpms_feature(broken, source_update_timestamp="1")
+
+    def test_v1_observation_preserves_hpms_unknown_method_qa_and_bounds(self):
+        record = self.normalize()
+        observation = hpms.record_to_observation_v1(
+            record,
+            source_snapshot_sha256="a" * 64,
+            source_url="https://data.transportation.gov/resource/42um-tgh5.geojson",
+            downloaded_at="2026-08-27T00:00:00Z",
+        )
+        validation_core.validate_observation(observation)
+        self.assertEqual(observation["evidence_grade"], "C")
+        self.assertEqual(observation["measurement"]["method"], "unknown")
+        self.assertEqual(observation["qa"]["status"], "unknown")
+        self.assertEqual(observation["estimate"]["source_supported_bounds"], "unknown")
 
 
 class FetchTests(unittest.TestCase):

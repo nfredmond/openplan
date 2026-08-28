@@ -27,6 +27,7 @@ TWO WAYS TO START IT, ONE WAY IT RUNS (AEQ_WORKER_MODE):
 import os
 import sys
 import time
+import uuid
 import json
 import shutil
 import sqlite3
@@ -39,7 +40,6 @@ import signal
 import tempfile
 import threading
 import urllib.parse
-import uuid
 from collections import deque
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -102,6 +102,7 @@ from centroid_geometry import candidates_on_routable_component, insert_distinct_
 import mode_choice
 import gtfs_skim
 import count_validation
+import model_validation_core
 import emissions
 import equity
 import model_credibility
@@ -220,20 +221,50 @@ COUNT_AUTO_INGEST = os.getenv("COUNT_AUTO_INGEST", "0") in ("1", "true", "True")
 # Passing it explicitly is what makes the correct counts a property of the run
 # rather than of whatever the process did last.
 
-# The registered count-source regions now live in count_validation.py
-# (COUNT_REGION_BOUNDS) so the coverage rules are stdlib-testable without the
-# geo/modeling stack, and so the "which states are covered" answer has ONE
-# source. Each key maps to a state-DOT AADT source in
-# scripts/modeling/count_sources.py::COUNT_SOURCES (CA=Caltrans, WA=WSDOT,
-# CO=CDOT, OR=ODOT); test_count_coverage.py fails if the two drift apart.
-_region_for_bbox = count_validation.region_for_bbox
+def resolve_observed_count_source_plan(run_row: dict | None) -> dict:
+    """Ask the adapter registry for every source named by the frozen geography.
 
-
-def observed_count_source_for_bbox(bbox) -> str | None:
-    """Preferred registered source for a study bbox, with national fallback."""
-    region = _region_for_bbox(tuple(bbox))
-    if region:
-        return region
+    The app resolves the exact polygon against the shared Census geography
+    system before launch.  The worker consumes that immutable list; it never
+    reinterprets a bbox, picks a first state, or substitutes a national source
+    for an unresolved/non-US polygon.
+    """
+    snapshot = (run_row or {}).get("input_snapshot_json") or {}
+    geography = snapshot.get("observedCountGeography") if isinstance(snapshot, dict) else None
+    if not isinstance(geography, dict) or geography.get("schema") != "openplan.observed-count-geography.v1":
+        return {
+            "state": "unresolved",
+            "subdivisions": [],
+            "sources": [],
+            "detail": "The run predates exact observed-count geography resolution.",
+        }
+    resolution = geography.get("resolution")
+    if resolution == "unsupported":
+        return {
+            "state": "unsupported",
+            "subdivisions": [],
+            "sources": [],
+            "detail": str(geography.get("detail") or "No observed-count adapter supports this country."),
+        }
+    if resolution != "resolved" or geography.get("countryCode") != "US":
+        return {
+            "state": "unresolved",
+            "subdivisions": [],
+            "sources": [],
+            "detail": str(geography.get("detail") or "The run polygon did not resolve to US subdivisions."),
+        }
+    subdivisions = sorted({
+        str(item.get("code"))
+        for item in (geography.get("subdivisions") or [])
+        if isinstance(item, dict) and isinstance(item.get("code"), str)
+    })
+    if not subdivisions:
+        return {
+            "state": "unresolved",
+            "subdivisions": [],
+            "sources": [],
+            "detail": "The resolved geography did not name any subdivision.",
+        }
     modeling_scripts = os.path.normpath(
         os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts", "modeling")
     )
@@ -241,23 +272,25 @@ def observed_count_source_for_bbox(bbox) -> str | None:
         sys.path.insert(0, modeling_scripts)
     try:
         import count_sources as _count_sources
-        import hpms_count_source as _hpms_count_source
+        sources = [source_id for source_id, _descriptor in _count_sources.observed_count_sources_for_regions(subdivisions)]
+    except Exception as exc:
+        return {
+            "state": "source_unavailable",
+            "subdivisions": subdivisions,
+            "sources": [],
+            "detail": f"Observed-count adapter registry could not be read: {exc}",
+        }
+    return {
+        "state": "resolved",
+        "subdivisions": subdivisions,
+        "sources": sources,
+        "detail": str(geography.get("detail") or "Every intersected subdivision is frozen."),
+    }
 
-        if _hpms_count_source.geography_supported(tuple(bbox)):
-            return _count_sources.HPMS_SOURCE_ID
-    except Exception:
-        pass
-    return None
 
-
-def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: bool = False) -> str | None:
-    """Best-effort: fetch local DOT AADT for the study bbox and build a per-run
-    validation CSV, returning its path (or None). Shells out to the existing
-    scripts/modeling/build_expanded_aadt_counts.py. Runs when either the
-    deployment enables COUNT_AUTO_INGEST OR this run opted into calibration
-    (calibrate_requested) — a per-run opt-in must be able to fetch its own count
-    set even where the deployment default is off, so the toggle works standalone
-    (esp. hosted). Skipped when VALIDATION_COUNTS_PATH is explicitly overridden."""
+def auto_ingest_counts(run_row, bbox, proj_dir: str, out_dir: str, calibrate_requested: bool = False) -> str | None:
+    """Load every applicable source and merge its eligible rows without ranking
+    records by model fit. Source attempts retain unavailable and empty states."""
     if (not COUNT_AUTO_INGEST and not calibrate_requested) or "VALIDATION_COUNTS_PATH" in os.environ:
         return None
     if not bbox or len(bbox) != 4:
@@ -271,10 +304,7 @@ def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: b
     )
     if not os.path.exists(db_path) or not os.path.exists(script):
         return None
-    # Prefer a registered state publisher. Everywhere else in the U.S. uses
-    # the HPMS adapter; this country-specific decision stays behind the source
-    # registry and never enters model geography types.
-    region = observed_count_source_for_bbox(tuple(bbox))
+    source_plan = resolve_observed_count_source_plan(run_row)
     status_path = os.path.join(out_dir, "count_source_status.json")
 
     def record_status(status: str, **extra) -> None:
@@ -283,77 +313,102 @@ def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: b
         # unsupported", and "no eligible sections" all collapse to the distant
         # configured fallback and become indistinguishable to a planner.
         os.makedirs(out_dir, exist_ok=True)
-        payload = {"status": status, "source_id": region, **extra}
+        payload = {
+            "status": status,
+            "subdivisions": source_plan.get("subdivisions", []),
+            "sources": source_plan.get("sources", []),
+            **extra,
+        }
         with open(status_path, "w") as handle:
             json.dump(payload, handle, indent=2, sort_keys=True)
 
-    if not region:
-        record_status(
-            "geography_unsupported",
-            error="No registered observed-count adapter supports this study-area bounding box.",
-        )
+    if source_plan["state"] != "resolved":
+        record_status(source_plan["state"], error=source_plan["detail"], attempts=[])
         return None
-    out_csv = os.path.join(out_dir, "auto_aadt_counts.csv")
+
+    boundary_path = os.path.join(out_dir, "observed_count_study_area.geojson")
+    os.makedirs(out_dir, exist_ok=True)
+    with open(boundary_path, "w") as handle:
+        json.dump((run_row or {}).get("corridor_geojson"), handle, sort_keys=True)
+
+    attempts = []
+    available_csvs = []
     try:
         import subprocess
-        res = subprocess.run(
-            [
-                sys.executable, script,
-                # `--opt=value` (not `--opt value`) so argparse doesn't mistake a
-                # negative-longitude bbox (every real US location) for an option
-                # flag — `--fetch-bbox -121.8,...` fails with "expected one argument"
-                # and silently disabled auto-ingest (→ calibration always skipped).
-                f"--fetch-bbox={bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}",
-                "--region", region, "--db", db_path, "--out", out_csv,
-            ],
-            capture_output=True, text=True, timeout=180,
-        )
-        source_sidecar = out_csv + ".count-source.json"
-        sidecar = None
-        if os.path.exists(source_sidecar):
-            try:
-                with open(source_sidecar) as handle:
-                    sidecar = json.load(handle)
-            except (OSError, ValueError, TypeError):
-                sidecar = None
-        if res.returncode != 0 or not os.path.exists(out_csv):
-            if isinstance(sidecar, dict) and sidecar.get("status") in {
-                "source_unavailable", "geography_unsupported",
-                "no_eligible_sections", "no_traffic_found",
-            }:
-                source = sidecar.get("source") if isinstance(sidecar.get("source"), dict) else {}
-                record_status(
-                    sidecar["status"],
-                    dataset_id=source.get("dataset_id"),
-                    vintage=source.get("vintage"),
-                    adapter=source.get("adapter"),
-                    country=source.get("country"),
-                    coverage_statement=source.get("coverage_statement"),
-                    error=sidecar.get("error") or (
-                        str(getattr(res, "stderr", "")).strip() or None
-                    ),
-                )
-            else:
-                record_status(
-                    "source_unavailable",
-                    error=(
-                        str(getattr(res, "stderr", "")).strip()
-                        or "Observed-count fetch did not produce a count file."
-                    ),
-                )
-            return None
-        with open(out_csv) as fh:
-            rows = sum(1 for _ in fh)
-        if rows < 2:
-            record_status(
-                "no_eligible_sections",
-                error="The source answered, but no eligible roadway section could be matched to the retained network.",
+        for source_id in source_plan["sources"]:
+            if source_id == "us-fhwa-tmas-2024":
+                tmas_root = (os.getenv("TMAS_2024_ROOT") or "").strip()
+                bundle_path = os.path.join(tmas_root, "observed-traffic-observations.json") if tmas_root else ""
+                if bundle_path and os.path.exists(bundle_path):
+                    attempts.append({"source_id": source_id, "status": "available", "observation_bundle": bundle_path})
+                else:
+                    attempts.append({
+                        "source_id": source_id,
+                        "status": "source_unavailable",
+                        "detail": "The complete exact-byte TMAS 2024 package is not installed in TMAS_2024_ROOT.",
+                    })
+                continue
+
+            builder_region = source_id.removeprefix("us-state-").upper() if source_id.startswith("us-state-") else source_id
+            out_csv = os.path.join(out_dir, f"auto_aadt_counts_{source_id}.csv")
+            res = subprocess.run(
+                [
+                    sys.executable, script,
+                    f"--fetch-bbox={bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}",
+                    "--boundary-geojson", boundary_path,
+                    "--region", builder_region, "--db", db_path, "--out", out_csv,
+                ],
+                capture_output=True, text=True, timeout=180,
             )
+            sidecar = None
+            source_sidecar = out_csv + ".count-source.json"
+            if os.path.exists(source_sidecar):
+                try:
+                    with open(source_sidecar) as handle:
+                        sidecar = json.load(handle)
+                except (OSError, ValueError, TypeError):
+                    sidecar = None
+            if res.returncode != 0 or not os.path.exists(out_csv):
+                attempts.append({
+                    "source_id": source_id,
+                    "status": (sidecar or {}).get("status") or "source_unavailable",
+                    "detail": (sidecar or {}).get("error") or str(getattr(res, "stderr", "")).strip()
+                              or "Observed-count fetch did not produce a count file.",
+                })
+                continue
+            frame = pd.read_csv(out_csv)
+            if frame.empty:
+                attempts.append({"source_id": source_id, "status": "supported_but_empty"})
+                continue
+            attempts.append({"source_id": source_id, "status": "available", "rows": int(len(frame))})
+            available_csvs.append(out_csv)
+
+        if not available_csvs:
+            status = (
+                "supported_but_empty"
+                if any(item["status"] == "supported_but_empty" for item in attempts)
+                else "source_unavailable"
+            )
+            record_status(status, attempts=attempts)
             return None
-        record_status("available")
-        return out_csv
+
+        combined = pd.concat([pd.read_csv(path) for path in available_csvs], ignore_index=True)
+        # Exact duplicate lineage only.  Source priority is never based on the
+        # residual; distinct state and federal records remain distinct until the
+        # rules-v4 core resolves their declared lineage.
+        lineage_columns = [
+            column for column in (
+                "source_dataset_id", "source_section_id", "measurement_date", "direction"
+            ) if column in combined.columns
+        ]
+        if lineage_columns:
+            combined = combined.drop_duplicates(subset=lineage_columns, keep="first")
+        combined_path = os.path.join(out_dir, "auto_aadt_counts.csv")
+        combined.to_csv(combined_path, index=False)
+        record_status("available", attempts=attempts, rows=int(len(combined)))
+        return combined_path
     except Exception as exc:
-        record_status("source_unavailable", error=str(exc))
+        record_status("source_unavailable", error=str(exc), attempts=attempts)
         return None
 
 # OPT-IN count-based calibration (OFF by default — the product ships an
@@ -546,6 +601,62 @@ def sb_post_artifact(payload: dict):
             "Failed to register model artifact: "
             f"{response.status_code} {response.text[:200]}"
         )
+    try:
+        rows = response.json()
+    except ValueError:
+        rows = []
+    return rows[0] if isinstance(rows, list) and rows else None
+
+
+def sb_record_modeling_validation_assessment(payload: dict) -> dict:
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/rpc/record_modeling_validation_assessment",
+        headers=HEADERS,
+        json=payload,
+        timeout=30,
+    )
+    if not 200 <= response.status_code < 300:
+        raise RuntimeError(
+            "validation evidence write failed: "
+            f"{response.status_code} {response.text[:200]}"
+        )
+    try:
+        result = response.json()
+    except ValueError as exc:
+        raise RuntimeError("validation evidence write failed: custody RPC returned no JSON") from exc
+    if not result:
+        raise RuntimeError("validation evidence write failed: custody RPC returned no row")
+    return result[0] if isinstance(result, list) else result
+
+
+def upload_immutable_validation_json(run_id: str, assessment_id: str, path: str) -> str:
+    """Upload one assessment file to a unique private object.
+
+    A local computation may survive a failed upload, but a local path is not
+    immutable evidence custody and must never be recorded as though it were.
+    """
+    object_path = (
+        f"model-runs/{run_id}/validation-assessments/{assessment_id}/"
+        f"{os.path.basename(path)}"
+    )
+    with open(path, "rb") as handle:
+        response = requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": "application/json",
+                "x-upsert": "false",
+            },
+            data=handle.read(),
+            timeout=60,
+        )
+    if response.status_code in (200, 201):
+        return f"storage://run-artifacts/{object_path}"
+    raise RuntimeError(
+        "validation evidence write failed: immutable storage upload returned "
+        f"{response.status_code} {response.text[:200]}"
+    )
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
@@ -904,6 +1015,10 @@ def write_model_run_modeling_evidence(
         median_ape = (validation or {}).get("median_ape")
         max_ape = (validation or {}).get("max_ape")
         gate = (validation or {}).get("screening_gate")
+        assessment = (validation or {}).get("model_validation_assessment") or {}
+        rules_v4 = (validation or {}).get("validation_rules_version") == 4
+        scientific_outcome = assessment.get("scientific_outcome")
+        evidence_write = assessment.get("validation_evidence_write")
         # THE ZONE SYSTEM GATES BOTH LINK-BASED TIERS.
         #
         # `screening_grade` and `calibrated_to_counts` rest on exactly one kind
@@ -924,7 +1039,27 @@ def write_model_run_modeling_evidence(
         # promote anything — only the reason changes, and only to a truer one.
         zone_block = (validation or {}).get("zone_resolution") or {}
         zone_support = zone_block.get("supports_link_level_validation")
-        if zone_support is False:
+        if rules_v4 and evidence_write == "validation evidence write failed":
+            claim_status, reason = "prototype_only", (
+                "Validation evidence write failed. The computation remains available, but its "
+                "exact inputs and output are not in immutable custody, so this run is scientifically unchecked."
+            )
+        elif rules_v4 and not assessment:
+            claim_status, reason = "prototype_only", (
+                "Rules-v4 validation did not produce a model-validation assessment. A point-count "
+                "diagnostic without the assessment cannot support an outward claim."
+            )
+        elif rules_v4 and scientific_outcome != "pass":
+            claim_status, reason = "prototype_only", (
+                f"The rules-v4 scientific outcome is {scientific_outcome or 'inconclusive'}. "
+                + " ".join(str(item) for item in assessment.get("reasons", [])[:2])
+            ).strip()
+        elif rules_v4:
+            claim_status, reason = "screening_grade", (
+                "The rules-v4 assessment passed its exact frozen, use-specific acceptance rule. "
+                "That result applies only to the recorded planning use and partition."
+            )
+        elif zone_support is False:
             zone_note = zone_block.get("note") or (
                 "At this zone resolution a large share of travel never reaches a link."
             )
@@ -1027,7 +1162,18 @@ def write_model_run_modeling_evidence(
             # Same zone qualification the claim decision above applied, so the
             # metric row and the claim beside it cannot tell a planner two
             # different stories about one comparison.
-            if zone_support is None:
+            if rules_v4:
+                status = (
+                    "pass" if scientific_outcome == "pass"
+                    else "fail" if scientific_outcome == "fail"
+                    else "warn"
+                )
+                detail = (
+                    f"Raw median APE {median_ape}% across {matched} station(s). The rules-v4 "
+                    f"scientific outcome is {scientific_outcome or 'inconclusive'}; this raw point-count "
+                    "metric does not decide the claim without proven comparable quantities."
+                )
+            elif zone_support is None:
                 status, detail = "warn", (
                     f"Median APE {median_ape}% across {matched} station(s), but the share of "
                     "travel that never reaches a link was not measured, so this comparison "
@@ -1048,6 +1194,7 @@ def write_model_run_modeling_evidence(
                     "percent_rmse": (validation or {}).get("percent_rmse"),
                     "geh_mean": ((validation or {}).get("geh") or {}).get("mean"),
                     "spearman_rho": (validation or {}).get("spearman_rho"),
+                    "scientific_outcome": scientific_outcome,
                 },
             }, {
                 "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
@@ -1063,7 +1210,7 @@ def write_model_run_modeling_evidence(
 
 
 def sb_get_run(run_id: str) -> dict:
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"
+    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,workspace_id,scenario_entry_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
         raise RuntimeError(f"Failed to load model run {run_id}: {res.status_code} {res.text[:200]}")
@@ -1071,6 +1218,27 @@ def sb_get_run(run_id: str) -> dict:
     if not rows:
         raise RuntimeError(f"Model run {run_id} not found")
     return rows[0]
+
+
+def sb_get_scenario_role(scenario_entry_id: str | None) -> str:
+    if not scenario_entry_id:
+        return "unknown"
+    url = (
+        f"{SUPABASE_URL}/rest/v1/scenario_entries?id=eq.{scenario_entry_id}"
+        "&select=entry_type"
+    )
+    response = requests.get(url, headers=HEADERS, timeout=20)
+    if response.status_code != 200:
+        return "unknown"
+    rows = response.json()
+    if not rows:
+        return "unknown"
+    entry_type = rows[0].get("entry_type")
+    if entry_type == "baseline":
+        return "baseline"
+    if entry_type == "alternative":
+        return "build"
+    return "unknown"
 
 
 def resolve_run_study_area(run_row: dict) -> tuple[dict, tuple]:
@@ -3263,6 +3431,19 @@ def assignment_engine_stamp(profile: dict) -> str:
     return f"{engine_name} {canonical['engine_version']}"
 
 
+def assignment_engine_record(profile: dict) -> dict:
+    """Return the structured engine identity required by the rules-v4 basis."""
+    canonical = canonical_assignment_profile(profile)
+    return {
+        "name": (
+            "AequilibraE"
+            if canonical["engine"] == "aequilibrae"
+            else canonical["engine"]
+        ),
+        "version": canonical["engine_version"],
+    }
+
+
 def accepted_network_settings_metadata(assign_result: dict, filename: str) -> dict:
     """Describe the persisted settings independently of the artifact's file encoding."""
     calibration = assign_result.get("calibration") or {}
@@ -3424,7 +3605,7 @@ def stage_assignment(
     # would silently be someone else's count set. See the note by
     # VALIDATION_COUNTS_PATH.
     counts_path = counts_path_override or (
-        auto_ingest_counts(setup_result.get("bbox"), proj_dir, out_dir,
+        auto_ingest_counts(run_row, setup_result.get("bbox"), proj_dir, out_dir,
                            calibrate_requested=calibrate_requested)
         or VALIDATION_COUNTS_PATH
     )
@@ -4300,6 +4481,201 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
     )
 
 
+def build_rules_v4_validation_records(
+    *,
+    run_id: str,
+    model_output_artifact_id: str,
+    model_output_artifact_type: str,
+    link_volumes_csv: str,
+    counts_path: str | None,
+    validation: dict | None,
+    run_row: dict,
+    verified_engine_stamp: dict,
+    assignment_profile: dict,
+    assignment_profile_digest_value: str,
+    network_settings: dict,
+    network_settings_digest: str,
+    network_state_digest: str,
+    population_vintage: dict | str,
+) -> tuple[dict, dict, dict]:
+    """Freeze fresh rules-v4 inputs even when the old count CSV is insufficient.
+
+    The current worker count rows predate the v1 observation contract. They are
+    retained byte-for-byte in the input bundle and reported as an inconclusive
+    diagnostic. Nothing here assigns them grades, bounds, or comparable units.
+    """
+    with open(link_volumes_csv, "rb") as handle:
+        model_output_sha256 = hashlib.sha256(handle.read()).hexdigest()
+    count_source: dict | str = "unknown"
+    if counts_path and os.path.isfile(counts_path):
+        with open(counts_path, "rb") as handle:
+            count_source = {
+                "file_name": os.path.basename(counts_path),
+                "sha256": hashlib.sha256(handle.read()).hexdigest(),
+            }
+    validation_input_bundle = {
+        "schema": "openplan.validation-input-bundle.v1",
+        "model_run_id": run_id,
+        "observation_contract": "not_available_for_legacy_count_rows",
+        "source_artifacts": [count_source],
+        "raw_point_count_diagnostic": validation or {},
+        "missing_facts": [
+            "observation method and duration",
+            "source-supported uncertainty bounds",
+            "same-basis year and day",
+            "direction, lane, and carriageway equivalence",
+            "vehicle/PCE conversion",
+            "pre-volume match audit",
+        ],
+    }
+    bundle_sha256 = model_validation_core.sha256_payload(validation_input_bundle)
+    scenario_role = sb_get_scenario_role(run_row.get("scenario_entry_id"))
+    basis = {
+        "schema": model_validation_core.COMPARISON_BASIS_SCHEMA,
+        "basis_id": str(uuid.uuid4()),
+        "model_run_id": run_id,
+        "model_output_artifact": {
+            "artifact_id": model_output_artifact_id,
+            "artifact_type": model_output_artifact_type,
+            "sha256": model_output_sha256,
+        },
+        "model_base_year": "unknown",
+        "day_basis": "unknown",
+        "assignment_period": {"label": "daily", "hours": list(range(24))},
+        "vehicle_basis": {"unit": "pce", "vehicle_pce_conversion": "unknown"},
+        "direction_basis": "unknown",
+        "planning_use": "unknown",
+        "scenario": {
+            "scenario_id": run_row.get("scenario_entry_id") or "unknown",
+            "role": scenario_role,
+        },
+        "engine": verified_engine_stamp,
+        "coefficient_package": "unknown",
+        "population_vintage": population_vintage,
+        "assignment_profile": {
+            "profile": assignment_profile,
+            "sha256": assignment_profile_digest_value,
+        },
+        "network_settings": {
+            "settings": network_settings,
+            "sha256": network_settings_digest,
+        },
+        "network_state_hashes": {"network_state": network_state_digest},
+        "acceptance_rule": "unknown",
+        "frozen_at": datetime.now(timezone.utc).isoformat(),
+    }
+    assessment = model_validation_core.uncontracted_v4_assessment(
+        validation or {},
+        basis,
+        assessment_id=str(uuid.uuid4()),
+        validation_input_bundle_sha256=bundle_sha256,
+    )
+    # The immutable bytes say pending. A successful custody row proves the
+    # transition to recorded; on failure the caller rewrites only the unbound
+    # local computation to the explicit failure state.
+    return validation_input_bundle, basis, assessment
+
+
+def persist_rules_v4_validation_records(
+    *,
+    run_id: str,
+    stage_id: str,
+    workspace_id: str,
+    track: str,
+    model_output_artifact_id: str,
+    record_dir: str,
+    validation_input_bundle: dict,
+    comparison_basis: dict,
+    assessment: dict,
+) -> dict:
+    """Write the three exact JSON artifacts and custody row transactionally.
+
+    Storage uploads precede the database transaction and are immutable unique
+    objects. If the transaction fails they remain unreferenced pending objects;
+    the returned local assessment says the evidence write failed and no claim
+    path treats it as checked.
+    """
+    os.makedirs(record_dir, exist_ok=False)
+    paths = {
+        "validation_input_bundle": os.path.join(record_dir, "validation_input_bundle.json"),
+        "model_comparison_basis": os.path.join(record_dir, "model_comparison_basis.json"),
+        "model_validation_assessment": os.path.join(record_dir, "model_validation_assessment.json"),
+    }
+    for artifact_type, payload in (
+        ("validation_input_bundle", validation_input_bundle),
+        ("model_comparison_basis", comparison_basis),
+        ("model_validation_assessment", assessment),
+    ):
+        with open(paths[artifact_type], "w") as handle:
+            handle.write(model_validation_core.canonical_json(payload))
+
+    try:
+        urls = {
+            artifact_type: upload_immutable_validation_json(run_id, assessment["assessment_id"], path)
+            for artifact_type, path in paths.items()
+        }
+
+        def facts(artifact_type: str) -> tuple[int, str]:
+            with open(paths[artifact_type], "rb") as handle:
+                payload = handle.read()
+            return len(payload), hashlib.sha256(payload).hexdigest()
+
+        input_size, input_hash = facts("validation_input_bundle")
+        basis_size, basis_hash = facts("model_comparison_basis")
+        assessment_size, assessment_hash = facts("model_validation_assessment")
+        if basis_hash != model_validation_core.sha256_payload(comparison_basis):
+            raise RuntimeError("comparison-basis byte hash drifted")
+        sb_record_modeling_validation_assessment({
+            "p_workspace_id": workspace_id,
+            "p_model_run_id": run_id,
+            "p_stage_id": stage_id,
+            "p_track": track,
+            "p_model_output_artifact_id": model_output_artifact_id,
+            "p_validation_input_file_url": urls["validation_input_bundle"],
+            "p_validation_input_size": input_size,
+            "p_validation_input_sha256": input_hash,
+            "p_validation_input_metadata": {
+                "schema": validation_input_bundle["schema"],
+                "comparison_basis_sha256": basis_hash,
+            },
+            "p_comparison_basis_file_url": urls["model_comparison_basis"],
+            "p_comparison_basis_size": basis_size,
+            "p_comparison_basis_sha256": basis_hash,
+            "p_comparison_basis_metadata": {"schema": comparison_basis["schema"]},
+            "p_assessment_file_url": urls["model_validation_assessment"],
+            "p_assessment_size": assessment_size,
+            "p_assessment_sha256": assessment_hash,
+            "p_assessment_metadata": {
+                "schema": assessment["schema"],
+                "comparison_basis_sha256": basis_hash,
+                "rules_version": assessment["rules_version"],
+                "scientific_outcome": assessment["scientific_outcome"],
+                "planning_use": assessment["planning_use"],
+                "partition": assessment["partition"],
+                "reasons": assessment["reasons"],
+                "coverage": assessment["coverage"],
+                "metrics": assessment["metrics"],
+                "comparability_findings": assessment["comparability_findings"],
+                "exact_inputs": assessment["exact_inputs"],
+                "legacy_point_count_diagnostic": assessment["legacy_point_count_diagnostic"],
+            },
+            "p_partition": assessment["partition"],
+            "p_planning_use": str(assessment["planning_use"]),
+            "p_scientific_outcome": assessment["scientific_outcome"],
+            "p_reasons": assessment["reasons"],
+        })
+        assessment["validation_evidence_write"] = "recorded"
+    except Exception as exc:
+        assessment["validation_evidence_write"] = "validation evidence write failed"
+        assessment["reasons"].append(
+            "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
+        )
+        with open(paths["model_validation_assessment"], "w") as handle:
+            handle.write(model_validation_core.canonical_json(assessment))
+        assessment["validation_evidence_write_error"] = str(exc)
+    return assessment
+
+
 def _network_coverage_for_run(run_id: str, db_path: str, link_volumes_csv: str) -> dict | None:
     """Share of the study area's roads this run put traffic on, or None with the
     reason logged.
@@ -4391,6 +4767,7 @@ def stage_artifacts(
     # ── Daily VMT (Σ link volume × length in miles) and per-capita VMT ──
     db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
     link_volumes_csv = os.path.join(out_dir, "link_volumes.csv")
+    model_output_artifact_id = str(uuid.uuid4())
     calibration_result = assign_result.get("calibration")
     daily_vmt = None
     vmt_per_capita = None
@@ -4792,6 +5169,51 @@ def stage_artifacts(
     except Exception as e:
         log += f"Count validation warning: {e}\n"
 
+    run_row_for_validation = sb_get_run(run_id)
+    validation_input_bundle, comparison_basis, validation_assessment = (
+        build_rules_v4_validation_records(
+            run_id=run_id,
+            model_output_artifact_id=model_output_artifact_id,
+            model_output_artifact_type="link_volumes",
+            link_volumes_csv=link_volumes_csv,
+            counts_path=assign_result.get("counts_path"),
+            validation=validation,
+            run_row=run_row_for_validation,
+            verified_engine_stamp=assignment_engine_record(
+                verified_assignment_profile
+            ),
+            assignment_profile=verified_assignment_profile,
+            assignment_profile_digest_value=verified_assignment_profile_digest,
+            network_settings=baseline_assignment_metadata["network_settings"],
+            network_settings_digest=baseline_assignment_metadata["network_settings_digest"],
+            network_state_digest=baseline_assignment_metadata["network_state_digest"],
+            population_vintage=(
+                (package_meta or {}).get("demographics_provenance") or "unknown"
+            ),
+        )
+    )
+    if validation is None:
+        validation = {}
+    validation["model_validation_assessment"] = validation_assessment
+    validation["scientific_outcome"] = validation_assessment["scientific_outcome"]
+    validation["validation_evidence_write"] = validation_assessment["validation_evidence_write"]
+    validation_record_dir = os.path.join(
+        out_dir, "validation_assessments", validation_assessment["assessment_id"]
+    )
+    os.makedirs(validation_record_dir, exist_ok=False)
+    validation_record_paths = {
+        "validation_input_bundle": os.path.join(validation_record_dir, "validation_input_bundle.json"),
+        "model_comparison_basis": os.path.join(validation_record_dir, "model_comparison_basis.json"),
+        "model_validation_assessment": os.path.join(validation_record_dir, "model_validation_assessment.json"),
+    }
+    for artifact_type, payload in (
+        ("validation_input_bundle", validation_input_bundle),
+        ("model_comparison_basis", comparison_basis),
+        ("model_validation_assessment", validation_assessment),
+    ):
+        with open(validation_record_paths[artifact_type], "w") as handle:
+            handle.write(model_validation_core.canonical_json(payload))
+
     # One artifact contract for the evidence that may (or may not) support a
     # count-backed claim. Calibration's own holdout is selection evidence, so
     # it is deliberately separated from an untouched accuracy result here.
@@ -4805,33 +5227,9 @@ def stage_artifacts(
         independent_validation=independent_validation_result,
     )
 
-    # Write the shared modeling claim-grade spine (modeling_validation_results +
-    # modeling_claim_decisions) so reports read one consistent claim grade for
-    # this run — the same tables the county lane populates.
-    try:
-        _ws_id = (sb_get_run(run_id) or {}).get("workspace_id")
-        write_model_run_modeling_evidence(
-            run_id,
-            _ws_id,
-            validation,
-            calibration_result,
-            independent_validation_result,
-        )
-        if calibration_result:
-            _tier = (
-                "calibrated_to_counts"
-                if credibility_evidence["independent_validation"]["supports_claim_tier"]
-                else "prototype_only"
-            )
-        else:
-            _tier = (
-                "screening_grade"
-                if (validation or {}).get("screening_gate") == "bounded screening-ready"
-                else "prototype_only"
-            )
-        log += f"Modeling claim spine updated (tier '{_tier}').\n"
-    except Exception as e:
-        log += f"Modeling evidence spine warning: {e}\n"
+    # The claim spine is written after the custody transaction below. Until
+    # then the assessment is a computation, not durable scientific evidence.
+    _ws_id = run_row_for_validation.get("workspace_id")
 
     validation_provenance = (validation or {}).get("method") or (
         "Observed-count validation did not run (no counts for this study area or disabled). "
@@ -4973,34 +5371,10 @@ def stage_artifacts(
         json.dump(evidence, f, indent=2)
     log += f"Wrote evidence packet to {evidence_path}.\n"
 
-    # Upload the evidence packet to the private run-artifacts bucket so the
-    # app can read it when app and worker run on different hosts (local://
-    # refs only resolve in single-host dev). Falls back to local:// on failure.
-    evidence_storage_ref = None
-    try:
-        ev_object_path = f"model-runs/{run_id}/evidence_packet.json"
-        ev_upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{ev_object_path}"
-        with open(evidence_path, "rb") as f:
-            ev_upload_res = requests.post(
-                ev_upload_url,
-                headers={
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "x-upsert": "true",
-                },
-                data=f.read(),
-                timeout=60,
-            )
-        if ev_upload_res.status_code in (200, 201):
-            evidence_storage_ref = f"storage://run-artifacts/{ev_object_path}"
-            log += f"Uploaded evidence packet to private Storage as {evidence_storage_ref}.\n"
-        else:
-            log += f"Evidence packet Storage upload failed ({ev_upload_res.status_code}); registering local path.\n"
-    except Exception as e:
-        log += f"Evidence packet Storage upload warning: {e}\n"
-
-    # Register artifacts in Supabase
+    # Register non-validation artifacts first. The exact link-volume artifact id
+    # is already frozen into the comparison basis and is the parent of the
+    # transactional custody write below.
+    registered_artifacts: dict[str, dict] = {}
     for fname, atype in [
         ("link_volumes.csv", "link_volumes"),
         ("link_volumes_calibrated.csv", "link_volumes_calibrated"),
@@ -5008,26 +5382,17 @@ def stage_artifacts(
         ("demand.omx", "demand_matrix"),
         ("travel_time_skims.omx", "skim_matrix"),
         ("network_setup_summary.json", "network_setup_summary"),
-        ("evidence_packet.json", "evidence_packet"),
     ]:
         fpath = os.path.join(out_dir, fname)
         if os.path.exists(fpath):
             size = os.path.getsize(fpath)
             with open(fpath, "rb") as fh:
                 content_hash = hashlib.sha256(fh.read()).hexdigest()
-            file_url = (
-                evidence_storage_ref
-                if atype == "evidence_packet" and evidence_storage_ref
-                else f"local://{fpath}"
-            )
-            metadata = (
-                evidence
-                if atype == "evidence_packet"
-                else assignment_artifact_metadata(assign_result, fname)
-            )
+            file_url = f"local://{fpath}"
+            metadata = assignment_artifact_metadata(assign_result, fname)
             if atype == "accepted_network_calibration":
                 metadata = accepted_network_settings_metadata(assign_result, fname)
-            sb_post_artifact({
+            artifact_payload = {
                 "run_id": run_id,
                 "stage_id": stage_id,
                 "artifact_type": atype,
@@ -5035,7 +5400,138 @@ def stage_artifacts(
                 "file_size_bytes": size,
                 "content_hash": content_hash,
                 "metadata_json": metadata,
-            })
+            }
+            if atype == "link_volumes":
+                artifact_payload["id"] = model_output_artifact_id
+            registered = sb_post_artifact(artifact_payload)
+            if registered:
+                registered_artifacts[atype] = registered
+
+    # Persist the v4 assessment and all of its evidence artifacts in one
+    # database transaction. A failure is not swallowed: it changes the visible
+    # scientific state and the claim decision written below.
+    try:
+        validation_urls = {
+            artifact_type: upload_immutable_validation_json(
+                run_id,
+                validation_assessment["assessment_id"],
+                path,
+            )
+            for artifact_type, path in validation_record_paths.items()
+        }
+
+        def validation_file_facts(artifact_type: str) -> tuple[int, str]:
+            path = validation_record_paths[artifact_type]
+            with open(path, "rb") as handle:
+                payload = handle.read()
+            return len(payload), hashlib.sha256(payload).hexdigest()
+
+        input_size, input_hash = validation_file_facts("validation_input_bundle")
+        basis_size, basis_hash = validation_file_facts("model_comparison_basis")
+        assessment_size, assessment_hash = validation_file_facts("model_validation_assessment")
+        expected_basis_hash = model_validation_core.sha256_payload(comparison_basis)
+        if basis_hash != expected_basis_hash:
+            raise RuntimeError("validation evidence write failed: comparison-basis byte hash drifted")
+        sb_record_modeling_validation_assessment({
+            "p_workspace_id": _ws_id,
+            "p_model_run_id": run_id,
+            "p_stage_id": stage_id,
+            "p_track": "assignment",
+            "p_model_output_artifact_id": model_output_artifact_id,
+            "p_validation_input_file_url": validation_urls["validation_input_bundle"],
+            "p_validation_input_size": input_size,
+            "p_validation_input_sha256": input_hash,
+            "p_validation_input_metadata": {
+                "schema": validation_input_bundle["schema"],
+                "comparison_basis_sha256": basis_hash,
+            },
+            "p_comparison_basis_file_url": validation_urls["model_comparison_basis"],
+            "p_comparison_basis_size": basis_size,
+            "p_comparison_basis_sha256": basis_hash,
+            "p_comparison_basis_metadata": {
+                "schema": comparison_basis["schema"],
+            },
+            "p_assessment_file_url": validation_urls["model_validation_assessment"],
+            "p_assessment_size": assessment_size,
+            "p_assessment_sha256": assessment_hash,
+            "p_assessment_metadata": {
+                "schema": validation_assessment["schema"],
+                "comparison_basis_sha256": basis_hash,
+                "rules_version": validation_assessment["rules_version"],
+                "scientific_outcome": validation_assessment["scientific_outcome"],
+                "planning_use": validation_assessment["planning_use"],
+                "partition": validation_assessment["partition"],
+                "reasons": validation_assessment["reasons"],
+                "coverage": validation_assessment["coverage"],
+                "metrics": validation_assessment["metrics"],
+                "comparability_findings": validation_assessment["comparability_findings"],
+                "exact_inputs": validation_assessment["exact_inputs"],
+                "legacy_point_count_diagnostic": validation_assessment["legacy_point_count_diagnostic"],
+            },
+            "p_partition": validation_assessment["partition"],
+            "p_planning_use": str(validation_assessment["planning_use"]),
+            "p_scientific_outcome": validation_assessment["scientific_outcome"],
+            "p_reasons": validation_assessment["reasons"],
+        })
+        validation["validation_evidence_write"] = "recorded"
+        validation_assessment["validation_evidence_write"] = "recorded"
+        log += "Rules-v4 validation assessment recorded in immutable custody.\n"
+    except Exception as exc:
+        validation["validation_evidence_write"] = "validation evidence write failed"
+        validation_assessment["validation_evidence_write"] = "validation evidence write failed"
+        validation_assessment["reasons"].append(
+            "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
+        )
+        with open(validation_record_paths["model_validation_assessment"], "w") as handle:
+            handle.write(model_validation_core.canonical_json(validation_assessment))
+        log += f"Validation evidence write failed: {exc}\n"
+
+    try:
+        write_model_run_modeling_evidence(
+            run_id,
+            _ws_id,
+            validation,
+            calibration_result,
+            independent_validation_result,
+        )
+        log += "Modeling claim spine updated from the rules-v4 scientific outcome.\n"
+    except Exception as exc:
+        log += f"Modeling evidence spine warning: {exc}\n"
+
+    # The evidence packet is a readable summary rather than a bound assessment.
+    # Write it after custody so it carries the actual persistence state.
+    with open(evidence_path, "w") as handle:
+        json.dump(evidence, handle, indent=2)
+    evidence_storage_ref = None
+    try:
+        ev_object_path = f"model-runs/{run_id}/evidence_packet.json"
+        with open(evidence_path, "rb") as handle:
+            ev_upload_res = requests.post(
+                f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{ev_object_path}",
+                headers={
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                    "x-upsert": "true",
+                },
+                data=handle.read(),
+                timeout=60,
+            )
+        if ev_upload_res.status_code in (200, 201):
+            evidence_storage_ref = f"storage://run-artifacts/{ev_object_path}"
+    except Exception as exc:
+        log += f"Evidence packet Storage upload warning: {exc}\n"
+    with open(evidence_path, "rb") as handle:
+        evidence_bytes = handle.read()
+    sb_post_artifact({
+        "run_id": run_id,
+        "stage_id": stage_id,
+        "artifact_type": "evidence_packet",
+        "file_url": evidence_storage_ref or f"local://{evidence_path}",
+        "file_size_bytes": len(evidence_bytes),
+        "content_hash": hashlib.sha256(evidence_bytes).hexdigest(),
+        "metadata_json": evidence,
+    })
 
     # Register the zone-attributes package input (local:// — same-host consumers
     # only). The ActivitySim behavioral worker reads this + travel_time_skims.omx
@@ -5695,7 +6191,9 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 )
                 with open(volume_path, "rb") as volume_handle:
                     volume_bytes = volume_handle.read()
+                activitysim_artifact_id = str(uuid.uuid4())
                 sb_post_artifact({
+                    "id": activitysim_artifact_id,
                     "run_id": run_id,
                     "stage_id": stage_id,
                     "artifact_type": "activitysim_link_volumes",
@@ -5722,9 +6220,69 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     intrazonal_share_pct=None,
                     zone_count=(result.get("network") or {}).get("zones"),
                 )
+                run_row = sb_get_run(run_id)
+                activitysim_profile, _profile_payload, activitysim_profile_digest = (
+                    validated_convergence_profile(
+                        result.get("convergence"), "ActivitySim validation assessment"
+                    )
+                )
+                input_bundle, comparison_basis, activitysim_assessment = (
+                    build_rules_v4_validation_records(
+                        run_id=run_id,
+                        model_output_artifact_id=activitysim_artifact_id,
+                        model_output_artifact_type="activitysim_link_volumes",
+                        link_volumes_csv=volume_path,
+                        counts_path=result.get("counts_path") or first_assignment.get("counts_path"),
+                        validation=activitysim_validation,
+                        run_row=run_row,
+                        verified_engine_stamp={
+                            "demand_model": "ActivitySim",
+                            "assignment_engine": assignment_engine_stamp(activitysim_profile),
+                        },
+                        assignment_profile=activitysim_profile,
+                        assignment_profile_digest_value=activitysim_profile_digest,
+                        network_settings=result.get("network_settings") or {},
+                        network_settings_digest=result.get("network_settings_digest") or "unknown",
+                        network_state_digest=result.get("network_state_digest") or "unknown",
+                        population_vintage="unknown",
+                    )
+                )
+                activitysim_assessment = persist_rules_v4_validation_records(
+                    run_id=run_id,
+                    stage_id=stage_id,
+                    workspace_id=str(run_row.get("workspace_id") or ""),
+                    track="behavioral_demand",
+                    model_output_artifact_id=activitysim_artifact_id,
+                    record_dir=os.path.join(
+                        work_dir,
+                        "activitysim_assignment_output",
+                        "validation_assessments",
+                        activitysim_assessment["assessment_id"],
+                    ),
+                    validation_input_bundle=input_bundle,
+                    comparison_basis=comparison_basis,
+                    assessment=activitysim_assessment,
+                )
+                if activitysim_validation is None:
+                    activitysim_validation = {}
+                activitysim_validation["validation_rules_version"] = 4
+                activitysim_validation["model_validation_assessment"] = activitysim_assessment
+                activitysim_validation["scientific_outcome"] = activitysim_assessment["scientific_outcome"]
+                activitysim_validation["validation_evidence_write"] = activitysim_assessment[
+                    "validation_evidence_write"
+                ]
+                if activitysim_assessment["validation_evidence_write"] == "recorded":
+                    result["log"] += (
+                        "ActivitySim rules-v4 assessment recorded separately in immutable custody.\n"
+                    )
+                else:
+                    result["log"] += (
+                        "Validation evidence write failed for the ActivitySim assessment; "
+                        "it is scientifically unchecked.\n"
+                    )
                 write_model_run_modeling_evidence(
                     run_id,
-                    (sb_get_run(run_id) or {}).get("workspace_id"),
+                    run_row.get("workspace_id"),
                     activitysim_validation,
                     track="behavioral_demand",
                 )

@@ -72,7 +72,7 @@
  *   ... npm run first-week-discovery -- --list
  *   npm run first-week-discovery -- --verify-only first-week-runs/<stamp>
  */
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -455,6 +455,40 @@ function readJsonIfPresent(filePath) {
   } catch {
     return null;
   }
+}
+
+/** Bind a first-week run to the exact app checkout it exercised. */
+function currentBuildIdentity() {
+  const appPackage = readJsonIfPresent(path.join(__dirname, '..', 'openplan', 'package.json'));
+  const revision = spawnSync('git', ['rev-parse', 'HEAD'], {
+    cwd: path.join(__dirname, '..'),
+    encoding: 'utf8',
+  });
+  const gitSha = revision.status === 0 ? revision.stdout.trim() : '';
+  return {
+    gitSha: /^[0-9a-f]{40}$/i.test(gitSha) ? gitSha : 'unknown',
+    appVersion:
+      typeof appPackage?.version === 'string' && appPackage.version.trim()
+        ? appPackage.version.trim()
+        : 'unknown',
+  };
+}
+
+function buildNewRunManifest({ createdAt, baseUrl, model, backend, jobs, freshAccount, build }) {
+  return { createdAt, baseUrl, model, backend, jobs, freshAccount, build };
+}
+
+function buildJobManifest({ job, email, approverEmail, model, backend, build }) {
+  return {
+    id: job.id,
+    title: job.title,
+    account: job.account,
+    email,
+    approverEmail,
+    model,
+    backend,
+    build,
+  };
 }
 
 function normalizeFindingsReport(value) {
@@ -888,14 +922,16 @@ async function main() {
     email: `first-week-${stamp.slice(0, 19).toLowerCase()}@openplan.test`,
     password: 'FirstWeek!2026',
   };
-  const manifest = existingManifest || {
+  const buildIdentity = currentBuildIdentity();
+  const manifest = existingManifest || buildNewRunManifest({
     createdAt: new Date().toISOString(),
     baseUrl,
     model,
     backend,
     jobs: selected.map((job) => job.id),
     freshAccount: generatedFreshAccount,
-  };
+    build: buildIdentity,
+  });
   const runHasFreshAccountCreator = jobs.some(
     (job) => job.account === 'fresh-run' && Array.isArray(manifest.jobs) && manifest.jobs.includes(job.id),
   );
@@ -955,7 +991,14 @@ async function main() {
 
     fs.writeFileSync(
       path.join(dir, 'job.json'),
-      `${JSON.stringify({ id: job.id, title: job.title, account: job.account, email, approverEmail: job.requiresApprover ? configuredApproverEmail : null, model, backend }, null, 2)}\n`,
+      `${JSON.stringify(buildJobManifest({
+        job,
+        email,
+        approverEmail: job.requiresApprover ? configuredApproverEmail : null,
+        model,
+        backend,
+        build: buildIdentity,
+      }), null, 2)}\n`,
     );
 
     const prompt = buildPrompt(job, {
@@ -1021,9 +1064,12 @@ async function main() {
 module.exports = {
   archiveAttempt,
   buildCodexArgs,
+  buildJobManifest,
+  buildNewRunManifest,
   classifyJobExecution,
   classifyJobOutcome,
   codexContractViolation,
+  currentBuildIdentity,
   loadJobs,
   parseAgentSession,
   parseArgs,

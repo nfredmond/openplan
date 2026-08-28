@@ -16,47 +16,47 @@ os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "import-only-not-a-key")
 import main
 
 
-def test_region_for_bbox_detects_california():
-    assert main._region_for_bbox((-121.80, 38.53, -121.68, 38.58)) == "CA"  # Davis
-    assert main._region_for_bbox((-121.06, 39.21, -121.04, 39.23)) == "CA"  # Nevada County
+def _run(*subdivisions, resolution="resolved", country="US"):
+    return {
+        "corridor_geojson": {
+            "type": "Polygon",
+            "coordinates": [[[-122, 38], [-121, 38], [-121, 39], [-122, 39], [-122, 38]]],
+        },
+        "input_snapshot_json": {
+            "observedCountGeography": {
+                "schema": "openplan.observed-count-geography.v1",
+                "resolution": resolution,
+                "countryCode": country,
+                "subdivisions": [{"fips": f"{index + 1:02d}", "code": code} for index, code in enumerate(subdivisions)],
+                "detail": "fixture",
+            }
+        },
+    }
 
 
-def test_region_for_bbox_detects_registered_states():
-    # Multi-state count adapters: each state's AADT FeatureServer is picked up by
-    # an in-state study bbox (verify_bbox from the live source discovery).
-    assert main._region_for_bbox((-122.35, 47.55, -122.30, 47.65)) == "WA"  # Seattle / I-5
-    assert main._region_for_bbox((-105.02, 39.70, -104.95, 39.78)) == "CO"  # Denver / I-25
-    assert main._region_for_bbox((-122.75, 45.40, -122.55, 45.60)) == "OR"  # Portland
-    # Denver is east of California's eastern edge, so CA does NOT swallow it.
-    assert main._region_for_bbox((-105.02, 39.70, -104.95, 39.78)) != "CA"
-    # Border coarseness is first-match by registry order. A bbox on the CA/OR line
-    # (lat ~42.0, where CA's 42.1 top overlaps OR's 41.99 bottom) resolves to CA
-    # because CA is registered first — pin it so a reorder can't silently reroute
-    # a far-NorCal study to ODOT. (OR-before-WA is already pinned by Portland.)
-    assert main._region_for_bbox((-122.00, 41.95, -121.90, 42.05)) == "CA"
+def test_source_plan_asks_for_every_state_and_national_adapter():
+    plan = main.resolve_observed_count_source_plan(_run("OR", "CA"))
+    assert plan["state"] == "resolved"
+    assert plan["subdivisions"] == ["CA", "OR"]
+    assert plan["sources"] == [
+        "us-fhwa-tmas-2024",
+        "us-state-ca",
+        "us-state-or",
+        "us-fhwa-hpms-2024",
+    ]
 
 
-def test_region_for_bbox_returns_none_outside_registered_regions():
-    assert main._region_for_bbox((-74.02, 40.70, -73.90, 40.80)) is None  # NYC (no registered source)
-
-
-def test_national_hpms_fallback_covers_unregistered_us_geographies():
-    assert main.observed_count_source_for_bbox((-83.2, 39.8, -82.8, 40.1)) == "us-fhwa-hpms-2024"
-    assert main.observed_count_source_for_bbox((-150.0, 60.0, -149.0, 61.0)) == "us-fhwa-hpms-2024"
-    assert main.observed_count_source_for_bbox((-158.5, 20.5, -157.5, 21.5)) == "us-fhwa-hpms-2024"
-    assert main.observed_count_source_for_bbox((179.0, 51.0, -179.0, 53.0)) == "us-fhwa-hpms-2024"
-    assert main.observed_count_source_for_bbox((2.0, 48.0, 3.0, 49.0)) is None
-
-
-def test_registered_state_feed_remains_preferred_to_hpms():
-    assert main.observed_count_source_for_bbox((-121.83, 38.51, -121.68, 38.58)) == "CA"
+def test_source_plan_keeps_unresolved_and_unsupported_distinct():
+    assert main.resolve_observed_count_source_plan(_run(resolution="unresolved"))["state"] == "unresolved"
+    assert main.resolve_observed_count_source_plan(_run(resolution="unsupported", country="NZ"))["state"] == "unsupported"
+    assert main.resolve_observed_count_source_plan({})["state"] == "unresolved"
 
 
 def test_auto_ingest_is_off_by_default():
     # COUNT_AUTO_INGEST defaults OFF, so the pilot/CI stay on the curated file.
     assert main.COUNT_AUTO_INGEST is False
     # Even for a CA bbox, disabled → None (no fetch attempted).
-    assert main.auto_ingest_counts((-121.80, 38.53, -121.68, 38.58), "/nonexistent", "/tmp") is None
+    assert main.auto_ingest_counts(_run("CA"), (-121.80, 38.53, -121.68, 38.58), "/nonexistent", "/tmp") is None
 
 
 def test_auto_ingest_passes_bbox_as_equals_form():
@@ -87,7 +87,7 @@ def test_auto_ingest_passes_bbox_as_equals_form():
         subprocess.run = fake_run
         with tempfile.TemporaryDirectory() as d:
             open(os.path.join(d, "project_database.sqlite"), "w").close()
-            result = main.auto_ingest_counts((-121.83, 38.51, -121.68, 38.58), d, d)
+            result = main.auto_ingest_counts(_run("CA"), (-121.83, 38.51, -121.68, 38.58), d, d)
     finally:
         subprocess.run = real_run
         main.COUNT_AUTO_INGEST = orig_flag
@@ -152,10 +152,11 @@ def test_auto_ingest_runs_for_per_run_calibrate_even_when_deployment_off():
             open(os.path.join(d, "project_database.sqlite"), "w").close()
             bbox = (-121.83, 38.51, -121.68, 38.58)  # Davis, CA (registered region)
             # No opt-in + env off → still skipped.
-            assert main.auto_ingest_counts(bbox, d, d) is None
-            assert main.auto_ingest_counts(bbox, d, d, calibrate_requested=False) is None
+            run = _run("CA")
+            assert main.auto_ingest_counts(run, bbox, d, d) is None
+            assert main.auto_ingest_counts(run, bbox, d, d, calibrate_requested=False) is None
             # Per-run opt-in → fetch runs even though COUNT_AUTO_INGEST is off.
-            result = main.auto_ingest_counts(bbox, d, d, calibrate_requested=True)
+            result = main.auto_ingest_counts(run, bbox, d, d, calibrate_requested=True)
     finally:
         subprocess.run = real_run
         main.COUNT_AUTO_INGEST = orig_flag
@@ -192,18 +193,43 @@ def test_should_run_calibration_gate():
         main.COUNT_VALIDATION_ENABLED = orig
 
 
+def test_immutable_validation_upload_failure_is_not_recorded_as_local_custody():
+    """A failed private-storage write must enter the explicit unchecked path.
+
+    Returning a local URL here would let the custody RPC succeed while binding
+    a mutable worker path, which is not immutable evidence.
+    """
+    import tempfile
+
+    real_post = main.requests.post
+
+    class FailedUpload:
+        status_code = 503
+        text = "fixture unavailable"
+
+    try:
+        main.requests.post = lambda *args, **kwargs: FailedUpload()
+        with tempfile.NamedTemporaryFile() as artifact:
+            try:
+                main.upload_immutable_validation_json("run-1", "assessment-1", artifact.name)
+            except RuntimeError as exc:
+                assert "validation evidence write failed" in str(exc)
+            else:
+                raise AssertionError("a failed immutable upload was accepted as custody")
+    finally:
+        main.requests.post = real_post
+
+
 if __name__ == "__main__":
     tests = [
-        test_region_for_bbox_detects_california,
-        test_region_for_bbox_detects_registered_states,
-        test_region_for_bbox_returns_none_outside_registered_regions,
-        test_national_hpms_fallback_covers_unregistered_us_geographies,
-        test_registered_state_feed_remains_preferred_to_hpms,
+        test_source_plan_asks_for_every_state_and_national_adapter,
+        test_source_plan_keeps_unresolved_and_unsupported_distinct,
         test_auto_ingest_is_off_by_default,
         test_auto_ingest_passes_bbox_as_equals_form,
         test_resolve_calibration_enabled_snapshot_over_env,
         test_auto_ingest_runs_for_per_run_calibrate_even_when_deployment_off,
         test_should_run_calibration_gate,
+        test_immutable_validation_upload_failure_is_not_recorded_as_local_custody,
     ]
     try:
         for t in tests:

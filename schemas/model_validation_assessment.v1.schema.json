@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.model-validation-assessment.v1",
+  "title": "OpenPlan model validation assessment v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "assessment_id", "rules_version", "created_at", "exact_inputs", "planning_use", "partition", "comparability_findings", "observation_results", "metrics", "coverage", "scientific_outcome", "reasons", "legacy_point_count_diagnostic", "validation_evidence_write"],
+  "properties": {
+    "schema": { "const": "openplan.model-validation-assessment.v1" },
+    "assessment_id": { "type": "string", "minLength": 1 },
+    "rules_version": { "oneOf": [{ "const": 4 }, { "type": "integer", "minimum": 1, "maximum": 3 }] },
+    "created_at": { "type": "string", "minLength": 1 },
+    "exact_inputs": { "oneOf": [{ "const": "unknown" }, { "type": "object", "required": ["observation_sha256", "comparison_basis_sha256", "model_output_artifact_id", "model_output_sha256"], "properties": { "observation_sha256": { "type": "array", "items": { "$ref": "#/$defs/sha256" } }, "comparison_basis_sha256": { "$ref": "#/$defs/sha256" }, "model_output_artifact_id": { "type": "string" }, "model_output_sha256": { "$ref": "#/$defs/sha256" } } }] },
+    "planning_use": {},
+    "partition": {},
+    "comparability_findings": {},
+    "observation_results": { "type": "array" },
+    "metrics": { "type": "object", "required": ["decisive", "diagnostic_grade_c", "all_computed"] },
+    "coverage": {},
+    "scientific_outcome": { "enum": ["pass", "fail", "inconclusive"] },
+    "reasons": { "type": "array", "items": { "type": "string" } },
+    "legacy_point_count_diagnostic": { "type": "boolean" },
+    "validation_evidence_write": { "enum": ["pending", "recorded", "validation evidence write failed", "legacy_not_applicable"] }
+  },
+  "$defs": { "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" } }
+}

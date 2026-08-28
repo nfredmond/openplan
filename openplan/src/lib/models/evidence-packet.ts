@@ -826,6 +826,9 @@ export function labelForArtifactType(artifactType: string | null | undefined) {
   if (artifactType === "behavioral_kpi_summary_json") return "Behavioral KPI Summary";
   if (artifactType === "behavioral_kpi_packet_md") return "Behavioral KPI Packet";
   if (artifactType === "activitysim_bundle_manifest_json") return "ActivitySim Bundle Manifest";
+  if (artifactType === "validation_input_bundle") return "Validation Input Bundle";
+  if (artifactType === "model_comparison_basis") return "Model Comparison Basis";
+  if (artifactType === "model_validation_assessment") return "Model Validation Assessment";
   return titleCaseTokenized(artifactType);
 }
 

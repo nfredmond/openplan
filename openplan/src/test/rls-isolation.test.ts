@@ -192,6 +192,14 @@ type ReadResult = {
 
 const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 
+// These append-only ledgers cannot join this harness's create/delete fixture
+// cycle. Their named live suites are part of `npm run test:rls-live` and prove
+// the same member-visible / outsider-hidden boundary plus their stricter write
+// rules. Keep this list exact so a filename alone cannot silently count.
+const DEDICATED_LIVE_RLS_PROBES = new Set([
+  "modeling_validation_assessments",
+]);
+
 const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
   {
     table: "aerial_missions",
@@ -1631,6 +1639,9 @@ describe("workspace RLS isolation inventory", () => {
       "workspace_reminder_preferences",
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
+    expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
+      "modeling_validation_assessments",
+    ]);
   });
 });
 
@@ -1896,7 +1907,10 @@ liveDescribe("the probe list covers the schema", () => {
 
     expect(rows.length, "the catalog query found no workspace-scoped tables at all").toBeGreaterThan(40);
 
-    const probed = new Set(WORKSPACE_RLS_PROBES.map((probe) => probe.table));
+    const probed = new Set([
+      ...WORKSPACE_RLS_PROBES.map((probe) => probe.table),
+      ...DEDICATED_LIVE_RLS_PROBES,
+    ]);
     const excused = new Set(PROBE_EXCUSED_TABLES);
 
     const uncovered = rows.filter(

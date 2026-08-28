@@ -85,6 +85,15 @@ export type ResolvedCitedModelRun = CitedModelRunRow & {
   claimReadFailed: boolean;
 };
 
+export type CitedModelValidationAssessment = {
+  outcome: "pass" | "fail" | "inconclusive";
+  reasons: string[];
+  partition: Record<string, unknown>;
+  planningUse: string;
+  rulesVersion: number;
+  comparisonBasisSha256: string;
+};
+
 /**
  * Why a cited link has no resolved run row. These are four different facts and
  * the citation says which one is true; `"unknown"` is what a caller that did not
@@ -451,26 +460,62 @@ export async function withCitedModelRunClaimTiers<
 >(
   supabase: SupabaseLike,
   citedModelRuns: T[]
-): Promise<Array<T & { claimStatus: ModelingClaimStatus | null; claimReadFailed: boolean }>> {
+): Promise<Array<T & {
+  claimStatus: ModelingClaimStatus | null;
+  claimReadFailed: boolean;
+  validationAssessment: CitedModelValidationAssessment | null;
+  validationAssessmentReadFailed: boolean;
+}>> {
   if (citedModelRuns.length === 0) return [];
 
-  const evidence = await loadRtpEvidenceRunDisclosures(
-    supabase as unknown as RtpEvidenceSupabaseLike,
-    citedModelRuns.map((run) => run.id),
-    {
-      knownRuns: citedModelRuns.map((run) => ({
-        id: run.id,
-        run_title: run.run_title,
-        engine_key: run.engine_key,
-        status: run.status,
-      })),
+  const runIds = citedModelRuns.map((run) => run.id);
+  const [evidence, assessmentResult] = await Promise.all([
+    loadRtpEvidenceRunDisclosures(
+      supabase as unknown as RtpEvidenceSupabaseLike,
+      runIds,
+      {
+        knownRuns: citedModelRuns.map((run) => ({
+          id: run.id,
+          run_title: run.run_title,
+          engine_key: run.engine_key,
+          status: run.status,
+        })),
+      }
+    ),
+    supabase
+      .from("modeling_validation_assessments")
+      .select("model_run_id, scientific_outcome, reasons_json, partition_json, planning_use, validation_rules_version, comparison_basis_sha256, created_at")
+      .in("model_run_id", runIds)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const newestAssessmentByRun = new Map<string, CitedModelValidationAssessment>();
+  if (!assessmentResult.error) {
+    for (const row of (assessmentResult.data ?? []) as Array<Record<string, unknown>>) {
+      const modelRunId = typeof row.model_run_id === "string" ? row.model_run_id : null;
+      const outcome = row.scientific_outcome;
+      if (!modelRunId || newestAssessmentByRun.has(modelRunId) || (outcome !== "pass" && outcome !== "fail" && outcome !== "inconclusive")) continue;
+      newestAssessmentByRun.set(modelRunId, {
+        outcome,
+        reasons: Array.isArray(row.reasons_json)
+          ? row.reasons_json.filter((reason): reason is string => typeof reason === "string")
+          : [],
+        partition: row.partition_json && typeof row.partition_json === "object" && !Array.isArray(row.partition_json)
+          ? row.partition_json as Record<string, unknown>
+          : {},
+        planningUse: typeof row.planning_use === "string" ? row.planning_use : "unknown",
+        rulesVersion: typeof row.validation_rules_version === "number" ? row.validation_rules_version : 4,
+        comparisonBasisSha256: typeof row.comparison_basis_sha256 === "string" ? row.comparison_basis_sha256 : "unknown",
+      });
     }
-  );
+  }
 
   return citedModelRuns.map((run) => ({
     ...run,
     claimStatus: evidence.claimTierFor(run.id),
     claimReadFailed: evidence.claimReadFailed,
+    validationAssessment: newestAssessmentByRun.get(run.id) ?? null,
+    validationAssessmentReadFailed: Boolean(assessmentResult.error),
   }));
 }
 

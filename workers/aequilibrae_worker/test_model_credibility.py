@@ -109,15 +109,31 @@ def test_auto_ingest_records_source_failure_for_the_artifact_stage():
         subprocess.run = lambda *args, **kwargs: FailedResult()
         with tempfile.TemporaryDirectory() as directory:
             open(os.path.join(directory, "project_database.sqlite"), "w").close()
+            run_row = {
+                "corridor_geojson": {
+                    "type": "Polygon",
+                    "coordinates": [[[-83.2, 39.8], [-82.8, 39.8], [-82.8, 40.1], [-83.2, 40.1], [-83.2, 39.8]]],
+                },
+                "input_snapshot_json": {
+                    "observedCountGeography": {
+                        "schema": "openplan.observed-count-geography.v1",
+                        "resolution": "resolved",
+                        "countryCode": "US",
+                        "subdivisions": [{"fips": "39", "code": "OH"}],
+                        "detail": "fixture",
+                    }
+                },
+            }
             result = main.auto_ingest_counts(
-                (-83.2, 39.8, -82.8, 40.1), directory, directory
+                run_row, (-83.2, 39.8, -82.8, 40.1), directory, directory
             )
             assert result is None
             with open(os.path.join(directory, "count_source_status.json")) as handle:
                 status = json.load(handle)
             assert status["status"] == "source_unavailable", status
-            assert status["source_id"] == "us-fhwa-hpms-2024"
-            assert "timed out" in status["error"]
+            hpms = next(item for item in status["attempts"] if item["source_id"] == "us-fhwa-hpms-2024")
+            assert hpms["status"] == "source_unavailable"
+            assert "timed out" in hpms["detail"]
     finally:
         subprocess.run = real_run
         main.COUNT_AUTO_INGEST = real_flag

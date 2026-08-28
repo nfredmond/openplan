@@ -1,0 +1,28 @@
+{
+  "schema": "openplan.development-validation-instrument-study.v1",
+  "study_id": "california-seven-county-observed-count-instrument",
+  "methods": ["aequilibrae", "activitysim"],
+  "counties": [
+    {"geography_id": "06007", "aequilibrae": "data/screening-runs/study-06007-base", "activitysim": "data/screening-runs/study-06007-asim"},
+    {"geography_id": "06039", "aequilibrae": "data/screening-runs/study-06039-base", "activitysim": "data/screening-runs/study-06039-asim"},
+    {"geography_id": "06047", "aequilibrae": "data/screening-runs/study-06047-base", "activitysim": "data/screening-runs/study-06047-asim"},
+    {"geography_id": "06053", "aequilibrae": "data/screening-runs/study-06053-base", "activitysim": "data/screening-runs/study-06053-asim"},
+    {"geography_id": "06057", "aequilibrae": "data/screening-runs/a2-base-06057-tight", "activitysim": "data/screening-runs/a2-asim-06057-roundtrip"},
+    {"geography_id": "06069", "aequilibrae": "data/screening-runs/study-06069-base", "activitysim": "data/screening-runs/study-06069-asim"},
+    {"geography_id": "06107", "aequilibrae": "data/screening-runs/study-06107-base", "activitysim": "data/screening-runs/study-06107-asim"}
+  ],
+  "required_files": {
+    "network": "work/aeq_project/project_database.sqlite",
+    "observations": "counts/published_counts.csv",
+    "match_audit": "validation/validation_candidate_audit.json",
+    "model_output": "run_output/link_volumes.csv"
+  },
+  "constraints": {
+    "identical_network_and_observations_between_methods": true,
+    "match_audit_frozen_before_model_output": true,
+    "read_model_output_during_readiness_audit": false,
+    "change_defaults": false,
+    "calibrate_candidate": false,
+    "open_acceptance_holdout": false
+  }
+}

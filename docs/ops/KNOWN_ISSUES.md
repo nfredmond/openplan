@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-28 against the final v0.37.0 candidate.
+**Reviewed:** 2026-08-28 against the v0.38.0 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -8,7 +8,7 @@ only in `docs/ROADMAP.md`.
 
 | ID | Severity | Boundary | Current disposition | Evidence |
 |---|---|---|---|---|
-| KI-2026-08-24-001 | High | County and dual-demand outputs remain screening evidence. Current held-out count results do not support defensible corridor accuracy, and agreement between models is not accuracy. | Keep caveats, claim tiers, both model values, and negative studies intact. Do not average or change defaults without untouched evidence. | `CHANGELOG.md` 0.22–0.23; `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
+| KI-2026-08-24-001 | High | County and dual-demand outputs remain screening evidence. Rules-v4 now detects same-basis gaps and preserves honest inconclusive results, but no untouched use-specific validation supports a corridor or nationwide accuracy claim. Agreement between models is not accuracy. | Keep caveats, claim tiers, both model values, and negative studies intact. Freeze identical observations and pre-volume matches before the next development study. Do not average or change defaults without untouched evidence. | `docs/modeling/OBSERVED_COUNT_INSTRUMENT_READINESS_2026-08-28.md`; `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-002 | High | ActivitySim can execute, but the available stock behavioral coefficients were estimated for another region. A locally fitted population does not make those choices locally calibrated. | Name coefficient provenance and keep output below locally validated claim tiers. | `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-003 | Medium | Crash rates per modeled VMT lack a defensible denominator where the modeled road network does not cover the observed crash network. | Keep rates deferred; disclose source and road-coverage limits instead of treating unsupported roads as zero. | `docs/ROADMAP.md` |
 | KI-2026-08-24-004 | Medium | Recovery confidence expires if operators stop exercising it. The repository drill proves the local reference path, not every deployment's disks, credentials, or cutover. | Run `npm run ops:restore-drill` before relevant releases and at least quarterly; next reference review due 2026-11-24. | `openplan/docs/ops/BACKUP_AND_RESTORE.md` |

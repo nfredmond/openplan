@@ -182,6 +182,10 @@ const modelingClaimSelectMock = vi.fn(() => ({
   in: modelingClaimInMock,
 }));
 
+const modelingAssessmentOrderMock = vi.fn();
+const modelingAssessmentInMock = vi.fn(() => ({ order: modelingAssessmentOrderMock }));
+const modelingAssessmentSelectMock = vi.fn(() => ({ in: modelingAssessmentInMock }));
+
 const modelingSourcesOrderMock = vi.fn();
 const modelingSourcesEqMock = vi.fn(() => ({ order: modelingSourcesOrderMock }));
 const modelingSourcesSelectMock = vi.fn(() => ({ eq: modelingSourcesEqMock }));
@@ -452,6 +456,10 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "modeling_validation_assessments") {
+    return { select: modelingAssessmentSelectMock };
+  }
+
   if (table === "engagement_campaigns") {
     return {
       select: engagementCampaignSelectMock,
@@ -703,6 +711,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     agreementArtifactsLimitMock.mockResolvedValue({ data: [], error: null });
     modelingClaimMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     modelingClaimInMock.mockResolvedValue({ data: [], error: null });
+    modelingAssessmentOrderMock.mockResolvedValue({ data: [], error: null });
     modelingSourcesOrderMock.mockResolvedValue({ data: [], error: null });
     modelingValidationsOrderMock.mockResolvedValue({ data: [], error: null });
     stageGateDecisionsLimitMock.mockResolvedValue({ data: [], error: null });

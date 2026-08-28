@@ -199,6 +199,7 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
 
 
 HPMS_SOURCE_ID = "us-fhwa-hpms-2024"
+TMAS_SOURCE_ID = "us-fhwa-tmas-2024"
 HPMS_DATASET_ID = "42um-tgh5"
 HPMS_COVERAGE_STATEMENT = (
     "Section-level AADT covers Federal-aid highways nationwide. Rural minor collectors and "
@@ -257,6 +258,29 @@ OBSERVED_COUNT_SOURCE_DESCRIPTORS: dict[str, ObservedCountSourceDescriptor] = {
         "geometry_field": "line",
         "priority": 10,
     },
+    TMAS_SOURCE_ID: {
+        "adapter": "us-fhwa-tmas-continuous-volume",
+        "country": "US",
+        "dataset_id": "fhwa:tmas:continuous-volume:2024",
+        "vintage": "2024",
+        "coverage_statement": (
+            "FHWA TMAS continuous station observations where states supplied complete "
+            "2024 station and monthly volume records. Missing stations or months are not zero."
+        ),
+        "field_map": {
+            "station_id": "station_id",
+            "state": "state_code",
+            "direction": "travel_dir",
+            "lane": "travel_lane",
+            "method": "method_volume",
+            "lrs_id": "lrs_id",
+            "lrs_point": "lrs_point",
+            "latitude": "latitude",
+            "longitude": "longitude",
+        },
+        "geometry_field": "station_coordinate",
+        "priority": 200,
+    },
 }
 
 
@@ -272,8 +296,10 @@ def observed_count_source_descriptor(source_id: str) -> ObservedCountSourceDescr
 
 
 def observed_count_sources_for_regions(regions: list[str]) -> list[tuple[str, ObservedCountSourceDescriptor]]:
-    """State publishers first, followed once by the nationwide HPMS fallback."""
-    selected: list[tuple[str, ObservedCountSourceDescriptor]] = []
+    """Every applicable state and national source, with no first-state choice."""
+    selected: list[tuple[str, ObservedCountSourceDescriptor]] = [
+        (TMAS_SOURCE_ID, OBSERVED_COUNT_SOURCE_DESCRIPTORS[TMAS_SOURCE_ID])
+    ]
     for region in sorted(set(regions)):
         source_id = f"us-state-{region.lower()}"
         if source_id in OBSERVED_COUNT_SOURCE_DESCRIPTORS:
@@ -303,6 +329,22 @@ def source_provenance(region: str) -> dict[str, Any]:
             "route_label_prefix": "",
             "count_year": 2024,
             "query_url": f"https://data.transportation.gov/resource/{descriptor['dataset_id']}.geojson",
+            "non_mainline_patterns": (),
+            "facility_clause_pattern": "",
+            "source_dataset_id": descriptor["dataset_id"],
+            "vintage": descriptor["vintage"],
+            "coverage_statement": descriptor["coverage_statement"],
+        }
+    if region == TMAS_SOURCE_ID:
+        descriptor = observed_count_source_descriptor(region)
+        return {
+            "region": region,
+            "name": "FHWA TMAS Continuous Volume Data - 2024",
+            "agency": "Federal Highway Administration",
+            "station_prefix": "TMAS",
+            "route_label_prefix": "",
+            "count_year": 2024,
+            "query_url": "https://www.fhwa.dot.gov/policyinformation/tables/tmasdata/",
             "non_mainline_patterns": (),
             "facility_clause_pattern": "",
             "source_dataset_id": descriptor["dataset_id"],

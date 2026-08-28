@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
 import sqlite3
 import sys
+import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,6 +30,7 @@ from count_validation import (
     station_candidate_distance_meters,
     station_candidate_rank,
 )
+import model_validation_core
 
 from screening_metrics import (
     accuracy_by_road_class,
@@ -1279,7 +1282,76 @@ def run_validation_bundle(
         ),
     }
 
+    # Rules v4 has one authority for comparability and scientific outcomes. The
+    # county lane's historical CSV rows lack the v1 observation facts, so this
+    # fresh output retains the point metrics and fails closed as inconclusive.
+    input_bundle = {
+        "schema": "openplan.validation-input-bundle.v1",
+        "model_run_id": summary["model_run_id"],
+        "observation_contract": "not_available_for_legacy_count_rows",
+        "source_artifacts": [{
+            "file_name": counts_csv.name,
+            "sha256": hashlib.sha256(counts_csv.read_bytes()).hexdigest(),
+        }],
+        "raw_point_count_diagnostic": summary,
+        "missing_facts": [
+            "observation method and duration",
+            "source-supported uncertainty bounds",
+            "same-basis year and day",
+            "direction, lane, and carriageway equivalence",
+            "vehicle/PCE conversion",
+            "pre-volume match audit",
+        ],
+    }
+    output_hash = hashlib.sha256(link_volumes_path.read_bytes()).hexdigest()
+    engine = evidence.get("engine")
+    if not isinstance(engine, dict):
+        engine = {"recorded_value": engine} if engine not in (None, "") else "unknown"
+    comparison_basis = {
+        "schema": model_validation_core.COMPARISON_BASIS_SCHEMA,
+        "basis_id": str(uuid.uuid4()),
+        "model_run_id": str(summary["model_run_id"]),
+        "model_output_artifact": {
+            "artifact_id": f"local:{link_volumes_path.name}",
+            "artifact_type": "link_volumes",
+            "sha256": output_hash,
+        },
+        "model_base_year": "unknown",
+        "day_basis": "unknown",
+        "assignment_period": {"label": "daily", "hours": list(range(24))},
+        "vehicle_basis": {"unit": "pce", "vehicle_pce_conversion": "unknown"},
+        "direction_basis": "unknown",
+        "planning_use": "unknown",
+        "scenario": "unknown",
+        "engine": engine,
+        "coefficient_package": "unknown",
+        "population_vintage": "unknown",
+        "assignment_profile": evidence.get("assignment_profile") if isinstance(evidence.get("assignment_profile"), dict) else "unknown",
+        "network_settings": evidence.get("network_settings") if isinstance(evidence.get("network_settings"), dict) else "unknown",
+        "network_state_hashes": "unknown",
+        "acceptance_rule": "unknown",
+        "frozen_at": datetime.now(timezone.utc).isoformat(),
+    }
+    assessment = model_validation_core.uncontracted_v4_assessment(
+        summary,
+        comparison_basis,
+        assessment_id=str(uuid.uuid4()),
+        validation_input_bundle_sha256=model_validation_core.sha256_payload(input_bundle),
+    )
+    summary["validation_rules_version"] = model_validation_core.VALIDATION_RULES_VERSION
+    summary["scientific_outcome"] = assessment["scientific_outcome"]
+    summary["model_validation_assessment"] = assessment
+
     write_results_csv(output_dir / "validation_results.csv", results)
+    (output_dir / "validation_input_bundle.json").write_text(
+        model_validation_core.canonical_json(input_bundle)
+    )
+    (output_dir / "model_comparison_basis.json").write_text(
+        model_validation_core.canonical_json(comparison_basis)
+    )
+    (output_dir / "model_validation_assessment.json").write_text(
+        model_validation_core.canonical_json(assessment)
+    )
     (output_dir / "validation_summary.json").write_text(json.dumps(summary, indent=2))
     write_markdown_report(output_dir / "validation_report.md", summary, results)
     write_candidate_audit_json(output_dir / "validation_candidate_audit.json", candidate_audit)

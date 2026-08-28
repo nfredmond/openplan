@@ -10,10 +10,10 @@ from a default. A count set carries the name of the DOT that actually published
 it; a WSDOT or CDOT count must never reach an evidence packet wearing another
 agency's attribution.
 
-observed_volume = max(BACK_AADT, AHEAD_AADT): reproduces all three of the
-original hand-picked Nevada County stations exactly (the mainline / higher-volume
-segment), so the rule is validated against that baseline. Every value and
-coordinate is real DOT data — nothing synthesized.
+Sources that publish adjacent-section values retain both. One becomes the
+observation only when route/LRS evidence identifies the applicable side. An
+unequal pair with no such evidence stays ambiguous; a larger residual must never
+be avoided by choosing the other side.
 """
 import argparse
 import csv
@@ -36,26 +36,28 @@ MAJOR_TYPES = ("motorway", "trunk", "primary", "secondary", "tertiary")
 NEAR_M = 160.0        # radius to gather candidate route links (metres)
 BOX_DEG = 0.0035      # station bbox half-size (~300m E-W, ~390m N-S at 39N)
 CLASS_RANK = {"motorway": 5, "trunk": 4, "primary": 3, "secondary": 2, "tertiary": 1}
-# Per-route plausible OSM classes — a small factual prior that disambiguates at
-# multi-route junctions (California's SR-174 is a 2-lane secondary highway, never
-# a freeway, so an SR-174 count near the SR-20 junction must not match the SR-20
-# motorway). Keyed by region first because route numbers repeat across states:
-# Washington's SR-20 is a different road than California's. A region with no
-# entry gets no prior — every major class stays plausible.
-ROUTE_CLASSES = {
-    "CA": {
-        "20": {"motorway", "trunk", "primary", "secondary"},
-        "49": {"motorway", "trunk", "primary", "secondary"},
-        "174": {"secondary", "primary", "tertiary"},
-    },
-}
-
-
 def _as_float(value):
     try:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def resolve_adjacent_section_volume(back, ahead, selected_side=None, route_lrs_match=False):
+    """Return (volume, status) without choosing the larger adjacent section."""
+    back_value, ahead_value = _as_float(back), _as_float(ahead)
+    if back_value is None and ahead_value is None:
+        return None, "missing"
+    if back_value is None:
+        return int(round(ahead_value)), "single_ahead"
+    if ahead_value is None:
+        return int(round(back_value)), "single_back"
+    if back_value == ahead_value:
+        return int(round(back_value)), "equal_adjacent_sections"
+    if route_lrs_match is True and selected_side in {"back", "ahead"}:
+        chosen = back_value if selected_side == "back" else ahead_value
+        return int(round(chosen)), f"route_lrs_selected_{selected_side}"
+    return None, "ambiguous_adjacent_sections"
 
 
 def load_points(geojson_path):
@@ -76,19 +78,14 @@ def load_points(geojson_path):
             round(pm, 3) if pm is not None else None,
             p.get("DESCRIPTION") or "",
         )
-        # observed = mainline (higher-volume) segment = max(back, ahead).
-        # AADT fields arrive as STRINGS — coerce before max or "4450" > "13500"
-        # lexicographically and the wrong segment wins.
-        vals = []
-        for v in (p.get("BACK_AADT"), p.get("AHEAD_AADT")):
-            if v not in (None, ""):
-                try:
-                    vals.append(int(round(float(v))))
-                except (TypeError, ValueError):
-                    pass
-        if not vals:
+        obs, adjacent_status = resolve_adjacent_section_volume(
+            p.get("BACK_AADT"),
+            p.get("AHEAD_AADT"),
+            p.get("SELECTED_SECTION_SIDE"),
+            p.get("ROUTE_LRS_MATCH") is True,
+        )
+        if adjacent_status == "missing":
             continue
-        obs = max(vals)
         lon, lat = g["coordinates"][0], g["coordinates"][1]
         if key not in uniq:
             uniq[key] = {
@@ -96,6 +93,9 @@ def load_points(geojson_path):
                 "pm": pm,
                 "desc": p.get("DESCRIPTION") or "",
                 "obs": obs,
+                "back_obs": _as_float(p.get("BACK_AADT")),
+                "ahead_obs": _as_float(p.get("AHEAD_AADT")),
+                "adjacent_section_status": adjacent_status,
                 "lon": float(lon),
                 "lat": float(lat),
                 "source_dataset_id": p.get("source_dataset_id", ""),
@@ -136,7 +136,7 @@ def route_link(conn, region, rte, lon, lat):
     class is plausible for this route in this region, the highest road class,
     nearest-first. Returns (name, link_type, dist_m) or None. Class-then-distance
     ordering picks the route mainline over a closer lower-class cross-street."""
-    allowed = ROUTE_CLASSES.get(region, {}).get(str(rte), set(MAJOR_TYPES))
+    allowed = set(MAJOR_TYPES)
     bounds = spatial_search_bounds(float(lon), float(lat), NEAR_M)
     index_clauses = []
     index_args: list[float] = []
@@ -203,7 +203,10 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
         tag = "AT" + re.sub(r"[^0-9]", "_", "{:.5f}_{:.5f}".format(pt["lon"], pt["lat"]))
         station_id = f"{prov['station_prefix']}_RTE{rte}_{tag}"
     vintage = prov.get("count_year")
-    notes = f"{prov['name']}; observed=max(back,ahead); network-derived candidates"
+    notes = (
+        f"{prov['name']}; adjacent sections preserved; "
+        f"resolution={pt.get('adjacent_section_status', 'unknown')}; network-derived candidates"
+    )
     if vintage is None:
         # Say so rather than let a blank year read as an oversight — or worse,
         # let some other source's year be assumed for it.
@@ -219,7 +222,10 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
         "count_year": vintage if vintage is not None else "",
         "count_type": "AADT",
         "direction": pt.get("directionality") or "two_way",
-        "observed_volume": pt["obs"],
+        "observed_volume": pt["obs"] if pt["obs"] is not None else "",
+        "back_observed_volume": pt.get("back_obs") if pt.get("back_obs") is not None else "",
+        "ahead_observed_volume": pt.get("ahead_obs") if pt.get("ahead_obs") is not None else "",
+        "adjacent_section_resolution": pt.get("adjacent_section_status", "unknown"),
         "source_agency": prov["agency"],
         "source_description": desc,
         "candidate_model_names": route_name,
@@ -238,8 +244,11 @@ def station_row(pt, prov, route_name, route_type, exclude_name):
         "facility_class": pt.get("facility_class", ""),
         "source_state": pt.get("source_state", ""),
         "source_county": pt.get("source_county", ""),
-        "exclusion_status": "eligible",
-        "exclusion_reason": "",
+        "exclusion_status": "excluded" if pt.get("obs") is None else "eligible",
+        "exclusion_reason": (
+            "ambiguous_adjacent_sections_without_route_lrs_side_evidence"
+            if pt.get("obs") is None else ""
+        ),
         "source_provenance": json.dumps(pt.get("source_provenance") or {}, sort_keys=True),
         "notes": notes,
     }
@@ -347,7 +356,8 @@ def main():
     conn.load_extension(SPATIALITE)
 
     fields = ["station_id", "label", "facility_name", "count_year", "count_type", "direction",
-              "observed_volume", "source_agency", "source_description", "candidate_model_names",
+              "observed_volume", "back_observed_volume", "ahead_observed_volume",
+              "adjacent_section_resolution", "source_agency", "source_description", "candidate_model_names",
               "candidate_link_types", "exclude_model_names", "bbox_min_lon", "bbox_min_lat",
               "bbox_max_lon", "bbox_max_lat", "station_role", "station_role_reason",
               "source_dataset_id", "source_vintage", "source_section_id", "measurement_date",

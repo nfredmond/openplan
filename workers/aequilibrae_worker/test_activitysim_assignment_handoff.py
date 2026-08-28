@@ -1040,6 +1040,7 @@ def test_agreement_artifact_registration_carries_both_full_convergence_records()
         ]
         assert metadata["network_state_digest"] == first["network_state_digest"]
         assert metadata["upload_status"] == "local_fallback"
+        assert metadata["is_average"] is False
 
 
 def test_latest_local_artifact_requires_full_hash_and_all_identity_metadata():
@@ -1228,8 +1229,13 @@ def test_network_factor_bools_and_local_engine_stamp_are_not_trusted():
     profile = main.resolve_assignment_profile({})
     persisted = {**profile, "engine_version": "persisted-version"}
     assert main.assignment_engine_stamp(persisted) == "AequilibraE persisted-version"
+    assert main.assignment_engine_record(persisted) == {
+        "name": "AequilibraE",
+        "version": "persisted-version",
+    }
     artifact_source = inspect.getsource(main.stage_artifacts)
     assert "verified_engine_stamp" in artifact_source
+    assert "verified_engine_stamp=assignment_engine_record" in artifact_source
     assert "ENGINE_STAMP" not in artifact_source
     assert "hexdigest()[:16]" not in artifact_source
 

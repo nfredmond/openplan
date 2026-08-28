@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: cb445c4b
-current_release: v0.37.0
+current_release: v0.38.0
 review_by: 2026-09-25
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.37.0
+## Current truth at v0.38.0
 
 Strong foundations already exist:
 
@@ -107,9 +107,32 @@ The v1 contract is not yet true:
 - the model is screening-grade, not nationwide validated. The often-repeated
   43.3% figure is the selection metric from the roughly 30% holdout drawn from a
   57-station, one-county dataset, not national or independent accuracy evidence.
-  OpenPlan's true nationwide error is unknown, rank agreement in measured
+  Rules-v4 now refuses a claim until observed and modeled quantities are proven
+  comparable, but OpenPlan's true nationwide error is still unknown. Rank agreement in measured
   examples is weak, and most minor links are unloaded. Observation uncertainty
-  has not yet been separated rigorously from structural model error.
+  is now represented without invented generic bounds, but has not yet been
+  separated from structural model error with untouched use-specific evidence.
+
+## Completed checkpoint: v0.38 trustworthy observed-count validation
+
+- Added exact observation, comparison-basis, and assessment contracts plus one
+  shared stdlib-only rules-v4 evaluation core.
+- Added complete 2024 FHWA TMAS custody, conservative HPMS enrichment, exact
+  polygon/multistate source resolution, Caltrans adjacent-side preservation,
+  and explicit coverage failure states.
+- Added append-only transactional assessment custody and planner-visible,
+  report, assistant, and project-evidence disclosure with downloadable hashes.
+- Kept legacy rows diagnostic, build forecasts inconclusive, and AequilibraE
+  and ActivitySim separate.
+- Stopped the seven-county development study before model-output reveal because
+  zero method pairs had identical observation packages and pre-volume match
+  audits. The readiness result is in
+  `docs/modeling/OBSERVED_COUNT_INSTRUMENT_READINESS_2026-08-28.md`.
+
+The next modeling checkpoint is to freeze one identical observation package and
+pre-volume route/match audit per development county, then run the unchanged
+paired baselines. Defaults, calibration, and the acceptance holdout remain
+closed until that development instrument is valid.
 
 That last point is a model-science question, not permission to fit observations
 exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and

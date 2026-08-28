@@ -440,16 +440,21 @@ const EXPECTED = {
   // and writer insert policies. 20260826000004 adds two governed-package
   // tables with member read plus role-aware insert policies, and one My Work
   // view. The correction migrations replace functions without adding schema.
-  policies: 686,
-  permissive: 440,
+  // 20260828000001 adds the append-only validation-assessment custody table.
+  // It has one member SELECT policy and no client write policy; all bound
+  // artifacts and the custody row are written through one service-only RPC.
+  // +1 policy/permissive, policy-bearing relation/table/RLS table, and no
+  // permissive write.
+  policies: 687,
+  permissive: 441,
   restrictive: 246,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 160,
-  relations: 184,
-  tables: 176,
+  tablesWithPolicies: 161,
+  relations: 185,
+  tables: 177,
   views: 8,
-  rlsEnabledTables: 176,
+  rlsEnabledTables: 177,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

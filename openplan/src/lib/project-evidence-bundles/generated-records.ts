@@ -70,9 +70,10 @@ async function evidenceRows(
   sources: Record<string, unknown>[];
   validation: Record<string, unknown>[];
   claims: Record<string, unknown>[];
+  assessments: Record<string, unknown>[];
 }> {
   if (modelRunIds.length === 0 && countyRunIds.length === 0) {
-    return { sources: [], validation: [], claims: [] };
+    return { sources: [], validation: [], claims: [], assessments: [] };
   }
 
   const tableReads = [
@@ -131,7 +132,25 @@ async function evidenceRows(
     collected.push([...unique.values()].sort((left, right) => String(left.id).localeCompare(String(right.id))));
   }
 
-  return { sources: collected[0], validation: collected[1], claims: collected[2] };
+  let assessments: Record<string, unknown>[] = [];
+  if (modelRunIds.length > 0) {
+    const read = await dynamicFrom("modeling_validation_assessments")
+      .select(
+        "id, workspace_id, model_run_id, track, model_output_artifact_id, validation_input_bundle_artifact_id, comparison_basis_artifact_id, model_validation_assessment_artifact_id, comparison_basis_sha256, validation_rules_version, partition_json, planning_use, scientific_outcome, reasons_json, created_at"
+      )
+      .eq("workspace_id", workspaceId)
+      .in("model_run_id", modelRunIds)
+      .order("created_at", { ascending: true });
+    if (read.error) {
+      throw new ProjectEvidenceBundleError(
+        "missing_evidence",
+        "Project-linked scientific validation assessments could not be read."
+      );
+    }
+    assessments = rows(read.data);
+  }
+
+  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments };
 }
 
 /**
@@ -356,8 +375,32 @@ export async function loadProjectEvidenceGeneratedFiles(
       }),
     };
   });
+  const validationAssessments = modelingEvidence.assessments.map((assessment) => ({
+    ...withoutPersonalIdentifiers(assessment) as Record<string, unknown>,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { table: "modeling_validation_assessments", id: assessment.id },
+      source: {
+        kind: "model_validation_assessment",
+        label: `Scientific model validation: ${String(assessment.scientific_outcome ?? "inconclusive")}`,
+        citation: typeof assessment.comparison_basis_sha256 === "string"
+          ? assessment.comparison_basis_sha256
+          : null,
+      },
+      asOfDate: typeof assessment.created_at === "string" ? assessment.created_at : null,
+      retrievedAt: generatedAt.toISOString(),
+      evidenceStatus: "modeled",
+      claimTier: null,
+      uncertainty: Array.isArray(assessment.reasons_json) ? assessment.reasons_json.map(String) : [],
+      limits: ["The outcome applies only to the exact bound run, artifacts, planning use, and partition."],
+      revisionToken: typeof assessment.created_at === "string" ? assessment.created_at : null,
+      checksumSha256: typeof assessment.comparison_basis_sha256 === "string"
+        ? assessment.comparison_basis_sha256
+        : null,
+      numericClaim: true,
+    }),
+  }));
   const modeling = {
-    schemaVersion: "project_modeling_evidence.v1",
+    schemaVersion: "project_modeling_evidence.v2",
     projectId: project.id,
     generatedAt: generatedAt.toISOString(),
     models: withoutPersonalIdentifiers(models),
@@ -366,6 +409,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     countyRuns: withoutPersonalIdentifiers(countyRuns),
     sourceManifests: withoutPersonalIdentifiers(modelingEvidence.sources),
     validationResults,
+    validationAssessments,
     claimDecisions,
   };
   const modelingRevisionToken = sourceRevision({

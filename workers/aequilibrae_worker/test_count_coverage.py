@@ -13,8 +13,8 @@ nothing, and report "Only 0 matched station(s); >= 3 required for a screening
 claim." A planner in Ohio reads that as "my model failed validation". The truth
 was that no count source covers their state.
 
-Includes a PARITY check against scripts/modeling/count_sources.py so the
-registered-region list cannot drift from the sources that actually exist.
+Source applicability is tested at the frozen run-snapshot/adapter seam. These
+checks cover only whether a supplied count set overlaps the study area.
 """
 import os
 import sys
@@ -48,19 +48,6 @@ def test_bboxes_intersect():
     assert not cv.bboxes_intersect((0, 0, 1), (2, 2, 3, 3))
 
 
-def test_region_for_bbox_resolves_registered_states():
-    assert cv.region_for_bbox(_DAVIS_BBOX) == "CA"
-    assert cv.region_for_bbox((-122.35, 47.55, -122.30, 47.65)) == "WA"
-    assert cv.region_for_bbox((-105.02, 39.70, -104.95, 39.78)) == "CO"
-    assert cv.region_for_bbox((-122.75, 45.40, -122.55, 45.60)) == "OR"
-
-
-def test_region_for_bbox_is_none_outside_registered_regions():
-    assert cv.region_for_bbox(_OHIO_BBOX) is None
-    assert cv.region_for_bbox(None) is None
-    assert cv.region_for_bbox((1, 2)) is None
-
-
 def test_station_set_extent_unions_declared_bboxes():
     stations = [
         _station("A", (-121.06, 39.21, -121.04, 39.23)),
@@ -89,19 +76,18 @@ def test_out_of_state_run_reports_coverage_not_failure():
     assert coverage["covered"] is False, coverage
     assert coverage["status"] == "out_of_area"
     assert coverage["region"] is None
-    # The reason must name the gap and be actionable, not blame the model.
-    assert "No observed-count source is registered" in coverage["reason"], coverage["reason"]
-    assert "CA" in coverage["reason"] and "OR" in coverage["reason"], coverage["reason"]
+    # The reason names the supplied-set gap without blaming the model.
+    assert "supplied count set" in coverage["reason"], coverage["reason"]
     for blame in ("failed", "did not meet", "matched station"):
         assert blame not in coverage["reason"], coverage["reason"]
 
 
-def test_in_region_but_out_of_area_run_says_counts_can_be_fetched():
-    """Davis is in CA — a registered region — but the pilot file is not local."""
+def test_out_of_area_run_does_not_guess_a_source_from_bbox():
     coverage = cv.describe_count_coverage([_station()], _DAVIS_BBOX)
     assert coverage["covered"] is False, coverage
-    assert coverage["region"] == "CA"
-    assert "auto-ingest" in coverage["reason"], coverage["reason"]
+    assert coverage["region"] is None
+    assert coverage["registered_regions"] == []
+    assert "run snapshot" in coverage["reason"], coverage["reason"]
 
 
 def test_missing_count_set_is_a_coverage_statement_not_a_failure():
@@ -136,40 +122,6 @@ def test_uncovered_summary_carries_no_gate_and_no_metrics():
         assert summary[metric] is None, metric
     assert summary["coverage"]["covered"] is False
     assert "coverage gap, not a validation result" in summary["method"]
-
-
-def test_registered_regions_match_the_count_source_registry():
-    """PARITY: adding a state must be a registry entry in BOTH places.
-
-    COUNT_REGION_BOUNDS decides which areas can auto-ingest counts;
-    COUNT_SOURCES holds the FeatureServer that actually serves them. A region in
-    one but not the other is either an area promised coverage it cannot get, or
-    a source no run will ever reach.
-    """
-    scripts_dir = os.path.normpath(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts", "modeling")
-    )
-    sys.path.insert(0, scripts_dir)
-    try:
-        import count_sources  # noqa: PLC0415
-    finally:
-        sys.path.remove(scripts_dir)
-
-    bounds_regions = set(cv.COUNT_REGION_BOUNDS)
-    source_regions = set(count_sources.COUNT_SOURCES)
-    assert bounds_regions == source_regions, (
-        f"registered-region drift: bounds-only={sorted(bounds_regions - source_regions)}, "
-        f"sources-only={sorted(source_regions - bounds_regions)}"
-    )
-
-
-def test_every_registered_region_has_sane_bounds():
-    for region, bounds in cv.COUNT_REGION_BOUNDS.items():
-        assert len(bounds) == 4, region
-        min_lon, min_lat, max_lon, max_lat = bounds
-        assert min_lon < max_lon and min_lat < max_lat, region
-        assert -180 <= min_lon <= 180 and -180 <= max_lon <= 180, region
-        assert -90 <= min_lat <= 90 and -90 <= max_lat <= 90, region
 
 
 if __name__ == "__main__":
