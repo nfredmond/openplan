@@ -374,7 +374,7 @@ export default async function DashboardPage({
     operationsSummary.counts.reports === 0;
 
   const overviewView = (
-    <>
+    <div className="dashboard-overview-stack">
       {reads.any ? (
         <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive" role="alert">
           <p>{reads.describe()}</p>
@@ -458,14 +458,14 @@ export default async function DashboardPage({
           honest path. The command board stays either way — it reports workspace
           state rather than offering a starting point, and on an empty workspace
           it reports zeros and says so. */}
-      <div className={workspaceIsEmpty ? undefined : "grid gap-6 xl:grid-cols-[1.04fr_0.96fr]"}>
+      <div className={workspaceIsEmpty ? undefined : "dashboard-command-grid"}>
         {workspaceIsEmpty ? null : <DashboardQuickActions actions={actions} />}
 
         <WorkspaceCommandBoard summary={operationsSummary} />
       </div>
 
       <RunHistory workspaceId={workspaceId} />
-    </>
+    </div>
   );
 
   return (

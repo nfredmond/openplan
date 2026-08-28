@@ -306,8 +306,8 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
         </div>
       ) : null}
 
-      <div className="mt-5 rounded-2xl border border-border/80 bg-background/70">
-        <div className="border-b border-border/70 px-4 py-3">
+      <div className="workflow-next-actions">
+        <div className="workflow-next-actions__header">
           <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
             Workflow next-action groups
           </p>
@@ -315,12 +315,12 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
             Review, check, inspect, or regenerate work in each module before treating the Command Center queue as clear.
           </p>
         </div>
-        <div className="divide-y divide-border/60">
+        <div className="workflow-next-actions__groups">
           {workflowGroups.map((group) => {
             return (
               <section
                 key={group.key}
-                className="grid gap-3 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)]"
+                className="workflow-next-action-group"
               >
               <div>
                 <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
                 <p className="mt-2 text-[0.72rem] font-medium text-muted-foreground/80">
                   {groupCountLabel(group)} · {group.cue}
                 </p>
-                <div className="mt-3 border-l border-border/80 pl-3">
+                <div className="workflow-next-action-readiness">
                   <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
                     Readiness: <span className="normal-case tracking-normal text-foreground">{group.readiness.label}</span>
                   </p>
@@ -345,12 +345,12 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
                   ) : null}
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="workflow-next-action-links">
                 {group.actions.map((action) => (
                   <Link
                     key={`${group.key}-${action.key}`}
                     href={resolveNextActionHref(action)}
-                    className="block rounded-xl border border-border/70 bg-muted/20 px-3 py-2 transition-colors hover:border-primary/35 hover:bg-muted/40"
+                    className="workflow-next-action-link"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-sm font-semibold text-foreground">{action.title}</p>

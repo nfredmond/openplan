@@ -676,6 +676,23 @@
     isolation: isolate;
   }
 
+  .dashboard-overview-stack {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .dashboard-command-grid {
+    display: grid;
+    align-items: start;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 1280px) {
+    .dashboard-command-grid {
+      grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    }
+  }
+
   .module-page-backdrop {
     pointer-events: none;
     position: absolute;
@@ -1169,6 +1186,62 @@
 
   .module-section-surface {
     padding: 1.5rem;
+  }
+
+  .workflow-next-actions {
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .workflow-next-actions__header {
+    padding: 0.9rem 0 0.75rem;
+  }
+
+  .workflow-next-actions__groups {
+    border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  }
+
+  .workflow-next-action-group {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  }
+
+  .workflow-next-action-readiness {
+    margin-top: 0.65rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  }
+
+  .workflow-next-action-links {
+    min-width: 0;
+  }
+
+  .workflow-next-action-link {
+    display: block;
+    padding: 0.65rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+    transition: color 140ms ease, background-color 140ms ease;
+  }
+
+  .workflow-next-action-link:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .workflow-next-action-link:last-child {
+    padding-bottom: 0;
+  }
+
+  .workflow-next-action-link:hover {
+    color: var(--primary);
+  }
+
+  @media (min-width: 1280px) {
+    .workflow-next-action-group {
+      grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+    }
   }
 
   .module-section-header {

@@ -293,13 +293,10 @@ html.dark .op-cart-rail__btn:hover {
   left: 92px;
   right: calc(272px + var(--cp-reserved, 0px));
   z-index: 30;
-  /* Three columns, not a flex row: workspace on the left, search CENTRED in the
-     window, actions flush right. As a flex row the search drifted with the
-     length of the workspace name, and the actions floated wherever the leftover
-     space put them. The outer columns are equal-weight so the middle one is
-     genuinely centred rather than merely "after" the first. */
+  /* Four columns keep the workspace compact and put search beside appearance:
+     workspace identity, flexible breathing room, search, appearance. */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(200px, 520px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 22rem) minmax(0, 1fr) minmax(200px, 520px) auto;
   gap: 12px;
   align-items: center;
   transition: left 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
@@ -311,6 +308,10 @@ html.dark .op-cart-rail__btn:hover {
      workspace name. Stretching makes it obey the column, and `min-width: 0`
      lets the name's existing ellipsis actually engage. */
   justify-self: stretch;
+  min-width: 0;
+  max-width: 22rem;
+}
+.op-cart-hdr__spacer {
   min-width: 0;
 }
 .op-cart-hdr__actions {
@@ -1557,6 +1558,9 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 @media (max-width: 1120px) {
   .op-cart-hdr {
     grid-template-columns: minmax(0, 0.7fr) minmax(160px, 1fr) auto;
+  }
+  .op-cart-hdr__spacer {
+    display: none;
   }
 }
 

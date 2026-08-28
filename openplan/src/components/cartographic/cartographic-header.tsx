@@ -42,6 +42,8 @@ export function CartographicHeader({
           </div>
         </div>
 
+        <div className="op-cart-hdr__spacer" aria-hidden />
+
         <button
           type="button"
           className="op-cart-pill op-cart-search"
