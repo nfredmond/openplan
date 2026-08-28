@@ -189,6 +189,9 @@ const modelingAssessmentSelectMock = vi.fn(() => ({ in: modelingAssessmentInMock
 const modelingDiagnosisOrderMock = vi.fn();
 const modelingDiagnosisInMock = vi.fn(() => ({ order: modelingDiagnosisOrderMock }));
 const modelingDiagnosisSelectMock = vi.fn(() => ({ in: modelingDiagnosisInMock }));
+const comparableCustodyOrderMock = vi.fn();
+const comparableCustodyInMock = vi.fn(() => ({ order: comparableCustodyOrderMock }));
+const comparableCustodySelectMock = vi.fn(() => ({ in: comparableCustodyInMock }));
 
 const modelingSourcesOrderMock = vi.fn();
 const modelingSourcesEqMock = vi.fn(() => ({ order: modelingSourcesOrderMock }));
@@ -468,6 +471,10 @@ const fromMock = vi.fn((table: string) => {
     return { select: modelingDiagnosisSelectMock };
   }
 
+  if (table === "modeling_validation_instrument_v2_custody") {
+    return { select: comparableCustodySelectMock };
+  }
+
   if (table === "engagement_campaigns") {
     return {
       select: engagementCampaignSelectMock,
@@ -594,6 +601,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     vi.clearAllMocks();
 
     modelingDiagnosisOrderMock.mockResolvedValue({ data: [], error: null });
+    comparableCustodyOrderMock.mockResolvedValue({ data: [], error: null });
     agreementArtifactsInMock.mockResolvedValue({ data: [], error: null });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020/schema",
+  "$id": "https://openplan.org/schemas/validation-input-bundle-v2.schema.json",
+  "title": "Validation input bundle v2",
+  "type": "object",
+  "required": ["schema", "bundle_id", "created_at", "study_id", "geography_id", "model_output_bytes_read", "readiness_inputs"],
+  "properties": {"schema": {"const": "openplan.validation-input-bundle.v2"}, "model_output_bytes_read": {"const": false}, "readiness_inputs": {"type": "object", "required": ["registry", "network", "observation_package", "pre_volume_match_audit", "assignment_profile", "sources"]}},
+  "additionalProperties": true
+}

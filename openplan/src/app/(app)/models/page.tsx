@@ -29,7 +29,9 @@ import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
 import { PublishedStructuralDiagnosisCard } from "@/components/models/published-structural-diagnosis-card";
+import { PublishedComparableObservationCard } from "@/components/models/published-comparable-observation-card";
 import { loadPublishedStructuralDiagnosisStudy } from "@/lib/models/published-structural-diagnosis";
+import { loadPublishedComparableObservationStudy } from "@/lib/models/published-comparable-observation-study";
 
 export const metadata = moduleMetadata("Models");
 
@@ -153,6 +155,7 @@ export default async function ModelsPage({
   }
 
   const publishedStructuralDiagnosis = await loadPublishedStructuralDiagnosisStudy().catch(() => null);
+  const publishedComparableObservationStudy = await loadPublishedComparableObservationStudy().catch(() => null);
 
   // Scoped to the active workspace — RLS grants ALL memberships, so without
   // the filter a multi-workspace member saw every workspace's models merged
@@ -443,6 +446,7 @@ export default async function ModelsPage({
         projectId={planningContext.status === "active" ? planningContext.project.id : null}
       />
 
+      <PublishedComparableObservationCard study={publishedComparableObservationStudy} />
       <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />
 
       <header className="module-header-grid">

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020/schema",
+  "$id": "https://openplan.org/schemas/model_comparison_basis.v2.schema.json",
+  "title": "Model comparison basis v2",
+  "type": "object",
+  "required": ["schema", "basis_id", "model_run_id", "method", "model_output_artifact", "model_base_year", "modeled_quantity", "assignment_period", "vehicle_basis", "observation_facts", "assignment_settings", "coefficient_package", "network_state_hashes", "acceptance_rule", "frozen_at"],
+  "properties": {"schema": {"const": "openplan.model-comparison-basis.v2"}, "method": {"enum": ["aequilibrae", "activitysim"]}, "observation_facts": {"type": "object"}},
+  "additionalProperties": true
+}

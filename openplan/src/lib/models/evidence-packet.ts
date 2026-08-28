@@ -830,6 +830,11 @@ export function labelForArtifactType(artifactType: string | null | undefined) {
   if (artifactType === "model_comparison_basis") return "Model Comparison Basis";
   if (artifactType === "model_validation_assessment") return "Model Validation Assessment";
   if (artifactType === "model_validation_structural_diagnosis") return "Model Validation Structural Diagnosis";
+  if (artifactType === "validation_input_bundle_v2") return "Comparable Observation Input Bundle";
+  if (artifactType === "pre_volume_match_audit_v2") return "Pre-volume Full-geometry Match Audit";
+  if (artifactType === "model_comparison_basis_v2") return "Comparable Observation Basis";
+  if (artifactType === "model_validation_assessment_v2") return "Rules-v5 Validation Assessment";
+  if (artifactType === "model_validation_structural_diagnosis_v2") return "Repaired Instrument Diagnosis";
   return titleCaseTokenized(artifactType);
 }
 

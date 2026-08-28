@@ -127,6 +127,15 @@ export type ReportCitedModelRun = {
     artifactUrl: string | null;
   } | null;
   validationStructuralDiagnosisReadFailed?: boolean;
+  comparableObservationCustody?: {
+    outcome: "inconclusive";
+    inputBundleSha256: string;
+    matchAuditSha256: string;
+    comparisonBasisSha256: string;
+    assessmentSha256: string;
+    diagnosisSha256: string;
+  } | null;
+  comparableObservationCustodyReadFailed?: boolean;
 };
 
 /** A county validation run cited by the report (report_runs.county_run_id). */
@@ -477,6 +486,12 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     : diagnosis
       ? `Why this is inconclusive: ${diagnosis.findings.length > 0 ? diagnosis.findings.slice(0, 3).join(" ") : "No structural finding sentence was recorded."} Diagnosis SHA-256 ${diagnosis.diagnosisSha256}.${diagnosis.unknownFacts.length > 0 ? ` Unknown basis facts: ${diagnosis.unknownFacts.join(", ")}.` : ""}`
       : "No structural diagnosis is attached to this assessment.";
+  const comparable = run.comparableObservationCustody;
+  const comparableLine = run.comparableObservationCustodyReadFailed
+    ? "Comparable-observation custody could not be read; the run is scientifically unchecked for that instrument."
+    : comparable
+      ? `Rules-v5 comparable-observation assessment: ${comparable.outcome}. Repaired observation and full-geometry match coverage is not improved model accuracy; modeled quantity is synthetic expanded daily traffic, not AADT. Input ${comparable.inputBundleSha256}; match audit ${comparable.matchAuditSha256}; basis ${comparable.comparisonBasisSha256}; assessment ${comparable.assessmentSha256}; diagnosis ${comparable.diagnosisSha256}.`
+      : "No rules-v5 comparable-observation custody is attached to this run.";
 
   return `<article class="run-card">
     <div class="run-head">
@@ -490,6 +505,7 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     ${claimTierLine ? `<p class="meta">${esc(claimTierLine)}</p>` : ""}
     <p class="meta">${esc(assessmentLine)}</p>
     <p class="meta">${esc(diagnosisLine)}</p>
+    <p class="meta">${esc(comparableLine)}</p>
     <p class="meta">${esc(runMode.caveatSummary)}</p>
   </article>`;
 }

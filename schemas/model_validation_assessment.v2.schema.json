@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020/schema",
+  "$id": "https://openplan.org/schemas/model_validation_assessment.v2.schema.json",
+  "title": "Model validation assessment v2",
+  "type": "object",
+  "required": ["schema", "assessment_id", "rules_version", "created_at", "exact_inputs", "method", "observation_results", "coverage", "scientific_outcome", "reasons", "validation_evidence_write"],
+  "properties": {"schema": {"const": "openplan.model-validation-assessment.v2"}, "rules_version": {"const": 5}, "scientific_outcome": {"enum": ["pass", "fail", "inconclusive"]}},
+  "additionalProperties": true
+}

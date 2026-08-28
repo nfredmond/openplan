@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: cb445c4b
-current_release: v0.40.0
+current_release: v0.41.0
 review_by: 2026-09-25
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.40.0
+## Current truth at v0.41.0
 
 Strong foundations already exist:
 
@@ -107,7 +107,7 @@ The v1 contract is not yet true:
 - the model is screening-grade, not nationwide validated. The often-repeated
   43.3% figure is the selection metric from the roughly 30% holdout drawn from a
   57-station, one-county dataset, not national or independent accuracy evidence.
-  Rules-v4 now refuses a claim until observed and modeled quantities are proven
+  Rules-v5 now refuses a claim until observed and modeled quantities are proven
   comparable, but OpenPlan's true nationwide error is still unknown. Rank agreement in measured
   examples is weak, and most minor links are unloaded. Observation uncertainty
   is now represented without invented generic bounds, but has not yet been
@@ -160,10 +160,25 @@ The v1 contract is not yet true:
   the scientific outcome remains `inconclusive` and California and nationwide
   capability remain `partial`.
 
-The next modeling checkpoint is a new, versioned observation-and-match
-instrument that resolves the diagnosed coordinate, full-geometry, lineage,
-loading, and comparison-basis gaps without modifying the frozen v0.39/v0.40
-record. Candidate selection and any use-specific acceptance rule remain later
+## Completed checkpoint: v0.41 comparable observation instrument
+
+- Preserved every v0.39/v0.40 artifact and the frozen v1 matcher while adding
+  versioned observation, package, audit, input, basis, assessment, and diagnosis
+  contracts.
+- Separated physical sites from station/direction/lane/year series, retained
+  complete TMAS days and exact hashes, and kept complete HPMS section shapes and
+  LRS facts.
+- Matched point and section observations against whole network links before
+  output reveal, retained ambiguity and unavailable states, and recorded
+  direction aggregation explicitly.
+- Proved the exact `0.10` assignment expansion and `class_pce = 1` profile, but
+  named the result synthetic expanded daily traffic rather than AADT.
+- Published fourteen separate diagnoses and kept the outcome `inconclusive`.
+  The repaired coverage is not evidence of improved model accuracy.
+
+The next modeling checkpoint addresses demand distribution, external and
+through travel, and network loading defects using the repaired v0.41 evidence
+boundary. Candidate selection and any use-specific acceptance rule remain later
 work. The rule must be frozen from primary evidence before an untouched holdout
 is opened.
 

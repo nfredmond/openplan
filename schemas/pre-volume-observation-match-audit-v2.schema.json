@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020/schema",
+  "$id": "https://openplan.org/schemas/pre-volume-observation-match-audit-v2.schema.json",
+  "title": "Pre-volume observation match audit v2",
+  "type": "object",
+  "required": ["schema", "audit_id", "created_at", "frozen_before_model_volume", "model_output_bytes_read", "geography", "search_distance_meters", "source_ids", "network_sha256", "observation_package_sha256", "registry_sha256", "matcher", "matches", "coverage"],
+  "properties": {"schema": {"const": "openplan.pre-volume-observation-match-audit.v2"}, "frozen_before_model_volume": {"const": true}, "model_output_bytes_read": {"const": false}, "matches": {"type": "array"}},
+  "additionalProperties": true
+}

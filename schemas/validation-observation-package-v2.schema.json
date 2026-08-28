@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020/schema",
+  "$id": "https://openplan.org/schemas/validation-observation-package-v2.schema.json",
+  "title": "Validation observation package v2",
+  "type": "object",
+  "required": ["schema", "package_id", "study_id", "created_at", "geography", "registry_artifact", "source_attempts", "observations", "series_count", "measurement_count", "state_counts"],
+  "properties": {"schema": {"const": "openplan.validation-observation-package.v2"}, "observations": {"type": "array"}, "series_count": {"type": "integer", "minimum": 0}, "measurement_count": {"type": "integer", "minimum": 0}},
+  "additionalProperties": true
+}

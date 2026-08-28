@@ -15,8 +15,12 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
 **What you need to have done:**
 
 1. Start from the signed-in landing page and use visible navigation to reach
-   Models. Review the published seven-county frozen diagnosis card and download
-   its exact study result. Then open a model with a completed baseline AequilibraE or behavioral-
+   Models. Review both the v0.41 comparable-observation instrument and the v0.40
+   frozen diagnosis history. Download the v0.41 exact study result, one observation
+   package, and its pre-volume full-geometry match audit. Confirm the screen calls
+   this repaired instrument coverage, not improved model accuracy, and calls the
+   modeled quantity synthetic expanded daily traffic rather than AADT. Then open
+   a model with a completed baseline AequilibraE or behavioral-
    demand run. If no completed baseline exists, launch one from the visible
    model controls and wait for it to finish.
 2. Open the run's scientific observed-count validation assessment. Identify
@@ -39,6 +43,9 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    exposes the exact model-output and comparison-basis hashes. If the screen
    says `validation evidence write failed`, record that the computation is
    scientifically unchecked and do not call the outcome validated.
+   For the v0.41 published record, also copy the full observation-package,
+   match-audit, input-bundle, comparison-basis, assessment, and diagnosis hashes
+   and exercise each visible exact-download link.
 6. If the run includes ActivitySim, confirm its assessment remains separate
    from the AequilibraE assignment assessment rather than being averaged.
 

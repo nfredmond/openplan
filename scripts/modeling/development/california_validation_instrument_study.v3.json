@@ -1,0 +1,44 @@
+{
+  "schema": "openplan.development-validation-instrument-study.v3",
+  "study_id": "california-seven-county-comparable-observation-instrument-v3",
+  "title": "Seven-county comparable observation and full-geometry match instrument",
+  "partition": "development",
+  "planning_use": "development-only instrument diagnosis",
+  "frozen_protocol": {
+    "v2_registry": "scripts/modeling/development/california_validation_instrument_study.v2.json",
+    "v2_registry_sha256": "85bced73c23ab6f19a3eb2b606eb77204ef0595850e20af2ea445f59ce6863a4",
+    "nationwide_preregistration": "docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json",
+    "nationwide_preregistration_sha256": "28807dc52f432d04289f13b8825f08dd5dce9b1ab42d914d467431ef9b454d7e",
+    "frozen_v1_matcher": "scripts/modeling/validation_instrument.py",
+    "frozen_v1_matcher_sha256": "78a67a02125db21eb35d4cdf6fdf4dbd44e15296d5b6d536f8c7377aa51f2aec",
+    "matcher_version": "openplan.pre-volume-observation-matcher.v2",
+    "validation_rules_version": 5
+  },
+  "adapters": {
+    "US": {
+      "source_ids": ["us-fhwa-tmas-2024", "us-fhwa-hpms-2024"],
+      "module": "scripts/modeling/us_observed_traffic_adapter_v2.py"
+    }
+  },
+  "methods": ["aequilibrae", "activitysim"],
+  "counties": [
+    {"geography_id": "06007", "name": "Butte County, California", "country": "US", "subdivision": "06", "county": "007", "search_distance_meters": 2000},
+    {"geography_id": "06039", "name": "Madera County, California", "country": "US", "subdivision": "06", "county": "039", "search_distance_meters": 2000},
+    {"geography_id": "06047", "name": "Merced County, California", "country": "US", "subdivision": "06", "county": "047", "search_distance_meters": 2000},
+    {"geography_id": "06053", "name": "Monterey County, California", "country": "US", "subdivision": "06", "county": "053", "search_distance_meters": 2000},
+    {"geography_id": "06057", "name": "Nevada County, California", "country": "US", "subdivision": "06", "county": "057", "search_distance_meters": 2000},
+    {"geography_id": "06069", "name": "San Benito County, California", "country": "US", "subdivision": "06", "county": "069", "search_distance_meters": 2000},
+    {"geography_id": "06107", "name": "Tulare County, California", "country": "US", "subdivision": "06", "county": "107", "search_distance_meters": 2000}
+  ],
+  "run_policy": {
+    "readiness_inputs_required_before_output": 7,
+    "shared_observation_package": true,
+    "shared_pre_volume_match_audit": true,
+    "reuse_unchanged_v039_assignment_outputs": true,
+    "model_base_year": "unknown",
+    "acceptance_rule": "unknown",
+    "average_methods": false,
+    "calibrate_candidate": false,
+    "open_acceptance_holdout": false
+  }
+}

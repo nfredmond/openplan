@@ -318,6 +318,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260828000003_model_validation_structural_diagnosis_custody.sql",
     migrationsAtRelease: 238,
   },
+  // 0.41.0 adds transactional custody for the comparable observation package,
+  // full-geometry match audit, basis, assessment, and diagnosis.
+  {
+    tag: "0.41.0",
+    lastMigration: "20260828000004_comparable_observation_v2_custody.sql",
+    migrationsAtRelease: 239,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

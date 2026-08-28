@@ -801,6 +801,16 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
           .limit(10);
         if (diagnosisError) throw new Error(diagnosisError.message ?? "modeling_validation_structural_diagnoses query failed");
         const diagnosisRows = (diagnosisData ?? []) as Array<Record<string, unknown>>;
+        const { data: comparableData, error: comparableError } = await supabase
+          .from("modeling_validation_instrument_v2_custody")
+          .select(
+            "id, input_bundle_artifact_id, match_audit_artifact_id, comparison_basis_artifact_id, assessment_artifact_id, diagnosis_artifact_id, input_bundle_sha256, match_audit_sha256, comparison_basis_sha256, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at"
+          )
+          .eq("model_run_id", input.modelRunId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (comparableError) throw new Error(comparableError.message ?? "comparable observation custody query failed");
+        const comparableRows = (comparableData ?? []) as Array<Record<string, unknown>>;
         const diagnosisArtifactIds = diagnosisRows
           .map((row) => row.diagnosis_artifact_id)
           .filter((value): value is string => typeof value === "string");
@@ -913,9 +923,22 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
                 createdAt: isoOrNull(row.created_at),
               };
             }),
+            comparableObservationCustody: comparableRows.map((row) => ({
+              id: row.id,
+              outcome: row.scientific_outcome,
+              note: "Repaired instrument coverage is not improved model accuracy. The modeled quantity is synthetic expanded daily traffic, not AADT.",
+              exactArtifacts: {
+                inputBundle: { id: row.input_bundle_artifact_id, sha256: row.input_bundle_sha256 },
+                preVolumeMatchAudit: { id: row.match_audit_artifact_id, sha256: row.match_audit_sha256 },
+                comparisonBasis: { id: row.comparison_basis_artifact_id, sha256: row.comparison_basis_sha256 },
+                assessment: { id: row.assessment_artifact_id, sha256: row.assessment_sha256 },
+                diagnosis: { id: row.diagnosis_artifact_id, sha256: row.diagnosis_sha256 },
+              },
+              createdAt: isoOrNull(row.created_at),
+            })),
             scientificNote:
-              assessmentRows.length === 0
-                ? "No rules-v4 scientific assessment is in immutable custody. Legacy point-count diagnostics do not establish same-basis comparability."
+              assessmentRows.length === 0 && comparableRows.length === 0
+                ? "No rules-v4 or rules-v5 scientific assessment is in immutable custody. Legacy point-count diagnostics do not establish same-basis comparability."
                 : "Quote the scientific outcome and reasons exactly. A fail or inconclusive assessment is retained evidence, not a missing result.",
           },
           claim: claim

@@ -102,6 +102,15 @@ export type CitedModelValidationStructuralDiagnosis = {
   artifactUrl: string | null;
 };
 
+export type CitedComparableObservationCustody = {
+  outcome: "inconclusive";
+  inputBundleSha256: string;
+  matchAuditSha256: string;
+  comparisonBasisSha256: string;
+  assessmentSha256: string;
+  diagnosisSha256: string;
+};
+
 /**
  * Why a cited link has no resolved run row. These are four different facts and
  * the citation says which one is true; `"unknown"` is what a caller that did not
@@ -475,11 +484,13 @@ export async function withCitedModelRunClaimTiers<
   validationAssessmentReadFailed: boolean;
   validationStructuralDiagnosis: CitedModelValidationStructuralDiagnosis | null;
   validationStructuralDiagnosisReadFailed: boolean;
+  comparableObservationCustody: CitedComparableObservationCustody | null;
+  comparableObservationCustodyReadFailed: boolean;
 }>> {
   if (citedModelRuns.length === 0) return [];
 
   const runIds = citedModelRuns.map((run) => run.id);
-  const [evidence, assessmentResult, diagnosisResult] = await Promise.all([
+  const [evidence, assessmentResult, diagnosisResult, comparableResult] = await Promise.all([
     loadRtpEvidenceRunDisclosures(
       supabase as unknown as RtpEvidenceSupabaseLike,
       runIds,
@@ -500,6 +511,11 @@ export async function withCitedModelRunClaimTiers<
     supabase
       .from("modeling_validation_structural_diagnoses")
       .select("model_run_id, diagnosis_artifact_id, assessment_sha256, diagnosis_sha256, created_at")
+      .in("model_run_id", runIds)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("modeling_validation_instrument_v2_custody")
+      .select("model_run_id, input_bundle_sha256, match_audit_sha256, comparison_basis_sha256, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at")
       .in("model_run_id", runIds)
       .order("created_at", { ascending: false }),
   ]);
@@ -561,6 +577,22 @@ export async function withCitedModelRunClaimTiers<
     }
   }
 
+  const newestComparableByRun = new Map<string, CitedComparableObservationCustody>();
+  if (!comparableResult.error) {
+    for (const row of (comparableResult.data ?? []) as Array<Record<string, unknown>>) {
+      const modelRunId = typeof row.model_run_id === "string" ? row.model_run_id : null;
+      if (!modelRunId || newestComparableByRun.has(modelRunId) || row.scientific_outcome !== "inconclusive") continue;
+      newestComparableByRun.set(modelRunId, {
+        outcome: "inconclusive",
+        inputBundleSha256: String(row.input_bundle_sha256 ?? "unknown"),
+        matchAuditSha256: String(row.match_audit_sha256 ?? "unknown"),
+        comparisonBasisSha256: String(row.comparison_basis_sha256 ?? "unknown"),
+        assessmentSha256: String(row.assessment_sha256 ?? "unknown"),
+        diagnosisSha256: String(row.diagnosis_sha256 ?? "unknown"),
+      });
+    }
+  }
+
   return citedModelRuns.map((run) => ({
     ...run,
     claimStatus: evidence.claimTierFor(run.id),
@@ -569,6 +601,8 @@ export async function withCitedModelRunClaimTiers<
     validationAssessmentReadFailed: Boolean(assessmentResult.error),
     validationStructuralDiagnosis: newestDiagnosisByRun.get(run.id) ?? null,
     validationStructuralDiagnosisReadFailed: Boolean(diagnosisResult.error || diagnosisArtifactResult.error),
+    comparableObservationCustody: newestComparableByRun.get(run.id) ?? null,
+    comparableObservationCustodyReadFailed: Boolean(comparableResult.error),
   }));
 }
 

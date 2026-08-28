@@ -19,6 +19,47 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.41.0 — 2026-08-28
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying. Migration
+`20260828000004_comparable_observation_v2_custody.sql`
+(`comparable_observation_v2_custody`) binds the exact observation input,
+pre-volume match audit, comparison basis, assessment, and diagnosis in one
+service-role-only transaction. Members may read their workspace records;
+custody rows and all five bound artifacts reject mutation and deletion. A
+failed transaction leaves the visible run `scientifically unchecked`.
+
+The seven-county development instrument now separates physical sites from
+station/direction/lane/year series and retains every exact source measurement.
+The US adapter decodes TMAS signed WGS84 coordinates, direction, and lane codes,
+and preserves HPMS route, LRS limits, facility facts, and complete LineString or
+MultiLineString sections. Country and source selection remain registry-owned.
+
+Matching now uses point-to-full-line distance and section overlap or
+full-geometry distance within the registry's 2,000-metre boundary. Direction,
+facility, and route/name support must leave one unique link, one explicit
+bidirectional link, or one supported carriageway pair. Ties and proximity-only
+candidates remain ambiguous; unavailable, unsupported, excluded, unresolved,
+genuine-network-absence, missing-output, and unloaded records remain visible.
+
+Rules v5 proves the existing representative peak-hour `0.10` expansion chain
+but names the quantity **synthetic expanded daily traffic, not AADT**. It treats
+vehicles and PCE as equivalent only when the exact assignment profile records
+`class_pce = 1`. Raw residuals, zero and negative observations, source intervals
+where present, and empty or unloaded output states are retained. Because no
+use-specific acceptance rule was frozen, the scientific outcome remains
+`inconclusive`.
+
+The Models page keeps the v0.40 diagnosis as history and adds authenticated,
+hash-verified downloads for the v0.41 observation package, match audit, input
+bundle, basis, assessment, and fourteen separate county/method diagnoses. The
+same custody and hashes flow into model reports, assistant evidence, and project
+evidence bundles. This repairs the validation instrument; it does not calibrate
+either method, select a candidate, change model defaults, define a threshold,
+or open a holdout. California and nationwide modeling capability remain
+`partial`.
+
 ## 0.40.0 — 2026-08-28
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

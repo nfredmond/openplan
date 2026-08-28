@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020/schema",
+  "$id": "https://openplan.org/schemas/model-validation-structural-diagnosis-v2.schema.json",
+  "title": "Model validation structural diagnosis v2",
+  "type": "object",
+  "required": ["schema", "diagnosis_id", "created_at", "geography_id", "method", "coverage", "scientific_outcome", "bindings"],
+  "properties": {"schema": {"const": "openplan.model-validation-structural-diagnosis.v2"}, "method": {"enum": ["aequilibrae", "activitysim"]}},
+  "additionalProperties": true
+}

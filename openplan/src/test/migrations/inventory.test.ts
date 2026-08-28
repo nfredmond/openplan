@@ -449,16 +449,18 @@ const EXPECTED = {
   // It has one member SELECT policy and no client write policy; the service
   // role records it through a binding RPC. +1 policy/permissive,
   // policy-bearing relation/table/RLS table, and no permissive write.
-  policies: 688,
-  permissive: 442,
+  // 20260828000004 adds the comparable-observation custody table with one
+  // member read policy and service-role-only transactional writes.
+  policies: 689,
+  permissive: 443,
   restrictive: 246,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 162,
-  relations: 186,
-  tables: 178,
+  tablesWithPolicies: 163,
+  relations: 187,
+  tables: 179,
   views: 8,
-  rlsEnabledTables: 178,
+  rlsEnabledTables: 179,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

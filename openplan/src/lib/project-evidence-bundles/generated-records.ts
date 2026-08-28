@@ -72,9 +72,10 @@ async function evidenceRows(
   claims: Record<string, unknown>[];
   assessments: Record<string, unknown>[];
   diagnoses: Record<string, unknown>[];
+  comparableObservationCustody: Record<string, unknown>[];
 }> {
   if (modelRunIds.length === 0 && countyRunIds.length === 0) {
-    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [] };
+    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [], comparableObservationCustody: [] };
   }
 
   const tableReads = [
@@ -135,6 +136,7 @@ async function evidenceRows(
 
   let assessments: Record<string, unknown>[] = [];
   let diagnoses: Record<string, unknown>[] = [];
+  let comparableObservationCustody: Record<string, unknown>[] = [];
   if (modelRunIds.length > 0) {
     const read = await dynamicFrom("modeling_validation_assessments")
       .select(
@@ -165,9 +167,24 @@ async function evidenceRows(
       );
     }
     diagnoses = rows(diagnosisRead.data);
+
+    const comparableRead = await dynamicFrom("modeling_validation_instrument_v2_custody")
+      .select(
+        "id, workspace_id, model_run_id, input_bundle_artifact_id, match_audit_artifact_id, comparison_basis_artifact_id, assessment_artifact_id, diagnosis_artifact_id, input_bundle_sha256, match_audit_sha256, comparison_basis_sha256, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at"
+      )
+      .eq("workspace_id", workspaceId)
+      .in("model_run_id", modelRunIds)
+      .order("created_at", { ascending: true });
+    if (comparableRead.error) {
+      throw new ProjectEvidenceBundleError(
+        "missing_evidence",
+        "Project-linked comparable observation custody could not be read."
+      );
+    }
+    comparableObservationCustody = rows(comparableRead.data);
   }
 
-  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses };
+  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses, comparableObservationCustody };
 }
 
 /**
@@ -280,6 +297,11 @@ export async function loadProjectEvidenceGeneratedFiles(
           "comparison_basis",
           "model_validation_assessment",
           "model_validation_structural_diagnosis",
+          "validation_input_bundle_v2",
+          "pre_volume_match_audit_v2",
+          "model_comparison_basis_v2",
+          "model_validation_assessment_v2",
+          "model_validation_structural_diagnosis_v2",
         ])
         .order("created_at", { ascending: true });
       if (artifactsRead.error) {
@@ -445,6 +467,26 @@ export async function loadProjectEvidenceGeneratedFiles(
       numericClaim: true,
     }),
   }));
+  const comparableObservationCustody = modelingEvidence.comparableObservationCustody.map((custody) => ({
+    ...withoutPersonalIdentifiers(custody) as Record<string, unknown>,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { table: "modeling_validation_instrument_v2_custody", id: custody.id },
+      source: {
+        kind: "comparable_observation_instrument",
+        label: "Rules-v5 comparable observation custody",
+        citation: typeof custody.diagnosis_sha256 === "string" ? custody.diagnosis_sha256 : null,
+      },
+      asOfDate: typeof custody.created_at === "string" ? custody.created_at : null,
+      retrievedAt: generatedAt.toISOString(),
+      evidenceStatus: "modeled",
+      claimTier: null,
+      uncertainty: ["Repaired instrument coverage is not improved model accuracy."],
+      limits: ["The modeled quantity is synthetic expanded daily traffic, not AADT."],
+      revisionToken: typeof custody.created_at === "string" ? custody.created_at : null,
+      checksumSha256: typeof custody.diagnosis_sha256 === "string" ? custody.diagnosis_sha256 : null,
+      numericClaim: true,
+    }),
+  }));
   const modeling = {
     schemaVersion: "project_modeling_evidence.v3",
     projectId: project.id,
@@ -457,6 +499,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     validationResults,
     validationAssessments,
     structuralDiagnoses,
+    comparableObservationCustody,
     claimDecisions,
   };
   const modelingRevisionToken = sourceRevision({
@@ -468,6 +511,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     validationResults: withoutPersonalIdentifiers(modelingEvidence.validation),
     validationAssessments: withoutPersonalIdentifiers(modelingEvidence.assessments),
     structuralDiagnoses: withoutPersonalIdentifiers(modelingEvidence.diagnoses),
+    comparableObservationCustody: withoutPersonalIdentifiers(modelingEvidence.comparableObservationCustody),
     claimDecisions: withoutPersonalIdentifiers(modelingEvidence.claims),
   });
   const hasUnsupportedModelingClaim = [...claimDecisions, ...validationResults]
