@@ -1744,11 +1744,11 @@ function ModelRunStagingAndArtifacts({
   const evidenceWriteFailed = run.claimDecision?.reason?.toLowerCase().includes("validation evidence write failed") ?? false;
 
   return (
-    <div className="mt-4 border-t pt-4">
+    <div className="mt-4 min-w-0 max-w-full border-t pt-4">
       {assessment ? (
         <section
           aria-label="Scientific model validation assessment"
-          className="mb-4 rounded-[0.75rem] border border-border/70 bg-background/80 p-4"
+          className="mb-4 min-w-0 max-w-full rounded-[0.75rem] border border-border/70 bg-background/80 p-4"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -1775,7 +1775,7 @@ function ModelRunStagingAndArtifacts({
               {assessmentReasons.map((reason) => <li key={reason}>{reason}</li>)}
             </ul>
           ) : null}
-          <dl className="mt-4 grid gap-3 text-xs sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-xs">
             <div>
               <dt className="font-semibold text-foreground">Planning use</dt>
               <dd className="mt-1 break-words text-muted-foreground">{String(assessment.planning_use ?? "unknown")}</dd>
@@ -1827,7 +1827,7 @@ function ModelRunStagingAndArtifacts({
       ) : null}
       {stages?.length > 0 ? <RunProgressBar stages={stages} /> : null}
       {(stages?.length > 0 || artifacts?.length > 0) ? (
-        <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 gap-4 text-sm">
           {stages?.length > 0 && (
             <div>
               <h4 className="mb-2 font-semibold">Execution stages</h4>

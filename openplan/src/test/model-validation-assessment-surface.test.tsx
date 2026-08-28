@@ -86,6 +86,9 @@ describe("rules-v4 assessment surface", () => {
     expect(panel).toHaveTextContent("network dddddddddddd");
     expect(panel).toHaveTextContent("observations eeeeeeeeeeee");
     expect(panel).toHaveTextContent("pre-volume audit ffffffffffff");
+    expect(panel).toHaveClass("min-w-0", "max-w-full");
+    expect(panel.parentElement).toHaveClass("min-w-0", "max-w-full");
+    expect(panel.querySelector("dl")).toHaveClass("min-w-0", "grid-cols-1");
     expect(screen.getByRole("link", { name: "View / Download" })).toHaveAttribute(
       "href",
       `/api/models/${MODEL_ID}/runs/33333333-3333-4333-8333-333333333333/artifacts/assessment-artifact/download`,
