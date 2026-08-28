@@ -77,6 +77,22 @@ class TMASAdapterTests(unittest.TestCase):
             with self.assertRaisesRegex(tmas.TMASSchemaDriftError, "24 hourly"):
                 tmas.build_monthly_observations(station, volume, downloaded_at="recorded")
 
+    def test_filtered_package_skips_unassignable_out_of_scope_volume_rows(self):
+        extra = self.volume_payload.replace(b"|000002|", b"|999999|", 1)
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            station, volume = self.write_archives(directory)
+            with zipfile.ZipFile(volume, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr("AK_JAN_2024 (TMAS).VOL", extra)
+            observations = tmas.build_monthly_observations(
+                station,
+                volume,
+                downloaded_at="recorded",
+                state_codes={"06"},
+                county_codes={"007"},
+            )
+        self.assertEqual(observations, [])
+
     def test_complete_fetch_preserves_every_exact_archive_and_sha256(self):
         payloads = {
             name: zip_bytes("member.txt", name.encode("ascii"))

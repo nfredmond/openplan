@@ -1,0 +1,1 @@
+{"algorithm":"bfw","capacity_field":"capacity","class_pce":1,"cores":1,"engine":"aequilibrae","engine_version":"1.6.2","max_iterations":3000,"profile_id":"aequilibrae-bfw-bpr-tight-v1","schema_version":"openplan.assignment-profile.v1","target_gap":0.0005,"time_field":"travel_time","vdf":"BPR","vdf_parameters":{"alpha":0.15,"beta":4}}

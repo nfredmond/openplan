@@ -1,0 +1,73 @@
+{
+  "schema": "openplan.development-validation-instrument-study.v2",
+  "study_id": "california-seven-county-observed-count-instrument-v2",
+  "title": "Seven-county development validation instrument",
+  "partition": "development",
+  "planning_use": "development-only baseline diagnostic",
+  "frozen_protocol": {
+    "v1_readiness_registry": "scripts/modeling/development/california_validation_instrument_study.v1.json",
+    "v1_readiness_registry_sha256": "02a6de47d3c911c90f28ad4a91aae4e7a964540a2b11da560bffafad6ceecb3e",
+    "nationwide_preregistration": "docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json",
+    "nationwide_preregistration_sha256": "28807dc52f432d04289f13b8825f08dd5dce9b1ab42d914d467431ef9b454d7e",
+    "matcher_version": "openplan.pre-volume-observation-matcher.v1",
+    "validation_rules_version": 4
+  },
+  "methods": ["aequilibrae", "activitysim"],
+  "counties": [
+    {
+      "geography_id": "06007",
+      "network_seed_run": "data/screening-runs/study-06007-base",
+      "activitysim_demand_package": "data/agreement-study/runs/holdout/06007/activitysim_demand_package"
+    },
+    {
+      "geography_id": "06039",
+      "network_seed_run": "data/screening-runs/study-06039-base",
+      "activitysim_demand_package": "data/agreement-study/runs/holdout/06039/activitysim_demand_package"
+    },
+    {
+      "geography_id": "06047",
+      "network_seed_run": "data/screening-runs/study-06047-base",
+      "activitysim_demand_package": "data/agreement-study/runs/dev/06047/activitysim_demand_package"
+    },
+    {
+      "geography_id": "06053",
+      "network_seed_run": "data/screening-runs/study-06053-base",
+      "activitysim_demand_package": "data/agreement-study/runs/holdout/06053/activitysim_demand_package"
+    },
+    {
+      "geography_id": "06057",
+      "network_seed_run": "data/screening-runs/a2-base-06057-tight",
+      "activitysim_demand_package": "data/screening-runs/a2-base-06057-tight/activitysim_demand_package"
+    },
+    {
+      "geography_id": "06069",
+      "network_seed_run": "data/screening-runs/study-06069-base",
+      "activitysim_demand_package": "data/agreement-study/runs/dev/06069/activitysim_demand_package"
+    },
+    {
+      "geography_id": "06107",
+      "network_seed_run": "data/screening-runs/study-06107-base",
+      "activitysim_demand_package": "data/agreement-study/runs/dev/06107/activitysim_demand_package"
+    }
+  ],
+  "source_policy": {
+    "select_from_observed_count_registry": true,
+    "require_every_intersected_subdivision": true,
+    "require_national_sources": true,
+    "preserve_exact_downloaded_bytes": true,
+    "unavailable_is_not_empty": true
+  },
+  "run_policy": {
+    "minimum_free_bytes": 107374182400,
+    "one_network_per_geography": true,
+    "shared_observation_package": true,
+    "shared_pre_volume_match_audit": true,
+    "stock_settings_only": true,
+    "open_outputs_only_after_all_geographies_ready": true,
+    "acceptance_rule": "unknown",
+    "change_defaults": false,
+    "calibrate_candidate": false,
+    "open_acceptance_holdout": false,
+    "average_methods": false
+  }
+}

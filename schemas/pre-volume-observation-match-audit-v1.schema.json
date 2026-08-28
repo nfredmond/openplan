@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.pre-volume-observation-match-audit.v1",
+  "title": "OpenPlan pre-volume observation match audit v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "audit_id", "created_at", "frozen_before_model_volume",
+    "network_sha256", "observation_package_sha256", "preregistration_sha256",
+    "matcher_version", "matcher_sha256", "matches", "coverage"
+  ],
+  "properties": {
+    "schema": {"const": "openplan.pre-volume-observation-match-audit.v1"},
+    "audit_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1},
+    "frozen_before_model_volume": {"const": true},
+    "network_sha256": {"$ref": "#/$defs/sha256"},
+    "observation_package_sha256": {"$ref": "#/$defs/sha256"},
+    "preregistration_sha256": {"$ref": "#/$defs/sha256"},
+    "matcher_version": {"type": "string", "minLength": 1},
+    "matcher_sha256": {"$ref": "#/$defs/sha256"},
+    "matches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "observation_id", "status", "candidate_link_ids", "selected_link_id",
+          "route", "geometry", "direction", "carriageway", "facility",
+          "duplicate_lineage", "reason"
+        ],
+        "properties": {
+          "observation_id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["matched", "ambiguous", "excluded", "unresolved", "unsupported", "source_unavailable", "supported_but_empty", "duplicate"]},
+          "candidate_link_ids": {"type": "array", "items": {"oneOf": [{"type": "integer"}, {"type": "string"}]}},
+          "selected_link_id": {"type": ["integer", "string"]},
+          "route": {}, "geometry": {}, "direction": {}, "carriageway": {},
+          "facility": {}, "duplicate_lineage": {},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "coverage": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}}
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

@@ -311,7 +311,11 @@ def _metric_row(observation: Mapping[str, Any], modeled_volume: float, findings:
         "raw_absolute_percent_error": ape,
         "interval_excess_error": excess,
         "comparability": list(findings),
-        "match_status": observation["match_audit"]["status"],
+        "match_status": (
+            "unloaded"
+            if observation["match_audit"]["status"] == "matched" and modeled_volume == 0
+            else observation["match_audit"]["status"]
+        ),
     }
 
 
@@ -349,6 +353,21 @@ def _coverage(observations: Sequence[Mapping[str, Any]], rows: Sequence[Mapping[
             statuses[status] += 1
         else:
             statuses["unresolved"] += 1
+    newly_unloaded = sum(
+        1
+        for row in rows
+        if row.get("match_status") == "unloaded"
+        and next(
+            (
+                observation["match_audit"].get("status")
+                for observation in observations
+                if observation.get("observation_id") == row.get("observation_id")
+            ),
+            None,
+        ) == "matched"
+    )
+    statuses["matched"] -= newly_unloaded
+    statuses["unloaded"] += newly_unloaded
     statuses["decisive"] = sum(1 for row in rows if row.get("decisive"))
     statuses["diagnostic"] = sum(1 for row in rows if row.get("diagnostic"))
     statuses["grade_d"] = sum(1 for observation in observations if observation["evidence_grade"] == "D")
@@ -451,6 +470,7 @@ def assess_validation(
             "comparison_basis_sha256": sha256_payload(basis),
             "model_output_artifact_id": model_artifact["artifact_id"],
             "model_output_sha256": model_artifact["sha256"],
+            "network_state_hashes": dict(basis["network_state_hashes"]),
         },
         "planning_use": basis["planning_use"],
         "partition": dict(partition),

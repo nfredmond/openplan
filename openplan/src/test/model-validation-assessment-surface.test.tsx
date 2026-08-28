@@ -66,6 +66,11 @@ describe("rules-v4 assessment surface", () => {
           exact_inputs: {
             comparison_basis_sha256: "a".repeat(64),
             model_output_sha256: "b".repeat(64),
+            network_state_hashes: {
+              network: "d".repeat(64),
+              observation_package: "e".repeat(64),
+              pre_volume_match_audit: "f".repeat(64),
+            },
           },
         },
       },
@@ -78,6 +83,9 @@ describe("rules-v4 assessment surface", () => {
     expect(panel).toHaveTextContent("ambiguous: 1");
     expect(panel).toHaveTextContent("aaaaaaaaaaaa");
     expect(panel).toHaveTextContent("bbbbbbbbbbbb");
+    expect(panel).toHaveTextContent("network dddddddddddd");
+    expect(panel).toHaveTextContent("observations eeeeeeeeeeee");
+    expect(panel).toHaveTextContent("pre-volume audit ffffffffffff");
     expect(screen.getByRole("link", { name: "View / Download" })).toHaveAttribute(
       "href",
       `/api/models/${MODEL_ID}/runs/33333333-3333-4333-8333-333333333333/artifacts/assessment-artifact/download`,

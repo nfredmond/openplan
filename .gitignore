@@ -98,6 +98,14 @@ data/agreement-study/runs/
 # beside them remain tracked evidence.
 data/modeling/gateway-volume-study-2026-08-22/runs/*/*/logs/
 
+# Frozen development-validation source bytes, network databases, and model
+# workspaces are multi-gigabyte local custody artifacts. Keep their compact
+# readiness manifest, assessments, hashes, and dated report tracked beside
+# this rule; those are the reproducible release evidence.
+data/modeling/development-validation-study-2026-08-28/instruments/
+data/modeling/development-validation-study-2026-08-28/runs/
+data/modeling/development-validation-study-2026-08-28/shared-sources/
+
 # Worker job manifests (`tmp/county-onramp/<run>.manifest.json`) — a transcript
 # of one local run, regenerated every time.
 /tmp/

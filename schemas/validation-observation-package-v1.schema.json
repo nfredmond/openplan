@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.validation-observation-package.v1",
+  "title": "OpenPlan frozen validation observation package v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "package_id", "created_at", "geography_id", "resolved_polygon",
+    "intersected_subdivisions", "source_attempts", "observations",
+    "compatibility_csv", "state_counts"
+  ],
+  "properties": {
+    "schema": {"const": "openplan.validation-observation-package.v1"},
+    "package_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1},
+    "geography_id": {"type": "string", "minLength": 1},
+    "resolved_polygon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "sha256", "geometry"],
+      "properties": {
+        "artifact": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "geometry": {"type": "object"}
+      }
+    },
+    "intersected_subdivisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["country", "subdivision"],
+        "properties": {
+          "country": {"type": "string", "minLength": 1},
+          "subdivision": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "source_attempts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_id", "adapter", "status", "attempted_at", "source_url",
+          "artifacts", "record_count", "reason"
+        ],
+        "properties": {
+          "source_id": {"type": "string", "minLength": 1},
+          "adapter": {"type": "string", "minLength": 1},
+          "status": {"enum": ["available", "source_unavailable", "supported_but_empty", "geography_unsupported"]},
+          "attempted_at": {"type": "string", "minLength": 1},
+          "source_url": {"type": "string", "minLength": 1},
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path", "sha256", "bytes"],
+              "properties": {
+                "path": {"type": "string", "minLength": 1},
+                "sha256": {"$ref": "#/$defs/sha256"},
+                "bytes": {"type": "integer", "minimum": 0}
+              }
+            }
+          },
+          "record_count": {"type": "integer", "minimum": 0},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "observations": {"type": "array", "items": {"type": "object"}},
+    "compatibility_csv": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "rows"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "rows": {"type": "integer", "minimum": 0}
+      }
+    },
+    "state_counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

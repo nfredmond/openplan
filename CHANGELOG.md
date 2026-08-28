@@ -19,6 +19,33 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.39.0 — 2026-08-28
+
+OpenPlan now has a frozen seven-county development validation instrument. Each
+county preserves one exact polygon, subdivision set, national and state source
+attempt, observation package, network, and assignment-blind match audit. The
+pre-volume audit cannot read model volumes and binds the exact network,
+observations, preregistration, and matcher version before either baseline is
+evaluated.
+
+The sealed runner refused to reveal any model output until all seven county
+packages passed custody. It then reused each county's exact network,
+observation package, and match audit for unchanged AequilibraE and ActivitySim
+runs. Both methods remain separate. Unproved model year, day basis,
+coefficients, population vintage, and acceptance rule remain `unknown`.
+
+All fourteen county/method assessments are scientifically `inconclusive`.
+There was no frozen use-specific acceptance rule and no decisive fully
+comparable observation. Two counties had no matched links; several matched
+links were unloaded; and raw diagnostic error varied sharply where a
+comparison was possible. These findings did not change defaults, calibrate a
+candidate, open an acceptance holdout, or support a California or nationwide
+accuracy claim.
+
+The existing Models assessment now shows the frozen network, observation
+package, and pre-volume audit hashes beside the comparison-basis and model
+output hashes. California and nationwide capability remain `partial`.
+
 ## 0.38.1 — 2026-08-28
 
 The California instrument-readiness test now resolves its script import from

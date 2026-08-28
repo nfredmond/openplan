@@ -195,6 +195,9 @@ def test_raw_residual_zero_observation_and_source_interval_metrics():
     item = observation(grade="A", bounds=authoritative)
     item["measurement"]["duration"]["complete_hours"] = 28 * 24
     result = assess([item], basis(acceptance=frozen_rule(maximum_median_interval_excess=10.0)), {"link-1": 112.0})
+    assert result["exact_inputs"]["network_state_hashes"] == basis(
+        acceptance=frozen_rule(maximum_median_interval_excess=10.0)
+    )["network_state_hashes"]
     row = result["observation_results"][0]
     assert row["raw_signed_residual"] == 12.0
     assert row["raw_absolute_percent_error"] == 12.0
@@ -218,6 +221,13 @@ def test_unloaded_observations_are_retained_and_ambiguous_are_not_scored():
     assert result["coverage"]["ambiguous"] == 1
     assert result["observation_results"][0]["modeled_volume"] == 0.0
     assert len(result["observation_results"]) == 1
+
+    frozen_match_becomes_unloaded = assess(
+        [observation()], basis(acceptance=frozen_rule()), {"link-1": 0.0}
+    )
+    assert frozen_match_becomes_unloaded["coverage"]["matched"] == 0
+    assert frozen_match_becomes_unloaded["coverage"]["unloaded"] == 1
+    assert frozen_match_becomes_unloaded["observation_results"][0]["match_status"] == "unloaded"
 
 
 def test_duplicate_lineage_cannot_double_count_a_source_record():

@@ -186,20 +186,42 @@ def build_monthly_observations(
     volume_archive: Path,
     *,
     downloaded_at: str,
+    state_codes: set[str] | None = None,
+    county_codes: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Normalize one monthly archive without manufacturing precision bounds."""
     station_members = archive_members(station_archive, kind="station")
     volume_members = archive_members(volume_archive, kind="volume")
+    selected_states = {str(value).zfill(2) for value in (state_codes or set())}
+    selected_counties = {str(value).zfill(3) for value in (county_codes or set())}
+    all_station_keys: set[tuple[str, str, str, str]] = set()
     stations: dict[tuple[str, str, str, str], tuple[dict[str, str], dict[str, Any]]] = {}
     for member in station_members:
         for row in member["rows"]:
-            stations[station_key(row)] = (row, member)
+            key = station_key(row)
+            all_station_keys.add(key)
+            state = str(row.get("state_code") or "").zfill(2)
+            county = str(row.get("county_code") or "").zfill(3)
+            if selected_states and state not in selected_states:
+                continue
+            if selected_counties and county not in selected_counties:
+                continue
+            stations[key] = (row, member)
 
     days: dict[tuple[str, str, str, str], list[float]] = defaultdict(list)
     volume_sources: dict[tuple[str, str, str, str], dict[str, Any]] = {}
     for member in volume_members:
         for row in member["rows"]:
             key = station_key(row)
+            state = str(row.get("state_code") or "").zfill(2)
+            if selected_states and state not in selected_states:
+                continue
+            if (selected_states or selected_counties) and key not in stations:
+                # A complete national monthly archive can contain a volume row
+                # with no station-description row. It cannot be assigned to the
+                # selected polygon, so a filtered package retains the exact
+                # source bytes but does not invent its county or coordinate.
+                continue
             daily = complete_daily_volume(row)
             if daily is not None:
                 days[key].append(daily)
@@ -242,6 +264,10 @@ def build_monthly_observations(
                 "lrs_id": station.get("lrs_id") or "unknown",
                 "lrs_point": _numeric(station.get("lrs_point")) if station.get("lrs_point", "").strip() else "unknown",
                 "station_location": station.get("station_location") or "unknown",
+                "source_geography": {
+                    "state_code": station.get("state_code") or "unknown",
+                    "county_code": station.get("county_code") or "unknown",
+                },
             },
             "geometry": geometry,
             "direction_lane_carriageway": {

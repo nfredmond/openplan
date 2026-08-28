@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: cb445c4b
-current_release: v0.38.1
+current_release: v0.39.0
 review_by: 2026-09-25
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.38.1
+## Current truth at v0.39.0
 
 Strong foundations already exist:
 
@@ -129,10 +129,24 @@ The v1 contract is not yet true:
   audits. The readiness result is in
   `docs/modeling/OBSERVED_COUNT_INSTRUMENT_READINESS_2026-08-28.md`.
 
-The next modeling checkpoint is to freeze one identical observation package and
-pre-volume route/match audit per development county, then run the unchanged
-paired baselines. Defaults, calibration, and the acceptance holdout remain
-closed until that development instrument is valid.
+## Completed checkpoint: v0.39 frozen development instrument
+
+- Froze one exact network, observation package, and assignment-blind match
+  audit for each of the seven registered development counties.
+- Required all seven custody gates to pass before opening any assignment
+  output, then ran unchanged AequilibraE and ActivitySim baselines against the
+  same county inputs.
+- Preserved both methods separately and retained every ambiguous, excluded,
+  unresolved, and unloaded observation.
+- Published all fourteen outcomes as `inconclusive`. No fully comparable
+  decisive observation and no use-specific acceptance rule existed, so the
+  run made no validation claim and changed no defaults.
+
+The next modeling checkpoint is structural diagnosis using this frozen
+instrument: explain the unmatched and unloaded network coverage, missing
+model-year/day comparability, and method disagreement before proposing a
+candidate. Any later acceptance rule must be frozen from primary evidence
+before an untouched holdout is opened.
 
 That last point is a model-science question, not permission to fit observations
 exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and

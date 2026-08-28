@@ -1735,6 +1735,12 @@ function ModelRunStagingAndArtifacts({
     assessment?.exact_inputs && typeof assessment.exact_inputs === "object" && !Array.isArray(assessment.exact_inputs)
       ? (assessment.exact_inputs as Record<string, unknown>)
       : null;
+  const networkStateHashes =
+    exactInputs?.network_state_hashes &&
+    typeof exactInputs.network_state_hashes === "object" &&
+    !Array.isArray(exactInputs.network_state_hashes)
+      ? (exactInputs.network_state_hashes as Record<string, unknown>)
+      : null;
   const evidenceWriteFailed = run.claimDecision?.reason?.toLowerCase().includes("validation evidence write failed") ?? false;
 
   return (
@@ -1792,6 +1798,13 @@ function ModelRunStagingAndArtifacts({
               <dt className="font-semibold text-foreground">Exact hashes</dt>
               <dd className="mt-1 break-all text-muted-foreground">
                 Basis {String(exactInputs?.comparison_basis_sha256 ?? "unknown").slice(0, 12)}… · model {String(exactInputs?.model_output_sha256 ?? "unknown").slice(0, 12)}…
+                {networkStateHashes ? (
+                  <>
+                    {" · network "}{String(networkStateHashes.network ?? "unknown").slice(0, 12)}…
+                    {" · observations "}{String(networkStateHashes.observation_package ?? "unknown").slice(0, 12)}…
+                    {" · pre-volume audit "}{String(networkStateHashes.pre_volume_match_audit ?? "unknown").slice(0, 12)}…
+                  </>
+                ) : null}
               </dd>
             </div>
           </dl>
