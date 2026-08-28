@@ -19,7 +19,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-## 0.37.0 — 2026-08-26
+## 0.37.0 — 2026-08-27
 
 **Migrations required.** Run `npm exec -- supabase migration up --linked`
 before deploying the app. Migrations
@@ -30,15 +30,36 @@ before deploying the app. Migrations
 `20260826000006_decision_package_approver_membership_visibility.sql`
 (`decision_package_approver_membership_visibility`), and
 `20260826000007_scenario_model_link_cascade_delete.sql`
-(`scenario_model_link_cascade_delete`) add append-only package
+(`scenario_model_link_cascade_delete`), followed by the release-corrective
+`20260827000001_model_truth_completion.sql`
+(`model_truth_completion`),
+`20260827000002_governed_decision_enforcement.sql`
+(`governed_decision_enforcement`), and
+`20260827000003_evidence_dependency_freshness.sql`
+(`evidence_dependency_freshness`), add append-only package
 submissions and decisions, exact ready-bundle hash checks, assigned-approver
 authority, My Work review queues, and the live-RLS role lookup needed to assign
-a different owner or admin.
+a different owner or admin. The corrective work completes exact guided-model
+custody, adds database gates for complete current manifests and one disposition
+per exact hash, verifies stored private bundle bytes in the submission and
+approval routes, preserves the canonical receipt bytes covered by its SHA-256,
+and marks packages stale when dependent evidence changes. A stale package can
+still be returned, but it cannot be approved.
 
-The final migration also preserves direct immutability for exact guided-model
-run links while allowing their containing scenario, project, or workspace to
-perform its declared parent cascade. The earlier trigger refused both paths and
-could block normal tenant cleanup.
+Migration `20260826000007_scenario_model_link_cascade_delete.sql` also preserves
+direct immutability for exact guided-model run links while allowing their
+containing scenario, project, or workspace to perform its declared parent
+cascade. The earlier trigger refused both paths and could block normal tenant
+cleanup.
+
+Guided project comparison now binds exactly four completed assignment outputs:
+baseline and build from AequilibraE, and baseline and build from ActivitySim.
+Each track selects its deterministic latest artifact, records the exact artifact
+hash plus shared network and assignment digests, retains current build
+assumptions, and requires a track-matched claim decision. Bound snapshots,
+deltas, artifacts, and decisions are immutable. Missing or unavailable
+ActivitySim assignment evidence remains explicitly behavioral-demand or
+prototype evidence; OpenPlan does not promote it to an assigned-volume result.
 
 Project evidence bundles now use the backward-compatible
 `project_evidence_manifest.v2` contract. A governed package binds one project,
@@ -49,13 +70,24 @@ revision, checksum, and stable evidence ID. Known report and model numeric
 artifacts without adequate point-of-use provenance make the package
 unapprovable.
 
-The GeoPackage includes project-scoped observed crash/KSI points and approved
-engagement geometry without comment text or personal identifiers. Its
+The GeoPackage includes project-scoped observed crash/KSI points and geometry
+only from approved public comments in campaigns with a live public page. It
+excludes comment text, submitter identity, moderation notes, and private
+records. Its
 `openplan_layer_status` table carries the same evidence descriptor and labels
 each expected layer `included`, `unavailable`, `reference_only`, or
-`not_selected`; absent data never reads as zero. Exact AequilibraE and
-ActivitySim link artifacts remain separate bundle files, and land-use GIS stays
-reference-only unless an exact version is selected rather than inferred.
+`not_selected`; absent data never reads as zero. The renderer accepts exact
+supplied AequilibraE links, ActivitySim links, and land-use designations as
+separate layers. Current bundle generation does not yet supply those upstream
+geometries, so it marks those layers unavailable instead of inferring or
+combining them; exact model artifacts remain separate bundle files.
+
+Evidence descriptors are validated when runtime records are read and again at
+freeze. Generated entries bind their checksum, retrieval time, and revision to
+the exact source or rendered bytes, and the terminal bundle records the
+authenticated generator. The review dialog auto-selects a sole linked plan,
+lists every remaining freeze blocker, and prior-bundle history exposes the full
+copyable manifest SHA-256 beside the already-full bundle and receipt hashes.
 
 Members may prepare and submit a ready package. Its assigned approver must be a
 different owner/admin from both creator and submitter. That person approves or
@@ -64,6 +96,11 @@ The immutable receipt preserves the original bundle SHA-256. Approval does not
 publish the package, assert statutory adoption, or validate a model. A later
 project revision preserves historical custody while marking the package stale
 for current use.
+
+My Work remains scoped to one active workspace. When a caller-specific pending
+review or returned package waits in another workspace, a caller-RLS probe names
+that fact and offers a direct membership-checked switch instead of presenting
+an apparently empty queue.
 
 ## 0.36.1 — 2026-08-26
 

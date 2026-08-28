@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-26 against v0.37.0.
+**Reviewed:** 2026-08-28 against the final v0.37.0 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -35,6 +35,8 @@ only in `docs/ROADMAP.md`.
 | KI-2026-08-26-003 | High | A normal current report PDF was classified as an unsupported numeric claim, blocking an otherwise approvable package. | Inventory classification now reserves numeric provenance enforcement for consequential numeric evidence, with focused regression coverage and the governed browser journey. `project-evidence-candidate-inventory.test.ts` |
 | KI-2026-08-26-004 | Medium | The decision-package panel did not refresh after a bundle was frozen in the adjacent evidence panel. | Both panels now share a project-scoped bundle-change event; the visible freeze-to-submit journey proves the refreshed state. `project-evidence-bundle-panel.tsx`; `project-decision-package-panel.tsx` |
 | KI-2026-08-26-005 | High | Missing linked-plan and current-report prerequisites were named but offered no route to repair them. | The review dialog now links directly to project-scoped Plans and Reports, with focused reachability coverage. `project-evidence-bundle-reachability.test.tsx` |
+| KI-2026-08-27-008 | Low | Prior-bundle history showed only a shortened manifest SHA-256, so a planner could not copy or compare the exact manifest identity. | History now shows all 64 characters with a copy action. Final job 09 run `2026-08-28T04-08-52-046Z`; `project-evidence-bundle-reachability.test.tsx` |
+| KI-2026-08-27-009 | Medium | A named approver whose active workspace differed from the package workspace saw an empty My Work queue. | Caller-RLS checks expose only the workspace containing assigned package work and offer a direct membership-checked switch. Final job 10 run `2026-08-28T04-12-21-580Z`; `my-work-query.test.ts`; `workspace-switcher.test.tsx`; `docs/ops/2026-08-28-governed-decision-handoff-browser-proof.md` |
 
 ## Closed in v0.31.0
 
