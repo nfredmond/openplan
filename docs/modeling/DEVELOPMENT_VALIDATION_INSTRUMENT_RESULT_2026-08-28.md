@@ -1,7 +1,9 @@
 # Frozen development validation instrument result
 
-Date: 2026-08-28  
-Release: v0.39.0  
+Date: 2026-08-28
+
+Release: v0.39.0
+
 Study: `california-seven-county-observed-count-instrument-v2`
 
 ## Decision
