@@ -163,7 +163,8 @@ const modelRunsSelectMock = vi.fn((columns: string) =>
 const agreementArtifactsLimitMock = vi.fn();
 const agreementArtifactsOrderMock = vi.fn(() => ({ limit: agreementArtifactsLimitMock }));
 const agreementArtifactsEqMock = vi.fn(() => ({ eq: agreementArtifactsEqMock, order: agreementArtifactsOrderMock }));
-const agreementArtifactsSelectMock = vi.fn(() => ({ eq: agreementArtifactsEqMock }));
+const agreementArtifactsInMock = vi.fn();
+const agreementArtifactsSelectMock = vi.fn(() => ({ eq: agreementArtifactsEqMock, in: agreementArtifactsInMock }));
 
 const modelingClaimMaybeSingleMock = vi.fn();
 const modelingClaimEqTrackMock = vi.fn(() => ({ maybeSingle: modelingClaimMaybeSingleMock }));
@@ -185,6 +186,9 @@ const modelingClaimSelectMock = vi.fn(() => ({
 const modelingAssessmentOrderMock = vi.fn();
 const modelingAssessmentInMock = vi.fn(() => ({ order: modelingAssessmentOrderMock }));
 const modelingAssessmentSelectMock = vi.fn(() => ({ in: modelingAssessmentInMock }));
+const modelingDiagnosisOrderMock = vi.fn();
+const modelingDiagnosisInMock = vi.fn(() => ({ order: modelingDiagnosisOrderMock }));
+const modelingDiagnosisSelectMock = vi.fn(() => ({ in: modelingDiagnosisInMock }));
 
 const modelingSourcesOrderMock = vi.fn();
 const modelingSourcesEqMock = vi.fn(() => ({ order: modelingSourcesOrderMock }));
@@ -460,6 +464,10 @@ const fromMock = vi.fn((table: string) => {
     return { select: modelingAssessmentSelectMock };
   }
 
+  if (table === "modeling_validation_structural_diagnoses") {
+    return { select: modelingDiagnosisSelectMock };
+  }
+
   if (table === "engagement_campaigns") {
     return {
       select: engagementCampaignSelectMock,
@@ -584,6 +592,9 @@ function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    modelingDiagnosisOrderMock.mockResolvedValue({ data: [], error: null });
+    agreementArtifactsInMock.mockResolvedValue({ data: [], error: null });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({

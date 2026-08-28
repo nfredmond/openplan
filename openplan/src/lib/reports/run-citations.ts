@@ -94,6 +94,14 @@ export type CitedModelValidationAssessment = {
   comparisonBasisSha256: string;
 };
 
+export type CitedModelValidationStructuralDiagnosis = {
+  assessmentSha256: string;
+  diagnosisSha256: string;
+  findings: string[];
+  unknownFacts: string[];
+  artifactUrl: string | null;
+};
+
 /**
  * Why a cited link has no resolved run row. These are four different facts and
  * the citation says which one is true; `"unknown"` is what a caller that did not
@@ -465,11 +473,13 @@ export async function withCitedModelRunClaimTiers<
   claimReadFailed: boolean;
   validationAssessment: CitedModelValidationAssessment | null;
   validationAssessmentReadFailed: boolean;
+  validationStructuralDiagnosis: CitedModelValidationStructuralDiagnosis | null;
+  validationStructuralDiagnosisReadFailed: boolean;
 }>> {
   if (citedModelRuns.length === 0) return [];
 
   const runIds = citedModelRuns.map((run) => run.id);
-  const [evidence, assessmentResult] = await Promise.all([
+  const [evidence, assessmentResult, diagnosisResult] = await Promise.all([
     loadRtpEvidenceRunDisclosures(
       supabase as unknown as RtpEvidenceSupabaseLike,
       runIds,
@@ -487,7 +497,29 @@ export async function withCitedModelRunClaimTiers<
       .select("model_run_id, scientific_outcome, reasons_json, partition_json, planning_use, validation_rules_version, comparison_basis_sha256, created_at")
       .in("model_run_id", runIds)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("modeling_validation_structural_diagnoses")
+      .select("model_run_id, diagnosis_artifact_id, assessment_sha256, diagnosis_sha256, created_at")
+      .in("model_run_id", runIds)
+      .order("created_at", { ascending: false }),
   ]);
+
+  const diagnosisRows = diagnosisResult.error
+    ? []
+    : (diagnosisResult.data ?? []) as Array<Record<string, unknown>>;
+  const diagnosisArtifactIds = diagnosisRows
+    .map((row) => row.diagnosis_artifact_id)
+    .filter((value): value is string => typeof value === "string");
+  const diagnosisArtifactResult = diagnosisArtifactIds.length > 0
+    ? await supabase
+        .from("model_run_artifacts")
+        .select("id, file_url, metadata_json")
+        .in("id", diagnosisArtifactIds)
+    : { data: [], error: null };
+  const diagnosisArtifactById = new Map(
+    ((diagnosisArtifactResult.data ?? []) as Array<Record<string, unknown>>)
+      .map((row) => [String(row.id), row]),
+  );
 
   const newestAssessmentByRun = new Map<string, CitedModelValidationAssessment>();
   if (!assessmentResult.error) {
@@ -510,12 +542,33 @@ export async function withCitedModelRunClaimTiers<
     }
   }
 
+  const newestDiagnosisByRun = new Map<string, CitedModelValidationStructuralDiagnosis>();
+  if (!diagnosisResult.error && !diagnosisArtifactResult.error) {
+    for (const row of diagnosisRows) {
+      const modelRunId = typeof row.model_run_id === "string" ? row.model_run_id : null;
+      if (!modelRunId || newestDiagnosisByRun.has(modelRunId)) continue;
+      const artifact = diagnosisArtifactById.get(String(row.diagnosis_artifact_id));
+      const metadata = artifact?.metadata_json && typeof artifact.metadata_json === "object" && !Array.isArray(artifact.metadata_json)
+        ? artifact.metadata_json as Record<string, unknown>
+        : {};
+      newestDiagnosisByRun.set(modelRunId, {
+        assessmentSha256: typeof row.assessment_sha256 === "string" ? row.assessment_sha256 : "unknown",
+        diagnosisSha256: typeof row.diagnosis_sha256 === "string" ? row.diagnosis_sha256 : "unknown",
+        findings: Array.isArray(metadata.findings) ? metadata.findings.map(String) : [],
+        unknownFacts: Array.isArray(metadata.unknown_facts) ? metadata.unknown_facts.map(String) : [],
+        artifactUrl: typeof artifact?.file_url === "string" ? artifact.file_url : null,
+      });
+    }
+  }
+
   return citedModelRuns.map((run) => ({
     ...run,
     claimStatus: evidence.claimTierFor(run.id),
     claimReadFailed: evidence.claimReadFailed,
     validationAssessment: newestAssessmentByRun.get(run.id) ?? null,
     validationAssessmentReadFailed: Boolean(assessmentResult.error),
+    validationStructuralDiagnosis: newestDiagnosisByRun.get(run.id) ?? null,
+    validationStructuralDiagnosisReadFailed: Boolean(diagnosisResult.error || diagnosisArtifactResult.error),
   }));
 }
 

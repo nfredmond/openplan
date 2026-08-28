@@ -71,9 +71,10 @@ async function evidenceRows(
   validation: Record<string, unknown>[];
   claims: Record<string, unknown>[];
   assessments: Record<string, unknown>[];
+  diagnoses: Record<string, unknown>[];
 }> {
   if (modelRunIds.length === 0 && countyRunIds.length === 0) {
-    return { sources: [], validation: [], claims: [], assessments: [] };
+    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [] };
   }
 
   const tableReads = [
@@ -133,6 +134,7 @@ async function evidenceRows(
   }
 
   let assessments: Record<string, unknown>[] = [];
+  let diagnoses: Record<string, unknown>[] = [];
   if (modelRunIds.length > 0) {
     const read = await dynamicFrom("modeling_validation_assessments")
       .select(
@@ -148,9 +150,24 @@ async function evidenceRows(
       );
     }
     assessments = rows(read.data);
+
+    const diagnosisRead = await dynamicFrom("modeling_validation_structural_diagnoses")
+      .select(
+        "id, workspace_id, model_run_id, modeling_validation_assessment_id, diagnosis_artifact_id, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at"
+      )
+      .eq("workspace_id", workspaceId)
+      .in("model_run_id", modelRunIds)
+      .order("created_at", { ascending: true });
+    if (diagnosisRead.error) {
+      throw new ProjectEvidenceBundleError(
+        "missing_evidence",
+        "Project-linked structural diagnoses could not be read."
+      );
+    }
+    diagnoses = rows(diagnosisRead.data);
   }
 
-  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments };
+  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses };
 }
 
 /**
@@ -256,7 +273,14 @@ export async function loadProjectEvidenceGeneratedFiles(
       const artifactsRead = await client.from("model_run_artifacts")
         .select("id, run_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
         .in("run_id", runIds)
-        .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
+        .in("artifact_type", [
+          "link_volumes",
+          "activitysim_link_volumes",
+          "validation_input_bundle",
+          "comparison_basis",
+          "model_validation_assessment",
+          "model_validation_structural_diagnosis",
+        ])
         .order("created_at", { ascending: true });
       if (artifactsRead.error) {
         throw new ProjectEvidenceBundleError("missing_evidence", "Project model link artifacts could not be read.");
@@ -399,8 +423,30 @@ export async function loadProjectEvidenceGeneratedFiles(
       numericClaim: true,
     }),
   }));
+  const structuralDiagnoses = modelingEvidence.diagnoses.map((diagnosis) => ({
+    ...withoutPersonalIdentifiers(diagnosis) as Record<string, unknown>,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { table: "modeling_validation_structural_diagnoses", id: diagnosis.id },
+      source: {
+        kind: "model_validation_structural_diagnosis",
+        label: "Why the scientific model validation is inconclusive",
+        citation: typeof diagnosis.diagnosis_sha256 === "string" ? diagnosis.diagnosis_sha256 : null,
+      },
+      asOfDate: typeof diagnosis.created_at === "string" ? diagnosis.created_at : null,
+      retrievedAt: generatedAt.toISOString(),
+      evidenceStatus: "modeled",
+      claimTier: null,
+      uncertainty: [],
+      limits: [
+        "The diagnosis explains the bound inconclusive assessment; it does not repair matches, calibrate a model, select a method, or change the outcome.",
+      ],
+      revisionToken: typeof diagnosis.created_at === "string" ? diagnosis.created_at : null,
+      checksumSha256: typeof diagnosis.diagnosis_sha256 === "string" ? diagnosis.diagnosis_sha256 : null,
+      numericClaim: true,
+    }),
+  }));
   const modeling = {
-    schemaVersion: "project_modeling_evidence.v2",
+    schemaVersion: "project_modeling_evidence.v3",
     projectId: project.id,
     generatedAt: generatedAt.toISOString(),
     models: withoutPersonalIdentifiers(models),
@@ -410,6 +456,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     sourceManifests: withoutPersonalIdentifiers(modelingEvidence.sources),
     validationResults,
     validationAssessments,
+    structuralDiagnoses,
     claimDecisions,
   };
   const modelingRevisionToken = sourceRevision({
@@ -419,6 +466,8 @@ export async function loadProjectEvidenceGeneratedFiles(
     countyRuns: withoutPersonalIdentifiers(countyRuns),
     sourceManifests: withoutPersonalIdentifiers(modelingEvidence.sources),
     validationResults: withoutPersonalIdentifiers(modelingEvidence.validation),
+    validationAssessments: withoutPersonalIdentifiers(modelingEvidence.assessments),
+    structuralDiagnoses: withoutPersonalIdentifiers(modelingEvidence.diagnoses),
     claimDecisions: withoutPersonalIdentifiers(modelingEvidence.claims),
   });
   const hasUnsupportedModelingClaim = [...claimDecisions, ...validationResults]

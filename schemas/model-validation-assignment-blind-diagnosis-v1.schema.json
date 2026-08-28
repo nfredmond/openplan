@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.model-validation-assignment-blind-diagnosis.v1",
+  "title": "OpenPlan assignment-blind model validation diagnosis v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "diagnosis_stage", "geography_id", "created_at",
+    "model_output_bytes_read", "exact_inputs", "jurisdictions",
+    "source_attempts", "observation", "matching", "findings", "match_changes"
+  ],
+  "properties": {
+    "schema": {"const": "openplan.model-validation-assignment-blind-diagnosis.v1"},
+    "diagnosis_stage": {"const": "assignment_blind"},
+    "geography_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1},
+    "model_output_bytes_read": {"const": false},
+    "exact_inputs": {"type": "object"},
+    "jurisdictions": {"type": "object"},
+    "source_attempts": {"type": "array"},
+    "observation": {"type": "object"},
+    "matching": {"type": "object"},
+    "findings": {"type": "array"},
+    "match_changes": {"const": 0}
+  }
+}

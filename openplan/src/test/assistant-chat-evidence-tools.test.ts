@@ -283,6 +283,31 @@ function modelRunFixture() {
         created_at: "2026-08-01T01:00:00Z",
       },
     ],
+    modeling_validation_structural_diagnoses: [
+      {
+        id: "diagnosis-custody-1",
+        model_run_id: RUN_ID,
+        modeling_validation_assessment_id: "assessment-1",
+        diagnosis_artifact_id: "diagnosis-artifact-1",
+        assessment_sha256: "b".repeat(64),
+        diagnosis_sha256: "c".repeat(64),
+        scientific_outcome: "inconclusive",
+        created_at: "2026-08-01T02:00:00Z",
+      },
+    ],
+    model_run_artifacts: [
+      {
+        id: "diagnosis-artifact-1",
+        run_id: RUN_ID,
+        artifact_type: "model_validation_structural_diagnosis",
+        file_url: "run-artifacts/model-runs/run/diagnosis.json",
+        content_hash: "c".repeat(64),
+        metadata_json: {
+          findings: ["The matched link has zero assigned volume."],
+          unknown_facts: ["day_basis"],
+        },
+      },
+    ],
     modeling_claim_decisions: [
       {
         model_run_id: RUN_ID,
@@ -348,6 +373,12 @@ describe("get_model_run_results", () => {
     const validation = result.validation as {
       results: Array<{ detail: string; status: string }>;
       scientificAssessments: Array<{ outcome: string; reasons: string[]; comparisonBasisSha256: string }>;
+      structuralDiagnoses: Array<{
+        diagnosisSha256: string;
+        findings: string[];
+        unknownFacts: string[];
+        exactArtifact: { id: string; fileUrl: string; contentHash: string };
+      }>;
     };
     expect(validation.results[0].detail).toBe("Median APE 42.5% exceeds the 30% claim-grade threshold.");
     expect(validation.results[0].status).toBe("warn");
@@ -355,6 +386,16 @@ describe("get_model_run_results", () => {
       outcome: "inconclusive",
       reasons: ["Same-basis day and vehicle units were not established."],
       comparisonBasisSha256: "a".repeat(64),
+    });
+    expect(validation.structuralDiagnoses[0]).toMatchObject({
+      diagnosisSha256: "c".repeat(64),
+      findings: ["The matched link has zero assigned volume."],
+      unknownFacts: ["day_basis"],
+      exactArtifact: {
+        id: "diagnosis-artifact-1",
+        fileUrl: "run-artifacts/model-runs/run/diagnosis.json",
+        contentHash: "c".repeat(64),
+      },
     });
 
     // Claim tier + its stored reason.

@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: cb445c4b
-current_release: v0.39.0
+current_release: v0.40.0
 review_by: 2026-09-25
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.39.0
+## Current truth at v0.40.0
 
 Strong foundations already exist:
 
@@ -142,11 +142,30 @@ The v1 contract is not yet true:
   decisive observation and no use-specific acceptance rule existed, so the
   run made no validation claim and changed no defaults.
 
-The next modeling checkpoint is structural diagnosis using this frozen
-instrument: explain the unmatched and unloaded network coverage, missing
-model-year/day comparability, and method disagreement before proposing a
-candidate. Any later acceptance rule must be frozen from primary evidence
-before an untouched holdout is opened.
+## Completed checkpoint: v0.40 frozen structural diagnosis
+
+- Diagnosed the immutable v0.39 networks, observation packages, pre-volume
+  audits, model outputs, comparison bases, and assessments without changing
+  any frozen byte or match identifier.
+- Completed every assignment-blind county diagnosis before opening any model
+  output, then retained loaded, zero-volume unloaded, and absent output rows
+  separately.
+- Found missing usable coordinates in four counties and centroid-only distance
+  exclusions in all seven. No observation with usable coordinates proved a
+  genuine absence of network geometry within the registered search distance.
+- Kept model year, day basis, coefficients, and population vintage unknown
+  where the exact evidence did not establish them, and kept AequilibraE and
+  ActivitySim raw values separate on identical frozen links.
+- Published fourteen versioned diagnosis artifacts plus a bound study result;
+  the scientific outcome remains `inconclusive` and California and nationwide
+  capability remain `partial`.
+
+The next modeling checkpoint is a new, versioned observation-and-match
+instrument that resolves the diagnosed coordinate, full-geometry, lineage,
+loading, and comparison-basis gaps without modifying the frozen v0.39/v0.40
+record. Candidate selection and any use-specific acceptance rule remain later
+work. The rule must be frozen from primary evidence before an untouched holdout
+is opened.
 
 That last point is a model-science question, not permission to fit observations
 exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and

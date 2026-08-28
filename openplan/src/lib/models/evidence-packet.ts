@@ -829,6 +829,7 @@ export function labelForArtifactType(artifactType: string | null | undefined) {
   if (artifactType === "validation_input_bundle") return "Validation Input Bundle";
   if (artifactType === "model_comparison_basis") return "Model Comparison Basis";
   if (artifactType === "model_validation_assessment") return "Model Validation Assessment";
+  if (artifactType === "model_validation_structural_diagnosis") return "Model Validation Structural Diagnosis";
   return titleCaseTokenized(artifactType);
 }
 

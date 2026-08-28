@@ -791,6 +791,32 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
         if (assessmentError) throw new Error(assessmentError.message ?? "modeling_validation_assessments query failed");
         const assessmentRows = (assessmentData ?? []) as Array<Record<string, unknown>>;
 
+        const { data: diagnosisData, error: diagnosisError } = await supabase
+          .from("modeling_validation_structural_diagnoses")
+          .select(
+            "id, modeling_validation_assessment_id, diagnosis_artifact_id, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at"
+          )
+          .eq("model_run_id", input.modelRunId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (diagnosisError) throw new Error(diagnosisError.message ?? "modeling_validation_structural_diagnoses query failed");
+        const diagnosisRows = (diagnosisData ?? []) as Array<Record<string, unknown>>;
+        const diagnosisArtifactIds = diagnosisRows
+          .map((row) => row.diagnosis_artifact_id)
+          .filter((value): value is string => typeof value === "string");
+        let diagnosisArtifactRows: Array<Record<string, unknown>> = [];
+        if (diagnosisArtifactIds.length > 0) {
+          const { data, error } = await supabase
+            .from("model_run_artifacts")
+            .select("id, file_url, content_hash, metadata_json")
+            .in("id", diagnosisArtifactIds);
+          if (error) throw new Error(error.message ?? "structural diagnosis artifacts query failed");
+          diagnosisArtifactRows = (data ?? []) as Array<Record<string, unknown>>;
+        }
+        const diagnosisArtifactById = new Map(
+          diagnosisArtifactRows.map((row) => [String(row.id), row]),
+        );
+
         const claimByRun = await loadModelRunClaimStatuses({
           supabase: supabase as unknown as ModelingEvidenceSupabaseLike,
           modelRunIds: [input.modelRunId],
@@ -866,6 +892,27 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
               },
               createdAt: isoOrNull(row.created_at),
             })),
+            structuralDiagnoses: diagnosisRows.map((row) => {
+              const artifact = diagnosisArtifactById.get(String(row.diagnosis_artifact_id));
+              const metadata = artifact?.metadata_json && typeof artifact.metadata_json === "object"
+                ? artifact.metadata_json as Record<string, unknown>
+                : {};
+              return {
+                id: row.id,
+                assessmentId: row.modeling_validation_assessment_id,
+                scientificOutcome: row.scientific_outcome,
+                assessmentSha256: row.assessment_sha256,
+                diagnosisSha256: row.diagnosis_sha256,
+                exactArtifact: {
+                  id: row.diagnosis_artifact_id,
+                  fileUrl: typeof artifact?.file_url === "string" ? artifact.file_url : null,
+                  contentHash: typeof artifact?.content_hash === "string" ? artifact.content_hash : null,
+                },
+                findings: Array.isArray(metadata.findings) ? metadata.findings.map(String) : [],
+                unknownFacts: Array.isArray(metadata.unknown_facts) ? metadata.unknown_facts.map(String) : [],
+                createdAt: isoOrNull(row.created_at),
+              };
+            }),
             scientificNote:
               assessmentRows.length === 0
                 ? "No rules-v4 scientific assessment is in immutable custody. Legacy point-count diagnostics do not establish same-basis comparability."

@@ -19,6 +19,42 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.40.0 — 2026-08-28
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying the app. Migration
+`20260828000003_model_validation_structural_diagnosis_custody.sql`
+(`model_validation_structural_diagnosis_custody`) adds append-only custody for
+one exact structural-diagnosis artifact bound to the same workspace, run,
+inconclusive assessment, and assessment hash. Members may read it; only the
+service role may create it; custody rows and bound artifacts reject mutation
+and deletion.
+
+OpenPlan now publishes the assignment-blind structural diagnosis of the frozen
+v0.39 seven-county instrument. The diagnosis measures missing usable
+coordinates, full-link versus centroid distance, candidate counts, name and
+facility evidence, ambiguous lineage, exclusions, and genuine network absence
+without opening model output or changing a match. Only after all seven frozen
+readiness gates pass does it inspect loaded, zero-volume unloaded, and absent
+output rows and compare AequilibraE with ActivitySim on identical frozen links.
+Raw method values, differences, and ratios remain separate; there is no average,
+ranking, winner, calibration, new threshold, or opened acceptance holdout.
+
+Every county/method artifact uses
+`openplan.model-validation-structural-diagnosis.v1` and binds the exact release
+source, preregistration, network, observation package, match audit, model
+output, comparison basis, assignment profile, and existing assessment. The
+evidence ledger keeps model year, day/period, direction, vehicle/PCE basis,
+population vintage, and coefficients `unknown` when the frozen artifacts do
+not prove them.
+
+The existing Models assessment panel now explains “Why this is inconclusive,”
+shows the full diagnosis hash, and downloads the exact artifact. The same hash,
+findings, unknown facts, and unchanged scientific outcome travel into cited
+reports, assistant evidence, and project evidence bundles. First-week job 11
+now requires that visible diagnosis journey. California and nationwide model
+validation remain `partial`.
+
 ## 0.39.0 — 2026-08-28
 
 OpenPlan now has a frozen seven-county development validation instrument. Each

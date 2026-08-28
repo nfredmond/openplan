@@ -74,6 +74,33 @@ describe("rules-v4 assessment surface", () => {
           },
         },
       },
+      {
+        id: "diagnosis-artifact",
+        artifact_type: "model_validation_structural_diagnosis",
+        file_url: "storage://run-artifacts/structural-diagnosis.json",
+        file_size_bytes: 4096,
+        content_hash: "9".repeat(64),
+        metadata_json: {
+          schema: "openplan.model-validation-structural-diagnosis.v1",
+          diagnosis_sha256: "9".repeat(64),
+          assessment_sha256: "c".repeat(64),
+          scientific_outcome: "inconclusive",
+          method_aggregation: "separate",
+          unknown_facts: ["model_year", "day_basis", "population_vintage", "coefficients"],
+          findings: [
+            {
+              category: "matching",
+              count: 12,
+              statement: "A nearby network link lacked the name or facility evidence required by the frozen matcher.",
+            },
+            {
+              category: "network_loading",
+              count: 2,
+              statement: "Recorded zero-volume matched links remain unloaded.",
+            },
+          ],
+        },
+      },
     ]));
 
     const panel = screen.getByRole("region", { name: "Scientific model validation assessment" });
@@ -89,10 +116,17 @@ describe("rules-v4 assessment surface", () => {
     expect(panel).toHaveClass("min-w-0", "max-w-full");
     expect(panel.parentElement).toHaveClass("min-w-0", "max-w-full");
     expect(panel.querySelector("dl")).toHaveClass("min-w-0", "grid-cols-1");
-    expect(screen.getByRole("link", { name: "View / Download" })).toHaveAttribute(
+    const diagnosis = screen.getByRole("region", { name: "Why this model validation is inconclusive" });
+    expect(diagnosis).toHaveTextContent("Why this is inconclusive");
+    expect(diagnosis).toHaveTextContent("12 · A nearby network link lacked the name or facility evidence");
+    expect(diagnosis).toHaveTextContent("2 · Recorded zero-volume matched links remain unloaded");
+    expect(diagnosis).toHaveTextContent("model_year, day_basis, population_vintage, coefficients");
+    expect(diagnosis).toHaveTextContent("9".repeat(64));
+    expect(screen.getByRole("link", { name: "Download exact structural diagnosis" })).toHaveAttribute(
       "href",
-      `/api/models/${MODEL_ID}/runs/33333333-3333-4333-8333-333333333333/artifacts/assessment-artifact/download`,
+      `/api/models/${MODEL_ID}/runs/33333333-3333-4333-8333-333333333333/artifacts/diagnosis-artifact/download`,
     );
+    expect(screen.getAllByRole("link", { name: "View / Download" })).toHaveLength(2);
   });
 
   it("shows custody failure as scientifically unchecked", () => {

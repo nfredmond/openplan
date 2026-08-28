@@ -198,6 +198,7 @@ const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 // rules. Keep this list exact so a filename alone cannot silently count.
 const DEDICATED_LIVE_RLS_PROBES = new Set([
   "modeling_validation_assessments",
+  "modeling_validation_structural_diagnoses",
 ]);
 
 const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
@@ -1641,6 +1642,7 @@ describe("workspace RLS isolation inventory", () => {
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
       "modeling_validation_assessments",
+      "modeling_validation_structural_diagnoses",
     ]);
   });
 });

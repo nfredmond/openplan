@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.model-validation-structural-diagnosis.v1",
+  "title": "OpenPlan model validation structural diagnosis v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "diagnosis_id", "study_id", "geography_id", "method",
+    "created_at", "release_source", "source_validation_release",
+    "scientific_outcome", "claim_tier_changed", "match_changes", "calibrated",
+    "candidate_selected", "acceptance_rule_created", "acceptance_holdout_opened",
+    "method_aggregation", "exact_inputs", "assignment_blind_summary",
+    "post_assignment", "paired_method_comparison", "evidence_ledger", "findings"
+  ],
+  "properties": {
+    "schema": {"const": "openplan.model-validation-structural-diagnosis.v1"},
+    "diagnosis_id": {"type": "string", "minLength": 1},
+    "study_id": {"type": "string", "minLength": 1},
+    "geography_id": {"type": "string", "minLength": 1},
+    "method": {"enum": ["aequilibrae", "activitysim"]},
+    "created_at": {"type": "string", "minLength": 1},
+    "release_source": {"type": "object"},
+    "source_validation_release": {"type": "object"},
+    "scientific_outcome": {"const": "inconclusive"},
+    "claim_tier_changed": {"const": false},
+    "match_changes": {"const": 0},
+    "calibrated": {"const": false},
+    "candidate_selected": {"const": false},
+    "acceptance_rule_created": {"const": false},
+    "acceptance_holdout_opened": {"const": false},
+    "method_aggregation": {"const": "separate"},
+    "exact_inputs": {"type": "object"},
+    "assignment_blind_summary": {
+      "type": "object",
+      "required": ["artifact", "model_output_bytes_read", "observation", "matching"],
+      "properties": {"model_output_bytes_read": {"const": false}}
+    },
+    "post_assignment": {"type": "object"},
+    "paired_method_comparison": {
+      "type": "object",
+      "required": ["aggregation", "ranking", "winner", "records"],
+      "properties": {
+        "aggregation": {"const": "none"},
+        "ranking": {"const": "none"},
+        "winner": {"const": "none"},
+        "records": {"type": "array"}
+      }
+    },
+    "evidence_ledger": {"type": "object"},
+    "findings": {"type": "array"}
+  }
+}

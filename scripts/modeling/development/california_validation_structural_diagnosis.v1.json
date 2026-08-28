@@ -1,0 +1,33 @@
+{
+  "schema": "openplan.model-validation-structural-diagnosis-study.v1",
+  "study_id": "california-seven-county-frozen-structural-diagnosis-v1",
+  "title": "Frozen structural diagnosis of the v0.39 development validation instrument",
+  "source_study": {
+    "preregistration": {
+      "path": "scripts/modeling/development/california_validation_instrument_study.v2.json",
+      "sha256": "85bced73c23ab6f19a3eb2b606eb77204ef0595850e20af2ea445f59ce6863a4"
+    },
+    "instrument_readiness": {
+      "path": "data/modeling/development-validation-study-2026-08-28/instrument-readiness.json",
+      "sha256": "1e293096f397fc8f43d4daf57ba892d2f0ee4de05f0ad6ea30305d7565bd79dd"
+    },
+    "study_result": {
+      "path": "data/modeling/development-validation-study-2026-08-28/study-result.json",
+      "sha256": "5fdb18df3685560ce938ee8904c72ecf7ed3c68263cc27e611b693adc7c9b5cc"
+    }
+  },
+  "method_policy": {
+    "methods": ["aequilibrae", "activitysim"],
+    "identical_frozen_links": true,
+    "average_methods": false,
+    "rank_methods": false,
+    "select_candidate": false
+  },
+  "study_boundaries": {
+    "change_matches": false,
+    "calibrate": false,
+    "create_acceptance_rule": false,
+    "open_acceptance_holdout": false,
+    "change_claim_tier": false
+  }
+}

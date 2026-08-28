@@ -26,14 +26,22 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    unloaded, or unavailable; note any base-year, day, direction/carriageway, or
    vehicle/PCE mismatch. For a build run, confirm the screen says base-year
    counts do not establish forecast or change validity.
-4. Download the model validation assessment, comparison basis, and validation
+4. Open **Why this is inconclusive**. Distinguish observation/matching,
+   network-loading, comparison-basis, and method-disagreement findings. Confirm
+   any absent or conflicting model year, day/period, direction, vehicle/PCE,
+   population, or coefficient fact remains `unknown`. Confirm the diagnosis
+   did not rematch an observation, average the methods, choose a winner,
+   calibrate a model, create a threshold, or change the scientific outcome.
+5. Download the exact structural diagnosis and copy its full SHA-256. Then
+   download the model validation assessment, comparison basis, and validation
    input bundle through the visible artifact controls. Confirm the assessment
    exposes the exact model-output and comparison-basis hashes. If the screen
    says `validation evidence write failed`, record that the computation is
    scientifically unchecked and do not call the outcome validated.
-5. If the run includes ActivitySim, confirm its assessment remains separate
+6. If the run includes ActivitySim, confirm its assessment remains separate
    from the AequilibraE assignment assessment rather than being averaged.
 
 The outcome is reached when you can state the recorded scientific outcome and
-why, and you have downloaded the immutable assessment plus its exact input and
-basis evidence. An honest `inconclusive` outcome fully satisfies this job.
+why, distinguish the structural finding categories, and have downloaded the
+exact diagnosis plus the immutable assessment and its exact input and basis
+evidence. An honest `inconclusive` outcome fully satisfies this job.

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openplan.model-validation-structural-diagnosis-study-result.v1",
+  "title": "OpenPlan frozen structural diagnosis study result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "study_id", "created_at", "git_sha", "app_version",
+    "diagnosis_registry_sha256", "source_study_result_sha256", "counties",
+    "method_aggregation", "scientific_outcome", "claims"
+  ],
+  "properties": {
+    "schema": {"const": "openplan.model-validation-structural-diagnosis-study-result.v1"},
+    "study_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "minLength": 1},
+    "git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "app_version": {"type": "string", "minLength": 1},
+    "diagnosis_registry_sha256": {"$ref": "#/$defs/sha256"},
+    "source_study_result_sha256": {"$ref": "#/$defs/sha256"},
+    "counties": {"type": "array", "items": {"type": "object"}},
+    "method_aggregation": {"const": "separate"},
+    "scientific_outcome": {"const": "inconclusive"},
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "california", "nationwide", "defaults_changed", "calibrated",
+        "candidate_selected", "acceptance_rule_created", "acceptance_holdout_opened"
+      ],
+      "properties": {
+        "california": {"const": "partial"},
+        "nationwide": {"const": "partial"},
+        "defaults_changed": {"const": false},
+        "calibrated": {"const": false},
+        "candidate_selected": {"const": false},
+        "acceptance_rule_created": {"const": false},
+        "acceptance_holdout_opened": {"const": false}
+      }
+    }
+  },
+  "$defs": {"sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}
+}

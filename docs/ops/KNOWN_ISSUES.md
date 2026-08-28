@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-28 against the v0.39.0 candidate.
+**Reviewed:** 2026-08-28 against the v0.40.0 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -8,7 +8,7 @@ only in `docs/ROADMAP.md`.
 
 | ID | Severity | Boundary | Current disposition | Evidence |
 |---|---|---|---|---|
-| KI-2026-08-24-001 | High | County and dual-demand outputs remain screening evidence. The frozen seven-county development instrument produced fourteen honest inconclusive assessments: no decisive fully comparable observations, two counties with no matched links, unloaded matched links, and large method disagreement in some raw diagnostics. No untouched use-specific evidence supports a corridor, California, or nationwide accuracy claim. | Keep caveats, claim tiers, both model values, and negative studies intact. Diagnose matching, network loading, and basis comparability before proposing a candidate. Freeze any use-specific acceptance rule before opening an untouched holdout; do not average methods or change defaults from these diagnostics. | `docs/modeling/DEVELOPMENT_VALIDATION_INSTRUMENT_RESULT_2026-08-28.md`; `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
+| KI-2026-08-24-001 | High | County and dual-demand outputs remain screening evidence. The frozen structural diagnosis found missing usable coordinates in four counties and centroid-only distance exclusions in all seven; it proved no genuine within-radius network absence where usable coordinates existed. Frozen basis evidence still leaves model year, day basis, coefficients, and population vintage unknown, while loaded/unloaded coverage and raw method disagreement remain diagnostic. No untouched use-specific evidence supports a corridor, California, or nationwide accuracy claim. | Keep caveats, claim tiers, both model values, and negative studies intact. Build a new versioned instrument to repair the diagnosed evidence gaps without altering the frozen v0.39/v0.40 record. Freeze any use-specific acceptance rule before opening an untouched holdout; do not average methods or change defaults from these diagnostics. | `docs/modeling/MODEL_VALIDATION_STRUCTURAL_DIAGNOSIS_RESULT_2026-08-28.md`; `docs/modeling/DEVELOPMENT_VALIDATION_INSTRUMENT_RESULT_2026-08-28.md`; `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-002 | High | ActivitySim can execute, but the available stock behavioral coefficients were estimated for another region. A locally fitted population does not make those choices locally calibrated. | Name coefficient provenance and keep output below locally validated claim tiers. | `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-003 | Medium | Crash rates per modeled VMT lack a defensible denominator where the modeled road network does not cover the observed crash network. | Keep rates deferred; disclose source and road-coverage limits instead of treating unsupported roads as zero. | `docs/ROADMAP.md` |
 | KI-2026-08-24-004 | Medium | Recovery confidence expires if operators stop exercising it. The repository drill proves the local reference path, not every deployment's disks, credentials, or cutover. | Run `npm run ops:restore-drill` before relevant releases and at least quarterly; next reference review due 2026-11-24. | `openplan/docs/ops/BACKUP_AND_RESTORE.md` |

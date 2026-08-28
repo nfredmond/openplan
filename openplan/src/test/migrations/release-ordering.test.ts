@@ -304,6 +304,20 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260828000002_validation_custody_fail_closed.sql",
     migrationsAtRelease: 237,
   },
+  // 0.39.0 froze and ran the seven-county dual-method validation instrument.
+  // Its new contracts and artifacts required no schema change.
+  {
+    tag: "0.39.0",
+    lastMigration: "20260828000002_validation_custody_fail_closed.sql",
+    migrationsAtRelease: 237,
+  },
+  // 0.40.0 adds append-only custody for the exact structural diagnosis bound
+  // to an existing inconclusive rules-v4 assessment and its artifact hashes.
+  {
+    tag: "0.40.0",
+    lastMigration: "20260828000003_model_validation_structural_diagnosis_custody.sql",
+    migrationsAtRelease: 238,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

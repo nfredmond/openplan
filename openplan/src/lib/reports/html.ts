@@ -119,6 +119,14 @@ export type ReportCitedModelRun = {
     comparisonBasisSha256: string;
   } | null;
   validationAssessmentReadFailed?: boolean;
+  validationStructuralDiagnosis?: {
+    assessmentSha256: string;
+    diagnosisSha256: string;
+    findings: string[];
+    unknownFacts: string[];
+    artifactUrl: string | null;
+  } | null;
+  validationStructuralDiagnosisReadFailed?: boolean;
 };
 
 /** A county validation run cited by the report (report_runs.county_run_id). */
@@ -463,6 +471,12 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     : assessment
       ? `Observed-count assessment: ${assessment.outcome} (rules v${assessment.rulesVersion}; planning use ${assessment.planningUse}; partition ${JSON.stringify(assessment.partition)}; comparison-basis SHA-256 ${assessment.comparisonBasisSha256}).${assessment.reasons.length > 0 ? ` ${assessment.reasons.slice(0, 3).join(" ")}` : ""}`
       : "No rules-v4 observed-count comparability assessment is attached; older point-count diagnostics do not establish same-basis validation.";
+  const diagnosis = run.validationStructuralDiagnosis;
+  const diagnosisLine = run.validationStructuralDiagnosisReadFailed
+    ? "Structural diagnosis could not be read; do not treat that lookup failure as evidence that no diagnosis exists."
+    : diagnosis
+      ? `Why this is inconclusive: ${diagnosis.findings.length > 0 ? diagnosis.findings.slice(0, 3).join(" ") : "No structural finding sentence was recorded."} Diagnosis SHA-256 ${diagnosis.diagnosisSha256}.${diagnosis.unknownFacts.length > 0 ? ` Unknown basis facts: ${diagnosis.unknownFacts.join(", ")}.` : ""}`
+      : "No structural diagnosis is attached to this assessment.";
 
   return `<article class="run-card">
     <div class="run-head">
@@ -475,6 +489,7 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     ${kpiLine ? `<p>${esc(kpiLine)}</p>` : `<p class="empty">No KPI summary is recorded for this run.</p>`}
     ${claimTierLine ? `<p class="meta">${esc(claimTierLine)}</p>` : ""}
     <p class="meta">${esc(assessmentLine)}</p>
+    <p class="meta">${esc(diagnosisLine)}</p>
     <p class="meta">${esc(runMode.caveatSummary)}</p>
   </article>`;
 }
