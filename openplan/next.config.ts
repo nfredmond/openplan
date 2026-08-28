@@ -83,6 +83,11 @@ const EMBED_SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/api/models/validation-structural-diagnosis/[...parts]": [
+      "../data/modeling/model-validation-structural-diagnosis-2026-08-28/**/*",
+    ],
+  },
   // Heavy, Node-only document parsers used by the Knowledge Base extraction path
   // (src/lib/knowledge-base/extract.ts). Keep them external so the webpack server
   // build require()s them at runtime instead of bundling pdf.js / mammoth internals.

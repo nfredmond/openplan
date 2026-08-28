@@ -135,9 +135,9 @@ liveDescribe("rules-v4 model validation custody live RLS", () => {
     const mutateCustody = await service.from("modeling_validation_assessments").update({ planning_use: "changed" }).eq("id", custodyId);
     expect(mutateCustody.error?.message).toContain("append-only");
     const mutateArtifact = await service.from("model_run_artifacts").update({ content_hash: "9".repeat(64) }).eq("id", assessmentArtifactId);
-    expect(mutateArtifact.error?.message).toContain("immutable model validation assessment custody");
+    expect(mutateArtifact.error?.message).toContain("immutable model validation custody");
     const deleteArtifact = await service.from("model_run_artifacts").delete().eq("id", outputA);
-    expect(deleteArtifact.error?.message).toContain("immutable model validation assessment custody");
+    expect(deleteArtifact.error?.message).toContain("immutable model validation custody");
   });
 
   it("rolls back every inserted evidence artifact when cross-workspace relinking is refused", async () => {

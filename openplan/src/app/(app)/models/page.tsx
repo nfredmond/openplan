@@ -28,6 +28,8 @@ import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
+import { PublishedStructuralDiagnosisCard } from "@/components/models/published-structural-diagnosis-card";
+import { loadPublishedStructuralDiagnosisStudy } from "@/lib/models/published-structural-diagnosis";
 
 export const metadata = moduleMetadata("Models");
 
@@ -149,6 +151,8 @@ export default async function ModelsPage({
       />
     );
   }
+
+  const publishedStructuralDiagnosis = await loadPublishedStructuralDiagnosisStudy().catch(() => null);
 
   // Scoped to the active workspace — RLS grants ALL memberships, so without
   // the filter a multi-workspace member saw every workspace's models merged
@@ -438,6 +442,8 @@ export default async function ModelsPage({
         currentStepId="model"
         projectId={planningContext.status === "active" ? planningContext.project.id : null}
       />
+
+      <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />
 
       <header className="module-header-grid">
         <article className="module-intro-card">

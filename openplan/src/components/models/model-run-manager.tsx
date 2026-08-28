@@ -1842,7 +1842,7 @@ function ModelRunStagingAndArtifacts({
                 <div>
                   <h5 className="font-semibold">Why this is inconclusive</h5>
                   <p className="mt-1 text-xs">
-                    This artifact diagnoses the frozen evidence. It does not repair matches, average methods,
+                    This diagnosis explains the frozen evidence. It does not repair matches, average methods,
                     calibrate a model, or change the scientific outcome.
                   </p>
                 </div>

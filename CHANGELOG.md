@@ -52,8 +52,10 @@ The existing Models assessment panel now explains “Why this is inconclusive,�
 shows the full diagnosis hash, and downloads the exact artifact. The same hash,
 findings, unknown facts, and unchanged scientific outcome travel into cited
 reports, assistant evidence, and project evidence bundles. First-week job 11
-now requires that visible diagnosis journey. California and nationwide model
-validation remain `partial`.
+now requires that visible diagnosis journey. The Models landing page also shows
+the completed frozen study and provides authenticated, hash-bearing downloads
+of the exact study result, report, and fourteen county/method diagnosis files.
+California and nationwide model validation remain `partial`.
 
 ## 0.39.0 — 2026-08-28
 

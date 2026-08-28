@@ -445,16 +445,20 @@ const EXPECTED = {
   // artifacts and the custody row are written through one service-only RPC.
   // +1 policy/permissive, policy-bearing relation/table/RLS table, and no
   // permissive write.
-  policies: 687,
-  permissive: 441,
+  // 20260828000003 adds the append-only structural-diagnosis custody table.
+  // It has one member SELECT policy and no client write policy; the service
+  // role records it through a binding RPC. +1 policy/permissive,
+  // policy-bearing relation/table/RLS table, and no permissive write.
+  policies: 688,
+  permissive: 442,
   restrictive: 246,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 161,
-  relations: 185,
-  tables: 177,
+  tablesWithPolicies: 162,
+  relations: 186,
+  tables: 178,
   views: 8,
-  rlsEnabledTables: 177,
+  rlsEnabledTables: 178,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

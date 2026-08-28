@@ -1460,6 +1460,27 @@ describe("POST /api/reports/[reportId]/generate", () => {
       data: [{ model_run_id: "model-run-1", claim_status: "calibrated_to_counts" }],
       error: null,
     });
+    modelingDiagnosisOrderMock.mockResolvedValueOnce({
+      data: [{
+        model_run_id: "model-run-1",
+        diagnosis_artifact_id: "diagnosis-artifact-1",
+        assessment_sha256: "a".repeat(64),
+        diagnosis_sha256: "b".repeat(64),
+        created_at: "2026-08-28T18:45:00Z",
+      }],
+      error: null,
+    });
+    agreementArtifactsInMock.mockResolvedValueOnce({
+      data: [{
+        id: "diagnosis-artifact-1",
+        file_url: "run-artifacts/model-runs/model-run-1/structural-diagnosis.json",
+        metadata_json: {
+          findings: ["Four matched links retain recorded zero volume."],
+          unknown_facts: ["model_year", "day_basis"],
+        },
+      }],
+      error: null,
+    });
 
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {
@@ -1491,6 +1512,10 @@ describe("POST /api/reports/[reportId]/generate", () => {
     // no packet. A funder reads this file; only an assertion on the generated
     // HTML proves the disclosure survived the route.
     expect(htmlContent).toContain("Claim tier: Calibrated to counts");
+    expect(htmlContent).toContain("Why this is inconclusive");
+    expect(htmlContent).toContain("Four matched links retain recorded zero volume.");
+    expect(htmlContent).toContain("Unknown basis facts: model_year, day_basis.");
+    expect(htmlContent).toContain("b".repeat(64));
     // The cited county run carries its name, stage, and validation posture.
     expect(htmlContent).toContain("County screening baseline");
     expect(htmlContent).toContain("Validated Screening");

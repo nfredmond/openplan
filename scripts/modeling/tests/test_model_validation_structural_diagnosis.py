@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import inspect
 import shutil
 import sys
 import tempfile
@@ -237,6 +238,13 @@ class RegistryContractTests(unittest.TestCase):
         for county in source_registry["counties"]:
             self.assertNotIn(county["geography_id"], core_text)
             self.assertNotIn(county["geography_id"], runner_text)
+        blind_loop = runner_text.index("# Complete every assignment-blind county stage")
+        output_lookup = runner_text.index('source["readiness_path"].parent / "runs"')
+        self.assertLess(blind_loop, output_lookup)
+        self.assertNotIn(
+            "model_output_path",
+            inspect.signature(diagnosis.build_assignment_blind_diagnosis).parameters,
+        )
 
     def test_contract_schemas_keep_outcome_and_methods_separate(self):
         final_schema = json.loads(

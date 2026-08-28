@@ -15,7 +15,8 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
 **What you need to have done:**
 
 1. Start from the signed-in landing page and use visible navigation to reach
-   Models. Open a model with a completed baseline AequilibraE or behavioral-
+   Models. Review the published seven-county frozen diagnosis card and download
+   its exact study result. Then open a model with a completed baseline AequilibraE or behavioral-
    demand run. If no completed baseline exists, launch one from the visible
    model controls and wait for it to finish.
 2. Open the run's scientific observed-count validation assessment. Identify
