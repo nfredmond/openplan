@@ -251,6 +251,11 @@ class RegistryContractTests(unittest.TestCase):
         self.assertEqual(final_schema["properties"]["scientific_outcome"]["const"], "inconclusive")
         self.assertEqual(final_schema["properties"]["method_aggregation"]["const"], "separate")
         self.assertFalse(blind_schema["properties"]["model_output_bytes_read"]["const"])
+        self.assertIn("assignment_profile", final_schema["properties"]["exact_inputs"]["required"])
+        self.assertEqual(
+            blind_schema["properties"]["exact_inputs"]["required"],
+            ["preregistration", "network", "observation_package", "pre_volume_match_audit"],
+        )
         self.assertEqual(result_schema["properties"]["claims"]["properties"]["california"]["const"], "partial")
         self.assertEqual(result_schema["properties"]["claims"]["properties"]["nationwide"]["const"], "partial")
 

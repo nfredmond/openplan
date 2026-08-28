@@ -15,12 +15,32 @@
     "geography_id": {"type": "string", "minLength": 1},
     "created_at": {"type": "string", "minLength": 1},
     "model_output_bytes_read": {"const": false},
-    "exact_inputs": {"type": "object"},
+    "exact_inputs": {
+      "type": "object", "additionalProperties": false,
+      "required": ["preregistration", "network", "observation_package", "pre_volume_match_audit"],
+      "properties": {
+        "preregistration": {"$ref": "#/$defs/artifact"},
+        "network": {"$ref": "#/$defs/artifact"},
+        "observation_package": {"$ref": "#/$defs/artifact"},
+        "pre_volume_match_audit": {"$ref": "#/$defs/artifact"}
+      }
+    },
     "jurisdictions": {"type": "object"},
     "source_attempts": {"type": "array"},
     "observation": {"type": "object"},
     "matching": {"type": "object"},
     "findings": {"type": "array"},
     "match_changes": {"const": 0}
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
   }
 }

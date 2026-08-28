@@ -776,6 +776,7 @@ def build_method_diagnosis(
             "model_output": model_output_artifact,
             "comparison_basis": basis_artifact,
             "existing_assessment": assessment_artifact,
+            "assignment_profile": _artifact(assignment_profile_path, repo_root),
         },
         "assignment_blind_summary": {
             "artifact": _artifact(assignment_blind_path, repo_root),

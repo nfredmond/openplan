@@ -19,8 +19,23 @@
     "geography_id": {"type": "string", "minLength": 1},
     "method": {"enum": ["aequilibrae", "activitysim"]},
     "created_at": {"type": "string", "minLength": 1},
-    "release_source": {"type": "object"},
-    "source_validation_release": {"type": "object"},
+    "release_source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["app_version", "git_sha"],
+      "properties": {
+        "app_version": {"type": "string", "minLength": 1},
+        "git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      }
+    },
+    "source_validation_release": {
+      "type": "object", "additionalProperties": false,
+      "required": ["app_version", "git_sha", "study_result_sha256"],
+      "properties": {
+        "app_version": {"type": "string", "minLength": 1},
+        "git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "study_result_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
     "scientific_outcome": {"const": "inconclusive"},
     "claim_tier_changed": {"const": false},
     "match_changes": {"const": 0},
@@ -29,7 +44,26 @@
     "acceptance_rule_created": {"const": false},
     "acceptance_holdout_opened": {"const": false},
     "method_aggregation": {"const": "separate"},
-    "exact_inputs": {"type": "object"},
+    "exact_inputs": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "preregistration", "network", "observation_package",
+        "pre_volume_match_audit", "assignment_blind_diagnosis",
+        "model_output", "comparison_basis", "existing_assessment",
+        "assignment_profile"
+      ],
+      "properties": {
+        "preregistration": {"$ref": "#/$defs/artifact"},
+        "network": {"$ref": "#/$defs/artifact"},
+        "observation_package": {"$ref": "#/$defs/artifact"},
+        "pre_volume_match_audit": {"$ref": "#/$defs/artifact"},
+        "assignment_blind_diagnosis": {"$ref": "#/$defs/artifact"},
+        "model_output": {"$ref": "#/$defs/artifact"},
+        "comparison_basis": {"$ref": "#/$defs/artifact"},
+        "existing_assessment": {"$ref": "#/$defs/artifact"},
+        "assignment_profile": {"$ref": "#/$defs/artifact"}
+      }
+    },
     "assignment_blind_summary": {
       "type": "object",
       "required": ["artifact", "model_output_bytes_read", "observation", "matching"],
@@ -46,7 +80,45 @@
         "records": {"type": "array"}
       }
     },
-    "evidence_ledger": {"type": "object"},
+    "evidence_ledger": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "model_year", "day_basis", "assignment_period", "direction",
+        "vehicle_pce_basis", "assignment_profile", "population_vintage",
+        "coefficients"
+      ],
+      "properties": {
+        "model_year": {"$ref": "#/$defs/ledgerFact"},
+        "day_basis": {"$ref": "#/$defs/ledgerFact"},
+        "assignment_period": {"$ref": "#/$defs/ledgerFact"},
+        "direction": {"$ref": "#/$defs/ledgerFact"},
+        "vehicle_pce_basis": {"$ref": "#/$defs/ledgerFact"},
+        "assignment_profile": {"$ref": "#/$defs/ledgerFact"},
+        "population_vintage": {"$ref": "#/$defs/ledgerFact"},
+        "coefficients": {"$ref": "#/$defs/ledgerFact"}
+      }
+    },
     "findings": {"type": "array"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "ledgerFact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "value", "evidence"],
+      "properties": {
+        "status": {"enum": ["proved", "unknown"]},
+        "value": {},
+        "evidence": {"type": "array"}
+      }
+    }
   }
 }
