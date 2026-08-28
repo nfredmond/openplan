@@ -10,12 +10,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 MODELING = ROOT / "scripts" / "modeling"
-if str(MODELING) not in sys.path:
-    sys.path.insert(0, str(MODELING))
+TESTS = Path(__file__).resolve().parent
+for directory in (MODELING, TESTS):
+    if str(directory) not in sys.path:
+        sys.path.insert(0, str(directory))
 
 import run_development_validation_study as study
 import validation_instrument as instrument
-from scripts.modeling.tests.test_validation_instrument import NOW, observation, write_boundary, write_network
+from test_validation_instrument import NOW, observation, write_boundary, write_network
 
 
 class StudyFixture(unittest.TestCase):
