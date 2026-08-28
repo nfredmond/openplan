@@ -4,6 +4,8 @@ Date: 2026-08-28
 
 Release: v0.39.0
 
+Release-source Git SHA: `272f731de72a8e46af6bd2f5444d16a0b27cf2e3`
+
 Study: `california-seven-county-observed-count-instrument-v2`
 
 ## Decision
@@ -57,10 +59,12 @@ Unavailable and empty states were never conflated.
 
 The machine-readable record is
 `data/modeling/development-validation-study-2026-08-28/study-result.json`.
-Per-method comparison bases and assessments are stored under the adjacent
-`results/` directory. They bind the preregistration, network, observation
-package, pre-volume audit, model output, basis, assessment, Git SHA, and app
-version hashes. Exact downloaded source bytes, county network databases, and
+Per-method validation input bundles, comparison bases, and assessments are
+stored under the adjacent `results/` directory. The assessment's exact-input
+hashes now match the downloadable artifact bytes, and the machine-readable
+result binds the preregistration, network, observation package, pre-volume
+audit, validation input bundle, model output, basis, assessment, source Git
+SHA, and app version. Exact downloaded source bytes, county network databases, and
 model workspaces remain in local frozen custody and are omitted from Git
 because they total several gigabytes; their SHA-256 manifests are tracked.
 

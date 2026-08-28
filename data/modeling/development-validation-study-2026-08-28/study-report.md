@@ -1,7 +1,7 @@
 # Development validation instrument result
 
 Date: 2026-08-28
-Git SHA: `ba54f8eb0ce3ba5b3332df666af6d8d219a3d8cf`
+Git SHA: `272f731dda38c8f5fee00cc075b5a5841fc223b1`
 OpenPlan: `0.39.0`
 
 ## Decision
@@ -57,4 +57,4 @@ AequilibraE and ActivitySim remain separate. Their values are not averaged.
 
 ## Bound artifacts
 
-Every method result binds the release Git SHA and version plus the exact preregistration, network, observation package, match audit, model output, comparison basis, and assessment hashes in `study-result.json`.
+Every method result binds the release-source Git SHA and version plus the exact preregistration, network, observation package, match audit, validation input bundle, model output, comparison basis, and assessment hashes in `study-result.json`.
