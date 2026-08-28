@@ -1,10 +1,13 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
+import { gunzip } from "node:zlib";
 
 export const COMPARABLE_STUDY_SCHEMA = "openplan.comparable-observation-study-result.v1";
 const STUDY_DIRECTORY = "data/modeling/comparable-observation-study-2026-08-28";
 const METHODS = ["aequilibrae", "activitysim"] as const;
+const gunzipAsync = promisify(gunzip);
 
 export type ComparableMethod = (typeof METHODS)[number];
 
@@ -45,6 +48,32 @@ function stringRecord(value: unknown): Record<string, string> {
 
 function digest(bytes: Buffer): string {
   return createHash("sha256").update(bytes).digest("hex");
+}
+
+async function readPublishedArtifact(relativePath: string): Promise<Buffer> {
+  const absolutePath = path.join(root(), relativePath);
+  try {
+    return await readFile(absolutePath);
+  } catch (error) {
+    if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+    return gunzipAsync(await readFile(`${absolutePath}.gz`));
+  }
+}
+
+/** Refuse manifest-selected bytes unless their committed hash is present and exact. */
+export function verifyPublishedComparableObservationHash(
+  bytes: Buffer,
+  expected: string | null,
+  requiresManifestHash: boolean,
+): string {
+  if (requiresManifestHash && !expected) {
+    throw new Error("Published comparable-observation manifest omitted an artifact hash.");
+  }
+  const sha256 = digest(bytes);
+  if (expected && sha256 !== expected) {
+    throw new Error("Published comparable-observation bytes changed.");
+  }
+  return sha256;
 }
 
 /** Load the committed v0.41 result while retaining v0.40 through its separate loader. */
@@ -88,6 +117,7 @@ export async function readPublishedComparableObservationDownload(parts: string[]
   const study = await loadPublishedComparableObservationStudy();
   let relativePath: string | null = null;
   let expected: string | null = null;
+  let requiresManifestHash = false;
   let contentType = "application/json";
   if (parts.length === 1 && parts[0] === "study-result.json") {
     relativePath = `${STUDY_DIRECTORY}/study-result.json`;
@@ -95,6 +125,7 @@ export async function readPublishedComparableObservationDownload(parts: string[]
     relativePath = `${STUDY_DIRECTORY}/study-report.md`;
     contentType = "text/markdown; charset=utf-8";
   } else if (parts.length === 3 && /^06\d{3}$/.test(parts[0]) && METHODS.includes(parts[1] as ComparableMethod)) {
+    requiresManifestHash = true;
     const record = study.diagnoses.find((item) => item.geographyId === parts[0] && item.method === parts[1]);
     const files: Record<string, [string, string | null]> = record ? {
       "validation-input-bundle-v2.json": [`${STUDY_DIRECTORY}/results/${parts[0]}/${parts[1]}/validation-input-bundle-v2.json`, record.bindings.input_bundle_sha256 ?? null],
@@ -105,6 +136,7 @@ export async function readPublishedComparableObservationDownload(parts: string[]
     const selected = files[parts[2]];
     if (selected) [relativePath, expected] = selected;
   } else if (parts.length === 3 && parts[1] === "instrument" && /^06\d{3}$/.test(parts[0])) {
+    requiresManifestHash = true;
     const record = study.diagnoses.find((item) => item.geographyId === parts[0]);
     const files: Record<string, [string, string | null]> = record ? {
       "observation-package-v2.json": [`${STUDY_DIRECTORY}/instruments/${parts[0]}/observation-package-v2.json`, record.bindings.observation_package_sha256 ?? null],
@@ -113,9 +145,8 @@ export async function readPublishedComparableObservationDownload(parts: string[]
     const selected = files[parts[2]];
     if (selected) [relativePath, expected] = selected;
   }
-  if (!relativePath || !expected) return null;
-  const bytes = await readFile(path.join(root(), relativePath));
-  const sha256 = digest(bytes);
-  if (sha256 !== expected) throw new Error("Published comparable-observation bytes changed.");
+  if (!relativePath) return null;
+  const bytes = await readPublishedArtifact(relativePath);
+  const sha256 = verifyPublishedComparableObservationHash(bytes, expected, requiresManifestHash);
   return { bytes, contentType, filename: parts.at(-1) ?? "artifact.json", sha256 };
 }

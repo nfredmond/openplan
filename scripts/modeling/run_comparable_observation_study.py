@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import sys
 from collections import Counter
@@ -28,6 +29,7 @@ DIAGNOSIS_SCHEMA = "openplan.model-validation-structural-diagnosis.v2"
 METHODS = ("aequilibrae", "activitysim")
 OLD_ROOT = Path("data/modeling/development-validation-study-2026-08-28")
 DEFAULT_OUTPUT = Path("data/modeling/comparable-observation-study-2026-08-28")
+COMPRESS_AT_REST_BYTES = 1_000_000
 
 
 class StudyRefused(RuntimeError):
@@ -44,6 +46,16 @@ def load(path: Path) -> dict[str, Any]:
 def write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(rules.canonical_json(value))
+
+
+def compress_release_artifacts(output_root: Path) -> None:
+    """Store large JSON compactly while preserving its exact logical bytes."""
+    for path in sorted(output_root.rglob("*.json")):
+        if path.name == "study-result.json" or path.stat().st_size < COMPRESS_AT_REST_BYTES:
+            continue
+        compressed_path = path.with_suffix(f"{path.suffix}.gz")
+        compressed_path.write_bytes(gzip.compress(path.read_bytes(), compresslevel=9, mtime=0))
+        path.unlink()
 
 
 def verify_protocol(registry_path: Path, registry: Mapping[str, Any]) -> None:
@@ -358,6 +370,7 @@ def main() -> int:
     if len(diagnoses) != 14:
         raise StudyRefused("The study must publish fourteen separate diagnosis records")
     write_study_result(registry_path, output_root, diagnoses, args.created_at, release)
+    compress_release_artifacts(output_root)
     print(f"wrote {len(diagnoses)} diagnoses to {output_root}")
     return 0
 

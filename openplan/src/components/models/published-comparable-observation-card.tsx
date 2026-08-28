@@ -42,6 +42,7 @@ export function PublishedComparableObservationCard({
                 <Link className="underline" href={`/api/models/comparable-observation-study/${geographyId}/instrument/observation-package-v2.json`}>observations</Link>
                 <Link className="underline" href={`/api/models/comparable-observation-study/${geographyId}/instrument/pre-volume-match-audit-v2.json`}>match audit</Link>
                 {(["aequilibrae", "activitysim"] as const).flatMap((method) => [
+                  <Link key={`${method}-input-bundle`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/validation-input-bundle-v2.json`}>{method} input bundle</Link>,
                   <Link key={`${method}-basis`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/comparison-basis-v2.json`}>{method} basis</Link>,
                   <Link key={`${method}-assessment`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/assessment-v2.json`}>{method} assessment</Link>,
                   <Link key={`${method}-diagnosis`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/structural-diagnosis-v2.json`}>{method} diagnosis</Link>,
