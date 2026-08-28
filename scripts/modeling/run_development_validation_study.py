@@ -234,6 +234,44 @@ def _proven_object(value: Any) -> dict[str, Any] | str:
     return dict(value) if isinstance(value, Mapping) else "unknown"
 
 
+def _study_artifact(path: Path, repo_root: Path) -> dict[str, Any]:
+    try:
+        path.relative_to(repo_root)
+    except ValueError:
+        return instrument.artifact_record(path)
+    return instrument.artifact_record(path, relative_to=repo_root)
+
+
+def build_validation_input_bundle(
+    repo_root: Path,
+    registry_path: Path,
+    output_root: Path,
+    geography_id: str,
+    custody: Mapping[str, Any],
+    *,
+    created_at: str,
+) -> dict[str, Any]:
+    """Bind the exact assignment-blind inputs that both methods must reuse."""
+    package_path = Path(custody["observation_package"])
+    instrument_dir = package_path.parent
+    observations_csv = instrument_dir / "observations.csv"
+    if not observations_csv.is_file():
+        raise StudyRefused(f"Frozen compatibility CSV is missing for {geography_id}")
+    return {
+        "schema": "openplan.validation-input-bundle.v1",
+        "study_id": str(_load(registry_path)["study_id"]),
+        "geography_id": geography_id,
+        "frozen_at": created_at,
+        "model_output_bytes_read": False,
+        "preregistration": _study_artifact(registry_path, repo_root),
+        "network": _study_artifact(Path(custody["network"]), repo_root),
+        "observation_package": _study_artifact(package_path, repo_root),
+        "compatibility_csv": _study_artifact(observations_csv, repo_root),
+        "pre_volume_match_audit": _study_artifact(Path(custody["match_audit"]), repo_root),
+        "readiness_gate": _study_artifact(output_root / "instrument-readiness.json", repo_root),
+    }
+
+
 def build_comparison_basis(
     method: str,
     geography_id: str,
@@ -349,6 +387,11 @@ def evaluate_runs(
             custody["match_audit"], custody["network"], custody["observation_package"], registry_path
         )
         observations = instrument.bind_match_audit_to_observations(package, audit)
+        input_bundle = build_validation_input_bundle(
+            repo_root, registry_path, output_root, geography_id, custody, created_at=created_at
+        )
+        input_bundle_bytes = instrument.canonical_json_bytes(input_bundle)
+        input_bundle_sha256 = instrument.sha256_bytes(input_bundle_bytes)
         methods = {}
         for method in METHODS:
             run_dir = runs[geography_id][method]
@@ -367,20 +410,29 @@ def evaluate_runs(
                 partition={"kind": "development", "id": geography_id},
                 assessment_id=f"{geography_id}:{method}:assessment-v1",
                 created_at=created_at,
+                validation_input_bundle_sha256=input_bundle_sha256,
             )
             if assessment["scientific_outcome"] != "inconclusive":
                 raise StudyRefused("Development study has no frozen acceptance rule and cannot emit pass or fail")
             evidence_dir.mkdir(parents=True, exist_ok=True)
             basis_path = evidence_dir / "comparison-basis.json"
             assessment_path = evidence_dir / "assessment.json"
-            basis_path.write_bytes(instrument.canonical_json_bytes(basis))
+            input_bundle_path = evidence_dir / "validation-input-bundle.json"
+            input_bundle_path.write_bytes(input_bundle_bytes)
+            # The rules-v4 core hashes the canonical JSON payload itself. Write
+            # those exact bytes so the assessment's basis hash is also the hash
+            # of the downloadable artifact, not a near-identical newline variant.
+            basis_path.write_text(model_validation_core.canonical_json(basis))
             assessment_path.write_bytes(instrument.canonical_json_bytes(assessment))
+            if assessment["exact_inputs"]["comparison_basis_sha256"] != instrument.sha256_file(basis_path):
+                raise StudyRefused(f"Persisted comparison basis hash changed for {geography_id}/{method}")
             methods[method] = {
                 "run_id": _run_name(geography_id, method),
                 "network_sha256": custody["network_sha256"],
                 "observation_package_sha256": custody["observation_package_sha256"],
                 "match_audit_sha256": custody["match_audit_sha256"],
                 "model_output_sha256": instrument.sha256_file(output_path),
+                "validation_input_bundle_sha256": instrument.sha256_file(input_bundle_path),
                 "comparison_basis_sha256": instrument.sha256_file(basis_path),
                 "assessment_sha256": instrument.sha256_file(assessment_path),
                 "scientific_outcome": assessment["scientific_outcome"],

@@ -416,6 +416,7 @@ def assess_validation(
     partition: Mapping[str, Any],
     assessment_id: str,
     created_at: str | None = None,
+    validation_input_bundle_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Assess exact observations against an exact model artifact.
 
@@ -460,18 +461,23 @@ def assess_validation(
 
     observation_hashes = [sha256_payload(observation) for observation in observations]
     model_artifact = basis["model_output_artifact"]
+    exact_inputs = {
+        "observation_sha256": observation_hashes,
+        "comparison_basis_sha256": sha256_payload(basis),
+        "model_output_artifact_id": model_artifact["artifact_id"],
+        "model_output_sha256": model_artifact["sha256"],
+        "network_state_hashes": dict(basis["network_state_hashes"]),
+    }
+    if validation_input_bundle_sha256 is not None:
+        if not _hash(validation_input_bundle_sha256):
+            raise ContractError("validation_input_bundle_sha256 must be an exact SHA-256")
+        exact_inputs["validation_input_bundle_sha256"] = validation_input_bundle_sha256
     return {
         "schema": ASSESSMENT_SCHEMA,
         "assessment_id": assessment_id,
         "rules_version": VALIDATION_RULES_VERSION,
         "created_at": created_at or datetime.now(timezone.utc).isoformat(),
-        "exact_inputs": {
-            "observation_sha256": observation_hashes,
-            "comparison_basis_sha256": sha256_payload(basis),
-            "model_output_artifact_id": model_artifact["artifact_id"],
-            "model_output_sha256": model_artifact["sha256"],
-            "network_state_hashes": dict(basis["network_state_hashes"]),
-        },
+        "exact_inputs": exact_inputs,
         "planning_use": basis["planning_use"],
         "partition": dict(partition),
         "comparability_findings": {row["observation_id"]: row["comparability"] for row in rows},

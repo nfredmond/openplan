@@ -178,12 +178,27 @@ class EvaluationTests(StudyFixture):
         self.assertEqual(result["scientific_outcome"], "inconclusive")
         for method in study.METHODS:
             basis_path = self.output_root / "results" / "fixture" / method / "comparison-basis.json"
+            input_path = self.output_root / "results" / "fixture" / method / "validation-input-bundle.json"
+            assessment_path = self.output_root / "results" / "fixture" / method / "assessment.json"
             basis = json.loads(basis_path.read_text())
+            input_bundle = json.loads(input_path.read_text())
+            assessment = json.loads(assessment_path.read_text())
             self.assertEqual(basis["model_base_year"], "unknown")
             self.assertEqual(basis["day_basis"], "unknown")
             self.assertEqual(basis["coefficient_package"], "unknown")
             self.assertEqual(basis["population_vintage"], "unknown")
             self.assertEqual(basis["acceptance_rule"], "unknown")
+            self.assertEqual(input_bundle["schema"], "openplan.validation-input-bundle.v1")
+            self.assertFalse(input_bundle["model_output_bytes_read"])
+            self.assertNotIn("modeled_volume", json.dumps(input_bundle).lower())
+            self.assertEqual(
+                assessment["exact_inputs"]["validation_input_bundle_sha256"],
+                instrument.sha256_file(input_path),
+            )
+            self.assertEqual(
+                assessment["exact_inputs"]["comparison_basis_sha256"],
+                instrument.sha256_file(basis_path),
+            )
 
     def test_different_run_network_is_refused_before_evaluation(self):
         def wrong_network(command, cwd):
