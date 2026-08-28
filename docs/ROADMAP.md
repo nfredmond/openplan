@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: cb445c4b
-current_release: v0.38.0
+current_release: v0.38.1
 review_by: 2026-09-25
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.38.0
+## Current truth at v0.38.1
 
 Strong foundations already exist:
 

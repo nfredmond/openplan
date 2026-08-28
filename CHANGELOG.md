@@ -19,6 +19,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.38.1 — 2026-08-28
+
+The California instrument-readiness test now resolves its script import from
+the test file's location. This fixes the modeling-script CI job when it runs
+each suite from `scripts/modeling/tests`; v0.38.0's product behavior and data
+contracts are unchanged.
+
 ## 0.38.0 — 2026-08-28
 
 **Migrations required.** Run `npm exec -- supabase migration up --linked`

@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-28 against the v0.38.0 candidate.
+**Reviewed:** 2026-08-28 against the v0.38.1 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 

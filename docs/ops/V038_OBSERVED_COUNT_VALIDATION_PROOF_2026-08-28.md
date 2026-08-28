@@ -69,7 +69,7 @@ was applied alone and restored by editing the exact text back.
 ## Release gates
 
 - `npm run qa:gate`: passed.
-- Product direction: current through 2026-09-25 for v0.38.0.
+- Product direction: current through 2026-09-25 for v0.38.1.
 - Application tests: 1,135 files passed; 12,708 tests passed; 7 files and
   91 tests skipped by their declared conditions.
 - Live database isolation: 14 files and 121 tests passed, including the
@@ -84,6 +84,11 @@ The final route regression repair also proved that an unavailable optional
 subdivision resolver freezes an explicit `unresolved` geography state instead
 of crashing the run. The separate project tract-readiness check still blocks a
 launch when the project cannot be modeled.
+
+The first remote v0.38.0 matrix exposed that the new development-study test
+imported its sibling script only when launched from the parent directory. The
+test now resolves that directory explicitly and v0.38.1 retains the failed
+v0.38.0 tag rather than rewriting published history.
 
 ## Scientific boundary
 
