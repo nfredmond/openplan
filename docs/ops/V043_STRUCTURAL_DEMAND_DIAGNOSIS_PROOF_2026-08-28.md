@@ -1,8 +1,8 @@
 # v0.43 structural demand and loading diagnosis proof
 
-Release-source SHA: `48fec76789b755f24cde7846dc2ae786eeee0de5`
+Release-source SHA: `e25ae7c928f437394fabfe71bc0208b947ae437e`
 
-Evidence-binding commit: `69a60bf6210c6ae7ddf3771a4d49c09efb82ce4e`
+Evidence-binding commit: `2c8fe4a95040815e80f002bd6cbce5d75933a0b9`
 
 App version: `0.43.0`
 
@@ -44,10 +44,12 @@ Disposition: **release candidate only; tag withheld**
 - Remote CI run `33239057013` passed the modeling, worker, shuffled-order, and
   full QA jobs. Remote RLS run `33239057003`, upgrade rehearsal `33238809083`,
   and live modeling-source contract `33238809039` also passed.
-- Two earlier remote failures exposed test isolation defects: the custody test
-  inherited local Supabase variables, and the modeling unit suite inherited
-  local large study inputs. Both now pass from a clean checkout; neither failure
-  was suppressed or reclassified.
+- Three remote failures exposed hidden assumptions rather than being rerun and
+  ignored: the custody test inherited local Supabase variables, the modeling
+  unit suite inherited local large study inputs, and JSZip gave auto-created
+  evidence-bundle directories the wall-clock time. The unit suites now pass in
+  a clean checkout, and 12 repeated evidence-bundle suites crossed timestamp
+  boundaries with byte-identical archives.
 
 ## Remaining release blockers
 
