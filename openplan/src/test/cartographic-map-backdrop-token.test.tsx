@@ -80,4 +80,28 @@ describe("CartographicMapBackdrop Mapbox token guard", () => {
     await waitFor(() => expect(mockMapConstructor).toHaveBeenCalledTimes(1));
     expect(mockSetStyle).not.toHaveBeenCalled();
   });
+
+  it("keeps live map errors visible but ignores a fetch cancellation after disposal", async () => {
+    process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = "pk.public-test-token";
+    delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const { CartographicMapBackdrop } = await importBackdrop();
+    const view = render(<CartographicMapBackdrop />);
+    await waitFor(() => expect(mockMapConstructor).toHaveBeenCalledTimes(1));
+
+    const errorHandler = mockMap.on.mock.calls.find(([eventName]) => eventName === "error")?.[1] as
+      | ((event: { error: Error }) => void)
+      | undefined;
+    expect(errorHandler).toBeTypeOf("function");
+
+    const liveFailure = new Error("Live style failed");
+    errorHandler?.({ error: liveFailure });
+    expect(consoleError).toHaveBeenCalledWith(liveFailure);
+
+    consoleError.mockClear();
+    view.unmount();
+    errorHandler?.({ error: new Error("Failed to fetch https://api.mapbox.com/styles/v1/mapbox/dark-v11") });
+    expect(consoleError).not.toHaveBeenCalled();
+  });
 });

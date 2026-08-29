@@ -18,6 +18,7 @@ const projectId = '32f5ef20-c0cf-46a9-b103-322938ca23ac';
 const projectName = 'Example Corridor Improvements';
 const reportTitle = 'Example Corridor Improvements Board / Binder';
 const expectedRegistryHash = '2a2fe3c38a86eb28daa2a8dbaa4e48f2ead5ffc7460dc6f37bd7a6132d52a7dc';
+const readinessDownloadLinkName = 'Download exact local support JSON';
 
 const exemplars = {
   'US-OR': {
@@ -96,7 +97,7 @@ async function visibleStatuses(page) {
 
 async function downloadReadiness(page, jurisdictionId, suffix) {
   const event = page.waitForEvent('download');
-  await page.getByRole('link', { name: 'Download exact local support JSON', exact: true }).click();
+  await page.getByRole('link', { name: readinessDownloadLinkName, exact: true }).click();
   const download = await event;
   const filePath = path.join(outputDir, `v042-${suffix}-jurisdiction-readiness.json`);
   await download.saveAs(filePath);
@@ -125,7 +126,7 @@ async function capture(page, name) {
 }
 
 async function captureMobileDownload(page, name) {
-  const link = page.getByRole('link', { name: 'Download exact readiness JSON', exact: true });
+  const link = page.getByRole('link', { name: readinessDownloadLinkName, exact: true });
   await link.scrollIntoViewIfNeeded();
   const box = await link.boundingBox();
   assertOk(box && box.x >= 0 && box.y >= 0 && box.x + box.width <= 390 && box.y + box.height <= 780, `${name} download is covered or outside the mobile viewport: ${JSON.stringify(box)}.`);

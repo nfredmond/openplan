@@ -605,6 +605,17 @@ export function CartographicMapBackdrop({
       dragRotate: false,
     });
     appliedStyleRef.current = styleUrl;
+    let disposed = false;
+
+    // Mapbox reports an aborted style request as an unhandled console error
+    // when a real page navigation removes the map mid-fetch. That is teardown,
+    // not a failed live map. Keep every live-map error visible while ignoring
+    // only the fetch cancellation emitted after this instance is disposed.
+    map.on("error", (event) => {
+      const error = event.error;
+      if (disposed && /failed to fetch/i.test(error?.message ?? "")) return;
+      console.error(error);
+    });
 
     didInitialFitRef.current = false;
     userMovedMapRef.current = false;
@@ -625,6 +636,7 @@ export function CartographicMapBackdrop({
     });
 
     return () => {
+      disposed = true;
       registerMapControls(null);
       map.remove();
       mapRef.current = null;
