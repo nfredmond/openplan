@@ -96,7 +96,7 @@ async function visibleStatuses(page) {
 
 async function downloadReadiness(page, jurisdictionId, suffix) {
   const event = page.waitForEvent('download');
-  await page.getByRole('link', { name: 'Download exact readiness JSON', exact: true }).click();
+  await page.getByRole('link', { name: 'Download exact local support JSON', exact: true }).click();
   const download = await event;
   const filePath = path.join(outputDir, `v042-${suffix}-jurisdiction-readiness.json`);
   await download.saveAs(filePath);
