@@ -25,6 +25,11 @@ import run_structural_demand_diagnosis as runner
 NOW = "2026-08-28T20:00:00Z"
 HASH = hashlib.sha256(b"fixture").hexdigest()
 REGISTRY = ROOT / "scripts/modeling/development/california_structural_demand_study.v4.json"
+PUBLISHED_AUDIT = ROOT / "data/modeling/structural-demand-diagnosis-study-2026-08-28/results/06007/aequilibrae/model-structural-input-audit-v1.json"
+
+
+def _published_audit() -> dict:
+    return json.loads(PUBLISHED_AUDIT.read_text())
 
 
 def _write_matrix(path: Path, ids: list[int], values: list[list[float]]) -> None:
@@ -98,7 +103,9 @@ def test_disconnected_components_one_way_and_minor_roads_remain_visible():
 
 
 def test_registry_is_adapter_driven_and_keeps_unknown_lodes_and_separate_methods():
-    registry = runner.verify_registry(REGISTRY)
+    # Registry semantics are checkout-portable even though its large frozen
+    # input packages are retained outside Git and verified by the study runner.
+    registry = json.loads(REGISTRY.read_text())
     assert registry["methods"] == ["aequilibrae", "activitysim"]
     assert len(registry["geographies"]) == 7
     assert all(item["country"] in registry["adapters"] for item in registry["geographies"])
@@ -127,7 +134,9 @@ def test_unsupported_country_and_mixed_vintage_cannot_sneak_into_registry():
         else:
             raise AssertionError("unsupported registry geography was accepted")
     registry = json.loads(REGISTRY.read_text())
-    methods = registry["geographies"][1]["methods"]
+    # Mutate the first method record so the registry refuses the invented fact
+    # before it reaches intentionally external large-file custody.
+    methods = registry["geographies"][0]["methods"]
     methods["aequilibrae"]["source_vintages"]["lodes"]["vintage"] = "2021"
     methods["activitysim"]["source_vintages"]["lodes"]["vintage"] = "2022"
     assert methods["aequilibrae"]["source_vintages"] != methods["activitysim"]["source_vintages"]
@@ -143,18 +152,8 @@ def test_unsupported_country_and_mixed_vintage_cannot_sneak_into_registry():
 
 
 def test_audit_validation_rejects_invented_through_share_dropped_crossings_and_swallowed_unreachable():
-    registry = runner.verify_registry(REGISTRY)
-    geography = registry["geographies"][0]
-    method_record = geography["methods"]["aequilibrae"]
-    artifacts = method_record["artifacts"]
-    value = audit.build_structural_input_audit(
-        repo_root=ROOT, audit_id="mutation-fixture", geography={key: geography[key] for key in ("geography_id", "name", "country", "subdivision", "county")}, method="aequilibrae",
-        registry_path=REGISTRY, predecessor_registry_path=runner.stored_path(registry["predecessor"]),
-        observation_package_path=runner.stored_path(artifacts["observation_package_v2"]), match_audit_path=runner.stored_path(artifacts["pre_volume_match_audit_v2"]),
-        network_path=runner.stored_path(artifacts["network"]), boundary_path=runner.stored_path(artifacts["boundary"]), zone_attributes_path=runner.stored_path(artifacts["zone_attributes"]),
-        od_matrix_path=runner.stored_path(artifacts["od_matrix"]), demand_layers_path=runner.stored_path(artifacts["demand_layers"]), assignment_profile_path=runner.stored_path(artifacts["assignment_profile"]),
-        network_setup_summary_path=runner.stored_path(artifacts["network_setup_summary"]), source_vintages=method_record["source_vintages"], person_to_vehicle_conversion=method_record["person_to_vehicle_conversion"], created_at=NOW, release={"version": "0.43.0", "sha": HASH},
-    )
+    value = _published_audit()
+    audit.validate_structural_input_audit(value)
     for mutate, expected in (
         (lambda item: item["external_and_through_travel"].__setitem__("through_share_evidence", "plausible"), "invented"),
         (lambda item: item["external_and_through_travel"].__setitem__("dropped_crossings", []), "crossings"),
@@ -171,22 +170,9 @@ def test_audit_validation_rejects_invented_through_share_dropped_crossings_and_s
             raise AssertionError(f"structural mutation survived: {expected}")
 
 
-def test_real_frozen_audit_covers_crossings_caps_pairing_connectors_and_conservation():
-    registry = runner.verify_registry(REGISTRY)
-    geography = registry["geographies"][0]
-    method = "aequilibrae"
-    method_record = geography["methods"][method]
-    artifacts = method_record["artifacts"]
-    value = audit.build_structural_input_audit(
-        repo_root=ROOT, audit_id="fixture", geography={key: geography[key] for key in ("geography_id", "name", "country", "subdivision", "county")}, method=method,
-        registry_path=REGISTRY, predecessor_registry_path=runner.stored_path(registry["predecessor"]),
-        observation_package_path=runner.stored_path(artifacts["observation_package_v2"]), match_audit_path=runner.stored_path(artifacts["pre_volume_match_audit_v2"]),
-        network_path=runner.stored_path(artifacts["network"]), boundary_path=runner.stored_path(artifacts["boundary"]),
-        zone_attributes_path=runner.stored_path(artifacts["zone_attributes"]), od_matrix_path=runner.stored_path(artifacts["od_matrix"]),
-        demand_layers_path=runner.stored_path(artifacts["demand_layers"]), assignment_profile_path=runner.stored_path(artifacts["assignment_profile"]),
-        network_setup_summary_path=runner.stored_path(artifacts["network_setup_summary"]), source_vintages=method_record["source_vintages"], person_to_vehicle_conversion=method_record["person_to_vehicle_conversion"], created_at=NOW,
-        release={"version": "0.43.0", "sha": HASH},
-    )
+def test_published_frozen_audit_covers_crossings_caps_pairing_connectors_and_conservation():
+    value = _published_audit()
+    audit.validate_structural_input_audit(value)
     external = value["external_and_through_travel"]
     loading = value["network_loading_readiness"]
     distribution = value["demand_distribution"]
@@ -279,22 +265,59 @@ def test_method_comparison_keeps_values_differences_and_ratios_without_average()
 def test_published_smoke_proves_all_audits_precede_output_and_hashes_are_exact():
     with tempfile.TemporaryDirectory() as temporary:
         output = Path(temporary) / "study"
+        registry = json.loads(REGISTRY.read_text())
+        # The checkout-portable sequencing proof does not open the large local
+        # study archive. Fourteen tiny method records exercise the runner seam;
+        # the committed artifact hashes are checked independently below.
+        registry["geographies"] = [
+            {
+                "geography_id": f"99{index:03d}", "name": f"Fixture {index}",
+                "country": "US", "subdivision": "99", "county": f"{index:03d}",
+                "methods": {
+                    method: {
+                        "artifacts": {
+                            key: ({"sha256": HASH} if key == "model_output" else {})
+                            for key in (
+                                "observation_package_v2", "pre_volume_match_audit_v2",
+                                "network", "boundary", "zone_attributes", "od_matrix",
+                                "demand_layers", "assignment_profile",
+                                "network_setup_summary", "v041_diagnosis", "model_output",
+                            )
+                        },
+                        "source_vintages": {},
+                        "person_to_vehicle_conversion": "fixture",
+                    }
+                    for method in diagnosis.METHODS
+                },
+            }
+            for index in range(7)
+        ]
         original_audit = runner.structural_audit.build_structural_input_audit
         original_diagnosis = runner.diagnosis_v3.build_structural_diagnosis
+        original_verify_registry = runner.verify_registry
         completed_audits = 0
         def counted_audit(**kwargs):
             nonlocal completed_audits
-            value = original_audit(**kwargs)
             completed_audits += 1
-            return value
+            return {"method": kwargs["method"], "fixture": True}
         def guarded_diagnosis(**kwargs):
             assert completed_audits == 14, "model output opened before every input audit passed"
-            return original_diagnosis(**kwargs)
+            method = kwargs["audit"]["method"]
+            return {
+                "schema": diagnosis.DIAGNOSIS_SCHEMA,
+                "method": method,
+                "scientific_outcome": "inconclusive",
+                "records": [{"observation_id": "zero", "classification": "unloaded", "modeled_value": 0}],
+                "record_coverage": {key: int(key == "unloaded") for key in ("loaded", "unloaded", "unreachable", "excluded", "ambiguous", "unsupported", "missing_output")},
+                "network_loading": {"output_link_records": 1, "loaded_links": 0, "unloaded_links": 1},
+            }
+        runner.verify_registry = lambda _path: registry
         runner.structural_audit.build_structural_input_audit = counted_audit
         runner.diagnosis_v3.build_structural_diagnosis = guarded_diagnosis
         try:
             result = runner.run_study(REGISTRY, output, created_at=NOW, release_sha=HASH, app_version="0.43.0")
         finally:
+            runner.verify_registry = original_verify_registry
             runner.structural_audit.build_structural_input_audit = original_audit
             runner.diagnosis_v3.build_structural_diagnosis = original_diagnosis
         assert result["method_records"] == 14
@@ -313,16 +336,18 @@ def test_published_smoke_proves_all_audits_precede_output_and_hashes_are_exact()
 
 
 def test_changed_registered_output_bytes_are_refused_as_custody_failure():
-    registry = json.loads(REGISTRY.read_text())
     with tempfile.TemporaryDirectory() as temporary:
         changed = Path(temporary) / "link_volumes.csv"
         changed.write_text("link_id,PCE_tot\n1,999\n")
-        record = registry["geographies"][0]["methods"]["aequilibrae"]["artifacts"]["model_output"]
-        record["stored_path"] = str(changed)
-        path = Path(temporary) / "registry.json"
-        path.write_text(json.dumps(registry))
+        original = b"link_id,PCE_tot\n1,1\n"
+        record = {
+            "stored_path": str(changed),
+            "stored_sha256": hashlib.sha256(original).hexdigest(),
+            "sha256": hashlib.sha256(original).hexdigest(),
+            "bytes": len(original),
+        }
         try:
-            runner.verify_registry(path)
+            runner.verify_record(record, "changed output")
         except runner.StudyRefused as exc:
             assert "changed" in str(exc)
         else:
