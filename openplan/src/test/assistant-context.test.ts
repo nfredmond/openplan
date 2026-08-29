@@ -676,9 +676,16 @@ describe("the project copilot over a failed funding read", () => {
     );
     expect(context.jurisdictionReadiness).toMatchObject({
       jurisdiction: { id: "US-CA", label: "Nevada County, California" },
-      job: { id: "project-evidence-handoff" },
-      status: "supported",
     });
+    expect(context.jurisdictionReadiness?.reports).toHaveLength(5);
+    expect(context.jurisdictionReadiness?.reports.map((report) => report.job.id)).toEqual([
+      "project-evidence-handoff",
+      "land-use-plan",
+      "safety-analysis",
+      "grants-and-reimbursement",
+      "model-validation-evidence",
+    ]);
+    expect(context.jurisdictionReadiness?.reports[0]).toMatchObject({ status: "supported" });
     expect(context.jurisdictionReadiness?.registrySha256).toMatch(/^[0-9a-f]{64}$/);
   });
 

@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
   if (read.error) {
     return NextResponse.json({ error: "Workspace jurisdiction could not be read" }, { status: 500 });
   }
+  if (!read.data) {
+    return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+  }
 
   const geography = parseWorkspaceHomeGeography(read.data);
   const payload = buildJurisdictionReadinessPayload(

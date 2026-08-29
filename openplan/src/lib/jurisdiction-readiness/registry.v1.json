@@ -92,6 +92,11 @@
       "sha256": "81485a0f391b5ab65412a42ad88c991ea15561a2918849d4b0525ede6b9018d1"
     },
     {
+      "id": "ccrs-source-adapter",
+      "path": "openplan/src/lib/safety/sources/ccrs.ts",
+      "sha256": "c34761e5e16420edd53f9e7e43538f57d6a4664226fa2a09d7e689575319a45e"
+    },
+    {
       "id": "grant-program-registry",
       "path": "openplan/src/lib/grants/programs/registry.ts",
       "sha256": "ed7138242b1158297f84c931c95b1e298eb96fbaabbf57fa3bbbb252ce0d1d7f"
@@ -100,6 +105,16 @@
       "id": "oregon-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-or.ts",
       "sha256": "106a360ab164122eb43a9f5146590690f08eb4e416d37ff3408a21029459548c"
+    },
+    {
+      "id": "federal-grant-adapter",
+      "path": "openplan/src/lib/grants/programs/us-federal.ts",
+      "sha256": "94af56e39de1862f7285956a61486e1a5257a3b065773bf2d432d9f2c988820d"
+    },
+    {
+      "id": "california-grant-adapter",
+      "path": "openplan/src/lib/grants/programs/us-ca.ts",
+      "sha256": "a65919d8448f369914db5fce14caf368bc53742bdbfae6190398c8aa97176482"
     },
     {
       "id": "comparable-observation-proof-v041",
@@ -155,7 +170,7 @@
       "jobId": "safety-analysis",
       "status": "partial",
       "applicability": "CCRS supplies statewide reported collisions and FARS supplies a fatal-crash backstop where its coverage applies.",
-      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "sourceIds": ["crash-source-registry", "ccrs-source-adapter", "fars-source-adapter"],
       "adapterIds": ["ccrs-ca", "fars-national"],
       "authorities": [
         {
@@ -179,7 +194,7 @@
       "jobId": "grants-and-reimbursement",
       "status": "partial",
       "applicability": "Federal and California program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",
-      "sourceIds": ["grant-program-registry"],
+      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "california-grant-adapter"],
       "adapterIds": ["us-federal", "us-ca"],
       "authorities": [
         {
@@ -248,7 +263,7 @@
       "jobId": "grants-and-reimbursement",
       "status": "partial",
       "applicability": "Federal and Oregon program descriptors can be matched to the workspace jurisdiction.",
-      "sourceIds": ["grant-program-registry", "oregon-grant-adapter"],
+      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "oregon-grant-adapter"],
       "adapterIds": ["us-federal", "us-or"],
       "authorities": [
         {

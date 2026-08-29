@@ -83,8 +83,10 @@ import {
 import { filterToCurrentReadyVersion } from "@/lib/gtfs/persist";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { ReadFailureLog, type ReadFailure, type ReadResultLike } from "@/lib/ui/read-failures";
-import type { JurisdictionReadinessReport } from "@/lib/jurisdiction-readiness/contracts";
-import { resolveJurisdictionReadiness } from "@/lib/jurisdiction-readiness/registry";
+import {
+  buildJurisdictionReadinessPayload,
+  type JurisdictionReadinessPayload,
+} from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 
 /**
@@ -593,7 +595,7 @@ export type ProjectAssistantContext = {
     deliveryPhase: string;
     updatedAt: string;
   };
-  jurisdictionReadiness?: JurisdictionReadinessReport;
+  jurisdictionReadiness?: JurisdictionReadinessPayload;
   counts: {
     deliverables: number;
     risks: number;
@@ -2471,15 +2473,14 @@ async function loadProjectContext(
       deliveryPhase: project.delivery_phase,
       updatedAt: project.updated_at,
     },
-    jurisdictionReadiness: resolveJurisdictionReadiness(
+    jurisdictionReadiness: buildJurisdictionReadinessPayload(
       {
         countryCode: project.place_country_code,
         subdivisionCode: project.place_subdivision_code,
         label: project.place_label,
       },
-      "project-evidence-handoff",
-      { registrySha256: jurisdictionReadinessRegistrySha256() },
-    ) ?? undefined,
+      jurisdictionReadinessRegistrySha256(),
+    ),
     counts: {
       deliverables: deliverablesResult.data?.length ?? 0,
       risks: risksResult.data?.length ?? 0,

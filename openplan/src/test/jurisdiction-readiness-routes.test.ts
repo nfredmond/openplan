@@ -120,4 +120,24 @@ describe("jurisdiction readiness APIs", () => {
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({ error: "Project jurisdiction could not be read" });
   });
+
+  it("does not turn a failed workspace read into an unassessed jurisdiction", async () => {
+    workspaceReadMock.mockResolvedValueOnce({ data: null, error: { message: "database unavailable" } });
+    const response = await getWorkspaceReadiness(
+      new NextRequest(`http://localhost/api/workspaces/jurisdiction-readiness?workspaceId=${WORKSPACE_ID}`),
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Workspace jurisdiction could not be read" });
+  });
+
+  it("does not invent an unassessed jurisdiction for a missing workspace row", async () => {
+    workspaceReadMock.mockResolvedValueOnce({ data: null, error: null });
+    const response = await getWorkspaceReadiness(
+      new NextRequest(`http://localhost/api/workspaces/jurisdiction-readiness?workspaceId=${WORKSPACE_ID}`),
+    );
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: "Workspace not found" });
+  });
 });

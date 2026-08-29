@@ -62,4 +62,18 @@ describe("JurisdictionReadinessPanel", () => {
     expect(screen.getByText(/no evidence-backed claim is registered/i)).toBeInTheDocument();
     expect(screen.queryByText(/California/)).not.toBeInTheDocument();
   });
+
+  it("shows an unreadable read as an error and withholds the download", () => {
+    render(
+      <JurisdictionReadinessPanel
+        reports={[]}
+        unreadableReason="The workspace geography record could not be read."
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Readiness could not be checked" })).toBeInTheDocument();
+    expect(screen.getByText("Unreadable")).toBeInTheDocument();
+    expect(screen.queryByText("Not assessed here")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /download exact readiness json/i })).not.toBeInTheDocument();
+  });
 });

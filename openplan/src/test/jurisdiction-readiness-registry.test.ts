@@ -21,6 +21,7 @@ describe("jurisdiction readiness registry", () => {
     });
     expect(report?.sources.map((source) => source.id)).toEqual([
       "grant-program-registry",
+      "federal-grant-adapter",
       "oregon-grant-adapter",
     ]);
     expect(report?.authorities).toEqual(expect.arrayContaining([
@@ -94,5 +95,30 @@ describe("jurisdiction readiness registry", () => {
     expect(puertoRicoSafety?.authorities).toEqual([
       expect.objectContaining({ kind: "data_source", agency: "National Highway Traffic Safety Administration" }),
     ]);
+  });
+
+  it("hash-binds every directly claimed jurisdiction adapter", () => {
+    const sourceIds = new Set(JURISDICTION_READINESS_REGISTRY.sources.map((source) => source.id));
+    for (const sourceId of [
+      "ccrs-source-adapter",
+      "fars-source-adapter",
+      "federal-grant-adapter",
+      "california-grant-adapter",
+      "oregon-grant-adapter",
+    ]) {
+      expect(sourceIds.has(sourceId), sourceId).toBe(true);
+    }
+
+    const californiaSafety = JURISDICTION_READINESS_REGISTRY.claims.find(
+      (claim) => claim.id === "US-CA/safety-analysis",
+    );
+    const californiaGrants = JURISDICTION_READINESS_REGISTRY.claims.find(
+      (claim) => claim.id === "US-CA/grants-and-reimbursement",
+    );
+    expect(californiaSafety?.sourceIds).toContain("ccrs-source-adapter");
+    expect(californiaGrants?.sourceIds).toEqual(expect.arrayContaining([
+      "federal-grant-adapter",
+      "california-grant-adapter",
+    ]));
   });
 });

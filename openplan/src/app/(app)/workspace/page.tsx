@@ -59,15 +59,20 @@ export default async function WorkspacePage() {
   const stageGateChoices = buildStageGateRebindChoices(workspaceRead.data, {
     readError: workspaceRead.error,
   });
-  const workspaceGeography = parseWorkspaceHomeGeography(workspaceRead.data);
-  const jurisdictionReadiness = buildJurisdictionReadinessPayload(
-    {
-      countryCode: workspaceGeography?.home_country_code ?? null,
-      subdivisionCode: workspaceGeography?.home_subdivision_code ?? null,
-      label: workspaceGeography?.home_geography_label ?? null,
-    },
-    jurisdictionReadinessRegistrySha256(),
-  );
+  const workspaceReadUnreadable = workspaceRead.error || !workspaceRead.data;
+  const workspaceGeography = workspaceReadUnreadable
+    ? null
+    : parseWorkspaceHomeGeography(workspaceRead.data);
+  const jurisdictionReadiness = workspaceReadUnreadable
+    ? null
+    : buildJurisdictionReadinessPayload(
+        {
+          countryCode: workspaceGeography?.home_country_code ?? null,
+          subdivisionCode: workspaceGeography?.home_subdivision_code ?? null,
+          label: workspaceGeography?.home_geography_label ?? null,
+        },
+        jurisdictionReadinessRegistrySha256(),
+      );
   const deploymentHealth = canManage
     ? evaluateDeploymentHealth({
         ...readDeploymentEnvFacts(),
@@ -109,8 +114,13 @@ export default async function WorkspacePage() {
       <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManage} />
 
       <JurisdictionReadinessPanel
-        reports={jurisdictionReadiness.reports}
-        downloadHref={`/api/workspaces/jurisdiction-readiness?workspaceId=${encodeURIComponent(workspaceId)}&download=1`}
+        reports={jurisdictionReadiness?.reports ?? []}
+        downloadHref={jurisdictionReadiness
+          ? `/api/workspaces/jurisdiction-readiness?workspaceId=${encodeURIComponent(workspaceId)}&download=1`
+          : undefined}
+        unreadableReason={workspaceReadUnreadable
+          ? "The workspace geography record could not be read. No jurisdiction support claim is available until that read succeeds."
+          : undefined}
       />
 
       <WorkspaceStageGatePanel

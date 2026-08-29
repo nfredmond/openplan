@@ -240,11 +240,28 @@ function checkJurisdictionReadinessRegistry(descriptor) {
   if (readiness.releaseVersion !== currentRelease().slice(1)) {
     fail(`jurisdiction readiness release does not match package release ${currentRelease()}`);
   }
+  const readinessReviewDate = dateValue(readiness.reviewedAt, "jurisdiction readiness reviewedAt");
+  const readinessReviewBy = dateValue(readiness.reviewBy, "jurisdiction readiness reviewBy");
+  const readinessReviewSpan = Math.round((readinessReviewBy - readinessReviewDate) / 86_400_000);
+  if (readinessReviewSpan < 1 || readinessReviewSpan > MAX_REVIEW_DAYS) {
+    fail(`jurisdiction readiness review interval is ${readinessReviewSpan} days; expected 1-${MAX_REVIEW_DAYS}`);
+  }
+  const todayText = new Date().toISOString().slice(0, 10);
+  if (readiness.reviewBy < todayText) {
+    fail(`jurisdiction readiness registry review expired on ${readiness.reviewBy}`);
+  }
+  const allowedReadinessStatuses = ["supported", "partial", "unavailable", "unassessed"];
   assertContainsAll(
     readiness.statuses ?? [],
-    ["supported", "partial", "unavailable", "unassessed"],
+    allowedReadinessStatuses,
     "jurisdiction readiness statuses",
   );
+  if (
+    readiness.statuses.length !== allowedReadinessStatuses.length ||
+    readiness.statuses.some((status) => !allowedReadinessStatuses.includes(status))
+  ) {
+    fail("jurisdiction readiness statuses contain an unsupported value");
+  }
 
   const jobs = Array.isArray(readiness.jobs) ? readiness.jobs : [];
   const jurisdictions = Array.isArray(readiness.jurisdictions) ? readiness.jurisdictions : [];
@@ -276,12 +293,19 @@ function checkJurisdictionReadinessRegistry(descriptor) {
     "www.nhtsa.gov",
     "www.oregon.gov",
   ]);
+  const readinessAuthorityKinds = new Set(["statute", "data_source", "program_catalog"]);
   for (const claim of claims) {
     if (!jurisdictionIds.has(claim.jurisdictionId)) {
       fail(`jurisdiction readiness claim ${claim.id} names unknown jurisdiction ${claim.jurisdictionId}`);
     }
     if (!jobIds.has(claim.jobId)) {
       fail(`jurisdiction readiness claim ${claim.id} names unknown job ${claim.jobId}`);
+    }
+    if (claim.id !== `${claim.jurisdictionId}/${claim.jobId}`) {
+      fail(`jurisdiction readiness claim ${claim.id} does not match its jurisdiction and job`);
+    }
+    if (!["supported", "partial", "unavailable"].includes(claim.status)) {
+      fail(`jurisdiction readiness claim ${claim.id} has unsupported status ${claim.status ?? "missing"}`);
     }
     if (!Array.isArray(claim.sourceIds) || claim.sourceIds.length === 0) {
       fail(`jurisdiction readiness claim ${claim.id} has no evidence source`);
@@ -298,6 +322,9 @@ function checkJurisdictionReadinessRegistry(descriptor) {
       fail(`jurisdiction readiness claim ${claim.id} has no authority list`);
     }
     for (const authority of claim.authorities ?? []) {
+      if (!readinessAuthorityKinds.has(authority.kind)) {
+        fail(`jurisdiction readiness claim ${claim.id} has unsupported authority kind ${authority.kind ?? "missing"}`);
+      }
       if (!authority.label?.trim() || !authority.agency?.trim()) {
         fail(`jurisdiction readiness claim ${claim.id} has an unnamed authority`);
       }

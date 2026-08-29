@@ -378,7 +378,7 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
         ? unknownBecauseUnread(projectControlCountsFailure, "the project control counts")
         : `${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, and ${context.counts.meetings} meetings are attached to this project surface.`,
       context.jurisdictionReadiness
-        ? `${context.jurisdictionReadiness.job.label}: ${context.jurisdictionReadiness.statusLabel} for ${context.jurisdictionReadiness.jurisdiction.label}.`
+        ? `${context.jurisdictionReadiness.reports.length} jurisdiction readiness checks for ${context.jurisdictionReadiness.jurisdiction.label}: ${context.jurisdictionReadiness.reports.map((report) => `${report.job.label} is ${report.statusLabel.toLowerCase()}`).join("; ")}.`
         : null,
       fundingOpportunitiesFailure
         ? unknownBecauseUnread(fundingOpportunitiesFailure, "the funding picture for this project")

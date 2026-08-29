@@ -12,7 +12,7 @@ import type {
   RunAssistantContext,
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
-import { resolveJurisdictionReadiness } from "@/lib/jurisdiction-readiness/registry";
+import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
 
 function buildOperationsSummary(
   overrides?: Partial<WorkspaceAssistantContext["operationsSummary"]["counts"]>
@@ -261,15 +261,19 @@ describe("buildAssistantChatContextLines", () => {
 
   it("carries exact jurisdiction status, limits, registry hash, and evidence into assistant grounding", () => {
     const context = buildProjectContext();
-    context.jurisdictionReadiness = resolveJurisdictionReadiness(
+    context.jurisdictionReadiness = buildJurisdictionReadinessPayload(
       { countryCode: "US", subdivisionCode: "OR", label: "Deschutes County, Oregon" },
-      "project-evidence-handoff",
-      { registrySha256: "e".repeat(64) },
-    ) ?? undefined;
+      "e".repeat(64),
+    );
 
     const joined = buildAssistantChatContextLines(context).join("\n");
 
-    expect(joined).toContain("Jurisdiction readiness: Project record and evidence handoff is partly supported");
+    expect(joined).toContain("Jurisdiction readiness for Deschutes County, Oregon:");
+    expect(joined).toContain("Project record and evidence handoff: Partly supported");
+    expect(joined).toContain("Land-use plan: Unavailable here");
+    expect(joined).toContain("Safety analysis: Partly supported");
+    expect(joined).toContain("Grants and reimbursement: Partly supported");
+    expect(joined).toContain("Model validation evidence: Unavailable here");
     expect(joined).toContain("Deschutes County, Oregon");
     expect(joined).toContain("sha256:" + "e".repeat(64));
     expect(joined).toContain("visible Oregon start-to-handoff journey has not yet");

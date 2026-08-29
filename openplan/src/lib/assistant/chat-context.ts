@@ -345,19 +345,22 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
       );
       if (context.project.summary) lines.push(`Project summary: ${context.project.summary}`);
       if (context.jurisdictionReadiness) {
-        const readiness = context.jurisdictionReadiness;
-        lines.push(
-          `Jurisdiction readiness: ${readiness.job.label} is ${readiness.statusLabel.toLowerCase()} for ${readiness.jurisdiction.label}. ${readiness.applicability}`,
-        );
-        lines.push(`Jurisdiction limits: ${readiness.limitations.join(" | ")}`);
-        lines.push(
-          `Jurisdiction registry: ${readiness.registryVersion}${readiness.registrySha256 ? ` · sha256:${readiness.registrySha256}` : ""}`,
-        );
-        if (readiness.sources.length > 0) {
+        const payload = context.jurisdictionReadiness;
+        lines.push(`Jurisdiction readiness for ${payload.jurisdiction.label}:`);
+        for (const readiness of payload.reports) {
           lines.push(
-            `Jurisdiction evidence: ${readiness.sources.map((source) => `${source.path} sha256:${source.sha256}`).join(" | ")}`,
+            `- ${readiness.job.label}: ${readiness.statusLabel}. ${readiness.applicability}`,
           );
+          lines.push(`  Limits: ${readiness.limitations.join(" | ")}`);
+          if (readiness.sources.length > 0) {
+            lines.push(
+              `  Evidence: ${readiness.sources.map((source) => `${source.path} sha256:${source.sha256}`).join(" | ")}`,
+            );
+          }
         }
+        lines.push(
+          `Jurisdiction registry: ${payload.registryVersion ?? "unknown"} · sha256:${payload.registrySha256}`,
+        );
       }
       lines.push(
         `Project counts: ${context.counts.deliverables} deliverables · ${context.counts.risks} risks · ${context.counts.issues} issues · ${context.counts.decisions} decisions · ${context.counts.meetings} meetings · ${context.counts.linkedDatasets} linked datasets (${context.counts.overlayReadyDatasets} overlay-ready) · ${context.counts.recentRuns} recent runs`

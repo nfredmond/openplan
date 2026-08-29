@@ -18,9 +18,10 @@ const STATUS_TONES: Record<JurisdictionReadinessStatus, StatusTone> = {
 
 type JurisdictionReadinessPanelProps = {
   reports: JurisdictionReadinessReport[];
-  downloadHref: string;
+  downloadHref?: string;
   defaultJobId?: string;
   compact?: boolean;
+  unreadableReason?: string;
 };
 
 /** One visible rendering for the same reports returned by the API and evidence bundle. */
@@ -29,6 +30,7 @@ export function JurisdictionReadinessPanel({
   downloadHref,
   defaultJobId = "project-evidence-handoff",
   compact = false,
+  unreadableReason,
 }: JurisdictionReadinessPanelProps) {
   const initialJobId = reports.some((report) => report.job.id === defaultJobId)
     ? defaultJobId
@@ -38,6 +40,29 @@ export function JurisdictionReadinessPanel({
     () => reports.find((candidate) => candidate.job.id === selectedJobId) ?? reports[0] ?? null,
     [reports, selectedJobId],
   );
+
+  if (unreadableReason) {
+    return (
+      <section
+        className={compact ? "rounded-xl border border-destructive/40 p-4" : "rounded-xl border border-destructive/40 p-5"}
+        aria-label="Jurisdiction readiness"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <MapPinned className="h-4 w-4" />
+              Jurisdiction readiness
+            </div>
+            <h2 className="mt-2 text-base font-semibold text-foreground">
+              Readiness could not be checked
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">{unreadableReason}</p>
+          </div>
+          <StatusBadge tone="danger">Unreadable</StatusBadge>
+        </div>
+      </section>
+    );
+  }
 
   if (!report) return null;
 
@@ -131,10 +156,12 @@ export function JurisdictionReadinessPanel({
             <code className="mt-1 block break-all font-mono text-[0.68rem]">sha256:{report.registrySha256}</code>
           ) : null}
         </div>
-        <a className="inline-flex items-center gap-1.5 font-medium text-foreground hover:underline" href={downloadHref}>
-          <Download className="h-3.5 w-3.5" />
-          Download exact readiness JSON
-        </a>
+        {downloadHref ? (
+          <a className="inline-flex items-center gap-1.5 font-medium text-foreground hover:underline" href={downloadHref}>
+            <Download className="h-3.5 w-3.5" />
+            Download exact readiness JSON
+          </a>
+        ) : null}
       </div>
     </section>
   );
