@@ -368,8 +368,24 @@ export async function buildProjectEvidenceBundle(
   files.set("checksums.sha256", Buffer.from(checksumText, "utf8"));
 
   const zip = new JSZip();
+  const directories = new Set<string>();
+  for (const path of files.keys()) {
+    const parts = path.split("/").slice(0, -1);
+    for (let index = 1; index <= parts.length; index += 1) {
+      directories.add(parts.slice(0, index).join("/"));
+    }
+  }
+  for (const directory of [...directories].sort((left, right) => left.localeCompare(right))) {
+    // JSZip otherwise creates parent entries with the current wall-clock time.
+    // Crossing a two-second ZIP timestamp boundary made identical bundles differ.
+    zip.file(`${directory}/`, null, {
+      createFolders: false,
+      date: input.generatedAt,
+      dir: true,
+    });
+  }
   for (const [path, bytes] of [...files.entries()].sort(([left], [right]) => left.localeCompare(right))) {
-    zip.file(path, bytes, { date: input.generatedAt, createFolders: true });
+    zip.file(path, bytes, { date: input.generatedAt, createFolders: false });
   }
   const bytes = await zip.generateAsync({
     type: "nodebuffer",

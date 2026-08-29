@@ -144,6 +144,11 @@ describe("project evidence archive", () => {
       "project/project.gpkg",
       "project/project.json",
     ]);
+    for (const path of ["files/", "files/knowledge_base/", "project/"]) {
+      expect(zip.files[path].date.getTime(), `${path} carries the fixed bundle timestamp`).toBe(
+        GENERATED_AT.getTime()
+      );
+    }
     const checksums = await zip.file("checksums.sha256")!.async("string");
     for (const line of checksums.trim().split("\n")) {
       const [expected, archivePath] = line.split(/\s{2}/);
