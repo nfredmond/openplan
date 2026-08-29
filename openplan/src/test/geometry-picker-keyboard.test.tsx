@@ -73,6 +73,25 @@ describe("GeometryPickerMap keyboard accessibility (WCAG 2.1.1)", () => {
     expect(mapboxMocks.instances[0].keyboard.disable).toHaveBeenCalled();
   });
 
+  it("keeps live map errors visible but ignores a fetch cancellation after disposal", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const view = await renderPicker(() => {});
+    const map = mapboxMocks.instances[0];
+    const errorHandler = (map.on as ReturnType<typeof vi.fn>).mock.calls.find(
+      ([eventName]) => eventName === "error",
+    )?.[1] as ((event: { error: Error }) => void) | undefined;
+    expect(errorHandler).toBeTypeOf("function");
+
+    const liveFailure = new Error("Live picker style failed");
+    errorHandler?.({ error: liveFailure });
+    expect(consoleError).toHaveBeenCalledWith(liveFailure);
+
+    consoleError.mockClear();
+    view.unmount();
+    errorHandler?.({ error: new Error("Failed to fetch https://api.mapbox.com/styles/v1/mapbox/dark-v11") });
+    expect(consoleError).not.toHaveBeenCalled();
+  });
+
   it("places a point at the map center on Enter", async () => {
     const onChange = vi.fn();
     const { getByRole } = await renderPicker(onChange);

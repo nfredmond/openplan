@@ -313,6 +313,17 @@ export function GeometryPickerMap({
       zoom: initialZoom,
       attributionControl: false,
     });
+    let disposed = false;
+
+    // Choosing a searched place closes this short-lived map while its style
+    // request may still be settling. Mapbox otherwise logs that canceled
+    // teardown request as an unhandled error. Keep failures from a live picker
+    // visible and ignore only a fetch cancellation after disposal.
+    map.on("error", (event) => {
+      const error = event.error;
+      if (disposed && /failed to fetch/i.test(error?.message ?? "")) return;
+      console.error(error);
+    });
 
     // This picker is mounted inside the project page's Evidence tab, which is
     // not the landing tab: the container is `display: none` while that tab is
@@ -408,6 +419,7 @@ export function GeometryPickerMap({
     mapRef.current = map;
 
     return () => {
+      disposed = true;
       stopSizing();
       map.remove();
       mapRef.current = null;
