@@ -1,8 +1,11 @@
 # v0.43 structural demand and loading diagnosis proof
 
-Release-source SHA: `6b1915582212ebe79608a2ac28f7fff0e25c1b9a`  
-Evidence-binding commit: `8b6e9f8c5b2d6af7e35ec48f1e8bdeb06a750bd0`  
-App version: `0.43.0`  
+Release-source SHA: `48fec76789b755f24cde7846dc2ae786eeee0de5`
+
+Evidence-binding commit: `69a60bf6210c6ae7ddf3771a4d49c09efb82ce4e`
+
+App version: `0.43.0`
+
 Disposition: **release candidate only; tag withheld**
 
 ## Scientific result
@@ -38,6 +41,13 @@ Disposition: **release candidate only; tag withheld**
 - `product:direction:check` passed through 2026-09-28. Its jurisdiction-registry
   rule was corrected to preserve the exact hash-bound v0.42 registry rather than
   rewriting a released artifact for v0.43.
+- Remote CI run `33239057013` passed the modeling, worker, shuffled-order, and
+  full QA jobs. Remote RLS run `33239057003`, upgrade rehearsal `33238809083`,
+  and live modeling-source contract `33238809039` also passed.
+- Two earlier remote failures exposed test isolation defects: the custody test
+  inherited local Supabase variables, and the modeling unit suite inherited
+  local large study inputs. Both now pass from a clean checkout; neither failure
+  was suppressed or reclassified.
 
 ## Remaining release blockers
 
@@ -45,8 +55,6 @@ Disposition: **release candidate only; tag withheld**
   signed-in first-week job 11, desktop and 390px visual inspection, method
   switching, real downloads, overflow check, console review, and failed-response
   review are not proven in this session.
-- Remote CI, RLS, upgrade rehearsal, and source-contract checks are pending the
-  pushed candidate.
 
-No `v0.43.0` tag may be created until those blockers pass. This file records an
+No `v0.43.0` tag may be created until that blocker passes. This file records an
 honest safe landing point; it is not a release claim.
