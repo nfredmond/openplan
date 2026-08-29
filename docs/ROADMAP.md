@@ -1,7 +1,7 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 8f5d125370f2ea2e09f8324407ced2daebddd319
+reviewed_commit: 69a60bf6210c6ae7ddf3771a4d49c09efb82ce4e
 current_release: v0.43.0
 review_by: 2026-09-28
 paths:
