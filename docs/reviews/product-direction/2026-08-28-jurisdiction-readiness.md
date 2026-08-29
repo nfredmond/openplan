@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-08-28
 review_by: 2026-09-28
-reviewed_commit: b70c531997bdc9d237f16bea13885322c65144f8
+reviewed_commit: 12b6e36244dcea758859ce17a6c2bc9e4dce4452
 current_release: v0.42.0
 independent_contexts: 2
 trigger: v0.41-milestone-and-whats-next
