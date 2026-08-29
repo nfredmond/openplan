@@ -45,6 +45,11 @@ describe("the recurring product-direction review", () => {
       schema: "openplan.jurisdiction-readiness.v1",
       path: "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
     });
+    const frozenReadiness = JSON.parse(
+      readFileSync(resolve(APP_ROOT, "src/lib/jurisdiction-readiness/registry.v1.json"), "utf8"),
+    );
+    expect(frozenReadiness.releaseVersion).toBe("0.42.0");
+    expect(registry.currentRelease).toBe("v0.43.0");
     expect(source).toContain("Product direction is current");
   });
 

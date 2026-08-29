@@ -2,7 +2,7 @@
 
 <!-- openplan-v1-product-contract
 decided: 2026-08-25
-current_release: v0.42.0
+current_release: v0.43.0
 direction_review: docs/reviews/product-direction/2026-08-28-jurisdiction-readiness.md
 review_protocol: docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 capability_matrix: docs/product/US_PLANNING_CAPABILITY_MATRIX.md

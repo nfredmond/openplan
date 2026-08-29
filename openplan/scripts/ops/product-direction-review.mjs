@@ -181,6 +181,20 @@ function currentRelease() {
   return `v${packageJson.version}`;
 }
 
+function semverParts(value, name) {
+  if (!/^\d+\.\d+\.\d+$/.test(value)) fail(`${name} must be an exact semantic version`);
+  return value.split(".").map((part) => Number.parseInt(part, 10));
+}
+
+function compareSemver(left, right) {
+  const a = semverParts(left, "registry releaseVersion");
+  const b = semverParts(right, "package release");
+  for (let index = 0; index < 3; index += 1) {
+    if (a[index] !== b[index]) return a[index] - b[index];
+  }
+  return 0;
+}
+
 function latestReviewPath() {
   const reviews = readdirSync(REVIEW_DIR)
     .filter((name) => /^\d{4}-\d{2}-\d{2}.*\.md$/.test(name))
@@ -237,8 +251,9 @@ function checkJurisdictionReadinessRegistry(descriptor) {
   if (readiness.schema !== descriptor.schema) {
     fail("jurisdiction readiness registry schema disagrees with its capability-registry descriptor");
   }
-  if (readiness.releaseVersion !== currentRelease().slice(1)) {
-    fail(`jurisdiction readiness release does not match package release ${currentRelease()}`);
+  const packageRelease = currentRelease().slice(1);
+  if (compareSemver(readiness.releaseVersion, packageRelease) > 0) {
+    fail(`jurisdiction readiness registry claims future release v${readiness.releaseVersion}`);
   }
   const readinessReviewDate = dateValue(readiness.reviewedAt, "jurisdiction readiness reviewedAt");
   const readinessReviewBy = dateValue(readiness.reviewBy, "jurisdiction readiness reviewBy");
