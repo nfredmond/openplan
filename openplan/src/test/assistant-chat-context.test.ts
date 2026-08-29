@@ -268,7 +268,7 @@ describe("buildAssistantChatContextLines", () => {
 
     const joined = buildAssistantChatContextLines(context).join("\n");
 
-    expect(joined).toContain("Jurisdiction readiness for Deschutes County, Oregon:");
+    expect(joined).toContain("Local support for Deschutes County, Oregon:");
     expect(joined).toContain("Project record and evidence handoff: Partly supported");
     expect(joined).toContain("Land-use plan: Unavailable here");
     expect(joined).toContain("Safety analysis: Partly supported");

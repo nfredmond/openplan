@@ -346,7 +346,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
       if (context.project.summary) lines.push(`Project summary: ${context.project.summary}`);
       if (context.jurisdictionReadiness) {
         const payload = context.jurisdictionReadiness;
-        lines.push(`Jurisdiction readiness for ${payload.jurisdiction.label}:`);
+        lines.push(`Local support for ${payload.jurisdiction.label}:`);
         for (const readiness of payload.reports) {
           lines.push(
             `- ${readiness.job.label}: ${readiness.statusLabel}. ${readiness.applicability}`,

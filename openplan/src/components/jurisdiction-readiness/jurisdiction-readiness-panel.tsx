@@ -45,16 +45,16 @@ export function JurisdictionReadinessPanel({
     return (
       <section
         className={compact ? "rounded-xl border border-destructive/40 p-4" : "rounded-xl border border-destructive/40 p-5"}
-        aria-label="Jurisdiction readiness"
+        aria-label="Jurisdiction support"
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
               <MapPinned className="h-4 w-4" />
-              Jurisdiction readiness
+              Local support
             </div>
             <h2 className="mt-2 text-base font-semibold text-foreground">
-              Readiness could not be checked
+              Support could not be checked
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">{unreadableReason}</p>
           </div>
@@ -69,13 +69,13 @@ export function JurisdictionReadinessPanel({
   return (
     <section
       className={compact ? "rounded-xl border border-border/70 p-4" : "rounded-xl border border-border/70 p-5"}
-      aria-label="Jurisdiction readiness"
+      aria-label="Jurisdiction support"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
             <MapPinned className="h-4 w-4" />
-            Jurisdiction readiness
+            Local support
           </div>
           <h2 className="mt-2 text-base font-semibold text-foreground">Can OpenPlan do this here?</h2>
           <p className="mt-1 text-sm text-muted-foreground">{report.jurisdiction.label}</p>
@@ -159,7 +159,7 @@ export function JurisdictionReadinessPanel({
         {downloadHref ? (
           <a className="inline-flex items-center gap-1.5 font-medium text-foreground hover:underline" href={downloadHref}>
             <Download className="h-3.5 w-3.5" />
-            Download exact readiness JSON
+            Download exact local support JSON
           </a>
         ) : null}
       </div>

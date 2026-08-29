@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { checkWorkspaceMembership } from "@/lib/workspaces/membership";
 import {
@@ -12,6 +13,7 @@ import {
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const audit = createApiAuditLogger("workspaces.jurisdiction_readiness.read", request);
   const workspaceId = new URL(request.url).searchParams.get("workspaceId") ?? "";
   if (!z.string().uuid().safeParse(workspaceId).success) {
     return NextResponse.json({ error: "A valid workspaceId is required" }, { status: 400 });
@@ -23,6 +25,9 @@ export async function GET(request: NextRequest) {
 
   const membership = await checkWorkspaceMembership(supabase, user.id, workspaceId);
   if (!membership.ok) {
+    if (membership.kind !== "not_member") {
+      audit.error("workspace_jurisdiction_readiness_membership_failed", { workspaceId, kind: membership.kind });
+    }
     return NextResponse.json(
       { error: membership.kind === "not_member" ? "Workspace not found" : "Workspace membership could not be verified" },
       { status: membership.kind === "not_member" ? 404 : 503 },
@@ -35,6 +40,7 @@ export async function GET(request: NextRequest) {
     .eq("id", workspaceId)
     .maybeSingle();
   if (read.error) {
+    audit.error("workspace_jurisdiction_readiness_failed", { workspaceId, message: read.error.message });
     return NextResponse.json({ error: "Workspace jurisdiction could not be read" }, { status: 500 });
   }
   if (!read.data) {
@@ -51,6 +57,12 @@ export async function GET(request: NextRequest) {
     jurisdictionReadinessRegistrySha256(),
   );
   const download = new URL(request.url).searchParams.get("download") === "1";
+  audit.info("workspace_jurisdiction_readiness_read", {
+    workspaceId,
+    jurisdictionId: payload.jurisdiction.id,
+    download,
+    registrySha256: payload.registrySha256,
+  });
   return NextResponse.json(payload, {
     headers: download
       ? { "content-disposition": `attachment; filename="jurisdiction-readiness-${workspaceId}.json"` }

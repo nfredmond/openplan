@@ -31,7 +31,7 @@ describe("JurisdictionReadinessPanel", () => {
     const evidenceHash = screen.getByText(/sha256:283f9f53/i);
     expect(evidenceHash).toBeInTheDocument();
     expect(evidenceHash.previousElementSibling).toHaveClass("break-all");
-    expect(screen.getByRole("link", { name: /download exact readiness json/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /download exact local support json/i })).toHaveAttribute(
       "href",
       "/api/workspaces/jurisdiction-readiness?download=1",
     );
@@ -71,7 +71,7 @@ describe("JurisdictionReadinessPanel", () => {
       />,
     );
 
-    expect(screen.getByRole("heading", { name: "Readiness could not be checked" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Support could not be checked" })).toBeInTheDocument();
     expect(screen.getByText("Unreadable")).toBeInTheDocument();
     expect(screen.queryByText("Not assessed here")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /download exact readiness json/i })).not.toBeInTheDocument();

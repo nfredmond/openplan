@@ -80,7 +80,7 @@ async function visibleStatuses(page) {
   const statuses = [];
   for (const option of options) {
     await select.selectOption(option);
-    const badge = page.locator('section[aria-label="Jurisdiction readiness"] span').filter({
+    const badge = page.locator('section[aria-label="Jurisdiction support"] span').filter({
       hasText: /Supported here|Partly supported|Unavailable here|Not assessed here/,
     }).first();
     const text = (await badge.textContent()).trim();
@@ -141,9 +141,13 @@ async function generateCurrentReport(page) {
   const format = page.getByRole('combobox', { name: 'Packet format' });
   await format.selectOption('pdf');
   const generate = page.getByRole('button', { name: /(?:Generate|Regenerate) PDF packet/ });
+  const generationResponse = page.waitForResponse((response) =>
+    response.request().method() === 'POST' && response.url().includes(`/api/reports/`) && response.url().endsWith('/generate')
+  );
   await generate.click();
-  await page.getByText(/Generating PDF packet/).waitFor({ state: 'hidden', timeout: 120_000 }).catch(() => {});
-  await page.getByRole('button', { name: /Regenerate PDF packet/ }).waitFor({ timeout: 120_000 });
+  const response = await generationResponse;
+  assertOk(response.ok(), `Report generation returned ${response.status()}.`);
+  await page.locator('button:not([disabled])').filter({ hasText: 'PDF packet' }).waitFor({ timeout: 120_000 });
   const alert = page.locator('[role="alert"]:visible');
   const alertText = (await alert.allTextContents()).map((text) => text.trim()).filter(Boolean);
   assertOk(alertText.length === 0, `Report generation displayed an error: ${alertText.join(' | ')}`);
