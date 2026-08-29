@@ -449,6 +449,11 @@ export function CartographicMapBackdrop({
     return { returnedCount, matchedCount, droppedCount, limit, truncated: Boolean(p.truncated) };
   }, []);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  // `new Map({ style })` starts the style request itself. The theme effect also
+  // runs after that first render; without this ref it immediately called
+  // `setStyle` with the same URL, cancelled the first request, and Mapbox logged
+  // a false fetch failure in otherwise healthy browser journeys.
+  const appliedStyleRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [themeMounted, setThemeMounted] = useState(false);
   const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
@@ -599,6 +604,7 @@ export function CartographicMapBackdrop({
       pitchWithRotate: false,
       dragRotate: false,
     });
+    appliedStyleRef.current = styleUrl;
 
     didInitialFitRef.current = false;
     userMovedMapRef.current = false;
@@ -622,6 +628,7 @@ export function CartographicMapBackdrop({
       registerMapControls(null);
       map.remove();
       mapRef.current = null;
+      appliedStyleRef.current = null;
     };
   }, [suppressed, themeMounted, backdropTheme, registerMapControls]);
 
@@ -633,8 +640,10 @@ export function CartographicMapBackdrop({
       backdropTheme === "dark"
         ? "mapbox://styles/mapbox/dark-v11"
         : "mapbox://styles/mapbox/light-v11";
+    if (appliedStyleRef.current === styleUrl) return;
     try {
       map.setStyle(styleUrl);
+      appliedStyleRef.current = styleUrl;
     } catch {
       // no-op: style change is best-effort
     }

@@ -276,7 +276,7 @@ describe("buildAssistantChatContextLines", () => {
     expect(joined).toContain("Model validation evidence: Unavailable here");
     expect(joined).toContain("Deschutes County, Oregon");
     expect(joined).toContain("sha256:" + "e".repeat(64));
-    expect(joined).toContain("visible Oregon start-to-handoff journey has not yet");
+    expect(joined).toContain("One v0.42 Oregon start-to-handoff journey is frozen");
     expect(joined).toContain("docs/ops/2026-08-28-v0.37-governed-decision-handoff-correction-proof.md");
   });
 

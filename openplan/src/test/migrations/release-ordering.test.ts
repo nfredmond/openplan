@@ -325,6 +325,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260828000004_comparable_observation_v2_custody.sql",
     migrationsAtRelease: 239,
   },
+  // 0.42.0 adds a source-hashed jurisdiction readiness registry and carries
+  // its exact payload through existing product surfaces without a schema change.
+  {
+    tag: "0.42.0",
+    lastMigration: "20260828000004_comparable_observation_v2_custody.sql",
+    migrationsAtRelease: 239,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

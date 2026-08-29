@@ -27,6 +27,7 @@
     "local-aerial-ortho-render-smoke": "node local-aerial-ortho-render-smoke.js",
     "local-behavioral-demand-acceptance": "node openplan-local-behavioral-demand-acceptance.js",
     "local-governed-decision-handoff-smoke": "node openplan-local-governed-decision-handoff-smoke.js",
+    "local-jurisdiction-readiness-smoke": "node openplan-local-jurisdiction-readiness-smoke.js",
     "local-workspace-url-isolation-smoke": "node openplan-local-workspace-url-isolation-smoke.js",
     "local-ui-ux-settle-capture": "node openplan-local-ui-ux-settle-capture.js",
     "local-card-nesting-audit": "node openplan-local-card-nesting-audit.js",

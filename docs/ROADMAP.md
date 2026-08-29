@@ -1,16 +1,16 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: cb445c4b
-current_release: v0.41.0
-review_by: 2026-09-25
+reviewed_commit: aa5ee2bbac653079fe81480d20467c945c5a7620
+current_release: v0.42.0
+review_by: 2026-09-28
 paths:
 - AGENTS.md
 - CLAUDE.md
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
-- docs/reviews/product-direction/2026-08-25-v1-direction.md
+- docs/reviews/product-direction/2026-08-28-jurisdiction-readiness.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
 - openplan/src/lib/safety/sources/registry.ts
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.41.0
+## Current truth at v0.42.0
 
 Strong foundations already exist:
 
@@ -95,8 +95,9 @@ The v1 contract is not yet true:
 
 - the unified shell and project context do not yet make every cross-module
   planning job complete or every specialist workflow approachable to a novice;
-- the first-week gate covers only four required outcomes and must expand with
-  the planner and organization matrix;
+- the first-week harness defines twelve required outcomes, but a current
+  all-journey run remains unproven and must expand with the planner and
+  organization matrix;
 - the proof registry exposes many `partial`, `missing`, and `not-assessed`
   cells; those open cells block v1 even though they do not block this interim
   release;
@@ -175,6 +176,21 @@ The v1 contract is not yet true:
   named the result synthetic expanded daily traffic rather than AADT.
 - Published fourteen separate diagnoses and kept the outcome `inconclusive`.
   The repaired coverage is not evidence of improved model accuracy.
+
+## Completed checkpoint: v0.42 jurisdiction-aware readiness
+
+- Added one sparse, versioned job-by-jurisdiction registry for California,
+  Oregon, and Puerto Rico, with exact source and adapter hashes, official
+  authorities, applicability, and limitations.
+- Made workspace and project pages answer “Can OpenPlan do this here?” before
+  reliance, while unknown, multistate, unsupported, and unreadable geography
+  states remain distinct and never inherit California behavior.
+- Carried all five planning-job cells and the same full registry hash into exact
+  JSON downloads, generated reports, assistant grounding, and immutable project
+  evidence bundles.
+- Extended existing first-week jobs rather than adding a module or journey.
+  Desktop and 390px exemplar checks remain release evidence, not a nationwide
+  capability claim.
 
 The next modeling checkpoint addresses demand distribution, external and
 through travel, and network loading defects using the repaired v0.41 evidence

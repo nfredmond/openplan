@@ -19,6 +19,29 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.42.0 — 2026-08-28
+
+**No migration required.** Pull and deploy after the normal backup and upgrade
+rehearsal. The database high-water mark remains
+`20260828000004_comparable_observation_v2_custody.sql`.
+
+Workspace setup and project pages now answer “Can OpenPlan do this here?” from
+one versioned readiness registry before a planner relies on a result. The first
+release slice covers five existing jobs across California, Oregon, and Puerto
+Rico. Each answer carries applicability, honest limitations, official source
+pages where applicable, exact local evidence paths and SHA-256 hashes, and a
+download of the complete registry-bound response. Unknown or multistate places
+remain unassessed; a failed geography read is shown as unreadable rather than
+laundered into absence.
+
+The same five-job payload and full registry hash flow into generated reports,
+assistant grounding, and immutable project evidence bundles. Direct California
+crash and grant adapters, the federal grant adapter, and the Oregon adapter are
+hash-bound so code drift invalidates the release gate. Oregon and Puerto Rico do
+not inherit California law or sources. This is a coverage and handoff release,
+not a claim that every state works, that California is complete, or that either
+travel model is accurate.
+
 ## 0.41.0 — 2026-08-28
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

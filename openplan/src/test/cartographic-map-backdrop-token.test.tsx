@@ -6,6 +6,14 @@ const ORIGINAL_LEGACY_MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 const ORIGINAL_FETCH = global.fetch;
 
 const mockMapConstructor = vi.fn();
+const mockSetStyle = vi.fn();
+const mockMap = {
+  on: vi.fn(),
+  zoomIn: vi.fn(),
+  zoomOut: vi.fn(),
+  remove: vi.fn(),
+  setStyle: mockSetStyle,
+};
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/projects",
@@ -34,6 +42,9 @@ async function importBackdrop() {
 describe("CartographicMapBackdrop Mapbox token guard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockMapConstructor.mockImplementation(function MockMap() {
+      return mockMap;
+    });
     mockEmptyFeatureFetch();
   });
 
@@ -57,5 +68,16 @@ describe("CartographicMapBackdrop Mapbox token guard", () => {
 
     expect(container.querySelector(".op-map-backdrop__canvas")).toBeNull();
     expect(mockMapConstructor).not.toHaveBeenCalled();
+  });
+
+  it("does not reapply the opening style during the first theme effect", async () => {
+    process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = "pk.public-test-token";
+    delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+
+    const { CartographicMapBackdrop } = await importBackdrop();
+    render(<CartographicMapBackdrop />);
+
+    await waitFor(() => expect(mockMapConstructor).toHaveBeenCalledTimes(1));
+    expect(mockSetStyle).not.toHaveBeenCalled();
   });
 });

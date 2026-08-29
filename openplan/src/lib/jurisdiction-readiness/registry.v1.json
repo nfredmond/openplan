@@ -1,7 +1,7 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-08-28.1",
-  "releaseVersion": "0.41.0",
+  "registryVersion": "2026-08-28.3",
+  "releaseVersion": "0.42.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
   "statuses": ["supported", "partial", "unavailable", "unassessed"],
@@ -226,7 +226,7 @@
       "sourceIds": ["project-handoff-proof-v037"],
       "adapterIds": ["project-place-of-record", "project-evidence-bundle-v2"],
       "authorities": [],
-      "limitations": ["A visible Oregon start-to-handoff journey has not yet been frozen as release evidence."]
+      "limitations": ["One v0.42 Oregon start-to-handoff journey is frozen as release evidence; broader Oregon planning journeys remain unproven."]
     },
     {
       "id": "US-OR/land-use-plan",
@@ -301,7 +301,7 @@
       "sourceIds": ["project-handoff-proof-v037"],
       "adapterIds": ["project-place-of-record", "project-evidence-bundle-v2"],
       "authorities": [],
-      "limitations": ["A visible Puerto Rico start-to-handoff journey has not yet been frozen as release evidence."]
+      "limitations": ["One v0.42 Puerto Rico readiness journey is frozen as release evidence; a complete territory-specific project handoff remains unproven."]
     },
     {
       "id": "US-PR/land-use-plan",

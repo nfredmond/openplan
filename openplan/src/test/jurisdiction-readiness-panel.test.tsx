@@ -20,7 +20,7 @@ describe("JurisdictionReadinessPanel", () => {
     expect(screen.getByRole("heading", { name: "Can OpenPlan do this here?" })).toBeInTheDocument();
     expect(screen.getByText("Deschutes County, Oregon")).toBeInTheDocument();
     expect(screen.getByText("Partly supported")).toBeInTheDocument();
-    expect(screen.getByText(/visible Oregon start-to-handoff journey has not yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/one v0\.42 Oregon start-to-handoff journey is frozen/i)).toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("combobox", { name: "Planning job" }), {
       target: { value: "land-use-plan" },

@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
-  "currentRelease": "v0.41.0",
-  "reviewedAt": "2026-08-25",
-  "reviewBy": "2026-09-25",
+  "currentRelease": "v0.42.0",
+  "reviewedAt": "2026-08-28",
+  "reviewBy": "2026-09-28",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
   "interimReleasePolicy": "Open cells block v1.0.0 but remain visible without blocking honest pre-v1 releases.",
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "14d4624918c3bd6f199cb24867f22863653d89f10a8f3862a0a62e2fb29524b0"
+    "sha256": "2a2fe3c38a86eb28daa2a8dbaa4e48f2ead5ffc7460dc6f37bd7a6132d52a7dc"
   },
   "dimensions": {
     "planner": [
