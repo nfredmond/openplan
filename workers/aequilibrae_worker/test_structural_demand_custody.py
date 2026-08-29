@@ -3,9 +3,15 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
+
+# The worker deliberately refuses to import without service credentials.  These
+# non-secret placeholders make this unit test independent of a developer shell.
+os.environ.setdefault("SUPABASE_URL", "http://worker-import-only.invalid")
+os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "import-only-not-a-key")
 
 import main
 import model_structural_input_audit as audit_core
