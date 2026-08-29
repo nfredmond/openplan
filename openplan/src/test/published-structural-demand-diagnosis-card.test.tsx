@@ -16,13 +16,13 @@ describe("PublishedStructuralDemandDiagnosisCard", () => {
     expect(screen.getByText(/do not show improved accuracy/i)).toBeInTheDocument();
     expect(screen.getByText(/non-work through travel is unsupported/i)).toBeInTheDocument();
     expect(screen.getByText(/No ranking or average/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "aequilibrae input audit" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "activitysim input audit" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "aequilibrae before-output check" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "activitysim before-output check" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "aequilibrae diagnosis" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "activitysim diagnosis" })).toBeInTheDocument();
-    expect(screen.getByTestId("selected-structural-demand-record")).toHaveTextContent("aequilibrae");
+    expect(screen.getByTestId("selected-structural-demand-check")).toHaveTextContent("aequilibrae");
     fireEvent.click(screen.getByRole("button", { name: "ActivitySim" }));
-    expect(screen.getByTestId("selected-structural-demand-record")).toHaveTextContent("activitysim");
+    expect(screen.getByTestId("selected-structural-demand-check")).toHaveTextContent("activitysim");
     expect(screen.getByText("b".repeat(64))).toHaveClass("break-all");
   });
 });

@@ -948,7 +948,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
               id: row.id,
               method: row.method,
               outcome: row.scientific_outcome,
-              note: "Structural coverage and diagnosed limitations only. This is not improved model accuracy. LODES provenance may be unavailable and non-work through travel may be unsupported.",
+              note: "Structural coverage and diagnosed limitations only. This is not improved model accuracy. LODES source history may be unavailable and non-work through travel may be unsupported.",
               exactArtifacts: {
                 inputAudit: { id: row.input_audit_artifact_id, sha256: row.input_audit_sha256 },
                 diagnosis: { id: row.diagnosis_artifact_id, sha256: row.diagnosis_sha256 },

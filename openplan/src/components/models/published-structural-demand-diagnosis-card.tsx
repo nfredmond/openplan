@@ -23,7 +23,7 @@ export function PublishedStructuralDemandDiagnosisCard({ study }: { study: Publi
         <StatusBadge tone="warning">{study.scientificOutcome}</StatusBadge>
       </div>
       <p className="module-section-description mt-3 max-w-[64rem]">
-        Fourteen separate development records size structural coverage and limitations. They do not show improved accuracy. LODES provenance is unavailable in these frozen packages, non-work through travel is unsupported, and the 0.35 through share is an assumption.
+        Fourteen separate county-and-method checks size structural coverage and limitations. They do not show improved accuracy. LODES source history is unavailable in these frozen packages, non-work through travel is unsupported, and the 0.35 through share is an assumption.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
         <div><span className="font-semibold">Coverage</span><span className="mt-1 block text-muted-foreground">{geographies.length} counties · {study.records.length} separate method records</span></div>
@@ -51,7 +51,7 @@ export function PublishedStructuralDemandDiagnosisCard({ study }: { study: Publi
           </div>
         </div>
         {selected ? (
-          <div className="mt-3 min-w-0" aria-live="polite" data-testid="selected-structural-demand-record">
+          <div className="mt-3 min-w-0" aria-live="polite" data-testid="selected-structural-demand-check">
             <p className="text-sm font-semibold">{selected.geographyName} · {selected.method}</p>
             <dl className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 lg:grid-cols-7">
               {(["loaded", "unloaded", "unreachable", "excluded", "ambiguous", "unsupported", "missing_output"] as const).map((key) => (
@@ -59,25 +59,25 @@ export function PublishedStructuralDemandDiagnosisCard({ study }: { study: Publi
               ))}
             </dl>
             <dl className="mt-3 min-w-0 space-y-2 text-xs">
-              <div className="min-w-0"><dt className="font-semibold">Input audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputAuditSha256}</dd></div>
+              <div className="min-w-0"><dt className="font-semibold">Before-output check SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputAuditSha256}</dd></div>
               <div className="min-w-0"><dt className="font-semibold">Diagnosis SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.diagnosisSha256}</dd></div>
             </dl>
             <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-              <Link className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-structural-input-audit-v1.json`}>Download selected input audit</Link>
+              <Link className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-structural-input-audit-v1.json`}>Download selected before-output check</Link>
               <Link className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-validation-structural-diagnosis-v3.json`}>Download selected diagnosis</Link>
             </div>
           </div>
         ) : null}
       </div>
       <details className="mt-4">
-        <summary className="cursor-pointer text-sm font-semibold">Input audits and post-output diagnoses</summary>
+        <summary className="cursor-pointer text-sm font-semibold">Before-output checks and post-output diagnoses</summary>
         <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
           {geographies.map(([geographyId, name]) => (
             <div key={geographyId} className="min-w-0 rounded border border-border/70 p-3 text-xs">
               <p className="font-semibold">{name}</p>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">
                 {(["aequilibrae", "activitysim"] as const).flatMap((method) => [
-                  <Link key={`${method}-audit`} className="underline" href={`/api/models/structural-demand-diagnosis/${geographyId}/${method}/model-structural-input-audit-v1.json`}>{method} input audit</Link>,
+                  <Link key={`${method}-audit`} className="underline" href={`/api/models/structural-demand-diagnosis/${geographyId}/${method}/model-structural-input-audit-v1.json`}>{method} before-output check</Link>,
                   <Link key={`${method}-diagnosis`} className="underline" href={`/api/models/structural-demand-diagnosis/${geographyId}/${method}/model-validation-structural-diagnosis-v3.json`}>{method} diagnosis</Link>,
                 ])}
               </div>

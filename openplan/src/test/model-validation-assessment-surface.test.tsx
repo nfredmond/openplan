@@ -160,7 +160,7 @@ describe("structural demand custody surface", () => {
     const panel = screen.getByRole("region", { name: "Structural demand and loading diagnosis" });
     expect(panel).toHaveTextContent("does not show improved accuracy");
     expect(panel).toHaveTextContent("remain separate");
-    expect(screen.getByRole("link", { name: "Download exact input audit" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Download exact before-output check" })).toHaveAttribute(
       "href", `/api/models/${MODEL_ID}/runs/33333333-3333-4333-8333-333333333333/artifacts/input-audit-v1/download`,
     );
     expect(screen.getByRole("link", { name: "Download exact v3 diagnosis" })).toHaveAttribute(

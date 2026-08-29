@@ -192,6 +192,9 @@ const modelingDiagnosisSelectMock = vi.fn(() => ({ in: modelingDiagnosisInMock }
 const comparableCustodyOrderMock = vi.fn();
 const comparableCustodyInMock = vi.fn(() => ({ order: comparableCustodyOrderMock }));
 const comparableCustodySelectMock = vi.fn(() => ({ in: comparableCustodyInMock }));
+const structuralDemandCustodyOrderMock = vi.fn();
+const structuralDemandCustodyInMock = vi.fn(() => ({ order: structuralDemandCustodyOrderMock }));
+const structuralDemandCustodySelectMock = vi.fn(() => ({ in: structuralDemandCustodyInMock }));
 
 const modelingSourcesOrderMock = vi.fn();
 const modelingSourcesEqMock = vi.fn(() => ({ order: modelingSourcesOrderMock }));
@@ -475,6 +478,10 @@ const fromMock = vi.fn((table: string) => {
     return { select: comparableCustodySelectMock };
   }
 
+  if (table === "modeling_structural_demand_diagnosis_custody") {
+    return { select: structuralDemandCustodySelectMock };
+  }
+
   if (table === "engagement_campaigns") {
     return {
       select: engagementCampaignSelectMock,
@@ -602,6 +609,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
 
     modelingDiagnosisOrderMock.mockResolvedValue({ data: [], error: null });
     comparableCustodyOrderMock.mockResolvedValue({ data: [], error: null });
+    structuralDemandCustodyOrderMock.mockResolvedValue({ data: [], error: null });
     agreementArtifactsInMock.mockResolvedValue({ data: [], error: null });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);

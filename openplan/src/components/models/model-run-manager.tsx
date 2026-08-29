@@ -1906,14 +1906,14 @@ function ModelRunStagingAndArtifacts({
             <StatusBadge tone="warning">inconclusive</StatusBadge>
           </div>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-            <a href={`/api/models/${modelId}/runs/${run.id}/artifacts/${structuralInputAuditArtifact.id}/download`} target="_blank" rel="noopener noreferrer" className="underline">Download exact input audit</a>
+            <a href={`/api/models/${modelId}/runs/${run.id}/artifacts/${structuralInputAuditArtifact.id}/download`} target="_blank" rel="noopener noreferrer" className="underline">Download exact before-output check</a>
             <a href={`/api/models/${modelId}/runs/${run.id}/artifacts/${structuralDemandDiagnosisArtifact.id}/download`} target="_blank" rel="noopener noreferrer" className="underline">Download exact v3 diagnosis</a>
           </div>
         </section>
       ) : structuralInputAuditArtifact || structuralDemandDiagnosisArtifact ? (
         <section aria-label="Structural demand custody failure" className="mb-4 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 p-4">
           <StatusBadge tone="danger">scientifically unchecked</StatusBadge>
-          <p className="mt-2 text-sm text-muted-foreground">The input audit and diagnosis did not enter immutable custody together. This run cannot support a structural diagnosis claim.</p>
+          <p className="mt-2 text-sm text-muted-foreground">The before-output check and diagnosis did not enter immutable custody together. This run cannot support a structural diagnosis claim.</p>
         </section>
       ) : null}
       {stages?.length > 0 ? <RunProgressBar stages={stages} /> : null}
