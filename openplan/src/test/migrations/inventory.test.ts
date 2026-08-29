@@ -451,16 +451,16 @@ const EXPECTED = {
   // policy-bearing relation/table/RLS table, and no permissive write.
   // 20260828000004 adds the comparable-observation custody table with one
   // member read policy and service-role-only transactional writes.
-  policies: 689,
-  permissive: 443,
+  policies: 690,
+  permissive: 444,
   restrictive: 246,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 163,
-  relations: 187,
-  tables: 179,
+  tablesWithPolicies: 164,
+  relations: 188,
+  tables: 180,
   views: 8,
-  rlsEnabledTables: 179,
+  rlsEnabledTables: 180,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

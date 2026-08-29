@@ -1724,6 +1724,12 @@ function ModelRunStagingAndArtifacts({
   const diagnosisArtifact = artifacts.find(
     (artifact) => artifact.artifact_type === "model_validation_structural_diagnosis",
   );
+  const structuralInputAuditArtifact = artifacts.find(
+    (artifact) => artifact.artifact_type === "model_structural_input_audit_v1",
+  );
+  const structuralDemandDiagnosisArtifact = artifacts.find(
+    (artifact) => artifact.artifact_type === "model_validation_structural_diagnosis_v3",
+  );
   const assessment = assessmentArtifact?.metadata_json ?? null;
   const diagnosis = diagnosisArtifact?.metadata_json ?? null;
   const scientificOutcome =
@@ -1888,6 +1894,26 @@ function ModelRunStagingAndArtifacts({
           <p className="mt-2 text-sm text-muted-foreground">
             The computation may still be available, but its source material and result were not placed in immutable custody. It cannot support a validation claim.
           </p>
+        </section>
+      ) : null}
+      {structuralInputAuditArtifact && structuralDemandDiagnosisArtifact ? (
+        <section aria-label="Structural demand and loading diagnosis" className="mb-4 rounded-[0.75rem] border border-amber-300/60 bg-amber-50/70 p-4 dark:border-amber-900/60 dark:bg-amber-950/20" data-testid="model-structural-demand-diagnosis">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h4 className="font-semibold text-foreground">Structural demand and loading diagnosis</h4>
+              <p className="mt-1 text-sm text-muted-foreground">Structural coverage and diagnosed limitations only. This does not show improved accuracy. AequilibraE and ActivitySim remain separate.</p>
+            </div>
+            <StatusBadge tone="warning">inconclusive</StatusBadge>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
+            <a href={`/api/models/${modelId}/runs/${run.id}/artifacts/${structuralInputAuditArtifact.id}/download`} target="_blank" rel="noopener noreferrer" className="underline">Download exact input audit</a>
+            <a href={`/api/models/${modelId}/runs/${run.id}/artifacts/${structuralDemandDiagnosisArtifact.id}/download`} target="_blank" rel="noopener noreferrer" className="underline">Download exact v3 diagnosis</a>
+          </div>
+        </section>
+      ) : structuralInputAuditArtifact || structuralDemandDiagnosisArtifact ? (
+        <section aria-label="Structural demand custody failure" className="mb-4 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 p-4">
+          <StatusBadge tone="danger">scientifically unchecked</StatusBadge>
+          <p className="mt-2 text-sm text-muted-foreground">The input audit and diagnosis did not enter immutable custody together. This run cannot support a structural diagnosis claim.</p>
         </section>
       ) : null}
       {stages?.length > 0 ? <RunProgressBar stages={stages} /> : null}

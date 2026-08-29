@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openplan.dev/schemas/model-structural-input-audit-v1.schema.json",
+  "title": "OpenPlan model structural input audit v1",
+  "type": "object",
+  "required": ["schema", "audit_id", "created_at", "geography", "method", "frozen_before_model_output", "model_output_bytes_read", "release", "source_hashes", "source_vintages", "demand_distribution", "external_and_through_travel", "network_loading_readiness", "scientific_status"],
+  "properties": {
+    "schema": {"const": "openplan.model-structural-input-audit.v1"},
+    "method": {"enum": ["aequilibrae", "activitysim"]},
+    "frozen_before_model_output": {"const": true},
+    "model_output_bytes_read": {"const": false},
+    "scientific_status": {"const": "inconclusive"},
+    "source_hashes": {"type": "object", "minProperties": 10},
+    "demand_distribution": {"type": "object", "required": ["zone_productions", "zone_attractions", "source_coverage", "lodes_seed_coverage", "assumed_commute_share", "fallback_use", "intrazonal_share", "distance_band_shares", "row_total", "column_total", "rounding_loss", "unreachable_od_trips", "person_to_vehicle_conversion"]},
+    "external_and_through_travel": {"type": "object", "required": ["detected_crossings_before_caps", "retained_crossings", "dropped_crossings", "route_pairing", "exterior_connectivity", "volume_basis", "through_share_evidence", "non_work_through_travel", "demand_totals", "conservation_difference"]},
+    "network_loading_readiness": {"type": "object", "required": ["connected_components", "zone_connectors", "skimmable_od_pairs", "demand_removed_as_unreachable", "directional_restrictions", "facility_coverage", "loadable_roadway_links", "structurally_unreachable_roadway_links", "assignment_readiness"]}
+  },
+  "additionalProperties": true
+}

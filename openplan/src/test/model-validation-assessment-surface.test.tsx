@@ -136,3 +136,42 @@ describe("rules-v4 assessment surface", () => {
     expect(panel).toHaveTextContent("scientifically unchecked");
   });
 });
+
+describe("structural demand custody surface", () => {
+  const audit = {
+    id: "input-audit-v1",
+    artifact_type: "model_structural_input_audit_v1",
+    file_url: "storage://run-artifacts/input-audit.json",
+    file_size_bytes: 1024,
+    content_hash: "1".repeat(64),
+    metadata_json: { schema: "openplan.model-structural-input-audit.v1", method: "aequilibrae" },
+  } satisfies ModelRunArtifact;
+  const diagnosis = {
+    id: "diagnosis-v3",
+    artifact_type: "model_validation_structural_diagnosis_v3",
+    file_url: "storage://run-artifacts/diagnosis-v3.json",
+    file_size_bytes: 2048,
+    content_hash: "2".repeat(64),
+    metadata_json: { schema: "openplan.model-validation-structural-diagnosis.v3", method: "aequilibrae" },
+  } satisfies ModelRunArtifact;
+
+  it("shows the exact pair as inconclusive structural coverage", () => {
+    renderRun(runWithArtifacts([audit, diagnosis]));
+    const panel = screen.getByRole("region", { name: "Structural demand and loading diagnosis" });
+    expect(panel).toHaveTextContent("does not show improved accuracy");
+    expect(panel).toHaveTextContent("remain separate");
+    expect(screen.getByRole("link", { name: "Download exact input audit" })).toHaveAttribute(
+      "href", `/api/models/${MODEL_ID}/runs/33333333-3333-4333-8333-333333333333/artifacts/input-audit-v1/download`,
+    );
+    expect(screen.getByRole("link", { name: "Download exact v3 diagnosis" })).toHaveAttribute(
+      "href", `/api/models/${MODEL_ID}/runs/33333333-3333-4333-8333-333333333333/artifacts/diagnosis-v3/download`,
+    );
+  });
+
+  it("marks a partial custody pair scientifically unchecked", () => {
+    renderRun(runWithArtifacts([audit]));
+    expect(screen.getByRole("region", { name: "Structural demand custody failure" })).toHaveTextContent(
+      "scientifically unchecked",
+    );
+  });
+});

@@ -19,6 +19,35 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.43.0 — 2026-08-28
+
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying. Migration
+`20260828000005_structural_demand_diagnosis_custody.sql`
+(`structural_demand_diagnosis_custody`) adds service-role-only, append-only
+custody for each exact pre-output structural audit and its separate post-output
+diagnosis. Members may read records in their workspace; changed hashes,
+cross-workspace records, updates, deletions, and mutation of bound artifacts are
+refused. A failed transaction leaves the run visibly scientifically unchecked.
+
+The seven registered development counties now have fourteen separate demand and
+network-loading diagnoses. Each records productions and attractions, source and
+LODES gaps, distance and intrazonal shares, conservation and unreachable demand,
+all boundary crossings before gateway caps, dropped and paired crossings,
+external-volume and through-share evidence, components, connectors, restrictions,
+facility coverage, and loadable versus structurally unreachable links before any
+assignment output is opened. Post-output records retain loaded, unloaded,
+unreachable, excluded, ambiguous, unsupported, and missing-output observations.
+
+LODES remains home-to-work job-location evidence, not all-purpose or vehicle-trip
+evidence. Its vintage and role stay unknown where the frozen package does not
+prove them; non-work through travel stays unsupported. AequilibraE and
+ActivitySim keep their exact internal matrices, raw values, differences, and
+ratios separate while sharing the frozen network and external layer. This is a
+structural coverage diagnosis, not calibration or improved accuracy. All
+fourteen outcomes remain `inconclusive`; California and nationwide modeling
+capability remain `partial`.
+
 ## 0.42.0 — 2026-08-28
 
 **No migration required.** Pull and deploy after the normal backup and upgrade

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openplan.dev/schemas/model-validation-structural-diagnosis-v3.schema.json",
+  "title": "OpenPlan model validation structural diagnosis v3",
+  "type": "object",
+  "required": ["schema", "diagnosis_id", "created_at", "geography", "method", "scientific_outcome", "release", "bindings", "record_coverage", "records", "grouped_counts", "demand_components", "network_loading", "limitations"],
+  "properties": {
+    "schema": {"const": "openplan.model-validation-structural-diagnosis.v3"},
+    "method": {"enum": ["aequilibrae", "activitysim"]},
+    "scientific_outcome": {"const": "inconclusive"},
+    "record_coverage": {"type": "object", "required": ["loaded", "unloaded", "unreachable", "excluded", "ambiguous", "unsupported", "missing_output"]},
+    "records": {"type": "array", "items": {"type": "object", "required": ["observation_id", "classification", "frozen_match_status", "selected_link_ids", "modeled_value", "facility_class", "direction_treatment", "demand_component"]}},
+    "bindings": {"type": "object", "required": ["release_sha", "app_version", "v4_registry_sha256", "v041_custody_sha256", "demand_package_sha256", "network_sha256", "input_audit_sha256", "model_output_sha256", "comparison_basis_sha256", "predecessor_diagnosis_sha256"]}
+  },
+  "additionalProperties": true
+}

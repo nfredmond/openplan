@@ -104,6 +104,8 @@ import gtfs_skim
 import count_validation
 import model_validation_core
 import model_validation_core_v5
+import model_structural_input_audit
+import model_validation_structural_diagnosis_v3
 import emissions
 import equity
 import model_credibility
@@ -630,6 +632,32 @@ def sb_record_modeling_validation_assessment(payload: dict) -> dict:
     return result[0] if isinstance(result, list) else result
 
 
+def sb_record_modeling_structural_demand_diagnosis(payload: dict) -> dict:
+    """Commit one audit/diagnosis pair through the service-role-only RPC."""
+    response = requests.post(
+        f"{SUPABASE_URL}/rest/v1/rpc/record_modeling_structural_demand_diagnosis",
+        headers=HEADERS,
+        json=payload,
+        timeout=30,
+    )
+    if not 200 <= response.status_code < 300:
+        raise RuntimeError(
+            "structural demand evidence write failed: "
+            f"{response.status_code} {response.text[:200]}"
+        )
+    try:
+        result = response.json()
+    except ValueError as exc:
+        raise RuntimeError(
+            "structural demand evidence write failed: custody RPC returned no JSON"
+        ) from exc
+    if not result:
+        raise RuntimeError(
+            "structural demand evidence write failed: custody RPC returned no row"
+        )
+    return result[0] if isinstance(result, list) else result
+
+
 def upload_immutable_validation_json(run_id: str, assessment_id: str, path: str) -> str:
     """Upload one assessment file to a unique private object.
 
@@ -656,6 +684,34 @@ def upload_immutable_validation_json(run_id: str, assessment_id: str, path: str)
         return f"storage://run-artifacts/{object_path}"
     raise RuntimeError(
         "validation evidence write failed: immutable storage upload returned "
+        f"{response.status_code} {response.text[:200]}"
+    )
+
+
+def upload_immutable_structural_demand_json(
+    run_id: str, diagnosis_id: str, path: str
+) -> str:
+    """Upload one structural record to a unique, non-upserted private object."""
+    object_path = (
+        f"model-runs/{run_id}/structural-demand-diagnoses/{diagnosis_id}/"
+        f"{os.path.basename(path)}"
+    )
+    with open(path, "rb") as handle:
+        response = requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": "application/json",
+                "x-upsert": "false",
+            },
+            data=handle.read(),
+            timeout=60,
+        )
+    if response.status_code in (200, 201):
+        return f"storage://run-artifacts/{object_path}"
+    raise RuntimeError(
+        "structural demand evidence write failed: immutable storage upload returned "
         f"{response.status_code} {response.text[:200]}"
     )
 
@@ -4583,6 +4639,7 @@ def assess_rules_v5_validation_instrument(
     pre_volume_match_audit_path: str,
     validation_input_bundle_path: str,
     comparison_basis_path: str,
+    structural_input_audit_path: str,
     link_volumes_csv: str,
     assessment_id: str,
     readiness_root: str | None = None,
@@ -4592,6 +4649,13 @@ def assess_rules_v5_validation_instrument(
     The normal local worker accepts only a caller-frozen v2 package, audit,
     bundle, and basis. It verifies every input before opening link-volume bytes.
     """
+    with open(structural_input_audit_path, encoding="utf-8") as handle:
+        structural_input = json.load(handle)
+    model_structural_input_audit.validate_structural_input_audit(structural_input)
+    if structural_input.get("model_output_bytes_read") is not False:
+        raise model_structural_input_audit.StructuralAuditRefused(
+            "Model output cannot open before the structural input audit passes"
+        )
     return model_validation_core_v5.assess_frozen_instrument_files(
         observation_package_path=observation_package_path,
         pre_volume_match_audit_path=pre_volume_match_audit_path,
@@ -4701,6 +4765,94 @@ def persist_rules_v4_validation_records(
             handle.write(model_validation_core.canonical_json(assessment))
         assessment["validation_evidence_write_error"] = str(exc)
     return assessment
+
+
+def persist_structural_demand_diagnosis_records(
+    *,
+    run_id: str,
+    stage_id: str,
+    workspace_id: str,
+    record_dir: str,
+    audit: dict,
+    diagnosis: dict,
+) -> dict:
+    """Persist an exact audit/diagnosis pair or return an unchecked run state.
+
+    The returned status is outside the exact diagnosis bytes. Adding a
+    post-write flag to the stored document would make its recorded SHA-256
+    false.
+    """
+    model_structural_input_audit.validate_structural_input_audit(audit)
+    if diagnosis.get("schema") != model_validation_structural_diagnosis_v3.DIAGNOSIS_SCHEMA:
+        raise ValueError("structural demand diagnosis schema is not v3")
+    if diagnosis.get("method") != audit.get("method"):
+        raise ValueError("structural demand audit and diagnosis methods differ")
+
+    os.makedirs(record_dir, exist_ok=False)
+    paths = {
+        "input_audit": os.path.join(record_dir, "model_structural_input_audit.json"),
+        "diagnosis": os.path.join(record_dir, "model_validation_structural_diagnosis.json"),
+    }
+    for key, payload in (("input_audit", audit), ("diagnosis", diagnosis)):
+        with open(paths[key], "w", encoding="utf-8") as handle:
+            handle.write(model_structural_input_audit.canonical_json(payload))
+
+    result = {
+        "diagnosis": diagnosis,
+        "custody_write": "pending",
+        "scientific_check": "scientifically_unchecked",
+    }
+    try:
+        urls = {
+            key: upload_immutable_structural_demand_json(
+                run_id, str(diagnosis["diagnosis_id"]), path
+            )
+            for key, path in paths.items()
+        }
+
+        def facts(path: str) -> tuple[int, str]:
+            with open(path, "rb") as handle:
+                payload = handle.read()
+            return len(payload), hashlib.sha256(payload).hexdigest()
+
+        audit_size, audit_hash = facts(paths["input_audit"])
+        diagnosis_size, diagnosis_hash = facts(paths["diagnosis"])
+        if diagnosis.get("bindings", {}).get("input_audit_sha256") != audit_hash:
+            raise RuntimeError("diagnosis does not bind the exact input-audit bytes")
+        sb_record_modeling_structural_demand_diagnosis({
+            "p_workspace_id": workspace_id,
+            "p_model_run_id": run_id,
+            "p_stage_id": stage_id,
+            "p_input_audit_file_url": urls["input_audit"],
+            "p_input_audit_size": audit_size,
+            "p_input_audit_sha256": audit_hash,
+            "p_input_audit_metadata": {
+                "schema": audit["schema"],
+                "method": audit["method"],
+            },
+            "p_diagnosis_file_url": urls["diagnosis"],
+            "p_diagnosis_size": diagnosis_size,
+            "p_diagnosis_sha256": diagnosis_hash,
+            "p_diagnosis_metadata": {
+                "schema": diagnosis["schema"],
+                "method": diagnosis["method"],
+                "input_audit_sha256": audit_hash,
+                "scientific_outcome": diagnosis["scientific_outcome"],
+            },
+            "p_method": diagnosis["method"],
+            "p_scientific_outcome": diagnosis["scientific_outcome"],
+        })
+        result["custody_write"] = "recorded"
+        result["scientific_check"] = "checked"
+    except Exception as exc:
+        unchecked = dict(diagnosis)
+        unchecked["limitations"] = list(diagnosis.get("limitations") or []) + [
+            "Custody write failed. The run is scientifically unchecked until exact append-only custody succeeds."
+        ]
+        result["diagnosis"] = unchecked
+        result["custody_write"] = "structural demand evidence write failed"
+        result["custody_write_error"] = str(exc)
+    return result
 
 
 def _network_coverage_for_run(run_id: str, db_path: str, link_volumes_csv: str) -> dict | None:

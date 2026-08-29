@@ -75,9 +75,10 @@ async function evidenceRows(
   assessments: Record<string, unknown>[];
   diagnoses: Record<string, unknown>[];
   comparableObservationCustody: Record<string, unknown>[];
+  structuralDemandCustody: Record<string, unknown>[];
 }> {
   if (modelRunIds.length === 0 && countyRunIds.length === 0) {
-    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [], comparableObservationCustody: [] };
+    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [], comparableObservationCustody: [], structuralDemandCustody: [] };
   }
 
   const tableReads = [
@@ -139,6 +140,7 @@ async function evidenceRows(
   let assessments: Record<string, unknown>[] = [];
   let diagnoses: Record<string, unknown>[] = [];
   let comparableObservationCustody: Record<string, unknown>[] = [];
+  let structuralDemandCustody: Record<string, unknown>[] = [];
   if (modelRunIds.length > 0) {
     const read = await dynamicFrom("modeling_validation_assessments")
       .select(
@@ -184,9 +186,19 @@ async function evidenceRows(
       );
     }
     comparableObservationCustody = rows(comparableRead.data);
+
+    const structuralDemandRead = await dynamicFrom("modeling_structural_demand_diagnosis_custody")
+      .select("id, workspace_id, model_run_id, input_audit_artifact_id, diagnosis_artifact_id, input_audit_sha256, diagnosis_sha256, method, scientific_outcome, created_at")
+      .eq("workspace_id", workspaceId)
+      .in("model_run_id", modelRunIds)
+      .order("created_at", { ascending: true });
+    if (structuralDemandRead.error) {
+      throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked structural demand custody could not be read.");
+    }
+    structuralDemandCustody = rows(structuralDemandRead.data);
   }
 
-  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses, comparableObservationCustody };
+  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses, comparableObservationCustody, structuralDemandCustody };
 }
 
 /**
@@ -304,6 +316,8 @@ export async function loadProjectEvidenceGeneratedFiles(
           "model_comparison_basis_v2",
           "model_validation_assessment_v2",
           "model_validation_structural_diagnosis_v2",
+          "model_structural_input_audit_v1",
+          "model_validation_structural_diagnosis_v3",
         ])
         .order("created_at", { ascending: true });
       if (artifactsRead.error) {
@@ -489,6 +503,26 @@ export async function loadProjectEvidenceGeneratedFiles(
       numericClaim: true,
     }),
   }));
+  const structuralDemandCustody = modelingEvidence.structuralDemandCustody.map((custody) => ({
+    ...withoutPersonalIdentifiers(custody) as Record<string, unknown>,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { table: "modeling_structural_demand_diagnosis_custody", id: custody.id },
+      source: {
+        kind: "structural_demand_diagnosis",
+        label: "Structural demand and network loading diagnosis",
+        citation: typeof custody.diagnosis_sha256 === "string" ? custody.diagnosis_sha256 : null,
+      },
+      asOfDate: typeof custody.created_at === "string" ? custody.created_at : null,
+      retrievedAt: generatedAt.toISOString(),
+      evidenceStatus: "modeled",
+      claimTier: null,
+      uncertainty: ["The scientific outcome remains inconclusive."],
+      limits: ["This diagnoses structural coverage and limitations. It does not claim improved model accuracy."],
+      revisionToken: typeof custody.created_at === "string" ? custody.created_at : null,
+      checksumSha256: typeof custody.diagnosis_sha256 === "string" ? custody.diagnosis_sha256 : null,
+      numericClaim: true,
+    }),
+  }));
   const modeling = {
     schemaVersion: "project_modeling_evidence.v3",
     projectId: project.id,
@@ -502,6 +536,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     validationAssessments,
     structuralDiagnoses,
     comparableObservationCustody,
+    structuralDemandCustody,
     claimDecisions,
   };
   const modelingRevisionToken = sourceRevision({
@@ -514,6 +549,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     validationAssessments: withoutPersonalIdentifiers(modelingEvidence.assessments),
     structuralDiagnoses: withoutPersonalIdentifiers(modelingEvidence.diagnoses),
     comparableObservationCustody: withoutPersonalIdentifiers(modelingEvidence.comparableObservationCustody),
+    structuralDemandCustody: withoutPersonalIdentifiers(modelingEvidence.structuralDemandCustody),
     claimDecisions: withoutPersonalIdentifiers(modelingEvidence.claims),
   });
   const hasUnsupportedModelingClaim = [...claimDecisions, ...validationResults]

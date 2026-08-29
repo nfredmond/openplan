@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openplan.dev/schemas/structural-demand-diagnosis-study-result-v1.schema.json",
+  "title": "OpenPlan structural demand diagnosis study result v1",
+  "type": "object",
+  "required": ["schema", "study_id", "created_at", "release", "v4_registry", "v041_study_result", "counties", "method_records", "method_aggregation", "scientific_outcome", "model_accuracy_claim", "claims"],
+  "properties": {
+    "schema": {"const": "openplan.structural-demand-diagnosis-study-result.v1"},
+    "method_records": {"const": 14},
+    "method_aggregation": {"const": "separate"},
+    "scientific_outcome": {"const": "inconclusive"},
+    "model_accuracy_claim": {"const": "not made"},
+    "counties": {"type": "array", "minItems": 7, "maxItems": 7}
+  },
+  "additionalProperties": true
+}

@@ -111,6 +111,13 @@ export type CitedComparableObservationCustody = {
   diagnosisSha256: string;
 };
 
+export type CitedStructuralDemandCustody = {
+  outcome: "inconclusive";
+  method: "aequilibrae" | "activitysim";
+  inputAuditSha256: string;
+  diagnosisSha256: string;
+};
+
 /**
  * Why a cited link has no resolved run row. These are four different facts and
  * the citation says which one is true; `"unknown"` is what a caller that did not
@@ -486,11 +493,13 @@ export async function withCitedModelRunClaimTiers<
   validationStructuralDiagnosisReadFailed: boolean;
   comparableObservationCustody: CitedComparableObservationCustody | null;
   comparableObservationCustodyReadFailed: boolean;
+  structuralDemandCustody: CitedStructuralDemandCustody | null;
+  structuralDemandCustodyReadFailed: boolean;
 }>> {
   if (citedModelRuns.length === 0) return [];
 
   const runIds = citedModelRuns.map((run) => run.id);
-  const [evidence, assessmentResult, diagnosisResult, comparableResult] = await Promise.all([
+  const [evidence, assessmentResult, diagnosisResult, comparableResult, structuralDemandResult] = await Promise.all([
     loadRtpEvidenceRunDisclosures(
       supabase as unknown as RtpEvidenceSupabaseLike,
       runIds,
@@ -516,6 +525,11 @@ export async function withCitedModelRunClaimTiers<
     supabase
       .from("modeling_validation_instrument_v2_custody")
       .select("model_run_id, input_bundle_sha256, match_audit_sha256, comparison_basis_sha256, assessment_sha256, diagnosis_sha256, scientific_outcome, created_at")
+      .in("model_run_id", runIds)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("modeling_structural_demand_diagnosis_custody")
+      .select("model_run_id, input_audit_sha256, diagnosis_sha256, method, scientific_outcome, created_at")
       .in("model_run_id", runIds)
       .order("created_at", { ascending: false }),
   ]);
@@ -593,6 +607,20 @@ export async function withCitedModelRunClaimTiers<
     }
   }
 
+  const newestStructuralDemandByRun = new Map<string, CitedStructuralDemandCustody>();
+  if (!structuralDemandResult.error) {
+    for (const row of (structuralDemandResult.data ?? []) as Array<Record<string, unknown>>) {
+      const modelRunId = typeof row.model_run_id === "string" ? row.model_run_id : null;
+      const method = row.method;
+      if (!modelRunId || newestStructuralDemandByRun.has(modelRunId) || row.scientific_outcome !== "inconclusive" || (method !== "aequilibrae" && method !== "activitysim")) continue;
+      newestStructuralDemandByRun.set(modelRunId, {
+        outcome: "inconclusive", method,
+        inputAuditSha256: String(row.input_audit_sha256 ?? "unknown"),
+        diagnosisSha256: String(row.diagnosis_sha256 ?? "unknown"),
+      });
+    }
+  }
+
   return citedModelRuns.map((run) => ({
     ...run,
     claimStatus: evidence.claimTierFor(run.id),
@@ -603,6 +631,8 @@ export async function withCitedModelRunClaimTiers<
     validationStructuralDiagnosisReadFailed: Boolean(diagnosisResult.error || diagnosisArtifactResult.error),
     comparableObservationCustody: newestComparableByRun.get(run.id) ?? null,
     comparableObservationCustodyReadFailed: Boolean(comparableResult.error),
+    structuralDemandCustody: newestStructuralDemandByRun.get(run.id) ?? null,
+    structuralDemandCustodyReadFailed: Boolean(structuralDemandResult.error),
   }));
 }
 

@@ -332,6 +332,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260828000004_comparable_observation_v2_custody.sql",
     migrationsAtRelease: 239,
   },
+  // 0.43.0 adds service-role-only append-only custody for the exact pre-output
+  // structural audit and its separate post-output method diagnosis.
+  {
+    tag: "0.43.0",
+    lastMigration: "20260828000005_structural_demand_diagnosis_custody.sql",
+    migrationsAtRelease: 240,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

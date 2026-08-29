@@ -15,8 +15,15 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
 **What you need to have done:**
 
 1. Start from the signed-in landing page and use visible navigation to reach
-   Models. Review both the v0.41 comparable-observation instrument and the v0.40
-   frozen diagnosis history. Download the v0.41 exact study result, one observation
+   Models. Review the v0.43 structural demand/loading diagnosis, the v0.41
+   comparable-observation instrument, and the v0.40 frozen diagnosis history.
+   In v0.43, select one county, switch between AequilibraE and ActivitySim, and
+   confirm the values are separate rather than averaged. Download both methods'
+   exact pre-output audits and post-output diagnoses and verify each downloaded
+   SHA-256 against the full hash on screen. Confirm LODES vintage and use remain
+   unknown, non-work through travel is unsupported, the through share is an
+   assumption, and the result is structural coverage rather than improved
+   accuracy. Download the v0.41 exact study result, one observation
    package, and its pre-volume full-geometry match audit. Confirm the screen calls
    this repaired instrument coverage, not improved model accuracy, and calls the
    modeled quantity synthetic expanded daily traffic rather than AADT. Then open
@@ -48,8 +55,12 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    and exercise each visible exact-download link.
 6. If the run includes ActivitySim, confirm its assessment remains separate
    from the AequilibraE assignment assessment rather than being averaged.
+7. Repeat the published-diagnosis inspection at desktop width and 390px. The
+   full hashes and download controls must not cause horizontal overflow. Record
+   any console error or failed response; a clean journey requires neither.
 
 The outcome is reached when you can state the recorded scientific outcome and
 why, distinguish the structural finding categories, and have downloaded the
-exact diagnosis plus the immutable assessment and its exact input and basis
-evidence. An honest `inconclusive` outcome fully satisfies this job.
+exact v0.43 audit/diagnosis pair plus the immutable run assessment and its exact
+input and basis evidence. An honest `inconclusive` outcome fully satisfies this
+job.

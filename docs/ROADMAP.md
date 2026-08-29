@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: 5d934626e0e4130b7a9408a7f85760d7ae9441c1
-current_release: v0.42.0
+current_release: v0.43.0
 review_by: 2026-09-28
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.42.0
+## Current truth at v0.43.0
 
 Strong foundations already exist:
 
@@ -188,6 +188,24 @@ The v1 contract is not yet true:
 - Carried all five planning-job cells and the same full registry hash into exact
   JSON downloads, generated reports, assistant grounding, and immutable project
   evidence bundles.
+
+## Completed checkpoint: v0.43 structural demand and loading diagnosis
+
+- Bound the frozen v0.41 packages, full-geometry matches, exact method demand,
+  shared network/external layer, source vintages, settings, and outputs in one
+  registry-driven v4 development study.
+- Completed fourteen assignment-blind input audits before opening any output,
+  retaining productions, attractions, distance shares, crossings before caps,
+  route pairing, external bases, components, connectors, restrictions,
+  unreachable demand, and roadway loading coverage.
+- Joined those audits to unchanged v0.41 records after output access and kept
+  loaded, unloaded, unreachable, excluded, ambiguous, unsupported, and
+  missing-output states visible by method and structural category.
+- Kept unproved LODES facts `unknown`, non-work through travel `unsupported`,
+  and AequilibraE and ActivitySim values separate. No default, match, parameter,
+  threshold, candidate, or holdout changed.
+- Published fourteen exact diagnoses as `inconclusive`; California and
+  nationwide modeling capability remain `partial`.
 - Extended existing first-week jobs rather than adding a module or journey.
   Desktop and 390px exemplar checks remain release evidence, not a nationwide
   capability claim.

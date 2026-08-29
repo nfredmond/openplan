@@ -811,6 +811,14 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
           .limit(10);
         if (comparableError) throw new Error(comparableError.message ?? "comparable observation custody query failed");
         const comparableRows = (comparableData ?? []) as Array<Record<string, unknown>>;
+        const { data: structuralDemandData, error: structuralDemandError } = await supabase
+          .from("modeling_structural_demand_diagnosis_custody")
+          .select("id, input_audit_artifact_id, diagnosis_artifact_id, input_audit_sha256, diagnosis_sha256, method, scientific_outcome, created_at")
+          .eq("model_run_id", input.modelRunId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (structuralDemandError) throw new Error(structuralDemandError.message ?? "structural demand custody query failed");
+        const structuralDemandRows = (structuralDemandData ?? []) as Array<Record<string, unknown>>;
         const diagnosisArtifactIds = diagnosisRows
           .map((row) => row.diagnosis_artifact_id)
           .filter((value): value is string => typeof value === "string");
@@ -936,8 +944,19 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
               },
               createdAt: isoOrNull(row.created_at),
             })),
+            structuralDemandCustody: structuralDemandRows.map((row) => ({
+              id: row.id,
+              method: row.method,
+              outcome: row.scientific_outcome,
+              note: "Structural coverage and diagnosed limitations only. This is not improved model accuracy. LODES provenance may be unavailable and non-work through travel may be unsupported.",
+              exactArtifacts: {
+                inputAudit: { id: row.input_audit_artifact_id, sha256: row.input_audit_sha256 },
+                diagnosis: { id: row.diagnosis_artifact_id, sha256: row.diagnosis_sha256 },
+              },
+              createdAt: isoOrNull(row.created_at),
+            })),
             scientificNote:
-              assessmentRows.length === 0 && comparableRows.length === 0
+              assessmentRows.length === 0 && comparableRows.length === 0 && structuralDemandRows.length === 0
                 ? "No rules-v4 or rules-v5 scientific assessment is in immutable custody. Legacy point-count diagnostics do not establish same-basis comparability."
                 : "Quote the scientific outcome and reasons exactly. A fail or inconclusive assessment is retained evidence, not a missing result.",
           },

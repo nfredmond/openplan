@@ -835,6 +835,8 @@ export function labelForArtifactType(artifactType: string | null | undefined) {
   if (artifactType === "model_comparison_basis_v2") return "Comparable Observation Basis";
   if (artifactType === "model_validation_assessment_v2") return "Rules-v5 Validation Assessment";
   if (artifactType === "model_validation_structural_diagnosis_v2") return "Repaired Instrument Diagnosis";
+  if (artifactType === "model_structural_input_audit_v1") return "Structural Model Input Audit";
+  if (artifactType === "model_validation_structural_diagnosis_v3") return "Structural Demand and Loading Diagnosis";
   return titleCaseTokenized(artifactType);
 }
 

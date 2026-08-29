@@ -137,6 +137,13 @@ export type ReportCitedModelRun = {
     diagnosisSha256: string;
   } | null;
   comparableObservationCustodyReadFailed?: boolean;
+  structuralDemandCustody?: {
+    outcome: "inconclusive";
+    method: "aequilibrae" | "activitysim";
+    inputAuditSha256: string;
+    diagnosisSha256: string;
+  } | null;
+  structuralDemandCustodyReadFailed?: boolean;
 };
 
 /** A county validation run cited by the report (report_runs.county_run_id). */
@@ -531,6 +538,12 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     : comparable
       ? `Rules-v5 comparable-observation assessment: ${comparable.outcome}. Repaired observation and full-geometry match coverage is not improved model accuracy; modeled quantity is synthetic expanded daily traffic, not AADT. Input ${comparable.inputBundleSha256}; match audit ${comparable.matchAuditSha256}; basis ${comparable.comparisonBasisSha256}; assessment ${comparable.assessmentSha256}; diagnosis ${comparable.diagnosisSha256}.`
       : "No rules-v5 comparable-observation custody is attached to this run.";
+  const structuralDemand = run.structuralDemandCustody;
+  const structuralDemandLine = run.structuralDemandCustodyReadFailed
+    ? "Structural demand custody could not be read; the run is scientifically unchecked for that diagnosis."
+    : structuralDemand
+      ? `Structural demand and loading diagnosis: ${structuralDemand.outcome}, ${structuralDemand.method}. This records structural coverage and limitations, not improved accuracy. Input audit ${structuralDemand.inputAuditSha256}; diagnosis ${structuralDemand.diagnosisSha256}.`
+      : "No structural demand and loading diagnosis custody is attached to this run.";
 
   return `<article class="run-card">
     <div class="run-head">
@@ -545,6 +558,7 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     <p class="meta">${esc(assessmentLine)}</p>
     <p class="meta">${esc(diagnosisLine)}</p>
     <p class="meta">${esc(comparableLine)}</p>
+    <p class="meta">${esc(structuralDemandLine)}</p>
     <p class="meta">${esc(runMode.caveatSummary)}</p>
   </article>`;
 }

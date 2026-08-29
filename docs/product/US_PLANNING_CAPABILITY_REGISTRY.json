@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "currentRelease": "v0.42.0",
+  "currentRelease": "v0.43.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
@@ -106,6 +106,7 @@
     "docs/ops/2026-08-28-v0.37-governed-decision-handoff-correction-proof.md",
     "docs/ops/2026-08-28-governed-decision-handoff-browser-proof.md",
     "docs/modeling/OBSERVED_COUNT_INSTRUMENT_READINESS_2026-08-28.md",
-    "docs/modeling/DEVELOPMENT_VALIDATION_INSTRUMENT_RESULT_2026-08-28.md"
+    "docs/modeling/DEVELOPMENT_VALIDATION_INSTRUMENT_RESULT_2026-08-28.md",
+    "docs/modeling/STRUCTURAL_DEMAND_DIAGNOSIS_RESULT_2026-08-28.md"
   ]
 }
