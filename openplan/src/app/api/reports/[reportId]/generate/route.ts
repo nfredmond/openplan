@@ -124,6 +124,8 @@ import type {
   PacketGeographyCorridor,
   PacketGeographyReadState,
 } from "@/lib/reports/geography-figure";
+import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 
 /**
  * A read whose ABSENCE is honest when the schema is genuinely not there: no
@@ -1624,6 +1626,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // type — the same reason the workspace read above is cast. Guaranteed
     // non-null here; a failed or empty project read returned already.
     const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
+    const jurisdictionReadiness = buildJurisdictionReadinessPayload(
+      {
+        countryCode: projectRow.place_country_code ?? null,
+        subdivisionCode: projectRow.place_subdivision_code ?? null,
+        label: projectRow.place_label ?? null,
+      },
+      jurisdictionReadinessRegistrySha256(),
+    );
     let estimatedCostSourceTitle: string | null = null;
     if (projectRow.estimated_cost_source_document_id) {
       // The recorded FK is the source of this estimate. Portfolio imports are
@@ -2345,6 +2355,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // client's string-parser cannot type.
       workspace: workspaceResult.data as { id: string; name: string } | null,
       project: { ...projectRow, estimated_cost_source_title: estimatedCostSourceTitle },
+      jurisdictionReadiness,
       runs: linkedRuns,
       sections: sectionsResult.data ?? [],
       safetyEvidence,
@@ -2503,6 +2514,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         reportOrigin: engagementProvenance?.origin ?? "report_builder",
         reportReason: engagementProvenance?.reason ?? null,
         projectUpdatedAt: projectRow.updated_at,
+        jurisdictionReadiness,
         linkedRunCount: linkedRuns.length,
         citedModelRunCount: citedModelRuns.length,
         citedCountyRunCount: citedCountyRuns.length,

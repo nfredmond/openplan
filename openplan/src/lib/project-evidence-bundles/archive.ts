@@ -44,7 +44,7 @@ export type GeneratedProjectEvidenceFile = {
   path: string;
   recordId: string;
   title: string;
-  sourceId: "project_record" | "linked_data" | "modeling_evidence" | "project_geopackage";
+  sourceId: "project_record" | "linked_data" | "modeling_evidence" | "project_geopackage" | "jurisdiction_readiness";
   owningModule: string;
   bytes: Buffer;
   contentType: string;

@@ -1,10 +1,15 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "currentRelease": "v0.41.0",
   "reviewedAt": "2026-08-25",
   "reviewBy": "2026-09-25",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
   "interimReleasePolicy": "Open cells block v1.0.0 but remain visible without blocking honest pre-v1 releases.",
+  "readinessRegistry": {
+    "schema": "openplan.jurisdiction-readiness.v1",
+    "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
+    "sha256": "7053ef47cd43d4344d5c429e53793823fb64c865531890f88defde915374d018"
+  },
   "dimensions": {
     "planner": [
       { "id": "transportation-planner", "status": "partial" },

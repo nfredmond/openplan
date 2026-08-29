@@ -30,6 +30,12 @@ Nobody told you which of these the software wants, or in what order.
 3. Whatever the software knows about this project can be pulled together into
    one thing you could put in front of the board and hand out. Find that thing
    and produce it.
+4. Before handoff, answer “Can OpenPlan do this here?” for the project evidence
+   handoff. The status, applicability, limitations, registry hash, and evidence
+   hashes must agree on the project screen, in the generated report, and in the
+   project evidence bundle. Download the exact readiness JSON and the bundle;
+   confirm the bundle contains `project/jurisdiction-readiness.json` rather than
+   relying on a screen-only summary.
 
 The test of whether you finished is not whether you clicked everything. It is
 whether, at the end, you could open one screen or one document and talk a board

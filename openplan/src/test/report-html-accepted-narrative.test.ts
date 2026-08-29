@@ -96,6 +96,59 @@ function narrative(overrides?: Partial<AcceptedSectionNarrative>): AcceptedSecti
 }
 
 describe("buildReportHtml accepted-narrative rendering", () => {
+  it("renders exact jurisdiction readiness without borrowing another jurisdiction", () => {
+    const html = buildReportHtml(baseData({
+      jurisdictionReadiness: {
+        schema: "openplan.jurisdiction-readiness-response.v1",
+        registryVersion: "2026-08-28",
+        registrySha256: "a".repeat(64),
+        jurisdiction: {
+          id: "US-OR",
+          label: "Oregon",
+          country: "US",
+          subdivision: "OR",
+          assessmentKind: "state_exemplar",
+        },
+        reports: [{
+          schema: "openplan.jurisdiction-readiness-report.v1",
+          registryVersion: "2026-08-28",
+          registrySha256: "a".repeat(64),
+          reviewedAt: "2026-08-28",
+          reviewBy: "OpenPlan product direction review",
+          jurisdiction: {
+            id: "US-OR",
+            label: "Oregon",
+            country: "US",
+            subdivision: "OR",
+            assessmentKind: "state_exemplar",
+          },
+          job: {
+            id: "project-evidence-handoff",
+            label: "Project evidence handoff",
+            description: "Freeze and transfer project evidence.",
+            plannerIds: ["transportation-planner"],
+            organizationIds: ["county"],
+            artifactIds: ["project-evidence-bundle"],
+          },
+          status: "partial",
+          statusLabel: "Partly supported",
+          applicability: "The shared handoff workflow is country-neutral.",
+          sources: [{ id: "handoff-proof", path: "docs/ops/2026-08-27-proof.md", sha256: "b".repeat(64) }],
+          adapterIds: [],
+          authorities: [],
+          limitations: ["The Oregon visible journey is not yet frozen."],
+        }],
+      },
+    }));
+
+    expect(html).toContain("Can OpenPlan do this here?");
+    expect(html).toContain("Oregon");
+    expect(html).toContain("Partly supported");
+    expect(html).toContain("The Oregon visible journey is not yet frozen.");
+    expect(html).toContain(`sha256:${"a".repeat(64)}`);
+    expect(html).toContain(`sha256:${"b".repeat(64)}`);
+  });
+
   it("renders the frozen orthophoto preview, custody facts, placement, and non-survey caveat", () => {
     const html = buildReportHtml(baseData({
       aerialOrthoPreview: {

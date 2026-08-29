@@ -5,6 +5,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { CORRIDOR_COLUMNS, type ProjectCorridorRow } from "@/lib/cartographic/project-corridor-record";
 import { buildEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
+import { buildJurisdictionReadinessEvidenceFile } from "@/lib/jurisdiction-readiness/evidence-bundle";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import {
   buildProjectGeoPackage,
   type ProjectGeoPackageCrash,
@@ -528,6 +530,14 @@ export async function loadProjectEvidenceGeneratedFiles(
   const linkedPlanRevisionToken = selectedPlan
     ? sourceRevision(withoutPersonalIdentifiers(selectedPlan))
     : null;
+  const jurisdictionReadinessFile = buildJurisdictionReadinessEvidenceFile(
+    projectRecord as ProjectScope & {
+      place_label?: string | null;
+      place_country_code?: string | null;
+      place_subdivision_code?: string | null;
+    },
+    jurisdictionReadinessRegistrySha256(),
+  );
 
   return {
     projectRecord,
@@ -545,6 +555,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         knownLimits: [],
         revisionToken: projectRevisionToken,
       },
+      jurisdictionReadinessFile,
       {
         path: "project/project.gpkg",
         recordId: project.id,

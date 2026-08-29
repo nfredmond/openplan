@@ -83,6 +83,9 @@ import {
 import { filterToCurrentReadyVersion } from "@/lib/gtfs/persist";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { ReadFailureLog, type ReadFailure, type ReadResultLike } from "@/lib/ui/read-failures";
+import type { JurisdictionReadinessReport } from "@/lib/jurisdiction-readiness/contracts";
+import { resolveJurisdictionReadiness } from "@/lib/jurisdiction-readiness/registry";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 
 /**
  * A READ THAT FAILED WHILE THIS CONTEXT WAS ASSEMBLED.
@@ -590,6 +593,7 @@ export type ProjectAssistantContext = {
     deliveryPhase: string;
     updatedAt: string;
   };
+  jurisdictionReadiness?: JurisdictionReadinessReport;
   counts: {
     deliverables: number;
     risks: number;
@@ -2090,7 +2094,7 @@ async function loadProjectContext(
   const reads = new ReadFailureLog();
   const projectResult = await supabase
     .from("projects")
-    .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
+    .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at, place_label, place_country_code, place_subdivision_code")
     .eq("id", projectId)
     .maybeSingle();
 
@@ -2103,6 +2107,9 @@ async function loadProjectContext(
     plan_type: string;
     delivery_phase: string;
     updated_at: string;
+    place_label: string | null;
+    place_country_code: string | null;
+    place_subdivision_code: string | null;
   }>("this project record", projectResult);
 
   if (!project) {
@@ -2464,6 +2471,15 @@ async function loadProjectContext(
       deliveryPhase: project.delivery_phase,
       updatedAt: project.updated_at,
     },
+    jurisdictionReadiness: resolveJurisdictionReadiness(
+      {
+        countryCode: project.place_country_code,
+        subdivisionCode: project.place_subdivision_code,
+        label: project.place_label,
+      },
+      "project-evidence-handoff",
+      { registrySha256: jurisdictionReadinessRegistrySha256() },
+    ) ?? undefined,
     counts: {
       deliverables: deliverablesResult.data?.length ?? 0,
       risks: risksResult.data?.length ?? 0,

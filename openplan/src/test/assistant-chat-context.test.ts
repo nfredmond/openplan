@@ -12,6 +12,7 @@ import type {
   RunAssistantContext,
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
+import { resolveJurisdictionReadiness } from "@/lib/jurisdiction-readiness/registry";
 
 function buildOperationsSummary(
   overrides?: Partial<WorkspaceAssistantContext["operationsSummary"]["counts"]>
@@ -256,6 +257,23 @@ describe("buildAssistantChatContextLines", () => {
     expect(joined).toContain('Lead funding opportunity: "SS4A Implementation Grant" (status open, decision pursue, closes 2026-08-15)');
     expect(joined).toContain('Overdue decision: "ATP Cycle 7"');
     expect(joined).toContain("Report posture: 3 linked reports (2 evidence-backed, 1 without packets, 1 refresh recommended)");
+  });
+
+  it("carries exact jurisdiction status, limits, registry hash, and evidence into assistant grounding", () => {
+    const context = buildProjectContext();
+    context.jurisdictionReadiness = resolveJurisdictionReadiness(
+      { countryCode: "US", subdivisionCode: "OR", label: "Deschutes County, Oregon" },
+      "project-evidence-handoff",
+      { registrySha256: "e".repeat(64) },
+    ) ?? undefined;
+
+    const joined = buildAssistantChatContextLines(context).join("\n");
+
+    expect(joined).toContain("Jurisdiction readiness: Project record and evidence handoff is partly supported");
+    expect(joined).toContain("Deschutes County, Oregon");
+    expect(joined).toContain("sha256:" + "e".repeat(64));
+    expect(joined).toContain("visible Oregon start-to-handoff journey has not yet");
+    expect(joined).toContain("docs/ops/2026-08-28-v0.37-governed-decision-handoff-correction-proof.md");
   });
 
   it("serializes RTP cycle context with horizon and packet posture", () => {

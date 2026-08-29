@@ -214,6 +214,9 @@ const PROJECT_ROW: TableResult = {
     plan_type: "corridor",
     delivery_phase: "design",
     updated_at: "2026-03-28T17:40:00.000Z",
+    place_label: "Nevada County, California",
+    place_country_code: "US",
+    place_subdivision_code: "CA",
   },
   error: null,
 };
@@ -656,6 +659,29 @@ describe("the RTP cycle copilot reads the financial element", () => {
 });
 
 describe("the project copilot over a failed funding read", () => {
+  it("reads and carries the project's exact jurisdiction readiness cell", async () => {
+    const supabase = createSupabase(
+      {
+        workspace_members: MEMBERSHIP,
+        projects: PROJECT_ROW,
+      },
+      { projectFixtureColumns: ["projects"] },
+    );
+
+    const context = await loadAssistantContext(supabase.client, "user-1", PROJECT_TARGET);
+    if (!context || context.kind !== "project") throw new Error("Expected a project context");
+
+    expect(supabase.selects.find((read) => read.table === "projects")?.columns).toContain(
+      "place_subdivision_code",
+    );
+    expect(context.jurisdictionReadiness).toMatchObject({
+      jurisdiction: { id: "US-CA", label: "Nevada County, California" },
+      job: { id: "project-evidence-handoff" },
+      status: "supported",
+    });
+    expect(context.jurisdictionReadiness?.registrySha256).toMatch(/^[0-9a-f]{64}$/);
+  });
+
   it("refuses to say no funding opportunities are linked", async () => {
     const supabase = createSupabase({
       workspace_members: MEMBERSHIP,

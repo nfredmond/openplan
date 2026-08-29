@@ -40,6 +40,11 @@ describe("the recurring product-direction review", () => {
       expect.arrayContaining(["planner", "organization", "state", "capability", "artifact", "accessibility", "operations"]),
     );
     expect(registry.dimensions.state).toHaveLength(56);
+    expect(registry.schemaVersion).toBe(2);
+    expect(registry.readinessRegistry).toMatchObject({
+      schema: "openplan.jurisdiction-readiness.v1",
+      path: "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
+    });
     expect(source).toContain("Product direction is current");
   });
 

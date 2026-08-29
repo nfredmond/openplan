@@ -194,6 +194,151 @@ function assertContainsAll(actual, required, name) {
   if (missing.length > 0) fail(`${name} is missing: ${missing.join(", ")}`);
 }
 
+function assertUniqueIds(items, name) {
+  const ids = items.map((item) => item?.id);
+  if (ids.some((id) => typeof id !== "string" || !id.trim())) {
+    fail(`${name} contains a missing id`);
+  }
+  if (new Set(ids).size !== ids.length) fail(`${name} has duplicate ids`);
+  return ids;
+}
+
+function assertSha256(value, name) {
+  if (!/^[0-9a-f]{64}$/.test(value ?? "")) fail(`${name} is not a lowercase SHA-256`);
+}
+
+function sha256File(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
+function sha256JsonFile(path) {
+  return createHash("sha256")
+    .update(JSON.stringify(JSON.parse(readFileSync(path, "utf8"))))
+    .digest("hex");
+}
+
+function checkJurisdictionReadinessRegistry(descriptor) {
+  if (!descriptor || typeof descriptor !== "object") {
+    fail("capability registry has no readinessRegistry descriptor");
+  }
+  if (descriptor.schema !== "openplan.jurisdiction-readiness.v1") {
+    fail(`unsupported jurisdiction readiness schema ${descriptor.schema ?? "missing"}`);
+  }
+  assertSha256(descriptor.sha256, "jurisdiction readiness registry hash");
+
+  const path = resolve(REPO_ROOT, descriptor.path ?? "");
+  if (!existsSync(path)) fail(`jurisdiction readiness registry is missing: ${descriptor.path}`);
+  const actualHash = sha256JsonFile(path);
+  if (actualHash !== descriptor.sha256) {
+    fail(`jurisdiction readiness registry hash changed: expected ${descriptor.sha256}, found ${actualHash}`);
+  }
+
+  const readiness = JSON.parse(readFileSync(path, "utf8"));
+  if (readiness.schema !== descriptor.schema) {
+    fail("jurisdiction readiness registry schema disagrees with its capability-registry descriptor");
+  }
+  if (readiness.releaseVersion !== currentRelease().slice(1)) {
+    fail(`jurisdiction readiness release does not match package release ${currentRelease()}`);
+  }
+  assertContainsAll(
+    readiness.statuses ?? [],
+    ["supported", "partial", "unavailable", "unassessed"],
+    "jurisdiction readiness statuses",
+  );
+
+  const jobs = Array.isArray(readiness.jobs) ? readiness.jobs : [];
+  const jurisdictions = Array.isArray(readiness.jurisdictions) ? readiness.jurisdictions : [];
+  const sources = Array.isArray(readiness.sources) ? readiness.sources : [];
+  const claims = Array.isArray(readiness.claims) ? readiness.claims : [];
+  if (jobs.length === 0 || jurisdictions.length === 0 || sources.length === 0 || claims.length === 0) {
+    fail("jurisdiction readiness registry has an empty required collection");
+  }
+  const jobIds = new Set(assertUniqueIds(jobs, "jurisdiction readiness jobs"));
+  const jurisdictionIds = new Set(assertUniqueIds(jurisdictions, "jurisdiction readiness jurisdictions"));
+  const sourceIds = new Set(assertUniqueIds(sources, "jurisdiction readiness sources"));
+  assertUniqueIds(claims, "jurisdiction readiness claims");
+
+  for (const source of sources) {
+    assertSha256(source.sha256, `jurisdiction readiness source ${source.id} hash`);
+    const sourcePath = resolve(REPO_ROOT, source.path ?? "");
+    if (!existsSync(sourcePath)) fail(`jurisdiction readiness source is missing: ${source.path}`);
+    const sourceHash = sha256File(sourcePath);
+    if (sourceHash !== source.sha256) {
+      fail(`jurisdiction readiness source ${source.id} hash changed`);
+    }
+  }
+
+  const cells = new Set();
+  const readinessAuthorityHosts = new Set([
+    "catc.ca.gov",
+    "dot.ca.gov",
+    "leginfo.legislature.ca.gov",
+    "www.nhtsa.gov",
+    "www.oregon.gov",
+  ]);
+  for (const claim of claims) {
+    if (!jurisdictionIds.has(claim.jurisdictionId)) {
+      fail(`jurisdiction readiness claim ${claim.id} names unknown jurisdiction ${claim.jurisdictionId}`);
+    }
+    if (!jobIds.has(claim.jobId)) {
+      fail(`jurisdiction readiness claim ${claim.id} names unknown job ${claim.jobId}`);
+    }
+    if (!Array.isArray(claim.sourceIds) || claim.sourceIds.length === 0) {
+      fail(`jurisdiction readiness claim ${claim.id} has no evidence source`);
+    }
+    for (const sourceId of claim.sourceIds) {
+      if (!sourceIds.has(sourceId)) {
+        fail(`jurisdiction readiness claim ${claim.id} names unknown source ${sourceId}`);
+      }
+    }
+    if (!Array.isArray(claim.limitations) || claim.limitations.length === 0) {
+      fail(`jurisdiction readiness claim ${claim.id} has no visible limitation`);
+    }
+    if (!Array.isArray(claim.authorities)) {
+      fail(`jurisdiction readiness claim ${claim.id} has no authority list`);
+    }
+    for (const authority of claim.authorities ?? []) {
+      if (!authority.label?.trim() || !authority.agency?.trim()) {
+        fail(`jurisdiction readiness claim ${claim.id} has an unnamed authority`);
+      }
+      let url;
+      try {
+        url = new URL(authority.url);
+      } catch {
+        fail(`jurisdiction readiness claim ${claim.id} has an invalid authority URL`);
+      }
+      if (url.protocol !== "https:" || !readinessAuthorityHosts.has(url.hostname)) {
+        fail(`jurisdiction readiness claim ${claim.id} has a non-official authority host ${url.hostname}`);
+      }
+    }
+    const requiredAuthorityKind =
+      claim.status === "supported" || claim.status === "partial"
+        ? {
+            "land-use-plan": "statute",
+            "safety-analysis": "data_source",
+            "grants-and-reimbursement": "program_catalog",
+          }[claim.jobId]
+        : null;
+    if (
+      requiredAuthorityKind &&
+      !claim.authorities.some((authority) => authority.kind === requiredAuthorityKind)
+    ) {
+      fail(`jurisdiction readiness claim ${claim.id} has no ${requiredAuthorityKind} authority`);
+    }
+    const key = `${claim.jurisdictionId}/${claim.jobId}`;
+    if (cells.has(key)) fail(`jurisdiction readiness has duplicate cell ${key}`);
+    cells.add(key);
+  }
+
+  for (const jurisdiction of jurisdictions) {
+    for (const job of jobs) {
+      if (!cells.has(`${jurisdiction.id}/${job.id}`)) {
+        fail(`jurisdiction readiness exemplar is missing ${jurisdiction.id}/${job.id}`);
+      }
+    }
+  }
+}
+
 function runCheck() {
   for (const path of [
     CONTRACT_PATH,
@@ -240,6 +385,9 @@ function runCheck() {
   assertContainsAll(list(matrixBlock, "statuses"), REQUIRED_STATUSES, "statuses");
 
   const registry = JSON.parse(readFileSync(CAPABILITY_REGISTRY_PATH, "utf8"));
+  if (registry.schemaVersion !== 2) {
+    fail(`capability registry schemaVersion must be 2, found ${registry.schemaVersion ?? "missing"}`);
+  }
   if (registry.currentRelease !== release) {
     fail(`capability registry release does not match package release ${release}`);
   }
@@ -275,6 +423,7 @@ function runCheck() {
       }
     }
   }
+  checkJurisdictionReadinessRegistry(registry.readinessRegistry);
 
   const reviewPath = latestReviewPath();
   const review = readFileSync(reviewPath, "utf8");

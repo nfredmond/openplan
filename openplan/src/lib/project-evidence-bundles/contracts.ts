@@ -62,7 +62,7 @@ export type ProjectEvidenceManifestEntryV1 = {
   path: string | null;
   owningModule: string;
   originalRecord: {
-    sourceId: ProjectEvidenceCandidateSourceId | "project_record" | "linked_data" | "modeling_evidence";
+    sourceId: ProjectEvidenceCandidateSourceId | "project_record" | "linked_data" | "modeling_evidence" | "jurisdiction_readiness";
     recordId: string;
     parentRecordId: string | null;
   };

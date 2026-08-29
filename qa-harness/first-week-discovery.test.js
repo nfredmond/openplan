@@ -347,6 +347,22 @@ check('the governed handoff job declares its second identity and the archive-rea
   assert.match(bundle?.body || '', /separate required[\s\S]*repository gate/i);
 });
 
+check('the twelve first-week jobs carry jurisdiction readiness through existing journeys', () => {
+  const jobs = loadJobs();
+  assert.strictEqual(jobs.length, 12);
+
+  const neutral = jobs.find((job) => job.id === '01-neutral-geography-setup');
+  const project = jobs.find((job) => job.id === '02-project-end-to-end');
+  const neutralBody = (neutral?.body || '').replace(/\s+/g, ' ');
+  const projectBody = (project?.body || '').replace(/\s+/g, ' ');
+  assert.match(neutralBody, /real county in Oregon/i);
+  assert.match(neutralBody, /Puerto Rico municipio/i);
+  assert.match(neutralBody, /Download the exact readiness JSON/i);
+  assert.match(neutralBody, /must not retain Oregon or California rules, sources, or support claims/i);
+  assert.match(projectBody, /status, applicability, limitations, registry hash, and evidence hashes/i);
+  assert.match(projectBody, /project\/jurisdiction-readiness\.json/);
+});
+
 check('the model-validation job treats an honest inconclusive assessment as a reached outcome', () => {
   const validation = loadJobs().find((job) => job.id === '11-model-validation-evidence');
   assert.ok(validation);

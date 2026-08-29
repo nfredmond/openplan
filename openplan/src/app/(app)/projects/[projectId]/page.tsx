@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { JurisdictionReadinessPanel } from "@/components/jurisdiction-readiness/jurisdiction-readiness-panel";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { ProjectEstimatedCostEditor } from "@/components/projects/project-estimated-cost-editor";
 import { buildStageGateRunOptions, type StageGateEvidenceRunRow } from "./_components/_helpers";
@@ -83,6 +84,8 @@ import {
 } from "@/lib/cartographic/project-corridor-record";
 import { deriveHomeMapView, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 import { canAccessWorkspaceAction, isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import type {
   BillingInvoiceRow,
   FundingAwardRow,
@@ -1035,6 +1038,14 @@ export default async function ProjectDetailPage({
   const { posture: aerialCachedPosture, updatedAt: aerialCachedPostureUpdatedAt } =
     await loadAerialProjectPosture(supabase, project.id);
   const projectPlaceOfRecord = placeOfRecordFromProject(project);
+  const jurisdictionReadiness = buildJurisdictionReadinessPayload(
+    {
+      countryCode: projectPlaceOfRecord.countryCode,
+      subdivisionCode: projectPlaceOfRecord.subdivisionCode,
+      label: projectPlaceOfRecord.label,
+    },
+    jurisdictionReadinessRegistrySha256(),
+  );
 
   // ONE ANSWER PER LANE, SHARED BY BOTH BOARDS ON THIS SCREEN. The crosslink
   // board and the readiness rollup are built from the same reads and render
@@ -1284,6 +1295,12 @@ export default async function ProjectDetailPage({
           description={`${reads.describe()} ${reads.messages().join(" · ")}`}
         />
       ) : null}
+
+      <JurisdictionReadinessPanel
+        reports={jurisdictionReadiness.reports}
+        downloadHref={`/api/projects/${project.id}/jurisdiction-readiness?download=1`}
+        compact
+      />
 
       <PageTabNav tabs={projectTabs} activeKey={activeTab} basePath={`/projects/${project.id}`} searchParams={resolvedSearchParams} ariaLabel="Project sections" />
 

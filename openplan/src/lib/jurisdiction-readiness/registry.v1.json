@@ -1,0 +1,343 @@
+{
+  "schema": "openplan.jurisdiction-readiness.v1",
+  "registryVersion": "2026-08-28.1",
+  "releaseVersion": "0.41.0",
+  "reviewedAt": "2026-08-28",
+  "reviewBy": "2026-09-28",
+  "statuses": ["supported", "partial", "unavailable", "unassessed"],
+  "jobs": [
+    {
+      "id": "project-evidence-handoff",
+      "label": "Project record and evidence handoff",
+      "description": "Carry one project record, its geography, linked evidence, review state, and exact files into a retained evidence package.",
+      "plannerIds": ["transportation-planner", "land-use-planner", "gis-data-and-records-planner"],
+      "organizationIds": ["local-and-county-government", "consultancies"],
+      "artifactIds": ["project-record", "interoperable-geospatial-exchange"]
+    },
+    {
+      "id": "land-use-plan",
+      "label": "Land-use plan",
+      "description": "Author, review, adopt, publish, and retain a statutory land-use plan under the applicable jurisdiction bundle.",
+      "plannerIds": ["land-use-planner"],
+      "organizationIds": ["local-and-county-government"],
+      "artifactIds": ["adopted-plan", "report-and-print-export"]
+    },
+    {
+      "id": "safety-analysis",
+      "label": "Safety analysis",
+      "description": "Acquire observed crash records for a project area, disclose source coverage, and retain the safety evidence.",
+      "plannerIds": ["transportation-planner"],
+      "organizationIds": ["local-and-county-government", "regional-and-metropolitan-organizations"],
+      "artifactIds": ["safety-evidence", "report-and-print-export"]
+    },
+    {
+      "id": "grants-and-reimbursement",
+      "label": "Grants and reimbursement",
+      "description": "Find applicable programs, preserve source limits, and carry an award through delivery and reimbursement records.",
+      "plannerIds": ["capital-programming-and-grants-planner"],
+      "organizationIds": ["local-and-county-government", "consultancies"],
+      "artifactIds": ["grant-application", "delivery-and-reimbursement-record"]
+    },
+    {
+      "id": "model-validation-evidence",
+      "label": "Model validation evidence",
+      "description": "Open a genuine baseline, inspect separate AequilibraE and ActivitySim assessments, and download exact scientific evidence.",
+      "plannerIds": ["transportation-planner"],
+      "organizationIds": ["local-and-county-government", "regional-and-metropolitan-organizations", "consultancies"],
+      "artifactIds": ["model-validation-record", "scenario-comparison"]
+    }
+  ],
+  "jurisdictions": [
+    {
+      "id": "US-CA",
+      "label": "California, United States",
+      "country": "US",
+      "subdivision": "CA",
+      "assessmentKind": "configured-exemplar"
+    },
+    {
+      "id": "US-OR",
+      "label": "Oregon, United States",
+      "country": "US",
+      "subdivision": "OR",
+      "assessmentKind": "configured-exemplar"
+    },
+    {
+      "id": "US-PR",
+      "label": "Puerto Rico, United States",
+      "country": "US",
+      "subdivision": "PR",
+      "assessmentKind": "explicit-limits-exemplar"
+    }
+  ],
+  "sources": [
+    {
+      "id": "project-handoff-proof-v037",
+      "path": "docs/ops/2026-08-28-v0.37-governed-decision-handoff-correction-proof.md",
+      "sha256": "fc9d0f47bbebd61e572d30ab58c6c9c3372dddb5b4dd168a44daf9bc7d9d981a"
+    },
+    {
+      "id": "land-use-plan-registry",
+      "path": "openplan/src/lib/land-use-plans/registry.ts",
+      "sha256": "283f9f5388cbe7cc83b9871b23e0f924598cb591cf49c1dc6ed14477763f9cdf"
+    },
+    {
+      "id": "crash-source-registry",
+      "path": "openplan/src/lib/safety/sources/registry.ts",
+      "sha256": "3db8b2d1cce0ac7ef42087056fd9995fbf9e1e7667c87d0ea6a12effaf0d646d"
+    },
+    {
+      "id": "fars-source-adapter",
+      "path": "openplan/src/lib/safety/sources/fars.ts",
+      "sha256": "81485a0f391b5ab65412a42ad88c991ea15561a2918849d4b0525ede6b9018d1"
+    },
+    {
+      "id": "grant-program-registry",
+      "path": "openplan/src/lib/grants/programs/registry.ts",
+      "sha256": "ed7138242b1158297f84c931c95b1e298eb96fbaabbf57fa3bbbb252ce0d1d7f"
+    },
+    {
+      "id": "oregon-grant-adapter",
+      "path": "openplan/src/lib/grants/programs/us-or.ts",
+      "sha256": "106a360ab164122eb43a9f5146590690f08eb4e416d37ff3408a21029459548c"
+    },
+    {
+      "id": "comparable-observation-proof-v041",
+      "path": "docs/ops/V041_COMPARABLE_OBSERVATION_PROOF_2026-08-28.md",
+      "sha256": "d3e3b79737df7ef4fda5003a383212c05faf8df12d8609bef392160b59fcfe4d"
+    }
+  ],
+  "claims": [
+    {
+      "id": "US-CA/project-evidence-handoff",
+      "jurisdictionId": "US-CA",
+      "jobId": "project-evidence-handoff",
+      "status": "supported",
+      "applicability": "The jurisdiction-neutral project record and immutable handoff are available. California-specific legal sufficiency is outside this claim.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": ["project-place-of-record", "project-evidence-bundle-v2"],
+      "authorities": [],
+      "limitations": ["The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-CA/land-use-plan",
+      "jurisdictionId": "US-CA",
+      "jobId": "land-use-plan",
+      "status": "partial",
+      "applicability": "A configured California general-plan descriptor supplies cited statewide requirements and process steps.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["us-ca-general-plan"],
+      "authorities": [
+        {
+          "kind": "statute",
+          "label": "California Government Code, Article 5: Authority for and Scope of General Plans",
+          "agency": "California Legislative Information",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=5.&chapter=3.&division=1.&lawCode=GOV&part=&title=7."
+        },
+        {
+          "kind": "statute",
+          "label": "California Government Code, Article 6: Preparation, Adoption, and Amendment",
+          "agency": "California Legislative Information",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=6.&chapter=3.&division=1.&lawCode=GOV&part=&title=7."
+        },
+        {
+          "kind": "statute",
+          "label": "California Government Code, Article 8: Specific Plans",
+          "agency": "California Legislative Information",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=8.&chapter=3.&division=1.&lawCode=GOV&part=&title=7."
+        }
+      ],
+      "limitations": ["The descriptor is scoped, does not determine legal sufficiency, and does not replace counsel or qualified planning review."]
+    },
+    {
+      "id": "US-CA/safety-analysis",
+      "jurisdictionId": "US-CA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "CCRS supplies statewide reported collisions and FARS supplies a fatal-crash backstop where its coverage applies.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "adapterIds": ["ccrs-ca", "fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Road Safety Data Resources and California Crash Reporting System",
+          "agency": "California Department of Transportation",
+          "url": "https://dot.ca.gov/programs/safety-programs/shsp/road-safety-data"
+        },
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": ["CCRS records do not by themselves establish complete serious-injury coverage. Source and geocoding gaps remain visible."]
+    },
+    {
+      "id": "US-CA/grants-and-reimbursement",
+      "jurisdictionId": "US-CA",
+      "jobId": "grants-and-reimbursement",
+      "status": "partial",
+      "applicability": "Federal and California program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": ["us-federal", "us-ca"],
+      "authorities": [
+        {
+          "kind": "program_catalog",
+          "label": "California Transportation Commission programs",
+          "agency": "California Transportation Commission",
+          "url": "https://catc.ca.gov/programs"
+        }
+      ],
+      "limitations": ["The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review."]
+    },
+    {
+      "id": "US-CA/model-validation-evidence",
+      "jurisdictionId": "US-CA",
+      "jobId": "model-validation-evidence",
+      "status": "partial",
+      "applicability": "The seven-county development instrument exposes comparable observations and separate method assessments.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": ["comparable-observation-instrument-v2"],
+      "authorities": [],
+      "limitations": ["The result is inconclusive, the modeled quantity is synthetic expanded daily traffic, and neither method is validated for planner accuracy claims."]
+    },
+    {
+      "id": "US-OR/project-evidence-handoff",
+      "jurisdictionId": "US-OR",
+      "jobId": "project-evidence-handoff",
+      "status": "partial",
+      "applicability": "The jurisdiction-neutral project record and evidence package are available without applying California rules.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": ["project-place-of-record", "project-evidence-bundle-v2"],
+      "authorities": [],
+      "limitations": ["A visible Oregon start-to-handoff journey has not yet been frozen as release evidence."]
+    },
+    {
+      "id": "US-OR/land-use-plan",
+      "jurisdictionId": "US-OR",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Oregon statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide an Oregon requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-OR/safety-analysis",
+      "jurisdictionId": "US-OR",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS can supply fatal crash records for covered Oregon study areas.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": ["The available adapter is fatal-only and read-only. A persisted Oregon all-severity crash source is not configured."]
+    },
+    {
+      "id": "US-OR/grants-and-reimbursement",
+      "jurisdictionId": "US-OR",
+      "jobId": "grants-and-reimbursement",
+      "status": "partial",
+      "applicability": "Federal and Oregon program descriptors can be matched to the workspace jurisdiction.",
+      "sourceIds": ["grant-program-registry", "oregon-grant-adapter"],
+      "adapterIds": ["us-federal", "us-or"],
+      "authorities": [
+        {
+          "kind": "program_catalog",
+          "label": "Local Government Funding Overview",
+          "agency": "Oregon Department of Transportation",
+          "url": "https://www.oregon.gov/ODOT/LocalGov/Pages/Funding.aspx"
+        },
+        {
+          "kind": "program_catalog",
+          "label": "ODOT Program Directory",
+          "agency": "Oregon Department of Transportation",
+          "url": "https://www.oregon.gov/odot/Programs/Pages/Program-Directory.aspx"
+        }
+      ],
+      "limitations": ["The catalog is not a live opportunity feed, and OpenPlan does not yet ship an Oregon reimbursement procedure profile."]
+    },
+    {
+      "id": "US-OR/model-validation-evidence",
+      "jurisdictionId": "US-OR",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry contains California counties only.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Oregon use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-PR/project-evidence-handoff",
+      "jurisdictionId": "US-PR",
+      "jobId": "project-evidence-handoff",
+      "status": "partial",
+      "applicability": "The jurisdiction-neutral project record and evidence package can retain a Puerto Rico place of record without inheriting state rules.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": ["project-place-of-record", "project-evidence-bundle-v2"],
+      "authorities": [],
+      "limitations": ["A visible Puerto Rico start-to-handoff journey has not yet been frozen as release evidence."]
+    },
+    {
+      "id": "US-PR/land-use-plan",
+      "jurisdictionId": "US-PR",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "OpenPlan has no configured Puerto Rico statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["The product must not substitute California, another state, or a generic legal checklist."]
+    },
+    {
+      "id": "US-PR/safety-analysis",
+      "jurisdictionId": "US-PR",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS declares Puerto Rico fatal-crash coverage for covered project areas.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": ["The adapter is fatal-only and read-only. It cannot support an all-severity or serious-injury claim."]
+    },
+    {
+      "id": "US-PR/grants-and-reimbursement",
+      "jurisdictionId": "US-PR",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Puerto Rico-specific program or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Country-level catalog entries are not enough to claim program eligibility or reimbursement procedure coverage in Puerto Rico."]
+    },
+    {
+      "id": "US-PR/model-validation-evidence",
+      "jurisdictionId": "US-PR",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The current comparable-observation study has no Puerto Rico geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Puerto Rico use-specific model validation assessment is available."]
+    }
+  ]
+}

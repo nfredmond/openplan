@@ -377,6 +377,9 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
       projectControlCountsFailure
         ? unknownBecauseUnread(projectControlCountsFailure, "the project control counts")
         : `${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, and ${context.counts.meetings} meetings are attached to this project surface.`,
+      context.jurisdictionReadiness
+        ? `${context.jurisdictionReadiness.job.label}: ${context.jurisdictionReadiness.statusLabel} for ${context.jurisdictionReadiness.jurisdiction.label}.`
+        : null,
       fundingOpportunitiesFailure
         ? unknownBecauseUnread(fundingOpportunitiesFailure, "the funding picture for this project")
         : context.fundingSummary.opportunityCount > 0

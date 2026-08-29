@@ -683,6 +683,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
         delivery_phase: "analysis",
         created_at: "2026-03-13T00:00:00.000Z",
         updated_at: "2026-03-14T01:00:00.000Z",
+        place_label: "Nevada County, California",
+        place_country_code: "US",
+        place_subdivision_code: "CA",
       },
       error: null,
     });
@@ -1209,6 +1212,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
           generationMode: "structured_html_packet",
           sourceContext: expect.objectContaining({
             linkedRunCount: 1,
+            jurisdictionReadiness: expect.objectContaining({
+              jurisdiction: expect.objectContaining({ id: "US-CA" }),
+              reports: expect.arrayContaining([
+                expect.objectContaining({
+                  job: expect.objectContaining({ id: "project-evidence-handoff" }),
+                  status: "supported",
+                }),
+              ]),
+            }),
             evidenceChainSummary: expect.objectContaining({
               linkedRunCount: 1,
               scenarioSetLinkCount: 1,

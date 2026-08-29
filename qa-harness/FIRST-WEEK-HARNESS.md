@@ -53,7 +53,7 @@ npm install
 OPENPLAN_BASE_URL=http://localhost:3200 \
 OPENPLAN_FIRST_WEEK_EMAIL=you@example.test \
 OPENPLAN_FIRST_WEEK_PASSWORD='…' \
-  npm run first-week-discovery                              # all eleven jobs
+  npm run first-week-discovery                              # all twelve jobs
 
 ... npm run first-week-discovery -- --job 03-public-engagement
 ... npm run first-week-discovery -- --list
@@ -68,11 +68,11 @@ no metered spend.
 
 **It is not free of your weekly limit, though.** Measured on 2026-08-14 with
 sonnet: a job runs 16–22 minutes and ~135 steps, and the CLI reports around
-$8.50 of API-equivalent usage for one. All eleven jobs is more than a working hour
+$8.50 of API-equivalent usage for one. All twelve jobs is more than a working hour
 and a real bite out of a week's allowance. Run the whole set when something big
 has landed; run one job when you want to check one surface.
 
-### The eleven jobs
+### The twelve jobs
 
 They live in `first-week-jobs/*.job.md` and they are written as **outcomes, not
 clicks** — "produce something you could show a board", never "click Reports then

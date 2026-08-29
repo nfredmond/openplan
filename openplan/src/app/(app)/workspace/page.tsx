@@ -7,6 +7,7 @@ import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { WorkspaceStageGatePanel } from "@/components/workspaces/workspace-stage-gate-panel";
 import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
+import { JurisdictionReadinessPanel } from "@/components/jurisdiction-readiness/jurisdiction-readiness-panel";
 import { evaluateDeploymentHealth } from "@/lib/config/deployment-health";
 import {
   loadModelingWorkerFacts,
@@ -21,6 +22,9 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 
 export const metadata = moduleMetadata("Workspace setup & health");
 
@@ -55,6 +59,15 @@ export default async function WorkspacePage() {
   const stageGateChoices = buildStageGateRebindChoices(workspaceRead.data, {
     readError: workspaceRead.error,
   });
+  const workspaceGeography = parseWorkspaceHomeGeography(workspaceRead.data);
+  const jurisdictionReadiness = buildJurisdictionReadinessPayload(
+    {
+      countryCode: workspaceGeography?.home_country_code ?? null,
+      subdivisionCode: workspaceGeography?.home_subdivision_code ?? null,
+      label: workspaceGeography?.home_geography_label ?? null,
+    },
+    jurisdictionReadinessRegistrySha256(),
+  );
   const deploymentHealth = canManage
     ? evaluateDeploymentHealth({
         ...readDeploymentEnvFacts(),
@@ -94,6 +107,11 @@ export default async function WorkspacePage() {
       ) : null}
 
       <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManage} />
+
+      <JurisdictionReadinessPanel
+        reports={jurisdictionReadiness.reports}
+        downloadHref={`/api/workspaces/jurisdiction-readiness?workspaceId=${encodeURIComponent(workspaceId)}&download=1`}
+      />
 
       <WorkspaceStageGatePanel
         workspaceId={workspaceId}

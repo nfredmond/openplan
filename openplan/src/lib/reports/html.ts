@@ -49,6 +49,7 @@ import { formatMoney } from "@/lib/money/format";
 import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
+import type { JurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
 
 /**
  * The disclosure label rendered over every included AI narrative block.
@@ -202,6 +203,8 @@ export type ReportGenerationData = {
   stageGateSnapshot: ProjectStageGateSnapshot;
   modelingEvidence: ReportModelingEvidence[];
   evidenceDescriptors?: EvidenceDescriptorV1[];
+  /** The exact sparse registry reading frozen into this packet. */
+  jurisdictionReadiness?: JurisdictionReadinessPayload;
   /**
    * The crash evidence attached to this project, or null when the read FAILED.
    * Optional so existing callers keep working — but `undefined` and `null` mean
@@ -337,6 +340,42 @@ function listMarkup(items: ProjectItem[], emptyMessage: string): string {
       </li>`;
     })
     .join("")}</ul>`;
+}
+
+function jurisdictionReadinessMarkup(payload: JurisdictionReadinessPayload | undefined): string {
+  if (!payload) return "";
+
+  const reports = payload.reports
+    .map((report) => `<article class="run-card">
+      <div class="run-head">
+        <div>
+          <h3>${esc(report.job.label)}</h3>
+          <p class="meta">${esc(report.statusLabel)}</p>
+        </div>
+      </div>
+      <p>${esc(report.applicability)}</p>
+      <ul class="record-list">${report.limitations.map((limit) => `<li>${esc(limit)}</li>`).join("")}</ul>
+      ${report.authorities.length > 0
+        ? `<div class="transparency-grid">${report.authorities.map((authority) => `<div class="transparency-item">
+            <strong>${esc(authority.label)}</strong>
+            <span class="meta">${esc(authority.agency)} • ${esc(authority.url)}</span>
+          </div>`).join("")}</div>`
+        : ""}
+      ${report.sources.length > 0
+        ? `<div class="transparency-grid">${report.sources.map((source) => `<div class="transparency-item">
+            <strong>${esc(source.path)}</strong>
+            <span class="meta">sha256:${esc(source.sha256)}</span>
+          </div>`).join("")}</div>`
+        : `<p class="empty">No evidence-backed claim is registered for this cell.</p>`}
+    </article>`)
+    .join("");
+
+  return `<section id="jurisdiction-readiness">
+    <h2 class="section-title">Jurisdiction readiness</h2>
+    <p>Can OpenPlan do this here? This packet records the current evidence-backed answer for ${esc(payload.jurisdiction.label)}. Unassessed work does not inherit another jurisdiction's claim.</p>
+    <p class="meta">Registry ${esc(payload.registryVersion ?? "unknown")} • sha256:${esc(payload.registrySha256)}</p>
+    <div class="metrics-stack">${reports}</div>
+  </section>`;
 }
 
 function timelineMarkup(data: ReportGenerationData): string {
@@ -1848,6 +1887,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
         data.sections.some((section) => section.section_key === PROJECT_GEOGRAPHY_SECTION_KEY)
       )}
       ${evidenceChainMarkup(evidenceChainSummary)}
+      ${jurisdictionReadinessMarkup(data.jurisdictionReadiness)}
       ${modelingEvidenceMarkup(data.modelingEvidence)}
       ${reportEvidenceDescriptorMarkup(data)}
       ${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}
