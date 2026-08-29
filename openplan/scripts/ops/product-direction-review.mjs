@@ -523,6 +523,44 @@ function runCheck() {
   } catch {
     fail(`reviewed_commit is not available: ${reviewedCommit}`);
   }
+  try {
+    execFileSync("git", ["merge-base", "--is-ancestor", reviewedCommit, "HEAD"], {
+      cwd: REPO_ROOT,
+      stdio: "ignore",
+    });
+  } catch {
+    fail(`reviewed_commit ${reviewedCommit} is not an ancestor of HEAD`);
+  }
+
+  const releaseMetadataPaths = new Set([
+    "CHANGELOG.md",
+    "docs/ROADMAP.md",
+    "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+    "docs/product/US_PLANNING_CAPABILITY_REGISTRY.json",
+    "docs/product/V1_PRODUCT_CONTRACT.md",
+    "openplan/package-lock.json",
+    "openplan/package.json",
+    "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
+    "openplan/src/test/migrations/release-ordering.test.ts",
+  ]);
+  const changedSinceReview = execFileSync("git", ["diff", "--name-only", reviewedCommit, "--"], {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+  })
+    .trim()
+    .split("\n")
+    .filter(Boolean);
+  const substantiveChanges = changedSinceReview.filter(
+    (path) =>
+      !releaseMetadataPaths.has(path) &&
+      !path.startsWith("docs/ops/V042_") &&
+      !path.startsWith("docs/reviews/product-direction/"),
+  );
+  if (substantiveChanges.length > 0) {
+    fail(
+      `latest direction review predates substantive changes: ${substantiveChanges.slice(0, 8).join(", ")}`,
+    );
+  }
 
   const contractReview = field(contractBlock, "direction_review");
   if (resolve(REPO_ROOT, contractReview) !== reviewPath) {
