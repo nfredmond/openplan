@@ -2,7 +2,8 @@
 
 Release-source SHA: `5d934626e0e4130b7a9408a7f85760d7ae9441c1`  
 App version: `0.42.0`  
-Disposition: local and remote proof complete; annotated release tag pending.
+Release evidence commit: `7b0576c3ea5ff14c52e619f7f03145112f210933`
+Disposition: released as annotated tag `v0.42.0` after local and remote proof passed.
 
 ## Product proof
 
@@ -41,3 +42,5 @@ Disposition: local and remote proof complete; annotated release tag pending.
 - RLS Isolation run `33231019042` passed on the same reviewed commit.
 - Upgrade Path run `33231367622` passed a populated `v0.41.0` to `e6be853f` in-place rehearsal with row and evidence-custody preservation.
 - Modeling source-contract run `33231368867` passed the live FHWA HPMS schema probe.
+- CI run `33231677830` and RLS Isolation run `33231677832` passed on release evidence commit `7b0576c3`.
+- Annotated tag `v0.42.0` points to `7b0576c3ea5ff14c52e619f7f03145112f210933` and is pushed to origin.
