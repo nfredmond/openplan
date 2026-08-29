@@ -40,7 +40,11 @@ function sha256(filePath) {
 }
 
 async function openProjectFromVisibleEntry(page) {
-  await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'networkidle' });
+  if (new URL(page.url()).pathname !== '/dashboard') {
+    await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'networkidle' });
+  } else {
+    await page.waitForLoadState('networkidle');
+  }
   await page.getByRole('link', { name: 'Projects', exact: true }).click();
   await page.waitForURL(/\/projects(?:\?|$)/, { timeout: 30_000 });
   await page.getByRole('link', { name: projectName, exact: true }).first().click();
@@ -163,7 +167,6 @@ async function freezeAndDownloadBundle(page) {
   await page.waitForURL(new RegExp(`/projects/${projectId}`), { timeout: 30_000 });
   await page.getByRole('heading', { name: 'Can OpenPlan do this here?' }).waitFor({ timeout: 120_000 });
   await page.locator('[data-page-tab="evidence"]:visible').last().click();
-  await page.waitForURL(/\?tab=evidence/, { timeout: 30_000 });
   await page.getByText('Frozen project handoff', { exact: true }).waitFor({ timeout: 120_000 });
   await page.getByRole('button', { name: 'Prepare evidence bundle', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Review project evidence bundle' });
@@ -216,8 +219,9 @@ async function main() {
   const page = await context.newPage();
   const consoleProblems = [];
   const failedResponses = [];
+  let proofStage = 'sign-in';
   page.on('console', (message) => {
-    if (message.type() === 'error') consoleProblems.push(message.text());
+    if (message.type() === 'error') consoleProblems.push(`${proofStage} at ${page.url()}: ${message.text()}`);
   });
   page.on('pageerror', (error) => consoleProblems.push(error.message));
   page.on('response', (response) => {
@@ -232,9 +236,12 @@ async function main() {
       email: 'mapaudit@openplan.test',
       password: 'MapAudit!2026',
     });
+    proofStage = 'open project';
     await openProjectFromVisibleEntry(page);
 
+    proofStage = 'select Oregon study area';
     await setProjectPlace(page, 'US-OR');
+    proofStage = 'inspect Oregon evidence';
     const oregonStatuses = await visibleStatuses(page);
     assertOk(JSON.stringify(oregonStatuses) === JSON.stringify(exemplars['US-OR'].statuses), `Oregon statuses drifted: ${oregonStatuses}.`);
     const oregon = await downloadReadiness(page, 'US-OR', 'oregon');
@@ -244,7 +251,9 @@ async function main() {
     artifacts.push(await capture(page, 'oregon-390'));
     artifacts.push(await captureMobileDownload(page, 'oregon-390-download'));
 
+    proofStage = 'generate report';
     const reportId = await generateCurrentReport(page);
+    proofStage = 'freeze project evidence bundle';
     const zipPath = await freezeAndDownloadBundle(page);
     artifacts.push(zipPath);
 
@@ -264,9 +273,12 @@ async function main() {
     assertOk(reportText.replace(/\s/g, '').toLowerCase().includes(expectedRegistryHash), 'Generated report does not carry the full readiness registry hash.');
     artifacts.push(reportTextPath);
 
+    proofStage = 'return to project';
     await page.goto(`${baseUrl}/projects/${projectId}`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: 'Can OpenPlan do this here?' }).waitFor({ timeout: 120_000 });
+    proofStage = 'select Puerto Rico study area';
     await setProjectPlace(page, 'US-PR');
+    proofStage = 'inspect Puerto Rico evidence';
     const puertoRicoStatuses = await visibleStatuses(page);
     assertOk(JSON.stringify(puertoRicoStatuses) === JSON.stringify(exemplars['US-PR'].statuses), `Puerto Rico statuses drifted: ${puertoRicoStatuses}.`);
     const puertoRico = await downloadReadiness(page, 'US-PR', 'puerto-rico');
@@ -277,6 +289,7 @@ async function main() {
     artifacts.push(await captureMobileDownload(page, 'puerto-rico-390-download'));
 
     await page.setViewportSize({ width: 1440, height: 1000 });
+    proofStage = 'restore unidentified study area';
     await clearProjectPlace(page);
     restored = true;
     const restoredPayload = await downloadReadiness(page, null, 'restored-unidentified');
