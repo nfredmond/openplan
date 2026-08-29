@@ -2,7 +2,8 @@
 
 Release-source SHA: `3ef6eff43d0f9dcf70afd8c308b63e819cdb7750`  
 App version: `0.41.0`  
-Disposition: local proof complete; remote CI and release tag pending.
+Release evidence commit: `f7763636083f7b91912112e798ce5a16f7f08461`
+Disposition: released as annotated tag `v0.41.0` after local and remote proof passed.
 
 ## Scientific proof
 
@@ -33,4 +34,11 @@ Disposition: local proof complete; remote CI and release tag pending.
 - `test:rls-live`: 16 files and 127 tests passed against local Supabase.
 - `qa:gate`: 1,143 test files and 12,727 tests passed, followed by live RLS, a zero-vulnerability dependency audit, and the production build.
 - Local migration upgrade applied without a database reset.
-- `v0.41.0` remains untagged until the final proof commit and remote CI pass.
+- The final uninterrupted local gate passed after one transient decision-package Storage response; the complete five-test decision-package suite and the following full 127-test live-RLS run both passed.
+
+## Remote release proof
+
+- CI run `33221793112` passed on release commit `f7763636`, including the QA gate, shuffled-order Vitest, modeling scripts, worker tests, and ops scripts.
+- RLS Isolation run `33221793071` passed on the same release commit.
+- Upgrade Path run `33221805740` passed a populated `v0.40.0` to `f7763636` in-place migration rehearsal with row and evidence-custody preservation.
+- Annotated tag `v0.41.0` points to `f7763636083f7b91912112e798ce5a16f7f08461` and is pushed to origin.
