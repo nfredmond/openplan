@@ -192,7 +192,9 @@ describe("project evidence bundle reachability", () => {
   it("lets a viewer inspect the selection but presents no enabled create control", async () => {
     render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate={false} />);
     fireEvent.click(await screen.findByRole("button", { name: "Prepare evidence bundle" }));
-    expect(await screen.findByText(/Viewers can review candidates and download ready bundles/)).toBeVisible();
+    await waitFor(() => {
+      expect(screen.getByText(/Viewers can review candidates and download ready bundles/)).toBeVisible();
+    });
     expect(screen.queryByText(/I reviewed this exact selection/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
   });
