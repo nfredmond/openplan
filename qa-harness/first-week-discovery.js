@@ -91,6 +91,7 @@ const SERVER_PROBE_TIMEOUT_MS = 10 * 1000;
 const BLOCKED_STATUSES = new Set([
   'blocked_quota',
   'blocked_server',
+  'blocked_build',
   'blocked_timeout',
   'blocked_turn_limit',
   'blocked_unfinished_report',
@@ -517,13 +518,68 @@ function currentBuildIdentity() {
     encoding: 'utf8',
   });
   const gitSha = revision.status === 0 ? revision.stdout.trim() : '';
+  const status = spawnSync('git', ['status', '--porcelain', '--untracked-files=normal'], {
+    cwd: path.join(__dirname, '..'),
+    encoding: 'utf8',
+  });
   return {
     gitSha: /^[0-9a-f]{40}$/i.test(gitSha) ? gitSha : 'unknown',
     appVersion:
       typeof appPackage?.version === 'string' && appPackage.version.trim()
         ? appPackage.version.trim()
         : 'unknown',
+    gitDirty: status.status !== 0 || Boolean(status.stdout.trim()),
   };
+}
+
+/** Explain why a local checkout and the app answering /api/health are not the same build. */
+function compareBuildIdentity(localBuild, deployment) {
+  if (!localBuild || localBuild.gitSha === 'unknown') return 'The local checkout commit is unknown.';
+  if (localBuild.gitDirty) return 'The local checkout is dirty, so HEAD does not name the exercised source.';
+  const commit = typeof deployment?.commit === 'string' ? deployment.commit.trim().toLowerCase() : '';
+  if (!/^[a-f0-9]{7,40}$/.test(commit)) return 'The running app did not advertise a usable commit.';
+  if (!localBuild.gitSha.toLowerCase().startsWith(commit)) {
+    return `The running app commit ${commit} does not match local checkout ${localBuild.gitSha}.`;
+  }
+  if (deployment?.version !== localBuild.appVersion) {
+    return `The running app version ${deployment?.version ?? 'unknown'} does not match ${localBuild.appVersion}.`;
+  }
+  return null;
+}
+
+async function readServerBuildIdentity(baseUrl) {
+  try {
+    const response = await fetch(`${baseUrl.replace(/\/$/, '')}/api/health`, {
+      signal: AbortSignal.timeout(SERVER_PROBE_TIMEOUT_MS),
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return payload?.deployment ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Browser logs are release evidence. Expected 409 validation responses and a
+ * missing development favicon stay recorded, but React errors, page failures,
+ * broken chunks, and every other console error invalidate the journey.
+ */
+function inspectBrowserConsole(browserDir) {
+  const result = { fatal: [], allowed: [] };
+  if (!fs.existsSync(browserDir)) return result;
+  const files = fs.readdirSync(browserDir).filter((name) => /^console-.*\.log$/i.test(name));
+  for (const file of files) {
+    const lines = fs.readFileSync(path.join(browserDir, file), 'utf8').split(/\r?\n/);
+    for (const text of lines) {
+      if (!/\[ERROR\]/.test(text)) continue;
+      const entry = { file, text };
+      const expectedConflict = /status of 409 \(Conflict\)/.test(text);
+      const missingFavicon = /status of 404 \(Not Found\).*\/favicon\.ico/i.test(text);
+      (expectedConflict || missingFavicon ? result.allowed : result.fatal).push(entry);
+    }
+  }
+  return result;
 }
 
 function buildNewRunManifest({ createdAt, baseUrl, model, backend, jobs, freshAccount, build }) {
@@ -643,7 +699,7 @@ function readJobExecution(jobDir) {
   return recorded;
 }
 
-function classifyJobOutcome({ execution, report }) {
+function classifyJobOutcome({ execution, report, fatalConsoleErrors = 0 }) {
   if (execution.status !== 'completed') {
     return {
       status: 'inconclusive',
@@ -652,6 +708,12 @@ function classifyJobOutcome({ execution, report }) {
   }
   if (!report) {
     return { status: 'inconclusive', reason: 'The completed execution has no valid findings report.' };
+  }
+  if (fatalConsoleErrors > 0) {
+    return {
+      status: 'failed',
+      reason: `The browser recorded ${fatalConsoleErrors} unexpected console error${fatalConsoleErrors === 1 ? '' : 's'}.`,
+    };
   }
   if (report.outcomeReached === 'yes') {
     return { status: 'passed', reason: 'The completed journey reports that the planner reached the intended outcome.' };
@@ -669,7 +731,12 @@ function shouldResumeJob(jobDir) {
   if (!fs.existsSync(jobDir)) return true;
   const execution = readJobExecution(jobDir);
   const report = readFindings(path.join(jobDir, 'agent'));
-  return classifyJobOutcome({ execution, report }).status !== 'passed';
+  const browserConsole = inspectBrowserConsole(path.join(jobDir, 'browser'));
+  return classifyJobOutcome({
+    execution,
+    report,
+    fatalConsoleErrors: browserConsole.fatal.length,
+  }).status !== 'passed';
 }
 
 /** Preserve every prior artifact. Resuming never erases the evidence for why a run stopped. */
@@ -732,6 +799,11 @@ function renderJobMarkdown(job, verdict) {
   lines.push(`- Discarded findings: **${verdict.discarded.length}**`);
   lines.push(`- Snapshots the browser recorded: ${verdict.browserDumps}`);
   if (verdict.execution) lines.push(`- Run status: **${verdict.execution.status}**. ${verdict.execution.reason}`);
+  if (verdict.browserConsole) {
+    lines.push(
+      `- Browser console: **${verdict.browserConsole.fatal.length} unexpected errors**; ${verdict.browserConsole.allowed.length} named expected HTTP responses retained.`,
+    );
+  }
   if (verdict.ending) lines.push(`- The session ${verdict.ending}.`);
   if (verdict.whatIDid) lines.push('', `**What it did.** ${verdict.whatIDid}`);
   if (verdict.whatWouldHaveHelped) lines.push('', `**What would have helped.** ${verdict.whatWouldHaveHelped}`);
@@ -799,9 +871,14 @@ function verifyRun(runRoot, baseUrl) {
         ? `ended \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`
         : `returned \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`;
     const report = readFindings(agentDir);
-    const outcome = classifyJobOutcome({ execution, report });
+    const browserConsole = inspectBrowserConsole(browserDir);
+    const outcome = classifyJobOutcome({
+      execution,
+      report,
+      fatalConsoleErrors: browserConsole.fatal.length,
+    });
     if (outcome.status === 'inconclusive') inconclusive += 1;
-    else if (report.outcomeReached === 'yes') reached += 1;
+    else if (outcome.status === 'passed') reached += 1;
     else if (report.outcomeReached === 'partly') partlyReached += 1;
     else notReached += 1;
 
@@ -812,6 +889,7 @@ function verifyRun(runRoot, baseUrl) {
           '',
           `- Run status: **${execution.status}**. ${execution.reason}`,
           `- Outcome gate: **${outcome.status}**. ${outcome.reason}`,
+          `- Browser console: **${browserConsole.fatal.length} unexpected errors**; ${browserConsole.allowed.length} named expected HTTP responses retained.`,
           `- The agent ${ending}. This journey is unfinished and may be resumed; it is not a no-findings result.`,
           `- See \`${jobDir}/execution.json\` and \`${jobDir}/agent-stdout.json\`.`,
           '',
@@ -826,6 +904,7 @@ function verifyRun(runRoot, baseUrl) {
     verdict.ending = ending;
     verdict.execution = execution;
     verdict.outcome = outcome;
+    verdict.browserConsole = browserConsole;
     confirmed += verdict.confirmed.length;
     discarded += verdict.discarded.length;
 
@@ -975,6 +1054,26 @@ async function main() {
     password: 'FirstWeek!2026',
   };
   const buildIdentity = currentBuildIdentity();
+  if (buildIdentity.gitDirty) {
+    console.error('The first-week release journey requires a clean checkout so HEAD names every exercised byte.');
+    process.exit(2);
+  }
+  if (existingManifest?.build) {
+    const resumeBuildProblem = compareBuildIdentity(buildIdentity, {
+      commit: existingManifest.build.gitSha,
+      version: existingManifest.build.appVersion,
+    });
+    if (resumeBuildProblem) {
+      console.error(`Refusing to resume against a different checkout: ${resumeBuildProblem}`);
+      process.exit(2);
+    }
+  }
+  const deploymentIdentity = await readServerBuildIdentity(baseUrl);
+  const initialBuildProblem = compareBuildIdentity(buildIdentity, deploymentIdentity);
+  if (initialBuildProblem) {
+    console.error(`First-week build identity check failed: ${initialBuildProblem}`);
+    process.exit(2);
+  }
   const manifest = existingManifest || buildNewRunManifest({
     createdAt: new Date().toISOString(),
     baseUrl,
@@ -1049,7 +1148,7 @@ async function main() {
         approverEmail: job.requiresApprover ? configuredApproverEmail : null,
         model,
         backend,
-        build: buildIdentity,
+        build: manifest.build,
       }), null, 2)}\n`,
     );
 
@@ -1065,15 +1164,25 @@ async function main() {
     fs.writeFileSync(path.join(dir, 'prompt.txt'), prompt);
 
     process.stdout.write(`▶ ${job.id} — ${job.title}\n`);
-    if (!(await serverIsAvailable(baseUrl))) {
+    const currentIdentity = currentBuildIdentity();
+    const localBuildProblem = compareBuildIdentity(currentIdentity, {
+      commit: manifest.build.gitSha,
+      version: manifest.build.appVersion,
+    });
+    const runningIdentity = await readServerBuildIdentity(baseUrl);
+    const runningBuildProblem = runningIdentity
+      ? compareBuildIdentity(manifest.build, runningIdentity)
+      : 'The target OpenPlan server did not answer the preflight health check.';
+    if (localBuildProblem || runningBuildProblem) {
+      const serverUnavailable = !runningIdentity && !localBuildProblem;
       const execution = {
-        status: 'blocked_server',
-        reason: 'The target OpenPlan server did not answer the preflight health check.',
+        status: serverUnavailable ? 'blocked_server' : 'blocked_build',
+        reason: localBuildProblem || runningBuildProblem,
         startedAt: new Date().toISOString(),
         endedAt: new Date().toISOString(),
       };
       fs.writeFileSync(path.join(dir, 'execution.json'), `${JSON.stringify(execution, null, 2)}\n`);
-      process.stdout.write('  BLOCKED: target server is unavailable; safe to resume later\n');
+      process.stdout.write(`  BLOCKED: ${execution.reason}\n`);
       continue;
     }
 
@@ -1083,14 +1192,26 @@ async function main() {
     if (result.stderr) fs.writeFileSync(path.join(dir, 'agent-stderr.log'), result.stderr);
     const session = parseAgentSession(result.stdout);
     const contractViolation = backend === 'codex' ? codexContractViolation(result.stdout) : null;
+    const serverAvailableAfter = await serverIsAvailable(baseUrl);
+    const localIdentityAfter = currentBuildIdentity();
+    const localBuildProblemAfter = compareBuildIdentity(localIdentityAfter, {
+      commit: manifest.build.gitSha,
+      version: manifest.build.appVersion,
+    });
+    const serverIdentityAfter = serverAvailableAfter ? await readServerBuildIdentity(baseUrl) : null;
+    const runningBuildProblemAfter = serverAvailableAfter
+      ? compareBuildIdentity(manifest.build, serverIdentityAfter)
+      : null;
     const execution = {
       ...(contractViolation
         ? { status: 'failed_contract', reason: contractViolation }
+        : localBuildProblemAfter || runningBuildProblemAfter
+          ? { status: 'blocked_build', reason: localBuildProblemAfter || runningBuildProblemAfter }
         : classifyJobExecution({
             processResult: result,
             session,
             reportPresent: readFindings(agentDir) !== null,
-            serverAvailableAfter: await serverIsAvailable(baseUrl),
+            serverAvailableAfter,
           })),
       startedAt,
       endedAt: new Date().toISOString(),
@@ -1120,8 +1241,10 @@ module.exports = {
   buildNewRunManifest,
   classifyJobExecution,
   classifyJobOutcome,
+  compareBuildIdentity,
   codexContractViolation,
   currentBuildIdentity,
+  inspectBrowserConsole,
   loadJobs,
   parseAgentSession,
   parseArgs,

@@ -326,6 +326,14 @@ export function PublicMapStage({
     translatorRef.current = translator;
   }, [draw, drawEnabled, onGeometryChange, onSupport, hasVoted, contextLayers, translator]);
 
+  // Tell the shell only after this stage has committed its own drawing state.
+  // Calling the parent setter from inside setDraw's updater makes React render
+  // the parent while this child is still rendering and logs a real runtime
+  // error on the public portal.
+  useEffect(() => {
+    onGeometryChangeRef.current?.(deriveGeometry(draw));
+  }, [draw]);
+
   const announceSeqRef = useRef(0);
   const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
   // A zero-width nonce so a repeated action with identical wording still mutates
@@ -336,11 +344,7 @@ export function PublicMapStage({
   };
 
   const applyDraw = (updater: (previous: DrawState) => DrawState) => {
-    setDraw((previous) => {
-      const next = updater(previous);
-      onGeometryChangeRef.current?.(deriveGeometry(next));
-      return next;
-    });
+    setDraw((previous) => updater(previous));
   };
 
   const commitVertex = (coord: [number, number]) => {
@@ -368,7 +372,6 @@ export function PublicMapStage({
   useEffect(() => {
     setDraw((previous) => {
       if (previous.mode === drawMode) return previous;
-      onGeometryChangeRef.current?.(null);
       return { mode: drawMode, vertices: [], areaClosed: false };
     });
   }, [drawMode]);

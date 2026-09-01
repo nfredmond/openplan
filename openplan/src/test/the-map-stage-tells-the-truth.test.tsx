@@ -25,6 +25,8 @@
  * resets the module registry and imports fresh under the environment it wants.
  */
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { readFileSync } from "node:fs";
+import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resolvePublicBasemapConfig, type PublicBasemapChoice } from "@/lib/cartographic/basemaps";
@@ -402,5 +404,43 @@ describe("a campaign with no geography does not present a wide map as its area",
       items: [{ id: "i1", latitude: 39.2, longitude: -121.05, title: null, body: "here" }],
     });
     expect(screen.queryByTestId("portal-map-unframed-notice")).toBeNull();
+  });
+});
+
+describe("drawing reports geometry after the stage commits its own state", () => {
+  it("keeps the parent callback out of the child state updater", () => {
+    const source = readFileSync("src/components/engagement/public-map-stage.tsx", "utf8");
+    expect(source).not.toMatch(/setDraw\(\(previous\) => \{[\s\S]{0,300}onGeometryChangeRef\.current/);
+  });
+
+  it("does not update the parent from inside the stage state updater", async () => {
+    const { PublicMapStage } = await import("@/components/engagement/public-map-stage");
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    function Parent() {
+      const [, setGeometry] = useState<Parameters<NonNullable<StageProps["onGeometryChange"]>>[0]>(null);
+      return (
+        <PublicMapStage
+          items={[]}
+          initialView={{ center: [-121.05, 39.2], zoom: 12 }}
+          basemapChoices={CHOICES}
+          selectedBasemapId="streets"
+          onBasemapSelect={vi.fn()}
+          visibleLayerIds={[]}
+          onVisibleLayerIdsChange={vi.fn()}
+          translator={TRANSLATOR}
+          onGeometryChange={setGeometry}
+        />
+      );
+    }
+    render(<Parent />);
+    const map = mapboxMocks.instances.at(-1) as
+      | { handlers: Record<string, Array<(payload?: unknown) => void>> }
+      | undefined;
+    if (!map) throw new Error("no map was constructed");
+
+    fireMapEvent(map, "click", { lngLat: { lng: -121.05, lat: 39.2 } });
+
+    expect(consoleError.mock.calls.flat().join(" ")).not.toContain("Cannot update a component");
+    consoleError.mockRestore();
   });
 });

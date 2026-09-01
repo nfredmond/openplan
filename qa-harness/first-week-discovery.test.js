@@ -17,8 +17,10 @@ const {
   buildNewRunManifest,
   classifyJobExecution,
   classifyJobOutcome,
+  compareBuildIdentity,
   codexContractViolation,
   currentBuildIdentity,
+  inspectBrowserConsole,
   loadJobs,
   parseAgentSession,
   parseArgs,
@@ -234,6 +236,24 @@ check('the summary passes its outcome gate when every completed journey reached 
   assert.doesNotMatch(fs.readFileSync(result.summaryPath, 'utf8'), /Confirmed findings/);
 });
 
+check('an unexpected browser console error fails an otherwise reached journey', () => {
+  const runRoot = jobDir();
+  const dir = path.join(runRoot, '03-public-engagement');
+  writeCompletedJob(dir);
+  fs.mkdirSync(path.join(dir, 'browser'), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, 'browser', 'console-1.log'),
+    '[ 20ms] [ERROR] Cannot update a component while rendering a different component',
+  );
+
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.reached, 0);
+  assert.strictEqual(result.notReached, 1);
+  assert.strictEqual(result.outcomeGatePassed, false);
+  assert.strictEqual(shouldResumeJob(dir), true);
+  assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /1 unexpected console error/);
+});
+
 check('a selected job missing from disk is inconclusive instead of disappearing from the gate', () => {
   const runRoot = jobDir();
   fs.writeFileSync(
@@ -408,6 +428,7 @@ check('new first-week manifests can bind the exact checkout and app version', ()
   const appPackage = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openplan', 'package.json'), 'utf8'));
   assert.match(identity.gitSha, /^[0-9a-f]{40}$/);
   assert.strictEqual(identity.appVersion, appPackage.version);
+  assert.strictEqual(typeof identity.gitDirty, 'boolean');
 
   const job = { id: '11-model-validation-evidence', title: 'Validation', account: 'run' };
   const runManifest = buildNewRunManifest({
@@ -429,6 +450,30 @@ check('new first-week manifests can bind the exact checkout and app version', ()
   });
   assert.deepStrictEqual(runManifest.build, identity);
   assert.deepStrictEqual(jobManifest.build, identity);
+});
+
+check('release journeys reject dirty, unknown, or different running builds', () => {
+  const clean = { gitSha: 'a'.repeat(40), appVersion: '0.44.0', gitDirty: false };
+  assert.strictEqual(compareBuildIdentity(clean, { commit: 'a'.repeat(12), version: '0.44.0' }), null);
+  assert.match(compareBuildIdentity({ ...clean, gitDirty: true }, { commit: 'a'.repeat(12), version: '0.44.0' }), /dirty/i);
+  assert.match(compareBuildIdentity(clean, { commit: 'unknown', version: '0.44.0' }), /commit/i);
+  assert.match(compareBuildIdentity(clean, { commit: 'b'.repeat(12), version: '0.44.0' }), /does not match/i);
+  assert.match(compareBuildIdentity(clean, { commit: 'a'.repeat(12), version: '0.43.0' }), /version/i);
+});
+
+check('unexpected browser console errors fail while named HTTP validation responses remain visible', () => {
+  const browserDir = fs.mkdtempSync(path.join(os.tmpdir(), 'first-week-console-'));
+  fs.writeFileSync(
+    path.join(browserDir, 'console-a.log'),
+    [
+      '[ 10ms] [ERROR] Failed to load resource: the server responded with a status of 409 (Conflict) @ http://localhost/api/review:0',
+      '[ 20ms] [ERROR] Cannot update a component while rendering a different component PublicMapShell PublicMapStage',
+    ].join('\n'),
+  );
+  const result = inspectBrowserConsole(browserDir);
+  assert.strictEqual(result.allowed.length, 1);
+  assert.strictEqual(result.fatal.length, 1);
+  assert.match(result.fatal[0].text, /Cannot update a component/);
 });
 
 check('new run directories live outside the repository', () => {
