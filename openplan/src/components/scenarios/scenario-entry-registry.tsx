@@ -330,6 +330,7 @@ function ScenarioEntryCard({
   modelRunOptions,
   baselineEntryId,
   baselineRunId,
+  baselineModelRunId,
   baselineLabel,
   linkedReports,
   unreadable,
@@ -344,6 +345,7 @@ function ScenarioEntryCard({
   modelRunOptions: ModelRunOption[];
   baselineEntryId: string | null;
   baselineRunId: string | null;
+  baselineModelRunId: string | null;
   baselineLabel: string | null;
   linkedReports: ScenarioLinkedReport[];
   unreadable: ScenarioRegistryReadFailures;
@@ -395,8 +397,8 @@ function ScenarioEntryCard({
     entry.entry_type === "alternative"
       ? getScenarioComparisonReadiness({
           baselineEntryId,
-          baselineRunId,
-          candidateRunId: entry.attached_run_id,
+          baselineRunId: baselineRunId ?? baselineModelRunId,
+          candidateRunId: entry.attached_run_id ?? entry.attached_model_run_id,
         })
       : null;
   const analysisHref = buildScenarioStudioHref({
@@ -780,8 +782,8 @@ export function ScenarioEntryRegistry({
   const alternativeEntries = entries.filter((entry) => entry.entry_type === "alternative");
   const comparisonSummary = buildScenarioComparisonSummary({
     baselineEntryId: baselineEntry?.id,
-    baselineRunId: baselineEntry?.attached_run_id ?? null,
-    candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
+    baselineRunId: baselineEntry?.attached_run_id ?? baselineEntry?.attached_model_run_id ?? null,
+    candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id ?? entry.attached_model_run_id ?? null),
   });
 
   return (
@@ -821,6 +823,7 @@ export function ScenarioEntryRegistry({
               modelRunOptions={modelRunOptions}
               baselineEntryId={baselineEntry.id}
               baselineRunId={baselineEntry.attached_run_id}
+              baselineModelRunId={baselineEntry.attached_model_run_id ?? null}
               baselineLabel={baselineEntry.label}
               linkedReports={linkedReports}
               unreadable={unreadable}
@@ -862,6 +865,7 @@ export function ScenarioEntryRegistry({
                 modelRunOptions={modelRunOptions}
                 baselineEntryId={baselineEntry?.id ?? null}
                 baselineRunId={baselineEntry?.attached_run_id ?? null}
+                baselineModelRunId={baselineEntry?.attached_model_run_id ?? null}
                 baselineLabel={baselineEntry?.label ?? null}
                 linkedReports={linkedReports}
                 unreadable={unreadable}
@@ -939,8 +943,8 @@ export function ScenarioEntryRegistry({
             {alternativeEntries.map((entry) => {
               const readiness = getScenarioComparisonReadiness({
                 baselineEntryId: baselineEntry?.id ?? null,
-                baselineRunId: baselineEntry?.attached_run_id ?? null,
-                candidateRunId: entry.attached_run_id,
+                baselineRunId: baselineEntry?.attached_run_id ?? baselineEntry?.attached_model_run_id ?? null,
+                candidateRunId: entry.attached_run_id ?? entry.attached_model_run_id ?? null,
               });
 
               return (

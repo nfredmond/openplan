@@ -5,6 +5,7 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadLandUsePlanAccess } from "@/lib/land-use-plans/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { buildAdoptionBlockers } from "@/lib/land-use-plans/workflow";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
@@ -68,11 +69,20 @@ export async function POST(request: NextRequest, context: Context) {
     const descriptor = getJurisdictionPlanDescriptor(access.plan.descriptor_id);
     if (!descriptor) return NextResponse.json({ error: "Plan descriptor is not installed" }, { status: 409 });
     const processByKey = new Map((processResult.data ?? []).map((record) => [record.process_key, record]));
-    const missing = descriptor.processSteps
+    const requiredPrerequisites = descriptor.processSteps
       .filter((step) => step.required && step.adoptionPrerequisite)
+      .map((step) => ({ key: step.key, label: step.label }));
+    const missing = requiredPrerequisites
       .map((step) => step.key)
       .filter((key) => processByKey.get(key)?.status !== "complete");
-    if (missing.length) return NextResponse.json({ error: "Adoption review is incomplete", missing }, { status: 409 });
+    const adoptionBlockers = buildAdoptionBlockers({
+      requiredPrerequisites,
+      processRecords: (processResult.data ?? []).map((record) => ({ processKey: record.process_key, status: record.status })),
+      hasClosedReviewRelease: Boolean(releaseResult.data),
+    });
+    if (adoptionBlockers.length) {
+      return NextResponse.json({ error: "Adoption review is incomplete", blockers: adoptionBlockers, missing }, { status: 409 });
+    }
     const release = releaseResult.data;
     if (!release || release.version_id !== version.id || release.version_content_hash !== payload.versionContentHash || !release.outcome_hash) {
       return NextResponse.json({ error: "Adoption requires the exact latest closed review release for this version" }, { status: 409 });

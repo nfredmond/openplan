@@ -80,6 +80,18 @@ function classifyCall(call: KpiCall): string | null {
   }
 
   if (
+    call.filePath === "src/lib/models/guided-comparison-evidence-server.ts" &&
+    chain.includes('.in("run_id"') &&
+    chain.includes('"total_trips"') &&
+    chain.includes('"daily_vmt"')
+  ) {
+    // The guided comparison reads only the exact four linked runs and the two
+    // same-unit measures it renders. The paired decision read keeps each
+    // method's evidence state beside those values.
+    return "guided-comparison-evidence-read-by-run-ids";
+  }
+
+  if (
     [
       "src/app/api/models/project-comparison/route.ts",
       "src/app/api/scenarios/[scenarioSetId]/spine/comparison-snapshots/route.ts",
@@ -220,6 +232,10 @@ describe("model_run_kpis reader inventory", () => {
       expect.objectContaining({
         filePath: "src/lib/models/behavioral-onramp-kpis.ts",
         classification: "behavioral-manifest-writer-insert",
+      }),
+      expect.objectContaining({
+        filePath: "src/lib/models/guided-comparison-evidence-server.ts",
+        classification: "guided-comparison-evidence-read-by-run-ids",
       }),
     ]);
   });

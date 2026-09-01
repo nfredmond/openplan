@@ -116,12 +116,26 @@ def main() -> int:
             _, comparison = exact_artifact(record["comparison"], f"{geography}/{method} comparison")
             audits[method] = audit
             for label, value in (("loading input", loading_input), ("pre-output audit", audit), ("comparison", comparison)):
-                release(value, expected_sha, f"{geography}/{method} {label}")
                 require(value.get("method") == method, f"{geography}/{method} {label} method changed")
             require(loading_input.get("schema") == "openplan.distributed-work-loading-input.v1", f"{geography}/{method} input schema changed")
+            source_release_keys = (
+                "publisher",
+                "product",
+                "release",
+                "year",
+                "jobs_type",
+                "segment",
+                "block_vintage",
+                "limitations",
+            )
+            expected_source_release = {key: registry["source_release"][key] for key in source_release_keys}
+            require(loading_input.get("source_release") == expected_source_release, f"{geography}/{method} Census source release changed")
+            release(audit, expected_sha, f"{geography}/{method} pre-output audit")
+            release(comparison, expected_sha, f"{geography}/{method} comparison")
             require(audit.get("schema") == "openplan.pre-output-audit.v1", f"{geography}/{method} audit schema changed")
             require(audit.get("frozen_before_assignment_output") is True and audit.get("assignment_output_bytes_read") is False, f"{geography}/{method} audit opened output early")
             require(audit.get("holdout_accessed") is False and audit.get("methods_averaged") is False and audit.get("defaults_changed") is False, f"{geography}/{method} audit crossed a forbidden boundary")
+            require((audit.get("bindings") or {}).get("loading_input") == record["input"], f"{geography}/{method} audit/loading-input binding changed")
             accounting = audit.get("demand_accounting") or {}
             require(set(accounting.get("source_state_demand") or {}) == STATES, f"{geography}/{method} source-state vocabulary changed")
             require(abs(float(accounting["candidate_total"]) - float(accounting["original_total"])) <= max(1e-6, float(accounting["original_total"]) * 1e-10), f"{geography}/{method} demand is not conserved")
@@ -143,7 +157,9 @@ def main() -> int:
         require(all((left.get(key) or {}).get("sha256") == (right.get(key) or {}).get("sha256") and (left.get(key) or {}).get("bytes") == (right.get(key) or {}).get("bytes") for key in comparable_bindings), f"{geography} methods do not share exact source/network custody")
     require(result.get("candidate_advanced") is every_advanced, "study candidate disposition disagrees with county-method gates")
     report = (STUDY / "study-report.md").read_text()
-    require(all(geography in report for geography in geography_ids), "study report omitted a development geography")
+    geography_names = [str(item["name"]) for item in registry.get("geographies") or []]
+    require(all(name in report for name in geography_names), "study report omitted a development geography")
+    require(all(method in report for method in METHODS), "study report omitted a separate method")
     require("inconclusive" in report and "No default changed" in report, "study report weakened its scientific boundary")
     print("distributed work loading study: all release, artifact, conservation, and custody bindings verified")
     return 0

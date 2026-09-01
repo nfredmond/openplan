@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 
 import type { JurisdictionPlanDescriptor } from "@/lib/land-use-plans/contracts";
 import { pickPublicAttributes, publicMapIsTooDense } from "@/lib/land-use-plans/public-map";
-import { buildLandUsePlanWorkflow, percentComplete } from "@/lib/land-use-plans/workflow";
+import {
+  buildAdoptionBlockers,
+  buildLandUsePlanWorkflow,
+  buildPublicDraftBlockers,
+  percentComplete,
+} from "@/lib/land-use-plans/workflow";
 import { formatReportTypeLabel } from "@/lib/reports/catalog";
 import { REPORT_ACCESS_COLUMNS } from "@/lib/reports/api";
 
@@ -45,6 +50,50 @@ function workflowInput() {
 }
 
 describe("Land Use Plans review and reporting completion", () => {
+  it("shows the exact adoption prerequisites beside the adoption control", () => {
+    expect(buildAdoptionBlockers({
+      requiredPrerequisites: [
+        { key: "referrals", label: "Send referrals" },
+        { key: "hearing", label: "Record hearing" },
+      ],
+      processRecords: [{ processKey: "referrals", status: "complete" }],
+      hasClosedReviewRelease: false,
+    })).toEqual([
+      "Complete adoption prerequisites: Record hearing",
+      "Close and freeze the exact latest public-review release",
+    ]);
+  });
+
+  it("shows every public-draft blocker beside the freeze control", () => {
+    expect(buildPublicDraftBlockers({
+      applicableRequirementKeys: ["land_use", "circulation"],
+      completedRequirementKeys: ["land_use"],
+      hasDesignation: false,
+      hasImplementationAction: false,
+      requiredReviewPrerequisiteKeys: ["environmental_review", "hearing"],
+      completedProcessKeys: ["hearing"],
+      requiresConsultation: true,
+      consultationStatus: "in_progress",
+    })).toEqual([
+      "Complete applicable sections: circulation",
+      "Attach a versioned mapped-designation layer",
+      "Add at least one implementation action",
+      "Complete review prerequisites: environmental_review",
+      "Complete or mark the private tribal-consultation record not applicable",
+    ]);
+
+    expect(buildPublicDraftBlockers({
+      applicableRequirementKeys: ["land_use"],
+      completedRequirementKeys: ["land_use"],
+      hasDesignation: true,
+      hasImplementationAction: true,
+      requiredReviewPrerequisiteKeys: ["hearing"],
+      completedProcessKeys: ["hearing"],
+      requiresConsultation: true,
+      consultationStatus: "not_applicable",
+    })).toEqual([]);
+  });
+
   it("derives completion from required descriptor records and ignores optional omissions", () => {
     const complete = buildLandUsePlanWorkflow(workflowInput());
     expect(complete.some((step) => step.key === "optional_notice")).toBe(false);

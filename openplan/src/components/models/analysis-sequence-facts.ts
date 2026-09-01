@@ -267,6 +267,7 @@ export async function loadAnalysisSequenceFacts(
         return snapshotHasExactGuidedEvidence(snapshot.id, snapshotLinks, setEvidence);
       }).length
     : readySnapshots.length;
+  const savedComparisonPacketCount = readySnapshots.length;
 
   return {
     areaLabel,
@@ -284,6 +285,7 @@ export async function loadAnalysisSequenceFacts(
     nonPrototypeCheckedRunCount,
     guidedComparisonCheckedCount,
     comparisonPacketCount,
+    savedComparisonPacketCount,
     unreadable: Array.from(new Set(unreadable)),
   };
 }

@@ -191,6 +191,34 @@ describe("what the analysis sequence counts as a checked run", () => {
     expect(latest.get(guidedRunJobKey(second))?.id).toBe("run-2");
   });
 
+  it("does not let a newer Corridor Analysis run hide the guided assignment", () => {
+    const job: GuidedRunJob = {
+      method: "aequilibrae",
+      scenario: "baseline",
+      modelId: "model-aeq",
+      scenarioEntryId: "entry-base",
+      assumptionsJson: {},
+    };
+    const latest = latestGuidedRuns([job], [
+      {
+        id: "newer-corridor-run",
+        model_id: "model-aeq",
+        scenario_entry_id: "entry-base",
+        engine_key: "deterministic_corridor_v1",
+        status: "succeeded",
+      },
+      {
+        id: "guided-assignment",
+        model_id: "model-aeq",
+        scenario_entry_id: "entry-base",
+        engine_key: "aequilibrae",
+        status: "succeeded",
+      },
+    ]);
+
+    expect(latest.get(guidedRunJobKey(job))?.id).toBe("guided-assignment");
+  });
+
   it("counts only claim decisions attached to the exact verified project outputs", async () => {
     const { facts } = await load(guidedTables());
     expect(facts.aequilibraeRunCount).toBe(2);
@@ -221,6 +249,7 @@ describe("what the analysis sequence counts as a checked run", () => {
     const { facts } = await load(tables);
     expect(facts.aequilibraeRunCount).toBe(1);
     expect(facts.comparisonPacketCount).toBe(0);
+    expect(facts.savedComparisonPacketCount).toBe(1);
   });
 
   it("does not accept an otherwise ready snapshot with no exact run links", async () => {
@@ -228,6 +257,7 @@ describe("what the analysis sequence counts as a checked run", () => {
     tables.scenario_comparison_model_run_links = { rows: [] };
     const { facts } = await load(tables);
     expect(facts.comparisonPacketCount).toBe(0);
+    expect(facts.savedComparisonPacketCount).toBe(1);
   });
 
   it("keeps validation incomplete until all four exact outputs have track-matched decisions", async () => {

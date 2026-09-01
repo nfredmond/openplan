@@ -73,7 +73,7 @@ export const GUIDED_PROJECT_COMPARISON_MODELS = [
 ] as const;
 
 export type ProjectComparisonState = {
-  state: "not_started" | "inputs_missing" | "runs_missing" | "validation_missing" | "packet_ready" | "unknown";
+  state: "not_started" | "inputs_missing" | "runs_missing" | "validation_missing" | "packet_stale" | "packet_ready" | "unknown";
   label: string;
   firstMissingStep: AnalysisStepId | null;
   trafficAnswer: string;
@@ -144,6 +144,21 @@ export function summarizeProjectComparison(facts: AnalysisSequenceFacts): Projec
       vmtAnswer: "Read the saved report; the two methods remain separate in that record.",
       valueAnswer: "Review the saved effects beside the project's documented cost and decision criteria.",
       uncertainties: ["The saved report's caveats and method disagreements still apply."],
+    };
+  }
+
+  if ((facts.comparisonPacketCount ?? 0) < 1 && (facts.savedComparisonPacketCount ?? 0) > 0) {
+    return {
+      state: "packet_stale",
+      label: "Saved comparison needs refresh",
+      firstMissingStep: "packet",
+      trafficAnswer: "A saved exact comparison is on file, but it does not match the latest four outputs. Open the saved record for its historical result, then refresh it before treating it as current.",
+      vmtAnswer: "The saved record keeps both methods separate, but newer run evidence means its VMT result is not the current comparison.",
+      valueAnswer: "Do not use the stale comparison for a current value judgment; preserve it and save a refreshed exact snapshot.",
+      uncertainties: [
+        "The saved comparison does not match the latest exact four outputs; preserve it and save a refreshed snapshot after review.",
+        ...missing.filter((item) => item.step !== "packet").map((item) => item.message),
+      ],
     };
   }
 

@@ -31,4 +31,7 @@ The outcome is the downloaded standard GIS artifact plus enough visible
 coverage information to tell the recipient what it does and does not contain.
 If the browser cannot expose a local download path or inspect the binary, say
 that plainly; do not claim you opened it in desktop GIS. Deterministic artifact
-validation belongs to the repository checks, not this browser journey.
+validation belongs to the repository checks, not this browser journey. If the
+filename, layer types, CRS, and missing or rejected geometry status are visible
+and the download succeeds, the browser outcome is reached; lacking a desktop
+binary reader is a stated limitation, not a partial product outcome.

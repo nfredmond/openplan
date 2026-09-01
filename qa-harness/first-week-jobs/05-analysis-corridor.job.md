@@ -29,6 +29,9 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
 4. You know how good the answer is. Anything the software is guessing at, or any
    place where the number is rough, you can point to on the screen. If a number
    is presented with more confidence than it deserves, write that down.
+5. If you use the guided project build comparison, save its visible Exact
+   four-run comparison after all four jobs finish. Do not substitute a
+   single-run Analysis Studio attachment and do not average the two methods.
 
 Watch the state of the run carefully. Note anything that made you unsure whether
 it was still working, finished, or broken — including how long you had to wait

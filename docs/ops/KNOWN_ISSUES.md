@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-31 against the v0.44.0 candidate.
+**Reviewed:** 2026-09-01 against the v0.44.0 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -18,6 +18,7 @@ only in `docs/ROADMAP.md`.
 | KI-2026-08-31-014 | Medium | Two killed-or-seriously-injured totals appear on one Safety screen with only fine print explaining their different scopes. | Name the scope beside each total and provide the reconciliation directly where both appear. | First-week run `2026-09-01T03-36-34-705Z`, job 04-safety-case |
 | KI-2026-08-31-015 | Medium | A crash retrieval started without Project context cannot later attach to a report, while the report wizard does not offer Safety evidence. | Warn before retrieval and make project-scoped Safety evidence reachable from report creation. | First-week run `2026-09-01T03-36-34-705Z`, job 04-safety-case |
 | KI-2026-08-31-016 | Low | Workbook preview warns that a normalized project name already exists while reporting zero conflicted rows. | Count the existing-name state as a conflict or explicitly distinguish it from the conflict total. | First-week run `2026-09-01T03-36-34-705Z`, job 08-project-portfolio-round-trip |
+| KI-2026-09-01-019 | Low | Data Hub can reuse an identical existing GIS layer, but an exact-label re-upload cannot become a new version of that layer. | Add version upload to an existing layer and make duplicate-content handling offer explicit reuse or a new governed version. | Final first-week run `2026-09-01T11-06-18-597Z`, job 06-land-use-plan, `evidence/f1.png` and `evidence/f1.snapshot.txt` |
 
 ## Closed in v0.44.0
 

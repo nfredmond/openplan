@@ -77,6 +77,28 @@ describe("project comparison guidance", () => {
     expect(summary.trafficAnswer).toMatch(/^Unavailable/);
   });
 
+  it("reports a saved exact comparison as stale instead of denying that it exists", () => {
+    const summary = summarizeProjectComparison({
+      ...EMPTY,
+      managedNetworkBasisCount: 1,
+      guidedProjectComparison: true,
+      scenarioSetCount: 1,
+      modelCount: 2,
+      aequilibraeModelCount: 1,
+      activitySimModelCount: 1,
+      aequilibraeRunCount: 2,
+      activitySimRunCount: 2,
+      guidedComparisonCheckedCount: 1,
+      comparisonPacketCount: 0,
+      savedComparisonPacketCount: 1,
+    });
+
+    expect(summary.state).toBe("packet_stale");
+    expect(summary.label).toBe("Saved comparison needs refresh");
+    expect(summary.uncertainties).toContain("The saved comparison does not match the latest exact four outputs; preserve it and save a refreshed snapshot after review.");
+    expect(summary.uncertainties.join(" ")).not.toMatch(/No unaveraged baseline-versus-build comparison report is saved/);
+  });
+
   it("starts one project-scoped scaffold and sends the planner to the first real missing input", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

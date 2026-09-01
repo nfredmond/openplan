@@ -26,6 +26,7 @@ const {
   RUNS_DIR,
   shouldResumeJob,
   verifyRun,
+  writeHandoverFiles,
 } = require('./first-week-discovery');
 
 let failures = 0;
@@ -361,6 +362,36 @@ check('the twelve first-week jobs carry jurisdiction readiness through existing 
   assert.match(neutralBody, /must not retain Oregon or California rules, sources, or support claims/i);
   assert.match(projectBody, /status, applicability, limitations, registry hash, and evidence hashes/i);
   assert.match(projectBody, /project\/jurisdiction-readiness\.json/);
+});
+
+check('the land-use journey gets only an explicit synthetic designation fixture', () => {
+  const dir = jobDir();
+  writeHandoverFiles(dir);
+  const fixturePath = path.join(dir, 'land-use-designations.geojson');
+  const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  const instrument = fs.readFileSync(path.join(dir, 'exercise-only-adoption-instrument.txt'), 'utf8');
+  assert.strictEqual(fixture.features.length, 2);
+  assert.ok(fixture.features.every((feature) =>
+    feature.properties.exercise_status === 'synthetic_unadopted_qa_fixture'));
+  assert.ok(fixture.features.every((feature) =>
+    /exercise OpenPlan first-week custody/.test(feature.properties.source_note)));
+  assert.match(instrument, /EXERCISE-ONLY ADOPTION INSTRUMENT — NOT AN AGENCY RECORD/);
+  assert.match(instrument, /not adopted, approved, signed, voted on, or legally effective/i);
+  assert.match(instrument, /does not establish legal compliance/i);
+
+  const job = loadJobs().find((candidate) => candidate.id === '06-land-use-plan');
+  assert.strictEqual(job?.files, 'handover');
+  assert.match(job?.body || '', /explicitly synthetic,[\s\S]*unadopted QA fixture/i);
+  assert.match(job?.body || '', /do not represent it as agency\s+evidence or an adopted map/i);
+  assert.match(job?.body || '', /exercise-only process statuses and dates[\s\S]*do not establish legal compliance/i);
+  assert.match(job?.body || '', /exercise-only-adoption-instrument\.txt[\s\S]*upload it through Documents/i);
+  assert.match(job?.body || '', /supporting adoption document[\s\S]*never a real legal instrument/i);
+});
+
+check('the GIS handoff browser outcome does not pretend to inspect its binary', () => {
+  const job = loadJobs().find((candidate) => candidate.id === '07-project-gis-handoff');
+  assert.match(job?.body || '', /browser outcome is reached/i);
+  assert.match(job?.body || '', /lacking a desktop[\s\S]*binary reader[\s\S]*not a partial product outcome/i);
 });
 
 check('the model-validation job treats an honest inconclusive assessment as a reached outcome', () => {

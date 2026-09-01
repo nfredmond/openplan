@@ -78,4 +78,13 @@ describe("Land Use Plans route boundaries", () => {
     expect(workbench).toContain('name="policyNodeIds"');
     expect(workbench).toContain('form.getAll("policyNodeIds")');
   });
+
+  it("puts the exact freeze blockers beside the consequential control", () => {
+    const workbench = readFileSync(path.resolve(__dirname, "../components/land-use-plans/land-use-plan-workbench.tsx"), "utf8");
+    const freezeRoute = readFileSync(path.join(API_ROOT, "freeze/route.ts"), "utf8");
+    expect(workbench).toContain("buildPublicDraftBlockers");
+    expect(workbench).toContain("Before freezing, complete:");
+    expect(workbench).toContain("publicDraftBlockers.length > 0");
+    expect(freezeRoute).toContain("buildPublicDraftBlockers");
+  });
 });

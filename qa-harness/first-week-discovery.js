@@ -198,16 +198,68 @@ function writeHandoverFiles(dir) {
       },
     ],
   };
+  const landUseDesignations = {
+    type: 'FeatureCollection',
+    name: 'Synthetic QA future land-use designations — exercise only, not adopted',
+    features: [
+      {
+        type: 'Feature',
+        properties: {
+          designation: 'Exercise mixed use',
+          exercise_status: 'synthetic_unadopted_qa_fixture',
+          source_note: 'Generated only to exercise OpenPlan first-week custody and publication controls',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [-123.235, 39.12],
+            [-123.2125, 39.12],
+            [-123.2125, 39.18],
+            [-123.235, 39.18],
+            [-123.235, 39.12],
+          ]],
+        },
+      },
+      {
+        type: 'Feature',
+        properties: {
+          designation: 'Exercise residential',
+          exercise_status: 'synthetic_unadopted_qa_fixture',
+          source_note: 'Generated only to exercise OpenPlan first-week custody and publication controls',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [[
+            [-123.2125, 39.12],
+            [-123.19, 39.12],
+            [-123.19, 39.18],
+            [-123.2125, 39.18],
+            [-123.2125, 39.12],
+          ]],
+        },
+      },
+    ],
+  };
   const projects = [
     'name,description,cost_usd,phase',
     'Example Corridor Complete Street,"Sidewalks, lighting and crossings along the corridor",4200000,planning',
     'Example Corridor Signal Upgrade,"Replace four signals and add pedestrian phases",1150000,design',
     'Example Corridor Shared-Use Path,"Two miles of separated path beside the corridor",7600000,planning',
   ].join('\n');
+  const adoptionInstrument = [
+    'EXERCISE-ONLY ADOPTION INSTRUMENT — NOT AN AGENCY RECORD',
+    '',
+    'Purpose: test OpenPlan first-week document custody and adoption workflow state transitions.',
+    'Status: synthetic QA fixture; not adopted, approved, signed, voted on, or legally effective.',
+    'This file does not establish legal compliance, environmental review, consultation, adoption, or agency action.',
+    'It must never be cited or represented as a real ordinance, resolution, finding, vote, or governing-body decision.',
+  ].join('\n');
 
   fs.writeFileSync(path.join(dir, 'corridor.geojson'), `${JSON.stringify(corridor, null, 2)}\n`);
   fs.writeFileSync(path.join(dir, 'study-area.geojson'), `${JSON.stringify(studyArea, null, 2)}\n`);
+  fs.writeFileSync(path.join(dir, 'land-use-designations.geojson'), `${JSON.stringify(landUseDesignations, null, 2)}\n`);
   fs.writeFileSync(path.join(dir, 'projects.csv'), `${projects}\n`);
+  fs.writeFileSync(path.join(dir, 'exercise-only-adoption-instrument.txt'), `${adoptionInstrument}\n`);
 }
 
 function buildPrompt(job, { baseUrl, email, password, approverEmail, approverPassword, agentDir, contract }) {

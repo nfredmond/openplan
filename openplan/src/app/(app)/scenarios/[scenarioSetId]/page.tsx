@@ -7,6 +7,8 @@ import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-reg
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
 import { ScenarioSpinePanel } from "@/components/scenarios/scenario-spine-panel";
 import { TripGenComparisonSaveButton } from "@/components/scenarios/trip-gen-comparison-save";
+import { GuidedComparisonResultsPanel } from "@/components/scenarios/guided-comparison-results-panel";
+import { GuidedComparisonSavePanel } from "@/components/scenarios/guided-comparison-save-panel";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -21,6 +23,9 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import { hasGuidedProjectComparisonIntent } from "@/lib/models/project-comparison";
+import { buildGuidedComparisonResults } from "@/lib/models/guided-comparison-results";
+import { loadGuidedComparisonEvidence } from "@/lib/models/guided-comparison-evidence-server";
 import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
 import { scenarioComparisonSourceContextFromMetadata } from "@/lib/scenarios/comparison-source-context";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
@@ -198,7 +203,7 @@ export default async function ScenarioSetDetailPage({
       .limit(30),
     supabase
       .from("models")
-      .select("id, title, status, last_run_recorded_at")
+      .select("id, title, status, last_run_recorded_at, config_json")
       .eq("workspace_id", scenarioSet.workspace_id)
       .eq("scenario_set_id", scenarioSet.id)
       .order("updated_at", { ascending: false }),
@@ -210,6 +215,9 @@ export default async function ScenarioSetDetailPage({
   const modelsUnreadable = reads.check("selectable models", modelsResult);
   const runsData = runsResult.data;
   const modelsData = modelsResult.data;
+  const guidedProjectComparison = (modelsData ?? []).some((model) =>
+    hasGuidedProjectComparisonIntent(model.config_json)
+  );
 
   // A database without the model-run-attachment migration answers the widened
   // select with a missing-column error; fall back to the legacy select and
@@ -366,8 +374,8 @@ export default async function ScenarioSetDetailPage({
   const alternativeEntries = entries.filter((entry) => entry.entry_type === "alternative");
   const comparisonSummary = buildScenarioComparisonSummary({
     baselineEntryId: baselineEntry?.id,
-    baselineRunId: baselineEntry?.attached_run_id ?? null,
-    candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
+    baselineRunId: baselineEntry?.attached_run_id ?? baselineEntry?.attached_model_run_id ?? null,
+    candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id ?? entry.attached_model_run_id ?? null),
   });
   // Narrow model_runs lookup for the trip-gen comparison save affordance: the
   // newest succeeded ite_trip_generation run per entry. Degrades to "no
@@ -440,6 +448,15 @@ export default async function ScenarioSetDetailPage({
   const comparisonSnapshots = comparisonSnapshotsSchemaPending
     ? []
     : ((comparisonSnapshotsResult.data ?? []) as ScenarioComparisonSnapshotRow[]);
+  const guidedSnapshotIds = comparisonSnapshots.filter((snapshot) => snapshot.metadata_json?.kind === "guided_project_comparison").map((snapshot) => snapshot.id);
+  const guidedEvidence = await loadGuidedComparisonEvidence(supabase, reads, guidedSnapshotIds);
+  const guidedCandidateEntry = baselineEntry ? alternativeEntries[0] ?? null : null;
+  const guidedComparisonAlreadySaved = Boolean(
+    guidedProjectComparison &&
+    baselineEntry &&
+    guidedCandidateEntry &&
+    comparisonSnapshots.some((snapshot) => snapshot.status === "ready" && snapshot.baseline_entry_id === baselineEntry.id && snapshot.candidate_entry_id === guidedCandidateEntry.id && snapshot.metadata_json?.kind === "guided_project_comparison")
+  );
   const comparisonSnapshotIds = comparisonSnapshots.map((snapshot) => snapshot.id);
   const comparisonIndicatorDeltasResult = comparisonSnapshotIds.length
     ? await supabase
@@ -549,6 +566,14 @@ export default async function ScenarioSetDetailPage({
     candidateEntry: entryById.get(snapshot.candidate_entry_id) ?? null,
     indicatorDeltaCount: comparisonIndicatorDeltaCountBySnapshotId.get(snapshot.id) ?? 0,
     sourceContext: scenarioComparisonSourceContextFromMetadata(snapshot.metadata_json),
+    guidedResults: snapshot.metadata_json?.kind === "guided_project_comparison" && !guidedEvidence.unreadable
+      ? buildGuidedComparisonResults({
+          snapshotId: snapshot.id,
+          links: guidedEvidence.links,
+          kpis: guidedEvidence.kpis,
+          decisions: guidedEvidence.decisions,
+        })
+      : [],
   }));
   const comparisonSnapshotExportReadyCount = recentComparisonSnapshots.filter(
     (snapshot) => snapshot.sourceContext?.exportReady
@@ -953,6 +978,11 @@ export default async function ScenarioSetDetailPage({
             ) : null}
 
             {!comparisonSnapshotsSchemaPending &&
+            !comparisonSnapshotsUnreadable && guidedProjectComparison && baselineEntry && guidedCandidateEntry ? (
+              <GuidedComparisonSavePanel scenarioSetId={scenarioSet.id} baseline={baselineEntry} candidate={guidedCandidateEntry} alreadySaved={guidedComparisonAlreadySaved} />
+            ) : null}
+
+            {!comparisonSnapshotsSchemaPending &&
             baselineEntry &&
             tripGenBaselineRun &&
             tripGenCandidateEntry &&
@@ -1094,6 +1124,14 @@ export default async function ScenarioSetDetailPage({
                         </div>
                       </div>
                     )}
+
+                    {snapshot.metadata_json?.kind === "guided_project_comparison" ? (
+                      <GuidedComparisonResultsPanel
+                        snapshotId={snapshot.id}
+                        results={snapshot.guidedResults}
+                        unreadable={guidedEvidence.unreadable}
+                      />
+                    ) : null}
                   </div>
                 ))}
               </div>

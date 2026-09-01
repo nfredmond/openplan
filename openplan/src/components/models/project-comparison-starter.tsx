@@ -121,7 +121,7 @@ export function ProjectComparisonStarter({
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold text-foreground">Project build comparison</h2>
             <StatusBadge
-              tone={summary.state === "packet_ready" ? "success" : summary.state === "unknown" ? "warning" : "neutral"}
+              tone={summary.state === "packet_ready" ? "success" : summary.state === "unknown" || summary.state === "packet_stale" ? "warning" : "neutral"}
               className="min-w-0 max-w-full shrink whitespace-normal break-words text-left leading-4"
             >
               {summary.label}

@@ -107,6 +107,8 @@
     "docs/ops/2026-08-28-governed-decision-handoff-browser-proof.md",
     "docs/modeling/OBSERVED_COUNT_INSTRUMENT_READINESS_2026-08-28.md",
     "docs/modeling/DEVELOPMENT_VALIDATION_INSTRUMENT_RESULT_2026-08-28.md",
-    "docs/modeling/STRUCTURAL_DEMAND_DIAGNOSIS_RESULT_2026-08-28.md"
+    "docs/modeling/STRUCTURAL_DEMAND_DIAGNOSIS_RESULT_2026-08-28.md",
+    "docs/ops/V044_DISTRIBUTED_WORK_LOADING_PROOF_2026-09-01.md",
+    "docs/ops/KNOWN_ISSUES.md"
   ]
 }

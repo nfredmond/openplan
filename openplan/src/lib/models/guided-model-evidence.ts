@@ -199,7 +199,10 @@ export function latestGuidedRuns(
   const latest = new Map<string, GuidedRunRow>();
   for (const job of jobs) {
     const row = orderedNewestFirst.find(
-      (run) => run.model_id === job.modelId && run.scenario_entry_id === job.scenarioEntryId,
+      (run) =>
+        run.model_id === job.modelId &&
+        run.scenario_entry_id === job.scenarioEntryId &&
+        run.engine_key === guidedEngineKey(job.method),
     );
     if (row) latest.set(guidedRunJobKey(job), row);
   }

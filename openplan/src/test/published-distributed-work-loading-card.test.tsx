@@ -20,6 +20,7 @@ describe("PublishedDistributedWorkLoadingCard", () => {
     expect(screen.getByText(/does not change model defaults/i)).toBeInTheDocument();
     expect(screen.getByText(/No average or national rescue/i)).toBeInTheDocument();
     expect(screen.getByTestId("selected-distributed-work-loading")).toHaveTextContent("aequilibrae");
+    expect(screen.getByText("b".repeat(64))).toHaveClass("break-all");
     expect(screen.getByRole("link", { name: "Download selected before-output audit" })).toHaveAttribute("href", expect.stringContaining("fixture/aequilibrae/"));
     fireEvent.click(screen.getByRole("button", { name: "ActivitySim" }));
     expect(screen.getByTestId("selected-distributed-work-loading")).toHaveTextContent("activitysim");

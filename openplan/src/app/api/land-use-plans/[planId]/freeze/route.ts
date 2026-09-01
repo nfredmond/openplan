@@ -5,6 +5,7 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { buildFrozenSnapshot, loadLandUsePlanAccess, loadWorkingVersion } from "@/lib/land-use-plans/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { getJurisdictionPlanDescriptor } from "@/lib/land-use-plans/registry";
+import { buildPublicDraftBlockers } from "@/lib/land-use-plans/workflow";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({ planId: z.string().uuid() });
@@ -40,22 +41,26 @@ export async function POST(request: NextRequest, context: Context) {
   if (nodes.error || designations.error || actions.error || processRecords.error || consultation.error) {
     return NextResponse.json({ error: "Failed to check public-draft readiness" }, { status: 500 });
   }
-  const bodies = new Map((nodes.data ?? []).map((node) => [node.requirement_key, node.body?.trim() ?? ""]));
-  const missingRequirements = (version.applicable_requirement_keys ?? []).filter((key: string) => !bodies.get(key));
-  const processByKey = new Map((processRecords.data ?? []).map((record) => [record.process_key, record.status]));
-  const missingReviewSteps = descriptor.processSteps
+  const completedRequirementKeys = (nodes.data ?? [])
+    .filter((node) => Boolean(node.body?.trim()))
+    .map((node) => node.requirement_key)
+    .filter((key): key is string => Boolean(key));
+  const requiredReviewPrerequisiteKeys = descriptor.processSteps
     .filter((step) => step.required && step.reviewPrerequisite)
-    .map((step) => step.key)
-    .filter((key) => processByKey.get(key) !== "complete");
-  const blockers = [
-    ...(missingRequirements.length ? [`Complete applicable sections: ${missingRequirements.join(", ")}`] : []),
-    ...(!(designations.data ?? []).length ? ["Attach a versioned mapped-designation layer"] : []),
-    ...(!(actions.data ?? []).length ? ["Add at least one implementation action"] : []),
-    ...(missingReviewSteps.length ? [`Complete review prerequisites: ${missingReviewSteps.join(", ")}`] : []),
-    ...(requiresConsultation && !["complete", "not_applicable"].includes(consultation.data?.status ?? "")
-      ? ["Complete or mark the private tribal-consultation record not applicable"]
-      : []),
-  ];
+    .map((step) => step.key);
+  const completedProcessKeys = (processRecords.data ?? [])
+    .filter((record) => record.status === "complete")
+    .map((record) => record.process_key);
+  const blockers = buildPublicDraftBlockers({
+    applicableRequirementKeys: version.applicable_requirement_keys ?? [],
+    completedRequirementKeys,
+    hasDesignation: (designations.data ?? []).length > 0,
+    hasImplementationAction: (actions.data ?? []).length > 0,
+    requiredReviewPrerequisiteKeys,
+    completedProcessKeys,
+    requiresConsultation,
+    consultationStatus: consultation.data?.status ?? null,
+  });
   if (blockers.length) return NextResponse.json({ error: "The public draft is not ready to freeze", blockers }, { status: 409 });
 
   const frozen = await buildFrozenSnapshot(loaded.access, version);

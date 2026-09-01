@@ -2,7 +2,7 @@
 id: 06-land-use-plan
 title: Write a land-use plan, take it through review and adoption, then report progress
 account: run
-files: none
+files: handover
 maxTurns: 300
 ---
 
@@ -16,7 +16,21 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
 
 1. Start from the signed-in landing page and create a land-use plan for the
    workspace's home geography. Add a readable section, one policy, and one
-   implementation action.
+   implementation action. The supplied
+   `handover/land-use-designations.geojson` is an explicitly synthetic,
+   unadopted QA fixture. Upload it through Data Hub and attach its exact ready
+   version as the plan's mapped designation so the custody workflow can be
+   exercised. Preserve its exercise-only label; do not represent it as agency
+   evidence or an adopted map.
+   For this isolated QA journey, use clearly labelled exercise-only process statuses and dates
+   to test the state transitions. They do not establish legal compliance,
+   environmental review, consultation, adoption, or agency
+   action. Never describe them as real findings.
+   The supplied `handover/exercise-only-adoption-instrument.txt` is likewise an
+   explicit synthetic QA fixture. Upload it through Documents, preserve its
+   exercise-only title, and select it only as the supporting adoption document
+   needed to exercise the custody link. It is never a real legal instrument,
+   vote, finding, ordinance, resolution, or agency decision.
 2. Prepare a public-review version, obtain the actual public address from the
    software, and open it signed out. The public record must make clear what is
    draft and what legal configuration applies.

@@ -422,6 +422,10 @@ export default async function ModelsPage({
             Choose one project. OpenPlan will keep it selected while it sets up the no-build baseline,
             build scenario, shared worker-built road network, and separate AequilibraE and ActivitySim runs.
           </p>
+          <p className="mt-2 max-w-[44rem] text-sm leading-6 text-muted-foreground">
+            Time to allow: roughly 10–40 minutes for all four jobs in a small area. Large areas, a busy queue,
+            source downloads, or count calibration can take hours.
+          </p>
           {projectsReadFailed ? (
             <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">
               Projects could not be read, so no project can be selected without guessing.

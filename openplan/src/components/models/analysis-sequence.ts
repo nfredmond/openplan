@@ -186,6 +186,8 @@ export type AnalysisSequenceFacts = {
   /** Guided scenario sets for which all four exact outputs have track-matched decisions. */
   readonly guidedComparisonCheckedCount?: number;
   readonly comparisonPacketCount?: number;
+  /** Ready snapshot rows retained even when newer runs make the latest four-output basis stale. */
+  readonly savedComparisonPacketCount?: number;
   readonly unreadable: readonly AnalysisStepId[];
 };
 
