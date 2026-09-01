@@ -87,4 +87,15 @@ describe("Land Use Plans route boundaries", () => {
     expect(workbench).toContain("publicDraftBlockers.length > 0");
     expect(freezeRoute).toContain("buildPublicDraftBlockers");
   });
+
+  it("puts Engagement closure prerequisites beside the review close control", () => {
+    const detailRoute = readFileSync(path.join(API_ROOT, "route.ts"), "utf8");
+    const workbench = readFileSync(path.resolve(__dirname, "../components/land-use-plans/land-use-plan-workbench.tsx"), "utf8");
+    expect(detailRoute).toContain("engagement_campaign_id");
+    expect(workbench).toContain("Close the linked Engagement campaign and clear its moderation queue before freezing this review outcome.");
+    expect(workbench).toContain("Review moderation queue");
+    expect(workbench).toContain("Open linked Engagement campaign");
+    expect(workbench).toContain('release.review_method === "external_process"');
+    expect(workbench).toContain("review-close-error");
+  });
 });

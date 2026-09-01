@@ -30,7 +30,7 @@ type WorkbenchData = {
   reports: Array<{ id: string; reporting_period_start: string; reporting_period_end: string; report_id: string | null }>;
   consultations: Array<{ id: string; status: string; confidential_notes: string | null; contains_sensitive_locations: boolean }>;
   processRecords: Array<{ id: string; process_key: string; status: string; due_on: string | null; completed_on: string | null; evidence_document_id: string | null; notes: string | null }>;
-  reviewReleases: Array<{ id: string; version_id: string; version_content_hash: string; round_number: number; share_token: string; review_method: string; review_open_on: string; review_close_on: string; status: string; outcome_hash: string | null; withdrawal_reason: string | null }>;
+  reviewReleases: Array<{ id: string; version_id: string; version_content_hash: string; round_number: number; share_token: string; review_method: string; review_open_on: string; review_close_on: string; engagement_campaign_id: string | null; status: string; outcome_hash: string | null; withdrawal_reason: string | null }>;
   layers: Array<{ id: string; name: string; current_version_id: string | null }>;
   layerVersions: Array<{ id: string; attribute_fields: Array<{ name?: string }> | null; bbox: unknown; feature_count: number; feature_hash: string | null }>;
   documents: Array<{ id: string; title: string; citation_label: string | null }>;
@@ -269,7 +269,75 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
       {data.activeVersion.state === "public_review" ? <section className="rounded-xl border border-border bg-card p-5">
         <h2 className="text-lg font-semibold">Public review releases</h2>
         <p className="mt-1 text-sm text-muted-foreground">Each release keeps this exact plan hash. Closed rounds remain public; withdrawal hides a mistaken release without deleting its audit row.</p>
-        {currentVersionReleases.map((release) => <article key={release.id} className="mt-4 rounded-lg border p-4 text-sm"><p><strong>Round {release.round_number}</strong> · {release.status} · {release.review_open_on} through {release.review_close_on}</p>{release.status !== "withdrawn" ? <a className="mt-2 inline-block underline" href={`/review/land-use-plans/${release.share_token}`}>Open public review</a> : <p className="mt-2 text-muted-foreground">Withdrawn: {release.withdrawal_reason}</p>}{release.status === "open" ? <div className="mt-3 grid gap-2 md:grid-cols-2"><Textarea id={`disposition-${release.id}`} placeholder="Disposition summary for external review"/><Button disabled={busy || !data.canWrite} onClick={() => { const value = (document.getElementById(`disposition-${release.id}`) as HTMLTextAreaElement | null)?.value || null; void run(() => postJson(`/api/land-use-plans/${planId}/review-releases`, { operation: "close", releaseId: release.id, dispositionSummary: value })); }}>Close and freeze outcome</Button><Input id={`withdraw-${release.id}`} placeholder="Reason for withdrawal"/><Button variant="outline" disabled={busy || !data.canWrite} onClick={() => { const reason = (document.getElementById(`withdraw-${release.id}`) as HTMLInputElement | null)?.value ?? ""; void run(() => postJson(`/api/land-use-plans/${planId}/review-releases`, { operation: "withdraw", releaseId: release.id, reason })); }}>Withdraw mistaken release</Button></div> : null}</article>)}
+        {currentVersionReleases.map((release) => {
+          const linkedCampaign = data.campaigns.find((campaign) => campaign.id === release.engagement_campaign_id);
+          const linkedCampaignNeedsClosure = release.review_method === "engagement_campaign" && linkedCampaign?.status !== "closed";
+          return (
+            <article key={release.id} className="mt-4 rounded-lg border p-4 text-sm">
+              <p><strong>Round {release.round_number}</strong> · {release.status} · {release.review_open_on} through {release.review_close_on}</p>
+              {release.status !== "withdrawn"
+                ? <a className="mt-2 inline-block underline" href={`/review/land-use-plans/${release.share_token}`}>Open public review</a>
+                : <p className="mt-2 text-muted-foreground">Withdrawn: {release.withdrawal_reason}</p>}
+              {release.status === "open" ? (
+                <div className="mt-3 grid gap-2 md:grid-cols-2">
+                  {release.review_method === "external_process" ? (
+                    <Textarea id={`disposition-${release.id}`} placeholder="Disposition summary for external review"/>
+                  ) : (
+                    <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100">
+                      <p>Close the linked Engagement campaign and clear its moderation queue before freezing this review outcome.</p>
+                      <p className="mt-1">Campaign status: {linkedCampaign?.status ?? "unavailable"}.</p>
+                      {release.engagement_campaign_id ? (
+                        <div className="mt-2 flex flex-wrap gap-3">
+                          <Link className="font-medium underline" href={`/engagement/${release.engagement_campaign_id}?tab=responses`}>
+                            Review moderation queue
+                          </Link>
+                          <Link className="font-medium underline" href={`/engagement/${release.engagement_campaign_id}?tab=setup`}>
+                            Open linked Engagement campaign
+                          </Link>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                  <Button
+                    disabled={busy || !data.canWrite || linkedCampaignNeedsClosure}
+                    onClick={() => {
+                      const value = release.review_method === "external_process"
+                        ? (document.getElementById(`disposition-${release.id}`) as HTMLTextAreaElement | null)?.value || null
+                        : null;
+                      void run(() => postJson(`/api/land-use-plans/${planId}/review-releases`, {
+                        operation: "close",
+                        releaseId: release.id,
+                        dispositionSummary: value,
+                      }));
+                    }}
+                  >
+                    Close and freeze outcome
+                  </Button>
+                  {actionError ? (
+                    <div className="md:col-span-2 rounded-lg border border-destructive p-3 text-destructive" data-testid="review-close-error">
+                      {actionError}
+                    </div>
+                  ) : null}
+                  <Input id={`withdraw-${release.id}`} placeholder="Reason for withdrawal"/>
+                  <Button
+                    variant="outline"
+                    disabled={busy || !data.canWrite}
+                    onClick={() => {
+                      const reason = (document.getElementById(`withdraw-${release.id}`) as HTMLInputElement | null)?.value ?? "";
+                      void run(() => postJson(`/api/land-use-plans/${planId}/review-releases`, {
+                        operation: "withdraw",
+                        releaseId: release.id,
+                        reason,
+                      }));
+                    }}
+                  >
+                    Withdraw mistaken release
+                  </Button>
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
         {currentVersionReleases.length === 0 ? <div className="mt-4 grid gap-6 lg:grid-cols-2"><form className="space-y-3 rounded-lg border p-4" onSubmit={(event) => void run(() => submitReviewRelease(event, "engagement_campaign"))}><h3 className="font-semibold">Release with Engagement</h3><Input name="reviewOpenOn" required type="date"/><Input name="reviewCloseOn" required type="date"/><select className="module-select w-full" name="campaignId" required defaultValue=""><option value="">Active public engagement</option>{data.campaigns.filter((campaign) => campaign.status === "active").map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.title}</option>)}</select><Button disabled={busy || !data.canWrite}>Publish review release</Button></form><form className="space-y-3 rounded-lg border p-4" onSubmit={(event) => void run(() => submitReviewRelease(event, "external_process"))}><h3 className="font-semibold">Release with external review</h3><Input name="reviewOpenOn" required type="date"/><Input name="reviewCloseOn" required type="date"/><select className="module-select w-full" name="documentId" required defaultValue=""><option value="">Ready external-review document</option>{data.documents.map((document) => <option key={document.id} value={document.id}>{document.title}</option>)}</select><Button disabled={busy || !data.canWrite}>Publish review release</Button></form></div> : null}
       </section> : null}
 
