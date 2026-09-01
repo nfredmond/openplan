@@ -819,6 +819,14 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
           .limit(10);
         if (structuralDemandError) throw new Error(structuralDemandError.message ?? "structural demand custody query failed");
         const structuralDemandRows = (structuralDemandData ?? []) as Array<Record<string, unknown>>;
+        const { data: distributedWorkLoadingData, error: distributedWorkLoadingError } = await supabase
+          .from("modeling_distributed_work_loading_custody")
+          .select("id, loading_input_artifact_id, pre_output_audit_artifact_id, development_comparison_artifact_id, loading_input_sha256, pre_output_audit_sha256, development_comparison_sha256, source_custody_sha256, network_custody_sha256, method, scientific_outcome, defaults_changed, holdout_accessed, created_at")
+          .eq("model_run_id", input.modelRunId)
+          .order("created_at", { ascending: false })
+          .limit(10);
+        if (distributedWorkLoadingError) throw new Error(distributedWorkLoadingError.message ?? "distributed work loading custody query failed");
+        const distributedWorkLoadingRows = (distributedWorkLoadingData ?? []) as Array<Record<string, unknown>>;
         const diagnosisArtifactIds = diagnosisRows
           .map((row) => row.diagnosis_artifact_id)
           .filter((value): value is string => typeof value === "string");
@@ -955,8 +963,24 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
               },
               createdAt: isoOrNull(row.created_at),
             })),
+            distributedWorkLoadingCustody: distributedWorkLoadingRows.map((row) => ({
+              id: row.id,
+              method: row.method,
+              outcome: row.scientific_outcome,
+              defaultsChanged: row.defaults_changed,
+              holdoutAccessed: row.holdout_accessed,
+              note: "Development evidence only. LODES supports work endpoints, non-work loading is unchanged, methods remain separate, and this record cannot promote a default.",
+              exactArtifacts: {
+                loadingInput: { id: row.loading_input_artifact_id, sha256: row.loading_input_sha256 },
+                preOutputAudit: { id: row.pre_output_audit_artifact_id, sha256: row.pre_output_audit_sha256 },
+                developmentComparison: { id: row.development_comparison_artifact_id, sha256: row.development_comparison_sha256 },
+              },
+              sourceCustodySha256: row.source_custody_sha256,
+              networkCustodySha256: row.network_custody_sha256,
+              createdAt: isoOrNull(row.created_at),
+            })),
             scientificNote:
-              assessmentRows.length === 0 && comparableRows.length === 0 && structuralDemandRows.length === 0
+              assessmentRows.length === 0 && comparableRows.length === 0 && structuralDemandRows.length === 0 && distributedWorkLoadingRows.length === 0
                 ? "No rules-v4 or rules-v5 scientific assessment is in immutable custody. Legacy point-count diagnostics do not establish same-basis comparability."
                 : "Quote the scientific outcome and reasons exactly. A fail or inconclusive assessment is retained evidence, not a missing result.",
           },

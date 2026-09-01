@@ -76,9 +76,10 @@ async function evidenceRows(
   diagnoses: Record<string, unknown>[];
   comparableObservationCustody: Record<string, unknown>[];
   structuralDemandCustody: Record<string, unknown>[];
+  distributedWorkLoadingCustody: Record<string, unknown>[];
 }> {
   if (modelRunIds.length === 0 && countyRunIds.length === 0) {
-    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [], comparableObservationCustody: [], structuralDemandCustody: [] };
+    return { sources: [], validation: [], claims: [], assessments: [], diagnoses: [], comparableObservationCustody: [], structuralDemandCustody: [], distributedWorkLoadingCustody: [] };
   }
 
   const tableReads = [
@@ -141,6 +142,7 @@ async function evidenceRows(
   let diagnoses: Record<string, unknown>[] = [];
   let comparableObservationCustody: Record<string, unknown>[] = [];
   let structuralDemandCustody: Record<string, unknown>[] = [];
+  let distributedWorkLoadingCustody: Record<string, unknown>[] = [];
   if (modelRunIds.length > 0) {
     const read = await dynamicFrom("modeling_validation_assessments")
       .select(
@@ -196,9 +198,19 @@ async function evidenceRows(
       throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked structural demand custody could not be read.");
     }
     structuralDemandCustody = rows(structuralDemandRead.data);
+
+    const distributedWorkLoadingRead = await dynamicFrom("modeling_distributed_work_loading_custody")
+      .select("id, workspace_id, model_run_id, loading_input_artifact_id, pre_output_audit_artifact_id, development_comparison_artifact_id, loading_input_sha256, pre_output_audit_sha256, development_comparison_sha256, source_custody_sha256, network_custody_sha256, method, scientific_outcome, defaults_changed, holdout_accessed, created_at")
+      .eq("workspace_id", workspaceId)
+      .in("model_run_id", modelRunIds)
+      .order("created_at", { ascending: true });
+    if (distributedWorkLoadingRead.error) {
+      throw new ProjectEvidenceBundleError("missing_evidence", "Project-linked distributed work-loading custody could not be read.");
+    }
+    distributedWorkLoadingCustody = rows(distributedWorkLoadingRead.data);
   }
 
-  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses, comparableObservationCustody, structuralDemandCustody };
+  return { sources: collected[0], validation: collected[1], claims: collected[2], assessments, diagnoses, comparableObservationCustody, structuralDemandCustody, distributedWorkLoadingCustody };
 }
 
 /**
@@ -318,6 +330,9 @@ export async function loadProjectEvidenceGeneratedFiles(
           "model_validation_structural_diagnosis_v2",
           "model_structural_input_audit_v1",
           "model_validation_structural_diagnosis_v3",
+          "distributed_work_loading_input_v1",
+          "pre_output_audit_v1",
+          "development_comparison_v1",
         ])
         .order("created_at", { ascending: true });
       if (artifactsRead.error) {
@@ -523,6 +538,26 @@ export async function loadProjectEvidenceGeneratedFiles(
       numericClaim: true,
     }),
   }));
+  const distributedWorkLoadingCustody = modelingEvidence.distributedWorkLoadingCustody.map((custody) => ({
+    ...withoutPersonalIdentifiers(custody) as Record<string, unknown>,
+    evidenceDescriptor: buildEvidenceDescriptor({
+      identity: { table: "modeling_distributed_work_loading_custody", id: custody.id },
+      source: {
+        kind: "distributed_work_loading_development",
+        label: "Distributed work-loading development comparison",
+        citation: typeof custody.development_comparison_sha256 === "string" ? custody.development_comparison_sha256 : null,
+      },
+      asOfDate: typeof custody.created_at === "string" ? custody.created_at : null,
+      retrievedAt: generatedAt.toISOString(),
+      evidenceStatus: "modeled",
+      claimTier: null,
+      uncertainty: ["The scientific outcome remains inconclusive."],
+      limits: ["This is development evidence. It does not change defaults or establish calibration or validation."],
+      revisionToken: typeof custody.created_at === "string" ? custody.created_at : null,
+      checksumSha256: typeof custody.development_comparison_sha256 === "string" ? custody.development_comparison_sha256 : null,
+      numericClaim: true,
+    }),
+  }));
   const modeling = {
     schemaVersion: "project_modeling_evidence.v3",
     projectId: project.id,
@@ -537,6 +572,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     structuralDiagnoses,
     comparableObservationCustody,
     structuralDemandCustody,
+    distributedWorkLoadingCustody,
     claimDecisions,
   };
   const modelingRevisionToken = sourceRevision({
@@ -550,6 +586,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     structuralDiagnoses: withoutPersonalIdentifiers(modelingEvidence.diagnoses),
     comparableObservationCustody: withoutPersonalIdentifiers(modelingEvidence.comparableObservationCustody),
     structuralDemandCustody: withoutPersonalIdentifiers(modelingEvidence.structuralDemandCustody),
+    distributedWorkLoadingCustody: withoutPersonalIdentifiers(modelingEvidence.distributedWorkLoadingCustody),
     claimDecisions: withoutPersonalIdentifiers(modelingEvidence.claims),
   });
   const hasUnsupportedModelingClaim = [...claimDecisions, ...validationResults]

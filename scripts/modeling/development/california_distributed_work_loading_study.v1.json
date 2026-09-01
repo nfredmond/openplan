@@ -1,0 +1,83 @@
+{
+  "schema": "openplan.development-distributed-work-loading-study.v1",
+  "study_id": "seven-county-distributed-work-loading-development-v1",
+  "created_at": "2026-08-31T00:00:00Z",
+  "predecessor": {
+    "path": "scripts/modeling/development/california_structural_demand_study.v4.json",
+    "bytes": 88755,
+    "sha256": "46ddd4185dfe2708b287e46dc2060c5212a41f7214c6f9cdbb7ffe616e8622ad"
+  },
+  "methods": ["aequilibrae", "activitysim"],
+  "adapters": {
+    "US": {
+      "module": "scripts/modeling/us_lodes8_work_loading_adapter.py",
+      "geography_key": "2020 Census block GEOID",
+      "zone_join": "2020 Census tract GEOID",
+      "scope": "home-to-work workplace and commute evidence only"
+    }
+  },
+  "source_release": {
+    "publisher": "U.S. Census Bureau, Center for Economic Studies",
+    "product": "LEHD Origin-Destination Employment Statistics",
+    "release": "LODES 8.4",
+    "year": 2023,
+    "jobs_type": "JT00",
+    "segment": "S000",
+    "block_vintage": "2020 Census blocks",
+    "download_recorded_by_version_file": "20251202_1657",
+    "documentation_url": "https://lehd.ces.census.gov/data/lodes/LODES8/LODESTechDoc8.4.pdf",
+    "data_directory_url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/",
+    "limitations": [
+      "LODES describes jobs and home-to-work relationships. It does not describe all-purpose travel or vehicle trips.",
+      "A missing OD row is inconclusive. It is not relabelled as an explicit zero or a suppressed value.",
+      "The release does not provide a source flag that lets this study infer suppression for an absent OD row.",
+      "The California main and auxiliary OD files cover jobs with workplaces in California. California residents working outside California are not present unless their workplace-state files are separately registered; this study retains that coverage as unavailable rather than inferring zero."
+    ],
+    "files": {
+      "od_main": {"path": "tmp/lodes8-ca-2023/ca_od_main_JT00_2023.csv.gz", "url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/od/ca_od_main_JT00_2023.csv.gz", "stored_bytes": 97270508, "stored_sha256": "f50d53a90d49a227628fc218247472f8cabe05ceba72b97a4dea9d1a3a104faa", "bytes": 990726050, "sha256": "150a7d2ab8dca469f4215d612862b1d70a74e6c1559cc2ed831109541e9d2178"},
+      "od_aux": {"path": "tmp/lodes8-ca-2023/ca_od_aux_JT00_2023.csv.gz", "url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/od/ca_od_aux_JT00_2023.csv.gz", "stored_bytes": 1888371, "stored_sha256": "807869bd81ad5ef2a1dc2e4d09f10e58d297fe65a821c66f42a15251459f998c", "bytes": 13337257, "sha256": "5fc325e62dc0dc036472084184c3ab68067a73b93794e3a7b93b7248fa91259c"},
+      "rac": {"path": "tmp/lodes8-ca-2023/ca_rac_S000_JT00_2023.csv.gz", "url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/rac/ca_rac_S000_JT00_2023.csv.gz", "stored_bytes": 11506476, "stored_sha256": "a7ec5983e859886203dda83d54eb84da14548926918b482731bbc61e3a27f134", "bytes": 43184413, "sha256": "ecb26aad03756be808d6399361c08abd5b92e3d3ec4bd4a819ef91308d86354a"},
+      "wac": {"path": "tmp/lodes8-ca-2023/ca_wac_S000_JT00_2023.csv.gz", "url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/wac/ca_wac_S000_JT00_2023.csv.gz", "stored_bytes": 6308415, "stored_sha256": "f062c82b1dd7b4d4441078c9e8d779c258a6eb71cc0312a10e3bb523c17951b6", "bytes": 34991901, "sha256": "d7294aa48cdb4b81e1b8bda0c8a57556862fd8097ba74efb2c2a30cd5b6ea701"},
+      "crosswalk": {"path": "tmp/lodes8-ca-2023/ca_xwalk.csv.gz", "url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/ca_xwalk.csv.gz", "stored_bytes": 9294052, "stored_sha256": "6b11ae561c4b3e84799a6730f68915d29cabe5bc4355e65382aaa1d44c6fa361", "bytes": 276435152, "sha256": "61dc3df7f67986d95b3d1b505eb91e53f4eb805a87a048b5cee36e8ec5499c97"},
+      "version": {"path": "tmp/lodes8-ca-2023/version.txt", "url": "https://lehd.ces.census.gov/data/lodes/LODES8/ca/version.txt", "stored_bytes": 125, "stored_sha256": "328a5660108e6e5ecce5f2cd0f9dbfdf783b6339b69d52e3d489a0880efd6dec", "bytes": 125, "sha256": "328a5660108e6e5ecce5f2cd0f9dbfdf783b6339b69d52e3d489a0880efd6dec"},
+      "documentation": {"path": "tmp/pdfs/lodes83/LODESTechDoc8.4.pdf", "url": "https://lehd.ces.census.gov/data/lodes/LODES8/LODESTechDoc8.4.pdf", "stored_bytes": 602016, "stored_sha256": "1189b8aa4cefd6cdf53c3b85e27366054af0cd5418056b04ff70d210b87eddee", "bytes": 602016, "sha256": "1189b8aa4cefd6cdf53c3b85e27366054af0cd5418056b04ff70d210b87eddee"}
+    }
+  },
+  "geographies": [
+    {"geography_id": "06007", "name": "Butte County, California", "country": "US", "work_layer_sources": {"aequilibrae_skim": {"path": "data/modeling/development-validation-study-2026-08-28/runs/v039-development-06007-aequilibrae/run_output/travel_time_skims.omx", "bytes": 63665, "sha256": "27de76769d400a20ee059426c7ef35c514f146247a0e9dd27b65912d05d79bba"}, "activitysim_trips": {"path": "data/agreement-study/runs/holdout/06007/activitysim_output/output/final_trips.csv", "bytes": 68732646, "sha256": "e784de3dd561d5434b1480aae65ad87308641dd4bfba8ddcd2ef2c88522e1a73"}}},
+    {"geography_id": "06039", "name": "Madera County, California", "country": "US", "work_layer_sources": {"aequilibrae_skim": {"path": "data/modeling/development-validation-study-2026-08-28/runs/v039-development-06039-aequilibrae/run_output/travel_time_skims.omx", "bytes": 36060, "sha256": "29ee9a41de2966b8f1160b5b3e6920006538d9e8fd43941f4c46e6e9d6836c74"}, "activitysim_trips": {"path": "data/agreement-study/runs/holdout/06039/activitysim_output/output/final_trips.csv", "bytes": 49010560, "sha256": "aa71983390cf9a5121415d88cc8bc7a0e5f1c0135243d62f233c3d2ec8aec1b5"}}},
+    {"geography_id": "06047", "name": "Merced County, California", "country": "US", "work_layer_sources": {"aequilibrae_skim": {"path": "data/modeling/development-validation-study-2026-08-28/runs/v039-development-06047-aequilibrae/run_output/travel_time_skims.omx", "bytes": 80251, "sha256": "18e93df24429950d710dafa4ce11c3deaba59d946d7491dab07ae4943f419de2"}, "activitysim_trips": {"path": "data/agreement-study/runs/dev/06047/activitysim_output/output/final_trips.csv", "bytes": 89291779, "sha256": "f0d1923b47164a551da321a6d244722c5cf8915f9f261346ca8dc3aaf5cb2f5c"}}},
+    {"geography_id": "06053", "name": "Monterey County, California", "country": "US", "work_layer_sources": {"aequilibrae_skim": {"path": "data/modeling/development-validation-study-2026-08-28/runs/v039-development-06053-aequilibrae/run_output/travel_time_skims.omx", "bytes": 181716, "sha256": "5cecd65911fea76639a7824f306ae32b312bf662c82ddaeb84b53119549c2469"}, "activitysim_trips": {"path": "data/agreement-study/runs/holdout/06053/activitysim_output/output/final_trips.csv", "bytes": 140774057, "sha256": "297c5311d43f15791124e91065c901cd270211705197c210ab9efc5408686cad"}}},
+    {"geography_id": "06057", "name": "Nevada County, California", "country": "US", "work_layer_sources": {"aequilibrae_skim": {"path": "data/modeling/development-validation-study-2026-08-28/runs/v039-development-06057-aequilibrae/run_output/travel_time_skims.omx", "bytes": 27554, "sha256": "c113d08048460b436adae60d3887658a638605db4fb259cd7b924c8fb9465348"}, "activitysim_trips": {"path": "data/screening-runs/a2-base-06057-tight/activitysim_mtc/output/final_trips.csv", "bytes": 31831857, "sha256": "8974d94b39f59f15993690e4ec6afcee2bb1b133feba20b062cddce47917ad70"}}},
+    {"geography_id": "06069", "name": "San Benito County, California", "country": "US", "work_layer_sources": {"aequilibrae_skim": {"path": "data/modeling/development-validation-study-2026-08-28/runs/v039-development-06069-aequilibrae/run_output/travel_time_skims.omx", "bytes": 17058, "sha256": "3ffa08b37c9d27581c1f18f8e79378165d5d1456ba2acf3ce506ecfa52f1820c"}, "activitysim_trips": {"path": "data/agreement-study/runs/dev/06069/activitysim_output/output/final_trips.csv", "bytes": 20775628, "sha256": "0377f0b7d5dcbe3c58e915b2bd3427fd2e053bef45322569749353a68192f6c5"}}},
+    {"geography_id": "06107", "name": "Tulare County, California", "country": "US", "work_layer_sources": {"aequilibrae_skim": {"path": "data/modeling/development-validation-study-2026-08-28/runs/v039-development-06107-aequilibrae/run_output/travel_time_skims.omx", "bytes": 178741, "sha256": "a5e384b8e9508d7d2d6d5ccf29a0834b404af546bfb2de38f27df74cf7cb36a1"}, "activitysim_trips": {"path": "data/agreement-study/runs/dev/06107/activitysim_output/output/final_trips.csv", "bytes": 154501690, "sha256": "3f3ef3b17b86c43aaa8d3f576524eba0335b10dd852ef9a226c6eccccf134284"}}}
+  ],
+  "development_gate": {
+    "reach_metric": "loaded_observed_link_count",
+    "residual_metric": "median_absolute_raw_residual",
+    "county_stratum": "each geography_id evaluated separately",
+    "road_class_stratum": "observation.facility.class with unknown retained",
+    "requires": [
+      "demand_conserved",
+      "observed_link_reach_improved",
+      "no_county_stratum_worsened",
+      "no_road_class_worsened",
+      "same_source_network_custody"
+    ]
+  },
+  "policy": {
+    "freeze_all_audits_before_output": true,
+    "preserve_method_work_totals": true,
+    "non_work_unchanged": true,
+    "aggregate_only_same_routable_node": true,
+    "retain_unroutable_demand": true,
+    "arbitrary_point_cap": null,
+    "arbitrary_gateway_cap": null,
+    "average_methods": false,
+    "open_holdout": false,
+    "change_defaults": false,
+    "promote_candidate": false,
+    "county_gate_no_national_rescue": true,
+    "scientific_outcome": "inconclusive"
+  }
+}

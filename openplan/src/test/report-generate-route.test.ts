@@ -195,6 +195,9 @@ const comparableCustodySelectMock = vi.fn(() => ({ in: comparableCustodyInMock }
 const structuralDemandCustodyOrderMock = vi.fn();
 const structuralDemandCustodyInMock = vi.fn(() => ({ order: structuralDemandCustodyOrderMock }));
 const structuralDemandCustodySelectMock = vi.fn(() => ({ in: structuralDemandCustodyInMock }));
+const distributedWorkLoadingCustodyOrderMock = vi.fn();
+const distributedWorkLoadingCustodyInMock = vi.fn(() => ({ order: distributedWorkLoadingCustodyOrderMock }));
+const distributedWorkLoadingCustodySelectMock = vi.fn(() => ({ in: distributedWorkLoadingCustodyInMock }));
 
 const modelingSourcesOrderMock = vi.fn();
 const modelingSourcesEqMock = vi.fn(() => ({ order: modelingSourcesOrderMock }));
@@ -482,6 +485,10 @@ const fromMock = vi.fn((table: string) => {
     return { select: structuralDemandCustodySelectMock };
   }
 
+  if (table === "modeling_distributed_work_loading_custody") {
+    return { select: distributedWorkLoadingCustodySelectMock };
+  }
+
   if (table === "engagement_campaigns") {
     return {
       select: engagementCampaignSelectMock,
@@ -610,6 +617,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     modelingDiagnosisOrderMock.mockResolvedValue({ data: [], error: null });
     comparableCustodyOrderMock.mockResolvedValue({ data: [], error: null });
     structuralDemandCustodyOrderMock.mockResolvedValue({ data: [], error: null });
+    distributedWorkLoadingCustodyOrderMock.mockResolvedValue({ data: [], error: null });
     agreementArtifactsInMock.mockResolvedValue({ data: [], error: null });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
@@ -1498,6 +1506,18 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }],
       error: null,
     });
+    distributedWorkLoadingCustodyOrderMock.mockResolvedValueOnce({
+      data: [{
+        model_run_id: "model-run-1",
+        loading_input_sha256: "d".repeat(64),
+        pre_output_audit_sha256: "e".repeat(64),
+        development_comparison_sha256: "f".repeat(64),
+        method: "aequilibrae",
+        scientific_outcome: "inconclusive",
+        created_at: "2026-08-31T23:30:00Z",
+      }],
+      error: null,
+    });
     agreementArtifactsInMock.mockResolvedValueOnce({
       data: [{
         id: "diagnosis-artifact-1",
@@ -1544,6 +1564,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(htmlContent).toContain("Four matched links retain recorded zero volume.");
     expect(htmlContent).toContain("Unknown basis facts: model_year, day_basis.");
     expect(htmlContent).toContain("b".repeat(64));
+    expect(htmlContent).toContain("Distributed work-loading checkpoint: inconclusive, aequilibrae");
+    expect(htmlContent).toContain("development evidence only; non-work loading is unchanged and no default is promoted");
+    expect(htmlContent).toContain("d".repeat(64));
+    expect(htmlContent).toContain("e".repeat(64));
+    expect(htmlContent).toContain("f".repeat(64));
     // The cited county run carries its name, stage, and validation posture.
     expect(htmlContent).toContain("County screening baseline");
     expect(htmlContent).toContain("Validated Screening");

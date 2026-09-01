@@ -118,6 +118,14 @@ export type CitedStructuralDemandCustody = {
   diagnosisSha256: string;
 };
 
+export type CitedDistributedWorkLoadingCustody = {
+  outcome: "inconclusive";
+  method: "aequilibrae" | "activitysim";
+  loadingInputSha256: string;
+  preOutputAuditSha256: string;
+  developmentComparisonSha256: string;
+};
+
 /**
  * Why a cited link has no resolved run row. These are four different facts and
  * the citation says which one is true; `"unknown"` is what a caller that did not
@@ -495,11 +503,13 @@ export async function withCitedModelRunClaimTiers<
   comparableObservationCustodyReadFailed: boolean;
   structuralDemandCustody: CitedStructuralDemandCustody | null;
   structuralDemandCustodyReadFailed: boolean;
+  distributedWorkLoadingCustody: CitedDistributedWorkLoadingCustody | null;
+  distributedWorkLoadingCustodyReadFailed: boolean;
 }>> {
   if (citedModelRuns.length === 0) return [];
 
   const runIds = citedModelRuns.map((run) => run.id);
-  const [evidence, assessmentResult, diagnosisResult, comparableResult, structuralDemandResult] = await Promise.all([
+  const [evidence, assessmentResult, diagnosisResult, comparableResult, structuralDemandResult, distributedWorkLoadingResult] = await Promise.all([
     loadRtpEvidenceRunDisclosures(
       supabase as unknown as RtpEvidenceSupabaseLike,
       runIds,
@@ -530,6 +540,11 @@ export async function withCitedModelRunClaimTiers<
     supabase
       .from("modeling_structural_demand_diagnosis_custody")
       .select("model_run_id, input_audit_sha256, diagnosis_sha256, method, scientific_outcome, created_at")
+      .in("model_run_id", runIds)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("modeling_distributed_work_loading_custody")
+      .select("model_run_id, loading_input_sha256, pre_output_audit_sha256, development_comparison_sha256, method, scientific_outcome, created_at")
       .in("model_run_id", runIds)
       .order("created_at", { ascending: false }),
   ]);
@@ -621,6 +636,21 @@ export async function withCitedModelRunClaimTiers<
     }
   }
 
+  const newestDistributedWorkLoadingByRun = new Map<string, CitedDistributedWorkLoadingCustody>();
+  if (!distributedWorkLoadingResult.error) {
+    for (const row of (distributedWorkLoadingResult.data ?? []) as Array<Record<string, unknown>>) {
+      const modelRunId = typeof row.model_run_id === "string" ? row.model_run_id : null;
+      const method = row.method;
+      if (!modelRunId || newestDistributedWorkLoadingByRun.has(modelRunId) || row.scientific_outcome !== "inconclusive" || (method !== "aequilibrae" && method !== "activitysim")) continue;
+      newestDistributedWorkLoadingByRun.set(modelRunId, {
+        outcome: "inconclusive", method,
+        loadingInputSha256: String(row.loading_input_sha256 ?? "unknown"),
+        preOutputAuditSha256: String(row.pre_output_audit_sha256 ?? "unknown"),
+        developmentComparisonSha256: String(row.development_comparison_sha256 ?? "unknown"),
+      });
+    }
+  }
+
   return citedModelRuns.map((run) => ({
     ...run,
     claimStatus: evidence.claimTierFor(run.id),
@@ -633,6 +663,8 @@ export async function withCitedModelRunClaimTiers<
     comparableObservationCustodyReadFailed: Boolean(comparableResult.error),
     structuralDemandCustody: newestStructuralDemandByRun.get(run.id) ?? null,
     structuralDemandCustodyReadFailed: Boolean(structuralDemandResult.error),
+    distributedWorkLoadingCustody: newestDistributedWorkLoadingByRun.get(run.id) ?? null,
+    distributedWorkLoadingCustodyReadFailed: Boolean(distributedWorkLoadingResult.error),
   }));
 }
 

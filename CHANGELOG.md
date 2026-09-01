@@ -19,6 +19,36 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Migration required.** Run `npm exec -- supabase migration up --linked`
+before deploying. Migrations
+`20260831000001_distributed_work_loading_custody.sql` and
+`20260831000002_distributed_work_loading_custody_guards.sql`
+(`distributed_work_loading_custody` and
+`distributed_work_loading_custody_guards`) add
+service-role-only, append-only custody for each exact distributed work-loading
+input, assignment-blind audit, and post-output development comparison. The
+second migration makes incomplete scientific metadata and non-conserved demand
+fail closed; a rejected transaction leaves none of its three artifacts behind.
+
+The seven-county development instrument now uses exact 2023 Census LODES 8.4
+home-to-work relationships to distribute only source-covered work-trip
+endpoints. Non-work trips retain their prior loading. Cross-boundary,
+unavailable, suppressed, explicit-zero, unmapped, unroutable, and missing-pair
+states remain separate; no point, gateway, runtime, or jurisdiction cap is
+introduced. AequilibraE and ActivitySim preserve their own work totals and stay
+separate. The checkpoint remains `inconclusive`; it changes no model default
+and makes no calibration, California-completeness, nationwide-validation, or
+v1-readiness claim.
+
+The Models page exposes the exact input, pre-output audit, comparison, hashes,
+and development gate for each county and method. Reports, assistant evidence,
+and project evidence bundles carry the same custody when a run is attached.
+Method downloads now include geography and method in their filenames.
+
+Corridor GeoJSON exports now state their exact layer inventory and CRS, and
+workbook users can inspect every parsed mapping row before choosing a sheet.
+Public engagement no longer reports a honeypot-filtered submission as received.
+
 ## 0.43.0 — 2026-08-28
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

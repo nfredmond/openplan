@@ -19,6 +19,7 @@ describe("published comparable observation study", () => {
     const inputBundle = await readPublishedComparableObservationDownload([
       "06007", "aequilibrae", "validation-input-bundle-v2.json",
     ]);
+    expect(inputBundle?.filename).toBe("06007-aequilibrae-validation-input-bundle-v2.json");
     expect(inputBundle?.sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.parse(inputBundle?.bytes.toString("utf8") ?? "{}").release.version).toBe("0.41.0");
     const diagnosis = await readPublishedComparableObservationDownload([

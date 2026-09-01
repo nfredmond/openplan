@@ -119,11 +119,14 @@ export async function readPublishedComparableObservationDownload(parts: string[]
   let expected: string | null = null;
   let requiresManifestHash = false;
   let contentType = "application/json";
+  let filename = parts.at(-1) ?? "artifact.json";
   if (parts.length === 1 && parts[0] === "study-result.json") {
     relativePath = `${STUDY_DIRECTORY}/study-result.json`;
+    filename = "comparable-observation-study-result.json";
   } else if (parts.length === 1 && parts[0] === "study-report.md") {
     relativePath = `${STUDY_DIRECTORY}/study-report.md`;
     contentType = "text/markdown; charset=utf-8";
+    filename = "comparable-observation-study-report.md";
   } else if (parts.length === 3 && /^06\d{3}$/.test(parts[0]) && METHODS.includes(parts[1] as ComparableMethod)) {
     requiresManifestHash = true;
     const record = study.diagnoses.find((item) => item.geographyId === parts[0] && item.method === parts[1]);
@@ -135,6 +138,7 @@ export async function readPublishedComparableObservationDownload(parts: string[]
     } : {};
     const selected = files[parts[2]];
     if (selected) [relativePath, expected] = selected;
+    filename = `${parts[0]}-${parts[1]}-${parts[2]}`;
   } else if (parts.length === 3 && parts[1] === "instrument" && /^06\d{3}$/.test(parts[0])) {
     requiresManifestHash = true;
     const record = study.diagnoses.find((item) => item.geographyId === parts[0]);
@@ -148,5 +152,5 @@ export async function readPublishedComparableObservationDownload(parts: string[]
   if (!relativePath) return null;
   const bytes = await readPublishedArtifact(relativePath);
   const sha256 = verifyPublishedComparableObservationHash(bytes, expected, requiresManifestHash);
-  return { bytes, contentType, filename: parts.at(-1) ?? "artifact.json", sha256 };
+  return { bytes, contentType, filename, sha256 };
 }

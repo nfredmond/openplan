@@ -96,13 +96,15 @@ export async function readPublishedStructuralDemandDownload(parts: string[]) {
   let relativePath: string | null = null;
   let stored: string | undefined;
   let expected: string | null = null;
-  const filename = parts.at(-1) ?? "artifact.json";
+  let filename = parts.at(-1) ?? "artifact.json";
   let contentType = "application/json";
   if (parts.length === 1 && parts[0] === "study-result.json") {
     relativePath = `${STUDY_DIRECTORY}/study-result.json`;
+    filename = "structural-demand-diagnosis-study-result.json";
   } else if (parts.length === 1 && parts[0] === "study-report.md") {
     relativePath = `${STUDY_DIRECTORY}/study-report.md`;
     contentType = "text/markdown; charset=utf-8";
+    filename = "structural-demand-diagnosis-study-report.md";
   } else if (parts.length === 3 && METHODS.includes(parts[1] as StructuralDemandMethod)) {
     const record = study.records.find((item) => item.geographyId === parts[0] && item.method === parts[1]);
     if (record && parts[2] === "model-structural-input-audit-v1.json") {
@@ -113,6 +115,7 @@ export async function readPublishedStructuralDemandDownload(parts: string[]) {
       stored = record.diagnosisStoredPath;
       expected = record.diagnosisSha256;
     }
+    filename = `${parts[0]}-${parts[1]}-${parts[2]}`;
   }
   if (!relativePath) return null;
   const bytes = await exactBytes(relativePath, stored);

@@ -144,6 +144,14 @@ export type ReportCitedModelRun = {
     diagnosisSha256: string;
   } | null;
   structuralDemandCustodyReadFailed?: boolean;
+  distributedWorkLoadingCustody?: {
+    outcome: "inconclusive";
+    method: "aequilibrae" | "activitysim";
+    loadingInputSha256: string;
+    preOutputAuditSha256: string;
+    developmentComparisonSha256: string;
+  } | null;
+  distributedWorkLoadingCustodyReadFailed?: boolean;
 };
 
 /** A county validation run cited by the report (report_runs.county_run_id). */
@@ -544,6 +552,12 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     : structuralDemand
       ? `Structural demand and loading diagnosis: ${structuralDemand.outcome}, ${structuralDemand.method}. This records structural coverage and limitations, not improved accuracy. Input audit ${structuralDemand.inputAuditSha256}; diagnosis ${structuralDemand.diagnosisSha256}.`
       : "No structural demand and loading diagnosis custody is attached to this run.";
+  const distributedWorkLoading = run.distributedWorkLoadingCustody;
+  const distributedWorkLoadingLine = run.distributedWorkLoadingCustodyReadFailed
+    ? "Distributed work-loading custody could not be read; the run is scientifically unchecked for that development checkpoint."
+    : distributedWorkLoading
+      ? `Distributed work-loading checkpoint: ${distributedWorkLoading.outcome}, ${distributedWorkLoading.method}. This is development evidence only; non-work loading is unchanged and no default is promoted. Input ${distributedWorkLoading.loadingInputSha256}; pre-output audit ${distributedWorkLoading.preOutputAuditSha256}; comparison ${distributedWorkLoading.developmentComparisonSha256}.`
+      : "No distributed work-loading development custody is attached to this run.";
 
   return `<article class="run-card">
     <div class="run-head">
@@ -559,6 +573,7 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
     <p class="meta">${esc(diagnosisLine)}</p>
     <p class="meta">${esc(comparableLine)}</p>
     <p class="meta">${esc(structuralDemandLine)}</p>
+    <p class="meta">${esc(distributedWorkLoadingLine)}</p>
     <p class="meta">${esc(runMode.caveatSummary)}</p>
   </article>`;
 }

@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-08-28 against the v0.41.0 candidate.
+**Reviewed:** 2026-08-31 against the v0.44.0 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -12,8 +12,21 @@ only in `docs/ROADMAP.md`.
 | KI-2026-08-24-002 | High | ActivitySim can execute, but the available stock behavioral coefficients were estimated for another region. A locally fitted population does not make those choices locally calibrated. | Name coefficient provenance and keep output below locally validated claim tiers. | `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-003 | Medium | Crash rates per modeled VMT lack a defensible denominator where the modeled road network does not cover the observed crash network. | Keep rates deferred; disclose source and road-coverage limits instead of treating unsupported roads as zero. | `docs/ROADMAP.md` |
 | KI-2026-08-24-004 | Medium | Recovery confidence expires if operators stop exercising it. The repository drill proves the local reference path, not every deployment's disks, credentials, or cutover. | Run `npm run ops:restore-drill` before relevant releases and at least quarterly; next reference review due 2026-11-24. | `openplan/docs/ops/BACKUP_AND_RESTORE.md` |
-| KI-2026-08-26-006 | Medium | Corridor Analysis GeoJSON downloads do not identify the exact included layers or coordinate reference system at the point of export. | Add explicit layer inventory and CRS metadata to the download handoff; do not infer either from the filename. | First-week GIS run `2026-08-27T00-52-51-591Z` |
-| KI-2026-08-26-007 | Low | The workbook importer previews only the first 12 rows of a 24-row “Read me” sheet, hiding the mapping table below the fold. | Make preview truncation explicit and provide a way to inspect all mapping rows before selection. | First-week workbook run `2026-08-27T01-10-21-544Z` |
+| KI-2026-08-31-011 | Medium | Workspace health can say worker presence is undeclared while also showing a current modeling-worker heartbeat in the same panel. | Reconcile deployment declarations and observed heartbeat into one explicit capability state. | First-week run `2026-09-01T03-36-34-705Z`, job 01-first-day-setup |
+| KI-2026-08-31-012 | Low | Choosing a geocoded study area silently replaces a planner's free-text plan-geography label. | Separate the planner label from resolved geography identity or make the replacement explicit and reversible. | First-week run `2026-09-01T03-36-34-705Z`, job 01-neutral-geography-setup |
+| KI-2026-08-31-013 | Medium | An exact uploaded project study boundary can remain without jurisdiction identity, leaving readiness unanswered. | Preserve the uploaded geometry while allowing a separately evidenced place identity. | First-week run `2026-09-01T03-36-34-705Z`, job 02-project-end-to-end |
+| KI-2026-08-31-014 | Medium | Two killed-or-seriously-injured totals appear on one Safety screen with only fine print explaining their different scopes. | Name the scope beside each total and provide the reconciliation directly where both appear. | First-week run `2026-09-01T03-36-34-705Z`, job 04-safety-case |
+| KI-2026-08-31-015 | Medium | A crash retrieval started without Project context cannot later attach to a report, while the report wizard does not offer Safety evidence. | Warn before retrieval and make project-scoped Safety evidence reachable from report creation. | First-week run `2026-09-01T03-36-34-705Z`, job 04-safety-case |
+| KI-2026-08-31-016 | Low | Workbook preview warns that a normalized project name already exists while reporting zero conflicted rows. | Count the existing-name state as a conflict or explicitly distinguish it from the conflict total. | First-week run `2026-09-01T03-36-34-705Z`, job 08-project-portfolio-round-trip |
+
+## Closed in v0.44.0
+
+| ID | Previous severity | Finding | Resolution evidence |
+|---|---|---|---|
+| KI-2026-08-26-006 | Medium | Corridor Analysis GeoJSON downloads did not identify the exact included layers or coordinate reference system at export. | The handoff now lists its exact FeatureCollection layers and `urn:ogc:def:crs:OGC:1.3:CRS84` longitude/latitude axis order. `explore-results-board.test.tsx`; mutation proof in the v0.44 release evidence. |
+| KI-2026-08-26-007 | Low | Workbook users could see only the first 12 rows of a mapping sheet before choosing it. | The review surface now expands every parsed row before selection while retaining a collapsed summary. `portfolio-workbook-import.test.ts`; `project-portfolio-importer.test.tsx`; mutation proof in the v0.44 release evidence. |
+| KI-2026-08-31-017 | Low | Separate AequilibraE and ActivitySim evidence downloaded with identical filenames. | v0.41, v0.43, and v0.44 method artifacts now include geography and method in the filename. `published-comparable-observation-study.test.ts`; `published-structural-demand-diagnosis.test.ts`; `published-distributed-work-loading.test.ts`. |
+| KI-2026-08-31-018 | High | A public-engagement honeypot submission could receive a success response without a stored comment, creating false receipt evidence. | The endpoint now returns an explicit filtered state rather than resident-facing success; the focused mutation test fails when false success returns, and live rerun `2026-09-01T05-52-38-788Z` completed with no pending consequential claims. `engagement-public-submit-route.test.ts`. |
 
 ## Closed in v0.32.0
 

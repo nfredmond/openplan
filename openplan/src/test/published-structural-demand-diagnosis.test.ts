@@ -13,9 +13,11 @@ describe("published structural demand diagnosis", () => {
 
   it("serves exact audit and compressed diagnosis bytes", async () => {
     const audit = await readPublishedStructuralDemandDownload(["06007", "aequilibrae", "model-structural-input-audit-v1.json"]);
+    expect(audit?.filename).toBe("06007-aequilibrae-model-structural-input-audit-v1.json");
     expect(audit?.sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.parse(audit?.bytes.toString("utf8") ?? "{}").model_output_bytes_read).toBe(false);
     const diagnosis = await readPublishedStructuralDemandDownload(["06007", "activitysim", "model-validation-structural-diagnosis-v3.json"]);
+    expect(diagnosis?.filename).toBe("06007-activitysim-model-validation-structural-diagnosis-v3.json");
     expect(diagnosis?.sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(JSON.parse(diagnosis?.bytes.toString("utf8") ?? "{}").record_coverage.unloaded).toBeGreaterThan(0);
     expect(await readPublishedStructuralDemandDownload(["..", "package.json"])).toBeNull();

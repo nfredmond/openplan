@@ -31,9 +31,11 @@ import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/plan
 import { PublishedStructuralDiagnosisCard } from "@/components/models/published-structural-diagnosis-card";
 import { PublishedComparableObservationCard } from "@/components/models/published-comparable-observation-card";
 import { PublishedStructuralDemandDiagnosisCard } from "@/components/models/published-structural-demand-diagnosis-card";
+import { PublishedDistributedWorkLoadingCard } from "@/components/models/published-distributed-work-loading-card";
 import { loadPublishedStructuralDiagnosisStudy } from "@/lib/models/published-structural-diagnosis";
 import { loadPublishedComparableObservationStudy } from "@/lib/models/published-comparable-observation-study";
 import { loadPublishedStructuralDemandDiagnosis } from "@/lib/models/published-structural-demand-diagnosis";
+import { loadPublishedDistributedWorkLoadingStudy } from "@/lib/models/published-distributed-work-loading";
 
 export const metadata = moduleMetadata("Models");
 
@@ -159,6 +161,7 @@ export default async function ModelsPage({
   const publishedStructuralDiagnosis = await loadPublishedStructuralDiagnosisStudy().catch(() => null);
   const publishedComparableObservationStudy = await loadPublishedComparableObservationStudy().catch(() => null);
   const publishedStructuralDemandDiagnosis = await loadPublishedStructuralDemandDiagnosis().catch(() => null);
+  const publishedDistributedWorkLoading = await loadPublishedDistributedWorkLoadingStudy().catch(() => null);
 
   // Scoped to the active workspace — RLS grants ALL memberships, so without
   // the filter a multi-workspace member saw every workspace's models merged
@@ -449,6 +452,7 @@ export default async function ModelsPage({
         projectId={planningContext.status === "active" ? planningContext.project.id : null}
       />
 
+      <PublishedDistributedWorkLoadingCard study={publishedDistributedWorkLoading} />
       <PublishedStructuralDemandDiagnosisCard study={publishedStructuralDemandDiagnosis} />
       <PublishedComparableObservationCard study={publishedComparableObservationStudy} />
       <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />
