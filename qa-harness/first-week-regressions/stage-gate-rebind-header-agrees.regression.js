@@ -62,6 +62,12 @@ module.exports = {
   async run({ page, baseUrl, expect }) {
     await page.goto(`${baseUrl}/dashboard`, { waitUntil: 'load' });
 
+    // The setting moved out of the overview when workspace setup became its
+    // own visible destination. Reach it through the same navigation a planner
+    // uses so another route move cannot masquerade as the original rebind bug.
+    await page.getByRole('link', { name: /Workspace setup & health/i }).click();
+    await page.waitForURL(/\/workspace(?:\?|$)/, { timeout: 30000 });
+
     const panel = page.getByRole('region', { name: 'Stage-gate template' });
     await panel.waitFor({ state: 'visible', timeout: 30000 });
 
