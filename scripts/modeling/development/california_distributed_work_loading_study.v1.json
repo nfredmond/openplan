@@ -2,6 +2,13 @@
   "schema": "openplan.development-distributed-work-loading-study.v1",
   "study_id": "seven-county-distributed-work-loading-development-v1",
   "created_at": "2026-08-31T00:00:00Z",
+  "partition": "unchanged v0.39 seven-county development partition",
+  "partition_custody": {
+    "source": "scripts/modeling/development/california_validation_instrument_study.v2.json",
+    "purpose": "development candidate diagnosis only",
+    "acceptance_holdout_opened": false,
+    "legacy_path_note": "Some frozen ActivitySim work-layer files remain under agreement-study directories named holdout. Those agreement-study partitions were already consumed before v0.39 and the exact files were subsequently frozen as inputs to this development partition. This study does not treat the legacy directory name as untouched evidence, read prior gateway outcomes to select the candidate, or reopen an acceptance holdout."
+  },
   "predecessor": {
     "path": "scripts/modeling/development/california_structural_demand_study.v4.json",
     "bytes": 88755,
