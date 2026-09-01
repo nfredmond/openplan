@@ -43,6 +43,40 @@ def sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def assignment_profile_sha256(profile: Mapping[str, Any]) -> str:
+    """Hash the exact pre-output assignment method contract."""
+    payload = json.dumps(
+        dict(profile), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode()
+    return sha256_bytes(payload)
+
+
+def require_assignment_profile_sha(
+    expected_sha256: str, profile: Mapping[str, Any], label: str
+) -> None:
+    actual_sha256 = assignment_profile_sha256(profile)
+    if actual_sha256 != expected_sha256:
+        raise DistributedWorkLoadingRefused(
+            f"Assignment runtime profile changed for {label}: "
+            f"expected {expected_sha256}, found {actual_sha256}"
+        )
+
+
+def require_assignment_summary_profile(
+    summary: Mapping[str, Any], expected_sha256: str, label: str
+) -> Mapping[str, Any]:
+    convergence = summary.get("convergence") or (summary.get("assignment") or {}).get("convergence")
+    if not isinstance(convergence, Mapping):
+        raise DistributedWorkLoadingRefused(
+            f"Assignment summary omitted convergence custody for {label}"
+        )
+    if convergence.get("assignment_profile_digest") != expected_sha256:
+        raise DistributedWorkLoadingRefused(
+            f"Assignment output used an unbound runtime profile for {label}"
+        )
+    return convergence
+
+
 def _finite_nonnegative(value: Any, label: str) -> float:
     try:
         number = float(value)

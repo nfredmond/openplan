@@ -18,8 +18,11 @@ from workers.aequilibrae_worker.distributed_work_loading import (
     INPUT_SCHEMA,
     SOURCE_STATES,
     DistributedWorkLoadingRefused,
+    assignment_profile_sha256,
     aggregate_access_points,
     distribute_work_matrix,
+    require_assignment_profile_sha,
+    require_assignment_summary_profile,
     same_custody_by_method,
     validate_development_comparison,
     validate_loading_input,
@@ -162,6 +165,38 @@ def test_candidate_cannot_advance_after_county_stratum_worsens():
         validate_development_comparison(value)
 
 
+def test_assignment_runtime_must_match_the_pre_output_profile():
+    profile = {
+        "schema_version": "openplan.assignment-profile.v1",
+        "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+        "engine": "aequilibrae",
+        "engine_version": "1.6.2",
+        "algorithm": "bfw",
+        "vdf": "BPR",
+        "vdf_parameters": {"alpha": 0.15, "beta": 4},
+        "capacity_field": "capacity",
+        "time_field": "travel_time",
+        "class_pce": 1,
+        "cores": 1,
+        "target_gap": 0.0005,
+        "max_iterations": 3000,
+    }
+    expected = assignment_profile_sha256(profile)
+    require_assignment_profile_sha(expected, profile, "fixture")
+    require_assignment_summary_profile(
+        {"convergence": {"assignment_profile_digest": expected}}, expected, "fixture"
+    )
+    changed = dict(profile, engine_version="1.7.0")
+    with pytest.raises(DistributedWorkLoadingRefused, match="runtime profile changed"):
+        require_assignment_profile_sha(expected, changed, "fixture")
+    with pytest.raises(DistributedWorkLoadingRefused, match="unbound runtime profile"):
+        require_assignment_summary_profile(
+            {"convergence": {"assignment_profile_digest": assignment_profile_sha256(changed)}},
+            expected,
+            "fixture",
+        )
+
+
 if __name__ == "__main__":
     direct_tests = [
         test_access_points_work_for_place_archetypes_without_jurisdiction_literals,
@@ -169,6 +204,7 @@ if __name__ == "__main__":
         test_contract_guards_refuse_swallowed_demand_premature_output_and_method_averaging,
         test_exact_source_and_network_custody_must_match_between_methods,
         test_candidate_cannot_advance_after_county_stratum_worsens,
+        test_assignment_runtime_must_match_the_pre_output_profile,
     ]
     for direct_test in direct_tests:
         direct_test()
@@ -176,4 +212,4 @@ if __name__ == "__main__":
         test_us_adapter_retains_relationships_across_county_and_source_boundaries(Path(directory))
     for boundary_flag in ("holdout_accessed", "defaults_changed", "candidate_promoted"):
         test_pre_output_audit_refuses_forbidden_boundaries(boundary_flag)
-    print("distributed work loading: 9 tests passed")
+    print("distributed work loading: 10 tests passed")

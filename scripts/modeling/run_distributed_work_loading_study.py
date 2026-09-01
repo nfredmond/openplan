@@ -231,6 +231,28 @@ def source_record(record: Mapping[str, Any], label: str) -> dict[str, Any]:
     return exact
 
 
+def require_bound_assignment_runtime(
+    registry: Mapping[str, Any], predecessor: Mapping[str, Any]
+) -> str:
+    runtime_profile = screening_runtime.assignment_profile()
+    runtime_sha256 = loading.assignment_profile_sha256(runtime_profile)
+    for geography in registry["geographies"]:
+        geography_id = str(geography["geography_id"])
+        for method in loading.METHODS:
+            method_record = find_method_record(predecessor, geography_id, method)
+            expected = source_record(
+                method_record["artifacts"]["assignment_profile"],
+                f"{geography_id}/{method}/assignment-profile",
+            )
+            try:
+                loading.require_assignment_profile_sha(
+                    expected["sha256"], runtime_profile, f"{geography_id}/{method}"
+                )
+            except loading.DistributedWorkLoadingRefused as error:
+                raise StudyRefused(str(error)) from error
+    return runtime_sha256
+
+
 def graph_components(conn: sqlite3.Connection) -> tuple[dict[int, int], set[int], list[tuple[int, float, float]]]:
     nodes = [(int(row[0]), int(row[1] or 0), float(row[2]), float(row[3])) for row in conn.execute("SELECT node_id,COALESCE(is_centroid,0),X(geometry),Y(geometry) FROM nodes")]
     centroid_ids = {node for node, centroid, _, _ in nodes if centroid}
@@ -424,6 +446,7 @@ def composite(records: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
 
 def prepare(registry_path: Path, output_root: Path, work_root: Path, created_at: str, release: Mapping[str, Any]) -> tuple[dict[str, Any], dict[str, Any], dict[tuple[str, str], dict[str, Any]]]:
     registry, predecessor, sources = verify_registry(registry_path)
+    require_bound_assignment_runtime(registry, predecessor)
     geography_ids = [str(item["geography_id"]) for item in registry["geographies"]]
     od_rows, active_blocks = lodes.read_county_od([sources["od_main"], sources["od_aux"]], geography_ids)
     crosswalk = lodes.read_crosswalk(sources["crosswalk"], active_blocks)
@@ -565,6 +588,7 @@ def prepare(registry_path: Path, output_root: Path, work_root: Path, created_at:
                 "geography": geography, "method_record": method_record, "audit": audit_value, "audit_record": audit_record,
                 "input_record": input_record, "matrix_path": method_work / "candidate-matrix.npy.gz", "matrix_record": matrix_record,
                 "candidate_network": candidate_network, "candidate_network_record": bindings["candidate_network"],
+                "assignment_profile_sha256": bindings["assignment_profile"]["sha256"],
                 "base_centroids": base_centroids, "access_centroids": access_centroids,
             }
     expected = len(registry["geographies"]) * len(loading.METHODS)
@@ -599,6 +623,10 @@ def assign(prepared: Mapping[tuple[str, str], Mapping[str, Any]], work_root: Pat
                 load_json(receipt_path) == receipt_value
                 and summary_value.get("assignment_input_receipt_sha256") == receipt_record["sha256"]
                 and summary_value.get("link_volumes_sha256") == sha256_file(volume_path)
+                and (
+                    (summary_value.get("convergence") or {}).get("assignment_profile_digest")
+                    == item["assignment_profile_sha256"]
+                )
             ):
                 continue
         receipt_record = write_json(receipt_path, receipt_value)
@@ -610,6 +638,12 @@ def assign(prepared: Mapping[tuple[str, str], Mapping[str, Any]], work_root: Pat
         started = time.monotonic()
         summary = screening_runtime.run_assignment(item["candidate_network"].parent, centroid_map, matrix, output, {})
         summary.pop("volumes_by_link", None)
+        try:
+            loading.require_assignment_summary_profile(
+                summary, item["assignment_profile_sha256"], f"{geography_id}/{method}"
+            )
+        except loading.DistributedWorkLoadingRefused as error:
+            raise StudyRefused(str(error)) from error
         summary["wall_clock_seconds"] = round(time.monotonic() - started, 2)
         summary["assignment_input_receipt_sha256"] = receipt_record["sha256"]
         summary["link_volumes_sha256"] = sha256_file(volume_path)
@@ -639,6 +673,13 @@ def compare(prepared: Mapping[tuple[str, str], Mapping[str, Any]], output_root: 
             observations = package["observations"]
             baseline = read_volumes(stored_path(artifacts["model_output"]))
             candidate_path = work_root / "assignments" / geography_id / method / "link_volumes.csv"
+            assignment_summary = load_json(work_root / "assignments" / geography_id / method / "assignment-summary.json")
+            try:
+                convergence = loading.require_assignment_summary_profile(
+                    assignment_summary, item["assignment_profile_sha256"], f"{geography_id}/{method}"
+                )
+            except loading.DistributedWorkLoadingRefused as error:
+                raise StudyRefused(str(error)) from error
             candidate = read_volumes(candidate_path)
             records = []; baseline_counts = Counter(); candidate_counts = Counter(); residuals: dict[str, dict[str, list[float]]] = defaultdict(lambda: {"baseline": [], "candidate": []})
             for observation, match in zip(observations, matches):
@@ -679,6 +720,14 @@ def compare(prepared: Mapping[tuple[str, str], Mapping[str, Any]], output_root: 
                 "release": dict(release), "geography": {"geography_id": geography_id, "name": geography["name"], "country": geography["country"]},
                 "method": method, "method_aggregation": "separate", "scientific_outcome": "inconclusive", "holdout_accessed": False, "defaults_changed": False,
                 "bindings": {"pre_output_audit_sha256": item["audit_record"]["sha256"], "baseline_output": source_record(artifacts["model_output"], f"{geography_id}/{method}/baseline-output"), "candidate_output": artifact(candidate_path)},
+                "assignment_runtime": {
+                    "assignment_profile_sha256": convergence["assignment_profile_digest"],
+                    "engine_version": (convergence.get("assignment_profile") or {}).get("engine_version"),
+                    "converged": convergence.get("converged"),
+                    "iterations": convergence.get("iterations"),
+                    "final_gap": convergence.get("final_gap"),
+                    "target_gap": convergence.get("target_gap"),
+                },
                 "coverage": {"baseline": {key: int(baseline_counts.get(key, 0)) for key in required}, "candidate": {key: int(candidate_counts.get(key, 0)) for key in required}},
                 "records": records, "county_stratum": county_stratum, "road_class_coverage": road_classes,
                 "development_gate": {"advanced": advanced, "demand_conserved": conserved, "observed_link_reach_improved": reach_improved, "no_county_stratum_worsened": not county_worsened, "no_road_class_worsened": no_worse, "same_source_network_custody": custody_same, "failed_candidate_published_unchanged_and_retired": not advanced},

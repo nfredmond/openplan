@@ -23,6 +23,7 @@ MUTATIONS = {
     "county-stratum-worsening": ('or gate.get("no_county_stratum_worsened") is not True', 'or False'),
     "holdout-access": ('if value.get("holdout_accessed") is not False:\n        raise DistributedWorkLoadingRefused("Pre-output audit crossed', 'if False:\n        raise DistributedWorkLoadingRefused("Pre-output audit crossed'),
     "default-promotion": ('if value.get("defaults_changed") is not False:\n        raise DistributedWorkLoadingRefused("Pre-output audit crossed', 'if False:\n        raise DistributedWorkLoadingRefused("Pre-output audit crossed'),
+    "assignment-runtime-profile": ('if actual_sha256 != expected_sha256:', 'if False:'),
 }
 
 
