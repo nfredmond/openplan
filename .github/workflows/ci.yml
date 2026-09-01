@@ -112,7 +112,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libsqlite3-mod-spatialite
-          pip install "numpy<2.1" pandas scipy shapely requests python-dotenv geopandas openmatrix
+          pip install "numpy<2.1" pandas scipy shapely requests python-dotenv geopandas openmatrix pytest
 
       # `|| exit 1`, not `|| break`: break leaves the loop with status 0, which
       # would turn a failing suite into a green job. The floor catches a broken

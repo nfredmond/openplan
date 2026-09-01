@@ -339,6 +339,13 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260828000005_structural_demand_diagnosis_custody.sql",
     migrationsAtRelease: 240,
   },
+  // 0.44.0 adds append-only distributed-work-loading custody, then hardens
+  // every conservation and no-promotion boundary in a corrective migration.
+  {
+    tag: "0.44.0",
+    lastMigration: "20260831000002_distributed_work_loading_custody_guards.sql",
+    migrationsAtRelease: 242,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

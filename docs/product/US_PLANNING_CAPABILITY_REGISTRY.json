@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "currentRelease": "v0.43.0",
+  "currentRelease": "v0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
   "statuses": ["proven", "partial", "missing", "not-assessed"],

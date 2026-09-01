@@ -19,6 +19,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.44.0 — 2026-09-01
+
 **Migration required.** Run `npm exec -- supabase migration up --linked`
 before deploying. Migrations
 `20260831000001_distributed_work_loading_custody.sql` and

@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: 350b945ff79a0cc52c6ec9cbcce5bc6b0412aa53
-current_release: v0.43.0
+current_release: v0.44.0
 review_by: 2026-09-28
 paths:
 - AGENTS.md
@@ -77,7 +77,7 @@ or a milestone just closed, generate a fresh packet with
 `npm run product:direction:packet` and obtain independent fresh-context reviews
 before committing the next major direction. Preserve their disagreements.
 
-## Current truth at v0.43.0
+## Current truth at v0.44.0
 
 Strong foundations already exist:
 
@@ -87,6 +87,8 @@ Strong foundations already exist:
   agent refusals, sealed-study custody, and honest negative results;
 - local/self-hosted workers, live RLS proof, backup and restore rehearsal,
   upgrade CI, interruption recovery, and a large mutation-backed test surface.
+- source-bound distributed work-trip loading with assignment-blind custody,
+  distinct unavailable/unmapped/unroutable states, and no default promotion.
 - one authenticated rail, project-scoped workflow links, a guided
   baseline-versus-build modeling record, named-road Safety context, and an
   expiring machine-readable v1 coverage registry.
@@ -95,9 +97,9 @@ The v1 contract is not yet true:
 
 - the unified shell and project context do not yet make every cross-module
   planning job complete or every specialist workflow approachable to a novice;
-- the first-week harness defines twelve required outcomes, but a current
-  all-journey run remains unproven and must expand with the planner and
-  organization matrix;
+- the first-week harness defines twelve required outcomes. The pre-v0.44
+  all-journey run completed every job but reached nine outcomes fully and three
+  partly; its evidence-complete lesser findings remain in `KNOWN_ISSUES.md`;
 - the proof registry exposes many `partial`, `missing`, and `not-assessed`
   cells; those open cells block v1 even though they do not block this interim
   release;
@@ -210,11 +212,30 @@ The v1 contract is not yet true:
   Desktop and 390px exemplar checks remain release evidence, not a nationwide
   capability claim.
 
-The next modeling checkpoint addresses demand distribution, external and
-through travel, and network loading defects using the repaired v0.41 evidence
-boundary. Candidate selection and any use-specific acceptance rule remain later
-work. The rule must be frozen from primary evidence before an untouched holdout
-is opened.
+## Completed checkpoint: v0.44 source-bound distributed work loading
+
+- Bound exact 2023 Census LODES 8.4 main, auxiliary, RAC, WAC, crosswalk,
+  documentation, method work-layer, network, observation, settings, and
+  algorithm inputs before assignment output.
+- Preserved each method's work total, left non-work demand unchanged, and
+  distributed only covered work endpoints to block-supported road access
+  points. Cross-boundary, unavailable, suppressed, explicit-zero, unmapped,
+  unroutable, and missing-pair states remain separate.
+- Added canonical candidate-network custody and a pre-assignment receipt so an
+  interrupted job resumes only when the audit, matrix, network, and completed
+  output hashes still match.
+- Kept seven county gates and both methods separate. No national aggregate,
+  method average, rematched observation, consumed holdout, tuning step, or
+  default promotion can rescue a failed candidate.
+- Carried the exact input, audit, comparison, and hashes through the existing
+  Models, report, assistant, and project-evidence surfaces. The scientific
+  outcome remains `inconclusive`; California and nationwide capability remain
+  `partial`.
+
+The next major lane is selected from the fresh post-checkpoint product-direction
+packet and recorded in the v0.44 release evidence. Any future model acceptance
+rule must be frozen from primary, use-specific evidence before a genuinely
+untouched geographic holdout is opened.
 
 That last point is a model-science question, not permission to fit observations
 exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and

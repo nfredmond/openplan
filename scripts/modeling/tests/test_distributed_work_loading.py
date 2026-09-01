@@ -2,8 +2,15 @@ from __future__ import annotations
 
 import copy
 import gzip
+import sys
+import tempfile
+from pathlib import Path
 
 import pytest
+
+ROOT = Path(__file__).resolve().parents[3]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from workers.aequilibrae_worker.distributed_work_loading import (
     AUDIT_SCHEMA,
@@ -153,3 +160,20 @@ def test_candidate_cannot_advance_after_county_stratum_worsens():
     value["development_gate"]["no_county_stratum_worsened"] = False
     with pytest.raises(DistributedWorkLoadingRefused, match="every preregistered county gate"):
         validate_development_comparison(value)
+
+
+if __name__ == "__main__":
+    direct_tests = [
+        test_access_points_work_for_place_archetypes_without_jurisdiction_literals,
+        test_distribution_preserves_nonwork_and_retains_every_unloadable_work_share,
+        test_contract_guards_refuse_swallowed_demand_premature_output_and_method_averaging,
+        test_exact_source_and_network_custody_must_match_between_methods,
+        test_candidate_cannot_advance_after_county_stratum_worsens,
+    ]
+    for direct_test in direct_tests:
+        direct_test()
+    with tempfile.TemporaryDirectory() as directory:
+        test_us_adapter_retains_relationships_across_county_and_source_boundaries(Path(directory))
+    for boundary_flag in ("holdout_accessed", "defaults_changed", "candidate_promoted"):
+        test_pre_output_audit_refuses_forbidden_boundaries(boundary_flag)
+    print("distributed work loading: 9 tests passed")

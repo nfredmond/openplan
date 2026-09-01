@@ -105,10 +105,13 @@ def assignment_network_artifact(path: Path) -> dict[str, Any]:
                         add(("text:" + str(value)).encode())
     finally:
         connection.close()
-    exact["bytes"] = logical_bytes
-    exact["sha256"] = digest.hexdigest()
-    exact["logical_schema"] = "openplan.assignment-network-logical-content.v1"
-    return exact
+    return {
+        "path": exact["path"],
+        "bytes": logical_bytes,
+        "sha256": digest.hexdigest(),
+        "logical_schema": "openplan.assignment-network-logical-content.v1",
+        "storage_note": "SQLite page-layout bytes are not a reproducible assignment input; exact ordered nodes and links are hash-bound.",
+    }
 
 
 def registry_record(path: Path, record: Mapping[str, Any], label: str) -> dict[str, Any]:

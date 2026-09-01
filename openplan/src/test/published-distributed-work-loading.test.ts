@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("server-only", () => ({}));
 
 import { loadPublishedDistributedWorkLoadingStudy, readPublishedDistributedWorkLoadingDownload } from "@/lib/models/published-distributed-work-loading";
 

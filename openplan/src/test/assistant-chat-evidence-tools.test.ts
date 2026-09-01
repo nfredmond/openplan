@@ -295,6 +295,25 @@ function modelRunFixture() {
         created_at: "2026-08-01T02:00:00Z",
       },
     ],
+    modeling_distributed_work_loading_custody: [
+      {
+        id: "distributed-work-custody-1",
+        model_run_id: RUN_ID,
+        loading_input_artifact_id: "loading-input-1",
+        pre_output_audit_artifact_id: "pre-output-audit-1",
+        development_comparison_artifact_id: "development-comparison-1",
+        loading_input_sha256: "d".repeat(64),
+        pre_output_audit_sha256: "e".repeat(64),
+        development_comparison_sha256: "f".repeat(64),
+        source_custody_sha256: "1".repeat(64),
+        network_custody_sha256: "2".repeat(64),
+        method: "aequilibrae",
+        scientific_outcome: "inconclusive",
+        defaults_changed: false,
+        holdout_accessed: false,
+        created_at: "2026-08-31T23:30:00Z",
+      },
+    ],
     model_run_artifacts: [
       {
         id: "diagnosis-artifact-1",
@@ -379,6 +398,12 @@ describe("get_model_run_results", () => {
         unknownFacts: string[];
         exactArtifact: { id: string; fileUrl: string; contentHash: string };
       }>;
+      distributedWorkLoadingCustody: Array<{
+        method: string;
+        outcome: string;
+        defaultsChanged: boolean;
+        exactArtifacts: { loadingInput: { sha256: string }; preOutputAudit: { sha256: string }; developmentComparison: { sha256: string } };
+      }>;
     };
     expect(validation.results[0].detail).toBe("Median APE 42.5% exceeds the 30% claim-grade threshold.");
     expect(validation.results[0].status).toBe("warn");
@@ -395,6 +420,16 @@ describe("get_model_run_results", () => {
         id: "diagnosis-artifact-1",
         fileUrl: "run-artifacts/model-runs/run/diagnosis.json",
         contentHash: "c".repeat(64),
+      },
+    });
+    expect(validation.distributedWorkLoadingCustody[0]).toMatchObject({
+      method: "aequilibrae",
+      outcome: "inconclusive",
+      defaultsChanged: false,
+      exactArtifacts: {
+        loadingInput: { sha256: "d".repeat(64) },
+        preOutputAudit: { sha256: "e".repeat(64) },
+        developmentComparison: { sha256: "f".repeat(64) },
       },
     });
 
