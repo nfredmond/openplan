@@ -3,7 +3,7 @@ id: 11-model-validation-evidence
 title: Decide what a baseline model's observed-count evidence actually establishes
 account: run
 files: none
-maxTurns: 180
+maxTurns: 260
 ---
 
 You are reviewing a real baseline travel-model run before its results are used
@@ -15,7 +15,18 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
 **What you need to have done:**
 
 1. Start from the signed-in landing page and use visible navigation to reach
-   Models. Review the v0.43 structural demand/loading diagnosis, the v0.41
+   Models. Review the v0.44 distributed work-loading checkpoint first. For all
+   seven counties, switch between AequilibraE and ActivitySim and download each
+   method's exact loading input, pre-output audit, and development comparison.
+   Verify all 42 downloaded SHA-256 values against the full hashes on screen.
+   Confirm the methods remain separate, LODES supports work travel only,
+   non-work demand is unchanged, unroutable demand is retained, distinct source
+   states remain visible, the run imposed no arbitrary point or gateway cap,
+   and neither a default nor an untouched holdout changed. An inconclusive or
+   retired candidate is useful evidence and must not be presented as
+   calibration or validation.
+
+   Then review the v0.43 structural demand/loading diagnosis, the v0.41
    comparable-observation instrument, and the v0.40 frozen diagnosis history.
    In v0.43, select one county, switch between AequilibraE and ActivitySim, and
    confirm the values are separate rather than averaged. Download both methods'
@@ -60,7 +71,7 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    any console error or failed response; a clean journey requires neither.
 
 The outcome is reached when you can state the recorded scientific outcome and
-why, distinguish the structural finding categories, and have downloaded the
-exact v0.43 audit/diagnosis pair plus the immutable run assessment and its exact
-input and basis evidence. An honest `inconclusive` outcome fully satisfies this
-job.
+why, distinguish the structural finding categories, have independently checked
+all 42 v0.44 downloads, and have downloaded the exact v0.43 audit/diagnosis pair
+plus the immutable run assessment and its exact input and basis evidence.
+An honest `inconclusive` outcome fully satisfies this job.

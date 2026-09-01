@@ -135,6 +135,9 @@ jobs:
           echo "ran $count suites"
           test "$count" -ge 40 || { echo "expected at least 40 suites, found $count — the glob broke"; exit 1; }
 
+      - name: Published v0.44 distributed-work-loading custody
+        run: python ../verify_distributed_work_loading_study.py a7c2afa71debdf3d61af8fe3967d8198e4f4ae09
+
   ops-script-tests:
     name: ops scripts (python unit tests)
     runs-on: ubuntu-latest
