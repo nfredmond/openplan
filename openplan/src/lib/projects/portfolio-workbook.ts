@@ -418,6 +418,9 @@ export async function inspectPortfolioWorkbook(input: {
   const format = await validateAndDetect(input);
   const sourceHash = sha256(input.bytes);
   if (format === "csv") {
+    if (input.worksheetIndex !== undefined && input.worksheetIndex !== 0) {
+      throw new PortfolioWorkbookError("worksheet_missing", "CSV has one worksheet at index 0.");
+    }
     const records = decodeCsv(input.bytes);
     const columnCount = records.reduce((maximum, row) => Math.max(maximum, row.length), 0);
     if (columnCount > PORTFOLIO_IMPORT_MAX_COLUMNS) {
@@ -433,7 +436,10 @@ export async function inspectPortfolioWorkbook(input: {
         visibility: "visible",
         rowCount: records.length,
         columnCount,
-        sampleRows: records.slice(0, PORTFOLIO_INSPECTION_SAMPLE_ROWS).map((row, index) => ({
+        sampleRows: records.slice(
+          0,
+          input.worksheetIndex === 0 ? records.length : PORTFOLIO_INSPECTION_SAMPLE_ROWS
+        ).map((row, index) => ({
           rowNumber: index + 1,
           cells: Array.from({ length: columnCount }, (_, column) => csvCell(row[column])),
         })),
@@ -443,7 +449,7 @@ export async function inspectPortfolioWorkbook(input: {
 
   const selected = input.worksheetIndex;
   const workbook = readWorkbook(input.bytes, {
-    sheetRows: PORTFOLIO_INSPECTION_SAMPLE_ROWS,
+    sheetRows: selected === undefined ? PORTFOLIO_INSPECTION_SAMPLE_ROWS : PORTFOLIO_IMPORT_MAX_ROWS,
     ...(selected === undefined ? {} : { sheets: [selected] }),
   });
   const sheets = workbook.Workbook?.Sheets ?? [];
@@ -461,7 +467,15 @@ export async function inspectPortfolioWorkbook(input: {
       throw new PortfolioWorkbookError("column_limit", `Worksheet ${index + 1} contains more than 256 columns.`);
     }
     const hidden = sheets[index]?.Hidden ?? 0;
-    const sampleThrough = Math.min(size.rowCount, PORTFOLIO_INSPECTION_SAMPLE_ROWS);
+    if (selected !== undefined && size.rowCount > PORTFOLIO_IMPORT_MAX_ROWS) {
+      throw new PortfolioWorkbookError(
+        "row_limit",
+        `Worksheet ${index + 1} contains more than ${PORTFOLIO_IMPORT_MAX_ROWS.toLocaleString("en-US")} rows.`
+      );
+    }
+    const sampleThrough = selected === undefined
+      ? Math.min(size.rowCount, PORTFOLIO_INSPECTION_SAMPLE_ROWS)
+      : size.rowCount;
     return {
       index,
       name,

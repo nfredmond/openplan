@@ -270,7 +270,8 @@ describe("POST /api/engage/[shareToken]/submit", () => {
         moderation_notes: "Auto-flagged because the hidden website field was completed.",
       })
     );
-    expect(itemInsertMock.mock.calls[0]?.[0]).not.toHaveProperty("website");
+    const insertCalls = itemInsertMock.mock.calls as unknown as Array<[Record<string, unknown>]>;
+    expect(insertCalls[0]?.[0]).not.toHaveProperty("website");
   });
 
   it("rate limits repeated recent submissions from the same connection", async () => {

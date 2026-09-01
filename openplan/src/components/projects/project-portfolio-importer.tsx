@@ -107,6 +107,7 @@ export function ProjectPortfolioImporter({
   const [committed, setCommitted] = useState<Committed | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [inspectingWorksheetIndex, setInspectingWorksheetIndex] = useState<number | null>(null);
 
   const isCsv = /\.csv$/i.test(sourceFile?.name ?? "");
   const selectedDrafts = useMemo(
@@ -191,6 +192,28 @@ export function ProjectPortfolioImporter({
       setMessage(error instanceof Error ? error.message : "Could not store and inspect the source.");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function inspectAllWorksheetRows(worksheetIndex: number) {
+    if (!sourceDocumentId || !inspection) return;
+    setInspectingWorksheetIndex(worksheetIndex);
+    setMessage(null);
+    try {
+      const payload = await callImport({ mode: "inspect", worksheetIndex });
+      const complete = payload.inspection?.worksheets[0];
+      if (!payload.inspection || !complete || payload.inspection.sourceHash !== inspection.sourceHash) {
+        throw new Error("The server did not return the complete stored worksheet.");
+      }
+      setInspection((current) => current ? {
+        ...current,
+        worksheets: current.worksheets.map((sheet) => sheet.index === worksheetIndex ? complete : sheet),
+      } : current);
+      setMessage(`All ${complete.rowCount.toLocaleString()} rows in ${complete.name} are available for inspection.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not inspect every row in the worksheet.");
+    } finally {
+      setInspectingWorksheetIndex(null);
     }
   }
 
@@ -375,6 +398,21 @@ export function ProjectPortfolioImporter({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <label className="flex items-center gap-2 font-semibold"><input type="checkbox" aria-label={`Select worksheet ${sheet.name}`} checked={Boolean(draft)} onChange={(event) => toggleSheet(sheet.index, event.target.checked)} />{sheet.index + 1}. {sheet.name}</label>
               <span className="text-xs text-muted-foreground">{sheet.visibility.replace("_", " ")} · {sheet.rowCount} rows · {sheet.columnCount} columns</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+              <span>
+                {sheet.sampleRows.length >= sheet.rowCount
+                  ? `All ${sheet.rowCount.toLocaleString()} rows available for inspection.`
+                  : `Showing the first ${sheet.sampleRows.length.toLocaleString()} of ${sheet.rowCount.toLocaleString()} rows.`}
+              </span>
+              {sheet.sampleRows.length < sheet.rowCount ? <button
+                type="button"
+                className="rounded border px-2 py-1.5 font-semibold text-foreground disabled:opacity-60"
+                disabled={inspectingWorksheetIndex !== null}
+                onClick={() => void inspectAllWorksheetRows(sheet.index)}
+              >
+                {inspectingWorksheetIndex === sheet.index ? "Loading every row…" : `Inspect all ${sheet.rowCount.toLocaleString()} rows`}
+              </button> : null}
             </div>
             <div className="overflow-x-auto rounded border"><table className="min-w-max text-xs"><tbody>{sheet.sampleRows.map((row) => <tr key={row.rowNumber} className="border-b last:border-0"><th className="bg-muted/50 px-2 py-1 text-right font-mono">{row.rowNumber}</th>{row.cells.map((cell, index) => <td key={index} className="max-w-48 truncate border-l px-2 py-1" title={cell.formula ? "Cached formula value" : cell.display}>{cell.display || " "}{cell.formula ? " [formula]" : ""}</td>)}</tr>)}</tbody></table></div>
             {draft ? <div className="space-y-4 border-t pt-3">

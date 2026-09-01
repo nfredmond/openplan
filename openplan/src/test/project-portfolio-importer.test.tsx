@@ -127,6 +127,49 @@ describe("ProjectPortfolioImporter", () => {
     ]));
   });
 
+  it("lets a planner inspect every worksheet row before selecting it", async () => {
+    const sampleRows = Array.from({ length: 12 }, (_, index) => ({
+      rowNumber: index + 1,
+      cells: [cell(index === 0 ? "ID" : `${index}`), cell(index === 0 ? "Project" : `Project ${index}`)],
+    }));
+    const initialInspection = {
+      format: "xlsx" as const,
+      sourceHash: "b".repeat(64),
+      byteLength: 1000,
+      worksheets: [{ index: 0, name: "Long list", visibility: "visible" as const, rowCount: 13, columnCount: 2, sampleRows }],
+    };
+    const completeInspection = {
+      ...initialInspection,
+      worksheets: [{
+        ...initialInspection.worksheets[0],
+        sampleRows: [...sampleRows, { rowNumber: 13, cells: [cell("12"), cell("Thirteenth visible project")] }],
+      }],
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).startsWith("/api/knowledge-base/documents")) {
+        return jsonResponse({ document: { id: SOURCE_ID, title: "long.xlsx" } }, 201);
+      }
+      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return jsonResponse({
+        source: { id: SOURCE_ID, format: "xlsx" },
+        inspection: body.worksheetIndex === 0 ? completeInspection : initialInspection,
+      });
+    }));
+
+    render(<ProjectPortfolioImporter workspaceId={WORKSPACE_ID} recentImports={[]} historyReadFailed={false} />);
+    fireEvent.change(screen.getByLabelText(/Project list, up to/i), {
+      target: { files: [new File(["workbook bytes"], "long.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })] },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Store source and inspect worksheets/i }));
+
+    expect(await screen.findByText("Showing the first 12 of 13 rows.")).toBeInTheDocument();
+    expect(screen.queryByText("Thirteenth visible project")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Inspect all 13 rows" }));
+    expect(await screen.findByText("Thirteenth visible project")).toBeInTheDocument();
+    expect(screen.getByText("All 13 rows available for inspection.")).toBeInTheDocument();
+    expect(screen.getByLabelText("Select worksheet Long list")).not.toBeChecked();
+  });
+
   it("shows a source-review failure and an honest history-read failure", async () => {
     vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
       if (String(input).startsWith("/api/knowledge-base/documents")) return jsonResponse({ document: { id: SOURCE_ID, title: "bad.xlsx" } }, 201);

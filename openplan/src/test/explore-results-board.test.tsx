@@ -174,6 +174,51 @@ describe("ExploreResultsBoard", () => {
     expect(screen.getByText("Source checks look good")).toBeInTheDocument();
   });
 
+  it("exports an exact CRS and feature-layer inventory with Corridor GeoJSON", () => {
+    const geojson: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features: [
+        { type: "Feature", geometry: { type: "LineString", coordinates: [[-121, 39], [-120.9, 39.1]] }, properties: { kind: "analysis_corridor" } },
+        { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39] }, properties: { kind: "crash_point" } },
+        { type: "Feature", geometry: { type: "Point", coordinates: [-120.9, 39.1] }, properties: { kind: "crash_point" } },
+      ],
+    };
+    render(
+      <ExploreResultsBoard
+        analysisResult={buildAnalysisResult({ geojson })}
+        comparisonRun={null}
+        queryText="Downtown access check"
+        currentMapViewState={currentMapViewState}
+        onClearComparison={vi.fn()}
+        onError={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Export Result GeoJSON" }));
+
+    expect(downloadMocks.downloadGeojson).toHaveBeenCalledTimes(1);
+    const [payload, filename] = downloadMocks.downloadGeojson.mock.calls[0];
+    expect(filename).toBe("openplan-run-current-result.geojson");
+    expect(payload).toMatchObject({
+      type: "FeatureCollection",
+      metadata: {
+        schema: "openplan.corridor-analysis-geojson-metadata.v1",
+        coordinateReferenceSystem: {
+          authority: "OGC",
+          code: "CRS84",
+          axisOrder: "longitude,latitude",
+          units: "decimal_degrees",
+        },
+        featureCount: 3,
+        layerInventory: [
+          { name: "analysis_corridor", featureCount: 1, geometryTypes: ["LineString"] },
+          { name: "crash_point", featureCount: 2, geometryTypes: ["Point"] },
+        ],
+        mapViewState: currentMapViewState,
+      },
+    });
+  });
+
   it("does not surface estimated indicators when all sources are measured", () => {
     render(
       <ExploreResultsBoard

@@ -69,6 +69,16 @@ describe("direct portfolio workbook inspection", () => {
     expect(inspection.worksheets[0].sampleRows.length).toBeLessThanOrEqual(12);
   });
 
+  it("returns every CSV mapping row when one worksheet is explicitly inspected", async () => {
+    const lines = ["ID,Project", ...Array.from({ length: 14 }, (_, index) => `${index + 1},Project ${index + 1}`)];
+    const bytes = new TextEncoder().encode(lines.join("\n"));
+    const initial = await inspectPortfolioWorkbook({ bytes, filename: "portfolio.csv", contentType: contentTypes.csv });
+    const complete = await inspectPortfolioWorkbook({ bytes, filename: "portfolio.csv", contentType: contentTypes.csv, worksheetIndex: 0 });
+    expect(initial.worksheets[0].sampleRows).toHaveLength(12);
+    expect(complete.worksheets[0].sampleRows).toHaveLength(15);
+    expect(complete.worksheets[0].sampleRows.at(-1)?.cells[1].display).toBe("Project 14");
+  });
+
   it("refuses extension, stored content type, and byte-structure disagreement", async () => {
     await expect(inspectPortfolioWorkbook({ bytes: fixture("portfolio-multi.xlsx"), filename: "renamed.ods", contentType: contentTypes.ods })).rejects.toMatchObject({ code: "format_mismatch" });
     await expect(inspectPortfolioWorkbook({ bytes: fixture("portfolio-multi.xlsx"), filename: "source.xlsx", contentType: contentTypes.xls })).rejects.toMatchObject({ code: "format_mismatch" });

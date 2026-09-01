@@ -41,6 +41,47 @@ import { ExploreRunComparisonCard } from "./explore-run-comparison-card";
 import type { DisclosureItem, GeospatialSourceCard, PlanningSignal, ResultScoreTile, ResultStatusBadge } from "./explore-results-types";
 
 const COMPARISON_HEADLINE_KEYS = new Set(["overallScore", "accessibilityScore", "safetyScore", "equityScore"]);
+const RESULT_GEOJSON_METADATA_SCHEMA = "openplan.corridor-analysis-geojson-metadata.v1";
+
+function resultGeojsonLayerInventory(features: GeoJSON.Feature[]) {
+  const layers = new Map<string, { featureCount: number; geometryTypes: Set<string> }>();
+  for (const feature of features) {
+    const rawKind = feature.properties?.kind;
+    const name = typeof rawKind === "string" && rawKind.trim() ? rawKind.trim() : "unclassified";
+    const layer = layers.get(name) ?? { featureCount: 0, geometryTypes: new Set<string>() };
+    layer.featureCount += 1;
+    layer.geometryTypes.add(feature.geometry?.type ?? "null");
+    layers.set(name, layer);
+  }
+  return [...layers.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([name, layer]) => ({
+      name,
+      featureCount: layer.featureCount,
+      geometryTypes: [...layer.geometryTypes].sort(),
+    }));
+}
+
+function resultGeojsonExport(
+  collection: GeoJSON.FeatureCollection,
+  mapViewState: MapViewState
+): GeoJSON.FeatureCollection & { metadata: Record<string, unknown> } {
+  return {
+    ...collection,
+    metadata: {
+      schema: RESULT_GEOJSON_METADATA_SCHEMA,
+      coordinateReferenceSystem: {
+        authority: "OGC",
+        code: "CRS84",
+        axisOrder: "longitude,latitude",
+        units: "decimal_degrees",
+      },
+      featureCount: collection.features.length,
+      layerInventory: resultGeojsonLayerInventory(collection.features),
+      mapViewState,
+    },
+  };
+}
 
 /**
  * What a tile shows when the underlying figure was never measured.
@@ -383,12 +424,7 @@ export function ExploreResultsBoard({
   const exportGeojson = () => {
     try {
       downloadGeojson(
-        {
-          ...analysisResult.geojson,
-          metadata: {
-            mapViewState: currentMapViewState,
-          },
-        } as GeoJSON.FeatureCollection,
+        resultGeojsonExport(analysisResult.geojson, currentMapViewState),
         `openplan-${analysisResult.runId}-result.geojson`
       );
     } catch {
