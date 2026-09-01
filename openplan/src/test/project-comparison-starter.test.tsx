@@ -200,20 +200,36 @@ describe("project comparison guidance", () => {
   });
 
   it("reports successful ActivitySim preflight without routing as though assignment finished", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        state: "needs_activitysim_runtime",
-        scenarioSetId: "scenario-1",
-        networkBasis: "worker_osm_snapshot",
-        nextRun: {
-          method: "activitysim",
-          scenario: "baseline",
-          modelId: "model-asim",
-          scenarioEntryId: "entry-baseline",
-        },
-      }),
-    }));
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: "needs_activitysim_runtime",
+          scenarioSetId: "scenario-1",
+          networkBasis: "worker_osm_snapshot",
+          nextRun: {
+            method: "activitysim",
+            scenario: "baseline",
+            modelId: "model-asim",
+            scenarioEntryId: "entry-baseline",
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: "ready_for_run",
+          scenarioSetId: "scenario-1",
+          networkBasis: "worker_osm_snapshot",
+          nextRun: {
+            method: "activitysim",
+            scenario: "baseline",
+            modelId: "model-asim",
+            scenarioEntryId: "entry-baseline",
+          },
+        }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
 
     render(
       <ProjectComparisonStarter
@@ -226,6 +242,20 @@ describe("project comparison guidance", () => {
 
     expect(await screen.findByRole("status")).toHaveTextContent(/preflight succeeded.*no assigned link volumes/i);
     expect(navigation.push).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry ActivitySim after configuring runtime" }));
+    await waitFor(() => expect(navigation.push).toHaveBeenCalledWith(
+      "/models/model-asim?projectId=11111111-1111-4111-8111-111111111111&scenarioEntryId=entry-baseline#run-model",
+    ));
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/api/models/project-comparison",
+      expect.objectContaining({
+        body: JSON.stringify({
+          projectId: "11111111-1111-4111-8111-111111111111",
+          retryActivitySim: true,
+        }),
+      }),
+    );
   });
 
   it("reports a missing ActivitySim assignment artifact separately from unavailable runtime", async () => {

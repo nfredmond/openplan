@@ -49,7 +49,13 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    unloaded, or unavailable; note any base-year, day, direction/carriageway, or
    vehicle/PCE mismatch. For a build run, confirm the screen says base-year
    counts do not establish forecast or change validity.
-4. Open **Why this is inconclusive**. Distinguish observation/matching,
+   The current run supplies the assessment, comparison basis, and validation input.
+   If it has no structural-diagnosis artifact, use the frozen v0.40 published record
+   for that separate diagnosis; do not imply that the older diagnosis belongs to the
+   current run.
+4. Open **Why this is inconclusive** where the structural diagnosis is published.
+   The frozen v0.40 published record satisfies this step when the current run has no
+   diagnosis of its own. Distinguish observation/matching,
    network-loading, comparison-basis, and method-disagreement findings. Confirm
    any absent or conflicting model year, day/period, direction, vehicle/PCE,
    population, or coefficient fact remains `unknown`. Confirm the diagnosis

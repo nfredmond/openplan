@@ -38,14 +38,16 @@ export function ProjectComparisonStarter({
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [runtimeNotice, setRuntimeNotice] = useState<string | null>(null);
+  const [canRetryActivitySim, setCanRetryActivitySim] = useState(false);
   const [needsBuildAssumption, setNeedsBuildAssumption] = useState(false);
   const [autoTripChangePct, setAutoTripChangePct] = useState("");
   const [assumptionBasis, setAssumptionBasis] = useState("");
   const summary = summarizeProjectComparison(facts);
 
-  async function startComparison(saveBuildAssumption = false) {
+  async function startComparison(saveBuildAssumption = false, retryActivitySim = false) {
     setError(null);
     setRuntimeNotice(null);
+    setCanRetryActivitySim(false);
     setIsStarting(true);
     try {
       const parsedChange = Number(autoTripChangePct);
@@ -66,6 +68,7 @@ export function ProjectComparisonStarter({
           ...(saveBuildAssumption
             ? { buildAssumption: { autoTripChangePct: parsedChange, basis: assumptionBasis.trim() } }
             : {}),
+          ...(retryActivitySim ? { retryActivitySim: true } : {}),
         }),
       });
       const payload = (await response.json().catch(() => ({}))) as StartResponse;
@@ -82,6 +85,7 @@ export function ProjectComparisonStarter({
         setRuntimeNotice(
           "ActivitySim preflight succeeded, but it produced no assigned link volumes. Configure an ActivitySim execution runtime, then run this scenario again. Preflight alone does not complete the ActivitySim step.",
         );
+        setCanRetryActivitySim(true);
         return;
       }
 
@@ -215,6 +219,17 @@ export function ProjectComparisonStarter({
       </div>
       {error ? <p className="mt-3 text-sm text-red-700 dark:text-red-300" role="alert">{error}</p> : null}
       {runtimeNotice ? <p className="mt-3 text-sm text-amber-800 dark:text-amber-200" role="status">{runtimeNotice}</p> : null}
+      {canRetryActivitySim ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3"
+          onClick={() => void startComparison(false, true)}
+          disabled={isStarting}
+        >
+          {isStarting ? "Checking runtime…" : "Retry ActivitySim after configuring runtime"}
+        </Button>
+      ) : null}
     </section>
   );
 }

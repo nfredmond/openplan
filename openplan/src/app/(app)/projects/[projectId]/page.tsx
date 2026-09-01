@@ -1431,10 +1431,9 @@ export default async function ProjectDetailPage({
             }))}
           />
       </PageTabPanel>
-
       <PageTabPanel tabKey="evidence" active={activeTab === "evidence"}>
           <ProjectMapPresencePanel
-            projectId={project.id}
+            projectId={project.id} projectAreaGeometry={project.place_geometry_geojson}
             latitude={project.latitude}
             longitude={project.longitude}
             corridors={projectCorridors}

@@ -159,11 +159,18 @@ function addPreflight(fake: ReturnType<typeof fakeClient>, runId: string, mode: 
   });
 }
 
-function request(buildAssumption?: { autoTripChangePct: number; basis: string }) {
+function request(
+  buildAssumption?: { autoTripChangePct: number; basis: string },
+  retryActivitySim = false,
+) {
   return new NextRequest("http://localhost/api/models/project-comparison", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ projectId: PROJECT_ID, ...(buildAssumption ? { buildAssumption } : {}) }),
+    body: JSON.stringify({
+      projectId: PROJECT_ID,
+      ...(buildAssumption ? { buildAssumption } : {}),
+      ...(retryActivitySim ? { retryActivitySim: true } : {}),
+    }),
   });
 }
 
@@ -289,6 +296,12 @@ describe("project comparison starter route", () => {
       activitysimPreflightRuns: [{ runId: "asim-base", scenario: "baseline", status: "preflight_succeeded" }],
     });
 
+    const retry = await POST(request(undefined, true));
+    expect(await retry.json()).toMatchObject({
+      state: "ready_for_run",
+      nextRun: { method: "activitysim", scenario: "baseline" },
+    });
+
     addOutput(fake, "asim-base", "activitysim", "c".repeat(64));
     fake.tables.model_runs.push({
       id: "asim-build",
@@ -348,6 +361,12 @@ describe("project comparison starter route", () => {
       state: "needs_activitysim_output",
       nextRun: { method: "activitysim", scenario: "baseline" },
       activitysimPreflightRuns: [],
+    });
+
+    const retry = await POST(request(undefined, true));
+    expect(await retry.json()).toMatchObject({
+      state: "needs_activitysim_output",
+      nextRun: { method: "activitysim", scenario: "baseline" },
     });
   });
 

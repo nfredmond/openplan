@@ -31,6 +31,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const inputSchema = z.object({
   projectId: z.string().uuid(),
+  retryActivitySim: z.boolean().optional(),
   buildAssumption: z.object({
     autoTripChangePct: z.number().finite().min(-90).max(200).refine((value) => value !== 0, {
       message: "The build change must be above or below zero",
@@ -393,16 +394,23 @@ export async function POST(request: NextRequest) {
     const activitysimPreflightRuns = activitysimMissingOutputRuns
       .filter((item) => item.runtimeMode === "preflight_only")
       .map((item) => ({ runId: item.runId, scenario: item.scenario, status: "preflight_succeeded" as const }));
-    const needsActivitySimRuntime = Boolean(
-      !buildAssumptionRequired &&
+    const hasActivitySimPreflightForNext = Boolean(
       nextRun?.method === "activitysim" &&
       activitysimPreflightRuns.some((item) => item.scenario === nextRun.scenario),
+    );
+    const activitySimRetryRequested = Boolean(
+      parsed.data.retryActivitySim && hasActivitySimPreflightForNext,
+    );
+    const needsActivitySimRuntime = Boolean(
+      !buildAssumptionRequired &&
+      hasActivitySimPreflightForNext &&
+      !activitySimRetryRequested,
     );
     const needsActivitySimOutput = Boolean(
       !buildAssumptionRequired &&
       nextRun?.method === "activitysim" &&
       activitysimMissingOutputRuns.some((item) => item.scenario === nextRun.scenario) &&
-      !needsActivitySimRuntime,
+      !hasActivitySimPreflightForNext,
     );
     const sharedNetworkMismatch = currentEvidence.length === 4 && !guidedEvidenceSharesExactNetwork(currentEvidence);
 

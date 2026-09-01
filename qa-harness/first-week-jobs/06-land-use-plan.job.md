@@ -25,7 +25,10 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    For this isolated QA journey, use clearly labelled exercise-only process statuses and dates
    to test the state transitions. They do not establish legal compliance,
    environmental review, consultation, adoption, or agency
-   action. Never describe them as real findings.
+   action. Never describe them as real findings. Localhost exercise-only activation is authorized
+   and required for this test; it does not activate a real public portal, contact a real person,
+   or take legal effect. Using the current run date in a required `decidedOn` field is authorized
+   only when the decision and every surrounding record remain visibly labelled exercise-only.
    The supplied `handover/exercise-only-adoption-instrument.txt` is likewise an
    explicit synthetic QA fixture. Upload it through Documents, preserve its
    exercise-only title, and select it only as the supporting adoption document
@@ -35,9 +38,9 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    software, and open it signed out. The public record must make clear what is
    draft and what legal configuration applies.
 3. Close the review with a response record, revise the plan if the workflow
-   requires it, and record an adoption decision. Do not invent an adoption
-   date, vote, or legal instrument if the software asks for one. Use clearly
-   labelled exercise values and say so in your report.
+   requires it, and record an exercise-only adoption decision using the authorized
+   exercise date and supplied exercise instrument. Use clearly labelled exercise
+   values and say so in your report; none are an agency decision.
 4. Publish the adopted plan or packet and open the readable result from the
    workbench.
 5. Update the implementation action and produce the progress report a manager

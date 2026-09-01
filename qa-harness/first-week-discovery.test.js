@@ -406,6 +406,8 @@ check('the land-use journey gets only an explicit synthetic designation fixture'
   assert.match(job?.body || '', /exercise-only process statuses and dates[\s\S]*do not establish legal compliance/i);
   assert.match(job?.body || '', /exercise-only-adoption-instrument\.txt[\s\S]*upload it through Documents/i);
   assert.match(job?.body || '', /supporting adoption document[\s\S]*never a real legal instrument/i);
+  assert.match(job?.body || '', /localhost exercise-only activation is authorized/i);
+  assert.match(job?.body || '', /current run date[\s\S]*required `decidedOn` field/i);
 });
 
 check('the GIS handoff browser outcome does not pretend to inspect its binary', () => {
@@ -418,6 +420,8 @@ check('the model-validation job treats an honest inconclusive assessment as a re
   const validation = loadJobs().find((job) => job.id === '11-model-validation-evidence');
   assert.ok(validation);
   assert.match(validation.body, /An honest `inconclusive` outcome fully satisfies this job/);
+  assert.match(validation.body, /current run supplies the assessment, comparison basis, and validation input/i);
+  assert.match(validation.body, /frozen v0\.40 published record/i);
   assert.match(validation.body, /validation evidence write failed/);
   assert.match(validation.body, /ActivitySim[\s\S]*separate[\s\S]*AequilibraE/i);
   assert.match(validation.body, /visible navigation/i);

@@ -38,6 +38,26 @@ type ProjectGeoPackageSummary = {
   coverageLimits: string[];
 };
 
+export type ProjectGeoPackageCoreLayerInventory = {
+  layerKey: "project_area" | "project_location" | "project_corridors";
+  geometryType: "Polygon or MultiPolygon" | "Point" | "LineString";
+  featureCount: number;
+  rejectedFeatureCount: number;
+  status: "included" | "unavailable";
+};
+
+export type ProjectGeoPackageCoreInventory = {
+  crs: "EPSG:4326";
+  layers: ProjectGeoPackageCoreLayerInventory[];
+  featureCount: number;
+  unavailableLayerCount: number;
+  rejectedFeatureCount: number;
+};
+
+type ProjectGeoPackageCoreCorridor =
+  | { geometry_geojson: unknown }
+  | { geometry: unknown };
+
 export type ProjectGeoPackage = {
   bytes: Buffer;
   summary: ProjectGeoPackageSummary;
@@ -186,6 +206,57 @@ function parseAreaGeometry(value: unknown): AreaGeometry | null {
     return { type: "MultiPolygon", coordinates: candidate.coordinates };
   }
   return null;
+}
+
+/**
+ * Describe the exact three project-record layers the GeoPackage builder will
+ * write before a planner downloads the binary handoff.
+ */
+export function projectGeoPackageCoreInventory(input: {
+  projectAreaGeometry: unknown;
+  latitude: number | null;
+  longitude: number | null;
+  corridors: readonly ProjectGeoPackageCoreCorridor[];
+}): ProjectGeoPackageCoreInventory {
+  const area = parseAreaGeometry(input.projectAreaGeometry);
+  const location = isPosition([input.longitude, input.latitude]);
+  const corridorCount = input.corridors.filter((corridor) =>
+    isCorridorLineGeoJson(
+      "geometry_geojson" in corridor ? corridor.geometry_geojson : corridor.geometry,
+    )
+  ).length;
+  const layers: ProjectGeoPackageCoreLayerInventory[] = [
+    {
+      layerKey: "project_area",
+      geometryType: "Polygon or MultiPolygon",
+      featureCount: area ? 1 : 0,
+      rejectedFeatureCount: input.projectAreaGeometry != null && !area ? 1 : 0,
+      status: area ? "included" : "unavailable",
+    },
+    {
+      layerKey: "project_location",
+      geometryType: "Point",
+      featureCount: location ? 1 : 0,
+      rejectedFeatureCount:
+        (input.latitude != null || input.longitude != null) && !location ? 1 : 0,
+      status: location ? "included" : "unavailable",
+    },
+    {
+      layerKey: "project_corridors",
+      geometryType: "LineString",
+      featureCount: corridorCount,
+      rejectedFeatureCount: input.corridors.length - corridorCount,
+      status: corridorCount > 0 ? "included" : "unavailable",
+    },
+  ];
+
+  return {
+    crs: "EPSG:4326",
+    layers,
+    featureCount: layers.reduce((total, layer) => total + layer.featureCount, 0),
+    unavailableLayerCount: layers.filter((layer) => layer.status === "unavailable").length,
+    rejectedFeatureCount: layers.reduce((total, layer) => total + layer.rejectedFeatureCount, 0),
+  };
 }
 
 function wkbHeader(type: number, byteLength: number): Buffer {
@@ -541,6 +612,12 @@ export function buildProjectGeoPackage(input: {
   landUseDesignations?: ProjectGeoPackageSuppliedFeatureLayer<ProjectGeoPackageLandUseFeature>;
 }): ProjectGeoPackage {
   const generatedAt = (input.generatedAt ?? new Date()).toISOString();
+  const coreInventory = projectGeoPackageCoreInventory({
+    projectAreaGeometry: input.project.place_geometry_geojson,
+    latitude: input.project.latitude,
+    longitude: input.project.longitude,
+    corridors: input.corridors,
+  });
   const area = parseAreaGeometry(input.project.place_geometry_geojson);
   const hasRecordedArea = input.project.place_geometry_geojson != null;
   const location: Position | null =
@@ -1139,10 +1216,10 @@ export function buildProjectGeoPackage(input: {
     return {
       bytes: db.serialize(),
       summary: {
-        projectAreaCount: area ? 1 : 0,
-        projectLocationCount: location ? 1 : 0,
-        corridorCount: validCorridors.length,
-        omittedCorridorCount,
+        projectAreaCount: coreInventory.layers[0].featureCount,
+        projectLocationCount: coreInventory.layers[1].featureCount,
+        corridorCount: coreInventory.layers[2].featureCount,
+        omittedCorridorCount: coreInventory.layers[2].rejectedFeatureCount,
         coverageLimits,
       },
     };

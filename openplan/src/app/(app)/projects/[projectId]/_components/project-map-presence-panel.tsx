@@ -2,6 +2,7 @@ import { Download, Map as MapIcon } from "lucide-react";
 import { ProjectMapPresence } from "@/components/projects/project-map-presence";
 import { Button } from "@/components/ui/button";
 import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record";
+import { projectGeoPackageCoreInventory } from "@/lib/projects/project-geopackage";
 
 /**
  * The project's presence on the cartographic backdrop: its marker and its study
@@ -13,6 +14,7 @@ import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record
  */
 export function ProjectMapPresencePanel({
   projectId,
+  projectAreaGeometry,
   latitude,
   longitude,
   corridors,
@@ -22,6 +24,7 @@ export function ProjectMapPresencePanel({
   canWrite,
 }: {
   projectId: string;
+  projectAreaGeometry: unknown;
   latitude: number | null;
   longitude: number | null;
   corridors: ProjectCorridor[];
@@ -31,6 +34,15 @@ export function ProjectMapPresencePanel({
   homeZoom?: number;
   canWrite: boolean;
 }) {
+  const packageInventory = projectGeoPackageCoreInventory({
+    projectAreaGeometry,
+    latitude,
+    longitude,
+    corridors,
+  });
+  const featureNoun = packageInventory.featureCount === 1 ? "feature" : "features";
+  const rejectedNoun = packageInventory.rejectedFeatureCount === 1 ? "shape" : "shapes";
+
   return (
     <article id="project-map-presence" className="module-section-surface scroll-mt-24">
       <div className="module-section-header">
@@ -62,6 +74,28 @@ export function ProjectMapPresencePanel({
             Download GeoPackage
           </a>
         </Button>
+      </div>
+
+      <div className="mt-3 rounded-lg border border-border/70 bg-background px-4 py-3">
+        <h3 className="text-sm font-semibold text-foreground">Layers in this package</h3>
+        <p className="mt-1 text-xs text-muted-foreground">Coordinate reference system: {packageInventory.crs} (WGS 84 longitude/latitude)</p>
+        <ul className="mt-2 space-y-1 text-sm text-foreground">
+          {packageInventory.layers.map((layer) => {
+            const layerFeatureNoun = layer.featureCount === 1 ? "feature" : "features";
+            return (
+              <li key={layer.layerKey}>
+                {layer.layerKey} · {layer.geometryType} · {layer.featureCount} {layerFeatureNoun} included
+                {layer.status === "unavailable" ? " (unavailable)" : ""}
+                {layer.rejectedFeatureCount > 0
+                  ? ` · ${layer.rejectedFeatureCount} rejected ${layer.rejectedFeatureCount === 1 ? "shape" : "shapes"}`
+                  : ""}
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-2 text-sm font-medium text-foreground">
+          {packageInventory.layers.length} core layers · {packageInventory.featureCount} {featureNoun} included · {packageInventory.unavailableLayerCount} unavailable · {packageInventory.rejectedFeatureCount} rejected {rejectedNoun}
+        </p>
       </div>
 
       {corridorsPending ? (
