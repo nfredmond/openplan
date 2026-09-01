@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 /**
  * A catalog narrowed by `?projectId=` may not describe the workspace.
  *

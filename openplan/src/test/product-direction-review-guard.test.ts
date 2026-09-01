@@ -62,6 +62,7 @@ describe("the recurring product-direction review", () => {
     expect(packet).toContain(`Planner pages: ${pageCount}`);
     expect(packet).toContain(`API routes: ${routeCount}`);
     expect(packet).toContain("ultimate free planning operating system");
+    expect(packet).toContain("Direction gate at generation:");
     expect(packet).toContain("## Binding v1 contract");
     expect(packet).toContain("## Current roadmap");
     expect(packet).toContain("## Current capability matrix");

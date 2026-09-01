@@ -4,6 +4,8 @@ import path from "node:path";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
+
 /**
  * THE PRIMARY ACTION GOES WHERE A PLANNER LOOKS FOR IT.
  *

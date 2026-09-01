@@ -619,7 +619,12 @@ function git(...args) {
 }
 
 function runPacket() {
-  runCheck();
+  let directionGate = "current";
+  try {
+    runCheck();
+  } catch (error) {
+    directionGate = error instanceof Error ? error.message : String(error);
+  }
   const release = currentRelease();
   const head = git("rev-parse", "HEAD");
   const recent = git("log", "-12", "--date=short", "--pretty=format:%h %ad %s");
@@ -655,6 +660,7 @@ as the principal engineer responsible for making the recommendation executable a
 - Migrations: ${migrations}
 - Vitest files: ${tests}
 - Latest direction record: ${latestReview}
+- Direction gate at generation: ${directionGate}
 - Recent tags: ${tags}
 
 ## Recent commits

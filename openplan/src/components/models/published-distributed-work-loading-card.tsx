@@ -59,7 +59,7 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
             <div><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
           </dl>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading input</Link>
+            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading file</Link>
             <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/pre-output-audit-v1.json`}>Download selected before-output audit</Link>
             <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/development-comparison-v1.json`}>Download selected comparison</Link>
           </div>
