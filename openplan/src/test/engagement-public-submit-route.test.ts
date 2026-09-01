@@ -250,7 +250,7 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     expect(response.status).toBe(403);
   });
 
-  it("silently accepts honeypot-filled submissions without inserting", async () => {
+  it("retains honeypot-filled submissions as flagged instead of reporting false success", async () => {
     const response = await POST(
       jsonRequest("test-share-token-12345", {
         body: "Spam message",
@@ -260,8 +260,17 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     );
 
     expect(response.status).toBe(201);
-    // Should not have called insert
-    expect(itemInsertMock).not.toHaveBeenCalled();
+    const json = await response.json();
+    expect(json.submissionId).toBe("22222222-2222-4222-8222-222222222222");
+    expect(json.reviewStatus).toBe("flagged");
+    expect(itemInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: "Spam message",
+        status: "flagged",
+        moderation_notes: "Auto-flagged because the hidden website field was completed.",
+      })
+    );
+    expect(itemInsertMock.mock.calls[0]?.[0]).not.toHaveProperty("website");
   });
 
   it("rate limits repeated recent submissions from the same connection", async () => {

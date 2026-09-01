@@ -143,10 +143,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid submission", details: parsed.error.issues }, { status: 400 });
     }
 
-    // Honeypot check: if 'website' field has content, silently accept but discard
-    if (parsed.data.website && parsed.data.website.length > 0) {
-      return NextResponse.json({ success: true, message: "Thank you for your feedback." }, { status: 201 });
-    }
+    // A filled honeypot is evidence for moderation, not permission to discard
+    // a submission while telling the participant it was saved. Keep the value
+    // itself out of storage, but retain the comment as a flagged record so the
+    // response, moderation queue, exports, and evidence all describe the same
+    // event.
+    const honeypotTriggered = Boolean(parsed.data.website?.length);
 
     // Geometry: validate structure, vertex cap, ring closure, and WGS84
     // bounds; then derive the representative lat/lng that keeps every legacy
@@ -338,6 +340,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       body: parsed.data.body,
       recentItems: (recentItemsData ?? []) as RecentPublicSubmissionRecord[],
     });
+    const autoFlagReason = honeypotTriggered
+      ? "Auto-flagged because the hidden website field was completed."
+      : safety.autoFlagReason;
 
     if (safety.isRateLimited) {
       return NextResponse.json(
@@ -361,7 +366,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       title: parsed.data.title,
       body: parsed.data.body,
       receivedAt,
-      autoFlagReason: safety.autoFlagReason,
+      autoFlagReason,
     });
 
     const { data: item, error: insertError } = await supabase
@@ -373,14 +378,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
         title: parsed.data.title?.trim() || null,
         body: parsed.data.body.trim(),
         submitted_by: parsed.data.submittedBy?.trim() || null,
-        status: safety.autoFlagReason ? "flagged" : "pending",
+        status: autoFlagReason ? "flagged" : "pending",
         source_type: "public",
         latitude,
         longitude,
         geometry,
         photo_path: photoPath,
         metadata_json: metadata,
-        moderation_notes: safety.autoFlagReason,
+        moderation_notes: autoFlagReason,
         created_by: null,
       })
       .select("id, created_at")
@@ -423,7 +428,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Best-effort operator notification — the submission is already saved, so a
     // failure here never fails the request (mirrors the demographics insert).
-    const flagged = Boolean(safety.autoFlagReason);
+    const flagged = Boolean(autoFlagReason);
     await recordOperatorNotification(supabase, {
       workspaceId: campaign.workspace_id,
       campaignId: campaign.id,
@@ -438,7 +443,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.info("engagement_public_submission_accepted", {
       campaignId: campaign.id,
       submissionId: item.id,
-      reviewStatus: safety.autoFlagReason ? "flagged" : "pending",
+      reviewStatus: autoFlagReason ? "flagged" : "pending",
     });
 
     return NextResponse.json(
@@ -446,7 +451,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         success: true,
         message: "Thank you for your feedback. Your submission will be reviewed by the project team.",
         submissionId: item.id,
-        reviewStatus: safety.autoFlagReason ? "flagged" : "pending",
+        reviewStatus: autoFlagReason ? "flagged" : "pending",
       },
       { status: 201 }
     );
