@@ -408,6 +408,21 @@ check('the land-use journey gets only an explicit synthetic designation fixture'
   assert.match(job?.body || '', /supporting adoption document[\s\S]*never a real legal instrument/i);
   assert.match(job?.body || '', /localhost exercise-only activation is authorized/i);
   assert.match(job?.body || '', /current run date[\s\S]*required `decidedOn` field/i);
+  assert.match(job?.body || '', /close every other[\s\S]*signed-in OpenPlan tab/i);
+});
+
+check('the corridor comparison gets an explicit exercise-only assumption instead of inventing one', () => {
+  const dir = jobDir();
+  writeHandoverFiles(dir);
+  const assumption = fs.readFileSync(path.join(dir, 'exercise-only-model-assumption.txt'), 'utf8');
+  assert.match(assumption, /EXERCISE-ONLY MODEL COMPARISON ASSUMPTION — NOT A FORECAST/);
+  assert.match(assumption, /-5 percent assigned daily auto trips versus no-build/i);
+  assert.match(assumption, /not a local study[\s\S]*calibrated result[\s\S]*outward claim/i);
+
+  const job = loadJobs().find((candidate) => candidate.id === '05-analysis-corridor');
+  assert.strictEqual(job?.files, 'handover');
+  assert.match(job?.body || '', /manager supplied `handover\/exercise-only-model-assumption\.txt`/i);
+  assert.match(job?.body || '', /synthetic QA assumption, not a forecast/i);
 });
 
 check('the GIS handoff browser outcome does not pretend to inspect its binary', () => {
@@ -425,6 +440,10 @@ check('the model-validation job treats an honest inconclusive assessment as a re
   assert.match(validation.body, /validation evidence write failed/);
   assert.match(validation.body, /ActivitySim[\s\S]*separate[\s\S]*AequilibraE/i);
   assert.match(validation.body, /visible navigation/i);
+  assert.strictEqual(validation.maxTurns, 420);
+  assert.match(validation.body, /one artifact at a time/i);
+  assert.match(validation.body, /browser cannot[\s\S]*compute[\s\S]*hashes/i);
+  assert.match(validation.body, /independent byte-level verifier/i);
 });
 
 check('new first-week manifests can bind the exact checkout and app version', () => {

@@ -2,7 +2,7 @@
 id: 05-analysis-corridor
 title: Run the analysis, then explain the answer to somebody who is not a modeller
 account: run
-files: none
+files: handover
 maxTurns: 200
 ---
 
@@ -12,6 +12,13 @@ whether it is worth doing. She wants the answer on one page, in words a county
 supervisor will understand, by Friday.
 
 You have taken one transport modelling class. You are not a modeller.
+
+Your manager supplied `handover/exercise-only-model-assumption.txt` so the
+guided comparison can be exercised without inventing an input. Use its exact
+`-5 percent assigned daily auto trips versus no-build` assumption if the
+workflow asks for one. Keep the source and limitation visible: it is a
+manager-supplied synthetic QA assumption, not a forecast, local study, adopted
+policy assumption, calibrated result, agency estimate, or outward claim.
 
 Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
 

@@ -35,8 +35,10 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    needed to exercise the custody link. It is never a real legal instrument,
    vote, finding, ordinance, resolution, or agency decision.
 2. Prepare a public-review version, obtain the actual public address from the
-   software, and open it signed out. The public record must make clear what is
-   draft and what legal configuration applies.
+   software, and open it signed out. Before signing out, close every other
+   signed-in OpenPlan tab so authenticated map and data views do not keep
+   polling after logout. The public record must make clear what is draft and
+   what legal configuration applies.
 3. Close the review with a response record, revise the plan if the workflow
    requires it, and record an exercise-only adoption decision using the authorized
    exercise date and supplied exercise instrument. Use clearly labelled exercise

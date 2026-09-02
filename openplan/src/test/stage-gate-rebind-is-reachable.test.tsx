@@ -434,6 +434,23 @@ describe("a planner can reach the stage-gate template binding from workspace set
       expect(within(panel).getAllByRole("radio").length).toBeGreaterThan(0);
     }
   });
+
+  it("keeps templates for unrelated jurisdictions behind an explicit manual override", async () => {
+    workspaceRowMock.mockReturnValue({
+      data: signupWorkspaceRow(inSubdivision("PR")),
+      error: null,
+    });
+
+    await renderWorkspace();
+
+    const panel = screen.getByRole("region", { name: "Stage-gate template" });
+    expect(within(panel).getByText(/no other registered template matches this workspace/i)).toBeInTheDocument();
+    const override = within(panel).getByText(/manual jurisdiction override/i).closest("details");
+    expect(override).not.toHaveAttribute("open");
+    for (const radio of within(panel).getAllByRole("radio")) {
+      expect(radio.closest("details")).toBe(override);
+    }
+  });
 });
 
 describe("the rebind itself", () => {

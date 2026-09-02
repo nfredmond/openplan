@@ -132,6 +132,8 @@ export function WorkspaceStageGatePanel({
   }
 
   const options = choices.options;
+  const matchingOptions = options.filter((option) => option.coversWorkspaceJurisdiction);
+  const otherJurisdictionOptions = options.filter((option) => !option.coversWorkspaceJurisdiction);
   const currentTemplateId = choices.kind === "bound" ? choices.binding.templateId : null;
   const selected: StageGateRebindOption | null =
     options.find((option) => option.templateId === selectedTemplateId) ?? null;
@@ -363,47 +365,94 @@ export function WorkspaceStageGatePanel({
         </div>
       ) : (
         <div className="mt-4 space-y-3">
-          <fieldset className="space-y-2">
-            <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Other registered templates
-            </legend>
-            {options.map((option) => (
-              <label key={option.templateId} className="flex items-start gap-2 text-sm">
-                <input
-                  type="radio"
-                  name="stage-gate-template"
-                  className="mt-1"
-                  value={option.templateId}
-                  checked={selectedTemplateId === option.templateId}
-                  onChange={() => {
-                    setSelectedTemplateId(option.templateId);
-                    setError(null);
-                  }}
-                />
-                <span>
-                  <span className="font-medium text-foreground">{option.templateName}</span>{" "}
-                  <span className="text-muted-foreground">
-                    — {option.jurisdictionLabel}, v{option.templateVersion}
-                  </span>
-                  {option.coversWorkspaceJurisdiction ? (
+          {matchingOptions.length > 0 ? (
+            <fieldset className="space-y-2">
+              <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Templates registered for this workspace
+              </legend>
+              {matchingOptions.map((option) => (
+                <label key={option.templateId} className="flex items-start gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="stage-gate-template"
+                    className="mt-1"
+                    value={option.templateId}
+                    checked={selectedTemplateId === option.templateId}
+                    onChange={() => {
+                      setSelectedTemplateId(option.templateId);
+                      setError(null);
+                    }}
+                  />
+                  <span>
+                    <span className="font-medium text-foreground">{option.templateName}</span>{" "}
+                    <span className="text-muted-foreground">
+                      — {option.jurisdictionLabel}, v{option.templateVersion}
+                    </span>
                     <span className="ml-1 text-xs text-muted-foreground">
                       (registered for this workspace&apos;s jurisdiction)
                     </span>
-                  ) : null}
-                  {option.isInterimDefault ? (
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      (the interim default — applied when nothing has chosen)
+                    {option.templateDescription ? (
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        {option.templateDescription}
+                      </span>
+                    ) : null}
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No other registered template matches this workspace&apos;s jurisdiction. The current
+              country-level or subdivision template remains the applicable binding.
+            </p>
+          )}
+
+          {otherJurisdictionOptions.length > 0 ? (
+            <details className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+              <summary className="cursor-pointer text-sm font-medium text-foreground">
+                Manual jurisdiction override ({otherJurisdictionOptions.length})
+              </summary>
+              <p className="mt-2 text-xs text-muted-foreground">
+                These templates are registered for other jurisdictions. Open this only when an
+                administrator has a documented reason to override the workspace geography; their
+                rules do not become applicable merely because they are installed.
+              </p>
+              <fieldset className="mt-3 space-y-2">
+                <legend className="sr-only">Templates for other jurisdictions</legend>
+                {otherJurisdictionOptions.map((option) => (
+                  <label key={option.templateId} className="flex items-start gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="stage-gate-template"
+                      className="mt-1"
+                      value={option.templateId}
+                      checked={selectedTemplateId === option.templateId}
+                      onChange={() => {
+                        setSelectedTemplateId(option.templateId);
+                        setError(null);
+                      }}
+                    />
+                    <span>
+                      <span className="font-medium text-foreground">{option.templateName}</span>{" "}
+                      <span className="text-muted-foreground">
+                        — {option.jurisdictionLabel}, v{option.templateVersion}
+                      </span>
+                      {option.isInterimDefault ? (
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          (the interim default — applied when nothing has chosen)
+                        </span>
+                      ) : null}
+                      {option.templateDescription ? (
+                        <span className="mt-0.5 block text-xs text-muted-foreground">
+                          {option.templateDescription}
+                        </span>
+                      ) : null}
                     </span>
-                  ) : null}
-                  {option.templateDescription ? (
-                    <span className="mt-0.5 block text-xs text-muted-foreground">
-                      {option.templateDescription}
-                    </span>
-                  ) : null}
-                </span>
-              </label>
-            ))}
-          </fieldset>
+                  </label>
+                ))}
+              </fieldset>
+            </details>
+          ) : null}
 
           <Button
             type="button"

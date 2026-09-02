@@ -10,6 +10,7 @@
     "check:pointer-reachability": "node pointer-reachability.test.js",
     "check:first-week-evidence": "node first-week-evidence.test.js",
     "check:first-week-discovery": "node first-week-discovery.test.js",
+    "check:first-week-model-downloads": "node verify-first-week-model-downloads.test.js",
     "check:first-week-regression-outcomes": "node first-week-regression.test.js",
     "first-week-discovery": "node first-week-discovery.js",
     "first-week-regression": "node first-week-regression.js",

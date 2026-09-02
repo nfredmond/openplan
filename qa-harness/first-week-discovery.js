@@ -255,12 +255,20 @@ function writeHandoverFiles(dir) {
     'This file does not establish legal compliance, environmental review, consultation, adoption, or agency action.',
     'It must never be cited or represented as a real ordinance, resolution, finding, vote, or governing-body decision.',
   ].join('\n');
+  const modelComparisonAssumption = [
+    'EXERCISE-ONLY MODEL COMPARISON ASSUMPTION — NOT A FORECAST',
+    '',
+    'Expected change: -5 percent assigned daily auto trips versus no-build.',
+    'Source: manager-supplied synthetic QA assumption for first-week workflow testing.',
+    'Limit: not a local study, count analysis, adopted policy assumption, calibrated result, agency estimate, or outward claim.',
+  ].join('\n');
 
   fs.writeFileSync(path.join(dir, 'corridor.geojson'), `${JSON.stringify(corridor, null, 2)}\n`);
   fs.writeFileSync(path.join(dir, 'study-area.geojson'), `${JSON.stringify(studyArea, null, 2)}\n`);
   fs.writeFileSync(path.join(dir, 'land-use-designations.geojson'), `${JSON.stringify(landUseDesignations, null, 2)}\n`);
   fs.writeFileSync(path.join(dir, 'projects.csv'), `${projects}\n`);
   fs.writeFileSync(path.join(dir, 'exercise-only-adoption-instrument.txt'), `${adoptionInstrument}\n`);
+  fs.writeFileSync(path.join(dir, 'exercise-only-model-assumption.txt'), `${modelComparisonAssumption}\n`);
 }
 
 function buildPrompt(job, { baseUrl, email, password, approverEmail, approverPassword, agentDir, contract }) {

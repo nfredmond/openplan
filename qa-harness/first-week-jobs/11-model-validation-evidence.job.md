@@ -3,7 +3,7 @@ id: 11-model-validation-evidence
 title: Decide what a baseline model's observed-count evidence actually establishes
 account: run
 files: none
-maxTurns: 260
+maxTurns: 420
 ---
 
 You are reviewing a real baseline travel-model run before its results are used
@@ -18,7 +18,11 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    Models. Review the v0.44 distributed work-loading checkpoint first. For all
    seven counties, switch between AequilibraE and ActivitySim and download each
    method's exact loading input, pre-output audit, and development comparison.
-   Verify all 42 downloaded SHA-256 values against the full hashes on screen.
+   Download one artifact at a time and wait for each download to finish before
+   starting the next; do not batch-click the 42 controls. Compare every exact
+   filename and full SHA-256 shown on screen, and preserve all downloaded files
+   for the repository's independent byte-level verifier. The browser cannot
+   inspect local download bytes, so do not claim that it computed those hashes.
    Confirm the methods remain separate, LODES supports work travel only,
    non-work demand is unchanged, unroutable demand is retained, distinct source
    states remain visible, the run imposed no arbitrary point or gateway cap,
@@ -76,8 +80,10 @@ Sign in at {{BASE_URL}} with {{EMAIL}} / {{PASSWORD}}.
    full hashes and download controls must not cause horizontal overflow. Record
    any console error or failed response; a clean journey requires neither.
 
-The outcome is reached when you can state the recorded scientific outcome and
-why, distinguish the structural finding categories, have independently checked
-all 42 v0.44 downloads, and have downloaded the exact v0.43 audit/diagnosis pair
-plus the immutable run assessment and its exact input and basis evidence.
+The browser outcome is reached when you can state the recorded scientific
+outcome and why, distinguish the structural finding categories, have preserved
+all 42 v0.44 downloads with their full on-screen filenames and hashes for the
+independent byte-level verifier, and have downloaded the exact v0.43
+audit/diagnosis pair plus the immutable run assessment and its exact input and
+basis evidence.
 An honest `inconclusive` outcome fully satisfies this job.
