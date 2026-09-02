@@ -160,7 +160,8 @@ describe("buildPlaceBoundaryUrl", () => {
     expect(url).toContain("/82/query?");
     expect(url).toContain("f=geojson");
     expect(url).toContain("outSR=4326");
-    expect(url).toContain("geometryPrecision=4");
+    expect(url).toContain("geometryPrecision=6");
+    expect(url).not.toContain("geometryPrecision=4");
     expect(url).toContain("returnGeometry=true");
     expect(decodeURIComponent(url)).toContain("GEOID='06113'");
   });

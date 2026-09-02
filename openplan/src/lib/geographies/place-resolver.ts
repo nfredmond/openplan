@@ -268,8 +268,10 @@ export function buildPlaceBoundaryUrl(layerId: number, geoid: string): string {
     outFields: "GEOID,NAME,BASENAME",
     returnGeometry: "true",
     outSR: "4326",
-    // ~11m precision: compact payloads, plenty for a screening study area.
-    geometryPrecision: "4",
+    // ~0.1m precision. Four decimal places made otherwise-valid TIGERweb
+    // boundaries self-intersect after rounding, so a place could be saved and
+    // displayed but then be rejected by the exact PostGIS modeling guard.
+    geometryPrecision: "6",
     f: "geojson",
   });
   return `${TIGERWEB_BASE}/${layerId}/query?${params.toString()}`;
