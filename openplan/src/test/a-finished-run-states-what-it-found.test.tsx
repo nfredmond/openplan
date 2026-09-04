@@ -46,7 +46,7 @@ describe("a finished run states what it found", () => {
       { kpi_name: "final_gap", value: 0.0007 },
     ]);
 
-    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" />);
+    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" engineKey="aequilibrae" />);
 
     await screen.findByText(/48,213/);
     expect(screen.getByText(/191,884/)).toBeTruthy();
@@ -57,10 +57,33 @@ describe("a finished run states what it found", () => {
     expect(screen.queryByText(/final_gap/)).toBeNull();
   });
 
+  it("shows ActivitySim's own results and never falls back to AequilibraE KPIs", async () => {
+    mockKpis([
+      { kpi_name: "total_trips", value: 267743 },
+      { kpi_name: "daily_vmt", value: 10526176.5 },
+      { kpi_name: "activitysim_trips", value: 64461 },
+      { kpi_name: "activitysim_daily_vmt", value: 10216067.3 },
+    ]);
+
+    render(
+      <ModelRunHeadlineAnswer
+        modelId="m1"
+        modelRunId="activitysim-run"
+        engineKey="behavioral_demand"
+      />
+    );
+
+    await screen.findByText(/64,461/);
+    expect(screen.getByText(/10,216,067/)).toBeTruthy();
+    expect(screen.getByText(/ActivitySim trips on an average day/i)).toBeTruthy();
+    expect(screen.queryByText(/267,743/)).toBeNull();
+    expect(screen.queryByText(/10,526,177/)).toBeNull();
+  });
+
   it("carries the screening-grade qualification with the figures, not elsewhere", async () => {
     mockKpis([{ kpi_name: "daily_vmt", value: 1000 }]);
 
-    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" />);
+    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" engineKey="aequilibrae" />);
 
     const panel = (await screen.findByLabelText(/what this run found/i)) as HTMLElement;
     expect(panel.textContent).toMatch(/screening-grade/i);
@@ -70,7 +93,7 @@ describe("a finished run states what it found", () => {
     // total_trips is missing entirely — the run measured miles and nothing else.
     mockKpis([{ kpi_name: "daily_vmt", value: 1000 }]);
 
-    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" />);
+    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" engineKey="aequilibrae" />);
 
     await screen.findByText(/1,000/);
     expect(screen.queryByText(/Trips on an average day/i)).toBeNull();
@@ -83,7 +106,7 @@ describe("a finished run states what it found", () => {
       new Response(JSON.stringify({ error: "connection reset" }), { status: 500 })
     );
 
-    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" />);
+    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" engineKey="aequilibrae" />);
 
     const panel = (await screen.findByLabelText(/what this run found/i)) as HTMLElement;
     await waitFor(() => expect(panel.textContent).toMatch(/could not read/i));
@@ -95,7 +118,7 @@ describe("a finished run states what it found", () => {
   it("says so plainly when the engine measured neither figure", async () => {
     mockKpis([{ kpi_name: "zone_count", value: 26 }]);
 
-    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" />);
+    render(<ModelRunHeadlineAnswer modelId="m1" modelRunId="r1" engineKey="aequilibrae" />);
 
     const panel = (await screen.findByLabelText(/what this run found/i)) as HTMLElement;
     await waitFor(() => expect(panel.textContent).toMatch(/did not measure/i));

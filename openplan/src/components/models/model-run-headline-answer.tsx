@@ -42,10 +42,27 @@ import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
  * is deliberately no fallback that renders unknown KPI names, because a raw
  * key like `final_gap` on screen is not an answer to anybody.
  */
-const HEADLINE_FIGURES: ReadonlyArray<{ kpiName: string; label: string; unit: string }> = [
+type HeadlineFigureDefinition = { kpiName: string; label: string; unit: string };
+
+const ASSIGNMENT_HEADLINE_FIGURES: ReadonlyArray<HeadlineFigureDefinition> = [
   { kpiName: "total_trips", label: "Trips on an average day", unit: "trips" },
   { kpiName: "daily_vmt", label: "Miles driven on an average day", unit: "miles" },
 ];
+
+const ACTIVITYSIM_HEADLINE_FIGURES: ReadonlyArray<HeadlineFigureDefinition> = [
+  { kpiName: "activitysim_trips", label: "ActivitySim trips on an average day", unit: "trips" },
+  {
+    kpiName: "activitysim_daily_vmt",
+    label: "ActivitySim-assigned miles driven on an average day",
+    unit: "miles",
+  },
+];
+
+function headlineFiguresForEngine(engineKey: string) {
+  return engineKey === "behavioral_demand"
+    ? ACTIVITYSIM_HEADLINE_FIGURES
+    : ASSIGNMENT_HEADLINE_FIGURES;
+}
 
 type Figure = { label: string; unit: string; value: number };
 
@@ -63,9 +80,11 @@ function asNumber(value: unknown): number | null {
 export function ModelRunHeadlineAnswer({
   modelId,
   modelRunId,
+  engineKey,
 }: {
   modelId: string;
   modelRunId: string;
+  engineKey: string;
 }) {
   const [state, setState] = useState<PanelState>({ status: "loading" });
 
@@ -85,7 +104,7 @@ export function ModelRunHeadlineAnswer({
 
         const rows = payload.kpis ?? [];
         const figures: Figure[] = [];
-        for (const figure of HEADLINE_FIGURES) {
+        for (const figure of headlineFiguresForEngine(engineKey)) {
           const row = rows.find((kpi) => kpi.kpi_name === figure.kpiName);
           const value = row ? asNumber(row.value) : null;
           // Absent stays absent. A run that measured nothing must not be
@@ -110,7 +129,7 @@ export function ModelRunHeadlineAnswer({
     return () => {
       cancelled = true;
     };
-  }, [modelId, modelRunId]);
+  }, [engineKey, modelId, modelRunId]);
 
   if (state.status === "loading") return null;
 

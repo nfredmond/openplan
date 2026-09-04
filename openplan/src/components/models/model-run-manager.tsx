@@ -2004,7 +2004,11 @@ function ModelRunStagingAndArtifacts({
           question). This panel gives the plain answer a home; it prints nothing
           the run did not measure. */}
       {run.status === "succeeded" ? (
-        <ModelRunHeadlineAnswer modelId={modelId} modelRunId={run.id} />
+        <ModelRunHeadlineAnswer
+          modelId={modelId}
+          modelRunId={run.id}
+          engineKey={run.engine_key}
+        />
       ) : null}
 
       {run.claimDecision?.roadClassAccuracy?.length ? (
