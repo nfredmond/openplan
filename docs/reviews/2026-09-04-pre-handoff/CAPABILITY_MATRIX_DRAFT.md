@@ -154,3 +154,13 @@ Nathaniel explicitly prioritizes engagement mapping superior to Social Pinpoint,
 | Full capital delivery | Project delivery, documents, stage gates, funding and reimbursement foundations; exact Caltrans forms/lifecycle not established. | Actual case from planning or mid-project intake through environmental, ROW/utilities, PS&E, procurement, construction, payments/reimbursement, acceptance and closeout; dated applicable rules and practitioner/finance review. |
 
 Detailed primary-source findings live in the dated pre-handoff priority reports. California office bulletins and inactive exhibits must be checked alongside manuals. Native CLI authentication and optional provider charges are distinct from OpenPlan's free software license. Personal CLI access must not become an unattended public-engagement account pool.
+
+## Restored planning-contract and complete RTP outcomes
+
+Current user instructions and the recovered August decisions require these as core practice, not optional additions. The core requirements ledger preserves scope and maps evidence; roadmap M11/M12 own sequencing. This assessment does not promote any capability to proven.
+
+| Outcome | Present foundation and gap | Completion evidence |
+|---|---|---|
+| Contract drawdown and proactive PM | Engagements, staff/time, rates, delivery/budget records and invoices exist. Task/staff allocations, approved historical baselines and remaining-work forecasts are incomplete; financial bases and attribution need repair. | Weekly PM review by project/contract/task/person/deliverable, reconciled hours/cost/fee/cash, explainable fee/date warning and authorized change; staff and finance permissions tested. |
+| Complete RTP update | Regional cycles, fiscal/project/measure records, chapters, extraction and public/adoption machinery exist. Complete applicability, narrative/financial consistency and a full real update remain unproved. | Entire applicable policy/action/financial/narrative and review/adoption/implementation workflow with practitioner-checked tables and artifacts. |
+| Begin from adopted predecessor | Source bytes/pages, extraction proposals, conflict review and verbatim chapter staging exist. Normal launcher omits chapter extraction. | Previous PDF/scan through complete coverage disclosure, reviewed chapter/table/figure/project reuse and source-preserving revisions; no silent overwrite, invented values or inaccessible step. |

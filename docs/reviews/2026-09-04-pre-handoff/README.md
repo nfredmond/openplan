@@ -44,3 +44,14 @@ The updated [roadmap draft](ROADMAP_DRAFT.md) makes these early work, with share
 The [capability draft](CAPABILITY_MATRIX_DRAFT.md), [known-limit draft](KNOWN_LIMITATIONS_DRAFT.md) and [human observation draft](PLANNER_OBSERVATION_PROTOCOL_DRAFT.md) incorporate these priorities without promoting any unproved capability. Their eventual canonical destinations are the product matrix, known-issues guide and observation protocol; canonical-relative links inside these drafts are reconciled during consolidation.
 
 This checkpoint adds research and documentation only. No new product feature, provider login/model invocation, browser journey, human study or construction-compliance certification was performed. Current source findings include silent public-feed and budget-input caps, lost receipt metadata and incomplete capital closeout meaning; the reports distinguish these from untested risks. The four research reports record current sources and coverage limits. T3 source was inspected in an external scratch clone; no upstream code or dependencies were added to OpenPlan.
+
+## Restored core scope: planning contracts and complete RTP updates
+
+- [Core requirements ledger](CORE_REQUIREMENTS_LEDGER.md) maps binding outcomes to existing product homes, gaps and roadmap completion evidence. It includes proportional planning project controls informed by primary GAO guidance; the roadmap stays the sole queue.
+- [Contract budget review](CONTRACT_BUDGET_CORE_REQUIREMENTS_REVIEW.md) covers task/staff/deliverable drawdown, money meanings, actual effort, rates, schedule, forecasts, changes and independent reconciliation.
+- [Complete RTP review](RTP_UPDATE_CORE_REQUIREMENTS_REVIEW.md) maps 27 work families and a continuous prior-plan-to-adoption/amendment outcome, including all applicable policy/action/financial/narrative elements.
+- [Recovered requirements](REQUIREMENTS_HISTORY_RECOVERY.md) records dated user decisions and bounded history coverage. These were earlier core requirements; exact older employee/task wording was not recovered, and current explicit instruction independently binds it.
+
+Roadmap M11 and M12 now preserve those outcomes explicitly and sequence first useful cases early. The contract and operating-entry proposals also retain them for eventual canonical consolidation. Existing contract metadata has not been relabeled in this checkpoint: the proposed copy must receive reconciled release/review identity at the safe handoff.
+
+This update adds documentation only. Source-level financial and RTP intake findings have independent root spot checks; no live accounting incident, complete RTP acceptance, human study or regulatory certification is claimed. As last checked, main d2ce5c0f CI failed and its RLS workflow passed. The review branch has no triggered CI run. These statuses are separate from successful preservation pushes.
