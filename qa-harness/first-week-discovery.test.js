@@ -46,7 +46,7 @@ function jobDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'first-week-discovery-'));
 }
 
-function writeCompletedJob(dir) {
+function writeCompletedJob(dir, { browserRecords = true } = {}) {
   fs.mkdirSync(path.join(dir, 'agent'), { recursive: true });
   fs.writeFileSync(path.join(dir, 'agent', 'findings.json'), JSON.stringify({ outcomeReached: 'yes', findings: [] }));
   fs.writeFileSync(
@@ -57,6 +57,12 @@ function writeCompletedJob(dir) {
     path.join(dir, 'execution.json'),
     JSON.stringify({ status: 'completed', reason: 'The agent completed and left a findings report.' }),
   );
+  if (browserRecords) {
+    fs.mkdirSync(path.join(dir, 'browser'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'browser', 'page-synthetic.yml'), '- heading "Synthetic test page" [level=1]\n');
+    // A captured console with no messages is legitimately empty.
+    fs.writeFileSync(path.join(dir, 'browser', 'console-synthetic.log'), '');
+  }
 }
 
 console.log('first-week discovery interruption and resume rules');
@@ -253,6 +259,40 @@ check('an unexpected browser console error fails an otherwise reached journey', 
   assert.strictEqual(shouldResumeJob(dir), true);
   assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /1 unexpected console error/);
 });
+
+for (const [name, files, expectedReason] of [
+  ['missing browser folder', null, /browser capture directory/i],
+  ['empty browser folder', {}, /page snapshot/i],
+  ['missing page snapshot', { 'console-synthetic.log': '' }, /page snapshot/i],
+  ['empty page snapshot', { 'page-synthetic.yml': '', 'console-synthetic.log': '' }, /page snapshot/i],
+  ['whitespace page snapshot', { 'page-synthetic.yml': ' \n\t', 'console-synthetic.log': '' }, /page snapshot/i],
+  ['unrelated text instead of MCP snapshot', { 'notes.txt': 'Page looked fine', 'console-synthetic.log': '' }, /page snapshot/i],
+  ['missing console capture', { 'page-synthetic.yml': '- heading "Synthetic page"' }, /console capture/i],
+]) {
+  check(`verification leaves ${name} inconclusive and resume retries it`, () => {
+    const runRoot = jobDir();
+    const dir = path.join(runRoot, '01-first-day-setup');
+    writeCompletedJob(dir, { browserRecords: false });
+    if (files) {
+      fs.mkdirSync(path.join(dir, 'browser'), { recursive: true });
+      for (const [filename, content] of Object.entries(files)) {
+        fs.writeFileSync(path.join(dir, 'browser', filename), content);
+      }
+    }
+    const originalFindings = fs.readFileSync(path.join(dir, 'agent', 'findings.json'), 'utf8');
+    const result = verifyRun(runRoot, 'http://localhost:3200');
+    assert.strictEqual(result.completed, 1);
+    assert.strictEqual(result.reached, 0);
+    assert.strictEqual(result.inconclusive, 1);
+    assert.strictEqual(result.outcomeGatePassed, false);
+    assert.strictEqual(shouldResumeJob(dir), true);
+    const verdict = JSON.parse(fs.readFileSync(path.join(dir, 'verdict.json'), 'utf8'));
+    assert.strictEqual(verdict.outcome.status, 'inconclusive');
+    assert.match(verdict.outcome.reason, expectedReason);
+    assert.match(fs.readFileSync(result.summaryPath, 'utf8'), expectedReason);
+    assert.strictEqual(fs.readFileSync(path.join(dir, 'agent', 'findings.json'), 'utf8'), originalFindings);
+  });
+}
 
 check('a selected job missing from disk is inconclusive instead of disappearing from the gate', () => {
   const runRoot = jobDir();

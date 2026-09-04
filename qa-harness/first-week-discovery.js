@@ -576,7 +576,9 @@ async function readServerBuildIdentity(baseUrl) {
 function inspectBrowserConsole(browserDir) {
   const result = { fatal: [], allowed: [] };
   if (!fs.existsSync(browserDir)) return result;
-  const files = fs.readdirSync(browserDir).filter((name) => /^console-.*\.log$/i.test(name));
+  const files = fs.readdirSync(browserDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && /^console-.*\.log$/i.test(entry.name))
+    .map((entry) => entry.name);
   for (const file of files) {
     const lines = fs.readFileSync(path.join(browserDir, file), 'utf8').split(/\r?\n/);
     for (const text of lines) {
@@ -588,6 +590,30 @@ function inspectBrowserConsole(browserDir) {
     }
   }
   return result;
+}
+
+/** Require the MCP's records even when the agent reports no findings. An empty
+ * console log is a valid capture; a missing log is not evidence of no errors.
+ * Presence alone does not prove the page content, screenshots or user outcome. */
+function inspectBrowserCapture(browserDir) {
+  try {
+    const files = fs.readdirSync(browserDir, { withFileTypes: true })
+      .filter((entry) => entry.isFile()).map((entry) => entry.name);
+    const hasSnapshot = files.some((name) => /^page-.*\.ya?ml$/i.test(name)
+      && fs.readFileSync(path.join(browserDir, name), 'utf8').trim().length > 0);
+    const hasConsole = files.some((name) => /^console-.*\.log$/i.test(name));
+    return {
+      problem: !hasSnapshot
+        ? 'No non-empty MCP page snapshot was retained for this journey.'
+        : !hasConsole ? 'No MCP console capture was retained for this journey.' : null,
+      console: inspectBrowserConsole(browserDir),
+    };
+  } catch {
+    return {
+      problem: 'The browser capture directory or its records are missing or unreadable.',
+      console: { fatal: [], allowed: [] },
+    };
+  }
 }
 
 function buildNewRunManifest({ createdAt, baseUrl, model, backend, jobs, freshAccount, build }) {
@@ -707,7 +733,7 @@ function readJobExecution(jobDir) {
   return recorded;
 }
 
-function classifyJobOutcome({ execution, report, fatalConsoleErrors = 0 }) {
+function classifyJobOutcome({ execution, report, fatalConsoleErrors = 0, browserCaptureProblem = null }) {
   if (execution.status !== 'completed') {
     return {
       status: 'inconclusive',
@@ -716,6 +742,9 @@ function classifyJobOutcome({ execution, report, fatalConsoleErrors = 0 }) {
   }
   if (!report) {
     return { status: 'inconclusive', reason: 'The completed execution has no valid findings report.' };
+  }
+  if (browserCaptureProblem) {
+    return { status: 'inconclusive', reason: browserCaptureProblem };
   }
   if (fatalConsoleErrors > 0) {
     return {
@@ -739,11 +768,12 @@ function shouldResumeJob(jobDir) {
   if (!fs.existsSync(jobDir)) return true;
   const execution = readJobExecution(jobDir);
   const report = readFindings(path.join(jobDir, 'agent'));
-  const browserConsole = inspectBrowserConsole(path.join(jobDir, 'browser'));
+  const browserCapture = inspectBrowserCapture(path.join(jobDir, 'browser'));
   return classifyJobOutcome({
     execution,
     report,
-    fatalConsoleErrors: browserConsole.fatal.length,
+    fatalConsoleErrors: browserCapture.console.fatal.length,
+    browserCaptureProblem: browserCapture.problem,
   }).status !== 'passed';
 }
 
@@ -879,11 +909,13 @@ function verifyRun(runRoot, baseUrl) {
         ? `ended \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`
         : `returned \`${session.subtype}\` after ${session.num_turns ?? '?'} steps`;
     const report = readFindings(agentDir);
-    const browserConsole = inspectBrowserConsole(browserDir);
+    const browserCapture = inspectBrowserCapture(browserDir);
+    const browserConsole = browserCapture.console;
     const outcome = classifyJobOutcome({
       execution,
       report,
       fatalConsoleErrors: browserConsole.fatal.length,
+      browserCaptureProblem: browserCapture.problem,
     });
     if (outcome.status === 'inconclusive') inconclusive += 1;
     else if (outcome.status === 'passed') reached += 1;
@@ -940,7 +972,9 @@ function verifyRun(runRoot, baseUrl) {
     `- Outcome gate: **${outcomeGatePassed ? 'PASSED' : 'FAILED'}**`,
     '',
     'The outcome gate passes only when every selected journey completes and reports that',
-    'the planner reached the intended outcome. A completed agent session is not enough.',
+    'the planner reached the intended outcome, with a retained non-empty MCP page snapshot',
+    'and a console capture without unexpected errors. These records are necessary, but do not',
+    'prove the semantic outcome, screenshot validity, runtime identity or human usability.',
     '',
     'An evidence-complete claim means the named screenshot and page snapshot passed mechanical',
     'checks, including exact and same-line missing-text contradictions. It does not prove the',

@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { validateCapabilityEvidence } from "./capability-evidence.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "../../..");
@@ -465,6 +466,7 @@ function runCheck() {
       }
     }
   }
+  validateCapabilityEvidence(registry, REPO_ROOT, new Date().toISOString().slice(0, 10));
   checkJurisdictionReadinessRegistry(registry.readinessRegistry);
 
   const reviewPath = latestReviewPath();
