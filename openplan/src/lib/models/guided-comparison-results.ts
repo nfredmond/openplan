@@ -44,11 +44,25 @@ export type GuidedComparisonMetric = {
 };
 
 const METHODS = [
-  { key: "aequilibrae", label: "AequilibraE", track: "assignment" },
-  { key: "activitysim", label: "ActivitySim", track: "behavioral_demand" },
+  {
+    key: "aequilibrae",
+    label: "AequilibraE",
+    track: "assignment",
+    kpiNames: { total_trips: "total_trips", daily_vmt: "daily_vmt" },
+  },
+  {
+    key: "activitysim",
+    label: "ActivitySim",
+    track: "behavioral_demand",
+    kpiNames: {
+      total_trips: "activitysim_trips",
+      daily_vmt: "activitysim_daily_vmt",
+    },
+  },
 ] as const;
 
 const METRICS = [
+  // Headline rows retain one display vocabulary while each method resolves its own evidence key.
   { key: "total_trips", label: "Trips per day" },
   { key: "daily_vmt", label: "Vehicle miles traveled per day" },
 ] as const;
@@ -88,11 +102,12 @@ export function buildGuidedComparisonResults(params: {
     };
 
     const metrics = METRICS.flatMap((metric): GuidedComparisonMetric[] => {
+      const kpiName = method.kpiNames[metric.key];
       const baseline = kpis.find(
-        (row) => row.run_id === baselineLink.model_run_id && row.kpi_name === metric.key,
+        (row) => row.run_id === baselineLink.model_run_id && row.kpi_name === kpiName,
       );
       const build = kpis.find(
-        (row) => row.run_id === buildLink.model_run_id && row.kpi_name === metric.key,
+        (row) => row.run_id === buildLink.model_run_id && row.kpi_name === kpiName,
       );
       if (
         typeof baseline?.value !== "number" ||
@@ -130,4 +145,3 @@ export function formatGuidedComparisonValue(value: number, key: GuidedComparison
     maximumFractionDigits: key === "daily_vmt" ? 1 : 0,
   });
 }
-

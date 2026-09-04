@@ -6368,6 +6368,22 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 volume_path = os.path.join(
                     work_dir, "activitysim_assignment_output", "link_volumes.csv"
                 )
+                activitysim_daily_vmt = compute_daily_vmt(
+                    os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
+                    volume_path,
+                )
+                if activitysim_daily_vmt is None:
+                    raise RuntimeError(
+                        "ActivitySim assignment produced no computable same-network VMT"
+                    )
+                activitysim_daily_vmt = round(activitysim_daily_vmt, 1)
+                activitysim_assigned_vehicle_trips = (result.get("demand") or {}).get(
+                    "routable_trips"
+                )
+                if not isinstance(activitysim_assigned_vehicle_trips, (int, float)):
+                    raise RuntimeError(
+                        "ActivitySim assignment produced no assigned vehicle-trip total"
+                    )
                 with open(volume_path, "rb") as volume_handle:
                     volume_bytes = volume_handle.read()
                 activitysim_artifact_id = str(uuid.uuid4())
@@ -6389,8 +6405,53 @@ def _claim_and_run_stage(stage: dict) -> bool:
                             else "baseline_network_settings"
                         ),
                         "trip_based_od_adjustments_reused": False,
+                        "assignment_totals": {
+                            "assigned_vehicle_trips": activitysim_assigned_vehicle_trips,
+                            "daily_vmt": activitysim_daily_vmt,
+                            "daily_vmt_method": (
+                                "sum(link assigned PCE volume x link length in miles); "
+                                "centroid connectors excluded"
+                            ),
+                        },
                     },
                 })
+                for kpi_name, kpi_label, value, unit, provenance in (
+                    (
+                        "activitysim_assigned_vehicle_trips",
+                        "ActivitySim assigned vehicle trips",
+                        activitysim_assigned_vehicle_trips,
+                        "vehicle-trips/day",
+                        (
+                            "Routable vehicle demand converted from the executed ActivitySim "
+                            "person-trip table using the versioned occupancy rules, plus any "
+                            "separately documented external gateway demand."
+                        ),
+                    ),
+                    (
+                        "activitysim_daily_vmt",
+                        "ActivitySim assignment daily VMT",
+                        activitysim_daily_vmt,
+                        "vehicle-miles/day",
+                        (
+                            "Same-network ActivitySim demand assignment: sum of assigned PCE "
+                            "link volume times link length in miles, excluding centroid connectors."
+                        ),
+                    ),
+                ):
+                    sb_post_kpi({
+                        "run_id": run_id,
+                        "kpi_category": "assignment",
+                        "kpi_name": kpi_name,
+                        "kpi_label": kpi_label,
+                        "value": value,
+                        "unit": unit,
+                        "breakdown_json": {
+                            "provenance": provenance,
+                            "demand_model": "ActivitySim",
+                            "assignment_engine": "AequilibraE",
+                            "uncalibrated": True,
+                        },
+                    })
                 activitysim_validation = _run_count_validation(
                     os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
                     volume_path,

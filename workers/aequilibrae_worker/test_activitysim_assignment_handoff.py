@@ -407,6 +407,7 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
                     0.0003,
                     profile=kwargs["assignment_profile_override"],
                 ),
+                "demand": {"routable_trips": 125.5},
             }
 
         activitysim_validation = {
@@ -424,8 +425,10 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
             mock.patch.object(main, "sb_patch_stage") as patch_stage,
             mock.patch.object(main, "sb_patch_run"),
             mock.patch.object(main, "sb_post_artifact") as post_artifact,
+            mock.patch.object(main, "sb_post_kpi") as post_kpi,
             mock.patch.object(main, "activitysim_assignment_package", return_value="/activitysim/package"),
             mock.patch.object(main, "stage_assignment", side_effect=assignment),
+            mock.patch.object(main, "compute_daily_vmt", return_value=456.789),
             mock.patch.object(
                 main, "_run_count_validation", return_value=activitysim_validation
             ) as validate,
@@ -469,6 +472,18 @@ def test_assignment_stage_reuses_state_and_bypasses_second_mode_split():
         assert payload["metadata_json"]["trip_based_od_adjustments_reused"] is False
         assert payload["metadata_json"]["network_settings_digest"] == accepted_digest
         assert payload["metadata_json"]["assignment_profile_digest"] == profile_digest
+        assert payload["metadata_json"]["assignment_totals"] == {
+            "assigned_vehicle_trips": 125.5,
+            "daily_vmt": 456.8,
+            "daily_vmt_method": (
+                "sum(link assigned PCE volume x link length in miles); "
+                "centroid connectors excluded"
+            ),
+        }
+        posted_kpis = {call.args[0]["kpi_name"]: call.args[0] for call in post_kpi.call_args_list}
+        assert posted_kpis["activitysim_assigned_vehicle_trips"]["value"] == 125.5
+        assert posted_kpis["activitysim_daily_vmt"]["value"] == 456.8
+        assert posted_kpis["activitysim_daily_vmt"]["unit"] == "vehicle-miles/day"
         assert validate.call_count == 1
         write_evidence.assert_called_once_with(
             run_id,
@@ -518,6 +533,7 @@ def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
                     0.0003,
                     profile=kwargs["assignment_profile_override"],
                 ),
+                "demand": {"routable_trips": 75.0},
             }
 
         completion = mock.Mock(status_code=200)
@@ -528,8 +544,10 @@ def test_uncalibrated_assignment_handoff_reuses_the_canonical_baseline_digest():
             mock.patch.object(main, "sb_patch_stage"),
             mock.patch.object(main, "sb_patch_run"),
             mock.patch.object(main, "sb_post_artifact") as post_artifact,
+            mock.patch.object(main, "sb_post_kpi"),
             mock.patch.object(main, "activitysim_assignment_package", return_value="/package"),
             mock.patch.object(main, "stage_assignment", side_effect=assignment),
+            mock.patch.object(main, "compute_daily_vmt", return_value=250.0),
             mock.patch.object(main.requests, "get", return_value=completion),
         ):
             assert main.process_stage(

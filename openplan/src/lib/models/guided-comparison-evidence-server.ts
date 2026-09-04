@@ -35,7 +35,12 @@ export async function loadGuidedComparisonEvidence(
           .from("model_run_kpis")
           .select("run_id, kpi_name, value, unit")
           .in("run_id", runIds)
-          .in("kpi_name", ["total_trips", "daily_vmt"]),
+          .in("kpi_name", [
+            "total_trips",
+            "daily_vmt",
+            "activitysim_trips",
+            "activitysim_daily_vmt",
+          ]),
         supabase
           .from("modeling_claim_decisions")
           .select("model_run_id, track, claim_status, status_reason, decided_at")

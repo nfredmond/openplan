@@ -9,10 +9,17 @@ const links = [
   { comparison_snapshot_id: "snapshot", model_run_id: "as-build", method: "activitysim", scenario_role: "build" },
 ];
 
-const kpis = links.flatMap((link, index) => [
-  { run_id: link.model_run_id, kpi_name: "total_trips", value: 100 + (index % 2) * 10, unit: "trips/day" },
-  { run_id: link.model_run_id, kpi_name: "daily_vmt", value: 1_000 - (index % 2) * 100, unit: "vehicle-miles/day" },
-]);
+const kpis = links.flatMap((link, index) => {
+  const isActivitySim = link.method === "activitysim";
+  return [
+    { run_id: link.model_run_id, kpi_name: isActivitySim ? "activitysim_trips" : "total_trips", value: (isActivitySim ? 200 : 100) + (index % 2) * 10, unit: "trips/day" },
+    { run_id: link.model_run_id, kpi_name: isActivitySim ? "activitysim_daily_vmt" : "daily_vmt", value: (isActivitySim ? 2_000 : 1_000) - (index % 2) * 100, unit: "vehicle-miles/day" },
+    ...(isActivitySim ? [
+      { run_id: link.model_run_id, kpi_name: "total_trips", value: 999, unit: "trips/day" },
+      { run_id: link.model_run_id, kpi_name: "daily_vmt", value: 9_999, unit: "vehicle-miles/day" },
+    ] : []),
+  ];
+});
 
 const decisions = [
   { model_run_id: "aeq-base", track: "assignment", claim_status: "prototype_only", status_reason: "Local counts were unavailable." },
@@ -31,6 +38,10 @@ describe("guided comparison results", () => {
       expect.objectContaining({ key: "daily_vmt", baseline: 1_000, build: 900, delta: -100, percentDelta: -10 }),
     ]);
     expect(results[0]?.build).toMatchObject({ claimStatus: "prototype_only", statusReason: "Local counts were unavailable." });
+    expect(results[1]?.metrics).toEqual([
+      expect.objectContaining({ key: "total_trips", baseline: 200, build: 210, delta: 10, percentDelta: 5 }),
+      expect.objectContaining({ key: "daily_vmt", baseline: 2_000, build: 1_900, delta: -100, percentDelta: -5 }),
+    ]);
     expect(results[1]?.build).toMatchObject({ claimStatus: "prototype_only", statusReason: "The behavioral result is uncalibrated." });
   });
 
@@ -46,5 +57,10 @@ describe("guided comparison results", () => {
     const results = buildGuidedComparisonResults({ snapshotId: "snapshot", links, kpis: broken, decisions });
     expect(results[0]?.metrics.map((metric) => metric.key)).toEqual(["total_trips"]);
   });
-});
 
+  it("does not relabel the trip-based assignment KPIs as ActivitySim evidence", () => {
+    const withoutActivitySimEvidence = kpis.filter((row) => !row.kpi_name.startsWith("activitysim_"));
+    const results = buildGuidedComparisonResults({ snapshotId: "snapshot", links, kpis: withoutActivitySimEvidence, decisions });
+    expect(results[1]?.metrics).toEqual([]);
+  });
+});

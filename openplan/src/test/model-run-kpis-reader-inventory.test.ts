@@ -83,7 +83,9 @@ function classifyCall(call: KpiCall): string | null {
     call.filePath === "src/lib/models/guided-comparison-evidence-server.ts" &&
     chain.includes('.in("run_id"') &&
     chain.includes('"total_trips"') &&
-    chain.includes('"daily_vmt"')
+    chain.includes('"daily_vmt"') &&
+    chain.includes('"activitysim_trips"') &&
+    chain.includes('"activitysim_daily_vmt"')
   ) {
     // The guided comparison reads only the exact four linked runs and the two
     // same-unit measures it renders. The paired decision read keeps each
