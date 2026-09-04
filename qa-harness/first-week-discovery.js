@@ -95,6 +95,7 @@ const BLOCKED_STATUSES = new Set([
   'blocked_timeout',
   'blocked_turn_limit',
   'blocked_unfinished_report',
+  'blocked_browser_tools',
 ]);
 
 function parseArgs(argv) {
@@ -652,6 +653,23 @@ function terminalAgentText(session, processResult) {
   return terminal.join('\n');
 }
 
+/** Read only Codex's own prose, never browser tool output that happens to quote similar words. */
+function codexAgentMessageText(stdout) {
+  const messages = [];
+  for (const line of String(stdout || '').split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const event = JSON.parse(line);
+      if (event?.item?.type === 'agent_message' && typeof event.item.text === 'string') {
+        messages.push(event.item.text);
+      }
+    } catch {
+      /* A forced stop may leave one truncated JSONL line. */
+    }
+  }
+  return messages.join('\n');
+}
+
 /**
  * Classify how a job ended separately from what the planner found. Claude can
  * return exit 0 and subtype "success" for a subscription limit, so process
@@ -661,6 +679,17 @@ function classifyJobExecution({ processResult = {}, session = null, reportPresen
   const resultText = terminalAgentText(session, processResult);
   if (session?.api_error_status === 429 || /session limit|weekly limit|usage limit|rate limit|quota/i.test(resultText)) {
     return { status: 'blocked_quota', reason: 'The agent service quota was exhausted before the journey finished.' };
+  }
+  const agentMessageText = codexAgentMessageText(processResult.stdout);
+  if (
+    /no browser MCP tools|no browser tools (?:are |were )?(?:available|exposed)|enable the browser MCP server/i.test(
+      `${resultText}\n${agentMessageText}`,
+    )
+  ) {
+    return {
+      status: 'blocked_browser_tools',
+      reason: 'The browser MCP tools were not provisioned for the journey, so the product was not exercised.',
+    };
   }
   if (
     !serverAvailableAfter ||
@@ -701,7 +730,8 @@ function readJobExecution(jobDir) {
   if (
     !recorded?.status ||
     (recorded.status === 'failed' && inferred.status !== 'failed') ||
-    (recorded.status === 'blocked_quota' && inferred.status === 'completed')
+    (recorded.status === 'blocked_quota' && inferred.status === 'completed') ||
+    (recorded.status === 'completed' && inferred.status === 'blocked_browser_tools')
   ) {
     return { ...recorded, ...inferred };
   }

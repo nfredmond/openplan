@@ -320,6 +320,40 @@ check('verification repairs a recorded generic failure when stdout proves the jo
   assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /blocked_quota/);
 });
 
+check('missing browser tools are resumable infrastructure failure, not a product outcome', () => {
+  const stdout = [
+    JSON.stringify({
+      type: 'item.completed',
+      item: {
+        type: 'agent_message',
+        text: 'Blocked: this session exposes no browser MCP tools, so I could not access OpenPlan.',
+      },
+    }),
+  ].join('\n');
+  const execution = classifyJobExecution({
+    processResult: { code: 0, stdout },
+    reportPresent: true,
+  });
+  assert.deepStrictEqual(execution, {
+    status: 'blocked_browser_tools',
+    reason: 'The browser MCP tools were not provisioned for the journey, so the product was not exercised.',
+  });
+
+  const runRoot = jobDir();
+  const dir = path.join(runRoot, '01-first-day-setup');
+  writeCompletedJob(dir);
+  fs.writeFileSync(
+    path.join(dir, 'execution.json'),
+    JSON.stringify({ status: 'completed', reason: 'report present', exitCode: 0, backend: 'codex' }),
+  );
+  fs.writeFileSync(path.join(dir, 'agent-stdout.json'), stdout);
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.blocked, 1);
+  assert.strictEqual(result.failed, 0);
+  assert.strictEqual(result.inconclusive, 1);
+  assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /blocked_browser_tools/);
+});
+
 check('verification repairs a false recorded quota when only browser page text contains the phrase', () => {
   const runRoot = jobDir();
   const dir = path.join(runRoot, '03-public-engagement');
