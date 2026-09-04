@@ -55,3 +55,14 @@ This checkpoint adds research and documentation only. No new product feature, pr
 Roadmap M11 and M12 now preserve those outcomes explicitly and sequence first useful cases early. The contract and operating-entry proposals also retain them for eventual canonical consolidation. Existing contract metadata has not been relabeled in this checkpoint: the proposed copy must receive reconciled release/review identity at the safe handoff.
 
 This update adds documentation only. Source-level financial and RTP intake findings have independent root spot checks; no live accounting incident, complete RTP acceptance, human study or regulatory certification is claimed. As last checked, main d2ce5c0f CI failed and its RLS workflow passed. The review branch has no triggered CI run. These statuses are separate from successful preservation pushes.
+
+## Local tax measures and administered grants
+
+Roadmap M13 and CORE-FUNDADMIN-01 restore the municipal-to-administrator reporting workflow, including project outputs, expenditures, agency review, appropriate distribution/reimbursement, public statistics and successor-measure obligations. They extend existing Programs/local_measure with scoped recipient participation and reusable reporting controls for administered grants.
+
+- [Current code review](LOCAL_MEASURE_CODE_REVIEW.md) inventories the real foundations and source-level access, custody, quantity, period-rule and completeness gaps.
+- [Napa T/U primary research](NAPA_TAX_MEASURE_REQUIREMENTS_RESEARCH.md) verifies historical sidewalk/road/ramp outputs, current rule distinctions and formula distributions; current U form exhibits and exact mandatory fields remain unestablished. The report withdraws an initially incorrect claim about the current reporting webpage.
+- [SHCC and SFCTA primary research](LOCAL_TAX_PROGRAM_ADMINISTRATION_RESEARCH.md) distinguishes actual program and sponsor-reporting rules, Prop K/Prop L continuity and historical portal documentation from current proof.
+- [Historical user requirements](LOCAL_MEASURE_HISTORY_RECOVERY.md) recover the earlier tax/sub-agency and post-award grant request; physical-output detail is independently binding from the current instruction.
+
+No new product code, live recipient account, agency contact, disbursement, municipal reporting cycle or browser acceptance was performed. The active development checkout has new developer-owned project/geography changes and remains protected pending handoff. Source findings in this checkpoint identify the inspected d2ce5c0f code and their limits. Main CI remains failed, RLS passed, Production Health skipped; the review branch has no triggered CI run.
