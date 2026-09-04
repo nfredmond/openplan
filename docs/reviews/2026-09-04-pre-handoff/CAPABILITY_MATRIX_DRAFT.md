@@ -186,3 +186,14 @@ M14 and CORE-PROCURE-01 make both sides mandatory. Source review at 27c22b68 est
 | Agency creates and issues a solicitation | Projects/Documents/stage gates are reusable; no complete agency-owned competition was established in the inspected paths. | Approved method/scope/criteria, immutable issued notice and amendments, publication evidence, separate consultant users and accurate public/private views. |
 | Submit and securely receive | Export artifacts are preserved; they are not buyer receipt or protected agency intake. | Exact-byte receipt, authoritative closing time, interruption/retry/replacement/withdrawal, separate bidder access and appropriately concealed costs, including assistant/search/storage paths. |
 | Evaluate, award and start delivery | Project/contract/budget records are reusable; panel/conflict/protest and procurement handoff remain unestablished. | Separate QBS and price-inclusive cases, recorded independent judgments and approvals, applicable notices/holds, executed scope/rates/deadlines and NTP linked to M11/M10. |
+
+## Hosted trials, customer deployment and optional services
+
+M15 and CORE-HOST-01/CORE-SERVICES-01 connect a fully functioning hosted evaluation to long-term independent use. Hosting a shell does not close the whole-product capability cells.
+
+| Required outcome | Current foundation and gap | Required evidence |
+|---|---|---|
+| Open a browser anywhere and do real work | Node production commands and worker deployment ingredients exist; public commissioning and full external-network acceptance are unproved. | Correct release identity, real auth/mail, maps/data/jobs/exports, sign-out/return and accessible desktop/390px tasks on a separate network. |
+| Shared trials remain private and affordable | Workspace roles, usage counters and optional operator cap exist; AI metering fails open and whole-host budgets/queue behavior remain unproved. | Cross-trial denial, retention/cleanup consent, cost reservation/limits, fair concurrency, metering failure and uninterrupted non-AI access. |
+| Adopt a customer-owned installation | Self-host/restore/export foundations exist; complete selective workspace transfer is unestablished. | Migrate one trial without another tenant's records, preserve evidence and bytes, reauthorize users/providers safely, continue work and restore on the new host. |
+| Offer optional implementation and administration | License notice permits services; independent operations and a bounded service runbook need proof. | Customer-owned accounts and records, accepted installation, clear update/backup/support scope, scoped customization and independent administrator exit rehearsal; no software paywall. |

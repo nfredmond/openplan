@@ -151,3 +151,14 @@ The code review distinguishes these from live incidents. Napa and SFCTA research
 | KL-2026-09-04-040 | Submission and discovery evidence gap | Current PDF/export and pursuit status do not establish receiver-confirmed submission; Grants.gov discovery is not contracting coverage. No live procurement-source adapter or agency intake proof was established here. | Official-source coverage/freshness, complete notice/addendum retrieval, exact payload/receipt custody and explicit unconfirmed external delivery. |
 
 These findings do not assert a deployed bid leak, missed deadline or illegal procurement. The dated procurement reports distinguish current code, sampled history, primary requirements and proposed architecture. No procurement browser or live submission test ran during this review.
+
+## Hosted-preview readiness review at 27c22b68
+
+| ID | Classification | Finding | Required closure |
+|---|---|---|---|
+| KL-2026-09-04-041 | Public commissioning proof gap | Local CLI auth/mail configuration and separate worker recipes are not a commissioned public deployment. County app routes read worker files from the same disk. | M3/M15: production topology, real mail/auth, TLS/private services, durable shared or transferred artifacts and complete outside-network workflow proof. |
+| KL-2026-09-04-042 | High hosted-spend protection gap; source-established | AI limiter allows requests on lookup failure and records usage best effort after success. Workspace call counts do not establish a global dollar ceiling or atomic concurrent admission. | Operator-approved instance budgets and reservations, concurrency/tenant protections, provider limits where supported, visible pause of expensive actions on uncertain budget and continued non-AI work. |
+| KL-2026-09-04-043 | Deployment-result guard gap; source-established | Machine-specific refresh script continues on unreadable migration state and only warns on served-commit mismatch before Done. | Fail uncertain production promotion, prove with harmless and targeted mutations, identify the served revision and rehearse recovery. Do not infer the current demo is mismatched. |
+| KL-2026-09-04-044 | Customer portability/administration proof gap | Report exports and representative full-stack restore fixtures do not establish isolated trial-to-customer workspace transfer or independent ongoing administration. | Complete byte/record/role/evidence transfer without another tenant, customer-owned accounts, accepted restore/upgrade/exit and a bounded optional service runbook. |
+
+No public infrastructure or paid service was provisioned during this review. Current license notice permits optional services; selected copy guards need contextual maintenance before describing those services, while genuine no-paywall tests remain.

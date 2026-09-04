@@ -2,7 +2,7 @@
 
 These are preserved review findings and proposals, not adopted product authorities
 or a release declaration. The active development checkout remains untouched by
-this review. It is collecting additional acceptance evidence; source was most recently observed clean at 27c22b68 during the procurement review. This is not a safe-handoff or release declaration.
+this review. It is collecting additional acceptance evidence; source was most recently observed clean at c64b70b6 during the hosted-preview review. Hosting source findings were inspected at 27c22b68; the subsequent commit changes only the acceptance harness. This is not a safe-handoff or release declaration.
 The current contract and sole active roadmap remain at their existing paths until
 the development session reaches a safe handoff and the consolidation is reviewed.
 
@@ -77,3 +77,15 @@ M14 and CORE-PROCURE-01 preserve the complete RFP/RFQ/proposal workflow on both 
 - [Historical recovery](PROCUREMENT_HISTORY_RECOVERY.md) separates July consultant implementation and earlier agency planning intent from direct user requirements not recovered in the bounded sample. The current explicit request independently binds the full scope.
 
 This extension changes documentation only. No live procurement, product implementation, browser acceptance or new application tests occurred. Root spot-checked current code, Caltrans cost-handling text and the SAM discovery contract. Main 27c22b68 CI failed ([run](https://github.com/nfredmond/openplan/actions/runs/33930095330)); RLS Isolation passed ([run](https://github.com/nfredmond/openplan/actions/runs/33930095367)). The review branch has no triggered CI run as checked before this checkpoint. A successful preservation push is separate from those results. The development checkout remains protected pending its owner's safe handoff.
+
+## Hosted evaluation and optional implementation services
+
+M15 and CORE-HOST-01/CORE-SERVICES-01 preserve Nathaniel's mid-term browser-accessible demonstration and editable trial, followed by independent customer ownership. Implementation, annual administration and customization are optional professional services around the same free software. No checkout, subscription entitlement or paid feature gate is proposed.
+
+- [Hosting source and architecture review](HOSTED_PREVIEW_CODE_AND_ARCHITECTURE_REVIEW.md) traces real deployment ingredients and missing commissioning, budget, artifact, release-identity and selective-transfer proof.
+- [Dated hosting costs and operations](HOSTED_PREVIEW_COST_AND_OPERATIONS_RESEARCH.md) supplies a concrete VM baseline, managed alternative, heavy-worker costs, assumptions, exclusions and acceptance prerequisites. Costs are research estimates, not approved spending or measured capacity.
+- [Services and customer ownership](OPEN_SOURCE_SERVICES_AND_HOSTED_TRIAL_REQUIREMENTS.md) distinguishes free licensing, accepted implementation, bounded annual administration, separately scoped customization, trial data and independently verified exit.
+
+The current source notice already allows optional commercial services. The categorical future shared-worker ban and broad commercial-vocabulary guards need alignment with Nathaniel's new direction while preserving actual free-software protections. Canonical operating/contract/contributor/self-hosting proposals were updated outside the active checkout for later consolidation. No paid infrastructure, DNS, public access, accounts or services changed.
+
+The active developer advanced main to c64b70b6 to classify missing browser tools as resumable infrastructure failure, with an inconclusive outcome. Root read the change; it does not establish planner success. The owner began a new full acceptance run on that commit. CI and RLS were in progress when inspected; the review branch has no triggered CI run. Safe handoff and main consolidation remain pending.
