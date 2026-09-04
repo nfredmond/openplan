@@ -12,6 +12,7 @@ const { spawnSync } = require('node:child_process');
 
 const {
   archiveAttempt,
+  buildPrompt,
   buildCodexArgs,
   buildJobManifest,
   buildNewRunManifest,
@@ -515,6 +516,24 @@ check('the Codex fallback isolates user context and exposes the browser MCP', ()
   assert.ok(!args.includes('--sandbox'), '--approve-for-me and --sandbox are mutually exclusive in this Codex CLI');
   assert.ok(args.some((arg) => arg === 'mcp_servers.browser.command="npx"'));
   assert.ok(args.some((arg) => arg.includes('@playwright/mcp@0.0.79')));
+});
+
+check('fresh-agent prompts direct browser actions to tools instead of unsupported resource discovery', () => {
+  const prompt = buildPrompt(
+    { id: 'neutral-geography', body: 'Use {{BASE_URL}}.', maxTurns: 10 },
+    {
+      baseUrl: 'http://localhost:3200',
+      email: 'planner@example.test',
+      password: 'test-only',
+      approverEmail: '',
+      approverPassword: '',
+      agentDir: '/tmp/agent',
+      contract: 'Report honestly.',
+    },
+  );
+  assert.match(prompt, /Browser actions are MCP tools, not MCP resources/);
+  assert.match(prompt, /browser_navigate/);
+  assert.match(prompt, /do not call resources\/list or resources\/templates\/list/);
 });
 
 check('a Codex journey that uses shell or web search violates the fresh-browser contract', () => {

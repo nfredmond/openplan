@@ -283,6 +283,7 @@ function buildPrompt(job, { baseUrl, email, password, approverEmail, approverPas
     'You are doing a real job in a real piece of software, using the browser you have been given.',
     'You have never seen this software before and there is no documentation. That is intentional.',
     'Use the browser MCP server named browser for the product. Do not use web search, shell commands, or inspect source files.',
+    'Browser actions are MCP tools, not MCP resources. Call browser_navigate, browser_snapshot, browser_click, browser_type, and browser_take_screenshot directly; do not call resources/list or resources/templates/list.',
     '',
     `Your working directory is ${agentDir}. Write your evidence and your report there and nowhere else.`,
     `The job id you were given is: ${job.id}`,
@@ -1244,6 +1245,7 @@ async function main() {
 
 module.exports = {
   archiveAttempt,
+  buildPrompt,
   buildCodexArgs,
   buildJobManifest,
   buildNewRunManifest,
