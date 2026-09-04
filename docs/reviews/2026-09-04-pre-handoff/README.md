@@ -2,7 +2,7 @@
 
 These are preserved review findings and proposals, not adopted product authorities
 or a release declaration. The active development checkout remains untouched by
-this review. It is collecting additional acceptance evidence; source was most recently observed at d2ce5c0f during this priority review.
+this review. It is collecting additional acceptance evidence; source was most recently observed clean at 27c22b68 during the procurement review. This is not a safe-handoff or release declaration.
 The current contract and sole active roadmap remain at their existing paths until
 the development session reaches a safe handoff and the consolidation is reviewed.
 
@@ -66,3 +66,14 @@ Roadmap M13 and CORE-FUNDADMIN-01 restore the municipal-to-administrator reporti
 - [Historical user requirements](LOCAL_MEASURE_HISTORY_RECOVERY.md) recover the earlier tax/sub-agency and post-award grant request; physical-output detail is independently binding from the current instruction.
 
 No new product code, live recipient account, agency contact, disbursement, municipal reporting cycle or browser acceptance was performed. The active development checkout has new developer-owned project/geography changes and remains protected pending handoff. Source findings in this checkpoint identify the inspected d2ce5c0f code and their limits. Main CI remains failed, RLS passed, Production Health skipped; the review branch has no triggered CI run.
+
+## Consultant and agency procurement
+
+M14 and CORE-PROCURE-01 preserve the complete RFP/RFQ/proposal workflow on both sides, with four increments from discovery/package preparation through issue/receipt, evaluation/negotiation and award-to-contract delivery. It starts with existing consultant response functionality and explicitly designs the missing agency competition record. Procurement joins the early contract/capital work; milestone numbers are not release order.
+
+- [Current procurement code review](PROCUREMENT_CODE_REVIEW.md) identifies preparation, metadata, deadline, package and receiving gaps at 27c22b68.
+- [Agency and consultant requirements](PROCUREMENT_AGENCY_REQUIREMENTS_RESEARCH.md) distinguishes actual selection methods, authority/funding, protected cost handling, decisions and records.
+- [Discovery and reuse](PROCUREMENT_DISCOVERY_AND_REUSE_RESEARCH.md) covers official sources, coverage/freshness, receipt evidence, OCDS and bounded OSS options. SAM status filtering is marked Coming Soon in its documentation and has not been proven live.
+- [Historical recovery](PROCUREMENT_HISTORY_RECOVERY.md) separates July consultant implementation and earlier agency planning intent from direct user requirements not recovered in the bounded sample. The current explicit request independently binds the full scope.
+
+This extension changes documentation only. No live procurement, product implementation, browser acceptance or new application tests occurred. Root spot-checked current code, Caltrans cost-handling text and the SAM discovery contract. Main 27c22b68 CI failed ([run](https://github.com/nfredmond/openplan/actions/runs/33930095330)); RLS Isolation passed ([run](https://github.com/nfredmond/openplan/actions/runs/33930095367)). The review branch has no triggered CI run as checked before this checkpoint. A successful preservation push is separate from those results. The development checkout remains protected pending its owner's safe handoff.

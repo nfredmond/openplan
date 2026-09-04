@@ -140,3 +140,14 @@ The scoped contract report also identifies API/database permission and billed-ti
 | KL-2026-09-04-036 | High financial completeness risk; source/config-established | Staff/public measure loaders use single table reads without pagination/complete aggregates; local API row cap is 1,000. Successful reads cannot prove complete lifetime totals. | Above-cap isolated reproduction; complete ordered retrieval or verified server totals, snapshot consistency and explicit incomplete states across display/export. |
 
 The code review distinguishes these from live incidents. Napa and SFCTA research identifies versioned local requirements and differing disbursement methods; no universal California reimbursement or output rule is inferred.
+
+## Procurement review at 27c22b68
+
+| ID | Classification | Finding | Required closure |
+|---|---|---|---|
+| KL-2026-09-04-037 | Core procurement capability gap in inspected paths | Consultant proposal preparation exists; a complete agency competition with publication, protected receipt, conflicts/evaluation, protests and award is unestablished. | M14a–d: independently observed agency and consultant outcomes with actual authority, cross-organization isolation and contract handoff. |
+| KL-2026-09-04-038 | Solicitation preparation/meaning gaps; source-established | Grant navigation obscures proposal work; creator omits questions/format fields accepted by POST; PATCH omits solicitation fields. Client-local deadline conversion has no recorded issuer timezone. | Discoverable entry, editable versioned instructions/deadlines, consistent context through drafting/export, cross-timezone/DST and amendment cases. |
+| KL-2026-09-04-039 | Proposal package completeness gap; source-established | Fixed seeded sections are not deletable, assembly combines all sections including finalized fees, and attachments are a checklist rather than embedded source files. Global DRAFT depends only on required attachments despite local unfinalized-section warnings. | Source-specific review/submission packages with actual file manifests, prescribed forms/partitions and truthful overall readiness. Preserve evidence warnings and fee AI prohibition. |
+| KL-2026-09-04-040 | Submission and discovery evidence gap | Current PDF/export and pursuit status do not establish receiver-confirmed submission; Grants.gov discovery is not contracting coverage. No live procurement-source adapter or agency intake proof was established here. | Official-source coverage/freshness, complete notice/addendum retrieval, exact payload/receipt custody and explicit unconfirmed external delivery. |
+
+These findings do not assert a deployed bid leak, missed deadline or illegal procurement. The dated procurement reports distinguish current code, sampled history, primary requirements and proposed architecture. No procurement browser or live submission test ran during this review.

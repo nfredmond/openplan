@@ -175,3 +175,14 @@ Restored core scope includes the administering agency and its reporting municipa
 | Project/output statistics | Projects/GIS/Documents are reusable; local claim records contain money and description, not structured project quantities. | Actual agency reporting form mapped to source-backed project/segment/quantity/unit/period, no-activity/missing distinction, revision/cumulative deduplication and reproducible totals. |
 | Program financial administration | Recorded receipts, versioned allocation rules, MOE, claims and oversight exist; complete lifetime retrieval and durable decision/settlement history remain unproved. | Source-specific formula/advance/reimbursement cases, complete reconciling balances, approvals and corrected/partial payments with independent finance review. |
 | Successor measures and public accountability | Effective rule versions and public financial pages exist; successor-obligation transfer and full project/output publication are unestablished. | Old/new rule and fund identity survive transition, with continuing obligations, accepted outputs, fiscal audit and accessible public reports. |
+
+## Consultant pursuits and agency procurement
+
+M14 and CORE-PROCURE-01 make both sides mandatory. Source review at 27c22b68 establishes preparation foundations, not complete procurement acceptance.
+
+| Required outcome | Existing foundation and gap | Required evidence |
+|---|---|---|
+| Discover and prepare a response | Proposal pursuit, grounded sections and exports exist under Grants. Procurement feeds, issuer timezone, complete requirements and source-specific package structure are incomplete. | Find/import a real permitted notice, detect an addendum, prepare exact technical/fee files and required attachments from verified firm material; preserve missing/unknown requirements. |
+| Agency creates and issues a solicitation | Projects/Documents/stage gates are reusable; no complete agency-owned competition was established in the inspected paths. | Approved method/scope/criteria, immutable issued notice and amendments, publication evidence, separate consultant users and accurate public/private views. |
+| Submit and securely receive | Export artifacts are preserved; they are not buyer receipt or protected agency intake. | Exact-byte receipt, authoritative closing time, interruption/retry/replacement/withdrawal, separate bidder access and appropriately concealed costs, including assistant/search/storage paths. |
+| Evaluate, award and start delivery | Project/contract/budget records are reusable; panel/conflict/protest and procurement handoff remain unestablished. | Separate QBS and price-inclusive cases, recorded independent judgments and approvals, applicable notices/holds, executed scope/rates/deadlines and NTP linked to M11/M10. |
