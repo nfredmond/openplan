@@ -2,7 +2,7 @@
 
 These are preserved review findings and proposals, not adopted product authorities
 or a release declaration. The active development checkout remains untouched by
-this review. It is collecting additional acceptance evidence after55cf4d98.
+this review. It is collecting additional acceptance evidence after 55cf4d98.
 The current contract and sole active roadmap remain at their existing paths until
 the development session reaches a safe handoff and the consolidation is reviewed.
 
@@ -13,10 +13,10 @@ acceptance records are excluded. Original scratch-only proof files referenced by
 some reports were not relocated into this folder; final evidence references must
 be reconciled during integration.
 
-The review branch contains three guard-maintenance commits on source55cf4d98:
-58fba23b, f2713892 and5ef27310. These require captured browser records, attributable
+The review branch contains three guard-maintenance commits on source 55cf4d98:
+58fba23b, f2713892 and 5ef27310. These require captured browser records, attributable
 capability proof, normal-QA execution of the existing evidence suites and working
-scenario test collection.38focused assertions pass on this newer source; nine
+scenario test collection.38 focused assertions pass on this newer source; nine
 live-RLS assertions are skipped deliberately. Type checking also passes. This is
 not full QA, CI, current browser acceptance or scientific validation.
 
