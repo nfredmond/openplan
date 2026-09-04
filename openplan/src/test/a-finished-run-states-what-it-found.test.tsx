@@ -75,7 +75,7 @@ describe("a finished run states what it found", () => {
 
     await screen.findByText(/64,461/);
     expect(screen.getByText(/10,216,067/)).toBeTruthy();
-    expect(screen.getByText(/ActivitySim trips on an average day/i)).toBeTruthy();
+    expect(screen.getByText(/ActivitySim trips per day/i)).toBeTruthy();
     expect(screen.queryByText(/267,743/)).toBeNull();
     expect(screen.queryByText(/10,526,177/)).toBeNull();
   });

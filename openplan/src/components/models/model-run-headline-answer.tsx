@@ -50,10 +50,10 @@ const ASSIGNMENT_HEADLINE_FIGURES: ReadonlyArray<HeadlineFigureDefinition> = [
 ];
 
 const ACTIVITYSIM_HEADLINE_FIGURES: ReadonlyArray<HeadlineFigureDefinition> = [
-  { kpiName: "activitysim_trips", label: "ActivitySim trips on an average day", unit: "trips" },
+  { kpiName: "activitysim_trips", label: "ActivitySim trips per day", unit: "trips" },
   {
     kpiName: "activitysim_daily_vmt",
-    label: "ActivitySim-assigned miles driven on an average day",
+    label: "ActivitySim VMT per day",
     unit: "miles",
   },
 ];
@@ -163,13 +163,13 @@ export function ModelRunHeadlineAnswer({
   return (
     <section className="rounded-xl border border-border/70 p-5" aria-label="What this run found">
       <h2 className="text-sm font-semibold text-foreground">What this run found</h2>
-      <dl className="mt-3 grid gap-4 sm:grid-cols-2">
+      <dl className="mt-3 grid gap-4">
         {state.figures.map((figure) => (
           <div key={figure.label}>
             <dt className="text-xs text-muted-foreground">{figure.label}</dt>
-            <dd className="text-2xl font-semibold tabular-nums text-foreground">
+            <dd className="text-xl font-semibold tabular-nums text-foreground">
               {Math.round(figure.value).toLocaleString()}{" "}
-              <span className="text-sm font-normal text-muted-foreground">{figure.unit}</span>
+              <span className="block text-sm font-normal text-muted-foreground">{figure.unit}</span>
             </dd>
           </div>
         ))}
