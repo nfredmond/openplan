@@ -1,17 +1,23 @@
 #!/usr/bin/env bash
-# Launch the ActivitySim behavioral-preflight worker (Supabase poll/claim loop).
+# Launch the ActivitySim behavioral-demand worker (Supabase poll/claim loop).
 #
-# The L1/L2 preflight loop only needs `requests` + `python-dotenv` (stdlib
-# otherwise), so it can run on the system python3 or a light venv. The L3
-# execution path (real ActivitySim runs) needs the heavier deps + a dedicated
-# host — see DEPLOY.md. This picks the first interpreter that can import
-# `requests`, preferring a local venv.
+# Prefer the execution venv when it is present and complete. Otherwise retain
+# the honest preflight-only fallback, which needs only requests + python-dotenv.
+# See DEPLOY.md for the execution environment contract.
 set -euo pipefail
 cd "$(dirname "$0")"
 
+exec_py=.venv-exec/bin/python
+exec_cli="$PWD/.venv-exec/bin/activitysim"
+if [ -x "$exec_py" ] && [ -x "$exec_cli" ] && "$exec_py" -c "import activitysim, requests, dotenv" >/dev/null 2>&1; then
+  export ACTIVITYSIM_CLI="$exec_cli"
+  echo "Starting ActivitySim execution worker with $exec_py"
+  exec "$exec_py" -u supabase_poll.py
+fi
+
 for py in .venv/bin/python .venv311/bin/python python3; do
-  if command -v "${py%% *}" >/dev/null 2>&1 && "$py" -c "import requests" >/dev/null 2>&1; then
-    echo "Starting ActivitySim behavioral-preflight worker with $py"
+  if command -v "${py%% *}" >/dev/null 2>&1 && "$py" -c "import requests, dotenv" >/dev/null 2>&1; then
+    echo "Starting ActivitySim preflight-only worker with $py"
     exec "$py" -u supabase_poll.py
   fi
 done

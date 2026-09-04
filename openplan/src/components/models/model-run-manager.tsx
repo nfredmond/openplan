@@ -56,6 +56,7 @@ import {
   reconcileModelRunExecutionOutlook,
   type ModelingWorkerHealth,
 } from "@/lib/models/worker-health";
+import { managedRunStatusPresentation } from "@/lib/models/run-status";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -277,7 +278,7 @@ function isRunStuck(run: ManagedModelRun, now: number): boolean {
   return now - latest > STUCK_RUN_THRESHOLD_MS;
 }
 
-function toneForRunStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
+function toneForStageStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
   if (status === "succeeded") return "success";
   if (status === "running" || status === "queued") return "info";
   if (status === "failed" || status === "cancelled") return "warning";
@@ -610,6 +611,7 @@ export function ModelRunManager({
   }
 
   const latestRun = modelRuns[0] ?? null;
+  const latestRunStatus = latestRun ? managedRunStatusPresentation(latestRun) : null;
   const latestBehavioralAgreementRun = modelRuns.find(
     (run) =>
       run.status === "succeeded" &&
@@ -722,7 +724,7 @@ export function ModelRunManager({
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Latest status</p>
-          <p className="module-summary-value text-base">{latestRun ? latestRun.status : "None"}</p>
+          <p className="module-summary-value text-base">{latestRunStatus?.label ?? "None"}</p>
           <p className="module-summary-detail">{latestRun ? latestRun.run_title : "No runs launched yet."}</p>
         </div>
         <div className="module-summary-card">
@@ -1309,6 +1311,7 @@ export function ModelRunManager({
                 const runLink = run.source_analysis_run_id ? `/explore?runId=${run.source_analysis_run_id}#analysis-run-history` : null;
                 const scenarioLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
                 const runMode = getManagedRunModeDefinition(run.engine_key);
+                const runStatus = managedRunStatusPresentation(run);
                 // Null for anything that has not terminally failed.
                 const failureSummary = summarizeRunFailure({
                   status: run.status,
@@ -1330,7 +1333,7 @@ export function ModelRunManager({
                   <div key={run.id} className="module-record-row">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
-                        <StatusBadge tone={toneForRunStatus(run.status)}>{run.status}</StatusBadge>
+                        <StatusBadge tone={runStatus.tone}>{runStatus.label}</StatusBadge>
                         <StatusBadge tone="neutral">{labelForEngineKey(run.engine_key)}</StatusBadge>
                         {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
                         {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
@@ -1935,7 +1938,7 @@ function ModelRunStagingAndArtifacts({
                           return Number.isFinite(started) && Number.isFinite(completed) ? Math.max(0, Math.round((completed - started) / 1000)) : null;
                         })()) ?? "Duration unavailable"}</p>
                       </div>
-                      <StatusBadge tone={toneForRunStatus(stage.status)}>{stage.status}</StatusBadge>
+                      <StatusBadge tone={toneForStageStatus(stage.status)}>{stage.status}</StatusBadge>
                     </div>
                     {stage.error_message ? <p className="mt-2 text-xs text-red-600 dark:text-red-300">{stage.error_message}</p> : null}
                     {/*
